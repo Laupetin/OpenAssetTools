@@ -25,8 +25,9 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B92A6638-68F9-45D2-AB03-6ED69E349381}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ZoneWriter</RootNamespace>
+    <RootNamespace>ZoneWriting</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>ZoneWriting</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
