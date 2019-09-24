@@ -1,0 +1,112 @@
+﻿using System;
+using System.Collections.Generic;
+using ZoneCodeGenerator.Domain;
+using ZoneCodeGenerator.Parsing.C_Header.Blocks;
+using ZoneCodeGenerator.Parsing.Matching;
+using ZoneCodeGenerator.Parsing.Matching.Matchers;
+using ZoneCodeGenerator.Parsing.Testing;
+
+namespace ZoneCodeGenerator.Parsing.C_Header.Tests
+{
+    class TestVariable : AbstractTokenTest<IHeaderParserState>
+    {
+        private const string PointerToArrayVariant = "pointertoarray";
+        private const string ArrayOfPointersVariant = "arrayofpointers";
+        private const string TypeNameToken = "typename";
+        private const string PointerTokens = "pointer";
+        private const string NameToken = "name";
+        private const string ArrayTokens = "array";
+        private const string BitSizeToken = "bitsize";
+
+        private static readonly TokenMatcher[] arrayOfPointersMatchers = {
+            new MatcherTypename().WithName(TypeNameToken),
+            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple,  new MatcherLiteral("*").WithName(PointerTokens)),
+            new MatcherName().WithName(NameToken),
+            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple, new MatcherArray().WithName(ArrayTokens)),
+            new MatcherGroupOptional(new MatcherGroupAnd(
+                new MatcherLiteral(":"),
+                new MatcherNumber().WithName(BitSizeToken)
+            )), 
+            new MatcherLiteral(";").WithName(ArrayOfPointersVariant)
+        };
+
+        private static readonly TokenMatcher[] pointerToArrayMatchers = {
+            new MatcherTypename().WithName(TypeNameToken),
+            new MatcherLiteral("("), 
+            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple,  new MatcherLiteral("*").WithName(PointerTokens)),
+            new MatcherName().WithName(NameToken),
+            new MatcherLiteral(")"), 
+            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple, new MatcherArray().WithName(ArrayTokens)),
+            new MatcherLiteral(";").WithName(PointerToArrayVariant)
+        };
+
+        private static readonly TokenMatcher[] matchers =
+        {
+            new MatcherGroupOr(
+                new MatcherGroupAnd(arrayOfPointersMatchers),
+                new MatcherGroupAnd(pointerToArrayMatchers)
+                )
+        };
+
+        public TestVariable() : base(matchers)
+        {
+
+        }
+
+        protected override void ProcessMatch(IHeaderParserState state)
+        {
+            var name = GetMatcherTokens(NameToken)[0];
+            var typeName = GetMatcherTokens(TypeNameToken)[0];
+            var type = state.FindType(typeName);
+
+            if (type == null)
+                throw new TestFailedException($"Type '{typeName}' not found.");
+
+            var pointerDepth = GetMatcherTokens(PointerTokens).Count;
+
+            var arrayTokens = GetMatcherTokens(ArrayTokens);
+            var arraySize = new int[arrayTokens.Count];
+
+            int? bitSize = null;
+            if (HasMatcherTokens(BitSizeToken))
+                bitSize = int.Parse(GetMatcherTokens(BitSizeToken)[0]);
+
+            for(var i = 0; i < arrayTokens.Count; i++)
+            {
+                if (!int.TryParse(arrayTokens[i], out arraySize[i]))
+                    throw new TestFailedException($"Array size '{arrayTokens[i]}' is not numeric.");
+            }
+
+            if (state.CurrentBlock is IVariableHolder variableHolder)
+            {
+                var references = new List<ReferenceType>();
+
+                if (HasMatcherTokens(PointerToArrayVariant))
+                {
+                    for (var i = 0; i < pointerDepth; i++)
+                        references.Add(new ReferenceTypePointer());
+                    foreach(var array in arraySize)
+                        references.Add(new ReferenceTypeArray(array));
+                }
+                else
+                {
+                    foreach(var array in arraySize)
+                        references.Add(new ReferenceTypeArray(array));
+
+                    for (var i = 0; i < pointerDepth; i++)
+                        references.Add(new ReferenceTypePointer());
+                }
+
+                var typeDeclaration = bitSize == null ? new TypeDeclaration(type, references) : new TypeDeclaration(type, bitSize.Value, references);
+
+                var variable = new Variable(name, typeDeclaration);
+
+                variableHolder.AddVariable(variable);
+            }
+            else
+            {
+                throw new Exception("Expected current block to be a variable holder when parsing variables.");
+            }
+        }
+    }
+}

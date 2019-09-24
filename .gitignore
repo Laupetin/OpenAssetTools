@@ -11,8 +11,13 @@
 *.obj
 *.log
 *.bak
+
 ipch/*
+
 .vs/
-local/
 bin/
+lib/
+local/
 obj/
+packages/
+TestResults/

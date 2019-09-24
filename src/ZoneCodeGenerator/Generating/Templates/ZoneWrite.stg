@@ -1,0 +1,38 @@
+﻿delimiters "$", "$"
+
+import "Common.stg"
+
+WriterClassName(asset) ::= "$asset.Type.Name; format=\"cap\"$ZoneWriter"
+
+// =======================
+// Header file entry point
+// =======================
+header(context) ::= <<
+#pragma once
+
+namespace ZoneLoader
+{
+    class $WriterClassName(context.Asset)$
+    {
+    public:
+		// TODO
+    }
+}
+>>
+
+IncludeHeaderOfOtherAsset(asset) ::= <<
+#include "../$asset.Type.Name$/$asset.Type.Name; format="lower"$_write_db.h"
+
+>>
+
+// =======================
+// Source file entry point
+// =======================
+source(context) ::= <<
+#include "$context.Asset.Type.Name; format="lower"$_write_db.h"
+
+// Referenced Assets:
+$context.ReferencedAssets:IncludeHeaderOfOtherAsset()$
+
+// TODO
+>>

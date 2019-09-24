@@ -18,6 +18,88 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game\T6\XAssets\rawfile\rawfile_load_db.h" />
+    <ClInclude Include="Loading\AssetLoader.h" />
+    <ClInclude Include="Loading\ContentLoader.h" />
+    <ClInclude Include="Loading\Exception\BlockOverflowException.h" />
+    <ClInclude Include="Loading\Exception\InvalidChunkSizeException.h" />
+    <ClInclude Include="Loading\Exception\InvalidCompressionException.h" />
+    <ClInclude Include="Loading\Exception\InvalidFileNameException.h" />
+    <ClInclude Include="Loading\Exception\InvalidMagicException.h" />
+    <ClInclude Include="Loading\Exception\InvalidOffsetBlockException.h" />
+    <ClInclude Include="Loading\Exception\InvalidOffsetBlockOffsetException.h" />
+    <ClInclude Include="Loading\Exception\InvalidSignatureException.h" />
+    <ClInclude Include="Loading\Exception\InvalidVersionException.h" />
+    <ClInclude Include="Loading\Exception\InvalidXBlockSizeException.h" />
+    <ClInclude Include="Loading\Exception\LoadingException.h" />
+    <ClInclude Include="Loading\Exception\UnexpectedEndOfFileException.h" />
+    <ClInclude Include="Loading\Exception\UnsupportedAssetTypeException.h" />
+    <ClInclude Include="Loading\IContentLoadingEntryPoint.h" />
+    <ClInclude Include="Loading\ILoadingStep.h" />
+    <ClInclude Include="Loading\ILoadingStream.h" />
+    <ClInclude Include="Loading\ISignatureDataProvider.h" />
+    <ClInclude Include="Loading\ISignatureProvider.h" />
+    <ClInclude Include="Loading\IZoneLoaderFactory.h" />
+    <ClInclude Include="Loading\IZoneScriptStringProvider.h" />
+    <ClInclude Include="Loading\LoadingFileStream.h" />
+    <ClInclude Include="Loading\Processor\ProcessorInflate.h" />
+    <ClInclude Include="Loading\Processor\ProcessorStreamCipher.h" />
+    <ClInclude Include="Loading\Processor\ProcessorXChunks.h" />
+    <ClInclude Include="Loading\Processor\XChunks\ChunkProcessorInflate.h" />
+    <ClInclude Include="Loading\Processor\XChunks\ChunkProcessorSalsa20.h" />
+    <ClInclude Include="Loading\Processor\XChunks\IXChunkProcessor.h" />
+    <ClInclude Include="Loading\Steps\StepAddProcessor.h" />
+    <ClInclude Include="Loading\Steps\StepAllocXBlocks.h" />
+    <ClInclude Include="Loading\Steps\StepLoadSignature.h" />
+    <ClInclude Include="Loading\Steps\StepLoadZoneContent.h" />
+    <ClInclude Include="Loading\Steps\StepSkipBytes.h" />
+    <ClInclude Include="Loading\Steps\StepVerifyFileName.h" />
+    <ClInclude Include="Loading\Steps\StepVerifyMagic.h" />
+    <ClInclude Include="Loading\Steps\StepVerifySignature.h" />
+    <ClInclude Include="Loading\StreamProcessor.h" />
+    <ClInclude Include="Game\T6\ContentLoaderT6.h" />
+    <ClInclude Include="Game\T6\ZoneLoaderFactoryT6.h" />
+    <ClInclude Include="Loading\ZoneLoader.h" />
+    <ClInclude Include="Zone\Stream\Impl\XBlockInputStream.h" />
+    <ClInclude Include="Zone\Stream\IZoneInputStream.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Game\T6\XAssets\rawfile\rawfile_load_db.cpp" />
+    <ClCompile Include="Loading\AssetLoader.cpp" />
+    <ClCompile Include="Loading\ContentLoader.cpp" />
+    <ClCompile Include="Loading\Exception\BlockOverflowException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidChunkSizeException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidCompressionException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidFileNameException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidMagicException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidOffsetBlockException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidOffsetBlockOffsetException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidSignatureException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidVersionException.cpp" />
+    <ClCompile Include="Loading\Exception\InvalidXBlockSizeException.cpp" />
+    <ClCompile Include="Loading\Exception\UnexpectedEndOfFileException.cpp" />
+    <ClCompile Include="Loading\Exception\UnsupportedAssetTypeException.cpp" />
+    <ClCompile Include="Loading\LoadingFileStream.cpp" />
+    <ClCompile Include="Loading\Processor\ProcessorInflate.cpp" />
+    <ClCompile Include="Loading\Processor\ProcessorStreamCipher.cpp" />
+    <ClCompile Include="Loading\Processor\ProcessorXChunks.cpp" />
+    <ClCompile Include="Loading\Processor\XChunks\ChunkProcessorInflate.cpp" />
+    <ClCompile Include="Loading\Processor\XChunks\ChunkProcessorSalsa20.cpp" />
+    <ClCompile Include="Loading\Steps\StepAddProcessor.cpp" />
+    <ClCompile Include="Loading\Steps\StepAllocXBlocks.cpp" />
+    <ClCompile Include="Loading\Steps\StepLoadSignature.cpp" />
+    <ClCompile Include="Loading\Steps\StepLoadZoneContent.cpp" />
+    <ClCompile Include="Loading\Steps\StepSkipBytes.cpp" />
+    <ClCompile Include="Loading\Steps\StepVerifyFileName.cpp" />
+    <ClCompile Include="Loading\Steps\StepVerifyMagic.cpp" />
+    <ClCompile Include="Loading\Steps\StepVerifySignature.cpp" />
+    <ClCompile Include="Loading\StreamProcessor.cpp" />
+    <ClCompile Include="Game\T6\ContentLoaderT6.cpp" />
+    <ClCompile Include="Game\T6\ZoneLoaderFactoryT6.cpp" />
+    <ClCompile Include="Loading\ZoneLoader.cpp" />
+    <ClCompile Include="Zone\Stream\Impl\XBlockInputStream.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{C3308B0A-D7C7-4560-B5F7-3654DD4B668D}</ProjectGuid>
@@ -73,54 +155,65 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)_$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)_$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)_$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)_$(Platform)\</IntDir>
-    <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)lib\$(Configuration)_$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)src\Crypto\;$(SolutionDir)src\Utils\;$(SolutionDir)src\ZoneCommon\;$(SolutionDir)thirdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Crypto.lib;Utils.lib;ZoneCommon.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)_$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4221</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)src\Crypto\;$(SolutionDir)src\Utils\;$(SolutionDir)src\ZoneCommon\;$(SolutionDir)thirdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Crypto.lib;Utils.lib;ZoneCommon.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)_$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4221</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -128,6 +221,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)src\Crypto\;$(SolutionDir)src\Utils\;$(SolutionDir)src\ZoneCommon\;$(SolutionDir)thirdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -135,10 +230,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Crypto.lib;Utils.lib;ZoneCommon.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)_$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4221</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -146,6 +245,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)src\Crypto\;$(SolutionDir)src\Utils\;$(SolutionDir)src\ZoneCommon\;$(SolutionDir)thirdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +254,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Crypto.lib;Utils.lib;ZoneCommon.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\$(Configuration)_$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4221</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
