@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClInclude Include="Utils\ClassUtils.h" />
     <ClInclude Include="Utils\FileAPI.h" />
+    <ClInclude Include="Utils\PathUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utils\FileAPI.cpp" />
+    <ClCompile Include="Utils\PathUtils.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
