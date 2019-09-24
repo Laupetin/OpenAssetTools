@@ -19,11 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Utils\Arguments\ArgumentParser.h" />
+    <ClInclude Include="Utils\Arguments\CommandLineOption.h" />
     <ClInclude Include="Utils\ClassUtils.h" />
     <ClInclude Include="Utils\FileAPI.h" />
     <ClInclude Include="Utils\PathUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Utils\Arguments\ArgumentParser.cpp" />
+    <ClCompile Include="Utils\Arguments\CommandLineOption.cpp" />
     <ClCompile Include="Utils\FileAPI.cpp" />
     <ClCompile Include="Utils\PathUtils.cpp" />
   </ItemGroup>
