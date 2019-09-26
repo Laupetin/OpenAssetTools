@@ -79,7 +79,8 @@ int main(const int argc, const char** argv)
     {
         const std::string& zonePath = arguments[argIndex];
 
-        if(!ZoneLoading::LoadZone(zonePath))
+        Zone* zone = ZoneLoading::LoadZone(zonePath);
+        if(zone == nullptr)
         {
             printf("Failed to load zone '%s'.\n", zonePath.c_str());
             return 1;

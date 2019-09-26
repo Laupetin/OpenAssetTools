@@ -1,8 +1,9 @@
 #pragma once
+#include "Zone/Zone.h"
 #include <string>
 
 class ZoneLoading
 {
 public:
-    static bool LoadZone(const std::string& path);
+    static Zone* LoadZone(const std::string& path);
 };
