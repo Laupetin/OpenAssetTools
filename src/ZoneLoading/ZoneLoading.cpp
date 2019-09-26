@@ -1,6 +1,6 @@
 #include "ZoneLoading.h"
 
-bool ZoneLoading::LoadZone(std::string& path)
+bool ZoneLoading::LoadZone(const std::string& path)
 {
     return false;
 }

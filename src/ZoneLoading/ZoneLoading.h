@@ -4,5 +4,5 @@
 class ZoneLoading
 {
 public:
-    static bool LoadZone(std::string& path);
+    static bool LoadZone(const std::string& path);
 };
