@@ -162,9 +162,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Generating\Templates\Common.stg" />
-    <None Include="Generating\Templates\ZoneLoad.stg" />
-    <None Include="Generating\Templates\ZoneWrite.stg" />
+    <EmbeddedResource Include="Generating\Templates\Common.stg" />
+    <EmbeddedResource Include="Generating\Templates\ZoneLoad.stg" />
+    <EmbeddedResource Include="Generating\Templates\ZoneWrite.stg" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
