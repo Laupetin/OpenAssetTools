@@ -1,0 +1,141 @@
+// Game: Black Ops 2 (T6)
+game T6;
+
+// Game Assets
+asset PhysPreset ASSET_TYPE_PHYSPRESET;
+asset PhysConstraints ASSET_TYPE_PHYSCONSTRAINTS;
+asset DestructibleDef ASSET_TYPE_DESTRUCTIBLEDEF;
+asset XAnimParts ASSET_TYPE_XANIMPARTS;
+asset XModel ASSET_TYPE_XMODEL;
+asset Material ASSET_TYPE_MATERIAL;
+asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
+asset GfxImage ASSET_TYPE_IMAGE;
+asset SndBank ASSET_TYPE_SOUND;
+asset SndPatch ASSET_TYPE_SOUND_PATCH;
+asset clipMap_t ASSET_TYPE_CLIPMAP_PVS;
+asset ComWorld ASSET_TYPE_COMWORLD;
+asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
+asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
+asset MapEnts ASSET_TYPE_MAP_ENTS;
+asset GfxWorld ASSET_TYPE_GFXWORLD;
+asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
+asset Font_s ASSET_TYPE_FONT;
+asset FontIcon ASSET_TYPE_FONTICON;
+asset MenuList ASSET_TYPE_MENULIST;
+asset menuDef_t ASSET_TYPE_MENU;
+asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
+asset WeaponVariantDef ASSET_TYPE_WEAPON;
+asset WeaponAttachment ASSET_TYPE_ATTACHMENT;
+asset WeaponAttachmentUnique ASSET_TYPE_ATTACHMENT_UNIQUE;
+asset WeaponCamo ASSET_TYPE_WEAPON_CAMO;
+asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
+asset FxEffectDef ASSET_TYPE_FX;
+asset FxImpactTable ASSET_TYPE_IMPACT_FX;
+asset RawFile ASSET_TYPE_RAWFILE;
+asset StringTable ASSET_TYPE_STRINGTABLE;
+asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
+asset XGlobals ASSET_TYPE_XGLOBALS;
+asset ddlRoot_t ASSET_TYPE_DDL;
+asset Glasses ASSET_TYPE_GLASSES;
+asset EmblemSet ASSET_TYPE_EMBLEMSET;
+asset ScriptParseTree ASSET_TYPE_SCRIPTPARSETREE;
+asset KeyValuePairs ASSET_TYPE_KEYVALUEPAIRS;
+asset VehicleDef ASSET_TYPE_VEHICLEDEF;
+asset MemoryBlock ASSET_TYPE_MEMORYBLOCK;
+asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
+asset TracerDef ASSET_TYPE_TRACER;
+asset SkinnedVertsDef ASSET_TYPE_SKINNEDVERTS;
+asset Qdb ASSET_TYPE_QDB;
+asset Slug ASSET_TYPE_SLUG;
+asset FootstepTableDef ASSET_TYPE_FOOTSTEP_TABLE;
+asset FootstepFXTableDef ASSET_TYPE_FOOTSTEPFX_TABLE;
+asset ZBarrierDef ASSET_TYPE_ZBARRIER;
+
+// Setup blocks
+block 0 temp    XFILE_BLOCK_TEMP                default;
+block 1 runtime XFILE_BLOCK_RUNTIME_VIRTUAL     default;
+block 2 runtime XFILE_BLOCK_RUNTIME_PHYSICAL;
+block 3 delay   XFILE_BLOCK_DELAY_VIRTUAL       default;
+block 4 delay   XFILE_BLOCK_DELAY_PHYSICAL;
+block 5 normal  XFILE_BLOCK_VIRTUAL             default;
+block 6 normal  XFILE_BLOCK_PHYSICAL;
+
+// =========================================
+// XModelPieces
+// =========================================
+set count XModelPieces::pieces numpieces;
+
+// =========================================
+// PhysConstraint
+// =========================================
+use PhysConstraint;
+set scriptstring targetname;
+set scriptstring target_ent1;
+set scriptstring target_ent2;
+
+// =========================================
+// DestructibleDef
+// =========================================
+set count DestructibleDef::pieces numPieces;
+
+// DestructiblePiece
+set scriptstring DestructiblePiece::enableLabel;
+
+// DestructibleStage
+set scriptstring DestructibleStage::showBone;
+
+// =========================================
+// XAnimParts
+// =========================================
+use XAnimParts;
+set scriptstring names;
+set count names boneCount[9];
+set count notify notifyCount;
+set count deltaPart 1;
+set count dataByte dataByteCount;
+set count dataShort dataShortCount;
+set count dataInt dataIntCount;
+set count randomDataShort randomDataShortCount;
+set count randomDataByte randomDataByteCount;
+set count randomDataInt randomDataIntCount;
+set count indices::_1 indexCount;
+set count indices::_2 indexCount;
+set condition indices::_1 numframes < 256;
+set condition indices::data never;
+reorder:
+    names
+    notify
+    deltaPart
+    dataByte
+    dataShort
+    dataInt
+    randomDataShort
+    randomDataByte
+    randomDataInt
+    indices;
+
+// XAnimNotifyInfo
+set scriptstring XAnimNotifyInfo::name;
+
+// XAnimDeltaPart
+use XAnimDeltaPart;
+set count trans 1;
+set count quat2 1;
+set count quat 1;
+
+// XAnimPartTrans
+use XAnimPartTrans;
+set condition u::frames size > 0;
+set condition XAnimParts::deltaPart::trans::u::frames::indices::_1 numframes < 256;
+set count u::frames::indices::_1 size + 1;
+set count u::frames::indices::_2 size + 1;
+set condition u::frames::frames::_1 smallTrans == true;
+set count u::frames::frames::_1 size + 1;
+set count u::frames::frames::_2 size + 1;
+
+// XAnimPartTransFrames
+reorder XAnimPartTransFrames:
+    indices
+    frames;
+
+// test

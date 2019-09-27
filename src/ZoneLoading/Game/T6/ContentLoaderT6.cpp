@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-#include "Game/T6/XAssets/rawfile/rawfile_load_db.h"
+#include "Game/T6/XAssets/rawfile/rawfile_load_db2.h"
 
 using namespace T6;
 

@@ -18,6 +18,7 @@ ipch/*
 bin/
 lib/
 local/
+gen/
 obj/
 packages/
 TestResults/
