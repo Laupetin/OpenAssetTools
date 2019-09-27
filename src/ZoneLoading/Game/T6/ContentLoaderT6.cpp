@@ -4,7 +4,54 @@
 
 #include <cassert>
 
-#include "Game/T6/XAssets/rawfile/rawfile_load_db2.h"
+#include "XAssets/gen/addonmapents/addonmapents_load_db.h"
+#include "XAssets/gen/clipmap_t/clipmap_t_load_db.h"
+#include "XAssets/gen/comworld/comworld_load_db.h"
+#include "XAssets/gen/ddlroot_t/ddlroot_t_load_db.h"
+#include "XAssets/gen/destructibledef/destructibledef_load_db.h"
+#include "XAssets/gen/emblemset/emblemset_load_db.h"
+#include "XAssets/gen/font_s/font_s_load_db.h"
+#include "XAssets/gen/fonticon/fonticon_load_db.h"
+#include "XAssets/gen/footstepfxtabledef/footstepfxtabledef_load_db.h"
+#include "XAssets/gen/footsteptabledef/footsteptabledef_load_db.h"
+#include "XAssets/gen/fxeffectdef/fxeffectdef_load_db.h"
+#include "XAssets/gen/fximpacttable/fximpacttable_load_db.h"
+#include "XAssets/gen/gameworldmp/gameworldmp_load_db.h"
+#include "XAssets/gen/gameworldsp/gameworldsp_load_db.h"
+#include "XAssets/gen/gfximage/gfximage_load_db.h"
+#include "XAssets/gen/gfxlightdef/gfxlightdef_load_db.h"
+#include "XAssets/gen/gfxworld/gfxworld_load_db.h"
+#include "XAssets/gen/glasses/glasses_load_db.h"
+#include "XAssets/gen/keyvaluepairs/keyvaluepairs_load_db.h"
+#include "XAssets/gen/leaderboarddef/leaderboarddef_load_db.h"
+#include "XAssets/gen/localizeentry/localizeentry_load_db.h"
+#include "XAssets/gen/mapents/mapents_load_db.h"
+#include "XAssets/gen/material/material_load_db.h"
+#include "XAssets/gen/materialtechniqueset/materialtechniqueset_load_db.h"
+#include "XAssets/gen/memoryblock/memoryblock_load_db.h"
+#include "XAssets/gen/menudef_t/menudef_t_load_db.h"
+#include "XAssets/gen/menulist/menulist_load_db.h"
+#include "XAssets/gen/physconstraints/physconstraints_load_db.h"
+#include "XAssets/gen/physpreset/physpreset_load_db.h"
+#include "XAssets/gen/qdb/qdb_load_db.h"
+#include "XAssets/gen/rawfile/rawfile_load_db.h"
+#include "XAssets/gen/scriptparsetree/scriptparsetree_load_db.h"
+#include "XAssets/gen/skinnedvertsdef/skinnedvertsdef_load_db.h"
+#include "XAssets/gen/slug/slug_load_db.h"
+#include "XAssets/gen/sndbank/sndbank_load_db.h"
+#include "XAssets/gen/snddriverglobals/snddriverglobals_load_db.h"
+#include "XAssets/gen/sndpatch/sndpatch_load_db.h"
+#include "XAssets/gen/stringtable/stringtable_load_db.h"
+#include "XAssets/gen/tracerdef/tracerdef_load_db.h"
+#include "XAssets/gen/vehicledef/vehicledef_load_db.h"
+#include "XAssets/gen/weaponattachment/weaponattachment_load_db.h"
+#include "XAssets/gen/weaponattachmentunique/weaponattachmentunique_load_db.h"
+#include "XAssets/gen/weaponcamo/weaponcamo_load_db.h"
+#include "XAssets/gen/weaponvariantdef/weaponvariantdef_load_db.h"
+#include "XAssets/gen/xanimparts/xanimparts_load_db.h"
+#include "XAssets/gen/xglobals/xglobals_load_db.h"
+#include "XAssets/gen/xmodel/xmodel_load_db.h"
+#include "XAssets/gen/zbarrierdef/zbarrierdef_load_db.h"
 
 using namespace T6;
 
@@ -36,6 +83,14 @@ void ContentLoaderT6::LoadScriptStringList(ScriptStringList* scriptStringList)
 
 void ContentLoaderT6::LoadXAsset(XAsset* pXAsset, const bool atStreamStart)
 {
+#define LOAD_ASSET(type_index, typeName, headerEntry) \
+    case type_index: \
+        { \
+            Loader_##typeName loader(this, m_zone, m_stream); \
+            loader.LoadPtr_##typeName(&pXAsset->header.headerEntry); \
+            break; \
+        }
+
     assert(pXAsset != nullptr);
 
     if(atStreamStart)
@@ -43,19 +98,63 @@ void ContentLoaderT6::LoadXAsset(XAsset* pXAsset, const bool atStreamStart)
 
     switch(pXAsset->type)
     {
-    case ASSET_TYPE_RAWFILE:
-        {
-            RawFileLoader rawFileLoader(this, m_zone, m_stream);
-
-            rawFileLoader.LoadRawFilePtr(&pXAsset->header.rawfile);
-            break;
-        }
+        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset);
+        LOAD_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints);
+        LOAD_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef);
+        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts);
+        LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model);
+        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material);
+        LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
+        LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
+        LOAD_ASSET(ASSET_TYPE_SOUND, SndBank, sound);
+        LOAD_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch);
+        LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap);
+        LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap);
+        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
+        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp);
+        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp);
+        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
+        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
+        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
+        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
+        LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);
+        LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
+        LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
+        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
+        LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon);
+        LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment);
+        LOAD_ASSET(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique, attachmentUnique);
+        LOAD_ASSET(ASSET_TYPE_WEAPON_CAMO, WeaponCamo, weaponCamo);
+        LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
+        LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
+        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
+        LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
+        LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
+        LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
+        LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals);
+        LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot);
+        LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses);
+        LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet);
+        LOAD_ASSET(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree, scriptParseTree);
+        LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs);
+        LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef);
+        LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
+        LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
+        LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
+        LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef);
+        LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
+        LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug);
+        LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef);
+        LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef);
+        LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef);
 
     default:
         {
             throw UnsupportedAssetTypeException(pXAsset->type);
         }
     }
+
+#undef LOAD_ASSET
 }
 
 void ContentLoaderT6::LoadXAssetArray(XAsset* pArray, const size_t count, const bool atStreamStart)
