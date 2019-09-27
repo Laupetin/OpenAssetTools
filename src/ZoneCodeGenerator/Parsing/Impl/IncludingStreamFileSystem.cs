@@ -29,7 +29,7 @@ namespace ZoneCodeGenerator.Parsing.Impl
             public string ReadLine()
             {
                 Line++;
-                return reader.ReadLine();
+                return reader.ReadLine() ?? "";
             }
 
             public void Close()
