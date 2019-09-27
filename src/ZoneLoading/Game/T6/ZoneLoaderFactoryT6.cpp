@@ -23,6 +23,7 @@
 const std::string ZoneLoaderFactoryT6::MAGIC_SIGNED_TREYARCH = "TAff0100";
 const std::string ZoneLoaderFactoryT6::MAGIC_SIGNED_ASSET_BUILDER = "ABff0100";
 const std::string ZoneLoaderFactoryT6::MAGIC_UNSIGNED = "TAffu100";
+const std::string ZoneLoaderFactoryT6::MAGIC_UNSIGNED_SERVER = "TAsvu100";
 const int ZoneLoaderFactoryT6::VERSION = 147;
 
 const int ZoneLoaderFactoryT6::STREAM_COUNT = 4;
@@ -83,7 +84,7 @@ const uint8_t ZoneLoaderFactoryT6::RSA_PUBLIC_KEY_TREYARCH[]
 
 class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
 {
-    static bool CanLoad(ZoneHeader& header, bool* isSecure, bool* isOfficial)
+    static bool CanLoad(ZoneHeader& header, bool* isSecure, bool* isOfficial, bool* isEncrypted)
     {
         assert(isSecure != nullptr);
         assert(isOfficial != nullptr);
@@ -97,6 +98,7 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
         {
             *isSecure = true;
             *isOfficial = true;
+            *isEncrypted = true;
             return true;
         }
         
@@ -104,6 +106,7 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
         {
             *isSecure = true;
             *isOfficial = false;
+            *isEncrypted = true;
             return true;
         }
 
@@ -111,6 +114,15 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
         {
             *isSecure = false;
             *isOfficial = true;
+            *isEncrypted = true;
+            return true;
+        }
+
+        if(!memcmp(header.m_magic, MAGIC_UNSIGNED_SERVER.c_str(), 8))
+        {
+            *isSecure = false;
+            *isOfficial = true;
+            *isEncrypted = false;
             return true;
         }
 
@@ -174,20 +186,25 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
         return signatureLoadStep;
     }
 
-    static ISignatureDataProvider* AddXChunkProcessor(ZoneLoader* zoneLoader, std::string& fileName)
+    static ISignatureDataProvider* AddXChunkProcessor(bool isEncrypted, ZoneLoader* zoneLoader, std::string& fileName)
     {
+        ISignatureDataProvider* result = nullptr;
         auto* xChunkProcessor = new ProcessorXChunks(STREAM_COUNT, XCHUNK_SIZE);
 
-        // First decrypt the chunks with Salsa20
-        auto* chunkProcessorSalsa20 = new ChunkProcessorSalsa20(STREAM_COUNT, fileName, SALSA20_KEY_TREYARCH, sizeof(SALSA20_KEY_TREYARCH));
-        xChunkProcessor->AddChunkProcessor(chunkProcessorSalsa20);
+        if(isEncrypted)
+        {
+            // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
+            auto* chunkProcessorSalsa20 = new ChunkProcessorSalsa20(STREAM_COUNT, fileName, SALSA20_KEY_TREYARCH, sizeof(SALSA20_KEY_TREYARCH));
+            xChunkProcessor->AddChunkProcessor(chunkProcessorSalsa20);
+            result = chunkProcessorSalsa20;
+        }
 
-        // Then decompress the chunks using zlib
+        // Decompress the chunks using zlib
         xChunkProcessor->AddChunkProcessor(new ChunkProcessorInflate());
         zoneLoader->AddLoadingStep(new StepAddProcessor(xChunkProcessor));
 
-        // The signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
-        return chunkProcessorSalsa20;
+        // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
+        return result;
     }
 
 public:
@@ -195,9 +212,10 @@ public:
     {
         bool isSecure;
         bool isOfficial;
+        bool isEncrypted;
 
         // Check if this file is a supported T6 zone.
-        if(!CanLoad(header, &isSecure, &isOfficial))
+        if(!CanLoad(header, &isSecure, &isOfficial, &isEncrypted))
             return nullptr;
 
         // Create new zone
@@ -215,7 +233,7 @@ public:
         ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, zoneLoader, fileName);
 
         // Setup loading XChunks from the zone from this point on.
-        ISignatureDataProvider* signatureDataProvider = AddXChunkProcessor(zoneLoader, fileName);
+        ISignatureDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, zoneLoader, fileName);
 
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(new StepSkipBytes(8)); // Skip size and externalSize fields since they are not interesting for us
