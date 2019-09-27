@@ -67,7 +67,6 @@
     <ClInclude Include="Game\T6\XAssets\gen\xglobals\xglobals_load_db.h" />
     <ClInclude Include="Game\T6\XAssets\gen\xmodel\xmodel_load_db.h" />
     <ClInclude Include="Game\T6\XAssets\gen\zbarrierdef\zbarrierdef_load_db.h" />
-    <ClInclude Include="Game\T6\XAssets\rawfile\rawfile_load_db2.h" />
     <ClInclude Include="Loading\AssetLoader.h" />
     <ClInclude Include="Loading\ContentLoader.h" />
     <ClInclude Include="Loading\Exception\BlockOverflowException.h" />
@@ -162,7 +161,6 @@
     <ClCompile Include="Game\T6\XAssets\gen\xglobals\xglobals_load_db.cpp" />
     <ClCompile Include="Game\T6\XAssets\gen\xmodel\xmodel_load_db.cpp" />
     <ClCompile Include="Game\T6\XAssets\gen\zbarrierdef\zbarrierdef_load_db.cpp" />
-    <ClCompile Include="Game\T6\XAssets\rawfile\rawfile_load_db2.cpp" />
     <ClCompile Include="Loading\AssetLoader.cpp" />
     <ClCompile Include="Loading\ContentLoader.cpp" />
     <ClCompile Include="Loading\Exception\BlockOverflowException.cpp" />
