@@ -3,6 +3,7 @@ delimiters "$", "$"
 import "Common.stg"
 
 Capital(name) ::= "$name; format=\"cap\"$"
+Lower(name) ::= "$name; format=\"lower\"$"
 
 LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
 
@@ -10,7 +11,7 @@ HeaderConstructor(context) ::= "$LoaderClassName(context.Asset)$(IZoneScriptStri
 
 HeaderPtrLoadMethodDeclaration(structure) ::= "void LoadPtr_$structure.Type.Name$($structure.Type.FullName$** pPtr);"
 HeaderArrayLoadMethodDeclaration(structure) ::= "void LoadArray_$structure.Type.Name$($structure.Type.FullName$** pArray, size_t count, bool atStreamStart);"
-HeaderLoadMethodDeclaration(structure) ::= "void Load_$structure.Type.Name$($structure.Type.FullName$** p$structure.Type.Name$, bool atStreamStart);"
+HeaderLoadMethodDeclaration(structure) ::= "void Load_$structure.Type.Name$($structure.Type.FullName$* p$structure.Type.Name$, bool atStreamStart);"
 
 HeaderGetNameMethodDeclaration(asset) ::= "static std::string GetAssetName($asset.Type.FullName$* p$asset.Type.Name$);"
 HeaderAssetLoadMethodDeclaration(asset) ::= "void LoadAsset_$asset.Type.Name$($asset.Type.FullName$** pPtr);"
@@ -50,7 +51,7 @@ header(context) ::= <<
 
 namespace $context.Game$
 {
-    class $LoaderClassName(context.Asset)$
+    class $LoaderClassName(context.Asset)$ final : public AssetLoader
     {
 		$context.Structures:{structure | $if(!structure.IsAsset)$$HeaderDeclaration(structure)$$endif$}$
 		$HeaderLoadMethodDeclaration(context.Asset)$
@@ -66,7 +67,7 @@ namespace $context.Game$
 >>
 
 IncludeHeaderOfOtherAsset(asset) ::= <<
-#include "../$asset.Type.Name$/$asset.Type.Name; format="lower"$_load_db.h"
+#include "../$Lower(asset.Type.Name)$/$Lower(asset.Type.Name)$_load_db.h"
 
 >>
 
@@ -129,9 +130,9 @@ void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$($structure.
 		else
 		{
 			$if(structure.Block.IsTemp)$
-			*pPtr = m_stream->ConvertOffsetToAlias(*ptr);
+			*pPtr = m_stream->ConvertOffsetToAlias(*pPtr);
 			$else$
-			*pPtr = m_stream->ConvertOffsetToPointer(*ptr);
+			*pPtr = m_stream->ConvertOffsetToPointer(*pPtr);
 			$endif$
 		}
 	}
@@ -204,7 +205,7 @@ source(context) ::= <<
 // Any changes will be discarded when regenerating.
 // ====================================================================
 
-#include "$context.Asset.Type.Name; format="lower"$_load_db.h"
+#include "$Lower(context.Asset.Type.Name)$_load_db.h"
 #include <cassert>
 
 // Referenced Assets:
