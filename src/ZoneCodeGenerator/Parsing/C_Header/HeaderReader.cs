@@ -15,7 +15,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header
             new PostProcessorUsages(), 
         };
 
-        public static IDataRepository ReadFile(string path)
+        public static IDataRepository ReadFile(string path, bool verbose = false)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header
                         var lexer = new Lexer(preprocessorStream);
                         var parser = new Parser<HeaderParserState>(state, lexer);
 
-                        if (!parser.Parse())
+                        if (!parser.Parse(verbose))
                             return null;
                     
                         dataRepository = new InMemoryDataRepository();

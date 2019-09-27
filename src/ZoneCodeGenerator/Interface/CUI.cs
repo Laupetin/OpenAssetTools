@@ -25,7 +25,10 @@ namespace ZoneCodeGenerator.Interface
                 return true;
             }
 
-            var session = new CUISession();
+            var session = new CUISession
+            {
+                Verbose = argumentParser.IsOptionSpecified(CommandLineOptions.OPTION_VERBOSE)
+            };
 
             if (argumentParser.IsOptionSpecified(CommandLineOptions.OPTION_OUTPUT_FOLDER))
             {
@@ -35,7 +38,7 @@ namespace ZoneCodeGenerator.Interface
             if (argumentParser.IsOptionSpecified(CommandLineOptions.OPTION_CREATE))
             {
                 session.SourceFilePath = argumentParser.GetValueForOption(CommandLineOptions.OPTION_CREATE);
-                session.Repository = HeaderReader.ReadFile(session.SourceFilePath);
+                session.Repository = HeaderReader.ReadFile(session.SourceFilePath, session.Verbose);
 
                 if (session.Repository == null)
                 {
@@ -51,7 +54,7 @@ namespace ZoneCodeGenerator.Interface
 
             if (argumentParser.IsOptionSpecified(CommandLineOptions.OPTION_EDITING_COMMANDS))
             {
-                if (!CommandFileReader.ReadFile(argumentParser.GetValueForOption(CommandLineOptions.OPTION_EDITING_COMMANDS), session))
+                if (!CommandFileReader.ReadFile(argumentParser.GetValueForOption(CommandLineOptions.OPTION_EDITING_COMMANDS), session, session.Verbose))
                 {
                     return false;
                 }

@@ -4,6 +4,6 @@
     {
         int ConsumedTokenCount { get; }
 
-        TokenTestResult PerformTest(TState state, ILexer lexer);
+        TokenTestResult PerformTest(TState state, ILexer lexer, bool verbose = false);
     }
 }

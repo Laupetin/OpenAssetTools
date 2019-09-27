@@ -57,7 +57,7 @@ namespace ZoneCodeGenerator.Parsing.Testing
 
         protected abstract void ProcessMatch(TState state);
 
-        public TokenTestResult PerformTest(TState state, ILexer lexer)
+        public TokenTestResult PerformTest(TState state, ILexer lexer, bool verbose = false)
         {
             var tokenOffset = 0;
             matchedEntries.Clear();
@@ -65,7 +65,10 @@ namespace ZoneCodeGenerator.Parsing.Testing
             ConsumedTokenCount = 0;
             tested = true;
 
-            var context = new MatchingContext(lexer, taggedMatchers);
+            var context = new MatchingContext(lexer, taggedMatchers)
+            {
+                Verbose = verbose
+            };
 
             if (context.Verbose)
             {

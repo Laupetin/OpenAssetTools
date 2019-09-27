@@ -15,6 +15,12 @@ namespace ZoneCodeGenerator.Interface
             .WithDescription("Show usage.")
             .Build();
 
+        public static readonly CommandLineOption OPTION_VERBOSE = CommandLineOption.CommandLineOptionBuilder.Create()
+            .WithShortName("v")
+            .WithLongName("verbose")
+            .WithDescription("Gives a lot and detailed output.")
+            .Build();
+
         // ------
         // INPUT
         // ------
@@ -75,6 +81,7 @@ namespace ZoneCodeGenerator.Interface
         {
             // GENERAL
             OPTION_HELP,
+            OPTION_VERBOSE,
 
             // INPUT
             OPTION_CREATE,

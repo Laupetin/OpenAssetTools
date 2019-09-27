@@ -16,7 +16,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile
             new PostProcessorDefaultBlock(),
         };
 
-        public static bool ReadFile(string path, CUISession session)
+        public static bool ReadFile(string path, CUISession session, bool verbose = false)
         {
             try
             {
@@ -29,7 +29,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile
                         var lexer = new Lexer(preprocessorStream);
                         var parser = new Parser<ICommandParserState>(state, lexer);
 
-                        if (!parser.Parse())
+                        if (!parser.Parse(verbose))
                             return false;
 
                         preprocessorStream.Close();

@@ -17,12 +17,7 @@ namespace ZoneCodeGenerator.Parsing.Matching
         {
             Lexer = lexer;
             this.taggedMatchers = taggedMatchers;
-
-            #if DEBUG
-            Verbose = true;
-            #else
             Verbose = false;
-            #endif
         }
 
         public TokenMatcher GetMatcherByTag(string tag)

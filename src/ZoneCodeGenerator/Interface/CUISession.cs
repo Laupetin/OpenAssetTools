@@ -8,11 +8,13 @@ namespace ZoneCodeGenerator.Interface
         public IDataRepository Repository { get; set; }
         public string GeneratorOutputPath { get; set; }
         public string SourceFilePath { get; set; }
+        public bool Verbose { get; set; }
 
         public CUISession()
         {
             Repository = null;
             GeneratorOutputPath = ".";
+            Verbose = false;
         }
     }
 }

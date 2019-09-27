@@ -52,7 +52,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Testing.Tests
 
             var test = new TestCloseBlock(false);
 
-            Assert.AreEqual(TokenTestResult.Match, test.PerformTest(parserStateMock.Object, lexerMock.Object));
+            Assert.AreEqual(TokenTestResult.Match, test.PerformTest(parserStateMock.Object, lexerMock.Object, true));
 
             // Be sure there was no name assigned
             topBlockNameAssignable.Verify(assignable => assignable.AssignName(It.IsAny<string>()), Times.Never());

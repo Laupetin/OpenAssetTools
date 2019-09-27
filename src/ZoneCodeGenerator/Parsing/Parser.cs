@@ -17,7 +17,7 @@ namespace ZoneCodeGenerator.Parsing
             this.lexer = lexer;
         }
 
-        public bool Parse()
+        public bool Parse(bool verbose = false)
         {
             while (!lexer.IsEndOfStream)
             {
@@ -27,7 +27,7 @@ namespace ZoneCodeGenerator.Parsing
                 {
                     foreach (var test in state.GetTests())
                     {
-                        switch (test.PerformTest(state, lexer))
+                        switch (test.PerformTest(state, lexer, verbose))
                         {
                             case TokenTestResult.Match:
                                 lexer.SkipTokens(test.ConsumedTokenCount);
