@@ -61,7 +61,10 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Blocks
             if (!Name.Equals(poppedNamespaceName))
                 throw new Exception($"Popped namespace '{poppedNamespaceName}' does not equal name of struct block '{Name}'");
 
-            _struct = new DataTypeStruct(Namespace, Name, Pack);
+            _struct = new DataTypeStruct(Namespace, Name, Pack)
+            {
+                AlignmentOverride = CustomAlignment
+            };
 
             _struct.Members.AddRange(Variables);
 
