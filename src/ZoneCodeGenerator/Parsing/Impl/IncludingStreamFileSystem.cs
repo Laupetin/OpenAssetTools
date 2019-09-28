@@ -44,7 +44,7 @@ namespace ZoneCodeGenerator.Parsing.Impl
         public IncludingStreamFileSystem(string path)
         {
             states = new Stack<HeaderStreamState>();
-            var initialState = new HeaderStreamState(new FileStream(path, FileMode.Open), path);
+            var initialState = new HeaderStreamState(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read), path);
 
             states.Push(initialState);
         }
@@ -86,7 +86,7 @@ namespace ZoneCodeGenerator.Parsing.Impl
 
             if (!File.Exists(path)) return;
 
-            var newState = new HeaderStreamState(new FileStream(path, FileMode.Open), path);
+            var newState = new HeaderStreamState(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read), path);
 
             states.Push(newState);
         }
