@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Persistence;
 
-namespace ZoneCodeGenerator.Parsing.C_Header.PostProcessor
+namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
 {
     class PostProcessorUsages : IDataPostProcessor
     {

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using ZoneCodeGenerator.Parsing.C_Header.Impl;
-using ZoneCodeGenerator.Parsing.C_Header.PostProcessor;
 using ZoneCodeGenerator.Parsing.Impl;
 using ZoneCodeGenerator.Persistence;
 
@@ -12,7 +11,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header
     {
         private static readonly IDataPostProcessor[] postProcessors =
         {
-            new PostProcessorUsages(), 
+
         };
 
         public static IDataRepository ReadFile(string path, bool verbose = false)
