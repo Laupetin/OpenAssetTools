@@ -749,7 +749,7 @@ enum SndBankState
   SND_BANK_STATE_ERROR = 0x8,
 };
 
-struct __declspec(align(2)) SndBank
+struct SndBank
 {
   const char *name;
   unsigned int aliasCount;
