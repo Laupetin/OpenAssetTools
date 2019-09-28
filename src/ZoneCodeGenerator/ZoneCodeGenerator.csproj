@@ -165,6 +165,7 @@
     <EmbeddedResource Include="Generating\Templates\Common.stg" />
     <EmbeddedResource Include="Generating\Templates\ZoneLoad.stg" />
     <EmbeddedResource Include="Generating\Templates\ZoneWrite.stg" />
+    <EmbeddedResource Include="Generating\Templates\AssetStructTests.stg" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

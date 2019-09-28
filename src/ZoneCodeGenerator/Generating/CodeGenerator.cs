@@ -29,6 +29,9 @@ namespace ZoneCodeGenerator.Generating
                 },
                 {
                     "ZoneWrite", new GeneratorPreset("$asset/$asset_write_db", "ZoneWrite.stg")
+                },
+                {
+                    "AssetStructTests", new GeneratorPreset("$asset_struct_test", "AssetStructTests.stg")
                 }
             };
 
