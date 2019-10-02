@@ -133,14 +133,14 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
     {
 #define XBLOCK_DEF(name, type) new XBlock(STR(name), name, type)
 
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlock::BLOCK_TYPE_TEMP));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlock::BLOCK_TYPE_RUNTIME));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_PHYSICAL, XBlock::BLOCK_TYPE_RUNTIME));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_VIRTUAL, XBlock::BLOCK_TYPE_DELAY));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_PHYSICAL, XBlock::BLOCK_TYPE_DELAY));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_VIRTUAL, XBlock::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_PHYSICAL, XBlock::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_STREAMER_RESERVE, XBlock::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_PHYSICAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_VIRTUAL, XBlock::Type::BLOCK_TYPE_DELAY));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_PHYSICAL, XBlock::Type::BLOCK_TYPE_DELAY));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_STREAMER_RESERVE, XBlock::Type::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
@@ -149,7 +149,7 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
     {
         if(isOfficial)
         {
-            auto* rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::RSA_HASH_SHA256, Crypto::RSA_PADDING_PSS);
+            auto* rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256, Crypto::RSAPaddingMode::RSA_PADDING_PSS);
 
             if(!rsa->SetKey(RSA_PUBLIC_KEY_TREYARCH, sizeof(RSA_PUBLIC_KEY_TREYARCH)))
             {

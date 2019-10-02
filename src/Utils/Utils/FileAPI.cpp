@@ -35,11 +35,11 @@ FileAPI::File FileAPI::Open(const std::string& filename, const Mode mode)
     switch(mode)
     {
     default:
-    case MODE_READ:
+    case Mode::MODE_READ:
         modeStr = "rb";
         break;
 
-    case MODE_WRITE:
+    case Mode::MODE_WRITE:
         modeStr = "wb";
         break;
     }

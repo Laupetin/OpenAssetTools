@@ -6,7 +6,7 @@
 class Crypto
 {
 public:
-    enum RSAPaddingMode
+    enum class RSAPaddingMode
     {
         RSA_PADDING_PKS1,
         RSA_PADDING_PSS,

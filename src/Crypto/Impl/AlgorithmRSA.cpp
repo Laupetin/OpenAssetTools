@@ -13,11 +13,11 @@ class AlgorithmRSA::AlgorithmRSAImpl
     {
         switch(m_hash)
         {
-        case RSA_HASH_SHA256:
+        case HashingAlgorithm::RSA_HASH_SHA256:
             return &sha256_desc;
 
         default:
-        case RSA_HASH_SHA512:
+        case HashingAlgorithm::RSA_HASH_SHA512:
             return &sha512_desc;
         }
     }
@@ -26,11 +26,11 @@ class AlgorithmRSA::AlgorithmRSAImpl
     {
         switch(m_padding)
         {
-        case Crypto::RSA_PADDING_PKS1:
+        case Crypto::RSAPaddingMode::RSA_PADDING_PKS1:
             return LTC_PKCS_1_V1_5;
 
         default:
-        case Crypto::RSA_PADDING_PSS:
+        case Crypto::RSAPaddingMode::RSA_PADDING_PSS:
             return LTC_PKCS_1_PSS;
         }
     }

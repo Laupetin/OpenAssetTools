@@ -5,7 +5,7 @@
 class IPublicKeyAlgorithm
 {
 public:
-    enum HashingAlgorithm
+    enum class HashingAlgorithm
     {
         RSA_HASH_SHA256,
         RSA_HASH_SHA512

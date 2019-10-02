@@ -66,7 +66,7 @@ block_t XBlockInputStream::PopBlock()
     m_block_in_stack[poppedBlock->m_index]--;
 
     // If the temp block is not used anymore right now, reset it to the buffer start since as the name suggests, the data inside is temporary.
-    if(poppedBlock->m_type == XBlock::BLOCK_TYPE_TEMP && m_block_in_stack[poppedBlock->m_index] == 0)
+    if(poppedBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP && m_block_in_stack[poppedBlock->m_index] == 0)
     {
         m_block_offsets[poppedBlock->m_index] = 0;
     }

@@ -10,7 +10,7 @@ IZoneLoaderFactory* zoneLoaderFactories[]
 Zone* ZoneLoading::LoadZone(const std::string& path)
 {
     std::string zoneName = utils::Path::GetFilenameWithoutExtension(path);
-    FileAPI::File file = FileAPI::Open(path, FileAPI::MODE_READ);
+    FileAPI::File file = FileAPI::Open(path, FileAPI::Mode::MODE_READ);
 
     if(!file.IsOpen())
     {

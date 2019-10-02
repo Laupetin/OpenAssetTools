@@ -6,7 +6,7 @@
 class FileAPI
 {
 public:
-    enum Mode
+    enum class Mode
     {
         MODE_READ = 0,
         MODE_WRITE = 1

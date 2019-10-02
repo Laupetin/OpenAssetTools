@@ -4,7 +4,7 @@
 class XBlock
 {
 public:
-    enum Type
+    enum class Type
     {
         BLOCK_TYPE_TEMP,
         BLOCK_TYPE_RUNTIME,
