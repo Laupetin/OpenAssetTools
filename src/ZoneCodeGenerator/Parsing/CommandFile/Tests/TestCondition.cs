@@ -50,7 +50,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 new MatcherWithTag(OperandTag),
                 new MatcherGroupOptional(new MatcherGroupAnd(
                     new MatcherWithTag(OperationTag),
-                    new MatcherWithTag(OperandTag)
+                    new MatcherWithTag(ConditionStatementTag)
                 ))
             )
         ).WithTag(ConditionStatementTag);
