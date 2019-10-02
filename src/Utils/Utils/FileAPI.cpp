@@ -119,7 +119,7 @@ size_t FileAPI::File::Printf(char* fmt, ...) const
 		return 0;
 
 	va_start(ap, fmt);
-    const int result = fprintf(static_cast<FILE*>(m_handle), fmt, ap);
+    const int result = vfprintf(static_cast<FILE*>(m_handle), fmt, ap);
 	va_end(ap);
 
     return result;
