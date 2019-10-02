@@ -11,20 +11,20 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
     class TestCount : AbstractTokenTest<ICommandParserState>
     {
         private const string TypeNameToken = "typeName";
-        private const string ConditionStatementTag = "conditionStatement";
-        private const string ConditionChainTag = "conditionChain";
-        private const string ConditionChainLinkTag = "conditionChainLink";
+        private const string CalculationStatementTag = "calculationStatement";
         private const string OperationTag = "operation";
         private const string OperandTag = "operand";
 
+        // operand ::= <typename> <array>* | <number>
         private static readonly TokenMatcher operand = new MatcherGroupOr(
             new MatcherGroupAnd(
                 new MatcherTypename(),
                 new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple, new MatcherArray())
-                ),
+            ),
             new MatcherNumber()
-            ).WithTag(OperandTag);
+        ).WithTag(OperandTag);
 
+        // operation ::= + | - | * | / | << | >>
         private static readonly TokenMatcher operation = new MatcherGroupOr(
             new MatcherLiteral("+"),
             new MatcherLiteral("-"),
@@ -32,56 +32,43 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             new MatcherLiteral("/"),
             new MatcherGroupAnd(new MatcherLiteral("<"), new MatcherLiteral("<")),
             new MatcherGroupAnd(new MatcherLiteral(">"), new MatcherLiteral(">"))
-            ).WithTag(OperationTag);
+        ).WithTag(OperationTag);
 
-        private static readonly TokenMatcher conditionStatement = new MatcherGroupOr(
+        // calculationStatement ::= ( <calculationStatement> ) | <operand> [<operation> <calculationStatement>]
+        private static readonly TokenMatcher calculationStatement = new MatcherGroupOr(
             new MatcherGroupAnd(
                 new MatcherLiteral("("),
-                new MatcherWithTag(ConditionStatementTag),
+                new MatcherWithTag(CalculationStatementTag),
                 new MatcherLiteral(")")
-                ),
+            ),
             new MatcherGroupAnd(
                 new MatcherWithTag(OperandTag),
                 new MatcherGroupOptional(new MatcherGroupAnd(
                     new MatcherWithTag(OperationTag),
-                    new MatcherWithTag(OperandTag)
-                    ))
-                )
-            ).WithTag(ConditionStatementTag);
-
-        private static readonly TokenMatcher conditionChainLink = new MatcherGroupOr(
-            new MatcherGroupAnd(new MatcherLiteral("|"), new MatcherLiteral("|")),
-            new MatcherGroupAnd(new MatcherLiteral("&"), new MatcherLiteral("&"))
-            ).WithTag(ConditionChainLinkTag);
-
-        private static readonly TokenMatcher conditionChain = new MatcherGroupAnd(
-            new MatcherWithTag(ConditionStatementTag),
-            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple, new MatcherGroupAnd(
-                new MatcherWithTag(ConditionChainLinkTag),
-                new MatcherWithTag(ConditionStatementTag)
+                    new MatcherWithTag(CalculationStatementTag)
                 ))
-            ).WithTag(ConditionChainTag);
+            )
+        ).WithTag(CalculationStatementTag);
 
-        private static readonly TokenMatcher[] matchers = {
+        // set count <typename> <calculationStatement>;
+        private static readonly TokenMatcher[] matchers =
+        {
             new MatcherLiteral("set"),
             new MatcherLiteral("count"),
             new MatcherTypename().WithName(TypeNameToken),
-            new MatcherWithTag(ConditionChainTag),
+            new MatcherWithTag(CalculationStatementTag),
             new MatcherLiteral(";")
         };
 
         public TestCount() : base(matchers)
         {
-            AddTaggedMatcher(conditionStatement);
-            AddTaggedMatcher(conditionChain);
-            AddTaggedMatcher(conditionChainLink);
-            AddTaggedMatcher(operation);
             AddTaggedMatcher(operand);
+            AddTaggedMatcher(operation);
+            AddTaggedMatcher(calculationStatement);
         }
 
         protected override void ProcessMatch(ICommandParserState state)
         {
-
         }
     }
 }
