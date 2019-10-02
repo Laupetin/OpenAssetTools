@@ -26,7 +26,8 @@ namespace ZoneCodeGenerator.Domain.StructureInformation
         public List<StructureInformation> Usages { get; }
         public List<MemberInformation> OrderedMembers { get; }
         public bool NonEmbeddedReferenceExists { get; set; }
-        public bool PointerReferenceExists { get; set; }
+        public bool SinglePointerReferenceExists { get; set; }
+        public bool ArrayPointerReferenceExists { get; set; }
         public bool ArrayReferenceExists { get; set; }
 
         public bool HasNameMember => Type.Members.Any(variable => variable.Name.Equals("name", StringComparison.CurrentCultureIgnoreCase));
@@ -37,7 +38,7 @@ namespace ZoneCodeGenerator.Domain.StructureInformation
             fastFileAlign = null;
             Type = type;
             NonEmbeddedReferenceExists = false;
-            PointerReferenceExists = false;
+            SinglePointerReferenceExists = false;
             ArrayReferenceExists = false;
             Usages = new List<StructureInformation>();
             OrderedMembers = new List<MemberInformation>();

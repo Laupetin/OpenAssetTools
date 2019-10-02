@@ -9,21 +9,21 @@ LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
 
 HeaderConstructor(context) ::= "$LoaderClassName(context.Asset)$(IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream);"
 
-HeaderPtrLoadMethodDeclaration(structure) ::= "void LoadPtr_$structure.Type.Name$($structure.Type.FullName$** pPtr);"
-HeaderArrayLoadMethodDeclaration(structure) ::= "void LoadArray_$structure.Type.Name$($structure.Type.FullName$** pArray, size_t count, bool atStreamStart);"
+HeaderSinglePtrLoadMethodDeclaration(structure) ::= "void LoadPtr_$structure.Type.Name$($structure.Type.FullName$** pPtr);"
+HeaderArrayPtrLoadMethodDeclaration(structure) ::= "void LoadArray_$structure.Type.Name$($structure.Type.FullName$** pArray, size_t count, bool atStreamStart);"
 HeaderLoadMethodDeclaration(structure) ::= "void Load_$structure.Type.Name$($structure.Type.FullName$* p$structure.Type.Name$, bool atStreamStart);"
 
 HeaderGetNameMethodDeclaration(asset) ::= "static std::string GetAssetName($asset.Type.FullName$* p$asset.Type.Name$);"
 HeaderAssetLoadMethodDeclaration(asset) ::= "void LoadAsset_$asset.Type.Name$($asset.Type.FullName$** pPtr);"
 
 HeaderDeclaration(structure) ::= <%
-$if(structure.PointerReferenceExists)$
-$HeaderPtrLoadMethodDeclaration(structure)$
+$if(structure.SinglePointerReferenceExists)$
+$HeaderSinglePtrLoadMethodDeclaration(structure)$
 $\n$
 $endif$
 
-$if(structure.ArrayReferenceExists)$
-$HeaderArrayLoadMethodDeclaration(structure)$
+$if(structure.ArrayPointerReferenceExists)$
+$HeaderArrayPtrLoadMethodDeclaration(structure)$
 $\n$
 $endif$
 
@@ -60,7 +60,7 @@ namespace $context.Game$
     public:
 		$HeaderConstructor(context)$
 
-		$HeaderPtrLoadMethodDeclaration(context.Asset)$
+		$HeaderSinglePtrLoadMethodDeclaration(context.Asset)$
 		$HeaderGetNameMethodDeclaration(context.Asset)$
     };
 }
@@ -91,7 +91,7 @@ void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$($structure.Typ
 }
 >>
 
-LoadPtrMethod(structure, context) ::= <<
+LoadSinglePtrMethod(structure, context) ::= <<
 void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$($structure.Type.FullName$** pPtr)
 {
     assert(pPtr != nullptr);
@@ -141,7 +141,7 @@ void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$($structure.
 }
 >>
 
-LoadArrayMethod(structure, context) ::= <<
+LoadArrayPtrMethod(structure, context) ::= <<
 void $LoaderClassName(context.Asset)$::LoadArray_$structure.Type.Name$($structure.Type.FullName$** pArray, const size_t count, const bool atStreamStart)
 {
 	assert(pArray != nullptr);
@@ -161,12 +161,12 @@ $if(structure.NonEmbeddedReferenceExists)$
 $LoadMethod(structure, context)$
 
 $endif$
-$if(structure.PointerReferenceExists)$
-$LoadPtrMethod(structure, context)$
+$if(structure.SinglePointerReferenceExists)$
+$LoadSinglePtrMethod(structure, context)$
 
 $endif$
-$if(structure.ArrayReferenceExists)$
-$LoadArrayMethod(structure, context)$
+$if(structure.ArrayPointerReferenceExists)$
+$LoadArrayPtrMethod(structure, context)$
 
 $endif$
 >>
@@ -220,7 +220,7 @@ $LoadMethod(context.Asset, context)$
 
 $LoadAssetMethod(context.Asset, context)$
 
-$LoadPtrMethod(context.Asset, context)$
+$LoadSinglePtrMethod(context.Asset, context)$
 
 $GetNameMethod(context)$
 >>

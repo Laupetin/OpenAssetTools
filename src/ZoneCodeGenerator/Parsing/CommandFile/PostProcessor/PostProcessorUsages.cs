@@ -23,11 +23,14 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
                     if (IsNonEmbeddedReference(memberInformation.Member))
                         memberInformation.StructureType.NonEmbeddedReferenceExists = true;
 
-                    if (IsPointerReference(memberInformation.Member))
-                        memberInformation.StructureType.PointerReferenceExists = true;
+                    if (IsSinglePointerReference(memberInformation.Member))
+                        memberInformation.StructureType.SinglePointerReferenceExists = true;
+
+                    if (IsArrayPointerReference(memberInformation.Member))
+                        memberInformation.StructureType.ArrayPointerReferenceExists = true;
 
                     if (IsArrayReference(memberInformation.Member))
-                        memberInformation.StructureType.PointerReferenceExists = true;
+                        memberInformation.StructureType.ArrayReferenceExists = true;
                 }
             }
 
@@ -39,10 +42,18 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
             return var.VariableType.References.Any();
         }
 
-        private static bool IsPointerReference(Variable var)
+        private static bool IsSinglePointerReference(Variable var)
         {
             return var.VariableType.References.Any() 
-                   && var.VariableType.References.Last() is ReferenceTypePointer;
+                    && var.VariableType.References.Last() is ReferenceTypePointer pointerReference
+                    && !pointerReference.IsArray;
+        }
+
+        private static bool IsArrayPointerReference(Variable var)
+        {
+            return var.VariableType.References.Any()
+                   && var.VariableType.References.Last() is ReferenceTypePointer pointerReference
+                   && pointerReference.IsArray;
         }
 
         private static bool IsArrayReference(Variable var)

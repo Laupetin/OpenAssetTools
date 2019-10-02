@@ -63,6 +63,11 @@
     <Compile Include="Domain\DataTypeUnion.cs" />
     <Compile Include="Domain\DataTypeWithMembers.cs" />
     <Compile Include="Domain\EnumMember.cs" />
+    <Compile Include="Domain\Evaluation\IEvaluation.cs" />
+    <Compile Include="Domain\Evaluation\OperandDynamic.cs" />
+    <Compile Include="Domain\Evaluation\OperandStatic.cs" />
+    <Compile Include="Domain\Evaluation\Operation.cs" />
+    <Compile Include="Domain\Evaluation\OperationType.cs" />
     <Compile Include="Domain\FastFileStructure\FastFileBlock.cs" />
     <Compile Include="Domain\ForwardDeclaration.cs" />
     <Compile Include="Domain\Namespace.cs" />
@@ -169,5 +174,6 @@
     <EmbeddedResource Include="Generating\Templates\AssetStructTests.stg" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
