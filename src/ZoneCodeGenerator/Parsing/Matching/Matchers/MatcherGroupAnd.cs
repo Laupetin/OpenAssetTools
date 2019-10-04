@@ -13,6 +13,7 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
         protected override TokenMatchingResult PerformTest(MatchingContext context, int tokenOffset)
         {
             var result = new TokenMatchingResult(true, 0);
+            result.AppendTag(Tag);
 
             foreach(var matcher in Matchers)
             {
@@ -20,8 +21,7 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
 
                 if (matcherResult.Successful)
                 {
-                    matcherResult.CopyNamedMatchesTo(result);
-                    result.ConsumedTokenCount += matcherResult.ConsumedTokenCount;
+                    matcherResult.CopyTo(result);
                 }
                 else
                 {

@@ -138,7 +138,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("420", result["number_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("420", result.NamedMatches["number_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -154,7 +154,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("421", result["number_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("421", result.NamedMatches["number_token"].ElementAtOrDefault(0));
         }
     }
 }

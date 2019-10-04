@@ -55,6 +55,7 @@
 
             if (name != null && success)
                 result.AddNamedMatch(name, output);
+            result.AppendTag(Tag);
 
             return result;
         }

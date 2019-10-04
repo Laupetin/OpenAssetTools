@@ -22,7 +22,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         protected override void ProcessMatch(ICommandParserState state)
         {
-            var typeName = GetMatcherTokens(TypeNameToken)[0];
+            var typeName = NextMatch(TypeNameToken);
             var dataTypeToUse = state.Repository.GetDataTypeByName(typeName);
 
             if (dataTypeToUse == null)

@@ -20,8 +20,10 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
             {
                 var matcherResult = matcher.Test(context, tokenOffset);
 
-                if (matcherResult.Successful)
-                    return matcherResult;
+                if (!matcherResult.Successful) continue;
+
+                matcherResult.PrependTag(Tag);
+                return matcherResult;
             }
 
             return new TokenMatchingResult(false, 0);

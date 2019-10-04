@@ -152,7 +152,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(3, result.ConsumedTokenCount);
-            Assert.AreEqual("13", result["array_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("13", result.NamedMatches["array_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -168,7 +168,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(3, result.ConsumedTokenCount);
-            Assert.AreEqual("307", result["array_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("307", result.NamedMatches["array_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -184,7 +184,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(3, result.ConsumedTokenCount);
-            Assert.AreEqual("HELLO_WORLD", result["array_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("HELLO_WORLD", result.NamedMatches["array_token"].ElementAtOrDefault(0));
         }
     }
 }

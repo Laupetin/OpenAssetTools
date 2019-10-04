@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using ZoneCodeGenerator.Utils;
 
 namespace ZoneCodeGenerator.Parsing.Matching
 {
-    class TokenMatchingResult : IEnumerable<KeyValuePair<string, List<string>>>
+    class TokenMatchingResult
     {
         public bool Successful { get; set; }
         public int ConsumedTokenCount { get; set; }
 
         private readonly Dictionary<string, List<string>> namedMatches;
+        public IReadOnlyDictionary<string, List<string>> NamedMatches => namedMatches;
+
+        private readonly List<string> matchedTags;
+        public IReadOnlyList<string> MatchedTags => matchedTags;
 
         public TokenMatchingResult(bool success, int consumedTokenCount)
         {
@@ -23,6 +29,7 @@ namespace ZoneCodeGenerator.Parsing.Matching
             ConsumedTokenCount = consumedTokenCount;
 
             namedMatches = new Dictionary<string, List<string>>();
+            matchedTags = new List<string>();
         }
 
         public void AddNamedMatch(string name, string value)
@@ -33,27 +40,31 @@ namespace ZoneCodeGenerator.Parsing.Matching
             namedMatches[name].Add(value);
         }
 
-        public IEnumerator<KeyValuePair<string, List<string>>> GetEnumerator()
+        public void PrependTag(string tag)
         {
-            return namedMatches.GetEnumerator();
+            if (!string.IsNullOrEmpty(tag))
+                matchedTags.Insert(0, tag);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public void AppendTag(string tag)
         {
-            return namedMatches.GetEnumerator();
+            if(!string.IsNullOrEmpty(tag))
+                matchedTags.Add(tag);
         }
 
-        public List<string> this[string key] => namedMatches.ContainsKey(key) ? namedMatches[key] : new List<string>();
-
-        public void CopyNamedMatchesTo(TokenMatchingResult target)
+        public void CopyTo(TokenMatchingResult target)
         {
-            foreach(var namedMatchKey in namedMatches)
+            foreach(var (matchKey, matchValue) in namedMatches)
             {
-                foreach (var namedMatch in namedMatchKey.Value)
+                foreach (var namedMatch in matchValue)
                 {
-                    target.AddNamedMatch(namedMatchKey.Key, namedMatch);
+                    target.AddNamedMatch(matchKey, namedMatch);
                 }
             }
+
+            target.matchedTags.AddRange(matchedTags);
+
+            target.ConsumedTokenCount += ConsumedTokenCount;
         }
     }
 }

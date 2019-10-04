@@ -30,7 +30,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
 
         protected override void ProcessMatch(IHeaderParserState state)
         {
-            var name = GetMatcherTokens(NameToken)[0];
+            var name = NextMatch(NameToken);
             var _namespace = state.CurrentNamespace.ToString();
 
             if (HasMatcherTokens(EnumToken))

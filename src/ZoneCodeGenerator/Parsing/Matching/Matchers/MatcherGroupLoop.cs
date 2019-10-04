@@ -23,6 +23,8 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
         protected override TokenMatchingResult PerformTest(MatchingContext context, int tokenOffset)
         {
             var result = new TokenMatchingResult(false, 0);
+            result.AppendTag(Tag);
+
             var matchedTimes = 0;
 
             while (true)
@@ -32,8 +34,7 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
                 if (!matcherResult.Successful)
                     break;
 
-                matcherResult.CopyNamedMatchesTo(result);
-                result.ConsumedTokenCount += matcherResult.ConsumedTokenCount;
+                matcherResult.CopyTo(result);
                 matchedTimes++;
             }
 

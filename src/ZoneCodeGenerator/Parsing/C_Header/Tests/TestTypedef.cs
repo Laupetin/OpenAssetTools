@@ -50,22 +50,22 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
 
         protected override void ProcessMatch(IHeaderParserState state)
         {
-            var name = GetMatcherTokens(NameToken)[0];
-            var pointerDepth = GetMatcherTokens(PointerTokens).Count;
+            var name = NextMatch(NameToken);
+            var pointerDepth = GetMatcherTokenCount(PointerTokens);
 
-            var typeName = string.Join(" ", GetMatcherTokens(TypeNameTokens));
+            var typeName = NextMatch(TypeNameTokens);
             var type = state.FindType(typeName);
 
             if (type == null)
                 throw new TestFailedException($"Could not find type '{typeName}' of typedef '{name}'.");
             
-            var arrayTokens = GetMatcherTokens(ArrayTokens);
-            var arraySize = new int[arrayTokens.Count];
-
-            for(var i = 0; i < arrayTokens.Count; i++)
+            var arraySize = new int[GetMatcherTokenCount(ArrayTokens)];
+            string arrayToken;
+            var index = 0;
+            while((arrayToken = NextMatch(ArrayTokens)) != null)
             {
-                if (!int.TryParse(arrayTokens[i], out arraySize[i]))
-                    throw new TestFailedException($"Array size '{arrayTokens[i]}' is not numeric.");
+                if (!int.TryParse(arrayToken, out arraySize[index++]))
+                    throw new TestFailedException($"Array size '{arrayToken}' is not numeric.");
             }
 
             var references = new List<ReferenceType>();

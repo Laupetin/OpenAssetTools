@@ -29,12 +29,12 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         protected override void ProcessMatch(IHeaderParserState state)
         {
             var isTypedef = HasMatcherTokens(TypedefToken);
-            var name = HasMatcherTokens(NameToken) ? GetMatcherTokens(NameToken)[0] : RandomName.GenerateName();
+            var name = NextMatch(NameToken) ?? RandomName.GenerateName();
             var parentType = DataTypeBaseType.INT;
 
             if (HasMatcherTokens(TypenameToken))
             {
-                var typeName = GetMatcherTokens(TypenameToken)[0];
+                var typeName = NextMatch(TypenameToken);
                 var type = state.FindType(typeName);
 
                 if (type == null)

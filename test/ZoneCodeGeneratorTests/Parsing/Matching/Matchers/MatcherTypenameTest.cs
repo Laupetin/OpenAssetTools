@@ -48,7 +48,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("int", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("int", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -64,7 +64,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("GfxWorld", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("GfxWorld", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -80,7 +80,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(2, result.ConsumedTokenCount);
-            Assert.AreEqual("unsigned int", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("unsigned int", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -96,7 +96,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(2, result.ConsumedTokenCount);
-            Assert.AreEqual("signed int", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("signed int", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -112,7 +112,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(2, result.ConsumedTokenCount);
-            Assert.AreEqual("const int", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("const int", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -128,7 +128,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(2, result.ConsumedTokenCount);
-            Assert.AreEqual("long long", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("long long", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -144,7 +144,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(4, result.ConsumedTokenCount);
-            Assert.AreEqual("const unsigned long long", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("const unsigned long long", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -160,7 +160,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("int", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("int", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -176,7 +176,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(4, result.ConsumedTokenCount);
-            Assert.AreEqual("std::string", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("std::string", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -192,7 +192,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(4, result.ConsumedTokenCount);
-            Assert.AreEqual("std::int32_t", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("std::int32_t", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -208,7 +208,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(4, result.ConsumedTokenCount);
-            Assert.AreEqual("a::b", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("a::b", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -224,7 +224,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsFalse(result.Successful);
             Assert.AreEqual(0, result.ConsumedTokenCount);
-            Assert.That.IsZero(result["type_token"].Count);
+            Assert.IsFalse(result.NamedMatches.ContainsKey("type_token"));
         }
 
         [TestMethod]
@@ -240,7 +240,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("std", result["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("std", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]
@@ -256,7 +256,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsFalse(result.Successful);
             Assert.AreEqual(0, result.ConsumedTokenCount);
-            Assert.That.IsZero(result["type_token"].Count);
+            Assert.IsFalse(result.NamedMatches.ContainsKey("type_token"));
         }
 
         [TestMethod]
@@ -272,7 +272,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsFalse(result.Successful);
             Assert.AreEqual(0, result.ConsumedTokenCount);
-            Assert.That.IsZero(result["type_token"].Count);
+            Assert.IsFalse(result.NamedMatches.ContainsKey("type_token"));
         }
     }
 }

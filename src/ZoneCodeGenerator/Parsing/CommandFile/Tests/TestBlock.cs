@@ -32,10 +32,10 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         protected override void ProcessMatch(ICommandParserState state)
         {
-            var blockName = GetMatcherTokens(BlockNameToken)[0];
-            var blockNumber = int.Parse(GetMatcherTokens(BlockNumberToken)[0]);
+            var blockName = NextMatch(BlockNameToken);
+            var blockNumber = int.Parse(NextMatch(BlockNumberToken));
 
-            var blockTypeInput = GetMatcherTokens(BlockTypeToken)[0];
+            var blockTypeInput = NextMatch(BlockTypeToken);
             if (!Enum.TryParse(blockTypeInput, true, out FastFileBlock.Type blockType))
             {
                 var blockTypeValues = Enum.GetValues(typeof(FastFileBlock.Type)).OfType<FastFileBlock.Type>()

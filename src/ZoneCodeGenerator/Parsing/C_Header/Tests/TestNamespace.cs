@@ -23,7 +23,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
 
         protected override void ProcessMatch(IHeaderParserState state)
         {
-            state.PushBlock(new BlockNamespace(state, GetMatcherTokens(NamespaceNameToken)[0]));
+            state.PushBlock(new BlockNamespace(state, NextMatch(NamespaceNameToken)));
         }
     }
 }

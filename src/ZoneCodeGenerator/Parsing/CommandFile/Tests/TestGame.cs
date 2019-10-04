@@ -31,7 +31,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 throw new TestFailedException($"Game has already been set with value '{state.Game}'");
             }
 
-            state.Game = GetMatcherTokens(GameNameToken)[0];
+            state.Game = NextMatch(GameNameToken);
         }
     }
 }

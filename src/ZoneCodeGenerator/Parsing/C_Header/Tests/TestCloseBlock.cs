@@ -31,7 +31,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
             {
                 if (state.CurrentBlock is INameAssignable nameAssignableBlock)
                 {
-                    nameAssignableBlock.AssignName(GetMatcherTokens(NameToken)[0]);
+                    nameAssignableBlock.AssignName(NextMatch(NameToken));
                 }
                 else
                 {

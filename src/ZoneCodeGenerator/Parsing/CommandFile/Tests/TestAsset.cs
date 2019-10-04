@@ -28,7 +28,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         protected override void ProcessMatch(ICommandParserState state)
         {
-            var assetTypeName = GetMatcherTokens(AssetTypeNameToken)[0];
+            var assetTypeName = NextMatch(AssetTypeNameToken);
 
             var assetType = state.Repository.GetDataTypeByName(assetTypeName);
             if (assetType == null)
@@ -47,7 +47,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 throw new LoadingException($"Could not find information for type '{assetTypeName}' to mark it as an asset.");
             }
 
-            var enumEntryName = GetMatcherTokens(AssetEnumEntryToken)[0];
+            var enumEntryName = NextMatch(AssetEnumEntryToken);
             var enumEntry = state.Repository.GetAllEnums()
                 .SelectMany(_enum => _enum.Members)
                 .FirstOrDefault(member => member.Name.Equals(enumEntryName, StringComparison.CurrentCultureIgnoreCase));

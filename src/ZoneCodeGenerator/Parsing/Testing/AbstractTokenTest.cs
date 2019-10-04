@@ -1,25 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using ZoneCodeGenerator.Parsing.Matching;
+using ZoneCodeGenerator.Parsing.Matching.Matchers;
+using ZoneCodeGenerator.Utils;
 
 namespace ZoneCodeGenerator.Parsing.Testing
 {
     abstract class AbstractTokenTest<TState> : ITokenTest<TState> where TState : IParserState<TState>
     {
-        public int ConsumedTokenCount { get; private set; }
+        private TokenMatchingResult lastResult;
+        private int tagOffset;
+        private readonly Dictionary<string, int> matchOffset;
 
-        private readonly TokenMatcher[] matcherEntryPoint;
-        private readonly Dictionary<string, List<string>> matchedEntries;
+        public int ConsumedTokenCount => lastResult?.ConsumedTokenCount ?? 0;
+
+        private readonly TokenMatcher matcherEntryPoint;
         private readonly Dictionary<string, TokenMatcher> taggedMatchers;
-        private bool tested;
 
         protected AbstractTokenTest(TokenMatcher[] matcherEntryPoint)
         {
-            this.matcherEntryPoint = matcherEntryPoint;
-            matchedEntries = new Dictionary<string, List<string>>();
+            this.matcherEntryPoint = new MatcherGroupAnd(matcherEntryPoint);
             taggedMatchers = new Dictionary<string, TokenMatcher>();
-            tested = false;
+
+            lastResult = null;
+            tagOffset = 0;
+            matchOffset = new Dictionary<string, int>();
 
             BuildTaggedMatcherList(matcherEntryPoint);
         }
@@ -40,31 +47,81 @@ namespace ZoneCodeGenerator.Parsing.Testing
             }
         }
 
+        private void Reset()
+        {
+            lastResult = null;
+            tagOffset = 0;
+            matchOffset.Clear();
+        }
+
         protected void AddTaggedMatcher(params TokenMatcher[] taggedMatcher)
         {
             BuildTaggedMatcherList(taggedMatcher);
         }
 
-        protected ReadOnlyCollection<string> GetMatcherTokens(string matcherName)
+        protected string PeekTag()
         {
-            return tested && matchedEntries.ContainsKey(matcherName) ? matchedEntries[matcherName].AsReadOnly() : new List<string>().AsReadOnly();
+            return lastResult?.MatchedTags.ElementAtOrDefault(tagOffset);
+        }
+
+        protected string NextTag()
+        {
+            return lastResult?.MatchedTags.ElementAtOrDefault(tagOffset++);
         }
 
         protected bool HasMatcherTokens(string matcherName)
         {
-            return tested && matchedEntries.ContainsKey(matcherName);
+            return GetMatcherTokenCount(matcherName) > 0;
+        }
+
+        protected int GetMatcherTokenCount(string matcherName)
+        {
+            if (lastResult == null || !lastResult.NamedMatches.TryGetValue(matcherName, out var matches))
+            {
+                return 0;
+            }
+
+            return matches.Count;
+        }
+
+        protected string PeekMatch(string matcherName)
+        {
+            if (!lastResult.NamedMatches.TryGetValue(matcherName, out var matches))
+            {
+                return null;
+            }
+
+            if (!matchOffset.TryGetValue(matcherName, out var offset))
+            {
+                offset = 0;
+            }
+
+            return matches.ElementAtOrDefault(offset);
+        }
+
+        protected string NextMatch(string matcherName)
+        {
+            if (!lastResult.NamedMatches.TryGetValue(matcherName, out var matches))
+            {
+                return null;
+            }
+
+            if (!matchOffset.TryGetValue(matcherName, out var offset))
+            {
+                offset = 0;
+            }
+
+            var result = matches.ElementAtOrDefault(offset++);
+
+            matchOffset[matcherName] = offset;
+
+            return result;
         }
 
         protected abstract void ProcessMatch(TState state);
 
         public TokenTestResult PerformTest(TState state, ILexer lexer, bool verbose = false)
         {
-            var tokenOffset = 0;
-            matchedEntries.Clear();
-
-            ConsumedTokenCount = 0;
-            tested = true;
-
             var context = new MatchingContext(lexer, taggedMatchers)
             {
                 Verbose = verbose
@@ -75,29 +132,18 @@ namespace ZoneCodeGenerator.Parsing.Testing
                 Console.WriteLine($"Test {GetType().Name} start");
             }
 
-            foreach(var matcher in matcherEntryPoint)
+            Reset();
+            lastResult = matcherEntryPoint.Test(context, 0);
+
+            if (!lastResult.Successful)
             {
-                var result = matcher.Test(context, tokenOffset);
-
-                if (!result.Successful)
+                if (context.Verbose)
                 {
-                    if (context.Verbose)
-                    {
-                        Console.WriteLine($"Test {GetType().Name} failed");
-                    }
-
-                    return TokenTestResult.NoMatch;
+                    Console.WriteLine($"Test {GetType().Name} failed");
                 }
 
-                tokenOffset += result.ConsumedTokenCount;
-
-                foreach (var entry in result)
-                {
-                    matchedEntries.Add(entry.Key, entry.Value);
-                }
+                return TokenTestResult.NoMatch;
             }
-
-            ConsumedTokenCount = tokenOffset;
 
             ProcessMatch(state);
 

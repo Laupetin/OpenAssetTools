@@ -43,16 +43,16 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         protected override void ProcessMatch(IHeaderParserState state)
         {
             var isTypedef = HasMatcherTokens(TypedefToken);
-            var name = HasMatcherTokens(NameToken) ? GetMatcherTokens(NameToken)[0] : RandomName.GenerateName();
+            var name = NextMatch(NameToken) ?? RandomName.GenerateName();
 
             var block = new BlockStruct(state, name, isTypedef);
 
             if (HasMatcherTokens(AlignToken))
-                block.CustomAlignment = int.Parse(GetMatcherTokens(AlignToken)[0]);
+                block.CustomAlignment = int.Parse(NextMatch(AlignToken));
 
             if (HasMatcherTokens(ParentToken))
             {
-                var parentDataTypeName = GetMatcherTokens(ParentToken)[0];
+                var parentDataTypeName = NextMatch(ParentToken);
                 var parentDataType = state.FindType(parentDataTypeName);
 
                 if(parentDataType == null)

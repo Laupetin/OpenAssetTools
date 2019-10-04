@@ -55,26 +55,26 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
 
         protected override void ProcessMatch(IHeaderParserState state)
         {
-            var name = GetMatcherTokens(NameToken)[0];
-            var typeName = GetMatcherTokens(TypeNameToken)[0];
+            var name = NextMatch(NameToken);
+            var typeName = NextMatch(TypeNameToken);
             var type = state.FindType(typeName);
 
             if (type == null)
                 throw new TestFailedException($"Type '{typeName}' not found.");
 
-            var pointerDepth = GetMatcherTokens(PointerTokens).Count;
-
-            var arrayTokens = GetMatcherTokens(ArrayTokens);
-            var arraySize = new int[arrayTokens.Count];
+            var pointerDepth = GetMatcherTokenCount(PointerTokens);
 
             int? bitSize = null;
             if (HasMatcherTokens(BitSizeToken))
-                bitSize = int.Parse(GetMatcherTokens(BitSizeToken)[0]);
+                bitSize = int.Parse(NextMatch(BitSizeToken));
 
-            for(var i = 0; i < arrayTokens.Count; i++)
+            string arrayToken;
+            var index = 0;
+            var arraySize = new int[GetMatcherTokenCount(ArrayTokens)];
+            while ((arrayToken = NextMatch(ArrayTokens)) != null)
             {
-                if (!int.TryParse(arrayTokens[i], out arraySize[i]))
-                    throw new TestFailedException($"Array size '{arrayTokens[i]}' is not numeric.");
+                if (!int.TryParse(arrayToken, out arraySize[index++]))
+                    throw new TestFailedException($"Array size '{arrayToken}' is not numeric.");
             }
 
             if (state.CurrentBlock is IVariableHolder variableHolder)

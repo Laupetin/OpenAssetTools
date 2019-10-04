@@ -175,7 +175,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
             Assert.AreEqual(10, result.ConsumedTokenCount);
             Assert.AreEqual(11, timesTested);
 
-            var namedMatches = result[LoopToken];
+            var namedMatches = result.NamedMatches[LoopToken];
 
             Assert.AreEqual(10, namedMatches.Count);
             

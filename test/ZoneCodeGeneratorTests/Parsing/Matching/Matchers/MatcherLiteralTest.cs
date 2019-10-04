@@ -93,7 +93,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsTrue(result.Successful);
             Assert.AreEqual(1, result.ConsumedTokenCount);
-            Assert.AreEqual("const", result["test_token"].ElementAtOrDefault(0));
+            Assert.AreEqual("const", result.NamedMatches["test_token"].ElementAtOrDefault(0));
         }
     }
 }

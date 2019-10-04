@@ -34,7 +34,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
 
         protected override void ProcessMatch(IHeaderParserState state)
         {
-            var name = GetMatcherTokens(NameToken)[0];
+            var name = NextMatch(NameToken);
             long value;
             
             if (!(state.CurrentBlock is BlockEnum _enum))
@@ -42,11 +42,11 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
 
             if (HasMatcherTokens(NumberValueToken))
             {
-                value = long.Parse(GetMatcherTokens(NumberValueToken)[0]);
+                value = long.Parse(NextMatch(NumberValueToken));
             }
             else if(HasMatcherTokens(EnumMemberValueToken))
             {
-                var stringValue = GetMatcherTokens(EnumMemberValueToken)[0];
+                var stringValue = NextMatch(EnumMemberValueToken);
                 var memberWithFittingName = state.FindEnumMember(stringValue);
 
                 if(memberWithFittingName == null)
