@@ -5,7 +5,7 @@ Public domain.
 */
 
 #include "salsa20.h"
-#include <cassert>
+#include <assert.h>
 
 #define U8V(v) ((uint8_t)(v) & 0xFFu)
 #define U16V(v) ((uint16_t)(v) & 0xFFFFu)
@@ -88,7 +88,7 @@ static void Salsa20_WordToByte(uint8_t output[64], const uint32_t input[16])
 static const char* sigma = "expand 32-byte k";
 static const char* tau = "expand 16-byte k";
 
-void Salsa20_KeySetup(salsa20_ctx* ctx, const uint8_t* key, const uint32_t keySize)
+void Salsa20_KeySetup(salsa20_ctx_t* ctx, const uint8_t* key, const uint32_t keySize)
 {
     const char* constants;
 
@@ -119,7 +119,7 @@ void Salsa20_KeySetup(salsa20_ctx* ctx, const uint8_t* key, const uint32_t keySi
     ctx->m_input[15] = U8TO32_LITTLE(constants + 12);
 }
 
-void Salsa20_IVSetup(salsa20_ctx* ctx, const uint8_t* iv)
+void Salsa20_IVSetup(salsa20_ctx_t* ctx, const uint8_t* iv)
 {
     ctx->m_input[6] = U8TO32_LITTLE(iv + 0);
     ctx->m_input[7] = U8TO32_LITTLE(iv + 4);
@@ -127,7 +127,7 @@ void Salsa20_IVSetup(salsa20_ctx* ctx, const uint8_t* iv)
     ctx->m_input[9] = 0;
 }
 
-void Salsa20_Encrypt_Bytes(salsa20_ctx* ctx, const uint8_t* plainText, uint8_t* cipherText, uint32_t msgLen)
+void Salsa20_Encrypt_Bytes(salsa20_ctx_t* ctx, const uint8_t* plainText, uint8_t* cipherText, uint32_t msgLen)
 {
     uint8_t output[64];
     unsigned int i;
@@ -154,7 +154,7 @@ void Salsa20_Encrypt_Bytes(salsa20_ctx* ctx, const uint8_t* plainText, uint8_t* 
     }
 }
 
-void Salsa20_Decrypt_Bytes(salsa20_ctx* ctx, const uint8_t* cipherText, uint8_t* plainText, const uint32_t msgLen)
+void Salsa20_Decrypt_Bytes(salsa20_ctx_t* ctx, const uint8_t* cipherText, uint8_t* plainText, const uint32_t msgLen)
 {
     Salsa20_Encrypt_Bytes(ctx, cipherText, plainText, msgLen);
 }

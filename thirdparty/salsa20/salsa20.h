@@ -6,12 +6,12 @@ Public domain.
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 
-struct salsa20_ctx
+typedef struct salsa20_ctx
 {
     uint32_t m_input[16];
-};
+} salsa20_ctx_t;
 
 /*
  * Initializes the context with the chosen key.
@@ -20,7 +20,7 @@ struct salsa20_ctx
  * key: A pointer to the key bytes.
  * keySize: The length of the key in bits. Has to be 128 or 256.
  */
-void Salsa20_KeySetup(salsa20_ctx* ctx, const uint8_t* key, uint32_t keySize);
+void Salsa20_KeySetup(salsa20_ctx_t* ctx, const uint8_t* key, uint32_t keySize);
 
 /*
  * Initializes or changes the IV of the context.
@@ -29,7 +29,7 @@ void Salsa20_KeySetup(salsa20_ctx* ctx, const uint8_t* key, uint32_t keySize);
  * ctx: The context to initialize.
  * iv: A pointer to the IV bytes. Must be 64 bits long.
  */
-void Salsa20_IVSetup(salsa20_ctx* ctx, const uint8_t* iv);
+void Salsa20_IVSetup(salsa20_ctx_t* ctx, const uint8_t* iv);
 
 /*
  * Encrypts the specified amount of plain text and writes it to the cipher text buffer.
@@ -40,7 +40,7 @@ void Salsa20_IVSetup(salsa20_ctx* ctx, const uint8_t* iv);
  * plainText: A pointer to the plain text buffer which must at least be msgLen bytes.
  * msgLen: The amount of bytes to encrypt.
  */
-void Salsa20_Encrypt_Bytes(salsa20_ctx* ctx, const uint8_t* plainText, uint8_t* cipherText, uint32_t msgLen);
+void Salsa20_Encrypt_Bytes(salsa20_ctx_t* ctx, const uint8_t* plainText, uint8_t* cipherText, uint32_t msgLen);
 
 /*
  * Decrypts the specified amount of cipher text and writes it to the plain text buffer.
@@ -52,4 +52,4 @@ void Salsa20_Encrypt_Bytes(salsa20_ctx* ctx, const uint8_t* plainText, uint8_t* 
  * plainText: A pointer to the plain text buffer which must at least be msgLen bytes.
  * msgLen: The amount of bytes to decrypt.
  */
-void Salsa20_Decrypt_Bytes(salsa20_ctx* ctx, const uint8_t* cipherText, uint8_t* plainText, uint32_t msgLen);
+void Salsa20_Decrypt_Bytes(salsa20_ctx_t* ctx, const uint8_t* cipherText, uint8_t* plainText, uint32_t msgLen);
