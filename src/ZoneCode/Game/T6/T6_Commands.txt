@@ -63,12 +63,20 @@ block 6 normal  XFILE_BLOCK_PHYSICAL;
 // =========================================
 // XModelPieces
 // =========================================
-set count XModelPieces::pieces numpieces;
+use XModelPieces;
+set string name;
+set count pieces numpieces;
+
+// =========================================
+// PhysPreset
+// =========================================
+set string PhysPreset::name;
 
 // =========================================
 // PhysConstraint
 // =========================================
 use PhysConstraint;
+set string name;
 set scriptstring targetname;
 set scriptstring target_ent1;
 set scriptstring target_ent2;
@@ -76,6 +84,7 @@ set scriptstring target_ent2;
 // =========================================
 // DestructibleDef
 // =========================================
+set string name;
 set count DestructibleDef::pieces numPieces;
 
 // DestructiblePiece
@@ -88,6 +97,7 @@ set scriptstring DestructibleStage::showBone;
 // XAnimParts
 // =========================================
 use XAnimParts;
+set string name;
 set scriptstring names;
 set count names boneCount[9];
 set count notify notifyCount;
@@ -138,4 +148,99 @@ reorder XAnimPartTransFrames:
     indices
     frames;
 
-// test
+// XAnimDeltaPartQuat2
+use XAnimDeltaPartQuat2;
+set condition u::frames size > 0;
+set condition XAnimParts::deltaPart::quat2::u::frames::indices::_1 numframes < 256;
+set count u::frames::indices::_1 size + 1;
+set count u::frames::indices::_2 size + 1;
+set count u::frames::frames size + 1;
+
+// XAnimDeltaPartQuatDataFrames2
+reorder XAnimDeltaPartQuatDataFrames2:
+    indices
+    frames;
+
+// XAnimDeltaPartQuat
+use XAnimDeltaPartQuat;
+set condition u::frames size > 0;
+set condition XAnimParts::deltaPart::quat::u::frames::indices::_1 numframes < 256;
+set count u::frames::indices::_1 size + 1;
+set count u::frames::indices::_2 size + 1;
+set count u::frames::frames size + 1;
+
+// =========================================
+// XModel
+// =========================================
+use XModel;
+set string name;
+set scriptstring boneNames;
+set count boneNames numBones;
+set count parentList numBones - numRootBones;
+set count quats numBones - numRootBones;
+set count trans numBones - numRootBones;
+set count partClassification numBones;
+set count baseMat numBones;
+set count surfs numsurfs;
+set count materialHandles numsurfs;
+set count collSurfs numCollSurfs;
+set count boneInfo numBones;
+set count himipInvSqRadii numsurfs;
+set count collmaps numCollmaps;
+
+// XSurface
+use XSurface;
+set condition verts0 !(flags & 1);
+set count verts0 vertCount;
+set count vb0 0;
+set count vertList vertListCount;
+set count triIndices triCount;
+set align triIndices 16;
+set count indexBuffer 0;
+reorder:
+	vertInfo
+	verts0
+	vertList
+	triIndices;
+
+// XSurfaceVertexInfo
+use XSurfaceVertexInfo;
+set count vertsBlend vertCount[0] 
+						+ 3 * vertCount[1] 
+						+ 5 * vertCount[2]
+						+ 7 * vertCount[3];
+set count tensionData vertCount[0] 
+						+ 3 * vertCount[1] 
+						+ 5 * vertCount[2]
+						+ 7 * vertCount[3];
+
+// XRigidVertList
+set count XRigidVertList::collisionTree 1;
+
+// XSurfaceCollisionTree
+use XSurfaceCollisionTree;
+set count nodes nodeCount;
+set count leafs leafCount;
+
+// XModelCollSurf_s
+set count XModelCollSurf_s::collTris numCollTris;
+
+// Collmap
+set count Collmap::geomList 1;
+
+// PhysGeomList
+set count PhysGeomList::geoms count;
+
+// PhysGeomInfo
+set count PhysGeomInfo::brush 1;
+
+// BrushWrapper
+use BrushWrapper;
+set count sides numsides;
+set count verts numverts;
+set count planes numsides;
+
+// cbrushside_t
+set count cbrushside_t::plane 1;
+
+// EOF
