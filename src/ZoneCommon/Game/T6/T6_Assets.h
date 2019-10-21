@@ -512,8 +512,8 @@ struct XModel
   char lodRampType;
   unsigned __int16 *boneNames;
   char *parentList;
-  __int16 *quats;
-  float *trans;
+  __int16 (*quats)[4];
+  float (*trans)[4];
   char *partClassification;
   DObjAnimMat *baseMat;
   XSurface *surfs;
@@ -2439,7 +2439,7 @@ struct __declspec(align(16)) XSurface
   unsigned __int16 vertCount;
   unsigned __int16 triCount;
   unsigned __int16 baseVertIndex;
-  unsigned __int16 *triIndices;
+  unsigned __int16 (*triIndices)[3];
   XSurfaceVertexInfo vertInfo;
   GfxPackedVertex *verts0;
   ID3D11Buffer *vb0;
