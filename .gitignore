@@ -16,9 +16,7 @@ ipch/*
 
 .vs/
 bin/
-lib/
+obj/
 local/
 gen/
-obj/
-packages/
-TestResults/
+build/
