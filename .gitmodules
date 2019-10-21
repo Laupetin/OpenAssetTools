@@ -1,0 +1,9 @@
+[submodule "thirdparty/libtomcrypt"]
+	path = thirdparty/libtomcrypt
+	url = https://github.com/libtom/libtomcrypt.git
+[submodule "thirdparty/libtommath"]
+	path = thirdparty/libtommath
+	url = https://github.com/libtom/libtommath
+[submodule "thirdparty/zlib"]
+	path = thirdparty/zlib
+	url = https://github.com/madler/zlib.git
