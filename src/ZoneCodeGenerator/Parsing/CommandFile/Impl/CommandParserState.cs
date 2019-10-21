@@ -11,6 +11,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Impl
     class CommandParserState : ICommandParserState
     {
         private static readonly ITokenTest<ICommandParserState>[] tests = {
+            new TestAlign(),
             new TestAsset(),
             new TestBlock(),
             new TestCondition(),
@@ -18,6 +19,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Impl
             new TestGame(),
             new TestReorder(),
             new TestScriptString(),
+            new TestString(),
             new TestUse()
         };
 

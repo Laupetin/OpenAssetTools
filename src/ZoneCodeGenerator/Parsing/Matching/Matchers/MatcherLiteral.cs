@@ -1,28 +1,37 @@
-﻿namespace ZoneCodeGenerator.Parsing.Matching.Matchers
+﻿using System.Text;
+
+namespace ZoneCodeGenerator.Parsing.Matching.Matchers
 {
     class MatcherLiteral : BaseMatcher
     { 
-        private readonly string literal;
+        private readonly string[] literals;
 
-        public MatcherLiteral(string literal)
+        public MatcherLiteral(params string[] literals)
         {
-            this.literal = literal;
+            this.literals = literals;
         }
 
         protected override MatchingResult Matches(MatchingContext context, int tokenOffset)
         {
-            var token = context.Lexer.PeekToken(tokenOffset);
-            var isMatch = string.Equals(token, literal);
+            var matcherOutputBuilder = new StringBuilder();
 
-            if (!isMatch) return new MatchingResult(false, 0);
+            foreach (var literal in literals)
+            {
+                var token = context.Lexer.PeekToken(tokenOffset);
+                var isMatch = string.Equals(token, literal);
 
-            SetMatcherOutput(literal);
-            return new MatchingResult(true, 1);
+                if (!isMatch) return new MatchingResult(false, 0);
+
+                matcherOutputBuilder.Append(literal);
+            }
+
+            SetMatcherOutput(matcherOutputBuilder.ToString());
+            return new MatchingResult(true, literals.Length);
         }
 
         protected override string GetIdentifier()
         {
-            return $"Literal(\"{literal}\")";
+            return $"Literal(\"{string.Join("", literals)}\")";
         }
     }
 }
