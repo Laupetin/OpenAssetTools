@@ -6,15 +6,5 @@
 class CryptoLibrary
 {
 public:
-    static void Init()
-    {
-        static bool initialized = false;
-
-        if(!initialized)
-        {
-            initialized = true;
-
-            ltc_mp = ltm_desc;
-        }
-    }
+    static void Init();
 };
