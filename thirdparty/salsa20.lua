@@ -7,7 +7,6 @@ function salsa20:include()
 end
 
 function salsa20:link()
-	self:include()
 	links {
 		"salsa20"
 	}

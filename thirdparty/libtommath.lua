@@ -7,7 +7,6 @@ function libtommath:include()
 end
 
 function libtommath:link()
-	self:include()
 	links {
 		"libtommath"
 	}

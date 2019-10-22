@@ -68,19 +68,55 @@ workspace "OpenAssetTools"
 -- ========================
 -- ThirdParty
 -- ========================
-
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
 include "thirdparty/salsa20.lua"
 include "thirdparty/zlib.lua"
 
--- All projects here should be in the thirdparty folder
-group "thirdparty"
+-- ThirdParty group: All projects that are external dependencies
+group "ThirdParty"
+    libtommath:project()
+    libtomcrypt:project()
+    salsa20:project()
+    zlib:project()
+group ""
 
-libtommath:project()
-libtomcrypt:project()
-salsa20:project()
-zlib:project()
+-- ========================
+-- Projects
+-- ========================
+include "src/Crypto.lua"
+include "src/Linker.lua"
+include "src/Unlinker.lua"
+include "src/Utils.lua"
+include "src/ZoneCodeGenerator.lua"
+include "src/ZoneCommon.lua"
+include "src/ZoneLoading.lua"
+include "src/ZoneWriting.lua"
 
--- Reset group
+-- Components group: All projects assist or are part of a tool
+group "Components"
+    Crypto:project()
+    Utils:project()
+    --ZoneCodeGenerator:project()
+    ZoneCommon:project()
+    ZoneLoading:project()
+    ZoneWriting:project()
+group ""
+
+-- Tools group: All projects that compile into the final tools
+group "Tools"
+    Linker:project()
+    Unlinker:project()
+group ""
+
+-- ========================
+-- Tests
+-- ========================
+include "test/ZoneCodeGeneratorTests.lua"
+include "test/ZoneCommonTests.lua"
+
+-- Tests group: Unit test and other tests projects
+group "Tests"
+    --ZoneCodeGeneratorTests:project()
+    ZoneCommonTests:project()
 group ""

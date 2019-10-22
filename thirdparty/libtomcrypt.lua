@@ -1,13 +1,16 @@
 libtomcrypt = {}
 
 function libtomcrypt:include()
+	defines{
+		"LTM_DESC"
+	}
+
 	includedirs {
 		path.join(ThirdPartyFolder(), "libtomcrypt/src/headers")
 	}
 end
 
 function libtomcrypt:link()
-	self:include()
 	links {
 		"libtomcrypt"
 	}

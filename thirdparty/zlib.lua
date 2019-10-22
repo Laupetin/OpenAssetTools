@@ -1,13 +1,17 @@
 zlib = {}
 
 function zlib:include()
+
+	defines {
+		"ZLIB_CONST"
+	}
+
 	includedirs {
 		path.join(ThirdPartyFolder(), "zlib")
 	}
 end
 
 function zlib:link()
-	self:include()
 	links {
 		"zlib"
 	}
