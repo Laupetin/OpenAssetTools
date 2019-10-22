@@ -97,7 +97,7 @@ include "src/ZoneWriting.lua"
 group "Components"
     Crypto:project()
     Utils:project()
-    --ZoneCodeGenerator:project()
+    ZoneCodeGenerator:project()
     ZoneCommon:project()
     ZoneLoading:project()
     ZoneWriting:project()
@@ -117,6 +117,6 @@ include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
-    --ZoneCodeGeneratorTests:project()
+    ZoneCodeGeneratorTests:project()
     ZoneCommonTests:project()
 group ""

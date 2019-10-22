@@ -15,7 +15,7 @@ function Unlinker:project()
 
 	project "Unlinker"
         targetdir(TargetDirectoryBin)
-		location "%{wks.location}/src"
+		location "%{wks.location}/src/%{prj.name}"
 		kind "ConsoleApp"
 		language "C++"
 		

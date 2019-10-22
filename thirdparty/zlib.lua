@@ -22,7 +22,7 @@ function zlib:project()
 
 	project "zlib"
         targetdir(TargetDirectoryLib)
-		location "%{wks.location}/thirdparty"
+		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
 		language "C"
 		

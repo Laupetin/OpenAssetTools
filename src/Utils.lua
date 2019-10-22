@@ -17,7 +17,7 @@ function Utils:project()
 
 	project "Utils"
         targetdir(TargetDirectoryLib)
-		location "%{wks.location}/src"
+		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
 		language "C++"
 		

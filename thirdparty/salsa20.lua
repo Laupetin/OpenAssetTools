@@ -17,7 +17,7 @@ function salsa20:project()
 
 	project "salsa20"
         targetdir(TargetDirectoryLib)
-		location "%{wks.location}/thirdparty"
+		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
 		language "C"
 		

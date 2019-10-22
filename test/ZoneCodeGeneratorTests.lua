@@ -13,26 +13,29 @@ function ZoneCodeGeneratorTests:project()
 
 	project "ZoneCodeGeneratorTests"
         targetdir(TargetDirectoryTest)
-		location "%{wks.location}/test"
+		location "%{wks.location}/test/%{prj.name}"
 		kind "SharedLib"
 		language "C#"
 		
 		files {
-			path.join(folder, "Zone/src/**.h"), 
-			path.join(folder, "libtomcrypt/src/**.c") 
+			path.join(folder, "ZoneCodeGeneratorTests/**.cs")
 		}
-		
-		defines {
-			"_CRT_SECURE_NO_WARNINGS",
-			"_CRT_NONSTDC_NO_DEPRECATE",
-			"LTC_SOURCE",
-			"LTC_NO_TEST",
-			"LTC_NO_PROTOTYPES"
-		}
-		
-		self:include()
-		libtommath:include()
 
-		-- Disable warnings. They do not have any value to us since it is not our code.
-		warnings "off"
+        vpaths { ["*"] = "test/ZoneCodeGeneratorTests" }
+
+        nuget {
+            "Moq:4.13.1",
+			"MSTest.TestFramework:2.0.0",
+			"MSTest.TestAdapter:2.0.0"
+        }
+        
+        links {
+            "System",
+            "System.Core",
+			"System.Data",
+			"Moq",
+			"MSTest.TestFramework"
+		}
+		
+		ZoneCodeGenerator:link()
 end

@@ -17,7 +17,7 @@ function ZoneCommon:project()
 
 	project "ZoneCommon"
         targetdir(TargetDirectoryLib)
-		location "%{wks.location}/src"
+		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
 		language "C++"
 		

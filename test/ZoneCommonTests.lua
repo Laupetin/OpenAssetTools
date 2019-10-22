@@ -13,7 +13,7 @@ function ZoneCommonTests:project()
 
 	project "ZoneCommonTests"
         targetdir(TargetDirectoryTest)
-		location "%{wks.location}/test"
+		location "%{wks.location}/test/%{prj.name}"
 		kind "SharedLib"
 		language "C++"
 		
@@ -26,7 +26,4 @@ function ZoneCommonTests:project()
 		ZoneCommon:include()
 
 		ZoneCommon:link()
-
-		-- Disable warnings. They do not have any value to us since it is not our code.
-		warnings "off"
 end

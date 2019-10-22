@@ -22,7 +22,7 @@ function ZoneLoading:project()
 
 	project "ZoneLoading"
         targetdir(TargetDirectoryLib)
-		location "%{wks.location}/src"
+		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
 		language "C++"
 		
