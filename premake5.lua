@@ -41,6 +41,7 @@ workspace "OpenAssetTools"
         "x86",
         "x64"
     }
+    defaultplatform "x86"
 
     filter "platforms:x86"
         architecture "x86"

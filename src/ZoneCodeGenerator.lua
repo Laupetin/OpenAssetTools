@@ -34,8 +34,6 @@ function ZoneCodeGenerator:project()
         links {
             "System",
             "System.Core",
-            "System.Data",
-            "StringTemplate4",
-            "Antlr3.Runtime"
+            "System.Data"
         }
 end
