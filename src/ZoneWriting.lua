@@ -35,6 +35,12 @@ function ZoneWriting:project()
 			path.join(folder, "ZoneWriting/**.cpp") 
 		}
 		
+        vpaths {
+			["*"] = {
+				path.join(folder, "ZoneWriting")
+			}
+		}
+		
         self:include()
         Crypto:include()
         Utils:include()

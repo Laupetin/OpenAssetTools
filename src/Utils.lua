@@ -28,5 +28,11 @@ function Utils:project()
 			path.join(folder, "Utils/**.cpp") 
 		}
 		
+        vpaths {
+			["*"] = {
+				path.join(folder, "Utils")
+			}
+		}
+		
         self:include()
 end
