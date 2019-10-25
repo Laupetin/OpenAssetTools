@@ -17,6 +17,10 @@ function ZoneWriting:link()
 	}
 end
 
+function ZoneWriting:use()
+	
+end
+
 function ZoneWriting:project()
 	local folder = ProjectFolder();
 
@@ -35,4 +39,6 @@ function ZoneWriting:project()
         Crypto:include()
         Utils:include()
 		zlib:include()
+
+		ZoneCode:use()
 end

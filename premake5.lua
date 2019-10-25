@@ -1,4 +1,9 @@
 -- Functions for locating commonly used folders
+local _BuildFolder = path.getabsolute("build")
+function BuildFolder()
+	return path.getrelative(os.getcwd(), _BuildFolder)
+end
+
 local _ThirdPartyFolder = path.getabsolute("thirdparty")
 function ThirdPartyFolder()
 	return path.getrelative(os.getcwd(), _ThirdPartyFolder)
@@ -89,6 +94,7 @@ include "src/Crypto.lua"
 include "src/Linker.lua"
 include "src/Unlinker.lua"
 include "src/Utils.lua"
+include "src/ZoneCode.lua"
 include "src/ZoneCodeGenerator.lua"
 include "src/ZoneCommon.lua"
 include "src/ZoneLoading.lua"
@@ -98,6 +104,7 @@ include "src/ZoneWriting.lua"
 group "Components"
     Crypto:project()
     Utils:project()
+    ZoneCode:project()
     ZoneCodeGenerator:project()
     ZoneCommon:project()
     ZoneLoading:project()

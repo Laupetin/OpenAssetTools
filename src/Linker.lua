@@ -10,6 +10,10 @@ function Linker:link()
     
 end
 
+function Linker:use()
+    dependson "Linker"
+end
+
 function Linker:project()
 	local folder = ProjectFolder();
 

@@ -5,24 +5,31 @@ function ZoneCodeGenerator:include()
 end
 
 function ZoneCodeGenerator:link()
-	links {
-		"ZoneCodeGenerator"
-	}
+	links "ZoneCodeGenerator"
+end
+
+function ZoneCodeGenerator:use()
+    dependson "ZoneCodeGenerator"
 end
 
 function ZoneCodeGenerator:project()
 	local folder = ProjectFolder();
 
 	project "ZoneCodeGenerator"
-        targetdir(TargetDirectoryBin)
+        targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "ConsoleApp"
         language "C#"
         namespace "ZoneCodeGenerator"
         
 		files {
-			path.join(folder, "ZoneCodeGenerator/**.cs")
+            path.join(folder, "ZoneCodeGenerator/**.cs"),
+            path.join(folder, "ZoneCodeGenerator/**.stg")
         }
+
+        filter "files:**.stg"
+            buildaction "Embed"
+        filter {}
 
         vpaths { ["*"] = "src/ZoneCodeGenerator" }
 

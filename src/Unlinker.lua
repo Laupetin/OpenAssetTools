@@ -10,6 +10,10 @@ function Unlinker:link()
     
 end
 
+function Unlinker:use()
+    dependson "Unlinker"
+end
+
 function Unlinker:project()
 	local folder = ProjectFolder();
 

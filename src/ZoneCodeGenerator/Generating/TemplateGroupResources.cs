@@ -82,8 +82,8 @@ namespace ZoneCodeGenerator.Generating
             {
                 if (resourceStream == null)
                 {
-                    if (Verbose)
-                        Console.WriteLine($"Resource '{fileName}' doesn't exist");
+                    Console.WriteLine($"Resource '{fileName}' doesn't exist");
+                    Console.WriteLine("The following files do exist: " + string.Join(", ", Assembly.GetExecutingAssembly().GetManifestResourceNames()));
 
                     return;
                 }

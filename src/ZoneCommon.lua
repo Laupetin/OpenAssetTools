@@ -12,6 +12,10 @@ function ZoneCommon:link()
 	}
 end
 
+function ZoneCommon:use()
+	
+end
+
 function ZoneCommon:project()
 	local folder = ProjectFolder();
 

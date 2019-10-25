@@ -31,7 +31,7 @@ namespace ZoneCodeGenerator.Generating
                     "ZoneWrite", new GeneratorPreset("$asset/$asset_write_db", "ZoneWrite.stg")
                 },
                 {
-                    "AssetStructTests", new GeneratorPreset("$asset_struct_test", "AssetStructTests.stg")
+                    "AssetStructTests", new GeneratorPreset("$asset/$asset_struct_test", "AssetStructTests.stg")
                 }
             };
 
@@ -40,7 +40,10 @@ namespace ZoneCodeGenerator.Generating
         public static bool GenerateCodeForPreset(string presetName, StructureInformation asset, CUISession session)
         {
             if (!presets.ContainsKey(presetName))
+            {
+                Console.WriteLine($"Unknown preset '{presetName}'");
                 return false;
+            }
 
             var preset = presets[presetName];
 
@@ -67,12 +70,19 @@ namespace ZoneCodeGenerator.Generating
                 var renderingContext = RenderingContext.BuildContext(session, asset);
 
                 if (renderingContext == null)
+                {
+                    Console.WriteLine("Building rendering context failed");
                     return false;
+                }
 
-                var generatedCode = false;
+                if (!codeTemplate.HasHeaderTemplate && !codeTemplate.HasSourceTemplate)
+                {
+                    Console.WriteLine($"Preset '{presetName}' does not have a header or a source! This is weird.");
+                    return false;
+                }
+
                 if (codeTemplate.HasHeaderTemplate)
                 {
-                    generatedCode = true;
                     using (var fileStream = new FileStream(fullPath + ".h", FileMode.Create))
                     {
                         codeTemplate.RenderHeaderFile(fileStream, renderingContext);
@@ -82,7 +92,6 @@ namespace ZoneCodeGenerator.Generating
 
                 if (codeTemplate.HasSourceTemplate)
                 {
-                    generatedCode = true;
                     using (var fileStream = new FileStream(fullPath + ".cpp", FileMode.Create))
                     {
                         codeTemplate.RenderSourceFile(fileStream, renderingContext);
@@ -90,10 +99,13 @@ namespace ZoneCodeGenerator.Generating
                     }
                 }
 
-                return generatedCode;
+                return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine("An exception occured while trying to generate code");
+                Console.WriteLine(e.GetType().Name);
+                Console.WriteLine(e.Message);
                 return false;
             }
         }

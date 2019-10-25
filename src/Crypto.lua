@@ -10,9 +10,11 @@ function Crypto:link()
     libtomcrypt:link()
 	libtommath:link()
 	salsa20:link()
-	links {
-		"Crypto"
-	}
+	links "Crypto"
+end
+
+function Crypto:use()
+	
 end
 
 function Crypto:project()

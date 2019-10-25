@@ -11,9 +11,11 @@ function libtomcrypt:include()
 end
 
 function libtomcrypt:link()
-	links {
-		"libtomcrypt"
-	}
+	links "libtomcrypt"
+end
+
+function libtomcrypt:use()
+	
 end
 
 function libtomcrypt:project()

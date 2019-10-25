@@ -17,6 +17,10 @@ function ZoneLoading:link()
 	}
 end
 
+function ZoneLoading:use()
+	
+end
+
 function ZoneLoading:project()
 	local folder = ProjectFolder();
 
@@ -28,11 +32,22 @@ function ZoneLoading:project()
 		
 		files {
 			path.join(folder, "ZoneLoading/**.h"), 
-			path.join(folder, "ZoneLoading/**.cpp") 
+			path.join(folder, "ZoneLoading/**.cpp"),
+			ZoneCode:allLoadFiles()
+		}
+		
+        vpaths {
+			["*"] = {
+				path.join(folder, "ZoneLoading"),
+				path.join(BuildFolder(), "src/ZoneCode")
+			}
 		}
 		
         self:include()
         Crypto:include()
 		Utils:include()
 		zlib:include()
+		ZoneCode:include()
+
+		ZoneCode:use()
 end

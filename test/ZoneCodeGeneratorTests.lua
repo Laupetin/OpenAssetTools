@@ -5,7 +5,11 @@ function ZoneCodeGeneratorTests:include()
 end
 
 function ZoneCodeGeneratorTests:link()
-    
+    links "ZoneCommonTests"
+end
+
+function ZoneCodeGeneratorTests:use()
+	
 end
 
 function ZoneCodeGeneratorTests:project()
@@ -32,9 +36,7 @@ function ZoneCodeGeneratorTests:project()
         links {
             "System",
             "System.Core",
-			"System.Data",
-			"Moq",
-			"MSTest.TestFramework"
+			"System.Data"
 		}
 		
 		ZoneCodeGenerator:link()

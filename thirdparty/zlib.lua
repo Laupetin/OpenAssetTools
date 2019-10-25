@@ -12,9 +12,11 @@ function zlib:include()
 end
 
 function zlib:link()
-	links {
-		"zlib"
-	}
+	links "zlib"
+end
+
+function zlib:use()
+	
 end
 
 function zlib:project()

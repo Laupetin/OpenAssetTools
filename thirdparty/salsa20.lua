@@ -7,9 +7,11 @@ function salsa20:include()
 end
 
 function salsa20:link()
-	links {
-		"salsa20"
-	}
+	links "salsa20"
+end
+
+function salsa20:use()
+	
 end
 
 function salsa20:project()

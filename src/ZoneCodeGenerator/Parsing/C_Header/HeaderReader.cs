@@ -56,8 +56,10 @@ namespace ZoneCodeGenerator.Parsing.C_Header
                     return dataRepository;
                 }
             }
-            catch (IOException)
+            catch (IOException e)
             {
+                Console.WriteLine("An exception occured while trying to read header file");
+                Console.WriteLine(e.Message);
                 return null;
             }
         }

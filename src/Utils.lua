@@ -7,9 +7,11 @@ function Utils:include()
 end
 
 function Utils:link()
-	links {
-		"Utils"
-	}
+	links "Utils"
+end
+
+function Utils:use()
+	
 end
 
 function Utils:project()

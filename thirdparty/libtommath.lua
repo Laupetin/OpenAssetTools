@@ -7,9 +7,11 @@ function libtommath:include()
 end
 
 function libtommath:link()
-	links {
-		"libtommath"
-	}
+	links "libtommath"
+end
+
+function libtommath:use()
+	
 end
 
 function libtommath:project()
