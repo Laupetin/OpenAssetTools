@@ -1,0 +1,57 @@
+stages:
+    - build
+    - test
+
+variables:
+    BUILD_APP: "MSBuild.exe"
+    TEST_APP: "vstest.console.exe"
+        
+.build:
+    stage: build
+    cache:
+      paths:
+        - build/
+    tags:
+      - build
+      - cpp
+      - dotnet
+      - windows
+      - powershell
+    script:
+        - "./generate.bat"
+        - "& \"$BUILD_APP\" build/OpenAssetTools.sln -t:restore -t:build -m -p:Configuration=Release -p:Platform=x86 -p:RestorePackagesPath=build/packages"
+
+build:withartifacts:
+  stage: build
+  extends: .build
+  only:
+    refs:
+      - master
+      - develop
+  artifacts:
+      name: "OpenAssetTools"
+      paths:
+          - build/bin
+
+build:noartifacts:
+  stage: build
+  extends: .build
+  except:
+    refs:
+      - master
+      - develop
+
+
+test:
+    stage: test
+    cache:
+      paths:
+        - build/
+    tags:
+      - test
+      - cpp
+      - dotnet
+      - windows
+      - powershell
+    script:
+        - "& \"$TEST_APP\" --InIsolation build/lib/Release_X86/tests/ZoneCodeGeneratorTests.dll build/lib/Release_X86/tests/ZoneCommonTests.dll"
