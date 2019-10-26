@@ -61,12 +61,12 @@ namespace ZoneCodeGenerator.Parsing.Testing
 
         protected string PeekTag()
         {
-            return lastResult?.MatchedTags.ElementAtOrDefault(tagOffset);
+            return lastResult?.MatchedTags.ElementAtOrDefault(tagOffset) ?? "";
         }
 
         protected string NextTag()
         {
-            return lastResult?.MatchedTags.ElementAtOrDefault(tagOffset++);
+            return lastResult?.MatchedTags.ElementAtOrDefault(tagOffset++) ?? "";
         }
 
         protected bool HasMatcherTokens(string matcherName)
