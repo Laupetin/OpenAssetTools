@@ -17,7 +17,7 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
 
             foreach (var literal in literals)
             {
-                var token = context.Lexer.PeekToken(tokenOffset);
+                var token = context.Lexer.PeekToken(tokenOffset++);
                 var isMatch = string.Equals(token, literal);
 
                 if (!isMatch) return new MatchingResult(false, 0);
