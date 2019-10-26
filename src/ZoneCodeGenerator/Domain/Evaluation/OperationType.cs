@@ -17,8 +17,11 @@ namespace ZoneCodeGenerator.Domain.Evaluation
             BitwiseShift = 3,
             RelationalGreaterLessThan = 4,
             RelationalEquals = 5,
-            LogicalAnd = 6,
-            LogicalOr = 7
+            BitwiseAnd = 6,
+            BitwiseXor = 7,
+            BitwiseOr = 8,
+            LogicalAnd = 9,
+            LogicalOr = 10
         }
 
         public delegate int EvaluationFunction(int operand1, int operand2);
@@ -67,6 +70,24 @@ namespace ZoneCodeGenerator.Domain.Evaluation
             "%",
             OperationPrecedence.MultiplicationDivisionRemainder,
             (operand1, operand2) => operand1 % operand2
+            );
+
+        public static OperationType OperationBitwiseAnd = new OperationType(
+            "&",
+            OperationPrecedence.BitwiseAnd,
+            (operand1, operand2) => operand1 & operand2
+            );
+
+        public static OperationType OperationBitwiseXor = new OperationType(
+            "^",
+            OperationPrecedence.BitwiseXor,
+            (operand1, operand2) => operand1 ^ operand2
+            );
+
+        public static OperationType OperationBitwiseOr = new OperationType(
+            "|",
+            OperationPrecedence.BitwiseOr,
+            (operand1, operand2) => operand1 | operand2
             );
 
         public static OperationType OperationShiftLeft = new OperationType(
