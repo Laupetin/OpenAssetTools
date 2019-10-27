@@ -26,6 +26,27 @@ namespace ZoneCodeGeneratorTests.Parsing.C_Header.Impl
         }
 
         [TestMethod]
+        public void EnsureReturnsUnmodifiedText()
+        {
+            string[] stringsThatShouldNotBeModified =
+            {
+                "This is a normal string",
+                "There is nothing to be preprocessed!",
+                "0124124124 # 124124124",
+                "...",
+                "<?php><html>asdf</html>",
+                ""
+            };
+
+            headerStreamTest.Lines.AddRange(stringsThatShouldNotBeModified);
+
+            foreach (var stringThatShouldNotBeModified in stringsThatShouldNotBeModified)
+            {
+                Assert.AreEqual(stringThatShouldNotBeModified, preprocessor.ReadLine());
+            }
+        }
+
+        [TestMethod]
         public void EnsureDefinesArePlacedCorrectly()
         {
             var defineStrings = new Dictionary<string, string>()
