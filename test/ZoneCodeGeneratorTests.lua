@@ -20,6 +20,7 @@ function ZoneCodeGeneratorTests:project()
 		location "%{wks.location}/test/%{prj.name}"
 		kind "SharedLib"
 		language "C#"
+        dotnetframework "4.5"
 		
 		files {
 			path.join(folder, "ZoneCodeGeneratorTests/**.cs")

@@ -20,6 +20,7 @@ function ZoneCodeGenerator:project()
 		location "%{wks.location}/src/%{prj.name}"
 		kind "ConsoleApp"
         language "C#"
+        dotnetframework "4.5"
         namespace "ZoneCodeGenerator"
         
 		files {

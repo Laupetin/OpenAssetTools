@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ZoneCodeGenerator.Utils
 {
@@ -8,6 +9,12 @@ namespace ZoneCodeGenerator.Utils
         {
             m1 = keyValuePair.Key;
             m2 = keyValuePair.Value;
+        }
+
+        public static void Deconstruct<T1, T2>(this Tuple<T1, T2> keyValuePair, out T1 m1, out T2 m2)
+        {
+            m1 = keyValuePair.Item1;
+            m2 = keyValuePair.Item2;
         }
     }
 }
