@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ZoneCodeGenerator.Parsing.Impl;
+using ZoneCodeGenerator.Utils;
 
 namespace ZoneCodeGenerator.Parsing.C_Header.Impl
 {
@@ -32,25 +33,25 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
 
         private void ParseCompilerExpression(string line)
         {
-            Match packPush = packPushRegex.Match(line.ToLower());
+            var packPush = packPushRegex.Match(line.ToLower());
             if(packPush.Success)
             {
                 state.PushPack(int.Parse(packPush.Groups[1].Value));
                 return;
             }
 
-            Match packPop = packPopRegex.Match(line.ToLower());
+            var packPop = packPopRegex.Match(line.ToLower());
             if(packPop.Success)
             {
                 state.PopPack();
                 return;
             }
 
-            Match define = defineRegex.Match(line);
+            var define = defineRegex.Match(line);
             if (define.Success)
             {
-                string key = define.Groups[1].Value;
-                string value = define.Groups[2].Value.Trim();
+                var key = define.Groups[1].Value;
+                var value = define.Groups[2].Value.Trim();
 
                 if (defines.ContainsKey(key))
                     defines[key] = value;
@@ -59,7 +60,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
                 return;
             }
 
-            Match undef = undefRegex.Match(line);
+            var undef = undefRegex.Match(line);
             if (undef.Success)
             {
                 var key = undef.Groups[1].Value;
@@ -69,10 +70,10 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
                 return;
             }
 
-            Match include = includeRegex.Match(line);
+            var include = includeRegex.Match(line);
             if (include.Success)
             {
-                string filename = include.Groups[1].Success ? include.Groups[1].Value : include.Groups[2].Value;
+                var filename = include.Groups[1].Success ? include.Groups[1].Value : include.Groups[2].Value;
 
                 streamFileSystem.IncludeFile(filename);
                 return;
@@ -93,13 +94,13 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
             do
             {
                 defineMatched = false;
-                foreach (KeyValuePair<string, string> define in defines)
+                foreach (var (defineKey, defineValue) in defines)
                 {
-                    Match match = Regex.Match(line, $@"^(.*\W)?{define.Key}(\W.*)?$");
+                    var match = Regex.Match(line, $@"^(.*\W)?{defineKey}(\W.*)?$");
 
                     if (!match.Success) continue;
 
-                    line = match.Groups[1].Value + define.Value + match.Groups[2].Value;
+                    line = match.Groups[1].Value + defineValue + match.Groups[2].Value;
                     defineMatched = true;
                     break;
                 }

@@ -7,7 +7,7 @@ using ZoneCodeGenerator.Parsing.C_Header.Impl;
 using ZoneCodeGenerator.Utils;
 using ZoneCodeGeneratorTests.Parsing.Mock;
 
-namespace ZoneCodeGeneratorTests.Parsing.Impl
+namespace ZoneCodeGeneratorTests.Parsing.C_Header.Impl
 {
     [TestClass]
     public class PreprocessorTest
@@ -26,83 +26,6 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
         }
 
         [TestMethod]
-        public void EnsureReturnsUnmodifiedText()
-        {
-            string[] stringsThatShouldNotBeModified =
-            {
-                "This is a normal string",
-                "There is nothing to be preprocessed!",
-                "0124124124 # 124124124",
-                "...",
-                "<?php><html>asdf</html>",
-                ""
-            };
-            headerStreamTest.Lines.AddRange(stringsThatShouldNotBeModified);
-
-            foreach (var stringThatShouldNotBeModified in stringsThatShouldNotBeModified)
-            {
-                Assert.AreEqual(stringThatShouldNotBeModified, preprocessor.ReadLine());
-            }
-        }
-
-        [TestMethod]
-        public void EnsureDoesRemoveLineComments()
-        {
-            var commentStrings = new Dictionary<string, string>()
-            {
-                {"// This is a comment at the beginning of the line", ""},
-                {"Text in front of a comment // Comment", "Text in front of a comment"},
-                {"/ / Not a comment", "/ / Not a comment"},
-                {"asdf /// Triple slash is a comment", "asdf"},
-                {"b2h3 /////////////// In fact after the first two slashes it should always be considered a comment", "b2h3"},
-            };
-            headerStreamTest.Lines.AddRange(commentStrings.Keys);
-
-            foreach (var (input, expectedResult) in commentStrings)
-            {
-                Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
-            }
-        }
-
-        [TestMethod]
-        public void EnsureDoesRemoveBlockComments()
-        {
-            var commentStrings = new Dictionary<string, string>()
-            {
-                {"/* This is a block comment */", ""},
-                {"Text in front of a comment /** Comment ***/", "Text in front of a comment"},
-                {"/ * Not a comment */", "/ * Not a comment */"},
-                {"Text in front of comment /* Comment */ Text after the comment", "Text in front of comment  Text after the comment"},
-                {"Hello/*Hell*/World", "HelloWorld"},
-            };
-            headerStreamTest.Lines.AddRange(commentStrings.Keys);
-
-            foreach (var (input, expectedResult) in commentStrings)
-            {
-                Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
-            }
-        }
-
-        [TestMethod]
-        public void EnsureBlockCommentsWorkOverMultipleLines()
-        {
-            var commentStrings = new Dictionary<string, string>()
-            {
-                {"The start of the comment /* Is now", "The start of the comment"},
-                {"Nothing to be seen here", ""},
-                {"* / /* Still nothing", ""},
-                {"The comment ends */ now", "now"},
-                {"This line should not cause any issues", "This line should not cause any issues"},
-            };
-            headerStreamTest.Lines.AddRange(commentStrings.Keys);
-
-            foreach (var (input, expectedResult) in commentStrings)
-            {
-                Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
-            }
-        }
-
-        [TestMethod]
         public void EnsureDefinesArePlacedCorrectly()
         {
             var defineStrings = new Dictionary<string, string>()
@@ -116,7 +39,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
             };
             headerStreamTest.Lines.AddRange(defineStrings.Keys);
 
-            foreach (var (input, expectedResult) in defineStrings)
+            foreach (var (_, expectedResult) in defineStrings)
             {
                 Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
             }
@@ -133,7 +56,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
             };
             headerStreamTest.Lines.AddRange(defineStrings.Keys);
 
-            foreach (var (input, expectedResult) in defineStrings)
+            foreach (var (_, expectedResult) in defineStrings)
             {
                 Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
             }
@@ -142,14 +65,14 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
         [TestMethod]
         public void EnsureEmptyDefinesResolveToEmpty()
         {
-            var defineStrings = new Dictionary<string, string>()
+            var defineStrings = new Dictionary<string, string>
             {
                 {"#define World", ""},
                 {"Hello World!", "Hello !"}
             };
             headerStreamTest.Lines.AddRange(defineStrings.Keys);
 
-            foreach (var (input, expectedResult) in defineStrings)
+            foreach (var (_, expectedResult) in defineStrings)
             {
                 Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
             }
@@ -171,7 +94,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
             };
             headerStreamTest.Lines.AddRange(defineStrings.Keys);
 
-            foreach (var (input, expectedResult) in defineStrings)
+            foreach (var (_, expectedResult) in defineStrings)
             {
                 Assert.AreEqual(expectedResult, preprocessor.ReadLine().Trim());
             }
@@ -197,7 +120,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
             };
             headerStreamTest.Lines.AddRange(packs.Select(tuple => tuple.Item1));
             
-            foreach (var (input, expectedPack) in packs)
+            foreach (var (_, expectedPack) in packs)
             {
                 preprocessor.ReadLine();
 
