@@ -53,9 +53,12 @@
 
             var result = new TokenMatchingResult(success, consumedTokens);
 
-            if (name != null && success)
-                result.AddNamedMatch(name, output);
-            result.AppendTag(Tag);
+            if (success)
+            {
+                if (name != null)
+                    result.AddNamedMatch(name, output);
+                result.AppendTag(Tag);
+            }
 
             return result;
         }
