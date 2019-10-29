@@ -10,7 +10,7 @@ using ZoneCodeGenerator.Parsing.C_Header.Blocks;
 using ZoneCodeGenerator.Parsing.C_Header.Tests;
 using ZoneCodeGenerator.Parsing.Testing;
 
-namespace ZoneCodeGeneratorTests.Parsing.Testing.Tests
+namespace ZoneCodeGeneratorTests.Parsing.C_Header.Tests
 {
     [TestClass]
     public class TestEnumMemberTest
