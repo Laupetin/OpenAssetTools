@@ -50,7 +50,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
         private static readonly TokenMatcher evaluation = new MatcherGroupAnd(
             new MatcherGroupOr(
                 new MatcherGroupAnd(
-                    new MatcherGroupOptional(new MatcherLiteral("!")).WithTag(TagEvaluationNot),
+                    new MatcherGroupOptional(new MatcherLiteral("!").WithTag(TagEvaluationNot)),
                     new MatcherLiteral("("),
                     new MatcherWithTag(TagEvaluation),
                     new MatcherLiteral(")")
@@ -60,7 +60,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             new MatcherGroupOptional(new MatcherGroupAnd(
                 new MatcherWithTag(TagOperationType),
                 new MatcherWithTag(TagEvaluation)
-            )).WithTag(TagEvaluationOperation)
+            ).WithTag(TagEvaluationOperation))
 
         ).WithTag(TagEvaluation);
 
