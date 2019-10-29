@@ -186,5 +186,53 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
             Assert.AreEqual(3, result.ConsumedTokenCount);
             Assert.AreEqual("HELLO_WORLD", result.NamedMatches["array_token"].ElementAtOrDefault(0));
         }
+
+        [TestMethod]
+        public void EnsureMakesCorrectUseOfTokenOffset()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "random", "string", "[", "5", "]", ";"
+            });
+
+            var matcher = new MatcherArray();
+            var result = matcher.Test(matchingContext, 2);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(3, result.ConsumedTokenCount);
+        }
+
+        [TestMethod]
+        public void EnsureAddsTagWhenMatched()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "[", "42", "]", "randomString"
+            });
+
+            var matcher = new MatcherArray().WithTag("asdf");
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(3, result.ConsumedTokenCount);
+            Assert.AreEqual(1, result.MatchedTags.Count);
+            Assert.AreEqual("asdf", result.MatchedTags[0]);
+        }
+
+        [TestMethod]
+        public void EnsureDoesNotAddTagWhenNotMatched()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "nope", "[", "42", "]", "randomString"
+            });
+
+            var matcher = new MatcherArray().WithTag("asdf");
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.ConsumedTokenCount);
+            Assert.AreEqual(0, result.MatchedTags.Count);
+        }
     }
 }

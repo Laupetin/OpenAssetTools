@@ -155,5 +155,54 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
             Assert.AreEqual(1, result.ConsumedTokenCount);
             Assert.AreEqual("variable_n4me", result.NamedMatches["name_token"].ElementAtOrDefault(0));
         }
+
+        [TestMethod]
+        public void EnsureMakesCorrectUseOfTokenOffset()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "static", "int", "variable_n4me", "=", "5", ";"
+            });
+
+            var matcher = new MatcherName().WithName("name_token");
+            var result = matcher.Test(matchingContext, 2);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(1, result.ConsumedTokenCount);
+            Assert.AreEqual("variable_n4me", result.NamedMatches["name_token"].ElementAtOrDefault(0));
+        }
+
+        [TestMethod]
+        public void EnsureAddsTagWhenMatched()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "variable_n4me"
+            });
+
+            var matcher = new MatcherName().WithTag("very_cool_matcher");
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(1, result.ConsumedTokenCount);
+            Assert.AreEqual(1, result.MatchedTags.Count);
+            Assert.AreEqual("very_cool_matcher", result.MatchedTags[0]);
+        }
+
+        [TestMethod]
+        public void EnsureDoesNotAddTagWhenNotMatched()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "1337"
+            });
+
+            var matcher = new MatcherName().WithTag("very_cool_matcher");
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.ConsumedTokenCount);
+            Assert.AreEqual(0, result.MatchedTags.Count);
+        }
     }
 }

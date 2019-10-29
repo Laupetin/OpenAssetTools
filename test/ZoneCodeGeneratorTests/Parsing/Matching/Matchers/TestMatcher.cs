@@ -29,6 +29,9 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
         {
             var result = new TokenMatchingResult(Successful, Successful ? tokenCount : 0);
 
+            if(result.Successful)
+                result.AppendTag(Tag);
+
             if(!string.IsNullOrEmpty(tokenName))
                 result.AddNamedMatch(tokenName, "test");
 

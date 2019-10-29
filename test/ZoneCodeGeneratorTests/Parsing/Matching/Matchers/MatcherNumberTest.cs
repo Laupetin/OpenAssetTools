@@ -156,5 +156,53 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
             Assert.AreEqual(1, result.ConsumedTokenCount);
             Assert.AreEqual("421", result.NamedMatches["number_token"].ElementAtOrDefault(0));
         }
+
+        [TestMethod]
+        public void EnsureMakesCorrectUseOfTokenOffset()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "int", "kek", "=", "1337", ";"
+            });
+
+            var matcher = new MatcherNumber();
+            var result = matcher.Test(matchingContext, 3);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(1, result.ConsumedTokenCount);
+        }
+
+        [TestMethod]
+        public void EnsureAddsTagWhenMatched()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "1337"
+            });
+
+            var matcher = new MatcherNumber().WithTag("Taggerino");
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(1, result.ConsumedTokenCount);
+            Assert.AreEqual(1, result.MatchedTags.Count);
+            Assert.AreEqual("Taggerino", result.MatchedTags[0]);
+        }
+
+        [TestMethod]
+        public void EnsureDoesNotAddTagWhenNotMatched()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "not_a_number_yo"
+            });
+
+            var matcher = new MatcherNumber().WithTag("Taggerino");
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.ConsumedTokenCount);
+            Assert.AreEqual(0, result.MatchedTags.Count);
+        }
     }
 }

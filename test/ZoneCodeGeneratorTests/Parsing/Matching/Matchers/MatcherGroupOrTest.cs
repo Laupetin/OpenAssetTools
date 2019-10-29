@@ -133,5 +133,60 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsNull(matcherGroup);
         }
+
+        [TestMethod]
+        public void EnsureMakesCorrectUseOfTokenOffset()
+        {
+            var testMatchers = new[]
+            {
+                new TestMatcher(true, 3),
+                new TestMatcher(false, 1)
+            };
+            var iTokenMatcherArray = (TokenMatcher[])testMatchers.Clone();
+            var groupOr = new MatcherGroupOr(iTokenMatcherArray);
+
+            var result = groupOr.Test(matchingContext, 5);
+
+            Assert.IsTrue(result.Successful);
+
+            Assert.AreEqual(5, testMatchers[0].TestTokenOffset);
+            Assert.IsFalse(testMatchers[1].WasTested);
+        }
+
+        [TestMethod]
+        public void EnsureAddsTagWhenMatched()
+        {
+            var testMatchers = new[]
+            {
+                new TestMatcher(false, 3).WithTag("testTagTheSecond"),
+                new TestMatcher(true, 1).WithTag("testTagTheThird")
+            };
+            var iTokenMatcherArray = (TokenMatcher[])testMatchers.Clone();
+            var groupOr = new MatcherGroupOr(iTokenMatcherArray).WithTag("testTagTheFirst");
+
+            var result = groupOr.Test(matchingContext, 0);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(2, result.MatchedTags.Count);
+            Assert.AreEqual("testTagTheFirst", result.MatchedTags[0]);
+            Assert.AreEqual("testTagTheThird", result.MatchedTags[1]);
+        }
+
+        [TestMethod]
+        public void EnsureDoesNotAddTagWhenNotMatched()
+        {
+            var testMatchers = new[]
+            {
+                new TestMatcher(false, 3).WithTag("testTagTheSecond"),
+                new TestMatcher(false, 1).WithTag("testTagTheThird")
+            };
+            var iTokenMatcherArray = (TokenMatcher[])testMatchers.Clone();
+            var groupOr = new MatcherGroupOr(iTokenMatcherArray).WithTag("testTagTheFirst");
+
+            var result = groupOr.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.MatchedTags.Count);
+        }
     }
 }

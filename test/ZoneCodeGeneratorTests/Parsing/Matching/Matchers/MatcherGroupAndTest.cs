@@ -117,5 +117,61 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
 
             Assert.IsNull(matcherGroup);
         }
+
+        [TestMethod]
+        public void EnsureMakesCorrectUseOfTokenOffset()
+        {
+            var testMatchers = new[]
+            {
+                new TestMatcher(true, 3), 
+                new TestMatcher(true, 1)
+            };
+            var iTokenMatcherArray = (TokenMatcher[])testMatchers.Clone();
+            var groupAnd = new MatcherGroupAnd(iTokenMatcherArray);
+
+            var result = groupAnd.Test(matchingContext, 5);
+
+            Assert.IsTrue(result.Successful);
+
+            Assert.AreEqual(5, testMatchers[0].TestTokenOffset);
+            Assert.AreEqual(8, testMatchers[1].TestTokenOffset);
+        }
+
+        [TestMethod]
+        public void EnsureAddsTagWhenMatched()
+        {
+            var testMatchers = new[]
+            {
+                new TestMatcher(true, 3).WithTag("testTagTheSecond"),
+                new TestMatcher(true, 1).WithTag("testTagTheThird")
+            };
+            var iTokenMatcherArray = (TokenMatcher[])testMatchers.Clone();
+            var groupAnd = new MatcherGroupAnd(iTokenMatcherArray).WithTag("testTagTheFirst");
+
+            var result = groupAnd.Test(matchingContext, 0);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(3, result.MatchedTags.Count);
+            Assert.AreEqual("testTagTheFirst", result.MatchedTags[0]);
+            Assert.AreEqual("testTagTheSecond", result.MatchedTags[1]);
+            Assert.AreEqual("testTagTheThird", result.MatchedTags[2]);
+        }
+
+        [TestMethod]
+        public void EnsureDoesNotAddTagWhenNotMatched()
+        {
+            var testMatchers = new[]
+            {
+                new TestMatcher(true, 3).WithTag("testTagTheSecond"),
+                new TestMatcher(false, 1).WithTag("testTagTheThird")
+            };
+            var iTokenMatcherArray = (TokenMatcher[])testMatchers.Clone();
+            var groupAnd = new MatcherGroupAnd(iTokenMatcherArray).WithTag("testTagTheFirst");
+
+            var result = groupAnd.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.MatchedTags.Count);
+        }
     }
 }

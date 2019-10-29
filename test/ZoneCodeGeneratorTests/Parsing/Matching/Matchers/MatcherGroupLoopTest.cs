@@ -39,6 +39,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
                     var matchResult = new TokenMatchingResult(true, 1);
 
                     matchResult.AddNamedMatch(LoopToken, "test");
+                    matchResult.AppendTag("testTag");
 
                     return matchResult;
                 });
@@ -181,6 +182,51 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
             
             foreach(var namedMatch in namedMatches)
                 Assert.AreEqual("test", namedMatch);
+        }
+
+        [TestMethod]
+        public void EnsureMakesCorrectUseOfTokenOffset()
+        {
+            testsUntilUnsuccessful = 2;
+            var groupLoop = new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple, tokenMatcherMock.Object);
+
+            var result = groupLoop.Test(matchingContext, 4);
+
+            tokenMatcherMock.Verify(matcher => matcher.Test(It.IsAny<MatchingContext>(), 4));
+            tokenMatcherMock.Verify(matcher => matcher.Test(It.IsAny<MatchingContext>(), 5));
+            tokenMatcherMock.Verify(matcher => matcher.Test(It.IsAny<MatchingContext>(), 6));
+            tokenMatcherMock.VerifyNoOtherCalls();
+
+            Assert.IsTrue(result.Successful);
+        }
+
+        [TestMethod]
+        public void EnsureAddsTagWhenMatched()
+        {
+            testsUntilUnsuccessful = 4;
+            var groupLoop = new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple, tokenMatcherMock.Object).WithTag("loopTag");
+
+            var result = groupLoop.Test(matchingContext, 0);
+
+            Assert.IsTrue(result.Successful);
+            Assert.AreEqual(5, result.MatchedTags.Count);
+            Assert.AreEqual("loopTag", result.MatchedTags[0]);
+            Assert.AreEqual("testTag", result.MatchedTags[1]);
+            Assert.AreEqual("testTag", result.MatchedTags[2]);
+            Assert.AreEqual("testTag", result.MatchedTags[3]);
+            Assert.AreEqual("testTag", result.MatchedTags[4]);
+        }
+
+        [TestMethod]
+        public void EnsureDoesNotAddTagWhenNotMatched()
+        {
+            testsUntilUnsuccessful = 1;
+            var groupLoop = new MatcherGroupLoop(MatcherGroupLoop.LoopMode.Multiple, tokenMatcherMock.Object).WithTag("loopTag");
+
+            var result = groupLoop.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.MatchedTags.Count);
         }
     }
 }
