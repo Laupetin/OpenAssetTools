@@ -22,43 +22,43 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
 
         protected override TokenMatchingResult PerformTest(MatchingContext context, int tokenOffset)
         {
-            var result = new TokenMatchingResult(false, 0);
-            result.AppendTag(Tag);
+            var successfulResult = new TokenMatchingResult(true, 0);
+            successfulResult.AppendTag(Tag);
 
             var matchedTimes = 0;
 
             while (true)
             {
-                var matcherResult = matcher.Test(context, tokenOffset + result.ConsumedTokenCount);
+                var matcherResult = matcher.Test(context, tokenOffset + successfulResult.ConsumedTokenCount);
 
                 if (!matcherResult.Successful)
                     break;
 
-                matcherResult.CopyTo(result);
+                matcherResult.CopyTo(successfulResult);
                 matchedTimes++;
             }
 
+            int minAmountOfMatches;
             switch (mode)
             {
                 case LoopMode.ZeroOneMultiple:
-                    result.Successful = true;
+                    minAmountOfMatches = 0;
                     break;
 
                 case LoopMode.OneMultiple:
-                    result.Successful = matchedTimes > 0;
+                    minAmountOfMatches = 1;
                     break;
 
                 case LoopMode.Multiple:
-                    result.Successful = matchedTimes > 1;
+                    minAmountOfMatches = 2;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
-            if (!result.Successful)
-                result.ConsumedTokenCount = 0;
-
-            return result;
+            return matchedTimes < minAmountOfMatches 
+                ? new TokenMatchingResult(false, 0) 
+                : successfulResult;
         }
 
         protected override string GetIdentifier()
