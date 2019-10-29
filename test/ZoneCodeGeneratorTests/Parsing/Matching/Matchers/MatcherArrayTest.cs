@@ -80,6 +80,21 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
         }
 
         [TestMethod]
+        public void EnsureInvalidEnumValueNameIsNotRecognized()
+        {
+            tokens.AddRange(new List<string>
+            {
+                "[", "09INVALID", "]"
+            });
+
+            var matcher = new MatcherArray();
+            var result = matcher.Test(matchingContext, 0);
+
+            Assert.IsFalse(result.Successful);
+            Assert.AreEqual(0, result.ConsumedTokenCount);
+        }
+
+        [TestMethod]
         public void EnsureFirstSquareBracketIsRequiredToBeRecognized()
         {
             tokens.AddRange(new List<string>
