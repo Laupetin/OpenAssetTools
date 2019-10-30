@@ -42,7 +42,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             }
 
             var assetInfo = state.Repository.GetInformationFor(assetTypeWithMembers);
-            if (assetType == null)
+            if (assetInfo == null)
             {
                 throw new LoadingException($"Could not find information for type '{assetTypeName}' to mark it as an asset.");
             }
