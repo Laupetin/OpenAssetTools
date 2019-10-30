@@ -33,18 +33,18 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             var assetType = state.Repository.GetDataTypeByName(assetTypeName);
             if (assetType == null)
             {
-                throw new LoadingException($"Could not find type '{assetTypeName}' to mark it as an asset.");
+                throw new TestFailedException($"Could not find type '{assetTypeName}' to mark it as an asset.");
             }
             
             if (!(assetType is DataTypeWithMembers assetTypeWithMembers))
             {
-                throw new LoadingException($"Type of asset '{assetTypeName}' needs to be struct or union.");
+                throw new TestFailedException($"Type of asset '{assetTypeName}' needs to be struct or union.");
             }
 
             var assetInfo = state.Repository.GetInformationFor(assetTypeWithMembers);
             if (assetInfo == null)
             {
-                throw new LoadingException($"Could not find information for type '{assetTypeName}' to mark it as an asset.");
+                throw new TestFailedException($"Could not find information for type '{assetTypeName}' to mark it as an asset.");
             }
 
             var enumEntryName = NextMatch(AssetEnumEntryToken);
@@ -52,7 +52,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 .SelectMany(_enum => _enum.Members)
                 .FirstOrDefault(member => member.Name.Equals(enumEntryName, StringComparison.CurrentCultureIgnoreCase));
 
-            assetInfo.AssetEnumEntry = enumEntry ?? throw new LoadingException(
+            assetInfo.AssetEnumEntry = enumEntry ?? throw new TestFailedException(
                     $"Could not find enum entry '{enumEntryName}' as an asset type index for asset type '{assetTypeName}'.");
         }
     }
