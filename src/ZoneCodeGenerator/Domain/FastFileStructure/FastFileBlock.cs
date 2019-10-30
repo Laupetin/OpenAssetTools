@@ -11,7 +11,7 @@
         }
 
         public string Name { get; }
-        public int Index { get; }
+        public long Index { get; }
         public Type BlockType { get; }
         public bool IsDefault { get; }
         public bool IsTemp => BlockType == Type.Temp;
@@ -19,7 +19,7 @@
         public bool IsDelay => BlockType == Type.Delay;
         public bool IsNormal => BlockType == Type.Normal;
 
-        public FastFileBlock(string name, int index, Type blockType, bool isDefault)
+        public FastFileBlock(string name, long index, Type blockType, bool isDefault)
         {
             Name = name;
             Index = index;

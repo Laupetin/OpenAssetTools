@@ -52,13 +52,13 @@ asset FootstepFXTableDef ASSET_TYPE_FOOTSTEPFX_TABLE;
 asset ZBarrierDef ASSET_TYPE_ZBARRIER;
 
 // Setup blocks
-block 0 temp    XFILE_BLOCK_TEMP                default;
-block 1 runtime XFILE_BLOCK_RUNTIME_VIRTUAL     default;
-block 2 runtime XFILE_BLOCK_RUNTIME_PHYSICAL;
-block 3 delay   XFILE_BLOCK_DELAY_VIRTUAL       default;
-block 4 delay   XFILE_BLOCK_DELAY_PHYSICAL;
-block 5 normal  XFILE_BLOCK_VIRTUAL             default;
-block 6 normal  XFILE_BLOCK_PHYSICAL;
+block temp    XFILE_BLOCK_TEMP              default;
+block runtime XFILE_BLOCK_RUNTIME_VIRTUAL   default;
+block runtime XFILE_BLOCK_RUNTIME_PHYSICAL;
+block delay   XFILE_BLOCK_DELAY_VIRTUAL	    default;
+block delay   XFILE_BLOCK_DELAY_PHYSICAL;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_PHYSICAL;
 
 // =========================================
 // XModelPieces

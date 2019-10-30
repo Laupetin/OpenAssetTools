@@ -9,19 +9,17 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 {
     class TestBlock : AbstractTokenTest<ICommandParserState>
     {
-        private const string BlockNumberToken = "num";
         private const string BlockTypeToken = "type";
-        private const string BlockNameToken = "name";
+        private const string BlockEnumMemberToken = "enumEntry";
         private const string DefaultToken = "default";
 
         private static readonly TokenMatcher[] matchers = {
-            new MatcherLiteral("block"), 
-            new MatcherNumber().WithName(BlockNumberToken),
+            new MatcherLiteral("block"),
             new MatcherName().WithName(BlockTypeToken),
-            new MatcherName().WithName(BlockNameToken),
-            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple,new MatcherGroupOr(
+            new MatcherName().WithName(BlockEnumMemberToken),
+            new MatcherGroupOptional(
                 new MatcherLiteral("default").WithName(DefaultToken)
-            )), 
+                ),
             new MatcherLiteral(";")
         };
 
@@ -32,8 +30,14 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         protected override void ProcessMatch(ICommandParserState state)
         {
-            var blockName = NextMatch(BlockNameToken);
-            var blockNumber = int.Parse(NextMatch(BlockNumberToken));
+            var blockEnumEntryName = NextMatch(BlockEnumMemberToken);
+            var blockEnumEntry = state.Repository.GetAllEnums()
+                .SelectMany(_enum => _enum.Members)
+                .FirstOrDefault(member => member.Name.Equals(blockEnumEntryName));
+            if (blockEnumEntry == null)
+            {
+                throw new TestFailedException($"Could not find enum entry '{blockEnumEntryName}' for block.");
+            }
 
             var blockTypeInput = NextMatch(BlockTypeToken);
             if (!Enum.TryParse(blockTypeInput, true, out FastFileBlock.Type blockType))
@@ -44,7 +48,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 throw new TestFailedException($"Unknown fastfile block type '{blockTypeInput}'. Must be one of the following: {string.Join(", ", blockTypeValues)}");
             }
 
-            var block = new FastFileBlock(blockName, blockNumber, blockType, HasMatcherTokens(DefaultToken));
+            var block = new FastFileBlock(blockEnumEntry.Name, blockEnumEntry.Value, blockType, HasMatcherTokens(DefaultToken));
 
             state.FastFileBlocks.Add(block);
         }

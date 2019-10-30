@@ -6,19 +6,6 @@ namespace T6
 {
 #include "T6_Assets.h"
 
-    enum XFileBlock
-    {
-	    XFILE_BLOCK_TEMP,
-	    XFILE_BLOCK_RUNTIME_VIRTUAL,
-	    XFILE_BLOCK_RUNTIME_PHYSICAL,
-	    XFILE_BLOCK_DELAY_VIRTUAL,
-	    XFILE_BLOCK_DELAY_PHYSICAL,
-	    XFILE_BLOCK_VIRTUAL,
-	    XFILE_BLOCK_PHYSICAL,
-	    XFILE_BLOCK_STREAMER_RESERVE,
-	    MAX_XFILE_COUNT,
-    };
-
     struct ScriptStringList
     {
         int count;
