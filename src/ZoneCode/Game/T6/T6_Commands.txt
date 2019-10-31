@@ -195,7 +195,6 @@ set count verts0 vertCount;
 set count vb0 0;
 set count vertList vertListCount;
 set count triIndices triCount;
-set align triIndices 16;
 set count indexBuffer 0;
 reorder:
 	vertInfo
