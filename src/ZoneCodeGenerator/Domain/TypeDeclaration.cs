@@ -23,7 +23,9 @@ namespace ZoneCodeGenerator.Domain
             set => type = value;
         }
 
-        public int? CustomBitSize { get; }
+        public int? CustomBitSize { get; set; }
+
+        public bool IsConst { get; set; }
 
         public bool HasCustomBitSize => CustomBitSize != null;
 
@@ -60,11 +62,6 @@ namespace ZoneCodeGenerator.Domain
             this.type = type;
             this.references = references ?? new List<ReferenceType>();
             CustomBitSize = null;
-        }
-
-        public TypeDeclaration(DataType type, int customBitSize, List<ReferenceType> references) : this(type, references)
-        {
-            CustomBitSize = customBitSize;
         }
     }
 }

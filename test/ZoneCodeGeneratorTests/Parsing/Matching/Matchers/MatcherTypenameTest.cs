@@ -100,22 +100,6 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
         }
 
         [TestMethod]
-        public void EnsureConstTypeNamesAreRecognized()
-        {
-            tokens.AddRange(new List<string>
-            {
-                "const", "int"
-            });
-
-            var matcher = new MatcherTypename().WithName("type_token");
-            var result = matcher.Test(matchingContext, 0);
-
-            Assert.IsTrue(result.Successful);
-            Assert.AreEqual(2, result.ConsumedTokenCount);
-            Assert.AreEqual("const int", result.NamedMatches["type_token"].ElementAtOrDefault(0));
-        }
-
-        [TestMethod]
         public void EnsureDoubleLongIsRecognized()
         {
             tokens.AddRange(new List<string>
@@ -136,15 +120,15 @@ namespace ZoneCodeGeneratorTests.Parsing.Matching.Matchers
         {
             tokens.AddRange(new List<string>
             {
-                "const", "unsigned", "long", "long"
+                "unsigned", "long", "long"
             });
 
             var matcher = new MatcherTypename().WithName("type_token");
             var result = matcher.Test(matchingContext, 0);
 
             Assert.IsTrue(result.Successful);
-            Assert.AreEqual(4, result.ConsumedTokenCount);
-            Assert.AreEqual("const unsigned long long", result.NamedMatches["type_token"].ElementAtOrDefault(0));
+            Assert.AreEqual(3, result.ConsumedTokenCount);
+            Assert.AreEqual("unsigned long long", result.NamedMatches["type_token"].ElementAtOrDefault(0));
         }
 
         [TestMethod]

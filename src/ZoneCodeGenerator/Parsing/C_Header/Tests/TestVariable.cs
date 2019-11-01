@@ -17,8 +17,10 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         private const string NameToken = "name";
         private const string ArrayTokens = "array";
         private const string BitSizeToken = "bitsize";
+        private const string TokenConst = "constToken";
 
         private static readonly TokenMatcher[] arrayOfPointersMatchers = {
+            new MatcherGroupOptional(new MatcherLiteral("const").WithTag(TokenConst)),
             new MatcherTypename().WithName(TypeNameToken),
             new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple,  new MatcherLiteral("*").WithName(PointerTokens)),
             new MatcherName().WithName(NameToken),
@@ -31,6 +33,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         };
 
         private static readonly TokenMatcher[] pointerToArrayMatchers = {
+            new MatcherGroupOptional(new MatcherLiteral("const").WithTag(TokenConst)),
             new MatcherTypename().WithName(TypeNameToken),
             new MatcherLiteral("("), 
             new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple,  new MatcherLiteral("*").WithName(PointerTokens)),
@@ -97,7 +100,11 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
                         references.Add(new ReferenceTypePointer());
                 }
 
-                var typeDeclaration = bitSize == null ? new TypeDeclaration(type, references) : new TypeDeclaration(type, bitSize.Value, references);
+                var typeDeclaration = new TypeDeclaration(type, references)
+                {
+                    CustomBitSize = bitSize,
+                    IsConst = HasMatcherTokens(TokenConst)
+                };
 
                 var variable = new Variable(name, typeDeclaration);
 

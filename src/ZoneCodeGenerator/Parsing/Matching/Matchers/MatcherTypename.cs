@@ -8,12 +8,6 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
     {
         private static readonly Regex nameRegex = new Regex(@"^[a-zA-Z_$][a-zA-Z0-9_$]*$");
 
-        private static readonly string[] typenamePrefixes = {
-            "const",
-            "signed",
-            "unsigned"
-        };
-
         private int MatchTypenameExtension(MatchingContext context, int tokenOffset)
         {
             if (!":".Equals(context.Lexer.PeekToken(tokenOffset++)))
@@ -31,19 +25,17 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
             var startTokenOffset = tokenOffset;
 
             var currentPart = lexer.PeekToken(tokenOffset++);
+            if ("unsigned".Equals(currentPart)
+                || "signed".Equals(currentPart))
+            {
+                typename.Append(currentPart);
+                typename.Append(' ');
+                currentPart = lexer.PeekToken(tokenOffset++);
+            }
+
             if (!nameRegex.IsMatch(currentPart))
                 return new MatchingResult(false, 0);
             typename.Append(currentPart);
-
-            while (typenamePrefixes.Contains(currentPart))
-            {
-                currentPart = lexer.PeekToken(tokenOffset++);
-
-                if (!nameRegex.IsMatch(currentPart))
-                    return new MatchingResult(false, 0);
-                typename.Append(' ');
-                typename.Append(currentPart);
-            }
 
             if ("long".Equals(currentPart))
             {
@@ -55,17 +47,19 @@ namespace ZoneCodeGenerator.Parsing.Matching.Matchers
                     typename.Append(currentPart);
                 }
             }
-
-            var extensionLength = MatchTypenameExtension(context, tokenOffset);
-            while (extensionLength > 0)
+            else
             {
-                for (var i = 0; i < extensionLength; i++)
+                var extensionLength = MatchTypenameExtension(context, tokenOffset);
+                while (extensionLength > 0)
                 {
-                    typename.Append(lexer.PeekToken(tokenOffset + i));
-                }
+                    for (var i = 0; i < extensionLength; i++)
+                    {
+                        typename.Append(lexer.PeekToken(tokenOffset + i));
+                    }
 
-                tokenOffset += extensionLength;
-                extensionLength = MatchTypenameExtension(context, tokenOffset);
+                    tokenOffset += extensionLength;
+                    extensionLength = MatchTypenameExtension(context, tokenOffset);
+                }
             }
 
             SetMatcherOutput(typename.ToString());
