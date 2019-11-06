@@ -20,7 +20,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         private const string TokenConst = "constToken";
 
         private static readonly TokenMatcher[] arrayOfPointersMatchers = {
-            new MatcherGroupOptional(new MatcherLiteral("const").WithTag(TokenConst)),
+            new MatcherGroupOptional(new MatcherLiteral("const").WithName(TokenConst)),
             new MatcherTypename().WithName(TypeNameToken),
             new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple,  new MatcherLiteral("*").WithName(PointerTokens)),
             new MatcherName().WithName(NameToken),
@@ -33,7 +33,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         };
 
         private static readonly TokenMatcher[] pointerToArrayMatchers = {
-            new MatcherGroupOptional(new MatcherLiteral("const").WithTag(TokenConst)),
+            new MatcherGroupOptional(new MatcherLiteral("const").WithName(TokenConst)),
             new MatcherTypename().WithName(TypeNameToken),
             new MatcherLiteral("("), 
             new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple,  new MatcherLiteral("*").WithName(PointerTokens)),
