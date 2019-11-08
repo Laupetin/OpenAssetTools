@@ -13,5 +13,10 @@ namespace ZoneCodeGenerator.Domain.Evaluation
         {
             throw new Exception("A dynamic operand cannot be evaluated.");
         }
+
+        public override string ToString()
+        {
+            return "dynamic";
+        }
     }
 }

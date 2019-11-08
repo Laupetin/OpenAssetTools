@@ -25,5 +25,33 @@ namespace ZoneCodeGenerator.Domain.Evaluation
             Operand2 = operand2;
             OperationType = type;
         }
+
+        public override string ToString()
+        {
+            string operand1String;
+            string operand2String;
+
+            if (Operand1 is Operation operation1
+                && operation1.OperationType.Precedence > OperationType.Precedence)
+            {
+                operand1String = $"({Operand1})";
+            }
+            else
+            {
+                operand1String = Operand1.ToString();
+            }
+
+            if (Operand2 is Operation operation2
+                && operation2.OperationType.Precedence > OperationType.Precedence)
+            {
+                operand2String = $"({Operand2})";
+            }
+            else
+            {
+                operand2String = Operand2.ToString();
+            }
+
+            return $"{operand1String} {OperationType} {operand2String}";
+        }
     }
 }
