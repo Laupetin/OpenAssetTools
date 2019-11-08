@@ -16,6 +16,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         // Evaluation Sub-Tags
         private const string TagEvaluationParenthesis = "evaluationParenthesis";
+        private const string TagEvaluationParenthesisEnd = "evaluationParenthesisEnd";
         private const string TagEvaluationNot = "evaluationNot";
         private const string TagEvaluationOperation = "evaluationOperation";
 
@@ -53,7 +54,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                     new MatcherGroupOptional(new MatcherLiteral("!").WithTag(TagEvaluationNot)),
                     new MatcherLiteral("("),
                     new MatcherWithTag(TagEvaluation),
-                    new MatcherLiteral(")")
+                    new MatcherLiteral(")").WithTag(TagEvaluationParenthesisEnd)
                 ).WithTag(TagEvaluationParenthesis),
                 new MatcherWithTag(TagOperand)
             ),
@@ -108,50 +109,78 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         private IEvaluation ProcessEvaluationInParenthesis(ICommandParserState state)
         {
+            var isNegated = false;
             if (NextTag().Equals(TagEvaluationNot))
             {
                 NextTag();
-                return new Operation(ProcessEvaluation(state), new OperandStatic(0), OperationType.OperationEquals);
+                isNegated = true;
             }
 
-            return ProcessEvaluation(state);
+            var processedEvaluation = ProcessEvaluation(state);
+
+            if (NextTag() != TagEvaluationParenthesisEnd)
+                throw new Exception("Expected parenthesis end tag @ EvaluationInParenthesis");
+
+            return !isNegated 
+                ? processedEvaluation 
+                : new Operation(processedEvaluation, new OperandStatic(0), OperationType.OperationEquals);
         }
 
         protected IEvaluation ProcessEvaluation(ICommandParserState state)
         {
-            IEvaluation firstStatementPart;
-            switch (NextTag())
+            var operands = new List<IEvaluation>();
+            var operators = new List<OperationType>();
+
+            while (true)
             {
-                case TagEvaluationParenthesis:
-                    firstStatementPart = ProcessEvaluationInParenthesis(state);
-                    break;
+                IEvaluation firstStatementPart;
+                switch (NextTag())
+                {
+                    case TagEvaluationParenthesis:
+                        firstStatementPart = ProcessEvaluationInParenthesis(state);
+                        break;
 
-                case TagOperand:
-                    firstStatementPart = ProcessOperand(state);
-                    break;
+                    case TagOperand:
+                        firstStatementPart = ProcessOperand(state);
+                        break;
 
-                default:
-                    throw new Exception("Invalid followup tag @ Evaluation");
+                    default:
+                        throw new Exception("Invalid followup tag @ Evaluation");
+                }
+                operands.Add(firstStatementPart);
+
+                if (PeekTag() == TagEvaluationOperation)
+                {
+                    NextTag();
+
+                    if (NextTag() != TagOperationType)
+                        throw new Exception("Expected operationType tag @ Evaluation");
+
+                    operators.Add(ProcessOperationType(state));
+
+                    if (NextTag() != TagEvaluation)
+                        throw new Exception("Expected EvaluationTag @ Evaluation");
+                }
+                else
+                {
+                    break;
+                }
             }
 
-            if (PeekTag() == TagEvaluationOperation)
+            while (operators.Any())
             {
-                NextTag();
+                var nextOperator = operators
+                    .OrderBy(type => type.Precedence)
+                    .First();
+                var operatorIndex = operators.IndexOf(nextOperator);
 
-                if (NextTag() != TagOperationType)
-                    throw new Exception("Expected operationType tag @ Evaluation");
-
-                var type = ProcessOperationType(state);
-
-                if (NextTag() != TagEvaluation)
-                    throw new Exception("Expected EvaluationTag @ Evaluation");
-
-                var secondStatementPart = ProcessEvaluation(state);
-
-                return new Operation(firstStatementPart, secondStatementPart, type);
+                var operation  = new Operation(operands[operatorIndex], operands[operatorIndex + 1], nextOperator);
+                operands.RemoveRange(operatorIndex, 2);
+                operands.Insert(operatorIndex, operation);
+                operators.RemoveAt(operatorIndex);
             }
 
-            return firstStatementPart;
+            return operands[0];
         }
     }
 }
