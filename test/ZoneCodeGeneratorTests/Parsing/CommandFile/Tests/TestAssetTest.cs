@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ZoneCodeGenerator;
 using ZoneCodeGenerator.Domain;
-using ZoneCodeGenerator.Domain.StructureInformation;
+using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Parsing;
 using ZoneCodeGenerator.Parsing.CommandFile;
 using ZoneCodeGenerator.Parsing.CommandFile.Tests;

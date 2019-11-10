@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Domain.FastFileStructure;
-using ZoneCodeGenerator.Domain.StructureInformation;
+using ZoneCodeGenerator.Domain.Information;
 
 namespace ZoneCodeGenerator.Persistence
 {

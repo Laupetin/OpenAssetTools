@@ -4,7 +4,7 @@ using System.Linq;
 using ZoneCodeGenerator.Domain.FastFileStructure;
 using ZoneCodeGenerator.Persistence;
 
-namespace ZoneCodeGenerator.Domain.StructureInformation
+namespace ZoneCodeGenerator.Domain.Information
 {
     class StructureInformation
     {

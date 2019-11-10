@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using ZoneCodeGenerator.Domain.StructureInformation;
+using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Interface;
 using ZoneCodeGenerator.Persistence;
 

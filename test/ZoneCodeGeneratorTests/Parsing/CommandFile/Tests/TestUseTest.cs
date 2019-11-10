@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Domain.FastFileStructure;
+using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Parsing;
 using ZoneCodeGenerator.Parsing.CommandFile;
 using ZoneCodeGenerator.Parsing.CommandFile.Tests;
@@ -18,7 +19,7 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
         private Mock<IReadOnlyDataRepository> repositoryMock;
         private Mock<ICommandParserState> parserStateMock;
 
-        private DataTypeWithMembers dataTypeWithMembers;
+        private StructureInformation usedType;
 
         private Mock<ILexer> lexerMock;
         private int tokenOffset;
@@ -29,7 +30,7 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
         {
             parserStateMock = new Mock<ICommandParserState>();
 
-            dataTypeWithMembers = null;
+            usedType = null;
 
             tokenOffset = 0;
             tokens = new List<string>();
@@ -39,6 +40,9 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
             parserStateMock.SetupGet(state => state.Repository)
                 .Returns(() => repositoryMock.Object);
 
+            repositoryMock.Setup(repository => repository.GetInformationFor(It.IsAny<DataTypeWithMembers>()))
+                .Returns((DataTypeWithMembers type) => new StructureInformation(type));
+
             lexerMock.Setup(lexer => lexer.PeekToken(It.IsAny<int>()))
                 .Returns((int index) => tokens.ElementAtOrDefault(index + tokenOffset));
             lexerMock.Setup(lexer => lexer.NextToken())
@@ -47,9 +51,9 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
                 .Callback((int count) => tokenOffset += count);
 
             parserStateMock.SetupGet(state => state.DataTypeInUse)
-                .Returns(() => dataTypeWithMembers);
-            parserStateMock.SetupSet(state => state.DataTypeInUse = It.IsAny<DataTypeWithMembers>())
-                .Callback((DataTypeWithMembers type) => dataTypeWithMembers = type);
+                .Returns(() => usedType);
+            parserStateMock.SetupSet(state => state.DataTypeInUse = It.IsAny<StructureInformation>())
+                .Callback((StructureInformation type) => usedType = type);
         }
 
         [TestMethod]
@@ -70,7 +74,8 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
             Assert.AreEqual(TokenTestResult.Match, test.PerformTest(parserStateMock.Object, lexerMock.Object));
             Assert.AreEqual(6, test.ConsumedTokenCount);
 
-            Assert.AreEqual(assetTypeToUse, dataTypeWithMembers);
+            Assert.IsNotNull(assetTypeToUse);
+            Assert.AreEqual(usedType.Type, assetTypeToUse);
         }
 
         [TestMethod]

@@ -1,4 +1,5 @@
-﻿using ZoneCodeGenerator.Domain;
+﻿using System;
+using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Parsing.Matching;
 using ZoneCodeGenerator.Parsing.Matching.Matchers;
 using ZoneCodeGenerator.Parsing.Testing;
@@ -35,7 +36,14 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 throw new TestFailedException($"To use data type '{typeName}' it must either be a struct or a union.");
             }
 
-            state.DataTypeInUse = dataTypeWithMembersToUse;
+            var dataTypeToUseInformation = state.Repository.GetInformationFor(dataTypeWithMembersToUse);
+
+            if (dataTypeToUseInformation == null)
+            {
+                throw new Exception($"Could not find information for type '{dataTypeWithMembersToUse.FullName}'");
+            }
+
+            state.DataTypeInUse = dataTypeToUseInformation;
         }
     }
 }

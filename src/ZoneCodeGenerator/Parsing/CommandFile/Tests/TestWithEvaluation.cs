@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ZoneCodeGenerator.Domain.Evaluation;
+using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Parsing.Matching;
 using ZoneCodeGenerator.Parsing.Matching.Matchers;
 using ZoneCodeGenerator.Parsing.Testing;
@@ -72,32 +73,70 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             AddTaggedMatcher(evaluation);
         }
 
+        private IEvaluation ProcessOperandNumber(ICommandParserState state)
+        {
+            var numberString = NextMatch(TokenOperandNumber);
+            return new OperandStatic(int.Parse(numberString));
+        }
+
+        protected abstract IEnumerable<StructureInformation> GetUsedTypes(ICommandParserState state);
+
+        private IEvaluation ProcessOperandTypename(ICommandParserState state)
+        {
+            var typenameString = NextMatch(TokenOperandTypename);
+            var arrayIndexStrings = new List<string>();
+
+            while (PeekTag().Equals(TagOperandArray))
+            {
+                NextTag();
+                arrayIndexStrings.Add(NextMatch(TokenOperandArray));
+            }
+
+            var nameParts = typenameString.Split(new[] { "::" }, StringSplitOptions.None);
+            List<MemberInformation> referencedMemberChain = null;
+
+            var referencedType = GetUsedTypes(state)
+                .FirstOrDefault(usedType => state.GetMembersFromParts(nameParts, usedType, out referencedMemberChain));
+
+            if (referencedType == null)
+            {
+                if (!state.GetTypenameAndMembersFromParts(nameParts, out referencedType,
+                    out referencedMemberChain))
+                {
+                    throw new TestFailedException($"Could not evaluate '{typenameString}'.");
+                }
+            }
+
+            if (!referencedMemberChain.Any())
+            {
+                throw new TestFailedException($"Typename '{typenameString}' needs to reference a member at this place.");
+            }
+
+            var operandDynamic = new OperandDynamic(referencedType, referencedMemberChain);
+
+            foreach (var arrayIndexString in arrayIndexStrings)
+            {
+                operandDynamic.ArrayIndices.Add(int.Parse(arrayIndexString));
+            }
+
+            return operandDynamic;
+        }
+
         private IEvaluation ProcessOperand(ICommandParserState state)
         {
             var operandTypeTag = NextTag();
 
             if (operandTypeTag.Equals(TagOperandNumber))
             {
-                var numberString = NextMatch(TokenOperandNumber);
-                return new OperandStatic(int.Parse(numberString));
+                return ProcessOperandNumber(state);
             }
-            else if(operandTypeTag.Equals(TagOperandTypename))
+            
+            if(operandTypeTag.Equals(TagOperandTypename))
             {
-                var typenameString = NextMatch(TokenOperandTypename);
-                var arrayIndexStrings = new List<string>();
-
-                while (PeekTag().Equals(TagOperandArray))
-                {
-                    NextTag();
-                    arrayIndexStrings.Add(NextMatch(TokenOperandArray));
-                }
-
-                return new OperandDynamic();
+                return ProcessOperandTypename(state);
             }
-            else
-            {
-                throw new Exception("Unknown Operand Type");
-            }
+
+            throw new Exception("Unknown Operand Type");
         }
 
         private OperationType ProcessOperationType(ICommandParserState state)

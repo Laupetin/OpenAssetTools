@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Domain.FastFileStructure;
-using ZoneCodeGenerator.Domain.StructureInformation;
+using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Interface;
 using ZoneCodeGenerator.Persistence;
 
