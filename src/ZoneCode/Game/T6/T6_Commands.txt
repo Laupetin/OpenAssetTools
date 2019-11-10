@@ -136,10 +136,10 @@ set count quat 1;
 // XAnimPartTrans
 use XAnimPartTrans;
 set condition u::frames size > 0;
-set condition XAnimParts::deltaPart::trans::u::frames::indices::_1 numframes < 256;
-set count u::frames::indices::_1 size + 1;
-set count u::frames::indices::_2 size + 1;
-set condition u::frames::frames::_1 smallTrans == true;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set condition u::frames::frames::_1 smallTrans;
 set count u::frames::frames::_1 size + 1;
 set count u::frames::frames::_2 size + 1;
 
@@ -151,9 +151,9 @@ reorder XAnimPartTransFrames:
 // XAnimDeltaPartQuat2
 use XAnimDeltaPartQuat2;
 set condition u::frames size > 0;
-set condition XAnimParts::deltaPart::quat2::u::frames::indices::_1 numframes < 256;
-set count u::frames::indices::_1 size + 1;
-set count u::frames::indices::_2 size + 1;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
 set count u::frames::frames size + 1;
 
 // XAnimDeltaPartQuatDataFrames2
@@ -164,9 +164,9 @@ reorder XAnimDeltaPartQuatDataFrames2:
 // XAnimDeltaPartQuat
 use XAnimDeltaPartQuat;
 set condition u::frames size > 0;
-set condition XAnimParts::deltaPart::quat::u::frames::indices::_1 numframes < 256;
-set count u::frames::indices::_1 size + 1;
-set count u::frames::indices::_2 size + 1;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
 set count u::frames::frames size + 1;
 
 // =========================================
