@@ -20,46 +20,21 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
 
                     memberInformation.StructureType.Usages.Add(information);
 
-                    if (IsNonEmbeddedReference(memberInformation.Member))
+                    if (memberInformation.IsNonEmbeddedReference)
                         memberInformation.StructureType.NonEmbeddedReferenceExists = true;
 
-                    if (IsSinglePointerReference(memberInformation.Member))
+                    if (memberInformation.IsSinglePointerReference)
                         memberInformation.StructureType.SinglePointerReferenceExists = true;
 
-                    if (IsArrayPointerReference(memberInformation.Member))
+                    if (memberInformation.IsArrayPointerReference)
                         memberInformation.StructureType.ArrayPointerReferenceExists = true;
 
-                    if (IsArrayReference(memberInformation.Member))
+                    if (memberInformation.IsArrayReference)
                         memberInformation.StructureType.ArrayReferenceExists = true;
                 }
             }
 
             return true;
-        }
-
-        private static bool IsNonEmbeddedReference(Variable var)
-        {
-            return var.VariableType.References.Any();
-        }
-
-        private static bool IsSinglePointerReference(Variable var)
-        {
-            return var.VariableType.References.Any() 
-                    && var.VariableType.References.Last() is ReferenceTypePointer pointerReference
-                    && !pointerReference.IsArray;
-        }
-
-        private static bool IsArrayPointerReference(Variable var)
-        {
-            return var.VariableType.References.Any()
-                   && var.VariableType.References.Last() is ReferenceTypePointer pointerReference
-                   && pointerReference.IsArray;
-        }
-
-        private static bool IsArrayReference(Variable var)
-        {
-            return var.VariableType.References.Any() 
-                   && var.VariableType.References.Last() is ReferenceTypeArray;
         }
     }
 }

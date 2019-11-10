@@ -24,7 +24,7 @@ namespace ZoneCodeGenerator.Domain.Information
         }
         
         public List<StructureInformation> Usages { get; }
-        public List<MemberInformation> OrderedMembers { get; }
+        public List<MemberInformation> OrderedMembers { get; set; }
         public bool NonEmbeddedReferenceExists { get; set; }
         public bool SinglePointerReferenceExists { get; set; }
         public bool ArrayPointerReferenceExists { get; set; }
