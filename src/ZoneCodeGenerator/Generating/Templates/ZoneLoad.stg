@@ -151,7 +151,7 @@ void $LoaderClassName(context.Asset)$::LoadArray_$structure.Type.Name$($structur
 
 	for(size_t index = 0; index < count; index++)
 	{
-		Load_$structure.Type.Name$(&pArray[index], false);
+		Load_$structure.Type.Name$(&(*pArray)[index], false);
 	}
 }
 >>
