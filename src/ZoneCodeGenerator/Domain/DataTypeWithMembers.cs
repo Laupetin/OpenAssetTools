@@ -16,6 +16,8 @@ namespace ZoneCodeGenerator.Domain
 
         public List<Variable> Members { get; }
 
+        public bool IsAnonymous { get; set; }
+
         private bool finalized;
         public void FinalizeDataType()
         {
@@ -30,6 +32,7 @@ namespace ZoneCodeGenerator.Domain
             Members = new List<Variable>();
             Pack = pack;
             finalized = false;
+            IsAnonymous = false;
         }
 
         private void CalculateProperties()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Parsing.C_Header.Tests;
 using ZoneCodeGenerator.Parsing.Testing;
+using ZoneCodeGenerator.Utils;
 
 namespace ZoneCodeGenerator.Parsing.C_Header.Blocks
 {
@@ -18,6 +19,8 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Blocks
         };
 
         public string Name { get; }
+        public bool IsAnonymous { get; }
+
         public string AssignedName { get; private set; }
         public string Namespace { get; private set; }
         public bool IsTypedef { get; }
@@ -30,7 +33,17 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Blocks
 
         public BlockUnion(IHeaderParserState headerParserState, string name, bool isTypedef) : base(headerParserState, BlockType.Union)
         {
-            Name = name;
+            if (!string.IsNullOrEmpty(name))
+            {
+                Name = name;
+                IsAnonymous = false;
+            }
+            else
+            {
+                Name = RandomName.GenerateName();
+                IsAnonymous = true;
+            }
+
             IsTypedef = isTypedef;
             Variables = new List<Variable>();
             CustomAlignment = null;
@@ -63,7 +76,8 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Blocks
 
             union = new DataTypeUnion(Namespace, Name, Pack)
             {
-                AlignmentOverride = CustomAlignment
+                AlignmentOverride = CustomAlignment,
+                IsAnonymous = IsAnonymous
             };
 
             union.Members.AddRange(Variables);

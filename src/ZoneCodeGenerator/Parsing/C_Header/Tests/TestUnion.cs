@@ -43,7 +43,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Tests
         protected override void ProcessMatch(IHeaderParserState state)
         {
             var isTypedef = HasMatcherTokens(TypedefToken);
-            var name = NextMatch(NameToken) ?? RandomName.GenerateName();
+            var name = NextMatch(NameToken) ?? "";
 
             var block = new BlockUnion(state, name, isTypedef);
 
