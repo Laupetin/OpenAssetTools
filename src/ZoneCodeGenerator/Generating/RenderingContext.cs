@@ -13,10 +13,13 @@ namespace ZoneCodeGenerator.Generating
     {
         public string Game { get; set; }
         public StructureInformation Asset { get; set; }
-        public HashSet<StructureInformation> Structures { get; }
+
+        public ISet<StructureInformation> Structures { get; }
+        public ISet<DataType> MemberTypes { get; }
+
         public IEnumerable<StructureInformation> ReferencedAssets => Structures.Where(inf => inf.IsAsset && inf != Asset);
 
-        public List<FastFileBlock> Blocks { get; private set; }
+        public IList<FastFileBlock> Blocks { get; private set; }
 
         public FastFileBlock DefaultNormalBlock => Blocks.FirstOrDefault(block => block.IsDefault && block.IsNormal) ??
                                                    Blocks.FirstOrDefault(block => block.IsNormal);
@@ -24,6 +27,7 @@ namespace ZoneCodeGenerator.Generating
         private RenderingContext()
         {
             Structures = new HashSet<StructureInformation>();
+            MemberTypes = new HashSet<DataType>();
         }
 
         private void AddToContext(StructureInformation structureInformation)
@@ -51,6 +55,12 @@ namespace ZoneCodeGenerator.Generating
             };
 
             context.AddToContext(asset);
+            context.MemberTypes.UnionWith(context.Structures.Where(information => !information.IsAsset || information == asset)
+                .SelectMany(information => information.OrderedMembers)
+                .Select(information => information.Member.VariableType.Type)
+                .Where(type => !(type is DataTypeBaseType) && type != asset.Type)
+                .Distinct());
+            
 
             return context;
         }
