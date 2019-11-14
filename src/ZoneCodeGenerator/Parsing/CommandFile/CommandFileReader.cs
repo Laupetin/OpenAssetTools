@@ -15,6 +15,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile
         {
             new PostProcessorDefaultBlock(),
             new PostProcessorUsages(),
+            new PostProcessorLeafs()
         };
 
         public static bool ReadFile(string path, CUISession session, bool verbose = false)

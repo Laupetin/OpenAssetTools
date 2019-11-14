@@ -30,6 +30,8 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool ArrayPointerReferenceExists { get; set; }
         public bool ArrayReferenceExists { get; set; }
 
+        public bool IsLeaf { get; set; }
+
         public bool HasNameMember => Type.Members.Any(variable => variable.Name.Equals("name", StringComparison.CurrentCultureIgnoreCase));
         
         public StructureInformation(DataTypeWithMembers type)
