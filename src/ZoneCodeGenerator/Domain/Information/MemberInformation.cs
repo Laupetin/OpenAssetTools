@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ZoneCodeGenerator.Domain.Evaluation;
+using ZoneCodeGenerator.Generating.Computations;
 
 namespace ZoneCodeGenerator.Domain.Information
 {
@@ -11,20 +13,7 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool IsScriptString { get; set; }
         public IEvaluation Condition { get; set; }
 
-        public bool IsNonEmbeddedReference => Member.VariableType.References.Any();
-
-        public bool IsSinglePointerReference => Member.VariableType.References.Any()
-                                                && Member.VariableType.References.Last() is ReferenceTypePointer
-                                                    pointerReference
-                                                && !pointerReference.IsArray;
-
-        public bool IsArrayPointerReference => Member.VariableType.References.Any()
-                                               && Member.VariableType.References.Last() is ReferenceTypePointer
-                                                   pointerReference
-                                               && pointerReference.IsArray;
-
-        public bool IsArrayReference => Member.VariableType.References.Any()
-                                        && Member.VariableType.References.Last() is ReferenceTypeArray;
+        public MemberComputations Computations => new MemberComputations(this);
 
         public MemberInformation(Variable member, StructureInformation structureType)
         {

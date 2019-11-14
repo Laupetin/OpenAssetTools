@@ -56,7 +56,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 throw new TestFailedException($"Specified member '{lastMember.Member.Name}' is not char type and therefore cannot be a string.");
             }
 
-            if (!lastMember.IsSinglePointerReference)
+            if (!lastMember.Computations.IsSinglePointerReference)
             {
                 throw new TestFailedException($"Specified member '{lastMember.Member.Name}' is a single pointer reference and therefore cannot be a string.");
             }

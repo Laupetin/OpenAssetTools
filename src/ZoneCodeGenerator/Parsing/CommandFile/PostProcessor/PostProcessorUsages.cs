@@ -20,16 +20,16 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
 
                     memberInformation.StructureType.Usages.Add(information);
 
-                    if (memberInformation.IsNonEmbeddedReference)
+                    if (memberInformation.Computations.IsNonEmbeddedReference)
                         memberInformation.StructureType.NonEmbeddedReferenceExists = true;
 
-                    if (memberInformation.IsSinglePointerReference)
+                    if (memberInformation.Computations.IsSinglePointerReference)
                         memberInformation.StructureType.SinglePointerReferenceExists = true;
 
-                    if (memberInformation.IsArrayPointerReference)
+                    if (memberInformation.Computations.IsArrayPointerReference)
                         memberInformation.StructureType.ArrayPointerReferenceExists = true;
 
-                    if (memberInformation.IsArrayReference)
+                    if (memberInformation.Computations.IsArrayReference)
                         memberInformation.StructureType.ArrayReferenceExists = true;
                 }
             }
