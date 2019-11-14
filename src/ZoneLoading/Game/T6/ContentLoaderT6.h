@@ -7,11 +7,13 @@
 class ContentLoaderT6 final : public ContentLoader, public IContentLoadingEntryPoint, public IZoneScriptStringProvider
 {
     std::vector<std::string> m_script_strings;
+    T6::XAsset* varXAsset;
+    T6::ScriptStringList* varScriptStringList;
 
-    void LoadScriptStringList(T6::ScriptStringList* scriptStringList);
+    void LoadScriptStringList(bool atStreamStart);
 
-    void LoadXAsset(T6::XAsset* pXAsset, bool atStreamStart);
-    void LoadXAssetArray(T6::XAsset* pArray, size_t count, bool atStreamStart);
+    void LoadXAsset(bool atStreamStart);
+    void LoadXAssetArray(bool atStreamStart, size_t count);
 
 public:
     ContentLoaderT6();

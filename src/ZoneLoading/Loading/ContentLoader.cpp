@@ -6,37 +6,42 @@ const void* ContentLoader::PTR_INSERT = reinterpret_cast<void*>(-2);
 
 ContentLoader::ContentLoader()
 {
+    varXString = nullptr;
+
     m_zone = nullptr;
     m_stream = nullptr;
 }
 
-void ContentLoader::LoadXString(const char** pXString) const
+void ContentLoader::LoadXString(const bool atStreamStart) const
 {
-    assert(pXString != nullptr);
+    assert(varXString != nullptr);
 
-    if(*pXString != nullptr)
+    if (atStreamStart)
+        m_stream->Load<const char*>(varXString);
+
+    if(*varXString != nullptr)
     {
-        if(*pXString == PTR_FOLLOWING)
+        if(*varXString == PTR_FOLLOWING)
         {
-            *pXString = m_stream->Alloc<const char>();
-            m_stream->LoadNullTerminated();
+            *varXString = m_stream->Alloc<const char>(alignof(const char));
+            m_stream->LoadNullTerminated(const_cast<char*>(*varXString));
         }
         else
         {
-            *pXString = m_stream->ConvertOffsetToPointer<const char>(*pXString);
+            *varXString = m_stream->ConvertOffsetToPointer<const char>(*varXString);
         }
     }
 }
 
-void ContentLoader::LoadXStringArray(const char** pArray, const size_t count, const bool atStreamStart) const
+void ContentLoader::LoadXStringArray(const bool atStreamStart, const size_t count) const
 {
-    assert(pArray != nullptr);
+    assert(varXString != nullptr);
 
     if(atStreamStart)
-        m_stream->Load<const char*>(count);
+        m_stream->Load<const char*>(varXString, count);
 
     for(size_t index = 0; index < count; index++)
     {
-        LoadXString(&pArray[index]);
+        LoadXString(&varXString[index]);
     }
 }

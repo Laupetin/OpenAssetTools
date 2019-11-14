@@ -14,25 +14,19 @@ public:
         return static_cast<T*>(Alloc(align));
     }
 
-    template<typename T>
-    T* Alloc()
-    {
-        return static_cast<T*>(Alloc(alignof(T)));
-    }
-
-    virtual void LoadData(size_t size) = 0;
-    virtual void LoadNullTerminated() = 0;
+    virtual void LoadData(void* dst, size_t size) = 0;
+    virtual void LoadNullTerminated(void* dst) = 0;
 
     template<typename T>
-    void Load()
+    void Load(T* dst)
     {
-        LoadData(sizeof(T));
+        LoadData(dst, sizeof(T));
     }
 
     template<typename T>
-    void Load(const uint32_t count)
+    void Load(T* dst, const uint32_t count)
     {
-        LoadData(count * sizeof(T));
+        LoadData(const_cast<void*>(reinterpret_cast<const void*>(dst)), count * sizeof(T));
     }
 
     virtual void** InsertPointer() = 0;

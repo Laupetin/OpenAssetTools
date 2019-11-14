@@ -4,6 +4,7 @@
 #include "Loading/Exception/InvalidOffsetBlockOffsetException.h"
 
 #include <cassert>
+#include "Loading/Exception/OutOfBlockBoundsException.h"
 
 XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, const int blockBitCount, const block_t insertBlock) : m_blocks(blocks)
 {
@@ -93,7 +94,7 @@ void* XBlockInputStream::Alloc(const int align)
     return &block->m_buffer[m_block_offsets[block->m_index]];
 }
 
-void XBlockInputStream::LoadData(const size_t size)
+void XBlockInputStream::LoadData(void* dst, const size_t size)
 {
     assert(!m_block_stack.empty());
 
@@ -102,17 +103,25 @@ void XBlockInputStream::LoadData(const size_t size)
 
     XBlock* block = m_block_stack.top();
 
-    if(m_block_offsets[block->m_index] + size >= block->m_buffer_size)
+    if(block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
+    {
+        throw OutOfBlockBoundsException(block);
+    }
+    
+    if(reinterpret_cast<uint8_t*>(dst) + size >= block->m_buffer + block->m_buffer_size)
     {
         throw BlockOverflowException(block);
     }
 
-    m_stream->Load(&block->m_buffer[m_block_offsets[block->m_index]], size);
+    // Theoretically ptr should always be at the current block offset.
+    assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
+
+    m_stream->Load(dst, size);
 
     m_block_offsets[block->m_index] += size;
 }
 
-void XBlockInputStream::LoadNullTerminated()
+void XBlockInputStream::LoadNullTerminated(void* dst)
 {
     assert(!m_block_stack.empty());
 
@@ -121,8 +130,16 @@ void XBlockInputStream::LoadNullTerminated()
 
     XBlock* block = m_block_stack.top();
 
+    if (block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
+    {
+        throw OutOfBlockBoundsException(block);
+    }
+
+    // Theoretically ptr should always be at the current block offset.
+    assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
+
     uint8_t byte;
-    size_t offset = m_block_offsets[block->m_index];
+    size_t offset = reinterpret_cast<uint8_t*>(dst) - block->m_buffer;
     do
     {
         m_stream->Load(&byte, 1);

@@ -30,11 +30,12 @@ public:
 
     void* Alloc(int align) override;
 
-    void LoadData(size_t size) override;
-    void LoadNullTerminated() override;
+    void LoadData(void* dst, size_t size) override;
+    void LoadNullTerminated(void* dst) override;
 
     void** InsertPointer() override;
 
     void* ConvertOffsetToPointer(const void* offset) override;
     void* ConvertOffsetToAlias(const void* offset) override;
+    
 };
