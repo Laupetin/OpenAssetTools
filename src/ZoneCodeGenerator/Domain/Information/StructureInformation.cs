@@ -42,6 +42,12 @@ namespace ZoneCodeGenerator.Domain.Information
             ArrayReferenceExists = false;
             Usages = new List<StructureInformation>();
             OrderedMembers = new List<MemberInformation>();
+            IsLeaf = true;
+        }
+
+        public override string ToString()
+        {
+            return $"info for {Type}";
         }
     }
 }

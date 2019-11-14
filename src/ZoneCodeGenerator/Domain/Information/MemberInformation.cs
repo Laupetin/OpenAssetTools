@@ -34,5 +34,10 @@ namespace ZoneCodeGenerator.Domain.Information
             IsScriptString = false;
             Condition = null;
         }
+
+        public override string ToString()
+        {
+            return $"info for {Member}";
+        }
     }
 }

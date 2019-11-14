@@ -15,5 +15,10 @@ namespace ZoneCodeGenerator.Domain
             Members = new List<EnumMember>();
             ParentType = parentType;
         }
+
+        public override string ToString()
+        {
+            return $"enum {FullName}";
+        }
     }
 }

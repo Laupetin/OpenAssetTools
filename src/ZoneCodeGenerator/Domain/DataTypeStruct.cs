@@ -42,5 +42,10 @@ namespace ZoneCodeGenerator.Domain
             
             return currentSize.Align(Alignment);
         }
+
+        public override string ToString()
+        {
+            return $"struct {FullName}";
+        }
     }
 }

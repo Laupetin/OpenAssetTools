@@ -36,5 +36,10 @@ namespace ZoneCodeGenerator.Domain
         {
             Size = size;
         }
+
+        public override string ToString()
+        {
+            return $"BaseType {FullName}";
+        }
     }
 }

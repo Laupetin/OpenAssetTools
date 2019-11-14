@@ -16,5 +16,10 @@ namespace ZoneCodeGenerator.Domain
                 .Max()
                 .Align(Alignment);
         }
+
+        public override string ToString()
+        {
+            return $"union {FullName}";
+        }
     }
 }
