@@ -1899,7 +1899,7 @@ struct ScriptParseTree
 {
   const char *name;
   int len;
-  char *buffer;
+  byte32 *buffer;
 };
 
 struct KeyValuePairs
@@ -2319,7 +2319,7 @@ struct Slug
 {
   const char *name;
   int len;
-  char *buffer;
+  byte32* buffer;
 };
 
 struct FootstepTableDef

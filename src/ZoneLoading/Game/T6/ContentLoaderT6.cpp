@@ -127,7 +127,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);
         // LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
         // LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
-        // LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
+        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
         // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon);
         // LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment);
         // LOAD_ASSET(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique, attachmentUnique);
@@ -149,8 +149,8 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
         // LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
         // LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef);
-        // LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
-        // LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug);
+        LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
+        LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug);
         // LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef);
         // LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef);
         // LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef);
