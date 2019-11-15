@@ -191,8 +191,12 @@ void** XBlockInputStream::InsertPointer()
 
 void* XBlockInputStream::ConvertOffsetToPointer(const void* offset)
 {
-    const block_t blockNum = reinterpret_cast<uintptr_t>(offset) >> (sizeof(offset) * 8 - m_block_bit_count);
-    const size_t blockOffset = reinterpret_cast<uintptr_t>(offset) & (UINTPTR_MAX >> m_block_bit_count);
+    // -1 because otherwise Block 0 Offset 0 would be just 0 which is already used to signalize a nullptr.
+    // So all offsets are moved by 1.
+    auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1;
+
+    const block_t blockNum = offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count);
+    const size_t blockOffset = offsetInt & (UINTPTR_MAX >> m_block_bit_count);
 
     if(blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
     {
@@ -211,8 +215,11 @@ void* XBlockInputStream::ConvertOffsetToPointer(const void* offset)
 
 void* XBlockInputStream::ConvertOffsetToAlias(const void* offset)
 {
-    const block_t blockNum = reinterpret_cast<uintptr_t>(offset) >> (sizeof(offset) * 8 - m_block_bit_count);
-    const size_t blockOffset = reinterpret_cast<uintptr_t>(offset) & (UINTPTR_MAX >> m_block_bit_count);
+    // For details see ConvertOffsetToPointer
+    auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1;
+
+    const block_t blockNum = offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count);
+    const size_t blockOffset = offsetInt & (UINTPTR_MAX >> m_block_bit_count);
 
     if(blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
     {
