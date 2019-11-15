@@ -113,7 +113,7 @@ void XBlockInputStream::LoadDataInBlock(void* dst, const size_t size)
         throw OutOfBlockBoundsException(block);
     }
     
-    if(reinterpret_cast<uint8_t*>(dst) + size >= block->m_buffer + block->m_buffer_size)
+    if(reinterpret_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
     {
         throw BlockOverflowException(block);
     }
@@ -158,13 +158,13 @@ void XBlockInputStream::LoadNullTerminated(void* dst)
     size_t offset = reinterpret_cast<uint8_t*>(dst) - block->m_buffer;
     do
     {
-        m_stream->Load(&byte, 1);
-        block->m_buffer[offset++] = byte;
-
-        if(offset >= block->m_buffer_size)
+        if (offset >= block->m_buffer_size)
         {
             throw BlockOverflowException(block);
         }
+
+        m_stream->Load(&byte, 1);
+        block->m_buffer[offset++] = byte;
 
     } while(byte != 0);
 
@@ -177,7 +177,7 @@ void** XBlockInputStream::InsertPointer()
 
     Align(sizeof(void*));
     
-    if(m_block_offsets[m_insert_block->m_index] + sizeof(void*) >= m_insert_block->m_buffer_size)
+    if(m_block_offsets[m_insert_block->m_index] + sizeof(void*) > m_insert_block->m_buffer_size)
     {
         throw BlockOverflowException(m_insert_block);
     }
