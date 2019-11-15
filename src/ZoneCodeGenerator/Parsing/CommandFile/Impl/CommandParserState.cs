@@ -21,6 +21,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Impl
             new TestCount(),
             new TestGame(),
             new TestReorder(),
+            new TestReusable(),
             new TestScriptString(),
             new TestString(),
             new TestUse()

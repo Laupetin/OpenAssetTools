@@ -11,6 +11,7 @@ namespace ZoneCodeGenerator.Domain.Information
         public Variable Member { get; set; }
         public bool IsString { get; set; }
         public bool IsScriptString { get; set; }
+        public bool IsReusable { get; set; }
         public IEvaluation Condition { get; set; }
 
         public MemberComputations Computations => new MemberComputations(this);
@@ -21,6 +22,7 @@ namespace ZoneCodeGenerator.Domain.Information
             StructureType = structureType;
             IsString = false;
             IsScriptString = false;
+            IsReusable = false;
             Condition = null;
         }
 
