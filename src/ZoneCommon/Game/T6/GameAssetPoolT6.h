@@ -65,4 +65,6 @@ public:
     void InitPoolDynamic(asset_type_t type) override;
 
     void* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetDependency>& dependencies) override;
+
+    ZoneContent GetContent() const override;
 };

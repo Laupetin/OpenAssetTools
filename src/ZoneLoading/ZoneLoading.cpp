@@ -41,3 +41,13 @@ Zone* ZoneLoading::LoadZone(const std::string& path)
     file.Close();
     return loadedZone;
 }
+
+bool ZoneLoading::DumpZone(Zone* zone, const std::string& basePath)
+{
+    return true;
+}
+
+bool ZoneLoading::WriteZoneDefinition(Zone* zone, FileAPI::File* file, bool minimalistic)
+{
+    return true;
+}

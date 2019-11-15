@@ -1,7 +1,11 @@
-#include <cstdlib>
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "ZoneLoading.h"
+#include "ContentPrinter.h"
+#include "Utils/PathUtils.h"
+
+#include <cstdlib>
+#include <regex>
 
 const CommandLineOption* optionHelp = CommandLineOption::Builder::Create()
     .WithShortName("?")
@@ -51,6 +55,11 @@ void PrintUsage()
     usage.Print();
 }
 
+std::string ResolveOutputFolderPath(const std::string& path, Zone* zone)
+{
+    return std::regex_replace(path, std::regex("%zoneName%"), zone->m_name);
+}
+
 int main(const int argc, const char** argv)
 {
     ArgumentParser argumentParser(commandLineOptions, _countof(commandLineOptions));
@@ -75,6 +84,8 @@ int main(const int argc, const char** argv)
         return 1;
     }
 
+    std::vector<Zone*> loadedZones;
+
     for(unsigned argIndex = 1; argIndex < argCount; argIndex++)
     {
         const std::string& zonePath = arguments[argIndex];
@@ -84,6 +95,51 @@ int main(const int argc, const char** argv)
         {
             printf("Failed to load zone '%s'.\n", zonePath.c_str());
             return 1;
+        }
+
+        loadedZones.push_back(zone);
+    }
+
+    if(argumentParser.IsOptionSpecified(optionList))
+    {
+        for(auto zone : loadedZones)
+        {
+            ContentPrinter printer(zone);
+            printer.PrintContent();
+        }
+    }
+    else
+    {
+        const bool minimalisticZoneDefinition = argumentParser.IsOptionSpecified(optionMinimalZoneFile);
+            
+        for (auto zone : loadedZones)
+        {
+            std::string outputFolderPath;
+
+            if (argumentParser.IsOptionSpecified(optionOutputFolder))
+            {
+                outputFolderPath = ResolveOutputFolderPath(argumentParser.GetValueForOption(optionOutputFolder), zone);
+            }
+            else
+            {
+                outputFolderPath = ResolveOutputFolderPath("./%zoneName%", zone);
+            }
+
+            FileAPI::CreateDirectory(outputFolderPath);
+
+            FileAPI::File zoneDefinitionFile = FileAPI::Open(utils::Path::Combine(outputFolderPath, zone->m_name + ".zone"), FileAPI::Mode::MODE_WRITE);
+
+            if(zoneDefinitionFile.IsOpen())
+            {
+                ZoneLoading::WriteZoneDefinition(zone, &zoneDefinitionFile, minimalisticZoneDefinition);
+                ZoneLoading::DumpZone(zone, outputFolderPath);
+            }
+            else
+            {
+                printf("Failed to open file for zone definition file of zone '%s'.\n", zone->m_name.c_str());
+            }
+
+            zoneDefinitionFile.Close();
         }
     }
 

@@ -335,3 +335,72 @@ void* GameAssetPoolT6::AddAsset(asset_type_t type, std::string name, void* asset
 
 #undef CASE_ADD_TO_POOL
 }
+
+ZoneContent GameAssetPoolT6::GetContent() const
+{
+    ZoneContent content{};
+
+    content.m_game_name = "T6";
+
+#define POOL_ADD_TO_CONTENT(assetTypeName, poolName) \
+    if((poolName) != nullptr) \
+    { \
+        for(auto asset : *(poolName)) \
+        { \
+            content.m_assets.emplace_back((assetTypeName), asset->m_name);\
+        } \
+    }
+
+    POOL_ADD_TO_CONTENT("physpreset", m_phys_preset);
+    POOL_ADD_TO_CONTENT("physconstraints", m_phys_constraints);
+    POOL_ADD_TO_CONTENT("destructibledef", m_destructible_def);
+    POOL_ADD_TO_CONTENT("xanim", m_xanim_parts);
+    POOL_ADD_TO_CONTENT("xmodel", m_xmodel);
+    POOL_ADD_TO_CONTENT("material", m_material);
+    POOL_ADD_TO_CONTENT("techniqueset", m_technique_set);
+    POOL_ADD_TO_CONTENT("image", m_image);
+    POOL_ADD_TO_CONTENT("soundbank", m_sound_bank);
+    POOL_ADD_TO_CONTENT("soundpatch", m_sound_patch);
+    POOL_ADD_TO_CONTENT("clipmap", m_clip_map);
+    POOL_ADD_TO_CONTENT("comworld", m_com_world);
+    POOL_ADD_TO_CONTENT("gameworldsp", m_game_world_sp);
+    POOL_ADD_TO_CONTENT("gameworldmp", m_game_world_mp);
+    POOL_ADD_TO_CONTENT("mapents", m_map_ents);
+    POOL_ADD_TO_CONTENT("gfxworld", m_gfx_world);
+    POOL_ADD_TO_CONTENT("gfxlightdef", m_gfx_light_def);
+    POOL_ADD_TO_CONTENT("font", m_font);
+    POOL_ADD_TO_CONTENT("fonticon", m_font_icon);
+    POOL_ADD_TO_CONTENT("menulist", m_menu_list);
+    POOL_ADD_TO_CONTENT("menudef", m_menu_def);
+    POOL_ADD_TO_CONTENT("localize", m_localize);
+    POOL_ADD_TO_CONTENT("weapon", m_weapon);
+    POOL_ADD_TO_CONTENT("attachment", m_attachment);
+    POOL_ADD_TO_CONTENT("attachmentunique", m_attachment_unique);
+    POOL_ADD_TO_CONTENT("camo", m_camo);
+    POOL_ADD_TO_CONTENT("snddriverglobals", m_snd_driver_globals);
+    POOL_ADD_TO_CONTENT("fx", m_fx);
+    POOL_ADD_TO_CONTENT("fximpacttable", m_fx_impact_table);
+    POOL_ADD_TO_CONTENT("rawfile", m_raw_file);
+    POOL_ADD_TO_CONTENT("stringtable", m_string_table);
+    POOL_ADD_TO_CONTENT("leaderboard", m_leaderboard);
+    POOL_ADD_TO_CONTENT("xglobals", m_xglobals);
+    POOL_ADD_TO_CONTENT("ddl", m_ddl);
+    POOL_ADD_TO_CONTENT("glasses", m_glasses);
+    POOL_ADD_TO_CONTENT("emblemset", m_emblem_set);
+    POOL_ADD_TO_CONTENT("script", m_script);
+    POOL_ADD_TO_CONTENT("keyvaluepairs", m_key_value_pairs);
+    POOL_ADD_TO_CONTENT("vehicle", m_vehicle);
+    POOL_ADD_TO_CONTENT("memoryblock", m_memory_block);
+    POOL_ADD_TO_CONTENT("addonmapents", m_addon_map_ents);
+    POOL_ADD_TO_CONTENT("tracer", m_tracer);
+    POOL_ADD_TO_CONTENT("skinnedverts", m_skinned_verts);
+    POOL_ADD_TO_CONTENT("qdb", m_qdb);
+    POOL_ADD_TO_CONTENT("slug", m_slug);
+    POOL_ADD_TO_CONTENT("footsteptable", m_footstep_table);
+    POOL_ADD_TO_CONTENT("footstepfxtable", m_footstep_fx_table);
+    POOL_ADD_TO_CONTENT("zbarrier", m_zbarrier);
+
+    return content;
+
+#undef POOL_ADD_TO_CONTENT
+}
