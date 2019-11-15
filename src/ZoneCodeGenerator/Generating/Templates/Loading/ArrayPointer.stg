@@ -1,0 +1,30 @@
+// Everything related to loading a pointer with a count that can be larger than 1
+
+LoadArrayPointerInner(context, structure, member) ::= <<
+$TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$>(alignof($TypeDeclaration(member.Member.VariableType)$));
+$if(member.StructureType && !member.StructureType.IsLeaf)$
+$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$;
+LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
+$else$
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$>($TypeVarName(structure)$->$member.Member.Name$, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);$endif$
+>>
+
+LoadArrayPointer(context, structure, member) ::= <<
+$if(!member.Computations.ShouldIgnore)$
+if ($TypeVarName(structure)$->$member.Member.Name$)
+{
+    $if(member.IsReusable)$
+    if($TypeVarName(structure)$->$member.Member.Name$ == PTR_FOLLOWING)
+    {
+        $LoadArrayPointerInner(context, structure, member)$
+    }
+    else
+    {
+        $TypeVarName(structure)$->$member.Member.Name$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$);
+    }
+    $else$
+    $LoadArrayPointerInner(context, structure, member)$
+    $endif$
+}
+$endif$
+>>

@@ -113,7 +113,7 @@ namespace ZoneCodeGenerator.Generating
 
         private static Stream StreamFromResources(string fileName)
         {
-            var resourceName = $"{ResourceBasePath}.{fileName}";
+            var resourceName = $"{ResourceBasePath}.{fileName.Replace('\\', '.').Replace('/', '.')}";
             var assembly = Assembly.GetExecutingAssembly();
 
             return assembly.GetManifestResourceStream(resourceName);

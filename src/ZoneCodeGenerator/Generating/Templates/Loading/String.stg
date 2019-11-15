@@ -1,0 +1,26 @@
+// String
+
+LoadStringSingleDepth(context, structure, member) ::= <<
+$if(!member.Computations.IsArray)$
+varXString = &$TypeVarName(structure)$->$member.Member.Name$;
+LoadXString(false); $\\$
+$else$
+varXString = $TypeVarName(structure)$->$member.Member.Name$;
+LoadXStringArray(false, $first(member.Computations.ArraySizes)$); $\\$
+$endif$
+>>
+
+LoadString(context, structure, member) ::= <<
+$if(member.Computations.PointerDepthIsOne)$
+$LoadStringSingleDepth(context, structure, member)$ $\\$
+$elseif(member.Computations.PointerDepthIsTwo && member.Computations.ArrayPointerCountEvaluation)$
+if ($TypeVarName(structure)$->$member.Member.Name$)
+{
+    $TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$*>(alignof($TypeDeclaration(member.Member.VariableType)$*));
+    varXString = $TypeVarName(structure)$->$member.Member.Name$;
+    LoadXStringArray(true, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
+} $\\$
+$else$
+#error Cannot load string $member.Member.Name$ $\\$
+$endif$
+>>

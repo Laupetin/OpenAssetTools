@@ -2,6 +2,12 @@ delimiters "$", "$"
 
 import "Common.stg"
 
+import "Loading/Common.stg"
+import "Loading/String.stg"
+import "Loading/ArrayPointer.stg"
+import "Loading/SinglePointer.stg"
+
+// Loading common
 LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
 
 HeaderConstructor(context) ::= "$LoaderClassName(context.Asset)$(IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream);"
@@ -82,31 +88,16 @@ LoadMember(context, member) ::= <<
 Loading member $member.Member.Name$
 >>
 
-LoadString(context, structure, member) ::= <<
-varXString = &$TypeVarName(structure)$->$member.Member.Name$;
-LoadXString(false);
->>
-
-LoadArrayPointer(context, structure, member) ::= <<
-if ($TypeVarName(structure)$->$member.Member.Name$)
-{
-    $TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$>(alignof($TypeDeclaration(member.Member.VariableType)$));
-    $if(member.StructureType && !member.StructureType.IsLeaf)$
-    $TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$;
-    LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
-    $else$
-    m_stream->Load<$TypeDeclaration(member.Member.VariableType)$>($TypeVarName(structure)$->$member.Member.Name$, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
-    $endif$
-}
->>
 
 LoadMemberIfNeedsTreatment(context, structure, member) ::= <<
 $if(member.IsString)$
 $LoadString(context, structure, member)$
 $elseif(member.IsScriptString)$
 // Load scriptstring for $member.Member.Name$
-$elseif(member.Computations.IsArrayPointerReference && member.Computations.IsSinglePointer)$
+$elseif(member.Computations.IsArrayPointerReference && member.Computations.PointerDepthIsOne)$
 $LoadArrayPointer(context, structure, member)$
+$elseif(member.Computations.IsSinglePointerReference)$
+$LoadSinglePointer(context, structure, member)$
 $endif$
 >>
 

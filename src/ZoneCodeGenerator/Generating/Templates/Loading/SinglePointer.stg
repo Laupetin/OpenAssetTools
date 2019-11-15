@@ -1,0 +1,41 @@
+// Everything related to loading a pointer with a count that is statically 1
+
+LoadSinglePointerInner(context, structure, member) ::= <<
+$TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$>(alignof($TypeDeclaration(member.Member.VariableType)$));
+$if(member.StructureType && !member.StructureType.IsLeaf)$
+$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$;
+Load_$member.Member.VariableType.Type.Name$(true);
+$else$
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$>($TypeVarName(structure)$->$member.Member.Name$);$endif$
+>>
+
+LoadSinglePointerAsset(context, structure, member) ::= <<
+$LoaderClassName(member.StructureType)$ loader(m_script_string_provider, m_zone, m_stream);
+loader.Load(&$TypeVarName(structure)$->$member.Member.Name$);
+>>
+
+LoadSinglePointer(context, structure, member) ::= <<
+$if(!member.Computations.ShouldIgnore)$
+$if(!member.Computations.IsArray && member.Computations.PointerDepthIsOne)$ $! TODO: FIX ARRAYS !$
+if ($TypeVarName(structure)$->$member.Member.Name$)
+{
+    $if(member.StructureType && member.StructureType.IsAsset)$
+    $LoadSinglePointerAsset(context, structure, member)$
+    $else$
+    $if(member.IsReusable)$
+    if($TypeVarName(structure)$->$member.Member.Name$ == PTR_FOLLOWING)
+    {
+        $LoadSinglePointerInner(context, structure, member)$
+    }
+    else
+    {
+        $TypeVarName(structure)$->$member.Member.Name$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$);
+    }
+    $else$
+    $LoadSinglePointerInner(context, structure, member)$
+    $endif$
+    $endif$
+}
+$endif$
+$endif$
+>>
