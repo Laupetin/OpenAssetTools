@@ -139,11 +139,11 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
         // LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
         // LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals);
-        // LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot);
+        LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot);
         // LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses);
         // LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet);
         LOAD_ASSET(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree, scriptParseTree);
-        // LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs);
+        LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs);
         // LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef);
         // LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
         // LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);

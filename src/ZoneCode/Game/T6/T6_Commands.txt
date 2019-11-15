@@ -465,6 +465,8 @@ set string name;
 // =========================================
 // FxEffectDef
 // =========================================
+use FxElemVisuals;
+set condition anonymous never;
 
 // =========================================
 // FxImpactTable
@@ -499,6 +501,31 @@ set string StringTableCell::string;
 // =========================================
 // ddlRoot_t
 // =========================================
+use ddlRoot_t;
+set string name;
+set count ddlDef 1;
+
+// ddlDef_t
+use ddlDef_t;
+set count structList structCount;
+set count enumList enumCount;
+set count next 1;
+
+// ddlStructDef_t
+use ddlStructDef_t;
+set string name;
+set count members memberCount;
+set count hashTable memberCount;
+
+// ddlMemberDef_t
+set string ddlMemberDef_t::name;
+
+// ddlEnumDef_t
+use ddlEnumDef_t;
+set string name;
+set string members;
+set count members memberCount;
+set count hashTable memberCount;
 
 // =========================================
 // EmblemSet
@@ -524,6 +551,30 @@ set string KeyValuePair::value;
 // =========================================
 // VehicleDef
 // =========================================
+use VehicleDef;
+set string name;
+set string turretWeapon;
+set string gunnerWeapon;
+set string sndNames;
+set string sndMaterialNames;
+set string futzName;
+set string animSet;
+set string deathFxSound;
+set string shootShock;
+set string shootRumble;
+set string rumbleType;
+set string compassIcon;
+set string gasButtonName;
+set string reverseBrakeButtonName;
+set string handBrakeButtonName;
+set string attackButtonName;
+set string attackSecondaryButtonName;
+set string boostButtonName;
+set string moveUpButtonName;
+set string moveDownButtonName;
+set string switchSeatButtonName;
+set string steerGraphName;
+set string accelGraphName;
 
 // =========================================
 // MemoryBlock
