@@ -1,79 +1,41 @@
 #include "PathUtils.h"
 
+#include <filesystem>
+
 namespace utils
 {
-    std::string Path::GetFilename(std::string path)
+    std::string Path::GetFilename(const std::string& pathInput)
     {
-        const size_t lastSlashIndex = path.find_last_of("\\/");
-        if (std::string::npos != lastSlashIndex)
-        {
-            path.erase(0, lastSlashIndex);
-        }
+        const std::filesystem::path path(pathInput);
 
-        return path;
+        return path.filename().string();
     }
 
-    std::string Path::GetFilenameWithoutExtension(std::string path)
+    std::string Path::GetFilenameWithoutExtension(const std::string& pathInput)
     {
-        const size_t lastSlashIndex = path.find_last_of("\\/");
-        if (std::string::npos != lastSlashIndex)
-        {
-            path.erase(0, lastSlashIndex + 1);
-        }
+        const std::filesystem::path path(pathInput);
 
-        // Remove extension if present.
-        const size_t dotIndex = path.rfind('.');
-        if (std::string::npos != dotIndex)
-        {
-            path.erase(dotIndex);
-        }
-
-        return path;
+        return path.filename().replace_extension().string();
     }
 
-    std::string Path::GetExtension(std::string path)
+    std::string Path::GetExtension(const std::string& pathInput)
     {
-        const size_t lastSlashIndex = path.find_last_of("\\/");
-        const size_t lastDotIndex = path.find_last_of('.');
-        if (std::string::npos != lastDotIndex
-            && (lastSlashIndex == std::string::npos || lastDotIndex > lastSlashIndex))
-        {
-            path.erase(0, lastDotIndex);
+        const std::filesystem::path path(pathInput);
 
-            return path;
-        }
-
-        return "";
+        return path.extension().string();
     }
 
-    std::string Path::GetDirectory(std::string path)
+    std::string Path::GetDirectory(const std::string& pathInput)
     {
-        const size_t lastSlashIndex = path.find_last_of("\\/");
-        if (std::string::npos != lastSlashIndex)
-        {
-            path.erase(lastSlashIndex);
-        }
-        else
-        {
-            return "./";
-        }
+        const std::filesystem::path path(pathInput);
 
-        return path;
+        return path.relative_path().string();
     }
 
-    std::string Path::Combine(std::string p1, std::string p2)
+    std::string Path::Combine(const std::string& p1, const std::string& p2)
     {
-        char c;
+        std::filesystem::path path(p1);
 
-        while (!p1.empty() && (c = p1[p1.size() - 1], c == '\\' || c == '/'))
-            p1.erase(p1.size() - 1);
-
-        while (!p2.empty() && (c = p2[0], c == '\\' || c == '/'))
-            p2.erase(0);
-
-        if (!p1.empty())
-            p1 += '/';
-
-        return p1 + p2;
+        return path.append(p2).string();
     }
 }

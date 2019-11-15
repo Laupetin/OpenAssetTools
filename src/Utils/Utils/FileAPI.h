@@ -38,6 +38,9 @@ public:
 
 	static bool FileExists(const std::string& fileName);
 	static uint64_t FileSize(const std::string& fileName);
+
+    static bool CreateDirectory(const std::string& directoryPath);
 	static bool DirectoryExists(const std::string& directoryName);
+
 	static File Open(const std::string& filename, Mode mode);
 };

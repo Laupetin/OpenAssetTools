@@ -7,10 +7,10 @@ namespace utils
     class Path
     {
     public:
-        static std::string GetFilename(std::string path);
-        static std::string GetFilenameWithoutExtension(std::string path);
-        static std::string GetExtension(std::string path);
-        static std::string GetDirectory(std::string path);
-        static std::string Combine(std::string p1, std::string p2);
+        static std::string GetFilename(const std::string& pathInput);
+        static std::string GetFilenameWithoutExtension(const std::string& pathInput);
+        static std::string GetExtension(const std::string& pathInput);
+        static std::string GetDirectory(const std::string& pathInput);
+        static std::string Combine(const std::string& p1, const std::string& p2);
     };
 }
