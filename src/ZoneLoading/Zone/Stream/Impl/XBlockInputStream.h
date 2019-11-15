@@ -30,7 +30,9 @@ public:
 
     void* Alloc(int align) override;
 
-    void LoadData(void* dst, size_t size) override;
+    void LoadDataRaw(void* dst, size_t size) override;
+    void LoadDataInBlock(void* dst, size_t size) override;
+    void IncBlockPos(size_t size) override;
     void LoadNullTerminated(void* dst) override;
 
     void** InsertPointer() override;

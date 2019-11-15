@@ -206,28 +206,28 @@ void ContentLoaderT6::Load(Zone* zone, IZoneInputStream* stream)
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
-    auto* assetList = m_stream->Alloc<XAssetList>(alignof(XAssetList));
-    m_stream->Load<XAssetList>(assetList);
+    XAssetList assetList{};
+    m_stream->LoadDataRaw(&assetList, sizeof assetList);
 
-    varScriptStringList = &assetList->stringList;
+    varScriptStringList = &assetList.stringList;
     LoadScriptStringList(false);
 
-    if(assetList->depends != nullptr)
+    if(assetList.depends != nullptr)
     {
-        assert(assetList->depends == PTR_FOLLOWING);
+        assert(assetList.depends == PTR_FOLLOWING);
 
-        assetList->depends = m_stream->Alloc<const char*>(alignof(const char));
-        varXString = assetList->depends;
-        LoadXStringArray(true, assetList->dependCount);
+        assetList.depends = m_stream->Alloc<const char*>(alignof(const char));
+        varXString = assetList.depends;
+        LoadXStringArray(true, assetList.dependCount);
     }
 
-    if(assetList->assets != nullptr)
+    if(assetList.assets != nullptr)
     {
-        assert(assetList->assets == PTR_FOLLOWING);
+        assert(assetList.assets == PTR_FOLLOWING);
 
-        assetList->assets = m_stream->Alloc<XAsset>(alignof(XAsset));
-        varXAsset = assetList->assets;
-        LoadXAssetArray(true, assetList->assetCount);
+        assetList.assets = m_stream->Alloc<XAsset>(alignof(XAsset));
+        varXAsset = assetList.assets;
+        LoadXAssetArray(true, assetList.assetCount);
     }
 
     m_stream->PopBlock();

@@ -94,7 +94,12 @@ void* XBlockInputStream::Alloc(const int align)
     return &block->m_buffer[m_block_offsets[block->m_index]];
 }
 
-void XBlockInputStream::LoadData(void* dst, const size_t size)
+void XBlockInputStream::LoadDataRaw(void* dst, const size_t size)
+{
+    m_stream->Load(dst, size);
+}
+
+void XBlockInputStream::LoadDataInBlock(void* dst, const size_t size)
 {
     assert(!m_block_stack.empty());
 
@@ -118,6 +123,17 @@ void XBlockInputStream::LoadData(void* dst, const size_t size)
 
     m_stream->Load(dst, size);
 
+    IncBlockPos(size);
+}
+
+void XBlockInputStream::IncBlockPos(const size_t size)
+{
+    assert(!m_block_stack.empty());
+
+    if (m_block_stack.empty())
+        return;
+
+    XBlock* block = m_block_stack.top();
     m_block_offsets[block->m_index] += size;
 }
 
