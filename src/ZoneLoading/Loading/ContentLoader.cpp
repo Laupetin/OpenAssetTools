@@ -33,7 +33,7 @@ void ContentLoader::LoadXString(const bool atStreamStart) const
     }
 }
 
-void ContentLoader::LoadXStringArray(const bool atStreamStart, const size_t count) const
+void ContentLoader::LoadXStringArray(const bool atStreamStart, const size_t count)
 {
     assert(varXString != nullptr);
 
@@ -42,6 +42,7 @@ void ContentLoader::LoadXStringArray(const bool atStreamStart, const size_t coun
 
     for(size_t index = 0; index < count; index++)
     {
-        LoadXString(&varXString[index]);
+        LoadXString(false);
+        varXString++;
     }
 }

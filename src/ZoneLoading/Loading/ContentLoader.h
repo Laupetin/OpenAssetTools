@@ -17,7 +17,7 @@ protected:
     ContentLoader();
 
     void LoadXString(bool atStreamStart) const;
-    void LoadXStringArray(bool atStreamStart, size_t count) const;
+    void LoadXStringArray(bool atStreamStart, size_t count);
 
 public:
     virtual ~ContentLoader() = default;
