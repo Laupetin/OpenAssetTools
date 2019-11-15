@@ -10,6 +10,10 @@ namespace ZoneCodeGenerator.Generating.Computations
     {
         private readonly MemberInformation information;
 
+        public bool ShouldIgnore => information.Condition != null 
+                                    && information.Condition.IsStatic 
+                                    && information.Condition.EvaluateNumeric() == 0;
+
         public bool IsNonEmbeddedReference => information.Member.VariableType.References.OfType<ReferenceTypePointer>().Any();
 
         public bool IsSinglePointerReference => information.Member.VariableType.References.Any()
@@ -30,6 +34,10 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsArrayReference => information.Member.VariableType.References.Any()
                                         && information.Member.VariableType.References.Last() is ReferenceTypeArray;
 
+        public bool IsArray => information.Member.VariableType.References
+            .OfType<ReferenceTypeArray>()
+            .Any();
+
         public IEnumerable<int> ArraySizes => information.Member.VariableType.References
             .OfType<ReferenceTypeArray>()
             .Select(array => array.ArraySize);
@@ -38,8 +46,8 @@ namespace ZoneCodeGenerator.Generating.Computations
             .OfType<ReferenceTypePointer>()
             .Count();
 
-        public bool IsSinglePointer => PointerDepth == 1;
-        public bool IsDoublePointer => PointerDepth == 2;
+        public bool PointerDepthIsOne => PointerDepth == 1;
+        public bool PointerDepthIsTwo => PointerDepth == 2;
 
         public MemberComputations(MemberInformation information)
         {
