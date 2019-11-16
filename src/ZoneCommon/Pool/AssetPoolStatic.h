@@ -4,7 +4,6 @@
 #include "AssetPool.h"
 
 #include <cstring>
-#include <map>
 
 template <typename T>
 class AssetPoolStatic final : public AssetPool<T>
@@ -53,6 +52,7 @@ public:
         {
             m_pool = nullptr;
             m_free = nullptr;
+            m_info_pool = nullptr;
         }
     }
 
