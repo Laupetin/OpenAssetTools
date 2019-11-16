@@ -125,7 +125,7 @@ int main(const int argc, const char** argv)
                 outputFolderPath = ResolveOutputFolderPath("./%zoneName%", zone);
             }
 
-            FileAPI::CreateDirectory(outputFolderPath);
+            FileAPI::DirectoryCreate(outputFolderPath);
 
             FileAPI::File zoneDefinitionFile = FileAPI::Open(utils::Path::Combine(outputFolderPath, zone->m_name + ".zone"), FileAPI::Mode::MODE_WRITE);
 
