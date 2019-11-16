@@ -27,9 +27,9 @@ namespace utils
 
     std::string Path::GetDirectory(const std::string& pathInput)
     {
-        const std::filesystem::path path(pathInput);
+        std::filesystem::path path(pathInput);
 
-        return path.relative_path().string();
+        return path.remove_filename().string();
     }
 
     std::string Path::Combine(const std::string& p1, const std::string& p2)
