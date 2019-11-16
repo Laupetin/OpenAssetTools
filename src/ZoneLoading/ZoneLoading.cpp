@@ -1,10 +1,18 @@
 #include "ZoneLoading.h"
-#include "Game/T6/ZoneLoaderFactoryT6.h"
 #include "Utils/PathUtils.h"
+#include "Dumping/IZoneDumper.h"
+
+#include "Game/T6/ZoneLoaderFactoryT6.h"
+#include "Game/T6/ZoneDumperT6.h"
 
 IZoneLoaderFactory* zoneLoaderFactories[]
 {
     new ZoneLoaderFactoryT6()
+};
+
+IZoneDumper* zoneDumper[]
+{
+    new ZoneDumperT6()
 };
 
 Zone* ZoneLoading::LoadZone(const std::string& path)
@@ -44,10 +52,24 @@ Zone* ZoneLoading::LoadZone(const std::string& path)
 
 bool ZoneLoading::DumpZone(Zone* zone, const std::string& basePath)
 {
-    return true;
+    for(auto dumper : zoneDumper)
+    {
+        if(dumper->CanDumpZone(zone))
+        {
+            if(dumper->DumpZone(zone, basePath))
+            {
+                return true;
+            }
+
+            printf("Dumper for zone '%s' failed!\n", zone->m_name.c_str());
+            return false;
+        }
+    }
+
+    return false;
 }
 
 bool ZoneLoading::WriteZoneDefinition(Zone* zone, FileAPI::File* file, bool minimalistic)
 {
-    return true;
+    return file->Printf("// %s", "Insert zone definition here") > 0;
 }
