@@ -14,7 +14,7 @@ uint64_t FileAPI::FileSize(const std::string& fileName)
     return std::filesystem::file_size(fileName);
 }
 
-bool FileAPI::CreateDirectory(const std::string& directoryPath)
+bool FileAPI::DirectoryCreate(const std::string& directoryPath)
 {
     return std::filesystem::create_directories(directoryPath);
 }
@@ -90,7 +90,7 @@ size_t FileAPI::File::Read(void* buffer, const size_t elementSize, const size_t 
 	return fread(buffer, elementSize, elementCount, static_cast<FILE*>(m_handle));
 }
 
-size_t FileAPI::File::Write(void* data, const size_t elementSize, const size_t elementCount) const
+size_t FileAPI::File::Write(const void* data, const size_t elementSize, const size_t elementCount) const
 {
 	if (!this->IsOpen())
 		return 0;
@@ -106,7 +106,7 @@ void FileAPI::File::Skip(const size_t amount) const
     fseek(static_cast<FILE*>(m_handle), amount, SEEK_CUR);
 }
 
-size_t FileAPI::File::Printf(char* fmt, ...) const
+size_t FileAPI::File::Printf(const char* fmt, ...) const
 {
 	va_list ap;
 

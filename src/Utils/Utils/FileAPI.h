@@ -28,9 +28,9 @@ public:
 
 		bool IsOpen() const;
 		size_t Read(void* buffer, size_t elementSize, size_t elementCount) const;
-		size_t Write(void* data, size_t elementSize, size_t elementCount) const;
+		size_t Write(const void* data, size_t elementSize, size_t elementCount) const;
         void Skip(size_t amount) const;
-		size_t Printf(char* fmt, ...) const;
+		size_t Printf(const char* fmt, ...) const;
         int64_t Pos() const;
         void Goto(int64_t pos) const;
 		void Close();
@@ -39,7 +39,7 @@ public:
 	static bool FileExists(const std::string& fileName);
 	static uint64_t FileSize(const std::string& fileName);
 
-    static bool CreateDirectory(const std::string& directoryPath);
+    static bool DirectoryCreate(const std::string& directoryPath);
 	static bool DirectoryExists(const std::string& directoryName);
 
 	static File Open(const std::string& filename, Mode mode);
