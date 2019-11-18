@@ -84,6 +84,76 @@ const uint8_t ZoneLoaderFactoryT6::RSA_PUBLIC_KEY_TREYARCH[]
 
 class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
 {
+    static ZoneLanguage GetZoneLanguage(std::string& zoneName)
+    {
+        if(zoneName.compare(0, 3, "en_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_ENGLISH;
+        }
+        if(zoneName.compare(0, 3, "fr_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_FRENCH;
+        }
+        if(zoneName.compare(0, 3, "fc_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_FRENCH_CAN;
+        }
+        if(zoneName.compare(0, 3, "ge_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_GERMAN;
+        }
+        if(zoneName.compare(0, 3, "as_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_AUSTRIAN;
+        }
+        if(zoneName.compare(0, 3, "it_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_ITALIAN;
+        }
+        if(zoneName.compare(0, 3, "sp_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_SPANISH;
+        }
+        if(zoneName.compare(0, 3, "br_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_BRITISH;
+        }
+        if(zoneName.compare(0, 3, "ru_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_RUSSIAN;
+        }
+        if(zoneName.compare(0, 3, "po_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_POLISH;
+        }
+        if(zoneName.compare(0, 3, "ko_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_KOREAN;
+        }
+        if(zoneName.compare(0, 3, "ja_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_JAPANESE;
+        }
+        if(zoneName.compare(0, 3, "cz_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_CZECH;
+        }
+        if(zoneName.compare(0, 3, "fj_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_FULL_JAPANESE;
+        }
+        if(zoneName.compare(0, 3, "bp_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_PORTUGUESE;
+        }
+        if(zoneName.compare(0, 3, "ms_") == 0)
+        {
+            return ZoneLanguage::LANGUAGE_MEXICAN_SPANISH;
+        }
+
+        return ZoneLanguage::LANGUAGE_NONE;
+    }
+
     static bool CanLoad(ZoneHeader& header, bool* isSecure, bool* isOfficial, bool* isEncrypted)
     {
         assert(isSecure != nullptr);
@@ -220,6 +290,7 @@ public:
 
         // Create new zone
         auto* zone = new Zone(fileName, 0, new GameAssetPoolT6(0), &game_t6);
+        zone->m_language = GetZoneLanguage(fileName);
         
         // File is supported. Now setup all required steps for loading this file.
         auto* zoneLoader = new ZoneLoader(zone);
