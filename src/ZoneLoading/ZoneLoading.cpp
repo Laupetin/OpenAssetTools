@@ -54,7 +54,7 @@ bool ZoneLoading::DumpZone(Zone* zone, const std::string& basePath)
 {
     for(auto dumper : zoneDumper)
     {
-        if(dumper->CanDumpZone(zone))
+        if(dumper->CanHandleZone(zone))
         {
             if(dumper->DumpZone(zone, basePath))
             {

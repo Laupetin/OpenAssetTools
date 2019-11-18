@@ -7,7 +7,7 @@
 #include "AssetDumpers/AssetDumperQdb.h"
 #include "AssetDumpers/AssetDumperScriptParseTree.h"
 
-bool ZoneDumperT6::CanDumpZone(Zone* zone)
+bool ZoneDumperT6::CanHandleZone(Zone* zone)
 {
     return zone->m_game == &game_t6;
 }
@@ -75,4 +75,9 @@ bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath)
     return true;
 
 #undef DUMP_ASSET_POOL
+}
+
+bool ZoneDumperT6::WriteZoneDefinition(Zone* zone, FileAPI::File* file, bool minimalistic)
+{
+    return true;
 }
