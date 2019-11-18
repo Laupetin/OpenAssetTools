@@ -8,29 +8,32 @@
 #include <regex>
 
 const CommandLineOption* optionHelp = CommandLineOption::Builder::Create()
-    .WithShortName("?")
-    .WithLongName("help")
-    .WithDescription("Displays usage information.")
-    .Build();
+                                      .WithShortName("?")
+                                      .WithLongName("help")
+                                      .WithDescription("Displays usage information.")
+                                      .Build();
 
 const CommandLineOption* optionMinimalZoneFile = CommandLineOption::Builder::Create()
-    .WithShortName("min")
-    .WithLongName("minimal-zone")
-    .WithDescription("Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
-    .Build();
+                                                 .WithShortName("min")
+                                                 .WithLongName("minimal-zone")
+                                                 .WithDescription(
+                                                     "Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
+                                                 .Build();
 
 const CommandLineOption* optionList = CommandLineOption::Builder::Create()
-    .WithShortName("l")
-    .WithLongName("list")
-    .WithDescription("Lists the contents of a zone instead of writing them to the disk.")
-    .Build();
+                                      .WithShortName("l")
+                                      .WithLongName("list")
+                                      .WithDescription(
+                                          "Lists the contents of a zone instead of writing them to the disk.")
+                                      .Build();
 
 const CommandLineOption* optionOutputFolder = CommandLineOption::Builder::Create()
-    .WithShortName("o")
-    .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to ./%zoneName%")
-    .WithParameter("outputFolderPath")
-    .Build();
+                                              .WithShortName("o")
+                                              .WithLongName("output-folder")
+                                              .WithDescription(
+                                                  "Specifies the output folder containing the contents of the unlinked zones. Defaults to ./%zoneName%")
+                                              .WithParameter("outputFolderPath")
+                                              .Build();
 
 const CommandLineOption* commandLineOptions[]
 {
@@ -64,13 +67,13 @@ int main(const int argc, const char** argv)
 {
     ArgumentParser argumentParser(commandLineOptions, _countof(commandLineOptions));
 
-    if(!argumentParser.ParseArguments(argc, argv))
+    if (!argumentParser.ParseArguments(argc, argv))
     {
         PrintUsage();
         return 1;
     }
 
-    if(argumentParser.IsOptionSpecified(optionHelp))
+    if (argumentParser.IsOptionSpecified(optionHelp))
     {
         PrintUsage();
         return 0;
@@ -78,7 +81,7 @@ int main(const int argc, const char** argv)
 
     const std::vector<std::string> arguments = argumentParser.GetArguments();
     const size_t argCount = arguments.size();
-    if(argCount <= 1)
+    if (argCount <= 1)
     {
         PrintUsage();
         return 1;
@@ -86,12 +89,12 @@ int main(const int argc, const char** argv)
 
     std::vector<Zone*> loadedZones;
 
-    for(unsigned argIndex = 1; argIndex < argCount; argIndex++)
+    for (unsigned argIndex = 1; argIndex < argCount; argIndex++)
     {
         const std::string& zonePath = arguments[argIndex];
 
         Zone* zone = ZoneLoading::LoadZone(zonePath);
-        if(zone == nullptr)
+        if (zone == nullptr)
         {
             printf("Failed to load zone '%s'.\n", zonePath.c_str());
             return 1;
@@ -100,9 +103,9 @@ int main(const int argc, const char** argv)
         loadedZones.push_back(zone);
     }
 
-    if(argumentParser.IsOptionSpecified(optionList))
+    if (argumentParser.IsOptionSpecified(optionList))
     {
-        for(auto zone : loadedZones)
+        for (auto zone : loadedZones)
         {
             ContentPrinter printer(zone);
             printer.PrintContent();
@@ -111,7 +114,7 @@ int main(const int argc, const char** argv)
     else
     {
         const bool minimalisticZoneDefinition = argumentParser.IsOptionSpecified(optionMinimalZoneFile);
-            
+
         for (auto zone : loadedZones)
         {
             std::string outputFolderPath;
@@ -127,9 +130,11 @@ int main(const int argc, const char** argv)
 
             FileAPI::DirectoryCreate(outputFolderPath);
 
-            FileAPI::File zoneDefinitionFile = FileAPI::Open(utils::Path::Combine(outputFolderPath, zone->m_name + ".zone"), FileAPI::Mode::MODE_WRITE);
+            FileAPI::File zoneDefinitionFile = FileAPI::Open(
+                utils::Path::Combine(utils::Path::Combine(outputFolderPath, "zone_source"), zone->m_name + ".zone"),
+                FileAPI::Mode::MODE_WRITE);
 
-            if(zoneDefinitionFile.IsOpen())
+            if (zoneDefinitionFile.IsOpen())
             {
                 ZoneLoading::WriteZoneDefinition(zone, &zoneDefinitionFile, minimalisticZoneDefinition);
                 ZoneLoading::DumpZone(zone, outputFolderPath);
