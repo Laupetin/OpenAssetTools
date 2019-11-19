@@ -130,8 +130,11 @@ int main(const int argc, const char** argv)
 
             FileAPI::DirectoryCreate(outputFolderPath);
 
+            std::string zoneDefinitionFileFolder = utils::Path::Combine(outputFolderPath, "zone_source");
+            FileAPI::DirectoryCreate(zoneDefinitionFileFolder);
+
             FileAPI::File zoneDefinitionFile = FileAPI::Open(
-                utils::Path::Combine(utils::Path::Combine(outputFolderPath, "zone_source"), zone->m_name + ".zone"),
+                utils::Path::Combine(zoneDefinitionFileFolder, zone->m_name + ".zone"),
                 FileAPI::Mode::MODE_WRITE);
 
             if (zoneDefinitionFile.IsOpen())
