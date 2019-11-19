@@ -2,12 +2,12 @@
 
 using namespace T6;
 
-std::string AssetDumperStringTable::GetFileNameForAsset(StringTable* asset)
+std::string AssetDumperStringTable::GetFileNameForAsset(Zone* zone, StringTable* asset)
 {
     return std::string(asset->name);
 }
 
-void AssetDumperStringTable::DumpAsset(StringTable* asset, FileAPI::File* out)
+void AssetDumperStringTable::DumpAsset(Zone* zone, StringTable* asset, FileAPI::File* out)
 {
     char separator[]{ ',' };
     char newLine[]{ '\n' };

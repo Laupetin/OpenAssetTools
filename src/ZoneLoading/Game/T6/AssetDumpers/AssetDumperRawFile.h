@@ -6,6 +6,6 @@
 class AssetDumperRawFile final : public AbstractAssetDumper<T6::RawFile>
 {
 protected:
-    std::string GetFileNameForAsset(T6::RawFile* asset) override;
-    void DumpAsset(T6::RawFile* asset, FileAPI::File* out) override;
+    std::string GetFileNameForAsset(Zone* zone, T6::RawFile* asset) override;
+    void DumpAsset(Zone* zone, T6::RawFile* asset, FileAPI::File* out) override;
 };

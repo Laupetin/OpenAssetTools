@@ -6,6 +6,6 @@
 class AssetDumperSlug final : public AbstractAssetDumper<T6::Slug>
 {
 protected:
-    std::string GetFileNameForAsset(T6::Slug* asset) override;
-    void DumpAsset(T6::Slug* asset, FileAPI::File* out) override;
+    std::string GetFileNameForAsset(Zone* zone, T6::Slug* asset) override;
+    void DumpAsset(Zone* zone, T6::Slug* asset, FileAPI::File* out) override;
 };

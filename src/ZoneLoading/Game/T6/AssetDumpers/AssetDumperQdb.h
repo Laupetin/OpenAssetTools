@@ -6,6 +6,6 @@
 class AssetDumperQdb final : public AbstractAssetDumper<T6::Qdb>
 {
 protected:
-    std::string GetFileNameForAsset(T6::Qdb* asset) override;
-    void DumpAsset(T6::Qdb* asset, FileAPI::File* out) override;
+    std::string GetFileNameForAsset(Zone* zone, T6::Qdb* asset) override;
+    void DumpAsset(Zone* zone, T6::Qdb* asset, FileAPI::File* out) override;
 };

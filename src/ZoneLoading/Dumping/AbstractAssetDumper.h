@@ -10,15 +10,15 @@ template<class T>
 class AbstractAssetDumper : public IAssetDumper<T>
 {
 protected:
-    virtual std::string GetFileNameForAsset(T* asset) = 0;
-    virtual void DumpAsset(T* asset, FileAPI::File* out) = 0;
+    virtual std::string GetFileNameForAsset(Zone* zone, T* asset) = 0;
+    virtual void DumpAsset(Zone* zone, T* asset, FileAPI::File* out) = 0;
 
 public:
-    void DumpPool(AssetPool<T>* pool, const std::string& basePath) override
+    void DumpPool(Zone* zone, AssetPool<T>* pool, const std::string& basePath) override
     {
         for(auto assetInfo : *pool)
         {
-            std::string assetFilePath = utils::Path::Combine(basePath, GetFileNameForAsset(assetInfo->m_asset));
+            std::string assetFilePath = utils::Path::Combine(basePath, GetFileNameForAsset(zone, assetInfo->m_asset));
 
             FileAPI::DirectoryCreate(utils::Path::GetDirectory(assetFilePath));
 
@@ -26,7 +26,7 @@ public:
 
             if(file.IsOpen())
             {
-                DumpAsset(assetInfo->m_asset, &file);
+                DumpAsset(zone, assetInfo->m_asset, &file);
 
                 file.Close();
             }

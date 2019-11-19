@@ -6,6 +6,6 @@
 class AssetDumperScriptParseTree final : public AbstractAssetDumper<T6::ScriptParseTree>
 {
 protected:
-    std::string GetFileNameForAsset(T6::ScriptParseTree* asset) override;
-    void DumpAsset(T6::ScriptParseTree* asset, FileAPI::File* out) override;
+    std::string GetFileNameForAsset(Zone* zone, T6::ScriptParseTree* asset) override;
+    void DumpAsset(Zone* zone, T6::ScriptParseTree* asset, FileAPI::File* out) override;
 };

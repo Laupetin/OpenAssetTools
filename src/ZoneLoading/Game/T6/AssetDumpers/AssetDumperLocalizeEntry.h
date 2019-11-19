@@ -6,5 +6,5 @@
 class AssetDumperLocalizeEntry final : public IAssetDumper<T6::LocalizeEntry>
 {
 public:
-    void DumpPool(AssetPool<T6::LocalizeEntry>* pool, const std::string& basePath) override;
+    void DumpPool(Zone* zone, AssetPool<T6::LocalizeEntry>* pool, const std::string& basePath) override;
 };

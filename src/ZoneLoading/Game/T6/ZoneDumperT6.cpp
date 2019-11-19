@@ -19,7 +19,7 @@ bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath)
     if(assetPools->poolName) \
     { \
         dumperType dumper; \
-        dumper.DumpPool(assetPools->poolName, basePath); \
+        dumper.DumpPool(zone, assetPools->poolName, basePath); \
     }
 
     const auto assetPools = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());

@@ -2,12 +2,12 @@
 
 using namespace T6;
 
-std::string AssetDumperQdb::GetFileNameForAsset(Qdb* asset)
+std::string AssetDumperQdb::GetFileNameForAsset(Zone* zone, Qdb* asset)
 {
     return std::string(asset->name);
 }
 
-void AssetDumperQdb::DumpAsset(Qdb* asset, FileAPI::File* out)
+void AssetDumperQdb::DumpAsset(Zone* zone, Qdb* asset, FileAPI::File* out)
 {
     out->Write(asset->buffer, 1, asset->len);
 }
