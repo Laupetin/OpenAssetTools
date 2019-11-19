@@ -44,6 +44,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
         // operationType ::= + | - | * | / | << | >> | ...
         private static readonly TokenMatcher operationType = new MatcherGroupOr(
             OperationType.Types
+                .OrderByDescending(type => type.Syntax.Length)
                 .Select(type => new MatcherLiteral(type.Syntax.ToCharArray().Select(c => c.ToString()).ToArray()).WithName(TokenOperationType))
                 .Cast<TokenMatcher>().ToArray()
         ).WithTag(TagOperationType);
