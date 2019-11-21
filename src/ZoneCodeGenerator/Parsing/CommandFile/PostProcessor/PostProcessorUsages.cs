@@ -1,40 +1,60 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ZoneCodeGenerator.Domain;
+using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Persistence;
 
 namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
 {
     class PostProcessorUsages : IDataPostProcessor
     {
-        public bool PostProcess(IDataRepository repository)
+        private static bool ProcessAsset(StructureInformation assetStructure)
         {
-            foreach (var dataTypeWithMembers in repository.GetAllStructs()
-                .AsEnumerable<DataTypeWithMembers>()
-                .Concat(repository.GetAllUnions()))
+            var processedAssets = new HashSet<StructureInformation>();
+            var processingQueue = new Queue<StructureInformation>();
+            processingQueue.Enqueue(assetStructure);
+
+            while (processingQueue.Count != 0)
             {
-                var information = repository.GetInformationFor(dataTypeWithMembers);
+                var currentStructure = processingQueue.Dequeue();
 
-                foreach (var memberInformation in information.OrderedMembers)
+                if (!processedAssets.Add(currentStructure))
                 {
-                    if (memberInformation.StructureType == null) continue;
+                    continue;
+                }
 
-                    memberInformation.StructureType.Usages.Add(information);
+                foreach (var member in currentStructure.OrderedMembers
+                    .Where(member => member.StructureType != null)
+                    .Where(member => !member.Computations.ShouldIgnore))
+                {
+                    if (member.Computations.IsNonEmbeddedReference)
+                        member.StructureType.NonEmbeddedReferenceExists = true;
 
-                    if (memberInformation.Computations.IsNonEmbeddedReference)
-                        memberInformation.StructureType.NonEmbeddedReferenceExists = true;
+                    if (member.Computations.IsSinglePointerReference)
+                        member.StructureType.SinglePointerReferenceExists = true;
 
-                    if (memberInformation.Computations.IsSinglePointerReference)
-                        memberInformation.StructureType.SinglePointerReferenceExists = true;
+                    if (member.Computations.IsArrayPointerReference)
+                        member.StructureType.ArrayPointerReferenceExists = true;
 
-                    if (memberInformation.Computations.IsArrayPointerReference)
-                        memberInformation.StructureType.ArrayPointerReferenceExists = true;
+                    if (member.Computations.IsArrayReference)
+                        member.StructureType.ArrayReferenceExists = true;
 
-                    if (memberInformation.Computations.IsArrayReference)
-                        memberInformation.StructureType.ArrayReferenceExists = true;
+                    member.StructureType.Usages.Add(currentStructure);
+                    processingQueue.Enqueue(member.StructureType);
                 }
             }
 
             return true;
+        }
+
+        public bool PostProcess(IDataRepository repository)
+        {
+            return repository.GetAllStructs()
+                .AsEnumerable<DataTypeWithMembers>()
+                .Concat(repository.GetAllUnions())
+                .Select(repository.GetInformationFor)
+                .Where(information => information.IsAsset)
+                .All(ProcessAsset);
         }
     }
 }
