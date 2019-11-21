@@ -17,7 +17,8 @@ namespace ZoneCodeGenerator.Generating
         public ISet<StructureInformation> Structures { get; }
         public ISet<DataType> MemberTypes { get; }
 
-        public IEnumerable<StructureInformation> ReferencedAssets => Structures.Where(inf => inf.IsAsset && inf != Asset);
+        public IEnumerable<StructureInformation> ReferencedAssets =>
+            Structures.Where(inf => inf.IsAsset && inf != Asset);
 
         public IList<FastFileBlock> Blocks { get; private set; }
 
@@ -38,10 +39,10 @@ namespace ZoneCodeGenerator.Generating
             if (structureInformation.IsAsset && structureInformation != Asset)
                 return;
 
-            foreach (var member in structureInformation.OrderedMembers)
+            foreach (var member in structureInformation.OrderedMembers
+                .Where(member => member.StructureType != null && !member.Computations.ShouldIgnore))
             {
-                if(member.StructureType != null)
-                    AddToContext(member.StructureType);
+                AddToContext(member.StructureType);
             }
         }
 
@@ -55,12 +56,15 @@ namespace ZoneCodeGenerator.Generating
             };
 
             context.AddToContext(asset);
-            context.MemberTypes.UnionWith(context.Structures.Where(information => !information.IsAsset || information == asset)
+            context.MemberTypes.UnionWith(context.Structures
+                .Where(structureInformation => !structureInformation.IsAsset || structureInformation == asset)
+                .Where(structureInformation =>
+                    structureInformation.Computations.IsUsed || structureInformation == asset)
                 .SelectMany(information => information.OrderedMembers)
+                .Where(information => !information.Computations.ShouldIgnore)
                 .Select(information => information.Member.VariableType.Type)
                 .Where(type => !(type is DataTypeBaseType) && type != asset.Type)
                 .Distinct());
-            
 
             return context;
         }

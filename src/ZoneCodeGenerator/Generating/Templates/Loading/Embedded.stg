@@ -1,8 +1,21 @@
 // Everything related to loading an embedded reference
 
-LoadEmbedded(context, structure, member) ::= <<
-$if(!member.Computations.ShouldIgnore)$
+LoadEmbedded_Load(context, structure, member) ::= <<
 $TypeVarName(member.StructureType)$ = &$TypeVarName(structure)$->$member.Member.Name$;
 Load_$member.Member.VariableType.Type.Name$(false);
-$endif$
+
 >>
+
+LoadEmbedded_Array(context, structure, member) ::= <<
+
+>>
+
+LoadEmbedded(context, structure, member) ::= <%
+$if(!member.Computations.ShouldIgnore)$
+$if(member.Computations.IsArray)$
+$LoadEmbedded_Array(context, structure, member)$
+$else$
+$LoadEmbedded_Load(context, structure, member)$
+$endif$
+$endif$
+%>

@@ -482,6 +482,29 @@ use menuDef_t;
 set string window::name;
 set name window::name;
 
+// expressionRpnDataUnion
+use expressionRpnDataUnion;
+set condition cmd never;
+
+// textDefData_t
+use textDefData_t;
+set condition data never;
+
+// itemDefData_t
+use itemDefData_t;
+set condition data never;
+
+// focusDefData_t
+use focusDefData_t;
+set condition data never;
+
+// Operand
+use Operand;
+set condition internals::intVal dataType == VAL_INT;
+set condition internals::floatVal dataType == VAL_FLOAT;
+set condition internals::string dataType == VAL_STRING;
+set condition internals::dvar never;
+
 // =========================================
 // LocalizeEntry
 // =========================================
@@ -535,6 +558,10 @@ set name name;
 // FxElemVisuals
 use FxElemVisuals;
 set condition anonymous never;
+
+// FxElemExtendedDefPtr
+use FxElemExtendedDefPtr;
+set condition unknownDef never;
 
 // =========================================
 // FxImpactTable
@@ -664,7 +691,9 @@ set string moveUpButtonName;
 set string moveDownButtonName;
 set string switchSeatButtonName;
 set string steerGraphName;
+set condition steerGraph never;
 set string accelGraphName;
+set condition accelGraph never;
 
 // =========================================
 // MemoryBlock

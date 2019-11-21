@@ -5,6 +5,7 @@ import "Common.stg"
 import "Loading/Common.stg"
 import "Loading/String.stg"
 import "Loading/ArrayPointer.stg"
+import "Loading/Embedded.stg"
 import "Loading/SinglePointer.stg"
 
 // Loading common
@@ -39,7 +40,7 @@ $HeaderArrayPtrLoadMethodDeclaration(structure)$
 $\n$
 $endif$
 
-$if(structure.NonEmbeddedReferenceExists && !structure.IsLeaf)$
+$if(!structure.IsLeaf && structure.Computations.IsUsed)$
 $HeaderLoadMethodDeclaration(structure)$
 $\n$
 $endif$
@@ -98,7 +99,8 @@ $elseif(member.Computations.IsArrayPointerReference && member.Computations.Point
 $LoadArrayPointer(context, structure, member)$
 $elseif(member.Computations.IsSinglePointerReference)$
 $LoadSinglePointer(context, structure, member)$
-$elseif(member.Computations.IsEmbeddedReference && member.StructureType)$
+$elseif(member.Computations.IsEmbeddedReference && member.StructureType && !member.StructureType.IsLeaf)$
+$LoadEmbedded(context, structure, member)$
 $endif$
 %>
 
@@ -200,7 +202,7 @@ $if(structure.ArrayPointerReferenceExists && !structure.IsLeaf)$
 $LoadArrayPtrMethod(structure, context)$
 
 $endif$
-$if(structure.NonEmbeddedReferenceExists && !structure.IsLeaf)$
+$if(!structure.IsLeaf && structure.Computations.IsUsed)$
 $LoadMethod(structure, context)$
 
 $endif$
