@@ -789,7 +789,7 @@ struct SndBank
 
 struct SndPatch
 {
-  char *name;
+  const char *name;
   unsigned int elementCount;
   unsigned int *elements;
 };

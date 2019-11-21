@@ -65,17 +65,22 @@ block normal  XFILE_BLOCK_PHYSICAL;
 // =========================================
 use XModelPieces;
 set string name;
+set name name;
 set count pieces numpieces;
 
 // =========================================
 // PhysPreset
 // =========================================
-set string PhysPreset::name;
+use PhysPreset;
+set string name;
+set name name;
 
 // =========================================
 // PhysConstraints
 // =========================================
-set string PhysConstraints::name;
+use PhysConstraints;
+set string name;
+set name name;
 
 use PhysConstraint;
 set scriptstring targetname;
@@ -87,6 +92,7 @@ set scriptstring target_ent2;
 // =========================================
 use DestructibleDef;
 set string name;
+set name name;
 set count pieces numPieces;
 
 // DestructiblePiece
@@ -100,6 +106,7 @@ set scriptstring DestructibleStage::showBone;
 // =========================================
 use XAnimParts;
 set string name;
+set name name;
 set scriptstring names;
 set count names boneCount[9];
 set count notify notifyCount;
@@ -176,6 +183,7 @@ set count u::frames::frames size + 1;
 // =========================================
 use XModel;
 set string name;
+set name name;
 set scriptstring boneNames;
 set reusable boneNames;
 set count boneNames numBones;
@@ -266,6 +274,7 @@ set count plane 1;
 // =========================================
 use Material;
 set string info::name;
+set name info::name;
 set reusable textureTable;
 set count textureTable textureCount;
 set reusable constantTable;
@@ -284,6 +293,7 @@ set count rasterizerState 0;
 // =========================================
 use MaterialTechniqueSet;
 set string name;
+set name name;
 set reusable techniques;
 
 // MaterialTechnique
@@ -338,6 +348,7 @@ set count u::literalConst 1;
 // =========================================
 use GfxImage;
 set string name;
+set name name;
 reorder:
     name
     texture;
@@ -355,6 +366,7 @@ set arraysize GfxImageLoadDef::data resourceSize;
 // =========================================
 use SndBank;
 set string name;
+set name name;
 set count alias aliasCount;
 set count aliasIndex aliasCount;
 set count radverbs radverbCount;
@@ -389,50 +401,86 @@ set count data dataSize;
 // =========================================
 // SndPatch
 // =========================================
+use SndPatch;
+set string name;
+set name name;
 
 // =========================================
 // clipMap_t
 // =========================================
+use clipMap_t;
+set string name;
+set name name;
 
 // =========================================
 // ComWorld
 // =========================================
+use ComWorld;
+set string name;
+set name name;
 
 // =========================================
 // GameWorldSp
 // =========================================
+use GameWorldSp;
+set string name;
+set name name;
 
 // =========================================
 // GameWorldMp
 // =========================================
+use GameWorldMp;
+set string name;
+set name name;
 
 // =========================================
 // MapEnts
 // =========================================
+use MapEnts;
+set string name;
+set name name;
 
 // =========================================
 // GfxWorld
 // =========================================
+use GfxWorld;
+set string name;
+set name name;
 
 // =========================================
 // GfxLightDef
 // =========================================
+use GfxLightDef;
+set string name;
+set name name;
 
 // =========================================
 // Font_s
 // =========================================
+use Font_s;
+set string fontName;
+set name fontName;
 
 // =========================================
 // FontIcon
 // =========================================
+use FontIcon;
+set string name;
+set name name;
 
 // =========================================
 // MenuList
 // =========================================
+use MenuList;
+set string name;
+set name name;
 
 // =========================================
 // menuDef_t
 // =========================================
+use menuDef_t;
+set string window::name;
+set name window::name;
 
 // =========================================
 // LocalizeEntry
@@ -440,42 +488,67 @@ set count data dataSize;
 use LocalizeEntry;
 set string value;
 set string name;
+set name name;
 
 // =========================================
 // WeaponVariantDef
 // =========================================
+use WeaponVariantDef;
+set string szInternalName;
+set name szInternalName;
 
 // =========================================
 // WeaponAttachment
 // =========================================
+use WeaponAttachment;
+set string szInternalName;
+set name szInternalName;
 
 // =========================================
 // WeaponAttachmentUnique
 // =========================================
+use WeaponAttachmentUnique;
+set string szInternalName;
+set name szInternalName;
 
 // =========================================
 // WeaponCamo
 // =========================================
+use WeaponCamo;
+set string name;
+set name name;
 
 // =========================================
 // SndDriverGlobals
 // =========================================
+use SndDriverGlobals;
+set string name;
+set name name;
 
 // =========================================
 // FxEffectDef
 // =========================================
+use FxEffectDef;
+set string name;
+set name name;
+
+// FxElemVisuals
 use FxElemVisuals;
 set condition anonymous never;
 
 // =========================================
 // FxImpactTable
 // =========================================
+use FxImpactTable;
+set string name;
+set name name;
 
 // =========================================
 // RawFile
 // =========================================
 use RawFile;
 set string name;
+set name name;
 set count buffer len + 1;
 
 // =========================================
@@ -483,6 +556,7 @@ set count buffer len + 1;
 // =========================================
 use StringTable;
 set string name;
+set name name;
 set count values columnCount * rowCount;
 set count cellIndex columnCount * rowCount;
 
@@ -492,16 +566,23 @@ set string StringTableCell::string;
 // =========================================
 // LeaderboardDef
 // =========================================
+use LeaderboardDef;
+set string name;
+set name name;
 
 // =========================================
 // XGlobals
 // =========================================
+use XGlobals;
+set string name;
+set name name;
 
 // =========================================
 // ddlRoot_t
 // =========================================
 use ddlRoot_t;
 set string name;
+set name name;
 set count ddlDef 1;
 
 // ddlDef_t
@@ -527,6 +608,13 @@ set count members memberCount;
 set count hashTable memberCount;
 
 // =========================================
+// Glasses
+// =========================================
+use Glasses;
+set string name;
+set name name;
+
+// =========================================
 // EmblemSet
 // =========================================
 
@@ -535,6 +623,7 @@ set count hashTable memberCount;
 // =========================================
 use ScriptParseTree;
 set string name;
+set name name;
 set count buffer len + 1;
 
 // =========================================
@@ -542,6 +631,7 @@ set count buffer len + 1;
 // =========================================
 use KeyValuePairs;
 set string name;
+set name name;
 set count keyValuePairs numVariables;
 
 // KeyValuePair
@@ -552,6 +642,7 @@ set string KeyValuePair::value;
 // =========================================
 use VehicleDef;
 set string name;
+set name name;
 set string turretWeapon;
 set string gunnerWeapon;
 set string sndNames;
@@ -578,25 +669,37 @@ set string accelGraphName;
 // =========================================
 // MemoryBlock
 // =========================================
+use MemoryBlock;
+set string name;
+set name name;
 
 // =========================================
 // AddonMapEnts
 // =========================================
+use AddonMapEnts;
+set string name;
+set name name;
 
 // =========================================
 // TracerDef
 // =========================================
+use TracerDef;
+set string name;
+set name name;
 
 // =========================================
 // SkinnedVertsDef
 // =========================================
-set string SkinnedVertsDef::name;
+use SkinnedVertsDef;
+set string name;
+set name name;
 
 // =========================================
 // Qdb
 // =========================================
 use Qdb;
 set string name;
+set name name;
 set count buffer len + 1;
 
 // =========================================
@@ -604,18 +707,28 @@ set count buffer len + 1;
 // =========================================
 use Slug;
 set string name;
+set name name;
 set count buffer len + 1;
 
 // =========================================
 // FootstepTableDef
 // =========================================
+use FootstepTableDef;
+set string name;
+set name name;
 
 // =========================================
 // FootstepFXTableDef
 // =========================================
+use FootstepFXTableDef;
+set string name;
+set name name;
 
 // =========================================
 // ZBarrierDef
 // =========================================
+use ZBarrierDef;
+set string name;
+set name name;
 
 // EOF

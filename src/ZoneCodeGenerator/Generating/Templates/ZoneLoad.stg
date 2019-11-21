@@ -16,7 +16,7 @@ HeaderSinglePtrLoadMethodDeclaration(structure) ::= "void LoadPtr_$structure.Typ
 HeaderArrayPtrLoadMethodDeclaration(structure) ::= "void LoadArray_$structure.Type.Name$(bool atStreamStart, size_t count);"
 HeaderLoadMethodDeclaration(structure) ::= "void Load_$structure.Type.Name$(bool atStreamStart);"
 
-HeaderGetNameMethodDeclaration(asset) ::= "static std::string GetAssetName($asset.Type.FullName$* p$asset.Type.Name$);"
+HeaderGetNameMethodDeclaration(asset) ::= "static std::string GetAssetName($asset.Type.FullName$* pAsset);"
 HeaderAssetLoadMethodDeclaration(asset) ::= "void LoadAsset_$asset.Type.Name$($asset.Type.FullName$** pAsset);"
 HeaderMainLoadMethodDeclaration(asset) ::= "void Load($asset.Type.FullName$** pAsset);"
 
@@ -246,10 +246,10 @@ void $LoaderClassName(context.Asset)$::Load($context.Asset.Type.FullName$** pAss
 >>
 
 GetNameMethod(context) ::= <<
-std::string $LoaderClassName(context.Asset)$::GetAssetName($context.Asset.Type.FullName$* p$context.Asset.Type.Name$)
+std::string $LoaderClassName(context.Asset)$::GetAssetName($context.Asset.Type.FullName$* pAsset)
 {
 $if(context.Asset.NameChain)$
-    return p$context.Asset.Type.Name$->$first(context.Asset.NameChain):{member | $member.Member.Name$}$$rest(context.Asset.NameChain):{member | .$member.Member.Name$}$;
+    return pAsset->$first(context.Asset.NameChain):{member | $member.Member.Name$}$$rest(context.Asset.NameChain):{member | .$member.Member.Name$}$;
 $else$
     return "$context.Asset.Type.Name$";
 $endif$
