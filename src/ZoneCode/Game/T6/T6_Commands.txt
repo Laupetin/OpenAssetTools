@@ -329,8 +329,7 @@ set count GfxPixelShaderLoadDef::program programSize;
 
 // MaterialShaderArgument
 use MaterialShaderArgument;
-//set condition u::literalConst type == MTL_ARG_LITERAL_VERTEX_CONST || type == MTL_ARG_LITERAL_PIXEL_CONST;
-set condition u::literalConst type == 1 || type == 7;
+set condition u::literalConst type == MTL_ARG_LITERAL_VERTEX_CONST || type == MTL_ARG_LITERAL_PIXEL_CONST;
 set reusable u::literalConst;
 set count u::literalConst 1;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Domain.Evaluation;
 using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Parsing.Matching;
@@ -94,6 +95,18 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             }
 
             var nameParts = typenameString.Split(new[] { "::" }, StringSplitOptions.None);
+
+            if (nameParts.Length == 1 && arrayIndexStrings.Count == 0)
+            {
+                var enumMember = state.Repository.GetAllEnums().SelectMany(_enum => _enum.Members)
+                    .FirstOrDefault(member => member.Name.Equals(nameParts[0]));
+
+                if(enumMember != null)
+                {
+                    return new OperandStatic(enumMember);
+                }
+            }
+
             List<MemberInformation> referencedMemberChain = null;
 
             var referencedType = GetUsedTypes(state)
