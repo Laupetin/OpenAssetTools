@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ZoneCodeGenerator.Domain.FastFileStructure;
+using ZoneCodeGenerator.Generating.Computations;
 using ZoneCodeGenerator.Persistence;
 
 namespace ZoneCodeGenerator.Domain.Information
@@ -33,6 +34,7 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool IsLeaf { get; set; }
 
         public List<MemberInformation> NameChain { get; set; }
+        public StructureComputations Computations => new StructureComputations(this);
 
         public StructureInformation(DataTypeWithMembers type)
         {
