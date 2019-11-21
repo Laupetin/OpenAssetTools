@@ -14,7 +14,9 @@ namespace ZoneCodeGenerator.Generating.Computations
                                     && information.Condition.IsStatic 
                                     && information.Condition.EvaluateNumeric() == 0;
 
-        public bool IsNonEmbeddedReference => information.Member.VariableType.References.OfType<ReferenceTypePointer>().Any();
+        public bool IsEmbeddedReference => !information.Member.VariableType.References.OfType<ReferenceTypePointer>().Any();
+
+        public bool IsNonEmbeddedReference => !IsEmbeddedReference;
 
         public bool IsSinglePointerReference => information.Member.VariableType.References.Any()
                                                 && information.Member.VariableType.References.Last() is ReferenceTypePointer

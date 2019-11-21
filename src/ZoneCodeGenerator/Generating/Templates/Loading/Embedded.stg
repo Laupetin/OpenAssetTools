@@ -1,0 +1,8 @@
+// Everything related to loading an embedded reference
+
+LoadEmbedded(context, structure, member) ::= <<
+$if(!member.Computations.ShouldIgnore)$
+$TypeVarName(member.StructureType)$ = &$TypeVarName(structure)$->$member.Member.Name$;
+Load_$member.Member.VariableType.Type.Name$(false);
+$endif$
+>>

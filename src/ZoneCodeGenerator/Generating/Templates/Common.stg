@@ -9,7 +9,11 @@ TypeVarName(structure) ::= "var$structure.Type.Name$"
 TypePtrVarName(structure) ::= "var$structure.Type.Name$Ptr"
 
 PrintOperandStatic(op) ::= <%
+$if(op.EnumMemberValue)$
+$op.EnumMemberValue.Name$
+$else$
 $op.Value$
+$endif$
 %>
 
 PrintOperandDynamic(op) ::= <%

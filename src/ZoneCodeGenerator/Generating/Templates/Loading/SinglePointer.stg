@@ -14,9 +14,7 @@ $LoaderClassName(member.StructureType)$ loader(m_script_string_provider, m_zone,
 loader.Load(&$TypeVarName(structure)$->$member.Member.Name$);
 >>
 
-LoadSinglePointer(context, structure, member) ::= <<
-$if(!member.Computations.ShouldIgnore)$
-$if(!member.Computations.IsArray && member.Computations.PointerDepthIsOne)$ $! TODO: FIX ARRAYS !$
+LoadSinglePointer_PointerCheck(context, structure, member) ::= <<
 if ($TypeVarName(structure)$->$member.Member.Name$)
 {
     $if(member.StructureType && member.StructureType.IsAsset)$
@@ -36,6 +34,29 @@ if ($TypeVarName(structure)$->$member.Member.Name$)
     $endif$
     $endif$
 }
-$endif$
-$endif$
 >>
+
+LoadSinglePointer_Condition(context, structure, member) ::= <%
+$if(member.Condition)$
+
+if($PrintEvaluation(member.Condition)$)$\n$
+{$\n$
+    $LoadSinglePointer_PointerCheck(context, structure, member)$$\n$
+}$\n$
+$\n$
+
+$else$
+
+$LoadSinglePointer_PointerCheck(context, structure, member)$$\n$
+$\n$
+
+$endif$
+%>
+
+LoadSinglePointer(context, structure, member) ::= <%
+$if(!member.Computations.ShouldIgnore)$
+$if(!member.Computations.IsArray && member.Computations.PointerDepthIsOne)$$! TODO: FIX ARRAYS !$
+$LoadSinglePointer_Condition(context, structure, member)$
+$endif$
+$endif$
+%>

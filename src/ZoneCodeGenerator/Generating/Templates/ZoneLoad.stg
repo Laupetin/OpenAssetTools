@@ -89,7 +89,7 @@ Loading member $member.Member.Name$
 >>
 
 
-LoadMemberIfNeedsTreatment(context, structure, member) ::= <<
+LoadMemberIfNeedsTreatment(context, structure, member) ::= <%
 $if(member.IsString)$
 $LoadString(context, structure, member)$
 $elseif(member.IsScriptString)$
@@ -98,8 +98,9 @@ $elseif(member.Computations.IsArrayPointerReference && member.Computations.Point
 $LoadArrayPointer(context, structure, member)$
 $elseif(member.Computations.IsSinglePointerReference)$
 $LoadSinglePointer(context, structure, member)$
+$elseif(member.Computations.IsEmbeddedReference && member.StructureType)$
 $endif$
->>
+%>
 
 LoadMethod(structure, context) ::= <<
 void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atStreamStart)
@@ -115,7 +116,6 @@ void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atS
     
     $structure.OrderedMembers:{member | $LoadMemberIfNeedsTreatment(context, structure, member)$}$
     $if(structure.Block.IsTemp)$
-
     m_stream->PopBlock();
     $endif$
 }

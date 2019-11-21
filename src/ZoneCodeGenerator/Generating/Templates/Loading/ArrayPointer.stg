@@ -1,30 +1,68 @@
 // Everything related to loading a pointer with a count that can be larger than 1
 
-LoadArrayPointerInner(context, structure, member) ::= <<
-$TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$>(alignof($TypeDeclaration(member.Member.VariableType)$));
-$if(member.StructureType && !member.StructureType.IsLeaf)$
-$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$;
-LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
-$else$
-m_stream->Load<$TypeDeclaration(member.Member.VariableType)$>($TypeVarName(structure)$->$member.Member.Name$, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);$endif$
->>
+LoadArrayPointer_Loading(context, structure, member) ::= <%
+$TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$>(alignof($TypeDeclaration(member.Member.VariableType)$));$\n$
 
-LoadArrayPointer(context, structure, member) ::= <<
-$if(!member.Computations.ShouldIgnore)$
+$if(member.StructureType && !member.StructureType.IsLeaf)$
+
+$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$;$\n$
+LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
+
+$else$
+
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$>($TypeVarName(structure)$->$member.Member.Name$, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
+
+$endif$
+%>
+
+LoadArrayPointer_PointerCheck(context, structure, member) ::= <<
 if ($TypeVarName(structure)$->$member.Member.Name$)
 {
     $if(member.IsReusable)$
     if($TypeVarName(structure)$->$member.Member.Name$ == PTR_FOLLOWING)
     {
-        $LoadArrayPointerInner(context, structure, member)$
+        $LoadArrayPointer_Loading(context, structure, member)$
     }
     else
     {
         $TypeVarName(structure)$->$member.Member.Name$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$);
     }
     $else$
-    $LoadArrayPointerInner(context, structure, member)$
+    $LoadArrayPointer_Loading(context, structure, member)$
     $endif$
 }
-$endif$
 >>
+
+LoadArrayPointer_Condition(context, structure, member) ::= <%
+$if(member.Condition)$
+$if(structure.IsUnion)$
+
+if($PrintEvaluation(member.Condition)$)$\n$
+{$\n$
+    $LoadArrayPointer_PointerCheck(context, structure, member)$$\n$
+}$\n$
+$\n$
+
+$else$
+
+if($PrintEvaluation(member.Condition)$)$\n$
+{$\n$
+    $LoadArrayPointer_PointerCheck(context, structure, member)$$\n$
+}$\n$
+$\n$
+
+$endif$
+
+$else$
+
+$LoadArrayPointer_PointerCheck(context, structure, member)$$\n$
+$\n$
+
+$endif$
+%>
+
+LoadArrayPointer(context, structure, member) ::= <%
+$if(!member.Computations.ShouldIgnore)$
+$LoadArrayPointer_Condition(context, structure, member)$
+$endif$
+%>
