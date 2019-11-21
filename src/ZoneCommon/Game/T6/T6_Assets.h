@@ -1878,21 +1878,21 @@ struct EmblemBackground
 
 struct EmblemSet
 {
-  int colorCount;
-  int layerCount;
-  EmblemLayer layers[32];
-  int categoryCount;
-  EmblemCategory categories[16];
-  int iconTypeCount;
-  EmblemIconType iconTypes[16];
-  int bgCategoryCount;
-  EmblemBGCategory bgCategories[16];
-  int iconCount;
-  EmblemIcon icons[1024];
-  int backgroundCount;
-  EmblemBackground backgrounds[550];
-  int backgroundLookupCount;
-  __int16 backgroundLookup[550];
+    int colorCount;
+    int layerCount;
+    EmblemLayer* layers;
+    int categoryCount;
+    EmblemCategory* categories;
+    int iconTypeCount;
+    EmblemIconType* iconTypes;
+    int bgCategoryCount;
+    EmblemBGCategory* bgCategories;
+    int iconCount;
+    EmblemIcon* icons;
+    int backgroundCount;
+    EmblemBackground* backgrounds;
+    int backgroundLookupCount;
+    __int16* backgroundLookup;
 };
 
 struct ScriptParseTree
