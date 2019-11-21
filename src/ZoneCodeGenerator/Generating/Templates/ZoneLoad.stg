@@ -248,8 +248,8 @@ void $LoaderClassName(context.Asset)$::Load($context.Asset.Type.FullName$** pAss
 GetNameMethod(context) ::= <<
 std::string $LoaderClassName(context.Asset)$::GetAssetName($context.Asset.Type.FullName$* p$context.Asset.Type.Name$)
 {
-$if(context.Asset.HasNameMember)$
-    return p$context.Asset.Type.Name$->name;
+$if(context.Asset.NameChain)$
+    return p$context.Asset.Type.Name$->$first(context.Asset.NameChain):{member | $member.Member.Name$}$$rest(context.Asset.NameChain):{member | .$member.Member.Name$}$;
 $else$
     return "$context.Asset.Type.Name$";
 $endif$

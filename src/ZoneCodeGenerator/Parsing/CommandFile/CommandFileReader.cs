@@ -13,6 +13,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile
     {
         private static readonly IDataPostProcessor[] postProcessors =
         {
+            new PostProcessorAssetName(),
             new PostProcessorDefaultBlock(),
             new PostProcessorUsages(),
             new PostProcessorLeafs()

@@ -32,8 +32,8 @@ namespace ZoneCodeGenerator.Domain.Information
 
         public bool IsLeaf { get; set; }
 
-        public bool HasNameMember => Type.Members.Any(variable => variable.Name.Equals("name", StringComparison.CurrentCultureIgnoreCase));
-        
+        public List<MemberInformation> NameChain { get; set; }
+
         public StructureInformation(DataTypeWithMembers type)
         {
             AssetEnumEntry = null;
@@ -45,6 +45,7 @@ namespace ZoneCodeGenerator.Domain.Information
             Usages = new List<StructureInformation>();
             OrderedMembers = new List<MemberInformation>();
             IsLeaf = true;
+            NameChain = null;
         }
 
         public override string ToString()
