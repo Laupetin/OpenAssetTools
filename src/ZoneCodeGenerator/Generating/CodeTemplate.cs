@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Antlr4.StringTemplate;
+using ZoneCodeGenerator.Domain;
 
 namespace ZoneCodeGenerator.Generating
 {
@@ -17,6 +18,7 @@ namespace ZoneCodeGenerator.Generating
         {
             this.templateGroup = templateGroup;
             templateGroup.RegisterRenderer(typeof(string), new StringRenderer());
+            templateGroup.RegisterRenderer(typeof(DataType), new DataTypeAttributeRenderer());
         }
 
         public static CodeTemplate FromResources(string fileName)
