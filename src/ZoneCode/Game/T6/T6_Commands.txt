@@ -96,10 +96,17 @@ set name name;
 set count pieces numPieces;
 
 // DestructiblePiece
-set scriptstring DestructiblePiece::enableLabel;
+use DestructiblePiece;
+set string damageSound;
+set string burnSound;
+set scriptstring enableLabel;
 
 // DestructibleStage
-set scriptstring DestructibleStage::showBone;
+use DestructibleStage;
+set string breakSound;
+set string breakNotify;
+set string loopSound;
+set scriptstring showBone;
 
 // =========================================
 // XAnimParts
