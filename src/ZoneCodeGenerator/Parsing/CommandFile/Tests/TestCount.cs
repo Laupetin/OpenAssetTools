@@ -12,14 +12,16 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
     class TestCount : TestWithEvaluation
     {
         private StructureInformation referencedType;
-        private const string TypeNameToken = "typeName";
+        private const string TokenTypeName = "typeName";
+        private const string TokenPointerResolve = "pointerResolve";
 
         // set count <typename> <calculationStatement>;
         private static readonly TokenMatcher[] matchers =
         {
             new MatcherLiteral("set"),
             new MatcherLiteral("count"),
-            new MatcherTypename().WithName(TypeNameToken),
+            new MatcherGroupLoop(MatcherGroupLoop.LoopMode.ZeroOneMultiple, new MatcherLiteral("*").WithName(TokenPointerResolve)), 
+            new MatcherTypename().WithName(TokenTypeName),
             new MatcherWithTag(TagEvaluation),
             new MatcherLiteral(";")
         };
@@ -31,7 +33,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         protected override void ProcessMatch(ICommandParserState state)
         {
-            var typeName = NextMatch(TypeNameToken);
+            var typeName = NextMatch(TokenTypeName);
             var typeNameParts = typeName.Split(new[] { "::" }, StringSplitOptions.None);
             if (state.DataTypeInUse != null
                 && state.GetMembersFromParts(typeNameParts, state.DataTypeInUse, out var typeMembers))
@@ -59,8 +61,10 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             var evaluation = ProcessEvaluation(state);
 
             var referencedMember = typeMembers.Last();
-            var reference = referencedMember.Member.VariableType.References.OfType<ReferenceTypePointer>()
-                .LastOrDefault();
+            var reference = referencedMember.Member.VariableType.References
+                .OfType<ReferenceTypePointer>()
+                .Skip(GetMatcherTokenCount(TokenPointerResolve))
+                .FirstOrDefault();
 
             if (reference != null)
                 reference.Count = evaluation;
