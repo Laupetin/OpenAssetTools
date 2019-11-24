@@ -505,6 +505,16 @@ set condition internals::floatVal dataType == VAL_FLOAT;
 set condition internals::string dataType == VAL_STRING;
 set condition internals::dvar never;
 
+// multiDef_s
+use multiDef_s;
+set string dvarList;
+set string dvarStr;
+
+// profileMultiDef_s
+use profileMultiDef_s;
+set string profileVarList;
+set string profileVarStr;
+
 // =========================================
 // LocalizeEntry
 // =========================================
@@ -519,6 +529,9 @@ set name name;
 use WeaponVariantDef;
 set string szInternalName;
 set name szInternalName;
+
+use WeaponDef;
+set string accuracyGraphName;
 
 // =========================================
 // WeaponAttachment
