@@ -1,0 +1,45 @@
+delimiters "$", "$"
+
+LoadPointerArray_Loading(context, structure, member, reference) ::= <%
+$if(member.Computations.IsArray)$
+$TypePtrVarName(member.Member.VariableType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadPtrArray_$SafeTypeName(member.Member.VariableType.Type)$(false, $reference.ArraySize$);
+$else$
+$TypePtrVarName(member.Member.VariableType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadPtrArray_$SafeTypeName(member.Member.VariableType.Type)$(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+$endif$
+%>
+
+LoadPointerArray_String(context, structure, member, reference) ::= <%
+$if(reference.IsArray)$
+varXString = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadXStringArray(false, $reference.ArraySize$);
+$else$
+$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$));$\n$
+varXString = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadXStringArray(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+$endif$
+%>
+
+LoadPointerArray_TypeCheck(context, structure, member, reference) ::= <%
+$if(member.IsString)$
+$LoadPointerArray_String(context, structure, member, reference)$
+$else$
+$LoadPointerArray_Loading(context, structure, member, reference)$
+$endif$
+%>
+
+LoadPointerArray_Condition(context, structure, member, reference) ::= <<
+$if(member.Condition)$$\\$
+if($PrintEvaluation(member.Condition)$)
+{
+    $LoadPointerArray_TypeCheck(context, structure, member, reference)$
+}
+$else$$\\$
+$LoadPointerArray_TypeCheck(context, structure, member, reference)$$\\$
+$endif$
+>>
+
+LoadPointerArray(context, structure, member, reference) ::= <%
+$LoadPointerArray_Condition(context, structure, member, reference)$
+%>

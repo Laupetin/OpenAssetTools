@@ -27,16 +27,16 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
                     .Where(member => member.StructureType != null)
                     .Where(member => !member.Computations.ShouldIgnore))
                 {
-                    if (member.Computations.IsNonEmbeddedReference)
+                    if (member.Computations.ContainsNonEmbeddedReference)
                         member.StructureType.NonEmbeddedReferenceExists = true;
 
-                    if (member.Computations.IsSinglePointerReference)
+                    if (member.Computations.ContainsSinglePointerReference)
                         member.StructureType.SinglePointerReferenceExists = true;
 
-                    if (member.Computations.IsArrayPointerReference)
+                    if (member.Computations.ContainsArrayPointerReference)
                         member.StructureType.ArrayPointerReferenceExists = true;
 
-                    if (member.Computations.IsArrayReference)
+                    if (member.Computations.ContainsArrayReference)
                         member.StructureType.ArrayReferenceExists = true;
 
                     member.StructureType.Usages.Add(currentStructure);

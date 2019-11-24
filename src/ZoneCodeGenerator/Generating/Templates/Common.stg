@@ -5,8 +5,24 @@ Lower(name) ::= "$name; format=\"lower\"$"
 
 TypeDeclaration(typeDecl) ::= "$if(typeDecl.IsConst)$const $endif$$typeDecl.Type.FullName$"
 
-TypeVarName(structure) ::= "var$structure.Type.Name$"
-TypePtrVarName(structure) ::= "var$structure.Type.Name$Ptr"
+TypeVarName(structure) ::= "var$SafeTypeName(structure.Type)$"
+TypePtrVarName(structure) ::= "var$SafeTypeName(structure.Type)$Ptr"
+
+SafeTypeName(type) ::= "$type; format=\"safe_name\"$"
+
+PrintFollowingReferences(references) ::= <%
+$references:{ reference | 
+
+$if(reference.ArraySize)$
+[$reference.ArraySize$]
+$else$
+*
+$endif$
+
+}$
+%>
+
+PrintArrayIndices(reference) ::= "$reference.ArrayIndices:{ index | [$index$] }$"
 
 PrintOperandStatic(op) ::= <%
 $if(op.EnumMemberValue)$

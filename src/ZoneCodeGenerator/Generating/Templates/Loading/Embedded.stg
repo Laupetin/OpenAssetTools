@@ -1,21 +1,25 @@
+delimiters "$", "$"
+
 // Everything related to loading an embedded reference
 
-LoadEmbedded_Load(context, structure, member) ::= <<
-$TypeVarName(member.StructureType)$ = &$TypeVarName(structure)$->$member.Member.Name$;
+LoadEmbedded_Load(context, structure, member, reference) ::= <<
+$TypeVarName(member.StructureType)$ = &$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;
 Load_$member.Member.VariableType.Type.Name$(false);
-
 >>
 
-LoadEmbedded_Array(context, structure, member) ::= <<
-
->>
-
-LoadEmbedded(context, structure, member) ::= <%
-$if(!member.Computations.ShouldIgnore)$
-$if(member.Computations.IsArray)$
-$LoadEmbedded_Array(context, structure, member)$
+LoadEmbedded_TypeCheck(context, structure, member, reference) ::= <%
+$if(member.IsScriptString)$
+$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = UseScriptString($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
 $else$
-$LoadEmbedded_Load(context, structure, member)$
-$endif$
+$LoadEmbedded_Load(context, structure, member, reference)$
 $endif$
 %>
+
+LoadEmbedded(context, structure, member, reference) ::= <%
+$LoadEmbedded_TypeCheck(context, structure, member, reference)$
+%>
+
+LoadEmbeddedArray(context, structure, member, reference) ::= <<
+$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;
+LoadArray_$member.Member.VariableType.Type.Name$(false, $reference.ArraySize$); // ASDF
+>>

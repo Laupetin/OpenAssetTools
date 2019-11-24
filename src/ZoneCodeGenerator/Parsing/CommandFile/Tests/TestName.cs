@@ -50,7 +50,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
             for (var i = 0; i < memberList.Count - 1; i++)
             {
-                if (!memberList[i].Computations.IsEmbeddedReference)
+                if (memberList[i].Computations.ContainsNonEmbeddedReference)
                 {
                     throw new TestFailedException("Can only add embedded members to name chain.");
                 }

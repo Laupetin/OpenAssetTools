@@ -1,68 +1,59 @@
+delimiters "$", "$"
+
 // Everything related to loading a pointer with a count that can be larger than 1
 
-LoadArrayPointer_Loading(context, structure, member) ::= <%
-$TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$>(alignof($TypeDeclaration(member.Member.VariableType)$));$\n$
+LoadArrayPointer_Loading(context, structure, member, reference) ::= <%
+$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$));$\n$
 
 $if(member.StructureType && !member.StructureType.IsLeaf)$
 
-$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$;$\n$
-LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
+$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
 
 $else$
 
-m_stream->Load<$TypeDeclaration(member.Member.VariableType)$>($TypeVarName(structure)$->$member.Member.Name$, $PrintEvaluation(member.Computations.ArrayPointerCountEvaluation)$);
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
 
 $endif$
 %>
 
-LoadArrayPointer_PointerCheck(context, structure, member) ::= <<
-if ($TypeVarName(structure)$->$member.Member.Name$)
+LoadArrayPointer_PointerCheck(context, structure, member, reference) ::= <<
+if ($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$)
 {
     $if(member.IsReusable)$
-    if($TypeVarName(structure)$->$member.Member.Name$ == PTR_FOLLOWING)
+    if($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
     {
-        $LoadArrayPointer_Loading(context, structure, member)$
+        $LoadArrayPointer_Loading(context, structure, member, reference)$
     }
     else
     {
-        $TypeVarName(structure)$->$member.Member.Name$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$);
+        $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
     }
     $else$
-    $LoadArrayPointer_Loading(context, structure, member)$
+    $LoadArrayPointer_Loading(context, structure, member, reference)$
     $endif$
 }
 >>
 
-LoadArrayPointer_Condition(context, structure, member) ::= <%
-$if(member.Condition)$
-$if(structure.IsUnion)$
-
-if($PrintEvaluation(member.Condition)$)$\n$
-{$\n$
-    $LoadArrayPointer_PointerCheck(context, structure, member)$$\n$
-}$\n$
-$\n$
-
+LoadArrayPointer_TypeCheck(context, structure, member, reference) ::= <%
+$if(member.IsScriptString)$
+// ScriptString $member.Member.Name$
 $else$
-
-if($PrintEvaluation(member.Condition)$)$\n$
-{$\n$
-    $LoadArrayPointer_PointerCheck(context, structure, member)$$\n$
-}$\n$
-$\n$
-
-$endif$
-
-$else$
-
-$LoadArrayPointer_PointerCheck(context, structure, member)$$\n$
-$\n$
-
+$LoadArrayPointer_PointerCheck(context, structure, member, reference)$
 $endif$
 %>
 
-LoadArrayPointer(context, structure, member) ::= <%
-$if(!member.Computations.ShouldIgnore)$
-$LoadArrayPointer_Condition(context, structure, member)$
+LoadArrayPointer_Condition(context, structure, member, reference) ::= <<
+$if(member.Condition)$$\\$
+if($PrintEvaluation(member.Condition)$)
+{
+    $LoadArrayPointer_TypeCheck(context, structure, member, reference)$
+}
+$else$$\\$
+$LoadArrayPointer_TypeCheck(context, structure, member, reference)$$\\$
 $endif$
+>>
+
+LoadArrayPointer(context, structure, member, reference) ::= <%
+$LoadArrayPointer_Condition(context, structure, member, reference)$
 %>

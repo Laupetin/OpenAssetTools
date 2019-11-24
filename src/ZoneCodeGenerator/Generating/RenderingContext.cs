@@ -1,24 +1,42 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using ZoneCodeGenerator.Domain;
 using ZoneCodeGenerator.Domain.FastFileStructure;
 using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Interface;
-using ZoneCodeGenerator.Persistence;
 
 namespace ZoneCodeGenerator.Generating
 {
     class RenderingContext
     {
+        public class UsedType
+        {
+            public DataType Type { get; }
+            public StructureInformation Information { get; }
+            public bool IsContextAsset { get; set; }
+
+            public bool NonEmbeddedReferenceExists { get; set; }
+            public bool ArrayReferenceExists { get; set; }
+            public bool PointerArrayReferenceExists { get; set; }
+
+            public UsedType(DataType type, StructureInformation information)
+            {
+                Type = type;
+                Information = information;
+                IsContextAsset = false;
+                NonEmbeddedReferenceExists = false;
+                ArrayReferenceExists = false;
+                PointerArrayReferenceExists = false;
+            }
+        }
+
         public string Game { get; set; }
         public StructureInformation Asset { get; set; }
 
-        public ISet<StructureInformation> Structures { get; }
-        public ISet<DataType> MemberTypes { get; }
+        private readonly IDictionary<DataType, UsedType> usedTypes;
+        public IEnumerable<UsedType> UsedTypes => usedTypes.Values;
 
-        public IEnumerable<StructureInformation> ReferencedAssets =>
-            Structures.Where(inf => inf.IsAsset && inf != Asset);
+        public IEnumerable<UsedType> ReferencedAssets => UsedTypes.Where(type => type.Information != null && type.Information.IsAsset && type.Information != Asset);
 
         public IList<FastFileBlock> Blocks { get; private set; }
 
@@ -27,22 +45,45 @@ namespace ZoneCodeGenerator.Generating
 
         private RenderingContext()
         {
-            Structures = new HashSet<StructureInformation>();
-            MemberTypes = new HashSet<DataType>();
+            usedTypes = new Dictionary<DataType, UsedType>();
         }
 
         private void AddToContext(StructureInformation structureInformation)
         {
-            if (!Structures.Add(structureInformation))
+            if (usedTypes.ContainsKey(structureInformation.Type))
                 return;
+
+            var newUsage = new UsedType(structureInformation.Type, structureInformation);
+            usedTypes.Add(newUsage.Type, newUsage);
 
             if (structureInformation.IsAsset && structureInformation != Asset)
                 return;
 
             foreach (var member in structureInformation.OrderedMembers
-                .Where(member => member.StructureType != null && !member.Computations.ShouldIgnore))
+                .Where(member => !member.Computations.ShouldIgnore))
             {
-                AddToContext(member.StructureType);
+                if(member.StructureType != null)
+                    AddToContext(member.StructureType);
+
+                UsedType usedType;
+                if (!usedTypes.ContainsKey(member.Member.VariableType.Type))
+                {
+                    usedType = new UsedType(member.Member.VariableType.Type, member.StructureType);
+                    usedTypes.Add(usedType.Type, usedType);
+                }
+                else
+                {
+                    usedType = usedTypes[member.Member.VariableType.Type];
+                }
+
+                if (member.Computations.ContainsNonEmbeddedReference)
+                    usedType.NonEmbeddedReferenceExists = true;
+
+                if (member.Computations.ContainsArrayPointerReference || member.Computations.ContainsArrayReference)
+                    usedType.ArrayReferenceExists = true;
+
+                if (member.Computations.ContainsPointerArrayReference)
+                    usedType.PointerArrayReferenceExists = true;
             }
         }
 
@@ -56,15 +97,7 @@ namespace ZoneCodeGenerator.Generating
             };
 
             context.AddToContext(asset);
-            context.MemberTypes.UnionWith(context.Structures
-                .Where(structureInformation => !structureInformation.IsAsset || structureInformation == asset)
-                .Where(structureInformation =>
-                    structureInformation.Computations.IsUsed || structureInformation == asset)
-                .SelectMany(information => information.OrderedMembers)
-                .Where(information => !information.Computations.ShouldIgnore)
-                .Select(information => information.Member.VariableType.Type)
-                .Where(type => !(type is DataTypeBaseType) && type != asset.Type)
-                .Distinct());
+            context.usedTypes[asset.Type].IsContextAsset = true;
 
             return context;
         }

@@ -1,2 +1,4 @@
+delimiters "$", "$"
+
 // Loading common
 LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"

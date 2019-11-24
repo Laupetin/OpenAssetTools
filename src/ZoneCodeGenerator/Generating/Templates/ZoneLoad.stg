@@ -3,10 +3,10 @@ delimiters "$", "$"
 import "Common.stg"
 
 import "Loading/Common.stg"
-import "Loading/String.stg"
 import "Loading/ArrayPointer.stg"
 import "Loading/Embedded.stg"
 import "Loading/SinglePointer.stg"
+import "Loading/PointerArray.stg"
 
 // Loading common
 LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
@@ -14,7 +14,8 @@ LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
 HeaderConstructor(context) ::= "$LoaderClassName(context.Asset)$(IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream);"
 
 HeaderSinglePtrLoadMethodDeclaration(structure) ::= "void LoadPtr_$structure.Type.Name$(bool atStreamStart);"
-HeaderArrayPtrLoadMethodDeclaration(structure) ::= "void LoadArray_$structure.Type.Name$(bool atStreamStart, size_t count);"
+HeaderArrayLoadMethodDeclaration(structure) ::= "void LoadArray_$structure.Type.Name$(bool atStreamStart, size_t count);"
+HeaderPtrArrayLoadMethodDeclaration(type) ::= "void LoadPtrArray_$SafeTypeName(type)$(bool atStreamStart, size_t count);"
 HeaderLoadMethodDeclaration(structure) ::= "void Load_$structure.Type.Name$(bool atStreamStart);"
 
 HeaderGetNameMethodDeclaration(asset) ::= "static std::string GetAssetName($asset.Type.FullName$* pAsset);"
@@ -22,26 +23,24 @@ HeaderAssetLoadMethodDeclaration(asset) ::= "void LoadAsset_$asset.Type.Name$($a
 HeaderMainLoadMethodDeclaration(asset) ::= "void Load($asset.Type.FullName$** pAsset);"
 
 VariableDeclaration(type) ::= <<
-$type.FullName$* var$type.Name$;
+$type.FullName$* var$SafeTypeName(type)$;
 >>
 
 PointerVariableDeclaration(type) ::= <<
-$type.FullName$** var$type.Name$Ptr;
+$type.FullName$** var$SafeTypeName(type)$Ptr;
 >>
 
-HeaderDeclaration(structure) ::= <%
-$if(structure.SinglePointerReferenceExists)$
-$HeaderSinglePtrLoadMethodDeclaration(structure)$
+HeaderMethodDeclarations(usedType) ::= <%
+$if(usedType.PointerArrayReferenceExists)$
+$HeaderPtrArrayLoadMethodDeclaration(usedType.Type)$
 $\n$
 $endif$
-
-$if(structure.ArrayPointerReferenceExists && !structure.IsLeaf)$
-$HeaderArrayPtrLoadMethodDeclaration(structure)$
+$if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf)$
+$HeaderArrayLoadMethodDeclaration(usedType.Information)$
 $\n$
 $endif$
-
-$if(!structure.IsLeaf && structure.Computations.IsUsed)$
-$HeaderLoadMethodDeclaration(structure)$
+$if(usedType.Information && !usedType.Information.IsLeaf && !usedType.Information.IsAsset)$
+$HeaderLoadMethodDeclaration(usedType.Information)$
 $\n$
 $endif$
 %>
@@ -68,11 +67,13 @@ namespace $context.Game$
     {
         $VariableDeclaration(context.Asset.Type)$
         $PointerVariableDeclaration(context.Asset.Type)$
-        $context.MemberTypes:{type | $if(!type.IsAnonymous)$$VariableDeclaration(type)$
+
+        $context.UsedTypes:{type | $if(type.Information && !type.Information.Type.IsAnonymous && !type.Information.IsLeaf && !type.Information.IsAsset)$$VariableDeclaration(type.Type)$
             $endif$}$
-        $context.Structures:{structure | $if(!structure.IsAsset && structure.SinglePointerReferenceExists)$$PointerVariableDeclaration(structure.Type)$
-            $endif$}$
-        $context.Structures:{structure | $if(!structure.IsAsset)$$HeaderDeclaration(structure)$$endif$}$
+        $context.UsedTypes:{type | $if(type.PointerArrayReferenceExists && !type.IsContextAsset)$$PointerVariableDeclaration(type.Type)$
+            $endif$}$$\\$
+
+        $context.UsedTypes:{usedType | $HeaderMethodDeclarations(usedType)$}$
         $HeaderLoadMethodDeclaration(context.Asset)$
         $HeaderSinglePtrLoadMethodDeclaration(context.Asset)$
         $HeaderAssetLoadMethodDeclaration(context.Asset)$
@@ -89,41 +90,43 @@ LoadMember(context, member) ::= <<
 Loading member $member.Member.Name$
 >>
 
-
-LoadMemberIfNeedsTreatment(context, structure, member) ::= <%
-$if(member.IsString)$
-$LoadString(context, structure, member)$
-$elseif(member.IsScriptString)$
-// Load scriptstring for $member.Member.Name$
-$elseif(member.Computations.IsArrayPointerReference && member.Computations.PointerDepthIsOne)$
-$LoadArrayPointer(context, structure, member)$
-$elseif(member.Computations.IsSinglePointerReference)$
-$LoadSinglePointer(context, structure, member)$
-$elseif(member.Computations.IsEmbeddedReference && member.StructureType && !member.StructureType.IsLeaf)$
-$LoadEmbedded(context, structure, member)$
+LoadMemberReference(context, structure, member, reference) ::= <%
+$if(reference.IsSinglePointer)$
+$\n$$\n$
+$LoadSinglePointer(context, structure, member, reference)$
+$elseif(reference.IsArrayPointer)$
+$\n$$\n$
+$LoadArrayPointer(context, structure, member, reference)$
+$elseif(reference.IsPointerArray)$
+$\n$$\n$
+$LoadPointerArray(context, structure, member, reference)$
+$elseif(reference.IsArray && !reference.NextReference)$
+$\n$$\n$
+$LoadEmbeddedArray(context, structure, member, reference)$
+$elseif(!reference.Reference)$
+$\n$$\n$
+$LoadEmbedded(context, structure, member, reference)$
+$else$
+$\n$$\n$
+// $member.Member.Name$
 $endif$
 %>
 
-LoadMethod(structure, context) ::= <<
-void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atStreamStart)
-{
-    assert($TypeVarName(structure)$ != nullptr);
+LoadMemberIfNeedsTreatment(context, structure, member) ::= <%
+$if(!member.Computations.ShouldIgnore)$
 
-    if(atStreamStart)
-        m_stream->Load<$structure.Type.FullName$>($TypeVarName(structure)$);
-    $if(structure.Block.IsTemp)$
+$if(member.IsString || member.IsScriptString)$
+$LoadMemberReference(context, structure, member, member.Computations.References)$
+$elseif(member.Computations.ContainsNonEmbeddedReference)$
+$LoadMemberReference(context, structure, member, member.Computations.References)$
+$elseif(member.StructureType && !member.StructureType.IsLeaf)$
+$LoadMemberReference(context, structure, member, member.Computations.References)$
+$endif$
 
-    m_stream->PushBlock($context.DefaultNormalBlock.Name$);
-    $endif$
-    
-    $structure.OrderedMembers:{member | $LoadMemberIfNeedsTreatment(context, structure, member)$}$
-    $if(structure.Block.IsTemp)$
-    m_stream->PopBlock();
-    $endif$
-}
->>
+$endif$
+%>
 
-LoadSinglePtrMethod(structure, context) ::= <<
+LoadSinglePtrMethod(context, structure) ::= <<
 void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$(const bool atStreamStart)
 {
     assert($TypePtrVarName(structure)$ != nullptr);
@@ -177,7 +180,14 @@ void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$(const bool 
 }
 >>
 
-LoadArrayPtrMethod(structure, context) ::= <<
+LoadPointerArrayMethod(context, type, structure) ::= <<
+void $LoaderClassName(context.Asset)$::LoadPtrArray_$SafeTypeName(type)$(const bool atStreamStart, const size_t count)
+{
+    
+}
+>>
+
+LoadArrayMethod(context, structure) ::= <<
 void $LoaderClassName(context.Asset)$::LoadArray_$structure.Type.Name$(const bool atStreamStart, const size_t count)
 {
     assert($TypeVarName(structure)$ != nullptr);
@@ -193,20 +203,39 @@ void $LoaderClassName(context.Asset)$::LoadArray_$structure.Type.Name$(const boo
 }
 >>
 
-SourceDefinition(structure, context) ::= <<
-$if(structure.SinglePointerReferenceExists)$
-$LoadSinglePtrMethod(structure, context)$
+LoadMethod(context, structure) ::= <<
+void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atStreamStart)
+{
+    assert($TypeVarName(structure)$ != nullptr);
 
-$endif$
-$if(structure.ArrayPointerReferenceExists && !structure.IsLeaf)$
-$LoadArrayPtrMethod(structure, context)$
+    if(atStreamStart)
+        m_stream->Load<$structure.Type.FullName$>($TypeVarName(structure)$);$\\$
+    $if(structure.Block.IsTemp)$
 
-$endif$
-$if(!structure.IsLeaf && structure.Computations.IsUsed)$
-$LoadMethod(structure, context)$
+    m_stream->PushBlock($context.DefaultNormalBlock.Name$);$\\$
+    $endif$
+    $structure.OrderedMembers:{member | $LoadMemberIfNeedsTreatment(context, structure, member)$}$
+    $if(structure.Block.IsTemp)$
 
-$endif$
+    m_stream->PopBlock();
+    $endif$
+}
 >>
+
+SourceDefinition(context, usedType) ::= <%
+$if(usedType.PointerArrayReferenceExists)$
+$LoadPointerArrayMethod(context, usedType.Type, usedType.Information)$
+$\n$$\n$
+$endif$
+$if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf)$
+$LoadArrayMethod(context, usedType.Information)$
+$\n$$\n$
+$endif$
+$if(usedType.Information && !usedType.Information.IsLeaf && !usedType.Information.IsAsset)$
+$LoadMethod(context, usedType.Information)$
+$\n$$\n$
+$endif$
+%>
 
 VariableInitialization(type) ::= <<
 var$type.Name$ = nullptr;
@@ -222,14 +251,15 @@ $LoaderClassName(context.Asset)$::$LoaderClassName(context.Asset)$(IZoneScriptSt
 {
     $VariableInitialization(context.Asset.Type)$
     $PointerVariableInitialization(context.Asset.Type)$
-    $context.MemberTypes:{type | $if(!type.IsAnonymous)$$VariableInitialization(type)$
-        $endif$}$
-    $context.Structures:{structure | $if(!structure.IsAsset && structure.SinglePointerReferenceExists)$$PointerVariableInitialization(structure.Type)$
-        $endif$}$
+
+    $context.UsedTypes:{type | $if(type.Information && !type.Information.Type.IsAnonymous && !type.Information.IsLeaf && !type.Information.IsAsset)$$VariableInitialization(type.Type)$
+    $endif$}$
+    $context.UsedTypes:{type | $if(type.Information && type.PointerArrayReferenceExists && !type.IsContextAsset)$$PointerVariableInitialization(type.Type)$
+    $endif$}$$\\$
 }
 >>
 
-LoadAssetMethod(structure, context) ::= <<
+LoadAssetMethod(context, structure) ::= <<
 void $LoaderClassName(context.Asset)$::LoadAsset_$structure.Type.Name$($structure.Type.FullName$** pAsset)
 {
     assert(pAsset != nullptr);
@@ -283,12 +313,12 @@ using namespace $context.Game$;
 
 $ConstructorMethod(context)$
 
-$context.Structures:{structure | $if(!structure.IsAsset)$$SourceDefinition(structure, context)$$endif$}$
-$LoadMethod(context.Asset, context)$
+$context.UsedTypes:{usedType | $SourceDefinition(context, usedType)$}$
+$LoadMethod(context, context.Asset)$
 
-$LoadAssetMethod(context.Asset, context)$
+$LoadSinglePtrMethod(context, context.Asset)$
 
-$LoadSinglePtrMethod(context.Asset, context)$
+$LoadAssetMethod(context, context.Asset)$
 
 $MainLoadMethod(context)$
 

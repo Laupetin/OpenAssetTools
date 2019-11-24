@@ -52,7 +52,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
             var lastMember = memberList.Last();
 
-            if (!lastMember.Computations.IsNonEmbeddedReference)
+            if (!lastMember.Computations.ContainsNonEmbeddedReference)
             {
                 throw new TestFailedException($"Specified member '{lastMember.Member.Name}' is not a pointer reference and therefore cannot be reusable.");
             }
