@@ -17,40 +17,48 @@ m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingRefer
 $endif$
 %>
 
+LoadArrayPointer_ScriptString(context, structure, member, reference) ::= <%
+$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$));$\n$
+
+varScriptString = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadScriptStringArray(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+
+%>
+
+LoadArrayPointer_TypeCheck(context, structure, member, reference) ::= <%
+$if(member.IsScriptString)$
+$LoadArrayPointer_ScriptString(context, structure, member, reference)$
+$else$
+$LoadArrayPointer_Loading(context, structure, member, reference)$
+$endif$
+%>
+
 LoadArrayPointer_PointerCheck(context, structure, member, reference) ::= <<
 if ($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$)
 {
     $if(member.IsReusable)$
     if($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
     {
-        $LoadArrayPointer_Loading(context, structure, member, reference)$
+        $LoadArrayPointer_TypeCheck(context, structure, member, reference)$
     }
     else
     {
         $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
     }
     $else$
-    $LoadArrayPointer_Loading(context, structure, member, reference)$
+    $LoadArrayPointer_TypeCheck(context, structure, member, reference)$
     $endif$
 }
 >>
-
-LoadArrayPointer_TypeCheck(context, structure, member, reference) ::= <%
-$if(member.IsScriptString)$
-// ScriptString $member.Member.Name$
-$else$
-$LoadArrayPointer_PointerCheck(context, structure, member, reference)$
-$endif$
-%>
 
 LoadArrayPointer_Condition(context, structure, member, reference) ::= <<
 $if(member.Condition)$$\\$
 if($PrintEvaluation(member.Condition)$)
 {
-    $LoadArrayPointer_TypeCheck(context, structure, member, reference)$
+    $LoadArrayPointer_PointerCheck(context, structure, member, reference)$
 }
 $else$$\\$
-$LoadArrayPointer_TypeCheck(context, structure, member, reference)$$\\$
+$LoadArrayPointer_PointerCheck(context, structure, member, reference)$$\\$
 $endif$
 >>
 

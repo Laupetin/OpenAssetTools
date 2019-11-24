@@ -1,4 +1,5 @@
 #include "AssetLoader.h"
+#include <cassert>
 
 AssetLoader::AssetLoader(const asset_type_t assetType, IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream)
 {
@@ -45,6 +46,20 @@ scr_string_t AssetLoader::UseScriptString(const scr_string_t scrString)
     m_used_script_strings.push_back(scrStringValue);
 
     return scriptStringIndex;
+}
+
+void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t count)
+{
+    assert(varScriptString != nullptr);
+
+    if (atStreamStart)
+        m_stream->Load<scr_string_t>(varScriptString, count);
+
+    for (size_t index = 0; index < count; index++)
+    {
+        *varScriptString = UseScriptString(*varScriptString);
+        varScriptString++;
+    }
 }
 
 void* AssetLoader::LinkAsset(std::string name, void* asset)
