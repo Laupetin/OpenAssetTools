@@ -18,6 +18,7 @@ namespace ZoneCodeGenerator.Parsing.Impl
             '{',
             '}',
             ',',
+            '.',
             '=',
             '(',
             ')',

@@ -47,6 +47,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
                 "word1{word2{ word3 { word4 {word5",
                 "word1}word2} word3 } word4 }word5",
                 "word1,word2, word3 , word4 ,word5",
+                "word1.word2. word3 . word4 .word5",
                 "word1=word2= word3 = word4 =word5",
                 "word1(word2( word3 ( word4 (word5",
                 "word1)word2) word3 ) word4 )word5",
@@ -73,6 +74,7 @@ namespace ZoneCodeGeneratorTests.Parsing.Impl
             AssertTokenOutput("word1", "{", "word2", "{", "word3", "{", "word4", "{", "word5");
             AssertTokenOutput("word1", "}", "word2", "}", "word3", "}", "word4", "}", "word5");
             AssertTokenOutput("word1", ",", "word2", ",", "word3", ",", "word4", ",", "word5");
+            AssertTokenOutput("word1", ".", "word2", ".", "word3", ".", "word4", ".", "word5");
             AssertTokenOutput("word1", "=", "word2", "=", "word3", "=", "word4", "=", "word5");
             AssertTokenOutput("word1", "(", "word2", "(", "word3", "(", "word4", "(", "word5");
             AssertTokenOutput("word1", ")", "word2", ")", "word3", ")", "word4", ")", "word5");
