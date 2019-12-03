@@ -14,12 +14,14 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
     {
         private const string TypeNameToken = "typeName";
         private const string ReorderMemberNameToken = "member";
+        private const string TokenFindFirst = "findFirst";
 
         private static readonly TokenMatcher[] matchers =
         {
             new MatcherLiteral("reorder"),
             new MatcherGroupOptional(new MatcherTypename().WithName(TypeNameToken)),
             new MatcherLiteral(":"),
+            new MatcherGroupOptional(new MatcherLiteral(".", ".", ".").WithName(TokenFindFirst)),
             new MatcherGroupLoop(MatcherGroupLoop.LoopMode.OneMultiple,
                 new MatcherName().WithName(ReorderMemberNameToken)),
             new MatcherLiteral(";")
@@ -70,6 +72,23 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
             // Create a list that will be the sorted list at the end.
             var sortedMembers = new List<MemberInformation>(memberPool.Count);
+
+            if (HasMatcherTokens(TokenFindFirst))
+            {
+                var firstMemberName = NextMatch(ReorderMemberNameToken);
+                var firstMember =
+                    memberPool.FirstOrDefault(information => information.Member.Name.Equals(firstMemberName));
+
+                if (firstMember == null)
+                {
+                    throw new TestFailedException(
+                        $"Cannot find member with name '{firstMemberName}' in type '{typeToReorder.Type.FullName}'.");
+                }
+
+                var firstMemberIndex = memberPool.IndexOf(firstMember);
+                sortedMembers.AddRange(memberPool.GetRange(0, firstMemberIndex + 1));
+                memberPool.RemoveRange(0, firstMemberIndex + 1);
+            }
 
             string nextMemberName;
             while ((nextMemberName = NextMatch(ReorderMemberNameToken)) != null)
