@@ -24,6 +24,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Impl
             new TestReorder(),
             new TestReusable(),
             new TestScriptString(),
+            new TestSetBlock(),
             new TestString(),
             new TestUse()
         };
