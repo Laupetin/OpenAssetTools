@@ -3541,10 +3541,40 @@ union expressionRpnDataUnion
   int cmdIdx;
 };
 
+enum expressionRpnEnum
+{
+    RPN_CONSTANT = 0x0,
+    RPN_CMD_IDX = 0x1,
+    RPN_CMD = 0x2,
+    RPN_END = 0x3,
+};
+
 struct expressionRpn
 {
   int type;
   expressionRpnDataUnion data;
+};
+
+enum ItemType
+{
+    // ITEM_TYPE_XYZ = 1, // ? some kind of read only text field
+    ITEM_TYPE_IMAGE = 2, // Confirmed
+    // ITEM_TYPE_XYZ = 3, // ? some kind of read only text field
+    ITEM_TYPE_LISTBOX = 4, // Confirmed
+    ITEM_TYPE_EDITFIELD = 5, // editable text field
+    ITEM_TYPE_OWNERDRAW = 6, // Confirmed
+    ITEM_TYPE_NUMERICFIELD = 7, // editable text field
+    ITEM_TYPE_SLIDER = 8, // Confirmed
+    ITEM_TYPE_YESNO = 9, // Confirmed
+    ITEM_TYPE_MULTI = 10, // Confirmed
+    ITEM_TYPE_DVARENUM = 11, // Confirmed
+    ITEM_TYPE_BIND_PRIMARY = 12, // Confirmed
+    ITEM_TYPE_NAMEFIELD = 13, // editable text field
+    ITEM_TYPE_UPPERTEXTFIELD = 14, // editable text field
+    ITEM_TYPE_GAME_MESSAGE_WINDOW = 15, // Confirmed
+    ITEM_TYPE_BIND_SECONDARY = 16, // Confirmed
+    ITEM_TYPE_PROFILEMULTI = 22, // Confirmed
+    ITEM_TYPE_DVAR_FLOAT = 30, // editable text field
 };
 
 union itemDefData_t
