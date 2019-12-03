@@ -411,6 +411,7 @@ set count data dataSize;
 use SndPatch;
 set string name;
 set name name;
+set count elements elementCount;
 
 // =========================================
 // clipMap_t
@@ -433,6 +434,23 @@ use GameWorldSp;
 set string name;
 set name name;
 
+// PathData
+use PathData;
+set count nodes nodeCount + 128;
+set block basenodes XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count basenodes nodeCount + 128;
+set count pathVis visBytes;
+set count smoothCache smoothBytes;
+set count nodeTree nodeTreeCount;
+
+// pathnode_tree_t
+use pathnode_tree_t;
+set condition u::s axis < 0;
+set reusable u::child;
+
+// pathnode_tree_nodes_t
+use pathnode_tree_nodes_t;
+
 // =========================================
 // GameWorldMp
 // =========================================
@@ -446,6 +464,16 @@ set name name;
 use MapEnts;
 set string name;
 set name name;
+set count entityString numEntityChars;
+
+// MapTriggers
+use MapTriggers;
+set count models count;
+set reusable models;
+set count hulls hullCount;
+set reusable hulls;
+set count slabs slabCount;
+set reusable slabs;
 
 // =========================================
 // GfxWorld
@@ -481,6 +509,7 @@ set name name;
 use MenuList;
 set string name;
 set name name;
+set count menus menuCount;
 
 // =========================================
 // menuDef_t
@@ -488,22 +517,33 @@ set name name;
 use menuDef_t;
 set string window::name;
 set name window::name;
+set string font;
+set string allowedBinding;
+set string soundName;
+set count items itemCount;
 
-// expressionRpnDataUnion
-use expressionRpnDataUnion;
-set condition cmd never;
+// windowDef_t
+use windowDef_t;
+set string group;
 
-// textDefData_t
-use textDefData_t;
-set condition data never;
+// GenericEventHandler
+use GenericEventHandler;
+set string name;
 
-// itemDefData_t
-use itemDefData_t;
-set condition data never;
+// GenericEventScript
+use GenericEventScript;
+set string action;
 
-// focusDefData_t
-use focusDefData_t;
-set condition data never;
+// ExpressionStatement
+use ExpressionStatement;
+set string filename;
+set count rpn numRpn;
+set reusable rpn;
+
+// expressionRpn
+use expressionRpn;
+set condition data::constant type == RPN_CONSTANT;
+set condition data::cmd never;
 
 // Operand
 use Operand;
@@ -511,6 +551,76 @@ set condition internals::intVal dataType == VAL_INT;
 set condition internals::floatVal dataType == VAL_FLOAT;
 set condition internals::string dataType == VAL_STRING;
 set condition internals::dvar never;
+
+// itemDef_s
+use itemDef_s;
+set string dvar;
+set string profileVar;
+set string dvarTest;
+set string enableDvar;
+set condition parent never;
+set condition typeData::textDef 
+type == 1 || type == 3 || type == 4
+|| type == 5  || type == 7 || type == 8
+|| type == 9 || type == 10 || type == 11
+|| type == 12 || type == 13 || type == 14
+|| type == 15 || type == 16 || type == 18
+|| type == 20 || type == 22;
+set condition typeData::imageDef type == 2;
+set condition typeData::blankButtonDef type == 16 || type == 21;
+set condition typeData::ownerDrawDef type == 6;
+set condition typeData::data never;
+
+// textDef_s
+use textDef_s;
+set string text;
+set condition textTypeData::focusItemDef itemDef_s::type == 3
+|| itemDef_s::type == 4 || itemDef_s::type == 5
+|| itemDef_s::type == 7 || itemDef_s::type == 8
+|| itemDef_s::type == 9 || itemDef_s::type == 10
+|| itemDef_s::type == 11 || itemDef_s::type == 12
+|| itemDef_s::type == 13 || itemDef_s::type == 14
+|| itemDef_s::type == 16 || itemDef_s::type == 20
+|| itemDef_s::type == 21 || itemDef_s::type == 22
+|| itemDef_s::type == 30;
+set condition textTypeData::gameMsgDef itemDef_s::type == 15;
+set condition textTypeData::data never;
+
+// focusItemDef_s
+use focusItemDef_s;
+set string mouseEnterText;
+set string mouseExitText;
+set string mouseEnter;
+set string mouseExit;
+set condition focusTypeData::listBox itemDef_s::type == 4;
+set condition focusTypeData::multi itemDef_s::type == 10;
+set condition focusTypeData::profileMulti itemDef_s::type == 22;
+set condition focusTypeData::editField itemDef_s::type == 5
+|| itemDef_s::type == 5
+|| itemDef_s::type == 7
+|| itemDef_s::type == 8
+|| itemDef_s::type == 9
+|| itemDef_s::type == 12
+|| itemDef_s::type == 13
+|| itemDef_s::type == 14
+|| itemDef_s::type == 16
+|| itemDef_s::type == 30;
+set condition focusTypeData::enumDvar itemDef_s::type == 11;
+set condition focusTypeData::data never;
+
+// listBoxDef_s
+use listBoxDef_s;
+set count rows maxRows;
+
+// MenuRow
+use MenuRow;
+set count cells listBoxDef_s::numColumns;
+set count eventName 32;
+set count onFocusEventName 32;
+
+// MenuCell
+use MenuCell;
+set count stringValue maxChars;
 
 // multiDef_s
 use multiDef_s;
@@ -521,6 +631,9 @@ set string dvarStr;
 use profileMultiDef_s;
 set string profileVarList;
 set string profileVarStr;
+
+// enumDvarDef_s
+set string enumDvarDef_s::enumDvarName;
 
 // =========================================
 // LocalizeEntry
@@ -536,9 +649,188 @@ set name name;
 use WeaponVariantDef;
 set string szInternalName;
 set name szInternalName;
+set reusable weapDef;
+set string szDisplayName;
+set string szAltWeaponName;
+set string szAttachmentUnique;
+set count attachments 63;
+set reusable attachments;
+set count attachmentUniques 95;
+set reusable attachmentUniques;
+set string szXAnims;
+set count szXAnims 88;
+set reusable szXAnims;
+set scriptstring hideTags;
+set count hideTags 32;
+set reusable hideTags;
+set count attachViewModel 8;
+set reusable attachViewModel;
+set count attachWorldModel 8;
+set reusable attachWorldModel;
+set string attachViewModelTag;
+set count attachViewModelTag 8;
+set reusable attachViewModelTag;
+set string attachWorldModelTag;
+set count attachWorldModelTag 8;
+set reusable attachWorldModelTag;
+set string szAmmoDisplayName;
+set string szAmmoName;
+set string szClipName;
 
+// WeaponDef
 use WeaponDef;
-set string accuracyGraphName;
+set string szOverlayName;
+set count gunXModel 16;
+set reusable gunXModel;
+set string szModeName;
+set scriptstring notetrackSoundMapKeys;
+set count notetrackSoundMapKeys 20;
+set reusable notetrackSoundMapKeys;
+set scriptstring notetrackSoundMapValues;
+set count notetrackSoundMapValues 20;
+set reusable notetrackSoundMapValues;
+set string parentWeaponName;
+set string pickupSound;
+set string pickupSoundPlayer;
+set string ammoPickupSound;
+set string ammoPickupSoundPlayer;
+set string projectileSound;
+set string pullbackSound;
+set string pullbackSoundPlayer;
+set string fireSound;
+set string fireSoundPlayer;
+set string fireLoopSound;
+set string fireLoopSoundPlayer;
+set string fireLoopEndSound;
+set string fireLoopEndSoundPlayer;
+set string fireStartSound;
+set string fireStopSound;
+set string fireKillcamSound;
+set string fireStartSoundPlayer;
+set string fireStopSoundPlayer;
+set string fireKillcamSoundPlayer;
+set string fireLastSound;
+set string fireLastSoundPlayer;
+set string emptyFireSound;
+set string emptyFireSoundPlayer;
+set string crackSound;
+set string whizbySound;
+set string meleeSwipeSound;
+set string meleeSwipeSoundPlayer;
+set string meleeHitSound;
+set string meleeMissSound;
+set string rechamberSound;
+set string rechamberSoundPlayer;
+set string reloadSound;
+set string reloadSoundPlayer;
+set string reloadEmptySound;
+set string reloadEmptySoundPlayer;
+set string reloadStartSound;
+set string reloadStartSoundPlayer;
+set string reloadEndSound;
+set string reloadEndSoundPlayer;
+set string rotateLoopSound;
+set string rotateLoopSoundPlayer;
+set string rotateStopSound;
+set string rotateStopSoundPlayer;
+set string deploySound;
+set string deploySoundPlayer;
+set string finishDeploySound;
+set string finishDeploySoundPlayer;
+set string breakdownSound;
+set string breakdownSoundPlayer;
+set string finishBreakdownSound;
+set string finishBreakdownSoundPlayer;
+set string detonateSound;
+set string detonateSoundPlayer;
+set string nightVisionWearSound;
+set string nightVisionWearSoundPlayer;
+set string nightVisionRemoveSound;
+set string nightVisionRemoveSoundPlayer;
+set string altSwitchSound;
+set string altSwitchSoundPlayer;
+set string raiseSound;
+set string raiseSoundPlayer;
+set string firstRaiseSound;
+set string firstRaiseSoundPlayer;
+set string adsRaiseSoundPlayer;
+set string adsLowerSoundPlayer;
+set string putawaySound;
+set string putawaySoundPlayer;
+set string overheatSound;
+set string overheatSoundPlayer;
+set string adsZoomSound;
+set string shellCasing;
+set string shellCasingPlayer;
+set string bounceSound;
+set count bounceSound 32;
+set reusable bounceSound;
+set string standMountedWeapdef;
+set string crouchMountedWeapdef;
+set string proneMountedWeapdef;
+set count worldModel 16;
+set reusable worldModel;
+set string szSharedAmmoCapName;
+set scriptstring explosionTag;
+set string spinLoopSound;
+set string spinLoopSoundPlayer;
+set string startSpinSound;
+set string startSpinSoundPlayer;
+set string stopSpinSound;
+set string stopSpinSoundPlayer;
+set string stackSound;
+set string szSpawnedGrenadeWeaponName;
+set string szDualWieldWeaponName;
+set string projExplosionSound;
+set string projDudSound;
+set string mortarShellSound;
+set string tankShellSound;
+set count parallelBounce 32;
+set reusable parallelBounce;
+set count perpendicularBounce 32;
+set reusable perpendicularBounce;
+set string projIgnitionSound;
+set string accuracyGraphName0;
+set string accuracyGraphName1;
+set reusable accuracyGraphKnots0;
+set reusable accuracyGraphKnots1;
+set count accuracyGraphKnots0 accuracyGraphKnotCount[0];
+set count accuracyGraphKnots1 accuracyGraphKnotCount[1];
+set reusable originalAccuracyGraphKnots0;
+set reusable originalAccuracyGraphKnots1;
+set count originalAccuracyGraphKnots0 accuracyGraphKnotCount[0];
+set count originalAccuracyGraphKnots1 accuracyGraphKnotCount[1];
+set string szUseHintString;
+set string dropHintString;
+set string szScript;
+set count locationDamageMultipliers 21;
+set reusable locationDamageMultipliers;
+set string fireRumble;
+set string meleeImpactRumble;
+set string reloadRumble;
+set string explosionRumble;
+set string flameTableFirstPerson;
+set string flameTableThirdPerson;
+set reusable flameTableFirstPersonPtr;
+set reusable flameTableThirdPersonPtr;
+set string throwBackType;
+
+reorder:
+...
+accuracyGraphName0
+accuracyGraphKnots0
+originalAccuracyGraphKnots0
+accuracyGraphName1
+accuracyGraphKnots1
+originalAccuracyGraphKnots1;
+
+// flameTable
+use flameTable;
+set string name;
+set string flameOffLoopSound;
+set string flameIgniteSound;
+set string flameOnLoopSound;
+set string flameCooldownSound;
 
 // =========================================
 // WeaponAttachment
@@ -546,6 +838,7 @@ set string accuracyGraphName;
 use WeaponAttachment;
 set string szInternalName;
 set name szInternalName;
+set string szDisplayName;
 
 // =========================================
 // WeaponAttachmentUnique
@@ -553,6 +846,32 @@ set name szInternalName;
 use WeaponAttachmentUnique;
 set string szInternalName;
 set name szInternalName;
+set string szAltWeaponName;
+set string szDualWieldWeaponName;
+set scriptstring hideTags;
+set count hideTags 32;
+set reusable hideTags;
+set string viewModelTag;
+set string worldModelTag;
+set string szXAnims;
+set count szXAnims 88;
+set reusable szXAnims;
+set count locationDamageMultipliers 84;
+set reusable locationDamageMultipliers;
+set string fireSound;
+set string fireSoundPlayer;
+set string fireLoopSound;
+set string fireLoopSoundPlayer;
+set string fireLoopEndSound;
+set string fireLoopEndSoundPlayer;
+set string fireStartSound;
+set string fireStopSound;
+set string fireStartSoundPlayer;
+set string fireStopSoundPlayer;
+set string fireLastSound;
+set string fireLastSoundPlayer;
+set string fireKillcamSound;
+set string fireKillcamSoundPlayer;
 
 // =========================================
 // WeaponCamo
@@ -560,6 +879,17 @@ set name szInternalName;
 use WeaponCamo;
 set string name;
 set name name;
+set count camoSets numCamoSets;
+set count camoMaterials numCamoMaterials;
+
+// WeaponCamoMaterialSet
+use WeaponCamoMaterialSet;
+set count materials numMaterials;
+
+// WeaponCamoMaterial
+use WeaponCamoMaterial;
+set count baseMaterials numBaseMaterials;
+set count camoMaterials numBaseMaterials;
 
 // =========================================
 // SndDriverGlobals
@@ -567,6 +897,14 @@ set name name;
 use SndDriverGlobals;
 set string name;
 set name name;
+set count groups groupCount;
+set count curves curveCount;
+set count pans panCount;
+set count duckGroups duckGroupCount;
+set count contexts contextCount;
+set count masters masterCount;
+set count voiceDucks voiceDuckCount;
+set count futzes futzCount;
 
 // =========================================
 // FxEffectDef
@@ -616,6 +954,13 @@ set string StringTableCell::string;
 use LeaderboardDef;
 set string name;
 set name name;
+set count columns columnCount;
+
+// LbColumnDef
+use LbColumnDef;
+set string name;
+set string statName;
+set string localization;
 
 // =========================================
 // XGlobals
@@ -623,6 +968,14 @@ set name name;
 use XGlobals;
 set string name;
 set name name;
+//set count gumps gumpsCount;
+//set count overlays overlayCount;
+
+// gump_info_t
+set string gump_info_t::name;
+
+// overlay_info_t
+set string overlay_info_t::name;
 
 // =========================================
 // ddlRoot_t
@@ -660,6 +1013,20 @@ set count hashTable memberCount;
 use Glasses;
 set string name;
 set name name;
+set count glasses numGlasses;
+set condition workMemory never;
+
+// Glass
+use Glass;
+set reusable glassDef;
+set count outline numOutlineVerts;
+
+// GlassDef
+use GlassDef;
+set string name;
+set string crackSound;
+set string shatterShound;
+set string autoShatterShound;
 
 // =========================================
 // EmblemSet
@@ -696,7 +1063,15 @@ set string sndNames;
 set string sndMaterialNames;
 set string futzName;
 set string animSet;
+set scriptstring extraWheelTags;
+set scriptstring driverHideTag;
+set scriptstring attachmentTags;
+set scriptstring deathAttachmentTags;
+set scriptstring deathFxTag;
 set string deathFxSound;
+set scriptstring lightFxTag;
+set scriptstring friendlyLightFxTag;
+set scriptstring enemyLightFxTag;
 set string shootShock;
 set string shootRumble;
 set string rumbleType;
@@ -714,6 +1089,19 @@ set string steerGraphName;
 set condition steerGraph never;
 set string accelGraphName;
 set condition accelGraph never;
+set string csvInclude;
+
+// VehicleParameter
+use VehicleParameter;
+set string m_name;
+
+// VehicleDriveBySound
+use VehicleDriveBySound;
+set string name;
+
+// VehicleEngineSound
+use VehicleEngineSound;
+set string name;
 
 // =========================================
 // MemoryBlock
@@ -728,6 +1116,15 @@ set name name;
 use AddonMapEnts;
 set string name;
 set name name;
+set count entityString numEntityChars;
+set reusable info;
+set count cmodels numSubModels;
+set count models numSubModels;
+
+// MapTriggers: See MapEnts
+// ClipInfo: See clipMap_t
+// cmodel_t: See clipMap_t
+// GfxBrushModel: See GfxWorld
 
 // =========================================
 // TracerDef
@@ -779,5 +1176,14 @@ set name name;
 use ZBarrierDef;
 set string name;
 set name name;
+set scriptstring zombieTauntAnimState;
+set scriptstring zombieReachThroughAnimState;
+
+// ZBarrierBoard
+use ZBarrierBoard;
+set string pTearAnim;
+set string pBoardAnim;
+set scriptstring zombieBoardTearStateName;
+set scriptstring zombieBoardTearSubStateName;
 
 // EOF
