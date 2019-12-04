@@ -19,7 +19,16 @@ LoadEmbedded(context, structure, member, reference) ::= <%
 $LoadEmbedded_TypeCheck(context, structure, member, reference)$
 %>
 
-LoadEmbeddedArray(context, structure, member, reference) ::= <<
-$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;
+LoadEmbeddedArray_TypeCheck(context, structure, member, reference) ::= <%
+$if(member.IsScriptString)$
+varScriptString = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadScriptStringArray(false, $reference.ArraySize$);
+$else$
+$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadArray_$member.Member.VariableType.Type.Name$(false, $reference.ArraySize$);
+$endif$
+%>
+
+LoadEmbeddedArray(context, structure, member, reference) ::= <<
+$LoadEmbeddedArray_TypeCheck(context, structure, member, reference)$
 >>
