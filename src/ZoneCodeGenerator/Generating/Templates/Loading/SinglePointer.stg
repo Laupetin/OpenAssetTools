@@ -45,7 +45,11 @@ if ($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$
 >>
 
 LoadSinglePointer_String(context, structure, member, reference) ::= <%
+$if(member.Member.VariableType.IsConst)$
 varXString = &$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+$else$
+varXString = const_cast<const char**>(&$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);$\n$
+$endif$
 LoadXString(false);
 %>
 
