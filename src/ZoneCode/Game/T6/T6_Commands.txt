@@ -74,6 +74,7 @@ set count pieces numpieces;
 use PhysPreset;
 set string name;
 set name name;
+set string sndAliasPrefix;
 
 // =========================================
 // PhysConstraints
@@ -85,7 +86,9 @@ set name name;
 use PhysConstraint;
 set scriptstring targetname;
 set scriptstring target_ent1;
+set string target_bone1;
 set scriptstring target_ent2;
+set string target_bone2;
 
 // =========================================
 // DestructibleDef
@@ -393,6 +396,11 @@ set string subtitle;
 set string secondaryname;
 set string assetFileName;
 
+// SndDuck
+use SndDuck;
+set count attenuation 128;
+set count filter 128;
+
 // SndRuntimeAssetBank
 use SndRuntimeAssetBank;
 set string zone;
@@ -467,6 +475,10 @@ set reusable cmodel_t::info;
 use ComWorld;
 set string name;
 set name name;
+set count primaryLights primaryLightCount;
+
+// ComPrimaryLight
+set string ComPrimaryLight::defName;
 
 // =========================================
 // GameWorldSp
@@ -536,6 +548,10 @@ set name name;
 use Font_s;
 set string fontName;
 set name fontName;
+set reusable glyphs;
+set count glyphs glyphCount;
+set reusable kerningPairs;
+set count kerningPairs kerningPairsCount;
 
 // =========================================
 // FontIcon
@@ -543,6 +559,13 @@ set name fontName;
 use FontIcon;
 set string name;
 set name name;
+set reusable fontIconEntry;
+set count fontIconEntry numEntries;
+set reusable fontIconAlias;
+set count fontIconAlias numAliasEntries;
+
+// FontIconName
+set string FontIconName::string;
 
 // =========================================
 // MenuList
@@ -1072,6 +1095,37 @@ set string autoShatterShound;
 // =========================================
 // EmblemSet
 // =========================================
+use EmblemSet;
+set count layers layerCount;
+set count categories categoryCount;
+set count iconTypes iconTypeCount;
+set count bgCategories iconTypeCount;
+set count icons iconTypeCount;
+set count backgrounds backgroundCount;
+set count backgroundLookup backgroundLookupCount;
+
+// EmblemCategory
+use EmblemCategory;
+set string name;
+set string description;
+
+// EmblemIconType
+use EmblemIconType;
+set string name;
+set string description;
+
+// EmblemBGCategory
+use EmblemBGCategory;
+set string name;
+set string description;
+
+// EmblemIcon
+use EmblemIcon;
+set string description;
+
+// EmblemBackground
+use EmblemBackground;
+set string description;
 
 // =========================================
 // ScriptParseTree

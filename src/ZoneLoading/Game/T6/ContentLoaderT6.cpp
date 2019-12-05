@@ -105,55 +105,55 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
 
     switch(varXAsset->type)
     {
-        // LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset);
-        // LOAD_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints);
+        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset);
+        LOAD_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints);
         // LOAD_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef);
         // LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts);
         // LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model);
-        // LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material);
+        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material);
         // LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
         // LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
-        // LOAD_ASSET(ASSET_TYPE_SOUND, SndBank, sound);
-        // LOAD_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch);
+        LOAD_ASSET(ASSET_TYPE_SOUND, SndBank, sound);
+        LOAD_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch);
         // LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap);
         // LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap);
-        // LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
+        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
         // LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp);
         // LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp);
         LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
         // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
-        // LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
-        // LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
-        // LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);
+        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
+        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
+        LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);
         // LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
         // LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
         LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
         // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon);
-        // LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment);
+        LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment);
         // LOAD_ASSET(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique, attachmentUnique);
         // LOAD_ASSET(ASSET_TYPE_WEAPON_CAMO, WeaponCamo, weaponCamo);
-        // LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
+        LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
         // LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
         // LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
         LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
         LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
-        // LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
+        LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
         // LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals);
         LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot);
-        // LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses);
-        // LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet);
+        LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses);
+        LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet);
         LOAD_ASSET(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree, scriptParseTree);
         LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs);
         // LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef);
         // LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
         LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
-        // LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
-        // LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef);
+        LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
+        LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef);
         LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
         LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug);
-        // LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef);
+        LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef);
         // LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef);
-        // LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef);
+        LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef);
 
     default:
         {

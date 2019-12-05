@@ -591,6 +591,8 @@ struct __declspec(align(8)) MaterialInfo
   int contents;
 };
 
+typedef __declspec(align(8)) GfxStateBits GfxStateBitsTable;
+
 struct Material
 {
   MaterialInfo info;
@@ -604,7 +606,7 @@ struct Material
   MaterialTechniqueSet *techniqueSet;
   MaterialTextureDef *textureTable;
   MaterialConstantDef *constantTable;
-  GfxStateBits *stateBitsTable;
+  GfxStateBitsTable*stateBitsTable;
   Material *thermalMaterial;
 };
 
@@ -741,6 +743,8 @@ struct __declspec(align(2)) SndRuntimeAssetBank
 };
 #pragma pack(pop)
 
+typedef __declspec(align(2048)) char SndChar2048;
+
 struct SndLoadedAssets
 {
   const char *zone;
@@ -749,7 +753,7 @@ struct SndLoadedAssets
   unsigned int entryCount;
   SndAssetBankEntry *entries;
   unsigned int dataSize;
-  char *data;
+  SndChar2048 *data;
 };
 
 enum SndBankState
@@ -2584,7 +2588,7 @@ struct SndAliasList
   int sequence;
 };
 
-struct SndIndexEntry
+struct __declspec(align(4)) SndIndexEntry
 {
   unsigned __int16 value;
   unsigned __int16 next;
@@ -2612,6 +2616,8 @@ struct SndRadverb
   float returnHighpass;
 };
 
+typedef __declspec(align(16)) float SndFloatAlign16;
+
 struct SndDuck
 {
   char name[32];
@@ -2623,8 +2629,8 @@ struct SndDuck
   float length;
   unsigned int fadeInCurve;
   unsigned int fadeOutCurve;
-  float *attenuation;
-  float *filter;
+  SndFloatAlign16 *attenuation;
+  SndFloatAlign16 *filter;
   int updateWhilePaused;
 };
 
