@@ -3,28 +3,42 @@ delimiters "$", "$"
 // Everything related to loading an embedded reference
 
 LoadEmbedded_Load(context, structure, member, reference) ::= <<
-$TypeVarName(member.StructureType)$ = &$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;
+$TypeVarName(member.Member.VariableType.Type)$ = &$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
 Load_$member.Member.VariableType.Type.Name$(false);
 >>
 
 LoadEmbedded_TypeCheck(context, structure, member, reference) ::= <%
 $if(member.IsScriptString)$
-$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = UseScriptString($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = UseScriptString($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
 $else$
 $LoadEmbedded_Load(context, structure, member, reference)$
 $endif$
 %>
 
+LoadEmbedded_Condition(context, structure, member, reference) ::= <<
+$if(member.Condition)$
+if($PrintEvaluation(member.Condition)$)
+{
+    $LoadEmbedded_TypeCheck(context, structure, member, reference)$
+    $if(structure.IsUnion)$
+    return;
+    $endif$
+}
+$else$$\\$
+$LoadEmbedded_TypeCheck(context, structure, member, reference)$$\\$
+$endif$
+>>
+
 LoadEmbedded(context, structure, member, reference) ::= <%
-$LoadEmbedded_TypeCheck(context, structure, member, reference)$
+$LoadEmbedded_Condition(context, structure, member, reference)$
 %>
 
 LoadEmbeddedArray_TypeCheck(context, structure, member, reference) ::= <%
 $if(member.IsScriptString)$
-varScriptString = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+varScriptString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadScriptStringArray(false, $reference.ArraySize$);
 $else$
-$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+$TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadArray_$member.Member.VariableType.Type.Name$(false, $reference.ArraySize$);
 $endif$
 %>

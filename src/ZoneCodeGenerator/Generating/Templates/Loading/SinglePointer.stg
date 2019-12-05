@@ -3,39 +3,41 @@ delimiters "$", "$"
 // Everything related to loading a pointer with a count that is statically 1
 
 LoadSinglePointerInner(context, structure, member, reference) ::= <%
-$TypeVarName(structure)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$));$\n$
+$TypeVarName(structure.Type)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); 
+// $member.Member.VariableType.Type.Alignment$
+$\n$
 
 $if(member.StructureType && !member.StructureType.IsLeaf)$
 
-$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+$TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 Load_$member.Member.VariableType.Type.Name$(true);
 
 $else$
 
-m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
 
 $endif$
 %>
 
 LoadSinglePointerAsset(context, structure, member, reference) ::= <<
 $LoaderClassName(member.StructureType)$ loader(m_script_string_provider, m_zone, m_stream);
-loader.Load(&$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+loader.Load(&$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
 >>
 
 LoadSinglePointer_PointerCheck(context, structure, member, reference) ::= <<
-if ($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$)
+if ($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$)
 {
     $if(member.StructureType && member.StructureType.IsAsset)$
     $LoadSinglePointerAsset(context, structure, member, reference)$
     $else$
     $if(member.IsReusable)$
-    if($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
+    if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
     {
         $LoadSinglePointerInner(context, structure, member, reference)$
     }
     else
     {
-        $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+        $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
     }
     $else$
     $LoadSinglePointerInner(context, structure, member, reference)$
@@ -46,9 +48,9 @@ if ($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$
 
 LoadSinglePointer_String(context, structure, member, reference) ::= <%
 $if(member.Member.VariableType.IsConst)$
-varXString = &$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+varXString = &$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 $else$
-varXString = const_cast<const char**>(&$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);$\n$
+varXString = const_cast<const char**>(&$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);$\n$
 $endif$
 LoadXString(false);
 %>

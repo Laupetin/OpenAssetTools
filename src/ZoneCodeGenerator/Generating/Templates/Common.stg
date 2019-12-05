@@ -5,8 +5,8 @@ Lower(name) ::= "$name; format=\"lower\"$"
 
 TypeDeclaration(typeDecl) ::= "$if(typeDecl.IsConst)$const $endif$$typeDecl.Type.FullName$"
 
-TypeVarName(structure) ::= "var$SafeTypeName(structure.Type)$"
-TypePtrVarName(structure) ::= "var$SafeTypeName(structure.Type)$Ptr"
+TypeVarName(type) ::= "var$SafeTypeName(type)$"
+TypePtrVarName(type) ::= "var$SafeTypeName(type)$Ptr"
 
 SafeTypeName(type) ::= "$type; format=\"safe_name\"$"
 
@@ -33,7 +33,7 @@ $endif$
 %>
 
 PrintOperandDynamic(op) ::= <%
-$TypeVarName(op.Structure)$
+$TypeVarName(op.Structure.Type)$
 ->$first(op.ReferencedMemberChain):{member | $member.Member.Name$}$
 $rest(op.ReferencedMemberChain):{member | .$member.Member.Name$}$
 $op.ArrayIndices:{ arrayIndex | [$arrayIndex$]}$

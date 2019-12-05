@@ -36,6 +36,11 @@ namespace ZoneCodeGenerator.Generating
         private readonly IDictionary<DataType, UsedType> usedTypes;
         public IEnumerable<UsedType> UsedTypes => usedTypes.Values;
 
+        public IEnumerable<StructureInformation> UsedStructures => UsedTypes
+            .Select(type => type.Information)
+            .Where(information => information != null)
+            .Distinct();
+
         public IEnumerable<UsedType> ReferencedAssets => UsedTypes.Where(type => type.Information != null && type.Information.IsAsset && type.Information != Asset);
 
         public IList<FastFileBlock> Blocks { get; private set; }

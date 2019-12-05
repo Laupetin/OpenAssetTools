@@ -3,24 +3,28 @@ delimiters "$", "$"
 // Everything related to loading a pointer with a count that can be larger than 1
 
 LoadArrayPointer_Loading(context, structure, member, reference) ::= <%
-$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$));$\n$
+$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); 
+// $member.Member.VariableType.Type.Alignment$
+$\n$
 
 $if(member.StructureType && !member.StructureType.IsLeaf)$
 
-$TypeVarName(member.StructureType)$ = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+$TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
 
 $else$
 
-m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
 
 $endif$
 %>
 
 LoadArrayPointer_ScriptString(context, structure, member, reference) ::= <%
-$TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$));$\n$
+$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); 
+// $member.Member.VariableType.Type.Alignment$
+$\n$
 
-varScriptString = $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+varScriptString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadScriptStringArray(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
 
 %>
@@ -34,16 +38,16 @@ $endif$
 %>
 
 LoadArrayPointer_PointerCheck(context, structure, member, reference) ::= <<
-if ($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$)
+if ($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$)
 {
     $if(member.IsReusable)$
-    if($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
+    if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
     {
         $LoadArrayPointer_TypeCheck(context, structure, member, reference)$
     }
     else
     {
-        $TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+        $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
     }
     $else$
     $LoadArrayPointer_TypeCheck(context, structure, member, reference)$

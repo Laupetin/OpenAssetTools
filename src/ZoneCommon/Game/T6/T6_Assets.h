@@ -794,6 +794,10 @@ struct SndPatch
   unsigned int *elements;
 };
 
+typedef unsigned short LeafBrush;
+typedef __declspec(align(128)) cbrush_t cbrush_array_t;
+typedef __declspec(align(128)) Bounds BoundsArray;
+
 struct ClipInfo
 {
   int planeCount;
@@ -805,14 +809,14 @@ struct ClipInfo
   unsigned int leafbrushNodesCount;
   cLeafBrushNode_s *leafbrushNodes;
   unsigned int numLeafBrushes;
-  unsigned __int16 *leafbrushes;
+  LeafBrush* leafbrushes;
   unsigned int numBrushVerts;
   vec3_t *brushVerts;
   unsigned int nuinds;
   unsigned __int16 *uinds;
   unsigned __int16 numBrushes;
-  cbrush_t *brushes;
-  Bounds *brushBounds;
+  cbrush_array_t *brushes;
+  BoundsArray *brushBounds;
   int *brushContents;
 };
 
@@ -2667,7 +2671,7 @@ struct cbrushside_t
 
 struct cLeafBrushNodeLeaf_t
 {
-  unsigned __int16 *brushes;
+  LeafBrush *brushes;
 };
 
 struct cLeafBrushNodeChildren_t
@@ -3253,7 +3257,7 @@ struct GfxBrushModelWritable
   float padding2;
 };
 
-struct GfxBrushModel
+struct __declspec(align(16)) GfxBrushModel
 {
   GfxBrushModelWritable writable;
   vec3_t bounds[2];

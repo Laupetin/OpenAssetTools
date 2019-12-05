@@ -420,6 +420,47 @@ use clipMap_t;
 set string name;
 set name name;
 
+// ClipInfo
+use ClipInfo;
+set reusable planes;
+set count planes planeCount;
+set reusable materials;
+set count materials numMaterials;
+set reusable brushsides;
+set count brushsides numBrushSides;
+set reusable leafbrushNodes;
+set count leafbrushNodes leafbrushNodesCount;
+set reusable leafbrushes;
+set count leafbrushes numLeafBrushes;
+set count brushVerts numBrushVerts;
+set count uinds nuinds;
+set reusable brushes;
+set count brushes numBrushes;
+set reusable brushBounds;
+set count brushBounds numBrushes;
+set reusable brushContents;
+set count brushContents numBrushes;
+
+// ClipMaterial
+set string ClipMaterial::name;
+
+// cbrushside_t
+set reusable cbrushside_t::plane;
+
+// cLeafBrushNode_s
+use cLeafBrushNode_s;
+set condition data::leaf leafBrushCount > 0;
+set reusable data::leaf::brushes;
+set count data::leaf::brushes leafBrushCount;
+
+// cbrush_t
+use cbrush_t;
+set reusable sides;
+set reusable verts;
+
+// cmodel_t
+set reusable cmodel_t::info;
+
 // =========================================
 // ComWorld
 // =========================================
