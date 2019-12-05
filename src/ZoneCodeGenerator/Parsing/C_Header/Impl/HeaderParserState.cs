@@ -11,7 +11,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
     class HeaderParserState : IHeaderParserState
     {
         private const int DefaultPack = 8;
-        
+
         private readonly Block defaultBlock;
         private readonly Stack<int> packStack;
         private readonly Stack<Block> blockStack;
@@ -78,8 +78,9 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
             {
                 var existingForwardDeclaration = forwardDeclarations[forwardDeclaration.FullName];
 
-                if(existingForwardDeclaration.Type != forwardDeclaration.Type)
-                    throw new ParserException($"Forward declaration of type '{forwardDeclaration.FullName}' already done with different type.");
+                if (existingForwardDeclaration.Type != forwardDeclaration.Type)
+                    throw new ParserException(
+                        $"Forward declaration of type '{forwardDeclaration.FullName}' already done with different type.");
             }
             else
             {
@@ -91,7 +92,8 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
         {
             var currentNamespaceTypename = Namespace.Combine(CurrentNamespace, typename);
 
-            var baseType = DataTypeBaseType.BASE_TYPES.FirstOrDefault(databaseBaseType => databaseBaseType.Name.Equals(typename));
+            var baseType =
+                DataTypeBaseType.BASE_TYPES.FirstOrDefault(databaseBaseType => databaseBaseType.Name.Equals(typename));
 
             if (baseType != null)
                 return baseType;
@@ -100,7 +102,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
             {
                 return dataTypes[typename];
             }
-            
+
             if (dataTypes.ContainsKey(currentNamespaceTypename))
             {
                 return dataTypes[currentNamespaceTypename];
@@ -121,7 +123,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
 
         public EnumMember FindEnumMember(string enumMemberName)
         {
-            foreach(var block in blockStack)
+            foreach (var block in blockStack)
             {
                 if (!(block is BlockEnum blockEnum)) continue;
 
@@ -147,7 +149,7 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
 
         private void ResolveForwardDeclarations()
         {
-            foreach(var forwardDeclaration in forwardDeclarations.Values)
+            foreach (var forwardDeclaration in forwardDeclarations.Values)
             {
                 var foundType = FindType(forwardDeclaration.FullName);
 
@@ -159,19 +161,25 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
 
             foreach (var dataType in dataTypes.Values)
             {
-                if (!(dataType is DataTypeWithMembers dataTypeWithMembers)) continue;
-
-                foreach (var variable in dataTypeWithMembers.Members)
+                if (dataType is DataTypeWithMembers dataTypeWithMembers)
                 {
-                    if (variable.VariableType.Type is ForwardDeclaration forwardDeclaration)
-                        variable.VariableType.Type = forwardDeclaration.ForwardedType;
+                    foreach (var variable in dataTypeWithMembers.Members)
+                    {
+                        if (variable.VariableType.Type is ForwardDeclaration forwardDeclaration)
+                            variable.VariableType.Type = forwardDeclaration.ForwardedType;
+                    }
+                }
+                else if (dataType is DataTypeTypedef typeDef)
+                {
+                    if (typeDef.TypeDefinition.Type is ForwardDeclaration forwardDeclaration)
+                        typeDef.TypeDefinition.Type = forwardDeclaration.ForwardedType;
                 }
             }
         }
 
         public void FinishAndSaveTo(IDataRepository dataRepository)
         {
-            if(blockStack.Count > 0)
+            if (blockStack.Count > 0)
                 throw new ParserException($"Parsing finished but {blockStack.Count} blocks were not closed.");
 
             ResolveForwardDeclarations();
