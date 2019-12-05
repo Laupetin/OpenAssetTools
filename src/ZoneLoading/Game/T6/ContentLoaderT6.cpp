@@ -120,7 +120,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
         // LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp);
         // LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp);
-        // LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
+        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
         // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
         // LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
         // LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
@@ -146,7 +146,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs);
         // LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef);
         // LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
-        // LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
+        LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
         // LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
         // LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef);
         LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
