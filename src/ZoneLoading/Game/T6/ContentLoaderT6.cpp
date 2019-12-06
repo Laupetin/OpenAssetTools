@@ -125,7 +125,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
         LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
         LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);
-        // LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
+        LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
         // LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
         LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
         // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon);
@@ -134,7 +134,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_WEAPON_CAMO, WeaponCamo, weaponCamo);
         LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
         // LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
-        // LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
+        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
         LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
         LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
         LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
@@ -152,7 +152,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
         LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug);
         LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef);
-        // LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef);
+        LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef);
         LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef);
 
     default:
