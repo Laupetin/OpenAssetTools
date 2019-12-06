@@ -167,13 +167,6 @@ void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$(const bool 
 }
 >>
 
-LoadPointerArrayMethod(context, type, structure) ::= <<
-void $LoaderClassName(context.Asset)$::LoadPtrArray_$SafeTypeName(type)$(const bool atStreamStart, const size_t count)
-{
-    
-}
->>
-
 LoadArrayMethod(context, type, structure) ::= <<
 void $LoaderClassName(context.Asset)$::LoadArray_$type.Name$(const bool atStreamStart, const size_t count)
 {
@@ -200,12 +193,12 @@ void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atS
 
     if(atStreamStart)
         m_stream->Load<$structure.Type.FullName$>($TypeVarName(structure.Type)$);$\\$
-    $if(structure.Block.IsTemp)$
+    $if(structure.ReferenceFromNonDefaultNormalBlockExists || structure.IsAsset)$
 
     m_stream->PushBlock($context.DefaultNormalBlock.Name$);$\\$
     $endif$
     $structure.OrderedMembers:{member | $LoadMemberIfNeedsTreatment(context, structure, member)$}$
-    $if(structure.Block.IsTemp)$
+    $if(structure.ReferenceFromNonDefaultNormalBlockExists || structure.IsAsset)$
 
     m_stream->PopBlock();
     $endif$
@@ -288,7 +281,7 @@ using namespace $context.Game$;
 
 $ConstructorMethod(context)$
 
-$context.UsedTypes:{usedType | $if(usedType.PointerArrayReferenceExists)$$LoadPointerArrayMethod(context, usedType.Type, usedType.Information)$$\n$$\n$$endif$}$
+$context.UsedTypes:{usedType | $if(usedType.PointerArrayReferenceExists)$$LoadPointerArrayMethod(context, usedType.Type, usedType.Information, usedType.PointerArrayReferenceIsReusable)$$\n$$\n$$endif$}$
 $context.UsedTypes:{usedType | $if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf)$$LoadArrayMethod(context, usedType.Type, usedType.Information)$$\n$$\n$$endif$}$
 $context.UsedStructures:{usedStructure | $if(!usedStructure.IsLeaf && !usedStructure.IsAsset)$$LoadMethod(context, usedStructure)$$\n$$\n$$endif$}$
 $LoadMethod(context, context.Asset)$

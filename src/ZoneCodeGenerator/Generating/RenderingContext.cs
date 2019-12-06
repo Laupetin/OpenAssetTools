@@ -18,6 +18,7 @@ namespace ZoneCodeGenerator.Generating
             public bool NonEmbeddedReferenceExists { get; set; }
             public bool ArrayReferenceExists { get; set; }
             public bool PointerArrayReferenceExists { get; set; }
+            public bool PointerArrayReferenceIsReusable { get; set; }
 
             public UsedType(DataType type, StructureInformation information)
             {
@@ -27,6 +28,7 @@ namespace ZoneCodeGenerator.Generating
                 NonEmbeddedReferenceExists = false;
                 ArrayReferenceExists = false;
                 PointerArrayReferenceExists = false;
+                PointerArrayReferenceIsReusable = false;
             }
         }
 
@@ -87,8 +89,13 @@ namespace ZoneCodeGenerator.Generating
                 if (member.Computations.ContainsArrayPointerReference || member.Computations.ContainsArrayReference)
                     usedType.ArrayReferenceExists = true;
 
-                if (member.Computations.ContainsPointerArrayReference)
+                if (member.Computations.ContainsPointerArrayReference && !member.IsString)
+                {
                     usedType.PointerArrayReferenceExists = true;
+
+                    if (member.IsReusable)
+                        usedType.PointerArrayReferenceIsReusable = true;
+                }
             }
         }
 

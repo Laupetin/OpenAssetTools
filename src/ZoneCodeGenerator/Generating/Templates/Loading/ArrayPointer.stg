@@ -58,14 +58,42 @@ if ($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(refere
 LoadArrayPointer_Condition(context, structure, member, reference) ::= <<
 $if(member.Condition)$$\\$
 if($PrintEvaluation(member.Condition)$)
+
+LoadPointerArrayMethod_PointerCheck(context, type, structure, reusable) ::= <<
+if (*$TypePtrVarName(type)$)
 {
-    $LoadArrayPointer_PointerCheck(context, structure, member, reference)$
+    $if(structure && structure.IsAsset)$
+    $LoadPointerArrayMethod_Asset(context, type, structure)$
+    $else$
+    $if(reusable)$
+    if(*$TypePtrVarName(type)$ == PTR_FOLLOWING)
+    {
+        $LoadPointerArrayMethod_Loading(context, type, structure)$
+    }
+    else
+    {
+        *$TypePtrVarName(type)$ = m_stream->ConvertOffsetToPointer(*$TypePtrVarName(type)$);
+    }
+    $else$
+    $LoadPointerArrayMethod_Loading(context, type, structure)$
+    $endif$
+    $endif$
 }
-$else$$\\$
-$LoadArrayPointer_PointerCheck(context, structure, member, reference)$$\\$
-$endif$
 >>
 
-LoadArrayPointer(context, structure, member, reference) ::= <%
-$LoadArrayPointer_Condition(context, structure, member, reference)$
-%>
+LoadPointerArrayMethod(context, type, structure, reusable) ::= <<
+void $LoaderClassName(context.Asset)$::LoadPtrArray_$SafeTypeName(type)$(const bool atStreamStart, const size_t count)
+{
+    assert($TypePtrVarName(type)$ != nullptr);
+
+    if(atStreamStart)
+        m_stream->Load<$type.FullName$*>($TypePtrVarName(type)$, count);
+
+    for(size_t index = 0; index < count; index++)
+    {
+        $LoadPointerArrayMethod_PointerCheck(context, type, structure, reusable)$
+
+        $TypePtrVarName(type)$++;
+    }
+}
+>>
