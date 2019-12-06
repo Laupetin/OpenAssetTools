@@ -7,7 +7,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
 {
     class PostProcessorLeafs : IDataPostProcessor
     {
-        private static bool IsLeaf(StructureInformation structureInformation)
+        public static bool IsLeaf(StructureInformation structureInformation)
         {
             foreach (var member in structureInformation.OrderedMembers)
             {

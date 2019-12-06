@@ -124,7 +124,7 @@ namespace ZoneCodeGenerator.Persistence
                         memberStructureInformation = GetInformationFor(memberType);
                     }
 
-                    information.OrderedMembers.Add(new MemberInformation(member, memberStructureInformation));
+                    information.OrderedMembers.Add(new MemberInformation(information, member, memberStructureInformation));
                 }
             }
 

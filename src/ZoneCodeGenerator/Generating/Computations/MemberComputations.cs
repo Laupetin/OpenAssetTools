@@ -73,6 +73,12 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsNotDefaultNormalBlock =>
             information.Block != null && !(information.Block.IsNormal && information.Block.IsDefault);
 
+        public bool IsFirstMember =>
+            information.Parent.OrderedMembers.FirstOrDefault(member => !member.IsLeaf && !member.Computations.ShouldIgnore) == information;
+
+        public bool IsLastMember =>
+            information.Parent.OrderedMembers.LastOrDefault(member => !member.IsLeaf && !member.Computations.ShouldIgnore) == information;
+
         public MemberReferenceComputations References => new MemberReferenceComputations(information);
 
         public MemberComputations(MemberInformation information)

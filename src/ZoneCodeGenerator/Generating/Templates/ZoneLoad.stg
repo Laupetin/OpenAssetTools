@@ -79,23 +79,74 @@ Loading member $member.Member.Name$
 
 LoadMemberReference(context, structure, member, reference) ::= <%
 $if(reference.IsSinglePointer)$
-$\n$$\n$
 $LoadSinglePointer(context, structure, member, reference)$
 $elseif(reference.IsArrayPointer)$
-$\n$$\n$
 $LoadArrayPointer(context, structure, member, reference)$
 $elseif(reference.IsPointerArray)$
-$\n$$\n$
 $LoadPointerArray(context, structure, member, reference)$
 $elseif(reference.IsArray && !reference.NextReference)$
-$\n$$\n$
 $LoadEmbeddedArray(context, structure, member, reference)$
 $elseif(!reference.Reference)$
-$\n$$\n$
 $LoadEmbedded(context, structure, member, reference)$
 $else$
-$\n$$\n$
 // $member.Member.Name$
+$endif$
+%>
+
+LoadMemberCondition_Struct(context, structure, member) ::= <<
+
+
+$if(member.Condition)$
+if($PrintEvaluation(member.Condition)$)
+{
+    $LoadMemberReference(context, structure, member, member.Computations.References)$
+}$\\$
+$else$
+$LoadMemberReference(context, structure, member, member.Computations.References)$$\\$
+$endif$
+>>
+
+LoadMemberCondition_Union(context, structure, member) ::= <<
+$if(member.Computations.IsFirstMember)$$\\$
+$if(member.Condition)$
+
+if($PrintEvaluation(member.Condition)$)
+{
+    $LoadMemberReference(context, structure, member, member.Computations.References)$
+}$\\$
+$else$
+
+$LoadMemberReference(context, structure, member, member.Computations.References)$$\\$
+$endif$$\\$
+$elseif(member.Computations.IsLastMember)$$\\$
+$if(member.Condition)$
+else if($PrintEvaluation(member.Condition)$)
+{
+    $LoadMemberReference(context, structure, member, member.Computations.References)$
+}$\\$
+$else$
+else
+{
+    $LoadMemberReference(context, structure, member, member.Computations.References)$
+}$\\$
+$endif$$\\$
+$else$$\\$
+$if(member.Condition)$
+else if($PrintEvaluation(member.Condition)$)
+{
+    $LoadMemberReference(context, structure, member, member.Computations.References)$
+}$\\$
+$else$$\\$
+#error Middle member of union must have condition ($member.Member.Name$)
+$endif$$\\$
+$endif$
+>>
+
+LoadMemberCondition(context, structure, member) ::= <%
+$if(structure.IsUnion)$
+$LoadMemberCondition_Union(context, structure, member)$
+$else$
+$LoadMemberCondition_Struct(context, structure, member)$
 $endif$
 %>
 
@@ -103,11 +154,11 @@ LoadMemberIfNeedsTreatment(context, structure, member) ::= <%
 $if(!member.Computations.ShouldIgnore)$
 
 $if(member.IsString || member.IsScriptString)$
-$LoadMemberReference(context, structure, member, member.Computations.References)$
+$LoadMemberCondition(context, structure, member)$
 $elseif(member.Computations.ContainsNonEmbeddedReference)$
-$LoadMemberReference(context, structure, member, member.Computations.References)$
+$LoadMemberCondition(context, structure, member)$
 $elseif(member.StructureType && !member.StructureType.IsLeaf)$
-$LoadMemberReference(context, structure, member, member.Computations.References)$
+$LoadMemberCondition(context, structure, member)$
 $endif$
 
 $endif$
