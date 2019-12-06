@@ -39,6 +39,9 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
                     if (member.Computations.ContainsArrayReference)
                         member.StructureType.ArrayReferenceExists = true;
 
+                    if (member.Computations.IsNotDefaultNormalBlock)
+                        member.StructureType.ReferenceFromNonDefaultNormalBlockExists = true;
+
                     member.StructureType.Usages.Add(currentStructure);
                     processingQueue.Enqueue(member.StructureType);
                 }

@@ -11,7 +11,6 @@ namespace ZoneCodeGenerator.Domain.Information
     {
         public DataTypeWithMembers Type { get; }
         public bool IsUnion => Type is DataTypeUnion;
-        public FastFileBlock Block { get; set; }
         
         public EnumMember AssetEnumEntry { get; set; }
         public bool IsAsset => AssetEnumEntry != null;
@@ -30,6 +29,7 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool SinglePointerReferenceExists { get; set; }
         public bool ArrayPointerReferenceExists { get; set; }
         public bool ArrayReferenceExists { get; set; }
+        public bool ReferenceFromNonDefaultNormalBlockExists { get; set; }
 
         public bool IsLeaf { get; set; }
 
@@ -44,6 +44,7 @@ namespace ZoneCodeGenerator.Domain.Information
             NonEmbeddedReferenceExists = false;
             SinglePointerReferenceExists = false;
             ArrayReferenceExists = false;
+            ReferenceFromNonDefaultNormalBlockExists = false;
             Usages = new List<StructureInformation>();
             OrderedMembers = new List<MemberInformation>();
             IsLeaf = true;

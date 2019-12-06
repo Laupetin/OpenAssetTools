@@ -65,20 +65,18 @@ $LoadSinglePointer_PointerCheck(context, structure, member, reference)$
 $endif$
 %>
 
-LoadSinglePointer_Condition(context, structure, member, reference) ::= <<
-$if(member.Condition)$
-if($PrintEvaluation(member.Condition)$)
-{
-    $LoadSinglePointer_TypeCheck(context, structure, member, reference)$
-}
-$if(structure.IsUnion)$
-return;
+LoadSinglePointer_Block(context, structure, member, reference) ::= <%
+$if(member.Computations.IsNotDefaultNormalBlock)$
+m_stream->PushBlock($member.Block.Name$);$\n$
 $endif$
-$else$$\\$
-$LoadSinglePointer_TypeCheck(context, structure, member, reference)$$\\$
+
+$LoadSinglePointer_TypeCheck(context, structure, member, reference)$
+
+$if(member.Computations.IsNotDefaultNormalBlock)$
+$\n$m_stream->PopBlock();
 $endif$
->>
+%>
 
 LoadSinglePointer(context, structure, member, reference) ::= <%
-$LoadSinglePointer_Condition(context, structure, member, reference)$
+$LoadSinglePointer_Block(context, structure, member, reference)$
 %>

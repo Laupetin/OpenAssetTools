@@ -31,17 +31,18 @@ $LoadPointerArray_Loading(context, structure, member, reference)$
 $endif$
 %>
 
-LoadPointerArray_Condition(context, structure, member, reference) ::= <<
-$if(member.Condition)$$\\$
-if($PrintEvaluation(member.Condition)$)
-{
-    $LoadPointerArray_TypeCheck(context, structure, member, reference)$
-}
-$else$$\\$
-$LoadPointerArray_TypeCheck(context, structure, member, reference)$$\\$
+LoadPointerArray_Block(context, structure, member, reference) ::= <%
+$if(member.Computations.IsNotDefaultNormalBlock)$
+m_stream->PushBlock($member.Block.Name$);$\n$
 $endif$
->>
+
+$LoadPointerArray_TypeCheck(context, structure, member, reference)$
+
+$if(member.Computations.IsNotDefaultNormalBlock)$
+$\n$m_stream->PopBlock();
+$endif$
+%>
 
 LoadPointerArray(context, structure, member, reference) ::= <%
-$LoadPointerArray_Condition(context, structure, member, reference)$
+$LoadPointerArray_Block(context, structure, member, reference)$
 %>

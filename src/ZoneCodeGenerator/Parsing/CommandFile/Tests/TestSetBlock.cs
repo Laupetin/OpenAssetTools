@@ -34,14 +34,13 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
         {
             var typeName = NextMatch(TokenTypeName);
             var typeNameParts = typeName.Split(new[] {"::"}, StringSplitOptions.None);
-            StructureInformation structure;
 
             if (state.DataTypeInUse != null &&
                 state.GetMembersFromParts(typeNameParts, state.DataTypeInUse, out var memberList))
             {
-                structure = state.DataTypeInUse;
+                // Do nothing
             }
-            else if (state.GetTypenameAndMembersFromParts(typeNameParts, out structure, out memberList))
+            else if (state.GetTypenameAndMembersFromParts(typeNameParts, out _, out memberList))
             {
                 // Do nothing
             }
@@ -50,19 +49,18 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 throw new TestFailedException($"Could not find type '{typeName}'.");
             }
 
-            if (memberList.Any())
+            if (!memberList.Any())
             {
-                var lastMember = memberList.Last();
-
-                structure = lastMember.StructureType ?? throw new TestFailedException(
-                                $"Specified member '{lastMember.Member.Name}' is not a structure or union and therefore cannot have its block set.");
+                throw new TestFailedException("Must specify a member and not a type when setting a block.");
             }
+
+            var member = memberList.Last();
 
             var blockName = NextMatch(TokenBlockEnumEntry);
             var block = state.FastFileBlocks
                 .FirstOrDefault(fastFileBlock => fastFileBlock.Name.Equals(blockName));
 
-            structure.Block =
+            member.Block =
                 block ?? throw new TestFailedException($"Could not find fastfile block with name '{blockName}'");
         }
     }

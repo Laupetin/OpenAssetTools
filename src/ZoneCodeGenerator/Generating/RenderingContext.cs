@@ -50,6 +50,9 @@ namespace ZoneCodeGenerator.Generating
         public FastFileBlock DefaultNormalBlock => Blocks.FirstOrDefault(block => block.IsDefault && block.IsNormal) ??
                                                    Blocks.FirstOrDefault(block => block.IsNormal);
 
+        public FastFileBlock DefaultTempBlock => Blocks.FirstOrDefault(block => block.IsDefault && block.IsTemp) ??
+                                                   Blocks.FirstOrDefault(block => block.IsTemp);
+
         private RenderingContext()
         {
             usedTypes = new Dictionary<DataType, UsedType>();

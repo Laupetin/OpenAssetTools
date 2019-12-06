@@ -15,22 +15,20 @@ $LoadEmbedded_Load(context, structure, member, reference)$
 $endif$
 %>
 
-LoadEmbedded_Condition(context, structure, member, reference) ::= <<
-$if(member.Condition)$
-if($PrintEvaluation(member.Condition)$)
-{
-    $LoadEmbedded_TypeCheck(context, structure, member, reference)$
-    $if(structure.IsUnion)$
-    return;
-    $endif$
-}
-$else$$\\$
-$LoadEmbedded_TypeCheck(context, structure, member, reference)$$\\$
+LoadEmbedded_Block(context, structure, member, reference) ::= <%
+$if(member.Computations.IsNotDefaultNormalBlock)$
+m_stream->PushBlock($member.Block.Name$);$\n$
 $endif$
->>
+
+$LoadEmbedded_TypeCheck(context, structure, member, reference)$
+
+$if(member.Computations.IsNotDefaultNormalBlock)$
+$\n$m_stream->PopBlock();
+$endif$
+%>
 
 LoadEmbedded(context, structure, member, reference) ::= <%
-$LoadEmbedded_Condition(context, structure, member, reference)$
+$LoadEmbedded_Block(context, structure, member, reference)$
 %>
 
 LoadEmbeddedArray_TypeCheck(context, structure, member, reference) ::= <%

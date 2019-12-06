@@ -55,9 +55,43 @@ if ($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(refere
 }
 >>
 
-LoadArrayPointer_Condition(context, structure, member, reference) ::= <<
-$if(member.Condition)$$\\$
-if($PrintEvaluation(member.Condition)$)
+LoadArrayPointer_Block(context, structure, member, reference) ::= <%
+$if(member.Computations.IsNotDefaultNormalBlock)$
+m_stream->PushBlock($member.Block.Name$);$\n$
+$endif$
+
+$LoadArrayPointer_PointerCheck(context, structure, member, reference)$
+
+$if(member.Computations.IsNotDefaultNormalBlock)$
+$\n$m_stream->PopBlock();
+$endif$
+%>
+
+LoadArrayPointer(context, structure, member, reference) ::= <%
+$LoadArrayPointer_Block(context, structure, member, reference)$
+%>
+
+LoadPointerArrayMethod_Loading(context, type, structure) ::= <%
+*$TypePtrVarName(type)$ = m_stream->Alloc<$type.FullName$>(alignof($type.FullName$)); 
+// $type.Alignment$
+$\n$
+
+$if(structure && !structure.IsLeaf)$
+
+$TypeVarName(structure.Type)$ = *$TypePtrVarName(type)$;$\n$
+Load_$type.Name$(true);
+
+$else$
+
+m_stream->Load<$type.FullName$>(*$TypePtrVarName(type)$);
+
+$endif$
+%>
+
+LoadPointerArrayMethod_Asset(context, type, structure) ::= <<
+$LoaderClassName(structure)$ loader(m_script_string_provider, m_zone, m_stream);
+loader.Load($TypePtrVarName(type)$);
+>>
 
 LoadPointerArrayMethod_PointerCheck(context, type, structure, reusable) ::= <<
 if (*$TypePtrVarName(type)$)

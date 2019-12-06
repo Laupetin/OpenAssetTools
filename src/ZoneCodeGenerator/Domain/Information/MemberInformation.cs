@@ -13,6 +13,7 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool IsScriptString { get; set; }
         public bool IsReusable { get; set; }
         public IEvaluation Condition { get; set; }
+        public FastFileBlock Block { get; set; }
 
         public MemberComputations Computations => new MemberComputations(this);
 
@@ -24,6 +25,7 @@ namespace ZoneCodeGenerator.Domain.Information
             IsScriptString = false;
             IsReusable = false;
             Condition = null;
+            Block = null;
         }
 
         public override string ToString()

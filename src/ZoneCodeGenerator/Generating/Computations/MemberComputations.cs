@@ -70,6 +70,9 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool PointerDepthIsOne => PointerDepth == 1;
         public bool PointerDepthIsTwo => PointerDepth == 2;
 
+        public bool IsNotDefaultNormalBlock =>
+            information.Block != null && !(information.Block.IsNormal && information.Block.IsDefault);
+
         public MemberReferenceComputations References => new MemberReferenceComputations(information);
 
         public MemberComputations(MemberInformation information)
