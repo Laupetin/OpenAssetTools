@@ -1,25 +1,78 @@
 delimiters "$", "$"
 
-LoadPointerArray_Loading(context, structure, member, reference) ::= <%
-$if(member.Computations.IsArray)$
+LoadPointerArray_Loading_Array(context, structure, member, reference) ::= <%
 $TypePtrVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadPtrArray_$SafeTypeName(member.Member.VariableType.Type)$(false, $reference.ArraySize$);
-$else$
+%>
+
+LoadPointerArray_Loading_Pointer_Inner(context, structure, member, reference) ::= <%
+$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); 
+// $member.Member.VariableType.Alignment$$\n$
 $TypePtrVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadPtrArray_$SafeTypeName(member.Member.VariableType.Type)$(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+%>
+
+LoadPointerArray_Loading_Pointer(context, structure, member, reference) ::= <<
+if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$)
+{
+    $if(member.IsReusable)$
+    if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
+    {
+        $LoadPointerArray_Loading_Pointer_Inner(context, structure, member, reference)$
+    }
+    else
+    {
+        $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+    }
+    $else$
+    $LoadPointerArray_Loading_Pointer_Inner(context, structure, member, reference)$
+    $endif$
+}
+>>
+
+LoadPointerArray_Loading(context, structure, member, reference) ::= <%
+$if(member.Computations.IsArray)$
+$LoadPointerArray_Loading_Array(context, structure, member, reference)$
+$else$
+$LoadPointerArray_Loading_Pointer(context, structure, member, reference)$
 $endif$
 %>
 
-LoadPointerArray_String(context, structure, member, reference) ::= <%
-$if(reference.IsArray)$
-varXString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+LoadPointerArray_String_Array(context, structure, member, reference) ::= <<
+varXString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
 LoadXStringArray(false, $reference.ArraySize$);
-$else$
+>>
+
+LoadPointerArray_String_Pointer_Inner(context, structure, member, reference) ::= <%
 $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); 
-// $member.Member.VariableType.Alignment$
-$\n$
+// $member.Member.VariableType.Alignment$$\n$
 varXString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadXStringArray(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+%>
+
+LoadPointerArray_String_Pointer(context, structure, member, reference) ::= <<
+if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$)
+{
+    $if(member.IsReusable)$
+    if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ == PTR_FOLLOWING)
+    {
+        $LoadPointerArray_String_Pointer_Inner(context, structure, member, reference)$
+    }
+    else
+    {
+        $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+    }
+    $else$
+    $LoadPointerArray_String_Pointer_Inner(context, structure, member, reference)$
+    $endif$
+}
+>>
+
+LoadPointerArray_String(context, structure, member, reference) ::= <%
+$if(reference.IsArray)$
+$LoadPointerArray_String_Array(context, structure, member, reference)$
+$else$
+$LoadPointerArray_String_Pointer(context, structure, member, reference)$
 $endif$
 %>
 
