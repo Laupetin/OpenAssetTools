@@ -96,14 +96,25 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 var nextMember =
                     memberPool.FirstOrDefault(information => information.Member.Name.Equals(nextMemberName));
 
-                if (nextMember == null)
+                if (nextMember != null)
                 {
-                    throw new TestFailedException(
-                        $"Cannot find member with name '{nextMemberName}' in type '{typeToReorder.Type.FullName}'.");
+                    sortedMembers.Add(nextMember);
+                    memberPool.Remove(nextMember);
                 }
+                else
+                {
+                    nextMember =
+                        sortedMembers.FirstOrDefault(information => information.Member.Name.Equals(nextMemberName));
 
-                sortedMembers.Add(nextMember);
-                memberPool.Remove(nextMember);
+                    if (nextMember == null)
+                    {
+                        throw new TestFailedException(
+                            $"Cannot find member with name '{nextMemberName}' in type '{typeToReorder.Type.FullName}'.");
+                    }
+
+                    sortedMembers.Remove(nextMember);
+                    sortedMembers.Add(nextMember);
+                }
             }
 
             // Insert members that have not been mentioned at the end.
