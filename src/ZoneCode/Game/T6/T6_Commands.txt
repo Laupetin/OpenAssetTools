@@ -219,12 +219,12 @@ use XSurface;
 set condition verts0 !(flags & 1);
 set reusable verts0;
 set count verts0 vertCount;
-set count vb0 0;
+set condition vb0 never;
 set reusable vertList;
 set count vertList vertListCount;
 set reusable triIndices;
 set count triIndices triCount;
-set count indexBuffer 0;
+set condition indexBuffer never;
 reorder:
 	vertInfo
 	verts0
@@ -240,12 +240,12 @@ set count vertsBlend vertCount[0]
 						+ 7 * vertCount[3];
 set reusable tensionData;
 set count tensionData vertCount[0] 
-						+ 3 * vertCount[1] 
-						+ 5 * vertCount[2]
-						+ 7 * vertCount[3];
+						+ vertCount[1] 
+						+ vertCount[2]
+						+ vertCount[3];
 
 // XRigidVertList
-set count XRigidVertList::collisionTree 1;
+set reusable XRigidVertList::collisionTree;
 
 // XSurfaceCollisionTree
 use XSurfaceCollisionTree;
@@ -515,6 +515,7 @@ set reusable u::child;
 
 // pathnode_tree_nodes_t
 use pathnode_tree_nodes_t;
+set count nodes nodeCount;
 
 // =========================================
 // GameWorldMp
