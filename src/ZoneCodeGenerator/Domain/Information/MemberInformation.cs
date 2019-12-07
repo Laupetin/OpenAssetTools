@@ -35,7 +35,7 @@ namespace ZoneCodeGenerator.Domain.Information
 
         public override string ToString()
         {
-            return $"info for {Member}";
+            return $"info for {Member.Name}";
         }
     }
 }
