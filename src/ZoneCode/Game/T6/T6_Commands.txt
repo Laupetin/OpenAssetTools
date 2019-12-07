@@ -627,6 +627,7 @@ use Operand;
 set condition internals::intVal dataType == VAL_INT;
 set condition internals::floatVal dataType == VAL_FLOAT;
 set condition internals::string dataType == VAL_STRING;
+set string internals::string;
 set condition internals::dvar never;
 
 // itemDef_s
@@ -644,7 +645,7 @@ type == 1 || type == 3 || type == 4
 || type == 15 || type == 16 || type == 18
 || type == 20 || type == 22;
 set condition typeData::imageDef type == 2;
-set condition typeData::blankButtonDef type == 16 || type == 21;
+set condition typeData::blankButtonDef type == 19 || type == 21;
 set condition typeData::ownerDrawDef type == 6;
 set condition typeData::data never;
 
@@ -673,7 +674,6 @@ set condition focusTypeData::listBox itemDef_s::type == 4;
 set condition focusTypeData::multi itemDef_s::type == 10;
 set condition focusTypeData::profileMulti itemDef_s::type == 22;
 set condition focusTypeData::editField itemDef_s::type == 5
-|| itemDef_s::type == 5
 || itemDef_s::type == 7
 || itemDef_s::type == 8
 || itemDef_s::type == 9
@@ -711,6 +711,16 @@ set string profileVarStr;
 
 // enumDvarDef_s
 set string enumDvarDef_s::enumDvarName;
+
+// UIAnimInfo
+use UIAnimInfo;
+set count animStates animStateCount;
+set condition currentAnimState never;
+set condition nextAnimState never;
+
+// animParamsDef_t
+use animParamsDef_t;
+set string name;
 
 // =========================================
 // LocalizeEntry
@@ -900,6 +910,11 @@ originalAccuracyGraphKnots0
 accuracyGraphName1
 accuracyGraphKnots1
 originalAccuracyGraphKnots1;
+
+reorder:
+...
+killIcon
+indicatorIcon;
 
 // flameTable
 use flameTable;
