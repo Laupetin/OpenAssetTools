@@ -22,7 +22,7 @@ $endif$
 }$
 %>
 
-PrintArrayIndices(reference) ::= "$reference.ArrayIndices:{ index | [$index$] }$"
+PrintArrayIndices(reference) ::= "$reference.ArrayIndices:{ index | [$index$]}$"
 
 PrintOperandStatic(op) ::= <%
 $if(op.EnumMemberValue)$
