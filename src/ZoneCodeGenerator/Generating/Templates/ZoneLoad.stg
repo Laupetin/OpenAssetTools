@@ -73,8 +73,11 @@ namespace $context.Game$
 }
 >>
 
-LoadMember(context, member) ::= <<
-Loading member $member.Member.Name$
+LoadMemberReference_Array(context, structure, member, reference) ::= <<
+$first(reference.ArrayEntries):{entry | $LoadMemberReference(context, structure, member, entry)$}$
+$rest(reference.ArrayEntries):{entry | 
+
+$LoadMemberReference(context, structure, member, entry)$}$
 >>
 
 LoadMemberReference(context, structure, member, reference) ::= <%
@@ -88,8 +91,10 @@ $elseif(reference.IsArray && !reference.NextReference)$
 $LoadEmbeddedArray(context, structure, member, reference)$
 $elseif(!reference.Reference)$
 $LoadEmbedded(context, structure, member, reference)$
+$elseif(reference.IsArray)$
+$LoadMemberReference_Array(context, structure, member, reference)$
 $else$
-// $member.Member.Name$
+// LoadMemberReference failed @ $member.Member.Name$
 $endif$
 %>
 

@@ -7,7 +7,7 @@ $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)
 // $member.Member.VariableType.Type.Alignment$
 $\n$
 
-$if(member.StructureType && !member.StructureType.IsLeaf)$
+$if(member.StructureType && !member.StructureType.IsLeaf && !member.Computations.IsRuntimeBlock)$
 
 $TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
