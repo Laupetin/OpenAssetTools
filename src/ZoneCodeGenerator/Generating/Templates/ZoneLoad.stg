@@ -176,17 +176,14 @@ void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$(const bool 
     
     if(*$TypePtrVarName(structure.Type)$ != nullptr)
     {
-        $if(structure.Block.IsTemp)$
         if(*$TypePtrVarName(structure.Type)$ == PTR_FOLLOWING || *$TypePtrVarName(structure.Type)$ == PTR_INSERT)
-        $else$
-        if(*$TypePtrVarName(structure.Type)$ == PTR_FOLLOWING)
-        $endif$
         {
-            $structure.Type.FullName$** toInsert = nullptr;
-            if(*$TypePtrVarName(structure.Type)$ == PTR_INSERT)
-                toInsert = m_stream->InsertPointer<$structure.Type.FullName$>();
-        
+            $structure.Type.FullName$* ptr = *$TypePtrVarName(structure.Type)$;
             *$TypePtrVarName(structure.Type)$ = m_stream->Alloc<$structure.Type.FullName$>(alignof($structure.Type.FullName$));
+            
+            $structure.Type.FullName$** toInsert = nullptr;
+            if(ptr == PTR_INSERT)
+                toInsert = m_stream->InsertPointer<$structure.Type.FullName$>();
 
             $if(!structure.IsLeaf)$
             $TypeVarName(structure.Type)$ = *$TypePtrVarName(structure.Type)$;
