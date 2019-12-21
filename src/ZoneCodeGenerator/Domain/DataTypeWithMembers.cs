@@ -38,10 +38,28 @@ namespace ZoneCodeGenerator.Domain
         private void CalculateProperties()
         {
             foreach (var member in Members
-                .Select(variable => variable.VariableType.Type)
-                .OfType<DataTypeWithMembers>())
+                .Select(variable => variable.VariableType.Type))
             {
-                member.FinalizeDataType();
+                switch (member)
+                {
+                    case DataTypeWithMembers dataTypeWithMembers:
+                        dataTypeWithMembers.FinalizeDataType();
+                        break;
+
+                    case DataTypeTypedef typeDef:
+                    {
+                        while (typeDef.TypeDefinition.Type is DataTypeTypedef typeDef2)
+                        {
+                            typeDef = typeDef2;
+                        }
+
+                        if(typeDef.TypeDefinition.Type is DataTypeWithMembers dataTypeWithMembers)
+                        {
+                            dataTypeWithMembers.FinalizeDataType();
+                        }
+                        break;
+                    }
+                }
             }
 
             alignment = Members.Select(variable => variable.Alignment).Max();
