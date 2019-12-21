@@ -366,10 +366,12 @@ reorder:
 // GfxTexture
 use GfxTexture;
 set reusable loadDef;
-set condition loadDef always;
+set block loadDef XFILE_BLOCK_TEMP;
+set condition basemap never;
 
 // GfxImageLoadDef
-set arraysize GfxImageLoadDef::data resourceSize;
+use GfxImageLoadDef;
+set arraysize data resourceSize;
 
 // =========================================
 // SndBank
