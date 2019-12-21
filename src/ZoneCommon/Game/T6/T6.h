@@ -2,10 +2,10 @@
 
 #include <d3d11.h>
 
-namespace T6
-{
 #include "T6_Assets.h"
 
+namespace T6
+{
     struct ScriptStringList
     {
         int count;
@@ -27,5 +27,4 @@ namespace T6
         int assetCount;
         XAsset *assets;
     };
-
 }

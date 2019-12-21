@@ -20,6 +20,11 @@ namespace std
     typedef long long           int64_t;
 }
 
+#define __int8 char
+#define __int16 short
+#define __int32 int
+#define __int64 long long
+
 // DirectX types do not need to be processed.
 // DirectX 9 Types
 typedef void IDirect3DVertexDeclaration9;
@@ -39,3 +44,5 @@ typedef void ID3D11Buffer;
 #define __unaligned
 #define volatile
 #define __cppobj
+
+// EOF

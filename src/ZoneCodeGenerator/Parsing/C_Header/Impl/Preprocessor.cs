@@ -9,15 +9,20 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
     {
         private static readonly Regex packPushRegex = new Regex(@"^\s*#pragma\s+pack\s*\(\s*push\s*,\s*(\d+)\s*\)\s*$");
         private static readonly Regex packPopRegex = new Regex(@"^\s*#pragma\s+pack\s*\(\s*pop\s*\)\s*$");
-        private static readonly Regex defineRegex = new Regex(@"^\s*#define\s*(\w+)(?:\s*(.*))?$");
-        private static readonly Regex undefRegex = new Regex(@"^\s*#undef\s*(\w+)\s*$");
-        private static readonly Regex includeRegex = new Regex(@"^\s*#include\s*(?:\""(.*)\""|\<(.*)\>)\s*$");
+        private static readonly Regex defineRegex = new Regex(@"^\s*#define\s+(\w+)(?:\s+(.*))?$");
+        private static readonly Regex undefRegex = new Regex(@"^\s*#undef\s+(\w+)\s*$");
+        private static readonly Regex includeRegex = new Regex(@"^\s*#include\s+(?:\""(.*)\""|\<(.*)\>)\s*$");
+        private static readonly Regex ifdefRegex = new Regex(@"^\s*#ifdef\s+(\w+)\s*$");
+        private static readonly Regex ifndefRegex = new Regex(@"^\s*#ifndef\s+(\w+)\s*$");
+        private static readonly Regex elseRegex = new Regex(@"^\s*#else\s*$");
+        private static readonly Regex endifRegex = new Regex(@"^\s*#endif\s*$");
 
         private readonly IIncludingParsingStream streamFileSystem;
         private readonly IHeaderParserState state;
         private readonly ICommentProcessor commentProcessor;
 
         private readonly Dictionary<string, string> defines;
+        private readonly Stack<bool> conditions;
 
         public bool EndOfStream => streamFileSystem.EndOfStream;
         public string Filename => streamFileSystem.Filename;
@@ -27,8 +32,14 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
         {
             streamFileSystem = includingParsingStream;
             this.state = state;
-            defines = new Dictionary<string, string>();
             commentProcessor = new CommentProcessor();
+
+            defines = new Dictionary<string, string>
+            {
+                {"__zonecodegenerator", "1"}
+            };
+
+            conditions = new Stack<bool>();
         }
 
         private void ParseCompilerExpression(string line)
@@ -78,6 +89,44 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
                 streamFileSystem.IncludeFile(filename);
                 return;
             }
+
+            var ifdef = ifdefRegex.Match(line);
+            if (ifdef.Success)
+            {
+                var key = ifdef.Groups[1].Value;
+
+                conditions.Push(defines.ContainsKey(key));
+                return;
+            }
+
+            var ifndef = ifndefRegex.Match(line);
+            if (ifndef.Success)
+            {
+                var key = ifndef.Groups[1].Value;
+
+                conditions.Push(!defines.ContainsKey(key));
+                return;
+            }
+
+            var _else = elseRegex.Match(line);
+            if (_else.Success)
+            {
+                if (conditions.Count > 0)
+                {
+                    conditions.Push(!conditions.Pop());
+                }
+                return;
+            }
+
+            var endif = endifRegex.Match(line);
+            if (endif.Success)
+            {
+                if (conditions.Count > 0)
+                {
+                    conditions.Pop();
+                }
+                return;
+            }
         }
 
         private string Preprocess(string line)
@@ -88,6 +137,11 @@ namespace ZoneCodeGenerator.Parsing.C_Header.Impl
             if (line.StartsWith("#"))
             {
                 ParseCompilerExpression(line);
+                return "";
+            }
+
+            if (conditions.Count > 0 && !conditions.Peek())
+            {
                 return "";
             }
 
