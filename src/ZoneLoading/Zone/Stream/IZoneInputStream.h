@@ -31,6 +31,12 @@ public:
         LoadDataInBlock(const_cast<void*>(reinterpret_cast<const void*>(dst)), count * sizeof(T));
     }
 
+    template<typename T>
+    void LoadPartial(T* dst, const size_t size)
+    {
+        LoadDataInBlock(const_cast<void*>(reinterpret_cast<const void*>(dst)), size);
+    }
+
     virtual void** InsertPointer() = 0;
     template<typename T>
     T** InsertPointer()

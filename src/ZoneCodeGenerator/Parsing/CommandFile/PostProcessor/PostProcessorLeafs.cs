@@ -32,6 +32,10 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
                 if (!hasNoPointerMembers)
                     return false;
 
+                // If the member has an embedded type with dynamic size
+                if (member.Computations.HasDynamicArraySize)
+                    return false;
+
                 if (member.StructureType != null
                     && member.StructureType != structureInformation
                     && !IsLeaf(member.StructureType))

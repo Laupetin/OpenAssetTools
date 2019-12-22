@@ -4,7 +4,7 @@ delimiters "$", "$"
 
 LoadEmbedded_Load(context, structure, member, reference) ::= <<
 $TypeVarName(member.Member.VariableType.Type)$ = &$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
-Load_$member.Member.VariableType.Type.Name$(false);
+Load_$member.Member.VariableType.Type.Name$($if(member.Computations.IsDynamicMember)$true$else$false$endif$);
 >>
 
 LoadEmbedded_TypeCheck(context, structure, member, reference) ::= <%

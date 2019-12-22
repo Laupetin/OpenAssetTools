@@ -29,6 +29,9 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.PostProcessor
             if (!hasNoPointerMembers)
                 return false;
 
+            if (member.Computations.HasDynamicArraySize)
+                return false;
+
             return true;
         }
 

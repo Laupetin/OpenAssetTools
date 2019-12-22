@@ -88,10 +88,9 @@ namespace ZoneCodeGenerator.Generating.Computations
             .OfType<ReferenceTypeArray>()
             .Any(array => array.DynamicSize != null);
 
-        public bool IsBarrier => HasDynamicArraySize ||
-                                 information.StructureType != null &&
-                                  information.StructureType != information.Parent &&
-                                  information.StructureType.Computations.Barrier != null;
+        public bool IsDynamicMember => HasDynamicArraySize ||
+                                       !ContainsNonEmbeddedReference &&
+                                       information.StructureType?.Computations.DynamicMember != null;
 
         public MemberReferenceComputations References => new MemberReferenceComputations(information);
 

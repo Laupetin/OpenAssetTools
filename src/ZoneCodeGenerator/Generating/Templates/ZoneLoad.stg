@@ -81,7 +81,9 @@ $LoadMemberReference(context, structure, member, entry)$}$
 >>
 
 LoadMemberReference(context, structure, member, reference) ::= <%
-$if(reference.IsSinglePointer)$
+$if(reference.IsDynamicArray)$
+// Dynamic array $member.Member.Name$
+$elseif(reference.IsSinglePointer)$
 $LoadSinglePointer(context, structure, member, reference)$
 $elseif(reference.IsArrayPointer)$
 $LoadArrayPointer(context, structure, member, reference)$
@@ -164,6 +166,8 @@ $elseif(member.Computations.ContainsNonEmbeddedReference)$
 $LoadMemberCondition(context, structure, member)$
 $elseif(member.StructureType && !member.StructureType.IsLeaf)$
 $LoadMemberCondition(context, structure, member)$
+$elseif(member.Computations.IsDynamicMember)$
+$LoadMemberCondition(context, structure, member)$
 $endif$
 
 $endif$
@@ -238,10 +242,17 @@ void $LoaderClassName(context.Asset)$::LoadArray_$type.Name$(const bool atStream
 LoadMethod(context, structure) ::= <<
 void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atStreamStart)
 {
-    assert($TypeVarName(structure.Type)$ != nullptr);
+    assert($TypeVarName(structure.Type)$ != nullptr);$\\$
+
+    $if(!(structure.IsUnion && structure.Computations.DynamicMember))$
 
     if(atStreamStart)
+        $if(!structure.Computations.DynamicMember)$
         m_stream->Load<$structure.Type.FullName$>($TypeVarName(structure.Type)$);$\\$
+        $else$
+        m_stream->LoadPartial<$structure.Type.FullName$>($TypeVarName(structure.Type)$, offsetof($structure.Type.FullName$, $structure.Computations.DynamicMember.Member.Name$));$\\$
+        $endif$
+    $endif$
     $if(structure.ReferenceFromNonDefaultNormalBlockExists || structure.IsAsset)$
 
     m_stream->PushBlock($context.DefaultNormalBlock.Name$);$\\$
