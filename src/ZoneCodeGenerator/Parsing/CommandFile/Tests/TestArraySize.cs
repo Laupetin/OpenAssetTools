@@ -26,13 +26,12 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
 
         public TestArraySize() : base(matchers)
         {
-
         }
 
         protected override void ProcessMatch(ICommandParserState state)
         {
             var typeName = NextMatch(TypeNameToken);
-            var typeNameParts = typeName.Split(new[] { "::" }, StringSplitOptions.None);
+            var typeNameParts = typeName.Split(new[] {"::"}, StringSplitOptions.None);
             if (state.DataTypeInUse != null
                 && state.GetMembersFromParts(typeNameParts, state.DataTypeInUse, out var typeMembers))
             {
@@ -62,6 +61,13 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             var reference = referencedMember.Member.VariableType.References.OfType<ReferenceTypeArray>()
                 .FirstOrDefault();
 
+            if (!referencedMember.Parent.IsUnion &&
+                referencedMember.Parent.Type.Members.Last() != referencedMember.Member)
+            {
+                throw new TestFailedException(
+                    "Cannot change the array size of a member that is not the last member of its structure.");
+            }
+
             if (reference != null)
                 reference.DynamicSize = evaluation;
             else
@@ -74,10 +80,10 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
             if (state.DataTypeInUse != null
                 && state.DataTypeInUse != referencedType)
             {
-                return new[] { state.DataTypeInUse, referencedType };
+                return new[] {state.DataTypeInUse, referencedType};
             }
 
-            return new[] { referencedType };
+            return new[] {referencedType};
         }
     }
 }
