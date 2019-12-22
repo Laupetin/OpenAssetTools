@@ -12,6 +12,9 @@ namespace ZoneCodeGenerator.Generating.Computations
 
         public bool IsUsed => information.Usages.Any();
 
+        public MemberInformation Barrier =>
+            information.OrderedMembers.FirstOrDefault(memberInformation => memberInformation.Computations.IsBarrier);
+
         public StructureComputations(StructureInformation information)
         {
             this.information = information;

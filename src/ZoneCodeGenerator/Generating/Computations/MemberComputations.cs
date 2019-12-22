@@ -84,6 +84,15 @@ namespace ZoneCodeGenerator.Generating.Computations
             information.Parent.OrderedMembers.LastOrDefault(member =>
                 !member.IsLeaf && !member.Computations.ShouldIgnore) == information;
 
+        public bool HasDynamicArraySize => information.Member.VariableType.References
+            .OfType<ReferenceTypeArray>()
+            .Any(array => array.DynamicSize != null);
+
+        public bool IsBarrier => HasDynamicArraySize ||
+                                 information.StructureType != null &&
+                                  information.StructureType != information.Parent &&
+                                  information.StructureType.Computations.Barrier != null;
+
         public MemberReferenceComputations References => new MemberReferenceComputations(information);
 
         public MemberComputations(MemberInformation information)
