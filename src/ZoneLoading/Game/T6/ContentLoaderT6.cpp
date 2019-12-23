@@ -75,13 +75,20 @@ void ContentLoaderT6::LoadScriptStringList(const bool atStreamStart)
     {
         assert(varScriptStringList->strings == PTR_FOLLOWING);
 
-        varScriptStringList->strings = m_stream->Alloc<const char*>(alignof(const char));
+        varScriptStringList->strings = m_stream->Alloc<const char*>(alignof(const char*));
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
         for(int i = 0; i < varScriptStringList->count; i++)
         {
-            m_script_strings.emplace_back(varScriptStringList->strings[i]);
+            if(varScriptStringList->strings[i])
+            {
+                m_script_strings.emplace_back(varScriptStringList->strings[i]);
+            }
+            else
+            {
+                m_script_strings.emplace_back("");
+            }
         }
     }
 
@@ -216,7 +223,7 @@ void ContentLoaderT6::Load(Zone* zone, IZoneInputStream* stream)
     {
         assert(assetList.depends == PTR_FOLLOWING);
 
-        assetList.depends = m_stream->Alloc<const char*>(alignof(const char));
+        assetList.depends = m_stream->Alloc<const char*>(alignof(const char*));
         varXString = assetList.depends;
         LoadXStringArray(true, assetList.dependCount);
     }
