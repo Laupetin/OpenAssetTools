@@ -2664,7 +2664,7 @@ namespace T6
     };
 
 
-    struct MaterialConstantDef
+    struct __declspec(align(16)) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];

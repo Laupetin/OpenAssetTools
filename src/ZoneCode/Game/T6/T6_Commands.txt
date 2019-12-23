@@ -294,9 +294,9 @@ set count stateBitsTable stateBitsCount;
 
 // GfxStateBits
 use GfxStateBits;
-set count blendState 0;
-set count depthStencilState 0;
-set count rasterizerState 0;
+set condition blendState never;
+set condition depthStencilState never;
+set condition rasterizerState never;
 
 // =========================================
 // MaterialTechniqueSet
@@ -327,13 +327,13 @@ reorder:
     args;
 
 // MaterialVertexStreamRouting
-set count MaterialVertexStreamRouting::decl 0;
+set condition MaterialVertexStreamRouting::decl never;
 
 // MaterialVertexShader
 set string MaterialVertexShader::name;
 
 // MaterialVertexShaderProgram
-set count MaterialVertexShaderProgram::vs 0;
+set condition MaterialVertexShaderProgram::vs never;
 
 // GfxVertexShaderLoadDef
 set count GfxVertexShaderLoadDef::program programSize;
@@ -342,7 +342,7 @@ set count GfxVertexShaderLoadDef::program programSize;
 set string MaterialPixelShader::name;
 
 // MaterialPixelShaderProgram
-set count MaterialPixelShaderProgram::ps 0;
+set condition MaterialPixelShaderProgram::ps never;
 
 // GfxPixelShaderLoadDef
 set count GfxPixelShaderLoadDef::program programSize;
@@ -359,6 +359,7 @@ set reusable u::literalConst;
 use GfxImage;
 set string name;
 set name name;
+set condition pixels never;
 reorder:
     name
     texture;
