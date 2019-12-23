@@ -34,9 +34,9 @@ $endif$
 
 PrintOperandDynamic(op) ::= <%
 $TypeVarName(op.Structure.Type)$
-->$first(op.ReferencedMemberChain):{member | $member.Member.Name$}$
-$rest(op.ReferencedMemberChain):{member | .$member.Member.Name$}$
-$op.ArrayIndices:{ arrayIndex | [$arrayIndex$]}$
+->$trunc(op.ReferencedMemberChain):{member | $member.Member.Name$$if(member.Computations.ContainsNonEmbeddedReference)$->$else$.$endif$}$
+$last(op.ReferencedMemberChain):{member | $member.Member.Name$}$
+$op.ArrayIndices:{ arrayIndex | [$PrintEvaluation(arrayIndex)$]}$
 %>
 
 PrintOperation(operation) ::= <%

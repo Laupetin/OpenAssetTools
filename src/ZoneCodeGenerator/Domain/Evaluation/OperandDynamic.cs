@@ -9,7 +9,7 @@ namespace ZoneCodeGenerator.Domain.Evaluation
     {
         public StructureInformation Structure { get; }
         public IList<MemberInformation> ReferencedMemberChain { get; }
-        public IList<int> ArrayIndices { get; }
+        public IList<IEvaluation> ArrayIndices { get; }
 
         public bool IsStatic => false;
 
@@ -17,7 +17,7 @@ namespace ZoneCodeGenerator.Domain.Evaluation
         {
             Structure = structure;
             ReferencedMemberChain = new List<MemberInformation>(memberChain);
-            ArrayIndices = new List<int>();
+            ArrayIndices = new List<IEvaluation>();
         }
 
         public int EvaluateNumeric()
