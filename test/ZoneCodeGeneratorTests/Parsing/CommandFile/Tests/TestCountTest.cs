@@ -362,8 +362,10 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
             Assert.AreEqual(countEntry, dynamicOperand.ReferencedMemberChain[0].Member);
 
             Assert.AreEqual(2, dynamicOperand.ArrayIndices.Count);
-            Assert.AreEqual(7, dynamicOperand.ArrayIndices[0]);
-            Assert.AreEqual(4, dynamicOperand.ArrayIndices[1]);
+            Assert.IsTrue(dynamicOperand.ArrayIndices[0].IsStatic);
+            Assert.AreEqual(7, dynamicOperand.ArrayIndices[0].EvaluateNumeric());
+            Assert.IsTrue(dynamicOperand.ArrayIndices[1].IsStatic);
+            Assert.AreEqual(4, dynamicOperand.ArrayIndices[1].EvaluateNumeric());
         }
 
         [TestMethod]
