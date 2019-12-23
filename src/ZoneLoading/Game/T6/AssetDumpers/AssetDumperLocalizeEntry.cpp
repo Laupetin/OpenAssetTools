@@ -61,6 +61,9 @@ std::string AssetDumperLocalizeEntry::GetNameOfLanguage(ZoneLanguage language)
 
 void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath)
 {
+    if (pool->m_asset_lookup.size() == 0)
+        return;
+
     const std::string language = GetNameOfLanguage(zone->m_language);
     const std::string stringsPath = utils::Path::Combine(basePath, language + "/localizedstrings");
 
