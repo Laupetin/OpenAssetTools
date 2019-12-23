@@ -11,9 +11,9 @@ class XBlockInputStream final : public IZoneInputStream
 {
     std::vector<XBlock*>& m_blocks;
     size_t* m_block_offsets;
-    unsigned int* m_block_in_stack;
 
     std::stack<XBlock*> m_block_stack;
+    std::stack<size_t> m_temp_offsets;
     ILoadingStream* m_stream;
 
     int m_block_bit_count;

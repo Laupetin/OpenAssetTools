@@ -6,13 +6,13 @@
 #include <cassert>
 #include "Loading/Exception/OutOfBlockBoundsException.h"
 
-XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, const int blockBitCount, const block_t insertBlock) : m_blocks(blocks)
+XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, const int blockBitCount,
+                                     const block_t insertBlock) : m_blocks(blocks)
 {
     m_stream = stream;
 
     const unsigned int blockCount = blocks.size();
     m_block_offsets = new size_t[blockCount]{0};
-    m_block_in_stack = new unsigned int[blockCount]{0};
 
     m_block_bit_count = blockBitCount;
 
@@ -25,9 +25,6 @@ XBlockInputStream::~XBlockInputStream()
     delete[] m_block_offsets;
     m_block_offsets = nullptr;
 
-    delete[] m_block_in_stack;
-    m_block_in_stack = nullptr;
-
     assert(m_block_stack.empty());
 }
 
@@ -35,7 +32,7 @@ void XBlockInputStream::Align(const int align)
 {
     assert(!m_block_stack.empty());
 
-    if(align > 0)
+    if (align > 0)
     {
         const block_t blockIndex = m_block_stack.top()->m_index;
         m_block_offsets[blockIndex] = (m_block_offsets[blockIndex] + align - 1) / align * align;
@@ -51,25 +48,29 @@ void XBlockInputStream::PushBlock(const block_t block)
     assert(newBlock->m_index == block);
 
     m_block_stack.push(newBlock);
-    m_block_in_stack[newBlock->m_index]++;
+
+    if(newBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+    {
+        m_temp_offsets.push(m_block_offsets[newBlock->m_index]);
+    }
 }
 
 block_t XBlockInputStream::PopBlock()
 {
     assert(!m_block_stack.empty());
 
-    if(m_block_stack.empty())
+    if (m_block_stack.empty())
         return -1;
 
     const XBlock* poppedBlock = m_block_stack.top();
 
     m_block_stack.pop();
-    m_block_in_stack[poppedBlock->m_index]--;
 
     // If the temp block is not used anymore right now, reset it to the buffer start since as the name suggests, the data inside is temporary.
-    if(poppedBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP && m_block_in_stack[poppedBlock->m_index] == 0)
+    if (poppedBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
     {
-        m_block_offsets[poppedBlock->m_index] = 0;
+        m_block_offsets[poppedBlock->m_index] = m_temp_offsets.top();
+        m_temp_offsets.pop();
     }
 
     return poppedBlock->m_index;
@@ -79,14 +80,14 @@ void* XBlockInputStream::Alloc(const int align)
 {
     assert(!m_block_stack.empty());
 
-    if(m_block_stack.empty())
+    if (m_block_stack.empty())
         return nullptr;
 
     XBlock* block = m_block_stack.top();
 
     Align(align);
 
-    if(m_block_offsets[block->m_index] >= block->m_buffer_size)
+    if (m_block_offsets[block->m_index] >= block->m_buffer_size)
     {
         throw BlockOverflowException(block);
     }
@@ -103,17 +104,17 @@ void XBlockInputStream::LoadDataInBlock(void* dst, const size_t size)
 {
     assert(!m_block_stack.empty());
 
-    if(m_block_stack.empty())
+    if (m_block_stack.empty())
         return;
 
     XBlock* block = m_block_stack.top();
 
-    if(block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
+    if (block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
     {
         throw OutOfBlockBoundsException(block);
     }
-    
-    if(reinterpret_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
+
+    if (reinterpret_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
     {
         throw BlockOverflowException(block);
     }
@@ -141,7 +142,7 @@ void XBlockInputStream::LoadNullTerminated(void* dst)
 {
     assert(!m_block_stack.empty());
 
-    if(m_block_stack.empty())
+    if (m_block_stack.empty())
         return;
 
     XBlock* block = m_block_stack.top();
@@ -165,8 +166,8 @@ void XBlockInputStream::LoadNullTerminated(void* dst)
 
         m_stream->Load(&byte, 1);
         block->m_buffer[offset++] = byte;
-
-    } while(byte != 0);
+    }
+    while (byte != 0);
 
     m_block_offsets[block->m_index] = offset;
 }
@@ -176,8 +177,8 @@ void** XBlockInputStream::InsertPointer()
     m_block_stack.push(m_insert_block);
 
     Align(alignof(void*));
-    
-    if(m_block_offsets[m_insert_block->m_index] + sizeof(void*) > m_insert_block->m_buffer_size)
+
+    if (m_block_offsets[m_insert_block->m_index] + sizeof(void*) > m_insert_block->m_buffer_size)
     {
         throw BlockOverflowException(m_insert_block);
     }
@@ -200,14 +201,14 @@ void* XBlockInputStream::ConvertOffsetToPointer(const void* offset)
     const block_t blockNum = offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count);
     const size_t blockOffset = offsetInt & (UINTPTR_MAX >> m_block_bit_count);
 
-    if(blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
+    if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
     {
         throw InvalidOffsetBlockException(blockNum);
     }
 
     XBlock* block = m_blocks[blockNum];
 
-    if(block->m_buffer_size <= blockOffset)
+    if (block->m_buffer_size <= blockOffset)
     {
         throw InvalidOffsetBlockOffsetException(block, blockOffset);
     }
@@ -223,14 +224,14 @@ void* XBlockInputStream::ConvertOffsetToAlias(const void* offset)
     const block_t blockNum = offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count);
     const size_t blockOffset = offsetInt & (UINTPTR_MAX >> m_block_bit_count);
 
-    if(blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
+    if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
     {
         throw InvalidOffsetBlockException(blockNum);
     }
 
     XBlock* block = m_blocks[blockNum];
 
-    if(block->m_buffer_size <= blockOffset + sizeof(void*))
+    if (block->m_buffer_size <= blockOffset + sizeof(void*))
     {
         throw InvalidOffsetBlockOffsetException(block, blockOffset);
     }
