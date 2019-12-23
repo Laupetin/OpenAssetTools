@@ -8,7 +8,7 @@ InvalidOffsetBlockOffsetException::InvalidOffsetBlockOffsetException(XBlock* blo
 
 std::string InvalidOffsetBlockOffsetException::DetailedMessage()
 {
-    return "Zone referenced offset" + std::to_string(m_referenced_offset) + " of block " + m_referenced_block->m_name 
+    return "Zone referenced offset " + std::to_string(m_referenced_offset) + " of block " + m_referenced_block->m_name 
         + " which is larger than its size " + std::to_string(m_referenced_block->m_buffer_size);
 }
 
