@@ -8,8 +8,17 @@ namespace T6
 {
 #endif
 
-    typedef __declspec(align(32)) char byte32;
     typedef __declspec(align(16)) char char16;
+    typedef __declspec(align(32)) char byte32;
+    typedef __declspec(align(128)) char byte128;
+
+    typedef __declspec(align(4)) char char_align4;
+    typedef __declspec(align(128)) char char_align128;
+
+    typedef __declspec(align(16)) char raw_byte16;
+    typedef __declspec(align(128)) char raw_byte128;
+
+    typedef __declspec(align(128)) float float_align128;
 
     struct dvar_t;
     struct MenuCell;
@@ -1081,14 +1090,14 @@ namespace T6
 
     struct GfxWorldVertexData0
     {
-        char* data;
+        byte128* data;
         ID3D11Buffer* vb;
     };
 
 
     struct GfxWorldVertexData1
     {
-        char* data;
+        byte128* data;
         ID3D11Buffer* vb;
     };
 
@@ -1112,6 +1121,7 @@ namespace T6
         ID3D11Buffer* indexBuffer;
     };
 
+    typedef __declspec(align(4)) char aligned_byte_pointer;
 
     struct GfxLightGrid
     {
@@ -1123,7 +1133,7 @@ namespace T6
         unsigned int colAxis;
         unsigned __int16* rowDataStart;
         unsigned int rawRowDataSize;
-        char* rawRowData;
+        aligned_byte_pointer* rawRowData;
         unsigned int entryCount;
         GfxLightGridEntry* entries;
         unsigned int colorCount;
@@ -1162,6 +1172,7 @@ namespace T6
     };
 
 
+
     struct GfxWorldDpvsStatic
     {
         unsigned int smodelCount;
@@ -1176,18 +1187,18 @@ namespace T6
         unsigned int emissiveTransSurfsEnd;
         unsigned int smodelVisDataCount;
         unsigned int surfaceVisDataCount;
-        char* smodelVisData[3];
-        char* surfaceVisData[3];
-        char* smodelVisDataCameraSaved;
-        char* surfaceVisDataCameraSaved;
+        raw_byte128* smodelVisData[3];
+        raw_byte128* surfaceVisData[3];
+        raw_byte128* smodelVisDataCameraSaved;
+        raw_byte128* surfaceVisDataCameraSaved;
         unsigned __int16* sortedSurfIndex;
         GfxStaticModelInst* smodelInsts;
         GfxSurface* surfaces;
         GfxStaticModelDrawInst* smodelDrawInsts;
         GfxDrawSurf* surfaceMaterials;
-        char* surfaceCastsSunShadow;
-        char* surfaceCastsShadow;
-        char* smodelCastsShadow;
+        raw_byte128* surfaceCastsSunShadow;
+        raw_byte128* surfaceCastsShadow;
+        raw_byte128* smodelCastsShadow;
         volatile int usageCount;
     };
 
@@ -1197,7 +1208,7 @@ namespace T6
         unsigned int dynEntClientWordCount[2];
         unsigned int dynEntClientCount[2];
         unsigned int* dynEntCellBits[2];
-        char* dynEntVisData[2][3];
+        raw_byte16* dynEntVisData[2][3];
         volatile int usageCount;
     };
 
@@ -3277,7 +3288,7 @@ namespace T6
     };
 
 
-    struct GfxStreamingAabbTree
+    struct __declspec(align(16)) GfxStreamingAabbTree
     {
         vec4_t mins;
         vec4_t maxs;
@@ -3291,7 +3302,7 @@ namespace T6
     };
 
 
-    struct float44
+    struct __declspec(align(16)) float44
     {
         union
         {
@@ -3301,7 +3312,7 @@ namespace T6
     };
 
 
-    struct GfxLight
+    struct __declspec(align(16)) GfxLight
     {
         char type;
         char canUseShadowMap;
@@ -3326,7 +3337,6 @@ namespace T6
         vec4_t cookieControl0;
         vec4_t cookieControl1;
         vec4_t cookieControl2;
-        /*__declspec(align(16))*/
         float44 viewMatrix;
         float44 projMatrix;
         GfxLightDef* def;
@@ -3572,7 +3582,7 @@ namespace T6
     };
 
 
-    struct SSkinInstance
+    struct __declspec(align(16)) SSkinInstance
     {
         union
         {
@@ -3629,7 +3639,7 @@ namespace T6
     };
 
 
-    struct GfxSurface
+    struct __declspec(align(16)) GfxSurface
     {
         srfTriangles_t tris;
         Material* material;
@@ -5533,9 +5543,9 @@ namespace T6
 
     struct SSkinShaders
     {
-        char* pixelShaderAlign;
-        char* pixelShader;
-        char* vertexShader;
+        char_align128* pixelShaderAlign;
+        char_align4* pixelShader;
+        char_align128* vertexShader;
         int pixelShaderSize;
         int vertexShaderSize;
     };
@@ -5555,7 +5565,7 @@ namespace T6
         int bones;
         int width;
         int frames;
-        float* data;
+        float_align128* data;
     };
 
 
