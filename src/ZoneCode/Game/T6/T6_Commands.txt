@@ -401,8 +401,8 @@ set string assetFileName;
 
 // SndDuck
 use SndDuck;
-set count attenuation 128;
-set count filter 128;
+set count attenuation 32;
+set count filter 32;
 
 // SndRuntimeAssetBank
 use SndRuntimeAssetBank;
