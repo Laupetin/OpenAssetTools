@@ -76,13 +76,15 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsTempBlock => information.Block != null && information.Block.IsTemp;
         public bool IsRuntimeBlock => information.Block != null && information.Block.IsRuntime;
 
-        public bool IsFirstMember =>
-            information.Parent.OrderedMembers.FirstOrDefault(member =>
-                !member.IsLeaf && !member.Computations.ShouldIgnore) == information;
+        private IEnumerable<MemberInformation> ParentUsedMembers =>
+            information.Parent.IsUnion && information.Parent.Computations.DynamicMember != null
+                ? information.Parent.OrderedMembers.Where(member => !member.Computations.ShouldIgnore)
+                : information.Parent.OrderedMembers.Where(member =>
+                    !member.IsLeaf && !member.Computations.ShouldIgnore);
 
-        public bool IsLastMember =>
-            information.Parent.OrderedMembers.LastOrDefault(member =>
-                !member.IsLeaf && !member.Computations.ShouldIgnore) == information;
+        public bool IsFirstMember => ParentUsedMembers.FirstOrDefault() == information;
+
+        public bool IsLastMember => ParentUsedMembers.LastOrDefault() == information;
 
         public bool HasDynamicArraySize => information.Member.VariableType.References
             .OfType<ReferenceTypeArray>()
@@ -91,6 +93,10 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsDynamicMember => HasDynamicArraySize ||
                                        !ContainsNonEmbeddedReference &&
                                        information.StructureType?.Computations.DynamicMember != null;
+
+        public bool IsAfterPartialLoad => IsDynamicMember ||
+                                          information.Parent.IsUnion &&
+                                          information.Parent.Computations.DynamicMember != null;
 
         public MemberReferenceComputations References => new MemberReferenceComputations(information);
 

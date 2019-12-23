@@ -3,8 +3,12 @@ delimiters "$", "$"
 // Everything related to loading an embedded reference
 
 LoadEmbedded_Load(context, structure, member, reference) ::= <<
+$if(!member.IsLeaf)$
 $TypeVarName(member.Member.VariableType.Type)$ = &$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
-Load_$member.Member.VariableType.Type.Name$($if(member.Computations.IsDynamicMember)$true$else$false$endif$);
+Load_$member.Member.VariableType.Type.Name$($if(member.Computations.IsAfterPartialLoad)$true$else$false$endif$);$\\$
+$elseif(member.Computations.IsAfterPartialLoad)$
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(&$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);$\\$
+$endif$
 >>
 
 LoadEmbedded_TypeCheck(context, structure, member, reference) ::= <%
@@ -31,13 +35,21 @@ LoadEmbedded(context, structure, member, reference) ::= <%
 $LoadEmbedded_Block(context, structure, member, reference)$
 %>
 
+LoadEmbeddedArray_Load(context, structure, member, reference) ::= <<
+$if(!member.IsLeaf)$
+$TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
+LoadArray_$member.Member.VariableType.Type.Name$($if(member.Computations.IsAfterPartialLoad)$true$else$false$endif$, $reference.ArraySize$);$\\$
+$elseif(member.Computations.IsAfterPartialLoad)$
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$, $reference.ArraySize$);$\\$
+$endif$
+>>
+
 LoadEmbeddedArray_TypeCheck(context, structure, member, reference) ::= <%
 $if(member.IsScriptString)$
 varScriptString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
 LoadScriptStringArray(false, $reference.ArraySize$);
 $else$
-$TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
-LoadArray_$member.Member.VariableType.Type.Name$(false, $reference.ArraySize$);
+$LoadEmbeddedArray_Load(context, structure, member, reference)$
 $endif$
 %>
 

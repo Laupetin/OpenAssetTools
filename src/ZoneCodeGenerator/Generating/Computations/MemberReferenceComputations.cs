@@ -64,6 +64,10 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsDynamicArray =>
             Reference is ReferenceTypeArray referenceTypeArray && referenceTypeArray.DynamicSize != null;
 
+        public IEvaluation DynamicArrayCountEvaluation => Reference is ReferenceTypeArray referenceTypeArray
+            ? referenceTypeArray.DynamicSize
+            : null;
+
         public MemberReferenceComputations(MemberInformation information)
         {
             this.information = information;
