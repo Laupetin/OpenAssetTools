@@ -189,7 +189,7 @@ void ContentLoaderT6::LoadXAssetArray(const bool atStreamStart, const size_t cou
 
     for(asset_type_t assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
     {
-        m_zone->GetPools()->InitPoolStatic(assetType, assetCounts[assetType]);
+        m_zone->GetPools()->InitPoolDynamic(assetType);
     }
 
     for(size_t index = 0; index < count; index++)
