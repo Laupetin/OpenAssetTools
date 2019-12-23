@@ -175,7 +175,7 @@ void** XBlockInputStream::InsertPointer()
 {
     m_block_stack.push(m_insert_block);
 
-    Align(sizeof(void*));
+    Align(alignof(void*));
     
     if(m_block_offsets[m_insert_block->m_index] + sizeof(void*) > m_insert_block->m_buffer_size)
     {
@@ -183,6 +183,8 @@ void** XBlockInputStream::InsertPointer()
     }
 
     void** ptr = reinterpret_cast<void**>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
+
+    IncBlockPos(sizeof(void*));
 
     m_block_stack.pop();
 
