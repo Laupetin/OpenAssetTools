@@ -515,8 +515,8 @@ namespace T6
         bool bDelta3D;
         bool bLeftHandGripIK;
         unsigned int streamedFileSize;
-        char boneCount[10];
-        char notifyCount;
+        unsigned char boneCount[10];
+        unsigned char notifyCount;
         char assetType;
         bool isDefault;
         unsigned int randomDataShortCount;
