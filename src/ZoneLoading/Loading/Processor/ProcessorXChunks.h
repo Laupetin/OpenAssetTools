@@ -9,9 +9,11 @@ class ProcessorXChunks : public StreamProcessor
 
 public:
     ProcessorXChunks(int numStreams, size_t xChunkSize);
+    ProcessorXChunks(int numStreams, size_t xChunkSize, size_t vanillaBufferSize);
     ~ProcessorXChunks() override;
 
     size_t Load(void* buffer, size_t length) override;
+    int64_t Pos() override;
 
     void AddChunkProcessor(IXChunkProcessor* chunkProcessor) const;
 };

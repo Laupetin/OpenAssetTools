@@ -13,6 +13,7 @@ class ZoneLoaderFactoryT6 final : public IZoneLoaderFactory
 
     static const int STREAM_COUNT;
     static const int XCHUNK_SIZE;
+    static const int VANILLA_BUFFER_SIZE;
     static const int OFFSET_BLOCK_BIT_COUNT;
     static const block_t INSERT_BLOCK;
 

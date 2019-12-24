@@ -28,6 +28,7 @@ const int ZoneLoaderFactoryT6::VERSION = 147;
 
 const int ZoneLoaderFactoryT6::STREAM_COUNT = 4;
 const int ZoneLoaderFactoryT6::XCHUNK_SIZE = 0x8000;
+const int ZoneLoaderFactoryT6::VANILLA_BUFFER_SIZE = 0x80000;
 const int ZoneLoaderFactoryT6::OFFSET_BLOCK_BIT_COUNT = 3;
 const block_t ZoneLoaderFactoryT6::INSERT_BLOCK = T6::XFILE_BLOCK_VIRTUAL;
 
@@ -259,7 +260,7 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
     static ISignatureDataProvider* AddXChunkProcessor(bool isEncrypted, ZoneLoader* zoneLoader, std::string& fileName)
     {
         ISignatureDataProvider* result = nullptr;
-        auto* xChunkProcessor = new ProcessorXChunks(STREAM_COUNT, XCHUNK_SIZE);
+        auto* xChunkProcessor = new ProcessorXChunks(STREAM_COUNT, XCHUNK_SIZE, VANILLA_BUFFER_SIZE);
 
         if(isEncrypted)
         {
