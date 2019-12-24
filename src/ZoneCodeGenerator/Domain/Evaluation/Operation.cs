@@ -14,7 +14,7 @@ namespace ZoneCodeGenerator.Domain.Evaluation
 
         public IEvaluation Operand2 { get; }
         public bool Operand2NeedsParenthesis => Operand2 is Operation operation2 &&
-                                                operation2.OperationType.Precedence > OperationType.Precedence;
+                                                operation2.OperationType.Precedence >= OperationType.Precedence;
 
         public OperationType OperationType { get; }
 
