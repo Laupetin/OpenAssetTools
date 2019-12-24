@@ -122,7 +122,22 @@ void XBlockInputStream::LoadDataInBlock(void* dst, const size_t size)
     // Theoretically ptr should always be at the current block offset.
     assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
 
-    m_stream->Load(dst, size);
+    switch (block->m_type)
+    {
+    case XBlock::Type::BLOCK_TYPE_TEMP:
+    case XBlock::Type::BLOCK_TYPE_NORMAL:
+        m_stream->Load(dst, size);
+        break;
+
+    case XBlock::Type::BLOCK_TYPE_RUNTIME:
+        memset(dst, 0, size);
+        break;
+
+    case XBlock::Type::BLOCK_TYPE_DELAY:
+        assert(false);
+        break;
+    }
+
 
     IncBlockPos(size);
 }
