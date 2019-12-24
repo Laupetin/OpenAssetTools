@@ -178,22 +178,6 @@ void ContentLoaderT6::LoadXAssetArray(const bool atStreamStart, const size_t cou
     if(atStreamStart)
         m_stream->Load<XAsset>(varXAsset, count);
 
-    size_t assetCounts[ASSET_TYPE_COUNT]{0};
-
-    for(size_t index = 0; index < count; index++)
-    {
-        assert(varXAsset[index].type >= 0 && varXAsset[index].type < ASSET_TYPE_COUNT);
-
-        if(varXAsset[index].type >= 0 && varXAsset[index].type < ASSET_TYPE_COUNT)
-        {
-            assetCounts[varXAsset[index].type]++;
-        }
-    }
-
-    // Special case: CLIPMAP and CLIPMAP_PVS are the same struct and therefore share the same asset pool
-    assetCounts[ASSET_TYPE_CLIPMAP_PVS] += assetCounts[ASSET_TYPE_CLIPMAP];
-    assetCounts[ASSET_TYPE_CLIPMAP] = 0;
-
     for(asset_type_t assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
     {
         m_zone->GetPools()->InitPoolDynamic(assetType);
