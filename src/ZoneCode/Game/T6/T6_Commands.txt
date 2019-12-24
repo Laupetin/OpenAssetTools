@@ -1345,8 +1345,10 @@ set string localization;
 use XGlobals;
 set string name;
 set name name;
-//set count gumps gumpsCount;
-//set count overlays overlayCount;
+set arraycount gumps gumpsCount;
+set condition gumps gumpsCount >= 0 && gumpsCount <= 32;
+set arraycount overlays overlayCount;
+set condition overlays overlayCount >= 0 && overlayCount <= 32;
 
 // gump_info_t
 set string gump_info_t::name;

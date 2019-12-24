@@ -145,7 +145,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
         LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
         LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
-        // LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals);
+        LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals);
         LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot);
         LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses);
         LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet);

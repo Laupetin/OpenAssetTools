@@ -29,6 +29,11 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsArray => Reference is ReferenceTypeArray;
         public int ArraySize => Reference is ReferenceTypeArray array ? array.ArraySize : 0;
 
+        public bool HasDynamicArrayCount => Reference is ReferenceTypeArray array && array.DynamicCount != null;
+
+        public IEvaluation DynamicArrayCountEvaluation =>
+            Reference is ReferenceTypeArray array ? array.DynamicCount : null;
+
         public IEnumerable<MemberReferenceComputations> ArrayEntries => Enumerable.Range(0, ArraySize)
             .Select(i => new MemberReferenceComputations(information, referenceIndices.Concat(new[] {i})));
 
@@ -64,7 +69,7 @@ namespace ZoneCodeGenerator.Generating.Computations
         public bool IsDynamicArray =>
             Reference is ReferenceTypeArray referenceTypeArray && referenceTypeArray.DynamicSize != null;
 
-        public IEvaluation DynamicArrayCountEvaluation => Reference is ReferenceTypeArray referenceTypeArray
+        public IEvaluation DynamicArraySizeEvaluation => Reference is ReferenceTypeArray referenceTypeArray
             ? referenceTypeArray.DynamicSize
             : null;
 

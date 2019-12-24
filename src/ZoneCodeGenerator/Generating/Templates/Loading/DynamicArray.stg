@@ -6,11 +6,11 @@ LoadDynamicArray_Load(context, structure, member, reference) ::= <%
 $if(member.StructureType && !member.StructureType.IsLeaf)$
 
 $TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
-LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.DynamicArrayCountEvaluation)$);
+LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.DynamicArraySizeEvaluation)$);
 
 $else$
 
-m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.DynamicArrayCountEvaluation)$);
+m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.DynamicArraySizeEvaluation)$);
 
 $endif$
 %>
