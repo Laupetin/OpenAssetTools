@@ -48,6 +48,8 @@ void ZoneLoader::AddXBlock(XBlock* block)
     {
         return b1->m_index < b2->m_index;
     });
+
+    m_zone->GetMemory()->AddBlock(block);
 }
 
 void ZoneLoader::AddLoadingStep(ILoadingStep* step)
@@ -88,7 +90,7 @@ Zone* ZoneLoader::LoadZone(FileAPI::File* file)
         return nullptr;
     }
 
-    m_zone->m_game->AddZone(m_zone);
+    m_zone->Register();
 
     return m_zone;
 }

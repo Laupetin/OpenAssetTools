@@ -146,12 +146,15 @@ public:
 
         m_linked_asset_pools.erase(iLinkEntry);
 
-        for(auto iAssetEntry = m_assets.begin(); iAssetEntry != m_assets.end(); ++iAssetEntry)
+        for(auto iAssetEntry = m_assets.begin(); iAssetEntry != m_assets.end(); )
         {
             auto& assetEntry = *iAssetEntry;
 
             if(assetEntry.second.m_duplicate && ReplaceAssetPoolEntry(assetEntry.second))
+            {
+                ++iAssetEntry;
                 continue;
+            }
 
             iAssetEntry = m_assets.erase(iAssetEntry);
         }

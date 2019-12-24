@@ -7,6 +7,7 @@ class GameT6 : public IGame
 
 public:
     void AddZone(Zone* zone) override;
+    void RemoveZone(Zone* zone) override;
     std::vector<Zone*> GetZones() override;
 };
 
