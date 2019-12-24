@@ -63,6 +63,54 @@ std::string ResolveOutputFolderPath(const std::string& path, Zone* zone)
     return std::regex_replace(path, std::regex("%zoneName%"), zone->m_name);
 }
 
+bool HandleZone(Zone* zone, ArgumentParser* argumentParser)
+{
+    if (argumentParser->IsOptionSpecified(optionList))
+    {
+        const ContentPrinter printer(zone);
+        printer.PrintContent();
+    }
+    else
+    {
+        const bool minimalisticZoneDefinition = argumentParser->IsOptionSpecified(optionMinimalZoneFile);
+
+        std::string outputFolderPath;
+
+        if (argumentParser->IsOptionSpecified(optionOutputFolder))
+        {
+            outputFolderPath = ResolveOutputFolderPath(argumentParser->GetValueForOption(optionOutputFolder), zone);
+        }
+        else
+        {
+            outputFolderPath = ResolveOutputFolderPath("./%zoneName%", zone);
+        }
+
+        FileAPI::DirectoryCreate(outputFolderPath);
+
+        const std::string zoneDefinitionFileFolder = utils::Path::Combine(outputFolderPath, "zone_source");
+        FileAPI::DirectoryCreate(zoneDefinitionFileFolder);
+
+        FileAPI::File zoneDefinitionFile = FileAPI::Open(
+            utils::Path::Combine(zoneDefinitionFileFolder, zone->m_name + ".zone"),
+            FileAPI::Mode::MODE_WRITE);
+
+        if (zoneDefinitionFile.IsOpen())
+        {
+            ZoneLoading::WriteZoneDefinition(zone, &zoneDefinitionFile, minimalisticZoneDefinition);
+            ZoneLoading::DumpZone(zone, outputFolderPath);
+        }
+        else
+        {
+            printf("Failed to open file for zone definition file of zone '%s'.\n", zone->m_name.c_str());
+            return false;
+        }
+
+        zoneDefinitionFile.Close();
+    }
+
+    return true;
+}
+
 int main(const int argc, const char** argv)
 {
     ArgumentParser argumentParser(commandLineOptions, _countof(commandLineOptions));
@@ -87,8 +135,6 @@ int main(const int argc, const char** argv)
         return 1;
     }
 
-    std::vector<Zone*> loadedZones;
-
     for (unsigned argIndex = 1; argIndex < argCount; argIndex++)
     {
         const std::string& zonePath = arguments[argIndex];
@@ -100,55 +146,12 @@ int main(const int argc, const char** argv)
             return 1;
         }
 
-        loadedZones.push_back(zone);
-    }
-
-    if (argumentParser.IsOptionSpecified(optionList))
-    {
-        for (auto zone : loadedZones)
+        if(!HandleZone(zone, &argumentParser))
         {
-            ContentPrinter printer(zone);
-            printer.PrintContent();
+            return 1;
         }
-    }
-    else
-    {
-        const bool minimalisticZoneDefinition = argumentParser.IsOptionSpecified(optionMinimalZoneFile);
 
-        for (auto zone : loadedZones)
-        {
-            std::string outputFolderPath;
-
-            if (argumentParser.IsOptionSpecified(optionOutputFolder))
-            {
-                outputFolderPath = ResolveOutputFolderPath(argumentParser.GetValueForOption(optionOutputFolder), zone);
-            }
-            else
-            {
-                outputFolderPath = ResolveOutputFolderPath("./%zoneName%", zone);
-            }
-
-            FileAPI::DirectoryCreate(outputFolderPath);
-
-            std::string zoneDefinitionFileFolder = utils::Path::Combine(outputFolderPath, "zone_source");
-            FileAPI::DirectoryCreate(zoneDefinitionFileFolder);
-
-            FileAPI::File zoneDefinitionFile = FileAPI::Open(
-                utils::Path::Combine(zoneDefinitionFileFolder, zone->m_name + ".zone"),
-                FileAPI::Mode::MODE_WRITE);
-
-            if (zoneDefinitionFile.IsOpen())
-            {
-                ZoneLoading::WriteZoneDefinition(zone, &zoneDefinitionFile, minimalisticZoneDefinition);
-                ZoneLoading::DumpZone(zone, outputFolderPath);
-            }
-            else
-            {
-                printf("Failed to open file for zone definition file of zone '%s'.\n", zone->m_name.c_str());
-            }
-
-            zoneDefinitionFile.Close();
-        }
+        delete zone;
     }
 
     return 0;
