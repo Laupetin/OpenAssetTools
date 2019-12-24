@@ -128,7 +128,7 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
         LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp);
         LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp);
         LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
-        // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
+        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
         LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
         LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
         LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);

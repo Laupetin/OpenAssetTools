@@ -661,6 +661,7 @@ set count smodelIndexes smodelIndexCount;
 
 // GfxPortal
 use GfxPortal;
+set condition writable never;
 set reusable cell;
 set count vertices vertexCount;
 
@@ -722,6 +723,19 @@ set count tris numTris;
 use SSkinAnim;
 set count data 4 * width * frames;
 
+// GfxShadowGeometry
+use GfxShadowGeometry;
+set count sortedSurfIndex surfaceCount;
+set count smodelIndex smodelCount;
+
+// GfxLightRegion
+use GfxLightRegion;
+set count hulls hullCount;
+
+// GfxLightRegionHull
+use GfxLightRegionHull;
+set count axis axisCount;
+
 // GfxWorldDpvsStatic
 use GfxWorldDpvsStatic;
 set block smodelVisData XFILE_BLOCK_RUNTIME_VIRTUAL;
@@ -757,18 +771,23 @@ reorder:
     smodelDrawInsts
     surfaceMaterials;
 
+// GfxStaticModelLmapVertexInfo
+use GfxStaticModelLmapVertexInfo;
+set count lmapVertexColors numLmapVertexColors;
+set condition lmapVertexColorsVB never;
+
 // GfxWorldDpvsDynamic
 use GfxWorldDpvsDynamic;
 set block dynEntCellBits XFILE_BLOCK_RUNTIME_VIRTUAL;
 set count dynEntCellBits[0] dynEntClientWordCount[0] * GfxWorld::dpvsPlanes::cellCount;
 set count dynEntCellBits[1] dynEntClientWordCount[1] * GfxWorld::dpvsPlanes::cellCount;
 set block dynEntVisData XFILE_BLOCK_RUNTIME_VIRTUAL;
-set count dynEntVisData[0][0] dynEntClientWordCount[0];
-set count dynEntVisData[1][0] dynEntClientWordCount[1];
-set count dynEntVisData[0][1] dynEntClientWordCount[0];
-set count dynEntVisData[1][1] dynEntClientWordCount[1];
-set count dynEntVisData[0][2] dynEntClientWordCount[0];
-set count dynEntVisData[1][2] dynEntClientWordCount[1];
+set count dynEntVisData[0][0] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][0] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][1] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][1] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][2] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][2] 32 * dynEntClientWordCount[1];
 
 // GfxWaterBuffer
 use GfxWaterBuffer;
