@@ -77,12 +77,12 @@ FileAPI::File& FileAPI::File::operator=(File&& f) noexcept
     return *this;
 }
 
-bool FileAPI::File::IsOpen() const
+bool FileAPI::File::IsOpen()
 {
 	return this->m_handle != nullptr;
 }
 
-size_t FileAPI::File::Read(void* buffer, const size_t elementSize, const size_t elementCount) const
+size_t FileAPI::File::Read(void* buffer, const size_t elementSize, const size_t elementCount)
 {
 	if (!this->IsOpen())
 		return 0;
@@ -90,7 +90,7 @@ size_t FileAPI::File::Read(void* buffer, const size_t elementSize, const size_t 
 	return fread(buffer, elementSize, elementCount, static_cast<FILE*>(m_handle));
 }
 
-size_t FileAPI::File::Write(const void* data, const size_t elementSize, const size_t elementCount) const
+size_t FileAPI::File::Write(const void* data, const size_t elementSize, const size_t elementCount)
 {
 	if (!this->IsOpen())
 		return 0;
@@ -98,7 +98,7 @@ size_t FileAPI::File::Write(const void* data, const size_t elementSize, const si
 	return fwrite(data, elementSize, elementCount, static_cast<FILE*>(m_handle));
 }
 
-void FileAPI::File::Skip(const size_t amount) const
+void FileAPI::File::Skip(const size_t amount)
 {
     if(!this->IsOpen())
         return;
@@ -106,7 +106,7 @@ void FileAPI::File::Skip(const size_t amount) const
     fseek(static_cast<FILE*>(m_handle), amount, SEEK_CUR);
 }
 
-size_t FileAPI::File::Printf(const char* fmt, ...) const
+size_t FileAPI::File::Printf(const char* fmt, ...)
 {
 	va_list ap;
 
@@ -120,12 +120,12 @@ size_t FileAPI::File::Printf(const char* fmt, ...) const
     return result;
 }
 
-int64_t FileAPI::File::Pos() const
+int64_t FileAPI::File::Pos()
 {
     return _ftelli64(static_cast<FILE*>(m_handle));
 }
 
-void FileAPI::File::Goto(const int64_t pos) const
+void FileAPI::File::Goto(const int64_t pos)
 {
     _fseeki64(static_cast<FILE*>(m_handle), pos, SEEK_SET);
 }

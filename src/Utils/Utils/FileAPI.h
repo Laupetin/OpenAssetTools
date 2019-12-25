@@ -12,7 +12,22 @@ public:
         MODE_WRITE = 1
     };
 
-	class File
+    class IFile
+    {
+    public:
+        virtual ~IFile() = default;
+
+        virtual bool IsOpen() = 0;
+        virtual size_t Read(void* buffer, size_t elementSize, size_t elementCount) = 0;
+        virtual size_t Write(const void* data, size_t elementSize, size_t elementCount) = 0;
+        virtual void Skip(size_t amount) = 0;
+        virtual size_t Printf(const char* fmt, ...) = 0;
+        virtual int64_t Pos() = 0;
+        virtual void Goto(int64_t pos) = 0;
+        virtual void Close() = 0;
+    };
+
+	class File final : public IFile
 	{
 		void* m_handle;
 
@@ -21,19 +36,19 @@ public:
         explicit File(void* handle);
         File(File&) = delete;
         File(File&& f) noexcept;
-		~File();
+		~File() override;
 
         File& operator=(File&) = delete;
         File& operator=(File&& f) noexcept;
 
-		bool IsOpen() const;
-		size_t Read(void* buffer, size_t elementSize, size_t elementCount) const;
-		size_t Write(const void* data, size_t elementSize, size_t elementCount) const;
-        void Skip(size_t amount) const;
-		size_t Printf(const char* fmt, ...) const;
-        int64_t Pos() const;
-        void Goto(int64_t pos) const;
-		void Close();
+		bool IsOpen() override;
+		size_t Read(void* buffer, size_t elementSize, size_t elementCount) override;
+		size_t Write(const void* data, size_t elementSize, size_t elementCount) override;
+        void Skip(size_t amount) override;
+		size_t Printf(const char* fmt, ...) override;
+        int64_t Pos() override;
+        void Goto(int64_t pos) override;
+		void Close() override;
 	};
 
 	static bool FileExists(const std::string& fileName);
