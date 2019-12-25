@@ -1,8 +1,10 @@
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "ZoneLoading.h"
+#include "ObjWriting.h"
 #include "ContentPrinter.h"
 #include "Utils/PathUtils.h"
+#include "Utils/FileAPI.h"
 
 #include <cstdlib>
 #include <regex>
@@ -96,8 +98,8 @@ bool HandleZone(Zone* zone, ArgumentParser* argumentParser)
 
         if (zoneDefinitionFile.IsOpen())
         {
-            ZoneLoading::WriteZoneDefinition(zone, &zoneDefinitionFile, minimalisticZoneDefinition);
-            ZoneLoading::DumpZone(zone, outputFolderPath);
+            ObjWriting::WriteZoneDefinition(zone, &zoneDefinitionFile, minimalisticZoneDefinition);
+            ObjWriting::DumpZone(zone, outputFolderPath);
         }
         else
         {

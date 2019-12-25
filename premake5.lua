@@ -100,6 +100,9 @@ include "src/ZoneCodeGenerator.lua"
 include "src/ZoneCommon.lua"
 include "src/ZoneLoading.lua"
 include "src/ZoneWriting.lua"
+include "src/ZoneCommon.lua"
+include "src/ObjLoading.lua"
+include "src/ObjWriting.lua"
 
 -- Components group: All projects assist or are part of a tool
 group "Components"
@@ -110,6 +113,8 @@ group "Components"
     ZoneCommon:project()
     ZoneLoading:project()
     ZoneWriting:project()
+    ObjLoading:project()
+    ObjWriting:project()
 group ""
 
 -- Tools group: All projects that compile into the final tools
