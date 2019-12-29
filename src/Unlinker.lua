@@ -31,9 +31,11 @@ function Unlinker:project()
 		self:include()
 		Utils:include()
         ZoneLoading:include()
+        ObjLoading:include()
         ObjWriting:include()
 
 		Utils:link()
         ZoneLoading:link()
+        ObjLoading:link()
         ObjWriting:link()
 end

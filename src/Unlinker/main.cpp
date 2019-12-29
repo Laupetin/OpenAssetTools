@@ -6,8 +6,8 @@
 #include "Utils/PathUtils.h"
 #include "Utils/FileAPI.h"
 
-#include <cstdlib>
 #include <regex>
+#include "ObjLoading.h"
 
 const CommandLineOption* optionHelp = CommandLineOption::Builder::Create()
                                       .WithShortName("?")
@@ -147,6 +147,9 @@ int main(const int argc, const char** argv)
             printf("Failed to load zone '%s'.\n", zonePath.c_str());
             return 1;
         }
+
+        ObjLoading::LoadReferencedContainersForZone(zone);
+        ObjLoading::LoadObjDataForZone(zone);
 
         if(!HandleZone(zone, &argumentParser))
         {

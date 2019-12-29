@@ -1,6 +1,7 @@
 ObjLoading = {}
 
 function ObjLoading:include()
+	ObjCommon:include()
 	ZoneCommon:include()
 	includedirs {
 		path.join(ProjectFolder(), "ObjLoading")
@@ -9,7 +10,11 @@ end
 
 function ObjLoading:link()
     Utils:link()
+	ObjCommon:link()
 	ZoneCommon:link()
+	minilzo:link()
+	minizip:link()
+	zlib:link()
 	links {
 		"ObjLoading"
 	}
@@ -39,6 +44,10 @@ function ObjLoading:project()
 			}
 		}
 		
-        self:include()
+		self:include()
+		Crypto:include()
 		Utils:include()
+		minilzo:include()
+		minizip:include()
+		zlib:include()
 end

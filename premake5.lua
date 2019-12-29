@@ -105,6 +105,7 @@ include "src/ZoneCommon.lua"
 include "src/ZoneLoading.lua"
 include "src/ZoneWriting.lua"
 include "src/ZoneCommon.lua"
+include "src/ObjCommon.lua"
 include "src/ObjLoading.lua"
 include "src/ObjWriting.lua"
 
@@ -117,6 +118,7 @@ group "Components"
     ZoneCommon:project()
     ZoneLoading:project()
     ZoneWriting:project()
+    ObjCommon:project()
     ObjLoading:project()
     ObjWriting:project()
 group ""
