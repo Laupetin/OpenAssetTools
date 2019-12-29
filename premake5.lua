@@ -77,6 +77,8 @@ workspace "OpenAssetTools"
 -- ========================
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
+include "thirdparty/minilzo.lua"
+include "thirdparty/minizip.lua"
 include "thirdparty/salsa20.lua"
 include "thirdparty/zlib.lua"
 
@@ -84,6 +86,8 @@ include "thirdparty/zlib.lua"
 group "ThirdParty"
     libtommath:project()
     libtomcrypt:project()
+    minilzo:project()
+    minizip:project()
     salsa20:project()
     zlib:project()
 group ""
