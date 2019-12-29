@@ -11,7 +11,7 @@
 
 bool ZoneDumperT6::CanHandleZone(Zone* zone)
 {
-    return zone->m_game == &game_t6;
+    return zone->m_game == &g_GameT6;
 }
 
 bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath)

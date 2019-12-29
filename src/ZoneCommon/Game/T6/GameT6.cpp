@@ -3,7 +3,7 @@
 
 using namespace T6;
 
-GameT6 game_t6;
+GameT6 g_GameT6;
 
 void GameT6::AddZone(Zone* zone)
 {

@@ -290,7 +290,7 @@ public:
             return nullptr;
 
         // Create new zone
-        auto* zone = new Zone(fileName, 0, new GameAssetPoolT6(0), &game_t6);
+        auto* zone = new Zone(fileName, 0, new GameAssetPoolT6(0), &g_GameT6);
         zone->m_language = GetZoneLanguage(fileName);
         
         // File is supported. Now setup all required steps for loading this file.

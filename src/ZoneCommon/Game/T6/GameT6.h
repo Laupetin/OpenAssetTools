@@ -11,4 +11,4 @@ public:
     std::vector<Zone*> GetZones() override;
 };
 
-extern GameT6 game_t6;
+extern GameT6 g_GameT6;
