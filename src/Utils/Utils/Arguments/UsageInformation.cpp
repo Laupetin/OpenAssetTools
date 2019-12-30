@@ -43,16 +43,16 @@ void UsageInformation::Print()
     str << "Usage:" << std::endl;
 
     PrintUsageOverview(str);
-    
+
     str << "The following options are available:" << std::endl;
 
     str.fill(' ');
 
     for (auto commandLineOption : m_command_line_options)
     {
-        if(categories.find(commandLineOption->m_category) == categories.end())
+        if (categories.find(commandLineOption->m_category) == categories.end())
             categories[commandLineOption->m_category] = std::vector<const CommandLineOption*>();
-        
+
         categories[commandLineOption->m_category].push_back(commandLineOption);
     }
 
@@ -62,40 +62,44 @@ void UsageInformation::Print()
 
     for (auto option : m_command_line_options)
     {
-        if(option->m_short_name.length() > longestShortName)
+        if (option->m_short_name.length() > longestShortName)
             longestShortName = option->m_short_name.length();
 
-        if(option->m_long_name.length() > longestLongName)
+        if (option->m_long_name.length() > longestLongName)
             longestLongName = option->m_long_name.length();
 
         const size_t argumentLength = GetOptionArgumentLength(option);
-        if(argumentLength > longestArgumentLength)
+        if (argumentLength > longestArgumentLength)
             longestArgumentLength = argumentLength;
     }
 
     bool firstCategory = true;
     for (auto& category : categories)
     {
-        if(!firstCategory)
+        if (!firstCategory)
             str << std::endl;
         else
             firstCategory = false;
 
-        if(!category.first.empty())
+        if (!category.first.empty())
         {
             str << "== " << category.first << " ==" << std::endl;
         }
 
         for (auto option : category.second)
         {
-            str << std::setw(longestShortName + 1) << "-" + option->m_short_name;
+            str << std::setw(static_cast<std::streamsize>(longestShortName) + 1) << (!option->m_short_name.empty()
+                                                                                         ? "-" + option->m_short_name
+                                                                                         : "");
 
-            if(!option->m_short_name.empty() && !option->m_long_name.empty())
+            if (!option->m_short_name.empty() && !option->m_long_name.empty())
                 str << ", ";
             else
                 str << "  ";
-            
-            str << std::setw(longestLongName + 2) << "--" + option->m_long_name;
+
+            str << std::setw(static_cast<std::streamsize>(longestLongName) + 2) << (!option->m_long_name.empty()
+                                                                                        ? "--" + option->m_long_name
+                                                                                        : "");
 
             str << " ";
             str << std::setw(longestArgumentLength) << GetOptionArgument(option);
@@ -112,7 +116,7 @@ void UsageInformation::PrintUsageOverview(std::stringstream& str)
     str << m_application_name << " [options]";
     for (ArgumentUsage& argument : m_arguments)
     {
-        if(argument.m_optional)
+        if (argument.m_optional)
         {
             str << " [" << argument.m_name << "]";
         }
@@ -121,7 +125,7 @@ void UsageInformation::PrintUsageOverview(std::stringstream& str)
             str << " <" << argument.m_name << ">";
         }
     }
-    if(m_var_args)
+    if (m_var_args)
     {
         str << "...";
     }
@@ -135,7 +139,7 @@ std::string UsageInformation::GetOptionArgument(const CommandLineOption* option)
     bool firstParam = true;
     for (const std::string& param : option->m_parameters)
     {
-        if(!firstParam)
+        if (!firstParam)
             str << " ";
         else
             firstParam = false;
@@ -157,6 +161,6 @@ size_t UsageInformation::GetOptionArgumentLength(const CommandLineOption* option
     }
 
     return parameterCount * 2 // < and >
-            + parameterCombinedStringLength
-            + (parameterCount > 1 ? parameterCount - 1 : 0); // One space between each argument
+        + parameterCombinedStringLength
+        + (parameterCount > 1 ? parameterCount - 1 : 0); // One space between each argument
 }
