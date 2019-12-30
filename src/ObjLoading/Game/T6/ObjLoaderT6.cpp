@@ -27,13 +27,13 @@ bool ObjLoaderT6::SupportsZone(Zone* zone)
     return zone->m_game == &g_GameT6;
 }
 
-void ObjLoaderT6::LoadIPakForZone(std::string ipakName, Zone* zone)
+void ObjLoaderT6::LoadIPakForZone(const std::string& ipakName, Zone* zone)
 {
     printf("Loading ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
     // TODO
 }
 
-void ObjLoaderT6::LoadReferencedContainersForZone(Zone* zone)
+void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
 {
     auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
     const int zoneNameHash = Com_HashKey(zone->m_name.c_str(), 64);
@@ -55,6 +55,7 @@ void ObjLoaderT6::LoadReferencedContainersForZone(Zone* zone)
     }
 }
 
-void ObjLoaderT6::LoadObjDataForZone(Zone* zone)
+void ObjLoaderT6::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
 {
+    // TODO
 }

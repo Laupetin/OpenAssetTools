@@ -8,25 +8,25 @@ IObjLoader* objLoaders[]
     new ObjLoaderT6()
 };
 
-void ObjLoading::LoadReferencedContainersForZone(Zone* zone)
+void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
 {
     for (auto* loader : objLoaders)
     {
         if (loader->SupportsZone(zone))
         {
-            loader->LoadReferencedContainersForZone(zone);
+            loader->LoadReferencedContainersForZone(searchPath, zone);
             return;
         }
     }
 }
 
-void ObjLoading::LoadObjDataForZone(Zone* zone)
+void ObjLoading::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
 {
     for (auto* loader : objLoaders)
     {
         if (loader->SupportsZone(zone))
         {
-            loader->LoadObjDataForZone(zone);
+            loader->LoadObjDataForZone(searchPath, zone);
             return;
         }
     }

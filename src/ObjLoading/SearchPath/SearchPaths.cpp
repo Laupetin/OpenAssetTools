@@ -1,11 +1,17 @@
 #include "SearchPaths.h"
 
+#include <filesystem>
+
+SearchPaths::SearchPaths() = default;
+
 SearchPaths::~SearchPaths()
 {
-    for(auto searchPath : m_search_paths)
+    for(auto searchPathToFree : m_to_free)
     {
-        delete searchPath;
+        delete searchPathToFree;
     }
+    m_to_free.clear();
+
     m_search_paths.clear();
 }
 
@@ -37,9 +43,9 @@ SearchPaths& SearchPaths::operator=(SearchPaths&& other) noexcept
 
 FileAPI::IFile* SearchPaths::Open(const std::string& fileName)
 {
-    for(auto searchPath : m_search_paths)
+    for(auto searchPathEntry : m_search_paths)
     {
-        auto* file = searchPath->Open(fileName);
+        auto* file = searchPathEntry->Open(fileName);
 
         if(file != nullptr)
         {
@@ -50,7 +56,46 @@ FileAPI::IFile* SearchPaths::Open(const std::string& fileName)
     return nullptr;
 }
 
-void SearchPaths::AddSearchPath(ISearchPath* searchPath)
+
+void SearchPaths::FindAll(const std::function<void(const std::string&)> callback)
+{
+    for (auto searchPathEntry : m_search_paths)
+    {
+        searchPathEntry->FindAll(callback);
+    }
+}
+
+void SearchPaths::FindAllOnDisk(const std::function<void(const std::string&)> callback)
+{
+    for (auto searchPathEntry : m_search_paths)
+    {
+        searchPathEntry->FindAllOnDisk(callback);
+    }
+}
+
+void SearchPaths::FindByExtension(const std::string& extension, const std::function<void(const std::string&)> callback)
+{
+    for (auto searchPathEntry : m_search_paths)
+    {
+        searchPathEntry->FindByExtension(extension, callback);
+    }
+}
+
+void SearchPaths::FindOnDiskByExtension(const std::string& extension, const std::function<void(const std::string&)> callback)
+{
+    for (auto searchPathEntry : m_search_paths)
+    {
+        searchPathEntry->FindOnDiskByExtension(extension, callback);
+    }
+}
+
+void SearchPaths::CommitSearchPath(ISearchPath* searchPath)
+{
+    m_search_paths.push_back(searchPath);
+    m_to_free.push_back(searchPath);
+}
+
+void SearchPaths::IncludeSearchPath(ISearchPath* searchPath)
 {
     m_search_paths.push_back(searchPath);
 }
