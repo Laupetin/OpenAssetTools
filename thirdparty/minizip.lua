@@ -30,6 +30,9 @@ function minizip:project()
 			path.join(folder, "zlib/contrib/minizip/unzip.c"),
 			path.join(folder, "zlib/contrib/minizip/zip.h"),
             path.join(folder, "zlib/contrib/minizip/zip.c"),
+			path.join(folder, "zlib/contrib/minizip/ioapi.h"),
+            path.join(folder, "zlib/contrib/minizip/ioapi.c"),
+			path.join(folder, "zlib/contrib/minizip/crypt.h"),
         }
 		
 		self:include()
