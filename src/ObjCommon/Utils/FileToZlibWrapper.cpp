@@ -1,4 +1,4 @@
-#include "ZlibFileWrapper.h"
+#include "FileToZlibWrapper.h"
 #include <cassert>
 
 voidpf Wrapper_Zlib_FileOpen(voidpf opaque, const char*, int)
@@ -71,7 +71,7 @@ int Wrapper_Zlib_FileError(voidpf opaque, voidpf stream)
     return 0;
 }
 
-zlib_filefunc_def ZlibFileWrapper::CreateFunctions32ForFile(FileAPI::IFile* file)
+zlib_filefunc_def FileToZlibWrapper::CreateFunctions32ForFile(FileAPI::IFile* file)
 {
     return zlib_filefunc_def_s
     {

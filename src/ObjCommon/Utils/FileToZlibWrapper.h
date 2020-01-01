@@ -3,7 +3,7 @@
 #include <ioapi.h>
 #include "Utils/FileAPI.h"
 
-class ZlibFileWrapper
+class FileToZlibWrapper
 {
 public:
     static zlib_filefunc_def CreateFunctions32ForFile(FileAPI::IFile* file);

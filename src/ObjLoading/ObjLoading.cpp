@@ -11,8 +11,6 @@ IObjLoader* objLoaders[]
     new ObjLoaderT6()
 };
 
-SearchPaths iwdSearchPaths;
-
 void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
 {
     for (auto* loader : objLoaders)
@@ -81,7 +79,14 @@ void ObjLoading::UnloadIWDsInSearchPath(ISearchPath* searchPath)
     IWD::Repository.RemoveContainerReferences(searchPath);
 }
 
-ISearchPath* ObjLoading::GetIWDSearchPaths()
+SearchPaths ObjLoading::GetIWDSearchPaths()
 {
-    return &iwdSearchPaths;
+    SearchPaths iwdPaths;
+
+    for(auto iwd : IWD::Repository)
+    {
+        iwdPaths.IncludeSearchPath(iwd);
+    }
+
+    return iwdPaths;
 }
