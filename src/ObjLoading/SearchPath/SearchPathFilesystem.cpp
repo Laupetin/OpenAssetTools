@@ -8,7 +8,7 @@ SearchPathFilesystem::SearchPathFilesystem(std::string path)
     m_path = std::move(path);
 }
 
-const std::string& SearchPathFilesystem::GetPath() const
+std::string SearchPathFilesystem::GetPath()
 {
     return m_path;
 }
@@ -25,55 +25,28 @@ FileAPI::IFile* SearchPathFilesystem::Open(const std::string& fileName)
     return nullptr;
 }
 
-
-void SearchPathFilesystem::FindAll(const std::function<void(const std::string&)> callback)
+void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
 {
-    std::filesystem::recursive_directory_iterator iterator(m_path);
-
-    for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
+    if (options.m_should_include_subdirectories)
     {
-        callback(entry->path().string());
-    }
-}
-
-void SearchPathFilesystem::FindAllOnDisk(const std::function<void(const std::string&)> callback)
-{
-    std::filesystem::recursive_directory_iterator iterator(m_path);
-
-    for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
-    {
-        callback(absolute(entry->path()).string());
-    }
-}
-
-void SearchPathFilesystem::FindByExtension(const std::string& extension,
-                                           const std::function<void(const std::string&)> callback)
-{
-    std::filesystem::recursive_directory_iterator iterator(m_path);
-
-    for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
-    {
-        auto entryPath = entry->path();
-
-        if (entryPath.extension().string() == extension)
+        std::filesystem::recursive_directory_iterator iterator(m_path);
+        for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
         {
-            callback(entryPath.string());
+            auto path = entry->path();
+            if (options.m_filter_extensions && path.extension().string() != options.m_extension)
+                continue;
+            callback(options.m_absolute_paths ? absolute(path).string() : path.string());
         }
     }
-}
-
-void SearchPathFilesystem::FindOnDiskByExtension(const std::string& extension,
-                                                 const std::function<void(const std::string&)> callback)
-{
-    std::filesystem::recursive_directory_iterator iterator(m_path);
-
-    for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
+    else
     {
-        auto entryPath = entry->path();
-
-        if (entryPath.extension().string() == extension)
+        std::filesystem::directory_iterator iterator(m_path);
+        for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
         {
-            callback(absolute(entryPath).string());
+            auto path = entry->path();
+            if (options.m_filter_extensions && path.extension().string() != options.m_extension)
+                continue;
+            callback(options.m_absolute_paths ? absolute(path).string() : path.string());
         }
     }
 }

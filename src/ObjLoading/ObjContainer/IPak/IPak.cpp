@@ -3,9 +3,12 @@
 #include "Exception/IPakLoadException.h"
 
 #include <sstream>
+#include "Utils/PathUtils.h"
 
 const uint32_t IPak::MAGIC = 'IPAK';
 const uint32_t IPak::VERSION = 0x50000;
+
+ObjContainerRepository<IPak, Zone> IPak::Repository;
 
 uint32_t IPak::R_HashString(const char* str, uint32_t hash)
 {
@@ -17,8 +20,9 @@ uint32_t IPak::R_HashString(const char* str, uint32_t hash)
     return hash;
 }
 
-IPak::IPak(FileAPI::IFile* file)
+IPak::IPak(std::string path, FileAPI::IFile* file)
 {
+    m_path = std::move(path);
     m_file = file;
     m_initialized = false;
     m_index_section = nullptr;
@@ -32,6 +36,11 @@ IPak::~IPak()
 
     delete m_data_section;
     m_data_section = nullptr;
+}
+
+std::string IPak::GetName()
+{
+    return utils::Path::GetFilename(m_path);
 }
 
 void IPak::ReadSection()

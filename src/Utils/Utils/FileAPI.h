@@ -20,10 +20,11 @@ public:
         virtual bool IsOpen() = 0;
         virtual size_t Read(void* buffer, size_t elementSize, size_t elementCount) = 0;
         virtual size_t Write(const void* data, size_t elementSize, size_t elementCount) = 0;
-        virtual void Skip(size_t amount) = 0;
+        virtual void Skip(int64_t amount) = 0;
         virtual size_t Printf(const char* fmt, ...) = 0;
         virtual int64_t Pos() = 0;
         virtual void Goto(int64_t pos) = 0;
+        virtual void GotoEnd() = 0;
         virtual void Close() = 0;
     };
 
@@ -44,10 +45,11 @@ public:
 		bool IsOpen() override;
 		size_t Read(void* buffer, size_t elementSize, size_t elementCount) override;
 		size_t Write(const void* data, size_t elementSize, size_t elementCount) override;
-        void Skip(size_t amount) override;
+        void Skip(int64_t amount) override;
 		size_t Printf(const char* fmt, ...) override;
         int64_t Pos() override;
         void Goto(int64_t pos) override;
+        void GotoEnd() override;
 		void Close() override;
 	};
 

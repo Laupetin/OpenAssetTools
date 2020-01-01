@@ -2,6 +2,7 @@ ObjCommon = {}
 
 function ObjCommon:include()
 	ZoneCommon:include()
+	minizip:include()
 	includedirs {
 		path.join(ProjectFolder(), "ObjCommon")
 	}
@@ -10,6 +11,7 @@ end
 function ObjCommon:link()
     Utils:link()
 	ZoneCommon:link()
+	minizip:link()
 	links {
 		"ObjCommon"
 	}

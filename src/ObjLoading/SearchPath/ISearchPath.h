@@ -1,7 +1,7 @@
 #pragma once
 
+#include "SearchPathSearchOptions.h"
 #include "Utils/FileAPI.h"
-#include <string>
 #include <functional>
 
 class ISearchPath
@@ -17,28 +17,24 @@ public:
     virtual FileAPI::IFile* Open(const std::string& fileName) = 0;
 
     /**
+     * \brief Returns the path to the search path.
+     * \return The path to the search path.
+     */
+    virtual std::string GetPath() = 0;
+
+    /**
+     * \brief Iterates through all files of the search path.
+     * \param callback The callback to call for each found file with it's path relative to the search path.
+     * \param options Options that modify the search.
+     */
+    virtual void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) = 0;
+
+    /**
      * \brief Iterates through all files of the search path.
      * \param callback The callback to call for each found file with it's path relative to the search path.
      */
-    virtual void FindAll(std::function<void(const std::string&)> callback) = 0;
-
-    /**
-     * \brief Iterates through all files available through the OS file system.
-     * \param callback The callback to call for each found file with it's full path.
-     */
-    virtual void FindAllOnDisk(std::function<void(const std::string&)> callback) = 0;
-
-    /**
-     * \brief Iterates through all files of the search path with the specified extension.
-     * \param extension The extension of all files to find.
-     * \param callback The callback to call for each found file with it's path relative to the search path.
-     */
-    virtual void FindByExtension(const std::string& extension, std::function<void(const std::string&)> callback) = 0;
-
-    /**
-     * \brief Iterates through all files available through the OS file system with the specified extension.
-     * \param extension The extension of all files to find.
-     * \param callback The callback to call for each found file with it's full path.
-     */
-    virtual void FindOnDiskByExtension(const std::string& extension, std::function<void(const std::string&)> callback) = 0;
+    void Find(const std::function<void(const std::string&)>& callback)
+    {
+        Find(SearchPathSearchOptions(), callback);
+    }
 };

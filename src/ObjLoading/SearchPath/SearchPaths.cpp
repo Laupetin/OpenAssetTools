@@ -56,36 +56,16 @@ FileAPI::IFile* SearchPaths::Open(const std::string& fileName)
     return nullptr;
 }
 
-
-void SearchPaths::FindAll(const std::function<void(const std::string&)> callback)
+std::string SearchPaths::GetPath()
 {
-    for (auto searchPathEntry : m_search_paths)
-    {
-        searchPathEntry->FindAll(callback);
-    }
+    return "SearchPaths: " + std::to_string(m_search_paths.size()) + " entries";
 }
 
-void SearchPaths::FindAllOnDisk(const std::function<void(const std::string&)> callback)
+void SearchPaths::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
 {
     for (auto searchPathEntry : m_search_paths)
     {
-        searchPathEntry->FindAllOnDisk(callback);
-    }
-}
-
-void SearchPaths::FindByExtension(const std::string& extension, const std::function<void(const std::string&)> callback)
-{
-    for (auto searchPathEntry : m_search_paths)
-    {
-        searchPathEntry->FindByExtension(extension, callback);
-    }
-}
-
-void SearchPaths::FindOnDiskByExtension(const std::string& extension, const std::function<void(const std::string&)> callback)
-{
-    for (auto searchPathEntry : m_search_paths)
-    {
-        searchPathEntry->FindOnDiskByExtension(extension, callback);
+        searchPathEntry->Find(options, callback);
     }
 }
 

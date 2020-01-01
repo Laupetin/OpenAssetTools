@@ -9,11 +9,8 @@ class SearchPathFilesystem final : public ISearchPath
 
 public:
     explicit SearchPathFilesystem(std::string path);
-    const std::string& GetPath() const;
 
     FileAPI::IFile* Open(const std::string& fileName) override;
-    void FindAll(std::function<void(const std::string&)> callback) override;
-    void FindAllOnDisk(std::function<void(const std::string&)> callback) override;
-    void FindByExtension(const std::string& extension, std::function<void(const std::string&)> callback) override;
-    void FindOnDiskByExtension(const std::string& extension, std::function<void(const std::string&)> callback) override;
+    std::string GetPath() override;
+    void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;
 };

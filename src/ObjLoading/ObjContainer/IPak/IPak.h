@@ -3,6 +3,8 @@
 #include "Utils/FileAPI.h"
 #include "ObjContainer/IPak/IPakTypes.h"
 #include "ObjContainer/ObjContainerReferenceable.h"
+#include "ObjContainer/ObjContainerRepository.h"
+#include "Zone/Zone.h"
 
 #include <vector>
 
@@ -11,6 +13,7 @@ class IPak final : public ObjContainerReferenceable
     static const uint32_t MAGIC;
     static const uint32_t VERSION;
 
+    std::string m_path;
     FileAPI::IFile* m_file;
 
     bool m_initialized;
@@ -26,8 +29,12 @@ class IPak final : public ObjContainerReferenceable
     void ReadHeader();
 
 public:
-    explicit IPak(FileAPI::IFile* file);
+    static ObjContainerRepository<IPak, Zone> Repository;
+
+    IPak(std::string path, FileAPI::IFile* file);
     ~IPak();
+
+    std::string GetName() override;
 
     void Initialize();
     FileAPI::IFile* GetEntryData(IPakHash nameHash, IPakHash dataHash);

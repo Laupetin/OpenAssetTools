@@ -1,9 +1,10 @@
 #include "ObjLoaderT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
+#include "ObjContainer/IPak/IPak.h"
 
-const int ObjLoaderT6::IPAK_READ_HASH = ObjLoaderT6::Com_HashKey("ipak_read", 64);
-const int ObjLoaderT6::GLOBAL_HASH = ObjLoaderT6::Com_HashKey("GLOBAL", 64);
+const int ObjLoaderT6::IPAK_READ_HASH = Com_HashKey("ipak_read", 64);
+const int ObjLoaderT6::GLOBAL_HASH = Com_HashKey("GLOBAL", 64);
 
 int ObjLoaderT6::Com_HashKey(const char* str, const int maxLen)
 {
@@ -27,10 +28,18 @@ bool ObjLoaderT6::SupportsZone(Zone* zone)
     return zone->m_game == &g_GameT6;
 }
 
-void ObjLoaderT6::LoadIPakForZone(const std::string& ipakName, Zone* zone)
+void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone)
 {
     printf("Loading ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
-    // TODO
+
+    const std::string ipakFilename = ipakName + ".ipak";
+
+    auto* file = searchPath->Open(ipakFilename);
+
+    if(file && file->IsOpen())
+    {
+        
+    }
 }
 
 void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
@@ -48,11 +57,16 @@ void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone*
                 
                 if(variable->namespaceHash == zoneNameHash && variable->keyHash == IPAK_READ_HASH)
                 {
-                    LoadIPakForZone(variable->value, zone);
+                    LoadIPakForZone(searchPath, variable->value, zone);
                 }
             }
         }
     }
+}
+
+void ObjLoaderT6::UnloadContainersOfZone(Zone* zone)
+{
+    IPak::Repository.RemoveContainerReferences(zone);
 }
 
 void ObjLoaderT6::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)

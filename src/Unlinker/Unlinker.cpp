@@ -14,6 +14,7 @@
 #include <set>
 #include <regex>
 #include <filesystem>
+#include "ObjContainer/IWD/IWD.h"
 
 const CommandLineOption* optionHelp = CommandLineOption::Builder::Create()
                                       .WithShortName("?")
@@ -80,14 +81,16 @@ class Unlinker::Impl
      * \brief Loads a search path.
      * \param searchPath The search path to load.
      */
-    void LoadSearchPath(SearchPathFilesystem* searchPath)
+    void LoadSearchPath(ISearchPath* searchPath) const
     {
-        if(m_should_load_obj)
+        if (m_should_load_obj)
         {
-            if(m_verbose)
+            if (m_verbose)
             {
                 printf("Loading search path: \"%s\"\n", searchPath->GetPath().c_str());
             }
+
+            ObjLoading::LoadIWDsInSearchPath(searchPath);
         }
     }
 
@@ -95,14 +98,16 @@ class Unlinker::Impl
      * \brief Unloads a search path.
      * \param searchPath The search path to unload.
      */
-    void UnloadSearchPath(SearchPathFilesystem* searchPath)
+    void UnloadSearchPath(ISearchPath* searchPath) const
     {
-        if(m_should_load_obj)
+        if (m_should_load_obj)
         {
-            if(m_verbose)
+            if (m_verbose)
             {
                 printf("Unloading search path: \"%s\"\n", searchPath->GetPath().c_str());
             }
+
+            ObjLoading::UnloadIWDsInSearchPath(searchPath);
         }
     }
 
@@ -220,6 +225,12 @@ class Unlinker::Impl
             {
                 std::string absolutePath = std::filesystem::absolute(path).string();
 
+                if (!FileAPI::DirectoryExists(absolutePath))
+                {
+                    printf("Could not find directory of search path: \"%s\"\n", path.c_str());
+                    return false;
+                }
+
                 SearchPathFilesystem* searchPath = new SearchPathFilesystem(absolutePath);
                 LoadSearchPath(searchPath);
                 m_search_paths.CommitSearchPath(searchPath);
@@ -327,6 +338,12 @@ class Unlinker::Impl
         return true;
     }
 
+    void SetVerbose(const bool verbose)
+    {
+        m_verbose = verbose;
+        ObjLoading::Configuration.Verbose = verbose;
+    }
+
 public:
     Impl()
         : m_argument_parser(commandLineOptions, _countof(commandLineOptions))
@@ -347,7 +364,7 @@ public:
             return false;
         }
 
-        m_verbose = m_argument_parser.IsOptionSpecified(optionVerbose);
+        SetVerbose(m_argument_parser.IsOptionSpecified(optionVerbose));
         m_should_load_obj = !m_argument_parser.IsOptionSpecified(optionList);
 
         // Check if the user requested help
@@ -384,8 +401,8 @@ public:
                 printf("Failed to load zone \"%s\".\n", zonePath.c_str());
                 return false;
             }
-            
-            if(m_verbose)
+
+            if (m_verbose)
             {
                 printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
             }

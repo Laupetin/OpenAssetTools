@@ -7,5 +7,5 @@ class IObjContainer
 public:
     virtual ~IObjContainer() = default;
 
-    virtual const std::string& GetName() = 0;
+    virtual std::string GetName() = 0;
 };
