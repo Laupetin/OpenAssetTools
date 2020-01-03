@@ -7,6 +7,7 @@ AssetLoader::AssetLoader(const asset_type_t assetType, IZoneScriptStringProvider
     m_script_string_provider = scriptStringProvider;
     m_zone = zone;
     m_stream = stream;
+    varScriptString = nullptr;
 }
 
 void AssetLoader::AddDependency(const asset_type_t type, std::string& name)
