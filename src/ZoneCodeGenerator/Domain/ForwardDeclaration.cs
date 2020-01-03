@@ -42,6 +42,8 @@ namespace ZoneCodeGenerator.Domain
         }
 
         public override int Alignment => 0;
+        public override bool ForceAlignment => false;
+
         public override int Size => 0;
     }
 }

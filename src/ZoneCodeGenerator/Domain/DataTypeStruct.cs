@@ -29,7 +29,7 @@ namespace ZoneCodeGenerator.Domain
                         currentBitOffset = 0;
                     }
 
-                    currentSize = currentSize.Align(Math.Min(member.Alignment, Pack));
+                    currentSize = currentSize.Align(member.ForceAlignment ? member.Alignment : Math.Min(member.Alignment, Pack));
                     currentSize += member.VariableType.Size;
                 }
             }
@@ -39,7 +39,7 @@ namespace ZoneCodeGenerator.Domain
                 currentBitOffset = currentBitOffset.Align(8);
                 currentSize += currentBitOffset / 8;
             }
-            
+
             return currentSize.Align(Alignment);
         }
 

@@ -11,6 +11,7 @@
 
         public int? AlignmentOverride { get; set; }
         public override int Alignment => AlignmentOverride ?? TypeDefinition.Alignment;
+        public override bool ForceAlignment => AlignmentOverride != null || TypeDefinition.ForceAlignment;
         public override int Size => TypeDefinition.Size;
 
         public override string ToString()

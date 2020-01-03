@@ -29,6 +29,7 @@ namespace ZoneCodeGenerator.Domain
             .Cast<DataTypeBaseType>()
             .ToList();
 
+        public override bool ForceAlignment => false;
         public override int Size { get; }
         public override int Alignment => Size;
 

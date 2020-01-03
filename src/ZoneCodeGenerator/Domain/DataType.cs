@@ -8,6 +8,7 @@
         public string FullName => string.IsNullOrEmpty(Namespace) ? Name : $"{Namespace}::{Name}";
 
         public abstract int Alignment { get; }
+        public abstract bool ForceAlignment { get; }
         public abstract int Size { get; }
 
         protected DataType(string _namespace, string name, DataTypeType type)

@@ -7,6 +7,7 @@
         public int? AlignmentOverride { get; set; }
 
         public int Alignment => AlignmentOverride ?? VariableType.Alignment;
+        public bool ForceAlignment => AlignmentOverride != null || VariableType.ForceAlignment;
 
         public TypeDeclaration VariableType { get; }
 

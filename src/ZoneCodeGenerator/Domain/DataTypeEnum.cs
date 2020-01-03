@@ -7,8 +7,10 @@ namespace ZoneCodeGenerator.Domain
         public DataTypeBaseType ParentType { get; }
         public List<EnumMember> Members { get; }
 
+        public override bool ForceAlignment => ParentType.ForceAlignment;
         public override int Size => ParentType.Size;
         public override int Alignment => ParentType.Alignment;
+        
 
         public DataTypeEnum(string _namespace, string name, DataTypeBaseType parentType) : base(_namespace, name, DataTypeType.Enum)
         {

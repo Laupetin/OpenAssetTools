@@ -8,6 +8,7 @@ namespace ZoneCodeGenerator.Domain
         public int? AlignmentOverride { get; set; }
         private int alignment;
         public override int Alignment => AlignmentOverride ?? alignment;
+        public override bool ForceAlignment => AlignmentOverride != null;
 
         private int size;
         public override int Size => size;

@@ -20,6 +20,7 @@ namespace ZoneCodeGenerator.Domain
         public IReadOnlyList<ReferenceType> References => references.AsReadOnly();
 
         public int Alignment => references.OfType<ReferenceTypePointer>().Any() ? PointerSize : Type.Alignment;
+        public bool ForceAlignment => !references.OfType<ReferenceTypePointer>().Any() && Type.ForceAlignment;
 
         public int Size
         {
