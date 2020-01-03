@@ -47,7 +47,7 @@ public:
 
     void RemoveContainerReferences(ReferencerType* referencer)
     {
-        for(auto iEntry = m_containers.begin(); iEntry != m_containers.end(); ++iEntry)
+        for(auto iEntry = m_containers.begin(); iEntry != m_containers.end();)
         {
             auto foundReference = iEntry->m_references.find(referencer);
 
@@ -59,7 +59,11 @@ public:
             if(iEntry->m_references.empty())
             {
                 delete iEntry->m_container;
-                m_containers.erase(iEntry);
+                iEntry = m_containers.erase(iEntry);
+            }
+            else
+            {
+                ++iEntry;
             }
         }
     }
