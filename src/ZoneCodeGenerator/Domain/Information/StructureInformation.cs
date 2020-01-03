@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ZoneCodeGenerator.Domain.FastFileStructure;
+﻿using System.Collections.Generic;
 using ZoneCodeGenerator.Generating.Computations;
-using ZoneCodeGenerator.Persistence;
 
 namespace ZoneCodeGenerator.Domain.Information
 {
@@ -31,6 +27,8 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool ArrayReferenceExists { get; set; }
         public bool ReferenceFromNonDefaultNormalBlockExists { get; set; }
 
+        public CustomAction PostLoadAction { get; set; }
+
         public bool IsLeaf { get; set; }
 
         public List<MemberInformation> NameChain { get; set; }
@@ -47,6 +45,7 @@ namespace ZoneCodeGenerator.Domain.Information
             ReferenceFromNonDefaultNormalBlockExists = false;
             Usages = new List<StructureInformation>();
             OrderedMembers = new List<MemberInformation>();
+            PostLoadAction = null;
             IsLeaf = true;
             NameChain = null;
         }

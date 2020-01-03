@@ -45,12 +45,18 @@ header(context) ::= <<
 
 #include "Loading/AssetLoader.h"
 #include "Game/$context.Game$/$context.Game$.h"
+$if(context.HasActions)$
+#include "Game/$context.Game$/XAssets/$Lower(context.Asset.Type.Name)$/$Lower(context.Asset.Type.Name)$_actions.h"
+$endif$
 #include <string>
 
 namespace $context.Game$
 {
     class $LoaderClassName(context.Asset)$ final : public AssetLoader
     {
+        $if(context.HasActions)$
+        Actions_$context.Asset.Type.Name$ m_actions;
+        $endif$
         $VariableDeclaration(context.Asset.Type)$
         $PointerVariableDeclaration(context.Asset.Type)$
 
@@ -60,8 +66,8 @@ namespace $context.Game$
             $endif$}$$\\$
 
         $context.UsedTypes:{usedType | $if(usedType.PointerArrayReferenceExists)$$HeaderPtrArrayLoadMethodDeclaration(usedType.Type)$$\n$$endif$}$
-        $context.UsedTypes:{usedType | $if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf)$$HeaderArrayLoadMethodDeclaration(usedType.Type)$$\n$$endif$}$
-        $context.UsedStructures:{usedStructure | $if(!usedStructure.IsLeaf && !usedStructure.IsAsset)$$HeaderLoadMethodDeclaration(usedStructure)$$\n$$endif$}$
+        $context.UsedTypes:{usedType | $if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf && usedType.NonRuntimeReferenceExists)$$HeaderArrayLoadMethodDeclaration(usedType.Type)$$\n$$endif$}$
+        $context.UsedStructures:{usedStructure | $if(usedStructure.NonRuntimeReferenceExists && !usedStructure.Information.IsLeaf && !usedStructure.Information.IsAsset)$$HeaderLoadMethodDeclaration(usedStructure.Information)$$\n$$endif$}$
         $HeaderLoadMethodDeclaration(context.Asset)$
         $HeaderTempPtrLoadMethodDeclaration(context.Asset)$
         $HeaderAssetLoadMethodDeclaration(context.Asset)$
@@ -274,7 +280,8 @@ var$type.Name$Ptr = nullptr;
 
 ConstructorMethod(context) ::= <<
 $LoaderClassName(context.Asset)$::$LoaderClassName(context.Asset)$(IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream) 
-    : AssetLoader($context.Asset.AssetEnumEntry.Name$, scriptStringProvider, zone, stream)
+    : AssetLoader($context.Asset.AssetEnumEntry.Name$, scriptStringProvider, zone, stream)$\\$
+    $if(context.HasActions)$, m_actions(zone)$endif$
 {
     $VariableInitialization(context.Asset.Type)$
     $PointerVariableInitialization(context.Asset.Type)$
@@ -341,8 +348,8 @@ using namespace $context.Game$;
 $ConstructorMethod(context)$
 
 $context.UsedTypes:{usedType | $if(usedType.PointerArrayReferenceExists)$$LoadPointerArrayMethod(context, usedType.Type, usedType.Information, usedType.PointerArrayReferenceIsReusable)$$\n$$\n$$endif$}$
-$context.UsedTypes:{usedType | $if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf)$$LoadArrayMethod(context, usedType.Type, usedType.Information)$$\n$$\n$$endif$}$
-$context.UsedStructures:{usedStructure | $if(!usedStructure.IsLeaf && !usedStructure.IsAsset)$$LoadMethod(context, usedStructure)$$\n$$\n$$endif$}$
+$context.UsedTypes:{usedType | $if(usedType.ArrayReferenceExists && usedType.Information && !usedType.Information.IsLeaf && usedType.NonRuntimeReferenceExists)$$LoadArrayMethod(context, usedType.Type, usedType.Information)$$\n$$\n$$endif$}$
+$context.UsedStructures:{usedStructure | $if(usedStructure.NonRuntimeReferenceExists && !usedStructure.Information.IsLeaf && !usedStructure.Information.IsAsset)$$LoadMethod(context, usedStructure.Information)$$\n$$\n$$endif$}$
 $LoadMethod(context, context.Asset)$
 
 $LoadTempPtrMethod(context, context.Asset)$

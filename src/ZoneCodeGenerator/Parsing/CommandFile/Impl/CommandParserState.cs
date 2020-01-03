@@ -15,6 +15,7 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Impl
     {
         private static readonly ITokenTest<ICommandParserState>[] tests =
         {
+            new TestAction(), 
             new TestArrayCount(),
             new TestArraySize(),
             new TestAsset(),

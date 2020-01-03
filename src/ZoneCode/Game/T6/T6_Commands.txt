@@ -378,6 +378,7 @@ set condition basemap never;
 
 // GfxImageLoadDef
 use GfxImageLoadDef;
+set action LoadImageData(GfxImageLoadDef, GfxImage);
 set arraysize data resourceSize;
 
 // =========================================

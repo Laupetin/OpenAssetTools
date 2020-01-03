@@ -11,10 +11,12 @@ namespace ZoneCodeGenerator.Generating
     {
         public class UsedType
         {
+            public bool MembersLoaded { get; set; }
             public DataType Type { get; }
             public StructureInformation Information { get; }
             public bool IsContextAsset { get; set; }
 
+            public bool NonRuntimeReferenceExists { get; set; }
             public bool NonEmbeddedReferenceExists { get; set; }
             public bool ArrayReferenceExists { get; set; }
             public bool PointerArrayReferenceExists { get; set; }
@@ -22,9 +24,11 @@ namespace ZoneCodeGenerator.Generating
 
             public UsedType(DataType type, StructureInformation information)
             {
+                MembersLoaded = false;
                 Type = type;
                 Information = information;
                 IsContextAsset = false;
+                NonRuntimeReferenceExists = false;
                 NonEmbeddedReferenceExists = false;
                 ArrayReferenceExists = false;
                 PointerArrayReferenceExists = false;
@@ -33,17 +37,16 @@ namespace ZoneCodeGenerator.Generating
         }
 
         public string Game { get; set; }
-        public StructureInformation Asset { get; set; }
+        public StructureInformation Asset { get; private set; }
 
         private readonly IDictionary<DataType, UsedType> usedTypes;
         public IEnumerable<UsedType> UsedTypes => usedTypes.Values;
 
-        public IEnumerable<StructureInformation> UsedStructures => UsedTypes
-            .Select(type => type.Information)
-            .Where(information => information != null)
-            .Distinct();
+        public IEnumerable<UsedType> UsedStructures => UsedTypes
+            .Where(usedType => usedType.Information != null && usedType.Information.Type == usedType.Type);
 
-        public IEnumerable<UsedType> ReferencedAssets => UsedTypes.Where(type => type.Information != null && type.Information.IsAsset && type.Information != Asset);
+        public IEnumerable<UsedType> ReferencedAssets => UsedTypes.Where(type =>
+            type.Information != null && type.Information.IsAsset && type.Information != Asset);
 
         public IList<FastFileBlock> Blocks { get; private set; }
 
@@ -51,30 +54,45 @@ namespace ZoneCodeGenerator.Generating
                                                    Blocks.FirstOrDefault(block => block.IsNormal);
 
         public FastFileBlock DefaultTempBlock => Blocks.FirstOrDefault(block => block.IsDefault && block.IsTemp) ??
-                                                   Blocks.FirstOrDefault(block => block.IsTemp);
+                                                 Blocks.FirstOrDefault(block => block.IsTemp);
+
+        public bool HasActions => UsedTypes.Any(type =>
+            (type.Information == null || !type.Information.IsAsset || type.IsContextAsset) && type.NonRuntimeReferenceExists &&
+            type.Information?.PostLoadAction != null);
 
         private RenderingContext()
         {
             usedTypes = new Dictionary<DataType, UsedType>();
         }
 
-        private void AddToContext(StructureInformation structureInformation)
+        private UsedType GetBaseType(UsedType usedType)
         {
-            if (usedTypes.ContainsKey(structureInformation.Type))
-                return;
+            if (usedType.Type is DataTypeTypedef typeDef)
+            {
+                while (typeDef.TypeDefinition.Type is DataTypeTypedef anotherTypeDef)
+                {
+                    typeDef = anotherTypeDef;
+                }
 
-            var newUsage = new UsedType(structureInformation.Type, structureInformation);
-            usedTypes.Add(newUsage.Type, newUsage);
+                if (!usedTypes.ContainsKey(typeDef.TypeDefinition.Type))
+                {
+                    var result = new UsedType(typeDef.TypeDefinition.Type, usedType.Information);
+                    usedTypes.Add(typeDef.TypeDefinition.Type, result);
 
-            if (structureInformation.IsAsset && structureInformation != Asset)
-                return;
+                    return result;
+                }
 
+                return usedTypes[typeDef.TypeDefinition.Type];
+            }
+
+            return null;
+        }
+
+        private void AddMembersToContext(StructureInformation structureInformation)
+        {
             foreach (var member in structureInformation.OrderedMembers
                 .Where(member => !member.Computations.ShouldIgnore))
             {
-                if(member.StructureType != null)
-                    AddToContext(member.StructureType);
-
                 UsedType usedType;
                 if (!usedTypes.ContainsKey(member.Member.VariableType.Type))
                 {
@@ -84,6 +102,16 @@ namespace ZoneCodeGenerator.Generating
                 else
                 {
                     usedType = usedTypes[member.Member.VariableType.Type];
+                }
+
+                var baseUsedType = GetBaseType(usedType);
+
+                if (!member.Computations.IsRuntimeBlock)
+                {
+                    usedType.NonRuntimeReferenceExists = true;
+
+                    if (baseUsedType != null)
+                        baseUsedType.NonRuntimeReferenceExists = true;
                 }
 
                 if (member.Computations.ContainsNonEmbeddedReference)
@@ -99,20 +127,34 @@ namespace ZoneCodeGenerator.Generating
                     if (member.IsReusable)
                         usedType.PointerArrayReferenceIsReusable = true;
                 }
+
+                if (usedType.Information != null && !usedType.Information.IsAsset && !member.Computations.IsRuntimeBlock &&
+                    !usedType.MembersLoaded)
+                {
+                    usedType.MembersLoaded = true;
+                    AddMembersToContext(usedType.Information);
+                }
             }
+        }
+
+        private void MakeAsset(StructureInformation asset)
+        {
+            Asset = asset;
+            var usage = new UsedType(asset.Type, asset) {IsContextAsset = true};
+            usedTypes.Add(usage.Type, usage);
+
+            AddMembersToContext(asset);
         }
 
         public static RenderingContext BuildContext(CUISession session, StructureInformation asset)
         {
             var context = new RenderingContext
             {
-                Asset = asset,
                 Game = session.Game,
                 Blocks = session.Repository.GetAllFastFileBlocks().ToList()
             };
 
-            context.AddToContext(asset);
-            context.usedTypes[asset.Type].IsContextAsset = true;
+            context.MakeAsset(asset);
 
             return context;
         }
