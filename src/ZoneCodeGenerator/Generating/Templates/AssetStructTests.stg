@@ -34,7 +34,7 @@ namespace ZoneCommonTests
 	{
 	public:
 		$TestMethod(context.Asset)$
-		$context.Structures:{structure | $if(!structure.IsAsset)$$TestMethod(structure)$
+		$context.UsedStructures:{structure | $if(!structure.Information.Type.IsAnonymous && !structure.Information.IsAsset)$$TestMethod(structure)$
 		$endif$}$
 	};
 }
