@@ -22,6 +22,10 @@ $\\$
 $if(member.StructureType && !member.StructureType.IsLeaf && !member.Computations.IsRuntimeBlock)$
 $TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
 Load_$member.Member.VariableType.Type.Name$(true);$\\$
+$if(member.StructureType.PostLoadAction)$
+
+$CustomAction(member.StructureType.PostLoadAction)$
+$endif$
 $else$
 m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);$\\$
 $endif$$\\$
