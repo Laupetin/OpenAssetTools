@@ -1,131 +1,223 @@
 #include "IPak.h"
 #include "zlib.h"
 #include "Exception/IPakLoadException.h"
-
-#include <sstream>
+#include "ObjContainer/IPak/IPakTypes.h"
 #include "Utils/PathUtils.h"
 
-const uint32_t IPak::MAGIC = 'IPAK';
-const uint32_t IPak::VERSION = 0x50000;
+#include <sstream>
+#include <vector>
 
 ObjContainerRepository<IPak, Zone> IPak::Repository;
 
-uint32_t IPak::R_HashString(const char* str, uint32_t hash)
+class IPak::Impl : public ObjContainerReferenceable
 {
-    for (const char* pos = str; *pos; pos++)
+    static const uint32_t MAGIC = 'IPAK';
+    static const uint32_t VERSION = 0x50000;
+
+    std::string m_path;
+    FileAPI::IFile* m_file;
+
+    bool m_initialized;
+
+    IPakSection* m_index_section;
+    IPakSection* m_data_section;
+
+    std::vector<IPakIndexEntry> m_index_entries;
+
+    static uint32_t R_HashString(const char* str, uint32_t hash)
     {
-        hash = 33 * hash ^ (*pos | 0x20);
+        for (const char* pos = str; *pos; pos++)
+        {
+            hash = 33 * hash ^ (*pos | 0x20);
+        }
+
+        return hash;
     }
 
-    return hash;
-}
+    bool ReadIndexSection()
+    {
+        m_file->Goto(m_index_section->offset);
+        IPakIndexEntry indexEntry{};
+
+        for (unsigned itemIndex = 0; itemIndex < m_index_section->itemCount; itemIndex++)
+        {
+            if (m_file->Read(&indexEntry, sizeof indexEntry, 1) != 1)
+            {
+                printf("Unexpected eof when trying to load index entry %u.\n", itemIndex);
+                return false;
+            }
+
+            m_index_entries.push_back(indexEntry);
+        }
+
+        return true;
+    }
+
+    bool ReadSection()
+    {
+        IPakSection section{};
+
+        if (m_file->Read(&section, sizeof section, 1) != 1)
+        {
+            printf("Unexpected eof when trying to load section.\n");
+            return false;
+        }
+
+        switch (section.type)
+        {
+        case 1:
+            m_index_section = new IPakSection(section);
+            break;
+
+        case 2:
+            m_data_section = new IPakSection(section);
+            break;
+
+        default:
+            break;
+        }
+
+        return true;
+    }
+
+    bool ReadHeader()
+    {
+        IPakHeader header{};
+
+        if (m_file->Read(&header, sizeof header, 1) != 1)
+        {
+            printf("Unexpected eof when trying to load header.\n");
+            return false;
+        }
+
+        if (header.magic != MAGIC)
+        {
+            printf("Invalid ipak magic '0x%x'.\n", header.magic);
+            return false;
+        }
+
+        if (header.version != VERSION)
+        {
+            printf("Unsupported ipak version '%u'.\n", header.version);
+            return false;
+        }
+
+        for (unsigned section = 0; section < header.sectionCount; section++)
+        {
+            if (!ReadSection())
+                return false;
+        }
+
+        if (m_index_section == nullptr)
+        {
+            printf("IPak does not contain an index section.\n");
+            return false;
+        }
+
+        if (m_data_section == nullptr)
+        {
+            printf("IPak does not contain a data section.\n");
+            return false;
+        }
+
+        if (!ReadIndexSection())
+            return false;
+
+        return true;
+    }
+
+public:
+    Impl(std::string path, FileAPI::IFile* file)
+    {
+        m_path = std::move(path);
+        m_file = file;
+        m_initialized = false;
+        m_index_section = nullptr;
+        m_data_section = nullptr;
+    }
+
+    ~Impl()
+    {
+        delete m_index_section;
+        m_index_section = nullptr;
+
+        delete m_data_section;
+        m_data_section = nullptr;
+    }
+
+    std::string GetName() override
+    {
+        return utils::Path::GetFilename(m_path);
+    }
+
+    bool Initialize()
+    {
+        if (m_initialized)
+            return true;
+
+        if (!ReadHeader())
+            return false;
+
+        m_initialized = true;
+        return true;
+    }
+
+    FileAPI::IFile* GetEntryData(const Hash nameHash, const Hash dataHash)
+    {
+        for(auto& entry : m_index_entries)
+        {
+            if(entry.key.nameHash == nameHash && entry.key.dataHash == dataHash)
+            {
+                __asm nop;
+            }
+        }
+
+        return nullptr;
+    }
+
+    static Hash HashString(const std::string& str)
+    {
+        return R_HashString(str.c_str(), 0);
+    }
+
+    static Hash HashData(const void* data, const size_t dataSize)
+    {
+        return crc32(0, static_cast<const Bytef*>(data), dataSize);
+    }
+};
 
 IPak::IPak(std::string path, FileAPI::IFile* file)
 {
-    m_path = std::move(path);
-    m_file = file;
-    m_initialized = false;
-    m_index_section = nullptr;
-    m_data_section = nullptr;
+    m_impl = new Impl(std::move(path), file);
 }
 
 IPak::~IPak()
 {
-    delete m_index_section;
-    m_index_section = nullptr;
-
-    delete m_data_section;
-    m_data_section = nullptr;
+    delete m_impl;
+    m_impl = nullptr;
 }
 
 std::string IPak::GetName()
 {
-    return utils::Path::GetFilename(m_path);
+    return m_impl->GetName();
 }
 
-void IPak::ReadSection()
+bool IPak::Initialize() const
 {
-    IPakSection section{};
-
-    if (m_file->Read(&section, sizeof section, 1) != sizeof section)
-        throw IPakLoadException("Unexpected eof when trying to load section.");
-
-    switch (section.type)
-    {
-    case 1:
-        m_index_section = new IPakSection(section);
-        break;
-
-    case 2:
-        m_data_section = new IPakSection(section);
-        break;
-
-    default:
-        break;
-    }
+    return m_impl->Initialize();
 }
 
-void IPak::ReadHeader()
+FileAPI::IFile* IPak::GetEntryData(const Hash nameHash, const Hash dataHash) const
 {
-    IPakHeader header{};
-
-    if (m_file->Read(&header, sizeof header, 1) != sizeof header)
-        throw IPakLoadException("Unexpected eof when trying to load header.");
-
-    if (header.magic != MAGIC)
-    {
-        std::ostringstream oss;
-        oss << "Invalid magic '0x" << std::hex << header.magic << "'.";
-
-        throw IPakLoadException(oss.str());
-    }
-
-    if(header.version != VERSION)
-    {
-        std::ostringstream oss;
-        oss << "Unsupported version '" << header.version << "'.";
-
-        throw IPakLoadException(oss.str());
-    }
-
-    for(unsigned section = 0; section < header.sectionCount; section++)
-    {
-        ReadSection();
-    }
-
-    if(m_index_section == nullptr)
-    {
-        throw IPakLoadException("IPak does not contain an index section.");
-    }
-
-    if(m_data_section == nullptr)
-    {
-        throw IPakLoadException("IPak does not contain a data section.");
-    }
+    return m_impl->GetEntryData(nameHash, dataHash);
 }
 
-void IPak::Initialize()
+IPak::Hash IPak::HashString(const std::string& str)
 {
-    if (m_initialized)
-        return;
-
-    ReadHeader();
-
-    m_initialized = true;
+    return Impl::HashString(str);
 }
 
-FileAPI::IFile* IPak::GetEntryData(IPakHash nameHash, IPakHash dataHash)
+IPak::Hash IPak::HashData(const void* data, const size_t dataSize)
 {
-    // TODO
-    return nullptr;
-}
-
-IPakHash IPak::HashString(const std::string& str)
-{
-    return R_HashString(str.c_str(), 0);
-}
-
-IPakHash IPak::HashData(const void* data, const size_t dataSize)
-{
-    return crc32(0, static_cast<const Bytef*>(data), dataSize);
+    return Impl::HashData(data, dataSize);
 }
