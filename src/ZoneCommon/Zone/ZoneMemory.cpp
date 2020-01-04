@@ -1,5 +1,12 @@
 #include "ZoneMemory.h"
 
+
+ZoneMemory::AllocationInfo::AllocationInfo(IDestructible* data, void* dataPtr)
+{
+    m_data = data;
+    m_data_ptr = dataPtr;
+}
+
 ZoneMemory::ZoneMemory()
 = default;
 
@@ -16,6 +23,12 @@ ZoneMemory::~ZoneMemory()
         free(allocation);
     }
     m_allocations.clear();
+
+    for(auto destructible : m_destructible)
+    {
+        delete destructible.m_data;
+    }
+    m_destructible.clear();
 }
 
 void ZoneMemory::AddBlock(XBlock* block)
@@ -37,4 +50,17 @@ char* ZoneMemory::Dup(const char* str)
     m_allocations.push_back(result);
 
     return result;
+}
+
+void ZoneMemory::Delete(void* data)
+{
+    for(auto iAlloc = m_destructible.begin(); iAlloc != m_destructible.end(); ++iAlloc)
+    {
+        if(iAlloc->m_data_ptr == data)
+        {
+            delete iAlloc->m_data;
+            m_destructible.erase(iAlloc);
+            return;
+        }
+    }
 }
