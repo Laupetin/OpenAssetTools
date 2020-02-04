@@ -391,6 +391,13 @@ public:
         for (unsigned argIndex = 1; argIndex < argCount; argIndex++)
         {
             const std::string& zonePath = arguments[argIndex];
+
+            if(!FileAPI::FileExists(zonePath))
+            {
+                printf("Could not find file \"%s\".\n", zonePath.c_str());
+                continue;
+            }
+
             std::string absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
             SearchPaths searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
