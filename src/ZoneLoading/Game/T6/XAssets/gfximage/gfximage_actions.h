@@ -8,5 +8,5 @@ class Actions_GfxImage final : public AssetLoadingActions
 public:
     explicit Actions_GfxImage(Zone* zone);
 
-    void LoadImageData(T6::GfxImageLoadDef* loadDef, T6::GfxImage* image);
+    void LoadImageData(T6::GfxImageLoadDef* loadDef, T6::GfxImage* image) const;
 };
