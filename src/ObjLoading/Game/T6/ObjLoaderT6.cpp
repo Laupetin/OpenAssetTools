@@ -106,11 +106,10 @@ void ObjLoaderT6::LoadImageData(ISearchPath* searchPath, Zone* zone)
         {
             auto* image = imageEntry->m_asset;
 
-            // TODO: Enable this when loadDef is no longer loaded into the temp block and never updated.
-            // if(image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
-            // {
-            //     continue;
-            // }
+            if(image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
+            {
+                continue;
+            }
 
             std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
             auto* filePathImage = searchPath->Open(imageFileName);
