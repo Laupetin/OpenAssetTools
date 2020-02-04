@@ -19,6 +19,10 @@ public:
     IWD& operator=(const IWD& other) = delete;
     IWD& operator=(IWD&& other) noexcept;
 
+    /**
+     * \brief Initializes the IWD container.
+     * \return \c true when initialization was successful.
+     */
     bool Initialize() const;
 
     FileAPI::IFile* Open(const std::string& fileName) override;

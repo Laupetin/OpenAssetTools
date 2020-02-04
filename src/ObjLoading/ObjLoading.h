@@ -13,12 +13,41 @@ public:
         bool Verbose = false;
     } Configuration;
 
+    /**
+     * \brief Loads all containers that are being referenced by the specified zone.
+     * \param searchPath The search path to use to find the referenced containers.
+     * \param zone The zone to load all referenced containers of.
+     */
     static void LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone);
+
+    /**
+     * \brief Unloads all containers that were referenced by a specified zone. If referenced by more than one zone a container will only be unloaded once all referencing zones were unloaded the container.
+     * \param zone The zone to unload all referenced containers for.
+     */
     static void UnloadContainersOfZone(Zone* zone);
 
+    /**
+     * \brief Loads all IWDs that can be found in a specified search path.
+     * \param searchPath The search path that contains IWDs to be loaded.
+     */
     static void LoadIWDsInSearchPath(ISearchPath* searchPath);
+
+    /**
+     * \brief Unloads all IWDs that were loaded from the specified search path.
+     * \param searchPath The search path that was used to load the IWDs to be unloaded.
+     */
     static void UnloadIWDsInSearchPath(ISearchPath* searchPath);
+
+    /**
+     * \brief Creates a \c SearchPaths object containing all IWDs that are currently loaded.
+     * \return A \c SearchPaths object containing all IWDs that are currently loaded.
+     */
     static SearchPaths GetIWDSearchPaths();
 
+    /**
+     * \brief Loads the obj data for all assets of a zone.
+     * \param searchPath The search path to use to search for all obj data files.
+     * \param zone The zone of the assets to load the obj data for.
+     */
     static void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone);
 };
