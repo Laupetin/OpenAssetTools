@@ -25,28 +25,36 @@ FileAPI::IFile* SearchPathFilesystem::Open(const std::string& fileName)
     return nullptr;
 }
 
-void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
+void SearchPathFilesystem::Find(const SearchPathSearchOptions& options,
+                                const std::function<void(const std::string&)>& callback)
 {
-    if (options.m_should_include_subdirectories)
+    try
     {
-        std::filesystem::recursive_directory_iterator iterator(m_path);
-        for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
+        if (options.m_should_include_subdirectories)
         {
-            auto path = entry->path();
-            if (options.m_filter_extensions && path.extension().string() != options.m_extension)
-                continue;
-            callback(options.m_absolute_paths ? absolute(path).string() : path.string());
+            std::filesystem::recursive_directory_iterator iterator(m_path);
+            for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
+            {
+                auto path = entry->path();
+                if (options.m_filter_extensions && path.extension().string() != options.m_extension)
+                    continue;
+                callback(options.m_absolute_paths ? absolute(path).string() : path.string());
+            }
+        }
+        else
+        {
+            std::filesystem::directory_iterator iterator(m_path);
+            for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
+            {
+                auto path = entry->path();
+                if (options.m_filter_extensions && path.extension().string() != options.m_extension)
+                    continue;
+                callback(options.m_absolute_paths ? absolute(path).string() : path.string());
+            }
         }
     }
-    else
+    catch (std::filesystem::filesystem_error& e)
     {
-        std::filesystem::directory_iterator iterator(m_path);
-        for (const auto entry = begin(iterator); iterator != end(iterator); ++iterator)
-        {
-            auto path = entry->path();
-            if (options.m_filter_extensions && path.extension().string() != options.m_extension)
-                continue;
-            callback(options.m_absolute_paths ? absolute(path).string() : path.string());
-        }
+        printf("Directory Iterator threw error when trying to find files: \"%s\"\n", e.what());
     }
 }
