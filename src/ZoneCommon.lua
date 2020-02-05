@@ -1,12 +1,14 @@
 ZoneCommon = {}
 
 function ZoneCommon:include()
+	Utils:include()
 	includedirs {
 		path.join(ProjectFolder(), "ZoneCommon")
 	}
 end
 
 function ZoneCommon:link()
+    Utils:link()
 	links {
 		"ZoneCommon"
 	}
