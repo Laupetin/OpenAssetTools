@@ -363,6 +363,7 @@ set reusable u::literalConst;
 // GfxImage
 // =========================================
 use GfxImage;
+set action OnImageLoaded(GfxImage);
 set string name;
 set name name;
 set condition pixels never;

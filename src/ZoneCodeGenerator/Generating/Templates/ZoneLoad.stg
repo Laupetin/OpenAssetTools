@@ -206,6 +206,10 @@ void $LoaderClassName(context.Asset)$::LoadPtr_$structure.Type.Name$(const bool 
             Load_$structure.Type.Name$(true);
             $endif$
 
+            $if(structure.PostLoadAction)$
+            $CustomAction(structure.PostLoadAction)$
+            $endif$
+
             $if(structure.IsAsset)$
             LoadAsset_$structure.Type.Name$($TypePtrVarName(structure.Type)$);
             $endif$

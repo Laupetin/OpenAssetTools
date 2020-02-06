@@ -1,8 +1,14 @@
 #include "gfximage_actions.h"
+#include <cassert>
 
 Actions_GfxImage::Actions_GfxImage(Zone* zone)
     : AssetLoadingActions(zone)
 {
+}
+
+void Actions_GfxImage::OnImageLoaded(T6::GfxImage* image) const
+{
+    image->loadedSize = 0;
 }
 
 void Actions_GfxImage::LoadImageData(T6::GfxImageLoadDef* loadDef, T6::GfxImage* image) const
