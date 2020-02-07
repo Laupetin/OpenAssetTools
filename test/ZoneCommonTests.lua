@@ -5,7 +5,9 @@ function ZoneCommonTests:include()
 end
 
 function ZoneCommonTests:link()
-    links "ZoneCommonTests"
+	if References:link("ZoneCommonTests") then
+		links "ZoneCommonTests"
+	end
 end
 
 function ZoneCommonTests:use()
@@ -13,6 +15,7 @@ function ZoneCommonTests:use()
 end
 
 function ZoneCommonTests:project()
+	References:reset()
 	local folder = TestFolder();
 
 	project "ZoneCommonTests"

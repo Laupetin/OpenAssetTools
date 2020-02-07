@@ -1,17 +1,21 @@
 libtomcrypt = {}
 
 function libtomcrypt:include()
-	defines{
-		"LTM_DESC"
-	}
+	if References:include("libtomcrypt") then
+		defines{
+			"LTM_DESC"
+		}
 
-	includedirs {
-		path.join(ThirdPartyFolder(), "libtomcrypt/src/headers")
-	}
+		includedirs {
+			path.join(ThirdPartyFolder(), "libtomcrypt/src/headers")
+		}
+	end
 end
 
 function libtomcrypt:link()
-	links "libtomcrypt"
+	if References:link("libtomcrypt") then
+		links "libtomcrypt"
+	end
 end
 
 function libtomcrypt:use()
@@ -19,6 +23,7 @@ function libtomcrypt:use()
 end
 
 function libtomcrypt:project()
+	References:reset()
 	local folder = ThirdPartyFolder();
 
 	project "libtomcrypt"

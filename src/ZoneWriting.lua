@@ -1,20 +1,24 @@
 ZoneWriting = {}
 
 function ZoneWriting:include()
-	ZoneCommon:include()
-	includedirs {
-		path.join(ProjectFolder(), "ZoneWriting")
-	}
+	if References:include("ZoneWriting") then
+		ZoneCommon:include()
+		includedirs {
+			path.join(ProjectFolder(), "ZoneWriting")
+		}
+	end
 end
 
 function ZoneWriting:link()
-    Crypto:link()
-    Utils:link()
-    ZoneCommon:link()
-	zlib:link()
-	links {
-		"ZoneWriting"
-	}
+	if References:link("ZoneWriting") then
+		Crypto:link()
+		Utils:link()
+		ZoneCommon:link()
+		zlib:link()
+		links {
+			"ZoneWriting"
+		}
+	end
 end
 
 function ZoneWriting:use()
@@ -22,6 +26,7 @@ function ZoneWriting:use()
 end
 
 function ZoneWriting:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "ZoneWriting"

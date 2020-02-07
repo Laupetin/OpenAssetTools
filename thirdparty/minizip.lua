@@ -1,15 +1,19 @@
 minizip = {}
 
 function minizip:include()
-    zlib:include()
-	includedirs {
-		path.join(ThirdPartyFolder(), "zlib/contrib/minizip")
-	}
+	if References:include("minizip") then
+		zlib:include()
+		includedirs {
+			path.join(ThirdPartyFolder(), "zlib/contrib/minizip")
+		}
+	end
 end
 
 function minizip:link()
-    zlib:link()
-	links "minizip"
+	if References:link("minizip") then
+		zlib:link()
+		links "minizip"
+	end
 end
 
 function minizip:use()
@@ -17,6 +21,7 @@ function minizip:use()
 end
 
 function minizip:project()
+	References:reset()
 	local folder = ThirdPartyFolder();
 
 	project "minizip"

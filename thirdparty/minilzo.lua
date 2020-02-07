@@ -1,13 +1,17 @@
 minilzo = {}
 
 function minilzo:include()
-	includedirs {
-		path.join(ThirdPartyFolder(), "minilzo")
-	}
+	if References:include("minilzo") then
+		includedirs {
+			path.join(ThirdPartyFolder(), "minilzo")
+		}
+	end
 end
 
 function minilzo:link()
-	links "minilzo"
+	if References:link("minilzo") then
+		links "minilzo"
+	end
 end
 
 function minilzo:use()
@@ -15,6 +19,7 @@ function minilzo:use()
 end
 
 function minilzo:project()
+	References:reset()
 	local folder = ThirdPartyFolder();
 
 	project "minilzo"

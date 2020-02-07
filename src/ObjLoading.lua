@@ -1,23 +1,27 @@
 ObjLoading = {}
 
 function ObjLoading:include()
-	ObjCommon:include()
-	ZoneCommon:include()
-	includedirs {
-		path.join(ProjectFolder(), "ObjLoading")
-	}
+	if References:include("ObjLoading") then
+		ObjCommon:include()
+		ZoneCommon:include()
+		includedirs {
+			path.join(ProjectFolder(), "ObjLoading")
+		}
+	end
 end
 
 function ObjLoading:link()
-    Utils:link()
-	ObjCommon:link()
-	ZoneCommon:link()
-	minilzo:link()
-	minizip:link()
-	zlib:link()
-	links {
-		"ObjLoading"
-	}
+	if References:link("ObjLoading") then
+		Utils:link()
+		ObjCommon:link()
+		ZoneCommon:link()
+		minilzo:link()
+		minizip:link()
+		zlib:link()
+		links {
+			"ObjLoading"
+		}
+	end
 end
 
 function ObjLoading:use()
@@ -25,6 +29,7 @@ function ObjLoading:use()
 end
 
 function ObjLoading:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "ObjLoading"

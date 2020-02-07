@@ -1,13 +1,17 @@
 libtommath = {}
 
 function libtommath:include()
-	includedirs {
-		path.join(ThirdPartyFolder(), "libtommath")
-	}
+	if References:include("libtommath") then
+		includedirs {
+			path.join(ThirdPartyFolder(), "libtommath")
+		}
+	end
 end
 
 function libtommath:link()
-	links "libtommath"
+	if References:link("libtommath") then
+		links "libtommath"
+	end
 end
 
 function libtommath:use()
@@ -15,6 +19,7 @@ function libtommath:use()
 end
 
 function libtommath:project()
+	References:reset()
 	local folder = ThirdPartyFolder();
 
 	project "libtommath"

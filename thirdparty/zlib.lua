@@ -1,18 +1,21 @@
 zlib = {}
 
 function zlib:include()
+	if References:include("zlib") then
+		defines {
+			"ZLIB_CONST"
+		}
 
-	defines {
-		"ZLIB_CONST"
-	}
-
-	includedirs {
-		path.join(ThirdPartyFolder(), "zlib")
-	}
+		includedirs {
+			path.join(ThirdPartyFolder(), "zlib")
+		}
+	end
 end
 
 function zlib:link()
-	links "zlib"
+	if References:link("zlib") then
+		links "zlib"
+	end
 end
 
 function zlib:use()
@@ -20,6 +23,7 @@ function zlib:use()
 end
 
 function zlib:project()
+	References:reset()
 	local folder = ThirdPartyFolder();
 
 	project "zlib"

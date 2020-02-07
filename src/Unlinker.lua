@@ -1,9 +1,11 @@
 Unlinker = {}
 
 function Unlinker:include()
-	includedirs {
-		path.join(ProjectFolder(), "Unlinker")
-	}
+	if References:include("Unlinker") then
+		includedirs {
+			path.join(ProjectFolder(), "Unlinker")
+		}
+	end
 end
 
 function Unlinker:link()
@@ -15,6 +17,7 @@ function Unlinker:use()
 end
 
 function Unlinker:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "Unlinker"

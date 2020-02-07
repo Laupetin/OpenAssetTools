@@ -1,20 +1,24 @@
 ZoneLoading = {}
 
 function ZoneLoading:include()
-	ZoneCommon:include()
-	includedirs {
-		path.join(ProjectFolder(), "ZoneLoading")
-	}
+	if References:include("ZoneLoading") then
+		ZoneCommon:include()
+		includedirs {
+			path.join(ProjectFolder(), "ZoneLoading")
+		}
+	end
 end
 
 function ZoneLoading:link()
-    Crypto:link()
-    Utils:link()
-	ZoneCommon:link()
-	zlib:link()
-	links {
-		"ZoneLoading"
-	}
+	if References:link("ZoneLoading") then
+		Crypto:link()
+		Utils:link()
+		ZoneCommon:link()
+		zlib:link()
+		links {
+			"ZoneLoading"
+		}
+	end
 end
 
 function ZoneLoading:use()
@@ -22,6 +26,7 @@ function ZoneLoading:use()
 end
 
 function ZoneLoading:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "ZoneLoading"

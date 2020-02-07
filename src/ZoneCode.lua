@@ -108,10 +108,12 @@ function ZoneCode:allWriteFiles()
 end
 
 function ZoneCode:include()
-	includedirs {
-		path.join(ProjectFolder(), "ZoneCode"),
-		"%{wks.location}/src/ZoneCode"
-	}
+	if References:include("ZoneCode") then
+        includedirs {
+            path.join(ProjectFolder(), "ZoneCode"),
+            "%{wks.location}/src/ZoneCode"
+        }
+    end
 end
 
 function ZoneCode:link()
@@ -123,6 +125,7 @@ function ZoneCode:use()
 end
 
 function ZoneCode:project()
+    References:reset()
 	local folder = ProjectFolder();
 
 	project "ZoneCode"

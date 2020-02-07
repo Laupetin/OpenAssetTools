@@ -1,13 +1,17 @@
 Utils = {}
 
 function Utils:include()
-	includedirs {
-		path.join(ProjectFolder(), "Utils")
-	}
+	if References:include("Utils") then
+		includedirs {
+			path.join(ProjectFolder(), "Utils")
+		}
+	end
 end
 
 function Utils:link()
-	links "Utils"
+	if References:link("Utils") then
+		links "Utils"
+	end
 end
 
 function Utils:use()
@@ -15,6 +19,7 @@ function Utils:use()
 end
 
 function Utils:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "Utils"

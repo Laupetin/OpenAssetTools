@@ -1,13 +1,17 @@
 salsa20 = {}
 
 function salsa20:include()
-	includedirs {
-		path.join(ThirdPartyFolder(), "salsa20")
-	}
+	if References:include("salsa20") then
+		includedirs {
+			path.join(ThirdPartyFolder(), "salsa20")
+		}
+	end
 end
 
 function salsa20:link()
-	links "salsa20"
+	if References:link("salsa20") then
+		links "salsa20"
+	end
 end
 
 function salsa20:use()
@@ -15,6 +19,7 @@ function salsa20:use()
 end
 
 function salsa20:project()
+	References:reset()
 	local folder = ThirdPartyFolder();
 
 	project "salsa20"

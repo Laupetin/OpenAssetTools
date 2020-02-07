@@ -1,20 +1,24 @@
 ObjCommon = {}
 
 function ObjCommon:include()
-	ZoneCommon:include()
-	minizip:include()
-	includedirs {
-		path.join(ProjectFolder(), "ObjCommon")
-	}
+	if References:include("ObjCommon") then
+		ZoneCommon:include()
+		minizip:include()
+		includedirs {
+			path.join(ProjectFolder(), "ObjCommon")
+		}
+	end
 end
 
 function ObjCommon:link()
-    Utils:link()
-	ZoneCommon:link()
-	minizip:link()
-	links {
-		"ObjCommon"
-	}
+	if References:link("ObjCommon") then
+		Utils:link()
+		ZoneCommon:link()
+		minizip:link()
+		links {
+			"ObjCommon"
+		}
+	end
 end
 
 function ObjCommon:use()
@@ -22,6 +26,7 @@ function ObjCommon:use()
 end
 
 function ObjCommon:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "ObjCommon"

@@ -5,7 +5,9 @@ function ZoneCodeGenerator:include()
 end
 
 function ZoneCodeGenerator:link()
-	links "ZoneCodeGenerator"
+	if References:link("ZoneCodeGenerator") then
+        links "ZoneCodeGenerator"
+    end
 end
 
 function ZoneCodeGenerator:use()
@@ -13,6 +15,7 @@ function ZoneCodeGenerator:use()
 end
 
 function ZoneCodeGenerator:project()
+    References:reset()
 	local folder = ProjectFolder();
 
 	project "ZoneCodeGenerator"

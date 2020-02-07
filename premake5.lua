@@ -19,6 +19,37 @@ function TestFolder()
 	return path.getrelative(os.getcwd(), _TestFolder)
 end
 
+-- Functions for including projects
+References = {
+    includeList = {},
+    linkList = {}
+}
+
+function References:include(name)
+    result = self.includeList[name] == nil
+
+    if result then
+        self.includeList[name] = true
+    end
+
+    return result
+end
+
+function References:link(name)
+    result = self.linkList[name] == nil
+
+    if result then
+        self.linkList[name] = true
+    end
+
+    return result
+end
+
+function References:reset()
+    self.includeList = {}
+    self.linkList = {}
+end
+
 -- Target Directories
 TargetDirectoryBin = "%{wks.location}/bin/%{cfg.buildcfg}_%{cfg.platform}"
 TargetDirectoryLib = "%{wks.location}/lib/%{cfg.buildcfg}_%{cfg.platform}"

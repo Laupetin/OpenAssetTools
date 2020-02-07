@@ -1,22 +1,26 @@
 ObjWriting = {}
 
 function ObjWriting:include()
-	ObjCommon:include()
-	ZoneCommon:include()
-	includedirs {
-		path.join(ProjectFolder(), "ObjWriting")
-	}
+	if References:include("ObjWriting") then
+		ObjCommon:include()
+		ZoneCommon:include()
+		includedirs {
+			path.join(ProjectFolder(), "ObjWriting")
+		}
+	end
 end
 
 function ObjWriting:link()
-    Utils:link()
-	ObjCommon:link()
-	ZoneCommon:link()
-	minilzo:link()
-	minizip:link()
-	links {
-		"ObjWriting"
-	}
+	if References:link("ObjWriting") then
+		Utils:link()
+		ObjCommon:link()
+		ZoneCommon:link()
+		minilzo:link()
+		minizip:link()
+		links {
+			"ObjWriting"
+		}
+	end
 end
 
 function ObjWriting:use()
@@ -24,6 +28,7 @@ function ObjWriting:use()
 end
 
 function ObjWriting:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "ObjWriting"

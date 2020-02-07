@@ -1,17 +1,23 @@
 ZoneCommon = {}
 
 function ZoneCommon:include()
-	Utils:include()
-	includedirs {
-		path.join(ProjectFolder(), "ZoneCommon")
-	}
+	if References:include("ZoneCommon") then
+		Utils:include()
+		ObjCommon:include()
+		includedirs {
+			path.join(ProjectFolder(), "ZoneCommon")
+		}
+	end
 end
 
 function ZoneCommon:link()
-    Utils:link()
-	links {
-		"ZoneCommon"
-	}
+	if References:link("ZoneCommon") then
+		Utils:link()
+		ObjCommon:link()
+		links {
+			"ZoneCommon"
+		}
+	end
 end
 
 function ZoneCommon:use()
@@ -19,6 +25,7 @@ function ZoneCommon:use()
 end
 
 function ZoneCommon:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "ZoneCommon"

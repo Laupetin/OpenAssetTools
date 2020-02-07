@@ -5,7 +5,9 @@ function ZoneCodeGeneratorTests:include()
 end
 
 function ZoneCodeGeneratorTests:link()
-    links "ZoneCommonTests"
+	if References:link("ZoneCodeGeneratorTests") then
+		links "ZoneCodeGeneratorTests"
+	end
 end
 
 function ZoneCodeGeneratorTests:use()
@@ -13,6 +15,7 @@ function ZoneCodeGeneratorTests:use()
 end
 
 function ZoneCodeGeneratorTests:project()
+	References:reset()
 	local folder = TestFolder();
 
 	project "ZoneCodeGeneratorTests"

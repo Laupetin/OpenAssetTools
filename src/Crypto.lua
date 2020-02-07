@@ -1,16 +1,20 @@
 Crypto = {}
 
 function Crypto:include()
-	includedirs {
-		path.join(ProjectFolder(), "Crypto")
-	}
+	if References:include("Crypto") then
+		includedirs {
+			path.join(ProjectFolder(), "Crypto")
+		}
+	end
 end
 
 function Crypto:link()
-    libtomcrypt:link()
-	libtommath:link()
-	salsa20:link()
-	links "Crypto"
+	if References:link("Crypto") then
+		libtomcrypt:link()
+		libtommath:link()
+		salsa20:link()
+		links "Crypto"
+	end
 end
 
 function Crypto:use()
@@ -18,6 +22,7 @@ function Crypto:use()
 end
 
 function Crypto:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "Crypto"

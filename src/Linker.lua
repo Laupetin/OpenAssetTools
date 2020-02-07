@@ -1,9 +1,11 @@
 Linker = {}
 
 function Linker:include()
-	includedirs {
-		path.join(ProjectFolder(), "Linker")
-	}
+	if References:include("Linker") then
+		includedirs {
+			path.join(ProjectFolder(), "Linker")
+		}
+	end
 end
 
 function Linker:link()
@@ -15,6 +17,7 @@ function Linker:use()
 end
 
 function Linker:project()
+	References:reset()
 	local folder = ProjectFolder();
 
 	project "Linker"
