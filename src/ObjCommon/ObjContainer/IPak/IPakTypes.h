@@ -24,8 +24,8 @@ union IPakIndexEntryKey
 {
 	struct
 	{
-		IPakHash nameHash;
 		IPakHash dataHash;
+		IPakHash nameHash;
 	};
 	uint64_t combinedKey;
 };
