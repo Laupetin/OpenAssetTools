@@ -168,7 +168,9 @@ public:
         {
             if(entry.key.nameHash == nameHash && entry.key.dataHash == dataHash)
             {
+                // TODO: Implement ipak reader as IFile interface and use here
                 __asm nop;
+                return nullptr;
             }
         }
 

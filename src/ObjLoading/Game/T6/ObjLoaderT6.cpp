@@ -3,6 +3,8 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "Image/Texture.h"
+#include "Image/IwiLoader.h"
 
 const int ObjLoaderT6::IPAK_READ_HASH = Com_HashKey("ipak_read", 64);
 const int ObjLoaderT6::GLOBAL_HASH = Com_HashKey("GLOBAL", 64);
@@ -33,7 +35,7 @@ void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ip
 {
     if(ObjLoading::Configuration.Verbose)
     {
-        printf("Loading ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
+        printf("Trying to load ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
     }
 
     const std::string ipakFilename = ipakName + ".ipak";
@@ -46,6 +48,8 @@ void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ip
         if(ipak->Initialize())
         {
             IPak::Repository.AddContainer(ipak, zone);
+
+            printf("Found and loaded ipak '%s'.\n", ipakFilename.c_str());
         }
         else
         {
@@ -98,46 +102,80 @@ void ObjLoaderT6::UnloadContainersOfZone(Zone* zone)
     IPak::Repository.RemoveContainerReferences(zone);
 }
 
-void ObjLoaderT6::LoadImageDataFromFile(T6::GfxImage* image, FileAPI::IFile* file, Zone* zone)
+void ObjLoaderT6::LoadImageFromLoadDef(T6::GfxImage* image, Zone* zone)
 {
+    // TODO: Load Texture from LoadDef here
+}
+
+void ObjLoaderT6::LoadImageFromIwi(T6::GfxImage* image, ISearchPath* searchPath, Zone* zone)
+{
+    Texture* loadedTexture = nullptr;
+    IwiLoader loader(zone->GetMemory());
+
+    const std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
+    auto* filePathImage = searchPath->Open(imageFileName);
+
+    if (filePathImage != nullptr && filePathImage->IsOpen())
+    {
+        loadedTexture = loader.LoadIwi(filePathImage);
+
+        filePathImage->Close();
+        delete filePathImage;
+    }
+    else if (image->streamedPartCount > 0)
+    {
+        for (auto* ipak : IPak::Repository)
+        {
+            auto* ipakEntry = ipak->GetEntryData(image->hash, image->streamedParts[0].hash);
+
+            if (ipakEntry != nullptr && ipakEntry->IsOpen())
+            {
+                loadedTexture = loader.LoadIwi(ipakEntry);
+
+                ipakEntry->Close();
+                delete ipakEntry;
+            }
+        }
+    }
+
+    if(loadedTexture != nullptr)
+    {
+        image->texture.texture = loadedTexture;
+    }
+    else
+    {
+        printf("Could not find data for image \"%s\"\n", image->name);
+    }
 }
 
 void ObjLoaderT6::LoadImageData(ISearchPath* searchPath, Zone* zone)
 {
     auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
 
-    if (assetPoolT6->m_image != nullptr)
+    if (assetPoolT6 && assetPoolT6->m_image != nullptr)
     {
         for (auto* imageEntry : *assetPoolT6->m_image)
         {
             auto* image = imageEntry->m_asset;
 
-            if(image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
+            if(image->loadedSize > 0)
             {
                 continue;
             }
 
-            std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
-            auto* filePathImage = searchPath->Open(imageFileName);
-            if(filePathImage != nullptr && filePathImage->IsOpen())
+            // Do not load linked assets
+            if(image->name && image->name[0] == ',')
             {
-                LoadImageDataFromFile(image, filePathImage, zone);
-                filePathImage->Close();
-                delete filePathImage;
+                continue;
             }
-            else if(image->streamedPartCount > 0)
-            {
-                for (auto* ipak : IPak::Repository)
-                {
-                    auto* ipakEntry = ipak->GetEntryData(image->hash, image->streamedParts[0].hash);
 
-                    if (ipakEntry != nullptr && ipakEntry->IsOpen())
-                    {
-                        LoadImageDataFromFile(image, ipakEntry, zone);
-                        ipakEntry->Close();
-                        delete ipakEntry;
-                    }
-                }
+            if(image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
+            {
+                LoadImageFromLoadDef(image, zone);
+            }
+            else
+            {
+                LoadImageFromIwi(image, searchPath, zone);
             }
         }
     }
