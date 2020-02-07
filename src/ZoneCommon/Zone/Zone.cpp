@@ -6,7 +6,7 @@ Zone::Zone(std::string name, const zone_priority_t priority, IZoneAssetPools* po
     m_priority = priority;
     m_pools = pools;
     m_game = game;
-    m_language = ZoneLanguage::LANGUAGE_NONE;
+    m_language = GameLanguage::LANGUAGE_NONE;
     m_memory = new ZoneMemory();
     m_registered = false;
 }

@@ -61,6 +61,12 @@ void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ip
     {
         LoadIPakForZone(searchPath, "mp", zone);
         LoadIPakForZone(searchPath, "so", zone);
+
+        auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
+        for(const auto& languagePrefix : languagePrefixes)
+        {
+            LoadIPakForZone(searchPath, languagePrefix.m_prefix + "base", zone);
+        }
     }
 }
 

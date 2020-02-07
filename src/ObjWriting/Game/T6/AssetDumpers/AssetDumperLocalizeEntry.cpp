@@ -3,58 +3,58 @@
 
 using namespace T6;
 
-std::string AssetDumperLocalizeEntry::GetNameOfLanguage(ZoneLanguage language)
+std::string AssetDumperLocalizeEntry::GetNameOfLanguage(GameLanguage language)
 {
     switch(language)
     {
-    case ZoneLanguage::LANGUAGE_NONE:
-    case ZoneLanguage::LANGUAGE_ENGLISH:
+    case GameLanguage::LANGUAGE_NONE:
+    case GameLanguage::LANGUAGE_ENGLISH:
     default:
         return "english";
 
-    case ZoneLanguage::LANGUAGE_FRENCH:
+    case GameLanguage::LANGUAGE_FRENCH:
         return "french";
 
-    case ZoneLanguage::LANGUAGE_GERMAN:
+    case GameLanguage::LANGUAGE_GERMAN:
         return "german";
 
-    case ZoneLanguage::LANGUAGE_ITALIAN:
+    case GameLanguage::LANGUAGE_ITALIAN:
         return "italian";
 
-    case ZoneLanguage::LANGUAGE_SPANISH:
+    case GameLanguage::LANGUAGE_SPANISH:
         return "spanish";
 
-    case ZoneLanguage::LANGUAGE_BRITISH:
+    case GameLanguage::LANGUAGE_BRITISH:
         return "british";
 
-    case ZoneLanguage::LANGUAGE_RUSSIAN:
+    case GameLanguage::LANGUAGE_RUSSIAN:
         return "russian";
 
-    case ZoneLanguage::LANGUAGE_POLISH:
+    case GameLanguage::LANGUAGE_POLISH:
         return "polish";
 
-    case ZoneLanguage::LANGUAGE_KOREAN:
+    case GameLanguage::LANGUAGE_KOREAN:
         return "korean";
 
-    case ZoneLanguage::LANGUAGE_JAPANESE:
+    case GameLanguage::LANGUAGE_JAPANESE:
         return "japanese";
 
-    case ZoneLanguage::LANGUAGE_CZECH:
+    case GameLanguage::LANGUAGE_CZECH:
         return "czech";
 
-    case ZoneLanguage::LANGUAGE_FRENCH_CAN:
+    case GameLanguage::LANGUAGE_FRENCH_CAN:
         return "frenchcan";
 
-    case ZoneLanguage::LANGUAGE_AUSTRIAN:
+    case GameLanguage::LANGUAGE_AUSTRIAN:
         return "austrian";
 
-    case ZoneLanguage::LANGUAGE_PORTUGUESE:
+    case GameLanguage::LANGUAGE_PORTUGUESE:
         return "portuguese";
 
-    case ZoneLanguage::LANGUAGE_MEXICAN_SPANISH:
+    case GameLanguage::LANGUAGE_MEXICAN_SPANISH:
         return "mexicanspanish";
 
-    case ZoneLanguage::LANGUAGE_FULL_JAPANESE:
+    case GameLanguage::LANGUAGE_FULL_JAPANESE:
         return "fulljapanese";
     }
 }
