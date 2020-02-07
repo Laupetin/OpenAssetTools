@@ -1,6 +1,7 @@
 #pragma once
 
 #include <d3d11.h>
+#include "Image/Texture.h"
 
 #include "T6_Assets.h"
 
@@ -17,7 +18,6 @@ namespace T6
         XAssetType type;
         XAssetHeader header;
     };
-
 
     struct XAssetList
     {
