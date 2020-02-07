@@ -231,7 +231,7 @@ class Unlinker::Impl
                     return false;
                 }
 
-                SearchPathFilesystem* searchPath = new SearchPathFilesystem(absolutePath);
+                auto* searchPath = new SearchPathFilesystem(absolutePath);
                 LoadSearchPath(searchPath);
                 m_search_paths.CommitSearchPath(searchPath);
 
@@ -401,6 +401,7 @@ public:
             std::string absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
             SearchPaths searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
+            searchPathsForZone.IncludeSearchPath(&m_search_paths);
 
             Zone* zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
