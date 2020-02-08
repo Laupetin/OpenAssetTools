@@ -182,7 +182,7 @@ public:
         {
             if (entry.key.combinedKey == wantedKey.combinedKey)
             {
-                return m_stream_manager.OpenStream(entry.offset, entry.size);
+                return m_stream_manager.OpenStream(m_data_section->offset + entry.offset, entry.size);
             }
             else if (entry.key.combinedKey > wantedKey.combinedKey)
             {
