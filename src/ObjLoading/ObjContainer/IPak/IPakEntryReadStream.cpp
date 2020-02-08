@@ -159,6 +159,8 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const bool co
 
         memcpy_s(&m_file_buffer[m_file_head], m_file_length - m_file_head, &m_chunk_buffer[m_pos - m_buffer_start_pos],
                  commandSize);
+
+        m_file_head += commandSize;
     }
 
     return true;
