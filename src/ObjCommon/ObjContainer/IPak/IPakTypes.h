@@ -4,6 +4,12 @@
 
 typedef uint32_t IPakHash;
 
+namespace ipak_consts
+{
+	static constexpr size_t IPAK_CHUNK_SIZE = 0x8000;
+	static constexpr size_t IPAK_CHUNK_COUNT_PER_READ = 0x8;
+}
+
 struct IPakHeader
 {
 	uint32_t magic;
@@ -37,7 +43,7 @@ struct IPakIndexEntry
 	uint32_t size;
 };
 
-struct IPakDataChunkHeader
+struct IPakDataBlockHeader
 {
 	union
 	{

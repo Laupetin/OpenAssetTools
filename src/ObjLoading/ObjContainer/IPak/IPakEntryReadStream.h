@@ -2,28 +2,48 @@
 
 #include "IPakStreamManager.h"
 #include "Utils/FileAPI.h"
+#include "ObjContainer/IPak/IPakTypes.h"
 #include <mutex>
 
 class IPakEntryReadStream final : public FileAPI::IFile
 {
-    static constexpr size_t IPAK_CHUNK_SIZE = 0x8000;
-    static constexpr size_t IPAK_CHUNK_COUNT_PER_READ = 0x8;
+    uint8_t* m_chunk_buffer;
+    uint8_t* m_file_buffer;
 
-    uint8_t* m_buffer;
     IFile* m_file;
-    IPakStreamManager* m_stream_manager;
-    std::mutex* m_read_mutex;
+    IPakStreamManagerActions* m_stream_manager_actions;
+
+    size_t m_file_offset;
+    size_t m_file_head;
+    size_t m_file_length;
 
     int64_t m_pos;
     int64_t m_base_pos;
-    int64_t m_end_pos;
-    int64_t m_buffer_pos;
+    int64_t m_buffer_start_pos;
+    int64_t m_buffer_end_pos;
 
-    static int64_t Align(int64_t num, int64_t alignTo);
+    template<typename T>
+    static T AlignForward(const T num, const T alignTo)
+    {
+        return (num + alignTo - 1) / alignTo * alignTo;
+    }
+
+    template<typename T>
+    static T AlignBackwards(const T num, const T alignTo)
+    {
+        return num / alignTo * alignTo;
+    }
+
+    bool SetChunkBufferWindow(int64_t startPos, size_t chunkCount);
+    bool ValidateBlockHeader(IPakDataBlockHeader* blockHeader) const;
+    bool AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHeader* blockHeader, size_t blockOffsetInChunk);
+    bool ProcessCommand(size_t commandSize, bool compressed);
+    bool AdvanceStream();
 
 public:
-    IPakEntryReadStream(IFile* file, IPakStreamManager* streamManager, std::mutex* readMutex, int64_t startOffset, size_t length);
+    IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t fileSize);
     ~IPakEntryReadStream() override;
+
     bool IsOpen() override;
     size_t Read(void* buffer, size_t elementSize, size_t elementCount) override;
     size_t Write(const void* data, size_t elementSize, size_t elementCount) override;
