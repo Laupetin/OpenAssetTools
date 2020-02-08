@@ -3,6 +3,7 @@
 #include "Exception/IPakLoadException.h"
 #include "ObjContainer/IPak/IPakTypes.h"
 #include "Utils/PathUtils.h"
+#include "IPakStreamManager.h"
 
 #include <sstream>
 #include <vector>
@@ -23,6 +24,8 @@ class IPak::Impl : public ObjContainerReferenceable
     IPakSection* m_data_section;
 
     std::vector<IPakIndexEntry> m_index_entries;
+
+    IPakStreamManager m_stream_manager;
 
     static uint32_t R_HashString(const char* str, uint32_t hash)
     {
@@ -49,6 +52,12 @@ class IPak::Impl : public ObjContainerReferenceable
 
             m_index_entries.push_back(indexEntry);
         }
+
+        std::sort(m_index_entries.begin(), m_index_entries.end(),
+                  [](const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
+                  {
+                      return entry1.key.combinedKey < entry2.key.combinedKey;
+                  });
 
         return true;
     }
@@ -128,6 +137,7 @@ class IPak::Impl : public ObjContainerReferenceable
 
 public:
     Impl(std::string path, FileAPI::IFile* file)
+        : m_stream_manager(file)
     {
         m_path = std::move(path);
         m_file = file;
@@ -164,12 +174,19 @@ public:
 
     FileAPI::IFile* GetEntryData(const Hash nameHash, const Hash dataHash)
     {
-        for(auto& entry : m_index_entries)
+        IPakIndexEntryKey wantedKey{};
+        wantedKey.nameHash = nameHash;
+        wantedKey.dataHash = dataHash;
+
+        for (auto& entry : m_index_entries)
         {
-            if(entry.key.nameHash == nameHash && entry.key.dataHash == dataHash)
+            if (entry.key.combinedKey == wantedKey.combinedKey)
             {
-                // TODO: Implement ipak reader as IFile interface and use here
-                __asm nop;
+                return m_stream_manager.OpenStream(entry.offset, entry.size);
+            }
+            else if (entry.key.combinedKey > wantedKey.combinedKey)
+            {
+                // The index entries are sorted so if the current entry is higher than the wanted entry we can cancel here
                 return nullptr;
             }
         }
@@ -209,7 +226,7 @@ bool IPak::Initialize() const
     return m_impl->Initialize();
 }
 
-FileAPI::IFile* IPak::GetEntryData(const Hash nameHash, const Hash dataHash) const
+FileAPI::IFile* IPak::GetEntryStream(const Hash nameHash, const Hash dataHash) const
 {
     return m_impl->GetEntryData(nameHash, dataHash);
 }

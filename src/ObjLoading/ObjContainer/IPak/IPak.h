@@ -21,7 +21,7 @@ public:
     std::string GetName() override;
 
     bool Initialize() const;
-    FileAPI::IFile* GetEntryData(Hash nameHash, Hash dataHash) const;
+    FileAPI::IFile* GetEntryStream(Hash nameHash, Hash dataHash) const;
 
     static Hash HashString(const std::string& str);
     static Hash HashData(const void* data, size_t dataSize);

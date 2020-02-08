@@ -112,29 +112,36 @@ void ObjLoaderT6::LoadImageFromIwi(T6::GfxImage* image, ISearchPath* searchPath,
     Texture* loadedTexture = nullptr;
     IwiLoader loader(zone->GetMemory());
 
-    const std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
-    auto* filePathImage = searchPath->Open(imageFileName);
-
-    if (filePathImage != nullptr && filePathImage->IsOpen())
-    {
-        loadedTexture = loader.LoadIwi(filePathImage);
-
-        filePathImage->Close();
-        delete filePathImage;
-    }
-    else if (image->streamedPartCount > 0)
+    if (image->streamedPartCount > 0)
     {
         for (auto* ipak : IPak::Repository)
         {
-            auto* ipakEntry = ipak->GetEntryData(image->hash, image->streamedParts[0].hash);
+            auto* ipakStream = ipak->GetEntryStream(image->hash, image->streamedParts[0].hash);
 
-            if (ipakEntry != nullptr && ipakEntry->IsOpen())
+            if (ipakStream != nullptr)
             {
-                loadedTexture = loader.LoadIwi(ipakEntry);
+                loadedTexture = loader.LoadIwi(ipakStream);
 
-                ipakEntry->Close();
-                delete ipakEntry;
+                ipakStream->Close();
+                delete ipakStream;
+
+                if (loadedTexture != nullptr)
+                    break;
             }
+        }
+    }
+
+    if(loadedTexture == nullptr)
+    {
+        const std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
+        auto* filePathImage = searchPath->Open(imageFileName);
+
+        if (filePathImage != nullptr)
+        {
+            loadedTexture = loader.LoadIwi(filePathImage);
+
+            filePathImage->Close();
+            delete filePathImage;
         }
     }
 
