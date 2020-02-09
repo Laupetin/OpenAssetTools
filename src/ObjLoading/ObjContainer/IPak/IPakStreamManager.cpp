@@ -2,6 +2,7 @@
 #include "IPakEntryReadStream.h"
 #include "ObjContainer/IPak/IPakTypes.h"
 #include <vector>
+#include <algorithm>
 
 using namespace ipak_consts;
 
