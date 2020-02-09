@@ -7,8 +7,9 @@
 
 class IPakEntryReadStream final : public FileAPI::IFile
 {
+    static constexpr size_t IPAK_DECOMPRESS_BUFFER_SIZE = 0x8000;
+
     uint8_t* m_chunk_buffer;
-    uint8_t* m_file_buffer;
 
     IFile* m_file;
     IPakStreamManagerActions* m_stream_manager_actions;
@@ -17,6 +18,13 @@ class IPakEntryReadStream final : public FileAPI::IFile
     size_t m_file_head;
 
     size_t m_entry_size;
+
+    uint8_t m_decompress_buffer[IPAK_DECOMPRESS_BUFFER_SIZE];
+    IPakDataBlockHeader* m_current_block;
+    unsigned m_next_command;
+    uint8_t* m_current_command_buffer;
+    size_t m_current_command_length;
+    size_t m_current_command_offset;
 
     int64_t m_pos;
     int64_t m_base_pos;
@@ -39,7 +47,8 @@ class IPakEntryReadStream final : public FileAPI::IFile
     bool SetChunkBufferWindow(int64_t startPos, size_t chunkCount);
     bool ValidateBlockHeader(IPakDataBlockHeader* blockHeader) const;
     bool AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHeader* blockHeader, size_t blockOffsetInChunk);
-    bool ProcessCommand(size_t commandSize, bool compressed);
+    bool NextBlock();
+    bool ProcessCommand(size_t commandSize, int compressed);
     bool AdvanceStream();
 
 public:

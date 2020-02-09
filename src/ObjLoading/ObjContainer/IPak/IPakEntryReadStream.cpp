@@ -8,6 +8,7 @@ using namespace ipak_consts;
 
 IPakEntryReadStream::IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions,
                                          uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
+    : m_decompress_buffer{}
 {
     m_file = file;
     m_stream_manager_actions = streamManagerActions;
@@ -17,13 +18,17 @@ IPakEntryReadStream::IPakEntryReadStream(IFile* file, IPakStreamManagerActions* 
     m_file_head = 0;
     m_entry_size = entrySize;
 
-    m_file_buffer = new uint8_t[entrySize];
-
     m_base_pos = startOffset;
     m_end_pos = startOffset + entrySize;
     m_pos = m_base_pos;
     m_buffer_start_pos = 0;
     m_buffer_end_pos = 0;
+
+    m_current_block = nullptr;
+    m_next_command = 0;
+    m_current_command_buffer = nullptr;
+    m_current_command_length = 0;
+    m_current_command_offset = 0;
 
     lzo_init();
 }
@@ -132,44 +137,13 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHea
     return true;
 }
 
-bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const bool compressed)
+bool IPakEntryReadStream::NextBlock()
 {
-    if (compressed)
-    {
-        lzo_uint outputSize = m_entry_size - m_file_head;
-        const auto result = lzo1x_decompress_safe(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize,
-                                             &m_file_buffer[m_file_head], &outputSize, nullptr);
+    if (m_pos >= m_end_pos)
+        return false;
 
-        if (result != LZO_E_OK)
-        {
-            printf("Decompressing block with lzo failed: %i!\n", result);
-            return false;
-        }
+    m_pos = AlignForward<int64_t>(m_pos, sizeof IPakDataBlockHeader);
 
-        m_file_head += outputSize;
-    }
-    else
-    {
-        if (m_entry_size - m_file_head < commandSize)
-        {
-            printf(
-                "There is not enough space in output buffer to extract data from IPak block: %u required, %u available\n",
-                commandSize, m_entry_size - m_file_head);
-            return false;
-        }
-
-        memcpy_s(&m_file_buffer[m_file_head], m_entry_size - m_file_head, &m_chunk_buffer[m_pos - m_buffer_start_pos],
-                 commandSize);
-
-        m_file_head += commandSize;
-    }
-    m_pos += commandSize;
-
-    return true;
-}
-
-bool IPakEntryReadStream::AdvanceStream()
-{
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
 
@@ -183,24 +157,64 @@ bool IPakEntryReadStream::AdvanceStream()
     if (!SetChunkBufferWindow(chunkStartPos, estimatedChunksToRead))
         return false;
 
-    const auto blockHeader = reinterpret_cast<IPakDataBlockHeader*>(&m_chunk_buffer[blockOffsetInChunk]);
+    m_current_block = reinterpret_cast<IPakDataBlockHeader*>(&m_chunk_buffer[blockOffsetInChunk]);
 
-    if (!ValidateBlockHeader(blockHeader))
+    if (!ValidateBlockHeader(m_current_block))
         return false;
 
-    if (!AdjustChunkBufferWindowForBlockHeader(blockHeader, blockOffsetInChunk))
+    if (!AdjustChunkBufferWindowForBlockHeader(m_current_block, blockOffsetInChunk))
         return false;
 
     m_pos += sizeof IPakDataBlockHeader;
+    m_next_command = 0;
 
-    for (unsigned commandIndex = 0; commandIndex < blockHeader->count; commandIndex++)
+    return true;
+}
+
+bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int compressed)
+{
+    if (compressed > 0)
     {
-        if (!ProcessCommand(blockHeader->_commands[commandIndex].size,
-                            blockHeader->_commands[commandIndex].compressed == 1))
+        if (compressed == 1)
+        {
+            lzo_uint outputSize = sizeof m_decompress_buffer;
+            const auto result = lzo1x_decompress_safe(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize,
+                m_decompress_buffer, &outputSize, nullptr);
+
+            if (result != LZO_E_OK)
+            {
+                printf("Decompressing block with lzo failed: %i!\n", result);
+                return false;
+            }
+
+            m_current_command_buffer = m_decompress_buffer;
+            m_current_command_length = outputSize;
+            m_current_command_offset = 0;
+            m_file_head += outputSize;
+        }
+    }
+    else
+    {
+        m_current_command_buffer = &m_chunk_buffer[m_pos - m_buffer_start_pos];
+        m_current_command_length = commandSize;
+        m_current_command_offset = 0;
+        m_file_head += commandSize;
+    }
+    m_pos += commandSize;
+
+    return true;
+}
+
+bool IPakEntryReadStream::AdvanceStream()
+{
+    if(m_current_block == nullptr || m_next_command >= m_current_block->count)
+    {
+        if (!NextBlock())
             return false;
     }
 
-    m_pos = AlignForward<int64_t>(m_pos, sizeof IPakDataBlockHeader);
+    ProcessCommand(m_current_block->_commands[m_next_command].size, m_current_block->_commands[m_next_command].compressed);
+    m_next_command++;
 
     return true;
 }
@@ -212,29 +226,32 @@ bool IPakEntryReadStream::IsOpen()
 
 size_t IPakEntryReadStream::Read(void* buffer, const size_t elementSize, const size_t elementCount)
 {
+    auto* destBuffer = static_cast<uint8_t*>(buffer);
     const size_t bufferSize = elementCount * elementSize;
-    size_t sizeToRead = bufferSize <= m_entry_size - m_file_offset ? bufferSize : m_entry_size - m_file_offset;
+    size_t countRead = 0;
 
-    while (m_file_offset + sizeToRead > m_file_head && m_pos < m_end_pos)
+    while (countRead < bufferSize)
     {
-        if (!AdvanceStream())
+        if (m_current_command_offset >= m_current_command_length)
         {
-            if (m_file_head - m_file_offset < sizeToRead)
-                sizeToRead = m_file_head - m_file_offset;
+            if (!AdvanceStream())
+                break;
+        }
+
+        size_t sizeToRead = bufferSize - countRead;
+        if (sizeToRead > m_current_command_length - m_current_command_offset)
+            sizeToRead = m_current_command_length - m_current_command_offset;
+
+        if(sizeToRead > 0)
+        {
+            memcpy_s(&destBuffer[countRead], bufferSize - countRead, &m_current_command_buffer[m_current_command_offset], sizeToRead);
+            countRead += sizeToRead;
+            m_current_command_offset += sizeToRead;
+            m_file_offset += sizeToRead;
         }
     }
 
-    if(sizeToRead > m_file_head - m_file_offset)
-    {
-        sizeToRead = m_file_head - m_file_offset;
-    }
-
-    if (sizeToRead > 0)
-    {
-        memcpy_s(buffer, bufferSize, &m_file_buffer[m_file_offset], sizeToRead);
-    }
-
-    return sizeToRead;
+    return countRead / elementSize;
 }
 
 size_t IPakEntryReadStream::Write(const void* data, size_t elementSize, size_t elementCount)
@@ -248,10 +265,24 @@ void IPakEntryReadStream::Skip(const int64_t amount)
 {
     if (amount > 0)
     {
-        m_file_offset += static_cast<size_t>(amount);
+        const size_t targetOffset = m_file_offset + static_cast<size_t>(amount);
 
-        if (m_file_offset > m_entry_size)
-            m_file_offset = m_entry_size;
+        while(m_file_head < targetOffset)
+        {
+            if (!AdvanceStream())
+                break;
+        }
+
+        if(targetOffset <= m_file_head)
+        {
+            m_current_command_offset = m_current_command_length - (m_file_head - targetOffset);
+            m_file_offset = targetOffset;
+        }
+        else
+        {
+            m_current_command_offset = m_current_command_length;
+            m_file_offset = m_file_head;
+        }
     }
 }
 
@@ -269,34 +300,25 @@ int64_t IPakEntryReadStream::Pos()
 
 void IPakEntryReadStream::Goto(const int64_t pos)
 {
-    if (pos >= 0)
+    if (pos > m_file_offset)
     {
-        while (m_file_head < pos && m_pos < m_end_pos)
-        {
-            if (!AdvanceStream())
-            {
-                break;
-            }
-        }
-
-        m_file_offset = static_cast<size_t>(pos);
-
-        if (m_file_offset > m_file_head)
-            m_file_offset = m_file_head;
+        Skip(pos - m_file_offset);
+    }
+    else
+    {
+        // Not implemented due to being too time consuming.
+        // Can be added if necessary.
+        assert(false);
+        throw std::runtime_error("Operation not supported!");
     }
 }
 
 void IPakEntryReadStream::GotoEnd()
 {
-    while (m_pos < m_end_pos)
-    {
-        if (!AdvanceStream())
-        {
-            break;
-        }
-    }
-
-    m_file_offset = m_file_head;
+    // Not implemented due to being too time consuming.
+    // Can be added if necessary.
+    assert(false);
+    throw std::runtime_error("Operation not supported!");
 }
 
 void IPakEntryReadStream::Close()
@@ -304,9 +326,6 @@ void IPakEntryReadStream::Close()
     if (IsOpen())
     {
         m_file = nullptr;
-
-        delete[] m_file_buffer;
-        m_file_buffer = nullptr;
 
         m_stream_manager_actions->CloseStream(this);
     }
