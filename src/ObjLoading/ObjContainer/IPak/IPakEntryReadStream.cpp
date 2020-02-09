@@ -300,7 +300,20 @@ int64_t IPakEntryReadStream::Pos()
 
 void IPakEntryReadStream::Goto(const int64_t pos)
 {
-    if (pos > m_file_offset)
+    if(pos == 0)
+    {
+        m_pos = m_base_pos;
+
+        m_file_head = 0;
+        m_file_offset = 0;
+
+        m_current_block = nullptr;
+        m_next_command = 0;
+        m_current_command_buffer = nullptr;
+        m_current_command_length = 0;
+        m_current_command_offset = 0;
+    }
+    else if (pos > m_file_offset)
     {
         Skip(pos - m_file_offset);
     }
