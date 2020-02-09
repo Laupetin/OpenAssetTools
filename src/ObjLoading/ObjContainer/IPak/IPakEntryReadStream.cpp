@@ -7,7 +7,7 @@
 using namespace ipak_consts;
 
 IPakEntryReadStream::IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions,
-                                         uint8_t* chunkBuffer, const int64_t startOffset, const size_t fileSize)
+                                         uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
 {
     m_file = file;
     m_stream_manager_actions = streamManagerActions;
@@ -15,11 +15,12 @@ IPakEntryReadStream::IPakEntryReadStream(IFile* file, IPakStreamManagerActions* 
 
     m_file_offset = 0;
     m_file_head = 0;
-    m_file_length = fileSize;
+    m_entry_size = entrySize;
 
-    m_file_buffer = new uint8_t[fileSize];
+    m_file_buffer = new uint8_t[entrySize];
 
     m_base_pos = startOffset;
+    m_end_pos = startOffset + entrySize;
     m_pos = m_base_pos;
     m_buffer_start_pos = 0;
     m_buffer_end_pos = 0;
@@ -91,10 +92,10 @@ bool IPakEntryReadStream::ValidateBlockHeader(IPakDataBlockHeader* blockHeader) 
         printf("IPak block has more than 31 commands: %u -> Invalid\n", blockHeader->count);
         return false;
     }
-    if (blockHeader->offset > m_file_length)
+    if (blockHeader->offset > m_entry_size)
     {
-        printf("IPak block offset is larger than file itself: %u > %u -> Invalid\n", blockHeader->offset,
-               m_file_length);
+        printf("IPak block offset is larger than the entry itself: %u > %u -> Invalid\n", blockHeader->offset,
+               m_entry_size);
         return false;
     }
 
@@ -113,9 +114,9 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHea
     const size_t requiredChunkCount = AlignForward<size_t>(
         blockOffsetInChunk + sizeof IPakDataBlockHeader + commandsSize, IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
 
-    const size_t amountOfReadBlocks = static_cast<size_t>(m_buffer_end_pos - m_buffer_start_pos) / IPAK_CHUNK_SIZE;
+    const size_t amountOfReadChunks = static_cast<size_t>(m_buffer_end_pos - m_buffer_start_pos) / IPAK_CHUNK_SIZE;
 
-    if (requiredChunkCount > amountOfReadBlocks)
+    if (requiredChunkCount > amountOfReadChunks)
     {
         if (requiredChunkCount > IPAK_CHUNK_COUNT_PER_READ)
         {
@@ -135,8 +136,8 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const bool co
 {
     if (compressed)
     {
-        lzo_uint outputSize = m_file_length - m_file_head;
-        const auto result = lzo1x_decompress(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize,
+        lzo_uint outputSize = m_entry_size - m_file_head;
+        const auto result = lzo1x_decompress_safe(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize,
                                              &m_file_buffer[m_file_head], &outputSize, nullptr);
 
         if (result != LZO_E_OK)
@@ -149,19 +150,20 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const bool co
     }
     else
     {
-        if (m_file_length - m_file_head < commandSize)
+        if (m_entry_size - m_file_head < commandSize)
         {
             printf(
                 "There is not enough space in output buffer to extract data from IPak block: %u required, %u available\n",
-                commandSize, m_file_length - m_file_head);
+                commandSize, m_entry_size - m_file_head);
             return false;
         }
 
-        memcpy_s(&m_file_buffer[m_file_head], m_file_length - m_file_head, &m_chunk_buffer[m_pos - m_buffer_start_pos],
+        memcpy_s(&m_file_buffer[m_file_head], m_entry_size - m_file_head, &m_chunk_buffer[m_pos - m_buffer_start_pos],
                  commandSize);
 
         m_file_head += commandSize;
     }
+    m_pos += commandSize;
 
     return true;
 }
@@ -171,7 +173,7 @@ bool IPakEntryReadStream::AdvanceStream()
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
 
-    const size_t sizeLeftToRead = m_file_length - m_file_head;
+    const size_t sizeLeftToRead = m_entry_size - m_file_head;
     size_t estimatedChunksToRead = AlignForward(blockOffsetInChunk + sizeLeftToRead, IPAK_CHUNK_SIZE)
         / IPAK_CHUNK_SIZE;
 
@@ -211,18 +213,20 @@ bool IPakEntryReadStream::IsOpen()
 size_t IPakEntryReadStream::Read(void* buffer, const size_t elementSize, const size_t elementCount)
 {
     const size_t bufferSize = elementCount * elementSize;
-    size_t sizeToRead = bufferSize <= m_file_length - m_file_offset ? bufferSize : m_file_length - m_file_offset;
+    size_t sizeToRead = bufferSize <= m_entry_size - m_file_offset ? bufferSize : m_entry_size - m_file_offset;
 
-    if (sizeToRead)
-        sizeToRead = m_file_length - m_file_offset;
-
-    while (m_file_offset + sizeToRead > m_file_head)
+    while (m_file_offset + sizeToRead > m_file_head && m_pos < m_end_pos)
     {
         if (!AdvanceStream())
         {
             if (m_file_head - m_file_offset < sizeToRead)
                 sizeToRead = m_file_head - m_file_offset;
         }
+    }
+
+    if(sizeToRead > m_file_head - m_file_offset)
+    {
+        sizeToRead = m_file_head - m_file_offset;
     }
 
     if (sizeToRead > 0)
@@ -246,8 +250,8 @@ void IPakEntryReadStream::Skip(const int64_t amount)
     {
         m_file_offset += static_cast<size_t>(amount);
 
-        if (m_file_offset > m_file_length)
-            m_file_offset = m_file_length;
+        if (m_file_offset > m_entry_size)
+            m_file_offset = m_entry_size;
     }
 }
 
@@ -265,18 +269,34 @@ int64_t IPakEntryReadStream::Pos()
 
 void IPakEntryReadStream::Goto(const int64_t pos)
 {
-    if (pos <= 0)
+    if (pos >= 0)
     {
+        while (m_file_head < pos && m_pos < m_end_pos)
+        {
+            if (!AdvanceStream())
+            {
+                break;
+            }
+        }
+
         m_file_offset = static_cast<size_t>(pos);
 
-        if (m_file_offset > m_file_length)
-            m_file_offset = m_file_length;
+        if (m_file_offset > m_file_head)
+            m_file_offset = m_file_head;
     }
 }
 
 void IPakEntryReadStream::GotoEnd()
 {
-    m_pos = m_file_length;
+    while (m_pos < m_end_pos)
+    {
+        if (!AdvanceStream())
+        {
+            break;
+        }
+    }
+
+    m_file_offset = m_file_head;
 }
 
 void IPakEntryReadStream::Close()

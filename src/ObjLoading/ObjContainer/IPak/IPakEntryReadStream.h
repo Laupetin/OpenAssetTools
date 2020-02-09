@@ -15,10 +15,12 @@ class IPakEntryReadStream final : public FileAPI::IFile
 
     size_t m_file_offset;
     size_t m_file_head;
-    size_t m_file_length;
+
+    size_t m_entry_size;
 
     int64_t m_pos;
     int64_t m_base_pos;
+    int64_t m_end_pos;
     int64_t m_buffer_start_pos;
     int64_t m_buffer_end_pos;
 
@@ -41,7 +43,7 @@ class IPakEntryReadStream final : public FileAPI::IFile
     bool AdvanceStream();
 
 public:
-    IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t fileSize);
+    IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t entrySize);
     ~IPakEntryReadStream() override;
 
     bool IsOpen() override;
