@@ -34,8 +34,16 @@ bool ObjLoaderT6::SupportsZone(Zone* zone)
 void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone)
 {
     if(ObjLoading::Configuration.Verbose)
-    {
         printf("Trying to load ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
+
+    IPak* existingIPak = IPak::Repository.GetContainerByName(ipakName);
+    if(existingIPak != nullptr)
+    {
+        if (ObjLoading::Configuration.Verbose)
+            printf("Referencing loaded ipak '%s'.\n", ipakName.c_str());
+
+        IPak::Repository.AddContainer(existingIPak, zone);
+        return;
     }
 
     const std::string ipakFilename = ipakName + ".ipak";
@@ -49,7 +57,8 @@ void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ip
         {
             IPak::Repository.AddContainer(ipak, zone);
 
-            printf("Found and loaded ipak '%s'.\n", ipakFilename.c_str());
+            if (ObjLoading::Configuration.Verbose)
+                printf("Found and loaded ipak '%s'.\n", ipakFilename.c_str());
         }
         else
         {
@@ -60,17 +69,53 @@ void ObjLoaderT6::LoadIPakForZone(ISearchPath* searchPath, const std::string& ip
             printf("Failed to load ipak '%s'!\n", ipakFilename.c_str());
         }
     }
+}
 
-    if(ipakName == "base")
+bool ObjLoaderT6::IsMpZone(Zone* zone)
+{
+    return zone->m_name.compare(0, 3, "mp_") == 0
+        || zone->m_name.compare(zone->m_name.length() - 3, 3, "_mp") == 0;
+}
+
+bool ObjLoaderT6::IsZmZone(Zone* zone)
+{
+    return zone->m_name.compare(0, 3, "zm_") == 0
+        || zone->m_name.compare(zone->m_name.length() - 3, 3, "_zm") == 0;
+}
+
+void ObjLoaderT6::LoadCommonIPaks(ISearchPath* searchPath, Zone* zone)
+{
+    if(ObjLoading::Configuration.Verbose)
+        printf("Loading common ipaks for zone \"%s\"\n", zone->m_name.c_str());
+
+    LoadIPakForZone(searchPath, "base", zone);
+    auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
+    for (const auto& languagePrefix : languagePrefixes)
     {
+        LoadIPakForZone(searchPath, languagePrefix.m_prefix + "base", zone);
+    }
+
+    if (IsMpZone(zone))
+    {
+        if (ObjLoading::Configuration.Verbose)
+            printf("Loading multiplayer ipaks for zone \"%s\"\n", zone->m_name.c_str());
+
         LoadIPakForZone(searchPath, "mp", zone);
         LoadIPakForZone(searchPath, "so", zone);
+    }
+    else if (IsZmZone(zone))
+    {
+        if (ObjLoading::Configuration.Verbose)
+            printf("Loading zombie ipak for zone \"%s\"\n", zone->m_name.c_str());
 
-        auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
-        for(const auto& languagePrefix : languagePrefixes)
-        {
-            LoadIPakForZone(searchPath, languagePrefix.m_prefix + "base", zone);
-        }
+        LoadIPakForZone(searchPath, "zm", zone);
+    }
+    else
+    {
+        if (ObjLoading::Configuration.Verbose)
+            printf("Loading singleplayer ipak for zone \"%s\"\n", zone->m_name.c_str());
+
+        LoadIPakForZone(searchPath, "sp", zone);
     }
 }
 
@@ -78,6 +123,8 @@ void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone*
 {
     auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
     const int zoneNameHash = Com_HashKey(zone->m_name.c_str(), 64);
+
+    LoadCommonIPaks(searchPath, zone);
 
     if(assetPoolT6->m_key_value_pairs != nullptr)
     {

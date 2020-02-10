@@ -68,7 +68,7 @@ public:
         }
     }
 
-    IObjContainer* GetContainerByName(const std::string& name)
+    ContainerType* GetContainerByName(const std::string& name)
     {
         auto foundEntry = std::find_if(m_containers.begin(), m_containers.end(), [name](ObjContainerEntry& entry) -> bool
             {

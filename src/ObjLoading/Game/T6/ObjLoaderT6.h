@@ -12,10 +12,13 @@ class ObjLoaderT6 final : public IObjLoader
 
     static void LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone);
 
-    static void LoadImageFromIwiFile(T6::GfxImage* image, FileAPI::IFile* file, Zone* zone);
     static void LoadImageFromIwi(T6::GfxImage* image, ISearchPath* searchPath, Zone* zone);
     static void LoadImageFromLoadDef(T6::GfxImage* image, Zone* zone);
     static void LoadImageData(ISearchPath* searchPath, Zone* zone);
+
+    static bool IsMpZone(Zone* zone);
+    static bool IsZmZone(Zone* zone);
+    static void LoadCommonIPaks(ISearchPath* searchPath, Zone* zone);
 
 public:
     bool SupportsZone(Zone* zone) override;

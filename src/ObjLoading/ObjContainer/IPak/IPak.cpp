@@ -157,7 +157,7 @@ public:
 
     std::string GetName() override
     {
-        return utils::Path::GetFilename(m_path);
+        return utils::Path::GetFilenameWithoutExtension(m_path);
     }
 
     bool Initialize()
