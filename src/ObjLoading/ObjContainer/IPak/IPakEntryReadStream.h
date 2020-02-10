@@ -44,6 +44,7 @@ class IPakEntryReadStream final : public FileAPI::IFile
         return num / alignTo * alignTo;
     }
 
+    size_t ReadChunks(uint8_t* buffer, int64_t startPos, size_t chunkCount) const;
     bool SetChunkBufferWindow(int64_t startPos, size_t chunkCount);
     bool ValidateBlockHeader(IPakDataBlockHeader* blockHeader) const;
     bool AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHeader* blockHeader, size_t blockOffsetInChunk);

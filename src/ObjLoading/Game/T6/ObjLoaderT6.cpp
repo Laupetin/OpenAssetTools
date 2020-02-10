@@ -126,7 +126,9 @@ void ObjLoaderT6::LoadImageFromIwi(T6::GfxImage* image, ISearchPath* searchPath,
                 delete ipakStream;
 
                 if (loadedTexture != nullptr)
+                {
                     break;
+                }
             }
         }
     }
