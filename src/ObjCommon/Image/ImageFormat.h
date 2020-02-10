@@ -53,7 +53,12 @@ public:
     ImageFormat() = delete;
 
     static const ImageFormatUnsigned FORMAT_R8G8B8;
+    static const ImageFormatUnsigned FORMAT_R8G8B8A8;
+    static const ImageFormatUnsigned FORMAT_A8;
+    static const ImageFormatUnsigned FORMAT_R16G16B16A16_FLOAT; //TODO: Float not unsigned
     static const ImageFormatBlockCompressed FORMAT_BC1;
     static const ImageFormatBlockCompressed FORMAT_BC2;
     static const ImageFormatBlockCompressed FORMAT_BC3;
+    static const ImageFormatBlockCompressed FORMAT_BC4;
+    static const ImageFormatBlockCompressed FORMAT_BC5;
 };

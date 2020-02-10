@@ -76,6 +76,11 @@ size_t ImageFormatBlockCompressed::GetSizeOfMipLevel(const unsigned mipLevel, co
 }
 
 const ImageFormatUnsigned ImageFormat::FORMAT_R8G8B8(24, 0, 8, 8, 8, 16, 8, 0, 0, DXGI_FORMAT_UNKNOWN);
-const ImageFormatBlockCompressed ImageFormat::FORMAT_BC1(4, 8, DXGI_FORMAT_BC1_UNORM);
-const ImageFormatBlockCompressed ImageFormat::FORMAT_BC2(4, 16, DXGI_FORMAT_BC2_UNORM);
-const ImageFormatBlockCompressed ImageFormat::FORMAT_BC3(4, 16, DXGI_FORMAT_BC3_UNORM);
+const ImageFormatUnsigned ImageFormat::FORMAT_R8G8B8A8(32, 0, 8, 8, 8, 16, 8, 24, 8, DXGI_FORMAT_R8G8B8A8_UNORM);
+const ImageFormatUnsigned ImageFormat::FORMAT_A8(8, 0, 0, 0, 0, 0, 0, 0, 8, DXGI_FORMAT_A8_UNORM);
+const ImageFormatUnsigned ImageFormat::FORMAT_R16G16B16A16_FLOAT(128, 0, 0, 0, 0, 0, 0, 0, 8, DXGI_FORMAT_R16G16B16A16_FLOAT);
+const ImageFormatBlockCompressed ImageFormat::FORMAT_BC1(4, 64, DXGI_FORMAT_BC1_UNORM);
+const ImageFormatBlockCompressed ImageFormat::FORMAT_BC2(4, 128, DXGI_FORMAT_BC2_UNORM);
+const ImageFormatBlockCompressed ImageFormat::FORMAT_BC3(4, 128, DXGI_FORMAT_BC3_UNORM);
+const ImageFormatBlockCompressed ImageFormat::FORMAT_BC4(4, 64, DXGI_FORMAT_BC4_UNORM);
+const ImageFormatBlockCompressed ImageFormat::FORMAT_BC5(4, 128, DXGI_FORMAT_BC5_UNORM);
