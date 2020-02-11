@@ -6,6 +6,7 @@
 class AssetDumperStringTable final : public AbstractAssetDumper<T6::StringTable>
 {
 protected:
+    bool ShouldDump(T6::StringTable* asset) override;
     std::string GetFileNameForAsset(Zone* zone, T6::StringTable* asset) override;
     void DumpAsset(Zone* zone, T6::StringTable* asset, FileAPI::File* out) override;
 };

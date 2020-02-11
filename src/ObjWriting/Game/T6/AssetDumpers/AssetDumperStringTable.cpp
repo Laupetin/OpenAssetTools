@@ -2,6 +2,11 @@
 
 using namespace T6;
 
+bool AssetDumperStringTable::ShouldDump(StringTable* asset)
+{
+    return true;
+}
+
 std::string AssetDumperStringTable::GetFileNameForAsset(Zone* zone, StringTable* asset)
 {
     return std::string(asset->name);

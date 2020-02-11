@@ -2,6 +2,11 @@
 
 using namespace T6;
 
+bool AssetDumperQdb::ShouldDump(Qdb* asset)
+{
+    return true;
+}
+
 std::string AssetDumperQdb::GetFileNameForAsset(Zone* zone, Qdb* asset)
 {
     return std::string(asset->name);

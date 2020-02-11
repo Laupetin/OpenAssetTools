@@ -2,6 +2,11 @@
 
 using namespace T6;
 
+bool AssetDumperScriptParseTree::ShouldDump(ScriptParseTree* asset)
+{
+    return true;
+}
+
 std::string AssetDumperScriptParseTree::GetFileNameForAsset(Zone* zone, ScriptParseTree* asset)
 {
     return std::string(asset->name);

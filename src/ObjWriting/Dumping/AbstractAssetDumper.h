@@ -10,6 +10,7 @@ template<class T>
 class AbstractAssetDumper : public IAssetDumper<T>
 {
 protected:
+    virtual bool ShouldDump(T* asset) = 0;
     virtual std::string GetFileNameForAsset(Zone* zone, T* asset) = 0;
     virtual void DumpAsset(Zone* zone, T* asset, FileAPI::File* out) = 0;
 
@@ -18,6 +19,12 @@ public:
     {
         for(auto assetInfo : *pool)
         {
+            if(assetInfo->m_name[0] == ','
+                || !ShouldDump(assetInfo->m_asset))
+            {
+                continue;
+            }
+
             std::string assetFilePath = utils::Path::Combine(basePath, GetFileNameForAsset(zone, assetInfo->m_asset));
 
             FileAPI::DirectoryCreate(utils::Path::GetDirectory(assetFilePath));

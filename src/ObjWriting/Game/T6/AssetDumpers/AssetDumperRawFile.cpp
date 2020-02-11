@@ -2,6 +2,11 @@
 
 using namespace T6;
 
+bool AssetDumperRawFile::ShouldDump(RawFile* asset)
+{
+    return true;
+}
+
 std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, RawFile* asset)
 {
     return std::string(asset->name);
