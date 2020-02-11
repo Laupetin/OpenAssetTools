@@ -197,6 +197,11 @@ void ObjLoaderT6::LoadImageFromIwi(T6::GfxImage* image, ISearchPath* searchPath,
     if(loadedTexture != nullptr)
     {
         image->texture.texture = loadedTexture;
+        image->loadedSize = 0;
+
+        const int textureMipCount = loadedTexture->GetMipMapCount();
+        for(int mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+            image->loadedSize += loadedTexture->GetSizeOfMipLevel(mipLevel);
     }
     else
     {
