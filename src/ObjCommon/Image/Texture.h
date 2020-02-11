@@ -5,11 +5,11 @@
 class Texture
 {
 protected:
-    const IImageFormat* m_format;
+    const ImageFormat* m_format;
     bool m_has_mip_maps;
     uint8_t* m_data;
 
-    Texture(const IImageFormat* format, bool mipMaps);
+    Texture(const ImageFormat* format, bool mipMaps);
     Texture(Texture&& other) noexcept;
 
     Texture& operator=(Texture&& other) noexcept;
@@ -20,7 +20,7 @@ public:
 
     Texture& operator=(const Texture& other) = delete;
 
-    const IImageFormat* GetFormat() const;
+    const ImageFormat* GetFormat() const;
 
     void Allocate();
     bool Empty() const;
@@ -39,8 +39,8 @@ protected:
     unsigned m_height;
 
 public:
-    Texture2D(const IImageFormat* format, unsigned width, unsigned height);
-    Texture2D(const IImageFormat* format, unsigned width, unsigned height, bool mipMaps);
+    Texture2D(const ImageFormat* format, unsigned width, unsigned height);
+    Texture2D(const ImageFormat* format, unsigned width, unsigned height, bool mipMaps);
     Texture2D(const Texture2D& other) = delete;
     Texture2D(Texture2D&& other) noexcept;
     ~Texture2D() override;
@@ -62,8 +62,8 @@ class TextureCube final : public Texture2D
     static const int FACE_COUNT;
 
 public:
-    TextureCube(const IImageFormat* format, unsigned width, unsigned height);
-    TextureCube(const IImageFormat* format, unsigned width, unsigned height, bool mipMaps);
+    TextureCube(const ImageFormat* format, unsigned width, unsigned height);
+    TextureCube(const ImageFormat* format, unsigned width, unsigned height, bool mipMaps);
     TextureCube(const TextureCube& other) = delete;
     TextureCube(TextureCube&& other) noexcept;
     ~TextureCube() override;
@@ -81,8 +81,8 @@ class Texture3D final : public Texture
     unsigned m_depth;
 
 public:
-    Texture3D(const IImageFormat* format, unsigned width, unsigned height, unsigned depth);
-    Texture3D(const IImageFormat* format, unsigned width, unsigned height, unsigned depth, bool mipMaps);
+    Texture3D(const ImageFormat* format, unsigned width, unsigned height, unsigned depth);
+    Texture3D(const ImageFormat* format, unsigned width, unsigned height, unsigned depth, bool mipMaps);
     Texture3D(const Texture3D& other) = delete;
     Texture3D(Texture3D&& other) noexcept;
     ~Texture3D() override;

@@ -5,7 +5,7 @@
 // ==============================================
 // ================= Texture ====================
 // ==============================================
-Texture::Texture(const IImageFormat* format, const bool mipMaps)
+Texture::Texture(const ImageFormat* format, const bool mipMaps)
 {
     m_format = format;
     m_has_mip_maps = mipMaps;
@@ -38,7 +38,7 @@ Texture::~Texture()
     m_data = nullptr;
 }
 
-const IImageFormat* Texture::GetFormat() const
+const ImageFormat* Texture::GetFormat() const
 {
     return m_format;
 }
@@ -73,12 +73,12 @@ bool Texture::HasMipMaps() const
 // ==============================================
 // ================ Texture2D ===================
 // ==============================================
-Texture2D::Texture2D(const IImageFormat* format, const unsigned width, const unsigned height)
+Texture2D::Texture2D(const ImageFormat* format, const unsigned width, const unsigned height)
     : Texture2D(format, width, height, false)
 {
 }
 
-Texture2D::Texture2D(const IImageFormat* format, const unsigned width, const unsigned height, const bool mipMaps)
+Texture2D::Texture2D(const ImageFormat* format, const unsigned width, const unsigned height, const bool mipMaps)
     : Texture(format, mipMaps)
 {
     m_width = width;
@@ -162,12 +162,12 @@ uint8_t* Texture2D::GetBufferForMipLevel(const int mipLevel)
 // ==============================================
 const int TextureCube::FACE_COUNT = 6;
 
-TextureCube::TextureCube(const IImageFormat* format, const unsigned width, const unsigned height)
+TextureCube::TextureCube(const ImageFormat* format, const unsigned width, const unsigned height)
     : Texture2D(format, width, height)
 {
 }
 
-TextureCube::TextureCube(const IImageFormat* format, const unsigned width, const unsigned height, const bool mipMaps)
+TextureCube::TextureCube(const ImageFormat* format, const unsigned width, const unsigned height, const bool mipMaps)
     : Texture2D(format, width, height, mipMaps)
 {
 }
@@ -198,12 +198,12 @@ size_t TextureCube::GetSizeOfMipLevel(const int mipLevel) const
 // ================ Texture3D ===================
 // ==============================================
 
-Texture3D::Texture3D(const IImageFormat* format, const unsigned width, const unsigned height, const unsigned depth)
+Texture3D::Texture3D(const ImageFormat* format, const unsigned width, const unsigned height, const unsigned depth)
     : Texture3D(format, width, height, depth, false)
 {
 }
 
-Texture3D::Texture3D(const IImageFormat* format, const unsigned width, const unsigned height, const unsigned depth,
+Texture3D::Texture3D(const ImageFormat* format, const unsigned width, const unsigned height, const unsigned depth,
                      const bool mipMaps)
     : Texture(format, mipMaps)
 {

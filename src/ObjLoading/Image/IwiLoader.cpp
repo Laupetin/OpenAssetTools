@@ -7,12 +7,12 @@ IwiLoader::IwiLoader(MemoryManager* memoryManager)
     m_memory_manager = memoryManager;
 }
 
-const IImageFormat* IwiLoader::GetFormat27(int8_t format)
+const ImageFormat* IwiLoader::GetFormat27(int8_t format)
 {
     switch (static_cast<iwi27::IwiFormat>(format))
     {
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
-        return &ImageFormat::FORMAT_R8G8B8A8;
+        return &ImageFormat::FORMAT_R8_G8_B8_A8;
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
         return &ImageFormat::FORMAT_A8;
     case iwi27::IwiFormat::IMG_FORMAT_DXT1:
@@ -25,7 +25,7 @@ const IImageFormat* IwiLoader::GetFormat27(int8_t format)
         return &ImageFormat::FORMAT_BC5;
     case iwi27::IwiFormat::IMG_FORMAT_A16B16G16R16F:
         assert(false); // Unsupported yet
-        return &ImageFormat::FORMAT_R16G16B16A16_FLOAT;
+        return &ImageFormat::FORMAT_R16_G16_B16_A16_FLOAT;
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGB:
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
@@ -55,7 +55,7 @@ Texture* IwiLoader::LoadIwi27(FileAPI::IFile* file)
     if (file->Read(&header, sizeof header, 1) != 1)
         return nullptr;
 
-    const IImageFormat* format = GetFormat27(header.format);
+    const ImageFormat* format = GetFormat27(header.format);
     if (format == nullptr)
         return nullptr;
 
