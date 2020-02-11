@@ -8,6 +8,7 @@
 #include "AssetDumpers/AssetDumperScriptParseTree.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
+#include "AssetDumpers/AssetDumperGfxImage.h"
 
 bool ZoneDumperT6::CanHandleZone(Zone* zone)
 {
@@ -32,7 +33,7 @@ bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath)
     // DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel);
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material);
     // DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set);
-    // DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);
+    DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);
     // DUMP_ASSET_POOL(AssetDumperSndBank, m_sound_bank);
     // DUMP_ASSET_POOL(AssetDumperSndPatch, m_sound_patch);
     // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map);
