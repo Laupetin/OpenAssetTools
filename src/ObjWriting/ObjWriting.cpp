@@ -2,14 +2,16 @@
 #include "Dumping/IZoneDumper.h"
 #include "Game/T6/ZoneDumperT6.h"
 
-IZoneDumper* zoneDumper[]
+ObjWriting::Configuration_t ObjWriting::Configuration;
+
+const IZoneDumper* const ZONE_DUMPER[]
 {
     new ZoneDumperT6()
 };
 
 bool ObjWriting::DumpZone(Zone* zone, const std::string& basePath)
 {
-    for (auto dumper : zoneDumper)
+    for (auto dumper : ZONE_DUMPER)
     {
         if (dumper->CanHandleZone(zone))
         {
@@ -26,7 +28,7 @@ bool ObjWriting::DumpZone(Zone* zone, const std::string& basePath)
     return false;
 }
 
-bool ObjWriting::WriteZoneDefinition(Zone* zone, FileAPI::File* file, bool minimalistic)
+bool ObjWriting::WriteZoneDefinition(Zone* zone, FileAPI::File* file)
 {
     return file->Printf("// %s", "Insert zone definition here") > 0;
 }

@@ -6,14 +6,14 @@
 
 ObjLoading::Configuration_t ObjLoading::Configuration;
 
-IObjLoader* objLoaders[]
+const IObjLoader* const OBJ_LOADERS[]
 {
     new ObjLoaderT6()
 };
 
 void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
 {
-    for (auto* loader : objLoaders)
+    for (auto* loader : OBJ_LOADERS)
     {
         if (loader->SupportsZone(zone))
         {
@@ -25,7 +25,7 @@ void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* 
 
 void ObjLoading::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
 {
-    for (auto* loader : objLoaders)
+    for (auto* loader : OBJ_LOADERS)
     {
         if (loader->SupportsZone(zone))
         {
@@ -37,7 +37,7 @@ void ObjLoading::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
 
 void ObjLoading::UnloadContainersOfZone(Zone* zone)
 {
-    for (auto* loader : objLoaders)
+    for (auto* loader : OBJ_LOADERS)
     {
         if (loader->SupportsZone(zone))
         {

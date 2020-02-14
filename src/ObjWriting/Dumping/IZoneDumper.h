@@ -8,7 +8,7 @@ class IZoneDumper
 public:
     virtual ~IZoneDumper() = default;
 
-    virtual bool CanHandleZone(Zone* zone) = 0;
-    virtual bool DumpZone(Zone* zone, const std::string& basePath) = 0;
-    virtual bool WriteZoneDefinition(Zone* zone, FileAPI::File* file, bool minimalistic) = 0;
+    virtual bool CanHandleZone(Zone* zone) const = 0;
+    virtual bool DumpZone(Zone* zone, const std::string& basePath) const = 0;
+    virtual bool WriteZoneDefinition(Zone* zone, FileAPI::File* file) const = 0;
 };

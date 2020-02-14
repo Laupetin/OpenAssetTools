@@ -26,7 +26,7 @@ int ObjLoaderT6::Com_HashKey(const char* str, const int maxLen)
     return hash ^ ((hash ^ (hash >> 10)) >> 10);
 }
 
-bool ObjLoaderT6::SupportsZone(Zone* zone)
+bool ObjLoaderT6::SupportsZone(Zone* zone) const
 {
     return zone->m_game == &g_GameT6;
 }
@@ -119,7 +119,7 @@ void ObjLoaderT6::LoadCommonIPaks(ISearchPath* searchPath, Zone* zone)
     }
 }
 
-void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
+void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
 {
     auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
     const int zoneNameHash = Com_HashKey(zone->m_name.c_str(), 64);
@@ -144,7 +144,7 @@ void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone*
     }
 }
 
-void ObjLoaderT6::UnloadContainersOfZone(Zone* zone)
+void ObjLoaderT6::UnloadContainersOfZone(Zone* zone) const
 {
     IPak::Repository.RemoveContainerReferences(zone);
 }
@@ -242,7 +242,7 @@ void ObjLoaderT6::LoadImageData(ISearchPath* searchPath, Zone* zone)
     }
 }
 
-void ObjLoaderT6::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
+void ObjLoaderT6::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) const
 {
     LoadImageData(searchPath, zone);
 }

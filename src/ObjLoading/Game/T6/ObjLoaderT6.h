@@ -21,10 +21,10 @@ class ObjLoaderT6 final : public IObjLoader
     static void LoadCommonIPaks(ISearchPath* searchPath, Zone* zone);
 
 public:
-    bool SupportsZone(Zone* zone) override;
+    bool SupportsZone(Zone* zone) const override;
 
-    void LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) override;
-    void UnloadContainersOfZone(Zone* zone) override;
+    void LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const override;
+    void UnloadContainersOfZone(Zone* zone) const override;
 
-    void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) override;
+    void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) const override;
 };

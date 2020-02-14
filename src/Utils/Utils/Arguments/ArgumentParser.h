@@ -11,7 +11,7 @@ class ArgumentParser
     std::vector<std::string> m_matched_arguments;
 
 public:
-    ArgumentParser(const CommandLineOption** options, size_t optionCount);
+    ArgumentParser(const CommandLineOption* const* options, size_t optionCount);
     
     bool ParseArguments(std::vector<std::string>& args);
     bool ParseArguments(int argc, const char** argv);

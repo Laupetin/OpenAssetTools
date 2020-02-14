@@ -4,7 +4,7 @@
 const std::string PREFIX_LONG = "--";
 const std::string PREFIX_SHORT = "-";
 
-ArgumentParser::ArgumentParser(const CommandLineOption** options, const size_t optionCount)
+ArgumentParser::ArgumentParser(const CommandLineOption* const* options, const size_t optionCount)
 {
     for(unsigned optionIndex = 0; optionIndex < optionCount; optionIndex++)
     {

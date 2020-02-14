@@ -10,12 +10,12 @@
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
 
-bool ZoneDumperT6::CanHandleZone(Zone* zone)
+bool ZoneDumperT6::CanHandleZone(Zone* zone) const
 {
     return zone->m_game == &g_GameT6;
 }
 
-bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath)
+bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath) const
 {
 #define DUMP_ASSET_POOL(dumperType, poolName) \
     if(assetPools->poolName) \
@@ -80,7 +80,7 @@ bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath)
 #undef DUMP_ASSET_POOL
 }
 
-bool ZoneDumperT6::WriteZoneDefinition(Zone* zone, FileAPI::File* file, bool minimalistic)
+bool ZoneDumperT6::WriteZoneDefinition(Zone* zone, FileAPI::File* file) const
 {
     return true;
 }
