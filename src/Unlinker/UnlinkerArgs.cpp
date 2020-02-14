@@ -179,7 +179,7 @@ bool UnlinkerArgs::SetImageDumpingMode()
 
 bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
 {
-    if (!m_argument_parser.ParseArguments(argc, argv))
+    if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
     {
         PrintUsage();
         return false;
@@ -192,14 +192,15 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
         return false;
     }
 
-    const std::vector<std::string> arguments = m_argument_parser.GetArguments();
-    const size_t argCount = arguments.size();
-    if (argCount <= 1)
+    m_zones_to_load = m_argument_parser.GetArguments();
+    const size_t zoneCount = m_zones_to_load.size();
+    if (zoneCount < 1)
     {
         // No zones to load specified...
         PrintUsage();
         return false;
     }
+
 
     // -v; --verbose
     SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
