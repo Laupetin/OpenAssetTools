@@ -79,8 +79,3 @@ bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath) const
 
 #undef DUMP_ASSET_POOL
 }
-
-bool ZoneDumperT6::WriteZoneDefinition(Zone* zone, FileAPI::File* file) const
-{
-    return true;
-}

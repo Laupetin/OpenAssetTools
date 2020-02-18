@@ -206,7 +206,7 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
     SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));
 
     // -min; --minimal-zone
-    ObjWriting::Configuration.MinimalZoneFileOutput = m_argument_parser.IsOptionSpecified(OPTION_MINIMAL_ZONE_FILE);
+    m_minimal_zone_def = m_argument_parser.IsOptionSpecified(OPTION_MINIMAL_ZONE_FILE);
 
     // -l; --list
     if (m_argument_parser.IsOptionSpecified(OPTION_LIST))

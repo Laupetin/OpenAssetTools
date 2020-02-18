@@ -6,5 +6,4 @@ class ZoneDumperT6 final : public IZoneDumper
 public:
     bool CanHandleZone(Zone* zone) const override;
     bool DumpZone(Zone* zone, const std::string& basePath) const override;
-    bool WriteZoneDefinition(Zone* zone, FileAPI::File* file) const override;
 };

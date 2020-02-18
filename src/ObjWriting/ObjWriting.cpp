@@ -27,8 +27,3 @@ bool ObjWriting::DumpZone(Zone* zone, const std::string& basePath)
 
     return false;
 }
-
-bool ObjWriting::WriteZoneDefinition(Zone* zone, FileAPI::File* file)
-{
-    return file->Printf("// %s", "Insert zone definition here") > 0;
-}

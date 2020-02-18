@@ -5,26 +5,10 @@
 #include "ObjLoading.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
+#include "Game/T6/CommonT6.h"
 
-const int ObjLoaderT6::IPAK_READ_HASH = Com_HashKey("ipak_read", 64);
-const int ObjLoaderT6::GLOBAL_HASH = Com_HashKey("GLOBAL", 64);
-
-int ObjLoaderT6::Com_HashKey(const char* str, const int maxLen)
-{
-    if (str == nullptr)
-        return 0;
-
-    int hash = 0;
-    for (int i = 0; i < maxLen; i++)
-    {
-        if (str[i] == '\0')
-            break;
-
-        hash += str[i] * (0x77 + i);
-    }
-
-    return hash ^ ((hash ^ (hash >> 10)) >> 10);
-}
+const int ObjLoaderT6::IPAK_READ_HASH = CommonT6::Com_HashKey("ipak_read", 64);
+const int ObjLoaderT6::GLOBAL_HASH = CommonT6::Com_HashKey("GLOBAL", 64);
 
 bool ObjLoaderT6::SupportsZone(Zone* zone) const
 {
@@ -122,7 +106,7 @@ void ObjLoaderT6::LoadCommonIPaks(ISearchPath* searchPath, Zone* zone)
 void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
 {
     auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
-    const int zoneNameHash = Com_HashKey(zone->m_name.c_str(), 64);
+    const int zoneNameHash = CommonT6::Com_HashKey(zone->m_name.c_str(), 64);
 
     LoadCommonIPaks(searchPath, zone);
 

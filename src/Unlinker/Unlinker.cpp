@@ -3,18 +3,25 @@
 #include "Utils/Arguments/ArgumentParser.h"
 #include "ZoneLoading.h"
 #include "ObjWriting.h"
-#include "ContentPrinter.h"
+#include "ContentLister/ContentPrinter.h"
 #include "Utils/PathUtils.h"
 #include "Utils/FileAPI.h"
 #include "ObjLoading.h"
 #include "SearchPath/SearchPaths.h"
 #include "SearchPath/SearchPathFilesystem.h"
+#include "ContentLister/ZoneDefWriter.h"
+#include "Game/T6/ZoneDefWriterT6.h"
 
 #include <set>
 #include <regex>
 #include <filesystem>
 #include "ObjContainer/IWD/IWD.h"
 #include "UnlinkerArgs.h"
+
+const IZoneDefWriter* const ZONE_DEF_WRITERS[]
+{
+    new ZoneDefWriterT6()
+};
 
 class Unlinker::Impl
 {
@@ -158,7 +165,14 @@ class Unlinker::Impl
 
             if (zoneDefinitionFile.IsOpen())
             {
-                ObjWriting::WriteZoneDefinition(zone, &zoneDefinitionFile);
+                for (auto zoneDefWriter : ZONE_DEF_WRITERS)
+                {
+                    if (zoneDefWriter->CanHandleZone(zone))
+                    {
+                        zoneDefWriter->WriteZoneDef(zone, &zoneDefinitionFile);
+                        break;
+                    }
+                }
                 ObjWriting::DumpZone(zone, outputFolderPath);
             }
             else
