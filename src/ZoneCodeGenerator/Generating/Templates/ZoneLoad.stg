@@ -21,7 +21,7 @@ HeaderLoadMethodDeclaration(structure) ::= "void Load_$structure.Type.Name$(bool
 
 HeaderGetNameMethodDeclaration(asset) ::= "static std::string GetAssetName($asset.Type.FullName$* pAsset);"
 HeaderAssetLoadMethodDeclaration(asset) ::= "void LoadAsset_$asset.Type.Name$($asset.Type.FullName$** pAsset);"
-HeaderMainLoadMethodDeclaration(asset) ::= "void Load($asset.Type.FullName$** pAsset);"
+HeaderMainLoadMethodDeclaration(asset) ::= "XAssetInfo<$asset.Type.FullName$>* Load($asset.Type.FullName$** pAsset);"
 
 VariableDeclaration(type) ::= <<
 $type.FullName$* var$SafeTypeName(type)$;
@@ -54,6 +54,7 @@ namespace $context.Game$
 {
     class $LoaderClassName(context.Asset)$ final : public AssetLoader
     {
+        XAssetInfo<$context.Asset.Type.FullName$>* m_asset_info;
         $if(context.HasActions)$
         Actions_$context.Asset.Type.Name$ m_actions;
         $endif$
@@ -287,6 +288,7 @@ $LoaderClassName(context.Asset)$::$LoaderClassName(context.Asset)$(IZoneScriptSt
     : AssetLoader($context.Asset.AssetEnumEntry.Name$, scriptStringProvider, zone, stream)$\\$
     $if(context.HasActions)$, m_actions(zone)$endif$
 {
+    m_asset_info = nullptr;
     $VariableInitialization(context.Asset.Type)$
     $PointerVariableInitialization(context.Asset.Type)$
 
@@ -301,17 +303,25 @@ LoadAssetMethod(context, structure) ::= <<
 void $LoaderClassName(context.Asset)$::LoadAsset_$structure.Type.Name$($structure.Type.FullName$** pAsset)
 {
     assert(pAsset != nullptr);
-    *pAsset = static_cast<$structure.Type.FullName$*>(LinkAsset(GetAssetName(*pAsset), *pAsset));
+    m_asset_info = reinterpret_cast<XAssetInfo<$structure.Type.FullName$>*>(LinkAsset(GetAssetName(*pAsset), *pAsset));
+    *pAsset = m_asset_info->Asset();
 }
 >>
 
 MainLoadMethod(context) ::= <<
-void $LoaderClassName(context.Asset)$::Load($context.Asset.Type.FullName$** pAsset)
+XAssetInfo<$context.Asset.Type.FullName$>* $LoaderClassName(context.Asset)$::Load($context.Asset.Type.FullName$** pAsset)
 {
     assert(pAsset != nullptr);
 
+    m_asset_info = nullptr;
+
     $TypePtrVarName(context.Asset.Type)$ = pAsset;
     LoadPtr_$context.Asset.Type.Name$(false);
+
+    if(m_asset_info == nullptr && *pAsset != nullptr)
+        m_asset_info = reinterpret_cast<XAssetInfo<$context.Asset.Type.FullName$>*>(GetAssetInfo(GetAssetName(*pAsset)));
+
+    return m_asset_info;
 }
 >>
 

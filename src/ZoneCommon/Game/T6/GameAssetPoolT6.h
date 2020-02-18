@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Pool/AssetPool.h"
 #include "Pool/IZoneAssetPools.h"
+#include "Pool/AssetPool.h"
 #include "T6.h"
 
 class GameAssetPoolT6 final : public IZoneAssetPools
@@ -64,7 +64,8 @@ public:
     void InitPoolStatic(asset_type_t type, size_t capacity) override;
     void InitPoolDynamic(asset_type_t type) override;
 
-    void* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetDependency>& dependencies) override;
+    XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) override;
+    XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) override;
 
     ZoneContent GetContent() const override;
 };

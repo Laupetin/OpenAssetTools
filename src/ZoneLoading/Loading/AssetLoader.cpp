@@ -10,22 +10,18 @@ AssetLoader::AssetLoader(const asset_type_t assetType, IZoneScriptStringProvider
     varScriptString = nullptr;
 }
 
-void AssetLoader::AddDependency(const asset_type_t type, std::string& name)
+void AssetLoader::AddDependency(XAssetInfoGeneric* assetInfo)
 {
-    for(auto& existingDependency : m_dependencies)
+    if (assetInfo == nullptr)
+        return;
+
+    const auto existingEntry = std::find(m_dependencies.begin(), m_dependencies.end(), assetInfo);
+    if(existingEntry != m_dependencies.end())
     {
-        if(existingDependency.m_type == type
-            && existingDependency.m_name == name)
-        {
-            return;
-        }
+        return;
     }
 
-    XAssetDependency dependency;
-    dependency.m_type = type;
-    dependency.m_name = name;
-
-    m_dependencies.push_back(dependency);
+    m_dependencies.push_back(assetInfo);
 }
 
 scr_string_t AssetLoader::UseScriptString(const scr_string_t scrString)
@@ -63,7 +59,12 @@ void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t c
     }
 }
 
-void* AssetLoader::LinkAsset(std::string name, void* asset)
+XAssetInfoGeneric* AssetLoader::LinkAsset(std::string name, void* asset)
 {
-    return m_zone->GetPools()->AddAsset(m_asset_type, std::move(name), asset, m_used_script_strings, m_dependencies);
+    return m_zone->GetPools()->AddAsset(m_asset_type, std::move(name), asset, m_used_script_strings, m_dependencies);;
+}
+
+XAssetInfoGeneric* AssetLoader::GetAssetInfo(std::string name) const
+{
+    return m_zone->GetPools()->GetAsset(m_asset_type, std::move(name));
 }

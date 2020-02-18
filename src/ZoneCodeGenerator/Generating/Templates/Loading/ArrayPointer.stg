@@ -90,7 +90,7 @@ $endif$
 
 LoadPointerArrayMethod_Asset(context, type, structure) ::= <<
 $LoaderClassName(structure)$ loader(m_script_string_provider, m_zone, m_stream);
-loader.Load($TypePtrVarName(type)$);
+AddDependency(loader.Load($TypePtrVarName(type)$));
 >>
 
 LoadPointerArrayMethod_PointerCheck(context, type, structure, reusable) ::= <<

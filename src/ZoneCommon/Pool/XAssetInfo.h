@@ -1,13 +1,23 @@
 #pragma once
 #include <vector>
-#include "Zone/XAssetDependency.h"
+#include <string>
 
-template<typename T>
-class XAssetInfo
+class XAssetInfoGeneric
 {
 public:
+    int m_type = -1;
     std::string m_name;
-    T* m_asset;
     std::vector<std::string> m_script_strings;
-    std::vector<XAssetDependency> m_dependencies;
+    std::vector<XAssetInfoGeneric*> m_dependencies;
+    void* m_ptr;
+};
+
+template<typename T>
+class XAssetInfo : public XAssetInfoGeneric
+{
+public:
+    T* Asset()
+    {
+        return static_cast<T*>(m_ptr);
+    }
 };

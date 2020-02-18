@@ -19,13 +19,15 @@ public:
     {
         for(auto assetInfo : *pool)
         {
+            T* asset = assetInfo->Asset();
+
             if(assetInfo->m_name[0] == ','
-                || !ShouldDump(assetInfo->m_asset))
+                || !ShouldDump(asset))
             {
                 continue;
             }
 
-            std::string assetFilePath = utils::Path::Combine(basePath, GetFileNameForAsset(zone, assetInfo->m_asset));
+            std::string assetFilePath = utils::Path::Combine(basePath, GetFileNameForAsset(zone, asset));
 
             FileAPI::DirectoryCreate(utils::Path::GetDirectory(assetFilePath));
 
@@ -33,7 +35,7 @@ public:
 
             if(file.IsOpen())
             {
-                DumpAsset(zone, assetInfo->m_asset, &file);
+                DumpAsset(zone, asset, &file);
 
                 file.Close();
             }

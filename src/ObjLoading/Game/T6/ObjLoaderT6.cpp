@@ -130,7 +130,7 @@ void ObjLoaderT6::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone*
     {
         for(auto* keyValuePairsEntry : *assetPoolT6->m_key_value_pairs)
         {
-            auto* keyValuePairs = keyValuePairsEntry->m_asset;
+            auto* keyValuePairs = keyValuePairsEntry->Asset();
             for(int variableIndex = 0; variableIndex < keyValuePairs->numVariables; variableIndex++)
             {
                 T6::KeyValuePair* variable = &keyValuePairs->keyValuePairs[variableIndex];
@@ -217,7 +217,7 @@ void ObjLoaderT6::LoadImageData(ISearchPath* searchPath, Zone* zone)
     {
         for (auto* imageEntry : *assetPoolT6->m_image)
         {
-            auto* image = imageEntry->m_asset;
+            auto* image = imageEntry->Asset();
 
             if(image->loadedSize > 0)
             {

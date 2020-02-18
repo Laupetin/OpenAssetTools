@@ -61,7 +61,7 @@ std::string AssetDumperLocalizeEntry::GetNameOfLanguage(GameLanguage language)
 
 void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath)
 {
-    if (pool->m_asset_lookup.size() == 0)
+    if (pool->m_asset_lookup.empty())
         return;
 
     const std::string language = GetNameOfLanguage(zone->m_language);
@@ -84,7 +84,7 @@ void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* po
 
         for(auto localizeEntry : *pool)
         {
-            stringFileDumper.WriteLocalizeEntry(localizeEntry->m_asset->name, localizeEntry->m_asset->value);
+            stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
         }
 
         stringFileDumper.Finalize();
