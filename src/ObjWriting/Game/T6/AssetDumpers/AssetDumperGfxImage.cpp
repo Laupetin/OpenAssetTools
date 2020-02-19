@@ -1,6 +1,8 @@
 #include "AssetDumperGfxImage.h"
 #include "ObjWriting.h"
 #include "Image/IwiWriter27.h"
+#include "Image/DdsWriter.h"
+#include <cassert>
 
 using namespace T6;
 
@@ -9,11 +11,13 @@ AssetDumperGfxImage::AssetDumperGfxImage()
     switch (ObjWriting::Configuration.ImageOutputFormat)
     {
     case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
+        m_writer = new DdsWriter();
         break;
     case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
         m_writer = new IwiWriter27();
         break;
     default:
+        assert(false);
         m_writer = nullptr;
         break;
     }
