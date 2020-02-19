@@ -5,6 +5,13 @@ using namespace T6;
 
 GameT6 g_GameT6;
 
+const std::string GameT6::NAME = "T6";
+
+const std::string& GameT6::GetName()
+{
+    return NAME;
+}
+
 void GameT6::AddZone(Zone* zone)
 {
     m_zones.push_back(zone);

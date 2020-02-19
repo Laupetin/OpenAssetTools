@@ -5,8 +5,75 @@
 
 using namespace T6;
 
+const std::string GameAssetPoolT6::ASSET_TYPE_INVALID = "invalid_asset";
+const std::string GameAssetPoolT6::ASSET_TYPE_NAMES[]
+{
+    "xmodelpieces",
+    "physpreset",
+    "physconstraints",
+    "destructibledef",
+    "xanim",
+    "xmodel",
+    "material",
+    "techniqueset",
+    "image",
+    "soundbank",
+    "soundpatch",
+    "clipmap",
+    "clipmap",
+    "comworld",
+    "gameworldsp",
+    "gameworldmp",
+    "mapents",
+    "gfxworld",
+    "gfxlightdef",
+    "uimap",
+    "font",
+    "fonticon",
+    "menulist",
+    "menu",
+    "localize",
+    "weapon",
+    "weapondef",
+    "weaponvariant",
+    "weaponfull",
+    "attachment",
+    "attachmentunique",
+    "camo",
+    "snddriverglobals",
+    "fx",
+    "fximpacttable",
+    "aitype",
+    "mptype",
+    "mpbody",
+    "mphead",
+    "character",
+    "xmodelalias",
+    "rawfile",
+    "stringtable",
+    "leaderboard",
+    "xglobals",
+    "ddl",
+    "glasses",
+    "emblemset",
+    "script",
+    "keyvaluepairs",
+    "vehicle",
+    "memoryblock",
+    "addonmapents",
+    "tracer",
+    "skinnedverts",
+    "qdb",
+    "slug",
+    "footsteptable",
+    "footstepfxtable",
+    "zbarrier"
+};
+
 GameAssetPoolT6::GameAssetPoolT6(const int priority)
 {
+    assert(_countof(ASSET_TYPE_NAMES) == ASSET_TYPE_COUNT);
+
     m_priority = priority;
 
     m_phys_preset = nullptr;
@@ -271,7 +338,12 @@ XAssetInfoGeneric* GameAssetPoolT6::AddAsset(asset_type_t type, std::string name
     case assetType: \
     { \
         assert((poolName) != nullptr); \
-        return (poolName)->AddAsset(std::move(name), xAsset.header.headerName, scriptStrings, dependencies); \
+        auto* assetInfo = (poolName)->AddAsset(std::move(name), xAsset.header.headerName, scriptStrings, dependencies); \
+        if(assetInfo) \
+        { \
+            m_assets_in_order.push_back(assetInfo); \
+        } \
+        return assetInfo; \
     }
 
     switch(xAsset.type)
@@ -336,7 +408,7 @@ XAssetInfoGeneric* GameAssetPoolT6::AddAsset(asset_type_t type, std::string name
 #undef CASE_ADD_TO_POOL
 }
 
-XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, std::string name)
+XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, std::string name) const
 {
 #define CASE_GET_ASSET(assetType, poolName) \
     case assetType: \
@@ -408,71 +480,20 @@ XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, std::strin
 #undef CASE_GET_ASSET
 }
 
-ZoneContent GameAssetPoolT6::GetContent() const
+const std::string& GameAssetPoolT6::GetAssetTypeName(const asset_type_t assetType) const
 {
-    ZoneContent content{};
+    if (assetType >= 0 && assetType < static_cast<int>(_countof(ASSET_TYPE_NAMES)))
+        return ASSET_TYPE_NAMES[assetType];
 
-    content.m_game_name = "T6";
+    return ASSET_TYPE_INVALID;
+}
 
-#define POOL_ADD_TO_CONTENT(assetTypeName, poolName) \
-    if((poolName) != nullptr) \
-    { \
-        for(auto asset : *(poolName)) \
-        { \
-            content.m_assets.emplace_back((assetTypeName), asset->m_name);\
-        } \
-    }
+IZoneAssetPools::iterator GameAssetPoolT6::begin() const
+{
+    return m_assets_in_order.begin();
+}
 
-    POOL_ADD_TO_CONTENT("physpreset", m_phys_preset);
-    POOL_ADD_TO_CONTENT("physconstraints", m_phys_constraints);
-    POOL_ADD_TO_CONTENT("destructibledef", m_destructible_def);
-    POOL_ADD_TO_CONTENT("xanim", m_xanim_parts);
-    POOL_ADD_TO_CONTENT("xmodel", m_xmodel);
-    POOL_ADD_TO_CONTENT("material", m_material);
-    POOL_ADD_TO_CONTENT("techniqueset", m_technique_set);
-    POOL_ADD_TO_CONTENT("image", m_image);
-    POOL_ADD_TO_CONTENT("soundbank", m_sound_bank);
-    POOL_ADD_TO_CONTENT("soundpatch", m_sound_patch);
-    POOL_ADD_TO_CONTENT("clipmap", m_clip_map);
-    POOL_ADD_TO_CONTENT("comworld", m_com_world);
-    POOL_ADD_TO_CONTENT("gameworldsp", m_game_world_sp);
-    POOL_ADD_TO_CONTENT("gameworldmp", m_game_world_mp);
-    POOL_ADD_TO_CONTENT("mapents", m_map_ents);
-    POOL_ADD_TO_CONTENT("gfxworld", m_gfx_world);
-    POOL_ADD_TO_CONTENT("gfxlightdef", m_gfx_light_def);
-    POOL_ADD_TO_CONTENT("font", m_font);
-    POOL_ADD_TO_CONTENT("fonticon", m_font_icon);
-    POOL_ADD_TO_CONTENT("menulist", m_menu_list);
-    POOL_ADD_TO_CONTENT("menudef", m_menu_def);
-    POOL_ADD_TO_CONTENT("localize", m_localize);
-    POOL_ADD_TO_CONTENT("weapon", m_weapon);
-    POOL_ADD_TO_CONTENT("attachment", m_attachment);
-    POOL_ADD_TO_CONTENT("attachmentunique", m_attachment_unique);
-    POOL_ADD_TO_CONTENT("camo", m_camo);
-    POOL_ADD_TO_CONTENT("snddriverglobals", m_snd_driver_globals);
-    POOL_ADD_TO_CONTENT("fx", m_fx);
-    POOL_ADD_TO_CONTENT("fximpacttable", m_fx_impact_table);
-    POOL_ADD_TO_CONTENT("rawfile", m_raw_file);
-    POOL_ADD_TO_CONTENT("stringtable", m_string_table);
-    POOL_ADD_TO_CONTENT("leaderboard", m_leaderboard);
-    POOL_ADD_TO_CONTENT("xglobals", m_xglobals);
-    POOL_ADD_TO_CONTENT("ddl", m_ddl);
-    POOL_ADD_TO_CONTENT("glasses", m_glasses);
-    POOL_ADD_TO_CONTENT("emblemset", m_emblem_set);
-    POOL_ADD_TO_CONTENT("script", m_script);
-    POOL_ADD_TO_CONTENT("keyvaluepairs", m_key_value_pairs);
-    POOL_ADD_TO_CONTENT("vehicle", m_vehicle);
-    POOL_ADD_TO_CONTENT("memoryblock", m_memory_block);
-    POOL_ADD_TO_CONTENT("addonmapents", m_addon_map_ents);
-    POOL_ADD_TO_CONTENT("tracer", m_tracer);
-    POOL_ADD_TO_CONTENT("skinnedverts", m_skinned_verts);
-    POOL_ADD_TO_CONTENT("qdb", m_qdb);
-    POOL_ADD_TO_CONTENT("slug", m_slug);
-    POOL_ADD_TO_CONTENT("footsteptable", m_footstep_table);
-    POOL_ADD_TO_CONTENT("footstepfxtable", m_footstep_fx_table);
-    POOL_ADD_TO_CONTENT("zbarrier", m_zbarrier);
-
-    return content;
-
-#undef POOL_ADD_TO_CONTENT
+IZoneAssetPools::iterator GameAssetPoolT6::end() const
+{
+    return m_assets_in_order.end();
 }

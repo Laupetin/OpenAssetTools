@@ -7,14 +7,13 @@ ContentPrinter::ContentPrinter(Zone* zone)
 
 void ContentPrinter::PrintContent() const
 {
-    const ZoneContent content = m_zone->GetPools()->GetContent();
-
-    printf("Zone '%s' (%s)\n", m_zone->m_name.c_str(), content.m_game_name.c_str());
+    const auto* pools = m_zone->GetPools();
+    printf("Zone '%s' (%s)\n", m_zone->m_name.c_str(), m_zone->m_game->GetName().c_str());
     puts("Content:");
 
-    for(const auto& asset : content.m_assets)
+    for(const auto& asset : *pools)
     {
-        printf("%s, %s\n", asset.m_asset_type_name.c_str(), asset.m_asset_name.c_str());
+        printf("%s, %s\n", pools->GetAssetTypeName(asset->m_type).c_str(), asset->m_name.c_str());
     }
 
     puts("");

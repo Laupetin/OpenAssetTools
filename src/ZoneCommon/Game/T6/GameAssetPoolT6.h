@@ -7,6 +7,10 @@
 class GameAssetPoolT6 final : public IZoneAssetPools
 {
     int m_priority;
+    std::vector<XAssetInfoGeneric*> m_assets_in_order;
+
+    static const std::string ASSET_TYPE_INVALID;
+    static const std::string ASSET_TYPE_NAMES[];
 
 public:
     AssetPool<T6::PhysPreset>* m_phys_preset;
@@ -65,7 +69,9 @@ public:
     void InitPoolDynamic(asset_type_t type) override;
 
     XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) override;
-    XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) override;
+    XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
+    const std::string& GetAssetTypeName(asset_type_t assetType) const override;
 
-    ZoneContent GetContent() const override;
+    iterator begin() const override;
+    iterator end() const override;
 };

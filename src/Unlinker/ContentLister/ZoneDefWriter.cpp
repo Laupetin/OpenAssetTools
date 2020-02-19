@@ -30,10 +30,10 @@ void AbstractZoneDefWriter::WriteEntry(const std::string& entryKey, const std::s
 
 void AbstractZoneDefWriter::WriteContent() const
 {
-    auto zoneContent = m_zone->GetPools()->GetContent();
+    const auto* pools = m_zone->GetPools();
 
-    for(const auto& asset : zoneContent.m_assets)
+    for(const auto& asset : *pools)
     {
-        WriteEntry(asset.m_asset_type_name, asset.m_asset_name);
+        WriteEntry(pools->GetAssetTypeName(asset->m_type), asset->m_name);
     }
 }

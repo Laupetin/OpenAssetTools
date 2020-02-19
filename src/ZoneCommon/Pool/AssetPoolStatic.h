@@ -29,9 +29,10 @@ class AssetPoolStatic final : public AssetPool<T>
     asset_type_t m_type;
 
 public:
-    AssetPoolStatic(const size_t capacity, const int priority, asset_type_t type)
+    AssetPoolStatic(const size_t capacity, const int priority, const asset_type_t type)
     {
         m_capacity = capacity;
+        m_type = type;
 
         if (m_capacity > 0)
         {
