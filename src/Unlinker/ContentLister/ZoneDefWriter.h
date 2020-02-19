@@ -14,7 +14,6 @@ protected:
     void WriteComment(const std::string& comment) const;
     void WriteMetaData(const std::string& metaDataKey, const std::string& metaDataValue) const;
     void WriteEntry(const std::string& entryKey, const std::string& entryValue) const;
-    void WriteContent() const;
 
     AbstractZoneDefWriter(Zone* zone, FileAPI::IFile* file);
 

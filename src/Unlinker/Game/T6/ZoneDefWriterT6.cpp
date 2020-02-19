@@ -5,6 +5,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <cassert>
 
 using namespace T6;
 
@@ -45,6 +46,35 @@ class ZoneDefWriterT6Impl final : public AbstractZoneDefWriter
         std::ostringstream str;
         str << "level.@" << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << kvp->keyHash;
         WriteMetaData(str.str(), kvp->value);
+    }
+
+    void WriteContent() const
+    {
+        const auto* pools = dynamic_cast<GameAssetPoolT6*>(m_zone->GetPools());
+
+        assert(pools);
+        if (!pools)
+            return;
+
+        // Localized strings are all collected in one string file. So only add this to the zone file.
+        if(!pools->m_localize->m_asset_lookup.empty())
+        {
+            WriteEntry(pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), m_zone->m_name);
+        }
+
+        for (const auto& asset : *pools)
+        {
+            switch (asset->m_type)
+            {
+            case ASSET_TYPE_LOCALIZE_ENTRY:
+            case ASSET_TYPE_KEYVALUEPAIRS: // KeyValuePairs should be included as zone file metadata and not as content
+                break;
+
+            default:
+                WriteEntry(pools->GetAssetTypeName(asset->m_type), asset->m_name);
+                break;
+            }
+        }
     }
 
 public:

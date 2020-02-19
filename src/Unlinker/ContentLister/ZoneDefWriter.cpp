@@ -27,13 +27,3 @@ void AbstractZoneDefWriter::WriteEntry(const std::string& entryKey, const std::s
 {
     m_file->Printf("%s,%s\n", entryKey.c_str(), entryValue.c_str());
 }
-
-void AbstractZoneDefWriter::WriteContent() const
-{
-    const auto* pools = m_zone->GetPools();
-
-    for(const auto& asset : *pools)
-    {
-        WriteEntry(pools->GetAssetTypeName(asset->m_type), asset->m_name);
-    }
-}
