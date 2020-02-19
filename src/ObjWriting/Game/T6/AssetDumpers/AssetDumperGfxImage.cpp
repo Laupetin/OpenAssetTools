@@ -1,5 +1,6 @@
 #include "AssetDumperGfxImage.h"
 #include "Image/IwiWriter27.h"
+#include "ObjWriting.h"
 
 using namespace T6;
 
@@ -15,6 +16,14 @@ std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, GfxImage* asset
 
 void AssetDumperGfxImage::DumpAsset(Zone* zone, GfxImage* asset, FileAPI::File* out)
 {
-    IwiWriter27 writer;
-    writer.DumpImage(out, asset->texture.texture);
+    switch(ObjWriting::Configuration.ImageOutputFormat)
+    {
+    case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
+        // TODO this is not yet supported
+        break;
+    case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
+        IwiWriter27 writer;
+        writer.DumpImage(out, asset->texture.texture);
+        break;
+    }
 }
