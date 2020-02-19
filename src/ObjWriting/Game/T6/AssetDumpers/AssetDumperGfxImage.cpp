@@ -1,8 +1,29 @@
 #include "AssetDumperGfxImage.h"
-#include "Image/IwiWriter27.h"
 #include "ObjWriting.h"
+#include "Image/IwiWriter27.h"
 
 using namespace T6;
+
+AssetDumperGfxImage::AssetDumperGfxImage()
+{
+    switch (ObjWriting::Configuration.ImageOutputFormat)
+    {
+    case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
+        break;
+    case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
+        m_writer = new IwiWriter27();
+        break;
+    default:
+        m_writer = nullptr;
+        break;
+    }
+}
+
+AssetDumperGfxImage::~AssetDumperGfxImage()
+{
+    delete m_writer;
+    m_writer = nullptr;
+}
 
 bool AssetDumperGfxImage::ShouldDump(GfxImage* asset)
 {
@@ -11,19 +32,10 @@ bool AssetDumperGfxImage::ShouldDump(GfxImage* asset)
 
 std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, GfxImage* asset)
 {
-    return "images/" + std::string(asset->name) + ".iwi";
+    return "images/" + std::string(asset->name) + m_writer->GetFileExtension();
 }
 
 void AssetDumperGfxImage::DumpAsset(Zone* zone, GfxImage* asset, FileAPI::File* out)
 {
-    switch(ObjWriting::Configuration.ImageOutputFormat)
-    {
-    case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
-        // TODO this is not yet supported
-        break;
-    case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
-        IwiWriter27 writer;
-        writer.DumpImage(out, asset->texture.texture);
-        break;
-    }
+    m_writer->DumpImage(out, asset->texture.texture);
 }
