@@ -50,7 +50,7 @@ void Texture::Allocate()
 
     for (int currentMipLevel = 0; currentMipLevel < mipLevelCount; currentMipLevel++)
     {
-        storageRequirement += GetSizeOfMipLevel(currentMipLevel);
+        storageRequirement += GetSizeOfMipLevel(currentMipLevel) * GetFaceCount();
     }
 
     if (storageRequirement > 0)
@@ -68,6 +68,11 @@ bool Texture::Empty() const
 bool Texture::HasMipMaps() const
 {
     return m_has_mip_maps;
+}
+
+uint8_t* Texture::GetBufferForMipLevel(const int mipLevel)
+{
+    return GetBufferForMipLevel(mipLevel, 0);
 }
 
 // ==============================================
@@ -106,6 +111,11 @@ Texture2D& Texture2D::operator=(Texture2D&& other) noexcept
     return *this;
 }
 
+Texture::Type Texture2D::GetType() const
+{
+    return Type::TYPE_2D;
+}
+
 unsigned Texture2D::GetWidth() const
 {
     return m_width;
@@ -114,6 +124,16 @@ unsigned Texture2D::GetWidth() const
 unsigned Texture2D::GetHeight() const
 {
     return m_height;
+}
+
+unsigned Texture2D::GetDepth() const
+{
+    return 1;
+}
+
+int Texture2D::GetFaceCount() const
+{
+    return 1;
 }
 
 size_t Texture2D::GetSizeOfMipLevel(const int mipLevel) const
@@ -136,13 +156,17 @@ int Texture2D::GetMipMapCount() const
     return mipMapCount;
 }
 
-uint8_t* Texture2D::GetBufferForMipLevel(const int mipLevel)
+uint8_t* Texture2D::GetBufferForMipLevel(const int mipLevel, const int face)
 {
     assert(mipLevel >= 0);
     assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
+    assert(face == 0);
     assert(m_data);
 
     if (mipLevel < 0 || mipLevel >= (m_has_mip_maps ? GetMipMapCount() : 1))
+        return nullptr;
+
+    if (face != 0)
         return nullptr;
 
     if (!m_data)
@@ -189,9 +213,40 @@ TextureCube& TextureCube::operator=(TextureCube&& other) noexcept
     return *this;
 }
 
-size_t TextureCube::GetSizeOfMipLevel(const int mipLevel) const
+Texture::Type TextureCube::GetType() const
 {
-    return m_format->GetSizeOfMipLevel(mipLevel, m_width, m_height, 1) * FACE_COUNT;
+    return Type::TYPE_CUBE;
+}
+
+int TextureCube::GetFaceCount() const
+{
+    return FACE_COUNT;
+}
+
+uint8_t* TextureCube::GetBufferForMipLevel(const int mipLevel, const int face)
+{
+    assert(mipLevel >= 0);
+    assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
+    assert(face >= 0);
+    assert(face < FACE_COUNT);
+    assert(m_data);
+
+    if (mipLevel < 0 || mipLevel >= (m_has_mip_maps ? GetMipMapCount() : 1))
+        return nullptr;
+
+    if (face < 0 || face >= FACE_COUNT)
+        return nullptr;
+
+    if (!m_data)
+        return nullptr;
+
+    size_t bufferOffset = 0;
+    for (int previousMipLevel = 0; previousMipLevel < mipLevel; previousMipLevel++)
+    {
+        bufferOffset += GetSizeOfMipLevel(previousMipLevel) * FACE_COUNT;
+    }
+
+    return &m_data[bufferOffset + GetSizeOfMipLevel(mipLevel) * face];
 }
 
 // ==============================================
@@ -235,6 +290,11 @@ Texture3D& Texture3D::operator=(Texture3D&& other) noexcept
     return *this;
 }
 
+Texture::Type Texture3D::GetType() const
+{
+    return Type::TYPE_3D;
+}
+
 unsigned Texture3D::GetWidth() const
 {
     return m_width;
@@ -248,6 +308,11 @@ unsigned Texture3D::GetHeight() const
 unsigned Texture3D::GetDepth() const
 {
     return m_depth;
+}
+
+int Texture3D::GetFaceCount() const
+{
+    return 1;
 }
 
 size_t Texture3D::GetSizeOfMipLevel(const int mipLevel) const
@@ -270,13 +335,17 @@ int Texture3D::GetMipMapCount() const
     return mipMapCount;
 }
 
-uint8_t* Texture3D::GetBufferForMipLevel(const int mipLevel)
+uint8_t* Texture3D::GetBufferForMipLevel(const int mipLevel, const int face)
 {
     assert(mipLevel >= 0);
     assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
+    assert(face == 0);
     assert(m_data);
 
     if (mipLevel < 0 || mipLevel >= (m_has_mip_maps ? GetMipMapCount() : 1))
+        return nullptr;
+
+    if (face != 0)
         return nullptr;
 
     if (!m_data)

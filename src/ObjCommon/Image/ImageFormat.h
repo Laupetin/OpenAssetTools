@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <dxgiformat.h>
 
 enum class ImageFormatId
@@ -42,6 +43,7 @@ public:
 
     virtual ImageFormatType GetType() const = 0;
     virtual size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const = 0;
+    virtual size_t GetPitch(unsigned width) const = 0;
 
     static const ImageFormatUnsigned FORMAT_R8_G8_B8;
     static const ImageFormatUnsigned FORMAT_R8_G8_B8_A8;
@@ -56,25 +58,39 @@ public:
 
 class ImageFormatUnsigned final : public ImageFormat
 {
-    unsigned m_bit_per_pixel;
-
 public:
-    ImageFormatUnsigned(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned bitPerPixel, unsigned rOffset,
+    unsigned m_bits_per_pixel;
+    unsigned m_r_offset;
+    unsigned m_r_size;
+    uint64_t m_r_mask;
+    unsigned m_g_offset;
+    unsigned m_g_size;
+    uint64_t m_g_mask;
+    unsigned m_b_offset;
+    unsigned m_b_size;
+    uint64_t m_b_mask;
+    unsigned m_a_offset;
+    unsigned m_a_size;
+    uint64_t m_a_mask;
+
+    ImageFormatUnsigned(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned bitsPerPixel, unsigned rOffset,
                         unsigned rSize, unsigned gOffset, unsigned gSize, unsigned bOffset, unsigned bSize,
                         unsigned aOffset, unsigned aSize);
 
     ImageFormatType GetType() const override;
     size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
+    size_t GetPitch(unsigned width) const override;
 };
 
 class ImageFormatBlockCompressed final : public ImageFormat
 {
+public:
     unsigned m_block_size;
     unsigned m_bits_per_block;
 
-public:
     ImageFormatBlockCompressed(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
 
     ImageFormatType GetType() const override;
     size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
+    size_t GetPitch(unsigned width) const override;
 };

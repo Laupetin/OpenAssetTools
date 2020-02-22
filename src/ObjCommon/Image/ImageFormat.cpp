@@ -18,12 +18,28 @@ DXGI_FORMAT ImageFormat::GetDxgiFormat() const
 }
 
 ImageFormatUnsigned::ImageFormatUnsigned(const ImageFormatId id, const DXGI_FORMAT dxgiFormat,
-                                         const unsigned bitPerPixel, const unsigned rOffset, const unsigned rSize,
+                                         const unsigned bitsPerPixel, const unsigned rOffset, const unsigned rSize,
                                          const unsigned gOffset, const unsigned gSize, const unsigned bOffset,
                                          const unsigned bSize, const unsigned aOffset, const unsigned aSize)
     : ImageFormat(id, dxgiFormat)
 {
-    m_bit_per_pixel = bitPerPixel;
+    m_bits_per_pixel = bitsPerPixel;
+
+    m_r_offset = rOffset;
+    m_r_size = rSize;
+    m_r_mask = (UINT64_MAX << rOffset) & ~(UINT64_MAX << (rOffset + rSize));
+
+    m_g_offset = gOffset;
+    m_g_size = gSize;
+    m_g_mask = (UINT64_MAX << gOffset) & ~(UINT64_MAX << (gOffset + gSize));
+
+    m_b_offset = bOffset;
+    m_b_size = bSize;
+    m_b_mask = (UINT64_MAX << bOffset) & ~(UINT64_MAX << (bOffset + bSize));
+
+    m_a_offset = aOffset;
+    m_a_size = aSize;
+    m_a_mask = (UINT64_MAX << aOffset) & ~(UINT64_MAX << (aOffset + aSize));
 }
 
 ImageFormatType ImageFormatUnsigned::GetType() const
@@ -45,7 +61,12 @@ size_t ImageFormatUnsigned::GetSizeOfMipLevel(const unsigned mipLevel, const uns
     if (mipDepth == 0)
         mipDepth = 1;
 
-    return mipWidth * mipHeight * mipDepth * m_bit_per_pixel / 8;
+    return mipWidth * mipHeight * mipDepth * m_bits_per_pixel / 8;
+}
+
+size_t ImageFormatUnsigned::GetPitch(const unsigned width) const
+{
+    return (width * m_bits_per_pixel + 7) / 8;
 }
 
 ImageFormatBlockCompressed::ImageFormatBlockCompressed(const ImageFormatId id, const DXGI_FORMAT dxgiFormat,
@@ -80,6 +101,11 @@ size_t ImageFormatBlockCompressed::GetSizeOfMipLevel(const unsigned mipLevel, co
         * mipDepth;
 
     return blockCount * m_bits_per_block / 8;
+}
+
+size_t ImageFormatBlockCompressed::GetPitch(const unsigned width) const
+{
+    return (width + m_block_size - 1) / m_block_size * (m_bits_per_block / 8);
 }
 
 const ImageFormatUnsigned ImageFormat::FORMAT_R8_G8_B8(ImageFormatId::R8_G8_B8, DXGI_FORMAT_UNKNOWN,

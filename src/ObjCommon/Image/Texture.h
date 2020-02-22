@@ -4,6 +4,14 @@
 
 class Texture
 {
+public:
+    enum class Type
+    {
+        TYPE_2D,
+        TYPE_CUBE,
+        TYPE_3D
+    };
+
 protected:
     const ImageFormat* m_format;
     bool m_has_mip_maps;
@@ -21,12 +29,19 @@ public:
     Texture& operator=(const Texture& other) = delete;
 
     const ImageFormat* GetFormat() const;
+    virtual Type GetType() const = 0;
+
+    virtual unsigned GetWidth() const = 0;
+    virtual unsigned GetHeight() const = 0;
+    virtual unsigned GetDepth() const = 0;
+    virtual int GetFaceCount() const = 0;
 
     void Allocate();
     bool Empty() const;
 
     virtual size_t GetSizeOfMipLevel(int mipLevel) const = 0;
-    virtual uint8_t* GetBufferForMipLevel(int mipLevel) = 0;
+    virtual uint8_t* GetBufferForMipLevel(int mipLevel, int face) = 0;
+    uint8_t* GetBufferForMipLevel(int mipLevel);
 
     bool HasMipMaps() const;
     virtual int GetMipMapCount() const = 0;
@@ -48,11 +63,15 @@ public:
     Texture2D& operator=(const Texture2D& other) = delete;
     Texture2D& operator=(Texture2D&& other) noexcept;
 
-    unsigned GetWidth() const;
-    unsigned GetHeight() const;
+    Type GetType() const override;
+
+    unsigned GetWidth() const override;
+    unsigned GetHeight() const override;
+    unsigned GetDepth() const override;
+    int GetFaceCount() const override;
 
     size_t GetSizeOfMipLevel(int mipLevel) const override;
-    uint8_t* GetBufferForMipLevel(int mipLevel) override;
+    uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
 
     int GetMipMapCount() const override;
 };
@@ -71,7 +90,11 @@ public:
     TextureCube& operator=(const TextureCube& other) = delete;
     TextureCube& operator=(TextureCube&& other) noexcept;
 
-    size_t GetSizeOfMipLevel(int mipLevel) const override;
+    Type GetType() const override;
+
+    int GetFaceCount() const override;
+
+    uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
 };
 
 class Texture3D final : public Texture
@@ -90,12 +113,15 @@ public:
     Texture3D& operator=(const Texture3D& other) = delete;
     Texture3D& operator=(Texture3D&& other) noexcept;
 
-    unsigned GetWidth() const;
-    unsigned GetHeight() const;
-    unsigned GetDepth() const;
+    Type GetType() const override;
+
+    unsigned GetWidth() const override;
+    unsigned GetHeight() const override;
+    unsigned GetDepth() const override;
+    int GetFaceCount() const override;
 
     size_t GetSizeOfMipLevel(int mipLevel) const override;
-    uint8_t* GetBufferForMipLevel(int mipLevel) override;
+    uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
 
     int GetMipMapCount() const override;
 };
