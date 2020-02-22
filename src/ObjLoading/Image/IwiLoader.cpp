@@ -85,7 +85,7 @@ Texture* IwiLoader::LoadIwi27(FileAPI::IFile* file)
 
     for (int currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
-        const size_t sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel);
+        const size_t sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
         if (currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip))
