@@ -1,4 +1,5 @@
 #include "ZoneDumperT6.h"
+
 #include "Game/T6/GameT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 
@@ -9,6 +10,7 @@
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
+#include "AssetDumpers/AssetDumperFontIcon.h"
 
 bool ZoneDumperT6::CanHandleZone(Zone* zone) const
 {
@@ -44,7 +46,7 @@ bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath) const
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world);
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def);
     // DUMP_ASSET_POOL(AssetDumperFont, m_font);
-    // DUMP_ASSET_POOL(AssetDumperFontIcon, m_font_icon);
+    DUMP_ASSET_POOL(AssetDumperFontIcon, m_font_icon);
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list);
     // DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def);
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize);
