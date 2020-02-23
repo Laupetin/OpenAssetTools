@@ -49,7 +49,12 @@ class AssetDumperFontIconInternal
         KnownAlias("BUTTON_CAC_NEXT"),
         KnownAlias("BUTTON_CAC_PREV"),
         KnownAlias("BUTTON_CANCEL"),
+        KnownAlias("BUTTON_CAROUSEL_STICK"),
         KnownAlias("BUTTON_CREATE"),
+        KnownAlias("BUTTON_CYCLE_LEFT"),
+        KnownAlias("BUTTON_CYCLE_LEFT_ACTIVE"),
+        KnownAlias("BUTTON_CYCLE_RIGHT"),
+        KnownAlias("BUTTON_CYCLE_RIGHT_ACTIVE"),
         KnownAlias("BUTTON_DELETE"),
         KnownAlias("BUTTON_EDIT"),
         KnownAlias("BUTTON_EMBLEM_BACKWARD"),
@@ -68,17 +73,36 @@ class AssetDumperFontIconInternal
         KnownAlias("BUTTON_FIRE"),
         KnownAlias("BUTTON_FRIENDSLIST"),
         KnownAlias("BUTTON_INTERACT"),
-        KnownAlias("BUTTON_LOOK"),
         KnownAlias("BUTTON_LOOKSTICK"),
+        KnownAlias("BUTTON_LOOK"),
         KnownAlias("BUTTON_LUI_ALT1"),
+        KnownAlias("BUTTON_LUI_ALT2"),
+        KnownAlias("BUTTON_LUI_DPAD_ALL"),
+        KnownAlias("BUTTON_LUI_DPAD_D"),
+        KnownAlias("BUTTON_LUI_DPAD_L"),
         KnownAlias("BUTTON_LUI_DPAD_RL"),
+        KnownAlias("BUTTON_LUI_DPAD_R"),
         KnownAlias("BUTTON_LUI_DPAD_UD"),
+        KnownAlias("BUTTON_LUI_DPAD_U"),
+        KnownAlias("BUTTON_LUI_LEFT_STICK_UP"),
+        KnownAlias("BUTTON_LUI_LEFT_TRIGGER"),
+        KnownAlias("BUTTON_LUI_PRIMARY"),
         KnownAlias("BUTTON_LUI_RIGHT_STICK"),
+        KnownAlias("BUTTON_LUI_RIGHT_TRIGGER"),
+        KnownAlias("BUTTON_LUI_SECONDARY"),
+        KnownAlias("BUTTON_LUI_SELECT"),
+        KnownAlias("BUTTON_LUI_SHOULDERL"),
         KnownAlias("BUTTON_LUI_SHOULDERR"),
+        KnownAlias("BUTTON_LUI_START"),
+        KnownAlias("BUTTON_MOUSE_CLICK"),
+        KnownAlias("BUTTON_MOUSE_CLICK_ACTIVE"),
+        KnownAlias("BUTTON_MOUSE_EDIT"),
+        KnownAlias("BUTTON_MOUSE_EDIT_ACTIVE"),
         KnownAlias("BUTTON_MOUSE_LEFT"),
+        KnownAlias("BUTTON_MOUSE_MIDDLE"),
         KnownAlias("BUTTON_MOUSE_RIGHT"),
-        KnownAlias("BUTTON_MOVE"),
         KnownAlias("BUTTON_MOVESTICK"),
+        KnownAlias("BUTTON_MOVE"),
         KnownAlias("BUTTON_MP_CANCELCOMMAND"),
         KnownAlias("BUTTON_MP_CHANGESETTINGS"),
         KnownAlias("BUTTON_MP_GAMERCARD"),
@@ -101,14 +125,18 @@ class AssetDumperFontIconInternal
         KnownAlias("BUTTON_MP_TOGGLEVIEW"),
         KnownAlias("BUTTON_NO"),
         KnownAlias("BUTTON_RECORD_VIEW_NEXT"),
+        KnownAlias("BUTTON_RECORD_VIEW_PREV"),
         KnownAlias("BUTTON_SELECTCHOICE"),
         KnownAlias("BUTTON_SP_TOGGLEMENU"),
         KnownAlias("BUTTON_YES"),
         KnownAlias("CP"),
+        KnownAlias("FONT_CAPITAL_I"),
+        KnownAlias("FONT_NUMBER_ZERO"),
         KnownAlias("KEY_DOWN_ARROW"),
         KnownAlias("KEY_LEFT_ARROW"),
         KnownAlias("KEY_RIGHT_ARROW"),
         KnownAlias("KEY_UP_ARROW"),
+        KnownAlias("MOUSE_WHEEL_DOWN"),
         KnownAlias("MOUSE_WHEEL_UP"),
         KnownAlias("Remote_LStick")
     };
@@ -140,10 +168,10 @@ class AssetDumperFontIconInternal
 
     static const KnownAlias* FindKnownAliasByHash(const int hash)
     {
-        for (unsigned i = 0; i < _countof(KNOWN_ALIASES); i++)
+        for (const auto& i : KNOWN_ALIASES)
         {
-            if (KNOWN_ALIASES[i].m_hash == hash)
-                return &KNOWN_ALIASES[i];
+            if (i.m_hash == hash)
+                return &i;
         }
 
         return nullptr;
