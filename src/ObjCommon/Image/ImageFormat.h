@@ -5,16 +5,20 @@
 
 enum class ImageFormatId
 {
-    UNKNOWN,
+    UNKNOWN = -1,
     R8_G8_B8,
+    B8_G8_R8_X8,
     R8_G8_B8_A8,
+    B8_G8_R8_A8,
     A8,
     R16_G16_B16_A16_FLOAT,
     BC1,
     BC2,
     BC3,
     BC4,
-    BC5
+    BC5,
+
+    MAX
 };
 
 enum class ImageFormatType
@@ -42,11 +46,13 @@ public:
     DXGI_FORMAT GetDxgiFormat() const;
 
     virtual ImageFormatType GetType() const = 0;
+    virtual size_t GetPitch(unsigned mipLevel, unsigned width) const = 0;
     virtual size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const = 0;
-    virtual size_t GetPitch(unsigned width) const = 0;
 
     static const ImageFormatUnsigned FORMAT_R8_G8_B8;
+    static const ImageFormatUnsigned FORMAT_B8_G8_R8_X8;
     static const ImageFormatUnsigned FORMAT_R8_G8_B8_A8;
+    static const ImageFormatUnsigned FORMAT_B8_G8_R8_A8;
     static const ImageFormatUnsigned FORMAT_A8;
     static const ImageFormatUnsigned FORMAT_R16_G16_B16_A16_FLOAT; //TODO: Float not unsigned
     static const ImageFormatBlockCompressed FORMAT_BC1;
@@ -54,6 +60,7 @@ public:
     static const ImageFormatBlockCompressed FORMAT_BC3;
     static const ImageFormatBlockCompressed FORMAT_BC4;
     static const ImageFormatBlockCompressed FORMAT_BC5;
+    static const ImageFormat* const ALL_FORMATS[static_cast<unsigned>(ImageFormatId::MAX)];
 };
 
 class ImageFormatUnsigned final : public ImageFormat
@@ -62,24 +69,25 @@ public:
     unsigned m_bits_per_pixel;
     unsigned m_r_offset;
     unsigned m_r_size;
-    uint64_t m_r_mask;
     unsigned m_g_offset;
     unsigned m_g_size;
-    uint64_t m_g_mask;
     unsigned m_b_offset;
     unsigned m_b_size;
-    uint64_t m_b_mask;
     unsigned m_a_offset;
     unsigned m_a_size;
-    uint64_t m_a_mask;
 
     ImageFormatUnsigned(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned bitsPerPixel, unsigned rOffset,
                         unsigned rSize, unsigned gOffset, unsigned gSize, unsigned bOffset, unsigned bSize,
                         unsigned aOffset, unsigned aSize);
 
     ImageFormatType GetType() const override;
+    size_t GetPitch(unsigned mipLevel, unsigned width) const override;
     size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
-    size_t GetPitch(unsigned width) const override;
+
+    bool HasR() const;
+    bool HasG() const;
+    bool HasB() const;
+    bool HasA() const;
 };
 
 class ImageFormatBlockCompressed final : public ImageFormat
@@ -91,6 +99,6 @@ public:
     ImageFormatBlockCompressed(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
 
     ImageFormatType GetType() const override;
+    size_t GetPitch(unsigned mipLevel, unsigned width) const override;
     size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
-    size_t GetPitch(unsigned width) const override;
 };

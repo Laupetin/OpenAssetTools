@@ -2,16 +2,15 @@
 #include "ImageFormat.h"
 #include <cstdint>
 
+enum class TextureType
+{
+    T_2D,
+    T_CUBE,
+    T_3D
+};
+
 class Texture
 {
-public:
-    enum class Type
-    {
-        TYPE_2D,
-        TYPE_CUBE,
-        TYPE_3D
-    };
-
 protected:
     const ImageFormat* m_format;
     bool m_has_mip_maps;
@@ -28,8 +27,8 @@ public:
 
     Texture& operator=(const Texture& other) = delete;
 
+    virtual TextureType GetTextureType() const = 0;
     const ImageFormat* GetFormat() const;
-    virtual Type GetType() const = 0;
 
     virtual unsigned GetWidth() const = 0;
     virtual unsigned GetHeight() const = 0;
@@ -63,7 +62,7 @@ public:
     Texture2D& operator=(const Texture2D& other) = delete;
     Texture2D& operator=(Texture2D&& other) noexcept;
 
-    Type GetType() const override;
+    TextureType GetTextureType() const override;
 
     unsigned GetWidth() const override;
     unsigned GetHeight() const override;
@@ -90,10 +89,11 @@ public:
     TextureCube& operator=(const TextureCube& other) = delete;
     TextureCube& operator=(TextureCube&& other) noexcept;
 
-    Type GetType() const override;
+    TextureType GetTextureType() const override;
 
     int GetFaceCount() const override;
 
+    size_t GetSizeOfMipLevel(int mipLevel) const override;
     uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
 };
 
@@ -113,7 +113,7 @@ public:
     Texture3D& operator=(const Texture3D& other) = delete;
     Texture3D& operator=(Texture3D&& other) noexcept;
 
-    Type GetType() const override;
+    TextureType GetTextureType() const override;
 
     unsigned GetWidth() const override;
     unsigned GetHeight() const override;

@@ -1,268 +1,228 @@
 #include "DdsWriter.h"
 
 #include <cassert>
+#include <map>
+#include <memory>
+
 
 #include "Image/DdsTypes.h"
+#include "Image/TextureConverter.h"
 
-using namespace dds;
+const std::map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE
+{
+    {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
+};
 
 class DdsWriterInternal
 {
-    static constexpr uint32_t DDS_MAGIC = MakeFourCc('D', 'D', 'S', ' ');
-    static constexpr uint32_t DDS_PF_DXT10_EXTENSION = MakeFourCc('D', 'X', '1', '0');
-    static constexpr uint32_t DDS_PF_BC1 = MakeFourCc('D', 'X', 'T', '1');
-    static constexpr uint32_t DDS_PF_BC2 = MakeFourCc('D', 'X', 'T', '3');
-    static constexpr uint32_t DDS_PF_BC3 = MakeFourCc('D', 'X', 'T', '5');
-
-public:
-    enum class ImageFormatSupportStatus
-    {
-        UNSUPPORTED,
-        SUPPORTED_WITH_SIMPLE_HEADER,
-        SUPPORTED_WITH_DXT10_HEADER
-    };
-
-private:
     FileAPI::IFile* m_file;
     Texture* m_texture;
-    ImageFormatSupportStatus m_support_status;
+    std::unique_ptr<Texture> m_converted_texture;
+    bool m_use_dx10_extension;
 
-    void PrepareHeader(DDS_HEADER* header) const
+    static constexpr unsigned Mask1(const unsigned length)
     {
-        header->dwSize = sizeof DDS_HEADER;
-        header->dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+        if (length >= sizeof(unsigned) * 8)
+            return UINT32_MAX;
+
+        return UINT32_MAX >> (sizeof(unsigned) * 8 - length);
+    }
+
+    void PopulatePixelFormatBlockCompressed(DDS_PIXELFORMAT& pf, const ImageFormatBlockCompressed* format)
+    {
+        pf.dwSize = sizeof(DDS_PIXELFORMAT);
+        pf.dwFlags = DDPF_FOURCC;
+        pf.dwRGBBitCount = 0;
+        pf.dwRBitMask = 0;
+        pf.dwGBitMask = 0;
+        pf.dwBBitMask = 0;
+        pf.dwABitMask = 0;
+
+        // Use standard pixel format for DXT1-5 for maximum compatibility and only otherwise use DX10 extension
+        switch (format->GetDxgiFormat())
+        {
+        case DXGI_FORMAT_BC1_UNORM:
+            pf.dwFourCC = MakeFourCc('D', 'X', 'T', '1');
+            break;
+        case DXGI_FORMAT_BC2_UNORM:
+            pf.dwFourCC = MakeFourCc('D', 'X', 'T', '3');
+            break;
+        case DXGI_FORMAT_BC3_UNORM:
+            pf.dwFourCC = MakeFourCc('D', 'X', 'T', '5');
+            break;
+        default:
+            m_use_dx10_extension = true;
+            pf.dwFourCC = MakeFourCc('D', 'X', '1', '0');
+            break;
+        }
+    }
+
+    static void PopulatePixelFormatUnsigned(DDS_PIXELFORMAT& pf, const ImageFormatUnsigned* format)
+    {
+        pf.dwSize = sizeof(DDS_PIXELFORMAT);
+        pf.dwFourCC = 0;
+        pf.dwRGBBitCount = format->m_bits_per_pixel;
+        pf.dwRBitMask = format->HasR() ? Mask1(format->m_r_size) << format->m_r_offset : 0;
+        pf.dwGBitMask = format->HasG() ? Mask1(format->m_g_size) << format->m_g_offset : 0;
+        pf.dwBBitMask = format->HasB() ? Mask1(format->m_b_size) << format->m_b_offset : 0;
+        pf.dwABitMask = format->HasA() ? Mask1(format->m_a_size) << format->m_a_offset : 0;
+
+        pf.dwFlags = 0;
+        if (format->HasA())
+            pf.dwFlags |= DDPF_ALPHAPIXELS;
+
+        if (format->HasR() && !format->HasG() && !format->HasB())
+            pf.dwFlags |= DDPF_LUMINANCE;
+        else
+            pf.dwFlags |= DDPF_RGB;
+    }
+
+    void PopulatePixelFormat(DDS_PIXELFORMAT& pf)
+    {
+        const auto* format = m_texture->GetFormat();
+
+        switch (format->GetType())
+        {
+        case ImageFormatType::BLOCK_COMPRESSED:
+            PopulatePixelFormatBlockCompressed(pf, dynamic_cast<const ImageFormatBlockCompressed*>(format));
+            break;
+        case ImageFormatType::UNSIGNED:
+            PopulatePixelFormatUnsigned(pf, dynamic_cast<const ImageFormatUnsigned*>(format));
+            break;
+        default:
+            assert(false);
+            break;
+        }
+    }
+
+    void PopulateDdsHeader(DDS_HEADER& header)
+    {
+        header.dwSize = sizeof header;
+        header.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
 
         if (m_texture->HasMipMaps())
-            header->dwFlags |= DDSD_MIPMAPCOUNT;
+            header.dwFlags |= DDSD_MIPMAPCOUNT;
 
         if (m_texture->GetFormat()->GetType() == ImageFormatType::BLOCK_COMPRESSED)
-            header->dwFlags |= DDSD_LINEARSIZE;
+            header.dwFlags |= DDSD_LINEARSIZE;
         else
-            header->dwFlags |= DDSD_PITCH;
+            header.dwFlags |= DDSD_PITCH;
 
-        if (m_texture->GetType() == Texture::Type::TYPE_3D)
-            header->dwFlags |= DDSD_DEPTH;
+        if (m_texture->GetDepth() > 1)
+            header.dwFlags |= DDSD_DEPTH;
 
-        header->dwWidth = m_texture->GetWidth();
-        header->dwHeight = m_texture->GetHeight();
-        header->dwDepth = m_texture->GetDepth();
-        header->dwPitchOrLinearSize = m_texture->GetFormat()->GetPitch(m_texture->GetWidth());
-        header->dwMipMapCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
+        header.dwHeight = m_texture->GetHeight();
+        header.dwWidth = m_texture->GetWidth();
+        header.dwDepth = m_texture->GetDepth();
+        header.dwPitchOrLinearSize = m_texture->GetFormat()->GetPitch(0, m_texture->GetWidth());
+        header.dwMipMapCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
 
-        memset(header->dwReserved1, 0, sizeof DDS_HEADER::dwReserved1);
+        PopulatePixelFormat(header.ddspf);
 
-        header->dwCaps = DDSCAPS_TEXTURE;
+        header.dwCaps = DDSCAPS_TEXTURE;
+
         if (m_texture->HasMipMaps())
-            header->dwCaps |= DDSCAPS_MIPMAP;
-        if (m_texture->GetType() == Texture::Type::TYPE_CUBE || m_texture->HasMipMaps())
-            header->dwCaps |= DDSCAPS_COMPLEX;
+            header.dwCaps |= DDSCAPS_COMPLEX | DDSCAPS_MIPMAP;
 
-        header->dwCaps2 = 0;
-        if (m_texture->GetType() == Texture::Type::TYPE_CUBE)
+        if (m_texture->GetTextureType() == TextureType::T_CUBE)
+            header.dwCaps |= DDSCAPS_COMPLEX;
+
+        header.dwCaps2 = 0;
+
+        if (m_texture->GetTextureType() == TextureType::T_CUBE)
         {
-            header->dwCaps2 |=
+            header.dwCaps2 |=
                 DDSCAPS2_CUBEMAP
                 | DDSCAPS2_CUBEMAP_POSITIVEX | DDSCAPS2_CUBEMAP_NEGATIVEX
                 | DDSCAPS2_CUBEMAP_POSITIVEY | DDSCAPS2_CUBEMAP_NEGATIVEY
                 | DDSCAPS2_CUBEMAP_POSITIVEZ | DDSCAPS2_CUBEMAP_NEGATIVEZ;
         }
-        else if (m_texture->GetType() == Texture::Type::TYPE_3D)
-        {
-            header->dwCaps2 |= DDSCAPS2_VOLUME;
-        }
 
-        header->dwCaps3 = 0;
-        header->dwCaps4 = 0;
-        header->dwReserved2 = 0;
+        header.dwCaps3 = 0;
+        header.dwCaps4 = 0;
+        header.dwReserved2 = 0;
     }
 
-    void SetPixelFormat(DDS_PIXELFORMAT* pixelFormat) const
+    void PopulateDxt10Header(DDS_HEADER_DXT10& header) const
     {
-        pixelFormat->dwSize = sizeof DDS_PIXELFORMAT;
-        pixelFormat->dwFlags = 0;
+        header.dxgiFormat = m_texture->GetFormat()->GetDxgiFormat();
+        header.miscFlag = 0;
+        header.miscFlags2 = 0;
 
-        const auto* imageFormat = m_texture->GetFormat();
-        switch (imageFormat->GetType())
+        switch (m_texture->GetTextureType())
         {
-        case ImageFormatType::UNSIGNED:
-            {
-                const auto* imageFormatUnsigned = dynamic_cast<const ImageFormatUnsigned*>(imageFormat);
-
-                if (imageFormatUnsigned->m_r_size == 0
-                    && imageFormatUnsigned->m_g_size == 0
-                    && imageFormatUnsigned->m_b_size == 0
-                    && imageFormatUnsigned->m_a_size > 0)
-                {
-                    pixelFormat->dwFlags |= DDPF_ALPHA;
-                }
-                else
-                {
-                    if (imageFormatUnsigned->m_r_size > 0
-                        && imageFormatUnsigned->m_g_size == 0
-                        && imageFormatUnsigned->m_b_size == 0)
-                    {
-                        pixelFormat->dwFlags |= DDPF_LUMINANCE;
-                    }
-                    else if (imageFormatUnsigned->m_r_size > 0
-                        || imageFormatUnsigned->m_g_size > 0
-                        || imageFormatUnsigned->m_b_size > 0)
-                    {
-                        pixelFormat->dwFlags |= DDPF_RGB;
-                    }
-
-                    if (imageFormatUnsigned->m_a_size > 0)
-                    {
-                        pixelFormat->dwFlags |= DDPF_ALPHAPIXELS;
-                    }
-                }
-
-                pixelFormat->dwRGBBitCount = imageFormatUnsigned->m_bits_per_pixel;
-                pixelFormat->dwRBitMask = static_cast<uint32_t>(imageFormatUnsigned->m_r_mask);
-                pixelFormat->dwGBitMask = static_cast<uint32_t>(imageFormatUnsigned->m_g_mask);
-                pixelFormat->dwBBitMask = static_cast<uint32_t>(imageFormatUnsigned->m_b_mask);
-                pixelFormat->dwABitMask = static_cast<uint32_t>(imageFormatUnsigned->m_a_mask);
-            }
+        case TextureType::T_2D:
+            header.resourceDimension = D3D10_RESOURCE_DIMENSION_TEXTURE2D;
+            header.arraySize = 1;
             break;
-        case ImageFormatType::BLOCK_COMPRESSED:
-            {
-                pixelFormat->dwFlags |= DDPF_FOURCC;
-                pixelFormat->dwRGBBitCount = 0;
-                pixelFormat->dwRBitMask = 0;
-                pixelFormat->dwGBitMask = 0;
-                pixelFormat->dwBBitMask = 0;
-                pixelFormat->dwABitMask = 0;
-
-                switch (imageFormat->GetId())
-                {
-                case ImageFormatId::BC1:
-                    pixelFormat->dwFourCC = DDS_PF_BC1;
-                    break;
-                case ImageFormatId::BC2:
-                    pixelFormat->dwFourCC = DDS_PF_BC2;
-                    break;
-                case ImageFormatId::BC3:
-                    pixelFormat->dwFourCC = DDS_PF_BC3;
-                    break;
-                default:
-                    assert(false);
-                    break;
-                }
-            }
+        case TextureType::T_CUBE:
+            header.resourceDimension = D3D10_RESOURCE_DIMENSION_TEXTURE2D;
+            header.arraySize = 6;
+            header.miscFlag |= DDS_RESOURCE_MISC_TEXTURECUBE;
             break;
-        default:
+        case TextureType::T_3D:
+            header.resourceDimension = D3D10_RESOURCE_DIMENSION_TEXTURE3D;
+            header.arraySize = 1;
             break;
         }
     }
 
-    static void MarkHeaderAsExtendedByHeaderDxt10(DDS_PIXELFORMAT* pixelFormat)
+    void ConvertTextureIfNecessary()
     {
-        pixelFormat->dwSize = sizeof DDS_PIXELFORMAT;
-        pixelFormat->dwFlags = DDPF_FOURCC;
-        pixelFormat->dwFourCC = DDS_PF_DXT10_EXTENSION;
-        pixelFormat->dwRGBBitCount = 0;
-        pixelFormat->dwRBitMask = 0;
-        pixelFormat->dwGBitMask = 0;
-        pixelFormat->dwBBitMask = 0;
-        pixelFormat->dwABitMask = 0;
-    }
+        auto entry = DDS_CONVERSION_TABLE.find(m_texture->GetFormat()->GetId());
 
-    void PrepareHeaderDxt10(DDS_HEADER_DXT10* header)
-    {
-        header->dxgiFormat = m_texture->GetFormat()->GetDxgiFormat();
-
-        switch (m_texture->GetType())
+        if(entry != DDS_CONVERSION_TABLE.end())
         {
-        case Texture::Type::TYPE_2D:
-        case Texture::Type::TYPE_CUBE:
-            header->resourceDimension = DDS_DIMENSION_TEXTURE2D;
-            break;
-        case Texture::Type::TYPE_3D:
-            header->resourceDimension = DDS_DIMENSION_TEXTURE3D;
-            break;
+            TextureConverter converter(m_texture, ImageFormat::ALL_FORMATS[static_cast<unsigned>(entry->second)]);
+            m_converted_texture = std::unique_ptr<Texture>(converter.Convert());
+            m_texture = m_converted_texture.get();
         }
-
-        header->miscFlag = 0;
-        if (m_texture->GetType() == Texture::Type::TYPE_CUBE)
-            header->miscFlag |= DDS_RESOURCE_MISC_TEXTURECUBE;
-
-        header->arraySize = m_texture->GetFaceCount();
-        header->miscFlags2 = 0;
     }
 
 public:
-    static ImageFormatSupportStatus GetSupportStatusForImageFormat(const ImageFormat* format)
+    static bool SupportsImageFormat(const ImageFormat* imageFormat)
     {
-        assert(format != nullptr);
+        return true;
+    }
 
-        if (auto* imageFormatUnsigned = dynamic_cast<const ImageFormatUnsigned*>(format))
-        {
-            if (imageFormatUnsigned->m_bits_per_pixel <= sizeof uint32_t * 8)
-                return ImageFormatSupportStatus::SUPPORTED_WITH_SIMPLE_HEADER;
-        }
-        else
-        {
-            switch (format->GetId())
-            {
-            case ImageFormatId::BC1:
-            case ImageFormatId::BC2:
-            case ImageFormatId::BC3:
-                return ImageFormatSupportStatus::SUPPORTED_WITH_SIMPLE_HEADER;
-            default:
-                break;
-            }
-        }
-
-        return format->GetDxgiFormat() != DXGI_FORMAT_UNKNOWN
-                   ? ImageFormatSupportStatus::SUPPORTED_WITH_DXT10_HEADER
-                   : ImageFormatSupportStatus::UNSUPPORTED;
+    static std::string GetFileExtension()
+    {
+        return ".dds";
     }
 
     DdsWriterInternal(FileAPI::IFile* file, Texture* texture)
+        : m_file(file),
+          m_texture(texture),
+          m_use_dx10_extension(false)
     {
-        m_file = file;
-        m_texture = texture;
-        m_support_status = GetSupportStatusForImageFormat(texture->GetFormat());
     }
 
-    bool DumpImage()
+    void DumpImage()
     {
-        if (m_file->Write(&DDS_MAGIC, sizeof uint32_t, 1) != 1)
-            return false;
+        ConvertTextureIfNecessary();
 
-        DDS_HEADER ddsHeader{};
-        PrepareHeader(&ddsHeader);
-        if (m_support_status == ImageFormatSupportStatus::SUPPORTED_WITH_SIMPLE_HEADER)
+        DDS_HEADER header{};
+        PopulateDdsHeader(header);
+
+        constexpr uint32_t magic = MakeFourCc('D', 'D', 'S', ' ');
+
+        m_file->Write(&magic, sizeof magic, 1);
+        m_file->Write(&header, sizeof header, 1);
+
+        if (m_use_dx10_extension)
         {
-            SetPixelFormat(&ddsHeader.ddspf);
-
-            if (m_file->Write(&ddsHeader, sizeof DDS_HEADER, 1) != 1)
-                return false;
-        }
-        else if (m_support_status == ImageFormatSupportStatus::SUPPORTED_WITH_DXT10_HEADER)
-        {
-            DDS_HEADER_DXT10 ddsHeaderDxt10{};
-
-            MarkHeaderAsExtendedByHeaderDxt10(&ddsHeader.ddspf);
-            PrepareHeaderDxt10(&ddsHeaderDxt10);
-
-            if (m_file->Write(&ddsHeader, sizeof DDS_HEADER, 1) != 1
-                || m_file->Write(&ddsHeaderDxt10, sizeof DDS_HEADER_DXT10, 1) != 1)
-                return false;
+            DDS_HEADER_DXT10 dxt10{};
+            PopulateDxt10Header(dxt10);
+            m_file->Write(&dxt10, sizeof dxt10, 1);
         }
 
         const int mipCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
-        for (int face = 0; face < m_texture->GetFaceCount(); face++)
+        for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
-            for (int mipLevel = 0; mipLevel < mipCount; mipLevel++)
-            {
-                const size_t sizeOfMipLevel = m_texture->GetSizeOfMipLevel(mipLevel);
-
-                if (m_file->Write(m_texture->GetBufferForMipLevel(mipLevel, face), 1, sizeOfMipLevel) != sizeOfMipLevel)
-                    return false;
-            }
+            const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel);
+            const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel);
+            m_file->Write(buffer, 1, mipLevelSize);
         }
-
-        return true;
     }
 };
 
@@ -271,17 +231,16 @@ DdsWriter::~DdsWriter()
 
 bool DdsWriter::SupportsImageFormat(const ImageFormat* imageFormat)
 {
-    return DdsWriterInternal::GetSupportStatusForImageFormat(imageFormat)
-        != DdsWriterInternal::ImageFormatSupportStatus::UNSUPPORTED;
+    return DdsWriterInternal::SupportsImageFormat(imageFormat);
 }
 
 std::string DdsWriter::GetFileExtension()
 {
-    return ".dds";
+    return DdsWriterInternal::GetFileExtension();
 }
 
 void DdsWriter::DumpImage(FileAPI::IFile* file, Texture* texture)
 {
-    DdsWriterInternal writer(file, texture);
-    writer.DumpImage();
+    DdsWriterInternal internal(file, texture);
+    internal.DumpImage();
 }

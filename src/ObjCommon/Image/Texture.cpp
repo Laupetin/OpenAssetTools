@@ -111,9 +111,9 @@ Texture2D& Texture2D::operator=(Texture2D&& other) noexcept
     return *this;
 }
 
-Texture::Type Texture2D::GetType() const
+TextureType Texture2D::GetTextureType() const
 {
-    return Type::TYPE_2D;
+    return TextureType::T_2D;
 }
 
 unsigned Texture2D::GetWidth() const
@@ -213,12 +213,17 @@ TextureCube& TextureCube::operator=(TextureCube&& other) noexcept
     return *this;
 }
 
-Texture::Type TextureCube::GetType() const
+TextureType TextureCube::GetTextureType() const
 {
-    return Type::TYPE_CUBE;
+    return TextureType::T_CUBE;
 }
 
 int TextureCube::GetFaceCount() const
+{
+    return 6;
+}
+
+size_t TextureCube::GetSizeOfMipLevel(const int mipLevel) const
 {
     return FACE_COUNT;
 }
@@ -290,9 +295,9 @@ Texture3D& Texture3D::operator=(Texture3D&& other) noexcept
     return *this;
 }
 
-Texture::Type Texture3D::GetType() const
+TextureType Texture3D::GetTextureType() const
 {
-    return Type::TYPE_3D;
+    return TextureType::T_3D;
 }
 
 unsigned Texture3D::GetWidth() const

@@ -163,11 +163,13 @@ group ""
 -- ========================
 -- Tests
 -- ========================
+include "test/ObjCommonTests.lua"
 include "test/ZoneCodeGeneratorTests.lua"
 include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
+    ObjCommonTests:project()
     ZoneCodeGeneratorTests:project()
     ZoneCommonTests:project()
 group ""
