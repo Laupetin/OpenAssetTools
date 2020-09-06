@@ -150,7 +150,7 @@ size_t ChunkProcessorSalsa20::Process(const int streamNumber, const uint8_t* inp
     return m_impl->Process(streamNumber, input, inputLength, output, outputBufferSize);
 }
 
-void ChunkProcessorSalsa20::GetSignatureData(const uint8_t** pSignatureData, size_t* pSize)
+void ChunkProcessorSalsa20::GetCapturedData(const uint8_t** pCapturedData, size_t* pSize)
 {
-    m_impl->GetSignatureData(pSignatureData, pSize);
+    m_impl->GetSignatureData(pCapturedData, pSize);
 }

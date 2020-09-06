@@ -1,9 +1,12 @@
 #include "ZoneLoading.h"
+
 #include "Utils/PathUtils.h"
+#include "Game/IW4/ZoneLoaderFactoryIW4.h"
 #include "Game/T6/ZoneLoaderFactoryT6.h"
 
 IZoneLoaderFactory* zoneLoaderFactories[]
 {
+    new ZoneLoaderFactoryIW4(),
     new ZoneLoaderFactoryT6()
 };
 

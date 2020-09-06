@@ -31,5 +31,7 @@ public:
     void AddLoadingStep(ILoadingStep* step);
     void AddStreamProcessor(StreamProcessor* streamProcessor);
 
+    void RemoveStreamProcessor(StreamProcessor* streamProcessor);
+
     Zone* LoadZone(FileAPI::File* file);
 };

@@ -203,9 +203,9 @@ class ZoneLoaderFactoryT6::ZoneLoaderFactoryT6Impl
         return signatureLoadStep;
     }
 
-    static ISignatureDataProvider* AddXChunkProcessor(bool isEncrypted, ZoneLoader* zoneLoader, std::string& fileName)
+    static ICapturedDataProvider* AddXChunkProcessor(bool isEncrypted, ZoneLoader* zoneLoader, std::string& fileName)
     {
-        ISignatureDataProvider* result = nullptr;
+        ICapturedDataProvider* result = nullptr;
         auto* xChunkProcessor = new ProcessorXChunks(STREAM_COUNT, XCHUNK_SIZE, VANILLA_BUFFER_SIZE);
 
         if(isEncrypted)
@@ -251,7 +251,7 @@ public:
         ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, zoneLoader, fileName);
 
         // Setup loading XChunks from the zone from this point on.
-        ISignatureDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, zoneLoader, fileName);
+        ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, zoneLoader, fileName);
 
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(new StepSkipBytes(8)); // Skip size and externalSize fields since they are not interesting for us

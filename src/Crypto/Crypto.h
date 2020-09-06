@@ -13,6 +13,7 @@ public:
     };
 
     static IHashFunction* CreateSHA1();
+    static IHashFunction* CreateSHA256();
 
     static IStreamCipher* CreateSalsa20(const uint8_t* keyBytes, size_t keySize);
 

@@ -1,4 +1,7 @@
 #include "StepVerifyFileName.h"
+
+#include <sstream>
+
 #include "Loading/Exception/InvalidFileNameException.h"
 
 StepVerifyFileName::StepVerifyFileName(std::string fileName, const size_t fileNameBufferSize)
@@ -12,7 +15,7 @@ StepVerifyFileName::StepVerifyFileName(std::string fileName, const size_t fileNa
 
 void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
-    std::string originalFileName;
+    std::stringstream originalFilenameStream;
     unsigned bufferOffset = 0;
     char c;
 
@@ -27,7 +30,7 @@ void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* str
             break;
         }
 
-        originalFileName += c;
+        originalFilenameStream << c;
     }
 
     // Skip the rest of the buffer which should be null bytes
@@ -36,6 +39,8 @@ void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* str
         stream->Load(&c, sizeof(char));
         bufferOffset++;
     }
+
+    std::string originalFileName = originalFilenameStream.str();
 
     if(originalFileName != m_file_name)
         throw InvalidFileNameException(m_file_name, originalFileName);

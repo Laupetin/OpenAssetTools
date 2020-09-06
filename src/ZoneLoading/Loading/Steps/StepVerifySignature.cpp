@@ -2,7 +2,7 @@
 #include "Loading/Exception/InvalidSignatureException.h"
 #include <cassert>
 
-StepVerifySignature::StepVerifySignature(IPublicKeyAlgorithm* signatureAlgorithm, ISignatureProvider* signatureProvider, ISignatureDataProvider* signatureDataProvider)
+StepVerifySignature::StepVerifySignature(IPublicKeyAlgorithm* signatureAlgorithm, ISignatureProvider* signatureProvider, ICapturedDataProvider* signatureDataProvider)
 {
     m_algorithm = signatureAlgorithm;
     m_signature_provider = signatureProvider;
@@ -27,7 +27,7 @@ void StepVerifySignature::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* st
 
     const uint8_t* signatureData;
     size_t signatureDataSize;
-    m_signature_data_provider->GetSignatureData(&signatureData, &signatureDataSize);
+    m_signature_data_provider->GetCapturedData(&signatureData, &signatureDataSize);
 
     if(!m_algorithm->Verify(signatureData, signatureDataSize, signature, signatureSize))
     {

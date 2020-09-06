@@ -63,6 +63,17 @@ void ZoneLoader::AddStreamProcessor(StreamProcessor* streamProcessor)
     m_processor_chain_dirty = true;
 }
 
+void ZoneLoader::RemoveStreamProcessor(StreamProcessor* streamProcessor)
+{
+    const auto foundEntry = std::find(m_processors.begin(), m_processors.end(), streamProcessor);
+
+    if(foundEntry != m_processors.end())
+    {
+        m_processors.erase(foundEntry);
+        m_processor_chain_dirty = true;
+    }
+}
+
 Zone* ZoneLoader::LoadZone(FileAPI::File* file)
 {
     LoadingFileStream fileStream(file);
