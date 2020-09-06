@@ -57,6 +57,7 @@ public:
             if (m_stream.avail_in == 0)
             {
                 m_stream.avail_in = m_base->m_base_stream->Load(m_buffer.get(), m_buffer_size);
+                m_stream.next_in = m_buffer.get();
 
                 if (m_stream.avail_in == 0) // EOF
                     return length - m_stream.avail_out;
