@@ -16,7 +16,9 @@
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Game/IW4/GameIW4.h"
 #include "Game/GameLanguage.h"
+#include "Loading/Processor/ProcessorAuthedBlocks.h"
 #include "Loading/Processor/ProcessorCaptureData.h"
+#include "Loading/Processor/ProcessorInflate.h"
 #include "Loading/Steps/StepLoadHash.h"
 #include "Loading/Steps/StepRemoveProcessor.h"
 #include "Loading/Steps/StepVerifyHash.h"
@@ -25,13 +27,7 @@ const std::string ZoneLoaderFactoryIW4::MAGIC_SIGNED_INFINITY_WARD = "IWff0100";
 const std::string ZoneLoaderFactoryIW4::MAGIC_UNSIGNED = "IWffu100";
 const int ZoneLoaderFactoryIW4::VERSION = 276;
 
-const int ZoneLoaderFactoryIW4::STREAM_COUNT = 4;
-const int ZoneLoaderFactoryIW4::VANILLA_BUFFER_SIZE = 0x80000;
-const int ZoneLoaderFactoryIW4::OFFSET_BLOCK_BIT_COUNT = 4;
-const block_t ZoneLoaderFactoryIW4::INSERT_BLOCK = IW4::XFILE_BLOCK_VIRTUAL;
-
 const std::string ZoneLoaderFactoryIW4::MAGIC_AUTH_HEADER = "IWffs100";
-
 const uint8_t ZoneLoaderFactoryIW4::RSA_PUBLIC_KEY_INFINITY_WARD[]
 {
     0x30, 0x82, 0x01, 0x0A, 0x02, 0x82, 0x01, 0x01,
@@ -69,6 +65,12 @@ const uint8_t ZoneLoaderFactoryIW4::RSA_PUBLIC_KEY_INFINITY_WARD[]
     0x7D, 0x9D, 0x40, 0x26, 0x44, 0x4B, 0x3B, 0x0A,
     0x89, 0x02, 0x03, 0x01, 0x00, 0x01
 };
+
+const size_t ZoneLoaderFactoryIW4::AUTHED_CHUNK_SIZE = 0x2000;
+const size_t ZoneLoaderFactoryIW4::AUTHED_CHUNK_COUNT_PER_GROUP = 256;
+
+const int ZoneLoaderFactoryIW4::OFFSET_BLOCK_BIT_COUNT = 4;
+const block_t ZoneLoaderFactoryIW4::INSERT_BLOCK = IW4::XFILE_BLOCK_VIRTUAL;
 
 class ZoneLoaderFactoryIW4::Impl
 {
@@ -146,15 +148,15 @@ class ZoneLoaderFactoryIW4::Impl
         }
     }
 
-    static IHashProvider* AddAuthHeaderSteps(const bool isSecure, const bool isOfficial, ZoneLoader* zoneLoader, std::string& fileName)
+    static void AddAuthHeaderSteps(const bool isSecure, const bool isOfficial, ZoneLoader* zoneLoader,
+                                   std::string& fileName)
     {
         // Unsigned zones do not have an auth header
         if (!isSecure)
-            return nullptr;
+            return;
 
         // If file is signed setup a RSA instance.
         IPublicKeyAlgorithm* rsa = SetupRSA(isOfficial);
-        auto sha256 = std::unique_ptr<IHashFunction>(Crypto::CreateSHA256());
 
         zoneLoader->AddLoadingStep(new StepVerifyMagic(MAGIC_AUTH_HEADER.c_str()));
         zoneLoader->AddLoadingStep(new StepSkipBytes(4)); // Skip reserved
@@ -172,13 +174,21 @@ class ZoneLoaderFactoryIW4::Impl
 
         zoneLoader->AddLoadingStep(new StepVerifyFileName(fileName, sizeof IW4::DB_AuthSubHeader::fastfileName));
         zoneLoader->AddLoadingStep(new StepSkipBytes(4)); // Skip reserved
-        auto* masterBlockHashes = new StepLoadHash(sizeof IW4::DB_AuthHash::bytes, _countof(IW4::DB_AuthSubHeader::masterBlockHashes));
+        auto* masterBlockHashes = new StepLoadHash(sizeof IW4::DB_AuthHash::bytes,
+                                                   _countof(IW4::DB_AuthSubHeader::masterBlockHashes));
         zoneLoader->AddLoadingStep(masterBlockHashes);
 
         zoneLoader->AddLoadingStep(new StepRemoveProcessor(subHeaderCapture));
-        zoneLoader->AddLoadingStep(new StepVerifyHash(std::move(sha256), 0, subheaderHash, subHeaderCapture));
+        zoneLoader->AddLoadingStep(new StepVerifyHash(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0,
+                                                      subheaderHash, subHeaderCapture));
 
-        return masterBlockHashes;
+        // Skip the rest of the first chunk
+        zoneLoader->AddLoadingStep(new StepSkipBytes(AUTHED_CHUNK_SIZE - sizeof(IW4::DB_AuthHeader)));
+
+        zoneLoader->AddLoadingStep(new StepAddProcessor(new ProcessorAuthedBlocks(
+            AUTHED_CHUNK_COUNT_PER_GROUP, AUTHED_CHUNK_SIZE, _countof(IW4::DB_AuthSubHeader::masterBlockHashes),
+            std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()),
+            masterBlockHashes)));
     }
 
 public:
@@ -207,7 +217,9 @@ public:
         zoneLoader->AddLoadingStep(new StepSkipBytes(8));
 
         // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
-        IHashProvider* masterBlockHashProvider = AddAuthHeaderSteps(isSecure, isOfficial, zoneLoader, fileName);
+        AddAuthHeaderSteps(isSecure, isOfficial, zoneLoader, fileName);
+
+        zoneLoader->AddLoadingStep(new StepAddProcessor(new ProcessorInflate(AUTHED_CHUNK_SIZE)));
 
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(new StepSkipBytes(8));
@@ -217,11 +229,6 @@ public:
         // Start of the zone content
         zoneLoader->AddLoadingStep(
             new StepLoadZoneContent(new ContentLoaderIW4(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
-
-        /*if (isSecure)
-        {
-            zoneLoader->AddLoadingStep(new StepVerifySignature(rsa, signatureProvider, signatureDataProvider));
-        }*/
 
         // Return the fully setup zoneloader
         return zoneLoader;

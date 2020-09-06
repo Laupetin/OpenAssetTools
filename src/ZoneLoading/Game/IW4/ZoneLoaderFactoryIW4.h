@@ -9,13 +9,14 @@ class ZoneLoaderFactoryIW4 final : public IZoneLoaderFactory
     static const std::string MAGIC_UNSIGNED;
     static const int VERSION;
 
-    static const int STREAM_COUNT;
-    static const int VANILLA_BUFFER_SIZE;
-    static const int OFFSET_BLOCK_BIT_COUNT;
-    static const block_t INSERT_BLOCK;
-
     static const std::string MAGIC_AUTH_HEADER;
     static const uint8_t RSA_PUBLIC_KEY_INFINITY_WARD[];
+
+    static const size_t AUTHED_CHUNK_SIZE;
+    static const unsigned AUTHED_CHUNK_COUNT_PER_GROUP;
+
+    static const int OFFSET_BLOCK_BIT_COUNT;
+    static const block_t INSERT_BLOCK;
 
     class Impl;
 
