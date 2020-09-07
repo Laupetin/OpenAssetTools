@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Pool/IZoneAssetPools.h"
 #include "Pool/AssetPool.h"
 #include "IW4.h"
@@ -13,57 +15,46 @@ class GameAssetPoolIW4 final : public IZoneAssetPools
     static const std::string ASSET_TYPE_NAMES[];
 
 public:
-    /*AssetPool<T6::PhysPreset>* m_phys_preset;
-    AssetPool<T6::PhysConstraints>* m_phys_constraints;
-    AssetPool<T6::DestructibleDef>* m_destructible_def;
-    AssetPool<T6::XAnimParts>* m_xanim_parts;
-    AssetPool<T6::XModel>* m_xmodel;
-    AssetPool<T6::Material>* m_material;
-    AssetPool<T6::MaterialTechniqueSet>* m_technique_set;
-    AssetPool<T6::GfxImage>* m_image;
-    AssetPool<T6::SndBank>* m_sound_bank;
-    AssetPool<T6::SndPatch>* m_sound_patch;
-    AssetPool<T6::clipMap_t>* m_clip_map;
-    AssetPool<T6::ComWorld>* m_com_world;
-    AssetPool<T6::GameWorldSp>* m_game_world_sp;
-    AssetPool<T6::GameWorldMp>* m_game_world_mp;
-    AssetPool<T6::MapEnts>* m_map_ents;
-    AssetPool<T6::GfxWorld>* m_gfx_world;
-    AssetPool<T6::GfxLightDef>* m_gfx_light_def;
-    AssetPool<T6::Font_s>* m_font;
-    AssetPool<T6::FontIcon>* m_font_icon;
-    AssetPool<T6::MenuList>* m_menu_list;
-    AssetPool<T6::menuDef_t>* m_menu_def;
-    AssetPool<T6::LocalizeEntry>* m_localize;
-    AssetPool<T6::WeaponVariantDef>* m_weapon;
-    AssetPool<T6::WeaponAttachment>* m_attachment;
-    AssetPool<T6::WeaponAttachmentUnique>* m_attachment_unique;
-    AssetPool<T6::WeaponCamo>* m_camo;
-    AssetPool<T6::SndDriverGlobals>* m_snd_driver_globals;
-    AssetPool<T6::FxEffectDef>* m_fx;
-    AssetPool<T6::FxImpactTable>* m_fx_impact_table;
-    AssetPool<T6::RawFile>* m_raw_file;
-    AssetPool<T6::StringTable>* m_string_table;
-    AssetPool<T6::LeaderboardDef>* m_leaderboard;
-    AssetPool<T6::XGlobals>* m_xglobals;
-    AssetPool<T6::ddlRoot_t>* m_ddl;
-    AssetPool<T6::Glasses>* m_glasses;
-    AssetPool<T6::EmblemSet>* m_emblem_set;
-    AssetPool<T6::ScriptParseTree>* m_script;
-    AssetPool<T6::KeyValuePairs>* m_key_value_pairs;
-    AssetPool<T6::VehicleDef>* m_vehicle;
-    AssetPool<T6::MemoryBlock>* m_memory_block;
-    AssetPool<T6::AddonMapEnts>* m_addon_map_ents;
-    AssetPool<T6::TracerDef>* m_tracer;
-    AssetPool<T6::SkinnedVertsDef>* m_skinned_verts;
-    AssetPool<T6::Qdb>* m_qdb;
-    AssetPool<T6::Slug>* m_slug;
-    AssetPool<T6::FootstepTableDef>* m_footstep_table;
-    AssetPool<T6::FootstepFXTableDef>* m_footstep_fx_table;
-    AssetPool<T6::ZBarrierDef>* m_zbarrier;*/
+    std::unique_ptr<AssetPool<IW4::PhysPreset>> m_phys_preset;
+    std::unique_ptr<AssetPool<IW4::PhysCollmap>> m_phys_collmap;
+    std::unique_ptr<AssetPool<IW4::XAnimParts>> m_xanim_parts;
+    // std::unique_ptr<AssetPool<IW4::XModelSurfs>> m_xmodel_surfs;
+    // std::unique_ptr<AssetPool<IW4::XModel>> m_xmodel;
+    // std::unique_ptr<AssetPool<IW4::Material>> m_material;
+    // std::unique_ptr<AssetPool<IW4::MaterialPixelShader>> m_material_pixel_shader;
+    // std::unique_ptr<AssetPool<IW4::MaterialVertexShader>> m_material_vertex_shader;
+    // std::unique_ptr<AssetPool<IW4::MaterialVertexDeclaration>> m_material_vertex_decl;
+    // std::unique_ptr<AssetPool<IW4::MaterialTechniqueSet>> m_technique_set;
+    // std::unique_ptr<AssetPool<IW4::GfxImage>> m_image;
+    // std::unique_ptr<AssetPool<IW4::snd_alias_list_t>> m_sound;
+    // std::unique_ptr<AssetPool<IW4::SndCurve>> m_sound_curve;
+    // std::unique_ptr<AssetPool<IW4::LoadedSound>> m_loaded_sound;
+    // std::unique_ptr<AssetPool<IW4::clipMap_t>> m_clip_map;
+    // std::unique_ptr<AssetPool<IW4::ComWorld>> m_com_world;
+    // std::unique_ptr<AssetPool<IW4::GameWorldSp>> m_game_world_sp;
+    // std::unique_ptr<AssetPool<IW4::GameWorldMp>> m_game_world_mp;
+    // std::unique_ptr<AssetPool<IW4::MapEnts>> m_map_ents;
+    // std::unique_ptr<AssetPool<IW4::FxWorld>> m_fx_world;
+    // std::unique_ptr<AssetPool<IW4::GfxWorld>> m_gfx_world;
+    // std::unique_ptr<AssetPool<IW4::GfxLightDef>> m_gfx_light_def;
+    // std::unique_ptr<AssetPool<IW4::Font_s>> m_font;
+    // std::unique_ptr<AssetPool<IW4::MenuList>> m_menu_list;
+    // std::unique_ptr<AssetPool<IW4::menuDef_t>> m_menu_def;
+    // std::unique_ptr<AssetPool<IW4::LocalizeEntry>> m_localize;
+    // std::unique_ptr<AssetPool<IW4::WeaponCompleteDef>> m_weapon;
+    // std::unique_ptr<AssetPool<IW4::SndDriverGlobals>> m_snd_driver_globals;
+    // std::unique_ptr<AssetPool<IW4::FxEffectDef>> m_fx;
+    // std::unique_ptr<AssetPool<IW4::FxImpactTable>> m_fx_impact_table;
+    // std::unique_ptr<AssetPool<IW4::RawFile>> m_raw_file;
+    // std::unique_ptr<AssetPool<IW4::StringTable>> m_string_table;
+    // std::unique_ptr<AssetPool<IW4::LeaderboardDef>> m_leaderboard;
+    // std::unique_ptr<AssetPool<IW4::StructuredDataDefSet>> m_structed_data_def_set;
+    // std::unique_ptr<AssetPool<IW4::TracerDef>> m_tracer;
+    // std::unique_ptr<AssetPool<IW4::VehicleDef>> m_vehicle;
+    // std::unique_ptr<AssetPool<IW4::AddonMapEnts>> m_addon_map_ents;
 
     explicit GameAssetPoolIW4(int priority);
-    ~GameAssetPoolIW4() override;
+    ~GameAssetPoolIW4() override = default;
 
     void InitPoolStatic(asset_type_t type, size_t capacity) override;
     void InitPoolDynamic(asset_type_t type) override;

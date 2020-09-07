@@ -1,0 +1,170 @@
+// Game: Modern Warfare 2 (IW4)
+game IW4;
+
+// Game Assets
+asset PhysPreset ASSET_TYPE_PHYSPRESET;
+asset PhysCollmap ASSET_TYPE_PHYSCOLLMAP;
+asset XAnimParts ASSET_TYPE_XANIMPARTS;
+// asset XModelSurfs ASSET_TYPE_XMODEL_SURFS;
+// asset XModel ASSET_TYPE_XMODEL;
+// asset Material ASSET_TYPE_MATERIAL;
+// asset MaterialPixelShader ASSET_TYPE_PIXELSHADER;
+// asset MaterialVertexShader ASSET_TYPE_VERTEXSHADER;
+// asset MaterialVertexDeclaration ASSET_TYPE_VERTEXDECL;
+// asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
+// asset GfxImage ASSET_TYPE_IMAGE;
+// asset snd_alias_list_t ASSET_TYPE_SOUND;
+// asset SndCurve ASSET_TYPE_SOUND_CURVE;
+// asset LoadedSound ASSET_TYPE_LOADED_SOUND;
+// asset clipMap_t ASSET_TYPE_CLIPMAP_MP;
+// asset ComWorld ASSET_TYPE_COMWORLD;
+// asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
+// asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
+// asset MapEnts ASSET_TYPE_MAP_ENTS;
+// asset FxWorld ASSET_TYPE_FXWORLD;
+// asset GfxWorld ASSET_TYPE_GFXWORLD;
+// asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
+// asset Font_s ASSET_TYPE_FONT;
+// asset MenuList ASSET_TYPE_MENULIST;
+// asset menuDef_t ASSET_TYPE_MENU;
+// asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
+// asset WeaponCompleteDef ASSET_TYPE_WEAPON;
+// asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
+// asset FxEffectDef ASSET_TYPE_FX;
+// asset FxImpactTable ASSET_TYPE_IMPACT_FX;
+// asset RawFile ASSET_TYPE_RAWFILE;
+// asset StringTable ASSET_TYPE_STRINGTABLE;
+// asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
+// asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
+// asset TracerDef ASSET_TYPE_TRACER;
+// asset VehicleDef ASSET_TYPE_VEHICLE;
+// asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
+
+// Setup blocks
+block temp    XFILE_BLOCK_TEMP              default;
+block normal  XFILE_BLOCK_PHYSICAL;
+block runtime XFILE_BLOCK_RUNTIME           default;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_LARGE;
+block normal  XFILE_BLOCK_CALLBACK;
+block normal  XFILE_BLOCK_VERTEX;
+block normal  XFILE_BLOCK_INDEX;
+
+// =========================================
+// PhysPreset
+// =========================================
+use PhysPreset;
+set string name;
+set name name;
+set string sndAliasPrefix;
+block normal  XFILE_BLOCK_INDEX;
+
+// =========================================
+// PhysCollmap
+// =========================================
+use PhysCollmap;
+set string name;
+set name name;
+set count geoms count;
+
+// PhysGeomInfo
+use PhysGeomInfo;
+set count brushWrapper 1;
+
+// BrushWrapper
+use BrushWrapper;
+set reusable planes;
+set count planes brush::numsides;
+
+// cbrushWrapper_t
+use cbrushWrapper_t;
+set count sides numsides;
+set count baseAdjacentSide BrushWrapper::totalEdgeCount;
+
+// cbrushside_t
+use cbrushside_t;
+set reusable plane;
+set count plane 1;
+
+// =========================================
+// XAnimParts
+// =========================================
+use XAnimParts;
+set string name;
+set name name;
+set scriptstring names;
+set count names boneCount[9];
+set count notify notifyCount;
+set count deltaPart 1;
+set count dataByte dataByteCount;
+set count dataShort dataShortCount;
+set count dataInt dataIntCount;
+set count randomDataShort randomDataShortCount;
+set count randomDataByte randomDataByteCount;
+set count randomDataInt randomDataIntCount;
+set count indices::_1 indexCount;
+set count indices::_2 indexCount;
+set condition indices::_1 numframes < 256;
+set condition indices::data never;
+reorder:
+    name
+    names
+    notify
+    deltaPart
+    dataByte
+    dataShort
+    dataInt
+    randomDataShort
+    randomDataByte
+    randomDataInt
+    indices;
+
+// XAnimNotifyInfo
+set scriptstring XAnimNotifyInfo::name;
+
+// XAnimDeltaPart
+use XAnimDeltaPart;
+set count trans 1;
+set count quat2 1;
+set count quat 1;
+
+// XAnimPartTrans
+use XAnimPartTrans;
+set condition u::frames size > 0;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set condition u::frames::frames::_1 smallTrans;
+set count u::frames::frames::_1 size + 1;
+set count u::frames::frames::_2 size + 1;
+
+// XAnimPartTransFrames
+reorder XAnimPartTransFrames:
+    indices
+    frames;
+
+// XAnimDeltaPartQuat2
+use XAnimDeltaPartQuat2;
+set condition u::frames size > 0;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set count u::frames::frames size + 1;
+
+// XAnimDeltaPartQuatDataFrames2
+reorder XAnimDeltaPartQuatDataFrames2:
+    indices
+    frames;
+
+// XAnimDeltaPartQuat
+use XAnimDeltaPartQuat;
+set condition u::frames size > 0;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set count u::frames::frames size + 1;
+
+// XAnimDeltaPartQuatDataFrames
+reorder XAnimDeltaPartQuatDataFrames:
+    indices
+    frames;

@@ -1,8 +1,12 @@
 #pragma once
 
+#ifndef __IW4_ASSETS_H
+#define __IW4_ASSETS_H
+
+#ifndef __zonecodegenerator
 namespace IW4
 {
-
+#endif
     enum XAssetType
     {
         ASSET_TYPE_PHYSPRESET = 0x0,
@@ -70,9 +74,47 @@ namespace IW4
         MAX_XFILE_COUNT,
     };
 
+    struct PhysPreset;
+    struct PhysCollmap;
+    struct XAnimParts;
+    struct XModelSurfs;
+    struct XModel;
+    struct Material;
+    struct MaterialPixelShader;
+    struct MaterialVertexShader;
+    struct MaterialVertexDeclaration;
+    struct MaterialTechniqueSet;
+    struct GfxImage;
+    struct snd_alias_list_t;
+    struct SndCurve;
+    struct LoadedSound;
+    struct clipMap_t;
+    struct ComWorld;
+    struct GameWorldSp;
+    struct GameWorldMp;
+    struct MapEnts;
+    struct FxWorld;
+    struct GfxWorld;
+    struct GfxLightDef;
+    struct Font_s;
+    struct MenuList;
+    struct menuDef_t;
+    struct LocalizeEntry;
+    struct WeaponCompleteDef;
+    struct SndDriverGlobals;
+    struct FxEffectDef;
+    struct FxImpactTable;
+    struct RawFile;
+    struct StringTable;
+    struct LeaderboardDef;
+    struct StructuredDataDefSet;
+    struct TracerDef;
+    struct VehicleDef;
+    struct AddonMapEnts;
+
     union XAssetHeader
     {
-        /*PhysPreset* physPreset;
+        PhysPreset* physPreset;
         PhysCollmap* physCollmap;
         XAnimParts* parts;
         XModelSurfs* modelSurfs;
@@ -108,7 +150,218 @@ namespace IW4
         StructuredDataDefSet* structuredDataDefSet;
         TracerDef* tracerDef;
         VehicleDef* vehDef;
-        AddonMapEnts* addonMapEnts;*/
+        AddonMapEnts* addonMapEnts;
         void* data;
     };
+
+    typedef char cbrushedge_t;
+    typedef float vec3_t[3];
+
+    struct PhysPreset
+    {
+        const char* name;
+        int type;
+        float mass;
+        float bounce;
+        float friction;
+        float bulletForceScale;
+        float explosiveForceScale;
+        const char* sndAliasPrefix;
+        float piecesSpreadFraction;
+        float piecesUpwardVelocity;
+        bool tempDefaultToCylinder;
+        bool perSurfaceSndAlias;
+    };
+
+    struct Bounds
+    {
+        float midPoint[3];
+        float halfSize[3];
+    };
+
+    struct cplane_s
+    {
+        float normal[3];
+        float dist;
+        char type;
+        char pad[3];
+    };
+
+    struct cbrushside_t
+    {
+        cplane_s* plane;
+        unsigned __int16 materialNum;
+        char firstAdjacentSideOffset;
+        char edgeCount;
+    };
+
+    struct cbrushWrapper_t
+    {
+        unsigned __int16 numsides;
+        unsigned __int16 glassPieceIndex;
+        cbrushside_t* sides;
+        cbrushedge_t* baseAdjacentSide;
+        __int16 axialMaterialNum[2][3];
+        char firstAdjacentSideOffsets[2][3];
+        char edgeCount[2][3];
+    };
+
+    struct BrushWrapper
+    {
+        Bounds bounds;
+        cbrushWrapper_t brush;
+        int totalEdgeCount;
+        cplane_s* planes;
+    };
+
+    struct PhysGeomInfo
+    {
+        BrushWrapper* brushWrapper;
+        int type;
+        float orientation[3][3];
+        Bounds bounds;
+    };
+
+    struct PhysMass
+    {
+        float centerOfMass[3];
+        float momentsOfInertia[3];
+        float productsOfInertia[3];
+    };
+
+    struct PhysCollmap
+    {
+        const char* name;
+        unsigned int count;
+        PhysGeomInfo* geoms;
+        PhysMass mass;
+        Bounds bounds;
+    };
+
+    union XAnimIndices
+    {
+        char* _1;
+        unsigned __int16* _2;
+        void* data;
+    };
+
+    struct XAnimNotifyInfo
+    {
+        unsigned __int16 name;
+        float time;
+    };
+
+    union XAnimDynamicFrames
+    {
+        char(*_1)[3];
+        unsigned __int16(*_2)[3];
+    };
+
+    union XAnimDynamicIndices
+    {
+        char _1[1];
+        unsigned __int16 _2[1];
+    };
+
+    struct __declspec(align(4)) XAnimPartTransFrames
+    {
+        float mins[3];
+        float size[3];
+        XAnimDynamicFrames frames;
+        XAnimDynamicIndices indices;
+    };
+
+    union XAnimPartTransData
+    {
+        XAnimPartTransFrames frames;
+        //float frame0[3];
+        vec3_t frame0;
+    };
+
+    struct XAnimPartTrans
+    {
+        unsigned __int16 size;
+        char smallTrans;
+        XAnimPartTransData u;
+    };
+
+    struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames2
+    {
+        __int16(*frames)[2];
+        XAnimDynamicIndices indices;
+    };
+
+    union XAnimDeltaPartQuatData2
+    {
+        XAnimDeltaPartQuatDataFrames2 frames;
+        __int16 frame0[2];
+    };
+
+    struct XAnimDeltaPartQuat2
+    {
+        unsigned __int16 size;
+        XAnimDeltaPartQuatData2 u;
+    };
+
+    struct XAnimDeltaPartQuatDataFrames
+    {
+        __int16(*frames)[4];
+        XAnimDynamicIndices indices;
+    };
+
+    union XAnimDeltaPartQuatData
+    {
+        XAnimDeltaPartQuatDataFrames frames;
+        __int16 frame0[4];
+    };
+
+    struct XAnimDeltaPartQuat
+    {
+        unsigned __int16 size;
+        XAnimDeltaPartQuatData u;
+    };
+
+    struct XAnimDeltaPart
+    {
+        XAnimPartTrans* trans;
+        XAnimDeltaPartQuat2* quat2;
+        XAnimDeltaPartQuat* quat;
+    };
+
+    struct XAnimParts
+    {
+        const char* name;
+        unsigned __int16 dataByteCount;
+        unsigned __int16 dataShortCount;
+        unsigned __int16 dataIntCount;
+        unsigned __int16 randomDataByteCount;
+        unsigned __int16 randomDataIntCount;
+        unsigned __int16 numframes;
+        char flags;
+        char boneCount[10];
+        char notifyCount;
+        char assetType;
+        bool isDefault;
+        unsigned int randomDataShortCount;
+        unsigned int indexCount;
+        float framerate;
+        float frequency;
+        unsigned __int16* names;
+        char* dataByte;
+        __int16* dataShort;
+        int* dataInt;
+        __int16* randomDataShort;
+        char* randomDataByte;
+        int* randomDataInt;
+        XAnimIndices indices;
+        XAnimNotifyInfo* notify;
+        XAnimDeltaPart* deltaPart;
+    };
+
+#ifndef __zonecodegenerator
 }
+#endif
+
+#endif
+
+// EOF
