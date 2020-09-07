@@ -256,7 +256,7 @@ void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atS
 
     if(atStreamStart)
         $if(!structure.Computations.DynamicMember)$
-        m_stream->Load<$structure.Type.FullName$>($TypeVarName(structure.Type)$);$\\$
+        m_stream->Load<$structure.Type.FullName$>($TypeVarName(structure.Type)$); // Size: $structure.Type.Size$$\\$
         $else$
         m_stream->LoadPartial<$structure.Type.FullName$>($TypeVarName(structure.Type)$, offsetof($structure.Type.FullName$, $structure.Computations.DynamicMember.Member.Name$));$\\$
         $endif$
