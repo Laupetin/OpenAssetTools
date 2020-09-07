@@ -61,7 +61,6 @@ const std::string GameAssetPoolIW4::ASSET_TYPE_NAMES[]
     ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset, m_phys_preset
     ASSET_TYPE_PHYSCOLLMAP, PhysCollmap, physCollmap, m_phys_collmap
     ASSET_TYPE_XANIMPARTS, XAnimParts, parts, m_xanim_parts
-    ASSET_TYPE_XMODEL_SURFS, XModelSurfs, modelSurfs, m_xmodel_surfs
     ASSET_TYPE_XMODEL, XModel, model, m_xmodel
     ASSET_TYPE_MATERIAL, Material, material, m_material
     ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader, m_material_pixel_shader
@@ -107,14 +106,13 @@ GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
     m_phys_preset = nullptr;
     m_phys_collmap = nullptr;
     m_xanim_parts = nullptr;
-    // m_xmodel_surfs = nullptr;
-    // m_xmodel = nullptr;
-    // m_material = nullptr;
-    // m_material_pixel_shader = nullptr;
-    // m_material_vertex_shader = nullptr;
-    // m_material_vertex_decl = nullptr;
-    // m_technique_set = nullptr;
-    // m_image = nullptr;
+    m_xmodel = nullptr;
+    m_material = nullptr;
+    m_material_pixel_shader = nullptr;
+    m_material_vertex_shader = nullptr;
+    m_material_vertex_decl = nullptr;
+    m_technique_set = nullptr;
+    m_image = nullptr;
     // m_sound = nullptr;
     // m_sound_curve = nullptr;
     // m_loaded_sound = nullptr;
@@ -134,8 +132,8 @@ GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
     // m_snd_driver_globals = nullptr;
     // m_fx = nullptr;
     // m_fx_impact_table = nullptr;
-    // m_raw_file = nullptr;
-    // m_string_table = nullptr;
+    m_raw_file = nullptr;
+    m_string_table = nullptr;
     // m_leaderboard = nullptr;
     // m_structed_data_def_set = nullptr;
     // m_tracer = nullptr;
@@ -157,17 +155,16 @@ void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capa
 
     switch (type)
     {
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_PHYSPRESET, m_phys_preset, PhysPreset);
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap, PhysCollmap);
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_XANIMPARTS, m_xanim_parts, XAnimParts);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_XMODEL_SURFS, m_xmodel_surfs, XModelSurfs);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_XMODEL, m_xmodel, XModel);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_MATERIAL, m_material, Material);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader, MaterialPixelShader);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader, MaterialVertexShader);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl, MaterialVertexDeclaration);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_TECHNIQUE_SET, m_technique_set, MaterialTechniqueSet);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_IMAGE, m_image, GfxImage);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_PHYSPRESET, m_phys_preset, PhysPreset);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap, PhysCollmap);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_XANIMPARTS, m_xanim_parts, XAnimParts);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_XMODEL, m_xmodel, XModel);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_MATERIAL, m_material, Material);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader, MaterialPixelShader);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader, MaterialVertexShader);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl, MaterialVertexDeclaration);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_TECHNIQUE_SET, m_technique_set, MaterialTechniqueSet);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_IMAGE, m_image, GfxImage);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_SOUND, m_sound, snd_alias_list_t);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_SOUND_CURVE, m_sound_curve, SndCurve);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_LOADED_SOUND, m_loaded_sound, LoadedSound);
@@ -188,8 +185,8 @@ void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capa
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, SndDriverGlobals);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, FxImpactTable);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_LEADERBOARD, m_leaderboard, LeaderboardDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_TRACER, m_tracer, TracerDef);
@@ -218,17 +215,16 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
 
     switch (type)
     {
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PHYSPRESET, m_phys_preset, PhysPreset);
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap, PhysCollmap);
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XANIMPARTS, m_xanim_parts, XAnimParts);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XMODEL_SURFS, m_xmodel_surfs, XModelSurfs);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XMODEL, m_xmodel, XModel);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MATERIAL, m_material, Material);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader, MaterialPixelShader);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader, MaterialVertexShader);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl, MaterialVertexDeclaration);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TECHNIQUE_SET, m_technique_set, MaterialTechniqueSet);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMAGE, m_image, GfxImage);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PHYSPRESET, m_phys_preset, PhysPreset);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap, PhysCollmap);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XANIMPARTS, m_xanim_parts, XAnimParts);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XMODEL, m_xmodel, XModel);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MATERIAL, m_material, Material);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader, MaterialPixelShader);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader, MaterialVertexShader);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl, MaterialVertexDeclaration);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TECHNIQUE_SET, m_technique_set, MaterialTechniqueSet);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMAGE, m_image, GfxImage);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SOUND, m_sound, snd_alias_list_t);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SOUND_CURVE, m_sound_curve, SndCurve);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LOADED_SOUND, m_loaded_sound, LoadedSound);
@@ -249,8 +245,8 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, SndDriverGlobals);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, FxImpactTable);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LEADERBOARD, m_leaderboard, LeaderboardDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TRACER, m_tracer, TracerDef);
@@ -288,17 +284,16 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
 
     switch (xAsset.type)
     {
-        CASE_ADD_TO_POOL(ASSET_TYPE_PHYSPRESET, m_phys_preset, physPreset);
-        CASE_ADD_TO_POOL(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap, physCollmap);
-        CASE_ADD_TO_POOL(ASSET_TYPE_XANIMPARTS, m_xanim_parts, parts);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_XMODEL_SURFS, m_xmodel_surfs, modelSurfs);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_XMODEL, m_xmodel, model);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_MATERIAL, m_material, material);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader, pixelShader);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader, vertexShader);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl, vertexDecl);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_TECHNIQUE_SET, m_technique_set, techniqueSet);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_IMAGE, m_image, image);
+    CASE_ADD_TO_POOL(ASSET_TYPE_PHYSPRESET, m_phys_preset, physPreset);
+    CASE_ADD_TO_POOL(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap, physCollmap);
+    CASE_ADD_TO_POOL(ASSET_TYPE_XANIMPARTS, m_xanim_parts, parts);
+    CASE_ADD_TO_POOL(ASSET_TYPE_XMODEL, m_xmodel, model);
+    CASE_ADD_TO_POOL(ASSET_TYPE_MATERIAL, m_material, material);
+    CASE_ADD_TO_POOL(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader, pixelShader);
+    CASE_ADD_TO_POOL(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader, vertexShader);
+    CASE_ADD_TO_POOL(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl, vertexDecl);
+    CASE_ADD_TO_POOL(ASSET_TYPE_TECHNIQUE_SET, m_technique_set, techniqueSet);
+    CASE_ADD_TO_POOL(ASSET_TYPE_IMAGE, m_image, image);
         // CASE_ADD_TO_POOL(ASSET_TYPE_SOUND, m_sound, sound);
         // CASE_ADD_TO_POOL(ASSET_TYPE_SOUND_CURVE, m_sound_curve, sndCurve);
         // CASE_ADD_TO_POOL(ASSET_TYPE_LOADED_SOUND, m_loaded_sound, loadSnd);
@@ -319,8 +314,8 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
         // CASE_ADD_TO_POOL(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, sndDriverGlobals);
         // CASE_ADD_TO_POOL(ASSET_TYPE_FX, m_fx, fx);
         // CASE_ADD_TO_POOL(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, impactFx);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_RAWFILE, m_raw_file, rawfile);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_STRINGTABLE, m_string_table, stringTable);
+    CASE_ADD_TO_POOL(ASSET_TYPE_RAWFILE, m_raw_file, rawfile);
+    CASE_ADD_TO_POOL(ASSET_TYPE_STRINGTABLE, m_string_table, stringTable);
         // CASE_ADD_TO_POOL(ASSET_TYPE_LEADERBOARD, m_leaderboard, leaderboardDef);
         // CASE_ADD_TO_POOL(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, structuredDataDefSet);
         // CASE_ADD_TO_POOL(ASSET_TYPE_TRACER, m_tracer, tracerDef);
@@ -349,17 +344,16 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
 
     switch (type)
     {
-        CASE_GET_ASSET(ASSET_TYPE_PHYSPRESET, m_phys_preset);
-        CASE_GET_ASSET(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap);
-        CASE_GET_ASSET(ASSET_TYPE_XANIMPARTS, m_xanim_parts);
-        // CASE_GET_ASSET(ASSET_TYPE_XMODEL_SURFS, m_xmodel_surfs);
-        // CASE_GET_ASSET(ASSET_TYPE_XMODEL, m_xmodel);
-        // CASE_GET_ASSET(ASSET_TYPE_MATERIAL, m_material);
-        // CASE_GET_ASSET(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader);
-        // CASE_GET_ASSET(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader);
-        // CASE_GET_ASSET(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl);
-        // CASE_GET_ASSET(ASSET_TYPE_TECHNIQUE_SET, m_technique_set);
-        // CASE_GET_ASSET(ASSET_TYPE_IMAGE, m_image);
+    CASE_GET_ASSET(ASSET_TYPE_PHYSPRESET, m_phys_preset);
+    CASE_GET_ASSET(ASSET_TYPE_PHYSCOLLMAP, m_phys_collmap);
+    CASE_GET_ASSET(ASSET_TYPE_XANIMPARTS, m_xanim_parts);
+    CASE_GET_ASSET(ASSET_TYPE_XMODEL, m_xmodel);
+    CASE_GET_ASSET(ASSET_TYPE_MATERIAL, m_material);
+    CASE_GET_ASSET(ASSET_TYPE_PIXELSHADER, m_material_pixel_shader);
+    CASE_GET_ASSET(ASSET_TYPE_VERTEXSHADER, m_material_vertex_shader);
+    CASE_GET_ASSET(ASSET_TYPE_VERTEXDECL, m_material_vertex_decl);
+    CASE_GET_ASSET(ASSET_TYPE_TECHNIQUE_SET, m_technique_set);
+    CASE_GET_ASSET(ASSET_TYPE_IMAGE, m_image);
         // CASE_GET_ASSET(ASSET_TYPE_SOUND, m_sound);
         // CASE_GET_ASSET(ASSET_TYPE_SOUND_CURVE, m_sound_curve);
         // CASE_GET_ASSET(ASSET_TYPE_LOADED_SOUND, m_loaded_sound);
@@ -380,8 +374,8 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
         // CASE_GET_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals);
         // CASE_GET_ASSET(ASSET_TYPE_FX, m_fx);
         // CASE_GET_ASSET(ASSET_TYPE_IMPACT_FX, m_fx_impact_table);
-        // CASE_GET_ASSET(ASSET_TYPE_RAWFILE, m_raw_file);
-        // CASE_GET_ASSET(ASSET_TYPE_STRINGTABLE, m_string_table);
+    CASE_GET_ASSET(ASSET_TYPE_RAWFILE, m_raw_file);
+    CASE_GET_ASSET(ASSET_TYPE_STRINGTABLE, m_string_table);
         // CASE_GET_ASSET(ASSET_TYPE_LEADERBOARD, m_leaderboard);
         // CASE_GET_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set);
         // CASE_GET_ASSET(ASSET_TYPE_TRACER, m_tracer);

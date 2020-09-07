@@ -5,14 +5,13 @@ game IW4;
 asset PhysPreset ASSET_TYPE_PHYSPRESET;
 asset PhysCollmap ASSET_TYPE_PHYSCOLLMAP;
 asset XAnimParts ASSET_TYPE_XANIMPARTS;
-// asset XModelSurfs ASSET_TYPE_XMODEL_SURFS;
-// asset XModel ASSET_TYPE_XMODEL;
-// asset Material ASSET_TYPE_MATERIAL;
-// asset MaterialPixelShader ASSET_TYPE_PIXELSHADER;
-// asset MaterialVertexShader ASSET_TYPE_VERTEXSHADER;
-// asset MaterialVertexDeclaration ASSET_TYPE_VERTEXDECL;
-// asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
-// asset GfxImage ASSET_TYPE_IMAGE;
+asset XModel ASSET_TYPE_XMODEL;
+asset Material ASSET_TYPE_MATERIAL;
+asset MaterialPixelShader ASSET_TYPE_PIXELSHADER;
+asset MaterialVertexShader ASSET_TYPE_VERTEXSHADER;
+asset MaterialVertexDeclaration ASSET_TYPE_VERTEXDECL;
+asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
+asset GfxImage ASSET_TYPE_IMAGE;
 // asset snd_alias_list_t ASSET_TYPE_SOUND;
 // asset SndCurve ASSET_TYPE_SOUND_CURVE;
 // asset LoadedSound ASSET_TYPE_LOADED_SOUND;
@@ -32,8 +31,8 @@ asset XAnimParts ASSET_TYPE_XANIMPARTS;
 // asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
 // asset FxEffectDef ASSET_TYPE_FX;
 // asset FxImpactTable ASSET_TYPE_IMPACT_FX;
-// asset RawFile ASSET_TYPE_RAWFILE;
-// asset StringTable ASSET_TYPE_STRINGTABLE;
+asset RawFile ASSET_TYPE_RAWFILE;
+asset StringTable ASSET_TYPE_STRINGTABLE;
 // asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
 // asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
 // asset TracerDef ASSET_TYPE_TRACER;
@@ -168,3 +167,204 @@ set count u::frames::frames size + 1;
 reorder XAnimDeltaPartQuatDataFrames:
     indices
     frames;
+
+// =========================================
+// XModel
+// =========================================
+use XModel;
+set string name;
+set name name;
+set scriptstring boneNames;
+set reusable boneNames;
+set count boneNames numBones;
+set reusable parentList;
+set count parentList numBones - numRootBones;
+set reusable quats;
+set count quats numBones - numRootBones;
+set reusable trans;
+set count trans numBones - numRootBones;
+set reusable partClassification;
+set count partClassification numBones;
+set reusable baseMat;
+set count baseMat numBones;
+set count materialHandles numsurfs;
+set count collSurfs numCollSurfs;
+set count boneInfo numBones;
+
+// XModelLodInfo
+use XModelLodInfo;
+set block modelSurfs XFILE_BLOCK_TEMP;
+set reusable modelSurfs;
+set condition surfs never;
+
+// XModelSurfs
+use XModelSurfs;
+set string name;
+set count surfs XModelLodInfo::numsurfs; // No this is not a mistake. This is how the game does it.
+
+// XSurface
+use XSurface;
+set reusable verts0;
+set block verts0 XFILE_BLOCK_VERTEX;
+set count verts0 vertCount;
+set reusable vertList;
+set count vertList vertListCount;
+set reusable triIndices;
+set block triIndices XFILE_BLOCK_INDEX;
+set count triIndices triCount;
+reorder:
+    zoneHandle
+    vertInfo
+    verts0
+    vertList
+    triIndices;
+
+// XSurfaceVertexInfo
+use XSurfaceVertexInfo;
+set reusable vertsBlend;
+set count vertsBlend vertCount[0] 
+						+ 3 * vertCount[1] 
+						+ 5 * vertCount[2]
+						+ 7 * vertCount[3];
+
+// XRigidVertList
+set reusable XRigidVertList::collisionTree;
+
+// XSurfaceCollisionTree
+use XSurfaceCollisionTree;
+set count nodes nodeCount;
+set count leafs leafCount;
+
+// XModelCollSurf_s
+set count XModelCollSurf_s::collTris numCollTris;
+
+// =========================================
+// Material
+// =========================================
+use Material;
+set string info::name;
+set name info::name;
+set reusable textureTable;
+set count textureTable textureCount;
+set reusable constantTable;
+set count constantTable constantCount;
+set reusable stateBitsTable;
+set count stateBitsTable stateBitsCount;
+
+// MaterialTextureDef
+use MaterialTextureDef;
+set condition u::water semantic == TS_WATER_MAP;
+set reusable u::water;
+
+// water_t
+use water_t;
+set count H0 N * M;
+set count wTerm N * M;
+
+// =========================================
+// MaterialTechniqueSet
+// =========================================
+use MaterialTechniqueSet;
+set string name;
+set name name;
+set condition remappedTechniqueSet never;
+set reusable techniques;
+
+// MaterialTechnique
+use MaterialTechnique;
+set string name;
+set arraysize passArray passCount;
+reorder:
+    passArray
+    name;
+
+// MaterialPass
+use MaterialPass;
+set count args perPrimArgCount + perObjArgCount + stableArgCount;
+
+// MaterialShaderArgument
+use MaterialShaderArgument;
+set condition u::literalConst type == MTL_ARG_LITERAL_VERTEX_CONST 
+|| type == MTL_ARG_LITERAL_PIXEL_CONST;
+set reusable u::literalConst;
+
+// =========================================
+// MaterialVertexDeclaration
+// =========================================
+use MaterialVertexDeclaration;
+set string name;
+set name name;
+
+// MaterialVertexStreamRouting
+set condition MaterialVertexStreamRouting::decl never;
+
+// =========================================
+// MaterialVertexShader
+// =========================================
+use MaterialVertexShader;
+set string name;
+set name name;
+
+// GfxVertexShaderLoadDef
+set count GfxVertexShaderLoadDef::program programSize;
+
+// MaterialVertexShaderProgram
+set condition MaterialVertexShaderProgram::vs never;
+
+// =========================================
+// MaterialPixelShader
+// =========================================
+use MaterialPixelShader;
+set string name;
+set name name;
+
+// GfxPixelShaderLoadDef
+set count GfxPixelShaderLoadDef::program programSize;
+
+// MaterialPixelShaderProgram
+set condition MaterialPixelShaderProgram::ps never;
+
+// =========================================
+// GfxImage
+// =========================================
+use GfxImage;
+set action OnImageLoaded(GfxImage);
+set string name;
+set name name;
+reorder:
+    name
+    texture;
+
+// GfxTexture
+use GfxTexture;
+set reusable loadDef;
+set block loadDef XFILE_BLOCK_TEMP;
+set condition texture never;
+
+// GfxImageLoadDef
+use GfxImageLoadDef;
+set action LoadImageData(GfxImageLoadDef, GfxImage);
+set arraysize data resourceSize;
+
+// =========================================
+// RawFile
+// =========================================
+use RawFile;
+set string name;
+set name name;
+set condition data::compressedBuffer compressedLen > 0;
+set count data::compressedBuffer compressedLen;
+set count data::buffer len + 1;
+
+// =========================================
+// StringTable
+// =========================================
+use StringTable;
+set string name;
+set name name;
+set count values columnCount * rowCount;
+
+// StringTableCell
+set string StringTableCell::string;
+
+// EOF

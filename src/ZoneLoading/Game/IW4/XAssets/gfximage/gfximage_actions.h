@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Loading/AssetLoadingActions.h"
-#include "Game/T6/T6.h"
+#include "Game/IW4/IW4.h"
 
-namespace T6
+namespace IW4
 {
     class Actions_GfxImage final : public AssetLoadingActions
     {

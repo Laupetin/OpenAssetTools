@@ -1,7 +1,7 @@
 #include "gfximage_actions.h"
 #include <cassert>
 
-using namespace T6;
+using namespace IW4;
 
 Actions_GfxImage::Actions_GfxImage(Zone* zone)
     : AssetLoadingActions(zone)
@@ -10,14 +10,14 @@ Actions_GfxImage::Actions_GfxImage(Zone* zone)
 
 void Actions_GfxImage::OnImageLoaded(GfxImage* image) const
 {
-    image->loadedSize = 0;
+    image->cardMemory.platform[0] = 0;
 }
 
 void Actions_GfxImage::LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const
 {
-    if(loadDef->resourceSize > 0)
+    if (loadDef->resourceSize > 0)
     {
-        const size_t loadDefSize = offsetof(T6::GfxImageLoadDef, data) + loadDef->resourceSize;
+        const size_t loadDefSize = offsetof(IW4::GfxImageLoadDef, data) + loadDef->resourceSize;
 
         image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone->GetMemory()->Alloc(loadDefSize));
         memcpy(image->texture.loadDef, loadDef, loadDefSize);

@@ -13,34 +13,33 @@
 //#include "Game/IW4/XAssets/fxworld/fxworld_load_db.h"
 //#include "Game/IW4/XAssets/gameworldmp/gameworldmp_load_db.h"
 //#include "Game/IW4/XAssets/gameworldsp/gameworldsp_load_db.h"
-//#include "Game/IW4/XAssets/gfximage/gfximage_load_db.h"
+#include "Game/IW4/XAssets/gfximage/gfximage_load_db.h"
 //#include "Game/IW4/XAssets/gfxlightdef/gfxlightdef_load_db.h"
 //#include "Game/IW4/XAssets/gfxworld/gfxworld_load_db.h"
 //#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
 //#include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
 //#include "Game/IW4/XAssets/localizeentry/localizeentry_load_db.h"
 //#include "Game/IW4/XAssets/mapents/mapents_load_db.h"
-//#include "Game/IW4/XAssets/material/material_load_db.h"
-//#include "Game/IW4/XAssets/materialpixelshader/materialpixelshader_load_db.h"
-//#include "Game/IW4/XAssets/materialtechniqueset/materialtechniqueset_load_db.h"
-//#include "Game/IW4/XAssets/materialvertexdeclaration/materialvertexdeclaration_load_db.h"
-//#include "Game/IW4/XAssets/materialvertexshader/materialvertexshader_load_db.h"
+#include "Game/IW4/XAssets/material/material_load_db.h"
+#include "Game/IW4/XAssets/materialpixelshader/materialpixelshader_load_db.h"
+#include "Game/IW4/XAssets/materialtechniqueset/materialtechniqueset_load_db.h"
+#include "Game/IW4/XAssets/materialvertexdeclaration/materialvertexdeclaration_load_db.h"
+#include "Game/IW4/XAssets/materialvertexshader/materialvertexshader_load_db.h"
 //#include "Game/IW4/XAssets/menudef_t/menudef_t_load_db.h"
 //#include "Game/IW4/XAssets/menulist/menulist_load_db.h"
 #include "Game/IW4/XAssets/physcollmap/physcollmap_load_db.h"
 #include "Game/IW4/XAssets/physpreset/physpreset_load_db.h"
-//#include "Game/IW4/XAssets/rawfile/rawfile_load_db.h"
+#include "Game/IW4/XAssets/rawfile/rawfile_load_db.h"
 //#include "Game/IW4/XAssets/snd_alias_list_t/snd_alias_list_t_load_db.h"
 //#include "Game/IW4/XAssets/sndcurve/sndcurve_load_db.h"
 //#include "Game/IW4/XAssets/snddriverglobals/snddriverglobals_load_db.h"
-//#include "Game/IW4/XAssets/stringtable/stringtable_load_db.h"
+#include "Game/IW4/XAssets/stringtable/stringtable_load_db.h"
 //#include "Game/IW4/XAssets/structureddatadefset/structureddatadefset_load_db.h"
 //#include "Game/IW4/XAssets/tracerdef/tracerdef_load_db.h"
 //#include "Game/IW4/XAssets/vehicledef/vehicledef_load_db.h"
 //#include "Game/IW4/XAssets/weaponcompletedef/weaponcompletedef_load_db.h"
 #include "Game/IW4/XAssets/xanimparts/xanimparts_load_db.h"
-//#include "Game/IW4/XAssets/xmodel/xmodel_load_db.h"
-//#include "Game/IW4/XAssets/xmodelsurfs/xmodelsurfs_load_db.h"
+#include "Game/IW4/XAssets/xmodel/xmodel_load_db.h"
 
 using namespace IW4;
 
@@ -101,17 +100,16 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
 
     switch (varXAsset->type)
     {
-        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset);
-        LOAD_ASSET(ASSET_TYPE_PHYSCOLLMAP, PhysCollmap, physCollmap);
-        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts);
-        // LOAD_ASSET(ASSET_TYPE_XMODEL_SURFS, XModelSurfs, modelSurfs);
-        // LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model);
-        // LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material);
-        // LOAD_ASSET(ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader);
-        // LOAD_ASSET(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader, vertexShader);
-        // LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl);
-        // LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
-        // LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
+    LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset);
+    LOAD_ASSET(ASSET_TYPE_PHYSCOLLMAP, PhysCollmap, physCollmap);
+    LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts);
+    LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model);
+    LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material);
+    LOAD_ASSET(ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader);
+    LOAD_ASSET(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader, vertexShader);
+    LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl);
+    LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
+    LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
         // LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound);
         // LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve);
         // LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd);
@@ -132,8 +130,8 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
         // LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
         // LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
-        // LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
-        // LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
+    LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
+    LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
         // LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
         // LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet);
         // LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
@@ -141,9 +139,9 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
 
     default:
-    {
-        throw UnsupportedAssetTypeException(varXAsset->type);
-    }
+        {
+            throw UnsupportedAssetTypeException(varXAsset->type);
+        }
     }
 
 #undef LOAD_ASSET

@@ -18,14 +18,13 @@ public:
     std::unique_ptr<AssetPool<IW4::PhysPreset>> m_phys_preset;
     std::unique_ptr<AssetPool<IW4::PhysCollmap>> m_phys_collmap;
     std::unique_ptr<AssetPool<IW4::XAnimParts>> m_xanim_parts;
-    // std::unique_ptr<AssetPool<IW4::XModelSurfs>> m_xmodel_surfs;
-    // std::unique_ptr<AssetPool<IW4::XModel>> m_xmodel;
-    // std::unique_ptr<AssetPool<IW4::Material>> m_material;
-    // std::unique_ptr<AssetPool<IW4::MaterialPixelShader>> m_material_pixel_shader;
-    // std::unique_ptr<AssetPool<IW4::MaterialVertexShader>> m_material_vertex_shader;
-    // std::unique_ptr<AssetPool<IW4::MaterialVertexDeclaration>> m_material_vertex_decl;
-    // std::unique_ptr<AssetPool<IW4::MaterialTechniqueSet>> m_technique_set;
-    // std::unique_ptr<AssetPool<IW4::GfxImage>> m_image;
+    std::unique_ptr<AssetPool<IW4::XModel>> m_xmodel;
+    std::unique_ptr<AssetPool<IW4::Material>> m_material;
+    std::unique_ptr<AssetPool<IW4::MaterialPixelShader>> m_material_pixel_shader;
+    std::unique_ptr<AssetPool<IW4::MaterialVertexShader>> m_material_vertex_shader;
+    std::unique_ptr<AssetPool<IW4::MaterialVertexDeclaration>> m_material_vertex_decl;
+    std::unique_ptr<AssetPool<IW4::MaterialTechniqueSet>> m_technique_set;
+    std::unique_ptr<AssetPool<IW4::GfxImage>> m_image;
     // std::unique_ptr<AssetPool<IW4::snd_alias_list_t>> m_sound;
     // std::unique_ptr<AssetPool<IW4::SndCurve>> m_sound_curve;
     // std::unique_ptr<AssetPool<IW4::LoadedSound>> m_loaded_sound;
@@ -45,8 +44,8 @@ public:
     // std::unique_ptr<AssetPool<IW4::SndDriverGlobals>> m_snd_driver_globals;
     // std::unique_ptr<AssetPool<IW4::FxEffectDef>> m_fx;
     // std::unique_ptr<AssetPool<IW4::FxImpactTable>> m_fx_impact_table;
-    // std::unique_ptr<AssetPool<IW4::RawFile>> m_raw_file;
-    // std::unique_ptr<AssetPool<IW4::StringTable>> m_string_table;
+    std::unique_ptr<AssetPool<IW4::RawFile>> m_raw_file;
+    std::unique_ptr<AssetPool<IW4::StringTable>> m_string_table;
     // std::unique_ptr<AssetPool<IW4::LeaderboardDef>> m_leaderboard;
     // std::unique_ptr<AssetPool<IW4::StructuredDataDefSet>> m_structed_data_def_set;
     // std::unique_ptr<AssetPool<IW4::TracerDef>> m_tracer;
@@ -59,7 +58,9 @@ public:
     void InitPoolStatic(asset_type_t type, size_t capacity) override;
     void InitPoolDynamic(asset_type_t type) override;
 
-    XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) override;
+    XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset,
+                                std::vector<std::string>& scriptStrings,
+                                std::vector<XAssetInfoGeneric*>& dependencies) override;
     XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
     const std::string& GetAssetTypeName(asset_type_t assetType) const override;
 
