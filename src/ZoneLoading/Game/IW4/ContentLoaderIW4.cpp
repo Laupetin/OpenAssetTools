@@ -25,8 +25,8 @@
 #include "Game/IW4/XAssets/materialtechniqueset/materialtechniqueset_load_db.h"
 #include "Game/IW4/XAssets/materialvertexdeclaration/materialvertexdeclaration_load_db.h"
 #include "Game/IW4/XAssets/materialvertexshader/materialvertexshader_load_db.h"
-//#include "Game/IW4/XAssets/menudef_t/menudef_t_load_db.h"
-//#include "Game/IW4/XAssets/menulist/menulist_load_db.h"
+#include "Game/IW4/XAssets/menudef_t/menudef_t_load_db.h"
+#include "Game/IW4/XAssets/menulist/menulist_load_db.h"
 #include "Game/IW4/XAssets/physcollmap/physcollmap_load_db.h"
 #include "Game/IW4/XAssets/physpreset/physpreset_load_db.h"
 #include "Game/IW4/XAssets/rawfile/rawfile_load_db.h"
@@ -126,8 +126,8 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
         // LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
         // LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
-        // LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
-        // LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
+    LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
+    LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
     LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
         // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon);
     SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);

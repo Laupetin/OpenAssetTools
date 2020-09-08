@@ -96,8 +96,8 @@ namespace IW4
     // struct GfxWorld;
     // struct GfxLightDef;
     // struct Font_s;
-    // struct MenuList;
-    // struct menuDef_t;
+    struct MenuList;
+    struct menuDef_t;
     struct LocalizeEntry;
     // struct WeaponCompleteDef;
     // struct SndDriverGlobals;
@@ -105,6 +105,7 @@ namespace IW4
     // struct FxImpactTable;
     struct RawFile;
     struct StringTable;
+
     // struct LeaderboardDef;
     // struct StructuredDataDefSet;
     // struct TracerDef;
@@ -136,8 +137,8 @@ namespace IW4
         // GfxWorld* gfxWorld;
         // GfxLightDef* lightDef;
         // Font_s* font;
-        // MenuList* menuList;
-        // menuDef_t* menu;
+        MenuList* menuList;
+        menuDef_t* menu;
         LocalizeEntry* localize;
         // WeaponCompleteDef* weapon;
         // SndDriverGlobals* sndDriverGlobals;
@@ -941,11 +942,13 @@ namespace IW4
         float distMax;
         float velocityMin;
         int flags;
+
         union
         {
             float slavePercentage;
             float masterPercentage;
         };
+
         float probability;
         float lfePercentage;
         float centerPercentage;
@@ -975,6 +978,425 @@ namespace IW4
     {
         const char* value;
         const char* name;
+    };
+
+    struct StringList
+    {
+        int totalStrings;
+        const char** strings;
+    };
+
+    union DvarLimits
+    {
+        struct
+        {
+            int stringCount;
+            const char** strings;
+        } enumeration;
+
+        struct
+        {
+            int min;
+            int max;
+        } integer;
+
+        struct
+        {
+            float min;
+            float max;
+        } value;
+
+        struct
+        {
+            float min;
+            float max;
+        } vector;
+    };
+
+    union DvarValue
+    {
+        bool enabled;
+        int integer;
+        unsigned int unsignedInt;
+        float value;
+        float vector[4];
+        const char* string;
+        char color[4];
+    };
+
+    struct dvar_t
+    {
+        const char* name;
+        const char* description;
+        unsigned int flags;
+        char type;
+        bool modified;
+        DvarValue current;
+        DvarValue latched;
+        DvarValue reset;
+        DvarLimits domain;
+        //bool (__cdecl* domainFunc)(dvar_t*, DvarValue);
+        void* domainFunc;
+        dvar_t* hashNext;
+    };
+
+    struct StaticDvar
+    {
+        dvar_t* dvar;
+        char* dvarName;
+    };
+
+    struct StaticDvarList
+    {
+        int numStaticDvars;
+        StaticDvar** staticDvars;
+    };
+
+    struct ExpressionString
+    {
+        const char* string;
+    };
+
+    struct Statement_s;
+
+    union operandInternalDataUnion
+    {
+        int intVal;
+        float floatVal;
+        ExpressionString stringVal;
+        Statement_s* function;
+    };
+
+    enum expDataType
+    {
+        VAL_INT = 0x0,
+        VAL_FLOAT = 0x1,
+        VAL_STRING = 0x2,
+        NUM_INTERNAL_DATATYPES = 0x3,
+        VAL_FUNCTION = 0x3,
+        NUM_DATATYPES = 0x4,
+    };
+
+    struct Operand
+    {
+        expDataType dataType;
+        operandInternalDataUnion internals;
+    };
+
+    union entryInternalData
+    {
+        int op;
+        Operand operand;
+    };
+
+    enum expressionEntryType : int
+    {
+        EET_OPERATOR = 0x0,
+        EET_OPERAND = 0x1,
+    };
+
+    struct expressionEntry
+    {
+        expressionEntryType type;
+        entryInternalData data;
+    };
+
+    struct ExpressionSupportingData;
+
+    struct Statement_s
+    {
+        int numEntries;
+        expressionEntry* entries;
+        ExpressionSupportingData* supportingData;
+        int lastExecuteTime;
+        Operand lastResult;
+    };
+
+    struct UIFunctionList
+    {
+        int totalFunctions;
+        Statement_s** functions;
+    };
+
+    struct ExpressionSupportingData
+    {
+        UIFunctionList uifunctions;
+        StaticDvarList staticDvarList;
+        StringList uiStrings;
+    };
+
+    struct menuTransition
+    {
+        int transitionType;
+        int targetField;
+        int startTime;
+        float startVal;
+        float endVal;
+        float time;
+        int endTriggerType;
+    };
+
+    struct ItemFloatExpression
+    {
+        int target;
+        Statement_s* expression;
+    };
+
+    struct columnInfo_s
+    {
+        int pos;
+        int width;
+        int maxChars;
+        int alignment;
+    };
+
+    struct MenuEventHandlerSet;
+
+    struct ConditionalScript
+    {
+        MenuEventHandlerSet* eventHandlerSet;
+        Statement_s* eventExpression;
+    };
+
+    struct SetLocalVarData
+    {
+        const char* localVarName;
+        Statement_s* expression;
+    };
+
+    union EventData
+    {
+        const char* unconditionalScript;
+        ConditionalScript* conditionalScript;
+        MenuEventHandlerSet* elseScript;
+        SetLocalVarData* setLocalVarData;
+    };
+
+    enum EventType : char
+    {
+        EVENT_UNCONDITIONAL = 0x0,
+        EVENT_IF = 0x1,
+        EVENT_ELSE = 0x2,
+        EVENT_SET_LOCAL_VAR_BOOL = 0x3,
+        EVENT_SET_LOCAL_VAR_INT = 0x4,
+        EVENT_SET_LOCAL_VAR_FLOAT = 0x5,
+        EVENT_SET_LOCAL_VAR_STRING = 0x6,
+
+        EVENT_COUNT,
+    };
+
+    struct MenuEventHandler
+    {
+        EventData eventData;
+        EventType eventType;
+    };
+
+    struct MenuEventHandlerSet
+    {
+        int eventHandlerCount;
+        MenuEventHandler** eventHandlers;
+    };
+
+    struct listBoxDef_s
+    {
+        int mousePos;
+        int startPos[1];
+        int endPos[1];
+        int drawPadding;
+        float elementWidth;
+        float elementHeight;
+        int elementStyle;
+        int numColumns;
+        columnInfo_s columnInfo[16];
+        MenuEventHandlerSet* onDoubleClick;
+        int notselectable;
+        int noScrollBars;
+        int usePaging;
+        float selectBorder[4];
+        Material* selectIcon;
+    };
+
+    struct editFieldDef_s
+    {
+        float minVal;
+        float maxVal;
+        float defVal;
+        float range;
+        int maxChars;
+        int maxCharsGotoNext;
+        int maxPaintChars;
+        int paintOffset;
+    };
+
+    struct multiDef_s
+    {
+        const char* dvarList[32];
+        const char* dvarStr[32];
+        float dvarValue[32];
+        int count;
+        int strDef;
+    };
+
+    struct newsTickerDef_s
+    {
+        int feedId;
+        int speed;
+        int spacing;
+        int lastTime;
+        int start;
+        int end;
+        float x;
+    };
+
+    struct textScrollDef_s
+    {
+        int startTime;
+    };
+
+    union itemDefData_t
+    {
+        listBoxDef_s* listBox;
+        editFieldDef_s* editField;
+        multiDef_s* multi;
+        const char* enumDvarName;
+        newsTickerDef_s* ticker;
+        textScrollDef_s* scroll;
+        void* data;
+    };
+
+    struct ItemKeyHandler
+    {
+        int key;
+        MenuEventHandlerSet* action;
+        ItemKeyHandler* next;
+    };
+
+    struct __declspec(align(4)) rectDef_s
+    {
+        float x;
+        float y;
+        float w;
+        float h;
+        char horzAlign;
+        char vertAlign;
+    };
+
+    struct windowDef_t
+    {
+        const char* name;
+        rectDef_s rect;
+        rectDef_s rectClient;
+        const char* group;
+        int style;
+        int border;
+        int ownerDraw;
+        int ownerDrawFlags;
+        float borderSize;
+        int staticFlags;
+        int dynamicFlags[1];
+        int nextTime;
+        float foreColor[4];
+        float backColor[4];
+        float borderColor[4];
+        float outlineColor[4];
+        float disableColor[4];
+        Material* background;
+    };
+
+    struct itemDef_s
+    {
+        windowDef_t window;
+        rectDef_s textRect[1];
+        int type;
+        int dataType;
+        int alignment;
+        int fontEnum;
+        int textAlignMode;
+        float textalignx;
+        float textaligny;
+        float textscale;
+        int textStyle;
+        int gameMsgWindowIndex;
+        int gameMsgWindowMode;
+        const char* text;
+        int itemFlags;
+        menuDef_t* parent;
+        MenuEventHandlerSet* mouseEnterText;
+        MenuEventHandlerSet* mouseExitText;
+        MenuEventHandlerSet* mouseEnter;
+        MenuEventHandlerSet* mouseExit;
+        MenuEventHandlerSet* action;
+        MenuEventHandlerSet* accept;
+        MenuEventHandlerSet* onFocus;
+        MenuEventHandlerSet* leaveFocus;
+        const char* dvar;
+        const char* dvarTest;
+        ItemKeyHandler* onKey;
+        const char* enableDvar;
+        const char* localVar;
+        int dvarFlags;
+        snd_alias_list_t* focusSound;
+        float special;
+        int cursorPos[1];
+        itemDefData_t typeData;
+        int imageTrack;
+        int floatExpressionCount;
+        ItemFloatExpression* floatExpressions;
+        Statement_s* visibleExp;
+        Statement_s* disabledExp;
+        Statement_s* textExp;
+        Statement_s* materialExp;
+        float glowColor[4];
+        bool decayActive;
+        int fxBirthTime;
+        int fxLetterTime;
+        int fxDecayStartTime;
+        int fxDecayDuration;
+        int lastSoundPlayedTime;
+    };
+
+    struct menuDef_t
+    {
+        windowDef_t window;
+        const char* font;
+        int fullScreen;
+        int itemCount;
+        int fontIndex;
+        int cursorItem[1];
+        int fadeCycle;
+        float fadeClamp;
+        float fadeAmount;
+        float fadeInAmount;
+        float blurRadius;
+        MenuEventHandlerSet* onOpen;
+        MenuEventHandlerSet* onCloseRequest;
+        MenuEventHandlerSet* onClose;
+        MenuEventHandlerSet* onESC;
+        ItemKeyHandler* onKey;
+        Statement_s* visibleExp;
+        const char* allowedBinding;
+        const char* soundName;
+        int imageTrack;
+        float focusColor[4];
+        Statement_s* rectXExp;
+        Statement_s* rectYExp;
+        Statement_s* rectWExp;
+        Statement_s* rectHExp;
+        Statement_s* openSoundExp;
+        Statement_s* closeSoundExp;
+        itemDef_s** items;
+        menuTransition scaleTransition[1];
+        menuTransition alphaTransition[1];
+        menuTransition xTransition[1];
+        menuTransition yTransition[1];
+        ExpressionSupportingData* expressionData;
+    };
+
+    struct MenuList
+    {
+        const char* name;
+        int menuCount;
+        menuDef_t** menus;
     };
 
 #ifndef __zonecodegenerator
