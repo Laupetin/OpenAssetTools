@@ -7,7 +7,7 @@ $if(member.Computations.IsTempBlock)$
 $member.Member.VariableType.Type.FullName$* ptr = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
 $endif$$\\$
 
-$TypeVarName(structure.Type)$->$member.Member.Name$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); // $member.Member.VariableType.Type.Alignment$$\\$
+$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->Alloc<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>(alignof($TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$)); // $member.Member.VariableType.Type.Alignment$$\\$
 $\\$
 $\\$
 $if(member.Computations.IsTempBlock)$
