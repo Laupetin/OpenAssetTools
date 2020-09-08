@@ -25,9 +25,9 @@ public:
     std::unique_ptr<AssetPool<IW4::MaterialVertexDeclaration>> m_material_vertex_decl;
     std::unique_ptr<AssetPool<IW4::MaterialTechniqueSet>> m_technique_set;
     std::unique_ptr<AssetPool<IW4::GfxImage>> m_image;
-    // std::unique_ptr<AssetPool<IW4::snd_alias_list_t>> m_sound;
-    // std::unique_ptr<AssetPool<IW4::SndCurve>> m_sound_curve;
-    // std::unique_ptr<AssetPool<IW4::LoadedSound>> m_loaded_sound;
+    std::unique_ptr<AssetPool<IW4::snd_alias_list_t>> m_sound;
+    std::unique_ptr<AssetPool<IW4::SndCurve>> m_sound_curve;
+    std::unique_ptr<AssetPool<IW4::LoadedSound>> m_loaded_sound;
     // std::unique_ptr<AssetPool<IW4::clipMap_t>> m_clip_map;
     // std::unique_ptr<AssetPool<IW4::ComWorld>> m_com_world;
     // std::unique_ptr<AssetPool<IW4::GameWorldSp>> m_game_world_sp;

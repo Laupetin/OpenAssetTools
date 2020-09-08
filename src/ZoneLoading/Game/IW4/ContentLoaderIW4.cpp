@@ -17,7 +17,7 @@
 //#include "Game/IW4/XAssets/gfxlightdef/gfxlightdef_load_db.h"
 //#include "Game/IW4/XAssets/gfxworld/gfxworld_load_db.h"
 //#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
-//#include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
+#include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
 //#include "Game/IW4/XAssets/localizeentry/localizeentry_load_db.h"
 //#include "Game/IW4/XAssets/mapents/mapents_load_db.h"
 #include "Game/IW4/XAssets/material/material_load_db.h"
@@ -30,8 +30,8 @@
 #include "Game/IW4/XAssets/physcollmap/physcollmap_load_db.h"
 #include "Game/IW4/XAssets/physpreset/physpreset_load_db.h"
 #include "Game/IW4/XAssets/rawfile/rawfile_load_db.h"
-//#include "Game/IW4/XAssets/snd_alias_list_t/snd_alias_list_t_load_db.h"
-//#include "Game/IW4/XAssets/sndcurve/sndcurve_load_db.h"
+#include "Game/IW4/XAssets/snd_alias_list_t/snd_alias_list_t_load_db.h"
+#include "Game/IW4/XAssets/sndcurve/sndcurve_load_db.h"
 //#include "Game/IW4/XAssets/snddriverglobals/snddriverglobals_load_db.h"
 #include "Game/IW4/XAssets/stringtable/stringtable_load_db.h"
 //#include "Game/IW4/XAssets/structureddatadefset/structureddatadefset_load_db.h"
@@ -110,9 +110,9 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl);
     LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
     LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
-        // LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound);
-        // LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve);
-        // LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd);
+        LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound);
+        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve);
+        LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd);
         // LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap);
         // LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap);
         // LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);

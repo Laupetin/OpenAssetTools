@@ -84,9 +84,9 @@ namespace IW4
     struct MaterialVertexDeclaration;
     struct MaterialTechniqueSet;
     struct GfxImage;
-    // struct snd_alias_list_t;
-    // struct SndCurve;
-    // struct LoadedSound;
+    struct snd_alias_list_t;
+    struct SndCurve;
+    struct LoadedSound;
     // struct clipMap_t;
     // struct ComWorld;
     // struct GameWorldSp;
@@ -105,7 +105,6 @@ namespace IW4
     // struct FxImpactTable;
     struct RawFile;
     struct StringTable;
-
     // struct LeaderboardDef;
     // struct StructuredDataDefSet;
     // struct TracerDef;
@@ -125,9 +124,9 @@ namespace IW4
         MaterialVertexDeclaration* vertexDecl;
         MaterialTechniqueSet* techniqueSet;
         GfxImage* image;
-        // snd_alias_list_t* sound;
-        // SndCurve* sndCurve;
-        // LoadedSound* loadSnd;
+        snd_alias_list_t* sound;
+        SndCurve* sndCurve;
+        LoadedSound* loadSnd;
         // clipMap_t* clipMap;
         // ComWorld* comWorld;
         // GameWorldSp* gameWorldSp;
@@ -850,6 +849,126 @@ namespace IW4
         int columnCount;
         int rowCount;
         StringTableCell* values;
+    };
+
+    struct _AILSOUNDINFO
+    {
+        int format;
+        const void* data_ptr;
+        unsigned int data_len;
+        unsigned int rate;
+        int bits;
+        int channels;
+        unsigned int samples;
+        unsigned int block_size;
+        const void* initial_ptr;
+    };
+
+    struct MssSound
+    {
+        _AILSOUNDINFO info;
+        char* data;
+    };
+
+    struct LoadedSound
+    {
+        const char* name;
+        MssSound sound;
+    };
+
+    struct StreamedSound
+    {
+        const char* dir;
+        const char* name;
+    };
+
+    union SoundFileRef
+    {
+        LoadedSound* loadSnd;
+        StreamedSound streamSnd;
+    };
+
+    enum snd_alias_type_t : char
+    {
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_VOICED = 0x3,
+        SAT_COUNT,
+    };
+
+    struct SoundFile
+    {
+        snd_alias_type_t type;
+        char exists;
+        SoundFileRef u;
+    };
+
+    struct MSSSpeakerLevels
+    {
+        int speaker;
+        int numLevels;
+        float levels[2];
+    };
+
+    struct MSSChannelMap
+    {
+        int speakerCount;
+        MSSSpeakerLevels speakers[6];
+    };
+
+    struct SpeakerMap
+    {
+        bool isDefault;
+        const char* name;
+        MSSChannelMap channelMaps[2][2];
+    };
+
+    struct snd_alias_t
+    {
+        const char* aliasName;
+        const char* subtitle;
+        const char* secondaryAliasName;
+        const char* chainAliasName;
+        const char* mixerGroup;
+        SoundFile* soundFile;
+        int sequence;
+        float volMin;
+        float volMax;
+        float pitchMin;
+        float pitchMax;
+        float distMin;
+        float distMax;
+        float velocityMin;
+        int flags;
+        union
+        {
+            float slavePercentage;
+            float masterPercentage;
+        };
+        float probability;
+        float lfePercentage;
+        float centerPercentage;
+        int startDelay;
+        SndCurve* volumeFalloffCurve;
+        float envelopMin;
+        float envelopMax;
+        float envelopPercentage;
+        SpeakerMap* speakerMap;
+    };
+
+    struct snd_alias_list_t
+    {
+        const char* aliasName;
+        snd_alias_t* head;
+        int count;
+    };
+
+    struct SndCurve
+    {
+        const char* filename;
+        unsigned __int16 knotCount;
+        float knots[16][2];
     };
 
 #ifndef __zonecodegenerator

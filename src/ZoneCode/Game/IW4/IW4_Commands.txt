@@ -12,9 +12,9 @@ asset MaterialVertexShader ASSET_TYPE_VERTEXSHADER;
 asset MaterialVertexDeclaration ASSET_TYPE_VERTEXDECL;
 asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
 asset GfxImage ASSET_TYPE_IMAGE;
-// asset snd_alias_list_t ASSET_TYPE_SOUND;
-// asset SndCurve ASSET_TYPE_SOUND_CURVE;
-// asset LoadedSound ASSET_TYPE_LOADED_SOUND;
+asset snd_alias_list_t ASSET_TYPE_SOUND;
+asset SndCurve ASSET_TYPE_SOUND_CURVE;
+asset LoadedSound ASSET_TYPE_LOADED_SOUND;
 // asset clipMap_t ASSET_TYPE_CLIPMAP_MP;
 // asset ComWorld ASSET_TYPE_COMWORLD;
 // asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
@@ -345,6 +345,59 @@ set condition texture never;
 use GfxImageLoadDef;
 set action LoadImageData(GfxImageLoadDef, GfxImage);
 set arraysize data resourceSize;
+
+// =========================================
+// snd_alias_list_t
+// =========================================
+use snd_alias_list_t;
+set string aliasName;
+set name aliasName;
+set reusable head;
+set count head count;
+
+// snd_alias_t
+use snd_alias_t;
+set string aliasName;
+set string subtitle;
+set string secondaryAliasName;
+set string chainAliasName;
+set string mixerGroup;
+set reusable soundFile;
+set reusable speakerMap;
+
+// SoundFile
+set condition SoundFile::u::loadSnd type == SAT_LOADED;
+
+// SpeakerMap
+set string SpeakerMap::name;
+
+// StreamedSound
+use StreamedSound;
+set string dir;
+set string name;
+
+// =========================================
+// SndCurve
+// =========================================
+use SndCurve;
+set string filename;
+set name filename;
+
+// =========================================
+// LoadedSound
+// =========================================
+use LoadedSound;
+set string name;
+set name name;
+
+// MssSound
+use MssSound;
+set block data XFILE_BLOCK_TEMP;
+set reusable data;
+set count data info::data_len;
+set condition info::data_ptr never;
+set condition info::initial_ptr never;
+set action SetSoundData(MssSound);
 
 // =========================================
 // RawFile
