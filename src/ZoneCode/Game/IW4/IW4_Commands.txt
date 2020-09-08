@@ -26,7 +26,7 @@ asset LoadedSound ASSET_TYPE_LOADED_SOUND;
 // asset Font_s ASSET_TYPE_FONT;
 // asset MenuList ASSET_TYPE_MENULIST;
 // asset menuDef_t ASSET_TYPE_MENU;
-// asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
+asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
 // asset WeaponCompleteDef ASSET_TYPE_WEAPON;
 // asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
 // asset FxEffectDef ASSET_TYPE_FX;
@@ -398,6 +398,14 @@ set count data info::data_len;
 set condition info::data_ptr never;
 set condition info::initial_ptr never;
 set action SetSoundData(MssSound);
+
+// =========================================
+// LocalizeEntry
+// =========================================
+use LocalizeEntry;
+set string name;
+set name name;
+set string value;
 
 // =========================================
 // RawFile

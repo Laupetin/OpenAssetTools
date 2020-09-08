@@ -18,7 +18,7 @@
 //#include "Game/IW4/XAssets/gfxworld/gfxworld_load_db.h"
 //#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
 #include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
-//#include "Game/IW4/XAssets/localizeentry/localizeentry_load_db.h"
+#include "Game/IW4/XAssets/localizeentry/localizeentry_load_db.h"
 //#include "Game/IW4/XAssets/mapents/mapents_load_db.h"
 #include "Game/IW4/XAssets/material/material_load_db.h"
 #include "Game/IW4/XAssets/materialpixelshader/materialpixelshader_load_db.h"
@@ -92,6 +92,9 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
             loader.Load(&varXAsset->header.headerEntry); \
             break; \
         }
+#define SKIP_ASSET(type_index, typeName, headerEntry) \
+    case type_index: \
+        break;
 
     assert(varXAsset != nullptr);
 
@@ -110,9 +113,9 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl);
     LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
     LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
-        LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound);
-        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve);
-        LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd);
+    LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound);
+    LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve);
+    LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd);
         // LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap);
         // LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap);
         // LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
@@ -125,9 +128,9 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
         // LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
         // LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
-        // LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
+    LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
         // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon);
-        // LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
+    SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
         // LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
         // LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
     LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);

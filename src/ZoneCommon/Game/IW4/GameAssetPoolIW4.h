@@ -39,7 +39,7 @@ public:
     // std::unique_ptr<AssetPool<IW4::Font_s>> m_font;
     // std::unique_ptr<AssetPool<IW4::MenuList>> m_menu_list;
     // std::unique_ptr<AssetPool<IW4::menuDef_t>> m_menu_def;
-    // std::unique_ptr<AssetPool<IW4::LocalizeEntry>> m_localize;
+    std::unique_ptr<AssetPool<IW4::LocalizeEntry>> m_localize;
     // std::unique_ptr<AssetPool<IW4::WeaponCompleteDef>> m_weapon;
     // std::unique_ptr<AssetPool<IW4::SndDriverGlobals>> m_snd_driver_globals;
     // std::unique_ptr<AssetPool<IW4::FxEffectDef>> m_fx;

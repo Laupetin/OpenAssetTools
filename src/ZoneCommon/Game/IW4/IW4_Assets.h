@@ -98,7 +98,7 @@ namespace IW4
     // struct Font_s;
     // struct MenuList;
     // struct menuDef_t;
-    // struct LocalizeEntry;
+    struct LocalizeEntry;
     // struct WeaponCompleteDef;
     // struct SndDriverGlobals;
     // struct FxEffectDef;
@@ -138,7 +138,7 @@ namespace IW4
         // Font_s* font;
         // MenuList* menuList;
         // menuDef_t* menu;
-        // LocalizeEntry* localize;
+        LocalizeEntry* localize;
         // WeaponCompleteDef* weapon;
         // SndDriverGlobals* sndDriverGlobals;
         // FxEffectDef* fx;
@@ -969,6 +969,12 @@ namespace IW4
         const char* filename;
         unsigned __int16 knotCount;
         float knots[16][2];
+    };
+
+    struct LocalizeEntry
+    {
+        const char* value;
+        const char* name;
     };
 
 #ifndef __zonecodegenerator

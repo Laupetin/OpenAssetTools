@@ -26,7 +26,7 @@ ZoneCode.Assets = {
         -- "Font_s",
         -- "MenuList",
         -- "menuDef_t",
-        -- "LocalizeEntry",
+        "LocalizeEntry",
         -- "WeaponCompleteDef",
         -- "SndDriverGlobals",
         -- "FxEffectDef",
