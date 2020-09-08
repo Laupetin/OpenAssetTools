@@ -185,7 +185,7 @@ void ObjLoaderT6::LoadImageFromIwi(T6::GfxImage* image, ISearchPath* searchPath,
 
         const int textureMipCount = loadedTexture->GetMipMapCount();
         for(int mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
-            image->loadedSize += loadedTexture->GetSizeOfMipLevel(mipLevel);
+            image->loadedSize += loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount();
     }
     else
     {

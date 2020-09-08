@@ -220,11 +220,6 @@ TextureType TextureCube::GetTextureType() const
 
 int TextureCube::GetFaceCount() const
 {
-    return 6;
-}
-
-size_t TextureCube::GetSizeOfMipLevel(const int mipLevel) const
-{
     return FACE_COUNT;
 }
 

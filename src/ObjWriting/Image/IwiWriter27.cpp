@@ -108,7 +108,7 @@ void IwiWriter27::DumpImage(FileAPI::IFile* file, Texture* texture)
     const int textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
     for (int currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
-        const size_t mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel);
+        const size_t mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
         if(currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip)))
@@ -132,7 +132,7 @@ void IwiWriter27::DumpImage(FileAPI::IFile* file, Texture* texture)
 
     for (int currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
-        const size_t mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel);
+        const size_t mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         file->Write(texture->GetBufferForMipLevel(currentMipLevel), 1, mipLevelSize);
     }
 }

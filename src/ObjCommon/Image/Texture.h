@@ -93,7 +93,6 @@ public:
 
     int GetFaceCount() const override;
 
-    size_t GetSizeOfMipLevel(int mipLevel) const override;
     uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
 };
 

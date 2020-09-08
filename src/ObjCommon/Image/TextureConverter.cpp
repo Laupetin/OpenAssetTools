@@ -158,7 +158,7 @@ void TextureConverter::ReorderUnsignedToUnsigned() const
 
     for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
     {
-        const auto mipLevelSize = m_input_texture->GetSizeOfMipLevel(mipLevel);
+        const auto mipLevelSize = m_input_texture->GetSizeOfMipLevel(mipLevel) * m_input_texture->GetFaceCount();
         const auto* inputBuffer = m_input_texture->GetBufferForMipLevel(mipLevel);
         auto* outputBuffer = m_output_texture->GetBufferForMipLevel(mipLevel);
 

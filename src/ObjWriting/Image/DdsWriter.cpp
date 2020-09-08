@@ -220,7 +220,7 @@ public:
         for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
             const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel);
-            const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel);
+            const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel) * m_texture->GetFaceCount();
             m_file->Write(buffer, 1, mipLevelSize);
         }
     }
