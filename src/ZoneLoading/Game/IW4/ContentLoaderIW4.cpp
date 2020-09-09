@@ -16,7 +16,7 @@
 #include "Game/IW4/XAssets/gfximage/gfximage_load_db.h"
 #include "Game/IW4/XAssets/gfxlightdef/gfxlightdef_load_db.h"
 //#include "Game/IW4/XAssets/gfxworld/gfxworld_load_db.h"
-//#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
+#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
 #include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
 #include "Game/IW4/XAssets/localizeentry/localizeentry_load_db.h"
 //#include "Game/IW4/XAssets/mapents/mapents_load_db.h"
@@ -135,7 +135,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
     LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
     LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
-        // LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
+    LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
         // LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet);
         // LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
         // LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef);

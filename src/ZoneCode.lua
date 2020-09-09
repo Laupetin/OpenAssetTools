@@ -33,7 +33,7 @@ ZoneCode.Assets = {
         "FxImpactTable",
         "RawFile",
         "StringTable",
-        -- "LeaderboardDef",
+        "LeaderboardDef",
         -- "StructuredDataDefSet",
         -- "TracerDef",
         -- "VehicleDef",

@@ -33,7 +33,7 @@ asset FxEffectDef ASSET_TYPE_FX;
 asset FxImpactTable ASSET_TYPE_IMPACT_FX;
 asset RawFile ASSET_TYPE_RAWFILE;
 asset StringTable ASSET_TYPE_STRINGTABLE;
-// asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
+asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
 // asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
 // asset TracerDef ASSET_TYPE_TRACER;
 // asset VehicleDef ASSET_TYPE_VEHICLE;
@@ -651,5 +651,18 @@ set count values columnCount * rowCount;
 
 // StringTableCell
 set string StringTableCell::string;
+
+// =========================================
+// LeaderboardDef
+// =========================================
+use LeaderboardDef;
+set string name;
+set name name;
+set count columns columnCount;
+
+// LbColumnDef
+use LbColumnDef;
+set string name;
+set string statName;
 
 // EOF

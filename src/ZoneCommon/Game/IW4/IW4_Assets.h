@@ -105,8 +105,7 @@ namespace IW4
     struct FxImpactTable;
     struct RawFile;
     struct StringTable;
-
-    // struct LeaderboardDef;
+    struct LeaderboardDef;
     // struct StructuredDataDefSet;
     // struct TracerDef;
     // struct VehicleDef;
@@ -146,7 +145,7 @@ namespace IW4
         FxImpactTable* impactFx;
         RawFile* rawfile;
         StringTable* stringTable;
-        // LeaderboardDef* leaderboardDef;
+        LeaderboardDef* leaderboardDef;
         // StructuredDataDefSet* structuredDataDefSet;
         // TracerDef* tracerDef;
         // VehicleDef* vehDef;
@@ -1637,6 +1636,48 @@ namespace IW4
     {
         const char* name;
         FxImpactEntry* table;
+    };
+
+    enum LbColType
+    {
+        LBCOL_TYPE_NUMBER = 0x0,
+        LBCOL_TYPE_TIME = 0x1,
+        LBCOL_TYPE_LEVELXP = 0x2,
+        LBCOL_TYPE_PRESTIGE = 0x3,
+        LBCOL_TYPE_BIGNUMBER = 0x4,
+        LBCOL_TYPE_PERCENT = 0x5,
+        LBCOL_TYPE_COUNT = 0x6,
+    };
+
+    enum LbAggType
+    {
+        LBAGG_TYPE_MIN = 0x0,
+        LBAGG_TYPE_MAX = 0x1,
+        LBAGG_TYPE_SUM = 0x2,
+        LBAGG_TYPE_LAST = 0x3,
+        LBAGG_TYPE_COUNT = 0x4,
+    };
+
+    struct LbColumnDef
+    {
+        const char* name;
+        int id;
+        int propertyId;
+        bool hidden;
+        const char* statName;
+        LbColType type;
+        int precision;
+        LbAggType agg;
+    };
+
+    struct LeaderboardDef
+    {
+        const char* name;
+        int id;
+        int columnCount;
+        int xpColId;
+        int prestigeColId;
+        LbColumnDef* columns;
     };
 
 #ifndef __zonecodegenerator
