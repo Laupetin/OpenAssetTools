@@ -130,7 +130,7 @@ GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
     m_localize = nullptr;
     // m_weapon = nullptr;
     // m_snd_driver_globals = nullptr;
-    // m_fx = nullptr;
+    m_fx = nullptr;
     // m_fx_impact_table = nullptr;
     m_raw_file = nullptr;
     m_string_table = nullptr;
@@ -183,7 +183,7 @@ void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capa
     CASE_INIT_POOL_STATIC(ASSET_TYPE_LOCALIZE_ENTRY, m_localize, LocalizeEntry);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_WEAPON, m_weapon, WeaponCompleteDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, SndDriverGlobals);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, FxImpactTable);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
@@ -243,7 +243,7 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LOCALIZE_ENTRY, m_localize, LocalizeEntry);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_WEAPON, m_weapon, WeaponCompleteDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, SndDriverGlobals);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, FxImpactTable);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
@@ -312,7 +312,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
     CASE_ADD_TO_POOL(ASSET_TYPE_LOCALIZE_ENTRY, m_localize, localize);
         // CASE_ADD_TO_POOL(ASSET_TYPE_WEAPON, m_weapon, weapon);
         // CASE_ADD_TO_POOL(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, sndDriverGlobals);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_FX, m_fx, fx);
+    CASE_ADD_TO_POOL(ASSET_TYPE_FX, m_fx, fx);
         // CASE_ADD_TO_POOL(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, impactFx);
     CASE_ADD_TO_POOL(ASSET_TYPE_RAWFILE, m_raw_file, rawfile);
     CASE_ADD_TO_POOL(ASSET_TYPE_STRINGTABLE, m_string_table, stringTable);
@@ -372,7 +372,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
     CASE_GET_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, m_localize);
         // CASE_GET_ASSET(ASSET_TYPE_WEAPON, m_weapon);
         // CASE_GET_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals);
-        // CASE_GET_ASSET(ASSET_TYPE_FX, m_fx);
+    CASE_GET_ASSET(ASSET_TYPE_FX, m_fx);
         // CASE_GET_ASSET(ASSET_TYPE_IMPACT_FX, m_fx_impact_table);
     CASE_GET_ASSET(ASSET_TYPE_RAWFILE, m_raw_file);
     CASE_GET_ASSET(ASSET_TYPE_STRINGTABLE, m_string_table);
