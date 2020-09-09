@@ -1,5 +1,9 @@
 #include "Unlinker.h"
 
+#include <set>
+#include <regex>
+#include <filesystem>
+
 #include "Utils/Arguments/ArgumentParser.h"
 #include "ZoneLoading.h"
 #include "ObjWriting.h"
@@ -10,17 +14,16 @@
 #include "SearchPath/SearchPaths.h"
 #include "SearchPath/SearchPathFilesystem.h"
 #include "ContentLister/ZoneDefWriter.h"
-#include "Game/T6/ZoneDefWriterT6.h"
-
-#include <set>
-#include <regex>
-#include <filesystem>
 #include "ObjContainer/IWD/IWD.h"
 #include "UnlinkerArgs.h"
 
+#include "Game/IW4/ZoneDefWriterIW4.h"
+#include "Game/T6/ZoneDefWriterT6.h"
+
 const IZoneDefWriter* const ZONE_DEF_WRITERS[]
 {
-    new ZoneDefWriterT6()
+    new IW4::ZoneDefWriter(),
+    new T6::ZoneDefWriter()
 };
 
 class Unlinker::Impl

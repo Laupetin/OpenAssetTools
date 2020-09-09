@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Dumping/AbstractAssetDumper.h"
-#include "Game/T6/T6.h"
+#include "Game/IW4/IW4.h"
 #include "Image/IImageWriter.h"
 
-namespace T6
+namespace IW4
 {
-    class AssetDumperGfxImage final : public AbstractAssetDumper<T6::GfxImage>
+    class AssetDumperGfxImage final : public AbstractAssetDumper<IW4::GfxImage>
     {
         IImageWriter* m_writer;
 
     protected:
-        bool ShouldDump(T6::GfxImage* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::GfxImage* asset) override;
-        void DumpAsset(Zone* zone, T6::GfxImage* asset, FileAPI::File* out) override;
+        bool ShouldDump(IW4::GfxImage* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, IW4::GfxImage* asset) override;
+        void DumpAsset(Zone* zone, IW4::GfxImage* asset, FileAPI::File* out) override;
 
     public:
         AssetDumperGfxImage();

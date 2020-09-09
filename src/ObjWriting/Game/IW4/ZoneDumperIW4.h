@@ -1,7 +1,7 @@
 #pragma once
 #include "Dumping/IZoneDumper.h"
 
-namespace T6
+namespace IW4
 {
     class ZoneDumper final : public IZoneDumper
     {

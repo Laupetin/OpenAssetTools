@@ -6,7 +6,7 @@
 #include "Image/IwiWriter27.h"
 #include "Image/DdsWriter.h"
 
-using namespace T6;
+using namespace IW4;
 
 AssetDumperGfxImage::AssetDumperGfxImage()
 {
@@ -33,7 +33,7 @@ AssetDumperGfxImage::~AssetDumperGfxImage()
 
 bool AssetDumperGfxImage::ShouldDump(GfxImage* asset)
 {
-    return asset->loadedSize > 0;
+    return asset->cardMemory.platform[0] > 0;
 }
 
 std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, GfxImage* asset)

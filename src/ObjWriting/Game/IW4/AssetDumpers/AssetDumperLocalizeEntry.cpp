@@ -3,7 +3,7 @@
 #include "Dumping/Localize/LocalizeCommon.h"
 #include "Dumping/Localize/StringFileDumper.h"
 
-using namespace T6;
+using namespace IW4;
 
 void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath)
 {
@@ -17,18 +17,18 @@ void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* po
 
     FileAPI::File stringFile = FileAPI::Open(utils::Path::Combine(stringsPath, zone->m_name + ".str"), FileAPI::Mode::MODE_WRITE);
 
-    if(stringFile.IsOpen())
+    if (stringFile.IsOpen())
     {
         StringFileDumper stringFileDumper(zone, &stringFile);
 
         stringFileDumper.SetLanguageName(language);
 
         // Magic string. Original string files do have this config file. The purpose of the config file is unknown though.
-        stringFileDumper.SetConfigFile(R"(C:\projects\cod\t6\bin\StringEd.cfg)");
+        stringFileDumper.SetConfigFile(R"(C:\trees\cod3\cod3\bin\StringEd.cfg)");
 
         stringFileDumper.SetNotes("");
 
-        for(auto localizeEntry : *pool)
+        for (auto localizeEntry : *pool)
         {
             stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
         }

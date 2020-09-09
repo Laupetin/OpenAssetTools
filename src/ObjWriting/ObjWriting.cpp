@@ -1,12 +1,14 @@
 #include "ObjWriting.h"
 #include "Dumping/IZoneDumper.h"
+#include "Game/IW4/ZoneDumperIW4.h"
 #include "Game/T6/ZoneDumperT6.h"
 
 ObjWriting::Configuration_t ObjWriting::Configuration;
 
 const IZoneDumper* const ZONE_DUMPER[]
 {
-    new ZoneDumperT6()
+    new IW4::ZoneDumper(),
+    new T6::ZoneDumper()
 };
 
 bool ObjWriting::DumpZone(Zone* zone, const std::string& basePath)

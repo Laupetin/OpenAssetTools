@@ -2,7 +2,7 @@
 
 #include "ContentLister/ZoneDefWriter.h"
 
-namespace T6
+namespace IW4
 {
     class ZoneDefWriter final : public IZoneDefWriter
     {

@@ -12,12 +12,14 @@
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperFontIcon.h"
 
-bool ZoneDumperT6::CanHandleZone(Zone* zone) const
+using namespace T6;
+
+bool ZoneDumper::CanHandleZone(Zone* zone) const
 {
     return zone->m_game == &g_GameT6;
 }
 
-bool ZoneDumperT6::DumpZone(Zone* zone, const std::string& basePath) const
+bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
 {
 #define DUMP_ASSET_POOL(dumperType, poolName) \
     if(assetPools->poolName) \
