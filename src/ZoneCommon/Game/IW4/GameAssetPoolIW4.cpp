@@ -135,7 +135,7 @@ GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
     m_raw_file = nullptr;
     m_string_table = nullptr;
     m_leaderboard = nullptr;
-    // m_structed_data_def_set = nullptr;
+    m_structed_data_def_set = nullptr;
     m_tracer = nullptr;
     // m_vehicle = nullptr;
     // m_addon_map_ents = nullptr;
@@ -188,7 +188,7 @@ void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capa
     CASE_INIT_POOL_STATIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_LEADERBOARD, m_leaderboard, LeaderboardDef);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_TRACER, m_tracer, TracerDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_VEHICLE, m_vehicle, VehicleDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents, AddonMapEnts);
@@ -248,7 +248,7 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_RAWFILE, m_raw_file, RawFile);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRINGTABLE, m_string_table, StringTable);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LEADERBOARD, m_leaderboard, LeaderboardDef);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TRACER, m_tracer, TracerDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VEHICLE, m_vehicle, VehicleDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents, AddonMapEnts);
@@ -317,7 +317,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
     CASE_ADD_TO_POOL(ASSET_TYPE_RAWFILE, m_raw_file, rawfile);
     CASE_ADD_TO_POOL(ASSET_TYPE_STRINGTABLE, m_string_table, stringTable);
     CASE_ADD_TO_POOL(ASSET_TYPE_LEADERBOARD, m_leaderboard, leaderboardDef);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, structuredDataDefSet);
+    CASE_ADD_TO_POOL(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, structuredDataDefSet);
     CASE_ADD_TO_POOL(ASSET_TYPE_TRACER, m_tracer, tracerDef);
         // CASE_ADD_TO_POOL(ASSET_TYPE_VEHICLE, m_vehicle, vehDef);
         // CASE_ADD_TO_POOL(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents, addonMapEnts);
@@ -377,7 +377,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
     CASE_GET_ASSET(ASSET_TYPE_RAWFILE, m_raw_file);
     CASE_GET_ASSET(ASSET_TYPE_STRINGTABLE, m_string_table);
     CASE_GET_ASSET(ASSET_TYPE_LEADERBOARD, m_leaderboard);
-        // CASE_GET_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set);
+    CASE_GET_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set);
     CASE_GET_ASSET(ASSET_TYPE_TRACER, m_tracer);
         // CASE_GET_ASSET(ASSET_TYPE_VEHICLE, m_vehicle);
         // CASE_GET_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents);

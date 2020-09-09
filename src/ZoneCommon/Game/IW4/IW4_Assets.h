@@ -106,7 +106,7 @@ namespace IW4
     struct RawFile;
     struct StringTable;
     struct LeaderboardDef;
-    // struct StructuredDataDefSet;
+    struct StructuredDataDefSet;
     struct TracerDef;
     // struct VehicleDef;
     // struct AddonMapEnts;
@@ -146,7 +146,7 @@ namespace IW4
         RawFile* rawfile;
         StringTable* stringTable;
         LeaderboardDef* leaderboardDef;
-        // StructuredDataDefSet* structuredDataDefSet;
+        StructuredDataDefSet* structuredDataDefSet;
         TracerDef* tracerDef;
         // VehicleDef* vehDef;
         // AddonMapEnts* addonMapEnts;
@@ -1691,6 +1691,101 @@ namespace IW4
         float screwRadius;
         float screwDist;
         float colors[5][4];
+    };
+
+    enum StructuredDataTypeCategory
+    {
+        DATA_INT = 0x0,
+        DATA_BYTE = 0x1,
+        DATA_BOOL = 0x2,
+        DATA_STRING = 0x3,
+        DATA_ENUM = 0x4,
+        DATA_STRUCT = 0x5,
+        DATA_INDEXED_ARRAY = 0x6,
+        DATA_ENUM_ARRAY = 0x7,
+        DATA_FLOAT = 0x8,
+        DATA_SHORT = 0x9,
+        DATA_COUNT = 0xA,
+    };
+
+    struct __declspec(align(4)) StructuredDataEnumEntry
+    {
+        const char* string;
+        unsigned __int16 index;
+    };
+
+    struct StructuredDataEnum
+    {
+        int entryCount;
+        int reservedEntryCount;
+        StructuredDataEnumEntry* entries;
+    };
+
+    union StructuredDataTypeUnion
+    {
+        unsigned int stringDataLength;
+        int enumIndex;
+        int structIndex;
+        int indexedArrayIndex;
+        int enumedArrayIndex;
+    };
+
+    struct StructuredDataType
+    {
+        StructuredDataTypeCategory type;
+        StructuredDataTypeUnion u;
+    };
+
+    struct StructuredDataStructProperty
+    {
+        const char* name;
+        StructuredDataType type;
+        unsigned int offset;
+    };
+
+    struct StructuredDataStruct
+    {
+        int propertyCount;
+        StructuredDataStructProperty* properties;
+        int size;
+        unsigned int bitOffset;
+    };
+
+    struct StructuredDataIndexedArray
+    {
+        int arraySize;
+        StructuredDataType elementType;
+        unsigned int elementSize;
+    };
+
+    struct StructuredDataEnumedArray
+    {
+        int enumIndex;
+        StructuredDataType elementType;
+        unsigned int elementSize;
+    };
+
+    struct StructuredDataDef
+    {
+        int version;
+        unsigned int formatChecksum;
+        int enumCount;
+        StructuredDataEnum* enums;
+        int structCount;
+        StructuredDataStruct* structs;
+        int indexedArrayCount;
+        StructuredDataIndexedArray* indexedArrays;
+        int enumedArrayCount;
+        StructuredDataEnumedArray* enumedArrays;
+        StructuredDataType rootType;
+        unsigned int size;
+    };
+
+    struct StructuredDataDefSet
+    {
+        const char* name;
+        unsigned int defCount;
+        StructuredDataDef* defs;
     };
 
 #ifndef __zonecodegenerator

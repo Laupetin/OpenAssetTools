@@ -34,7 +34,7 @@ asset FxImpactTable ASSET_TYPE_IMPACT_FX;
 asset RawFile ASSET_TYPE_RAWFILE;
 asset StringTable ASSET_TYPE_STRINGTABLE;
 asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
-// asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
+asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
 asset TracerDef ASSET_TYPE_TRACER;
 // asset VehicleDef ASSET_TYPE_VEHICLE;
 // asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
@@ -664,6 +664,33 @@ set count columns columnCount;
 use LbColumnDef;
 set string name;
 set string statName;
+
+// =========================================
+// StructuredDataDefSet
+// =========================================
+use StructuredDataDefSet;
+set string name;
+set name name;
+set count defs defCount;
+
+// StructuredDataDef
+use StructuredDataDef;
+set count enums enumCount;
+set count structs structCount;
+set count indexedArrays indexedArrayCount;
+set count enumedArrays enumedArrayCount;
+
+// StructuredDataEnum
+set count StructuredDataEnum::entries entryCount;
+
+// StructuredDataEnumEntry
+set string StructuredDataEnumEntry::string;
+
+// StructuredDataStruct
+set count StructuredDataStruct::properties propertyCount;
+
+// StructuredDataStructProperty
+set string StructuredDataStructProperty::name;
 
 // =========================================
 // TracerDef

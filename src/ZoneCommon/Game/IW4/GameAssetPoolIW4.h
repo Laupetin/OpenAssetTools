@@ -47,7 +47,7 @@ public:
     std::unique_ptr<AssetPool<IW4::RawFile>> m_raw_file;
     std::unique_ptr<AssetPool<IW4::StringTable>> m_string_table;
     std::unique_ptr<AssetPool<IW4::LeaderboardDef>> m_leaderboard;
-    // std::unique_ptr<AssetPool<IW4::StructuredDataDefSet>> m_structed_data_def_set;
+    std::unique_ptr<AssetPool<IW4::StructuredDataDefSet>> m_structed_data_def_set;
     std::unique_ptr<AssetPool<IW4::TracerDef>> m_tracer;
     // std::unique_ptr<AssetPool<IW4::VehicleDef>> m_vehicle;
     // std::unique_ptr<AssetPool<IW4::AddonMapEnts>> m_addon_map_ents;

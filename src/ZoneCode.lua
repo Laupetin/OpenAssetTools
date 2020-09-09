@@ -34,7 +34,7 @@ ZoneCode.Assets = {
         "RawFile",
         "StringTable",
         "LeaderboardDef",
-        -- "StructuredDataDefSet",
+        "StructuredDataDefSet",
         "TracerDef",
         -- "VehicleDef",
         -- "AddonMapEnts"
