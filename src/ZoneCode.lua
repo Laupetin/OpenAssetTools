@@ -30,7 +30,7 @@ ZoneCode.Assets = {
         -- "WeaponCompleteDef",
         -- "SndDriverGlobals",
         "FxEffectDef",
-        -- "FxImpactTable",
+        "FxImpactTable",
         "RawFile",
         "StringTable",
         -- "LeaderboardDef",

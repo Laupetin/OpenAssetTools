@@ -9,7 +9,7 @@
 //#include "Game/IW4/XAssets/comworld/comworld_load_db.h"
 //#include "Game/IW4/XAssets/font_s/font_s_load_db.h"
 #include "Game/IW4/XAssets/fxeffectdef/fxeffectdef_load_db.h"
-//#include "Game/IW4/XAssets/fximpacttable/fximpacttable_load_db.h"
+#include "Game/IW4/XAssets/fximpacttable/fximpacttable_load_db.h"
 //#include "Game/IW4/XAssets/fxworld/fxworld_load_db.h"
 //#include "Game/IW4/XAssets/gameworldmp/gameworldmp_load_db.h"
 //#include "Game/IW4/XAssets/gameworldsp/gameworldsp_load_db.h"
@@ -132,7 +132,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon);
     SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
     LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
-        // LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
+    LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
     LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
     LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
         // LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);

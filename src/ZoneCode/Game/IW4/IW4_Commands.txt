@@ -30,7 +30,7 @@ asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
 // asset WeaponCompleteDef ASSET_TYPE_WEAPON;
 // asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
 asset FxEffectDef ASSET_TYPE_FX;
-// asset FxImpactTable ASSET_TYPE_IMPACT_FX;
+asset FxImpactTable ASSET_TYPE_IMPACT_FX;
 asset RawFile ASSET_TYPE_RAWFILE;
 asset StringTable ASSET_TYPE_STRINGTABLE;
 // asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
@@ -615,6 +615,14 @@ set condition sparkFountainDef FxElemDef::elemType == FX_ELEM_TYPE_SPARK_FOUNTAI
 use FxTrailDef;
 set count verts vertCount;
 set count inds indCount;
+
+// =========================================
+// FxImpactTable
+// =========================================
+use FxImpactTable;
+set string name;
+set name name;
+set count table 15;
 
 // =========================================
 // GfxLightDef

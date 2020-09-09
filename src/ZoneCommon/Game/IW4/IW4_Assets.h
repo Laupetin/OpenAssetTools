@@ -102,7 +102,7 @@ namespace IW4
     // struct WeaponCompleteDef;
     // struct SndDriverGlobals;
     struct FxEffectDef;
-    // struct FxImpactTable;
+    struct FxImpactTable;
     struct RawFile;
     struct StringTable;
 
@@ -143,7 +143,7 @@ namespace IW4
         // WeaponCompleteDef* weapon;
         // SndDriverGlobals* sndDriverGlobals;
         FxEffectDef* fx;
-        // FxImpactTable* impactFx;
+        FxImpactTable* impactFx;
         RawFile* rawfile;
         StringTable* stringTable;
         // LeaderboardDef* leaderboardDef;
@@ -1625,6 +1625,18 @@ namespace IW4
         const char* name;
         GfxLightImage attenuation;
         int lmapLookupStart;
+    };
+
+    struct FxImpactEntry
+    {
+        FxEffectDef* nonflesh[31];
+        FxEffectDef* flesh[4];
+    };
+
+    struct FxImpactTable
+    {
+        const char* name;
+        FxImpactEntry* table;
     };
 
 #ifndef __zonecodegenerator
