@@ -114,7 +114,7 @@ void XBlockInputStream::LoadDataInBlock(void* dst, const size_t size)
         throw OutOfBlockBoundsException(block);
     }
 
-    if (reinterpret_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
+    if (static_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
     {
         throw BlockOverflowException(block);
     }
