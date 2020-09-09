@@ -22,7 +22,7 @@ ZoneCode.Assets = {
         -- "MapEnts",
         -- "FxWorld",
         -- "GfxWorld",
-        -- "GfxLightDef",
+        "GfxLightDef",
         -- "Font_s",
         "MenuList",
         "menuDef_t",

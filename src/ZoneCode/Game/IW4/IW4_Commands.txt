@@ -22,7 +22,7 @@ asset LoadedSound ASSET_TYPE_LOADED_SOUND;
 // asset MapEnts ASSET_TYPE_MAP_ENTS;
 // asset FxWorld ASSET_TYPE_FXWORLD;
 // asset GfxWorld ASSET_TYPE_GFXWORLD;
-// asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
+asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
 // asset Font_s ASSET_TYPE_FONT;
 asset MenuList ASSET_TYPE_MENULIST;
 asset menuDef_t ASSET_TYPE_MENU;
@@ -615,6 +615,13 @@ set condition sparkFountainDef FxElemDef::elemType == FX_ELEM_TYPE_SPARK_FOUNTAI
 use FxTrailDef;
 set count verts vertCount;
 set count inds indCount;
+
+// =========================================
+// GfxLightDef
+// =========================================
+use GfxLightDef;
+set string name;
+set name name;
 
 // =========================================
 // RawFile

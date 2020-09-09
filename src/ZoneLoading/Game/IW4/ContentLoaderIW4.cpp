@@ -14,7 +14,7 @@
 //#include "Game/IW4/XAssets/gameworldmp/gameworldmp_load_db.h"
 //#include "Game/IW4/XAssets/gameworldsp/gameworldsp_load_db.h"
 #include "Game/IW4/XAssets/gfximage/gfximage_load_db.h"
-//#include "Game/IW4/XAssets/gfxlightdef/gfxlightdef_load_db.h"
+#include "Game/IW4/XAssets/gfxlightdef/gfxlightdef_load_db.h"
 //#include "Game/IW4/XAssets/gfxworld/gfxworld_load_db.h"
 //#include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
 #include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
@@ -124,7 +124,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
         // LOAD_ASSET(ASSET_TYPE_FXWORLD, FxWorld, fxWorld);
         // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
-        // LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
+    LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
         // LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
     LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
     LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);

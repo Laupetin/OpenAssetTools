@@ -35,7 +35,7 @@ public:
     // std::unique_ptr<AssetPool<IW4::MapEnts>> m_map_ents;
     // std::unique_ptr<AssetPool<IW4::FxWorld>> m_fx_world;
     // std::unique_ptr<AssetPool<IW4::GfxWorld>> m_gfx_world;
-    // std::unique_ptr<AssetPool<IW4::GfxLightDef>> m_gfx_light_def;
+    std::unique_ptr<AssetPool<IW4::GfxLightDef>> m_gfx_light_def;
     // std::unique_ptr<AssetPool<IW4::Font_s>> m_font;
     std::unique_ptr<AssetPool<IW4::MenuList>> m_menu_list;
     std::unique_ptr<AssetPool<IW4::menuDef_t>> m_menu_def;

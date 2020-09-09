@@ -94,7 +94,7 @@ namespace IW4
     // struct MapEnts;
     // struct FxWorld;
     // struct GfxWorld;
-    // struct GfxLightDef;
+    struct GfxLightDef;
     // struct Font_s;
     struct MenuList;
     struct menuDef_t;
@@ -105,6 +105,7 @@ namespace IW4
     // struct FxImpactTable;
     struct RawFile;
     struct StringTable;
+
     // struct LeaderboardDef;
     // struct StructuredDataDefSet;
     // struct TracerDef;
@@ -134,7 +135,7 @@ namespace IW4
         // MapEnts* mapEnts;
         // FxWorld* fxWorld;
         // GfxWorld* gfxWorld;
-        // GfxLightDef* lightDef;
+        GfxLightDef* lightDef;
         // Font_s* font;
         MenuList* menuList;
         menuDef_t* menu;
@@ -1611,6 +1612,19 @@ namespace IW4
         int elemDefCountOneShot;
         int elemDefCountEmission;
         FxElemDef* elemDefs;
+    };
+
+    struct GfxLightImage
+    {
+        GfxImage* image;
+        char samplerState;
+    };
+
+    struct GfxLightDef
+    {
+        const char* name;
+        GfxLightImage attenuation;
+        int lmapLookupStart;
     };
 
 #ifndef __zonecodegenerator
