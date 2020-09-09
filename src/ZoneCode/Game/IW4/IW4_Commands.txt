@@ -35,7 +35,7 @@ asset RawFile ASSET_TYPE_RAWFILE;
 asset StringTable ASSET_TYPE_STRINGTABLE;
 asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
 // asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
-// asset TracerDef ASSET_TYPE_TRACER;
+asset TracerDef ASSET_TYPE_TRACER;
 // asset VehicleDef ASSET_TYPE_VEHICLE;
 // asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
 
@@ -664,5 +664,12 @@ set count columns columnCount;
 use LbColumnDef;
 set string name;
 set string statName;
+
+// =========================================
+// TracerDef
+// =========================================
+use TracerDef;
+set string name;
+set name name;
 
 // EOF

@@ -107,7 +107,7 @@ namespace IW4
     struct StringTable;
     struct LeaderboardDef;
     // struct StructuredDataDefSet;
-    // struct TracerDef;
+    struct TracerDef;
     // struct VehicleDef;
     // struct AddonMapEnts;
 
@@ -147,7 +147,7 @@ namespace IW4
         StringTable* stringTable;
         LeaderboardDef* leaderboardDef;
         // StructuredDataDefSet* structuredDataDefSet;
-        // TracerDef* tracerDef;
+        TracerDef* tracerDef;
         // VehicleDef* vehDef;
         // AddonMapEnts* addonMapEnts;
         void* data;
@@ -1678,6 +1678,19 @@ namespace IW4
         int xpColId;
         int prestigeColId;
         LbColumnDef* columns;
+    };
+
+    struct TracerDef
+    {
+        const char* name;
+        Material* material;
+        unsigned int drawInterval;
+        float speed;
+        float beamLength;
+        float beamWidth;
+        float screwRadius;
+        float screwDist;
+        float colors[5][4];
     };
 
 #ifndef __zonecodegenerator
