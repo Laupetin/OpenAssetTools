@@ -153,11 +153,13 @@ void $LoaderClassName(context.Asset)$::LoadPtrArray_$SafeTypeName(type)$(const b
     if(atStreamStart)
         m_stream->Load<$type.FullName$*>($TypePtrVarName(type)$, count);
 
+    $type.FullName$** var = $TypePtrVarName(type)$;
     for(size_t index = 0; index < count; index++)
     {
+        $TypePtrVarName(type)$ = var;
         $LoadPointerArrayMethod_PointerCheck(context, type, structure, reusable)$
 
-        $TypePtrVarName(type)$++;
+        var++;
     }
 }
 >>

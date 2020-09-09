@@ -236,13 +236,16 @@ void $LoaderClassName(context.Asset)$::LoadArray_$type.Name$(const bool atStream
     if(atStreamStart)
         m_stream->Load<$type.FullName$>($TypeVarName(type)$, count);
 
+    $type.FullName$* var = $TypeVarName(type)$;
     for(size_t index = 0; index < count; index++)
     {
         $if(!type.Members)$
-        $TypeVarName(structure.Type)$ = $TypeVarName(type)$;
+        $TypeVarName(structure.Type)$ = var;
+        $else$
+        $TypeVarName(type)$ = var;
         $endif$
         Load_$structure.Type.Name$(false);
-        $TypeVarName(type)$++;
+        var++;
     }
 }
 >>
