@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ZoneCodeGenerator.Domain;
-using ZoneCodeGenerator.Domain.FastFileStructure;
 using ZoneCodeGenerator.Domain.Information;
 using ZoneCodeGenerator.Parsing.Matching;
 using ZoneCodeGenerator.Parsing.Matching.Matchers;
@@ -21,8 +17,11 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
         {
             new MatcherLiteral("set"),
             new MatcherLiteral("block"),
-            new MatcherTypename().WithName(TokenTypeName),
-            new MatcherName().WithName(TokenBlockEnumEntry),
+            new MatcherGroupOr(new MatcherGroupAnd(
+                    new MatcherTypename().WithName(TokenTypeName),
+                    new MatcherName().WithName(TokenBlockEnumEntry)
+                ),
+                new MatcherName().WithName(TokenBlockEnumEntry)),
             new MatcherLiteral(";")
         };
 
@@ -33,35 +32,52 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
         protected override void ProcessMatch(ICommandParserState state)
         {
             var typeName = NextMatch(TokenTypeName);
-            var typeNameParts = typeName.Split(new[] {"::"}, StringSplitOptions.None);
 
-            if (state.DataTypeInUse != null &&
-                state.GetMembersFromParts(typeNameParts, state.DataTypeInUse, out var memberList))
+            StructureInformation typeInfo;
+            List<MemberInformation> memberList;
+
+            if (typeName != null)
             {
-                // Do nothing
-            }
-            else if (state.GetTypenameAndMembersFromParts(typeNameParts, out _, out memberList))
-            {
-                // Do nothing
+                var typeNameParts = typeName.Split(new[] { "::" }, StringSplitOptions.None);
+                if (state.DataTypeInUse != null &&
+                    state.GetMembersFromParts(typeNameParts, state.DataTypeInUse, out memberList))
+                {
+                    typeInfo = state.DataTypeInUse;
+                }
+                else if (state.GetTypenameAndMembersFromParts(typeNameParts, out typeInfo, out memberList))
+                {
+                    // Do nothing
+                }
+                else
+                {
+                    throw new TestFailedException($"Could not find type '{typeName}'.");
+                }
             }
             else
             {
-                throw new TestFailedException($"Could not find type '{typeName}'.");
-            }
+                typeInfo = state.DataTypeInUse;
+                memberList = new List<MemberInformation>();
 
-            if (!memberList.Any())
-            {
-                throw new TestFailedException("Must specify a member and not a type when setting a block.");
+                if(typeInfo == null)
+                    throw new TestFailedException("Must specify a type or member.");
             }
-
-            var member = memberList.Last();
 
             var blockName = NextMatch(TokenBlockEnumEntry);
             var block = state.FastFileBlocks
                 .FirstOrDefault(fastFileBlock => fastFileBlock.Name.Equals(blockName));
 
-            member.Block =
-                block ?? throw new TestFailedException($"Could not find fastfile block with name '{blockName}'");
+            if (block == null)
+                throw new TestFailedException($"Could not find fastfile block with name '{blockName}'");
+
+            if (memberList.Any())
+            {
+                var member = memberList.Last();
+                member.Block = block;
+            }
+            else
+            {
+                typeInfo.Block = block;
+            }
         }
     }
 }

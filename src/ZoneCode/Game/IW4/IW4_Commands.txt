@@ -199,6 +199,7 @@ set condition surfs never;
 
 // XModelSurfs
 use XModelSurfs;
+set block XFILE_BLOCK_VIRTUAL;
 set string name;
 set count surfs XModelLodInfo::numsurfs; // No this is not a mistake. This is how the game does it.
 

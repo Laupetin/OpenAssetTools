@@ -263,12 +263,15 @@ void $LoaderClassName(context.Asset)$::Load_$structure.Type.Name$(const bool atS
     $else$
     assert(atStreamStart);$\\$
     $endif$
-    $if(structure.IsAsset)$
+    $if(structure.Block)$
+
+    m_stream->PushBlock($structure.Block.Name$);$\\$
+    $elseif(structure.IsAsset)$
 
     m_stream->PushBlock($context.DefaultNormalBlock.Name$);$\\$
     $endif$
     $structure.OrderedMembers:{member | $LoadMemberIfNeedsTreatment(context, structure, member)$}$
-    $if(structure.IsAsset)$
+    $if(structure.Block || structure.IsAsset)$
 
     m_stream->PopBlock();
     $endif$

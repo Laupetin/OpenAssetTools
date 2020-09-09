@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ZoneCodeGenerator.Domain.FastFileStructure;
 using ZoneCodeGenerator.Generating.Computations;
 
 namespace ZoneCodeGenerator.Domain.Information
@@ -28,6 +29,7 @@ namespace ZoneCodeGenerator.Domain.Information
         public bool ReferenceFromNonDefaultNormalBlockExists { get; set; }
 
         public CustomAction PostLoadAction { get; set; }
+        public FastFileBlock Block { get; set; }
 
         public bool IsLeaf { get; set; }
 
