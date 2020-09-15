@@ -4,10 +4,10 @@
 
 #include <cassert>
 
-//#include "Game/IW4/XAssets/addonmapents/addonmapents_load_db.h"
+#include "Game/IW4/XAssets/addonmapents/addonmapents_load_db.h"
 #include "Game/IW4/XAssets/clipmap_t/clipmap_t_load_db.h"
 //#include "Game/IW4/XAssets/comworld/comworld_load_db.h"
-//#include "Game/IW4/XAssets/font_s/font_s_load_db.h"
+#include "Game/IW4/XAssets/font_s/font_s_load_db.h"
 #include "Game/IW4/XAssets/fxeffectdef/fxeffectdef_load_db.h"
 #include "Game/IW4/XAssets/fximpacttable/fximpacttable_load_db.h"
 //#include "Game/IW4/XAssets/fxworld/fxworld_load_db.h"
@@ -125,7 +125,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
         // LOAD_ASSET(ASSET_TYPE_FXWORLD, FxWorld, fxWorld);
         // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
     LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
-        // LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
+    LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
     LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
     LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
     LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
@@ -139,7 +139,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet);
     LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
         // LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef);
-        // LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
+    LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
 
     default:
         {

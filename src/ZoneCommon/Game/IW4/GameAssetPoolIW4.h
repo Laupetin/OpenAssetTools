@@ -36,7 +36,7 @@ public:
     // std::unique_ptr<AssetPool<IW4::FxWorld>> m_fx_world;
     // std::unique_ptr<AssetPool<IW4::GfxWorld>> m_gfx_world;
     std::unique_ptr<AssetPool<IW4::GfxLightDef>> m_gfx_light_def;
-    // std::unique_ptr<AssetPool<IW4::Font_s>> m_font;
+    std::unique_ptr<AssetPool<IW4::Font_s>> m_font;
     std::unique_ptr<AssetPool<IW4::MenuList>> m_menu_list;
     std::unique_ptr<AssetPool<IW4::menuDef_t>> m_menu_def;
     std::unique_ptr<AssetPool<IW4::LocalizeEntry>> m_localize;
@@ -50,7 +50,7 @@ public:
     std::unique_ptr<AssetPool<IW4::StructuredDataDefSet>> m_structed_data_def_set;
     std::unique_ptr<AssetPool<IW4::TracerDef>> m_tracer;
     // std::unique_ptr<AssetPool<IW4::VehicleDef>> m_vehicle;
-    // std::unique_ptr<AssetPool<IW4::AddonMapEnts>> m_addon_map_ents;
+    std::unique_ptr<AssetPool<IW4::AddonMapEnts>> m_addon_map_ents;
 
     explicit GameAssetPoolIW4(int priority);
     ~GameAssetPoolIW4() override = default;

@@ -23,7 +23,7 @@ ZoneCode.Assets = {
         -- "FxWorld",
         -- "GfxWorld",
         "GfxLightDef",
-        -- "Font_s",
+        "Font_s",
         "MenuList",
         "menuDef_t",
         "LocalizeEntry",
@@ -37,7 +37,7 @@ ZoneCode.Assets = {
         "StructuredDataDefSet",
         "TracerDef",
         -- "VehicleDef",
-        -- "AddonMapEnts"
+        "AddonMapEnts"
     },
 
     T6 = {

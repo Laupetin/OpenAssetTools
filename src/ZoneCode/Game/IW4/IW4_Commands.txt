@@ -23,7 +23,7 @@ asset MapEnts ASSET_TYPE_MAP_ENTS;
 // asset FxWorld ASSET_TYPE_FXWORLD;
 // asset GfxWorld ASSET_TYPE_GFXWORLD;
 asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
-// asset Font_s ASSET_TYPE_FONT;
+asset Font_s ASSET_TYPE_FONT;
 asset MenuList ASSET_TYPE_MENULIST;
 asset menuDef_t ASSET_TYPE_MENU;
 asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
@@ -37,7 +37,7 @@ asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
 asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
 asset TracerDef ASSET_TYPE_TRACER;
 // asset VehicleDef ASSET_TYPE_VEHICLE;
-// asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
+asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
 
 // Setup blocks
 block temp    XFILE_BLOCK_TEMP              default;
@@ -739,6 +739,15 @@ set string name;
 set name name;
 
 // =========================================
+// Font_s
+// =========================================
+use Font_s;
+set string fontName;
+set name fontName;
+set reusable glyphs;
+set count glyphs glyphCount;
+
+// =========================================
 // RawFile
 // =========================================
 use RawFile;
@@ -805,5 +814,13 @@ set string StructuredDataStructProperty::name;
 use TracerDef;
 set string name;
 set name name;
+
+// =========================================
+// AddonMapEnts
+// =========================================
+use AddonMapEnts;
+set string name;
+set name name;
+set count entityString numEntityChars;
 
 // EOF

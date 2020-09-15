@@ -95,7 +95,7 @@ namespace IW4
     // struct FxWorld;
     // struct GfxWorld;
     struct GfxLightDef;
-    // struct Font_s;
+    struct Font_s;
     struct MenuList;
     struct menuDef_t;
     struct LocalizeEntry;
@@ -109,7 +109,7 @@ namespace IW4
     struct StructuredDataDefSet;
     struct TracerDef;
     // struct VehicleDef;
-    // struct AddonMapEnts;
+    struct AddonMapEnts;
 
     union XAssetHeader
     {
@@ -135,7 +135,7 @@ namespace IW4
         // FxWorld* fxWorld;
         // GfxWorld* gfxWorld;
         GfxLightDef* lightDef;
-        // Font_s* font;
+        Font_s* font;
         MenuList* menuList;
         menuDef_t* menu;
         LocalizeEntry* localize;
@@ -149,7 +149,7 @@ namespace IW4
         StructuredDataDefSet* structuredDataDefSet;
         TracerDef* tracerDef;
         // VehicleDef* vehDef;
-        // AddonMapEnts* addonMapEnts;
+        AddonMapEnts* addonMapEnts;
         void* data;
     };
 
@@ -1626,6 +1626,30 @@ namespace IW4
         int lmapLookupStart;
     };
 
+    struct Glyph
+    {
+        unsigned __int16 letter;
+        char x0;
+        char y0;
+        char dx;
+        char pixelWidth;
+        char pixelHeight;
+        float s0;
+        float t0;
+        float s1;
+        float t1;
+    };
+
+    struct Font_s
+    {
+        const char* fontName;
+        int pixelHeight;
+        int glyphCount;
+        Material* material;
+        Material* glowMaterial;
+        Glyph* glyphs;
+    };
+
     struct FxImpactEntry
     {
         FxEffectDef* nonflesh[31];
@@ -1836,6 +1860,14 @@ namespace IW4
         MapTriggers trigger;
         Stage* stages;
         char stageCount;
+    };
+
+    struct AddonMapEnts
+    {
+        const char* name;
+        char* entityString;
+        int numEntityChars;
+        MapTriggers trigger;
     };
 
     typedef unsigned short LeafBrush;
