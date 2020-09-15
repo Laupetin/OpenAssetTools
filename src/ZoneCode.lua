@@ -27,7 +27,7 @@ ZoneCode.Assets = {
         "MenuList",
         "menuDef_t",
         "LocalizeEntry",
-        -- "WeaponCompleteDef",
+        "WeaponCompleteDef",
         -- "SndDriverGlobals",
         "FxEffectDef",
         "FxImpactTable",
@@ -36,7 +36,7 @@ ZoneCode.Assets = {
         "LeaderboardDef",
         "StructuredDataDefSet",
         "TracerDef",
-        -- "VehicleDef",
+        "VehicleDef",
         "AddonMapEnts"
     },
 

@@ -128,7 +128,7 @@ GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
     m_menu_list = nullptr;
     m_menu_def = nullptr;
     m_localize = nullptr;
-    // m_weapon = nullptr;
+    m_weapon = nullptr;
     // m_snd_driver_globals = nullptr;
     m_fx = nullptr;
     m_fx_impact_table = nullptr;
@@ -137,7 +137,7 @@ GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
     m_leaderboard = nullptr;
     m_structed_data_def_set = nullptr;
     m_tracer = nullptr;
-    // m_vehicle = nullptr;
+    m_vehicle = nullptr;
     m_addon_map_ents = nullptr;
 }
 
@@ -181,7 +181,7 @@ void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capa
     CASE_INIT_POOL_STATIC(ASSET_TYPE_MENULIST, m_menu_list, MenuList);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_MENU, m_menu_def, menuDef_t);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_LOCALIZE_ENTRY, m_localize, LocalizeEntry);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_WEAPON, m_weapon, WeaponCompleteDef);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_WEAPON, m_weapon, WeaponCompleteDef);
         // CASE_INIT_POOL_STATIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, SndDriverGlobals);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, FxImpactTable);
@@ -190,7 +190,7 @@ void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capa
     CASE_INIT_POOL_STATIC(ASSET_TYPE_LEADERBOARD, m_leaderboard, LeaderboardDef);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_TRACER, m_tracer, TracerDef);
-        // CASE_INIT_POOL_STATIC(ASSET_TYPE_VEHICLE, m_vehicle, VehicleDef);
+    CASE_INIT_POOL_STATIC(ASSET_TYPE_VEHICLE, m_vehicle, VehicleDef);
     CASE_INIT_POOL_STATIC(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents, AddonMapEnts);
 
     default:
@@ -241,7 +241,7 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MENULIST, m_menu_list, MenuList);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MENU, m_menu_def, menuDef_t);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LOCALIZE_ENTRY, m_localize, LocalizeEntry);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_WEAPON, m_weapon, WeaponCompleteDef);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_WEAPON, m_weapon, WeaponCompleteDef);
         // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, SndDriverGlobals);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FX, m_fx, FxEffectDef);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, FxImpactTable);
@@ -250,7 +250,7 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LEADERBOARD, m_leaderboard, LeaderboardDef);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, StructuredDataDefSet);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TRACER, m_tracer, TracerDef);
-        // CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VEHICLE, m_vehicle, VehicleDef);
+    CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VEHICLE, m_vehicle, VehicleDef);
     CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents, AddonMapEnts);
 
     default:
@@ -310,7 +310,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
     CASE_ADD_TO_POOL(ASSET_TYPE_MENULIST, m_menu_list, menuList);
     CASE_ADD_TO_POOL(ASSET_TYPE_MENU, m_menu_def, menu);
     CASE_ADD_TO_POOL(ASSET_TYPE_LOCALIZE_ENTRY, m_localize, localize);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_WEAPON, m_weapon, weapon);
+    CASE_ADD_TO_POOL(ASSET_TYPE_WEAPON, m_weapon, weapon);
         // CASE_ADD_TO_POOL(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals, sndDriverGlobals);
     CASE_ADD_TO_POOL(ASSET_TYPE_FX, m_fx, fx);
     CASE_ADD_TO_POOL(ASSET_TYPE_IMPACT_FX, m_fx_impact_table, impactFx);
@@ -319,7 +319,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
     CASE_ADD_TO_POOL(ASSET_TYPE_LEADERBOARD, m_leaderboard, leaderboardDef);
     CASE_ADD_TO_POOL(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set, structuredDataDefSet);
     CASE_ADD_TO_POOL(ASSET_TYPE_TRACER, m_tracer, tracerDef);
-        // CASE_ADD_TO_POOL(ASSET_TYPE_VEHICLE, m_vehicle, vehDef);
+    CASE_ADD_TO_POOL(ASSET_TYPE_VEHICLE, m_vehicle, vehDef);
     CASE_ADD_TO_POOL(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents, addonMapEnts);
 
     default:
@@ -370,7 +370,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
     CASE_GET_ASSET(ASSET_TYPE_MENULIST, m_menu_list);
     CASE_GET_ASSET(ASSET_TYPE_MENU, m_menu_def);
     CASE_GET_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, m_localize);
-        // CASE_GET_ASSET(ASSET_TYPE_WEAPON, m_weapon);
+    CASE_GET_ASSET(ASSET_TYPE_WEAPON, m_weapon);
         // CASE_GET_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals);
     CASE_GET_ASSET(ASSET_TYPE_FX, m_fx);
     CASE_GET_ASSET(ASSET_TYPE_IMPACT_FX, m_fx_impact_table);
@@ -379,7 +379,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
     CASE_GET_ASSET(ASSET_TYPE_LEADERBOARD, m_leaderboard);
     CASE_GET_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, m_structed_data_def_set);
     CASE_GET_ASSET(ASSET_TYPE_TRACER, m_tracer);
-        // CASE_GET_ASSET(ASSET_TYPE_VEHICLE, m_vehicle);
+    CASE_GET_ASSET(ASSET_TYPE_VEHICLE, m_vehicle);
     CASE_GET_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents);
 
     default:

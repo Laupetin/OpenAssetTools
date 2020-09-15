@@ -36,8 +36,8 @@
 #include "Game/IW4/XAssets/stringtable/stringtable_load_db.h"
 #include "Game/IW4/XAssets/structureddatadefset/structureddatadefset_load_db.h"
 #include "Game/IW4/XAssets/tracerdef/tracerdef_load_db.h"
-//#include "Game/IW4/XAssets/vehicledef/vehicledef_load_db.h"
-//#include "Game/IW4/XAssets/weaponcompletedef/weaponcompletedef_load_db.h"
+#include "Game/IW4/XAssets/vehicledef/vehicledef_load_db.h"
+#include "Game/IW4/XAssets/weaponcompletedef/weaponcompletedef_load_db.h"
 #include "Game/IW4/XAssets/xanimparts/xanimparts_load_db.h"
 #include "Game/IW4/XAssets/xmodel/xmodel_load_db.h"
 
@@ -129,7 +129,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
     LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
     LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
-        // LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon);
+    LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon);
     SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
     LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
     LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
@@ -138,7 +138,7 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
     LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet);
     LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
-        // LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef);
+    LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef);
     LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
 
     default:

@@ -40,7 +40,7 @@ public:
     std::unique_ptr<AssetPool<IW4::MenuList>> m_menu_list;
     std::unique_ptr<AssetPool<IW4::menuDef_t>> m_menu_def;
     std::unique_ptr<AssetPool<IW4::LocalizeEntry>> m_localize;
-    // std::unique_ptr<AssetPool<IW4::WeaponCompleteDef>> m_weapon;
+    std::unique_ptr<AssetPool<IW4::WeaponCompleteDef>> m_weapon;
     // std::unique_ptr<AssetPool<IW4::SndDriverGlobals>> m_snd_driver_globals;
     std::unique_ptr<AssetPool<IW4::FxEffectDef>> m_fx;
     std::unique_ptr<AssetPool<IW4::FxImpactTable>> m_fx_impact_table;
@@ -49,7 +49,7 @@ public:
     std::unique_ptr<AssetPool<IW4::LeaderboardDef>> m_leaderboard;
     std::unique_ptr<AssetPool<IW4::StructuredDataDefSet>> m_structed_data_def_set;
     std::unique_ptr<AssetPool<IW4::TracerDef>> m_tracer;
-    // std::unique_ptr<AssetPool<IW4::VehicleDef>> m_vehicle;
+    std::unique_ptr<AssetPool<IW4::VehicleDef>> m_vehicle;
     std::unique_ptr<AssetPool<IW4::AddonMapEnts>> m_addon_map_ents;
 
     explicit GameAssetPoolIW4(int priority);

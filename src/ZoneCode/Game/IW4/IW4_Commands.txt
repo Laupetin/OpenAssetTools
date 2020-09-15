@@ -27,7 +27,7 @@ asset Font_s ASSET_TYPE_FONT;
 asset MenuList ASSET_TYPE_MENULIST;
 asset menuDef_t ASSET_TYPE_MENU;
 asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
-// asset WeaponCompleteDef ASSET_TYPE_WEAPON;
+asset WeaponCompleteDef ASSET_TYPE_WEAPON;
 // asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
 asset FxEffectDef ASSET_TYPE_FX;
 asset FxImpactTable ASSET_TYPE_IMPACT_FX;
@@ -36,7 +36,7 @@ asset StringTable ASSET_TYPE_STRINGTABLE;
 asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
 asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
 asset TracerDef ASSET_TYPE_TRACER;
-// asset VehicleDef ASSET_TYPE_VEHICLE;
+asset VehicleDef ASSET_TYPE_VEHICLE;
 asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
 
 // Setup blocks
@@ -493,6 +493,86 @@ set name name;
 set string value;
 
 // =========================================
+// WeaponCompleteDef
+// =========================================
+use WeaponCompleteDef;
+set string szInternalName;
+set name szInternalName;
+set reusable weapDef;
+set string szDisplayName;
+set reusable hideTags;
+set scriptstring hideTags;
+set count hideTags 32;
+set string szXAnims;
+set reusable szXAnims;
+set count szXAnims 37;
+set string szAltWeaponName;
+set reusable accuracyGraphKnots;
+set count accuracyGraphKnots[0] accuracyGraphKnotCount[0];
+set count accuracyGraphKnots[1] accuracyGraphKnotCount[1];
+
+// WeaponDef
+use WeaponDef;
+set string szOverlayName;
+set reusable gunXModel;
+set count gunXModel 16;
+set reusable szXAnimsRightHanded;
+set string szXAnimsRightHanded;
+set count szXAnimsRightHanded 37;
+set reusable szXAnimsLeftHanded;
+set string szXAnimsLeftHanded;
+set count szXAnimsLeftHanded 37;
+set string szModeName;
+set reusable notetrackSoundMapKeys;
+set scriptstring notetrackSoundMapKeys;
+set count notetrackSoundMapKeys 16;
+set reusable notetrackSoundMapValues;
+set scriptstring notetrackSoundMapValues;
+set count notetrackSoundMapValues 16;
+set reusable notetrackRumbleMapKeys;
+set scriptstring notetrackRumbleMapKeys;
+set count notetrackRumbleMapKeys 16;
+set reusable notetrackRumbleMapValues;
+set scriptstring notetrackRumbleMapValues;
+set count notetrackRumbleMapValues 16;
+set reusable bounceSound;
+set count bounceSound 31;
+set reusable worldModel;
+set count worldModel 16;
+set string szAmmoName;
+set string szClipName;
+set string szSharedAmmoCapName;
+set reusable parallelBounce;
+set count parallelBounce 31;
+set reusable perpendicularBounce;
+set count perpendicularBounce 31;
+set string accuracyGraphName0;
+set string accuracyGraphName1;
+set reusable originalAccuracyGraphKnots0;
+set reusable originalAccuracyGraphKnots1;
+set count originalAccuracyGraphKnots0 WeaponCompleteDef::accuracyGraphKnotCount[0];
+set count originalAccuracyGraphKnots1 WeaponCompleteDef::accuracyGraphKnotCount[1];
+set string szUseHintString;
+set string dropHintString;
+set string szScript;
+set reusable locationDamageMultipliers;
+set count locationDamageMultipliers 20;
+set string fireRumble;
+set string meleeImpactRumble;
+set string turretBarrelSpinRumble;
+reorder:
+    ...
+    accuracyGraphName0
+    originalAccuracyGraphKnots0
+    accuracyGraphName1
+    originalAccuracyGraphKnots1;
+
+// SndAliasCustom
+use SndAliasCustom;
+set string soundName;
+set condition sound never;
+
+// =========================================
 // MenuList
 // =========================================
 use MenuList;
@@ -791,6 +871,22 @@ set string StructuredDataStructProperty::name;
 use TracerDef;
 set string name;
 set name name;
+
+// =========================================
+// VehicleDef
+// =========================================
+use VehicleDef;
+set string name;
+set name name;
+set string useHintString;
+set string turretWeaponName;
+set scriptstring trophyTags;
+set string surfaceSndPrefix;
+
+// VehiclePhysDef
+use VehiclePhysDef;
+set string physPresetName;
+set string accelGraphName;
 
 // =========================================
 // AddonMapEnts
