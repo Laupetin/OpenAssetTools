@@ -440,33 +440,10 @@ set block dynEntCollList XFILE_BLOCK_RUNTIME;
 set count dynEntCollList[0] dynEntCount[0];
 set count dynEntCollList[1] dynEntCount[1];
 reorder:
-    name
-    planes
-    staticModelList
-    materials
-    brushsides
-    brushEdges
-    nodes
+    ...
     leafs
     leafbrushes
-    leafbrushNodes
-    leafsurfaces
-    verts
-    triIndices
-    triEdgeIsWalkable
-    borders
-    partitions
-    aabbTrees
-    cmodels
-    brushes
-    brushBounds
-    brushContents
-    smodelNodes
-    mapEnts
-    dynEntDefList
-    dynEntPoseList
-    dynEntClientList
-    dynEntCollList;
+    leafbrushNodes;
 
 // ClipMaterial
 set string ClipMaterial::name;
