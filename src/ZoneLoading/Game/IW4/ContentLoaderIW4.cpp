@@ -5,7 +5,7 @@
 #include <cassert>
 
 //#include "Game/IW4/XAssets/addonmapents/addonmapents_load_db.h"
-//#include "Game/IW4/XAssets/clipmap_t/clipmap_t_load_db.h"
+#include "Game/IW4/XAssets/clipmap_t/clipmap_t_load_db.h"
 //#include "Game/IW4/XAssets/comworld/comworld_load_db.h"
 //#include "Game/IW4/XAssets/font_s/font_s_load_db.h"
 #include "Game/IW4/XAssets/fxeffectdef/fxeffectdef_load_db.h"
@@ -19,7 +19,7 @@
 #include "Game/IW4/XAssets/leaderboarddef/leaderboarddef_load_db.h"
 #include "Game/IW4/XAssets/loadedsound/loadedsound_load_db.h"
 #include "Game/IW4/XAssets/localizeentry/localizeentry_load_db.h"
-//#include "Game/IW4/XAssets/mapents/mapents_load_db.h"
+#include "Game/IW4/XAssets/mapents/mapents_load_db.h"
 #include "Game/IW4/XAssets/material/material_load_db.h"
 #include "Game/IW4/XAssets/materialpixelshader/materialpixelshader_load_db.h"
 #include "Game/IW4/XAssets/materialtechniqueset/materialtechniqueset_load_db.h"
@@ -116,12 +116,12 @@ void ContentLoaderIW4::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound);
     LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve);
     LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd);
-        // LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap);
-        // LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap);
+    LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap);
+    LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap);
         // LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
         // LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp);
         // LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp);
-        // LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
+    LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
         // LOAD_ASSET(ASSET_TYPE_FXWORLD, FxWorld, fxWorld);
         // LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
     LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
