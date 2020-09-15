@@ -32,7 +32,6 @@
 #include "Game/IW4/XAssets/rawfile/rawfile_load_db.h"
 #include "Game/IW4/XAssets/snd_alias_list_t/snd_alias_list_t_load_db.h"
 #include "Game/IW4/XAssets/sndcurve/sndcurve_load_db.h"
-//#include "Game/IW4/XAssets/snddriverglobals/snddriverglobals_load_db.h"
 #include "Game/IW4/XAssets/stringtable/stringtable_load_db.h"
 #include "Game/IW4/XAssets/structureddatadefset/structureddatadefset_load_db.h"
 #include "Game/IW4/XAssets/tracerdef/tracerdef_load_db.h"

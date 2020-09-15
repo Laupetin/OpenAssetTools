@@ -41,7 +41,6 @@ public:
     std::unique_ptr<AssetPool<IW4::menuDef_t>> m_menu_def;
     std::unique_ptr<AssetPool<IW4::LocalizeEntry>> m_localize;
     std::unique_ptr<AssetPool<IW4::WeaponCompleteDef>> m_weapon;
-    // std::unique_ptr<AssetPool<IW4::SndDriverGlobals>> m_snd_driver_globals;
     std::unique_ptr<AssetPool<IW4::FxEffectDef>> m_fx;
     std::unique_ptr<AssetPool<IW4::FxImpactTable>> m_fx_impact_table;
     std::unique_ptr<AssetPool<IW4::RawFile>> m_raw_file;

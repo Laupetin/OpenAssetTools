@@ -140,7 +140,7 @@ namespace IW4
         menuDef_t* menu;
         LocalizeEntry* localize;
         WeaponCompleteDef* weapon;
-        // SndDriverGlobals* sndDriverGlobals;
+        // SndDriverGlobals* sndDriverGlobals; // UNUSED ON PC
         FxEffectDef* fx;
         FxImpactTable* impactFx;
         RawFile* rawfile;

@@ -28,7 +28,6 @@ ZoneCode.Assets = {
         "menuDef_t",
         "LocalizeEntry",
         "WeaponCompleteDef",
-        -- "SndDriverGlobals",
         "FxEffectDef",
         "FxImpactTable",
         "RawFile",
