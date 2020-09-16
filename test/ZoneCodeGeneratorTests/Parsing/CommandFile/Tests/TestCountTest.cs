@@ -397,11 +397,11 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
         }
 
         [TestMethod]
-        public void EnsureFailsWhenReferencingNoMembersAsDynamicOperands()
+        public void EnsureCanReferenceNoMembersAsDynamicOperands()
         {
             tokens.AddRange(new List<string>
             {
-                "set", "count", "test_struct", ":", ":", "ptrEntry", "1", "+", "test_struct", ";"
+                "set", "count", "test_struct", ":", ":", "ptrEntry", "test_struct", ";"
             });
 
             var test = new TestCount();
@@ -420,7 +420,14 @@ namespace ZoneCodeGeneratorTests.Parsing.CommandFile.Tests
 
             repository.Add(testStruct);
 
-            Assert.ThrowsException<TestFailedException>(() => test.PerformTest(parserState, lexerMock.Object));
+            Assert.AreEqual(TokenTestResult.Match, test.PerformTest(parserState, lexerMock.Object));
+            Assert.AreEqual(8, test.ConsumedTokenCount);
+
+            Assert.AreNotEqual(ReferenceTypePointer.DefaultCount, pointerReference.Count);
+            Assert.IsFalse(pointerReference.Count.IsStatic);
+
+            Assert.IsInstanceOfType(pointerReference.Count, typeof(OperandDynamic));
+            Assert.AreEqual("test_struct", ((OperandDynamic)pointerReference.Count).Structure.Type.Name);
         }
 
         [TestMethod]

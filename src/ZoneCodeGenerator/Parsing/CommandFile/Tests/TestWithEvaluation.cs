@@ -138,11 +138,6 @@ namespace ZoneCodeGenerator.Parsing.CommandFile.Tests
                 }
             }
 
-            if (!referencedMemberChain.Any())
-            {
-                throw new TestFailedException($"Typename '{typenameString}' needs to reference a member at this place.");
-            }
-
             var operandDynamic = new OperandDynamic(referencedType, referencedMemberChain);
             foreach (var indexEvaluation in arrayIndexEvaluations)
             {

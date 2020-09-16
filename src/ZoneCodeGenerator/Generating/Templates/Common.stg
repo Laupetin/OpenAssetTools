@@ -34,9 +34,11 @@ $endif$
 
 PrintOperandDynamic(op) ::= <%
 $TypeVarName(op.Structure.Type)$
+$if(first(op.ReferencedMemberChain))$
 ->$trunc(op.ReferencedMemberChain):{member | $member.Member.Name$$if(member.Computations.ContainsNonEmbeddedReference)$->$else$.$endif$}$
 $last(op.ReferencedMemberChain):{member | $member.Member.Name$}$
 $op.ArrayIndices:{ arrayIndex | [$PrintEvaluation(arrayIndex)$]}$
+$endif$
 %>
 
 PrintOperation(operation) ::= <%
