@@ -568,8 +568,12 @@ reorder:
 
 // SndAliasCustom
 use SndAliasCustom;
-set string soundName;
+set count name 1;
+set reusable name;
 set condition sound never;
+
+// snd_alias_list_name
+set string snd_alias_list_name::soundName;
 
 // =========================================
 // MenuList

@@ -2278,9 +2278,14 @@ namespace IW4
         MISSILE_GUIDANCE_COUNT
     };
 
-    union SndAliasCustom
+    struct snd_alias_list_name
     {
         const char* soundName;
+    };
+
+    union SndAliasCustom
+    {
+        snd_alias_list_name* name;
         snd_alias_list_t* sound;
     };
 
