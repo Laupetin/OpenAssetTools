@@ -509,8 +509,8 @@ namespace IW4
         unsigned int noScalePartBits[6];
         unsigned __int16* boneNames;
         char* parentList;
-        __int16* quats;
-        float* trans;
+        __int16(*quats)[4];
+        float(*trans)[3];
         char* partClassification;
         DObjAnimMat* baseMat;
         Material** materialHandles;
