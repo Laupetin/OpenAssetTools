@@ -199,6 +199,7 @@ function ZoneCode:project()
             buildinputs {
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}.h"),
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt"),
+                path.join(ProjectFolder(), "ZoneCommon/Game/%{file.basename}/%{file.basename}_Assets.h"),
                 TargetDirectoryLib .. "/ZoneCodeGenerator.exe"
             }
         filter {}
