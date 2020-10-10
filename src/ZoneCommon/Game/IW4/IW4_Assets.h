@@ -257,7 +257,7 @@ namespace IW4
         unsigned __int16 (*_2)[3];
     };
 
-    union XAnimDynamicIndices
+    union XAnimDynamicIndicesTrans
     {
         char _1[1];
         unsigned __int16 _2[1];
@@ -268,7 +268,7 @@ namespace IW4
         float mins[3];
         float size[3];
         XAnimDynamicFrames frames;
-        XAnimDynamicIndices indices;
+        XAnimDynamicIndicesTrans indices;
     };
 
     union XAnimPartTransData
@@ -284,10 +284,16 @@ namespace IW4
         XAnimPartTransData u;
     };
 
+    union XAnimDynamicIndicesQuat2
+    {
+        char _1[1];
+        unsigned __int16 _2[1];
+    };
+
     struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames2
     {
         __int16 (*frames)[2];
-        XAnimDynamicIndices indices;
+        XAnimDynamicIndicesQuat2 indices;
     };
 
     union XAnimDeltaPartQuatData2
@@ -302,10 +308,16 @@ namespace IW4
         XAnimDeltaPartQuatData2 u;
     };
 
+    union XAnimDynamicIndicesQuat
+    {
+        char _1[1];
+        unsigned __int16 _2[1];
+    };
+
     struct XAnimDeltaPartQuatDataFrames
     {
         __int16 (*frames)[4];
-        XAnimDynamicIndices indices;
+        XAnimDynamicIndicesQuat indices;
     };
 
     union XAnimDeltaPartQuatData
