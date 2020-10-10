@@ -251,10 +251,13 @@ namespace IW4
         float time;
     };
 
+    typedef unsigned char ByteVec[3];
+    typedef __declspec(align(4)) unsigned short UShortVec[3];
+
     union XAnimDynamicFrames
     {
-        char (*_1)[3];
-        unsigned __int16 (*_2)[3];
+        ByteVec* _1;
+        UShortVec* _2;
     };
 
     union XAnimDynamicIndicesTrans
@@ -290,9 +293,11 @@ namespace IW4
         unsigned __int16 _2[1];
     };
 
+    typedef __declspec(align(4)) short XQuat2[2];
+
     struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames2
     {
-        __int16 (*frames)[2];
+        XQuat2* frames;
         XAnimDynamicIndicesQuat2 indices;
     };
 
@@ -314,9 +319,11 @@ namespace IW4
         unsigned __int16 _2[1];
     };
 
+    typedef __declspec(align(4)) short XQuat[4];
+
     struct XAnimDeltaPartQuatDataFrames
     {
-        __int16 (*frames)[4];
+        XQuat* frames;
         XAnimDynamicIndicesQuat indices;
     };
 
