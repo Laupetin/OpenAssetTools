@@ -349,7 +349,7 @@ namespace IW4
         unsigned __int16 randomDataIntCount;
         unsigned __int16 numframes;
         char flags;
-        char boneCount[10];
+        unsigned char boneCount[10];
         char notifyCount;
         char assetType;
         bool isDefault;
