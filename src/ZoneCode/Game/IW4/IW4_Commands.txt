@@ -16,12 +16,12 @@ asset snd_alias_list_t ASSET_TYPE_SOUND;
 asset SndCurve ASSET_TYPE_SOUND_CURVE;
 asset LoadedSound ASSET_TYPE_LOADED_SOUND;
 asset clipMap_t ASSET_TYPE_CLIPMAP_MP;
-// asset ComWorld ASSET_TYPE_COMWORLD;
-// asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
-// asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
+asset ComWorld ASSET_TYPE_COMWORLD;
+asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
+asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
 asset MapEnts ASSET_TYPE_MAP_ENTS;
-// asset FxWorld ASSET_TYPE_FXWORLD;
-// asset GfxWorld ASSET_TYPE_GFXWORLD;
+asset FxWorld ASSET_TYPE_FXWORLD;
+asset GfxWorld ASSET_TYPE_GFXWORLD;
 asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
 asset Font_s ASSET_TYPE_FONT;
 asset MenuList ASSET_TYPE_MENULIST;
@@ -443,6 +443,11 @@ reorder:
     leafs
     leafbrushes
     leafbrushNodes;
+reorder:
+    ...
+    brushContents
+    smodelNodes
+    mapEnts;
 
 // ClipMaterial
 set string ClipMaterial::name;
@@ -466,6 +471,91 @@ set reusable sides;
 set reusable baseAdjacentSide;
 
 // =========================================
+// ComWorld
+// =========================================
+use ComWorld;
+set string name;
+set name name;
+set count primaryLights primaryLightCount;
+
+// ComPrimaryLight
+set string ComPrimaryLight::defName;
+
+// =========================================
+// GameWorldSp
+// =========================================
+use GameWorldSp;
+set string name;
+set name name;
+
+// PathData
+use PathData;
+set count nodes nodeCount;
+set block basenodes XFILE_BLOCK_RUNTIME;
+set count basenodes nodeCount;
+set count chainNodeForNode nodeCount;
+set count nodeForChainNode nodeCount;
+set count pathVis visBytes;
+set count nodeTree nodeTreeCount;
+
+// pathnode_t
+set condition pathnode_t::transient never;
+
+// pathnode_constant_t
+use pathnode_constant_t;
+set scriptstring targetname;
+set scriptstring script_linkName;
+set scriptstring script_noteworthy;
+set scriptstring target;
+set scriptstring animscript;
+set count Links totalLinkCount;
+
+// pathnode_dynamic_t
+set condition pathnode_dynamic_t::pOwner never;
+
+// pathnode_tree_t
+use pathnode_tree_t;
+set condition u::child axis >= 0;
+set reusable u::child;
+
+// pathnode_tree_nodes_t
+set count pathnode_tree_nodes_t::nodes nodeCount;
+
+// VehicleTrack
+use VehicleTrack;
+set reusable segments;
+set count segments segmentCount;
+
+// VehicleTrackSegment
+use VehicleTrackSegment;
+set string targetName;
+set count sectors sectorCount;
+set reusable nextBranches;
+set count nextBranches nextBranchesCount;
+set reusable prevBranches;
+set count prevBranches prevBranchesCount;
+
+// VehicleTrackSector
+set count VehicleTrackSector::obstacles obstacleCount;
+
+// G_GlassData
+use G_GlassData;
+set count glassPieces pieceCount;
+set count glassNames glassNameCount;
+
+// G_GlassName
+use G_GlassName;
+set string nameStr;
+set count pieceIndices pieceCount;
+
+// =========================================
+// GameWorldMp
+// =========================================
+use GameWorldMp;
+set string name;
+set name name;
+
+// =========================================
 // MapEnts
 // =========================================
 use MapEnts;
@@ -482,6 +572,172 @@ set count slabs slabCount;
 
 // Stage
 set string Stage::name;
+
+// =========================================
+// FxWorld
+// =========================================
+use FxWorld;
+set string name;
+set name name;
+
+// FxGlassSystem
+use FxGlassSystem;
+set count defs defCount;
+set block piecePlaces XFILE_BLOCK_RUNTIME;
+set count piecePlaces pieceLimit;
+set block pieceStates XFILE_BLOCK_RUNTIME;
+set count pieceStates pieceLimit;
+set block pieceDynamics XFILE_BLOCK_RUNTIME;
+set count pieceDynamics pieceLimit;
+set block geoData XFILE_BLOCK_RUNTIME;
+set count geoData geoDataLimit;
+set block isInUse XFILE_BLOCK_RUNTIME;
+set count isInUse pieceWordCount;
+set block cellBits XFILE_BLOCK_RUNTIME;
+set count cellBits pieceWordCount * cellCount;
+set block visData XFILE_BLOCK_RUNTIME;
+set count visData (pieceLimit + 15) / 16 * 16;
+set block linkOrg XFILE_BLOCK_RUNTIME;
+set count linkOrg pieceLimit;
+set block halfThickness XFILE_BLOCK_RUNTIME;
+set count halfThickness (pieceLimit + 3) / 4 * 4;
+set count lightingHandles initPieceCount;
+set count initPieceStates initPieceCount;
+set count initGeoData initGeoDataCount;
+
+// FxGlassDef
+reorder FxGlassDef:
+    physPreset
+    material
+    materialShattered;
+
+// =========================================
+// GfxWorld
+// =========================================
+use GfxWorld;
+set string name;
+set name name;
+set string baseName;
+set count skies skyCount;
+set count aabbTreeCounts dpvsPlanes::cellCount;
+set count aabbTrees dpvsPlanes::cellCount;
+set count cells dpvsPlanes::cellCount;
+set count models modelCount;
+set count materialMemory materialMemoryCount;
+set block cellCasterBits XFILE_BLOCK_RUNTIME;
+set count cellCasterBits dpvsPlanes::cellCount * ((dpvsPlanes::cellCount + 31) / 32);
+set block cellHasSunLitSurfsBits XFILE_BLOCK_RUNTIME;
+set count cellHasSunLitSurfsBits (dpvsPlanes::cellCount + 31) / 32;
+set block sceneDynModel XFILE_BLOCK_RUNTIME;
+set count sceneDynModel dpvsDyn::dynEntClientCount[0];
+set block sceneDynBrush XFILE_BLOCK_RUNTIME;
+set count sceneDynBrush dpvsDyn::dynEntClientCount[1];
+set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
+set count primaryLightEntityShadowVis (primaryLightCount - lastSunPrimaryLightIndex - 1) * 0x2000;
+set block primaryLightDynEntShadowVis XFILE_BLOCK_RUNTIME;
+set count primaryLightDynEntShadowVis[0] dpvsDyn::dynEntClientCount[0] * (primaryLightCount - lastSunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis[1] dpvsDyn::dynEntClientCount[1] * (primaryLightCount - lastSunPrimaryLightIndex - 1);
+set block nonSunPrimaryLightForModelDynEnt XFILE_BLOCK_RUNTIME;
+set count nonSunPrimaryLightForModelDynEnt dpvsDyn::dynEntClientCount[0];
+set count shadowGeom primaryLightCount;
+set count lightRegion primaryLightCount;
+set count heroOnlyLights heroOnlyLightCount;
+
+// GfxSky
+set count GfxSky::skyStartSurfs skySurfCount;
+
+// GfxWorldDpvsPlanes
+use GfxWorldDpvsPlanes;
+set reusable planes;
+set count planes GfxWorld::planeCount;
+set count nodes GfxWorld::nodeCount;
+set block sceneEntCellBits XFILE_BLOCK_RUNTIME;
+set count sceneEntCellBits cellCount * 0x200;
+
+// GfxCellTree
+// Extremly dirty hack caused by IW doing an extremly dirty hack in their code as well.
+// No idea why they decided to separate the count from the pointer that uses the count.
+// Thank you Treyarch for doing better in your games at least.
+set count GfxCellTree::aabbTree GfxWorld::aabbTreeCounts[GfxCellTree - GfxWorld::aabbTrees];
+
+// GfxAabbTree
+use GfxAabbTree;
+set reusable smodelIndexes;
+set count smodelIndexes smodelIndexCount;
+
+// GfxCell
+use GfxCell;
+set count portals portalCount;
+set count reflectionProbes reflectionProbeCount;
+
+// GfxPortal
+use GfxPortal;
+set condition writable never;
+set count vertices vertexCount;
+
+// GfxWorldDraw
+use GfxWorldDraw;
+set count reflectionProbes reflectionProbeCount;
+set count reflectionProbeOrigins reflectionProbeCount;
+set block reflectionProbeTextures XFILE_BLOCK_RUNTIME;
+set count reflectionProbeTextures reflectionProbeCount;
+set count lightmaps lightmapCount;
+set block lightmapPrimaryTextures XFILE_BLOCK_RUNTIME;
+set count lightmapPrimaryTextures lightmapCount;
+set block lightmapSecondaryTextures XFILE_BLOCK_RUNTIME;
+set count lightmapSecondaryTextures lightmapCount;
+set count vd::vertices vertexCount;
+set condition vd::worldVb never;
+set count vld::data vertexLayerDataSize;
+set condition vld::layerVb never;
+set count indices indexCount;
+
+// GfxLightGrid
+use GfxLightGrid;
+set count rowDataStart maxs[rowAxis] - mins[rowAxis] + 1;
+set count rawRowData rawRowDataSize;
+set count entries entryCount;
+set count colors colorCount;
+
+// GfxShadowGeometry
+use GfxShadowGeometry;
+set count sortedSurfIndex surfaceCount;
+set count smodelIndex smodelCount;
+
+// GfxLightRegion
+set count GfxLightRegion::hulls hullCount;
+
+// GfxLightRegionHull
+set count GfxLightRegionHull::axis axisCount;
+
+// GfxWorldDpvsStatic
+use GfxWorldDpvsStatic;
+set block smodelVisData XFILE_BLOCK_RUNTIME;
+set count smodelVisData smodelCount;
+set block surfaceVisData XFILE_BLOCK_RUNTIME;
+set count surfaceVisData staticSurfaceCount;
+set count sortedSurfIndex staticSurfaceCount + staticSurfaceCountNoDecal;
+set count smodelInsts smodelCount;
+set count surfaces GfxWorld::surfaceCount;
+set count surfacesBounds GfxWorld::surfaceCount;
+set count smodelDrawInsts smodelCount;
+set block surfaceMaterials XFILE_BLOCK_RUNTIME;
+set count surfaceMaterials GfxWorld::surfaceCount;
+set block surfaceCastsSunShadow XFILE_BLOCK_RUNTIME;
+set count surfaceCastsSunShadow surfaceVisDataCount;
+
+// GfxWorldDpvsDynamic
+use GfxWorldDpvsDynamic;
+set block dynEntCellBits XFILE_BLOCK_RUNTIME;
+set count dynEntCellBits[0] dynEntClientWordCount[0] * GfxWorld::dpvsPlanes::cellCount;
+set count dynEntCellBits[1] dynEntClientWordCount[1] * GfxWorld::dpvsPlanes::cellCount;
+set block dynEntVisData XFILE_BLOCK_RUNTIME;
+set count dynEntVisData[0][0] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][0] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][1] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][1] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][2] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][2] 32 * dynEntClientWordCount[1];
 
 // =========================================
 // LocalizeEntry
