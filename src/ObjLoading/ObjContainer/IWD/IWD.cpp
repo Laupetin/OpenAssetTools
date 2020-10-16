@@ -53,7 +53,7 @@ public:
     {
         const auto result = unzReadCurrentFile(m_container, buffer, elementSize * elementCount);
 
-        return result >= 0 ? static_cast<size_t>(result) : 0;
+        return result >= 0 ? static_cast<size_t>(result) / elementSize : 0;
     }
 
     size_t Write(const void* data, size_t elementSize, size_t elementCount) override
@@ -113,7 +113,7 @@ public:
 
     void Close() override
     {
-        unzClose(m_container);
+        unzCloseCurrentFile(m_container);
         m_open = false;
 
         m_parent->OnIWDFileClose();
@@ -232,6 +232,8 @@ public:
             {
                 m_last_file = new IWDFile(this, m_unz_file, iwdEntry->m_size);
             }
+
+            return m_last_file;
         }
 
         return nullptr;

@@ -3,7 +3,7 @@
 #include <cassert>
 
 #include "ObjWriting.h"
-#include "Image/IwiWriter27.h"
+#include "Image/IwiWriter8.h"
 #include "Image/DdsWriter.h"
 
 using namespace IW4;
@@ -16,7 +16,7 @@ AssetDumperGfxImage::AssetDumperGfxImage()
         m_writer = new DdsWriter();
         break;
     case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
-        m_writer = new IwiWriter27();
+        m_writer = new iwi8::IwiWriter();
         break;
     default:
         assert(false);

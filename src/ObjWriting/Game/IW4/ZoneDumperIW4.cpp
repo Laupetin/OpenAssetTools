@@ -35,7 +35,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     // DUMP_ASSET_POOL(AssetDumperMaterialVertexShader, m_material_vertex_shader);
     // DUMP_ASSET_POOL(AssetDumperMaterialVertexDeclaration, m_material_vertex_decl);
     // DUMP_ASSET_POOL(AssetDumperMaterialTechniqueSet, m_technique_set);
-    // DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);
+    DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound);
     // DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve);
     // DUMP_ASSET_POOL(AssetDumperLoadedSound, m_loaded_sound);

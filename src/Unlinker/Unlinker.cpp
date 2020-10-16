@@ -99,6 +99,11 @@ class Unlinker::Impl
             LoadSearchPath(m_last_zone_search_path);
         }
 
+        for(auto* iwd : IWD::Repository)
+        {
+            searchPathsForZone.IncludeSearchPath(iwd);
+        }
+
         return searchPathsForZone;
     }
 

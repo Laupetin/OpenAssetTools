@@ -2,24 +2,18 @@
 
 #include "IObjLoader.h"
 #include "SearchPath/ISearchPath.h"
-#include "Game/T6/T6.h"
+#include "Game/IW4/IW4.h"
 
-namespace T6
+namespace IW4
 {
     class ObjLoader final : public IObjLoader
     {
-        static const int IPAK_READ_HASH;
-        static const int GLOBAL_HASH;
-
-        static void LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone);
-
         static void LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone* zone);
         static void LoadImageFromLoadDef(GfxImage* image, Zone* zone);
         static void LoadImageData(ISearchPath* searchPath, Zone* zone);
 
         static bool IsMpZone(Zone* zone);
         static bool IsZmZone(Zone* zone);
-        static void LoadCommonIPaks(ISearchPath* searchPath, Zone* zone);
 
     public:
         bool SupportsZone(Zone* zone) const override;

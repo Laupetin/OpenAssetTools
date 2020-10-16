@@ -1,5 +1,6 @@
 #include "ObjLoading.h"
 #include "IObjLoader.h"
+#include "Game/IW4/ObjLoaderIW4.h"
 #include "Game/T6/ObjLoaderT6.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "SearchPath/SearchPaths.h"
@@ -8,12 +9,13 @@ ObjLoading::Configuration_t ObjLoading::Configuration;
 
 const IObjLoader* const OBJ_LOADERS[]
 {
-    new ObjLoaderT6()
+    new IW4::ObjLoader(),
+    new T6::ObjLoader()
 };
 
 void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
 {
-    for (auto* loader : OBJ_LOADERS)
+    for (const auto* loader : OBJ_LOADERS)
     {
         if (loader->SupportsZone(zone))
         {
@@ -25,7 +27,7 @@ void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* 
 
 void ObjLoading::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
 {
-    for (auto* loader : OBJ_LOADERS)
+    for (const auto* loader : OBJ_LOADERS)
     {
         if (loader->SupportsZone(zone))
         {
@@ -37,7 +39,7 @@ void ObjLoading::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
 
 void ObjLoading::UnloadContainersOfZone(Zone* zone)
 {
-    for (auto* loader : OBJ_LOADERS)
+    for (const auto* loader : OBJ_LOADERS)
     {
         if (loader->SupportsZone(zone))
         {
@@ -56,7 +58,7 @@ void ObjLoading::LoadIWDsInSearchPath(ISearchPath* searchPath)
 
                          if (file.IsOpen())
                          {
-                             const auto fileP = new FileAPI::File(std::move(file));
+                             auto* fileP = new FileAPI::File(std::move(file));
                              IWD* iwd = new IWD(path, fileP);
 
                              if (iwd->Initialize())
@@ -83,7 +85,7 @@ SearchPaths ObjLoading::GetIWDSearchPaths()
 {
     SearchPaths iwdPaths;
 
-    for(auto iwd : IWD::Repository)
+    for (auto* iwd : IWD::Repository)
     {
         iwdPaths.IncludeSearchPath(iwd);
     }
