@@ -16,7 +16,7 @@ AssetDumperGfxImage::AssetDumperGfxImage()
         m_writer = new DdsWriter();
         break;
     case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
-        m_writer = new IwiWriter27();
+        m_writer = new iwi27::IwiWriter();
         break;
     default:
         assert(false);
