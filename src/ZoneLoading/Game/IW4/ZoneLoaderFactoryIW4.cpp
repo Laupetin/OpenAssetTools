@@ -23,12 +23,14 @@
 #include "Loading/Steps/StepRemoveProcessor.h"
 #include "Loading/Steps/StepVerifyHash.h"
 
-const std::string ZoneLoaderFactoryIW4::MAGIC_SIGNED_INFINITY_WARD = "IWff0100";
-const std::string ZoneLoaderFactoryIW4::MAGIC_UNSIGNED = "IWffu100";
-const int ZoneLoaderFactoryIW4::VERSION = 276;
+using namespace IW4;
 
-const std::string ZoneLoaderFactoryIW4::MAGIC_AUTH_HEADER = "IWffs100";
-const uint8_t ZoneLoaderFactoryIW4::RSA_PUBLIC_KEY_INFINITY_WARD[]
+const std::string ZoneLoaderFactory::MAGIC_SIGNED_INFINITY_WARD = "IWff0100";
+const std::string ZoneLoaderFactory::MAGIC_UNSIGNED = "IWffu100";
+const int ZoneLoaderFactory::VERSION = 276;
+
+const std::string ZoneLoaderFactory::MAGIC_AUTH_HEADER = "IWffs100";
+const uint8_t ZoneLoaderFactory::RSA_PUBLIC_KEY_INFINITY_WARD[]
 {
     0x30, 0x82, 0x01, 0x0A, 0x02, 0x82, 0x01, 0x01,
     0x00, 0xA5, 0x86, 0xCC, 0x18, 0xA9, 0x12, 0x17,
@@ -66,13 +68,13 @@ const uint8_t ZoneLoaderFactoryIW4::RSA_PUBLIC_KEY_INFINITY_WARD[]
     0x89, 0x02, 0x03, 0x01, 0x00, 0x01
 };
 
-const size_t ZoneLoaderFactoryIW4::AUTHED_CHUNK_SIZE = 0x2000;
-const size_t ZoneLoaderFactoryIW4::AUTHED_CHUNK_COUNT_PER_GROUP = 256;
+const size_t ZoneLoaderFactory::AUTHED_CHUNK_SIZE = 0x2000;
+const size_t ZoneLoaderFactory::AUTHED_CHUNK_COUNT_PER_GROUP = 256;
 
-const int ZoneLoaderFactoryIW4::OFFSET_BLOCK_BIT_COUNT = 4;
-const block_t ZoneLoaderFactoryIW4::INSERT_BLOCK = IW4::XFILE_BLOCK_VIRTUAL;
+const int ZoneLoaderFactory::OFFSET_BLOCK_BIT_COUNT = 4;
+const block_t ZoneLoaderFactory::INSERT_BLOCK = IW4::XFILE_BLOCK_VIRTUAL;
 
-class ZoneLoaderFactoryIW4::Impl
+class ZoneLoaderFactory::Impl
 {
     static GameLanguage GetZoneLanguage(std::string& zoneName)
     {
@@ -228,14 +230,14 @@ public:
 
         // Start of the zone content
         zoneLoader->AddLoadingStep(
-            new StepLoadZoneContent(new ContentLoaderIW4(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
+            new StepLoadZoneContent(new ContentLoader(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
 
         // Return the fully setup zoneloader
         return zoneLoader;
     }
 };
 
-ZoneLoader* ZoneLoaderFactoryIW4::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName)
+ZoneLoader* ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName)
 {
     return Impl::CreateLoaderForHeader(header, fileName);
 }
