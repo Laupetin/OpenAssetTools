@@ -1,9 +1,9 @@
 #pragma once
 #include "Pool/XAssetInfo.h"
-#include "ContentLoader.h"
+#include "ContentLoaderBase.h"
 #include "IZoneScriptStringProvider.h"
 
-class AssetLoader : public ContentLoader
+class AssetLoader : public ContentLoaderBase
 {
     asset_type_t m_asset_type;
 

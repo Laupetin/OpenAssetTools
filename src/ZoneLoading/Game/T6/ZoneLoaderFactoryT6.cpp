@@ -16,7 +16,7 @@
 #include "Utils/ClassUtils.h"
 #include <cassert>
 #include "Loading/Steps/StepLoadZoneContent.h"
-#include "ContentLoaderT6.h"
+#include "ContentLoader.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/GameLanguage.h"

@@ -28,7 +28,7 @@
 #include "Game/T6/XAssets/mapents/mapents_load_db.h"
 #include "Game/T6/XAssets/material/material_load_db.h"
 #include "Game/T6/XAssets/materialtechniqueset/materialtechniqueset_load_db.h"
-#include "Game/T6/XAssets/memoryblock/memoryblock_load_db.h"
+//#include "Game/T6/XAssets/memoryblock/memoryblock_load_db.h"
 #include "Game/T6/XAssets/menudef_t/menudef_t_load_db.h"
 #include "Game/T6/XAssets/menulist/menulist_load_db.h"
 #include "Game/T6/XAssets/physconstraints/physconstraints_load_db.h"
@@ -55,7 +55,7 @@
 
 using namespace T6;
 
-ContentLoaderT6::ContentLoaderT6()
+ContentLoader::ContentLoader()
 {
     varXAsset = nullptr;
     varScriptStringList = nullptr;
@@ -64,14 +64,14 @@ ContentLoaderT6::ContentLoaderT6()
     m_script_strings.emplace_back("");
 }
 
-void ContentLoaderT6::LoadScriptStringList(const bool atStreamStart)
+void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     if (atStreamStart)
         m_stream->Load<ScriptStringList>(varScriptStringList);
 
-    if(varScriptStringList->strings != nullptr)
+    if (varScriptStringList->strings != nullptr)
     {
         assert(varScriptStringList->strings == PTR_FOLLOWING);
 
@@ -79,9 +79,9 @@ void ContentLoaderT6::LoadScriptStringList(const bool atStreamStart)
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
-        for(int i = 0; i < varScriptStringList->count; i++)
+        for (int i = 0; i < varScriptStringList->count; i++)
         {
-            if(varScriptStringList->strings[i])
+            if (varScriptStringList->strings[i])
             {
                 m_script_strings.emplace_back(varScriptStringList->strings[i]);
             }
@@ -95,7 +95,7 @@ void ContentLoaderT6::LoadScriptStringList(const bool atStreamStart)
     m_stream->PopBlock();
 }
 
-void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
+void ContentLoader::LoadXAsset(const bool atStreamStart)
 {
 #define LOAD_ASSET(type_index, typeName, headerEntry) \
     case type_index: \
@@ -107,60 +107,60 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
 
     assert(varXAsset != nullptr);
 
-    if(atStreamStart)
+    if (atStreamStart)
         m_stream->Load<XAsset>(varXAsset);
 
-    switch(varXAsset->type)
+    switch (varXAsset->type)
     {
-        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset);
-        LOAD_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints);
-        LOAD_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef);
-        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts);
-        LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model);
-        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material);
-        LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet);
-        LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image);
-        LOAD_ASSET(ASSET_TYPE_SOUND, SndBank, sound);
-        LOAD_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch);
-        LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap);
-        LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap);
-        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld);
-        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp);
-        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp);
-        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts);
-        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld);
-        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef);
-        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font);
-        LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon);
-        LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList);
-        LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu);
-        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize);
-        LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon);
-        LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment);
-        LOAD_ASSET(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique, attachmentUnique);
-        LOAD_ASSET(ASSET_TYPE_WEAPON_CAMO, WeaponCamo, weaponCamo);
-        LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals);
-        LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx);
-        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx);
-        LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile);
-        LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable);
-        LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef);
-        LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals);
-        LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot);
-        LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses);
-        LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet);
-        LOAD_ASSET(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree, scriptParseTree);
-        LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs);
-        LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef);
+    LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
+    LOAD_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints)
+    LOAD_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef)
+    LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
+    LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
+    LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
+    LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
+    LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
+    LOAD_ASSET(ASSET_TYPE_SOUND, SndBank, sound)
+    LOAD_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch)
+    LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
+    LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
+    LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
+    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
+    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
+    LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
+    LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
+    LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
+    LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
+    LOAD_ASSET(ASSET_TYPE_FONTICON, FontIcon, fontIcon)
+    LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
+    LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
+    LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
+    LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon)
+    LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment)
+    LOAD_ASSET(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique, attachmentUnique)
+    LOAD_ASSET(ASSET_TYPE_WEAPON_CAMO, WeaponCamo, weaponCamo)
+    LOAD_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
+    LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
+    LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
+    LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
+    LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
+    LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef)
+    LOAD_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals)
+    LOAD_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot)
+    LOAD_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses)
+    LOAD_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet)
+    LOAD_ASSET(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree, scriptParseTree)
+    LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs)
+    LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef)
         // LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
-        LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts);
-        LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef);
-        LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef);
-        LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb);
-        LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug);
-        LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef);
-        LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef);
-        LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef);
+    LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts)
+    LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef)
+    LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef)
+    LOAD_ASSET(ASSET_TYPE_QDB, Qdb, qdb)
+    LOAD_ASSET(ASSET_TYPE_SLUG, Slug, slug)
+    LOAD_ASSET(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef, footstepTableDef)
+    LOAD_ASSET(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef, footstepFXTableDef)
+    LOAD_ASSET(ASSET_TYPE_ZBARRIER, ZBarrierDef, zbarrierDef)
 
     default:
         {
@@ -171,26 +171,26 @@ void ContentLoaderT6::LoadXAsset(const bool atStreamStart)
 #undef LOAD_ASSET
 }
 
-void ContentLoaderT6::LoadXAssetArray(const bool atStreamStart, const size_t count)
+void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count)
 {
     assert(varXAsset != nullptr);
 
-    if(atStreamStart)
+    if (atStreamStart)
         m_stream->Load<XAsset>(varXAsset, count);
 
-    for(asset_type_t assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
+    for (asset_type_t assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
     {
         m_zone->GetPools()->InitPoolDynamic(assetType);
     }
 
-    for(size_t index = 0; index < count; index++)
+    for (size_t index = 0; index < count; index++)
     {
         LoadXAsset(false);
         varXAsset++;
     }
 }
 
-void ContentLoaderT6::Load(Zone* zone, IZoneInputStream* stream)
+void ContentLoader::Load(Zone* zone, IZoneInputStream* stream)
 {
     m_zone = zone;
     m_stream = stream;
@@ -203,7 +203,7 @@ void ContentLoaderT6::Load(Zone* zone, IZoneInputStream* stream)
     varScriptStringList = &assetList.stringList;
     LoadScriptStringList(false);
 
-    if(assetList.depends != nullptr)
+    if (assetList.depends != nullptr)
     {
         assert(assetList.depends == PTR_FOLLOWING);
 
@@ -212,7 +212,7 @@ void ContentLoaderT6::Load(Zone* zone, IZoneInputStream* stream)
         LoadXStringArray(true, assetList.dependCount);
     }
 
-    if(assetList.assets != nullptr)
+    if (assetList.assets != nullptr)
     {
         assert(assetList.assets == PTR_FOLLOWING);
 
@@ -224,11 +224,11 @@ void ContentLoaderT6::Load(Zone* zone, IZoneInputStream* stream)
     m_stream->PopBlock();
 }
 
-std::string& ContentLoaderT6::GetZoneScriptString(const scr_string_t scrString)
+std::string& ContentLoader::GetZoneScriptString(const scr_string_t scrString)
 {
     assert(scrString >= 0 && scrString < m_script_strings.size());
 
-    if(scrString < 0 || scrString >= m_script_strings.size())
+    if (scrString >= m_script_strings.size())
     {
         return m_script_strings[0];
     }

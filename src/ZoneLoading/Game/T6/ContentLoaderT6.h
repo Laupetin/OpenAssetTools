@@ -1,23 +1,26 @@
 #pragma once
-#include "Loading/ContentLoader.h"
+#include "Loading/ContentLoaderBase.h"
 #include "Loading/IContentLoadingEntryPoint.h"
 #include "Game/T6/T6.h"
 #include "Loading/IZoneScriptStringProvider.h"
 
-class ContentLoaderT6 final : public ContentLoader, public IContentLoadingEntryPoint, public IZoneScriptStringProvider
+namespace T6
 {
-    std::vector<std::string> m_script_strings;
-    T6::XAsset* varXAsset;
-    T6::ScriptStringList* varScriptStringList;
+    class ContentLoader final : public ContentLoaderBase, public IContentLoadingEntryPoint, public IZoneScriptStringProvider
+    {
+        std::vector<std::string> m_script_strings;
+        XAsset* varXAsset;
+        ScriptStringList* varScriptStringList;
 
-    void LoadScriptStringList(bool atStreamStart);
+        void LoadScriptStringList(bool atStreamStart);
 
-    void LoadXAsset(bool atStreamStart);
-    void LoadXAssetArray(bool atStreamStart, size_t count);
+        void LoadXAsset(bool atStreamStart);
+        void LoadXAssetArray(bool atStreamStart, size_t count);
 
-public:
-    ContentLoaderT6();
+    public:
+        ContentLoader();
 
-    void Load(Zone* zone, IZoneInputStream* stream) override;
-    std::string& GetZoneScriptString(scr_string_t scrString) override;
-};
+        void Load(Zone* zone, IZoneInputStream* stream) override;
+        std::string& GetZoneScriptString(scr_string_t scrString) override;
+    };
+}

@@ -3,7 +3,7 @@
 #include "Zone/Zone.h"
 #include "Zone/Stream/IZoneInputStream.h"
 
-class ContentLoader
+class ContentLoaderBase
 {
 protected:
     static const void* PTR_FOLLOWING;
@@ -14,11 +14,11 @@ protected:
     Zone* m_zone;
     IZoneInputStream* m_stream;
 
-    ContentLoader();
+    ContentLoaderBase();
 
     void LoadXString(bool atStreamStart) const;
     void LoadXStringArray(bool atStreamStart, size_t count);
 
 public:
-    virtual ~ContentLoader() = default;
+    virtual ~ContentLoaderBase() = default;
 };

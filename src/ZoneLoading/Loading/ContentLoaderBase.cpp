@@ -1,10 +1,10 @@
-#include "ContentLoader.h"
+#include "ContentLoaderBase.h"
 #include <cassert>
 
-const void* ContentLoader::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-const void* ContentLoader::PTR_INSERT = reinterpret_cast<void*>(-2);
+const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
+const void* ContentLoaderBase::PTR_INSERT = reinterpret_cast<void*>(-2);
 
-ContentLoader::ContentLoader()
+ContentLoaderBase::ContentLoaderBase()
 {
     varXString = nullptr;
 
@@ -12,7 +12,7 @@ ContentLoader::ContentLoader()
     m_stream = nullptr;
 }
 
-void ContentLoader::LoadXString(const bool atStreamStart) const
+void ContentLoaderBase::LoadXString(const bool atStreamStart) const
 {
     assert(varXString != nullptr);
 
@@ -33,7 +33,7 @@ void ContentLoader::LoadXString(const bool atStreamStart) const
     }
 }
 
-void ContentLoader::LoadXStringArray(const bool atStreamStart, const size_t count)
+void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t count)
 {
     assert(varXString != nullptr);
 
