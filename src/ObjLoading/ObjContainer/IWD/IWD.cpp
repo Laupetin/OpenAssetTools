@@ -37,7 +37,7 @@ public:
         m_open = true;
     }
 
-    ~IWDFile()
+    ~IWDFile() override
     {
         if(m_open)
         {
@@ -257,9 +257,9 @@ public:
             return;
         }
 
-        for(auto& entry : m_entry_map)
+        for(auto& [entryName, entry] : m_entry_map)
         {
-            std::filesystem::path entryPath(entry.first);
+            std::filesystem::path entryPath(entryName);
 
             if(!options.m_should_include_subdirectories && entryPath.has_parent_path())
                 continue;
@@ -267,7 +267,7 @@ public:
             if(options.m_filter_extensions && options.m_extension != entryPath.extension().string())
                 continue;
 
-            callback(entry.first);
+            callback(entryName);
         }
     }
 
