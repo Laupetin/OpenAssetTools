@@ -876,7 +876,7 @@ namespace IW4
         StringTableCell* values;
     };
 
-    struct _AILSOUNDINFO
+    struct AILSOUNDINFO
     {
         int format;
         const void* data_ptr;
@@ -891,7 +891,7 @@ namespace IW4
 
     struct MssSound
     {
-        _AILSOUNDINFO info;
+        AILSOUNDINFO info;
         char* data;
     };
 

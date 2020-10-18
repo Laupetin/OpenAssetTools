@@ -7,6 +7,7 @@
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
+#include "AssetDumpers/AssetDumperLoadedSound.h"
 
 using namespace IW4;
 
@@ -38,7 +39,6 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound);
     // DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve);
-    // DUMP_ASSET_POOL(AssetDumperLoadedSound, m_loaded_sound);
     // DUMP_ASSET_POOL(AssetDumperclipMap_t, m_clip_map);
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world);
     // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp);
@@ -62,6 +62,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     // DUMP_ASSET_POOL(AssetDumperTracerDef, m_tracer);
     // DUMP_ASSET_POOL(AssetDumperVehicleDef, m_vehicle);
     // DUMP_ASSET_POOL(AssetDumperAddonMapEnts, m_addon_map_ents);
+    DUMP_ASSET_POOL(AssetDumperLoadedSound, m_loaded_sound)
 
     return true;
 

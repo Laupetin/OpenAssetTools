@@ -1,0 +1,30 @@
+#pragma once
+#include <cstdint>
+
+#include "Utils/FileUtils.h"
+
+constexpr uint32_t WAV_WAVE_ID = MakeMagic32('W', 'A', 'V', 'E');
+constexpr uint32_t WAV_CHUNK_ID_RIFF = MakeMagic32('R', 'I', 'F', 'F');
+constexpr uint32_t WAV_CHUNK_ID_FMT = MakeMagic32('f', 'm', 't', ' ');
+constexpr uint32_t WAV_CHUNK_ID_DATA = MakeMagic32('d', 'a', 't', 'a');
+
+struct WavChunkHeader
+{
+    uint32_t chunkID;
+    uint32_t chunkSize;
+};
+
+enum class WavFormat : int16_t
+{
+    PCM = 1
+};
+
+struct WavFormatChunkPcm
+{
+    WavFormat wFormatTag;
+    uint16_t nChannels;
+    uint32_t nSamplesPerSec;
+    uint32_t nAvgBytesPerSec;
+    uint16_t nBlockAlign;
+    uint16_t wBitsPerSample;
+};
