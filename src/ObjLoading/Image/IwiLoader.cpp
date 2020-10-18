@@ -25,8 +25,10 @@ const ImageFormat* IwiLoader::GetFormat8(int8_t format)
         return &ImageFormat::FORMAT_BC3;
     case iwi8::IwiFormat::IMG_FORMAT_DXN:
         return &ImageFormat::FORMAT_BC5;
-    case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA: // used
-    case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE: // used
+    case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
+        return &ImageFormat::FORMAT_R8_A8;
+    case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
+        return &ImageFormat::FORMAT_R8;
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGB: // used
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
@@ -141,8 +143,11 @@ const ImageFormat* IwiLoader::GetFormat27(int8_t format)
         assert(false); // Unsupported yet
         return &ImageFormat::FORMAT_R16_G16_B16_A16_FLOAT;
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_RGB:
+        return &ImageFormat::FORMAT_R8_G8_B8;
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
+        return &ImageFormat::FORMAT_R8_A8;
     case iwi27::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
+        return &ImageFormat::FORMAT_R8;
     case iwi27::IwiFormat::IMG_FORMAT_WAVELET_RGBA:
     case iwi27::IwiFormat::IMG_FORMAT_WAVELET_RGB:
     case iwi27::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:

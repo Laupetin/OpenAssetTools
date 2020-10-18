@@ -143,6 +143,10 @@ const ImageFormatUnsigned ImageFormat::FORMAT_A8(ImageFormatId::A8, DXGI_FORMAT_
 const ImageFormatUnsigned ImageFormat::FORMAT_R16_G16_B16_A16_FLOAT(ImageFormatId::R16_G16_B16_A16_FLOAT,
                                                                     DXGI_FORMAT_R16G16B16A16_FLOAT,
                                                                     128, 0, 0, 0, 0, 0, 0, 0, 8);
+const ImageFormatUnsigned ImageFormat::FORMAT_R8(ImageFormatId::R8, DXGI_FORMAT_R8_UNORM,
+    8, 0, 8, 0, 0, 0, 0, 0, 0);
+const ImageFormatUnsigned ImageFormat::FORMAT_R8_A8(ImageFormatId::R8_A8, DXGI_FORMAT_UNKNOWN,
+    16, 0, 8, 0, 0, 0, 0, 8, 8);
 const ImageFormatBlockCompressed ImageFormat::FORMAT_BC1(ImageFormatId::BC1, DXGI_FORMAT_BC1_UNORM, 4, 64);
 const ImageFormatBlockCompressed ImageFormat::FORMAT_BC2(ImageFormatId::BC2, DXGI_FORMAT_BC2_UNORM, 4, 128);
 const ImageFormatBlockCompressed ImageFormat::FORMAT_BC3(ImageFormatId::BC3, DXGI_FORMAT_BC3_UNORM, 4, 128);

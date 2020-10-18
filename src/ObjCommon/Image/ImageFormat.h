@@ -12,6 +12,8 @@ enum class ImageFormatId
     B8_G8_R8_A8,
     A8,
     R16_G16_B16_A16_FLOAT,
+    R8,
+    R8_A8,
     BC1,
     BC2,
     BC3,
@@ -55,6 +57,8 @@ public:
     static const ImageFormatUnsigned FORMAT_B8_G8_R8_A8;
     static const ImageFormatUnsigned FORMAT_A8;
     static const ImageFormatUnsigned FORMAT_R16_G16_B16_A16_FLOAT; //TODO: Float not unsigned
+    static const ImageFormatUnsigned FORMAT_R8;
+    static const ImageFormatUnsigned FORMAT_R8_A8;
     static const ImageFormatBlockCompressed FORMAT_BC1;
     static const ImageFormatBlockCompressed FORMAT_BC2;
     static const ImageFormatBlockCompressed FORMAT_BC3;
