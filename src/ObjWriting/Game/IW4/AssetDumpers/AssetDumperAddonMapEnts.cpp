@@ -1,6 +1,8 @@
 #define NOMINMAX
 #include "AssetDumperAddonMapEnts.h"
 
+#include <algorithm>
+
 using namespace IW4;
 
 bool AssetDumperAddonMapEnts::ShouldDump(AddonMapEnts* asset)
