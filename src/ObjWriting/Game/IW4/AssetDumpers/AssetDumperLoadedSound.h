@@ -7,10 +7,10 @@ namespace IW4
 {
     class AssetDumperLoadedSound final : public AbstractAssetDumper<LoadedSound>
     {
-        static void DumpWavPcm(Zone* zone, LoadedSound* asset, FileAPI::File* out);
+        static void DumpWavPcm(Zone* zone, const LoadedSound* asset, FileAPI::File* out);
     protected:
-        bool ShouldDump(LoadedSound* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, LoadedSound* asset) override;
-        void DumpAsset(Zone* zone, LoadedSound* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<LoadedSound>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<LoadedSound>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<LoadedSound>* asset, FileAPI::File* out) override;
     };
 }

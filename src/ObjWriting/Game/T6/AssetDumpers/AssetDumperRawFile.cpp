@@ -2,17 +2,18 @@
 
 using namespace T6;
 
-bool AssetDumperRawFile::ShouldDump(RawFile* asset)
+bool AssetDumperRawFile::ShouldDump(XAssetInfo<RawFile>* asset)
 {
     return true;
 }
 
-std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, RawFile* asset)
+std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset)
 {
-    return std::string(asset->name);
+    return asset->m_name;
 }
 
-void AssetDumperRawFile::DumpAsset(Zone* zone, RawFile* asset, FileAPI::File* out)
+void AssetDumperRawFile::DumpAsset(Zone* zone, XAssetInfo<RawFile>* asset, FileAPI::File* out)
 {
-    out->Write(asset->buffer, 1, asset->len);
+    const auto* rawFile = asset->Asset();
+    out->Write(rawFile->buffer, 1, rawFile->len);
 }

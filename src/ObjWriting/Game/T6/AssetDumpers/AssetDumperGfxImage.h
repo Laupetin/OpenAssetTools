@@ -6,18 +6,18 @@
 
 namespace T6
 {
-    class AssetDumperGfxImage final : public AbstractAssetDumper<T6::GfxImage>
+    class AssetDumperGfxImage final : public AbstractAssetDumper<GfxImage>
     {
         IImageWriter* m_writer;
 
     protected:
-        bool ShouldDump(T6::GfxImage* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::GfxImage* asset) override;
-        void DumpAsset(Zone* zone, T6::GfxImage* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<GfxImage>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, FileAPI::File* out) override;
 
     public:
         AssetDumperGfxImage();
-        ~AssetDumperGfxImage();
+        ~AssetDumperGfxImage() override;
 
         AssetDumperGfxImage(const AssetDumperGfxImage& other) = delete;
         AssetDumperGfxImage(AssetDumperGfxImage&& other) noexcept = delete;

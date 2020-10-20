@@ -8,8 +8,8 @@ namespace IW4
     class AssetDumperRawFile final : public AbstractAssetDumper<RawFile>
     {
     protected:
-        bool ShouldDump(RawFile* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, RawFile* asset) override;
-        void DumpAsset(Zone* zone, RawFile* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<RawFile>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<RawFile>* asset, FileAPI::File* out) override;
     };
 }

@@ -2,17 +2,18 @@
 
 using namespace T6;
 
-bool AssetDumperQdb::ShouldDump(Qdb* asset)
+bool AssetDumperQdb::ShouldDump(XAssetInfo<Qdb>* asset)
 {
     return true;
 }
 
-std::string AssetDumperQdb::GetFileNameForAsset(Zone* zone, Qdb* asset)
+std::string AssetDumperQdb::GetFileNameForAsset(Zone* zone, XAssetInfo<Qdb>* asset)
 {
-    return std::string(asset->name);
+    return asset->m_name;
 }
 
-void AssetDumperQdb::DumpAsset(Zone* zone, Qdb* asset, FileAPI::File* out)
+void AssetDumperQdb::DumpAsset(Zone* zone, XAssetInfo<Qdb>* asset, FileAPI::File* out)
 {
-    out->Write(asset->buffer, 1, asset->len);
+    const auto* qdb = asset->Asset();
+    out->Write(qdb->buffer, 1, qdb->len);
 }

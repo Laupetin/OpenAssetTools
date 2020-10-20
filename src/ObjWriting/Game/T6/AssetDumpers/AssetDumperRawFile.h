@@ -5,11 +5,11 @@
 
 namespace T6
 {
-    class AssetDumperRawFile final : public AbstractAssetDumper<T6::RawFile>
+    class AssetDumperRawFile final : public AbstractAssetDumper<RawFile>
     {
     protected:
-        bool ShouldDump(T6::RawFile* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::RawFile* asset) override;
-        void DumpAsset(Zone* zone, T6::RawFile* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<RawFile>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<RawFile>* asset, FileAPI::File* out) override;
     };
 }

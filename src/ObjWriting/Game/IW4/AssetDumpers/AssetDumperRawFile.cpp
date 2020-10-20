@@ -4,19 +4,20 @@
 
 using namespace IW4;
 
-bool AssetDumperRawFile::ShouldDump(RawFile* asset)
+bool AssetDumperRawFile::ShouldDump(XAssetInfo<RawFile>* asset)
 {
     return true;
 }
 
-std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, RawFile* asset)
+std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset)
 {
-    return std::string(asset->name);
+    return asset->m_name;
 }
 
-void AssetDumperRawFile::DumpAsset(Zone* zone, RawFile* asset, FileAPI::File* out)
+void AssetDumperRawFile::DumpAsset(Zone* zone, XAssetInfo<RawFile>* asset, FileAPI::File* out)
 {
-    if (asset->compressedLen > 0)
+    const auto* rawFile = asset->Asset();
+    if (rawFile->compressedLen > 0)
     {
         z_stream_s zs{};
 
@@ -33,12 +34,12 @@ void AssetDumperRawFile::DumpAsset(Zone* zone, RawFile* asset, FileAPI::File* ou
             throw std::exception("Initializing inflate failed");
         }
 
-        zs.next_in = reinterpret_cast<const Bytef*>(asset->data.compressedBuffer);
-        zs.avail_in = asset->compressedLen;
+        zs.next_in = reinterpret_cast<const Bytef*>(rawFile->data.compressedBuffer);
+        zs.avail_in = rawFile->compressedLen;
 
         Bytef buffer[0x1000];
 
-        while(zs.avail_in > 0)
+        while (zs.avail_in > 0)
         {
             zs.next_out = buffer;
             zs.avail_out = sizeof buffer;
@@ -46,7 +47,7 @@ void AssetDumperRawFile::DumpAsset(Zone* zone, RawFile* asset, FileAPI::File* ou
 
             if (ret < 0)
             {
-                printf("Inflate failed for dumping rawfile '%s'\n", asset->name);
+                printf("Inflate failed for dumping rawfile '%s'\n", rawFile->name);
                 inflateEnd(&zs);
                 return;
             }
@@ -56,8 +57,8 @@ void AssetDumperRawFile::DumpAsset(Zone* zone, RawFile* asset, FileAPI::File* ou
 
         inflateEnd(&zs);
     }
-    else if (asset->len > 0)
+    else if (rawFile->len > 0)
     {
-        out->Write(asset->data.buffer, 1, asset->len);
+        out->Write(rawFile->data.buffer, 1, rawFile->len);
     }
 }

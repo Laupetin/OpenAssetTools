@@ -2,17 +2,18 @@
 
 using namespace T6;
 
-bool AssetDumperScriptParseTree::ShouldDump(ScriptParseTree* asset)
+bool AssetDumperScriptParseTree::ShouldDump(XAssetInfo<ScriptParseTree>* asset)
 {
     return true;
 }
 
-std::string AssetDumperScriptParseTree::GetFileNameForAsset(Zone* zone, ScriptParseTree* asset)
+std::string AssetDumperScriptParseTree::GetFileNameForAsset(Zone* zone, XAssetInfo<ScriptParseTree>* asset)
 {
-    return std::string(asset->name);
+    return asset->m_name;
 }
 
-void AssetDumperScriptParseTree::DumpAsset(Zone* zone, ScriptParseTree* asset, FileAPI::File* out)
+void AssetDumperScriptParseTree::DumpAsset(Zone* zone, XAssetInfo<ScriptParseTree>* asset, FileAPI::File* out)
 {
-    out->Write(asset->buffer, 1, asset->len);
+    const auto* scriptParseTree = asset->Asset();
+    out->Write(scriptParseTree->buffer, 1, scriptParseTree->len);
 }

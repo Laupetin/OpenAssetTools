@@ -6,18 +6,18 @@
 
 namespace IW4
 {
-    class AssetDumperGfxImage final : public AbstractAssetDumper<IW4::GfxImage>
+    class AssetDumperGfxImage final : public AbstractAssetDumper<GfxImage>
     {
         IImageWriter* m_writer;
 
     protected:
-        bool ShouldDump(IW4::GfxImage* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, IW4::GfxImage* asset) override;
-        void DumpAsset(Zone* zone, IW4::GfxImage* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<GfxImage>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, FileAPI::File* out) override;
 
     public:
         AssetDumperGfxImage();
-        ~AssetDumperGfxImage();
+        ~AssetDumperGfxImage() override;
 
         AssetDumperGfxImage(const AssetDumperGfxImage& other) = delete;
         AssetDumperGfxImage(AssetDumperGfxImage&& other) noexcept = delete;

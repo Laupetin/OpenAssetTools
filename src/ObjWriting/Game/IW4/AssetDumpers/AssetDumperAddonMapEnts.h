@@ -8,8 +8,8 @@ namespace IW4
     class AssetDumperAddonMapEnts final : public AbstractAssetDumper<AddonMapEnts>
     {
     protected:
-        bool ShouldDump(AddonMapEnts* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, AddonMapEnts* asset) override;
-        void DumpAsset(Zone* zone, AddonMapEnts* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<AddonMapEnts>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset, FileAPI::File* out) override;
     };
 }

@@ -5,11 +5,11 @@
 
 namespace T6
 {
-    class AssetDumperStringTable final : public AbstractAssetDumper<T6::StringTable>
+    class AssetDumperStringTable final : public AbstractAssetDumper<StringTable>
     {
     protected:
-        bool ShouldDump(T6::StringTable* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::StringTable* asset) override;
-        void DumpAsset(Zone* zone, T6::StringTable* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<StringTable>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<StringTable>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, FileAPI::File* out) override;
     };
 }

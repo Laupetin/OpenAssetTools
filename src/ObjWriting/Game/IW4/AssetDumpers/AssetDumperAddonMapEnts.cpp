@@ -5,17 +5,18 @@
 
 using namespace IW4;
 
-bool AssetDumperAddonMapEnts::ShouldDump(AddonMapEnts* asset)
+bool AssetDumperAddonMapEnts::ShouldDump(XAssetInfo<AddonMapEnts>* asset)
 {
     return true;
 }
 
-std::string AssetDumperAddonMapEnts::GetFileNameForAsset(Zone* zone, AddonMapEnts* asset)
+std::string AssetDumperAddonMapEnts::GetFileNameForAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset)
 {
-    return std::string(asset->name);
+    return asset->m_name;
 }
 
-void AssetDumperAddonMapEnts::DumpAsset(Zone* zone, AddonMapEnts* asset, FileAPI::File* out)
+void AssetDumperAddonMapEnts::DumpAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset, FileAPI::File* out)
 {
-    out->Write(asset->entityString, 1, std::max(asset->numEntityChars - 1, 0));
+    const auto* addonMapEnts = asset->Asset();
+    out->Write(addonMapEnts->entityString, 1, std::max(addonMapEnts->numEntityChars - 1, 0));
 }

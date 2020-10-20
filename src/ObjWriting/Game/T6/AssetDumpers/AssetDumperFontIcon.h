@@ -5,11 +5,11 @@
 
 namespace T6
 {
-    class AssetDumperFontIcon final : public AbstractAssetDumper<T6::FontIcon>
+    class AssetDumperFontIcon final : public AbstractAssetDumper<FontIcon>
     {
     protected:
-        bool ShouldDump(T6::FontIcon* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::FontIcon* asset) override;
-        void DumpAsset(Zone* zone, T6::FontIcon* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<FontIcon>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<FontIcon>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, FileAPI::File* out) override;
     };
 }

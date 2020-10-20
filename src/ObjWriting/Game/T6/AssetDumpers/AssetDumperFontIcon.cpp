@@ -255,18 +255,18 @@ public:
     }
 };
 
-bool AssetDumperFontIcon::ShouldDump(FontIcon* asset)
+bool AssetDumperFontIcon::ShouldDump(XAssetInfo<FontIcon>* asset)
 {
     return true;
 }
 
-std::string AssetDumperFontIcon::GetFileNameForAsset(Zone* zone, FontIcon* asset)
+std::string AssetDumperFontIcon::GetFileNameForAsset(Zone* zone, XAssetInfo<FontIcon>* asset)
 {
-    return std::string(asset->name);
+    return asset->m_name;
 }
 
-void AssetDumperFontIcon::DumpAsset(Zone* zone, FontIcon* asset, FileAPI::File* out)
+void AssetDumperFontIcon::DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, FileAPI::File* out)
 {
     AssetDumperFontIconInternal dumper(out);
-    dumper.DumpFontIcon(asset);
+    dumper.DumpFontIcon(asset->Asset());
 }

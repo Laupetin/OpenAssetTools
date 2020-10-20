@@ -31,17 +31,19 @@ AssetDumperGfxImage::~AssetDumperGfxImage()
     m_writer = nullptr;
 }
 
-bool AssetDumperGfxImage::ShouldDump(GfxImage* asset)
+bool AssetDumperGfxImage::ShouldDump(XAssetInfo<GfxImage>* asset)
 {
-    return asset->cardMemory.platform[0] > 0;
+    const auto* image = asset->Asset();
+    return image->cardMemory.platform[0] > 0;
 }
 
-std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, GfxImage* asset)
+std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset)
 {
-    return "images/" + std::string(asset->name) + m_writer->GetFileExtension();
+    return "images/" + asset->m_name + m_writer->GetFileExtension();
 }
 
-void AssetDumperGfxImage::DumpAsset(Zone* zone, GfxImage* asset, FileAPI::File* out)
+void AssetDumperGfxImage::DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, FileAPI::File* out)
 {
-    m_writer->DumpImage(out, asset->texture.texture);
+    const auto* image = asset->Asset();
+    m_writer->DumpImage(out, image->texture.texture);
 }

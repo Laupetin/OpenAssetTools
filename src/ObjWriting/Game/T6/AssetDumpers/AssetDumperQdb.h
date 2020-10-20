@@ -5,11 +5,11 @@
 
 namespace T6
 {
-    class AssetDumperQdb final : public AbstractAssetDumper<T6::Qdb>
+    class AssetDumperQdb final : public AbstractAssetDumper<Qdb>
     {
     protected:
-        bool ShouldDump(T6::Qdb* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::Qdb* asset) override;
-        void DumpAsset(Zone* zone, T6::Qdb* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<Qdb>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<Qdb>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<Qdb>* asset, FileAPI::File* out) override;
     };
 }

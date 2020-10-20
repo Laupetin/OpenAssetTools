@@ -5,11 +5,11 @@
 
 namespace IW4
 {
-    class AssetDumperStringTable final : public AbstractAssetDumper<IW4::StringTable>
+    class AssetDumperStringTable final : public AbstractAssetDumper<StringTable>
     {
     protected:
-        bool ShouldDump(IW4::StringTable* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, IW4::StringTable* asset) override;
-        void DumpAsset(Zone* zone, IW4::StringTable* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<StringTable>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<StringTable>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, FileAPI::File* out) override;
     };
 }

@@ -5,9 +5,9 @@
 
 namespace T6
 {
-    class AssetDumperLocalizeEntry final : public IAssetDumper<T6::LocalizeEntry>
+    class AssetDumperLocalizeEntry final : public IAssetDumper<LocalizeEntry>
     {
     public:
-        void DumpPool(Zone* zone, AssetPool<T6::LocalizeEntry>* pool, const std::string& basePath) override;
+        void DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath) override;
     };
 }

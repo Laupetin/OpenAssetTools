@@ -5,11 +5,11 @@
 
 namespace T6
 {
-    class AssetDumperScriptParseTree final : public AbstractAssetDumper<T6::ScriptParseTree>
+    class AssetDumperScriptParseTree final : public AbstractAssetDumper<ScriptParseTree>
     {
     protected:
-        bool ShouldDump(T6::ScriptParseTree* asset) override;
-        std::string GetFileNameForAsset(Zone* zone, T6::ScriptParseTree* asset) override;
-        void DumpAsset(Zone* zone, T6::ScriptParseTree* asset, FileAPI::File* out) override;
+        bool ShouldDump(XAssetInfo<ScriptParseTree>* asset) override;
+        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<ScriptParseTree>* asset) override;
+        void DumpAsset(Zone* zone, XAssetInfo<ScriptParseTree>* asset, FileAPI::File* out) override;
     };
 }
