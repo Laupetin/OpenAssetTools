@@ -4048,6 +4048,31 @@ namespace T6
         MISSILE_GUIDANCE_COUNT = 0x9,
     };
 
+    enum hitLocation_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_MID = 0x5,
+        HITLOC_TORSO_LWR = 0x6,
+        HITLOC_R_ARM_UPR = 0x7,
+        HITLOC_L_ARM_UPR = 0x8,
+        HITLOC_R_ARM_LWR = 0x9,
+        HITLOC_L_ARM_LWR = 0xA,
+        HITLOC_R_HAND = 0xB,
+        HITLOC_L_HAND = 0xC,
+        HITLOC_R_LEG_UPR = 0xD,
+        HITLOC_L_LEG_UPR = 0xE,
+        HITLOC_R_LEG_LWR = 0xF,
+        HITLOC_L_LEG_LWR = 0x10,
+        HITLOC_R_FOOT = 0x11,
+        HITLOC_L_FOOT = 0x12,
+        HITLOC_GUN = 0x13,
+        HITLOC_SHIELD = 0x14,
+        HITLOC_NUM = 0x15,
+    };
 
     struct WeaponDef
     {
@@ -4730,6 +4755,44 @@ namespace T6
         WEAP_ANIM_ADS_DOWN = 0x56,
         WEAP_ANIM_ADS_UP_OTHER_SCOPE = 0x57,
         NUM_WEAP_ANIMS = 0x58,
+    };
+
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_PLAYER,
+        SURF_TYPE_TALL_GRASS,
+        SURF_TYPE_RIOT_SHIELD,
+
+        SURF_TYPE_NUM
     };
 
     struct WeaponVariantDef
