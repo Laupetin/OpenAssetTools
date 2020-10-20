@@ -1454,84 +1454,6 @@ namespace T6
         WEAPON_ICON_RATIO_COUNT = 0x3,
     };
 
-
-    struct WeaponVariantDef
-    {
-        const char* szInternalName;
-        int iVariantCount;
-        WeaponDef* weapDef;
-        const char* szDisplayName;
-        const char* szAltWeaponName;
-        const char* szAttachmentUnique;
-        WeaponAttachment** attachments;
-        WeaponAttachmentUnique** attachmentUniques;
-        const char** szXAnims;
-        unsigned __int16* hideTags;
-        XModel** attachViewModel;
-        XModel** attachWorldModel;
-        const char** attachViewModelTag;
-        const char** attachWorldModelTag;
-        float attachViewModelOffsets[24];
-        float attachWorldModelOffsets[24];
-        float attachViewModelRotations[24];
-        float attachWorldModelRotations[24];
-        vec3_t stowedModelOffsets;
-        vec3_t stowedModelRotations;
-        unsigned int altWeaponIndex;
-        int iAttachments;
-        bool bIgnoreAttachments;
-        int iClipSize;
-        int iReloadTime;
-        int iReloadEmptyTime;
-        int iReloadQuickTime;
-        int iReloadQuickEmptyTime;
-        int iAdsTransInTime;
-        int iAdsTransOutTime;
-        int iAltRaiseTime;
-        const char* szAmmoDisplayName;
-        const char* szAmmoName;
-        int iAmmoIndex;
-        const char* szClipName;
-        int iClipIndex;
-        float fAimAssistRangeAds;
-        float fAdsSwayHorizScale;
-        float fAdsSwayVertScale;
-        float fAdsViewKickCenterSpeed;
-        float fHipViewKickCenterSpeed;
-        float fAdsZoomFov1;
-        float fAdsZoomFov2;
-        float fAdsZoomFov3;
-        float fAdsZoomInFrac;
-        float fAdsZoomOutFrac;
-        float fOverlayAlphaScale;
-        float fOOPosAnimLength[2];
-        bool bSilenced;
-        bool bDualMag;
-        bool bInfraRed;
-        bool bTVGuided;
-        unsigned int perks[2];
-        bool bAntiQuickScope;
-        Material* overlayMaterial;
-        Material* overlayMaterialLowRes;
-        Material* dpadIcon;
-        weaponIconRatioType_t dpadIconRatio;
-        bool noAmmoOnDpadIcon;
-        bool mmsWeapon;
-        bool mmsInScope;
-        float mmsFOV;
-        float mmsAspect;
-        float mmsMaxDist;
-        vec3_t ikLeftHandIdlePos;
-        vec3_t ikLeftHandOffset;
-        vec3_t ikLeftHandRotation;
-        bool bUsingLeftHandProneIK;
-        vec3_t ikLeftHandProneOffset;
-        vec3_t ikLeftHandProneRotation;
-        vec3_t ikLeftHandUiViewerOffset;
-        vec3_t ikLeftHandUiViewerRotation;
-    };
-
-
     enum eAttachment
     {
         ATTACHMENT_NONE = 0x0,
@@ -4129,16 +4051,16 @@ namespace T6
 
     struct WeaponDef
     {
-        const char* szOverlayName;
-        XModel** gunXModel;
-        XModel* handXModel;
-        const char* szModeName;
-        unsigned __int16* notetrackSoundMapKeys;
-        unsigned __int16* notetrackSoundMapValues;
-        int playerAnimType;
+        const char* szOverlayName; // covered
+        XModel** gunXModel; // covered
+        XModel* handXModel; // covered
+        const char* szModeName; // covered
+        unsigned __int16* notetrackSoundMapKeys; // covered
+        unsigned __int16* notetrackSoundMapValues; // covered
+        int playerAnimType; // covered
         weapType_t weapType;
         weapClass_t weapClass;
-        PenetrateType penetrateType;
+        PenetrateType penetrateTWeaponAttachmentype;
         ImpactType impactType;
         weapInventoryType_t inventoryType;
         weapFireType_t fireType;
@@ -4715,6 +4637,197 @@ namespace T6
         int customBool0;
         int customBool1;
         int customBool2;
+    };
+
+    enum weapAnimFiles_t
+    {
+        WEAP_ANIM_ROOT = 0x0,
+        WEAP_ANIM_IDLE = 0x1,
+        WEAP_ANIM_EMPTY_IDLE = 0x2,
+        WEAP_ANIM_FIRE_INTRO = 0x3,
+        WEAP_ANIM_FIRE = 0x4,
+        WEAP_ANIM_HOLD_FIRE = 0x5,
+        WEAP_ANIM_LASTSHOT = 0x6,
+        WEAP_ANIM_FINALSHOT = 0x7,
+        WEAP_ANIM_RECHAMBER = 0x8,
+        WEAP_ANIM_MELEE = 0x9,
+        WEAP_ANIM_MELEE1 = 0xA,
+        WEAP_ANIM_MELEE2 = 0xB,
+        WEAP_ANIM_MELEE3 = 0xC,
+        WEAP_ANIM_MELEE_EMPTY = 0xD,
+        WEAP_ANIM_MELEE_CHARGE = 0xE,
+        WEAP_ANIM_MELEE_CHARGE_EMPTY = 0xF,
+        WEAP_ANIM_RELOAD = 0x10,
+        WEAP_ANIM_RELOAD_RIGHT = 0x11,
+        WEAP_ANIM_RELOAD_EMPTY = 0x12,
+        WEAP_ANIM_RELOAD_START = 0x13,
+        WEAP_ANIM_RELOAD_END = 0x14,
+        WEAP_ANIM_RELOAD_QUICK = 0x15,
+        WEAP_ANIM_RELOAD_QUICK_EMPTY = 0x16,
+        WEAP_ANIM_RAISE = 0x17,
+        WEAP_ANIM_FIRST_RAISE = 0x18,
+        WEAP_ANIM_DROP = 0x19,
+        WEAP_ANIM_ALT_RAISE = 0x1A,
+        WEAP_ANIM_ALT_DROP = 0x1B,
+        WEAP_ANIM_QUICK_RAISE = 0x1C,
+        WEAP_ANIM_QUICK_DROP = 0x1D,
+        WEAP_ANIM_EMPTY_RAISE = 0x1E,
+        WEAP_ANIM_EMPTY_DROP = 0x1F,
+        WEAP_ANIM_SPRINT_IN = 0x20,
+        WEAP_ANIM_SPRINT_LOOP = 0x21,
+        WEAP_ANIM_SPRINT_OUT = 0x22,
+        WEAP_ANIM_SPRINT_EMPTY_IN = 0x23,
+        WEAP_ANIM_SPRINT_EMPTY_LOOP = 0x24,
+        WEAP_ANIM_SPRINT_EMPTY_OUT = 0x25,
+        WEAP_ANIM_LOWREADY_IN = 0x26,
+        WEAP_ANIM_LOWREADY_LOOP = 0x27,
+        WEAP_ANIM_LOWREADY_OUT = 0x28,
+        WEAP_ANIM_CONT_FIRE_IN = 0x29,
+        WEAP_ANIM_CONT_FIRE_LOOP = 0x2A,
+        WEAP_ANIM_CONT_FIRE_OUT = 0x2B,
+        WEAP_ANIM_CRAWL_IN = 0x2C,
+        WEAP_ANIM_CRAWL_FORWARD = 0x2D,
+        WEAP_ANIM_CRAWL_BACK = 0x2E,
+        WEAP_ANIM_CRAWL_RIGHT = 0x2F,
+        WEAP_ANIM_CRAWL_LEFT = 0x30,
+        WEAP_ANIM_CRAWL_OUT = 0x31,
+        WEAP_ANIM_CRAWL_EMPTY_IN = 0x32,
+        WEAP_ANIM_CRAWL_EMPTY_FORWARD = 0x33,
+        WEAP_ANIM_CRAWL_EMPTY_BACK = 0x34,
+        WEAP_ANIM_CRAWL_EMPTY_RIGHT = 0x35,
+        WEAP_ANIM_CRAWL_EMPTY_LEFT = 0x36,
+        WEAP_ANIM_CRAWL_EMPTY_OUT = 0x37,
+        WEAP_ANIM_DEPLOY = 0x38,
+        WEAP_ANIM_BREAKDOWN = 0x39,
+        WEAP_ANIM_DETONATE = 0x3A,
+        WEAP_ANIM_NIGHTVISION_WEAR = 0x3B,
+        WEAP_ANIM_NIGHTVISION_REMOVE = 0x3C,
+        WEAP_ANIM_ADS_FIRE = 0x3D,
+        WEAP_ANIM_ADS_LASTSHOT = 0x3E,
+        WEAP_ANIM_ADS_FIRE_INTRO = 0x3F,
+        WEAP_ANIM_ADS_RECHAMBER = 0x40,
+        WEAP_ANIM_DTP_IN = 0x41,
+        WEAP_ANIM_DTP_LOOP = 0x42,
+        WEAP_ANIM_DTP_OUT = 0x43,
+        WEAP_ANIM_DTP_EMPTY_IN = 0x44,
+        WEAP_ANIM_DTP_EMPTY_LOOP = 0x45,
+        WEAP_ANIM_DTP_EMPTY_OUT = 0x46,
+        WEAP_ANIM_SLIDE_IN = 0x47,
+        WEAP_ANIM_MANTLE = 0x48,
+        WEAP_ANIM_CAMERA_SPRINT_LOOP = 0x49,
+        WEAP_ANIM_CAMERA_DTP_IN = 0x4A,
+        WEAP_ANIM_CAMERA_DTP_LOOP = 0x4B,
+        WEAP_ANIM_CAMERA_DTP_OUT = 0x4C,
+        WEAP_ANIM_CAMERA_MANTLE = 0x4D,
+        WEAP_ANIM_FIRE_LEFT = 0x4E,
+        WEAP_ANIM_LASTSHOT_LEFT = 0x4F,
+        WEAP_ANIM_FINALSHOT_LEFT = 0x50,
+        WEAP_ANIM_IDLE_LEFT = 0x51,
+        WEAP_ANIM_EMPTY_IDLE_LEFT = 0x52,
+        WEAP_ANIM_RELOAD_EMPTY_LEFT = 0x53,
+        WEAP_ANIM_RELOAD_LEFT = 0x54,
+        WEAP_ANIM_ADS_UP = 0x55,
+        WEAP_ANIM_ADS_DOWN = 0x56,
+        WEAP_ANIM_ADS_UP_OTHER_SCOPE = 0x57,
+        NUM_WEAP_ANIMS = 0x58,
+    };
+
+    struct WeaponVariantDef
+    {
+        const char* szInternalName;
+        int iVariantCount;
+        WeaponDef* weapDef;
+        const char* szDisplayName;
+        const char* szAltWeaponName;
+        const char* szAttachmentUnique;
+        WeaponAttachment** attachments;
+        WeaponAttachmentUnique** attachmentUniques;
+        const char** szXAnims;
+        unsigned __int16* hideTags;
+        XModel** attachViewModel;
+        XModel** attachWorldModel;
+        const char** attachViewModelTag;
+        const char** attachWorldModelTag;
+        float attachViewModelOffsets[24];
+        float attachWorldModelOffsets[24];
+        float attachViewModelRotations[24];
+        float attachWorldModelRotations[24];
+        vec3_t stowedModelOffsets;
+        vec3_t stowedModelRotations;
+        unsigned int altWeaponIndex;
+        int iAttachments;
+        bool bIgnoreAttachments;
+        int iClipSize;
+        int iReloadTime;
+        int iReloadEmptyTime;
+        int iReloadQuickTime;
+        int iReloadQuickEmptyTime;
+        int iAdsTransInTime;
+        int iAdsTransOutTime;
+        int iAltRaiseTime;
+        const char* szAmmoDisplayName;
+        const char* szAmmoName;
+        int iAmmoIndex;
+        const char* szClipName;
+        int iClipIndex;
+        float fAimAssistRangeAds;
+        float fAdsSwayHorizScale;
+        float fAdsSwayVertScale;
+        float fAdsViewKickCenterSpeed;
+        float fHipViewKickCenterSpeed;
+        float fAdsZoomFov1;
+        float fAdsZoomFov2;
+        float fAdsZoomFov3;
+        float fAdsZoomInFrac;
+        float fAdsZoomOutFrac;
+        float fOverlayAlphaScale;
+        float fOOPosAnimLength[2];
+        bool bSilenced;
+        bool bDualMag;
+        bool bInfraRed;
+        bool bTVGuided;
+        unsigned int perks[2];
+        bool bAntiQuickScope;
+        Material* overlayMaterial;
+        Material* overlayMaterialLowRes;
+        Material* dpadIcon;
+        weaponIconRatioType_t dpadIconRatio;
+        bool noAmmoOnDpadIcon;
+        bool mmsWeapon;
+        bool mmsInScope;
+        float mmsFOV;
+        float mmsAspect;
+        float mmsMaxDist;
+        vec3_t ikLeftHandIdlePos;
+        vec3_t ikLeftHandOffset;
+        vec3_t ikLeftHandRotation;
+        bool bUsingLeftHandProneIK;
+        vec3_t ikLeftHandProneOffset;
+        vec3_t ikLeftHandProneRotation;
+        vec3_t ikLeftHandUiViewerOffset;
+        vec3_t ikLeftHandUiViewerRotation;
+    };
+
+    struct WeaponFullDef
+    {
+        WeaponVariantDef weapVariantDef;
+        WeaponDef weapDef;
+        WeaponAttachment* attachments[63];
+        WeaponAttachmentUnique* attachmentUniques[95];
+        XModel* gunXModel[16];
+        const char* szXAnims[88];
+        unsigned __int16 hideTags[32];
+        unsigned __int16 notetrackSoundMapKeys[20];
+        unsigned __int16 notetrackSoundMapValues[20];
+        XModel* worldModel[16];
+        XModel* attachViewModel[8];
+        XModel* attachWorldModel[8];
+        const char* attachViewModelTag[8];
+        const char* attachWorldModelTag[8];
+        float parallelBounce[32];
+        float perpendicularBounce[32];
+        float locationDamageMultipliers[21];
+        char weaponCamo[64];
     };
 
 

@@ -11,6 +11,7 @@
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperFontIcon.h"
+#include "AssetDumpers/AssetDumperWeapon.h"
 
 using namespace T6;
 
@@ -52,7 +53,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list);
     // DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def);
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize);
-    // DUMP_ASSET_POOL(AssetDumperWeaponVariantDef, m_weapon);
+    DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon);
     // DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment);
     // DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique);
     // DUMP_ASSET_POOL(AssetDumperWeaponCamo, m_camo);
