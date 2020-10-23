@@ -59,9 +59,6 @@ ContentLoader::ContentLoader()
 {
     varXAsset = nullptr;
     varScriptStringList = nullptr;
-
-    // Script String 0 is always empty string
-    m_script_strings.emplace_back("");
 }
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
