@@ -52,10 +52,30 @@ void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t c
     if (atStreamStart)
         m_stream->Load<scr_string_t>(varScriptString, count);
 
+    auto* ptr = varScriptString;
     for (size_t index = 0; index < count; index++)
     {
-        *varScriptString = UseScriptString(*varScriptString);
-        varScriptString++;
+        *ptr = UseScriptString(*ptr);
+        ptr++;
+    }
+}
+
+void AssetLoader::LoadScriptStringArrayRealloc(const bool atStreamStart, const size_t count)
+{
+    assert(varScriptString != nullptr);
+
+    if (atStreamStart)
+        m_stream->Load<scr_string_t>(varScriptString, count);
+
+    auto* scriptStringsNew = static_cast<scr_string_t*>(m_zone->GetMemory()->Alloc(sizeof scr_string_t * count));
+    memcpy_s(scriptStringsNew, sizeof scr_string_t * count, varScriptString, sizeof scr_string_t * count);
+    varScriptString = scriptStringsNew;
+
+    auto* ptr = varScriptString;
+    for (size_t index = 0; index < count; index++)
+    {
+        *ptr = UseScriptString(*ptr);
+        ptr++;
     }
 }
 

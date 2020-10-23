@@ -40,7 +40,12 @@ $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)
 $\n$
 
 varScriptString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+$if(!member.IsReusable)$
 LoadScriptStringArray(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+$else$
+LoadScriptStringArrayRealloc(true, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);$\n$
+$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = varScriptString;
+$endif$
 
 %>
 
@@ -70,6 +75,11 @@ if($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(referen
 else
 {
     $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = m_stream->ConvertOffsetToPointer($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$);
+    $if(member.IsScriptString)$
+    varScriptString = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;
+    LoadScriptStringArrayRealloc(false, $PrintEvaluation(reference.ArrayPointerCountEvaluation)$);
+    $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$ = varScriptString;
+    $endif$
 }$\\$
 $endif$
 >>
