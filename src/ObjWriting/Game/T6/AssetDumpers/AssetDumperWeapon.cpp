@@ -1441,7 +1441,9 @@ namespace T6
                     break;
                 }
 
-            case WFT_EXPLOSION_TAG: break;
+            case WFT_EXPLOSION_TAG:
+                FillFromScriptString(std::string(field.szName), field.iOffset);
+                break;
 
             case WFT_NOTETRACKSOUNDMAP:
                 {
