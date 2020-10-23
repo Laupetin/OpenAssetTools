@@ -1421,12 +1421,58 @@ namespace T6
 
             case WFT_HIDETAGS:
                 {
+                    const auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                    std::stringstream ss;
+                    bool first = true;
+
+                    for (auto i = 0u; i < _countof(WeaponFullDef::hideTags); i++)
+                    {
+                        const auto& str = m_get_scr_string(hideTags[i]);
+                        if (!str.empty())
+                        {
+                            if (!first)
+                                ss << "\n";
+                            else
+                                first = false;
+
+                            ss << str;
+                        }
+                    }
+
+                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
                     break;
                 }
 
             case WFT_EXPLOSION_TAG: break;
 
-            case WFT_NOTETRACKSOUNDMAP: break;
+            case WFT_NOTETRACKSOUNDMAP:
+                {
+                    const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                    const auto* values = &keys[_countof(WeaponFullDef::notetrackSoundMapKeys)];
+                    std::stringstream ss;
+                    bool first = true;
+
+                    for(auto i = 0u; i < _countof(WeaponFullDef::notetrackSoundMapKeys); i++)
+                    {
+                        const auto& key = m_get_scr_string(keys[i]);
+                        const auto& value = m_get_scr_string(values[i]);
+                        if (!key.empty())
+                        {
+                            if (!first)
+                                ss << "\n";
+                            else
+                                first = false;
+
+                            ss << key;
+
+                            if (!value.empty())
+                                ss << " " << value;
+                        }
+                    }
+
+                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                    break;
+                }
 
             case WFT_WEAPON_CAMO:
                 {
