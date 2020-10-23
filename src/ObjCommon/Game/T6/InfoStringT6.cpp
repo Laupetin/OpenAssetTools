@@ -158,7 +158,7 @@ InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structu
 }
 
 InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure, const cspField_t* fields, const size_t fieldCount,
-                                                             std::function<const std::string&(scr_string_t)> scriptStringValueCallback)
+                                                             std::function<std::string(scr_string_t)> scriptStringValueCallback)
     : InfoStringFromStructConverterBase(structure, std::move(scriptStringValueCallback)),
       m_fields(fields),
       m_field_count(fieldCount)

@@ -1634,7 +1634,7 @@ void AssetDumperWeapon::DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asse
     memset(fullDef, 0, sizeof WeaponFullDef);
     CopyToFullDef(asset->Asset(), fullDef);
 
-    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields), [asset](const scr_string_t scrStr) -> const std::string&
+    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields), [asset](const scr_string_t scrStr)
     {
         if (scrStr >= asset->m_script_strings.size())
             return EMPTY_STRING;

@@ -28,6 +28,6 @@ namespace T6
 
     public:
         InfoStringFromStructConverter(const void* structure, const cspField_t* fields, size_t fieldCount);
-        InfoStringFromStructConverter(const void* structure, const cspField_t* fields, size_t fieldCount, std::function<const std::string&(scr_string_t)> scriptStringValueCallback);
+        InfoStringFromStructConverter(const void* structure, const cspField_t* fields, size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback);
     };
 }

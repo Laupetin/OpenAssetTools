@@ -117,7 +117,7 @@ InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void*
 {
 }
 
-InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure, std::function<const std::string&(scr_string_t)> scriptStringValueCallback)
+InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure, std::function<std::string(scr_string_t)> scriptStringValueCallback)
     : m_structure(structure),
       m_get_scr_string(std::move(scriptStringValueCallback))
 {
@@ -132,7 +132,7 @@ InfoString InfoStringFromStructConverterBase::Convert()
     return std::move(m_info_string);
 }
 
-void InfoStringFromStructConverterBase::FillFromString(const std::string& key, size_t offset)
+void InfoStringFromStructConverterBase::FillFromString(const std::string& key, const size_t offset)
 {
     const auto* str = *reinterpret_cast<const char**>(reinterpret_cast<uintptr_t>(m_structure) + offset);
 
