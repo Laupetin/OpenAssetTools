@@ -1,10 +1,13 @@
 #include "AssetDumperWeapon.h"
 
 #include <cassert>
+#include <sstream>
 
 #include "Game/T6/InfoStringT6.h"
 
 using namespace T6;
+
+const std::string AssetDumperWeapon::EMPTY_STRING;
 
 cspField_t AssetDumperWeapon::weapon_fields[]
 {
@@ -1445,8 +1448,8 @@ namespace T6
         }
 
     public:
-        InfoStringFromWeaponConverter(const WeaponFullDef* structure, const cspField_t* fields, const size_t fieldCount)
-            : InfoStringFromStructConverter(structure, fields, fieldCount)
+        InfoStringFromWeaponConverter(const WeaponFullDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<const std::string&(scr_string_t)> scriptStringValueCallback)
+            : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
@@ -1585,7 +1588,14 @@ void AssetDumperWeapon::DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asse
     memset(fullDef, 0, sizeof WeaponFullDef);
     CopyToFullDef(asset->Asset(), fullDef);
 
-    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields));
+    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields), [asset](const scr_string_t scrStr) -> const std::string&
+    {
+        if (scrStr >= asset->m_script_strings.size())
+            return EMPTY_STRING;
+
+        return asset->m_script_strings[scrStr];
+    });
+
     const auto infoString = converter.Convert();
     const auto stringValue = infoString.ToString("WEAPONFILE");
     out->Write(stringValue.c_str(), 1, stringValue.length());

@@ -72,53 +72,56 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
         }
 
     case CSPFT_XMODEL:
-    {
-        const auto* model = *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+        {
+            const auto* model = *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
-        if (model)
-            m_info_string.SetValueForKey(std::string(field.szName), std::string(model->name));
-        else
-            m_info_string.SetValueForKey(std::string(field.szName), "");
-        break;
-    }
+            if (model)
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(model->name));
+            else
+                m_info_string.SetValueForKey(std::string(field.szName), "");
+            break;
+        }
 
     case CSPFT_MATERIAL:
     case CSPFT_MATERIAL_STREAM:
-    {
-        const auto* material = *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+        {
+            const auto* material = *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.
+                iOffset);
 
-        if (material)
-            m_info_string.SetValueForKey(std::string(field.szName), std::string(material->info.name));
-        else
-            m_info_string.SetValueForKey(std::string(field.szName), "");
-        break;
-    }
+            if (material)
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(material->info.name));
+            else
+                m_info_string.SetValueForKey(std::string(field.szName), "");
+            break;
+        }
 
     case CSPFT_PHYS_PRESET:
-    {
-        const auto* physPreset = *reinterpret_cast<PhysPreset**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+        {
+            const auto* physPreset = *reinterpret_cast<PhysPreset**>(reinterpret_cast<uintptr_t>(m_structure) + field.
+                iOffset);
 
-        if (physPreset)
-            m_info_string.SetValueForKey(std::string(field.szName), std::string(physPreset->name));
-        else
-            m_info_string.SetValueForKey(std::string(field.szName), "");
-        break;
-    }
+            if (physPreset)
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(physPreset->name));
+            else
+                m_info_string.SetValueForKey(std::string(field.szName), "");
+            break;
+        }
 
     case CSPFT_SCRIPT_STRING:
         FillFromScriptString(std::string(field.szName), field.iOffset);
         break;
 
     case CSPFT_TRACER:
-    {
-        const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+        {
+            const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset
+            );
 
-        if (tracer)
-            m_info_string.SetValueForKey(std::string(field.szName), std::string(tracer->name));
-        else
-            m_info_string.SetValueForKey(std::string(field.szName), "");
-        break;
-    }
+            if (tracer)
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(tracer->name));
+            else
+                m_info_string.SetValueForKey(std::string(field.szName), "");
+            break;
+        }
 
     case CSPFT_SOUND_ALIAS_ID:
         assert(false);
@@ -149,6 +152,14 @@ void InfoStringFromStructConverter::FillInfoString()
 InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure, const cspField_t* fields,
                                                              const size_t fieldCount)
     : InfoStringFromStructConverterBase(structure),
+      m_fields(fields),
+      m_field_count(fieldCount)
+{
+}
+
+InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure, const cspField_t* fields, const size_t fieldCount,
+                                                             std::function<const std::string&(scr_string_t)> scriptStringValueCallback)
+    : InfoStringFromStructConverterBase(structure, std::move(scriptStringValueCallback)),
       m_fields(fields),
       m_field_count(fieldCount)
 {

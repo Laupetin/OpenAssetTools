@@ -50,7 +50,7 @@ class InfoStringFromStructConverterBase
 protected:
     InfoString m_info_string;
     const void* m_structure;
-    const std::function<std::string(scr_string_t)> m_get_scr_string;
+    const std::function<const std::string&(scr_string_t)> m_get_scr_string;
 
     void FillFromString(const std::string& key, size_t offset);
     void FillFromStringBuffer(const std::string& key, size_t offset, size_t bufferSize);
@@ -67,7 +67,7 @@ protected:
 
 public:
     explicit InfoStringFromStructConverterBase(const void* structure);
-    InfoStringFromStructConverterBase(const void* structure, std::function<std::string(scr_string_t)> scriptStringValueCallback);
+    InfoStringFromStructConverterBase(const void* structure, std::function<const std::string&(scr_string_t)> scriptStringValueCallback);
     virtual ~InfoStringFromStructConverterBase();
     InfoStringFromStructConverterBase(const InfoStringFromStructConverterBase& other) = delete;
     InfoStringFromStructConverterBase(InfoStringFromStructConverterBase&& other) noexcept = delete;

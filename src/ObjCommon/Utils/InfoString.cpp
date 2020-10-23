@@ -117,9 +117,7 @@ InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void*
 {
 }
 
-InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure,
-                                                                     std::function<std::string(scr_string_t)>
-                                                                     scriptStringValueCallback)
+InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure, std::function<const std::string&(scr_string_t)> scriptStringValueCallback)
     : m_structure(structure),
       m_get_scr_string(std::move(scriptStringValueCallback))
 {
