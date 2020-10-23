@@ -1218,7 +1218,8 @@ namespace T6
         "riotshield",
         "tablet",
         "turned",
-        "screecher"
+        "screecher",
+        "staff"
     };
 
     const char* activeReticleNames[]
