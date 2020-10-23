@@ -7,8 +7,6 @@
 
 using namespace T6;
 
-const std::string AssetDumperWeapon::EMPTY_STRING;
-
 cspField_t AssetDumperWeapon::weapon_fields[]
 {
     {"displayName", offsetof(WeaponFullDef, weapVariantDef.szDisplayName), CSPFT_STRING},
@@ -1494,7 +1492,7 @@ namespace T6
         }
 
     public:
-        InfoStringFromWeaponConverter(const WeaponFullDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<const std::string&(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromWeaponConverter(const WeaponFullDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
@@ -1634,10 +1632,10 @@ void AssetDumperWeapon::DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asse
     memset(fullDef, 0, sizeof WeaponFullDef);
     CopyToFullDef(asset->Asset(), fullDef);
 
-    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields), [asset](const scr_string_t scrStr)
+    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields), [asset](const scr_string_t scrStr) -> std::string
     {
         if (scrStr >= asset->m_script_strings.size())
-            return EMPTY_STRING;
+            return "";
 
         return asset->m_script_strings[scrStr];
     });
