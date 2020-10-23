@@ -40,6 +40,14 @@ scr_string_t AssetLoader::UseScriptString(const scr_string_t scrString)
     }
 
     scriptStringIndex = static_cast<scr_string_t>(m_used_script_strings.size());
+
+    // If an asset uses script strings make sure that script string 0 is always empty
+    if(scriptStringIndex == 0 && !scrStringValue.empty())
+    {
+        m_used_script_strings.emplace_back("");
+        scriptStringIndex++;
+    }
+
     m_used_script_strings.push_back(scrStringValue);
 
     return scriptStringIndex;
