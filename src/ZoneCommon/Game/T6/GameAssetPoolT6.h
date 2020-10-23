@@ -1,16 +1,18 @@
 #pragma once
 
-#include "Pool/IZoneAssetPools.h"
+#include "Pool/ZoneAssetPools.h"
 #include "Pool/AssetPool.h"
 #include "T6.h"
 
-class GameAssetPoolT6 final : public IZoneAssetPools
+class GameAssetPoolT6 final : public ZoneAssetPools
 {
     int m_priority;
-    std::vector<XAssetInfoGeneric*> m_assets_in_order;
 
     static const std::string ASSET_TYPE_INVALID;
     static const std::string ASSET_TYPE_NAMES[];
+
+protected:
+    XAssetInfoGeneric* AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*>& dependencies) override;
 
 public:
     AssetPool<T6::PhysPreset>* m_phys_preset;
@@ -62,16 +64,12 @@ public:
     AssetPool<T6::FootstepFXTableDef>* m_footstep_fx_table;
     AssetPool<T6::ZBarrierDef>* m_zbarrier;
 
-    explicit GameAssetPoolT6(int priority);
+    GameAssetPoolT6(Zone* zone, int priority);
     ~GameAssetPoolT6() override;
 
     void InitPoolStatic(asset_type_t type, size_t capacity) override;
     void InitPoolDynamic(asset_type_t type) override;
 
-    XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) override;
     XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
     const std::string& GetAssetTypeName(asset_type_t assetType) const override;
-
-    iterator begin() const override;
-    iterator end() const override;
 };

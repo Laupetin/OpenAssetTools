@@ -2,12 +2,16 @@
 #include <vector>
 #include <string>
 
+#include "Zone/Zone.h"
+
+class Zone;
+
 class XAssetInfoGeneric
 {
 public:
     int m_type = -1;
     std::string m_name;
-    std::vector<std::string> m_script_strings;
+    Zone* m_zone;
     std::vector<XAssetInfoGeneric*> m_dependencies;
     void* m_ptr;
 };

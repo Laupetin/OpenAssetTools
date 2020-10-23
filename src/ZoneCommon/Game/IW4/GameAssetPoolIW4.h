@@ -2,17 +2,19 @@
 
 #include <memory>
 
-#include "Pool/IZoneAssetPools.h"
+#include "Pool/ZoneAssetPools.h"
 #include "Pool/AssetPool.h"
 #include "IW4.h"
 
-class GameAssetPoolIW4 final : public IZoneAssetPools
+class GameAssetPoolIW4 final : public ZoneAssetPools
 {
     int m_priority;
-    std::vector<XAssetInfoGeneric*> m_assets_in_order;
 
     static const std::string ASSET_TYPE_INVALID;
     static const std::string ASSET_TYPE_NAMES[];
+
+protected:
+    XAssetInfoGeneric* AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*>& dependencies) override;
 
 public:
     std::unique_ptr<AssetPool<IW4::PhysPreset>> m_phys_preset;
@@ -51,18 +53,12 @@ public:
     std::unique_ptr<AssetPool<IW4::VehicleDef>> m_vehicle;
     std::unique_ptr<AssetPool<IW4::AddonMapEnts>> m_addon_map_ents;
 
-    explicit GameAssetPoolIW4(int priority);
+    GameAssetPoolIW4(Zone* zone, int priority);
     ~GameAssetPoolIW4() override = default;
 
     void InitPoolStatic(asset_type_t type, size_t capacity) override;
     void InitPoolDynamic(asset_type_t type) override;
 
-    XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset,
-                                std::vector<std::string>& scriptStrings,
-                                std::vector<XAssetInfoGeneric*>& dependencies) override;
     XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
     const std::string& GetAssetTypeName(asset_type_t assetType) const override;
-
-    iterator begin() const override;
-    iterator end() const override;
 };

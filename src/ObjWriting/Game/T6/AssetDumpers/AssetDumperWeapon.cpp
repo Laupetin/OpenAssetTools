@@ -1450,7 +1450,7 @@ namespace T6
                     std::stringstream ss;
                     bool first = true;
 
-                    for(auto i = 0u; i < _countof(WeaponFullDef::notetrackSoundMapKeys); i++)
+                    for (auto i = 0u; i < _countof(WeaponFullDef::notetrackSoundMapKeys); i++)
                     {
                         const auto& key = m_get_scr_string(keys[i]);
                         const auto& value = m_get_scr_string(values[i]);
@@ -1634,10 +1634,11 @@ void AssetDumperWeapon::DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asse
 
     InfoStringFromWeaponConverter converter(fullDef, weapon_fields, _countof(weapon_fields), [asset](const scr_string_t scrStr) -> std::string
     {
-        if (scrStr >= asset->m_script_strings.size())
+        assert(scrStr < asset->m_zone->m_script_strings.size());
+        if (scrStr >= asset->m_zone->m_script_strings.size())
             return "";
 
-        return asset->m_script_strings[scrStr];
+        return asset->m_zone->m_script_strings[scrStr];
     });
 
     const auto infoString = converter.Convert();

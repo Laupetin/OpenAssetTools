@@ -52,7 +52,7 @@ namespace T6
 
         void WriteContent() const
         {
-            const auto* pools = dynamic_cast<GameAssetPoolT6*>(m_zone->GetPools());
+            const auto* pools = dynamic_cast<GameAssetPoolT6*>(m_zone->m_pools.get());
 
             assert(pools);
             if (!pools)
@@ -91,7 +91,7 @@ namespace T6
             WriteMetaData(META_DATA_KEY_GAME, "t6");
             EmptyLine();
 
-            auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(m_zone->GetPools());
+            auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(m_zone->m_pools.get());
 
             if (assetPoolT6 && !assetPoolT6->m_key_value_pairs->m_asset_lookup.empty())
             {

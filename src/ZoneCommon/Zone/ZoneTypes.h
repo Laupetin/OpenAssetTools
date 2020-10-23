@@ -12,11 +12,15 @@ typedef uint32_t scr_string_t;
 typedef uint64_t xchunk_size_t;
 typedef uint64_t xblock_size_t;
 typedef uint64_t zone_pointer_t;
+
+constexpr uint16_t SCR_STRING_MAX = UINT32_MAX;
 #elif _WIN32
 typedef uint16_t scr_string_t;
 typedef uint32_t xchunk_size_t;
 typedef uint32_t xblock_size_t;
 typedef uint32_t zone_pointer_t;
+
+constexpr uint16_t SCR_STRING_MAX = UINT16_MAX;
 #endif
 
 typedef int block_t;

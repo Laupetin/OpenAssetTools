@@ -81,7 +81,7 @@ public:
         m_capacity = 0;
     }
 
-    XAssetInfo<T>* AddAsset(std::string name, T* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) override
+    XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*>& dependencies) override
     {
         if(m_free == nullptr)
         {
@@ -96,7 +96,7 @@ public:
         poolSlot->m_info->m_type = m_type;
         poolSlot->m_info->m_name = std::move(name);
         poolSlot->m_info->m_ptr = &poolSlot->m_entry;
-        poolSlot->m_info->m_script_strings = std::move(scriptStrings);
+        poolSlot->m_info->m_zone = zone;
         poolSlot->m_info->m_dependencies = std::move(dependencies);
 
         m_asset_lookup[poolSlot->m_info->m_name] = poolSlot->m_info;

@@ -1,10 +1,12 @@
 #include "AssetLoader.h"
 #include <cassert>
 
-AssetLoader::AssetLoader(const asset_type_t assetType, IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream)
+AssetLoader::AssetLoader(const asset_type_t assetType, Zone* zone, IZoneInputStream* stream)
+    : ContentLoaderBase(zone, stream),
+      m_asset_type(assetType),
+      varScriptString(nullptr)
 {
     m_asset_type = assetType;
-    m_script_string_provider = scriptStringProvider;
     m_zone = zone;
     m_stream = stream;
     varScriptString = nullptr;
@@ -16,7 +18,7 @@ void AssetLoader::AddDependency(XAssetInfoGeneric* assetInfo)
         return;
 
     const auto existingEntry = std::find(m_dependencies.begin(), m_dependencies.end(), assetInfo);
-    if(existingEntry != m_dependencies.end())
+    if (existingEntry != m_dependencies.end())
     {
         return;
     }
@@ -26,31 +28,12 @@ void AssetLoader::AddDependency(XAssetInfoGeneric* assetInfo)
 
 scr_string_t AssetLoader::UseScriptString(const scr_string_t scrString)
 {
-    std::string& scrStringValue = m_script_string_provider->GetZoneScriptString(scrString);
+    assert(scrString < m_zone->m_script_strings.size());
 
-    scr_string_t scriptStringIndex = 0;
-    for(auto& existingScriptString : m_used_script_strings)
-    {
-        if(existingScriptString == scrStringValue)
-        {
-            return scriptStringIndex;
-        }
+    if (scrString >= m_zone->m_script_strings.size())
+        return 0u;
 
-        scriptStringIndex++;
-    }
-
-    scriptStringIndex = static_cast<scr_string_t>(m_used_script_strings.size());
-
-    // If an asset uses script strings make sure that script string 0 is always empty
-    if(scriptStringIndex == 0 && !scrStringValue.empty())
-    {
-        m_used_script_strings.emplace_back("");
-        scriptStringIndex++;
-    }
-
-    m_used_script_strings.push_back(scrStringValue);
-
-    return scriptStringIndex;
+    return scrString;
 }
 
 void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t count)
@@ -68,31 +51,12 @@ void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t c
     }
 }
 
-void AssetLoader::LoadScriptStringArrayRealloc(const bool atStreamStart, const size_t count)
-{
-    assert(varScriptString != nullptr);
-
-    if (atStreamStart)
-        m_stream->Load<scr_string_t>(varScriptString, count);
-
-    auto* scriptStringsNew = static_cast<scr_string_t*>(m_zone->GetMemory()->Alloc(sizeof scr_string_t * count));
-    memcpy_s(scriptStringsNew, sizeof scr_string_t * count, varScriptString, sizeof scr_string_t * count);
-    varScriptString = scriptStringsNew;
-
-    auto* ptr = varScriptString;
-    for (size_t index = 0; index < count; index++)
-    {
-        *ptr = UseScriptString(*ptr);
-        ptr++;
-    }
-}
-
 XAssetInfoGeneric* AssetLoader::LinkAsset(std::string name, void* asset)
 {
-    return m_zone->GetPools()->AddAsset(m_asset_type, std::move(name), asset, m_used_script_strings, m_dependencies);;
+    return m_zone->m_pools->AddAsset(m_asset_type, std::move(name), asset, m_dependencies);
 }
 
 XAssetInfoGeneric* AssetLoader::GetAssetInfo(std::string name) const
 {
-    return m_zone->GetPools()->GetAsset(m_asset_type, std::move(name));
+    return m_zone->m_pools->GetAsset(m_asset_type, std::move(name));
 }

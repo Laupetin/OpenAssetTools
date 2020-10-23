@@ -15,7 +15,7 @@ namespace IW4
     {
         void WriteContent() const
         {
-            const auto* pools = dynamic_cast<GameAssetPoolIW4*>(m_zone->GetPools());
+            const auto* pools = dynamic_cast<GameAssetPoolIW4*>(m_zone->m_pools.get());
 
             assert(pools);
             if (!pools)

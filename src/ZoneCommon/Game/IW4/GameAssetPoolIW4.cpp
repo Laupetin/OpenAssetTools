@@ -97,11 +97,11 @@ const std::string GameAssetPoolIW4::ASSET_TYPE_NAMES[]
     ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts, m_addon_map_ents
  */
 
-GameAssetPoolIW4::GameAssetPoolIW4(const int priority)
+GameAssetPoolIW4::GameAssetPoolIW4(Zone* zone, const int priority)
+    : ZoneAssetPools(zone),
+      m_priority(priority)
 {
     assert(_countof(ASSET_TYPE_NAMES) == ASSET_TYPE_COUNT);
-
-    m_priority = priority;
 
     m_phys_preset = nullptr;
     m_phys_collmap = nullptr;
@@ -258,9 +258,7 @@ void GameAssetPoolIW4::InitPoolDynamic(const asset_type_t type)
 #undef CASE_INIT_POOL_STATIC
 }
 
-XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string name, void* asset,
-                                              std::vector<std::string>& scriptStrings,
-                                              std::vector<XAssetInfoGeneric*>& dependencies)
+XAssetInfoGeneric* GameAssetPoolIW4::AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*>& dependencies)
 {
     XAsset xAsset{};
 
@@ -271,7 +269,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAsset(asset_type_t type, std::string nam
     case assetType: \
     { \
         assert((poolName) != nullptr); \
-        auto* assetInfo = (poolName)->AddAsset(std::move(name), xAsset.header.headerName, scriptStrings, dependencies); \
+        auto* assetInfo = (poolName)->AddAsset(std::move(name), xAsset.header.headerName, m_zone, dependencies); \
         if(assetInfo) \
         { \
             m_assets_in_order.push_back(assetInfo); \
@@ -393,14 +391,4 @@ const std::string& GameAssetPoolIW4::GetAssetTypeName(const asset_type_t assetTy
         return ASSET_TYPE_NAMES[assetType];
 
     return ASSET_TYPE_INVALID;
-}
-
-IZoneAssetPools::iterator GameAssetPoolIW4::begin() const
-{
-    return m_assets_in_order.begin();
-}
-
-IZoneAssetPools::iterator GameAssetPoolIW4::end() const
-{
-    return m_assets_in_order.end();
 }

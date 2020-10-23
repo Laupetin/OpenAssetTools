@@ -40,12 +40,12 @@ public:
         m_asset_lookup.clear();
     }
 
-    XAssetInfo<T>* AddAsset(std::string name, T* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) override
+    XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*>& dependencies) override
     {
         auto* newInfo = new XAssetInfo<T>();
         newInfo->m_type = m_type;
         newInfo->m_name = std::move(name);
-        newInfo->m_script_strings = std::move(scriptStrings);
+        newInfo->m_zone = zone;
         newInfo->m_dependencies = std::move(dependencies);
 
         T* newAsset = new T();

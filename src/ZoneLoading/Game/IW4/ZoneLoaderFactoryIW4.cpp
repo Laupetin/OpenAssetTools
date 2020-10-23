@@ -204,7 +204,8 @@ public:
             return nullptr;
 
         // Create new zone
-        auto* zone = new Zone(fileName, 0, new GameAssetPoolIW4(0), &g_GameIW4);
+        auto* zone = new Zone(fileName, 0, &g_GameIW4);
+        zone->m_pools = std::make_unique<GameAssetPoolIW4>(zone, 0);
         zone->m_language = GetZoneLanguage(fileName);
 
         // File is supported. Now setup all required steps for loading this file.

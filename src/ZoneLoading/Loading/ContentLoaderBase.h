@@ -15,6 +15,7 @@ protected:
     IZoneInputStream* m_stream;
 
     ContentLoaderBase();
+    ContentLoaderBase(Zone* zone, IZoneInputStream* stream);
 
     void LoadXString(bool atStreamStart) const;
     void LoadXStringArray(bool atStreamStart, size_t count);

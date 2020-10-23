@@ -107,7 +107,7 @@ namespace T6
 
     void ObjLoader::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
     {
-        auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
+        auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
         const int zoneNameHash = CommonT6::Com_HashKey(zone->m_name.c_str(), 64);
 
         LoadCommonIPaks(searchPath, zone);
@@ -197,7 +197,7 @@ namespace T6
 
     void ObjLoader::LoadImageData(ISearchPath* searchPath, Zone* zone)
     {
-        auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->GetPools());
+        auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
 
         if (assetPoolT6 && assetPoolT6->m_image != nullptr)
         {

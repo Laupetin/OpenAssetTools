@@ -26,7 +26,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
         dumper.DumpPool(zone, assetPools->poolName.get(), basePath); \
     }
 
-    const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(zone->GetPools());
+    const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(zone->m_pools.get());
 
     // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset)
     // DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap)

@@ -38,7 +38,7 @@ $endif$
 >>
 
 LoadSinglePointerAsset(context, structure, member, reference) ::= <<
-$LoaderClassName(member.StructureType)$ loader(m_script_string_provider, m_zone, m_stream);
+$LoaderClassName(member.StructureType)$ loader(m_zone, m_stream);
 AddDependency(loader.Load(&$TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$));
 >>
 

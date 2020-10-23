@@ -1,19 +1,22 @@
 #pragma once
+#include <memory>
+
 #include "ZoneTypes.h"
-#include "Pool/IZoneAssetPools.h"
+#include "Pool/ZoneAssetPools.h"
 #include "Game/IGame.h"
 #include "Game/GameLanguage.h"
 #include "Zone/XBlock.h"
 #include "ZoneMemory.h"
 #include <string>
+#include <vector>
 
 class IGame;
+class ZoneAssetPools;
 
 class Zone
 {
-    IZoneAssetPools* m_pools;
     std::vector<XBlock*> m_blocks;
-    ZoneMemory* m_memory;
+    std::unique_ptr<ZoneMemory> m_memory;
 
     bool m_registered;
 
@@ -22,12 +25,13 @@ public:
     zone_priority_t m_priority;
     GameLanguage m_language;
     IGame* m_game;
+    std::vector<std::string> m_script_strings;
+    std::unique_ptr<ZoneAssetPools> m_pools;
 
-    Zone(std::string name, zone_priority_t priority, IZoneAssetPools* pools, IGame* game);
+    Zone(std::string name, zone_priority_t priority, IGame* game);
     ~Zone();
 
     void Register();
 
-    IZoneAssetPools* GetPools() const;
     ZoneMemory* GetMemory() const;
 };

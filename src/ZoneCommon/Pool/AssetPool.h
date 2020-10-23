@@ -1,8 +1,12 @@
 #pragma once
 
-#include "XAssetInfo.h"
 #include <string>
 #include <map>
+
+#include "XAssetInfo.h"
+#include "zone/Zone.h"
+
+class Zone;
 
 template<typename T>
 class AssetPool
@@ -43,7 +47,7 @@ public:
 
     virtual ~AssetPool() = default;
 
-    virtual XAssetInfo<T>* AddAsset(std::string name, T* asset, std::vector<std::string>& scriptStrings, std::vector<XAssetInfoGeneric*>& dependencies) = 0;
+    virtual XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*>& dependencies) = 0;
 
     XAssetInfo<T>* GetAsset(const std::string& name)
     {

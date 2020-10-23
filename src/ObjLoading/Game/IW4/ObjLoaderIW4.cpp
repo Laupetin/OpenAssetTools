@@ -71,7 +71,7 @@ namespace IW4
 
     void ObjLoader::LoadImageData(ISearchPath* searchPath, Zone* zone)
     {
-        auto* assetPool = dynamic_cast<GameAssetPoolIW4*>(zone->GetPools());
+        auto* assetPool = dynamic_cast<GameAssetPoolIW4*>(zone->m_pools.get());
 
         if (assetPool && assetPool->m_image != nullptr)
         {

@@ -12,7 +12,7 @@ import "Loading/PointerArray.stg"
 // Loading common
 LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
 
-HeaderConstructor(context) ::= "$LoaderClassName(context.Asset)$(IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream);"
+HeaderConstructor(context) ::= "$LoaderClassName(context.Asset)$(Zone* zone, IZoneInputStream* stream);"
 
 HeaderTempPtrLoadMethodDeclaration(structure) ::= "void LoadPtr_$structure.Type.Name$(bool atStreamStart);"
 HeaderArrayLoadMethodDeclaration(type) ::= "void LoadArray_$SafeTypeName(type)$(bool atStreamStart, size_t count);"
@@ -290,8 +290,8 @@ var$type.Name$Ptr = nullptr;
 >>
 
 ConstructorMethod(context) ::= <<
-$LoaderClassName(context.Asset)$::$LoaderClassName(context.Asset)$(IZoneScriptStringProvider* scriptStringProvider, Zone* zone, IZoneInputStream* stream) 
-    : AssetLoader($context.Asset.AssetEnumEntry.Name$, scriptStringProvider, zone, stream)$\\$
+$LoaderClassName(context.Asset)$::$LoaderClassName(context.Asset)$(Zone* zone, IZoneInputStream* stream) 
+    : AssetLoader($context.Asset.AssetEnumEntry.Name$, zone, stream)$\\$
     $if(context.HasActions)$, m_actions(zone)$endif$
 {
     m_asset_info = nullptr;

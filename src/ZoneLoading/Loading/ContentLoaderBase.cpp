@@ -5,11 +5,17 @@ const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
 const void* ContentLoaderBase::PTR_INSERT = reinterpret_cast<void*>(-2);
 
 ContentLoaderBase::ContentLoaderBase()
+    : varXString(nullptr),
+      m_zone(nullptr),
+      m_stream(nullptr)
 {
-    varXString = nullptr;
+}
 
-    m_zone = nullptr;
-    m_stream = nullptr;
+ContentLoaderBase::ContentLoaderBase(Zone* zone, IZoneInputStream* stream)
+    : varXString(nullptr),
+      m_zone(zone),
+      m_stream(stream)
+{
 }
 
 void ContentLoaderBase::LoadXString(const bool atStreamStart) const
@@ -19,9 +25,9 @@ void ContentLoaderBase::LoadXString(const bool atStreamStart) const
     if (atStreamStart)
         m_stream->Load<const char*>(varXString);
 
-    if(*varXString != nullptr)
+    if (*varXString != nullptr)
     {
-        if(*varXString == PTR_FOLLOWING)
+        if (*varXString == PTR_FOLLOWING)
         {
             *varXString = m_stream->Alloc<const char>(alignof(const char));
             m_stream->LoadNullTerminated(const_cast<char*>(*varXString));
@@ -37,10 +43,10 @@ void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t 
 {
     assert(varXString != nullptr);
 
-    if(atStreamStart)
+    if (atStreamStart)
         m_stream->Load<const char*>(varXString, count);
 
-    for(size_t index = 0; index < count; index++)
+    for (size_t index = 0; index < count; index++)
     {
         LoadXString(false);
         varXString++;

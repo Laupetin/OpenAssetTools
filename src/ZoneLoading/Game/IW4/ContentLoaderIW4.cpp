@@ -50,6 +50,8 @@ ContentLoader::ContentLoader()
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
+    assert(m_zone->m_script_strings.empty());
+
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     if (atStreamStart)
@@ -67,16 +69,18 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
         {
             if (varScriptStringList->strings[i])
             {
-                m_script_strings.emplace_back(varScriptStringList->strings[i]);
+                m_zone->m_script_strings.emplace_back(varScriptStringList->strings[i]);
             }
             else
             {
-                m_script_strings.emplace_back("");
+                m_zone->m_script_strings.emplace_back("");
             }
         }
     }
 
     m_stream->PopBlock();
+
+    assert(m_zone->m_script_strings.size() <= SCR_STRING_MAX + 1);
 }
 
 void ContentLoader::LoadXAsset(const bool atStreamStart)
@@ -84,7 +88,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart)
 #define LOAD_ASSET(type_index, typeName, headerEntry) \
     case type_index: \
         { \
-            Loader_##typeName loader(this, m_zone, m_stream); \
+            Loader_##typeName loader(m_zone, m_stream); \
             loader.Load(&varXAsset->header.headerEntry); \
             break; \
         }
@@ -155,7 +159,7 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
 
     for (asset_type_t assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
     {
-        m_zone->GetPools()->InitPoolDynamic(assetType);
+        m_zone->m_pools->InitPoolDynamic(assetType);
     }
 
     for (size_t index = 0; index < count; index++)
@@ -188,16 +192,4 @@ void ContentLoader::Load(Zone* zone, IZoneInputStream* stream)
     }
 
     m_stream->PopBlock();
-}
-
-std::string& ContentLoader::GetZoneScriptString(const scr_string_t scrString)
-{
-    assert(scrString >= 0 && scrString < m_script_strings.size());
-
-    if (scrString >= m_script_strings.size())
-    {
-        return m_script_strings[0];
-    }
-
-    return m_script_strings[scrString];
 }

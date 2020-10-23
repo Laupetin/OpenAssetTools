@@ -2,13 +2,11 @@
 #include "Loading/ContentLoaderBase.h"
 #include "Loading/IContentLoadingEntryPoint.h"
 #include "Game/T6/T6.h"
-#include "Loading/IZoneScriptStringProvider.h"
 
 namespace T6
 {
-    class ContentLoader final : public ContentLoaderBase, public IContentLoadingEntryPoint, public IZoneScriptStringProvider
+    class ContentLoader final : public ContentLoaderBase, public IContentLoadingEntryPoint
     {
-        std::vector<std::string> m_script_strings;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
 
@@ -21,6 +19,5 @@ namespace T6
         ContentLoader();
 
         void Load(Zone* zone, IZoneInputStream* stream) override;
-        std::string& GetZoneScriptString(scr_string_t scrString) override;
     };
 }
