@@ -1647,4 +1647,6 @@ void AssetDumperWeapon::DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asse
     const auto infoString = converter.Convert();
     const auto stringValue = infoString.ToString("WEAPONFILE");
     out->Write(stringValue.c_str(), 1, stringValue.length());
+
+    delete fullDef;
 }
