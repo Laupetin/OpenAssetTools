@@ -13,8 +13,5 @@ namespace T6
         bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<VehicleDef>* asset) override;
         void DumpAsset(Zone* zone, XAssetInfo<VehicleDef>* asset, FileAPI::File* out) override;
-
-    public:
-        static void CheckFields();
     };
 }

@@ -113,8 +113,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
 
     case CSPFT_TRACER:
         {
-            const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset
-            );
+            const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
             if (tracer)
                 m_info_string.SetValueForKey(std::string(field.szName), std::string(tracer->name));
@@ -124,9 +123,12 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
         }
 
     case CSPFT_SOUND_ALIAS_ID:
-        assert(false);
-        FillFromUint(std::string(field.szName), field.iOffset);
-        break;
+        {
+            // TODO: Search sound files for files matching the hash
+            const auto* hash = reinterpret_cast<unsigned*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+            m_info_string.SetValueForKey(std::string(field.szName), "@" + std::to_string(*hash));
+            break;
+        }
 
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:

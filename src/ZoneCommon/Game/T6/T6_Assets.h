@@ -394,6 +394,22 @@ namespace T6
         float v[3];
     };
 
+    struct PhysPresetInfo
+    {
+        float mass;
+        float bounce;
+        float friction;
+        int isFrictionInfinity;
+        float bulletForceScale;
+        float explosiveForceScale;
+        float piecesSpreadFraction;
+        float piecesUpwardVelocity;
+        int canFloat;
+        float gravityScale;
+        vec3_t centerOfMassOffset;
+        vec3_t buoyancyBoxMin;
+        vec3_t buoyancyBoxMax;
+    };
 
     struct PhysPreset
     {
