@@ -2105,8 +2105,93 @@ namespace T6
         float gravity;
     };
 
+    enum VehicleSeatPositions
+    {
+        VEH_POS_NONE = 0xFFFFFFFF,
+        VEH_POS_DRIVER = 0x0,
+        VEH_POS_MIN_GUNNER = 0x1,
+        VEH_POS_GUNNER_1 = 0x1,
+        VEH_POS_GUNNER_2 = 0x2,
+        VEH_POS_GUNNER_3 = 0x3,
+        VEH_POS_GUNNER_4 = 0x4,
+        VEH_POS_MAX_GUNNER = 0x4,
+        VEH_POS_MIN_PASSENGER = 0x5,
+        VEH_POS_PASSENGER_1 = 0x5,
+        VEH_POS_PASSENGER_2 = 0x6,
+        VEH_POS_PASSENGER_3 = 0x7,
+        VEH_POS_PASSENGER_4 = 0x8,
+        VEH_POS_PASSENGER_5 = 0x9,
+        VEH_POS_PASSENGER_6 = 0xA,
+        VEH_POS_MAX_PASSENGER = 0xA,
+        NUM_VEHICLE_POSITIONS = 0xB,
+    };
 
-    const struct VehicleDef
+    enum VehicleSound
+    {
+        VEH_TURRET_SPIN_SND = 0x0,
+        VEH_TURRET_STOP_SND = 0x1,
+        NUM_VEHICLE_SNDS = 0x2,
+    };
+
+    enum VehicleMaterialSound
+    {
+        VEH_WHEEL_ROAD_NOISE = 0x0,
+        VEH_WHEEL_SLIDING = 0x1,
+        VEH_WHEEL_PEELING_OUT = 0x2,
+        NUM_VEHICLE_MATERIAL_SNDS = 0x3,
+    };
+
+    enum VehicleMantlePoints
+    {
+        MANTLE_ANGLE_FRONT = 0x0,
+        MANTLE_ANGLE_BACK = 0x1,
+        MANTLE_ANGLE_LEFT = 0x2,
+        MANTLE_ANGLE_RIGHT = 0x3,
+        MANTLE_ANGLE_MAX = 0x4,
+    };
+
+    enum VehicleWheelType
+    {
+        FL_WHEEL = 0x0,
+        FR_WHEEL = 0x1,
+        BL_WHEEL = 0x2,
+        BR_WHEEL = 0x3,
+        ML_WHEEL = 0x4,
+        MR_WHEEL = 0x5,
+        NUM_VEHICLE_WHEELS = 0x6,
+    };
+
+    enum VehicleEngineSoundParam
+    {
+        VEH_ENGINESND_FADE_IN_START = 0x0,
+        VEH_ENGINESND_FADE_IN_END = 0x1,
+        VEH_ENGINESND_FADE_OUT_START = 0x2,
+        VEH_ENGINESND_FADE_OUT_END = 0x3,
+        VEH_ENGINESND_PITCH_REF = 0x4,
+        NUM_VEHICLE_ENGINESND_PARAMS = 0x5,
+    };
+
+    enum team_t
+    {
+        TEAM_FREE = 0x0,
+        TEAM_BAD = 0x0,
+        TEAM_ALLIES = 0x1,
+        TEAM_AXIS = 0x2,
+        TEAM_THREE = 0x3,
+        TEAM_FOUR = 0x4,
+        TEAM_FIVE = 0x5,
+        TEAM_SIX = 0x6,
+        TEAM_SEVEN = 0x7,
+        TEAM_EIGHT = 0x8,
+        TEAM_NUM_PLAYING_TEAMS = 0x9,
+        TEAM_SPECTATOR = 0x9,
+        TEAM_NUM_TEAMS = 0xA,
+        TEAM_LOCALPLAYERS = 0xB,
+        TEAM_FIRST_PLAYING_TEAM = 0x1,
+        TEAM_LAST_PLAYING_TEAM = 0x8,
+    };
+
+    struct VehicleDef
     {
         const char* name;
         __int16 type;
