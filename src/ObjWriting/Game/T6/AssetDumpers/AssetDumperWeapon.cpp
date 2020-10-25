@@ -1514,102 +1514,93 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponVariantDef* weapon, WeaponFull
 
     if (weapon->attachments)
     {
-        memcpy_s(fullDef->attachments, sizeof WeaponFullDef::attachments, weapon->attachments, sizeof(void*) * 63);
+        memcpy_s(fullDef->attachments, sizeof WeaponFullDef::attachments, weapon->attachments, sizeof(void*) * _countof(WeaponFullDef::attachments));
         fullDef->weapVariantDef.attachments = fullDef->attachments;
     }
 
     if (weapon->attachmentUniques)
     {
-        memcpy_s(fullDef->attachmentUniques, sizeof WeaponFullDef::attachmentUniques, weapon->attachmentUniques,
-                 sizeof(void*) * 95);
+        memcpy_s(fullDef->attachmentUniques, sizeof WeaponFullDef::attachmentUniques, weapon->attachmentUniques, sizeof(void*) * _countof(WeaponFullDef::attachmentUniques));
         fullDef->weapVariantDef.attachmentUniques = fullDef->attachmentUniques;
     }
 
     if (fullDef->weapDef.gunXModel)
     {
-        memcpy_s(fullDef->gunXModel, sizeof WeaponFullDef::gunXModel, fullDef->weapDef.gunXModel, sizeof(void*) * 16);
+        memcpy_s(fullDef->gunXModel, sizeof WeaponFullDef::gunXModel, fullDef->weapDef.gunXModel, sizeof(void*) * _countof(WeaponFullDef::gunXModel));
         fullDef->weapDef.gunXModel = fullDef->gunXModel;
     }
 
     if (weapon->szXAnims)
     {
-        memcpy_s(fullDef->szXAnims, sizeof WeaponFullDef::szXAnims, weapon->szXAnims, sizeof(void*) * 88);
+        memcpy_s(fullDef->szXAnims, sizeof WeaponFullDef::szXAnims, weapon->szXAnims, sizeof(void*) * NUM_WEAP_ANIMS);
         fullDef->weapVariantDef.szXAnims = fullDef->szXAnims;
     }
 
     if (weapon->hideTags)
     {
-        memcpy_s(fullDef->hideTags, sizeof WeaponFullDef::hideTags, weapon->hideTags, sizeof(scr_string_t) * 32);
+        memcpy_s(fullDef->hideTags, sizeof WeaponFullDef::hideTags, weapon->hideTags, sizeof(scr_string_t) * _countof(WeaponFullDef::hideTags));
         fullDef->weapVariantDef.hideTags = fullDef->hideTags;
     }
 
     if (fullDef->weapDef.notetrackSoundMapKeys)
     {
-        memcpy_s(fullDef->notetrackSoundMapKeys, sizeof WeaponFullDef::notetrackSoundMapKeys,
-                 fullDef->weapDef.notetrackSoundMapKeys, sizeof(scr_string_t) * 20);
+        memcpy_s(fullDef->notetrackSoundMapKeys, sizeof WeaponFullDef::notetrackSoundMapKeys, fullDef->weapDef.notetrackSoundMapKeys,
+                 sizeof(scr_string_t) * _countof(WeaponFullDef::notetrackSoundMapKeys));
         fullDef->weapDef.notetrackSoundMapKeys = fullDef->notetrackSoundMapKeys;
     }
 
     if (fullDef->weapDef.notetrackSoundMapValues)
     {
-        memcpy_s(fullDef->notetrackSoundMapValues, sizeof WeaponFullDef::notetrackSoundMapValues,
-                 fullDef->weapDef.notetrackSoundMapValues, sizeof(scr_string_t) * 20);
+        memcpy_s(fullDef->notetrackSoundMapValues, sizeof WeaponFullDef::notetrackSoundMapValues, fullDef->weapDef.notetrackSoundMapValues,
+                 sizeof(scr_string_t) * _countof(WeaponFullDef::notetrackSoundMapValues));
         fullDef->weapDef.notetrackSoundMapValues = fullDef->notetrackSoundMapValues;
     }
 
     if (fullDef->weapDef.worldModel)
     {
-        memcpy_s(fullDef->worldModel, sizeof WeaponFullDef::worldModel, fullDef->weapDef.worldModel,
-                 sizeof(void*) * 16);
+        memcpy_s(fullDef->worldModel, sizeof WeaponFullDef::worldModel, fullDef->weapDef.worldModel, sizeof(void*) * _countof(WeaponFullDef::worldModel));
         fullDef->weapDef.worldModel = fullDef->worldModel;
     }
 
     if (weapon->attachViewModel)
     {
-        memcpy_s(fullDef->attachViewModel, sizeof WeaponFullDef::attachViewModel, weapon->attachViewModel,
-                 sizeof(void*) * 8);
+        memcpy_s(fullDef->attachViewModel, sizeof WeaponFullDef::attachViewModel, weapon->attachViewModel, sizeof(void*) * _countof(WeaponFullDef::attachViewModel));
         fullDef->weapVariantDef.attachViewModel = fullDef->attachViewModel;
     }
 
     if (weapon->attachWorldModel)
     {
-        memcpy_s(fullDef->attachWorldModel, sizeof WeaponFullDef::attachWorldModel, weapon->attachWorldModel,
-                 sizeof(void*) * 8);
+        memcpy_s(fullDef->attachWorldModel, sizeof WeaponFullDef::attachWorldModel, weapon->attachWorldModel, sizeof(void*) * _countof(WeaponFullDef::attachWorldModel));
         fullDef->weapVariantDef.attachWorldModel = fullDef->attachWorldModel;
     }
 
     if (weapon->attachViewModelTag)
     {
-        memcpy_s(fullDef->attachViewModelTag, sizeof WeaponFullDef::attachViewModelTag, weapon->attachViewModelTag,
-                 sizeof(void*) * 8);
+        memcpy_s(fullDef->attachViewModelTag, sizeof WeaponFullDef::attachViewModelTag, weapon->attachViewModelTag, sizeof(void*) * _countof(WeaponFullDef::attachViewModelTag));
         fullDef->weapVariantDef.attachViewModelTag = fullDef->attachViewModelTag;
     }
 
     if (weapon->attachWorldModelTag)
     {
-        memcpy_s(fullDef->attachWorldModelTag, sizeof WeaponFullDef::attachWorldModelTag, weapon->attachWorldModelTag,
-                 sizeof(void*) * 8);
+        memcpy_s(fullDef->attachWorldModelTag, sizeof WeaponFullDef::attachWorldModelTag, weapon->attachWorldModelTag, sizeof(void*) * _countof(WeaponFullDef::attachWorldModelTag));
         fullDef->weapVariantDef.attachWorldModelTag = fullDef->attachWorldModelTag;
     }
 
     if (fullDef->weapDef.parallelBounce)
     {
-        memcpy_s(fullDef->parallelBounce, sizeof WeaponFullDef::parallelBounce, fullDef->weapDef.parallelBounce,
-                 sizeof(float) * 32);
+        memcpy_s(fullDef->parallelBounce, sizeof WeaponFullDef::parallelBounce, fullDef->weapDef.parallelBounce, sizeof(float) * SURF_TYPE_NUM);
         fullDef->weapDef.parallelBounce = fullDef->parallelBounce;
     }
 
     if (fullDef->weapDef.perpendicularBounce)
     {
-        memcpy_s(fullDef->perpendicularBounce, sizeof WeaponFullDef::perpendicularBounce,
-                 fullDef->weapDef.perpendicularBounce, sizeof(float) * 32);
+        memcpy_s(fullDef->perpendicularBounce, sizeof WeaponFullDef::perpendicularBounce, fullDef->weapDef.perpendicularBounce, sizeof(float) * SURF_TYPE_NUM);
         fullDef->weapDef.perpendicularBounce = fullDef->perpendicularBounce;
     }
 
     if (fullDef->weapDef.locationDamageMultipliers)
     {
-        memcpy_s(fullDef->locationDamageMultipliers, sizeof WeaponFullDef::locationDamageMultipliers,
-                 fullDef->weapDef.locationDamageMultipliers, sizeof(float) * 21);
+        memcpy_s(fullDef->locationDamageMultipliers, sizeof WeaponFullDef::locationDamageMultipliers, fullDef->weapDef.locationDamageMultipliers, sizeof(float) * HITLOC_NUM);
         fullDef->weapDef.locationDamageMultipliers = fullDef->locationDamageMultipliers;
     }
 

@@ -4172,7 +4172,8 @@ namespace T6
         HITLOC_L_FOOT = 0x12,
         HITLOC_GUN = 0x13,
         HITLOC_SHIELD = 0x14,
-        HITLOC_NUM = 0x15,
+
+        HITLOC_NUM,
     };
 
     struct WeaponDef
