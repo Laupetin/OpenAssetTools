@@ -116,4 +116,11 @@ namespace T6
 
         TFT_NUM_FIELD_TYPES
     };
+
+    enum constraintsFieldType_t
+    {
+        CFT_TYPE = 0x12,
+
+        CFT_NUM
+    };
 }

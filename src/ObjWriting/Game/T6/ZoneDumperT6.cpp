@@ -11,6 +11,7 @@
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperFontIcon.h"
+#include "AssetDumpers/AssetDumperPhysConstraints.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
 #include "AssetDumpers/AssetDumperTracer.h"
 #include "AssetDumpers/AssetDumperVehicle.h"
@@ -36,7 +37,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     const auto* assetPools = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
 
     DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset);
-    // DUMP_ASSET_POOL(AssetDumperPhysConstraints, m_phys_constraints);
+    DUMP_ASSET_POOL(AssetDumperPhysConstraints, m_phys_constraints);
     // DUMP_ASSET_POOL(AssetDumperDestructibleDef, m_destructible_def);
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts);
     // DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel);
