@@ -338,12 +338,7 @@ XAssetInfoGeneric* GameAssetPoolT6::AddAssetToPool(asset_type_t type, std::strin
     case assetType: \
     { \
         assert((poolName) != nullptr); \
-        auto* assetInfo = (poolName)->AddAsset(std::move(name), xAsset.header.headerName, m_zone, dependencies); \
-        if(assetInfo) \
-        { \
-            m_assets_in_order.push_back(assetInfo); \
-        } \
-        return assetInfo; \
+        return (poolName)->AddAsset(std::move(name), xAsset.header.headerName, m_zone, dependencies); \
     }
 
     switch (xAsset.type)
