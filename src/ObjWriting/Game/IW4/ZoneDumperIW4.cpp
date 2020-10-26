@@ -3,12 +3,13 @@
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
 
+#include "AssetDumpers/AssetDumperAddonMapEnts.h"
+#include "AssetDumpers/AssetDumperGfxImage.h"
+#include "AssetDumpers/AssetDumperLoadedSound.h"
+#include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
-#include "AssetDumpers/AssetDumperLocalizeEntry.h"
-#include "AssetDumpers/AssetDumperGfxImage.h"
-#include "AssetDumpers/AssetDumperAddonMapEnts.h"
-#include "AssetDumpers/AssetDumperLoadedSound.h"
+#include "AssetDumpers/AssetDumperWeapon.h"
 
 using namespace IW4;
 
@@ -53,7 +54,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list)
     // DUMP_ASSET_POOL(AssetDumpermenuDef_t, m_menu_def)
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize)
-    // DUMP_ASSET_POOL(AssetDumperWeaponCompleteDef, m_weapon)
+    DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon)
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table)

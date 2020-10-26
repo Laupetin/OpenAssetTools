@@ -3118,6 +3118,112 @@ namespace IW4
         MISSILE_GUIDANCE_COUNT
     };
 
+    enum weapAnimFiles_t
+    {
+        WEAP_ANIM_ROOT = 0x0,
+        WEAP_ANIM_IDLE = 0x1,
+        WEAP_ANIM_EMPTY_IDLE = 0x2,
+        WEAP_ANIM_FIRE = 0x3,
+        WEAP_ANIM_HOLD_FIRE = 0x4,
+        WEAP_ANIM_LASTSHOT = 0x5,
+        WEAP_ANIM_RECHAMBER = 0x6,
+        WEAP_ANIM_MELEE = 0x7,
+        WEAP_ANIM_MELEE_CHARGE = 0x8,
+        WEAP_ANIM_RELOAD = 0x9,
+        WEAP_ANIM_RELOAD_EMPTY = 0xA,
+        WEAP_ANIM_RELOAD_START = 0xB,
+        WEAP_ANIM_RELOAD_END = 0xC,
+        WEAP_ANIM_RAISE = 0xD,
+        WEAP_ANIM_FIRST_RAISE = 0xE,
+        WEAP_ANIM_BREACH_RAISE = 0xF,
+        WEAP_ANIM_DROP = 0x10,
+        WEAP_ANIM_ALT_RAISE = 0x11,
+        WEAP_ANIM_ALT_DROP = 0x12,
+        WEAP_ANIM_QUICK_RAISE = 0x13,
+        WEAP_ANIM_QUICK_DROP = 0x14,
+        WEAP_ANIM_EMPTY_RAISE = 0x15,
+        WEAP_ANIM_EMPTY_DROP = 0x16,
+        WEAP_ANIM_SPRINT_IN = 0x17,
+        WEAP_ANIM_SPRINT_LOOP = 0x18,
+        WEAP_ANIM_SPRINT_OUT = 0x19,
+        WEAP_ANIM_STUNNED_START = 0x1A,
+        WEAP_ANIM_STUNNED_LOOP = 0x1B,
+        WEAP_ANIM_STUNNED_END = 0x1C,
+        WEAP_ANIM_DETONATE = 0x1D,
+        WEAP_ANIM_NIGHTVISION_WEAR = 0x1E,
+        WEAP_ANIM_NIGHTVISION_REMOVE = 0x1F,
+        WEAP_ANIM_ADS_FIRE = 0x20,
+        WEAP_ANIM_ADS_LASTSHOT = 0x21,
+        WEAP_ANIM_ADS_RECHAMBER = 0x22,
+        WEAP_ANIM_ADS_UP = 0x23,
+        WEAP_ANIM_ADS_DOWN = 0x24,
+
+        NUM_WEAP_ANIMS,
+    };
+
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_RIOT_SHIELD,
+        SURF_TYPE_SLUSH,
+
+        SURF_TYPE_NUM
+    };
+
+    enum hitLocation_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_LWR = 0x5,
+        HITLOC_R_ARM_UPR = 0x6,
+        HITLOC_L_ARM_UPR = 0x7,
+        HITLOC_R_ARM_LWR = 0x8,
+        HITLOC_L_ARM_LWR = 0x9,
+        HITLOC_R_HAND = 0xA,
+        HITLOC_L_HAND = 0xB,
+        HITLOC_R_LEG_UPR = 0xC,
+        HITLOC_L_LEG_UPR = 0xD,
+        HITLOC_R_LEG_LWR = 0xE,
+        HITLOC_L_LEG_LWR = 0xF,
+        HITLOC_R_FOOT = 0x10,
+        HITLOC_L_FOOT = 0x11,
+        HITLOC_GUN = 0x12,
+        HITLOC_SHIELD = 0x13,
+
+        HITLOC_NUM,
+    };
+
     struct snd_alias_list_name
     {
         const char* soundName;
@@ -3589,6 +3695,25 @@ namespace IW4
         bool motionTracker;
         bool enhanced;
         bool dpadIconShowsAmmo;
+    };
+
+    struct WeaponFullDef
+    {
+        WeaponCompleteDef weapCompleteDef;
+        WeaponDef weapDef;
+        unsigned __int16 hideTags[32];
+        const char* szXAnims[37];
+        XModel* gunXModel[16];
+        const char* szXAnimsRightHanded[37];
+        const char* szXAnimsLeftHanded[37];
+        unsigned __int16 notetrackSoundMapKeys[16];
+        unsigned __int16 notetrackSoundMapValues[16];
+        unsigned __int16 notetrackRumbleMapKeys[16];
+        unsigned __int16 notetrackRumbleMapValues[16];
+        XModel* worldModel[16];
+        float parallelBounce[31];
+        float perpendicularBounce[31];
+        float locationDamageMultipliers[20];
     };
 
     enum VehicleAxleType
