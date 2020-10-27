@@ -9,6 +9,7 @@
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
+#include "AssetDumpers/AssetDumperVehicle.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 
 using namespace IW4;
@@ -63,7 +64,7 @@ bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
     // DUMP_ASSET_POOL(AssetDumperLeaderboardDef, m_leaderboard)
     // DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set)
     // DUMP_ASSET_POOL(AssetDumperTracerDef, m_tracer)
-    // DUMP_ASSET_POOL(AssetDumperVehicleDef, m_vehicle)
+    DUMP_ASSET_POOL(AssetDumperVehicle, m_vehicle)
     DUMP_ASSET_POOL(AssetDumperAddonMapEnts, m_addon_map_ents)
 
     return true;
