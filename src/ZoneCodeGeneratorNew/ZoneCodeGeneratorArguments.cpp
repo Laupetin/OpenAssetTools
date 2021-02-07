@@ -1,5 +1,7 @@
 #include "ZoneCodeGeneratorArguments.h"
 
+#include <iostream>
+
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
@@ -21,26 +23,23 @@ const CommandLineOption* const OPTION_VERBOSE = CommandLineOption::Builder::Crea
 
 constexpr const char* CATEGORY_INPUT = "Input";
 
-const CommandLineOption* const OPTION_CREATE = CommandLineOption::Builder::Create()
+const CommandLineOption* const OPTION_HEADER = CommandLineOption::Builder::Create()
                                                .WithShortName("h")
                                                .WithLongName("header")
-                                               .WithDescription("Create a new database from the specified header file.")
+                                               .WithDescription("Reads from the specified header file.")
                                                .WithCategory(CATEGORY_INPUT)
                                                .WithParameter("headerFile")
+                                               .Reusable()
                                                .Build();
 
-// ------
-// EDITING
-// ------
-constexpr const char* CATEGORY_EDITING = "Editing";
-
-const CommandLineOption* const OPTION_EDITING_COMMANDS = CommandLineOption::Builder::Create()
-                                                         .WithShortName("e")
-                                                         .WithLongName("editing-commands")
-                                                         .WithDescription("Specifies the editing command file. Defaults to stdin.")
-                                                         .WithCategory(CATEGORY_EDITING)
-                                                         .WithParameter("commandFile")
-                                                         .Build();
+const CommandLineOption* const OPTION_COMMANDS_FILE = CommandLineOption::Builder::Create()
+                                                      .WithShortName("c")
+                                                      .WithLongName("commands-file")
+                                                      .WithDescription("Specifies the commands file. Defaults to stdin.")
+                                                      .WithCategory(CATEGORY_INPUT)
+                                                      .WithParameter("commandFile")
+                                                      .Reusable()
+                                                      .Build();
 
 // ------
 // OUTPUT
@@ -65,7 +64,8 @@ const CommandLineOption* const OPTION_PRINT = CommandLineOption::Builder::Create
 const CommandLineOption* const OPTION_GENERATE = CommandLineOption::Builder::Create()
                                                  .WithShortName("g")
                                                  .WithLongName("generate")
-                                                 .WithDescription("Generates a specified asset/preset combination. Can be used multiple times. Available presets: "
+                                                 .WithDescription(
+                                                     "Generates a specified asset/preset combination. Can be used multiple times. Available presets: "
                                                      "ZoneLoad, ZoneWrite, AssetStructTests")
                                                  .WithCategory(CATEGORY_OUTPUT)
                                                  .WithParameter("assetName")
@@ -77,8 +77,8 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 {
     OPTION_HELP,
     OPTION_VERBOSE,
-    OPTION_CREATE,
-    OPTION_EDITING_COMMANDS,
+    OPTION_HEADER,
+    OPTION_COMMANDS_FILE,
     OPTION_OUTPUT_FOLDER,
     OPTION_PRINT,
     OPTION_GENERATE
@@ -137,32 +137,49 @@ bool ZoneCodeGeneratorArguments::Parse(const int argc, const char** argv)
     // -o; --output
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))
         m_output_directory = m_argument_parser.GetValueForOption(OPTION_OUTPUT_FOLDER);
+    else
+        m_output_directory = ".";
 
     // -h; --header
-    if (m_argument_parser.IsOptionSpecified(OPTION_CREATE))
-        m_header_path = m_argument_parser.GetValueForOption(OPTION_CREATE);
+    if (m_argument_parser.IsOptionSpecified(OPTION_HEADER))
+    {
+        for (const auto& arg : m_argument_parser.GetParametersForOption(OPTION_HEADER))
+            m_header_paths.push_back(arg);
+    }
+    else
+    {
+        std::cout << "At least one header file must be specified via -h / --header." << std::endl;
+        return false;
+    }
 
-    // -e; --editing-commands
-    if (m_argument_parser.IsOptionSpecified(OPTION_EDITING_COMMANDS))
-        m_commands_path = m_argument_parser.GetValueForOption(OPTION_EDITING_COMMANDS);
+    // -c; --commands-file
+    if (m_argument_parser.IsOptionSpecified(OPTION_COMMANDS_FILE))
+    {
+        for (const auto& arg : m_argument_parser.GetParametersForOption(OPTION_COMMANDS_FILE))
+            m_command_paths.push_back(arg);
+    }
+    else
+    {
+        std::cout << "At least one commands file must be specified via -c / --commands-file." << std::endl;
+        return false;
+    }
 
     if (m_task == ProcessingTask::GENERATE_CODE)
     {
         if (!m_argument_parser.IsOptionSpecified(OPTION_GENERATE))
         {
-            printf("A generate parameter needs to be specified when generating code\n");
+            std::cout << "A generate parameter needs to be specified when generating code" << std::endl;
             PrintUsage();
             return false;
         }
 
         const auto generateParameterValues = m_argument_parser.GetParametersForOption(OPTION_GENERATE);
-        const auto generateCount = generateParameterValues.size() / 2;
-        for(auto i = 0u; i < generateCount; i++)
+        for (auto i = 0u; i < generateParameterValues.size(); i+=2)
             m_generation_tasks.emplace_back(generateParameterValues[i], generateParameterValues[i + 1]);
     }
     else if (m_argument_parser.IsOptionSpecified(OPTION_GENERATE))
     {
-        printf("Cannot specify generate parameter when not generating code\n");
+        std::cout << "Cannot specify generate parameter when not generating code" << std::endl;
         PrintUsage();
         return false;
     }

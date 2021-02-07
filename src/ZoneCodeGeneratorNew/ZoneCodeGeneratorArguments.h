@@ -31,8 +31,8 @@ public:
 
     bool m_verbose;
 
-    std::string m_header_path;
-    std::string m_commands_path;
+    std::vector<std::string> m_header_paths;
+    std::vector<std::string> m_command_paths;
     std::string m_output_directory;
 
     ProcessingTask m_task;
