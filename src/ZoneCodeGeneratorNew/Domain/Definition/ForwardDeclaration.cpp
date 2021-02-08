@@ -12,17 +12,17 @@ DataDefinitionType ForwardDeclaration::GetType() const
     return DataDefinitionType::FORWARD_DECLARATION;
 }
 
-unsigned ForwardDeclaration::GetAlignment() const
+unsigned ForwardDeclaration::GetAlignment()
 {
     return 0;
 }
 
-bool ForwardDeclaration::GetForceAlignment() const
+bool ForwardDeclaration::GetForceAlignment()
 {
     return false;
 }
 
-unsigned ForwardDeclaration::GetSize() const
+unsigned ForwardDeclaration::GetSize()
 {
     return 0;
 }

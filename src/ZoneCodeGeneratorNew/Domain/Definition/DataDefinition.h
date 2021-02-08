@@ -28,10 +28,10 @@ public:
     std::string m_namespace;
     std::string m_name;
     
-    _NO_DISCARD virtual DataDefinitionType GetType() const = 0;
-    _NO_DISCARD virtual unsigned GetAlignment() = 0;
-    _NO_DISCARD virtual bool GetForceAlignment() = 0;
-    _NO_DISCARD virtual unsigned GetSize() = 0;
+    _NODISCARD virtual DataDefinitionType GetType() const = 0;
+    _NODISCARD virtual unsigned GetAlignment() = 0;
+    _NODISCARD virtual bool GetForceAlignment() = 0;
+    _NODISCARD virtual unsigned GetSize() = 0;
 
-    _NO_DISCARD std::string GetFullName() const;
+    _NODISCARD std::string GetFullName() const;
 };

@@ -20,5 +20,5 @@ public:
      */
     std::unique_ptr<IEvaluation> m_dynamic_count_evaluation;
 
-    DeclarationModifierType GetType() override;
+    DeclarationModifierType GetType() const override;
 };

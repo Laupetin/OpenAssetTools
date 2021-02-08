@@ -5,17 +5,17 @@ Operation::Operation(const OperationType* type)
 {
 }
 
-EvaluationType Operation::GetType()
+EvaluationType Operation::GetType() const
 {
     return EvaluationType::OPERATION;
 }
 
-bool Operation::IsStatic()
+bool Operation::IsStatic() const
 {
     return m_operand1->IsStatic() && m_operand2->IsStatic();
 }
 
-int Operation::EvaluateNumeric()
+int Operation::EvaluateNumeric() const
 {
     return m_operation_type->m_evaluation_function(m_operand1->EvaluateNumeric(), m_operand2->EvaluateNumeric());
 }

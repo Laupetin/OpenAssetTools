@@ -7,17 +7,17 @@ OperandDynamic::OperandDynamic(StructureInformation* structure)
 {
 }
 
-EvaluationType OperandDynamic::GetType()
+EvaluationType OperandDynamic::GetType() const
 {
     return EvaluationType::OPERAND_DYNAMIC;
 }
 
-bool OperandDynamic::IsStatic()
+bool OperandDynamic::IsStatic() const
 {
     return false;
 }
 
-int OperandDynamic::EvaluateNumeric()
+int OperandDynamic::EvaluateNumeric() const
 {
     assert(false);
     return 0;

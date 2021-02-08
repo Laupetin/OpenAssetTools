@@ -15,9 +15,9 @@ public:
 
     explicit Operation(const OperationType* type);
 
-    EvaluationType GetType() override;
-    bool IsStatic() override;
-    int EvaluateNumeric() override;
+    _NODISCARD EvaluationType GetType() const override;
+    _NODISCARD bool IsStatic() const override;
+    _NODISCARD int EvaluateNumeric() const override;
 
     _NODISCARD bool Operand1NeedsParenthesis() const;
     _NODISCARD bool Operand2NeedsParenthesis() const;

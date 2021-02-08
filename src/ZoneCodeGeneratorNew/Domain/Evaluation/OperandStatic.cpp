@@ -12,17 +12,17 @@ OperandStatic::OperandStatic(const int value, EnumMember* enumMember)
 {
 }
 
-EvaluationType OperandStatic::GetType()
+EvaluationType OperandStatic::GetType() const
 {
     return EvaluationType::OPERAND_STATIC;
 }
 
-bool OperandStatic::IsStatic()
+bool OperandStatic::IsStatic() const
 {
     return true;
 }
 
-int OperandStatic::EvaluateNumeric()
+int OperandStatic::EvaluateNumeric() const
 {
     return m_value;
 }

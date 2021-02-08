@@ -14,17 +14,17 @@ DataDefinitionType EnumDefinition::GetType() const
     return DataDefinitionType::ENUM;
 }
 
-unsigned EnumDefinition::GetAlignment() const
+unsigned EnumDefinition::GetAlignment()
 {
     return m_parent_type->GetAlignment();
 }
 
-bool EnumDefinition::GetForceAlignment() const
+bool EnumDefinition::GetForceAlignment()
 {
     return m_parent_type->GetForceAlignment();
 }
 
-unsigned EnumDefinition::GetSize() const
+unsigned EnumDefinition::GetSize()
 {
     return m_parent_type->GetSize();
 }

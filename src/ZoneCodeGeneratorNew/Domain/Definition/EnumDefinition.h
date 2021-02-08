@@ -16,9 +16,9 @@ public:
     EnumDefinition(std::string _namespace, std::string name, const BaseTypeDefinition* parentType);
 
     _NODISCARD DataDefinitionType GetType() const override;
-    _NODISCARD unsigned GetAlignment() const override;
-    _NODISCARD bool GetForceAlignment() const override;
-    _NODISCARD unsigned GetSize() const override;
+    _NODISCARD unsigned GetAlignment() override;
+    _NODISCARD bool GetForceAlignment() override;
+    _NODISCARD unsigned GetSize() override;
 
     void AddEnumMember(EnumMember enumMember);
 };

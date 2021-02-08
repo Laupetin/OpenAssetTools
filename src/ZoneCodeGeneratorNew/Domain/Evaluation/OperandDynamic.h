@@ -15,7 +15,7 @@ public:
 
     explicit OperandDynamic(StructureInformation* structure);
 
-    EvaluationType GetType() override;
-    bool IsStatic() override;
-    int EvaluateNumeric() override;
+    _NODISCARD EvaluationType GetType() const override;
+    _NODISCARD bool IsStatic() const override;
+    _NODISCARD int EvaluateNumeric() const override;
 };

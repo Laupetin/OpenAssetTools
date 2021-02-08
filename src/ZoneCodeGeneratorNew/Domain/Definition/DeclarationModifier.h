@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
+
 enum class DeclarationModifierType
 {
     POINTER,
@@ -12,5 +14,5 @@ public:
     DeclarationModifier() = default;
     virtual ~DeclarationModifier() = default;
 
-    virtual DeclarationModifierType GetType() = 0;
+    _NODISCARD virtual DeclarationModifierType GetType() const = 0;
 };

@@ -11,15 +11,30 @@ DataDefinitionType BaseTypeDefinition::GetType() const
     return DataDefinitionType::BASE_TYPE;
 }
 
-unsigned BaseTypeDefinition::GetAlignment() const
+unsigned BaseTypeDefinition::GetAlignment()
 {
     // Since this type has no members the alignment is always equal to the size.
     return m_size;
 }
 
+unsigned BaseTypeDefinition::GetAlignment() const
+{
+    return m_size;
+}
+
+bool BaseTypeDefinition::GetForceAlignment()
+{
+    return false;
+}
+
 bool BaseTypeDefinition::GetForceAlignment() const
 {
     return false;
+}
+
+unsigned BaseTypeDefinition::GetSize()
+{
+    return m_size;
 }
 
 unsigned BaseTypeDefinition::GetSize() const

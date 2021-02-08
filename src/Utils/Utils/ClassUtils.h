@@ -10,8 +10,10 @@
 #define _CPP_VERSION 0
 #endif
 
+#ifndef _NODISCARD
 #if _CPP_VERSION >= 201703L
-#define _NO_DISCARD [[nodiscard]]
+#define _NODISCARD [[nodiscard]]
 #else
-#define _NO_DISCARD
+#define _NODISCARD
+#endif
 #endif
