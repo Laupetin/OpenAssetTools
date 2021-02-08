@@ -45,8 +45,8 @@ class ZoneCodeGenerator::Impl
 
     void PrintData() const
     {
-        PrettyPrinter prettyPrinter;
-        prettyPrinter.Print(m_repository.get());
+        const PrettyPrinter prettyPrinter(std::cout, m_repository.get());
+        prettyPrinter.PrintAll();
     }
 
     bool GenerateCode()
@@ -73,20 +73,19 @@ public:
 
         if (!ReadHeaderData() || !ReadCommandsData())
             return 1;
-        
-        switch(m_args.m_task)
+
+        if(m_args.ShouldPrint())
         {
-        case ZoneCodeGeneratorArguments::ProcessingTask::PRINT_DATA:
             PrintData();
-            return 0;
-
-        case ZoneCodeGeneratorArguments::ProcessingTask::GENERATE_CODE:
-            return GenerateCode() ? 0 : 1;
-
-        default:
-            std::cout << "Unknown task: " << static_cast<int>(m_args.m_task) << std::endl; 
-            return 2;
         }
+
+        if(m_args.ShouldGenerate())
+        {
+            if (!GenerateCode())
+                return 1;
+        }
+
+        return 0;
     }
 };
 

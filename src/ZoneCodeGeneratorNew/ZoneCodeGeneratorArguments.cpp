@@ -94,10 +94,10 @@ ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName
 }
 
 ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, _countof(COMMAND_LINE_OPTIONS))
+    : m_argument_parser(COMMAND_LINE_OPTIONS, _countof(COMMAND_LINE_OPTIONS)),
+      m_task_flags(0)
 {
     m_verbose = false;
-    m_task = ProcessingTask::GENERATE_CODE;
 }
 
 void ZoneCodeGeneratorArguments::PrintUsage()
@@ -132,7 +132,7 @@ bool ZoneCodeGeneratorArguments::Parse(const int argc, const char** argv)
 
     // -p; --print
     if (m_argument_parser.IsOptionSpecified(OPTION_PRINT))
-        m_task = ProcessingTask::PRINT_DATA;
+        m_task_flags |= FLAG_TASK_PRINT;
 
     // -o; --output
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))
@@ -164,25 +164,30 @@ bool ZoneCodeGeneratorArguments::Parse(const int argc, const char** argv)
         return false;
     }
 
-    if (m_task == ProcessingTask::GENERATE_CODE)
+    if (m_argument_parser.IsOptionSpecified(OPTION_GENERATE))
     {
-        if (!m_argument_parser.IsOptionSpecified(OPTION_GENERATE))
-        {
-            std::cout << "A generate parameter needs to be specified when generating code" << std::endl;
-            PrintUsage();
-            return false;
-        }
-
+        m_task_flags |= FLAG_TASK_GENERATE;
         const auto generateParameterValues = m_argument_parser.GetParametersForOption(OPTION_GENERATE);
-        for (auto i = 0u; i < generateParameterValues.size(); i+=2)
+        for (auto i = 0u; i < generateParameterValues.size(); i += 2)
             m_generation_tasks.emplace_back(generateParameterValues[i], generateParameterValues[i + 1]);
     }
-    else if (m_argument_parser.IsOptionSpecified(OPTION_GENERATE))
+
+    if (m_task_flags == 0)
     {
-        std::cout << "Cannot specify generate parameter when not generating code" << std::endl;
+        std::cout << "There was no output task specified." << std::endl;
         PrintUsage();
         return false;
     }
 
     return true;
+}
+
+bool ZoneCodeGeneratorArguments::ShouldGenerate() const
+{
+    return m_task_flags & FLAG_TASK_GENERATE;
+}
+
+bool ZoneCodeGeneratorArguments::ShouldPrint() const
+{
+    return m_task_flags & FLAG_TASK_PRINT;
 }

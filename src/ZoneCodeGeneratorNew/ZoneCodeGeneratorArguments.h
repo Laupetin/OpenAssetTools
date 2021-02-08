@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Utils/ClassUtils.h"
 #include "Utils/Arguments/ArgumentParser.h"
 
 #include <vector>
@@ -13,11 +15,8 @@ class ZoneCodeGeneratorArguments
     static void PrintUsage();
 
 public:
-    enum class ProcessingTask
-    {
-        GENERATE_CODE,
-        PRINT_DATA
-    };
+    static constexpr unsigned FLAG_TASK_GENERATE = 1 << 0;
+    static constexpr unsigned FLAG_TASK_PRINT = 1 << 1;
 
     class GenerationTask
     {
@@ -35,10 +34,13 @@ public:
     std::vector<std::string> m_command_paths;
     std::string m_output_directory;
 
-    ProcessingTask m_task;
+    unsigned m_task_flags;
     std::vector<GenerationTask> m_generation_tasks;
 
     ZoneCodeGeneratorArguments();
 
     bool Parse(int argc, const char** argv);
+
+    _NODISCARD bool ShouldGenerate() const;
+    _NODISCARD bool ShouldPrint() const;
 };
