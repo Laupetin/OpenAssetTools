@@ -4,6 +4,8 @@
 #include <cassert>
 #include <sstream>
 
+#include "Utils/NamespaceBuilder.h"
+
 DataDefinition::DataDefinition(std::string _namespace, std::string name)
     : m_namespace(std::move(_namespace)),
       m_name(std::move(name))
@@ -13,8 +15,5 @@ DataDefinition::DataDefinition(std::string _namespace, std::string name)
 
 std::string DataDefinition::GetFullName() const
 {
-    std::ostringstream str;
-    str << m_namespace << "::" << m_name;
-
-    return str.str();
+    return NamespaceBuilder::Combine(m_namespace, m_name);
 }
