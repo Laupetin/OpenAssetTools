@@ -75,7 +75,8 @@ bool ParserFilesystemStream::IncludeFile(const std::string& filename)
     if (m_files.empty())
         return false;
     
-    const auto newFilePath = fs::path(m_files.top().m_file_path).remove_filename().concat(filename);
+    auto newFilePath = fs::path(m_files.top().m_file_path);
+    newFilePath.remove_filename().concat(filename);
 
     FileInfo fileInfo(newFilePath.string());
 
