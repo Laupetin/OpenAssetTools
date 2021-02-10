@@ -13,5 +13,5 @@ class HeaderFileReader
 public:
     HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);
 
-    bool ReadHeaderFile(IDataRepository* repository);
+    bool ReadHeaderFile(IDataRepository* repository) const;
 };
