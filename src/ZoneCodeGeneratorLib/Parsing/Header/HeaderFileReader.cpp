@@ -2,7 +2,10 @@
 
 #include <iostream>
 
+
+#include "Parsing/ParsingException.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
+#include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
 
@@ -17,7 +20,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository) const
     std::cout << "Reading header file: " << m_filename << std::endl;
 
     ParserFilesystemStream stream(m_filename);
-    if(!stream.IsOpen())
+    if (!stream.IsOpen())
     {
         std::cout << "Could not open header file" << std::endl;
         return false;
@@ -25,21 +28,31 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository) const
 
     IParserLineStream* lineStream = &stream;
 
-    IncludingStreamProxy includeProxy(lineStream);
-    lineStream = &includeProxy;
-
     CommentRemovingStreamProxy commentProxy(lineStream);
     lineStream = &commentProxy;
 
+    IncludingStreamProxy includeProxy(lineStream);
+    lineStream = &includeProxy;
 
-    while(true)
+    DefinesStreamProxy definesProxy(lineStream);
+    definesProxy.AddDefine(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE);
+    lineStream = &definesProxy;
+
+    try
     {
-        auto line = lineStream->NextLine();
-        
-        if (line.IsEof())
-            break;
+        while (true)
+        {
+            auto line = lineStream->NextLine();
 
-        std::cout << "Line " << line.m_filename << ":" << line.m_line_number << ": " << line.m_line << std::endl;
+            if (line.IsEof())
+                break;
+
+            std::cout << "Line " << line.m_filename << ":" << line.m_line_number << ": " << line.m_line << std::endl;
+        }
+    }
+    catch (const ParsingException& e)
+    {
+        std::cout << "Error: " << e.FullMessage() << std::endl;
     }
 
     return true;
