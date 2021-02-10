@@ -9,14 +9,12 @@ IncludingStreamProxy::IncludingStreamProxy(IParserLineStream* stream)
 {
 }
 
-bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line) const
+bool IncludingStreamProxy::FindIncludeDirective(const ParserLine& line, unsigned& includeDirectivePosition)
 {
-    unsigned includeDirectivePos = 0;
-    auto hasIncludeDirective = false;
-
-    for (; includeDirectivePos < line.m_line.size() - INCLUDE_DIRECTIVE_MINIMUM_TOTAL_LENGTH; includeDirectivePos++)
+    includeDirectivePosition = 0;
+    for (; includeDirectivePosition < line.m_line.size() - INCLUDE_DIRECTIVE_MINIMUM_TOTAL_LENGTH; includeDirectivePosition++)
     {
-        const auto c = line.m_line[includeDirectivePos];
+        const auto c = line.m_line[includeDirectivePosition];
 
         if (isspace(c))
             continue;
@@ -24,19 +22,20 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line) const
         if (c != '#')
             return false;
 
-        if (line.m_line.compare(includeDirectivePos + 1, INCLUDE_DIRECTIVE_LENGTH, INCLUDE_DIRECTIVE) != 0)
+        if (line.m_line.compare(includeDirectivePosition + 1, INCLUDE_DIRECTIVE_LENGTH, INCLUDE_DIRECTIVE) != 0)
         {
             return false;
         }
 
-        hasIncludeDirective = true;
-        break;
+        return true;
     }
 
-    if (!hasIncludeDirective)
-        return false;
+    return false;
+}
 
-    auto currentPos = includeDirectivePos + INCLUDE_DIRECTIVE_LENGTH + 1;
+bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition)
+{
+    auto currentPos = includeDirectivePosition;
     bool isDoubleQuotes;
     if (line.m_line[currentPos] == '"')
         isDoubleQuotes = true;
@@ -45,9 +44,8 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line) const
     else
         throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
 
-    const auto filenameStart = ++currentPos;
-    unsigned filenameEnd = 0;
-    auto filenameHasEnd = false;
+    filenameStartPosition = ++currentPos;
+    filenameEndPosition = 0;
 
     for (; currentPos < line.m_line.size(); currentPos++)
     {
@@ -55,24 +53,35 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line) const
 
         if (c == '"')
         {
-            if(!isDoubleQuotes)
+            if (!isDoubleQuotes)
                 throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), "");
-            filenameEnd = currentPos;
-            filenameHasEnd = true;
-            break;
+            filenameEndPosition = currentPos;
+            return true;
         }
 
         if (c == '>')
         {
             if (isDoubleQuotes)
                 throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
-            filenameEnd = currentPos;
-            filenameHasEnd = true;
-            break;
+            filenameEndPosition = currentPos;
+            return true;
         }
     }
 
-    if(!filenameHasEnd)
+    return false;
+}
+
+bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line) const
+{
+    unsigned includeDirectivePos;
+
+    if (!FindIncludeDirective(line, includeDirectivePos))
+        return false;
+
+    const auto currentPos = includeDirectivePos + INCLUDE_DIRECTIVE_LENGTH + 1;
+    unsigned filenameStart, filenameEnd;
+
+    if(!ExtractIncludeFilename(line, currentPos, filenameStart, filenameEnd))
         throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
 
     if(filenameEnd <= filenameStart)

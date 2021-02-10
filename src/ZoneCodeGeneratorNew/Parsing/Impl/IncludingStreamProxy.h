@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
 #include "Parsing/IParserLineStream.h"
 
 class IncludingStreamProxy final : public IParserLineStream
@@ -11,7 +12,9 @@ class IncludingStreamProxy final : public IParserLineStream
 
     IParserLineStream* m_stream;
 
-    bool MatchIncludeDirective(const ParserLine& line) const;
+    _NODISCARD static bool FindIncludeDirective(const ParserLine& line, unsigned& includeDirectivePosition);
+    _NODISCARD static bool ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
+    _NODISCARD bool MatchIncludeDirective(const ParserLine& line) const;
 
 public:
     explicit IncludingStreamProxy(IParserLineStream* stream);
