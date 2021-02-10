@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-
+#include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
 
@@ -23,8 +23,14 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository) const
         return false;
     }
 
-    IncludingStreamProxy includeProxy(&stream);
-    IParserLineStream* lineStream = &includeProxy;
+    IParserLineStream* lineStream = &stream;
+
+    IncludingStreamProxy includeProxy(lineStream);
+    lineStream = &includeProxy;
+
+    CommentRemovingStreamProxy commentProxy(lineStream);
+    lineStream = &commentProxy;
+
 
     while(true)
     {

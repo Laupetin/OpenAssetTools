@@ -106,6 +106,7 @@ workspace "OpenAssetTools"
 -- ========================
 -- ThirdParty
 -- ========================
+include "thirdparty/catch2.lua"
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
 include "thirdparty/minilzo.lua"
@@ -115,6 +116,7 @@ include "thirdparty/zlib.lua"
 
 -- ThirdParty group: All projects that are external dependencies
 group "ThirdParty"
+    catch2:project()
     libtommath:project()
     libtomcrypt:project()
     minilzo:project()
@@ -132,6 +134,7 @@ include "src/Unlinker.lua"
 include "src/Utils.lua"
 include "src/ZoneCode.lua"
 include "src/ZoneCodeGenerator.lua"
+include "src/ZoneCodeGeneratorLib.lua"
 include "src/ZoneCodeGeneratorNew.lua"
 include "src/ZoneCommon.lua"
 include "src/ZoneLoading.lua"
@@ -147,7 +150,7 @@ group "Components"
     Utils:project()
     ZoneCode:project()
     ZoneCodeGenerator:project()
-    ZoneCodeGeneratorNew:project()
+    ZoneCodeGeneratorLib:project()
     ZoneCommon:project()
     ZoneLoading:project()
     ZoneWriting:project()
@@ -160,6 +163,7 @@ group ""
 group "Tools"
     Linker:project()
     Unlinker:project()
+    ZoneCodeGeneratorNew:project()
 group ""
 
 -- ========================
@@ -167,11 +171,13 @@ group ""
 -- ========================
 include "test/ObjCommonTests.lua"
 include "test/ZoneCodeGeneratorTests.lua"
+include "test/ZoneCodeGeneratorLibTests.lua"
 include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
     ObjCommonTests:project()
     ZoneCodeGeneratorTests:project()
+    ZoneCodeGeneratorLibTests:project()
     ZoneCommonTests:project()
 group ""

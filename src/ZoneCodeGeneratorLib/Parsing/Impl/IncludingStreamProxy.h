@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Parsing/IParserLineStream.h"
 
 class IncludingStreamProxy final : public IParserLineStream
@@ -10,7 +9,7 @@ class IncludingStreamProxy final : public IParserLineStream
     static constexpr int INCLUDE_DIRECTIVE_LENGTH = std::char_traits<char>::length(INCLUDE_DIRECTIVE);
     static constexpr int INCLUDE_DIRECTIVE_MINIMUM_TOTAL_LENGTH = INCLUDE_DIRECTIVE_LENGTH + 1 + 2; // #=+1 ""=+2
 
-    IParserLineStream* m_stream;
+    IParserLineStream* const m_stream;
 
     _NODISCARD static bool FindIncludeDirective(const ParserLine& line, unsigned& includeDirectivePosition);
     _NODISCARD static bool ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
