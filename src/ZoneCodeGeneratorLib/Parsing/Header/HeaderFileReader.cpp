@@ -47,7 +47,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository) const
             if (line.IsEof())
                 break;
 
-            std::cout << "Line " << line.m_filename << ":" << line.m_line_number << ": " << line.m_line << std::endl;
+            std::cout << "Line " << line.m_filename << ":" << line.m_line_number << ": " << line.m_line << "\n";
         }
     }
     catch (const ParsingException& e)

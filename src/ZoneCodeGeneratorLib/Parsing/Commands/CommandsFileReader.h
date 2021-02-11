@@ -7,6 +7,9 @@
 
 class CommandsFileReader
 {
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+
     const ZoneCodeGeneratorArguments* m_args;
     std::string m_filename;
 
