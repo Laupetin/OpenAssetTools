@@ -37,6 +37,13 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
 {
     auto currentPos = includeDirectivePosition;
     bool isDoubleQuotes;
+
+    while(isspace(line.m_line[currentPos]))
+    {
+        if(currentPos++ >= line.m_line.size())
+            throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
+    }
+
     if (line.m_line[currentPos] == '"')
         isDoubleQuotes = true;
     else if (line.m_line[currentPos] == '<')
