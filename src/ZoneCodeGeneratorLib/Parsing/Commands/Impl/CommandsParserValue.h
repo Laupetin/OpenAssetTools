@@ -2,12 +2,13 @@
 
 #include <string>
 
-#include "Parsing/TokenPos.h"
 #include "Utils/ClassUtils.h"
+#include "Parsing/TokenPos.h"
 
 class CommandsParserValueType
 {
     CommandsParserValueType() = default;
+
 public:
     enum
     {

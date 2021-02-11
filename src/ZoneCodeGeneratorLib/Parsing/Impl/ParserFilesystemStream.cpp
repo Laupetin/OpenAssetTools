@@ -5,8 +5,6 @@
 
 namespace fs = std::filesystem;
 
-const std::string ParserFilesystemStream::EMPTY_FILE_NAME;
-
 ParserFilesystemStream::FileInfo::FileInfo(std::string filePath)
     : m_file_path(std::move(filePath)),
       m_stream(m_file_path),
@@ -31,7 +29,7 @@ ParserLine ParserFilesystemStream::NextLine()
     auto hasLength = false;
 
     if (m_files.empty())
-        return ParserLine(EMPTY_FILE_NAME, 0, std::string());
+        return ParserLine();
 
     while(!m_files.empty())
     {
@@ -67,7 +65,7 @@ ParserLine ParserFilesystemStream::NextLine()
         m_files.pop();
     }
 
-    return ParserLine(EMPTY_FILE_NAME, 0, std::string());
+    return ParserLine();
 }
 
 bool ParserFilesystemStream::IncludeFile(const std::string& filename)

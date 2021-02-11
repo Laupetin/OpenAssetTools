@@ -3,6 +3,7 @@
 #include <string>
 
 #include "ZoneCodeGeneratorArguments.h"
+#include "Parsing/IParserLineStream.h"
 #include "Persistence/IDataRepository.h"
 
 class HeaderFileReader
@@ -13,8 +14,14 @@ class HeaderFileReader
     const ZoneCodeGeneratorArguments* m_args;
     std::string m_filename;
 
+    std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
+    IParserLineStream* m_stream;
+
+    bool OpenBaseStream();
+    void SetupStreamProxies();
+
 public:
     HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);
 
-    bool ReadHeaderFile(IDataRepository* repository) const;
+    bool ReadHeaderFile(IDataRepository* repository);
 };

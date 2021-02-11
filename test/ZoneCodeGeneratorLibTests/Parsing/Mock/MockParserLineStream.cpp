@@ -37,7 +37,7 @@ ParserLine MockParserLineStream::NextLine()
         m_include_positions.pop_back();
     }
 
-    return ParserLine(MOCK_FILENAME, 0, std::string());
+    return ParserLine();
 }
 
 bool MockParserLineStream::IncludeFile(const std::string& filename)

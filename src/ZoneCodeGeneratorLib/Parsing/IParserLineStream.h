@@ -6,11 +6,14 @@
 
 class ParserLine
 {
+    static const std::string EMPTY_STRING;
+
 public:
-    const std::string& m_filename;
-    const int m_line_number;
+    std::reference_wrapper<const std::string> m_filename;
+    int m_line_number;
     std::string m_line;
 
+    ParserLine();
     ParserLine(const std::string& filename, int lineNumber, std::string line);
 
     _NODISCARD bool IsEof() const;

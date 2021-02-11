@@ -7,8 +7,6 @@
 
 class ParserFilesystemStream final : public IParserLineStream
 {
-    static const std::string EMPTY_FILE_NAME;
-
     class FileInfo
     {
     public:
