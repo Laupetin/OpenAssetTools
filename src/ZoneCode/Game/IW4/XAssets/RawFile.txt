@@ -1,0 +1,9 @@
+// =========================================
+// RawFile
+// =========================================
+use RawFile;
+set string name;
+set name name;
+set condition data::compressedBuffer compressedLen > 0;
+set count data::compressedBuffer compressedLen;
+set count data::buffer len + 1;

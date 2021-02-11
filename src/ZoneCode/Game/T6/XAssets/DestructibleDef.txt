@@ -1,0 +1,20 @@
+// =========================================
+// DestructibleDef
+// =========================================
+use DestructibleDef;
+set string name;
+set name name;
+set count pieces numPieces;
+
+// DestructiblePiece
+use DestructiblePiece;
+set string damageSound;
+set string burnSound;
+set scriptstring enableLabel;
+
+// DestructibleStage
+use DestructibleStage;
+set string breakSound;
+set string breakNotify;
+set string loopSound;
+set scriptstring showBone;

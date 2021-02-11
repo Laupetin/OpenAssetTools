@@ -1,0 +1,7 @@
+// =========================================
+// RawFile
+// =========================================
+use RawFile;
+set string name;
+set name name;
+set count buffer len + 1;

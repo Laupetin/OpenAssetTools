@@ -1,0 +1,34 @@
+// =========================================
+// EmblemSet
+// =========================================
+use EmblemSet;
+set count layers layerCount;
+set count categories categoryCount;
+set count iconTypes iconTypeCount;
+set count bgCategories iconTypeCount;
+set count icons iconTypeCount;
+set count backgrounds backgroundCount;
+set count backgroundLookup backgroundLookupCount;
+
+// EmblemCategory
+use EmblemCategory;
+set string name;
+set string description;
+
+// EmblemIconType
+use EmblemIconType;
+set string name;
+set string description;
+
+// EmblemBGCategory
+use EmblemBGCategory;
+set string name;
+set string description;
+
+// EmblemIcon
+use EmblemIcon;
+set string description;
+
+// EmblemBackground
+use EmblemBackground;
+set string description;

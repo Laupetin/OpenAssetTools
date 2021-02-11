@@ -1,0 +1,7 @@
+// =========================================
+// PhysPreset
+// =========================================
+use PhysPreset;
+set string name;
+set name name;
+set string sndAliasPrefix;

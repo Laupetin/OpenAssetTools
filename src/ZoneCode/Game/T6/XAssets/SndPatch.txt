@@ -1,0 +1,7 @@
+// =========================================
+// SndPatch
+// =========================================
+use SndPatch;
+set string name;
+set name name;
+set count elements elementCount;

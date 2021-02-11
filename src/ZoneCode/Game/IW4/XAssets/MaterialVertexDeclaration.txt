@@ -1,0 +1,9 @@
+// =========================================
+// MaterialVertexDeclaration
+// =========================================
+use MaterialVertexDeclaration;
+set string name;
+set name name;
+
+// MaterialVertexStreamRouting
+set condition MaterialVertexStreamRouting::decl never;

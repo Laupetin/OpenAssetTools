@@ -1,0 +1,6 @@
+// =========================================
+// FootstepTableDef
+// =========================================
+use FootstepTableDef;
+set string name;
+set name name;

@@ -1,0 +1,7 @@
+// =========================================
+// LocalizeEntry
+// =========================================
+use LocalizeEntry;
+set string value;
+set string name;
+set name name;

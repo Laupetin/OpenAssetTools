@@ -1,0 +1,32 @@
+// =========================================
+// WeaponAttachmentUnique
+// =========================================
+use WeaponAttachmentUnique;
+set string szInternalName;
+set name szInternalName;
+set string szAltWeaponName;
+set string szDualWieldWeaponName;
+set scriptstring hideTags;
+set count hideTags 32;
+set reusable hideTags;
+set string viewModelTag;
+set string worldModelTag;
+set string szXAnims;
+set count szXAnims 88;
+set reusable szXAnims;
+set count locationDamageMultipliers 21;
+set reusable locationDamageMultipliers;
+set string fireSound;
+set string fireSoundPlayer;
+set string fireLoopSound;
+set string fireLoopSoundPlayer;
+set string fireLoopEndSound;
+set string fireLoopEndSoundPlayer;
+set string fireStartSound;
+set string fireStopSound;
+set string fireStartSoundPlayer;
+set string fireStopSoundPlayer;
+set string fireLastSound;
+set string fireLastSoundPlayer;
+set string fireKillcamSound;
+set string fireKillcamSoundPlayer;

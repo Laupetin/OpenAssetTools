@@ -1,0 +1,41 @@
+// =========================================
+// SndBank
+// =========================================
+use SndBank;
+set string name;
+set name name;
+set count alias aliasCount;
+set count aliasIndex aliasCount;
+set count radverbs radverbCount;
+set count ducks duckCount;
+set count scriptIdLookups scriptIdLookupCount;
+
+// SndAliasList
+use SndAliasList;
+set string name;
+set reusable head;
+set count head count;
+
+// SndAlias
+use SndAlias;
+set string name;
+set string subtitle;
+set string secondaryname;
+set string assetFileName;
+
+// SndDuck
+use SndDuck;
+set count attenuation 32;
+set count filter 32;
+
+// SndRuntimeAssetBank
+use SndRuntimeAssetBank;
+set string zone;
+set string language;
+
+// SndLoadedAssets
+use SndLoadedAssets;
+set string zone;
+set string language;
+set count entries entryCount;
+set count data dataSize;

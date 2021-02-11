@@ -1,0 +1,51 @@
+// =========================================
+// VehicleDef
+// =========================================
+use VehicleDef;
+set string name;
+set name name;
+set string turretWeapon;
+set string gunnerWeapon;
+set string sndNames;
+set string sndMaterialNames;
+set string futzName;
+set string animSet;
+set scriptstring extraWheelTags;
+set scriptstring driverHideTag;
+set scriptstring attachmentTags;
+set scriptstring deathAttachmentTags;
+set scriptstring deathFxTag;
+set string deathFxSound;
+set scriptstring lightFxTag;
+set scriptstring friendlyLightFxTag;
+set scriptstring enemyLightFxTag;
+set string shootShock;
+set string shootRumble;
+set string rumbleType;
+set string compassIcon;
+set string gasButtonName;
+set string reverseBrakeButtonName;
+set string handBrakeButtonName;
+set string attackButtonName;
+set string attackSecondaryButtonName;
+set string boostButtonName;
+set string moveUpButtonName;
+set string moveDownButtonName;
+set string switchSeatButtonName;
+set string steerGraphName;
+set condition steerGraph never;
+set string accelGraphName;
+set condition accelGraph never;
+set string csvInclude;
+
+// VehicleParameter
+use VehicleParameter;
+set string m_name;
+
+// VehicleDriveBySound
+use VehicleDriveBySound;
+set string name;
+
+// VehicleEngineSound
+use VehicleEngineSound;
+set string name;

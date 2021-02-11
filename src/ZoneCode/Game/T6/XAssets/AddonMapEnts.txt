@@ -1,0 +1,18 @@
+// =========================================
+// AddonMapEnts
+// =========================================
+use AddonMapEnts;
+set string name;
+set name name;
+set count entityString numEntityChars;
+set reusable info;
+set count cmodels numSubModels;
+set count models numSubModels;
+
+// cmodel_t2
+set reusable cmodel_t2::info;
+
+// MapTriggers: See MapEnts
+// ClipInfo: See clipMap_t
+
+// GfxBrushModel: See GfxWorld

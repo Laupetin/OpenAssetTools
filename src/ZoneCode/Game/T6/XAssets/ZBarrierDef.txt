@@ -1,0 +1,15 @@
+// =========================================
+// ZBarrierDef
+// =========================================
+use ZBarrierDef;
+set string name;
+set name name;
+set scriptstring zombieTauntAnimState;
+set scriptstring zombieReachThroughAnimState;
+
+// ZBarrierBoard
+use ZBarrierBoard;
+set string pTearAnim;
+set string pBoardAnim;
+set scriptstring zombieBoardTearStateName;
+set scriptstring zombieBoardTearSubStateName;

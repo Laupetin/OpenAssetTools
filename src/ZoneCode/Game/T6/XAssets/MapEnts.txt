@@ -1,0 +1,16 @@
+// =========================================
+// MapEnts
+// =========================================
+use MapEnts;
+set string name;
+set name name;
+set count entityString numEntityChars;
+
+// MapTriggers
+use MapTriggers;
+set count models count;
+set reusable models;
+set count hulls hullCount;
+set reusable hulls;
+set count slabs slabCount;
+set reusable slabs;

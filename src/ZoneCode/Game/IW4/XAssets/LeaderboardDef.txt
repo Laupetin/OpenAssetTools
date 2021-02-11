@@ -1,0 +1,12 @@
+// =========================================
+// LeaderboardDef
+// =========================================
+use LeaderboardDef;
+set string name;
+set name name;
+set count columns columnCount;
+
+// LbColumnDef
+use LbColumnDef;
+set string name;
+set string statName;

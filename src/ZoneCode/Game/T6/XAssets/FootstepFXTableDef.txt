@@ -1,0 +1,6 @@
+// =========================================
+// FootstepFXTableDef
+// =========================================
+use FootstepFXTableDef;
+set string name;
+set name name;

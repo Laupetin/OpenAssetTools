@@ -1,0 +1,18 @@
+// =========================================
+// Material
+// =========================================
+use Material;
+set string info::name;
+set name info::name;
+set reusable textureTable;
+set count textureTable textureCount;
+set reusable constantTable;
+set count constantTable constantCount;
+set reusable stateBitsTable;
+set count stateBitsTable stateBitsCount;
+
+// GfxStateBits
+use GfxStateBits;
+set condition blendState never;
+set condition depthStencilState never;
+set condition rasterizerState never;

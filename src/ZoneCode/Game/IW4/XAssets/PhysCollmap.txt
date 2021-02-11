@@ -1,0 +1,26 @@
+// =========================================
+// PhysCollmap
+// =========================================
+use PhysCollmap;
+set string name;
+set name name;
+set count geoms count;
+
+// PhysGeomInfo
+use PhysGeomInfo;
+set count brushWrapper 1;
+
+// BrushWrapper
+use BrushWrapper;
+set reusable planes;
+set count planes brush::numsides;
+
+// cbrushWrapper_t
+use cbrushWrapper_t;
+set count sides numsides;
+set count baseAdjacentSide BrushWrapper::totalEdgeCount;
+
+// cbrushside_t
+use cbrushside_t;
+set reusable plane;
+set count plane 1;

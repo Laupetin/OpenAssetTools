@@ -1,0 +1,14 @@
+// =========================================
+// SndDriverGlobals
+// =========================================
+use SndDriverGlobals;
+set string name;
+set name name;
+set count groups groupCount;
+set count curves curveCount;
+set count pans panCount;
+set count duckGroups duckGroupCount;
+set count contexts contextCount;
+set count masters masterCount;
+set count voiceDucks voiceDuckCount;
+set count futzes futzCount;

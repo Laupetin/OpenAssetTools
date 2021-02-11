@@ -174,7 +174,7 @@ function ZoneCode:project()
 		files {
 			path.join(folder, "ZoneCode/**.gen"),
 			path.join(folder, "ZoneCode/**.h"),
-			path.join(folder, "ZoneCode/**_Commands.txt")
+			path.join(folder, "ZoneCode/**.txt")
         }
 		
         vpaths {

@@ -1,0 +1,20 @@
+// =========================================
+// Glasses
+// =========================================
+use Glasses;
+set string name;
+set name name;
+set count glasses numGlasses;
+set condition workMemory never;
+
+// Glass
+use Glass;
+set reusable glassDef;
+set count outline numOutlineVerts;
+
+// GlassDef
+use GlassDef;
+set string name;
+set string crackSound;
+set string shatterShound;
+set string autoShatterShound;

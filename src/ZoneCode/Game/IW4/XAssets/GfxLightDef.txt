@@ -1,0 +1,6 @@
+// =========================================
+// GfxLightDef
+// =========================================
+use GfxLightDef;
+set string name;
+set name name;

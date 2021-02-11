@@ -1,0 +1,12 @@
+// =========================================
+// MaterialVertexShader
+// =========================================
+use MaterialVertexShader;
+set string name;
+set name name;
+
+// GfxVertexShaderLoadDef
+set count GfxVertexShaderLoadDef::program programSize;
+
+// MaterialVertexShaderProgram
+set condition MaterialVertexShaderProgram::vs never;

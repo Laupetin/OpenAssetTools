@@ -1,0 +1,199 @@
+// =========================================
+// GfxWorld
+// =========================================
+use GfxWorld;
+set string name;
+set name name;
+set string baseName;
+set string skyBoxModel;
+set reusable sunLight;
+set count coronas coronaCount;
+set count shadowMapVolumes shadowMapVolumeCount;
+set count shadowMapVolumePlanes shadowMapVolumePlaneCount;
+set count exposureVolumes exposureVolumeCount;
+set count exposureVolumePlanes exposureVolumePlaneCount;
+set count worldFogVolumes worldFogVolumeCount;
+set count worldFogVolumePlanes worldFogVolumePlaneCount;
+set count worldFogModifierVolumes worldFogModifierVolumeCount;
+set count worldFogModifierVolumePlanes worldFogModifierVolumePlaneCount;
+set count lutVolumes lutVolumeCount;
+set count lutVolumePlanes lutVolumePlaneCount;
+set count cells dpvsPlanes::cellCount;
+set count models modelCount;
+set count materialMemory materialMemoryCount;
+set block cellCasterBits XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count cellCasterBits dpvsPlanes::cellCount * ((dpvsPlanes::cellCount + 31) / 32);
+set block sceneDynModel XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count sceneDynModel dpvsDyn::dynEntClientCount[0];
+set block sceneDynBrush XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count sceneDynBrush dpvsDyn::dynEntClientCount[1];
+set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x2000;
+set block primaryLightDynEntShadowVis XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count primaryLightDynEntShadowVis[0] dpvsDyn::dynEntClientCount[0] * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis[1] dpvsDyn::dynEntClientCount[1] * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count siegeSkinInsts numSiegeSkinInsts;
+set count shadowGeom primaryLightCount;
+set count lightRegion primaryLightCount;
+set count occluders numOccluders;
+set count outdoorBounds numOutdoorBounds;
+set count heroLights heroLightCount;
+set count heroLightTree heroLightTreeCount;
+
+// GfxWorldStreamInfo
+use GfxWorldStreamInfo;
+set count aabbTrees aabbTreeCount;
+set count leafRefs leafRefCount;
+
+// GfxWorldDpvsPlanes
+use GfxWorldDpvsPlanes;
+set reusable planes;
+set count planes GfxWorld::planeCount;
+set count nodes GfxWorld::nodeCount;
+set block sceneEntCellBits XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count sceneEntCellBits cellCount * 0x200;
+
+// GfxCell
+use GfxCell;
+set count aabbTree aabbTreeCount;
+set count portals portalCount;
+set count reflectionProbes reflectionProbeCount;
+
+// GfxAabbTree
+use GfxAabbTree;
+set reusable smodelIndexes;
+set count smodelIndexes smodelIndexCount;
+
+// GfxPortal
+use GfxPortal;
+set condition writable never;
+set reusable cell;
+set count vertices vertexCount;
+
+// GfxWorldDraw
+use GfxWorldDraw;
+set count reflectionProbes reflectionProbeCount;
+set block reflectionProbeTextures XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count reflectionProbeTextures reflectionProbeCount;
+set count lightmaps lightmapCount;
+set block lightmapPrimaryTextures XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count lightmapPrimaryTextures lightmapCount;
+set block lightmapSecondaryTextures XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count lightmapSecondaryTextures lightmapCount;
+set count indices indexCount;
+set condition indexBuffer never;
+
+// GfxReflectionProbe
+use GfxReflectionProbe;
+set count probeVolumes probeVolumeCount;
+
+// GfxWorldVertexData0
+use GfxWorldVertexData0;
+set count data GfxWorldDraw::vertexDataSize0;
+set condition vb never;
+
+// GfxWorldVertexData1
+use GfxWorldVertexData1;
+set count data GfxWorldDraw::vertexDataSize1;
+set condition vb never;
+
+// GfxLightGrid
+use GfxLightGrid;
+set count rowDataStart maxs[rowAxis] - mins[rowAxis] + 1;
+set count rawRowData rawRowDataSize;
+set count entries entryCount;
+set count colors colorCount;
+set count coeffs coeffCount;
+set count skyGridVolumes skyGridVolumeCount;
+
+// SSkinInstance
+use SSkinInstance;
+set reusable shaders;
+set reusable model;
+set reusable anim;
+set count instVerts model::numVerts;
+
+// SSkinShaders
+use SSkinShaders;
+set count pixelShaderAlign pixelShaderSize;
+set count pixelShader pixelShaderSize;
+set count vertexShader vertexShaderSize;
+
+// SSkinModel
+use SSkinModel;
+set count verts numVerts;
+set count tris numTris;
+
+// SSkinAnim
+use SSkinAnim;
+set count data 4 * width * frames;
+
+// GfxShadowGeometry
+use GfxShadowGeometry;
+set count sortedSurfIndex surfaceCount;
+set count smodelIndex smodelCount;
+
+// GfxLightRegion
+use GfxLightRegion;
+set count hulls hullCount;
+
+// GfxLightRegionHull
+use GfxLightRegionHull;
+set count axis axisCount;
+
+// GfxWorldDpvsStatic
+use GfxWorldDpvsStatic;
+set block smodelVisData XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count smodelVisData smodelVisDataCount;
+set block surfaceVisData XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count surfaceVisData surfaceVisDataCount;
+set block smodelVisDataCameraSaved XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count smodelVisDataCameraSaved smodelVisDataCount;
+set block surfaceVisDataCameraSaved XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count surfaceVisDataCameraSaved surfaceVisDataCount;
+set block surfaceCastsSunShadow XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count surfaceCastsSunShadow surfaceVisDataCount;
+set block surfaceCastsShadow XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count surfaceCastsShadow surfaceVisDataCount;
+set count smodelCastsShadow smodelVisDataCount;
+set count sortedSurfIndex staticSurfaceCount;
+set count smodelInsts smodelCount;
+set count surfaces GfxWorld::surfaceCount;
+set count smodelDrawInsts smodelCount;
+set block surfaceMaterials XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count surfaceMaterials staticSurfaceCount;
+reorder:
+    smodelVisData
+    surfaceVisData
+    smodelVisDataCameraSaved
+    surfaceVisDataCameraSaved
+    surfaceCastsSunShadow
+    surfaceCastsShadow
+    smodelCastsShadow
+    sortedSurfIndex
+    smodelInsts
+    surfaces
+    smodelDrawInsts
+    surfaceMaterials;
+
+// GfxStaticModelLmapVertexInfo
+use GfxStaticModelLmapVertexInfo;
+set count lmapVertexColors numLmapVertexColors;
+set condition lmapVertexColorsVB never;
+
+// GfxWorldDpvsDynamic
+use GfxWorldDpvsDynamic;
+set block dynEntCellBits XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count dynEntCellBits[0] dynEntClientWordCount[0] * GfxWorld::dpvsPlanes::cellCount;
+set count dynEntCellBits[1] dynEntClientWordCount[1] * GfxWorld::dpvsPlanes::cellCount;
+set block dynEntVisData XFILE_BLOCK_RUNTIME_VIRTUAL;
+set count dynEntVisData[0][0] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][0] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][1] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][1] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][2] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][2] 32 * dynEntClientWordCount[1];
+
+// GfxWaterBuffer
+use GfxWaterBuffer;
+set count buffer bufferSize / 16;

@@ -1,0 +1,29 @@
+// =========================================
+// snd_alias_list_t
+// =========================================
+use snd_alias_list_t;
+set string aliasName;
+set name aliasName;
+set reusable head;
+set count head count;
+
+// snd_alias_t
+use snd_alias_t;
+set string aliasName;
+set string subtitle;
+set string secondaryAliasName;
+set string chainAliasName;
+set string mixerGroup;
+set reusable soundFile;
+set reusable speakerMap;
+
+// SoundFile
+set condition SoundFile::u::loadSnd type == SAT_LOADED;
+
+// SpeakerMap
+set string SpeakerMap::name;
+
+// StreamedSound
+use StreamedSound;
+set string dir;
+set string name;

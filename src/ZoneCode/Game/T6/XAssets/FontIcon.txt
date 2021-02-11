@@ -1,0 +1,13 @@
+// =========================================
+// FontIcon
+// =========================================
+use FontIcon;
+set string name;
+set name name;
+set reusable fontIconEntry;
+set count fontIconEntry numEntries;
+set reusable fontIconAlias;
+set count fontIconAlias numAliasEntries;
+
+// FontIconName
+set string FontIconName::string;

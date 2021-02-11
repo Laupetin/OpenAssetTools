@@ -1,0 +1,6 @@
+// =========================================
+// SndCurve
+// =========================================
+use SndCurve;
+set string filename;
+set name filename;

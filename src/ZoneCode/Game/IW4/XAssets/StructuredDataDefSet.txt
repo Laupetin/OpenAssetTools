@@ -1,0 +1,26 @@
+// =========================================
+// StructuredDataDefSet
+// =========================================
+use StructuredDataDefSet;
+set string name;
+set name name;
+set count defs defCount;
+
+// StructuredDataDef
+use StructuredDataDef;
+set count enums enumCount;
+set count structs structCount;
+set count indexedArrays indexedArrayCount;
+set count enumedArrays enumedArrayCount;
+
+// StructuredDataEnum
+set count StructuredDataEnum::entries entryCount;
+
+// StructuredDataEnumEntry
+set string StructuredDataEnumEntry::string;
+
+// StructuredDataStruct
+set count StructuredDataStruct::properties propertyCount;
+
+// StructuredDataStructProperty
+set string StructuredDataStructProperty::name;

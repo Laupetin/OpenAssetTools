@@ -1,0 +1,10 @@
+// =========================================
+// KeyValuePairs
+// =========================================
+use KeyValuePairs;
+set string name;
+set name name;
+set count keyValuePairs numVariables;
+
+// KeyValuePair
+set string KeyValuePair::value;

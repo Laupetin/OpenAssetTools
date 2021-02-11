@@ -1,0 +1,7 @@
+// =========================================
+// AddonMapEnts
+// =========================================
+use AddonMapEnts;
+set string name;
+set name name;
+set count entityString numEntityChars;

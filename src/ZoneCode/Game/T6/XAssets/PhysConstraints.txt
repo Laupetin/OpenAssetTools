@@ -1,0 +1,13 @@
+// =========================================
+// PhysConstraints
+// =========================================
+use PhysConstraints;
+set string name;
+set name name;
+
+use PhysConstraint;
+set scriptstring targetname;
+set scriptstring target_ent1;
+set string target_bone1;
+set scriptstring target_ent2;
+set string target_bone2;

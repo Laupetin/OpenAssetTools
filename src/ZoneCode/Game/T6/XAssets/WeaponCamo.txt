@@ -1,0 +1,17 @@
+// =========================================
+// WeaponCamo
+// =========================================
+use WeaponCamo;
+set string name;
+set name name;
+set count camoSets numCamoSets;
+set count camoMaterials numCamoMaterials;
+
+// WeaponCamoMaterialSet
+use WeaponCamoMaterialSet;
+set count materials numMaterials;
+
+// WeaponCamoMaterial
+use WeaponCamoMaterial;
+set count baseMaterials numBaseMaterials;
+set count camoMaterials numBaseMaterials;

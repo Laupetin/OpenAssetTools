@@ -1,0 +1,10 @@
+// =========================================
+// StringTable
+// =========================================
+use StringTable;
+set string name;
+set name name;
+set count values columnCount * rowCount;
+
+// StringTableCell
+set string StringTableCell::string;

@@ -1,0 +1,16 @@
+// =========================================
+// XGlobals
+// =========================================
+use XGlobals;
+set string name;
+set name name;
+set arraycount gumps gumpsCount;
+set condition gumps gumpsCount >= 0 && gumpsCount <= 32;
+set arraycount overlays overlayCount;
+set condition overlays overlayCount >= 0 && overlayCount <= 32;
+
+// gump_info_t
+set string gump_info_t::name;
+
+// overlay_info_t
+set string overlay_info_t::name;

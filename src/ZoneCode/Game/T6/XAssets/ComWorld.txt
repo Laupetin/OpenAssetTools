@@ -1,0 +1,10 @@
+// =========================================
+// ComWorld
+// =========================================
+use ComWorld;
+set string name;
+set name name;
+set count primaryLights primaryLightCount;
+
+// ComPrimaryLight
+set string ComPrimaryLight::defName;

@@ -1,0 +1,133 @@
+// =========================================
+// menuDef_t
+// =========================================
+use menuDef_t;
+set string window::name;
+set name window::name;
+set string font;
+set string allowedBinding;
+set string soundName;
+set count items itemCount;
+
+// windowDef_t
+use windowDef_t;
+set string group;
+
+// GenericEventHandler
+use GenericEventHandler;
+set string name;
+
+// GenericEventScript
+use GenericEventScript;
+set string action;
+
+// ExpressionStatement
+use ExpressionStatement;
+set string filename;
+set count rpn numRpn;
+set reusable rpn;
+
+// expressionRpn
+use expressionRpn;
+set condition data::constant type == RPN_CONSTANT;
+set condition data::cmd never;
+
+// Operand
+use Operand;
+set condition internals::intVal dataType == VAL_INT;
+set condition internals::floatVal dataType == VAL_FLOAT;
+set condition internals::string dataType == VAL_STRING;
+set string internals::string;
+set condition internals::dvar never;
+
+// itemDef_s
+use itemDef_s;
+set string dvar;
+set string profileVar;
+set string dvarTest;
+set string enableDvar;
+set condition parent never;
+set condition typeData::textDef 
+type == 1 || type == 3 || type == 4
+|| type == 5  || type == 7 || type == 8
+|| type == 9 || type == 10 || type == 11
+|| type == 12 || type == 13 || type == 14
+|| type == 15 || type == 16 || type == 18
+|| type == 20 || type == 22;
+set condition typeData::imageDef type == 2;
+set condition typeData::blankButtonDef type == 19 || type == 21;
+set condition typeData::ownerDrawDef type == 6;
+set condition typeData::data never;
+
+// textDef_s
+use textDef_s;
+set string text;
+set condition textTypeData::focusItemDef itemDef_s::type == 3
+|| itemDef_s::type == 4 || itemDef_s::type == 5
+|| itemDef_s::type == 7 || itemDef_s::type == 8
+|| itemDef_s::type == 9 || itemDef_s::type == 10
+|| itemDef_s::type == 11 || itemDef_s::type == 12
+|| itemDef_s::type == 13 || itemDef_s::type == 14
+|| itemDef_s::type == 16 || itemDef_s::type == 20
+|| itemDef_s::type == 21 || itemDef_s::type == 22
+|| itemDef_s::type == 30;
+set condition textTypeData::gameMsgDef itemDef_s::type == 15;
+set condition textTypeData::data never;
+
+// focusItemDef_s
+use focusItemDef_s;
+set string mouseEnterText;
+set string mouseExitText;
+set string mouseEnter;
+set string mouseExit;
+set condition focusTypeData::listBox itemDef_s::type == 4;
+set condition focusTypeData::multi itemDef_s::type == 10;
+set condition focusTypeData::profileMulti itemDef_s::type == 22;
+set condition focusTypeData::editField itemDef_s::type == 5
+|| itemDef_s::type == 7
+|| itemDef_s::type == 8
+|| itemDef_s::type == 9
+|| itemDef_s::type == 12
+|| itemDef_s::type == 13
+|| itemDef_s::type == 14
+|| itemDef_s::type == 16
+|| itemDef_s::type == 30;
+set condition focusTypeData::enumDvar itemDef_s::type == 11;
+set condition focusTypeData::data never;
+
+// listBoxDef_s
+use listBoxDef_s;
+set count rows maxRows;
+
+// MenuRow
+use MenuRow;
+set count cells listBoxDef_s::numColumns;
+set count eventName 32;
+set count onFocusEventName 32;
+
+// MenuCell
+use MenuCell;
+set count stringValue maxChars;
+
+// multiDef_s
+use multiDef_s;
+set string dvarList;
+set string dvarStr;
+
+// profileMultiDef_s
+use profileMultiDef_s;
+set string profileVarList;
+set string profileVarStr;
+
+// enumDvarDef_s
+set string enumDvarDef_s::enumDvarName;
+
+// UIAnimInfo
+use UIAnimInfo;
+set count animStates animStateCount;
+set condition currentAnimState never;
+set condition nextAnimState never;
+
+// animParamsDef_t
+use animParamsDef_t;
+set string name;

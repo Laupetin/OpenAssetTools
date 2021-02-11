@@ -1,0 +1,7 @@
+// =========================================
+// WeaponAttachment
+// =========================================
+use WeaponAttachment;
+set string szInternalName;
+set name szInternalName;
+set string szDisplayName;

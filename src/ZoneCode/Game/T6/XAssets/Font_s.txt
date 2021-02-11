@@ -1,0 +1,10 @@
+// =========================================
+// Font_s
+// =========================================
+use Font_s;
+set string fontName;
+set name fontName;
+set reusable glyphs;
+set count glyphs glyphCount;
+set reusable kerningPairs;
+set count kerningPairs kerningPairsCount;

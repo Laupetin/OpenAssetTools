@@ -1,0 +1,6 @@
+// =========================================
+// SkinnedVertsDef
+// =========================================
+use SkinnedVertsDef;
+set string name;
+set name name;
