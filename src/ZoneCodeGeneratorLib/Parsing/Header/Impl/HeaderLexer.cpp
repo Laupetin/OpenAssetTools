@@ -3,6 +3,20 @@
 HeaderLexer::HeaderLexer(IParserLineStream* stream)
     : AbstractLexer(stream)
 {
+    PrepareKeywords();
+}
+
+void HeaderLexer::PrepareKeywords()
+{
+    m_keywords["__declspec"] = HeaderParserValueType::DECLSPEC;
+    m_keywords["align"] = HeaderParserValueType::ALIGN;
+    m_keywords["alignas"] = HeaderParserValueType::ALIGNAS;
+    m_keywords["const"] = HeaderParserValueType::CONST;
+    m_keywords["enum"] = HeaderParserValueType::ENUM;
+    m_keywords["namespace"] = HeaderParserValueType::NAMESPACE;
+    m_keywords["struct"] = HeaderParserValueType::STRUCT;
+    m_keywords["typedef"] = HeaderParserValueType::TYPEDEF;
+    m_keywords["union"] = HeaderParserValueType::UNION;
 }
 
 HeaderParserValue HeaderLexer::GetNextToken()
@@ -131,7 +145,15 @@ HeaderParserValue HeaderLexer::GetNextToken()
                 }
 
                 if (isalpha(c) || c == '_')
-                    return HeaderParserValue::Identifier(GetPreviousCharacterPos(), new std::string(ReadIdentifier()));
+                {
+                    auto identifier = ReadIdentifier();
+
+                    const auto foundKeyword = m_keywords.find(identifier);
+                    if (foundKeyword != m_keywords.end())
+                        return HeaderParserValue::Keyword(GetPreviousCharacterPos(), foundKeyword->second);
+
+                    return HeaderParserValue::Identifier(GetPreviousCharacterPos(), new std::string(std::move(identifier)));
+                }
 
                 return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
             }

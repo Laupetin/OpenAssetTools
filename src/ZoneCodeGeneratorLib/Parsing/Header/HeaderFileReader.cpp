@@ -91,6 +91,50 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
                 std::cout << "Token STRING \"" << token.StringValue() << "\"\n";
                 break;
 
+            case HeaderParserValueType::INTEGER:
+                std::cout << "Token INTEGER " << token.IntegerValue() << "\n";
+                break;
+
+            case HeaderParserValueType::FLOATING_POINT:
+                std::cout << "Token FLOATINGPOINT " << token.FloatingPointValue() << "\n";
+                break;
+
+            case HeaderParserValueType::DECLSPEC:
+                std::cout << "Token DECLSPEC\n";
+                break;
+
+            case HeaderParserValueType::ALIGN:
+                std::cout << "Token ALIGN\n";
+                break;
+
+            case HeaderParserValueType::ALIGNAS:
+                std::cout << "Token ALIGNAS\n";
+                break;
+
+            case HeaderParserValueType::CONST:
+                std::cout << "Token CONST\n";
+                break;
+
+            case HeaderParserValueType::ENUM:
+                std::cout << "Token ENUM\n";
+                break;
+
+            case HeaderParserValueType::NAMESPACE:
+                std::cout << "Token NAMESPACE\n";
+                break;
+
+            case HeaderParserValueType::STRUCT:
+                std::cout << "Token STRUCT\n";
+                break;
+
+            case HeaderParserValueType::TYPEDEF:
+                std::cout << "Token TYPEDEF\n";
+                break;
+
+            case HeaderParserValueType::UNION:
+                std::cout << "Token UNION\n";
+                break;
+
             default:
                 std::cout << "Token UNKNOWN\n";
                 break;

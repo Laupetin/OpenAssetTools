@@ -97,6 +97,11 @@ HeaderParserValue HeaderParserValue::Identifier(const TokenPos pos, std::string*
     return pv;
 }
 
+HeaderParserValue HeaderParserValue::Keyword(const TokenPos pos, const HeaderParserValueType type)
+{
+    return HeaderParserValue(pos, type);
+}
+
 HeaderParserValue HeaderParserValue::TypeName(const TokenPos pos, std::string* typeName)
 {
     HeaderParserValue pv(pos, HeaderParserValueType::TYPE_NAME);

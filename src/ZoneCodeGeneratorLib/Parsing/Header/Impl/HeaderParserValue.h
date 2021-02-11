@@ -30,6 +30,17 @@ enum class HeaderParserValueType
     STRING,
     IDENTIFIER,
 
+    // Keywords
+    DECLSPEC,
+    ALIGN,
+    ALIGNAS,
+    CONST,
+    ENUM,
+    NAMESPACE,
+    STRUCT,
+    TYPEDEF,
+    UNION,
+
     // Parser created
     TYPE_NAME,
 
@@ -65,6 +76,7 @@ public:
     static HeaderParserValue FloatingPoint(TokenPos pos, double value);
     static HeaderParserValue String(TokenPos pos, std::string* stringValue);
     static HeaderParserValue Identifier(TokenPos pos, std::string* identifier);
+    static HeaderParserValue Keyword(TokenPos pos, HeaderParserValueType type);
     static HeaderParserValue TypeName(TokenPos pos, std::string* typeName);
 
 private:
