@@ -149,6 +149,16 @@ HeaderParserValue& HeaderParserValue::operator=(HeaderParserValue&& other) noexc
     return *this;
 }
 
+bool HeaderParserValue::IsEof() const
+{
+    return m_type == HeaderParserValueType::END_OF_FILE;
+}
+
+const TokenPos& HeaderParserValue::GetPos() const
+{
+    return m_pos;
+}
+
 char HeaderParserValue::CharacterValue() const
 {
     assert(m_type == HeaderParserValueType::CHARACTER);

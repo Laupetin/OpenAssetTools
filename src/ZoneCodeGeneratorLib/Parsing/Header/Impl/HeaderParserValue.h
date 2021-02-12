@@ -2,6 +2,8 @@
 
 #include <string>
 
+
+#include "Parsing/IParserValue.h"
 #include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
 
@@ -48,7 +50,7 @@ enum class HeaderParserValueType
     MAX
 };
 
-class HeaderParserValue
+class HeaderParserValue final : public IParserValue
 {
 public:
     TokenPos m_pos;
@@ -83,11 +85,14 @@ private:
     HeaderParserValue(TokenPos pos, HeaderParserValueType type);
 
 public:
-    ~HeaderParserValue();
+    ~HeaderParserValue() override;
     HeaderParserValue(const HeaderParserValue& other) = delete;
     HeaderParserValue(HeaderParserValue&& other) noexcept;
     HeaderParserValue& operator=(const HeaderParserValue& other) = delete;
     HeaderParserValue& operator=(HeaderParserValue&& other) noexcept;
+
+    _NODISCARD bool IsEof() const override;
+    _NODISCARD const TokenPos& GetPos() const override;
 
     _NODISCARD char CharacterValue() const;
     _NODISCARD int IntegerValue() const;

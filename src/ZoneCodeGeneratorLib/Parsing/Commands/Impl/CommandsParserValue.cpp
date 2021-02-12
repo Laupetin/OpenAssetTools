@@ -16,7 +16,8 @@ CommandsParserValue CommandsParserValue::EndOfFile(const TokenPos pos)
 
 CommandsParserValue CommandsParserValue::Character(const TokenPos pos, const char c)
 {
-    CommandsParserValue pv(pos, c);
+    CommandsParserValue pv(pos, CommandsParserValueType::CHARACTER);
+    pv.m_value.char_value = c;
     return pv;
 }
 
@@ -93,6 +94,7 @@ CommandsParserValue CommandsParserValue::Identifier(const TokenPos pos, std::str
 {
     CommandsParserValue pv(pos, CommandsParserValueType::IDENTIFIER);
     pv.m_value.string_value = identifier;
+    pv.m_hash = std::hash<std::string>()(*identifier);
     return pv;
 }
 
@@ -103,10 +105,11 @@ CommandsParserValue CommandsParserValue::TypeName(const TokenPos pos, std::strin
     return pv;
 }
 
-CommandsParserValue::CommandsParserValue(const TokenPos pos, const int type)
+CommandsParserValue::CommandsParserValue(const TokenPos pos, const CommandsParserValueType type)
     : m_pos(pos),
       m_type(type),
-      m_value()
+      m_hash(0),
+      m_value{}
 {
 }
 
@@ -129,6 +132,7 @@ CommandsParserValue::~CommandsParserValue()
 
 CommandsParserValue::CommandsParserValue(CommandsParserValue&& other) noexcept
     : m_type(other.m_type),
+      m_hash(other.m_hash),
       m_value(other.m_value)
 {
     other.m_value = ValueType();
@@ -138,9 +142,26 @@ CommandsParserValue& CommandsParserValue::operator=(CommandsParserValue&& other)
 {
     m_type = other.m_type;
     m_value = other.m_value;
+    m_hash = other.m_hash;
     other.m_value = ValueType();
 
     return *this;
+}
+
+bool CommandsParserValue::IsEof() const
+{
+    return m_type == CommandsParserValueType::END_OF_FILE;
+}
+
+const TokenPos& CommandsParserValue::GetPos() const
+{
+    return m_pos;
+}
+
+char CommandsParserValue::CharacterValue() const
+{
+    assert(m_type == CommandsParserValueType::CHARACTER);
+    return m_value.char_value;
 }
 
 int CommandsParserValue::IntegerValue() const
@@ -165,6 +186,12 @@ std::string& CommandsParserValue::IdentifierValue() const
 {
     assert(m_type == CommandsParserValueType::IDENTIFIER);
     return *m_value.string_value;
+}
+
+size_t CommandsParserValue::IdentifierHash() const
+{
+    assert(m_type == CommandsParserValueType::IDENTIFIER);
+    return m_hash;
 }
 
 std::string& CommandsParserValue::TypeNameValue() const

@@ -2,53 +2,52 @@
 
 #include <string>
 
+
+#include "Parsing/IParserValue.h"
 #include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
 
-class CommandsParserValueType
+enum class CommandsParserValueType
 {
-    CommandsParserValueType() = default;
+    // Meta tokens
+    INVALID,
+    END_OF_FILE,
 
-public:
-    enum
-    {
-        FIRST = 0x100,
+    // Single character
+    CHARACTER,
 
-        // Meta tokens
-        INVALID = FIRST,
-        END_OF_FILE,
+    // Symbol tokens
+    SHIFT_LEFT,
+    SHIFT_RIGHT,
+    EQUALS,
+    NOT_EQUAL,
+    GREATER_EQUAL,
+    LESS_EQUAL,
+    LOGICAL_AND,
+    LOGICAL_OR,
 
-        // Symbol tokens
-        SHIFT_LEFT,
-        SHIFT_RIGHT,
-        EQUALS,
-        NOT_EQUAL,
-        GREATER_EQUAL,
-        LESS_EQUAL,
-        LOGICAL_AND,
-        LOGICAL_OR,
+    // Generic token types
+    INTEGER,
+    FLOATING_POINT,
+    STRING,
+    IDENTIFIER,
 
-        // Generic token types
-        INTEGER,
-        FLOATING_POINT,
-        STRING,
-        IDENTIFIER,
+    // Parser created
+    TYPE_NAME,
 
-        // Parser created
-        TYPE_NAME,
-
-        // End
-        MAX
-    };
+    // End
+    MAX
 };
 
-class CommandsParserValue
+class CommandsParserValue final : public IParserValue
 {
 public:
     TokenPos m_pos;
-    int m_type;
+    CommandsParserValueType m_type;
+    size_t m_hash;
     union ValueType
     {
+        char char_value;
         int int_value;
         double double_value;
         std::string* string_value;
@@ -72,18 +71,23 @@ public:
     static CommandsParserValue TypeName(TokenPos pos, std::string* typeName);
 
 private:
-    CommandsParserValue(TokenPos pos, int type);
+    CommandsParserValue(TokenPos pos, CommandsParserValueType type);
 
 public:
-    ~CommandsParserValue();
+    ~CommandsParserValue() override;
     CommandsParserValue(const CommandsParserValue& other) = delete;
     CommandsParserValue(CommandsParserValue&& other) noexcept;
     CommandsParserValue& operator=(const CommandsParserValue& other) = delete;
     CommandsParserValue& operator=(CommandsParserValue&& other) noexcept;
 
+    _NODISCARD bool IsEof() const override;
+    _NODISCARD const TokenPos& GetPos() const override;
+
+    _NODISCARD char CharacterValue() const;
     _NODISCARD int IntegerValue() const;
     _NODISCARD double FloatingPointValue() const;
     _NODISCARD std::string& StringValue() const;
     _NODISCARD std::string& IdentifierValue() const;
+    _NODISCARD size_t IdentifierHash() const;
     _NODISCARD std::string& TypeNameValue() const;
 };

@@ -5,12 +5,16 @@
 
 #include "Utils/ClassUtils.h"
 #include "ILexer.h"
+#include "IParserValue.h"
 #include "IParserLineStream.h"
 #include "ParsingException.h"
 
 template <typename TokenType>
 class AbstractLexer : public ILexer
 {
+    // TokenType must inherit IParserValue
+    static_assert(std::is_base_of<IParserValue, TokenType>::value);
+
 protected:
     std::deque<TokenType> m_token_cache;
     IParserLineStream* const m_stream;
@@ -164,7 +168,7 @@ protected:
         const auto* start = &m_current_line.m_line.c_str()[m_current_line_offset - 1];
         char* end;
 
-        integerValue = std::strtoul(start, &end, 16);
+        integerValue = static_cast<int>(std::strtoul(start, &end, 16));
         const auto numberLength = static_cast<unsigned>(end - start);
         if (numberLength == 0 || isalnum(*end) || *end == '_')
             throw ParsingException(GetPreviousCharacterPos(), "Invalid hex number");
@@ -179,9 +183,7 @@ protected:
         auto dot = false;
         auto exponent = false;
 
-        if (*currentCharacter == '-')
-            currentCharacter++;
-        else if (*currentCharacter == '+')
+        if (*currentCharacter == '-' || *currentCharacter == '+')
             currentCharacter++;
 
         while (*currentCharacter)
@@ -288,5 +290,15 @@ public:
     void PopTokens(int amount) override
     {
         m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
+    }
+
+    _NODISCARD bool IsEof()
+    {
+        return GetToken(0).IsEof();
+    }
+
+    _NODISCARD const TokenPos& GetPos()
+    {
+        return GetToken(0).GetPos();
     }
 };
