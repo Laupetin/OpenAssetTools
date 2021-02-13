@@ -30,10 +30,22 @@ protected:
 
     virtual void ProcessMatch(ParserState* state, SequenceResult<TokenType>& result) const = 0;
 
+    void AddMatchers(std::unique_ptr<matcher_t> matcher)
+    {
+        assert(!m_entry);
+        m_entry = std::move(matcher);
+    }
+
     void AddMatchers(std::initializer_list<Movable<std::unique_ptr<matcher_t>>> matchers)
     {
         assert(!m_entry);
         m_entry = std::make_unique<MatcherAnd<TokenType>>(matchers);
+    }
+
+    void AddLabeledMatchers(std::unique_ptr<matcher_t> matcher, const int label)
+    {
+        assert(m_matchers.find(label) == m_matchers.end());
+        m_matchers.emplace(label, std::move(matcher));
     }
 
     void AddLabeledMatchers(std::initializer_list<Movable<std::unique_ptr<matcher_t>>> matchers, const int label)

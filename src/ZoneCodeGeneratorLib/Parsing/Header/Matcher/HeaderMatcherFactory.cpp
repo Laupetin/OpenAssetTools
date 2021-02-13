@@ -18,6 +18,16 @@ MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::Identifier() cons
     return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherValueType>(HeaderParserValueType::IDENTIFIER));
 }
 
+MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::Integer() const
+{
+    return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherValueType>(HeaderParserValueType::INTEGER));
+}
+
+MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::FloatingPoint() const
+{
+    return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherValueType>(HeaderParserValueType::FLOATING_POINT));
+}
+
 MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::Char(char c) const
 {
     return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherCharacter>(c));

@@ -10,5 +10,7 @@ public:
 
     _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Type(HeaderParserValueType type) const;
     _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Identifier() const;
+    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Integer() const;
+    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> FloatingPoint() const;
     _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Char(char c) const;
 };
