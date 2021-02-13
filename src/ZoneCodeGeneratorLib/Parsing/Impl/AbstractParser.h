@@ -3,11 +3,13 @@
 #include <iostream>
 #include <vector>
 
-#include "AbstractLexer.h"
-#include "Sequence/AbstractSequence.h"
+#include "Parsing/IParser.h"
+#include "Parsing/ILexer.h"
+#include "Parsing/Sequence/AbstractSequence.h"
+#include "Parsing/ParsingException.h"
 
 template <typename TokenType, typename ParserState>
-class AbstractParser
+class AbstractParser : public IParser
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -16,10 +18,10 @@ public:
     typedef AbstractSequence<TokenType, ParserState> sequence_t;
 
 protected:
-    AbstractLexer<TokenType>* m_lexer;
+    ILexer<TokenType>* m_lexer;
     std::unique_ptr<ParserState> m_state;
 
-    explicit AbstractParser(AbstractLexer<TokenType>* lexer, std::unique_ptr<ParserState> state)
+    explicit AbstractParser(ILexer<TokenType>* lexer, std::unique_ptr<ParserState> state)
         : m_lexer(lexer),
           m_state(std::move(state))
     {
@@ -34,7 +36,7 @@ public:
     AbstractParser& operator=(const AbstractParser& other) = default;
     AbstractParser& operator=(AbstractParser&& other) noexcept = default;
 
-    bool Parse()
+    bool Parse() override
     {
         try
         {

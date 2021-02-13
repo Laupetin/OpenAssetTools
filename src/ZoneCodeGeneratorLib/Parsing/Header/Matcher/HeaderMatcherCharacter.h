@@ -8,7 +8,7 @@ class HeaderMatcherCharacter final : public AbstractMatcher<HeaderParserValue>
     char m_char;
 
 protected:
-    MatcherResult<HeaderParserValue> CanMatch(AbstractLexer<HeaderParserValue>* lexer, unsigned tokenOffset) override;
+    MatcherResult<HeaderParserValue> CanMatch(ILexer<HeaderParserValue>* lexer, unsigned tokenOffset) override;
 
 public:
     explicit HeaderMatcherCharacter(char c);

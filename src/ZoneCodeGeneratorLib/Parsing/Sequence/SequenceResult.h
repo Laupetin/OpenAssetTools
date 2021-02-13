@@ -5,6 +5,7 @@
 #include "Utils/ClassUtils.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
 #include "Parsing/Matcher/MatcherResult.h"
+#include "Parsing/ParsingException.h"
 
 template <typename TokenType>
 class SequenceResult
@@ -30,7 +31,7 @@ class SequenceResult
     unsigned m_tag_offset;
 
 public:
-    SequenceResult(AbstractLexer<TokenType>* lexer, const MatcherResult<TokenType>& result)
+    SequenceResult(ILexer<TokenType>* lexer, const MatcherResult<TokenType>& result)
         : m_tags(result.m_tags),
           m_tag_offset(0)
     {

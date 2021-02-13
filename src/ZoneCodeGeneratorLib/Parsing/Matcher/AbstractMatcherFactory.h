@@ -43,7 +43,7 @@ public:
         return *this;
     }
 
-    MatcherFactoryWrapper<TokenType>& Transform(std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>)> transform)
+    MatcherFactoryWrapper<TokenType>& Transform(std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>&)> transform)
     {
         m_matcher->SetTransform(std::move(transform));
         return *this;
@@ -81,14 +81,14 @@ public:
     {
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> And(std::initializer_list<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
+    _NODISCARD MatcherFactoryWrapper<TokenType> And(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
     {
-        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherAnd<TokenType>>(std::move(matchers)));
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherAnd<TokenType>>(matchers));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> Or(std::initializer_list<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
+    _NODISCARD MatcherFactoryWrapper<TokenType> Or(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
     {
-        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOr<TokenType>>(std::move(matchers)));
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOr<TokenType>>(matchers));
     }
 
     _NODISCARD MatcherFactoryWrapper<TokenType> Loop(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
@@ -108,6 +108,6 @@ public:
 
     _NODISCARD MatcherFactoryWrapper<TokenType> Label(const int label) const
     {
-        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherLabel<TokenType>>(label));
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherLabel<TokenType>>(m_label_supplier, label));
     }
 };

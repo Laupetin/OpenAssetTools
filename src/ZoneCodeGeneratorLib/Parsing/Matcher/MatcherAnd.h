@@ -15,7 +15,7 @@ class MatcherAnd final : public AbstractMatcher<TokenType>
     std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> m_matchers;
 
 protected:
-    MatcherResult<TokenType> CanMatch(AbstractLexer<TokenType>* lexer, const unsigned tokenOffset) override
+    MatcherResult<TokenType> CanMatch(ILexer<TokenType>* lexer, const unsigned tokenOffset) override
     {
         auto matchResult = MatcherResult<TokenType>::Match(0);
 

@@ -13,6 +13,11 @@ MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::Type(HeaderParser
     return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherValueType>(type));
 }
 
+MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::Identifier() const
+{
+    return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherValueType>(HeaderParserValueType::IDENTIFIER));
+}
+
 MatcherFactoryWrapper<HeaderParserValue> HeaderMatcherFactory::Char(char c) const
 {
     return MatcherFactoryWrapper<HeaderParserValue>(std::make_unique<HeaderMatcherCharacter>(c));

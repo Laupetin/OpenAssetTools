@@ -13,6 +13,6 @@ SequenceNamespace::SequenceNamespace()
     });
 }
 
-void SequenceNamespace::ProcessMatch(HeaderParserState* state, const SequenceResult<HeaderParserValue>& result) const
+void SequenceNamespace::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
 }

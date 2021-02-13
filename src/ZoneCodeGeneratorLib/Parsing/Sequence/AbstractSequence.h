@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <cassert>
 
 #include "SequenceResult.h"
 #include "Utils/ClassUtils.h"
@@ -27,7 +28,7 @@ protected:
 
     AbstractSequence() = default;
 
-    virtual void ProcessMatch(ParserState* state, const SequenceResult<TokenType>& result) const = 0;
+    virtual void ProcessMatch(ParserState* state, SequenceResult<TokenType>& result) const = 0;
 
     void AddMatchers(std::initializer_list<Movable<std::unique_ptr<matcher_t>>> matchers)
     {
@@ -35,7 +36,7 @@ protected:
         m_entry = std::make_unique<MatcherAnd<TokenType>>(matchers);
     }
 
-    void AddLabeledMatchers(int label, std::initializer_list<Movable<std::unique_ptr<matcher_t>>> matchers)
+    void AddLabeledMatchers(std::initializer_list<Movable<std::unique_ptr<matcher_t>>> matchers, const int label)
     {
         assert(m_matchers.find(label) == m_matchers.end());
         m_matchers.emplace(label, std::make_unique<MatcherAnd<TokenType>>(matchers));
@@ -61,7 +62,7 @@ public:
         return nullptr;
     }
 
-    _NODISCARD bool MatchSequence(AbstractLexer<TokenType>* lexer, ParserState* state, unsigned& consumedTokenCount) const
+    _NODISCARD bool MatchSequence(ILexer<TokenType>* lexer, ParserState* state, unsigned& consumedTokenCount) const
     {
         if (!m_entry)
             return false;

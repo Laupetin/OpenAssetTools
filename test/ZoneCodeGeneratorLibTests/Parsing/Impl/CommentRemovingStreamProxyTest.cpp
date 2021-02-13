@@ -1,10 +1,9 @@
 #include <catch2/catch.hpp>
 
-
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
 
-namespace test::parsing
+namespace test::parsing::impl::comment_removing_stream_proxy
 {
     TEST_CASE("CommentRemovingStreamProxy: Ensure simple single line comment is working", "[parsing][parsingstream]")
     {

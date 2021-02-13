@@ -14,7 +14,7 @@ class MatcherLoop final : public AbstractMatcher<TokenType>
     std::unique_ptr<AbstractMatcher<TokenType>> m_matcher;
 
 protected:
-    MatcherResult<TokenType> CanMatch(AbstractLexer<TokenType>* lexer, const unsigned tokenOffset) override
+    MatcherResult<TokenType> CanMatch(ILexer<TokenType>* lexer, const unsigned tokenOffset) override
     {
         auto matchResult = MatcherResult<TokenType>::Match(0);
         auto loopedAtLeastOnce = false;

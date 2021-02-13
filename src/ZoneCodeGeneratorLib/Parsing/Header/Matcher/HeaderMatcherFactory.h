@@ -9,5 +9,6 @@ public:
     explicit HeaderMatcherFactory(const IMatcherForLabelSupplier<HeaderParserValue>* labelSupplier);
 
     _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Type(HeaderParserValueType type) const;
+    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Identifier() const;
     _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Char(char c) const;
 };

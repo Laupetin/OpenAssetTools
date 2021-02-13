@@ -3,7 +3,7 @@
 #include "Parsing/Header/Impl/HeaderLexer.h"
 #include "Parsing/Mock/MockParserLineStream.h"
 
-namespace test::parsing::header
+namespace test::parsing::header::impl::header_lexer
 {
     void ExpectCharacterToken(HeaderLexer& lexer, char c)
     {

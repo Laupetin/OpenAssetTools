@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "Parsing/IParserValue.h"
-#include "Parsing/AbstractLexer.h"
+#include "Parsing/ILexer.h"
 #include "Parsing/Matcher/MatcherResult.h"
 
 template <typename TokenType>
@@ -19,7 +19,7 @@ private:
     int m_tag_id;
     int m_capture_id;
     bool m_no_consume;
-    std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>)> m_transform_func;
+    std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>&)> m_transform_func;
 
 protected:
     AbstractMatcher()
@@ -29,7 +29,7 @@ protected:
     {
     }
 
-    virtual MatcherResult<TokenType> CanMatch(AbstractLexer<TokenType>* lexer, unsigned tokenOffset) = 0;
+    virtual MatcherResult<TokenType> CanMatch(ILexer<TokenType>* lexer, unsigned tokenOffset) = 0;
 
 public:
     virtual ~AbstractMatcher() = default;
@@ -53,12 +53,12 @@ public:
         m_no_consume = !value;
     }
 
-    void SetTransform(std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>)> transform)
+    void SetTransform(std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>&)> transform)
     {
         m_transform_func = std::move(transform);
     }
 
-    MatcherResult<TokenType> Match(AbstractLexer<TokenType>* lexer, const unsigned tokenOffset)
+    MatcherResult<TokenType> Match(ILexer<TokenType>* lexer, const unsigned tokenOffset)
     {
         MatcherResult<TokenType> result = CanMatch(lexer, tokenOffset);
 

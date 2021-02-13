@@ -5,7 +5,7 @@ HeaderMatcherValueType::HeaderMatcherValueType(HeaderParserValueType type)
 {
 }
 
-MatcherResult<HeaderParserValue> HeaderMatcherValueType::CanMatch(AbstractLexer<HeaderParserValue>* lexer, const unsigned tokenOffset)
+MatcherResult<HeaderParserValue> HeaderMatcherValueType::CanMatch(ILexer<HeaderParserValue>* lexer, const unsigned tokenOffset)
 {
     return lexer->GetToken(tokenOffset).m_type == m_type
                ? MatcherResult<HeaderParserValue>::Match(1)

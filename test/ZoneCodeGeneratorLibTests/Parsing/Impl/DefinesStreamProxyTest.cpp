@@ -3,7 +3,7 @@
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
 
-namespace test::parsing
+namespace test::parsing::impl::defines_stream_proxy
 {
     void ExpectLine(IParserLineStream* stream, const int lineNumber, const std::string& value)
     {

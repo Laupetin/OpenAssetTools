@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iterator>
 #include <memory>
 
 #include "Parsing/IParserValue.h"
@@ -15,7 +14,7 @@ class MatcherOptional final : public AbstractMatcher<TokenType>
     std::unique_ptr<AbstractMatcher<TokenType>> m_matcher;
 
 protected:
-    MatcherResult<TokenType> CanMatch(AbstractLexer<TokenType>* lexer, unsigned tokenOffset) override
+    MatcherResult<TokenType> CanMatch(ILexer<TokenType>* lexer, unsigned tokenOffset) override
     {
         auto result = m_matcher->Match(lexer, tokenOffset);
 

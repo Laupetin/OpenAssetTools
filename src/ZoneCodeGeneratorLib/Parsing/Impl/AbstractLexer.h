@@ -4,13 +4,12 @@
 #include <deque>
 
 #include "Utils/ClassUtils.h"
-#include "ILexer.h"
-#include "IParserValue.h"
-#include "IParserLineStream.h"
-#include "ParsingException.h"
+#include "Parsing/ILexer.h"
+#include "Parsing/IParserLineStream.h"
+#include "Parsing/ParsingException.h"
 
 template <typename TokenType>
-class AbstractLexer : public ILexer
+class AbstractLexer : public ILexer<TokenType>
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -278,7 +277,7 @@ protected:
     }
 
 public:
-    const TokenType& GetToken(unsigned index)
+    const TokenType& GetToken(unsigned index) override
     {
         assert(index >= 0);
         while (index >= m_token_cache.size())
@@ -292,12 +291,12 @@ public:
         m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
     }
 
-    _NODISCARD bool IsEof()
+    _NODISCARD bool IsEof() override
     {
         return GetToken(0).IsEof();
     }
 
-    _NODISCARD const TokenPos& GetPos()
+    _NODISCARD const TokenPos& GetPos() override
     {
         return GetToken(0).GetPos();
     }

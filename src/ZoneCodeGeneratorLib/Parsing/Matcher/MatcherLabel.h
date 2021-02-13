@@ -31,7 +31,7 @@ class MatcherLabel final : public AbstractMatcher<TokenType>
     int m_label;
 
 protected:
-    MatcherResult<TokenType> CanMatch(AbstractLexer<TokenType>* lexer, unsigned tokenOffset) override
+    MatcherResult<TokenType> CanMatch(ILexer<TokenType>* lexer, unsigned tokenOffset) override
     {
         AbstractMatcher<TokenType>* matcher = m_supplier->GetMatcherForLabel(m_label);
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommandsParserValue.h"
-#include "Parsing/AbstractLexer.h"
+#include "Parsing/Impl/AbstractLexer.h"
 
 class CommandsLexer final : public AbstractLexer<CommandsParserValue>
 {

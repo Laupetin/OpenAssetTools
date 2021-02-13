@@ -5,7 +5,7 @@ HeaderMatcherCharacter::HeaderMatcherCharacter(const char c)
 {
 }
 
-MatcherResult<HeaderParserValue> HeaderMatcherCharacter::CanMatch(AbstractLexer<HeaderParserValue>* lexer, const unsigned tokenOffset)
+MatcherResult<HeaderParserValue> HeaderMatcherCharacter::CanMatch(ILexer<HeaderParserValue>* lexer, const unsigned tokenOffset)
 {
     const auto& token = lexer->GetToken(tokenOffset);
     return token.m_type == HeaderParserValueType::CHARACTER && token.CharacterValue() == m_char

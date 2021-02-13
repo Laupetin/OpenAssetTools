@@ -2,7 +2,7 @@
 
 #include "HeaderLexer.h"
 #include "HeaderParserState.h"
-#include "Parsing/AbstractParser.h"
+#include "Parsing/Impl/AbstractParser.h"
 #include "Persistence/IDataRepository.h"
 
 class HeaderParser final : public AbstractParser<HeaderParserValue, HeaderParserState>

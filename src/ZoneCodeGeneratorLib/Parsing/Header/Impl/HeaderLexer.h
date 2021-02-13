@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 #include "HeaderParserValue.h"
-#include "Parsing/AbstractLexer.h"
+#include "Parsing/Impl/AbstractLexer.h"
 
 class HeaderLexer final : public AbstractLexer<HeaderParserValue>
 {

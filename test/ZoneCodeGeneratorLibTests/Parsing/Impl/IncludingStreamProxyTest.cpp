@@ -3,7 +3,7 @@
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
 
-namespace test::parsing
+namespace test::parsing::impl::including_stream_proxy
 {
     TEST_CASE("IncludingStreamProxy: Ensure simple include is working", "[parsing][parsingstream]")
     {
