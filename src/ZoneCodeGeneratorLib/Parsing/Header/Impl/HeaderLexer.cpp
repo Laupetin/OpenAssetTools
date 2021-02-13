@@ -129,9 +129,9 @@ HeaderParserValue HeaderLexer::GetNextToken()
                 if (isspace(c))
                     break;
 
+                const auto pos = GetPreviousCharacterPos();
                 if(isdigit(c))
                 {
-                    const auto pos = GetPreviousCharacterPos();
                     bool isFloatingPointValue;
                     double doubleValue;
                     int integerValue;
@@ -150,12 +150,12 @@ HeaderParserValue HeaderLexer::GetNextToken()
 
                     const auto foundKeyword = m_keywords.find(identifier);
                     if (foundKeyword != m_keywords.end())
-                        return HeaderParserValue::Keyword(GetPreviousCharacterPos(), foundKeyword->second);
+                        return HeaderParserValue::Keyword(pos, foundKeyword->second);
 
-                    return HeaderParserValue::Identifier(GetPreviousCharacterPos(), new std::string(std::move(identifier)));
+                    return HeaderParserValue::Identifier(pos, new std::string(std::move(identifier)));
                 }
 
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                return HeaderParserValue::Character(pos, static_cast<char>(c));
             }
         }
 

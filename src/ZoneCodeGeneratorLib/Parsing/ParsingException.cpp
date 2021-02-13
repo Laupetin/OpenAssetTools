@@ -7,7 +7,7 @@ ParsingException::ParsingException(const TokenPos position, std::string message)
       m_message(std::move(message))
 {
     std::ostringstream str;
-    str << position.m_filename << " L" << m_pos.m_line << ':' << m_pos.m_column << ' ' << m_message;
+    str << position.m_filename.get() << " L" << m_pos.m_line << ':' << m_pos.m_column << ' ' << m_message;
     m_full_message = str.str();
 }
 

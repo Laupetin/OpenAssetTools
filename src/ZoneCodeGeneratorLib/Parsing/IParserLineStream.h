@@ -32,6 +32,7 @@ public:
 
     virtual ParserLine NextLine() = 0;
     virtual bool IncludeFile(const std::string& filename) = 0;
+    virtual void PopCurrentFile() = 0;
     _NODISCARD virtual bool IsOpen() const = 0;
     _NODISCARD virtual bool Eof() const = 0;
 };

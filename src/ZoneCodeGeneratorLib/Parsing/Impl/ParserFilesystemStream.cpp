@@ -14,7 +14,8 @@ ParserFilesystemStream::FileInfo::FileInfo(std::string filePath)
 
 ParserFilesystemStream::ParserFilesystemStream(std::string path)
 {
-    m_files.emplace(FileInfo(std::move(path)));
+    const auto absolutePath = absolute(fs::path(path));
+    m_files.emplace(FileInfo(absolutePath.string()));
 }
 
 bool ParserFilesystemStream::IsOpen() const
@@ -75,6 +76,7 @@ bool ParserFilesystemStream::IncludeFile(const std::string& filename)
     
     auto newFilePath = fs::path(m_files.top().m_file_path);
     newFilePath.remove_filename().concat(filename);
+    newFilePath = absolute(newFilePath);
 
     FileInfo fileInfo(newFilePath.string());
 
@@ -83,6 +85,12 @@ bool ParserFilesystemStream::IncludeFile(const std::string& filename)
 
     m_files.emplace(std::move(fileInfo));
     return true;
+}
+
+void ParserFilesystemStream::PopCurrentFile()
+{
+    if(!m_files.empty())
+        m_files.pop();
 }
 
 bool ParserFilesystemStream::Eof() const

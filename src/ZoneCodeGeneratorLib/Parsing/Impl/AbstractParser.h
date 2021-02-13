@@ -60,7 +60,17 @@ public:
                 if (!testSuccessful)
                 {
                     const TokenPos& pos = m_lexer->GetPos();
-                    std::cout << "Error: " << pos.m_filename << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression." << std::endl;
+                    const ParserLine line = m_lexer->GetLineForPos(pos);
+
+                    if (!line.IsEof())
+                    {
+                        std::cout << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression:\n"
+                            << line.m_line.substr(pos.m_column - 1) << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression." << std::endl;
+                    }
                     return false;
                 }
             }

@@ -63,6 +63,11 @@ bool CommentRemovingStreamProxy::IncludeFile(const std::string& filename)
     return m_stream->IncludeFile(filename);
 }
 
+void CommentRemovingStreamProxy::PopCurrentFile()
+{
+    m_stream->PopCurrentFile();
+}
+
 bool CommentRemovingStreamProxy::IsOpen() const
 {
     return m_stream->IsOpen();

@@ -16,19 +16,16 @@ class AbstractLexer : public ILexer<TokenType>
 
 protected:
     std::deque<TokenType> m_token_cache;
+    std::deque<ParserLine> m_line_cache;
     IParserLineStream* const m_stream;
 
+    unsigned m_line_index;
     unsigned m_current_line_offset;
-    bool m_peeked_next_line;
-    bool m_start;
-    ParserLine m_current_line;
-    ParserLine m_next_line;
 
     explicit AbstractLexer(IParserLineStream* stream)
         : m_stream(stream),
-          m_current_line_offset(0u),
-          m_peeked_next_line(false),
-          m_start(true)
+          m_line_index(0u),
+          m_current_line_offset(0u)
     {
     }
 
@@ -36,60 +33,63 @@ protected:
 
     int NextChar()
     {
-        if (m_current_line.IsEof())
+        while (true)
         {
-            if (m_start)
-                m_start = false;
-            else
-                return EOF;
-        }
+            while (m_line_index >= m_line_cache.size())
+            {
+                if (!m_line_cache.empty() && m_line_cache.back().IsEof())
+                    return EOF;
 
-        while (m_current_line_offset >= m_current_line.m_line.size())
-        {
-            m_current_line_offset = 0;
-            if (m_peeked_next_line)
-            {
-                m_current_line = m_next_line;
-                m_peeked_next_line = false;
-            }
-            else
-            {
-                m_current_line = m_stream->NextLine();
+                m_line_cache.push_back(m_stream->NextLine());
             }
 
-            if (m_current_line.IsEof())
-                return EOF;
+            if (m_current_line_offset >= m_line_cache[m_line_index].m_line.size())
+            {
+                m_line_index++;
+                m_current_line_offset = 0;
+            }
+            else
+                break;
         }
 
-        return m_current_line.m_line[m_current_line_offset++];
+        return m_line_cache[m_line_index].m_line[m_current_line_offset++];
     }
 
     int PeekChar()
     {
-        if (m_current_line.IsEof())
-            return EOF;
+        auto peekLineOffset = m_current_line_offset;
+        auto peekLine = m_line_index;
 
-        if (m_current_line_offset >= m_current_line.m_line.size())
+        while (true)
         {
-            m_peeked_next_line = true;
-
-            do
+            while (peekLine >= m_line_cache.size())
             {
-                m_next_line = m_stream->NextLine();
-                if (m_next_line.IsEof())
+                if (m_line_cache.back().IsEof())
                     return EOF;
-            }
-            while (m_next_line.m_line.empty());
 
-            return m_next_line.m_line[0];
+                m_line_cache.push_back(m_stream->NextLine());
+            }
+
+            if (peekLineOffset >= m_line_cache[peekLine].m_line.size())
+            {
+                peekLine++;
+                peekLineOffset = 0;
+            }
+            else
+                break;
         }
 
-        return m_current_line.m_line[m_current_line_offset];
+        return m_line_cache[peekLine].m_line[peekLineOffset];
+    }
+
+    _NODISCARD const ParserLine& CurrentLine() const
+    {
+        return m_line_cache[m_line_index];
     }
 
     _NODISCARD bool IsLineEnd() const
     {
-        return m_current_line_offset >= m_current_line.m_line.size();
+        return m_current_line_offset >= CurrentLine().m_line.size();
     }
 
     _NODISCARD bool NextCharInLineIs(const char c)
@@ -99,18 +99,20 @@ protected:
 
     _NODISCARD TokenPos GetPreviousCharacterPos() const
     {
-        return TokenPos(m_current_line.m_filename, m_current_line.m_line_number, m_current_line_offset);
+        const auto& currentLine = CurrentLine();
+        return TokenPos(currentLine.m_filename, currentLine.m_line_number, m_current_line_offset);
     }
 
     _NODISCARD TokenPos GetNextCharacterPos()
     {
-        if (m_current_line_offset + 1 >= m_current_line.m_line.size())
+        const auto& currentLine = CurrentLine();
+        if (m_current_line_offset + 1 >= currentLine.m_line.size())
         {
             PeekChar();
-            return TokenPos(m_next_line.m_filename, m_next_line.m_line_number, 1);
+            return TokenPos(m_line_cache.back().m_filename, m_line_cache.back().m_line_number, 1);
         }
 
-        return TokenPos(m_current_line.m_filename, m_current_line.m_line_number, m_current_line_offset + 1);
+        return TokenPos(currentLine.m_filename, currentLine.m_line_number, m_current_line_offset + 1);
     }
 
     /**
@@ -119,14 +121,15 @@ protected:
      */
     std::string ReadIdentifier()
     {
+        const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
-        assert(isalpha(m_current_line.m_line[m_current_line_offset - 1]) || m_current_line.m_line[m_current_line_offset - 1] == '_');
+        assert(isalpha(currentLine.m_line[m_current_line_offset - 1]) || currentLine.m_line[m_current_line_offset - 1] == '_');
 
         const auto startPos = m_current_line_offset - 1;
-        const auto lineSize = m_current_line.m_line.size();
+        const auto lineSize = currentLine.m_line.size();
         while (m_current_line_offset < lineSize)
         {
-            const auto c = m_current_line.m_line[m_current_line_offset];
+            const auto c = currentLine.m_line[m_current_line_offset];
 
             if (!isalnum(c) && c != '_')
                 break;
@@ -134,7 +137,7 @@ protected:
             m_current_line_offset++;
         }
 
-        return std::string(m_current_line.m_line, startPos, m_current_line_offset - startPos);
+        return std::string(currentLine.m_line, startPos, m_current_line_offset - startPos);
     }
 
     /**
@@ -143,28 +146,30 @@ protected:
      */
     std::string ReadString()
     {
+        const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
-        assert(m_current_line.m_line[m_current_line_offset - 1] == '"');
+        assert(currentLine.m_line[m_current_line_offset - 1] == '"');
 
         const auto startPos = m_current_line_offset;
-        const auto lineSize = m_current_line.m_line.size();
+        const auto lineSize = currentLine.m_line.size();
         while (true)
         {
             if (m_current_line_offset >= lineSize)
-                throw ParsingException(TokenPos(m_current_line.m_filename, m_current_line.m_line_number, m_current_line_offset), "Unclosed string");
+                throw ParsingException(TokenPos(currentLine.m_filename, currentLine.m_line_number, m_current_line_offset), "Unclosed string");
 
-            if (m_current_line.m_line[m_current_line_offset] == '\"')
+            if (currentLine.m_line[m_current_line_offset] == '\"')
                 break;
 
             m_current_line_offset++;
         }
-        
-        return std::string(m_current_line.m_line, startPos, m_current_line_offset++ - startPos);
+
+        return std::string(currentLine.m_line, startPos, m_current_line_offset++ - startPos);
     }
 
     void ReadHexNumber(int& integerValue)
     {
-        const auto* start = &m_current_line.m_line.c_str()[m_current_line_offset - 1];
+        const auto& currentLine = CurrentLine();
+        const auto* start = &currentLine.m_line.c_str()[m_current_line_offset - 1];
         char* end;
 
         integerValue = static_cast<int>(std::strtoul(start, &end, 16));
@@ -177,7 +182,8 @@ protected:
 
     _NODISCARD bool IsIntegerNumber() const
     {
-        const auto* currentCharacter = &m_current_line.m_line.c_str()[m_current_line_offset - 1];
+        const auto& currentLine = CurrentLine();
+        const auto* currentCharacter = &currentLine.m_line.c_str()[m_current_line_offset - 1];
         auto isInteger = true;
         auto dot = false;
         auto exponent = false;
@@ -223,12 +229,13 @@ protected:
 
     int ReadInteger()
     {
-        const auto* start = &m_current_line.m_line.c_str()[m_current_line_offset - 1];
+        const auto& currentLine = CurrentLine();
+        const auto* start = &currentLine.m_line.c_str()[m_current_line_offset - 1];
         char* end;
         const auto integerValue = std::strtol(start, &end, 10);
         const auto numberLength = static_cast<unsigned>(end - start);
 
-        if(numberLength == 0)
+        if (numberLength == 0)
             throw ParsingException(GetPreviousCharacterPos(), "Invalid number");
 
         m_current_line_offset += numberLength - 1;
@@ -238,7 +245,8 @@ protected:
 
     double ReadFloatingPoint()
     {
-        const auto* start = &m_current_line.m_line.c_str()[m_current_line_offset - 1];
+        const auto& currentLine = CurrentLine();
+        const auto* start = &currentLine.m_line.c_str()[m_current_line_offset - 1];
         char* end;
         const auto floatingPointValue = std::strtod(start, &end);
         const auto numberLength = static_cast<unsigned>(end - start);
@@ -253,13 +261,14 @@ protected:
 
     void ReadNumber(bool& isFloatingPoint, double& floatingPointValue, int& integerValue)
     {
+        const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
-        assert(isdigit(m_current_line.m_line[m_current_line_offset - 1]));
+        assert(isdigit(currentLine.m_line[m_current_line_offset - 1]));
 
-        const auto lineLength = m_current_line.m_line.size();
+        const auto lineLength = currentLine.m_line.size();
         if (lineLength - m_current_line_offset >= 1
-            && m_current_line.m_line[m_current_line_offset - 1] == '0'
-            && m_current_line.m_line[m_current_line_offset] == 'x')
+            && currentLine.m_line[m_current_line_offset - 1] == '0'
+            && currentLine.m_line[m_current_line_offset] == 'x')
         {
             isFloatingPoint = false;
             ReadHexNumber(integerValue);
@@ -288,7 +297,31 @@ public:
 
     void PopTokens(int amount) override
     {
-        m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
+        if (amount <= 0 || m_token_cache.empty())
+            return;
+
+        if (static_cast<int>(m_token_cache.size()) <= amount)
+        {
+            const auto& lastToken = m_token_cache.back();
+            while (m_line_cache.front().m_line_number != lastToken.GetPos().m_line
+                || m_line_cache.front().m_filename.get() != lastToken.GetPos().m_filename.get())
+            {
+                m_line_cache.pop_front();
+                m_line_index--;
+            }
+            m_token_cache.clear();
+        }
+        else
+        {
+            m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
+            const auto& firstToken = m_token_cache.front();
+            while (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
+                || m_line_cache.front().m_filename.get() != firstToken.GetPos().m_filename.get())
+            {
+                m_line_cache.pop_front();
+                m_line_index--;
+            }
+        }
     }
 
     _NODISCARD bool IsEof() override
@@ -299,5 +332,17 @@ public:
     _NODISCARD const TokenPos& GetPos() override
     {
         return GetToken(0).GetPos();
+    }
+
+    _NODISCARD ParserLine GetLineForPos(const TokenPos& pos) const override
+    {
+        for(const auto& line : m_line_cache)
+        {
+            if (line.m_filename.get() == pos.m_filename.get()
+                && line.m_line_number == pos.m_line)
+                return line;
+        }
+
+        return ParserLine();
     }
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IParserLineStream.h"
 #include "Parsing/IParserValue.h"
 
 template<typename TokenType>
@@ -21,4 +22,5 @@ public:
 
     _NODISCARD virtual bool IsEof() = 0;
     _NODISCARD virtual const TokenPos& GetPos() = 0;
+    _NODISCARD virtual ParserLine GetLineForPos(const TokenPos& pos) const = 0;
 };

@@ -290,6 +290,11 @@ bool DefinesStreamProxy::IncludeFile(const std::string& filename)
     return m_stream->IncludeFile(filename);
 }
 
+void DefinesStreamProxy::PopCurrentFile()
+{
+    m_stream->PopCurrentFile();
+}
+
 bool DefinesStreamProxy::IsOpen() const
 {
     return m_stream->IsOpen();

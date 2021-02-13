@@ -111,8 +111,8 @@ HeaderParserValue HeaderParserValue::TypeName(const TokenPos pos, std::string* t
 
 HeaderParserValue::HeaderParserValue(const TokenPos pos, const HeaderParserValueType type)
     : m_pos(pos),
-    m_type(type),
-    m_value()
+      m_type(type),
+      m_value()
 {
 }
 
@@ -134,14 +134,16 @@ HeaderParserValue::~HeaderParserValue()
 }
 
 HeaderParserValue::HeaderParserValue(HeaderParserValue&& other) noexcept
-    : m_type(other.m_type),
-    m_value(other.m_value)
+    : m_pos(other.m_pos),
+      m_type(other.m_type),
+      m_value(other.m_value)
 {
     other.m_value = ValueType();
 }
 
 HeaderParserValue& HeaderParserValue::operator=(HeaderParserValue&& other) noexcept
 {
+    m_pos = other.m_pos;
     m_type = other.m_type;
     m_value = other.m_value;
     other.m_value = ValueType();

@@ -50,6 +50,12 @@ bool MockParserLineStream::IncludeFile(const std::string& filename)
     return true;
 }
 
+void MockParserLineStream::PopCurrentFile()
+{
+    if (!m_include_positions.empty())
+        m_include_positions.pop_back();
+}
+
 bool MockParserLineStream::IsOpen() const
 {
     return true;
