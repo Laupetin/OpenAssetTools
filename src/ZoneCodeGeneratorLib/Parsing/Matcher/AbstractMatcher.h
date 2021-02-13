@@ -15,11 +15,13 @@ class AbstractMatcher
 public:
     static constexpr int NO_ID = -1;
 
+    typedef std::vector<std::reference_wrapper<const TokenType>> token_list_t;
+
 private:
     int m_tag_id;
     int m_capture_id;
     bool m_no_consume;
-    std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>&)> m_transform_func;
+    std::function<TokenType(token_list_t&)> m_transform_func;
 
 protected:
     AbstractMatcher()
@@ -68,26 +70,29 @@ public:
         if (m_tag_id != NO_ID)
             result.m_tags.push_back(m_tag_id);
 
+        if (m_transform_func)
+        {
+            std::vector<std::reference_wrapper<const TokenType>> tokens;
+            tokens.reserve(result.m_consumed_token_count);
+
+            for (auto i = 0u; i < result.m_consumed_token_count; i++)
+                tokens.emplace_back(lexer->GetToken(tokenOffset + i));
+
+            result.m_fabricated_tokens.push_back(m_transform_func(tokens));
+
+            result.m_matched_tokens.clear();
+            result.m_matched_tokens.emplace_back(result.m_fabricated_tokens.size() - 1, true);
+        }
+        else if(result.m_matched_tokens.empty())
+        {
+            for (auto i = 0u; i < result.m_consumed_token_count; i++)
+                result.m_matched_tokens.emplace_back(tokenOffset + i, false);
+        }
+
         if (m_capture_id != NO_ID)
         {
-            if (m_transform_func)
-            {
-                std::vector<std::reference_wrapper<const TokenType>> tokens;
-                tokens.reserve(result.m_consumed_token_count);
-                
-                for (auto i = 0u; i < result.m_consumed_token_count; i++)
-                    tokens.emplace_back(lexer->GetToken(tokenOffset + i));
-
-                result.m_fabricated_tokens.push_back(m_transform_func(tokens));
-                result.m_captures.emplace_back(m_capture_id, result.m_fabricated_tokens.size() - 1, true);
-            }
-            else
-            {
-                for (auto i = 0u; i < result.m_consumed_token_count; i++)
-                {
-                    result.m_captures.emplace_back(m_capture_id, tokenOffset + i);
-                }
-            }
+            for (const auto& match : result.m_matched_tokens)
+                result.m_captures.emplace_back(m_capture_id, match);
         }
 
         return result;

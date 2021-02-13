@@ -37,10 +37,10 @@ public:
     {
         for (const typename MatcherResult<TokenType>::Capture& capture : result.m_captures)
         {
-            if (capture.IsFabricated())
-                m_captures[capture.GetCaptureId()].m_tokens.push_back(result.m_fabricated_tokens[capture.GetTokenIndex()]);
+            if (capture.m_token_index.IsFabricated())
+                m_captures[capture.GetCaptureId()].m_tokens.push_back(result.m_fabricated_tokens[capture.m_token_index.GetTokenIndex()]);
             else
-                m_captures[capture.GetCaptureId()].m_tokens.push_back(lexer->GetToken(capture.GetTokenIndex()));
+                m_captures[capture.GetCaptureId()].m_tokens.push_back(lexer->GetToken(capture.m_token_index.GetTokenIndex()));
         }
     }
 

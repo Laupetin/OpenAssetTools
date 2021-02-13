@@ -20,6 +20,8 @@ class MatcherFactoryWrapper
     std::unique_ptr<AbstractMatcher<TokenType>> m_matcher;
 
 public:
+    typedef typename AbstractMatcher<TokenType>::token_list_t token_list_t;
+
     explicit MatcherFactoryWrapper(std::unique_ptr<AbstractMatcher<TokenType>> matcher)
         : m_matcher(std::move(matcher))
     {
@@ -43,7 +45,7 @@ public:
         return *this;
     }
 
-    MatcherFactoryWrapper<TokenType>& Transform(std::function<TokenType(std::vector<std::reference_wrapper<const TokenType>>&)> transform)
+    MatcherFactoryWrapper<TokenType>& Transform(std::function<TokenType(token_list_t&)> transform)
     {
         m_matcher->SetTransform(std::move(transform));
         return *this;
@@ -76,6 +78,8 @@ class AbstractMatcherFactory
     const IMatcherForLabelSupplier<TokenType>* m_label_supplier;
 
 public:
+    typedef typename AbstractMatcher<TokenType>::token_list_t token_list_t;
+
     explicit AbstractMatcherFactory(const IMatcherForLabelSupplier<TokenType>* labelSupplier)
         : m_label_supplier(labelSupplier)
     {

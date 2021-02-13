@@ -13,29 +13,19 @@ class MatcherResult
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
 
 public:
-    class Capture
+    class TokenIndex
     {
         static constexpr unsigned FABRICATED_FLAG_MASK = std::numeric_limits<unsigned>::max() ^ std::numeric_limits<int>::max();
         static constexpr unsigned TOKEN_INDEX_MASK = ~FABRICATED_FLAG_MASK;
 
-        int m_capture_id;
         unsigned m_token_index;
 
     public:
-        Capture(const int captureId, const unsigned tokenIndex)
-            : Capture(captureId, tokenIndex, false)
+        TokenIndex(const unsigned index, const bool isFabricated)
         {
-        }
-
-        Capture(const int captureId, const unsigned tokenIndex, const bool isFabricated)
-            : m_capture_id(captureId),
-              m_token_index(!isFabricated ? tokenIndex : tokenIndex | FABRICATED_FLAG_MASK)
-        {
-        }
-
-        _NODISCARD int GetCaptureId() const
-        {
-            return m_capture_id;
+            m_token_index = index & TOKEN_INDEX_MASK;
+            if (isFabricated)
+                m_token_index |= FABRICATED_FLAG_MASK;
         }
 
         _NODISCARD bool IsFabricated() const
@@ -49,10 +39,40 @@ public:
         }
     };
 
+    class Capture
+    {
+    public:
+        int m_capture_id;
+        TokenIndex m_token_index;
+
+        Capture(const int captureId, const unsigned tokenIndex)
+            : Capture(captureId, tokenIndex, false)
+        {
+        }
+
+        Capture(const int captureId, const unsigned tokenIndex, const bool isFabricated)
+            : m_capture_id(captureId),
+              m_token_index(tokenIndex, isFabricated)
+        {
+        }
+
+        Capture(const int captureId, const TokenIndex index)
+            : m_capture_id(captureId),
+              m_token_index(index)
+        {
+        }
+
+        _NODISCARD int GetCaptureId() const
+        {
+            return m_capture_id;
+        }
+    };
+
     bool m_matches;
     unsigned m_consumed_token_count;
     std::vector<int> m_tags;
     std::vector<Capture> m_captures;
+    std::vector<TokenIndex> m_matched_tokens;
     std::vector<TokenType> m_fabricated_tokens;
 
 private:
@@ -82,13 +102,21 @@ public:
 
         for (const auto& capture : other.m_captures)
         {
-            if (capture.IsFabricated())
-                m_captures.emplace_back(capture.GetCaptureId(), m_fabricated_tokens.size() + capture.GetTokenIndex(), true);
+            if (capture.m_token_index.IsFabricated())
+                m_captures.emplace_back(capture.GetCaptureId(), TokenIndex(m_fabricated_tokens.size() + capture.m_token_index.GetTokenIndex(), true));
             else
-                m_captures.emplace_back(capture.GetCaptureId(), capture.GetTokenIndex());
+                m_captures.emplace_back(capture.GetCaptureId(), capture.m_token_index);
         }
 
-        for(auto& fabricated : other.m_fabricated_tokens)
+        for (const auto& token : other.m_matched_tokens)
+        {
+            if (token.IsFabricated())
+                m_matched_tokens.emplace_back(m_fabricated_tokens.size() + token.GetTokenIndex(), true);
+            else
+                m_matched_tokens.emplace_back(token.GetTokenIndex(), false);
+        }
+
+        for (auto& fabricated : other.m_fabricated_tokens)
         {
             m_fabricated_tokens.emplace_back(std::move(fabricated));
         }
