@@ -2,7 +2,6 @@
 
 #include <string>
 
-
 #include "Parsing/IParserValue.h"
 #include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
@@ -31,6 +30,15 @@ enum class HeaderParserValueType
     FLOATING_POINT,
     STRING,
     IDENTIFIER,
+
+    // Built-in types
+    BUILT_IN_FIRST,
+    UNSIGNED = BUILT_IN_FIRST,
+    CHAR,
+    SHORT,
+    INT,
+    LONG,
+    BUILT_IN_LAST = LONG,
 
     // Keywords
     DECLSPEC,

@@ -9,9 +9,6 @@ class HeaderParser final : public AbstractParser<HeaderParserValue, HeaderParser
 {
     IDataRepository* m_repository;
 
-    std::vector<std::unique_ptr<sequence_t>> m_tests;
-    std::vector<sequence_t*> m_normal_tests;
-
 protected:
     const std::vector<sequence_t*>& GetTestsForState() override;
 

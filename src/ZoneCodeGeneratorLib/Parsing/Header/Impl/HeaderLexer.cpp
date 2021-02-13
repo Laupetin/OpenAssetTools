@@ -11,12 +11,17 @@ void HeaderLexer::PrepareKeywords()
     m_keywords["__declspec"] = HeaderParserValueType::DECLSPEC;
     m_keywords["align"] = HeaderParserValueType::ALIGN;
     m_keywords["alignas"] = HeaderParserValueType::ALIGNAS;
+    m_keywords["char"] = HeaderParserValueType::CHAR;
     m_keywords["const"] = HeaderParserValueType::CONST;
     m_keywords["enum"] = HeaderParserValueType::ENUM;
+    m_keywords["int"] = HeaderParserValueType::INT;
+    m_keywords["long"] = HeaderParserValueType::LONG;
     m_keywords["namespace"] = HeaderParserValueType::NAMESPACE;
+    m_keywords["short"] = HeaderParserValueType::SHORT;
     m_keywords["struct"] = HeaderParserValueType::STRUCT;
     m_keywords["typedef"] = HeaderParserValueType::TYPEDEF;
     m_keywords["union"] = HeaderParserValueType::UNION;
+    m_keywords["unsigned"] = HeaderParserValueType::UNSIGNED;
 }
 
 HeaderParserValue HeaderLexer::GetNextToken()

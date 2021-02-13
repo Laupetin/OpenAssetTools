@@ -7,11 +7,9 @@ HeaderParser::HeaderParser(HeaderLexer* lexer, IDataRepository* targetRepository
       m_repository(targetRepository)
 {
     auto sequenceNamespace = std::make_unique<SequenceNamespace>();
-    m_normal_tests.push_back(sequenceNamespace.get());
-    m_tests.emplace_back(std::move(sequenceNamespace));
 }
 
 const std::vector<HeaderParser::sequence_t*>& HeaderParser::GetTestsForState()
 {
-    return m_normal_tests;
+    return m_state->GetBlock()->GetTestsForBlock();
 }
