@@ -95,6 +95,9 @@ public:
                 result.m_captures.emplace_back(m_capture_id, match);
         }
 
+        if (m_no_consume)
+            result.m_consumed_token_count = 0;
+
         return result;
     }
 };

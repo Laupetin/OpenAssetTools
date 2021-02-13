@@ -772,7 +772,7 @@ namespace test::parsing::matcher
                 REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
                 REQUIRE(capture.IdentifierValue() == "hello_world");
             }
-            
+
             REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
             REQUIRE(result.NextCapture(CAPTURE_LOOP_GROUP).m_type == HeaderParserValueType::NAMESPACE);
 
@@ -970,5 +970,57 @@ namespace test::parsing::matcher
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
+    }
+
+    TEST_CASE("Matcher: Ensure noconsume does not consume a token", "[parsing][matcher]")
+    {
+        MatchersTestsHelper test;
+        const TokenPos pos;
+        test.Tokens({
+            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+            HeaderParserValue::Character(pos, '{'),
+            HeaderParserValue::Invalid(pos)
+        });
+        const auto create = test.Factory();
+        test.Matchers({
+            create.Type(HeaderParserValueType::NAMESPACE),
+            create.Identifier(),
+            create.Char('{').NoConsume()
+        });
+
+        REQUIRE(test.PerformTest());
+        REQUIRE(test.GetConsumedTokenCount() == 2);
+    }
+
+    TEST_CASE("Matcher: Ensure noconsume can be captured", "[parsing][matcher]")
+    {
+        static constexpr auto CAPTURE_NAME = 1;
+
+        MatchersTestsHelper test;
+        const TokenPos pos;
+        test.Tokens({
+            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+            HeaderParserValue::Character(pos, '{'),
+            HeaderParserValue::Invalid(pos)
+        });
+        const auto create = test.Factory();
+        test.Matchers({
+            create.Type(HeaderParserValueType::NAMESPACE),
+            create.Identifier().NoConsume().Capture(CAPTURE_NAME)
+        });
+        test.MatchCallback([](sequence_result_t& result)
+        {
+            REQUIRE(result.HasNextCapture(CAPTURE_NAME));
+            {
+                const auto& capture = result.NextCapture(CAPTURE_NAME);
+                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                REQUIRE(capture.IdentifierValue() == "test_namespace");
+            }
+        });
+
+        REQUIRE(test.PerformTest());
+        REQUIRE(test.GetConsumedTokenCount() == 1);
     }
 }
