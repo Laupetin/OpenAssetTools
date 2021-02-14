@@ -3,9 +3,10 @@
 #include <unordered_map>
 #include <stack>
 
+#include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IParserLineStream.h"
 
-class DefinesStreamProxy final : public IParserLineStream
+class DefinesStreamProxy final : public AbstractDirectiveStreamProxy
 {
     static constexpr const char* DEFINE_DIRECTIVE = "define ";
     static constexpr const char* UNDEF_DIRECTIVE = "undef ";
@@ -14,12 +15,11 @@ class DefinesStreamProxy final : public IParserLineStream
     static constexpr const char* ELSE_DIRECTIVE = "else";
     static constexpr const char* ENDIF_DIRECTIVE = "endif";
 
-    std::unordered_map<std::string, std::string> m_defines;
     IParserLineStream* const m_stream;
+    std::unordered_map<std::string, std::string> m_defines;
     std::stack<bool> m_modes;
     unsigned m_ignore_depth;
-
-    _NODISCARD static bool FindDirective(const ParserLine& line, unsigned& directivePosition);
+    
     _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directivePosition);

@@ -13,7 +13,6 @@ class MockLexer final : public ILexer<TokenType>
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
 
     std::vector<TokenType> m_tokens;
-    //std::vector<HeaderParserValue> m_tokens;
     TokenType m_eof;
     int m_pop_count;
 
@@ -57,5 +56,10 @@ public:
     _NODISCARD int GetPopCount() const
     {
         return m_pop_count;
+    }
+
+    _NODISCARD ParserLine GetLineForPos(const TokenPos& pos) const override
+    {
+        return ParserLine();
     }
 };

@@ -20,7 +20,7 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
     while (isspace(line.m_line[currentPos]))
     {
         if (currentPos++ >= line.m_line.size())
-            throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
+            throw ParsingException(CreatePos(line, currentPos - 1), INCLUDE_QUOTES_ERROR);
     }
 
     if (line.m_line[currentPos] == '"')
@@ -28,7 +28,7 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
     else if (line.m_line[currentPos] == '<')
         isDoubleQuotes = false;
     else
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
+        throw ParsingException(CreatePos(line, currentPos - 1), INCLUDE_QUOTES_ERROR);
 
     filenameStartPosition = ++currentPos;
     filenameEndPosition = 0;
@@ -40,7 +40,7 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
         if (c == '"')
         {
             if (!isDoubleQuotes)
-                throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), "");
+                throw ParsingException(CreatePos(line, currentPos - 1), "");
             filenameEndPosition = currentPos;
             return true;
         }
@@ -48,7 +48,7 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
         if (c == '>')
         {
             if (isDoubleQuotes)
-                throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
+                throw ParsingException(CreatePos(line, currentPos - 1), INCLUDE_QUOTES_ERROR);
             filenameEndPosition = currentPos;
             return true;
         }
@@ -57,20 +57,18 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
     return false;
 }
 
-bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const unsigned directivePosition) const
+bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, unsigned directivePosition) const
 {
-    constexpr auto directiveLength = std::char_traits<char>::length(INCLUDE_DIRECTIVE);
-    if (line.m_line.compare(directivePosition + 1, directiveLength, INCLUDE_DIRECTIVE) != 0)
+    if (!MatchString(line, directivePosition, INCLUDE_DIRECTIVE, std::char_traits<char>::length(INCLUDE_DIRECTIVE)))
         return false;
-
-    const auto currentPos = directivePosition + directiveLength + 1;
+    
     unsigned filenameStart, filenameEnd;
 
-    if (!ExtractIncludeFilename(line, currentPos, filenameStart, filenameEnd))
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), INCLUDE_QUOTES_ERROR);
+    if (!ExtractIncludeFilename(line, directivePosition, filenameStart, filenameEnd))
+        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, directivePosition), INCLUDE_QUOTES_ERROR);
 
     if (filenameEnd <= filenameStart)
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), "No filename specified");
+        throw ParsingException(CreatePos(line, directivePosition), "No filename specified");
 
     const auto filename = line.m_line.substr(filenameStart, filenameEnd - filenameStart);
 
@@ -78,16 +76,15 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const u
     {
         std::ostringstream errorStr;
         errorStr << "Could not include file \"" << filename << "\"";
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, currentPos), errorStr.str());
+        throw ParsingException(CreatePos(line, directivePosition), errorStr.str());
     }
 
     return true;
 }
 
-bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, const unsigned directivePosition)
+bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, unsigned directivePosition)
 {
-    constexpr auto directiveLength = std::char_traits<char>::length(PRAGMA_ONCE_DIRECTIVE);
-    if (line.m_line.compare(directivePosition + 1, directiveLength, PRAGMA_ONCE_DIRECTIVE) != 0)
+    if(!MatchString(line, directivePosition, PRAGMA_ONCE_DIRECTIVE, std::char_traits<char>::length(PRAGMA_ONCE_DIRECTIVE)))
         return false;
 
     const auto absolutePath = absolute(fs::path(line.m_filename.get()));
@@ -102,22 +99,6 @@ bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, cons
     return true;
 }
 
-bool IncludingStreamProxy::FindDirective(const ParserLine& line, unsigned& directivePosition)
-{
-    directivePosition = 0;
-    for (; directivePosition < line.m_line.size(); directivePosition++)
-    {
-        const auto c = line.m_line[directivePosition];
-
-        if (isspace(c))
-            continue;
-
-        return c == '#';
-    }
-
-    return false;
-}
-
 bool IncludingStreamProxy::MatchDirectives(const ParserLine& line)
 {
     unsigned directivePos;
@@ -125,6 +106,7 @@ bool IncludingStreamProxy::MatchDirectives(const ParserLine& line)
     if (!FindDirective(line, directivePos))
         return false;
 
+    directivePos++;
     return MatchIncludeDirective(line, directivePos)
         || MatchPragmaOnceDirective(line, directivePos);
 }

@@ -2,9 +2,10 @@
 
 #include <set>
 
+#include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IParserLineStream.h"
 
-class IncludingStreamProxy final : public IParserLineStream
+class IncludingStreamProxy final : public AbstractDirectiveStreamProxy
 {
     static constexpr const char* INCLUDE_QUOTES_ERROR = "Invalid include directive. Expected \"\" or <>";
     static constexpr const char* INCLUDE_DIRECTIVE = "include ";
@@ -12,12 +13,10 @@ class IncludingStreamProxy final : public IParserLineStream
 
     IParserLineStream* const m_stream;
     std::set<std::string> m_included_files;
-
     
     _NODISCARD static bool ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
     _NODISCARD bool MatchIncludeDirective(const ParserLine& line, unsigned directivePosition) const;
     _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, unsigned directivePosition);
-    _NODISCARD static bool FindDirective(const ParserLine& line, unsigned& directivePosition);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
 public:
