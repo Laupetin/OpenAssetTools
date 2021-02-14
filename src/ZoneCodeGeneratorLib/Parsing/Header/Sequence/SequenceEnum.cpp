@@ -1,5 +1,6 @@
 #include "SequenceEnum.h"
 
+#include "Parsing/Header/Block/HeaderBlockEnum.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 
@@ -22,4 +23,5 @@ SequenceEnum::SequenceEnum()
 
 void SequenceEnum::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    state->PushBlock(std::make_unique<HeaderBlockEnum>());
 }

@@ -18,4 +18,6 @@ SequenceCloseBlock::SequenceCloseBlock()
 
 void SequenceCloseBlock::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    // TODO: Set variable name to last block
+    state->PopBlock();
 }

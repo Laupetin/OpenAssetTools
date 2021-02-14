@@ -18,14 +18,14 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockEnum::GetTestsForBlock(
     return tests;
 }
 
-void HeaderBlockEnum::OnOpen()
+void HeaderBlockEnum::OnOpen(HeaderParserState* state)
 {
 }
 
-void HeaderBlockEnum::OnClose()
+void HeaderBlockEnum::OnClose(HeaderParserState* state)
 {
 }
 
-void HeaderBlockEnum::OnChildBlockClose(IHeaderBlock* block)
+void HeaderBlockEnum::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
 }

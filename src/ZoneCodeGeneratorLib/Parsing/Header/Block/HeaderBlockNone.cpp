@@ -26,14 +26,14 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockNone::GetTestsForBlock(
     return tests;
 }
 
-void HeaderBlockNone::OnOpen()
+void HeaderBlockNone::OnOpen(HeaderParserState* state)
 {
 }
 
-void HeaderBlockNone::OnClose()
+void HeaderBlockNone::OnClose(HeaderParserState* state)
 {
 }
 
-void HeaderBlockNone::OnChildBlockClose(IHeaderBlock* block)
+void HeaderBlockNone::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
 }

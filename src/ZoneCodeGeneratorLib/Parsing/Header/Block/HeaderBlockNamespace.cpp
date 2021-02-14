@@ -8,6 +8,11 @@
 #include "Parsing/Header/Sequence/SequenceTypedef.h"
 #include "Parsing/Header/Sequence/SequenceUnion.h"
 
+HeaderBlockNamespace::HeaderBlockNamespace(std::string namespaceName)
+    : m_namespace_name(std::move(namespaceName))
+{
+}
+
 HeaderBlockType HeaderBlockNamespace::GetType()
 {
     return HeaderBlockType::NAMESPACE;
@@ -28,14 +33,16 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockNamespace::GetTestsForB
     return tests;
 }
 
-void HeaderBlockNamespace::OnOpen()
+void HeaderBlockNamespace::OnOpen(HeaderParserState* state)
 {
+    state->m_namespace.Push(m_namespace_name);
 }
 
-void HeaderBlockNamespace::OnClose()
+void HeaderBlockNamespace::OnClose(HeaderParserState* state)
 {
+    state->m_namespace.Pop();
 }
 
-void HeaderBlockNamespace::OnChildBlockClose(IHeaderBlock* block)
+void HeaderBlockNamespace::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
 }

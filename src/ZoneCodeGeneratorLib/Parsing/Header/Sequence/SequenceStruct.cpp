@@ -1,5 +1,6 @@
 #include "SequenceStruct.h"
 
+#include "Parsing/Header/Block/HeaderBlockStruct.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 
@@ -25,4 +26,5 @@ SequenceStruct::SequenceStruct()
 
 void SequenceStruct::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    state->PushBlock(std::make_unique<HeaderBlockStruct>());
 }

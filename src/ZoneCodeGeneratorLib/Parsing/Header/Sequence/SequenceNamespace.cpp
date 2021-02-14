@@ -1,5 +1,7 @@
 #include "SequenceNamespace.h"
 
+
+#include "Parsing/Header/Block/HeaderBlockNamespace.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceNamespace::SequenceNamespace()
@@ -15,4 +17,6 @@ SequenceNamespace::SequenceNamespace()
 
 void SequenceNamespace::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    assert(result.HasNextCapture(CAPTURE_NAME));
+    state->PushBlock(std::make_unique<HeaderBlockNamespace>(result.NextCapture(CAPTURE_NAME).IdentifierValue()));
 }

@@ -32,7 +32,7 @@ public:
 
     virtual const std::vector<sequence_t*>& GetTestsForBlock() = 0;
 
-    virtual void OnOpen() = 0;
-    virtual void OnClose() = 0;
-    virtual void OnChildBlockClose(IHeaderBlock* block) = 0;
+    virtual void OnOpen(HeaderParserState* state) = 0;
+    virtual void OnClose(HeaderParserState* state) = 0;
+    virtual void OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) = 0;
 };

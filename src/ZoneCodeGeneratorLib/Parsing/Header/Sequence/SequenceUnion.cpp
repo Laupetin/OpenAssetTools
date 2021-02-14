@@ -1,5 +1,6 @@
 #include "SequenceUnion.h"
 
+#include "Parsing/Header/Block/HeaderBlockUnion.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 
@@ -25,4 +26,5 @@ SequenceUnion::SequenceUnion()
 
 void SequenceUnion::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    state->PushBlock(std::make_unique<HeaderBlockUnion>());
 }
