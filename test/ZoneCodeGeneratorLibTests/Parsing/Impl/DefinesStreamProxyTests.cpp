@@ -338,4 +338,21 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can define name with underscores and digits", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define __int16 short",
+            "unsigned __int16 value;"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "unsigned short value;");
+
+        REQUIRE(proxy.Eof());
+    }
 }

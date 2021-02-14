@@ -51,7 +51,7 @@ bool AbstractDirectiveStreamProxy::ExtractIdentifier(const ParserLine& line, uns
         const auto c = line.m_line[position];
         if (isalpha(c) 
             || c == '_' 
-            || firstChar && isdigit(c))
+            || !firstChar && isdigit(c))
         {
             position++;
         }
