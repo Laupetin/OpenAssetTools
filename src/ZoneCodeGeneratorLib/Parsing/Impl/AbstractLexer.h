@@ -177,7 +177,7 @@ protected:
         if (numberLength == 0 || isalnum(*end) || *end == '_')
             throw ParsingException(GetPreviousCharacterPos(), "Invalid hex number");
 
-        m_current_line_offset += numberLength;
+        m_current_line_offset += numberLength - 1;
     }
 
     _NODISCARD bool IsIntegerNumber() const

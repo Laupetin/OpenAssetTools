@@ -92,6 +92,25 @@ namespace test::parsing::header::impl::header_lexer
         REQUIRE(lexer.GetToken(0).m_type == HeaderParserValueType::END_OF_FILE);
     }
 
+    TEST_CASE("HeaderLexer: Ensure can parse simple hex numbers surrounded by symbols", "[parsing][header]")
+    {
+        const std::vector<std::string> lines
+        {
+            "0x25:0xABC,0x1a4",
+        };
+
+        MockParserLineStream mockStream(lines);
+        HeaderLexer lexer(&mockStream);
+
+        ExpectIntegerToken(lexer, 0x25);
+        ExpectCharacterToken(lexer, ':');
+        ExpectIntegerToken(lexer, 0xABC);
+        ExpectCharacterToken(lexer, ',');
+        ExpectIntegerToken(lexer, 0x1a4);
+
+        REQUIRE(lexer.GetToken(0).m_type == HeaderParserValueType::END_OF_FILE);
+    }
+
     TEST_CASE("HeaderLexer: Ensure throws exception when parsing incomplete hex number", "[parsing][header]")
     {
         const std::vector<std::string> lines
