@@ -8,11 +8,13 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
+#include "Parsing/Impl/PackDefinitionStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
 
 HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
       m_filename(std::move(filename)),
+      m_pack_value_supplier(nullptr),
       m_stream(nullptr)
 {
 }
@@ -35,13 +37,16 @@ void HeaderFileReader::SetupStreamProxies()
 {
     auto commentProxy = std::make_unique<CommentRemovingStreamProxy>(m_stream);
     auto includeProxy = std::make_unique<IncludingStreamProxy>(commentProxy.get());
-    auto definesProxy = std::make_unique<DefinesStreamProxy>(includeProxy.get());
+    auto packProxy = std::make_unique<PackDefinitionStreamProxy>(includeProxy.get());
+    auto definesProxy = std::make_unique<DefinesStreamProxy>(packProxy.get());
     definesProxy->AddDefine(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE);
 
+    m_pack_value_supplier = packProxy.get();
     m_stream = definesProxy.get();
 
     m_open_streams.emplace_back(std::move(commentProxy));
     m_open_streams.emplace_back(std::move(includeProxy));
+    m_open_streams.emplace_back(std::move(packProxy));
     m_open_streams.emplace_back(std::move(definesProxy));
 }
 
