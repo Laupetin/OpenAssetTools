@@ -2,9 +2,8 @@
 
 #include "Parsing/Header/Sequence/SequenceNamespace.h"
 
-HeaderParser::HeaderParser(HeaderLexer* lexer, IDataRepository* targetRepository)
-    : AbstractParser(lexer, std::make_unique<HeaderParserState>()),
-      m_repository(targetRepository)
+HeaderParser::HeaderParser(HeaderLexer* lexer)
+    : AbstractParser(lexer, std::make_unique<HeaderParserState>())
 {
     auto sequenceNamespace = std::make_unique<SequenceNamespace>();
 }
@@ -12,4 +11,9 @@ HeaderParser::HeaderParser(HeaderLexer* lexer, IDataRepository* targetRepository
 const std::vector<HeaderParser::sequence_t*>& HeaderParser::GetTestsForState()
 {
     return m_state->GetBlock()->GetTestsForBlock();
+}
+
+void HeaderParser::SaveToRepository(IDataRepository* repository)
+{
+
 }

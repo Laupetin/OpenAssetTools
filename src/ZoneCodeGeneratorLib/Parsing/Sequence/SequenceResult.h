@@ -52,6 +52,21 @@ public:
         return AbstractMatcher<TokenType>::NO_ID;
     }
 
+    int PeekAndRemoveIfTag(const int tag)
+    {
+        if (m_tag_offset < m_tags.size())
+        {
+            const auto result = m_tags[m_tag_offset];
+            
+            if (result == tag)
+                m_tag_offset++;
+
+            return result;
+        }
+
+        return AbstractMatcher<TokenType>::NO_ID;
+    }
+
     int NextTag()
     {
         if (m_tag_offset < m_tags.size())

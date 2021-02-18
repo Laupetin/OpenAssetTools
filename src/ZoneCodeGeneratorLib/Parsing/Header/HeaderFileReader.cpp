@@ -61,10 +61,12 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
     SetupStreamProxies();
 
     const auto lexer = std::make_unique<HeaderLexer>(m_stream);
-    const auto parser = std::make_unique<HeaderParser>(lexer.get(), repository);
+    const auto parser = std::make_unique<HeaderParser>(lexer.get());
 
     const auto start = std::chrono::steady_clock::now();
     const auto result = parser->Parse();
+    if (result)
+        parser->SaveToRepository(repository);
     const auto end = std::chrono::steady_clock::now();
     std::cout << "Processing header took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 

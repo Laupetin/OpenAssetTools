@@ -36,7 +36,7 @@ void HeaderBlockStruct::OnChildBlockClose(HeaderParserState* state, IHeaderBlock
 {
 }
 
-void HeaderBlockStruct::SetVariableName(std::string name)
+void HeaderBlockStruct::SetBlockName(const TokenPos& nameTokenPos, std::string name)
 {
     m_variable_name = std::move(name);
 }

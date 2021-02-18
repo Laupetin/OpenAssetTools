@@ -4,6 +4,9 @@
 
 std::string NamespaceBuilder::Combine(const std::string& _namespace, const std::string& name)
 {
+    if (_namespace.empty())
+        return name;
+
     std::ostringstream str;
     str << _namespace << "::" << name;
 

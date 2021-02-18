@@ -4,8 +4,8 @@
 
 class UnionDefinition final : public DefinitionWithMembers
 {
-protected:
-    void CalculateSize() override;
+//protected:
+//    void CalculateSize() override;
 
 public:
     UnionDefinition(std::string _namespace, std::string name, int pack);

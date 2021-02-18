@@ -23,5 +23,27 @@ SequenceEnum::SequenceEnum()
 
 void SequenceEnum::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
-    state->PushBlock(std::make_unique<HeaderBlockEnum>());
+    auto isTypedef = result.PeekAndRemoveIfTag(TAG_TYPEDEF) == TAG_TYPEDEF;
+    std::string name;
+    const auto* parentType = BaseTypeDefinition::INT;
+
+    if (result.HasNextCapture(CAPTURE_NAME))
+        name = result.NextCapture(CAPTURE_NAME).IdentifierValue();
+
+    if(result.HasNextCapture(CAPTURE_PARENT_TYPE))
+    {
+        const auto& typeNameToken = result.NextCapture(CAPTURE_PARENT_TYPE);
+        const auto* foundTypeDefinition = state->FindType(typeNameToken.TypeNameValue());
+
+        if (foundTypeDefinition == nullptr)
+            throw ParsingException(typeNameToken.GetPos(), "Cannot find type");
+
+        while (foundTypeDefinition->GetType() == DataDefinitionType::TYPEDEF)
+            foundTypeDefinition = dynamic_cast<const TypedefDefinition*>(foundTypeDefinition)->m_type_declaration->m_type;
+
+        if (foundTypeDefinition->GetType() != DataDefinitionType::BASE_TYPE)
+            throw ParsingException(typeNameToken.GetPos(), "Enums can only have base types as parent type");
+    }
+
+    state->PushBlock(std::make_unique<HeaderBlockEnum>(name, parentType, isTypedef));
 }

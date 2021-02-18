@@ -13,7 +13,7 @@ DataDefinitionType TypedefDefinition::GetType() const
     return DataDefinitionType::TYPEDEF;
 }
 
-unsigned TypedefDefinition::GetAlignment()
+unsigned TypedefDefinition::GetAlignment() const
 {
     if (m_has_alignment_override)
     {
@@ -22,12 +22,12 @@ unsigned TypedefDefinition::GetAlignment()
     return m_type_declaration->GetAlignment();
 }
 
-bool TypedefDefinition::GetForceAlignment()
+bool TypedefDefinition::GetForceAlignment() const
 {
     return m_has_alignment_override || m_type_declaration->GetForceAlignment();
 }
 
-unsigned TypedefDefinition::GetSize()
+unsigned TypedefDefinition::GetSize() const
 {
     return m_type_declaration->GetSize();
 }

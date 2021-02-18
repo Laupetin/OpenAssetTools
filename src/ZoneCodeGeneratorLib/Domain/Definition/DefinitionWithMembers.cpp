@@ -1,5 +1,7 @@
 #include "DefinitionWithMembers.h"
 
+#include <cassert>
+
 DefinitionWithMembers::DefinitionWithMembers(std::string _namespace, std::string name, const unsigned pack)
     : DataDefinition(std::move(_namespace), std::move(name)),
       m_flags(0),
@@ -12,46 +14,49 @@ DefinitionWithMembers::DefinitionWithMembers(std::string _namespace, std::string
 {
 }
 
-void DefinitionWithMembers::CalculateAlignment()
-{
-    if (m_has_alignment_override)
-    {
-        m_flags |= FLAG_ALIGNMENT_FORCED;
-        m_alignment = m_alignment_override;
-    }
-    else
-    {
-        m_alignment = 0;
-        for (const auto& member : m_members)
-        {
-            const auto memberAlignment = member->GetAlignment();
-            if (memberAlignment > m_alignment)
-                m_alignment = memberAlignment;
-        }
-    }
-    m_flags |= FLAG_ALIGNMENT_CALCULATED;
-}
+//void DefinitionWithMembers::CalculateAlignment()
+//{
+//    if (m_has_alignment_override)
+//    {
+//        m_flags |= FLAG_ALIGNMENT_FORCED;
+//        m_alignment = m_alignment_override;
+//    }
+//    else
+//    {
+//        m_alignment = 0;
+//        for (const auto& member : m_members)
+//        {
+//            const auto memberAlignment = member->GetAlignment();
+//            if (memberAlignment > m_alignment)
+//                m_alignment = memberAlignment;
+//        }
+//    }
+//    m_flags |= FLAG_ALIGNMENT_CALCULATED;
+//}
 
-unsigned DefinitionWithMembers::GetAlignment()
+unsigned DefinitionWithMembers::GetAlignment() const
 {
-    if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
-        CalculateAlignment();
+    assert(m_flags & FLAG_ALIGNMENT_CALCULATED);
+    /*if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
+        CalculateAlignment();*/
 
     return m_alignment;
 }
 
-bool DefinitionWithMembers::GetForceAlignment()
+bool DefinitionWithMembers::GetForceAlignment() const
 {
-    if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
-        CalculateAlignment();
+    assert(m_flags & FLAG_ALIGNMENT_CALCULATED);
+    /*if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
+        CalculateAlignment();*/
 
     return m_flags & FLAG_ALIGNMENT_FORCED;
 }
 
-unsigned DefinitionWithMembers::GetSize()
+unsigned DefinitionWithMembers::GetSize() const
 {
-    if ((m_flags & FLAG_SIZE_CALCULATED) == 0)
-        CalculateSize();
+    assert(m_flags & FLAG_SIZE_CALCULATED);
+    /*if ((m_flags & FLAG_SIZE_CALCULATED) == 0)
+        CalculateSize();*/
 
     return m_size;
 }

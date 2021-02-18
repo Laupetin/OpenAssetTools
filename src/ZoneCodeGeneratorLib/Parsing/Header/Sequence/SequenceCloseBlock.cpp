@@ -1,6 +1,6 @@
 #include "SequenceCloseBlock.h"
 
-#include "Parsing/Header/Block/IHeaderBlockVariableDefining.h"
+#include "Parsing/Header/Block/IHeaderBlockNameHolder.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 
@@ -22,7 +22,7 @@ void SequenceCloseBlock::ProcessMatch(HeaderParserState* state, SequenceResult<H
 {
     if (result.NextTag() == TAG_SEMICOLON)
     {
-        if(!m_semicolon_required)
+        if (!m_semicolon_required)
             throw ParsingException(result.NextCapture(CAPTURE_CLOSING_PARENTHESIS).GetPos(), "Block should not be closed with semicolon");
     }
     else
@@ -33,13 +33,13 @@ void SequenceCloseBlock::ProcessMatch(HeaderParserState* state, SequenceResult<H
 
     if (result.HasNextCapture(CAPTURE_NAME))
     {
-        auto* variableDefiningBlock = dynamic_cast<IHeaderBlockVariableDefining*>(state->GetBlock());
+        auto* variableDefiningBlock = dynamic_cast<IHeaderBlockNameHolder*>(state->GetBlock());
         const auto& name = result.NextCapture(CAPTURE_NAME);
 
         if (variableDefiningBlock == nullptr)
             throw ParsingException(name.GetPos(), "Block does not support holding names.");
 
-        variableDefiningBlock->SetVariableName(name.IdentifierValue());
+        variableDefiningBlock->SetBlockName(name.GetPos(), name.IdentifierValue());
     }
 
     state->PopBlock();

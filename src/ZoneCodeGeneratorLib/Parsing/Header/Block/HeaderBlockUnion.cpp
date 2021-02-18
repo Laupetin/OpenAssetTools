@@ -36,7 +36,7 @@ void HeaderBlockUnion::OnChildBlockClose(HeaderParserState* state, IHeaderBlock*
 {
 }
 
-void HeaderBlockUnion::SetVariableName(std::string name)
+void HeaderBlockUnion::SetBlockName(const TokenPos& nameTokenPos, std::string name)
 {
     m_variable_name = std::move(name);
 }

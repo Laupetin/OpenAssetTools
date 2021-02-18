@@ -29,9 +29,9 @@ public:
     std::string m_name;
     
     _NODISCARD virtual DataDefinitionType GetType() const = 0;
-    _NODISCARD virtual unsigned GetAlignment() = 0;
-    _NODISCARD virtual bool GetForceAlignment() = 0;
-    _NODISCARD virtual unsigned GetSize() = 0;
+    _NODISCARD virtual unsigned GetAlignment() const = 0;
+    _NODISCARD virtual bool GetForceAlignment() const = 0;
+    _NODISCARD virtual unsigned GetSize() const = 0;
 
     _NODISCARD std::string GetFullName() const;
 };

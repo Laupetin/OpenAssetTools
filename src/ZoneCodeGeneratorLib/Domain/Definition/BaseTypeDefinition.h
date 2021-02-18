@@ -11,12 +11,9 @@ private:
 
 public:
     _NODISCARD DataDefinitionType GetType() const override;
-    _NODISCARD unsigned GetAlignment() override;
-    _NODISCARD unsigned GetAlignment() const;
-    _NODISCARD bool GetForceAlignment() override;
-    _NODISCARD bool GetForceAlignment() const;
-    _NODISCARD unsigned GetSize() override;
-    _NODISCARD unsigned GetSize() const;
+    _NODISCARD unsigned GetAlignment() const override;
+    _NODISCARD bool GetForceAlignment() const override;
+    _NODISCARD unsigned GetSize() const override;
 
     static const BaseTypeDefinition* const FLOAT;
     static const BaseTypeDefinition* const DOUBLE;
@@ -34,4 +31,5 @@ public:
     static const BaseTypeDefinition* const VOID;
 
     static const BaseTypeDefinition* const ALL_BASE_TYPES[];
+    static const size_t ALL_BASE_TYPES_COUNT;
 };

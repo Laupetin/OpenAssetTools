@@ -13,7 +13,7 @@ public:
     TypedefDefinition(std::string _namespace, std::string name, std::unique_ptr<TypeDeclaration> typeDeclaration);
 
     _NODISCARD DataDefinitionType GetType() const override;
-    _NODISCARD unsigned GetAlignment() override;
-    _NODISCARD bool GetForceAlignment() override;
-    _NODISCARD unsigned GetSize() override;
+    _NODISCARD unsigned GetAlignment() const override;
+    _NODISCARD bool GetForceAlignment() const override;
+    _NODISCARD unsigned GetSize() const override;
 };

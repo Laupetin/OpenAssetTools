@@ -71,7 +71,7 @@ std::unique_ptr<HeaderCommonMatchers::matcher_t> HeaderCommonMatchers::Typename(
         }).Transform([](HeaderMatcherFactory::token_list_t& values)
         {
             std::ostringstream str;
-            auto first = false;
+            auto first = true;
 
             for(const auto& token : values)
             {

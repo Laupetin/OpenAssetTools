@@ -33,7 +33,7 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Typen
         }).Transform([](CommandsMatcherFactory::token_list_t& values)
         {
             std::ostringstream str;
-            auto first = false;
+            auto first = true;
 
             for (const auto& token : values)
             {
