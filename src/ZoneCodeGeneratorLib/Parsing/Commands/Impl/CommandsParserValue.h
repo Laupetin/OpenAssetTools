@@ -26,6 +26,15 @@ enum class CommandsParserValueType
     LOGICAL_AND,
     LOGICAL_OR,
 
+    // Built-in types
+    BUILT_IN_FIRST,
+    UNSIGNED = BUILT_IN_FIRST,
+    CHAR,
+    SHORT,
+    INT,
+    LONG,
+    BUILT_IN_LAST = LONG,
+
     // Generic token types
     INTEGER,
     FLOATING_POINT,

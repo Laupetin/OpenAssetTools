@@ -131,7 +131,8 @@ CommandsParserValue::~CommandsParserValue()
 }
 
 CommandsParserValue::CommandsParserValue(CommandsParserValue&& other) noexcept
-    : m_type(other.m_type),
+    : m_pos(other.m_pos),
+      m_type(other.m_type),
       m_hash(other.m_hash),
       m_value(other.m_value)
 {
@@ -140,6 +141,7 @@ CommandsParserValue::CommandsParserValue(CommandsParserValue&& other) noexcept
 
 CommandsParserValue& CommandsParserValue::operator=(CommandsParserValue&& other) noexcept
 {
+    m_pos = other.m_pos;
     m_type = other.m_type;
     m_value = other.m_value;
     m_hash = other.m_hash;

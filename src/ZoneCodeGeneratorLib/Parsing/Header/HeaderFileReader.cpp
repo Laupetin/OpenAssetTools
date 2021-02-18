@@ -6,7 +6,6 @@
 
 #include "Impl/HeaderLexer.h"
 #include "Impl/HeaderParser.h"
-#include "Parsing/ParsingException.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"

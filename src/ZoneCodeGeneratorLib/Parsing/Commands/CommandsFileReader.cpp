@@ -1,9 +1,10 @@
 #include "CommandsFileReader.h"
 
+#include <chrono>
 #include <iostream>
 
 #include "Impl/CommandsLexer.h"
-#include "Parsing/ParsingException.h"
+#include "Impl/CommandsParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
@@ -53,24 +54,13 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 
     SetupStreamProxies();
 
-    auto lexer = std::make_unique<CommandsLexer>(m_stream);
+    const auto lexer = std::make_unique<CommandsLexer>(m_stream);
+    const auto parser = std::make_unique<CommandsParser>(lexer.get(), repository);
 
-    try
-    {
-        while (true)
-        {
-            auto line = m_stream->NextLine();
+    const auto start = std::chrono::steady_clock::now();
+    const auto result = parser->Parse();
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
-            if (line.IsEof())
-                break;
-
-            std::cout << "Line " << line.m_filename.get() << ":" << line.m_line_number << ": " << line.m_line << "\n";
-        }
-    }
-    catch (const ParsingException& e)
-    {
-        std::cout << "Error: " << e.FullMessage() << std::endl;
-    }
-
-    return true;
+    return result;
 }
