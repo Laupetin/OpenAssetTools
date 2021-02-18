@@ -12,7 +12,8 @@ HeaderBlockStruct::HeaderBlockStruct(std::string name, const bool isTypedef)
       m_struct_definition(nullptr),
       m_custom_alignment(0),
       m_is_typedef(isTypedef),
-      m_has_custom_align(false)
+      m_has_custom_align(false),
+      m_is_anonymous(false)
 {
 }
 
@@ -38,27 +39,26 @@ void HeaderBlockStruct::OnOpen(HeaderParserState* state)
 {
     m_namespace = state->m_namespace.ToString();
 
-    if (!m_type_name.empty())
+    if (m_type_name.empty())
+    {
+        m_is_anonymous = true;
+        m_type_name = NameUtils::GenerateRandomName();
+    }
+    else
+    {
         state->m_namespace.Push(m_type_name);
+    }
 }
 
 void HeaderBlockStruct::OnClose(HeaderParserState* state)
 {
-    if (!m_type_name.empty())
+    if (!m_is_anonymous)
         state->m_namespace.Pop();
 
-    auto isAnonymous = false;
-    auto typeName = m_type_name;
-    if(typeName.empty())
-    {
-        isAnonymous = true;
-        typeName = NameUtils::GenerateRandomName();
-    }
-
-    auto structDefinition = std::make_unique<StructDefinition>(m_namespace, std::move(typeName), state->m_pack_value_supplier->GetCurrentPack());
+    auto structDefinition = std::make_unique<StructDefinition>(m_namespace, m_type_name, state->m_pack_value_supplier->GetCurrentPack());
     m_struct_definition = structDefinition.get();
 
-    if (isAnonymous)
+    if (m_is_anonymous)
         structDefinition->m_anonymous = true;
 
     for (auto& member : m_members)
@@ -72,6 +72,10 @@ void HeaderBlockStruct::OnClose(HeaderParserState* state)
 
 void HeaderBlockStruct::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
+    auto* variableDefining = dynamic_cast<IHeaderBlockVariableDefining*>(block);
+
+    if (variableDefining && variableDefining->IsDefiningVariable())
+        m_members.emplace_back(std::make_shared<Variable>(variableDefining->GetVariableName(), std::make_unique<TypeDeclaration>(variableDefining->GetVariableType())));
 }
 
 void HeaderBlockStruct::AddVariable(std::shared_ptr<Variable> variable)
@@ -87,7 +91,7 @@ void HeaderBlockStruct::SetCustomAlignment(const int alignment)
 
 void HeaderBlockStruct::Inherit(const StructDefinition* parentStruct)
 {
-    for(const auto& parentMember : parentStruct->m_members)
+    for (const auto& parentMember : parentStruct->m_members)
         AddVariable(parentMember);
 }
 

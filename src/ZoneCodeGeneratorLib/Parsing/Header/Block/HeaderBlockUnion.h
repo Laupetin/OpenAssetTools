@@ -15,6 +15,7 @@ class HeaderBlockUnion final : public IHeaderBlock, public IHeaderBlockNameHolde
 
     bool m_is_typedef;
     bool m_has_custom_align;
+    bool m_is_anonymous;
 
     std::string m_variable_name;
 
