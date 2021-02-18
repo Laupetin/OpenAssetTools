@@ -7,6 +7,7 @@ HeaderBlockEnum::HeaderBlockEnum(std::string typeName, const BaseTypeDefinition*
     : m_type_name(std::move(typeName)),
       m_parent_type(parentType),
       m_is_typedef(isTypeDef),
+      m_next_value(0),
       m_enum_definition(nullptr)
 {
 }
@@ -56,7 +57,24 @@ void HeaderBlockEnum::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* 
 
 void HeaderBlockEnum::AddEnumMember(std::unique_ptr<EnumMember> enumMember)
 {
+    m_next_value = enumMember->m_value + 1;
     m_members.emplace_back(std::move(enumMember));
+}
+
+EnumMember* HeaderBlockEnum::GetEnumMember(const std::string& name) const
+{
+    for (const auto& member : m_members)
+    {
+        if (member->m_name == name)
+            return member.get();
+    }
+
+    return nullptr;
+}
+
+long long HeaderBlockEnum::GetNextEnumMemberValue() const
+{
+    return m_next_value;
 }
 
 void HeaderBlockEnum::SetBlockName(const TokenPos& nameTokenPos, std::string name)

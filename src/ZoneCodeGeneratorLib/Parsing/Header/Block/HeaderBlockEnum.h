@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
 #include "IHeaderBlock.h"
 #include "IHeaderBlockNameHolder.h"
 #include "IHeaderBlockVariableDefining.h"
@@ -13,6 +14,7 @@ class HeaderBlockEnum final : public IHeaderBlock, public IHeaderBlockNameHolder
     const BaseTypeDefinition* m_parent_type;
     bool m_is_typedef;
     std::vector<std::unique_ptr<EnumMember>> m_members;
+    long long m_next_value;
     EnumDefinition* m_enum_definition;
 
     std::string m_variable_name;
@@ -27,6 +29,8 @@ public:
     void OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) override;
 
     void AddEnumMember(std::unique_ptr<EnumMember> enumMember);
+    _NODISCARD EnumMember* GetEnumMember(const std::string& name) const;
+    _NODISCARD long long GetNextEnumMemberValue() const;
 
     void SetBlockName(const TokenPos& nameTokenPos, std::string name) override;
     bool IsDefiningVariable() override;

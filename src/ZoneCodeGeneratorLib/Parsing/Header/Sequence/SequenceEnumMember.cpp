@@ -1,5 +1,6 @@
 #include "SequenceEnumMember.h"
 
+#include "Parsing/Header/Block/HeaderBlockEnum.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 
@@ -25,4 +26,33 @@ SequenceEnumMember::SequenceEnumMember()
 
 void SequenceEnumMember::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    long long value;
+    auto* enumBlock = dynamic_cast<HeaderBlockEnum*>(state->GetBlock());
+
+    if (result.HasNextCapture(CAPTURE_VALUE))
+    {
+        const auto& valueToken = result.NextCapture(CAPTURE_VALUE);
+        if (valueToken.m_type == HeaderParserValueType::IDENTIFIER)
+        {
+            auto* enumMember = enumBlock->GetEnumMember(valueToken.IdentifierValue());
+
+            if (enumMember == nullptr)
+                enumMember = state->FindEnumMember(valueToken.IdentifierValue());
+
+            if (enumMember == nullptr)
+                throw ParsingException(valueToken.GetPos(), "Could not find enum member with specified name");
+
+            value = enumMember->m_value;
+        }
+        else
+        {
+            value = valueToken.IntegerValue();
+        }
+    }
+    else
+    {
+        value = enumBlock->GetNextEnumMemberValue();
+    }
+
+    enumBlock->AddEnumMember(std::make_unique<EnumMember>(result.NextCapture(CAPTURE_NAME).IdentifierValue(), value));
 }
