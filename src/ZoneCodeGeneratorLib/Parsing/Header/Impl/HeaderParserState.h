@@ -11,6 +11,7 @@
 #include "Domain/Definition/ForwardDeclaration.h"
 #include "Utils/NamespaceBuilder.h"
 #include "Parsing/Header/Block/IHeaderBlock.h"
+#include "Persistence/IDataRepository.h"
 
 class IHeaderBlock;
 
@@ -39,4 +40,6 @@ public:
 
     const DataDefinition* FindType(const std::string& typeName);
     EnumMember* FindEnumMember(const std::string& enumMemberName);
+
+    void SaveToRepository(IDataRepository* repository);
 };

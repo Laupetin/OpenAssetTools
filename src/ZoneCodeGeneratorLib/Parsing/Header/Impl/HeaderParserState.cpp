@@ -83,3 +83,31 @@ EnumMember* HeaderParserState::FindEnumMember(const std::string& enumMemberName)
 
     return nullptr;
 }
+
+void HeaderParserState::SaveToRepository(IDataRepository* repository)
+{
+    for(auto& definition : m_header_definitions)
+    {
+        switch(definition->GetType())
+        {
+        case DataDefinitionType::ENUM:
+            repository->Add(std::unique_ptr<EnumDefinition>(dynamic_cast<EnumDefinition*>(definition.release())));
+            break;
+
+        case DataDefinitionType::STRUCT:
+            repository->Add(std::unique_ptr<StructDefinition>(dynamic_cast<StructDefinition*>(definition.release())));
+            break;
+
+        case DataDefinitionType::UNION:
+            repository->Add(std::unique_ptr<UnionDefinition>(dynamic_cast<UnionDefinition*>(definition.release())));
+            break;
+
+        case DataDefinitionType::TYPEDEF:
+            repository->Add(std::unique_ptr<TypedefDefinition>(dynamic_cast<TypedefDefinition*>(definition.release())));
+            break;
+
+        default:
+            break;
+        }
+    }
+}

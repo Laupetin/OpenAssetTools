@@ -13,5 +13,5 @@ protected:
 public:
     explicit HeaderParser(HeaderLexer* lexer);
 
-    void SaveToRepository(IDataRepository* repository);
+    void SaveToRepository(IDataRepository* repository) const;
 };
