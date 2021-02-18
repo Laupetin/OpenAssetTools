@@ -2,6 +2,7 @@
 
 #include "HeaderLexer.h"
 #include "HeaderParserState.h"
+#include "Parsing/IPackValueSupplier.h"
 #include "Parsing/Impl/AbstractParser.h"
 #include "Persistence/IDataRepository.h"
 
@@ -11,7 +12,7 @@ protected:
     const std::vector<sequence_t*>& GetTestsForState() override;
 
 public:
-    explicit HeaderParser(HeaderLexer* lexer);
+    HeaderParser(HeaderLexer* lexer, const IPackValueSupplier* packValueSupplier);
 
     void SaveToRepository(IDataRepository* repository) const;
 };

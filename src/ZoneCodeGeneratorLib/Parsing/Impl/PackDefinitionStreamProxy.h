@@ -31,5 +31,5 @@ public:
     _NODISCARD bool IsOpen() const override;
     _NODISCARD bool Eof() const override;
 
-    int GetCurrentPack() override;
+    int GetCurrentPack() const override;
 };

@@ -20,11 +20,11 @@ void TypeDeclaration::CalculateSize()
 {
     auto currentSize = m_type->GetSize();
 
-    for(auto i = m_declaration_modifiers.size(); i > 0; i--)
+    for (auto i = m_declaration_modifiers.size(); i > 0; i--)
     {
         const auto& declarationModifier = m_declaration_modifiers[i - 1];
-        
-        switch(declarationModifier->GetType())
+
+        switch (declarationModifier->GetType())
         {
         case DeclarationModifierType::POINTER:
             currentSize = POINTER_SIZE;

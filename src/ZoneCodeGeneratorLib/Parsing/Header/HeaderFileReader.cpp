@@ -61,7 +61,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
     SetupStreamProxies();
 
     const auto lexer = std::make_unique<HeaderLexer>(m_stream);
-    const auto parser = std::make_unique<HeaderParser>(lexer.get());
+    const auto parser = std::make_unique<HeaderParser>(lexer.get(), m_pack_value_supplier);
 
     const auto start = std::chrono::steady_clock::now();
     const auto result = parser->Parse();

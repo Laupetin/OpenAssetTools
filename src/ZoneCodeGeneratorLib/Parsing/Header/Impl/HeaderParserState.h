@@ -9,6 +9,7 @@
 #include "Domain/Definition/DataDefinition.h"
 #include "Domain/Definition/EnumMember.h"
 #include "Domain/Definition/ForwardDeclaration.h"
+#include "Parsing/IPackValueSupplier.h"
 #include "Utils/NamespaceBuilder.h"
 #include "Parsing/Header/Block/IHeaderBlock.h"
 #include "Persistence/IDataRepository.h"
@@ -27,9 +28,10 @@ class HeaderParserState
     void AddBaseDataType(const BaseTypeDefinition* baseType);
 
 public:
+    const IPackValueSupplier* const m_pack_value_supplier;
     NamespaceBuilder m_namespace;
 
-    HeaderParserState();
+    explicit HeaderParserState(const IPackValueSupplier* packValueSupplier);
 
     _NODISCARD IHeaderBlock* GetBlock() const;
     void PushBlock(std::unique_ptr<IHeaderBlock> block);

@@ -26,5 +26,36 @@ SequenceUnion::SequenceUnion()
 
 void SequenceUnion::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
-    state->PushBlock(std::make_unique<HeaderBlockUnion>());
+    auto isTypedef = result.PeekAndRemoveIfTag(TAG_TYPEDEF) == TAG_TYPEDEF;
+    std::string name;
+
+    if (result.HasNextCapture(CAPTURE_NAME))
+        name = result.NextCapture(CAPTURE_NAME).IdentifierValue();
+
+    auto unionBlock = std::make_unique<HeaderBlockUnion>(std::move(name), isTypedef);
+
+    if (result.HasNextCapture(CAPTURE_ALIGN))
+        unionBlock->SetCustomAlignment(result.NextCapture(CAPTURE_ALIGN).IntegerValue());
+
+    if (result.HasNextCapture(CAPTURE_PARENT_TYPE))
+    {
+        const auto& parentTypeToken = result.NextCapture(CAPTURE_PARENT_TYPE);
+        const auto* parentDefinition = state->FindType(parentTypeToken.TypeNameValue());
+
+        if (parentDefinition == nullptr && !state->m_namespace.IsEmpty())
+        {
+            const auto fullTypeName = NamespaceBuilder::Combine(state->m_namespace.ToString(), parentTypeToken.TypeNameValue());
+            parentDefinition = state->FindType(fullTypeName);
+        }
+
+        if (parentDefinition == nullptr)
+            throw ParsingException(parentTypeToken.GetPos(), "Cannot find specified parent type");
+
+        if (parentDefinition->GetType() != DataDefinitionType::STRUCT)
+            throw ParsingException(parentTypeToken.GetPos(), "Parent type must be a struct");
+
+        unionBlock->Inherit(dynamic_cast<const StructDefinition*>(parentDefinition));
+    }
+
+    state->PushBlock(std::move(unionBlock));
 }

@@ -2,8 +2,8 @@
 
 #include "Parsing/Header/Sequence/SequenceNamespace.h"
 
-HeaderParser::HeaderParser(HeaderLexer* lexer)
-    : AbstractParser(lexer, std::make_unique<HeaderParserState>())
+HeaderParser::HeaderParser(HeaderLexer* lexer, const IPackValueSupplier* packValueSupplier)
+    : AbstractParser(lexer, std::make_unique<HeaderParserState>(packValueSupplier))
 {
     auto sequenceNamespace = std::make_unique<SequenceNamespace>();
 }

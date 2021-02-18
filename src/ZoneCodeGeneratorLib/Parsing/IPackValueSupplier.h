@@ -10,5 +10,5 @@ public:
     IPackValueSupplier& operator=(const IPackValueSupplier& other) = default;
     IPackValueSupplier& operator=(IPackValueSupplier&& other) noexcept = default;
 
-    virtual int GetCurrentPack() = 0;
+    virtual int GetCurrentPack() const = 0;
 };

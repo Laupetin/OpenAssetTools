@@ -26,7 +26,7 @@ public:
     const unsigned m_pack;
     unsigned m_alignment_override;
 
-    std::vector<std::unique_ptr<Variable>> m_members;
+    std::vector<std::shared_ptr<Variable>> m_members;
 
     DefinitionWithMembers(std::string _namespace, std::string name, unsigned pack);
 

@@ -1,5 +1,13 @@
 #include "Variable.h"
 
+Variable::Variable(std::string name, std::unique_ptr<TypeDeclaration> typeDeclaration)
+    : m_name(std::move(name)),
+      m_has_alignment_override(false),
+      m_alignment_override(0),
+      m_type_declaration(std::move(typeDeclaration))
+{
+}
+
 unsigned Variable::GetAlignment()
 {
     if (m_has_alignment_override)

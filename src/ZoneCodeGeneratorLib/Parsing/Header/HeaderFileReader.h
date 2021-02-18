@@ -16,7 +16,7 @@ class HeaderFileReader
     std::string m_filename;
 
     std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
-    IPackValueSupplier* m_pack_value_supplier;
+    const IPackValueSupplier* m_pack_value_supplier;
     IParserLineStream* m_stream;
 
     bool OpenBaseStream();

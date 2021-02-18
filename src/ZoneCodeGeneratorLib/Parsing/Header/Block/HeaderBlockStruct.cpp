@@ -5,6 +5,16 @@
 #include "Parsing/Header/Sequence/SequenceStruct.h"
 #include "Parsing/Header/Sequence/SequenceUnion.h"
 #include "Parsing/Header/Sequence/SequenceVariable.h"
+#include "Utils/NameUtils.h"
+
+HeaderBlockStruct::HeaderBlockStruct(std::string name, const bool isTypedef)
+    : m_type_name(std::move(name)),
+      m_struct_definition(nullptr),
+      m_custom_alignment(0),
+      m_is_typedef(isTypedef),
+      m_has_custom_align(false)
+{
+}
 
 HeaderBlockType HeaderBlockStruct::GetType()
 {
@@ -26,17 +36,77 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockStruct::GetTestsForBloc
 
 void HeaderBlockStruct::OnOpen(HeaderParserState* state)
 {
+    m_namespace = state->m_namespace.ToString();
+
+    if (!m_type_name.empty())
+        state->m_namespace.Push(m_type_name);
 }
 
 void HeaderBlockStruct::OnClose(HeaderParserState* state)
 {
+    if (!m_type_name.empty())
+        state->m_namespace.Pop();
+
+    auto isAnonymous = false;
+    auto typeName = m_type_name;
+    if(typeName.empty())
+    {
+        isAnonymous = true;
+        typeName = NameUtils::GenerateRandomName();
+    }
+
+    auto structDefinition = std::make_unique<StructDefinition>(m_namespace, std::move(typeName), state->m_pack_value_supplier->GetCurrentPack());
+    m_struct_definition = structDefinition.get();
+
+    if (isAnonymous)
+        structDefinition->m_anonymous = true;
+
+    for (auto& member : m_members)
+        structDefinition->m_members.emplace_back(std::move(member));
+
+    state->AddDataType(std::move(structDefinition));
+
+    if (m_is_typedef)
+        state->AddDataType(std::make_unique<TypedefDefinition>(m_namespace, m_variable_name, std::make_unique<TypeDeclaration>(m_struct_definition)));
 }
 
 void HeaderBlockStruct::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
 }
 
+void HeaderBlockStruct::AddVariable(std::shared_ptr<Variable> variable)
+{
+    m_members.emplace_back(std::move(variable));
+}
+
+void HeaderBlockStruct::SetCustomAlignment(const int alignment)
+{
+    m_has_custom_align = true;
+    m_custom_alignment = alignment;
+}
+
+void HeaderBlockStruct::Inherit(const StructDefinition* parentStruct)
+{
+    for(const auto& parentMember : parentStruct->m_members)
+        AddVariable(parentMember);
+}
+
 void HeaderBlockStruct::SetBlockName(const TokenPos& nameTokenPos, std::string name)
 {
     m_variable_name = std::move(name);
+}
+
+bool HeaderBlockStruct::IsDefiningVariable()
+{
+    return !m_is_typedef && !m_variable_name.empty();
+}
+
+DataDefinition* HeaderBlockStruct::GetVariableType()
+{
+    return m_struct_definition;
+}
+
+std::string HeaderBlockStruct::GetVariableName()
+{
+    return m_variable_name;
 }

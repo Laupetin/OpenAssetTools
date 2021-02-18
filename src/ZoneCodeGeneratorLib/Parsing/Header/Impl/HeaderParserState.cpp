@@ -3,7 +3,9 @@
 #include "Domain/Definition/EnumDefinition.h"
 #include "Parsing/Header/Block/HeaderBlockNone.h"
 
-HeaderParserState::HeaderParserState()
+HeaderParserState::HeaderParserState(const IPackValueSupplier* packValueSupplier)
+    : m_pack_value_supplier(packValueSupplier)
+
 {
     m_blocks.push(std::make_unique<HeaderBlockNone>());
 

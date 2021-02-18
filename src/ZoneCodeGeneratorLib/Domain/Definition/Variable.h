@@ -13,6 +13,8 @@ public:
     unsigned m_alignment_override;
     std::unique_ptr<TypeDeclaration> m_type_declaration;
 
+    Variable(std::string name, std::unique_ptr<TypeDeclaration> typeDeclaration);
+
     unsigned GetAlignment();
     bool GetForceAlignment();
 };

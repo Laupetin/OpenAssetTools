@@ -86,7 +86,7 @@ bool PackDefinitionStreamProxy::Eof() const
     return m_stream->Eof();
 }
 
-int PackDefinitionStreamProxy::GetCurrentPack()
+int PackDefinitionStreamProxy::GetCurrentPack() const
 {
     return m_current_pack.empty() ? DEFAULT_PACK : m_current_pack.top();
 }
