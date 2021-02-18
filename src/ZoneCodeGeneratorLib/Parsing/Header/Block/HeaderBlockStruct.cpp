@@ -14,7 +14,7 @@ HeaderBlockType HeaderBlockStruct::GetType()
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockStruct::GetTestsForBlock()
 {
     static std::vector<sequence_t*> tests({
-        new SequenceCloseBlock(),
+        new SequenceCloseBlock(true),
         new SequenceEnum(),
         new SequenceStruct(),
         new SequenceUnion(),
@@ -34,4 +34,9 @@ void HeaderBlockStruct::OnClose(HeaderParserState* state)
 
 void HeaderBlockStruct::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
+}
+
+void HeaderBlockStruct::SetVariableName(std::string name)
+{
+    m_variable_name = std::move(name);
 }

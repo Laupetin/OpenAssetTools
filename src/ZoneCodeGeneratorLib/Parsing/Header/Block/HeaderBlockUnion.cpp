@@ -14,7 +14,7 @@ HeaderBlockType HeaderBlockUnion::GetType()
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockUnion::GetTestsForBlock()
 {
     static std::vector<sequence_t*> tests({
-        new SequenceCloseBlock(),
+        new SequenceCloseBlock(true),
         new SequenceEnum(),
         new SequenceStruct(),
         new SequenceUnion(),
@@ -34,4 +34,9 @@ void HeaderBlockUnion::OnClose(HeaderParserState* state)
 
 void HeaderBlockUnion::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
+}
+
+void HeaderBlockUnion::SetVariableName(std::string name)
+{
+    m_variable_name = std::move(name);
 }

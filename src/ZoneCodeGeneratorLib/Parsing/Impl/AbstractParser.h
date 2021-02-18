@@ -30,7 +30,7 @@ protected:
     virtual const std::vector<sequence_t*>& GetTestsForState() = 0;
 
 public:
-    virtual ~AbstractParser() = default;
+    virtual ~AbstractParser() override = default;
     AbstractParser(const AbstractParser& other) = default;
     AbstractParser(AbstractParser&& other) noexcept = default;
     AbstractParser& operator=(const AbstractParser& other) = default;
@@ -77,7 +77,18 @@ public:
         }
         catch (const ParsingException& e)
         {
-            std::cout << "Error: " << e.FullMessage() << std::endl;
+            const auto pos = e.Position();
+            const auto line = m_lexer->GetLineForPos(pos);
+
+            if (!line.IsEof())
+            {
+                std::cout << "Error: " << e.FullMessage() << "\n" << line.m_line.substr(pos.m_column - 1) << std::endl;
+            }
+            else
+            {
+                std::cout << "Error: " << e.FullMessage() << std::endl;
+            }
+
             return false;
         }
 

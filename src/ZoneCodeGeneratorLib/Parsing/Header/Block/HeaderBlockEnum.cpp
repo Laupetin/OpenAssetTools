@@ -11,7 +11,7 @@ HeaderBlockType HeaderBlockEnum::GetType()
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockEnum::GetTestsForBlock()
 {
     static std::vector<sequence_t*> tests({
-        new SequenceCloseBlock(),
+        new SequenceCloseBlock(true),
         new SequenceEnumMember()
     });
 
@@ -28,4 +28,9 @@ void HeaderBlockEnum::OnClose(HeaderParserState* state)
 
 void HeaderBlockEnum::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
 {
+}
+
+void HeaderBlockEnum::SetVariableName(std::string name)
+{
+    m_variable_name = std::move(name);
 }
