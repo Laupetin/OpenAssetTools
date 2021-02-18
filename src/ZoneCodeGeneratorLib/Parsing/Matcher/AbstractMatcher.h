@@ -68,7 +68,7 @@ public:
             return result;
 
         if (m_tag_id != NO_ID)
-            result.m_tags.push_back(m_tag_id);
+            result.m_tags.insert(result.m_tags.begin(), m_tag_id);
 
         if (m_transform_func)
         {

@@ -2,6 +2,7 @@
 
 #include "Parsing/Header/Sequence/SequenceNamespace.h"
 #include "Parsing/Mock/MockLexer.h"
+#include "Parsing/Mock/MockPackValueSupplier.h"
 
 namespace test::parsing::header::sequence::sequence_namespace
 {
@@ -15,8 +16,9 @@ namespace test::parsing::header::sequence::sequence_namespace
                 HeaderParserValue::Character(pos, '{')
             }, HeaderParserValue::EndOfFile(pos)));
 
+        const auto packValueSupplier = std::make_unique<MockPackValueSupplier>();
         const auto sequence = std::make_unique<SequenceNamespace>();
-        const auto state = std::make_unique<HeaderParserState>();
+        const auto state = std::make_unique<HeaderParserState>(packValueSupplier.get());
 
         unsigned consumedTokenCount;
         auto result = sequence->MatchSequence(lexer.get(), state.get(), consumedTokenCount);

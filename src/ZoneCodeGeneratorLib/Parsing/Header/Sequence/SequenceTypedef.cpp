@@ -1,6 +1,5 @@
 #include "SequenceTypedef.h"
 
-
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"

@@ -5,10 +5,11 @@
 #include "IHeaderBlock.h"
 #include "IHeaderBlockNameHolder.h"
 #include "IHeaderBlockVariableDefining.h"
+#include "IHeaderBlockVariableHolder.h"
 #include "Domain/Definition/StructDefinition.h"
 #include "Domain/Definition/Variable.h"
 
-class HeaderBlockStruct final : public IHeaderBlock, public IHeaderBlockNameHolder, public IHeaderBlockVariableDefining
+class HeaderBlockStruct final : public IHeaderBlock, public IHeaderBlockNameHolder, public IHeaderBlockVariableDefining, public IHeaderBlockVariableHolder
 {
     std::string m_namespace;
     std::string m_type_name;
@@ -32,7 +33,7 @@ public:
     void OnClose(HeaderParserState* state) override;
     void OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) override;
 
-    void AddVariable(std::shared_ptr<Variable> variable);
+    void AddVariable(std::shared_ptr<Variable> variable) override;
     void SetCustomAlignment(int alignment);
     void Inherit(const StructDefinition* parentStruct);
 
