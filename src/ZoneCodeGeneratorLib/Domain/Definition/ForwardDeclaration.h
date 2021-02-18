@@ -6,7 +6,7 @@ class ForwardDeclaration final : public DataDefinition
 {
 public:
     const DataDefinitionType m_forwarded_type;
-    DataDefinition* m_definition;
+    const DataDefinition* m_definition;
 
     ForwardDeclaration(std::string _namespace, std::string name, DataDefinitionType type);
 
