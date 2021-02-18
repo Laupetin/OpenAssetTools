@@ -26,7 +26,7 @@ SequenceEnumMember::SequenceEnumMember()
 
 void SequenceEnumMember::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
-    long long value;
+    int value;
     auto* enumBlock = dynamic_cast<HeaderBlockEnum*>(state->GetBlock());
 
     if (result.HasNextCapture(CAPTURE_VALUE))

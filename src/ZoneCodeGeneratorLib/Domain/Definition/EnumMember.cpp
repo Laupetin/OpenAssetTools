@@ -5,7 +5,7 @@ EnumMember::EnumMember()
 {
 }
 
-EnumMember::EnumMember(std::string name, const long long value)
+EnumMember::EnumMember(std::string name, const int value)
     : m_name(std::move(name)),
       m_value(value)
 {

@@ -14,7 +14,7 @@ class HeaderBlockEnum final : public IHeaderBlock, public IHeaderBlockNameHolder
     const BaseTypeDefinition* m_parent_type;
     bool m_is_typedef;
     std::vector<std::unique_ptr<EnumMember>> m_members;
-    long long m_next_value;
+    int m_next_value;
     EnumDefinition* m_enum_definition;
 
     std::string m_variable_name;
@@ -30,7 +30,7 @@ public:
 
     void AddEnumMember(std::unique_ptr<EnumMember> enumMember);
     _NODISCARD EnumMember* GetEnumMember(const std::string& name) const;
-    _NODISCARD long long GetNextEnumMemberValue() const;
+    _NODISCARD int GetNextEnumMemberValue() const;
 
     void SetBlockName(const TokenPos& nameTokenPos, std::string name) override;
     bool IsDefiningVariable() override;

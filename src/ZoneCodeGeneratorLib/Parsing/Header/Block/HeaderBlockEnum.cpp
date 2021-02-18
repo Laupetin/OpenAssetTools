@@ -72,7 +72,7 @@ EnumMember* HeaderBlockEnum::GetEnumMember(const std::string& name) const
     return nullptr;
 }
 
-long long HeaderBlockEnum::GetNextEnumMemberValue() const
+int HeaderBlockEnum::GetNextEnumMemberValue() const
 {
     return m_next_value;
 }

@@ -6,8 +6,8 @@ class EnumMember
 {
 public:
     std::string m_name;
-    long long m_value;
+    int m_value;
 
     EnumMember();
-    EnumMember(std::string name, long long value);
+    EnumMember(std::string name, int value);
 };

@@ -4,7 +4,7 @@
 
 #include "ArrayDeclarationModifier.h"
 
-TypeDeclaration::TypeDeclaration(DataDefinition* type)
+TypeDeclaration::TypeDeclaration(const DataDefinition* type)
     : m_flags(0),
       m_size(0),
       m_alignment(0),

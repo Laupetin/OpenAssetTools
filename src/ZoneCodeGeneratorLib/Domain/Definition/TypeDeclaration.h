@@ -21,12 +21,12 @@ class TypeDeclaration
     void CalculateAlignment();
 
 public:
-    explicit TypeDeclaration(DataDefinition* type);
+    explicit TypeDeclaration(const DataDefinition* type);
 
     bool m_is_const;
     bool m_has_custom_bit_size;
 
-    DataDefinition* m_type;
+    const DataDefinition* m_type;
     unsigned m_custom_bit_size;
 
     std::vector<std::unique_ptr<DeclarationModifier>> m_declaration_modifiers;

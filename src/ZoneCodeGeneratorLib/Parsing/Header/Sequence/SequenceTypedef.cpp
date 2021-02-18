@@ -1,5 +1,8 @@
 #include "SequenceTypedef.h"
 
+
+#include "Domain/Definition/ArrayDeclarationModifier.h"
+#include "Domain/Definition/PointerDeclarationModifier.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 
@@ -43,6 +46,71 @@ SequenceTypedef::SequenceTypedef()
     });
 }
 
+void SequenceTypedef::AddPointerDeclarationModifiers(SequenceResult<HeaderParserValue>& result, TypeDeclaration* typeDeclaration) const
+{
+    while (result.PeekAndRemoveIfTag(TAG_POINTER) == TAG_POINTER)
+        typeDeclaration->m_declaration_modifiers.emplace_back(std::make_unique<PointerDeclarationModifier>());
+}
+
+void SequenceTypedef::AddArrayDeclarationModifiers(HeaderParserState* state, SequenceResult<HeaderParserValue>& result, TypeDeclaration* typeDeclaration) const
+{
+    while (result.HasNextCapture(CAPTURE_ARRAY))
+    {
+        const auto& arrayToken = result.NextCapture(CAPTURE_ARRAY);
+
+        if (arrayToken.m_type == HeaderParserValueType::INTEGER)
+        {
+            typeDeclaration->m_declaration_modifiers.emplace_back(std::make_unique<ArrayDeclarationModifier>(arrayToken.IntegerValue()));
+        }
+        else
+        {
+            auto* enumMember = state->FindEnumMember(arrayToken.IdentifierValue());
+
+            if (enumMember == nullptr)
+                throw ParsingException(arrayToken.GetPos(), "Unknown enum member");
+
+            typeDeclaration->m_declaration_modifiers.emplace_back(std::make_unique<ArrayDeclarationModifier>(enumMember->m_value));
+        }
+    }
+}
+
 void SequenceTypedef::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
 {
+    const auto modeTag = result.NextTag();
+    assert(modeTag == TAG_ARRAY_OF_POINTERS || modeTag == TAG_POINTER_TO_ARRAY);
+
+    const auto name = result.NextCapture(CAPTURE_NAME).IdentifierValue();
+
+    const auto& typenameToken = result.NextCapture(CAPTURE_TYPE);
+    const auto* type = state->FindType(typenameToken.TypeNameValue());
+    if (type == nullptr && !state->m_namespace.IsEmpty())
+    {
+        const auto fullTypename = NamespaceBuilder::Combine(state->m_namespace.ToString(), typenameToken.TypeNameValue());
+        type = state->FindType(fullTypename);
+    }
+    if (type == nullptr)
+        throw ParsingException(typenameToken.GetPos(), "Unknown type");
+
+    auto typedefDefinition = std::make_unique<TypedefDefinition>(state->m_namespace.ToString(), name, std::make_unique<TypeDeclaration>(type));
+    typedefDefinition->m_type_declaration->m_is_const = result.PeekAndRemoveIfTag(TAG_CONST) == TAG_CONST;
+
+    if(result.HasNextCapture(CAPTURE_ALIGN))
+    {
+        const auto& alignToken = result.NextCapture(CAPTURE_ALIGN);
+        typedefDefinition->m_alignment_override = static_cast<unsigned>(alignToken.IntegerValue());
+        typedefDefinition->m_has_alignment_override = true;
+    }
+
+    if (modeTag == TAG_ARRAY_OF_POINTERS)
+    {
+        AddArrayDeclarationModifiers(state, result, typedefDefinition->m_type_declaration.get());
+        AddPointerDeclarationModifiers(result, typedefDefinition->m_type_declaration.get());
+    }
+    else
+    {
+        AddPointerDeclarationModifiers(result, typedefDefinition->m_type_declaration.get());
+        AddArrayDeclarationModifiers(state, result, typedefDefinition->m_type_declaration.get());
+    }
+
+    state->AddDataType(std::move(typedefDefinition));
 }

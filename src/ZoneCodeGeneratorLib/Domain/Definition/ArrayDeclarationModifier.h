@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "Utils/ClassUtils.h"
 #include "DeclarationModifier.h"
 #include "Domain/Evaluation/IEvaluation.h"
 
@@ -20,5 +21,7 @@ public:
      */
     std::unique_ptr<IEvaluation> m_dynamic_count_evaluation;
 
-    DeclarationModifierType GetType() const override;
+    explicit ArrayDeclarationModifier(int size);
+
+    _NODISCARD DeclarationModifierType GetType() const override;
 };

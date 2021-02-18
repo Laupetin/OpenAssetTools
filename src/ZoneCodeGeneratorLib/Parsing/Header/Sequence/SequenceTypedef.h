@@ -20,6 +20,9 @@ class SequenceTypedef final : public HeaderParser::sequence_t
     static constexpr auto LABEL_ARRAY_OF_POINTERS = 1;
     static constexpr auto LABEL_POINTER_TO_ARRAY = 2;
 
+    void AddPointerDeclarationModifiers(SequenceResult<HeaderParserValue>& result, TypeDeclaration* typeDeclaration) const;
+    void AddArrayDeclarationModifiers(HeaderParserState* state, SequenceResult<HeaderParserValue>& result, TypeDeclaration* typeDeclaration) const;
+
 protected:
     void ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const override;
 
