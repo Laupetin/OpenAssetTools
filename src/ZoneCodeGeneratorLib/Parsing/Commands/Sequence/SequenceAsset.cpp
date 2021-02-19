@@ -18,4 +18,24 @@ SequenceAsset::SequenceAsset()
 
 void SequenceAsset::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
+    const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
+    const auto& enumEntryToken = result.NextCapture(CAPTURE_ENUM_ENTRY);
+
+    auto* definition = state->GetRepository()->GetDataDefinitionByName(typeNameToken.TypeNameValue());
+    if (definition == nullptr)
+        throw ParsingException(typeNameToken.GetPos(), "Unknown type");
+
+    auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(definition);
+    if (definitionWithMembers == nullptr)
+        throw ParsingException(typeNameToken.GetPos(), "Type must be struct or union");
+
+    auto* information = state->GetRepository()->GetInformationFor(definitionWithMembers);
+    if (information == nullptr)
+        throw ParsingException(typeNameToken.GetPos(), "No information for definition");
+
+    auto* enumMember = state->GetRepository()->GetEnumMemberByName(enumEntryToken.IdentifierValue());
+    if (enumMember == nullptr)
+        throw ParsingException(enumEntryToken.GetPos(), "Unknown enum entry");
+
+    information->m_asset_enum_entry = enumMember;
 }
