@@ -27,6 +27,9 @@ public:
     virtual void Add(std::unique_ptr<StructureInformation> structureInformation) = 0;
     virtual void Add(std::unique_ptr<FastFileBlock> fastFileBlock) = 0;
 
+    _NODISCARD virtual const std::string& GetGameName() const = 0;
+    virtual void SetGame(std::string gameName) = 0;
+
     _NODISCARD virtual const std::vector<EnumDefinition*>& GetAllEnums() const = 0;
     _NODISCARD virtual const std::vector<StructDefinition*>& GetAllStructs() const = 0;
     _NODISCARD virtual const std::vector<UnionDefinition*>& GetAllUnions() const = 0;
@@ -36,4 +39,5 @@ public:
 
     _NODISCARD virtual DataDefinition* GetDataDefinitionByName(const std::string& name) const = 0;
     _NODISCARD virtual StructureInformation* GetInformationFor(DefinitionWithMembers* definitionWithMembers) const = 0;
+    _NODISCARD virtual EnumMember* GetEnumMemberByName(const std::string& name) const = 0;
 };

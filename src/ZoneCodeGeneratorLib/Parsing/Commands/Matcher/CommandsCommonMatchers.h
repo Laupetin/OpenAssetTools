@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Domain/Evaluation/IEvaluation.h"
+#include "Parsing/Commands/Impl/CommandsParserState.h"
 #include "Parsing/Commands/Impl/CommandsParserValue.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
 #include "Parsing/Matcher/MatcherLabel.h"
@@ -29,5 +30,5 @@ private:
 
 public:
     static std::unique_ptr<matcher_t> Evaluation(const supplier_t* labelSupplier);
-    static std::unique_ptr<IEvaluation> ParseEvaluation(SequenceResult<CommandsParserValue>& result);
+    static std::unique_ptr<IEvaluation> ParseEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result);
 };

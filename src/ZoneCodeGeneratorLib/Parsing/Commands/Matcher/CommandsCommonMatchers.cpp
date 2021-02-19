@@ -194,7 +194,12 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Evalu
     }).Tag(TAG_EVALUATION);
 }
 
-std::unique_ptr<IEvaluation> CommandsCommonMatchers::ParseEvaluation(SequenceResult<CommandsParserValue>& result)
+std::unique_ptr<IEvaluation> CommandsCommonMatchers::ParseEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
 {
+    if (result.PeekAndRemoveIfTag(TAG_EVALUATION) != TAG_EVALUATION)
+        return nullptr;
+
+
+
     return nullptr;
 }

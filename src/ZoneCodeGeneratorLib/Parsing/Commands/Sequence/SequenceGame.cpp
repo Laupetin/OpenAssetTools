@@ -16,4 +16,5 @@ SequenceGame::SequenceGame()
 
 void SequenceGame::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
+    state->SetGame(result.NextCapture(CAPTURE_GAME).IdentifierValue());
 }

@@ -17,7 +17,7 @@
 #include "Parsing/Commands/Sequence/SequenceUse.h"
 
 CommandsParser::CommandsParser(CommandsLexer* lexer, IDataRepository* targetRepository)
-    : AbstractParser(lexer, std::make_unique<CommandsParserState>()),
+    : AbstractParser(lexer, std::make_unique<CommandsParserState>(targetRepository)),
       m_repository(targetRepository)
 {
 }

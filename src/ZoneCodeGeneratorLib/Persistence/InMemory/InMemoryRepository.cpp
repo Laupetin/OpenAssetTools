@@ -1,10 +1,29 @@
 #include "InMemoryRepository.h"
 
+InMemoryRepository::~InMemoryRepository()
+{
+    for (auto* enumDefinition : m_enums)
+        delete enumDefinition;
+    for (auto* structDefinition : m_structs)
+        delete structDefinition;
+    for (auto* unionDefinition : m_unions)
+        delete unionDefinition;
+    for (auto* typedefDefinition : m_typedefs)
+        delete typedefDefinition;
+    for (auto* structureInformation : m_structures_information)
+        delete structureInformation;
+    for (auto* fastFileBlock : m_fast_file_blocks)
+        delete fastFileBlock;
+}
+
 void InMemoryRepository::Add(std::unique_ptr<EnumDefinition> enumsDefinition)
 {
     auto* raw = enumsDefinition.release();
     m_enums.push_back(raw);
     m_data_definitions_by_name[raw->m_name] = raw;
+
+    for(const auto& enumMember : raw->m_members)
+        m_enum_members_by_name[enumMember->m_name] = enumMember.get();
 }
 
 void InMemoryRepository::Add(std::unique_ptr<StructDefinition> structDefinition)
@@ -38,6 +57,16 @@ void InMemoryRepository::Add(std::unique_ptr<StructureInformation> structureInfo
 void InMemoryRepository::Add(std::unique_ptr<FastFileBlock> fastFileBlock)
 {
     m_fast_file_blocks.push_back(fastFileBlock.release());
+}
+
+const std::string& InMemoryRepository::GetGameName() const
+{
+    return m_game_name;
+}
+
+void InMemoryRepository::SetGame(std::string gameName)
+{
+    m_game_name = std::move(gameName);
 }
 
 const std::vector<EnumDefinition*>& InMemoryRepository::GetAllEnums() const
@@ -85,6 +114,16 @@ StructureInformation* InMemoryRepository::GetInformationFor(DefinitionWithMember
     const auto foundEntry = m_structure_information_by_definition.find(definitionWithMembers);
 
     if (foundEntry != m_structure_information_by_definition.end())
+        return foundEntry->second;
+
+    return nullptr;
+}
+
+EnumMember* InMemoryRepository::GetEnumMemberByName(const std::string& name) const
+{
+    const auto foundEntry = m_enum_members_by_name.find(name);
+
+    if (foundEntry != m_enum_members_by_name.end())
         return foundEntry->second;
 
     return nullptr;
