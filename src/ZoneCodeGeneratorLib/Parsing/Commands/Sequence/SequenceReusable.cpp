@@ -18,4 +18,15 @@ SequenceReusable::SequenceReusable()
 
 void SequenceReusable::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
+    const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
+
+    StructureInformation* type;
+    std::vector<MemberInformation*> members;
+    if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), type, members))
+        throw ParsingException(typeNameToken.GetPos(), "Unknown type");
+
+    if (members.empty())
+        throw ParsingException(typeNameToken.GetPos(), "Need to specify a member when trying to mark as reusable.");
+
+    members.back()->m_is_reusable = true;
 }
