@@ -1,9 +1,7 @@
 #include "StructureInformation.h"
 
 StructureInformation::StructureInformation(DefinitionWithMembers* definition)
-    : m_has_non_default_fast_file_align(false),
-      m_custom_fast_file_align(0),
-      m_definition(definition),
+    : m_definition(definition),
       m_asset_enum_entry(nullptr),
       m_is_leaf(false),
       m_non_embedded_reference_exists(false),

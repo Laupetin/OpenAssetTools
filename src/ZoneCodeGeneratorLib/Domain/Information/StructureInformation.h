@@ -11,9 +11,6 @@ class MemberInformation;
 class StructureInformation
 {
 public:
-    bool m_has_non_default_fast_file_align;
-    unsigned m_custom_fast_file_align;
-
     DefinitionWithMembers* const m_definition;
     EnumMember* m_asset_enum_entry;
 
