@@ -11,6 +11,10 @@
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
 #include "Parsing/PostProcessing/CalculateSizeAndAlignPostProcessor.h"
+#include "Parsing/PostProcessing/LeafsPostProcessor.h"
+#include "Parsing/PostProcessing/MemberLeafsPostProcessor.h"
+#include "Parsing/PostProcessing/UnionsPostProcessor.h"
+#include "Parsing/PostProcessing/UsagesPostProcessor.h"
 
 CommandsFileReader::CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
@@ -50,7 +54,12 @@ void CommandsFileReader::SetupStreamProxies()
 
 void CommandsFileReader::SetupPostProcessors()
 {
+    // Order is important
     m_post_processors.emplace_back(std::make_unique<CalculateSizeAndAlignPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<UsagesPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<LeafsPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<MemberLeafsPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<UnionsPostProcessor>());
 }
 
 bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
