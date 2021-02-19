@@ -36,27 +36,21 @@ DefinitionWithMembers::DefinitionWithMembers(std::string _namespace, std::string
 
 unsigned DefinitionWithMembers::GetAlignment() const
 {
-    assert(m_flags & FLAG_ALIGNMENT_CALCULATED);
-    /*if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
-        CalculateAlignment();*/
+    assert(m_flags & FLAG_FIELDS_CALCULATED);
 
     return m_alignment;
 }
 
 bool DefinitionWithMembers::GetForceAlignment() const
 {
-    assert(m_flags & FLAG_ALIGNMENT_CALCULATED);
-    /*if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
-        CalculateAlignment();*/
+    assert(m_flags & FLAG_FIELDS_CALCULATED);
 
     return m_flags & FLAG_ALIGNMENT_FORCED;
 }
 
 unsigned DefinitionWithMembers::GetSize() const
 {
-    assert(m_flags & FLAG_SIZE_CALCULATED);
-    /*if ((m_flags & FLAG_SIZE_CALCULATED) == 0)
-        CalculateSize();*/
+    assert(m_flags & FLAG_FIELDS_CALCULATED);
 
     return m_size;
 }

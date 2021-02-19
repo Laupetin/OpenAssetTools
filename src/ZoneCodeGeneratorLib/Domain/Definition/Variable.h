@@ -15,6 +15,6 @@ public:
 
     Variable(std::string name, std::unique_ptr<TypeDeclaration> typeDeclaration);
 
-    unsigned GetAlignment();
-    bool GetForceAlignment();
+    unsigned GetAlignment() const;
+    bool GetForceAlignment() const;
 };

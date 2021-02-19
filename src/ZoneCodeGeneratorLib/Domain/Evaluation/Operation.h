@@ -14,6 +14,7 @@ public:
     std::unique_ptr<IEvaluation> m_operand2;
 
     explicit Operation(const OperationType* type);
+    Operation(const OperationType* type, std::unique_ptr<IEvaluation> operand1, std::unique_ptr<IEvaluation> operand2);
 
     _NODISCARD EvaluationType GetType() const override;
     _NODISCARD bool IsStatic() const override;

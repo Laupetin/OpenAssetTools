@@ -16,75 +16,20 @@ TypeDeclaration::TypeDeclaration(const DataDefinition* type)
     assert(m_type != nullptr);
 }
 
-void TypeDeclaration::CalculateSize()
+unsigned TypeDeclaration::GetSize() const
 {
-    auto currentSize = m_type->GetSize();
-
-    for (auto i = m_declaration_modifiers.size(); i > 0; i--)
-    {
-        const auto& declarationModifier = m_declaration_modifiers[i - 1];
-
-        switch (declarationModifier->GetType())
-        {
-        case DeclarationModifierType::POINTER:
-            currentSize = POINTER_SIZE;
-            break;
-
-        case DeclarationModifierType::ARRAY:
-            currentSize *= dynamic_cast<ArrayDeclarationModifier*>(declarationModifier.get())->m_size;
-            break;
-        }
-    }
-
-    m_flags |= FLAG_SIZE_CALCULATED;
-}
-
-void TypeDeclaration::CalculateAlignment()
-{
-    auto hasPointerModifier = false;
-    for (const auto& declarationModifier : m_declaration_modifiers)
-    {
-        if (declarationModifier->GetType() == DeclarationModifierType::POINTER)
-        {
-            hasPointerModifier = true;
-            break;
-        }
-    }
-
-    if (hasPointerModifier)
-    {
-        m_alignment = POINTER_SIZE;
-    }
-    else
-    {
-        m_alignment = m_type->GetAlignment();
-        if (m_type->GetForceAlignment())
-            m_flags |= FLAG_ALIGNMENT_FORCED;
-    }
-
-    m_flags |= FLAG_ALIGNMENT_CALCULATED;
-}
-
-unsigned TypeDeclaration::GetSize()
-{
-    if ((m_flags & FLAG_SIZE_CALCULATED) == 0)
-        CalculateSize();
-
+    assert(m_flags & FLAG_FIELDS_CALCULATED);
     return m_size;
 }
 
-unsigned TypeDeclaration::GetAlignment()
+unsigned TypeDeclaration::GetAlignment() const
 {
-    if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
-        CalculateAlignment();
-
+    assert(m_flags & FLAG_FIELDS_CALCULATED);
     return m_alignment;
 }
 
-bool TypeDeclaration::GetForceAlignment()
+bool TypeDeclaration::GetForceAlignment() const
 {
-    if ((m_flags & FLAG_ALIGNMENT_CALCULATED) == 0)
-        CalculateAlignment();
-
+    assert(m_flags & FLAG_FIELDS_CALCULATED);
     return m_flags & FLAG_ALIGNMENT_FORCED;
 }

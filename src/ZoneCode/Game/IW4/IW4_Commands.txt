@@ -1,5 +1,6 @@
 // Game: Modern Warfare 2 (IW4)
 game IW4;
+architecture x86;
 
 // Game Assets
 asset PhysPreset ASSET_TYPE_PHYSPRESET;

@@ -4,6 +4,7 @@
 
 #include "ZoneCodeGeneratorArguments.h"
 #include "Parsing/IParserLineStream.h"
+#include "Parsing/PostProcessing/IPostProcessor.h"
 #include "Persistence/IDataRepository.h"
 
 class CommandsFileReader
@@ -17,8 +18,11 @@ class CommandsFileReader
     std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
     IParserLineStream* m_stream;
 
+    std::vector<std::unique_ptr<IPostProcessor>> m_post_processors;
+
     bool OpenBaseStream();
     void SetupStreamProxies();
+    void SetupPostProcessors();
 
 public:
     explicit CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);

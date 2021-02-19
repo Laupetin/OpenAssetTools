@@ -17,4 +17,14 @@ SequenceUse::SequenceUse()
 
 void SequenceUse::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
+    const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
+    auto* definition = state->GetRepository()->GetDataDefinitionByName(typeNameToken.TypeNameValue());
+    if (definition == nullptr)
+        throw ParsingException(typeNameToken.GetPos(), "Unknown type");
+
+    auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(definition);
+    if (definitionWithMembers == nullptr)
+        throw ParsingException(typeNameToken.GetPos(), "Type must be able to have members");
+
+    state->SetInUse(state->GetRepository()->GetInformationFor(definitionWithMembers));
 }

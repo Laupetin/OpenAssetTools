@@ -102,7 +102,7 @@ void HeaderBlockUnion::SetBlockName(const TokenPos& nameTokenPos, std::string na
 
 bool HeaderBlockUnion::IsDefiningVariable()
 {
-    return !m_is_typedef && !m_variable_name.empty();
+    return true;
 }
 
 DataDefinition* HeaderBlockUnion::GetVariableType()

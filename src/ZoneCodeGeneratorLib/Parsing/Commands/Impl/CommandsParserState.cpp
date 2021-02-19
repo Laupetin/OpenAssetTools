@@ -16,6 +16,11 @@ void CommandsParserState::AddBlock(std::unique_ptr<FastFileBlock> block) const
     m_repository->Add(std::move(block));
 }
 
+void CommandsParserState::SetArchitecture(const Architecture architecture) const
+{
+    m_repository->SetArchitecture(architecture);
+}
+
 void CommandsParserState::SetGame(std::string gameName) const
 {
     m_repository->SetGame(std::move(gameName));
@@ -31,12 +36,105 @@ void CommandsParserState::SetInUse(StructureInformation* structure)
     m_in_use = structure;
 }
 
-bool CommandsParserState::GetMembersFromParts(const std::string& typeNameValue, StructureInformation* baseType, std::vector<MemberInformation*>& members)
+MemberInformation* CommandsParserState::GetMemberWithName(const std::string& memberName, StructureInformation* type)
 {
+    for (const auto& member : type->m_ordered_members)
+    {
+        if (member->m_member->m_name == memberName)
+        {
+            return member.get();
+        }
+    }
+
+    return nullptr;
+}
+
+bool CommandsParserState::GetNextTypenameSeparatorPos(const std::string& typeNameValue, const unsigned startPos, unsigned& separatorPos)
+{
+    const auto typeNameValueSize = typeNameValue.size();
+    for (auto currentHead = startPos + 1; currentHead < typeNameValueSize; currentHead++)
+    {
+        if (typeNameValue[currentHead] == ':'
+            && typeNameValue[currentHead - 1] == ':')
+        {
+            separatorPos = currentHead - 1;
+            return true;
+        }
+    }
+
     return false;
 }
 
-bool CommandsParserState::GetTypenameAndMembersFromParts(const std::string& typeNameValue, StructureInformation*& structure, std::vector<MemberInformation*>& members)
+bool CommandsParserState::ExtractMembersFromTypenameInternal(const std::string& typeNameValue, unsigned typeNameOffset, StructureInformation* type, std::vector<MemberInformation*>& members)
 {
-    return false;
+    auto startOffset = typeNameOffset;
+    while (GetNextTypenameSeparatorPos(typeNameValue, typeNameOffset, typeNameOffset))
+    {
+        auto* foundMember = GetMemberWithName(std::string(typeNameValue, startOffset, typeNameOffset - startOffset), type);
+
+        if (foundMember == nullptr)
+            return false;
+
+        members.push_back(foundMember);
+        type = foundMember->m_type;
+        typeNameOffset += 2;
+        startOffset = typeNameOffset;
+    }
+
+    auto* foundMember = GetMemberWithName(std::string(typeNameValue, startOffset, typeNameValue.size() - startOffset), type);
+    if (foundMember == nullptr)
+        return false;
+
+    members.push_back(foundMember);
+    return true;
+}
+
+bool CommandsParserState::GetMembersFromTypename(const std::string& typeNameValue, StructureInformation* baseType, std::vector<MemberInformation*>& members) const
+{
+    return m_in_use != nullptr && ExtractMembersFromTypenameInternal(typeNameValue, 0, m_in_use, members)
+        || ExtractMembersFromTypenameInternal(typeNameValue, 0, baseType, members);
+}
+
+bool CommandsParserState::GetTypenameAndMembersFromTypename(const std::string& typeNameValue, StructureInformation*& structure, std::vector<MemberInformation*>& members) const
+{
+    if (m_in_use != nullptr)
+    {
+        if (ExtractMembersFromTypenameInternal(typeNameValue, 0, m_in_use, members))
+        {
+            structure = m_in_use;
+            return true;
+        }
+        members.clear();
+    }
+
+    DataDefinition* foundDefinition = nullptr;
+    unsigned currentSeparatorPos = 0;
+    while (GetNextTypenameSeparatorPos(typeNameValue, currentSeparatorPos, currentSeparatorPos))
+    {
+        std::string currentTypename(typeNameValue, 0, currentSeparatorPos);
+        currentSeparatorPos += 2;
+
+        foundDefinition = m_repository->GetDataDefinitionByName(currentTypename);
+        if (foundDefinition != nullptr)
+            break;
+    }
+
+    if (foundDefinition == nullptr)
+    {
+        currentSeparatorPos = typeNameValue.size();
+        foundDefinition = m_repository->GetDataDefinitionByName(typeNameValue);
+    }
+
+    if (foundDefinition == nullptr)
+        return false;
+
+    auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(foundDefinition);
+    if (definitionWithMembers == nullptr)
+        return false;
+
+    structure = m_repository->GetInformationFor(definitionWithMembers);
+    if (currentSeparatorPos >= typeNameValue.size())
+        return true;
+
+    return ExtractMembersFromTypenameInternal(typeNameValue, currentSeparatorPos, structure, members);
 }

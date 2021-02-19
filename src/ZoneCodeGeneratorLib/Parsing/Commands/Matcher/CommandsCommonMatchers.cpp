@@ -1,8 +1,13 @@
 #include "CommandsCommonMatchers.h"
 
+#include <list>
 #include <sstream>
+#include <vector>
 
 #include "CommandsMatcherFactory.h"
+#include "Domain/Evaluation/OperandDynamic.h"
+#include "Domain/Evaluation/OperandStatic.h"
+#include "Domain/Evaluation/Operation.h"
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Typename(const supplier_t* labelSupplier)
 {
@@ -86,43 +91,23 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Array
     });
 }
 
-static constexpr int TAG_OPERATION_TYPE = std::numeric_limits<int>::max() - 1;
-static constexpr int TAG_ADD = std::numeric_limits<int>::max() - 2;
-static constexpr int TAG_MINUS = std::numeric_limits<int>::max() - 3;
-static constexpr int TAG_MULTIPLY = std::numeric_limits<int>::max() - 4;
-static constexpr int TAG_DIVIDE = std::numeric_limits<int>::max() - 5;
-static constexpr int TAG_REMAINDER = std::numeric_limits<int>::max() - 6;
-static constexpr int TAG_BITWISE_AND = std::numeric_limits<int>::max() - 7;
-static constexpr int TAG_BITWISE_XOR = std::numeric_limits<int>::max() - 8;
-static constexpr int TAG_BITWISE_OR = std::numeric_limits<int>::max() - 9;
-static constexpr int TAG_SHIFT_LEFT = std::numeric_limits<int>::max() - 10;
-static constexpr int TAG_SHIFT_RIGHT = std::numeric_limits<int>::max() - 11;
-static constexpr int TAG_GREATER_THAN = std::numeric_limits<int>::max() - 12;
-static constexpr int TAG_GREATER_EQUAL = std::numeric_limits<int>::max() - 13;
-static constexpr int TAG_LESS_THAN = std::numeric_limits<int>::max() - 14;
-static constexpr int TAG_LESS_EQUAL = std::numeric_limits<int>::max() - 15;
-static constexpr int TAG_EQUALS = std::numeric_limits<int>::max() - 16;
-static constexpr int TAG_NOT_EQUAL = std::numeric_limits<int>::max() - 17;
-static constexpr int TAG_LOGICAL_AND = std::numeric_limits<int>::max() - 18;
-static constexpr int TAG_LOGICAL_OR = std::numeric_limits<int>::max() - 19;
-static constexpr int TAG_OPERAND = std::numeric_limits<int>::max() - 20;
-static constexpr int TAG_OPERAND_TYPENAME = std::numeric_limits<int>::max() - 21;
-static constexpr int TAG_OPERAND_ARRAY = std::numeric_limits<int>::max() - 22;
-static constexpr int TAG_OPERAND_ARRAY_END = std::numeric_limits<int>::max() - 23;
-static constexpr int TAG_OPERAND_INTEGER = std::numeric_limits<int>::max() - 24;
-static constexpr int TAG_OPERAND_FLOATING_POINT = std::numeric_limits<int>::max() - 25;
-static constexpr int TAG_EVALUATION_NOT = std::numeric_limits<int>::max() - 26;
-static constexpr int TAG_EVALUATION_PARENTHESIS = std::numeric_limits<int>::max() - 27;
-static constexpr int TAG_EVALUATION_PARENTHESIS_END = std::numeric_limits<int>::max() - 28;
-static constexpr int TAG_EVALUATION = std::numeric_limits<int>::max() - 29;
-static constexpr int TAG_EVALUATION_OPERATION = std::numeric_limits<int>::max() - 30;
+static constexpr int TAG_OPERAND = std::numeric_limits<int>::max() - 1;
+static constexpr int TAG_OPERAND_TYPENAME = std::numeric_limits<int>::max() - 2;
+static constexpr int TAG_OPERAND_ARRAY = std::numeric_limits<int>::max() - 3;
+static constexpr int TAG_OPERAND_ARRAY_END = std::numeric_limits<int>::max() - 4;
+static constexpr int TAG_OPERAND_INTEGER = std::numeric_limits<int>::max() - 5;
+static constexpr int TAG_EVALUATION_NOT = std::numeric_limits<int>::max() - 6;
+static constexpr int TAG_EVALUATION_PARENTHESIS = std::numeric_limits<int>::max() - 7;
+static constexpr int TAG_EVALUATION_PARENTHESIS_END = std::numeric_limits<int>::max() - 8;
+static constexpr int TAG_EVALUATION = std::numeric_limits<int>::max() - 9;
+static constexpr int TAG_EVALUATION_OPERATION = std::numeric_limits<int>::max() - 10;
 
 static constexpr int CAPTURE_OPERAND_TYPENAME = std::numeric_limits<int>::max() - 1;
 static constexpr int CAPTURE_OPERAND_ARRAY = std::numeric_limits<int>::max() - 1;
 static constexpr int CAPTURE_OPERAND_INTEGER = std::numeric_limits<int>::max() - 2;
-static constexpr int CAPTURE_OPERAND_FLOATING_POINT = std::numeric_limits<int>::max() - 3;
+static constexpr int CAPTURE_OPERATION_TYPE = std::numeric_limits<int>::max() - 3;
 
-std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::OperandArray(const supplier_t* labelSupplier)
+std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ParseOperandArray(const supplier_t* labelSupplier)
 {
     const CommandsMatcherFactory create(labelSupplier);
 
@@ -133,44 +118,97 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Opera
     }).Tag(TAG_OPERAND_ARRAY);
 }
 
-std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Operand(const supplier_t* labelSupplier)
+std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ParseOperand(const supplier_t* labelSupplier)
 {
     const CommandsMatcherFactory create(labelSupplier);
 
     return create.Or({
         create.And({
             create.Label(LABEL_TYPENAME).Capture(CAPTURE_OPERAND_TYPENAME),
-            create.OptionalLoop(MatcherFactoryWrapper<CommandsParserValue>(OperandArray(labelSupplier)).Capture(CAPTURE_OPERAND_ARRAY))
+            create.OptionalLoop(MatcherFactoryWrapper<CommandsParserValue>(ParseOperandArray(labelSupplier)).Capture(CAPTURE_OPERAND_ARRAY))
         }).Tag(TAG_OPERAND_TYPENAME),
-        create.Integer().Tag(TAG_OPERAND_INTEGER).Capture(CAPTURE_OPERAND_INTEGER),
-        create.FloatingPoint().Tag(TAG_OPERAND_FLOATING_POINT).Capture(CAPTURE_OPERAND_FLOATING_POINT)
+        create.Integer().Tag(TAG_OPERAND_INTEGER).Capture(CAPTURE_OPERAND_INTEGER)
     }).Tag(TAG_OPERAND);
 }
 
-std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::OperationType(const supplier_t* labelSupplier)
+std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ParseOperationType(const supplier_t* labelSupplier)
 {
     const CommandsMatcherFactory create(labelSupplier);
 
     return create.Or({
-        create.Char('+').Tag(TAG_ADD),
-        create.Char('-').Tag(TAG_MINUS),
-        create.Char('*').Tag(TAG_MULTIPLY),
-        create.Char('/').Tag(TAG_DIVIDE),
-        create.Char('%').Tag(TAG_REMAINDER),
-        create.Char('&').Tag(TAG_BITWISE_AND),
-        create.Char('^').Tag(TAG_BITWISE_XOR),
-        create.Char('|').Tag(TAG_BITWISE_OR),
-        create.Type(CommandsParserValueType::SHIFT_LEFT).Tag(TAG_SHIFT_LEFT),
-        create.Type(CommandsParserValueType::SHIFT_RIGHT).Tag(TAG_SHIFT_RIGHT),
-        create.Char('>').Tag(TAG_GREATER_THAN),
-        create.Type(CommandsParserValueType::GREATER_EQUAL).Tag(TAG_GREATER_EQUAL),
-        create.Char('<').Tag(TAG_LESS_THAN),
-        create.Type(CommandsParserValueType::LESS_EQUAL).Tag(TAG_LESS_EQUAL),
-        create.Type(CommandsParserValueType::EQUALS).Tag(TAG_EQUALS),
-        create.Type(CommandsParserValueType::NOT_EQUAL).Tag(TAG_NOT_EQUAL),
-        create.Type(CommandsParserValueType::LOGICAL_AND).Tag(TAG_LOGICAL_AND),
-        create.Type(CommandsParserValueType::LOGICAL_OR).Tag(TAG_LOGICAL_OR)
-    }).Tag(TAG_OPERATION_TYPE);
+        create.Char('+').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_ADD);
+        }),
+        create.Char('-').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SUBTRACT);
+        }),
+        create.Char('*').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_MULTIPLY);
+        }),
+        create.Char('/').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_DIVIDE);
+        }),
+        create.Char('%').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_REMAINDER);
+        }),
+        create.Char('&').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_AND);
+        }),
+        create.Char('^').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_XOR);
+        }),
+        create.Char('|').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_OR);
+        }),
+        create.Type(CommandsParserValueType::SHIFT_LEFT).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SHIFT_LEFT);
+        }),
+        create.Type(CommandsParserValueType::SHIFT_RIGHT).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SHIFT_RIGHT);
+        }),
+        create.Char('>').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_GREATER_THAN);
+        }),
+        create.Type(CommandsParserValueType::GREATER_EQUAL).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_GREATER_EQUAL_THAN);
+        }),
+        create.Char('<').Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_LESS_THAN);
+        }),
+        create.Type(CommandsParserValueType::LESS_EQUAL).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_LESS_EQUAL_THAN);
+        }),
+        create.Type(CommandsParserValueType::EQUALS).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_EQUALS);
+        }),
+        create.Type(CommandsParserValueType::NOT_EQUAL).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_NOT_EQUAL);
+        }),
+        create.Type(CommandsParserValueType::LOGICAL_AND).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_AND);
+        }),
+        create.Type(CommandsParserValueType::LOGICAL_OR).Transform([](CommandsMatcherFactory::token_list_t& values)
+        {
+            return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_OR);
+        })
+    }).Capture(CAPTURE_OPERATION_TYPE);
 }
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Evaluation(const supplier_t* labelSupplier)
@@ -185,21 +223,123 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Evalu
                 create.Label(LABEL_EVALUATION),
                 create.Char(')').Tag(TAG_EVALUATION_PARENTHESIS_END)
             }).Tag(TAG_EVALUATION_PARENTHESIS),
-            Operand(labelSupplier)
+            ParseOperand(labelSupplier)
         }),
         create.Optional(create.And({
-            OperationType(labelSupplier),
+            ParseOperationType(labelSupplier),
             create.Label(LABEL_EVALUATION)
-        })).Tag(TAG_EVALUATION_OPERATION)
+        }).Tag(TAG_EVALUATION_OPERATION))
     }).Tag(TAG_EVALUATION);
 }
 
-std::unique_ptr<IEvaluation> CommandsCommonMatchers::ParseEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
+std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessEvaluationInParenthesis(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
+{
+    const auto isNegated = result.PeekAndRemoveIfTag(TAG_EVALUATION_NOT) == TAG_EVALUATION_NOT;
+
+    auto processedEvaluation = ProcessEvaluation(state, result);
+
+    if (result.PeekAndRemoveIfTag(TAG_EVALUATION_PARENTHESIS_END) != TAG_EVALUATION_PARENTHESIS_END)
+        throw ParsingException(TokenPos(), "Expected parenthesis end tag @ EvaluationInParenthesis");
+
+    if (isNegated)
+        processedEvaluation = std::make_unique<Operation>(OperationType::OPERATION_EQUALS, std::move(processedEvaluation), std::make_unique<OperandStatic>(0));
+
+    return processedEvaluation;
+}
+
+std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessOperand(CommandsParserState* state, SequenceResult<CommandsParserValue>& result, StructureInformation* currentType)
+{
+    const auto nextTag = result.NextTag();
+
+    if (nextTag == TAG_OPERAND_INTEGER)
+    {
+        return std::make_unique<OperandStatic>(result.NextCapture(CAPTURE_OPERAND_INTEGER).IntegerValue());
+    }
+
+    if (nextTag == TAG_OPERAND_TYPENAME)
+    {
+        const auto& typeNameToken = result.NextCapture(CAPTURE_OPERAND_TYPENAME);
+        std::vector<std::unique_ptr<IEvaluation>> arrayIndexEvaluations;
+
+        while (result.PeekAndRemoveIfTag(TAG_OPERAND_ARRAY) == TAG_OPERAND_ARRAY)
+        {
+            arrayIndexEvaluations.emplace_back(ProcessEvaluation(state, result, currentType));
+
+            if (result.PeekAndRemoveIfTag(TAG_OPERAND_ARRAY_END) != TAG_OPERAND_ARRAY_END)
+                throw ParsingException(TokenPos(), "Expected operand array end tag @ Operand");
+        }
+
+        auto* foundEnumMember = state->GetRepository()->GetEnumMemberByName(typeNameToken.TypeNameValue());
+        if (foundEnumMember != nullptr)
+            return std::make_unique<OperandStatic>(foundEnumMember);
+
+        StructureInformation* structure;
+        std::vector<MemberInformation*> memberChain;
+        if (state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), structure, memberChain))
+            return std::make_unique<OperandDynamic>(structure, std::move(memberChain), std::move(arrayIndexEvaluations));
+
+        if (currentType != nullptr && state->GetMembersFromTypename(typeNameToken.TypeNameValue(), currentType, memberChain))
+            return std::make_unique<OperandDynamic>(currentType, std::move(memberChain), std::move(arrayIndexEvaluations));
+
+        throw ParsingException(typeNameToken.GetPos(), "Unknown type");
+    }
+
+    throw ParsingException(TokenPos(), "Unknown operand type @ Operand");
+}
+
+std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
+{
+    return ProcessEvaluation(state, result, nullptr);
+}
+
+std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result, StructureInformation* currentType)
 {
     if (result.PeekAndRemoveIfTag(TAG_EVALUATION) != TAG_EVALUATION)
         return nullptr;
 
+    if (currentType == state->GetInUse())
+        currentType = nullptr;
 
+    std::list<std::unique_ptr<IEvaluation>> operands;
+    std::list<std::pair<unsigned, const OperationType*>> operators;
+
+    while (true)
+    {
+        std::unique_ptr<IEvaluation> firstStatementPart;
+        const auto nextTag = result.NextTag();
+        switch (nextTag)
+        {
+        case TAG_EVALUATION_PARENTHESIS:
+            firstStatementPart = ProcessEvaluationInParenthesis(state, result);
+            break;
+
+        case TAG_OPERAND:
+            firstStatementPart = ProcessOperand(state, result, currentType);
+            break;
+
+        default:
+            throw ParsingException(TokenPos(), "Invalid followup tag @ Evaluation");
+        }
+        operands.emplace_back(std::move(firstStatementPart));
+
+        if (result.PeekAndRemoveIfTag(TAG_EVALUATION_OPERATION) == TAG_EVALUATION_OPERATION)
+            operators.emplace_back(operators.size(), result.NextCapture(CAPTURE_OPERATION_TYPE).OpTypeValue());
+        else
+            break;
+
+        if (result.PeekAndRemoveIfTag(TAG_EVALUATION) != TAG_EVALUATION)
+            throw ParsingException(TokenPos(), "Expected EvaluationTag @ Evaluation");
+    }
+
+    operators.sort([](const std::pair<unsigned, const OperationType*>& p1, const std::pair<unsigned, const OperationType*>& p2)
+    {
+        return p1.second->m_precedence > p2.second->m_precedence;
+    });
+
+    while (!operators.empty())
+    {
+        operators.pop_back();
+    }
 
     return nullptr;
 }

@@ -7,6 +7,7 @@
 #include "Domain/Definition/StructDefinition.h"
 #include "Domain/Definition/TypedefDefinition.h"
 #include "Domain/Definition/UnionDefinition.h"
+#include "Domain/Environment/Architecture.h"
 #include "Domain/Information/StructureInformation.h"
 #include "Domain/FastFile/FastFileBlock.h"
 
@@ -29,6 +30,8 @@ public:
 
     _NODISCARD virtual const std::string& GetGameName() const = 0;
     virtual void SetGame(std::string gameName) = 0;
+    _NODISCARD virtual Architecture GetArchitecture() const = 0;
+    virtual void SetArchitecture(Architecture architecture) = 0;
 
     _NODISCARD virtual const std::vector<EnumDefinition*>& GetAllEnums() const = 0;
     _NODISCARD virtual const std::vector<StructDefinition*>& GetAllStructs() const = 0;
@@ -38,6 +41,6 @@ public:
     _NODISCARD virtual const std::vector<FastFileBlock*>& GetAllFastFileBlocks() const = 0;
 
     _NODISCARD virtual DataDefinition* GetDataDefinitionByName(const std::string& name) const = 0;
-    _NODISCARD virtual StructureInformation* GetInformationFor(DefinitionWithMembers* definitionWithMembers) const = 0;
+    _NODISCARD virtual StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const = 0;
     _NODISCARD virtual EnumMember* GetEnumMemberByName(const std::string& name) const = 0;
 };

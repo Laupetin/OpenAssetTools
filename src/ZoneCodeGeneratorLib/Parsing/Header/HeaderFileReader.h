@@ -5,6 +5,7 @@
 #include "ZoneCodeGeneratorArguments.h"
 #include "Parsing/IPackValueSupplier.h"
 #include "Parsing/IParserLineStream.h"
+#include "Parsing/PostProcessing/IPostProcessor.h"
 #include "Persistence/IDataRepository.h"
 
 class HeaderFileReader
@@ -19,8 +20,11 @@ class HeaderFileReader
     const IPackValueSupplier* m_pack_value_supplier;
     IParserLineStream* m_stream;
 
+    std::vector<std::unique_ptr<IPostProcessor>> m_post_processors;
+
     bool OpenBaseStream();
     void SetupStreamProxies();
+    void SetupPostProcessors();
 
 public:
     HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);

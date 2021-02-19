@@ -1,5 +1,10 @@
 #include "InMemoryRepository.h"
 
+InMemoryRepository::InMemoryRepository()
+    : m_architecture(Architecture::UNKNOWN)
+{
+}
+
 InMemoryRepository::~InMemoryRepository()
 {
     for (auto* enumDefinition : m_enums)
@@ -22,7 +27,7 @@ void InMemoryRepository::Add(std::unique_ptr<EnumDefinition> enumsDefinition)
     m_enums.push_back(raw);
     m_data_definitions_by_name[raw->m_name] = raw;
 
-    for(const auto& enumMember : raw->m_members)
+    for (const auto& enumMember : raw->m_members)
         m_enum_members_by_name[enumMember->m_name] = enumMember.get();
 }
 
@@ -69,6 +74,16 @@ void InMemoryRepository::SetGame(std::string gameName)
     m_game_name = std::move(gameName);
 }
 
+Architecture InMemoryRepository::GetArchitecture() const
+{
+    return m_architecture;
+}
+
+void InMemoryRepository::SetArchitecture(const Architecture architecture)
+{
+    m_architecture = architecture;
+}
+
 const std::vector<EnumDefinition*>& InMemoryRepository::GetAllEnums() const
 {
     return m_enums;
@@ -109,7 +124,7 @@ DataDefinition* InMemoryRepository::GetDataDefinitionByName(const std::string& n
     return nullptr;
 }
 
-StructureInformation* InMemoryRepository::GetInformationFor(DefinitionWithMembers* definitionWithMembers) const
+StructureInformation* InMemoryRepository::GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const
 {
     const auto foundEntry = m_structure_information_by_definition.find(definitionWithMembers);
 

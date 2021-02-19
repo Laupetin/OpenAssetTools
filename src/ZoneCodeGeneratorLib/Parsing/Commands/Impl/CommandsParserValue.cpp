@@ -105,6 +105,13 @@ CommandsParserValue CommandsParserValue::TypeName(const TokenPos pos, std::strin
     return pv;
 }
 
+CommandsParserValue CommandsParserValue::OpType(const TokenPos pos, const OperationType* operationType)
+{
+    CommandsParserValue pv(pos, CommandsParserValueType::OPERATION_TYPE);
+    pv.m_value.op_type_value = operationType;
+    return pv;
+}
+
 CommandsParserValue::CommandsParserValue(const TokenPos pos, const CommandsParserValueType type)
     : m_pos(pos),
       m_type(type),
@@ -200,4 +207,10 @@ std::string& CommandsParserValue::TypeNameValue() const
 {
     assert(m_type == CommandsParserValueType::TYPE_NAME);
     return *m_value.string_value;
+}
+
+const OperationType* CommandsParserValue::OpTypeValue() const
+{
+    assert(m_type == CommandsParserValueType::OPERATION_TYPE);
+    return m_value.op_type_value;
 }

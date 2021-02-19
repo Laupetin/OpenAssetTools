@@ -3,6 +3,8 @@
 #include <string>
 
 
+
+#include "Domain/Evaluation/OperationType.h"
 #include "Parsing/IParserValue.h"
 #include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
@@ -43,6 +45,7 @@ enum class CommandsParserValueType
 
     // Parser created
     TYPE_NAME,
+    OPERATION_TYPE,
 
     // End
     MAX
@@ -60,6 +63,7 @@ public:
         int int_value;
         double double_value;
         std::string* string_value;
+        const OperationType* op_type_value;
     } m_value;
 
     static CommandsParserValue Invalid(TokenPos pos);
@@ -78,6 +82,7 @@ public:
     static CommandsParserValue String(TokenPos pos, std::string* stringValue);
     static CommandsParserValue Identifier(TokenPos pos, std::string* identifier);
     static CommandsParserValue TypeName(TokenPos pos, std::string* typeName);
+    static CommandsParserValue OpType(TokenPos pos, const OperationType* operationType);
 
 private:
     CommandsParserValue(TokenPos pos, CommandsParserValueType type);
@@ -99,4 +104,5 @@ public:
     _NODISCARD std::string& IdentifierValue() const;
     _NODISCARD size_t IdentifierHash() const;
     _NODISCARD std::string& TypeNameValue() const;
+    _NODISCARD const OperationType* OpTypeValue() const;
 };

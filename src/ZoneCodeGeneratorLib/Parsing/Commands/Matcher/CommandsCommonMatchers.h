@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Domain/Evaluation/IEvaluation.h"
+#include "Domain/Evaluation/OperationType.h"
 #include "Parsing/Commands/Impl/CommandsParserState.h"
 #include "Parsing/Commands/Impl/CommandsParserValue.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
@@ -24,11 +25,15 @@ public:
     static std::unique_ptr<matcher_t> ArrayDef(const supplier_t* labelSupplier);
 
 private:
-    static std::unique_ptr<matcher_t> OperandArray(const supplier_t* labelSupplier);
-    static std::unique_ptr<matcher_t> Operand(const supplier_t* labelSupplier);
-    static std::unique_ptr<matcher_t> OperationType(const supplier_t* labelSupplier);
+    static std::unique_ptr<matcher_t> ParseOperandArray(const supplier_t* labelSupplier);
+    static std::unique_ptr<matcher_t> ParseOperand(const supplier_t* labelSupplier);
+    static std::unique_ptr<matcher_t> ParseOperationType(const supplier_t* labelSupplier);
+
+    static std::unique_ptr<IEvaluation> ProcessEvaluationInParenthesis(CommandsParserState* state, SequenceResult<CommandsParserValue>& result);
+    static std::unique_ptr<IEvaluation> ProcessOperand(CommandsParserState* state, SequenceResult<CommandsParserValue>& result, StructureInformation* currentType);
 
 public:
     static std::unique_ptr<matcher_t> Evaluation(const supplier_t* labelSupplier);
-    static std::unique_ptr<IEvaluation> ParseEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result);
+    static std::unique_ptr<IEvaluation> ProcessEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result);
+    static std::unique_ptr<IEvaluation> ProcessEvaluation(CommandsParserState* state, SequenceResult<CommandsParserValue>& result, StructureInformation* currentType);
 };

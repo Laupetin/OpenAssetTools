@@ -73,7 +73,7 @@ const OperationType* const OperationType::OPERATION_GREATER_THAN
         return op1 > op2 ? 1 : 0;
     });
 
-const OperationType* const OperationType::OPERATION_GREATER_EQUALS_THAN
+const OperationType* const OperationType::OPERATION_GREATER_EQUAL_THAN
     = new OperationType(">=", OperationPrecedence::RELATIONAL_GREATER_LESS_THAN, [](auto op1, auto op2)
     {
         return op1 >= op2 ? 1 : 0;
@@ -85,7 +85,7 @@ const OperationType* const OperationType::OPERATION_LESS_THAN
         return op1 < op2 ? 1 : 0;
     });
 
-const OperationType* const OperationType::OPERATION_LESS_EQUALS_THAN
+const OperationType* const OperationType::OPERATION_LESS_EQUAL_THAN
     = new OperationType("<=", OperationPrecedence::RELATIONAL_GREATER_LESS_THAN, [](auto op1, auto op2)
     {
         return op1 <= op2 ? 1 : 0;
@@ -97,7 +97,7 @@ const OperationType* const OperationType::OPERATION_EQUALS
         return op1 == op2 ? 1 : 0;
     });
 
-const OperationType* const OperationType::OPERATION_NOT_EQUALS
+const OperationType* const OperationType::OPERATION_NOT_EQUAL
     = new OperationType("!=", OperationPrecedence::RELATIONAL_EQUALS, [](auto op1, auto op2)
     {
         return op1 != op2 ? 1 : 0;
@@ -129,11 +129,11 @@ const OperationType* const OperationType::ALL_OPERATION_TYPES[]
     OPERATION_SHIFT_LEFT,
     OPERATION_SHIFT_RIGHT,
     OPERATION_GREATER_THAN,
-    OPERATION_GREATER_EQUALS_THAN,
+    OPERATION_GREATER_EQUAL_THAN,
     OPERATION_LESS_THAN,
-    OPERATION_LESS_EQUALS_THAN,
+    OPERATION_LESS_EQUAL_THAN,
     OPERATION_EQUALS,
-    OPERATION_NOT_EQUALS,
+    OPERATION_NOT_EQUAL,
     OPERATION_AND,
     OPERATION_OR
 };

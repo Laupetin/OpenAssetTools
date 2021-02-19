@@ -1,5 +1,6 @@
 #include "CommandsFileReader.h"
 
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 
@@ -9,12 +10,14 @@
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
+#include "Parsing/PostProcessing/CalculateSizeAndAlignPostProcessor.h"
 
 CommandsFileReader::CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
       m_filename(std::move(filename)),
       m_stream(nullptr)
 {
+    SetupPostProcessors();
 }
 
 bool CommandsFileReader::OpenBaseStream()
@@ -45,6 +48,11 @@ void CommandsFileReader::SetupStreamProxies()
     m_open_streams.emplace_back(std::move(definesProxy));
 }
 
+void CommandsFileReader::SetupPostProcessors()
+{
+    m_post_processors.emplace_back(std::make_unique<CalculateSizeAndAlignPostProcessor>());
+}
+
 bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 {
     std::cout << "Reading commands file: " << m_filename << std::endl;
@@ -62,5 +70,11 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
     const auto end = std::chrono::steady_clock::now();
     std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
-    return result;
+    if (!result)
+        return false;
+
+    return std::all_of(m_post_processors.begin(), m_post_processors.end(), [repository](const std::unique_ptr<IPostProcessor>& postProcessor)
+    {
+        return postProcessor->PostProcess(repository);
+    });
 }

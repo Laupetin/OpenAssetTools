@@ -8,7 +8,7 @@ Variable::Variable(std::string name, std::unique_ptr<TypeDeclaration> typeDeclar
 {
 }
 
-unsigned Variable::GetAlignment()
+unsigned Variable::GetAlignment() const
 {
     if (m_has_alignment_override)
         return m_alignment_override;
@@ -16,7 +16,7 @@ unsigned Variable::GetAlignment()
     return m_type_declaration->GetAlignment();
 }
 
-bool Variable::GetForceAlignment()
+bool Variable::GetForceAlignment() const
 {
     return m_has_alignment_override || m_type_declaration->GetForceAlignment();
 }

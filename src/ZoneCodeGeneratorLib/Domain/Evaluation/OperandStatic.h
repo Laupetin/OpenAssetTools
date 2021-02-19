@@ -10,7 +10,7 @@ public:
     EnumMember* const m_enum_member;
 
     explicit OperandStatic(int value);
-    OperandStatic(int value, EnumMember* enumMember);
+    explicit OperandStatic(EnumMember* enumMember);
 
     _NODISCARD EvaluationType GetType() const override;
     _NODISCARD bool IsStatic() const override;

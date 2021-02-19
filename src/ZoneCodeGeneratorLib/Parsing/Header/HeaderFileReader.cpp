@@ -1,6 +1,6 @@
 #include "HeaderFileReader.h"
 
-
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 
@@ -11,6 +11,9 @@
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/PackDefinitionStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
+#include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
+#include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
+#include "Parsing/PostProcessing/IPostProcessor.h"
 
 HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
@@ -18,6 +21,7 @@ HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::
       m_pack_value_supplier(nullptr),
       m_stream(nullptr)
 {
+    SetupPostProcessors();
 }
 
 bool HeaderFileReader::OpenBaseStream()
@@ -51,6 +55,13 @@ void HeaderFileReader::SetupStreamProxies()
     m_open_streams.emplace_back(std::move(definesProxy));
 }
 
+void HeaderFileReader::SetupPostProcessors()
+{
+    // Order is important
+    m_post_processors.emplace_back(std::make_unique<CreateStructureInformationPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<CreateMemberInformationPostProcessor>());
+}
+
 bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
 {
     std::cout << "Reading header file: " << m_filename << std::endl;
@@ -64,11 +75,17 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
     const auto parser = std::make_unique<HeaderParser>(lexer.get(), m_pack_value_supplier);
 
     const auto start = std::chrono::steady_clock::now();
-    const auto result = parser->Parse();
+    auto result = parser->Parse();
     if (result)
-        parser->SaveToRepository(repository);
+        result = parser->SaveToRepository(repository);
     const auto end = std::chrono::steady_clock::now();
     std::cout << "Processing header took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
-    return result;
+    if (!result)
+        return false;
+
+    return std::all_of(m_post_processors.begin(), m_post_processors.end(), [repository](const std::unique_ptr<IPostProcessor>& postProcessor)
+    {
+        return postProcessor->PostProcess(repository);
+    });
 }

@@ -1,5 +1,6 @@
 // Game: Black Ops 2 (T6)
 game T6;
+architecture x86;
 
 // Game Assets
 asset PhysPreset ASSET_TYPE_PHYSPRESET;

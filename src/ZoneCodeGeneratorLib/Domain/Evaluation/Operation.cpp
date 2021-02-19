@@ -5,6 +5,13 @@ Operation::Operation(const OperationType* type)
 {
 }
 
+Operation::Operation(const OperationType* type, std::unique_ptr<IEvaluation> operand1, std::unique_ptr<IEvaluation> operand2)
+    : m_operation_type(type),
+      m_operand1(std::move(operand1)),
+      m_operand2(std::move(operand2))
+{
+}
+
 EvaluationType Operation::GetType() const
 {
     return EvaluationType::OPERATION;

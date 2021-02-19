@@ -40,11 +40,11 @@ public:
     static const OperationType* const OPERATION_SHIFT_LEFT;
     static const OperationType* const OPERATION_SHIFT_RIGHT;
     static const OperationType* const OPERATION_GREATER_THAN;
-    static const OperationType* const OPERATION_GREATER_EQUALS_THAN;
+    static const OperationType* const OPERATION_GREATER_EQUAL_THAN;
     static const OperationType* const OPERATION_LESS_THAN;
-    static const OperationType* const OPERATION_LESS_EQUALS_THAN;
+    static const OperationType* const OPERATION_LESS_EQUAL_THAN;
     static const OperationType* const OPERATION_EQUALS;
-    static const OperationType* const OPERATION_NOT_EQUALS;
+    static const OperationType* const OPERATION_NOT_EQUAL;
     static const OperationType* const OPERATION_AND;
     static const OperationType* const OPERATION_OR;
 

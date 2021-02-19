@@ -9,16 +9,13 @@
 class DefinitionWithMembers : public DataDefinition
 {
 public:
-    static constexpr int FLAG_SIZE_CALCULATED = 1 << 0;
-    static constexpr int FLAG_ALIGNMENT_CALCULATED = 1 << 1;
+    static constexpr int FLAG_FIELDS_CALCULATED = 1 << 0;
+    static constexpr int FLAG_FIELDS_CALCULATING = 1 << 1;
     static constexpr int FLAG_ALIGNMENT_FORCED = 1 << 2;
 
     unsigned m_flags;
     unsigned m_size;
     unsigned m_alignment;
-
-    /*virtual void CalculateSize() = 0;
-    void CalculateAlignment();*/
 
     bool m_has_alignment_override;
     bool m_anonymous;

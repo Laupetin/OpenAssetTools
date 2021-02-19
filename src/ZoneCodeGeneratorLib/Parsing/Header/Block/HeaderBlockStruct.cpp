@@ -102,7 +102,7 @@ void HeaderBlockStruct::SetBlockName(const TokenPos& nameTokenPos, std::string n
 
 bool HeaderBlockStruct::IsDefiningVariable()
 {
-    return !m_is_typedef && !m_variable_name.empty();
+    return true;
 }
 
 DataDefinition* HeaderBlockStruct::GetVariableType()

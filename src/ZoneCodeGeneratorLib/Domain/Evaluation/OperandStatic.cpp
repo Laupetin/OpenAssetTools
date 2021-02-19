@@ -6,8 +6,8 @@ OperandStatic::OperandStatic(const int value)
 {
 }
 
-OperandStatic::OperandStatic(const int value, EnumMember* enumMember)
-    : m_value(value),
+OperandStatic::OperandStatic(EnumMember* enumMember)
+    : m_value(enumMember->m_value),
       m_enum_member(enumMember)
 {
 }
