@@ -36,7 +36,7 @@ namespace test::parsing::commands::sequence::sequence_architecture
         }
     };
 
-    TEST_CASE("SequenceAction: Ensure can set x86", "[parsing][parsingstream]")
+    TEST_CASE("SequenceArchitecture: Ensure can set x86", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -54,7 +54,7 @@ namespace test::parsing::commands::sequence::sequence_architecture
         REQUIRE(helper.m_repository->GetArchitecture() == Architecture::X86);
     }
 
-    TEST_CASE("SequenceAction: Ensure can set x64", "[parsing][parsingstream]")
+    TEST_CASE("SequenceArchitecture: Ensure can set x64", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -72,7 +72,7 @@ namespace test::parsing::commands::sequence::sequence_architecture
         REQUIRE(helper.m_repository->GetArchitecture() == Architecture::X86);
     }
 
-    TEST_CASE("SequenceAction: Ensure cannot match unknown value", "[parsing][parsingstream]")
+    TEST_CASE("SequenceArchitecture: Ensure cannot match unknown value", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;

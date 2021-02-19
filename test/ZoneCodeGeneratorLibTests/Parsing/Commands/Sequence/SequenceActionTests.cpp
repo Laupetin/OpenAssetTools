@@ -122,7 +122,7 @@ namespace test::parsing::commands::sequence::sequence_action
         }
     };
 
-    TEST_CASE("SequenceAction: Ensure can parse simple action directive", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse simple action directive", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -146,7 +146,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types.empty());
     }
 
-    TEST_CASE("SequenceAction: Ensure can parse simple action directive with one arg", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse simple action directive with one arg", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -172,7 +172,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types[0] == helper.m_arg_struct_raw);
     }
 
-    TEST_CASE("SequenceAction: Ensure can parse simple action directive with two args", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse simple action directive with two args", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -201,7 +201,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types[1] == helper.m_arg_struct2_raw);
     }
 
-    TEST_CASE("SequenceAction: Ensure can parse simple action directive with three args", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse simple action directive with three args", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -233,7 +233,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types[2] == helper.m_arg_struct3_raw);
     }
 
-    TEST_CASE("SequenceAction: Fails if base typename does not exist", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Fails if base typename does not exist", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -252,7 +252,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
     }
 
-    TEST_CASE("SequenceAction: Fails if arg typename does not exist", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Fails if arg typename does not exist", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -276,7 +276,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
     }
 
-    TEST_CASE("SequenceAction: Fails if no type and no use", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Fails if no type and no use", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -294,7 +294,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
     }
 
-    TEST_CASE("SequenceAction: Ensure can parse action directive with used type", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse action directive with used type", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -318,7 +318,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types.empty());
     }
 
-    TEST_CASE("SequenceAction: Ensure can parse action directive with type from member", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse action directive with type from member", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -345,7 +345,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types.empty());
     }
 
-    TEST_CASE("SequenceAction: Ensure can parse action directive with type from member and in use", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can parse action directive with type from member and in use", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -370,7 +370,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types.empty());
     }
 
-    TEST_CASE("SequenceAction: Ensure can use different struct even though something is used", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure can use different struct even though something is used", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
@@ -398,7 +398,7 @@ namespace test::parsing::commands::sequence::sequence_action
         REQUIRE(helper.m_test_struct->m_post_load_action->m_parameter_types.empty());
     }
 
-    TEST_CASE("SequenceAction: Ensure member must be type with members", "[parsing][parsingstream]")
+    TEST_CASE("SequenceAction: Ensure member must be type with members", "[parsing][sequence]")
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
