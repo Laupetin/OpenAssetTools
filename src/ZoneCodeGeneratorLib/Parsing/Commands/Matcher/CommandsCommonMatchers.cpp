@@ -103,9 +103,9 @@ static constexpr int TAG_EVALUATION = std::numeric_limits<int>::max() - 9;
 static constexpr int TAG_EVALUATION_OPERATION = std::numeric_limits<int>::max() - 10;
 
 static constexpr int CAPTURE_OPERAND_TYPENAME = std::numeric_limits<int>::max() - 1;
-static constexpr int CAPTURE_OPERAND_ARRAY = std::numeric_limits<int>::max() - 1;
-static constexpr int CAPTURE_OPERAND_INTEGER = std::numeric_limits<int>::max() - 2;
-static constexpr int CAPTURE_OPERATION_TYPE = std::numeric_limits<int>::max() - 3;
+static constexpr int CAPTURE_OPERAND_ARRAY = std::numeric_limits<int>::max() - 2;
+static constexpr int CAPTURE_OPERAND_INTEGER = std::numeric_limits<int>::max() - 3;
+static constexpr int CAPTURE_OPERATION_TYPE = std::numeric_limits<int>::max() - 4;
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ParseOperandArray(const supplier_t* labelSupplier)
 {
