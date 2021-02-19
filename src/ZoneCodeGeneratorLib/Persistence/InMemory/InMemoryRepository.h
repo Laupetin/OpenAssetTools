@@ -14,6 +14,7 @@ class InMemoryRepository final : public IDataRepository
     std::vector<FastFileBlock*> m_fast_file_blocks;
     std::map<std::string, DataDefinition*> m_data_definitions_by_name;
     std::map<std::string, EnumMember*> m_enum_members_by_name;
+    std::map<std::string, FastFileBlock*> m_fast_file_blocks_by_name;
     std::map<const DefinitionWithMembers*, StructureInformation*> m_structure_information_by_definition;
     std::string m_game_name;
     Architecture m_architecture;
@@ -35,7 +36,7 @@ public:
 
     _NODISCARD const std::string& GetGameName() const override;
     void SetGame(std::string gameName) override;
-    Architecture GetArchitecture() const override;
+    _NODISCARD Architecture GetArchitecture() const override;
     void SetArchitecture(Architecture architecture) override;
 
     _NODISCARD const std::vector<EnumDefinition*>& GetAllEnums() const override;
@@ -48,4 +49,5 @@ public:
     _NODISCARD DataDefinition* GetDataDefinitionByName(const std::string& name) const override;
     _NODISCARD StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const override;
     _NODISCARD EnumMember* GetEnumMemberByName(const std::string& name) const override;
+    _NODISCARD FastFileBlock* GetFastFileBlockByName(const std::string& name) const override;
 };

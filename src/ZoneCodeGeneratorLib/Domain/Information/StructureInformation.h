@@ -29,7 +29,7 @@ public:
     bool m_reference_from_non_default_normal_block_exists;
 
     std::unique_ptr<CustomAction> m_post_load_action;
-    FastFileBlock* m_block;
+    const FastFileBlock* m_block;
     std::vector<MemberInformation*> m_name_chain;
 
     explicit StructureInformation(DefinitionWithMembers* definition);

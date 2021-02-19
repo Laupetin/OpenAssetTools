@@ -61,7 +61,9 @@ void InMemoryRepository::Add(std::unique_ptr<StructureInformation> structureInfo
 
 void InMemoryRepository::Add(std::unique_ptr<FastFileBlock> fastFileBlock)
 {
-    m_fast_file_blocks.push_back(fastFileBlock.release());
+    auto* raw = fastFileBlock.release();
+    m_fast_file_blocks.push_back(raw);
+    m_fast_file_blocks_by_name[raw->m_name] = raw;
 }
 
 const std::string& InMemoryRepository::GetGameName() const
@@ -139,6 +141,16 @@ EnumMember* InMemoryRepository::GetEnumMemberByName(const std::string& name) con
     const auto foundEntry = m_enum_members_by_name.find(name);
 
     if (foundEntry != m_enum_members_by_name.end())
+        return foundEntry->second;
+
+    return nullptr;
+}
+
+FastFileBlock* InMemoryRepository::GetFastFileBlockByName(const std::string& name) const
+{
+    const auto foundEntry = m_fast_file_blocks_by_name.find(name);
+
+    if (foundEntry != m_fast_file_blocks_by_name.end())
         return foundEntry->second;
 
     return nullptr;

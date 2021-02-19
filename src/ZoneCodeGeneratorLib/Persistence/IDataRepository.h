@@ -43,4 +43,5 @@ public:
     _NODISCARD virtual DataDefinition* GetDataDefinitionByName(const std::string& name) const = 0;
     _NODISCARD virtual StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const = 0;
     _NODISCARD virtual EnumMember* GetEnumMemberByName(const std::string& name) const = 0;
+    _NODISCARD virtual FastFileBlock* GetFastFileBlockByName(const std::string& name) const = 0;
 };

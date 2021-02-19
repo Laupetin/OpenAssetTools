@@ -20,7 +20,7 @@ public:
     bool m_is_reusable;
     bool m_is_leaf;
     std::unique_ptr<IEvaluation> m_condition;
-    FastFileBlock* m_fast_file_block;
+    const FastFileBlock* m_fast_file_block;
 
     MemberInformation(StructureInformation* parent, StructureInformation* type, Variable* member);
 };
