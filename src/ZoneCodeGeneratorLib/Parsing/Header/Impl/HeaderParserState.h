@@ -26,6 +26,12 @@ class HeaderParserState
     std::unordered_map<std::string, std::unique_ptr<ForwardDeclaration>> m_forward_declarations;
 
     void AddBaseDataType(const BaseTypeDefinition* baseType);
+    bool ResolveForwardDeclarations();
+    static bool ReplaceForwardDeclarationsInStruct(StructDefinition* structDefinition);
+    static bool ReplaceForwardDeclarationsInTypedef(TypedefDefinition* typedefDefinition);
+    static bool ReplaceForwardDeclarationsInUnion(UnionDefinition* unionDefinition);
+    bool ReplaceForwardDeclarationsInDefinitions();
+    bool MoveDefinitionsToRepository(IDataRepository* repository);
 
 public:
     const IPackValueSupplier* const m_pack_value_supplier;
@@ -43,5 +49,5 @@ public:
     const DataDefinition* FindType(const std::string& typeName);
     EnumMember* FindEnumMember(const std::string& enumMemberName);
 
-    void SaveToRepository(IDataRepository* repository);
+    bool SaveToRepository(IDataRepository* repository);
 };

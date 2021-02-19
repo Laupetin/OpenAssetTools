@@ -14,5 +14,5 @@ protected:
 public:
     HeaderParser(HeaderLexer* lexer, const IPackValueSupplier* packValueSupplier);
 
-    void SaveToRepository(IDataRepository* repository) const;
+    bool SaveToRepository(IDataRepository* repository) const;
 };

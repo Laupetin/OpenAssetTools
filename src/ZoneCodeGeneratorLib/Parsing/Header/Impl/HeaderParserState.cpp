@@ -1,5 +1,8 @@
 #include "HeaderParserState.h"
 
+#include <iostream>
+
+
 #include "Domain/Definition/EnumDefinition.h"
 #include "Parsing/Header/Block/HeaderBlockNone.h"
 
@@ -9,7 +12,7 @@ HeaderParserState::HeaderParserState(const IPackValueSupplier* packValueSupplier
 {
     m_blocks.push(std::make_unique<HeaderBlockNone>());
 
-    for(auto i = 0u; i < BaseTypeDefinition::ALL_BASE_TYPES_COUNT; i++)
+    for (auto i = 0u; i < BaseTypeDefinition::ALL_BASE_TYPES_COUNT; i++)
         AddBaseDataType(BaseTypeDefinition::ALL_BASE_TYPES[i]);
 }
 
@@ -43,9 +46,9 @@ void HeaderParserState::PopBlock()
 
 void HeaderParserState::AddDataType(std::unique_ptr<DataDefinition> definition)
 {
-    if(definition->GetType() == DataDefinitionType::ENUM)
+    if (definition->GetType() == DataDefinitionType::ENUM)
     {
-        for(const auto& enumMember : dynamic_cast<EnumDefinition*>(definition.get())->m_members)
+        for (const auto& enumMember : dynamic_cast<EnumDefinition*>(definition.get())->m_members)
         {
             m_enum_members.insert(std::make_pair(enumMember->m_name, enumMember.get()));
         }
@@ -86,11 +89,88 @@ EnumMember* HeaderParserState::FindEnumMember(const std::string& enumMemberName)
     return nullptr;
 }
 
-void HeaderParserState::SaveToRepository(IDataRepository* repository)
+bool HeaderParserState::ResolveForwardDeclarations()
 {
-    for(auto& definition : m_header_definitions)
+    for (auto& [_, forwardDeclaration] : m_forward_declarations)
     {
-        switch(definition->GetType())
+        const auto* dataDefinition = FindType(forwardDeclaration->GetFullName());
+
+        if (dataDefinition == nullptr)
+        {
+            std::cout << "Forward declaration \"" << forwardDeclaration->GetFullName() << "\" was not defined" << std::endl;
+            return false;
+        }
+
+        forwardDeclaration->m_definition = dataDefinition;
+    }
+
+    return true;
+}
+
+bool HeaderParserState::ReplaceForwardDeclarationsInStruct(StructDefinition* structDefinition)
+{
+    for (const auto& variable : structDefinition->m_members)
+    {
+        if (variable->m_type_declaration->m_type->GetType() == DataDefinitionType::FORWARD_DECLARATION)
+            variable->m_type_declaration->m_type = dynamic_cast<const ForwardDeclaration*>(variable->m_type_declaration->m_type)->m_definition;
+    }
+
+    return true;
+}
+
+bool HeaderParserState::ReplaceForwardDeclarationsInTypedef(TypedefDefinition* typedefDefinition)
+{
+    if (typedefDefinition->m_type_declaration->m_type->GetType() == DataDefinitionType::FORWARD_DECLARATION)
+        typedefDefinition->m_type_declaration->m_type = dynamic_cast<const ForwardDeclaration*>(typedefDefinition->m_type_declaration->m_type)->m_definition;
+
+    return true;
+}
+
+bool HeaderParserState::ReplaceForwardDeclarationsInUnion(UnionDefinition* unionDefinition)
+{
+    for (const auto& variable : unionDefinition->m_members)
+    {
+        if (variable->m_type_declaration->m_type->GetType() == DataDefinitionType::FORWARD_DECLARATION)
+            variable->m_type_declaration->m_type = dynamic_cast<const ForwardDeclaration*>(variable->m_type_declaration->m_type)->m_definition;
+    }
+
+    return true;
+}
+
+bool HeaderParserState::ReplaceForwardDeclarationsInDefinitions()
+{
+    for (auto& definition : m_header_definitions)
+    {
+        switch (definition->GetType())
+        {
+        case DataDefinitionType::STRUCT:
+            if (!ReplaceForwardDeclarationsInStruct(dynamic_cast<StructDefinition*>(definition.get())))
+                return false;
+            break;
+
+        case DataDefinitionType::TYPEDEF:
+            if (!ReplaceForwardDeclarationsInTypedef(dynamic_cast<TypedefDefinition*>(definition.get())))
+                return false;
+            break;
+
+        case DataDefinitionType::UNION:
+            if (!ReplaceForwardDeclarationsInUnion(dynamic_cast<UnionDefinition*>(definition.get())))
+                return false;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return true;
+}
+
+bool HeaderParserState::MoveDefinitionsToRepository(IDataRepository* repository)
+{
+    for (auto& definition : m_header_definitions)
+    {
+        switch (definition->GetType())
         {
         case DataDefinitionType::ENUM:
             repository->Add(std::unique_ptr<EnumDefinition>(dynamic_cast<EnumDefinition*>(definition.release())));
@@ -112,4 +192,13 @@ void HeaderParserState::SaveToRepository(IDataRepository* repository)
             break;
         }
     }
+
+    return true;
+}
+
+bool HeaderParserState::SaveToRepository(IDataRepository* repository)
+{
+    return ResolveForwardDeclarations()
+        && ReplaceForwardDeclarationsInDefinitions()
+        && MoveDefinitionsToRepository(repository);
 }

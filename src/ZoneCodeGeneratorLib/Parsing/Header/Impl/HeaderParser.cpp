@@ -13,7 +13,7 @@ const std::vector<HeaderParser::sequence_t*>& HeaderParser::GetTestsForState()
     return m_state->GetBlock()->GetTestsForBlock();
 }
 
-void HeaderParser::SaveToRepository(IDataRepository* repository) const
+bool HeaderParser::SaveToRepository(IDataRepository* repository) const
 {
     return m_state->SaveToRepository(repository);
 }
