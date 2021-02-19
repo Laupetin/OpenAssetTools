@@ -9,27 +9,22 @@ SequenceArchitecture::SequenceArchitecture()
 
     AddMatchers({
         create.Keyword("architecture"),
-        create.Or({
-            create.Keyword("x86").Tag(TAG_X86),
-            create.Keyword("x64").Tag(TAG_X64)
-        }),
+        create.Identifier().Capture(CAPTURE_ARCHITECTURE),
         create.Char(';')
     });
+
+    m_architecture_mapping["x86"] = Architecture::X86;
+    m_architecture_mapping["x64"] = Architecture::X64;
 }
 
 void SequenceArchitecture::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
-    switch (result.NextTag())
-    {
-    case TAG_X86:
-        state->SetArchitecture(Architecture::X86);
-        break;
+    const auto& architectureToken = result.NextCapture(CAPTURE_ARCHITECTURE);
 
-    case TAG_X64:
-        state->SetArchitecture(Architecture::X64);
-        break;
+    const auto foundArchitecture = m_architecture_mapping.find(architectureToken.IdentifierValue());
 
-    default:
-        throw ParsingException(TokenPos(), "Unknown architecture!");
-    }
+    if(foundArchitecture == m_architecture_mapping.end())
+        throw ParsingException(architectureToken.GetPos(), "Unknown architecture");
+
+    state->SetArchitecture(foundArchitecture->second);
 }
