@@ -300,7 +300,7 @@ std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessEvaluation(CommandsP
     if (currentType == state->GetInUse())
         currentType = nullptr;
 
-    std::list<std::unique_ptr<IEvaluation>> operands;
+    std::vector<std::unique_ptr<IEvaluation>> operands;
     std::list<std::pair<unsigned, const OperationType*>> operators;
 
     while (true)
@@ -333,13 +333,28 @@ std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessEvaluation(CommandsP
 
     operators.sort([](const std::pair<unsigned, const OperationType*>& p1, const std::pair<unsigned, const OperationType*>& p2)
     {
-        return p1.second->m_precedence > p2.second->m_precedence;
-    });
+        if(p1.second->m_precedence != p2.second->m_precedence)
+            return p1.second->m_precedence > p2.second->m_precedence;
 
+        return p1.first > p2.first;
+    });
+    
     while (!operators.empty())
     {
-        operators.pop_back();
-    }
+        const auto [operatorIndex, operatorType] = operators.back();
 
-    return nullptr;
+        auto operation = std::make_unique<Operation>(operatorType, std::move(operands[operatorIndex]), std::move(operands[operatorIndex + 1]));
+        operands.erase(operands.begin() + operatorIndex);
+        operands[operatorIndex] = std::move(operation);
+
+        operators.pop_back();
+
+        for(auto& [opIndex, _] : operators)
+        {
+            if (opIndex > operatorIndex)
+                opIndex--;
+        }
+    }
+    
+    return std::move(operands.front());
 }

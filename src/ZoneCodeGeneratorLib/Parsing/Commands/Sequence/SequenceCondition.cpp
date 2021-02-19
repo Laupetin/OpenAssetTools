@@ -1,5 +1,6 @@
 #include "SequenceCondition.h"
 
+#include "Domain/Evaluation/OperandStatic.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 
@@ -24,4 +25,34 @@ SequenceCondition::SequenceCondition()
 
 void SequenceCondition::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
+    const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
+
+    StructureInformation* type;
+    std::vector<MemberInformation*> memberChain;
+    if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), type, memberChain))
+        throw ParsingException(typeNameToken.GetPos(), "Unknown type");
+
+    if (memberChain.empty())
+        throw ParsingException(typeNameToken.GetPos(), "Conditions can only be set on members and not for types");
+
+    std::unique_ptr<IEvaluation> conditionEvaluation;
+    switch(result.NextTag())
+    {
+    case TAG_ALWAYS:
+        conditionEvaluation = std::make_unique<OperandStatic>(1);
+        break;
+
+    case TAG_NEVER:
+        conditionEvaluation = std::make_unique<OperandStatic>(0);
+        break;
+
+    case TAG_EVALUATION:
+        conditionEvaluation = CommandsCommonMatchers::ProcessEvaluation(state, result, type);
+        break;
+
+    default:
+        throw ParsingException(TokenPos(), "Unknown evaluation type @ Condition");
+    }
+
+    memberChain.back()->m_condition = std::move(conditionEvaluation);
 }
