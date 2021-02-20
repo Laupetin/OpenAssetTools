@@ -48,6 +48,8 @@ void HeaderBlockStruct::OnOpen(HeaderParserState* state)
     {
         state->m_namespace.Push(m_type_name);
     }
+
+    state->AddForwardDeclaration(std::make_unique<ForwardDeclaration>(m_namespace, m_type_name, DataDefinitionType::STRUCT));
 }
 
 void HeaderBlockStruct::OnClose(HeaderParserState* state)

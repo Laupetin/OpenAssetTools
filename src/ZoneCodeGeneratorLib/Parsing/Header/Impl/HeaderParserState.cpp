@@ -61,7 +61,7 @@ void HeaderParserState::AddDataType(std::unique_ptr<DataDefinition> definition)
 
 void HeaderParserState::AddForwardDeclaration(std::unique_ptr<ForwardDeclaration> forwardDeclaration)
 {
-    m_forward_declarations.insert(std::make_pair(forwardDeclaration->m_name, std::move(forwardDeclaration)));
+    m_forward_declarations.insert(std::make_pair(forwardDeclaration->GetFullName(), std::move(forwardDeclaration)));
 }
 
 const DataDefinition* HeaderParserState::FindType(const std::string& typeName)
