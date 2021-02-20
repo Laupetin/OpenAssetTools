@@ -85,11 +85,20 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 };
 
 ZoneCodeGeneratorArguments::GenerationTask::GenerationTask()
-= default;
+    : m_all_assets(false)
+{
+}
 
-ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName, std::string presetName)
-    : m_asset_name(std::move(assetName)),
-      m_preset_name(std::move(presetName))
+ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string templateName)
+    : m_all_assets(true),
+      m_template_name(std::move(templateName))
+{
+}
+
+ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName, std::string templateName)
+    : m_all_assets(false),
+      m_asset_name(std::move(assetName)),
+      m_template_name(std::move(templateName))
 {
 }
 
@@ -169,7 +178,15 @@ bool ZoneCodeGeneratorArguments::Parse(const int argc, const char** argv)
         m_task_flags |= FLAG_TASK_GENERATE;
         const auto generateParameterValues = m_argument_parser.GetParametersForOption(OPTION_GENERATE);
         for (auto i = 0u; i < generateParameterValues.size(); i += 2)
-            m_generation_tasks.emplace_back(generateParameterValues[i], generateParameterValues[i + 1]);
+        {
+            const auto& assetName = generateParameterValues[i];
+            const auto& templateName = generateParameterValues[i + 1];
+
+            if (assetName == "*")
+                m_generation_tasks.emplace_back(templateName);
+            else
+                m_generation_tasks.emplace_back(assetName, templateName);
+        }
     }
 
     if (m_task_flags == 0)

@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "ZoneCodeGeneratorArguments.h"
+#include "Generating/CodeGenerator.h"
 #include "Parsing/Commands/CommandsFileReader.h"
 #include "Parsing/Header/HeaderFileReader.h"
 #include "Persistence/IDataRepository.h"
@@ -49,15 +50,10 @@ class ZoneCodeGenerator::Impl
         prettyPrinter.PrintAll();
     }
 
-    bool GenerateCode()
+    _NODISCARD bool GenerateCode() const
     {
-        for(const auto& generationTask : m_args.m_generation_tasks)
-        {
-            // TODO: Implement
-            std::cout << "Generating code for asset \"" << generationTask.m_asset_name << "\" and preset \"" << generationTask.m_preset_name << "\" ..." << std::endl;
-        }
-
-        return true;
+        CodeGenerator codeGenerator(&m_args);
+        return codeGenerator.GenerateCode(m_repository.get());
     }
 
 public:

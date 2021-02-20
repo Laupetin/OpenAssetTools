@@ -21,11 +21,13 @@ public:
     class GenerationTask
     {
     public:
+        bool m_all_assets;
         std::string m_asset_name;
-        std::string m_preset_name;
+        std::string m_template_name;
 
         GenerationTask();
-        GenerationTask(std::string assetName, std::string presetName);
+        explicit GenerationTask(std::string templateName);
+        GenerationTask(std::string assetName, std::string templateName);
     };
 
     bool m_verbose;

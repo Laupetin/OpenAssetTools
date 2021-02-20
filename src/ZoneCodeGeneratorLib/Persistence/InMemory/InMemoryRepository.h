@@ -11,10 +11,10 @@ class InMemoryRepository final : public IDataRepository
     std::vector<UnionDefinition*> m_unions;
     std::vector<TypedefDefinition*> m_typedefs;
     std::vector<StructureInformation*> m_structures_information;
-    std::vector<FastFileBlock*> m_fast_file_blocks;
+    std::vector<const FastFileBlock*> m_fast_file_blocks;
     std::map<std::string, DataDefinition*> m_data_definitions_by_name;
     std::map<std::string, EnumMember*> m_enum_members_by_name;
-    std::map<std::string, FastFileBlock*> m_fast_file_blocks_by_name;
+    std::map<std::string, const FastFileBlock*> m_fast_file_blocks_by_name;
     std::map<const DefinitionWithMembers*, StructureInformation*> m_structure_information_by_definition;
     std::string m_game_name;
     Architecture m_architecture;
@@ -44,10 +44,10 @@ public:
     _NODISCARD const std::vector<UnionDefinition*>& GetAllUnions() const override;
     _NODISCARD const std::vector<TypedefDefinition*>& GetAllTypedefs() const override;
     _NODISCARD const std::vector<StructureInformation*>& GetAllStructureInformation() const override;
-    _NODISCARD const std::vector<FastFileBlock*>& GetAllFastFileBlocks() const override;
+    _NODISCARD const std::vector<const FastFileBlock*>& GetAllFastFileBlocks() const override;
 
     _NODISCARD DataDefinition* GetDataDefinitionByName(const std::string& name) const override;
     _NODISCARD StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const override;
     _NODISCARD EnumMember* GetEnumMemberByName(const std::string& name) const override;
-    _NODISCARD FastFileBlock* GetFastFileBlockByName(const std::string& name) const override;
+    _NODISCARD const FastFileBlock* GetFastFileBlockByName(const std::string& name) const override;
 };

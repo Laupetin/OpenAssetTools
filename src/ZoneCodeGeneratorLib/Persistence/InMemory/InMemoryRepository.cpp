@@ -17,7 +17,7 @@ InMemoryRepository::~InMemoryRepository()
         delete typedefDefinition;
     for (auto* structureInformation : m_structures_information)
         delete structureInformation;
-    for (auto* fastFileBlock : m_fast_file_blocks)
+    for (const auto* fastFileBlock : m_fast_file_blocks)
         delete fastFileBlock;
 }
 
@@ -111,7 +111,7 @@ const std::vector<StructureInformation*>& InMemoryRepository::GetAllStructureInf
     return m_structures_information;
 }
 
-const std::vector<FastFileBlock*>& InMemoryRepository::GetAllFastFileBlocks() const
+const std::vector<const FastFileBlock*>& InMemoryRepository::GetAllFastFileBlocks() const
 {
     return m_fast_file_blocks;
 }
@@ -146,7 +146,7 @@ EnumMember* InMemoryRepository::GetEnumMemberByName(const std::string& name) con
     return nullptr;
 }
 
-FastFileBlock* InMemoryRepository::GetFastFileBlockByName(const std::string& name) const
+const FastFileBlock* InMemoryRepository::GetFastFileBlockByName(const std::string& name) const
 {
     const auto foundEntry = m_fast_file_blocks_by_name.find(name);
 
