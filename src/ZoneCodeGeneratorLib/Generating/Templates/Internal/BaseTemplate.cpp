@@ -51,7 +51,7 @@ std::string BaseTemplate::SafeTypeName(const DataDefinition* def)
 {
     auto safeName(def->m_name);
 
-    for(auto& c : safeName)
+    for (auto& c : safeName)
     {
         if (isspace(c))
             c = '_';
@@ -69,9 +69,9 @@ void BaseTemplate::TypeDecl(const TypeDeclaration* decl) const
 
 void BaseTemplate::PrintFollowingReferences(const std::vector<std::unique_ptr<DeclarationModifier>>& modifiers) const
 {
-    for(const auto& modifier : modifiers)
+    for (const auto& modifier : modifiers)
     {
-        if(modifier->GetType() == DeclarationModifierType::ARRAY)
+        if (modifier->GetType() == DeclarationModifierType::ARRAY)
         {
             const auto* array = dynamic_cast<const ArrayDeclarationModifier*>(modifier.get());
             m_out << "[" << array->m_size << "]";
@@ -83,8 +83,30 @@ void BaseTemplate::PrintFollowingReferences(const std::vector<std::unique_ptr<De
 
 void BaseTemplate::PrintArrayIndices(const DeclarationModifierComputations& modifierComputations) const
 {
-    for(auto index : modifierComputations.GetArrayIndices())
+    for (auto index : modifierComputations.GetArrayIndices())
         m_out << "[" << index << "]";
+}
+
+void BaseTemplate::PrintCustomAction(CustomAction* action) const
+{
+    LINE_START("m_actions." << action->m_action_name << "(")
+
+    auto first = true;
+    for (auto* def : action->m_parameter_types)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            LINE_MIDDLE(", ")
+        }
+
+        LINE_MIDDLE(TypeVarName(def))
+    }
+
+    LINE_END(");")
 }
 
 void BaseTemplate::PrintOperandStatic(const OperandStatic* op) const
@@ -111,7 +133,7 @@ void BaseTemplate::PrintOperandDynamic(const OperandDynamic* op) const
             m_out << '.' << chainMember->m_member->m_name;
     }
 
-    for(const auto& arrayIndex : op->m_array_indices)
+    for (const auto& arrayIndex : op->m_array_indices)
     {
         m_out << "[";
         PrintEvaluation(arrayIndex.get());

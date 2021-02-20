@@ -70,6 +70,360 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE(LoaderClassName(m_env.m_asset)<<"(Zone* zone, IZoneInputStream* stream);")
     }
 
+    void PrintVariableInitialization(const DataDefinition* def) const
+    {
+        LINE("var"<<def->m_name<<" = nullptr;")
+    }
+
+    void PrintPointerVariableInitialization(const DataDefinition* def) const
+    {
+        LINE("var"<<def->m_name<<"Ptr = nullptr;")
+    }
+
+    void PrintConstructorMethod()
+    {
+        LINE(LoaderClassName(m_env.m_asset) << "::" << LoaderClassName(m_env.m_asset) << "(Zone* zone, IZoneInputStream* stream)")
+
+        m_intendation++;
+        LINE_START(": AssetLoader("<<m_env.m_asset->m_asset_enum_entry->m_name<<", zone, stream)")
+        if (m_env.m_has_actions)
+        {
+            LINE_MIDDLE(", m_actions(zone)")
+        }
+        LINE_END("")
+        m_intendation--;
+
+        LINE("{")
+        m_intendation++;
+
+        LINE("m_asset_info = nullptr;")
+        PrintVariableInitialization(m_env.m_asset->m_definition);
+        PrintPointerVariableInitialization(m_env.m_asset->m_definition);
+        LINE("")
+
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+            {
+                PrintVariableInitialization(type->m_type);
+            }
+        }
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_info && type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+            {
+                PrintPointerVariableInitialization(type->m_type);
+            }
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, bool reusable)
+    {
+        // TODO
+    }
+
+    void PrintLoadPtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+    {
+        LINE("void "<<LoaderClassName(m_env.m_asset)<<"::LoadPtrArray_"<<SafeTypeName(def)<<"(const bool atStreamStart, const size_t count)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << TypePtrVarName(def) << " != nullptr);")
+        LINE("")
+
+        LINE("if(atStreamStart)")
+        m_intendation++;
+        LINE("m_stream->Load<"<<def->GetFullName()<<"*>("<<TypePtrVarName(def)<<", count);")
+        m_intendation--;
+
+        LINE("")
+        LINE(def->GetFullName() << "** var = " << TypePtrVarName(def) << ";")
+        LINE("for(size_t index = 0; index < count; index++)")
+        LINE("{")
+        m_intendation++;
+
+        LINE(TypePtrVarName(def) << " = var;")
+        PrintLoadPtrArrayMethod_PointerCheck(def, info, reusable);
+        LINE("")
+        LINE("var++;")
+
+        m_intendation--;
+        LINE("}")
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintLoadArrayMethod(const DataDefinition* def, StructureInformation* info)
+    {
+        LINE("void " << LoaderClassName(m_env.m_asset) << "::LoadArray_" << SafeTypeName(def) << "(const bool atStreamStart, const size_t count)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << TypeVarName(def) << " != nullptr);")
+        LINE("")
+        LINE("if(atStreamStart)")
+        m_intendation++;
+        LINE("m_stream->Load<"<<def->GetFullName()<<">("<<TypeVarName(def)<<", count);")
+        m_intendation--;
+
+        LINE("")
+        LINE(def->GetFullName() << "* var = " << TypeVarName(def) << ";")
+        LINE("for(size_t index = 0; index < count; index++)")
+        LINE("{")
+        m_intendation++;
+
+        /*if (info == nullptr)
+        {
+            LINE(TypeVarName(def)<<" = var;")
+        }
+        else
+        {
+            LINE(TypeVarName(info->m_definition) << " = var;")
+        }*/
+        LINE(TypeVarName(info->m_definition) << " = var;")
+        LINE("Load_"<<info->m_definition->m_name<<"(false);")
+        LINE("var++;")
+
+        m_intendation--;
+        LINE("}")
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintLoadMethod(StructureInformation* info)
+    {
+        const StructureComputations computations(info);
+        LINE("void " << LoaderClassName(m_env.m_asset) << "::Load_" << info->m_definition->m_name << "(const bool atStreamStart)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << TypeVarName(info->m_definition) << " != nullptr);")
+
+        auto* dynamicMember = computations.GetDynamicMember();
+        if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
+        {
+            LINE("")
+            LINE("if(atStreamStart)")
+            m_intendation++;
+
+            if (dynamicMember == nullptr)
+            {
+                LINE("m_stream->Load<"<<info->m_definition->GetFullName()<<">("<<TypeVarName(info->m_definition)<<"); // Size: "<<info->m_definition->GetSize())
+            }
+            else
+            {
+                LINE("m_stream->LoadPartial<"<<info->m_definition->GetFullName()<<">("<<TypeVarName(info->m_definition)<<", offsetof("<<info->m_definition->GetFullName()
+                    <<", "<<dynamicMember->m_member->m_name<<"));")
+            }
+
+            m_intendation--;
+        }
+        else
+        {
+            LINE("assert(atStreamStart);")
+        }
+
+        if (info->m_block)
+        {
+            LINE("")
+            LINE("m_stream->PushBlock("<<info->m_block->m_name<<");")
+        }
+        else if (computations.IsAsset())
+        {
+            LINE("")
+            LINE("m_stream->PushBlock("<<m_env.m_default_normal_block->m_name<<");")
+        }
+
+        for (const auto& member : info->m_ordered_members)
+        {
+            // TODO
+            LINE("// "<<member->m_member->m_name)
+        }
+
+        if (info->m_block || computations.IsAsset())
+        {
+            LINE("")
+            LINE("m_stream->PopBlock();")
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintLoadTempPtrMethod(StructureInformation* info)
+    {
+        LINE("void "<<LoaderClassName(m_env.m_asset)<<"::LoadPtr_"<<SafeTypeName(info->m_definition)<<"(const bool atStreamStart)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert("<<TypePtrVarName(info->m_definition)<<" != nullptr);")
+        LINE("")
+
+        LINE("if(atStreamStart)")
+        m_intendation++;
+        LINE("m_stream->Load<"<<info->m_definition->GetFullName()<<"*>("<<TypePtrVarName(info->m_definition)<<");")
+        m_intendation--;
+
+        LINE("")
+        LINE("m_stream->PushBlock("<<m_env.m_default_temp_block->m_name<<");")
+        LINE("")
+        LINE("if(*"<<TypePtrVarName(info->m_definition)<<" != nullptr)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("if(*" << TypePtrVarName(info->m_definition) << " == PTR_FOLLOWING || *" << TypePtrVarName(info->m_definition) << " == PTR_INSERT)")
+        LINE("{")
+        m_intendation++;
+
+        LINE(info->m_definition->GetFullName() << "* ptr = *" << TypePtrVarName(info->m_definition) << ";")
+        LINE("*" << TypePtrVarName(info->m_definition) << " = m_stream->Alloc<" << info->m_definition->GetFullName() << ">(alignof(" << info->m_definition->GetFullName() << "));")
+        LINE("")
+        LINE(info->m_definition->GetFullName() << "** toInsert = nullptr;")
+        LINE("if(ptr == PTR_INSERT)")
+        m_intendation++;
+        LINE("toInsert = m_stream->InsertPointer<"<<info->m_definition->GetFullName()<<">();")
+        m_intendation--;
+
+        auto startLoadSection = true;
+
+        if (!info->m_is_leaf)
+        {
+            if (startLoadSection)
+            {
+                startLoadSection = false;
+                LINE("")
+            }
+            LINE(TypeVarName(info->m_definition)<<" = *"<<TypePtrVarName(info->m_definition)<<";")
+            LINE("Load_"<<SafeTypeName(info->m_definition)<<"(true);")
+        }
+
+        if (info->m_post_load_action)
+        {
+            if (startLoadSection)
+            {
+                startLoadSection = false;
+                LINE("")
+            }
+            PrintCustomAction(info->m_post_load_action.get());
+        }
+
+        if (StructureComputations(info).IsAsset())
+        {
+            if (startLoadSection)
+            {
+                startLoadSection = false;
+                LINE("")
+            }
+            LINE("LoadAsset_"<<SafeTypeName(info->m_definition)<<"("<<TypePtrVarName(info->m_definition)<<");")
+        }
+
+        if (!startLoadSection)
+        {
+            LINE("")
+        }
+
+        LINE("if(toInsert != nullptr)")
+        m_intendation++;
+        LINE("*toInsert = *"<<TypePtrVarName(info->m_definition)<<";")
+        m_intendation--;
+
+        m_intendation--;
+        LINE("}")
+        LINE("else")
+        LINE("{")
+        m_intendation++;
+
+        LINE("*"<<TypePtrVarName(info->m_definition)<<" = m_stream->ConvertOffsetToAlias(*"<<TypePtrVarName(info->m_definition)<<");")
+
+        m_intendation--;
+        LINE("}")
+
+        m_intendation--;
+        LINE("}")
+
+        LINE("")
+        LINE("m_stream->PopBlock();")
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintLoadAssetMethod(StructureInformation* info)
+    {
+        LINE("void " << LoaderClassName(m_env.m_asset) << "::LoadAsset_" << SafeTypeName(info->m_definition) << "(" << info->m_definition->GetFullName() << "** pAsset)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(pAsset != nullptr);")
+        LINE("m_asset_info = reinterpret_cast<XAssetInfo<"<<info->m_definition->GetFullName()<<">*>(LinkAsset(GetAssetName(*pAsset), *pAsset));")
+        LINE("*pAsset = m_asset_info->Asset();")
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintMainLoadMethod()
+    {
+        LINE("XAssetInfo<" << m_env.m_asset->m_definition->GetFullName() << ">* " << LoaderClassName(m_env.m_asset) << "::Load(" << m_env.m_asset->m_definition->GetFullName() << "** pAsset)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(pAsset != nullptr);")
+        LINE("")
+        LINE("m_asset_info = nullptr;")
+        LINE("")
+        LINE(TypePtrVarName(m_env.m_asset->m_definition) << " = pAsset;")
+        LINE("LoadPtr_" << SafeTypeName(m_env.m_asset->m_definition) << "(false);")
+        LINE("")
+        LINE("if(m_asset_info == nullptr && *pAsset != nullptr)")
+        m_intendation++;
+        LINE("m_asset_info = reinterpret_cast<XAssetInfo<"<<m_env.m_asset->m_definition->GetFullName()<<">*>(GetAssetInfo(GetAssetName(*pAsset)));")
+        m_intendation--;
+        LINE("")
+        LINE("return m_asset_info;")
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintGetNameMethod()
+    {
+        LINE("std::string " << LoaderClassName(m_env.m_asset) << "::GetAssetName(" << m_env.m_asset->m_definition->GetFullName() << "* pAsset)")
+        LINE("{")
+        m_intendation++;
+
+        if (!m_env.m_asset->m_name_chain.empty())
+        {
+            LINE_START("return pAsset")
+
+            auto first = true;
+            for (auto* member : m_env.m_asset->m_name_chain)
+            {
+                if (first)
+                {
+                    first = false;
+                    LINE_MIDDLE("->"<<member->m_member->m_name)
+                }
+                else
+                {
+                    LINE_MIDDLE("." << member->m_member->m_name)
+                }
+            }
+            LINE_END(";")
+        }
+        else
+        {
+            LINE("return \""<<m_env.m_asset->m_definition->m_name<<"\";")
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
 public:
     Internal(std::ostream& stream, RenderingContext* context)
         : BaseTemplate(stream, context)
@@ -108,6 +462,7 @@ public:
         }
         LINE(VariableDecl(m_env.m_asset->m_definition))
         LINE(PointerVariableDecl(m_env.m_asset->m_definition))
+        LINE("")
 
         // Variable Declarations: type varType;
         for (auto* type : m_env.m_used_types)
@@ -168,6 +523,63 @@ public:
 
     void Source()
     {
+        LINE("// ====================================================================")
+        LINE("// This file has been generated by ZoneCodeGenerator.")
+        LINE("// Do not modify. ")
+        LINE("// Any changes will be discarded when regenerating.")
+        LINE("// ====================================================================")
+        LINE("")
+        LINE("#include \""<<Lower(m_env.m_asset->m_definition->m_name)<<"_load_db.h\"")
+        LINE("#include <cassert>")
+        LINE("")
+
+        if (!m_env.m_referenced_assets.empty())
+        {
+            LINE("// Referenced Assets:")
+            for (auto* type : m_env.m_referenced_assets)
+            {
+                LINE("#include \"../"<<Lower(type->m_type->m_name)<<"/"<<Lower(type->m_type->m_name)<<"_load_db.h\"")
+            }
+            LINE("")
+        }
+        LINE("using namespace " << m_env.m_game << ";")
+        LINE("")
+        PrintConstructorMethod();
+
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_pointer_array_reference_exists)
+            {
+                LINE("")
+                PrintLoadPtrArrayMethod(type->m_type, type->m_info, type->m_pointer_array_reference_is_reusable);
+            }
+        }
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_array_reference_exists && type->m_info && !type->m_info->m_is_leaf && type->m_non_runtime_reference_exists)
+            {
+                LINE("")
+                PrintLoadArrayMethod(type->m_type, type->m_info);
+            }
+        }
+        for (auto* type : m_env.m_used_structures)
+        {
+            if (type->m_non_runtime_reference_exists && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+            {
+                LINE("")
+                PrintLoadMethod(type->m_info);
+            }
+        }
+        LINE("")
+        PrintLoadMethod(m_env.m_asset);
+        LINE("")
+        PrintLoadTempPtrMethod(m_env.m_asset);
+        LINE("")
+        PrintLoadAssetMethod(m_env.m_asset);
+        LINE("")
+        PrintMainLoadMethod();
+        LINE("")
+        PrintGetNameMethod();
     }
 };
 

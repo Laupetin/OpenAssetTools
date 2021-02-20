@@ -29,6 +29,8 @@ protected:
     void TypeDecl(const TypeDeclaration* decl) const;
     void PrintFollowingReferences(const std::vector<std::unique_ptr<DeclarationModifier>>& modifiers) const;
     void PrintArrayIndices(const DeclarationModifierComputations& modifierComputations) const;
+
+    void PrintCustomAction(CustomAction* action) const;
     
     void PrintOperandStatic(const OperandStatic* op) const;
     void PrintOperandDynamic(const OperandDynamic* op) const;
