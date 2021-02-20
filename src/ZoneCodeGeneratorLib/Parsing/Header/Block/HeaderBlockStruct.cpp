@@ -66,6 +66,12 @@ void HeaderBlockStruct::OnClose(HeaderParserState* state)
     for (auto& member : m_members)
         structDefinition->m_members.emplace_back(std::move(member));
 
+    if(m_has_custom_align)
+    {
+        structDefinition->m_alignment_override = static_cast<unsigned>(m_custom_alignment);
+        structDefinition->m_has_alignment_override = true;
+    }
+
     state->AddDataType(std::move(structDefinition));
 
     if (m_is_typedef)
