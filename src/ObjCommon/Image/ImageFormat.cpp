@@ -161,6 +161,8 @@ const ImageFormat* const ImageFormat::ALL_FORMATS[static_cast<unsigned>(ImageFor
     &FORMAT_B8_G8_R8_A8,
     &FORMAT_A8,
     &FORMAT_R16_G16_B16_A16_FLOAT,
+    &FORMAT_R8,
+    &FORMAT_R8_A8,
     &FORMAT_BC1,
     &FORMAT_BC2,
     &FORMAT_BC3,
