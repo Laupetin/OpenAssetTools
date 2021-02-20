@@ -29,14 +29,11 @@ void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag, Rende
 {
     if (fileTag == TAG_HEADER)
     {
-        stream << "Header";
     }
     else if (fileTag == TAG_SOURCE)
     {
-        stream << "Source";
     }
     else
     {
-        stream << "Unknown";
     }
 }
