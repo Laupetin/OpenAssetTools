@@ -1,12 +1,16 @@
 ZoneCommonTests = {}
 
 function ZoneCommonTests:include()
-    
+    if References:include(self:name()) then
+		includedirs {
+			path.join(TestFolder(), "ZoneCommonTests")
+		}
+	end
 end
 
 function ZoneCommonTests:link()
-	if References:link("ZoneCommonTests") then
-		links "ZoneCommonTests"
+	if References:link(self:name()) then
+		links(self:name())
 	end
 end
 
@@ -14,14 +18,18 @@ function ZoneCommonTests:use()
 	
 end
 
+function ZoneCommonTests:name()
+    return "ZoneCommonTests"
+end
+
 function ZoneCommonTests:project()
 	References:reset()
 	local folder = TestFolder();
 
-	project "ZoneCommonTests"
+	project(self:name())
         targetdir(TargetDirectoryTest)
 		location "%{wks.location}/test/%{prj.name}"
-		kind "SharedLib"
+		kind "ConsoleApp"
 		language "C++"
 		
 		files {
@@ -39,6 +47,7 @@ function ZoneCommonTests:project()
 		
 		self:include()
 		ZoneCommon:include()
+		catch2:include()
 
 		ZoneCommon:link()
 

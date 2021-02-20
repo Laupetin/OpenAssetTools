@@ -23,16 +23,16 @@ class AssetStructTestsTemplate::Internal
 
     void TestMethod(StructureInformation* structure)
     {
-        if (structure->m_non_embedded_reference_exists)
-        {
-            LINE("TEST_METHOD(Test_"<<structure->m_definition->m_name<<")");
+        /*if (structure->m_non_embedded_reference_exists)
+        {*/
+            LINE("TEST_CASE(\""<<m_env.m_game<<"::"<<m_env.m_asset->m_definition->GetFullName()<<": Tests for "<<structure->m_definition->GetFullName()<<"\", \"[assetstruct]\")");
             LINE("{");
             m_intendation++;
-            LINE("Assert::AreEqual("<<structure->m_definition->GetSize()<<"u, sizeof("<<structure->m_definition->GetFullName()<<"));");
-            LINE("Assert::AreEqual("<<structure->m_definition->GetAlignment()<<"u, alignof("<<structure->m_definition->GetFullName()<<"));");
+            LINE("REQUIRE("<<structure->m_definition->GetSize()<<"u == sizeof("<<structure->m_definition->GetFullName()<<"));");
+            LINE("REQUIRE("<<structure->m_definition->GetAlignment()<<"u == alignof("<<structure->m_definition->GetFullName()<<"));");
             m_intendation--;
             LINE("}");
-        }
+        /*}*/
     }
 
 public:
@@ -51,18 +51,13 @@ public:
         LINE("// Any changes will be discarded when regenerating.");
         LINE("// ====================================================================");
         LINE("");
-        LINE("#include \"CppUnitTest.h\"");
+        LINE("#include <catch2/catch.hpp>");
         LINE("#include \"Game/" << m_env.m_game << "/" << m_env.m_game << ".h\"");
         LINE("");
-        LINE("using namespace Microsoft::VisualStudio::CppUnitTestFramework;");
         LINE("using namespace " << m_env.m_game << ";");
         LINE("");
-        LINE("namespace ZoneCommonTests");
+        LINE("namespace game::"<<m_env.m_game<<"::xassets::asset_"<<m_env.m_asset->m_definition->m_name);
         LINE("{");
-        m_intendation++;
-        LINE("TEST_CLASS(AssetStructTest_"<<m_env.m_asset->m_definition->m_name<<")");
-        LINE("{");
-        LINE("public:");
         m_intendation++;
 
         TestMethod(m_env.m_asset);
@@ -73,8 +68,6 @@ public:
                 TestMethod(structure->m_info);
         }
 
-        m_intendation--;
-        LINE("};");
         m_intendation--;
         LINE("}");
     }
