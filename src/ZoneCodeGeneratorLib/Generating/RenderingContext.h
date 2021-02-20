@@ -29,6 +29,7 @@ class RenderingContext
 
     RenderingContext(std::string game, std::vector<const FastFileBlock*> fastFileBlocks);
 
+    RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
     RenderingUsedType* GetBaseType(RenderingUsedType* usedType);
     void AddMembersToContext(StructureInformation* info);
     void MakeAsset(StructureInformation* asset);

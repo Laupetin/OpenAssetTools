@@ -36,6 +36,15 @@ RenderingContext::RenderingContext(std::string game, std::vector<const FastFileB
     }
 }
 
+RenderingUsedType* RenderingContext::AddUsedType(std::unique_ptr<RenderingUsedType> usedType)
+{
+    auto* result = usedType.get();
+    m_used_types.push_back(usedType.get());
+    m_used_types_lookup.emplace(std::make_pair(usedType->m_type, std::move(usedType)));
+
+    return result;
+}
+
 RenderingUsedType* RenderingContext::GetBaseType(RenderingUsedType* usedType)
 {
     if(usedType->m_type->GetType() == DataDefinitionType::TYPEDEF)
@@ -47,13 +56,7 @@ RenderingUsedType* RenderingContext::GetBaseType(RenderingUsedType* usedType)
 
         const auto foundUsedType = m_used_types_lookup.find(typedefDefinition);
         if(foundUsedType == m_used_types_lookup.end())
-        {
-            auto usedTypePtr = std::make_unique<RenderingUsedType>(typedefDefinition->m_type_declaration->m_type, nullptr);
-            auto* result = usedTypePtr.get();
-            m_used_types_lookup.emplace(std::make_pair(usedTypePtr->m_type, std::move(usedTypePtr)));
-
-            return result;
-        }
+            return AddUsedType(std::make_unique<RenderingUsedType>(typedefDefinition->m_type_declaration->m_type, nullptr));
 
         return foundUsedType->second.get();
     }
@@ -73,15 +76,9 @@ void RenderingContext::AddMembersToContext(StructureInformation* info)
         RenderingUsedType* usedType;
         const auto existingUsedType = m_used_types_lookup.find(member->m_member->m_type_declaration->m_type);
         if(existingUsedType == m_used_types_lookup.end())
-        {
-            auto usedTypePtr = std::make_unique<RenderingUsedType>(member->m_member->m_type_declaration->m_type, member->m_type);
-            usedType = usedTypePtr.get();
-            m_used_types_lookup.emplace(std::make_pair(usedTypePtr->m_type, std::move(usedTypePtr)));
-        }
+            usedType = AddUsedType(std::make_unique<RenderingUsedType>(member->m_member->m_type_declaration->m_type, member->m_type));
         else
-        {
             usedType = existingUsedType->second.get();
-        }
 
         auto* baseUsedType = GetBaseType(usedType);
 
@@ -118,28 +115,24 @@ void RenderingContext::AddMembersToContext(StructureInformation* info)
 void RenderingContext::MakeAsset(StructureInformation* asset)
 {
     m_asset = asset;
-    auto assetUsedType = std::make_unique<RenderingUsedType>(asset->m_definition, asset);
-    assetUsedType->m_is_context_asset = true;
-    m_used_types_lookup.emplace(std::make_pair(asset->m_definition, std::move(assetUsedType)));
+    AddUsedType(std::make_unique<RenderingUsedType>(asset->m_definition, asset));
 
     AddMembersToContext(asset);
 }
 
 void RenderingContext::CreateUsedTypeCollections()
 {
-    for(const auto& [dataDef, usedType] : m_used_types_lookup)
+    for(auto* usedType : m_used_types)
     {
-        m_used_types.push_back(usedType.get());
-
         if (usedType->m_info != nullptr)
         {
             StructureComputations computations(usedType->m_info);
 
-            if(usedType->m_info->m_definition == dataDef)
-                m_used_structures.push_back(usedType.get());
+            if(usedType->m_info->m_definition == usedType->m_type)
+                m_used_structures.push_back(usedType);
 
             if(computations.IsAsset() && usedType->m_info != m_asset)
-                m_referenced_assets.push_back(usedType.get());
+                m_referenced_assets.push_back(usedType);
 
             if (!m_has_actions)
             {
