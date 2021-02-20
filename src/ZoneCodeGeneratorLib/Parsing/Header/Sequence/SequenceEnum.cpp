@@ -43,6 +43,8 @@ void SequenceEnum::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderP
 
         if (foundTypeDefinition->GetType() != DataDefinitionType::BASE_TYPE)
             throw ParsingException(typeNameToken.GetPos(), "Enums can only have base types as parent type");
+
+        parentType = dynamic_cast<const BaseTypeDefinition*>(foundTypeDefinition);
     }
 
     state->PushBlock(std::make_unique<HeaderBlockEnum>(name, parentType, isTypedef));
