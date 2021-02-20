@@ -43,7 +43,7 @@ bool CodeGenerator::GenerateCodeForTemplate(RenderingContext* context, ICodeTemp
             return false;
         }
 
-        codeTemplate->RenderFile(stream, codeFile.m_tag);
+        codeTemplate->RenderFile(stream, codeFile.m_tag, context);
 
         stream.close();
     }

@@ -25,7 +25,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContex
     return files;
 }
 
-void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag)
+void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
 {
     if (fileTag == TAG_HEADER)
     {

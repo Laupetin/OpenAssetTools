@@ -25,6 +25,6 @@ std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(RenderingConte
     return files;
 }
 
-void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag)
+void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
 {
 }

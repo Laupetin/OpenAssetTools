@@ -30,5 +30,5 @@ public:
     ICodeTemplate& operator=(ICodeTemplate&& other) noexcept = default;
     
     virtual std::vector<CodeTemplateFile> GetFilesToRender(RenderingContext* context) = 0;
-    virtual void RenderFile(std::ostream& stream, int fileTag) = 0;
+    virtual void RenderFile(std::ostream& stream, int fileTag, RenderingContext* context) = 0;
 };
