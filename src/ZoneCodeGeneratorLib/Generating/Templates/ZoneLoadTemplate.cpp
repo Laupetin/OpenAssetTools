@@ -247,14 +247,229 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void LoadDynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    void LoadDynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        LINE("// LoadDynamicArray: "<<member->m_member->m_name)
+        if (member->m_type && !member->m_type->m_is_leaf)
+        {
+            LINE_START(TypeVarName(member->m_member->m_type_declaration->m_type) << " = " << TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
+            PrintArrayIndices(modifier);
+            LINE_END(";")
+            LINE_START("LoadArray_" << SafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, ")
+            PrintEvaluation(modifier.GetDynamicArraySizeEvaluation());
+            LINE_END(");")
+        }
+        else
+        {
+            LINE_START("m_stream->Load<")
+            PrintTypeDecl(member->m_member->m_type_declaration.get());
+            PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+            LINE_MIDDLE(">(" << TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
+            PrintArrayIndices(modifier);
+            LINE_MIDDLE(", ")
+            PrintEvaluation(modifier.GetDynamicArraySizeEvaluation());
+            LINE_END(");")
+        }
+    }
+
+    void LoadSinglePointer_Inner(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        const MemberComputations computations(member);
+        if (computations.IsInTempBlock())
+        {
+            LINE_START(member->m_member->m_type_declaration->m_type->GetFullName()<<"* ptr = ")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(";")
+        }
+
+        LINE_START("")
+        PrintAccessMember(info, member, modifier);
+        LINE_MIDDLE(" = m_stream->Alloc<")
+        PrintTypeDecl(member->m_member->m_type_declaration.get());
+        PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+        LINE_MIDDLE(">(alignof(")
+        PrintTypeDecl(member->m_member->m_type_declaration.get());
+        PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+        LINE_END(")); // "<<member->m_member->m_type_declaration->m_type->GetAlignment())
+
+        if (computations.IsInTempBlock())
+        {
+            LINE("")
+            LINE(member->m_member->m_type_declaration->m_type->GetFullName() << "** toInsert = nullptr;")
+            LINE("if(ptr == PTR_INSERT)")
+            m_intendation++;
+            LINE("toInsert = m_stream->InsertPointer<"<<member->m_member->m_type_declaration->m_type->GetFullName()<<">();")
+            m_intendation--;
+            LINE("")
+        }
+
+        if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
+        {
+            LINE_START(TypeVarName(member->m_member->m_type_declaration->m_type) << " = ")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(";")
+            LINE("Load_"<<SafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true);")
+
+            if (member->m_type->m_post_load_action)
+            {
+                PrintCustomAction(member->m_type->m_post_load_action.get());
+            }
+        }
+        else
+        {
+            LINE_START("m_stream->Load<")
+            PrintTypeDecl(member->m_member->m_type_declaration.get());
+            PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+            LINE_MIDDLE(">(")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(");")
+        }
+
+        if (computations.IsInTempBlock())
+        {
+            LINE("")
+            LINE("if(toInsert != nullptr)")
+            m_intendation++;
+            LINE("*toInsert = "<<TypeVarName(info->m_definition)<<"->"<<member->m_member->m_name<<";")
+            m_intendation--;
+        }
+    }
+
+    void LoadSinglePointer_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        const MemberComputations computations(member);
+        if (computations.IsInTempBlock())
+        {
+            LINE_START("if(")
+            PrintAccessMember(info, member, modifier);
+            LINE_MIDDLE(" == PTR_FOLLOWING || ")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(" == PTR_INSERT)")
+            LINE("{")
+            m_intendation++;
+
+            LoadSinglePointer_Inner(info, member, modifier);
+
+            m_intendation--;
+            LINE("}")
+            LINE("else")
+            LINE("{")
+            m_intendation++;
+
+            LINE_START("")
+            PrintAccessMember(info, member, modifier);
+            LINE_MIDDLE(" = m_stream->ConvertOffsetToAlias(")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(");")
+
+            m_intendation--;
+            LINE("}")
+        }
+        else
+        {
+            LINE_START("if(")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(" == PTR_FOLLOWING)")
+            LINE("{")
+            m_intendation++;
+
+            LoadSinglePointer_Inner(info, member, modifier);
+
+            m_intendation--;
+            LINE("}")
+            LINE("else")
+            LINE("{")
+            m_intendation++;
+
+            LINE_START("")
+            PrintAccessMember(info, member, modifier);
+            LINE_MIDDLE(" = m_stream->ConvertOffsetToPointer(")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(");")
+
+            m_intendation--;
+            LINE("}")
+        }
+    }
+
+    void LoadSinglePointer_Asset(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        LINE(LoaderClassName(member->m_type) << " loader(m_zone, m_stream);")
+        LINE_START("AddDependency(loader.Load(&" << TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
+        PrintArrayIndices(modifier);
+        LINE_END("));")
+    }
+
+    void LoadSinglePointer_PointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE_START("if (")
+        PrintAccessMember(info, member, modifier);
+        LINE_END(")")
+        LINE("{")
+        m_intendation++;
+
+        if (member->m_type && StructureComputations(member->m_type).IsAsset())
+        {
+            LoadSinglePointer_Asset(info, member, modifier);
+        }
+        else
+        {
+            if (member->m_is_reusable)
+            {
+                LoadSinglePointer_Reuse(info, member, modifier);
+            }
+            else
+            {
+                LoadSinglePointer_Inner(info, member, modifier);
+            }
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void LoadSinglePointer_String(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        if (member->m_member->m_type_declaration->m_is_const)
+        {
+            LINE_START("varXString = &")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(";")
+        }
+        else
+        {
+            LINE_START("varXString = const_cast<const char**>(&")
+            PrintAccessMember(info, member, modifier);
+            LINE_END(");")
+        }
+        LINE("LoadXString(false);")
     }
 
     void LoadSinglePointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
     {
-        LINE("// LoadSinglePointer: " << member->m_member->m_name)
+        const MemberComputations computations(member);
+
+        if (computations.IsNotInDefaultNormalBlock())
+        {
+            LINE("m_stream->PushBlock("<<member->m_fast_file_block->m_name<<");")
+        }
+
+        if (member->m_is_string)
+        {
+            LoadSinglePointer_String(info, member, modifier);
+        }
+        else if (member->m_is_script_string)
+        {
+            LINE("#error Scriptstring "<<member->m_member->m_name)
+        }
+        else
+        {
+            LoadSinglePointer_PointerCheck(info, member, modifier);
+        }
+
+        if (computations.IsNotInDefaultNormalBlock())
+        {
+            LINE("m_stream->PopBlock();")
+        }
     }
 
     void LoadArrayPointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)

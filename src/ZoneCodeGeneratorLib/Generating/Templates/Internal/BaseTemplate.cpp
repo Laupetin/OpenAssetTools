@@ -60,7 +60,13 @@ std::string BaseTemplate::SafeTypeName(const DataDefinition* def)
     return safeName;
 }
 
-void BaseTemplate::TypeDecl(const TypeDeclaration* decl) const
+void BaseTemplate::PrintAccessMember(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+{
+    LINE_MIDDLE(TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
+    PrintArrayIndices(modifier);
+}
+
+void BaseTemplate::PrintTypeDecl(const TypeDeclaration* decl) const
 {
     if (decl->m_is_const)
     {
@@ -69,13 +75,13 @@ void BaseTemplate::TypeDecl(const TypeDeclaration* decl) const
     LINE_MIDDLE(decl->m_type->GetFullName())
 }
 
-void BaseTemplate::PrintFollowingReferences(const std::vector<std::unique_ptr<DeclarationModifier>>& modifiers) const
+void BaseTemplate::PrintFollowingReferences(const std::vector<DeclarationModifier*>& modifiers) const
 {
-    for (const auto& modifier : modifiers)
+    for (const auto* modifier : modifiers)
     {
         if (modifier->GetType() == DeclarationModifierType::ARRAY)
         {
-            const auto* array = dynamic_cast<const ArrayDeclarationModifier*>(modifier.get());
+            const auto* array = dynamic_cast<const ArrayDeclarationModifier*>(modifier);
             LINE_MIDDLE("["<< array->m_size <<"]")
         }
         else

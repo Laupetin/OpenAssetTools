@@ -26,8 +26,9 @@ protected:
     static std::string TypeVarName(const DataDefinition* def);
     static std::string TypePtrVarName(const DataDefinition* def);
     static std::string SafeTypeName(const DataDefinition* def);
-    void TypeDecl(const TypeDeclaration* decl) const;
-    void PrintFollowingReferences(const std::vector<std::unique_ptr<DeclarationModifier>>& modifiers) const;
+    void PrintAccessMember(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const;
+    void PrintTypeDecl(const TypeDeclaration* decl) const;
+    void PrintFollowingReferences(const std::vector<DeclarationModifier*>& modifiers) const;
     void PrintArrayIndices(const DeclarationModifierComputations& modifierComputations) const;
 
     void PrintCustomAction(CustomAction* action) const;
