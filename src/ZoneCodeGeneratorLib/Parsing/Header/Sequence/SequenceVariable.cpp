@@ -105,6 +105,17 @@ void SequenceVariable::ProcessMatch(HeaderParserState* state, SequenceResult<Hea
         variable->m_has_alignment_override = true;
     }
 
+    if(result.HasNextCapture(CAPTURE_BIT_SIZE))
+    {
+        const auto& bitSizeToken = result.NextCapture(CAPTURE_BIT_SIZE);
+        variable->m_type_declaration->m_custom_bit_size = bitSizeToken.IntegerValue();
+
+        if (variable->m_type_declaration->m_custom_bit_size <= 0)
+            throw ParsingException(bitSizeToken.GetPos(), "Custom bit size must be greater than 0");
+
+        variable->m_type_declaration->m_has_custom_bit_size = true;
+    }
+
     if (modeTag == TAG_ARRAY_OF_POINTERS)
     {
         AddArrayDeclarationModifiers(state, result, variable->m_type_declaration.get());
