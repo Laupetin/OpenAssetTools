@@ -107,7 +107,7 @@ void RenderingContext::AddMembersToContext(StructureInformation* info)
                 usedType->m_pointer_array_reference_is_reusable = true;
         }
 
-        if(usedType->m_info != nullptr && StructureComputations(usedType->m_info).IsAsset() && !computations.IsInRuntimeBlock() && !usedType->m_members_loaded)
+        if(usedType->m_info != nullptr && !StructureComputations(usedType->m_info).IsAsset() && !computations.IsInRuntimeBlock() && !usedType->m_members_loaded)
         {
             usedType->m_members_loaded = true;
             AddMembersToContext(usedType->m_info);
