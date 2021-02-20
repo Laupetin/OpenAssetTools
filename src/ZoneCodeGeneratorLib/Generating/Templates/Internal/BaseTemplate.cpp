@@ -63,8 +63,10 @@ std::string BaseTemplate::SafeTypeName(const DataDefinition* def)
 void BaseTemplate::TypeDecl(const TypeDeclaration* decl) const
 {
     if (decl->m_is_const)
-        m_out << "const ";
-    m_out << decl->m_type->GetFullName();
+    {
+        LINE_MIDDLE("const ")
+    }
+    LINE_MIDDLE(decl->m_type->GetFullName())
 }
 
 void BaseTemplate::PrintFollowingReferences(const std::vector<std::unique_ptr<DeclarationModifier>>& modifiers) const
@@ -74,17 +76,21 @@ void BaseTemplate::PrintFollowingReferences(const std::vector<std::unique_ptr<De
         if (modifier->GetType() == DeclarationModifierType::ARRAY)
         {
             const auto* array = dynamic_cast<const ArrayDeclarationModifier*>(modifier.get());
-            m_out << "[" << array->m_size << "]";
+            LINE_MIDDLE("["<< array->m_size <<"]")
         }
         else
-            m_out << '*';
+        {
+            LINE_MIDDLE("*")
+        }
     }
 }
 
 void BaseTemplate::PrintArrayIndices(const DeclarationModifierComputations& modifierComputations) const
 {
     for (auto index : modifierComputations.GetArrayIndices())
-        m_out << "[" << index << "]";
+    {
+        LINE_MIDDLE("["<<index<<"]")
+    }
 }
 
 void BaseTemplate::PrintCustomAction(CustomAction* action) const
@@ -112,14 +118,18 @@ void BaseTemplate::PrintCustomAction(CustomAction* action) const
 void BaseTemplate::PrintOperandStatic(const OperandStatic* op) const
 {
     if (op->m_enum_member != nullptr)
-        m_out << op->m_enum_member->m_name;
+    {
+        LINE_MIDDLE(op->m_enum_member->m_name)
+    }
     else
-        m_out << op->m_value;
+    {
+        LINE_MIDDLE(op->m_value)
+    }
 }
 
 void BaseTemplate::PrintOperandDynamic(const OperandDynamic* op) const
 {
-    m_out << TypeVarName(op->m_structure->m_definition);
+    LINE_MIDDLE(TypeVarName(op->m_structure->m_definition))
 
     auto first = true;
     for (const auto* chainMember : op->m_referenced_member_chain)
@@ -127,17 +137,19 @@ void BaseTemplate::PrintOperandDynamic(const OperandDynamic* op) const
         if (first)
         {
             first = false;
-            m_out << "->" << chainMember->m_member->m_name;
+            LINE_MIDDLE("->"<< chainMember->m_member->m_name)
         }
         else
-            m_out << '.' << chainMember->m_member->m_name;
+        {
+            LINE_MIDDLE("." << chainMember->m_member->m_name)
+        }
     }
 
     for (const auto& arrayIndex : op->m_array_indices)
     {
-        m_out << "[";
+        LINE_MIDDLE("[")
         PrintEvaluation(arrayIndex.get());
-        m_out << "]";
+        LINE_MIDDLE("]")
     }
 }
 
@@ -145,20 +157,20 @@ void BaseTemplate::PrintOperation(const Operation* operation) const
 {
     if (operation->Operand1NeedsParenthesis())
     {
-        m_out << "(";
+        LINE_MIDDLE("(")
         PrintEvaluation(operation->m_operand1.get());
-        m_out << ")";
+        LINE_MIDDLE(")")
     }
     else
         PrintEvaluation(operation->m_operand1.get());
 
-    m_out << " " << operation->m_operation_type->m_syntax << " ";
+    LINE_MIDDLE(" "<<operation->m_operation_type->m_syntax<<" ")
 
     if (operation->Operand2NeedsParenthesis())
     {
-        m_out << "(";
+        LINE_MIDDLE("(")
         PrintEvaluation(operation->m_operand2.get());
-        m_out << ")";
+        LINE_MIDDLE(")")
     }
     else
         PrintEvaluation(operation->m_operand2.get());

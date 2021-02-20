@@ -4,6 +4,7 @@
 #include <sstream>
 
 
+#include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
 
@@ -120,9 +121,61 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, bool reusable)
+    void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, StructureInformation* info) const
     {
-        // TODO
+        LINE("*"<<TypePtrVarName(def)<<" = m_stream->Alloc<"<<def->GetFullName()<<">(alignof("<<def->GetFullName()<<")); // "<<def->GetAlignment())
+
+        if (info && info->m_is_leaf)
+        {
+            LINE(TypeVarName(info->m_definition)<<" = *"<<TypePtrVarName(def)<<";")
+            LINE("Load_"<<SafeTypeName(def)<<"(true);")
+        }
+        else
+        {
+            LINE("m_stream->Load<"<<def->GetFullName()<<">(*"<<TypePtrVarName(def)<<");")
+        }
+    }
+
+    void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+    {
+        LINE("if (*" << TypePtrVarName(def) << ")")
+        LINE("{")
+        m_intendation++;
+
+        if (info && StructureComputations(info).IsAsset())
+        {
+            LINE(LoaderClassName(info)<<" loader(m_zone, m_stream);")
+            LINE("AddDependency(loader.Load("<<TypePtrVarName(def)<<"));")
+        }
+        else
+        {
+            if (reusable)
+            {
+                LINE("if(*" << TypePtrVarName(def) << " == PTR_FOLLOWING)")
+                LINE("{")
+                m_intendation++;
+
+                PrintLoadPtrArrayMethod_Loading(def, info);
+
+                m_intendation--;
+                LINE("}")
+                LINE("else")
+                LINE("{")
+                m_intendation++;
+
+                LINE("*"<<TypePtrVarName(def)<<" = m_stream->ConvertOffsetToPointer(*"<<TypePtrVarName(def)<<");")
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                PrintLoadPtrArrayMethod_Loading(def, info);
+            }
+        }
+
+        m_intendation--;
+        LINE("}")
     }
 
     void PrintLoadPtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
@@ -194,6 +247,192 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
+    void LoadDynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadDynamicArray: "<<member->m_member->m_name)
+    }
+
+    void LoadSinglePointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadSinglePointer: " << member->m_member->m_name)
+    }
+
+    void LoadArrayPointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadArrayPointer: " << member->m_member->m_name)
+    }
+
+    void LoadPointerArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadPointerArray: " << member->m_member->m_name)
+    }
+
+    void LoadEmbeddedArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadEmbeddedArray: " << member->m_member->m_name)
+    }
+
+    void LoadEmbedded(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadEmbedded: " << member->m_member->m_name)
+    }
+
+    void LoadMember_ReferenceArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        LINE("// LoadMember_ReferenceArray: " << member->m_member->m_name)
+    }
+
+    void LoadMember_Reference(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        if (modifier.IsDynamicArray())
+        {
+            LoadDynamicArray(info, member, modifier);
+        }
+        else if (modifier.IsSinglePointer())
+        {
+            LoadSinglePointer(info, member, modifier);
+        }
+        else if (modifier.IsArrayPointer())
+        {
+            LoadArrayPointer(info, member, modifier);
+        }
+        else if (modifier.IsPointerArray())
+        {
+            LoadPointerArray(info, member, modifier);
+        }
+        else if (modifier.IsArray() && modifier.GetNextDeclarationModifier() == nullptr)
+        {
+            LoadEmbeddedArray(info, member, modifier);
+        }
+        else if (modifier.GetDeclarationModifier() == nullptr)
+        {
+            LoadEmbedded(info, member, modifier);
+        }
+        else if (modifier.IsArray())
+        {
+            LoadMember_ReferenceArray(info, member, modifier);
+        }
+        else
+        {
+            LINE("#error LoadMemberReference failed @ "<<member->m_member->m_name)
+        }
+    }
+
+    void LoadMember_Condition_Struct(StructureInformation* info, MemberInformation* member)
+    {
+        LINE("")
+        if (member->m_condition)
+        {
+            LINE_START("if(")
+            PrintEvaluation(member->m_condition.get());
+            LINE_END(")")
+            LINE("{")
+            m_intendation++;
+
+            LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+
+            m_intendation--;
+            LINE("}")
+        }
+        else
+        {
+            LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+        }
+    }
+
+    void LoadMember_Condition_Union(StructureInformation* info, MemberInformation* member)
+    {
+        const MemberComputations computations(member);
+
+        if (computations.IsFirstMember())
+        {
+            LINE("")
+            if (member->m_condition)
+            {
+                LINE_START("if(")
+                PrintEvaluation(member->m_condition.get());
+                LINE_END(")")
+                LINE("{")
+                m_intendation++;
+
+                LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+            }
+        }
+        else if (computations.IsLastMember())
+        {
+            if (member->m_condition)
+            {
+                LINE_START("else if(")
+                PrintEvaluation(member->m_condition.get());
+                LINE_END(")")
+                LINE("{")
+                m_intendation++;
+
+                LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LINE("else")
+                LINE("{")
+                m_intendation++;
+
+                LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+        }
+        else
+        {
+            if (member->m_condition)
+            {
+                LINE_START("else if(")
+                PrintEvaluation(member->m_condition.get());
+                LINE_END(")")
+                LINE("{")
+                m_intendation++;
+
+                LoadMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LINE("#error Middle member of union must have condition ("<<member->m_member->m_name<<")")
+            }
+        }
+    }
+
+    void PrintLoadMemberIfNeedsTreatment(StructureInformation* info, MemberInformation* member)
+    {
+        const MemberComputations computations(member);
+        if (computations.ShouldIgnore())
+            return;
+
+        if (member->m_is_string
+            || member->m_is_script_string
+            || computations.ContainsNonEmbeddedReference()
+            || member->m_type && !member->m_type->m_is_leaf
+            || computations.IsAfterPartialLoad())
+        {
+            if (info->m_definition->GetType() == DataDefinitionType::UNION)
+                LoadMember_Condition_Union(info, member);
+            else
+                LoadMember_Condition_Struct(info, member);
+        }
+    }
+
     void PrintLoadMethod(StructureInformation* info)
     {
         const StructureComputations computations(info);
@@ -240,8 +479,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
         for (const auto& member : info->m_ordered_members)
         {
-            // TODO
-            LINE("// "<<member->m_member->m_name)
+            PrintLoadMemberIfNeedsTreatment(info, member.get());
         }
 
         if (info->m_block || computations.IsAsset())
