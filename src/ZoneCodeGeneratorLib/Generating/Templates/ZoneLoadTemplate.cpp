@@ -732,7 +732,30 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void LoadMember_EmbeddedArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        LINE("// LoadEmbeddedArray: " << member->m_member->m_name)
+        const MemberComputations computations(member);
+        if (!member->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+
+                if (computations.IsAfterPartialLoad())
+                {
+                    LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "<<modifier.GetArraySize()<<");")
+                }
+                else
+                {
+                    LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<modifier.GetArraySize()<<");")
+                }
+
+            if (member->m_type->m_post_load_action)
+            {
+                LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
+            }
+        }
+        else if (computations.IsAfterPartialLoad())
+        {
+            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(" << MakeMemberAccess(info, member, modifier) <<", "<<modifier.GetArraySize()<<");")
+        }
     }
 
     void LoadMember_DynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
@@ -742,7 +765,30 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void LoadMember_Embedded(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        LINE("// LoadEmbedded: " << member->m_member->m_name)
+        const MemberComputations computations(member);
+        if (!member->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = &" << MakeMemberAccess(info, member, modifier) << ";")
+
+            if (computations.IsAfterPartialLoad())
+            {
+                LINE("Load_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true);")
+            }
+            else
+            {
+                LINE("Load_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false);")
+            }
+
+            if (member->m_type->m_post_load_action)
+            {
+                LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
+            }
+        }
+        else if (computations.IsAfterPartialLoad())
+        {
+            LINE("m_stream->Load<"<<MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(&" << MakeMemberAccess(info, member, modifier)<<");")
+        }
     }
 
     void LoadMember_SinglePointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
@@ -937,7 +983,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     static bool LoadMember_ShouldMakePointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, MemberLoadType loadType)
     {
-        if(loadType != MemberLoadType::ARRAY_POINTER
+        if (loadType != MemberLoadType::ARRAY_POINTER
             && loadType != MemberLoadType::POINTER_ARRAY
             && loadType != MemberLoadType::SINGLE_POINTER)
         {
