@@ -807,7 +807,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         else
         {
             LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+                << ">(" << MakeMemberAccess(info, member, modifier) << ");")
         }
     }
 
