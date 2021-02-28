@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "Domain/Computations/MemberComputations.h"
 #include "Domain/Information/StructureInformation.h"
 #include "Persistence/IDataRepository.h"
 
@@ -30,9 +31,10 @@ class RenderingContext
     RenderingContext(std::string game, std::vector<const FastFileBlock*> fastFileBlocks);
 
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
-    RenderingUsedType* GetBaseType(RenderingUsedType* usedType);
-    void AddMembersToContext(StructureInformation* info);
-    void MakeAsset(StructureInformation* asset);
+    RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
+    void AddMembersToContext(const IDataRepository* repository, StructureInformation* info);
+    void ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
+    void MakeAsset(const IDataRepository* repository, StructureInformation* asset);
     void CreateUsedTypeCollections();
 
 public:

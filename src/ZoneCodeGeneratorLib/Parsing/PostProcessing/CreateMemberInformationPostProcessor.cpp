@@ -7,7 +7,14 @@ bool CreateMemberInformationPostProcessor::CreateMemberInformationForStructure(I
     for(const auto& member : structure->m_definition->m_members)
     {
         StructureInformation* typeInfo = nullptr;
-        const auto* memberDefinition = dynamic_cast<const DefinitionWithMembers*>(member->m_type_declaration->m_type);
+        const auto* currentDefinition = member->m_type_declaration->m_type;
+
+        while(currentDefinition->GetType() == DataDefinitionType::TYPEDEF)
+        {
+            currentDefinition = dynamic_cast<const TypedefDefinition*>(currentDefinition)->m_type_declaration->m_type;
+        }
+
+        const auto* memberDefinition = dynamic_cast<const DefinitionWithMembers*>(currentDefinition);
 
         if(memberDefinition != nullptr)
             typeInfo = repository->GetInformationFor(memberDefinition);

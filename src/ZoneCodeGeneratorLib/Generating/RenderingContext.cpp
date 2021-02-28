@@ -45,7 +45,7 @@ RenderingUsedType* RenderingContext::AddUsedType(std::unique_ptr<RenderingUsedTy
     return result;
 }
 
-RenderingUsedType* RenderingContext::GetBaseType(RenderingUsedType* usedType)
+RenderingUsedType* RenderingContext::GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType)
 {
     if(usedType->m_type->GetType() == DataDefinitionType::TYPEDEF)
     {
@@ -54,9 +54,18 @@ RenderingUsedType* RenderingContext::GetBaseType(RenderingUsedType* usedType)
         while(typedefDefinition->m_type_declaration->m_type->GetType() == DataDefinitionType::TYPEDEF)
             typedefDefinition = dynamic_cast<const TypedefDefinition*>(typedefDefinition->m_type_declaration->m_type);
 
-        const auto foundUsedType = m_used_types_lookup.find(typedefDefinition);
+        const auto foundUsedType = m_used_types_lookup.find(typedefDefinition->m_type_declaration->m_type);
         if(foundUsedType == m_used_types_lookup.end())
-            return AddUsedType(std::make_unique<RenderingUsedType>(typedefDefinition->m_type_declaration->m_type, nullptr));
+        {
+            const auto* memberDef = dynamic_cast<const DefinitionWithMembers*>(typedefDefinition->m_type_declaration->m_type);
+            StructureInformation* info = nullptr;
+            if (memberDef)
+                info = repository->GetInformationFor(memberDef);
+
+            auto* addedUsedType = AddUsedType(std::make_unique<RenderingUsedType>(typedefDefinition->m_type_declaration->m_type, info));
+            ScanUsedTypeIfNeeded(repository, computations, usedType);
+            return addedUsedType;
+        }
 
         return foundUsedType->second.get();
     }
@@ -64,7 +73,7 @@ RenderingUsedType* RenderingContext::GetBaseType(RenderingUsedType* usedType)
     return nullptr;
 }
 
-void RenderingContext::AddMembersToContext(StructureInformation* info)
+void RenderingContext::AddMembersToContext(const IDataRepository* repository, StructureInformation* info)
 {
     for(const auto& member : info->m_ordered_members)
     {
@@ -80,7 +89,7 @@ void RenderingContext::AddMembersToContext(StructureInformation* info)
         else
             usedType = existingUsedType->second.get();
 
-        auto* baseUsedType = GetBaseType(usedType);
+        auto* baseUsedType = GetBaseType(repository, &computations, usedType);
 
         if(!computations.IsInRuntimeBlock())
         {
@@ -104,20 +113,25 @@ void RenderingContext::AddMembersToContext(StructureInformation* info)
                 usedType->m_pointer_array_reference_is_reusable = true;
         }
 
-        if(usedType->m_info != nullptr && !StructureComputations(usedType->m_info).IsAsset() && !computations.IsInRuntimeBlock() && !usedType->m_members_loaded)
-        {
-            usedType->m_members_loaded = true;
-            AddMembersToContext(usedType->m_info);
-        }
+        ScanUsedTypeIfNeeded(repository, &computations, usedType);
     }
 }
 
-void RenderingContext::MakeAsset(StructureInformation* asset)
+void RenderingContext::ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType)
+{
+    if (usedType->m_info != nullptr && !StructureComputations(usedType->m_info).IsAsset() && !computations->IsInRuntimeBlock() && !usedType->m_members_loaded)
+    {
+        usedType->m_members_loaded = true;
+        AddMembersToContext(repository, usedType->m_info);
+    }
+}
+
+void RenderingContext::MakeAsset(const IDataRepository* repository, StructureInformation* asset)
 {
     m_asset = asset;
     AddUsedType(std::make_unique<RenderingUsedType>(asset->m_definition, asset));
 
-    AddMembersToContext(asset);
+    AddMembersToContext(repository, asset);
 }
 
 void RenderingContext::CreateUsedTypeCollections()
@@ -152,7 +166,7 @@ std::unique_ptr<RenderingContext> RenderingContext::BuildContext(const IDataRepo
 {
     auto context = std::make_unique<RenderingContext>(RenderingContext(repository->GetGameName(), repository->GetAllFastFileBlocks()));
 
-    context->MakeAsset(asset);
+    context->MakeAsset(repository, asset);
     context->CreateUsedTypeCollections();
 
     return std::move(context);
