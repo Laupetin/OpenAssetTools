@@ -644,7 +644,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else if (loadType == MemberLoadType::EMBEDDED)
         {
-            LINE(MakeMemberAccess(info, member, modifier) << " = UseScriptString(" << MakeMemberAccess(info, member, modifier) << ";")
+            LINE(MakeMemberAccess(info, member, modifier) << " = UseScriptString(" << MakeMemberAccess(info, member, modifier) << ");")
         }
         else
         {
@@ -694,7 +694,6 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             }
             else
             {
-                LINE("varXString = " << MakeMemberAccess(info, member, modifier) << ";")
                 LINE("LoadXStringArray(true, "<<MakeEvaluation(modifier.GetPointerArrayCountEvaluation())<<");")
             }
         }
@@ -711,7 +710,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(computations.GetArrayPointerCountEvaluation()) << ");")
+            LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
 
             if (member->m_type->m_post_load_action)
             {
@@ -737,14 +736,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
 
-                if (computations.IsAfterPartialLoad())
-                {
-                    LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "<<modifier.GetArraySize()<<");")
-                }
-                else
-                {
-                    LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<modifier.GetArraySize()<<");")
-                }
+            if (computations.IsAfterPartialLoad())
+            {
+                LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "<<modifier.GetArraySize()<<");")
+            }
+            else
+            {
+                LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<modifier.GetArraySize()<<");")
+            }
 
             if (member->m_type->m_post_load_action)
             {
@@ -899,7 +898,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
         const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
         LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">(alignof("<<typeDecl<<followingReferences
-            <<")); // " << member->m_member->m_type_declaration->m_type->GetAlignment())
+            <<")); // " << member->m_member->m_type_declaration->GetAlignment())
 
         if (computations.IsInTempBlock())
         {
@@ -991,7 +990,9 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
 
         if (member->m_is_string)
-            return false;
+        {
+            return loadType == MemberLoadType::POINTER_ARRAY;
+        }
 
         return true;
     }
