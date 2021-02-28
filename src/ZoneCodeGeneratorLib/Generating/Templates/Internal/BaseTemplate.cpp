@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+
+#include "Domain/Computations/MemberComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 
 BaseTemplate::BaseTemplate(std::ostream& stream, RenderingContext* context)
@@ -33,75 +35,111 @@ std::string BaseTemplate::Lower(std::string str)
     return str;
 }
 
-std::string BaseTemplate::TypeVarName(const DataDefinition* def)
+void BaseTemplate::MakeSafeTypeNameInternal(const DataDefinition* def, std::ostringstream& str)
 {
-    std::ostringstream str;
-    str << "var" << SafeTypeName(def);
-    return str.str();
-}
-
-std::string BaseTemplate::TypePtrVarName(const DataDefinition* def)
-{
-    std::ostringstream str;
-    str << "var" << SafeTypeName(def) << "Ptr";
-    return str.str();
-}
-
-std::string BaseTemplate::SafeTypeName(const DataDefinition* def)
-{
-    auto safeName(def->m_name);
-
-    for (auto& c : safeName)
+    for (const auto& c : def->m_name)
     {
         if (isspace(c))
-            c = '_';
+            str << "_";
+        else
+            str << c;
     }
-
-    return safeName;
 }
 
-void BaseTemplate::PrintAccessMember(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+void BaseTemplate::MakeTypeVarNameInternal(const DataDefinition* def, std::ostringstream& str)
 {
-    LINE_MIDDLE(TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
-    PrintArrayIndices(modifier);
+    str << "var";
+    MakeSafeTypeNameInternal(def, str);
 }
 
-void BaseTemplate::PrintTypeDecl(const TypeDeclaration* decl) const
+void BaseTemplate::MakeTypePtrVarNameInternal(const DataDefinition* def, std::ostringstream& str)
 {
+    str << "var";
+    MakeSafeTypeNameInternal(def, str);
+    str << "Ptr";
+}
+
+void BaseTemplate::MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str)
+{
+    for (auto index : modifierComputations.GetArrayIndices())
+    {
+        str << "[" << index << "]";
+    }
+}
+
+std::string BaseTemplate::MakeTypeVarName(const DataDefinition* def)
+{
+    std::ostringstream str;
+    MakeTypeVarNameInternal(def, str);
+    return str.str();
+}
+
+std::string BaseTemplate::MakeTypePtrVarName(const DataDefinition* def)
+{
+    std::ostringstream str;
+    MakeTypePtrVarNameInternal(def, str);
+    return str.str();
+}
+
+std::string BaseTemplate::MakeSafeTypeName(const DataDefinition* def)
+{
+    std::ostringstream str;
+    MakeSafeTypeNameInternal(def, str);
+    return str.str();
+}
+
+std::string BaseTemplate::MakeMemberAccess(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+{
+    std::ostringstream str;
+    MakeTypeVarNameInternal(info->m_definition, str);
+    str << "->" << member->m_member->m_name;
+    MakeArrayIndicesInternal(modifier, str);
+
+    return str.str();
+}
+
+std::string BaseTemplate::MakeTypeDecl(const TypeDeclaration* decl)
+{
+    std::ostringstream str;
     if (decl->m_is_const)
     {
-        LINE_MIDDLE("const ")
+        str << "const ";
     }
-    LINE_MIDDLE(decl->m_type->GetFullName())
+
+    str << decl->m_type->GetFullName();
+    return str.str();
 }
 
-void BaseTemplate::PrintFollowingReferences(const std::vector<DeclarationModifier*>& modifiers) const
+std::string BaseTemplate::MakeFollowingReferences(const std::vector<DeclarationModifier*>& modifiers)
 {
+    std::ostringstream str;
     for (const auto* modifier : modifiers)
     {
         if (modifier->GetType() == DeclarationModifierType::ARRAY)
         {
             const auto* array = dynamic_cast<const ArrayDeclarationModifier*>(modifier);
-            LINE_MIDDLE("["<< array->m_size <<"]")
+            str << "[" << array->m_size << "]";
         }
         else
         {
-            LINE_MIDDLE("*")
+            str << "*";
         }
     }
+
+    return str.str();
 }
 
-void BaseTemplate::PrintArrayIndices(const DeclarationModifierComputations& modifierComputations) const
+std::string BaseTemplate::MakeArrayIndices(const DeclarationModifierComputations& modifierComputations)
 {
-    for (auto index : modifierComputations.GetArrayIndices())
-    {
-        LINE_MIDDLE("["<<index<<"]")
-    }
+    std::ostringstream str;
+    MakeArrayIndicesInternal(modifierComputations, str);
+    return str.str();
 }
 
-void BaseTemplate::PrintCustomAction(CustomAction* action) const
+std::string BaseTemplate::MakeCustomActionCall(CustomAction* action)
 {
-    LINE_START("m_actions." << action->m_action_name << "(")
+    std::ostringstream str;
+    str << "m_actions." << action->m_action_name << "(";
 
     auto first = true;
     for (auto* def : action->m_parameter_types)
@@ -112,82 +150,104 @@ void BaseTemplate::PrintCustomAction(CustomAction* action) const
         }
         else
         {
-            LINE_MIDDLE(", ")
+            str << ", ";
         }
 
-        LINE_MIDDLE(TypeVarName(def))
+        MakeTypeVarNameInternal(def, str);
     }
 
-    LINE_END(");")
+    str << ");";
+    return str.str();
 }
 
-void BaseTemplate::PrintOperandStatic(const OperandStatic* op) const
+std::string BaseTemplate::MakeArrayCount(const ArrayDeclarationModifier* arrayModifier)
+{
+    if(arrayModifier->m_dynamic_count_evaluation)
+    {
+        return MakeEvaluation(arrayModifier->m_dynamic_count_evaluation.get());
+    }
+
+    return std::to_string(arrayModifier->m_size);
+}
+
+void BaseTemplate::MakeOperandStatic(const OperandStatic* op, std::ostringstream& str)
 {
     if (op->m_enum_member != nullptr)
     {
-        LINE_MIDDLE(op->m_enum_member->m_name)
+        str << op->m_enum_member->m_name;
     }
     else
     {
-        LINE_MIDDLE(op->m_value)
+        str << op->m_value;
     }
 }
 
-void BaseTemplate::PrintOperandDynamic(const OperandDynamic* op) const
+void BaseTemplate::MakeOperandDynamic(const OperandDynamic* op, std::ostringstream& str)
 {
-    LINE_MIDDLE(TypeVarName(op->m_structure->m_definition))
+    MakeTypeVarNameInternal(op->m_structure->m_definition, str);
 
-    auto first = true;
-    for (const auto* chainMember : op->m_referenced_member_chain)
+    if(!op->m_referenced_member_chain.empty())
     {
-        if (first)
+        str << "->";
+        const auto lastEntry = op->m_referenced_member_chain.end() - 1;
+        for(auto i = op->m_referenced_member_chain.begin(); i != lastEntry; ++i)
         {
-            first = false;
-            LINE_MIDDLE("->"<< chainMember->m_member->m_name)
+            MemberComputations computations(*i);
+            str << (*i)->m_member->m_name;
+
+            if (computations.ContainsNonEmbeddedReference())
+                str << "->";
+            else
+                str << ".";
         }
-        else
-        {
-            LINE_MIDDLE("." << chainMember->m_member->m_name)
-        }
+
+        str << (*lastEntry)->m_member->m_name;
     }
 
     for (const auto& arrayIndex : op->m_array_indices)
     {
-        LINE_MIDDLE("[")
-        PrintEvaluation(arrayIndex.get());
-        LINE_MIDDLE("]")
+        str << "[";
+        MakeEvaluationInternal(arrayIndex.get(), str);
+        str << "]";
     }
 }
 
-void BaseTemplate::PrintOperation(const Operation* operation) const
+void BaseTemplate::MakeOperation(const Operation* operation, std::ostringstream& str)
 {
     if (operation->Operand1NeedsParenthesis())
     {
-        LINE_MIDDLE("(")
-        PrintEvaluation(operation->m_operand1.get());
-        LINE_MIDDLE(")")
+        str << "(";
+        MakeEvaluationInternal(operation->m_operand1.get(), str);
+        str << ")";
     }
     else
-        PrintEvaluation(operation->m_operand1.get());
+        MakeEvaluationInternal(operation->m_operand1.get(), str);
 
-    LINE_MIDDLE(" "<<operation->m_operation_type->m_syntax<<" ")
+    str << " " << operation->m_operation_type->m_syntax << " ";
 
     if (operation->Operand2NeedsParenthesis())
     {
-        LINE_MIDDLE("(")
-        PrintEvaluation(operation->m_operand2.get());
-        LINE_MIDDLE(")")
+        str << "(";
+        MakeEvaluationInternal(operation->m_operand2.get(), str);
+        str << ")";
     }
     else
-        PrintEvaluation(operation->m_operand2.get());
+        MakeEvaluationInternal(operation->m_operand2.get(), str);
 }
 
-void BaseTemplate::PrintEvaluation(const IEvaluation* evaluation) const
+void BaseTemplate::MakeEvaluationInternal(const IEvaluation* evaluation, std::ostringstream& str)
 {
     if (evaluation->GetType() == EvaluationType::OPERATION)
-        PrintOperation(dynamic_cast<const Operation*>(evaluation));
+        MakeOperation(dynamic_cast<const Operation*>(evaluation), str);
     else if (evaluation->GetType() == EvaluationType::OPERAND_STATIC)
-        PrintOperandStatic(dynamic_cast<const OperandStatic*>(evaluation));
+        MakeOperandStatic(dynamic_cast<const OperandStatic*>(evaluation), str);
     else if (evaluation->GetType() == EvaluationType::OPERAND_DYNAMIC)
-        PrintOperandDynamic(dynamic_cast<const OperandDynamic*>(evaluation));
+        MakeOperandDynamic(dynamic_cast<const OperandDynamic*>(evaluation), str);
+}
+
+std::string BaseTemplate::MakeEvaluation(const IEvaluation* evaluation)
+{
+    std::ostringstream str;
+    MakeEvaluationInternal(evaluation, str);
+    return str.str();
 }
