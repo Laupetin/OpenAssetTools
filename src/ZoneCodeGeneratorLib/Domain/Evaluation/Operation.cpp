@@ -36,5 +36,5 @@ bool Operation::Operand1NeedsParenthesis() const
 bool Operation::Operand2NeedsParenthesis() const
 {
     return m_operand2->GetType() == EvaluationType::OPERATION
-        && dynamic_cast<Operation*>(m_operand2.get())->m_operation_type->m_precedence > m_operation_type->m_precedence;
+        && dynamic_cast<Operation*>(m_operand2.get())->m_operation_type->m_precedence >= m_operation_type->m_precedence;
 }
