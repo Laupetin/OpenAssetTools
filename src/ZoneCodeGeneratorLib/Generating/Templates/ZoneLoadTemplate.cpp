@@ -726,7 +726,15 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void LoadMember_PointerArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        LINE("// LoadPointerArray: " << member->m_member->m_name)
+        LINE(MakeTypePtrVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+        if (modifier.IsArray())
+        {
+            LINE("LoadPtrArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<modifier.GetArraySize()<<");")
+        }
+        else
+        {
+            LINE("LoadPtrArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true, "<<MakeEvaluation(modifier.GetPointerArrayCountEvaluation())<<");")
+        }
     }
 
     void LoadMember_EmbeddedArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
@@ -899,7 +907,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
         LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">(alignof("<<typeDecl<<followingReferences
             <<")); // " << modifier.GetAlignment())
-            
+
         if (computations.IsInTempBlock())
         {
             LINE("")
@@ -992,6 +1000,11 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (member->m_is_string)
         {
             return loadType == MemberLoadType::POINTER_ARRAY;
+        }
+
+        if (loadType == MemberLoadType::POINTER_ARRAY)
+        {
+            return !modifier.IsArray();
         }
 
         return true;

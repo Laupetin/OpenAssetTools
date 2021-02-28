@@ -242,7 +242,7 @@ const IEvaluation* DeclarationModifierComputations::GetDynamicArraySizeEvaluatio
     return dynamic_cast<ArrayDeclarationModifier*>(declarationModifier)->m_dynamic_size_evaluation.get();
 }
 
-int DeclarationModifierComputations::GetAlignment() const
+unsigned DeclarationModifierComputations::GetAlignment() const
 {
     const auto following = GetFollowingDeclarationModifiers();
 
