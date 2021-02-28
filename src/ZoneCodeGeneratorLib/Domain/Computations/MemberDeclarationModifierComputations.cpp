@@ -241,3 +241,13 @@ const IEvaluation* DeclarationModifierComputations::GetDynamicArraySizeEvaluatio
 
     return dynamic_cast<ArrayDeclarationModifier*>(declarationModifier)->m_dynamic_size_evaluation.get();
 }
+
+int DeclarationModifierComputations::GetAlignment() const
+{
+    const auto following = GetFollowingDeclarationModifiers();
+
+    return std::any_of(following.begin(), following.end(), [](const DeclarationModifier* modifier)
+    {
+        return modifier->GetType() == DeclarationModifierType::POINTER;
+    }) ? m_information->m_member->GetAlignment() : m_information->m_member->m_type_declaration->m_type->GetAlignment();
+}

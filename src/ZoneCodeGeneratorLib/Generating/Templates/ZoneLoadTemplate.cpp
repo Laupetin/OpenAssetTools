@@ -898,8 +898,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
         const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
         LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">(alignof("<<typeDecl<<followingReferences
-            <<")); // " << member->m_member->m_type_declaration->GetAlignment())
-
+            <<")); // " << modifier.GetAlignment())
+            
         if (computations.IsInTempBlock())
         {
             LINE("")

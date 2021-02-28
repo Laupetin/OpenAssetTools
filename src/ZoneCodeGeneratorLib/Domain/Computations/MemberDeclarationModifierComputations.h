@@ -31,4 +31,5 @@ public:
     _NODISCARD const IEvaluation* GetPointerArrayCountEvaluation() const;
     _NODISCARD bool IsDynamicArray() const;
     _NODISCARD const IEvaluation* GetDynamicArraySizeEvaluation() const;
+    _NODISCARD int GetAlignment() const;
 };
