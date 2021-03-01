@@ -769,7 +769,29 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void LoadMember_DynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        LINE("// LoadDynamicArray: " << member->m_member->m_name)
+        /*
+         $if(member.StructureType && !member.StructureType.IsLeaf)$
+
+        $TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
+        LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.DynamicArraySizeEvaluation)$);
+
+        $else$
+
+        m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.DynamicArraySizeEvaluation)$);
+
+        $endif$
+         */
+
+        if (member->m_type && member->m_type->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true, "<<MakeEvaluation(modifier.GetDynamicArraySizeEvaluation())<<");")
+        }
+        else
+        {
+            LINE("m_stream->Load<"<<MakeTypeDecl(member->m_member->m_type_declaration.get())<<MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                <<">("<<MakeMemberAccess(info, member, modifier)<<", "<<MakeEvaluation(modifier.GetDynamicArraySizeEvaluation())<<");")
+        }
     }
 
     void LoadMember_Embedded(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
@@ -880,7 +902,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             return false;
         }
 
-        if(loadType == MemberLoadType::POINTER_ARRAY)
+        if (loadType == MemberLoadType::POINTER_ARRAY)
         {
             return !modifier.IsArray();
         }
@@ -942,14 +964,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     static bool LoadMember_ShouldMakeReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
     {
-        if(loadType != MemberLoadType::ARRAY_POINTER
+        if (loadType != MemberLoadType::ARRAY_POINTER
             && loadType != MemberLoadType::SINGLE_POINTER
             && loadType != MemberLoadType::POINTER_ARRAY)
         {
             return false;
         }
 
-        if(loadType == MemberLoadType::POINTER_ARRAY
+        if (loadType == MemberLoadType::POINTER_ARRAY
             && modifier.IsArray())
         {
             return false;
@@ -1022,7 +1044,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             return !modifier.IsArray();
         }
 
-        if(member->m_is_string)
+        if (member->m_is_string)
         {
             return false;
         }
