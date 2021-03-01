@@ -87,6 +87,7 @@ block normal  XFILE_BLOCK_PHYSICAL;
 #include "XAssets/WeaponVariantDef.txt"
 #include "XAssets/WeaponAttachment.txt"
 #include "XAssets/WeaponAttachmentUnique.txt"
+#include "XAssets/WeaponCamo.txt"
 #include "XAssets/SndDriverGlobals.txt"
 #include "XAssets/FxEffectDef.txt"
 #include "XAssets/FxImpactTable.txt"
