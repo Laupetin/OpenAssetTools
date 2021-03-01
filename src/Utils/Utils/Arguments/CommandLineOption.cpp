@@ -1,5 +1,4 @@
 #include "CommandLineOption.h"
-#include <Windows.h>
 
 CommandLineOption::CommandLineOption()
 {

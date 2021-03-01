@@ -1,7 +1,7 @@
 #include "AlgorithmSalsa20.h"
 #include "salsa20.h"
 #include <cassert>
-#include <exception>
+#include <stdexcept>
 
 class AlgorithmSalsa20::AlgorithmSalsa20Impl
 {
@@ -27,7 +27,7 @@ public:
 
         if(ivSize != 8)
         {
-            throw std::exception("Salsa20 IV size must be 8");
+            throw std::invalid_argument("Salsa20 IV size must be 8");
         }
 
         Salsa20_IVSetup(&m_context, iv);

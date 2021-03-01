@@ -1,4 +1,7 @@
 #pragma once
+
+#include <cstddef>
+
 #include "IHashFunction.h"
 #include "IStreamCipher.h"
 #include "IPublicKeyAlgorithm.h"
