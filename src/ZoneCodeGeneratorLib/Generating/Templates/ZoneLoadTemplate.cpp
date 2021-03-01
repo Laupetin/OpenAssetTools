@@ -136,7 +136,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
     {
         LINE("*"<< MakeTypePtrVarName(def)<<" = m_stream->Alloc<"<<def->GetFullName()<<">(alignof("<<def->GetFullName()<<")); // "<<def->GetAlignment())
 
-        if (info && info->m_is_leaf)
+        if (info && !info->m_is_leaf)
         {
             LINE(MakeTypeVarName(info->m_definition)<<" = *"<< MakeTypePtrVarName(def)<<";")
             LINE("Load_"<< MakeSafeTypeName(def)<<"(true);")
@@ -714,6 +714,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             if (member->m_type->m_post_load_action)
             {
+                LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
         }
@@ -755,6 +756,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             if (member->m_type->m_post_load_action)
             {
+                LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
         }
@@ -788,6 +790,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             if (member->m_type->m_post_load_action)
             {
+                LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
         }
@@ -808,6 +811,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             if (member->m_type->m_post_load_action)
             {
+                LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
         }
@@ -876,9 +880,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             return false;
         }
 
+        if(loadType == MemberLoadType::POINTER_ARRAY)
+        {
+            return !modifier.IsArray();
+        }
+
         if (member->m_is_string)
         {
-            return loadType == MemberLoadType::POINTER_ARRAY && !modifier.IsArray();
+            return false;
         }
 
         if (member->m_type && StructureComputations(member->m_type).IsAsset())
@@ -933,9 +942,20 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     static bool LoadMember_ShouldMakeReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
     {
-        return loadType == MemberLoadType::ARRAY_POINTER
-            || loadType == MemberLoadType::SINGLE_POINTER
-            || loadType == MemberLoadType::POINTER_ARRAY;
+        if(loadType != MemberLoadType::ARRAY_POINTER
+            && loadType != MemberLoadType::SINGLE_POINTER
+            && loadType != MemberLoadType::POINTER_ARRAY)
+        {
+            return false;
+        }
+
+        if(loadType == MemberLoadType::POINTER_ARRAY
+            && modifier.IsArray())
+        {
+            return false;
+        }
+
+        return true;
     }
 
     void LoadMember_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
@@ -997,14 +1017,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             return false;
         }
 
-        if (member->m_is_string)
-        {
-            return loadType == MemberLoadType::POINTER_ARRAY;
-        }
-
         if (loadType == MemberLoadType::POINTER_ARRAY)
         {
             return !modifier.IsArray();
+        }
+
+        if(member->m_is_string)
+        {
+            return false;
         }
 
         return true;
@@ -1353,11 +1373,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
         if (info->m_post_load_action)
         {
-            if (startLoadSection)
-            {
-                startLoadSection = false;
-                LINE("")
-            }
+            LINE("")
             LINE(MakeCustomActionCall(info->m_post_load_action.get()))
         }
 
