@@ -88,6 +88,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
             assets.push_back(info);
     }
 
+    const auto start = std::chrono::steady_clock::now();
     for (const auto& generationTask : m_args->m_generation_tasks)
     {
         auto templateName = generationTask.m_template_name;
@@ -107,7 +108,12 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
             {
                 auto context = RenderingContext::BuildContext(repository, asset);
                 if (!GenerateCodeForTemplate(context.get(), foundTemplate->second.get()))
+                {
+                    std::cout << "Failed to generate code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first << "'\n";
                     return false;
+                }
+                
+                std::cout << "Successfully generated code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first << "'\n";
             }
         }
         else
@@ -120,6 +126,11 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
             if (!GenerateCodeForTemplate(context.get(), foundTemplate->second.get()))
                 return false;
         }
+    }
+    const auto end = std::chrono::steady_clock::now();
+    if (m_args->m_verbose)
+    {
+        std::cout << "Generating code took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
     }
 
     return true;

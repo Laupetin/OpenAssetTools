@@ -64,7 +64,10 @@ void CommandsFileReader::SetupPostProcessors()
 
 bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 {
-    std::cout << "Reading commands file: " << m_filename << std::endl;
+    if(m_args->m_verbose)
+    {
+        std::cout << "Reading commands file: " << m_filename << std::endl;
+    }
 
     if (!OpenBaseStream())
         return false;
@@ -77,7 +80,11 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
     const auto start = std::chrono::steady_clock::now();
     const auto result = parser->Parse();
     const auto end = std::chrono::steady_clock::now();
-    std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+
+    if(m_args->m_verbose)
+    {
+        std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+    }
 
     if (!result)
         return false;
