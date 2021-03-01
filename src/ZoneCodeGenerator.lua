@@ -1,29 +1,29 @@
-ZoneCodeGeneratorNew = {}
+ZoneCodeGenerator = {}
 
-function ZoneCodeGeneratorNew:include()
+function ZoneCodeGenerator:include()
 	if References:include(self:name()) then
 		includedirs {
-			path.join(ProjectFolder(), "ZoneCodeGeneratorNew")
+			path.join(ProjectFolder(), "ZoneCodeGenerator")
 		}
 	end
 	Utils:include()
 end
 
-function ZoneCodeGeneratorNew:link()
+function ZoneCodeGenerator:link()
 	if References:link(self:name()) then
 		links(self:name())
 	end
 end
 
-function ZoneCodeGeneratorNew:use()
+function ZoneCodeGenerator:use()
     dependson(self:name())
 end
 
-function ZoneCodeGeneratorNew:name()
-    return "ZoneCodeGeneratorNew"
+function ZoneCodeGenerator:name()
+    return "ZoneCodeGenerator"
 end
 
-function ZoneCodeGeneratorNew:project()
+function ZoneCodeGenerator:project()
 	References:reset()
 	local folder = ProjectFolder();
 
@@ -34,12 +34,12 @@ function ZoneCodeGeneratorNew:project()
 		language "C++"
 		
 		files {
-			path.join(folder, "ZoneCodeGeneratorNew/**.h"), 
-			path.join(folder, "ZoneCodeGeneratorNew/**.cpp") 
+			path.join(folder, "ZoneCodeGenerator/**.h"), 
+			path.join(folder, "ZoneCodeGenerator/**.cpp") 
 		}
         vpaths {
 			["*"] = {
-				path.join(folder, "ZoneCodeGeneratorNew"),
+				path.join(folder, "ZoneCodeGenerator"),
 			}
 		}
 		

@@ -183,12 +183,12 @@ function ZoneCode:project()
 			}
 		}
 
-        ZoneCodeGeneratorNew:use()
+        ZoneCodeGenerator:use()
 
         filter "files:**.gen"
             buildmessage "Generating ZoneCode for game %{file.basename}"
             buildcommands {
-                '"' .. TargetDirectoryBin .. '/ZoneCodeGeneratorNew.exe"' 
+                '"' .. TargetDirectoryBin .. '/ZoneCodeGenerator.exe"' 
                     .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
                     .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets"'
@@ -200,7 +200,7 @@ function ZoneCode:project()
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}.h"),
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt"),
                 path.join(ProjectFolder(), "ZoneCommon/Game/%{file.basename}/%{file.basename}_Assets.h"),
-                TargetDirectoryBin .. "/ZoneCodeGeneratorNew.exe"
+                TargetDirectoryBin .. "/ZoneCodeGenerator.exe"
             }
         filter {}
         

@@ -134,7 +134,7 @@ include "src/Unlinker.lua"
 include "src/Utils.lua"
 include "src/ZoneCode.lua"
 include "src/ZoneCodeGeneratorLib.lua"
-include "src/ZoneCodeGeneratorNew.lua"
+include "src/ZoneCodeGenerator.lua"
 include "src/ZoneCommon.lua"
 include "src/ZoneLoading.lua"
 include "src/ZoneWriting.lua"
@@ -161,7 +161,7 @@ group ""
 group "Tools"
     Linker:project()
     Unlinker:project()
-    ZoneCodeGeneratorNew:project()
+    ZoneCodeGenerator:project()
 group ""
 
 -- ========================
