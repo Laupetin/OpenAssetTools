@@ -133,7 +133,6 @@ include "src/Linker.lua"
 include "src/Unlinker.lua"
 include "src/Utils.lua"
 include "src/ZoneCode.lua"
-include "src/ZoneCodeGenerator.lua"
 include "src/ZoneCodeGeneratorLib.lua"
 include "src/ZoneCodeGeneratorNew.lua"
 include "src/ZoneCommon.lua"
@@ -149,7 +148,6 @@ group "Components"
     Crypto:project()
     Utils:project()
     ZoneCode:project()
-    ZoneCodeGenerator:project()
     ZoneCodeGeneratorLib:project()
     ZoneCommon:project()
     ZoneLoading:project()
@@ -170,14 +168,12 @@ group ""
 -- Tests
 -- ========================
 include "test/ObjCommonTests.lua"
-include "test/ZoneCodeGeneratorTests.lua"
 include "test/ZoneCodeGeneratorLibTests.lua"
 include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
     ObjCommonTests:project()
-    ZoneCodeGeneratorTests:project()
     ZoneCodeGeneratorLibTests:project()
     ZoneCommonTests:project()
 group ""

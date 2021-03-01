@@ -1,8 +1,0 @@
-delimiters "$", "$"
-
-// Loading common
-LoaderClassName(asset) ::= "Loader_$asset.Type.Name$"
-
-CustomAction(action) ::= <<
-m_actions.$action.ActionName$($first(action.ParameterTypes):{ param | $TypeVarName(param)$}$$rest(action.ParameterTypes):{ param | , $TypeVarName(param)$}$);
->>
