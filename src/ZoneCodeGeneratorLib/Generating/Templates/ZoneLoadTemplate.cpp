@@ -624,13 +624,13 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void LoadMember_ScriptString(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
     {
-        if (loadType == MemberLoadType::ARRAY_POINTER)
-        {
-            const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
-            const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-            LINE(MakeMemberAccess(info, member, modifier) << " = m_stream->Alloc<" << typeDecl << followingReferences << ">(alignof(" << typeDecl << followingReferences
-                << ")); // " << member->m_member->m_type_declaration->m_type->GetAlignment())
-        }
+        // if (loadType == MemberLoadType::ARRAY_POINTER)
+        // {
+        //     const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
+        //     const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+        //     LINE(MakeMemberAccess(info, member, modifier) << " = m_stream->Alloc<" << typeDecl << followingReferences << ">(alignof(" << typeDecl << followingReferences
+        //         << ")); // " << member->m_member->m_type_declaration->m_type->GetAlignment())
+        // }
 
         if (loadType == MemberLoadType::ARRAY_POINTER)
         {
@@ -741,17 +741,24 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
     void LoadMember_EmbeddedArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
         const MemberComputations computations(member);
+        std::string arraySizeStr;
+
+        if (modifier.HasDynamicArrayCount())
+            arraySizeStr = MakeEvaluation(modifier.GetDynamicArrayCountEvaluation());
+        else
+            arraySizeStr = std::to_string(modifier.GetArraySize());
+
         if (!member->m_is_leaf)
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
 
             if (computations.IsAfterPartialLoad())
             {
-                LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "<<modifier.GetArraySize()<<");")
+                LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "<<arraySizeStr <<");")
             }
             else
             {
-                LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<modifier.GetArraySize()<<");")
+                LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<arraySizeStr <<");")
             }
 
             if (member->m_type->m_post_load_action)
@@ -763,26 +770,13 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         else if (computations.IsAfterPartialLoad())
         {
             LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) <<", "<<modifier.GetArraySize()<<");")
+                << ">(" << MakeMemberAccess(info, member, modifier) <<", "<<arraySizeStr <<");")
         }
     }
 
     void LoadMember_DynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        /*
-         $if(member.StructureType && !member.StructureType.IsLeaf)$
-
-        $TypeVarName(member.Member.VariableType.Type)$ = $TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$;$\n$
-        LoadArray_$member.Member.VariableType.Type.Name$(true, $PrintEvaluation(reference.DynamicArraySizeEvaluation)$);
-
-        $else$
-
-        m_stream->Load<$TypeDeclaration(member.Member.VariableType)$$PrintFollowingReferences(reference.FollowingReferences)$>($TypeVarName(structure.Type)$->$member.Member.Name$$PrintArrayIndices(reference)$, $PrintEvaluation(reference.DynamicArraySizeEvaluation)$);
-
-        $endif$
-         */
-
-        if (member->m_type && member->m_type->m_is_leaf)
+        if (member->m_type && !member->m_type->m_is_leaf)
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
             LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true, "<<MakeEvaluation(modifier.GetDynamicArraySizeEvaluation())<<");")
