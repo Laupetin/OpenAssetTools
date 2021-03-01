@@ -1,6 +1,5 @@
 #include "ZoneLoadTemplate.h"
 
-
 #include <cassert>
 #include <iostream>
 #include <sstream>
@@ -238,15 +237,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("for(size_t index = 0; index < count; index++)")
         LINE("{")
         m_intendation++;
-
-        /*if (info == nullptr)
-        {
-            LINE(TypeVarName(def)<<" = var;")
-        }
-        else
-        {
-            LINE(TypeVarName(info->m_definition) << " = var;")
-        }*/
+        
         LINE(MakeTypeVarName(info->m_definition) << " = var;")
         LINE("Load_"<<info->m_definition->m_name<<"(false);")
         LINE("var++;")
@@ -258,380 +249,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void LoadDynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
-    {
-        // if (member->m_type && !member->m_type->m_is_leaf)
-        // {
-        //     LINE_START(TypeVarName(member->m_member->m_type_declaration->m_type) << " = " << TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
-        //     PrintArrayIndices(modifier);
-        //     LINE_END(";")
-        //     LINE_START("LoadArray_" << SafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, ")
-        //     PrintEvaluation(modifier.GetDynamicArraySizeEvaluation());
-        //     LINE_END(");")
-        // }
-        // else
-        // {
-        //     LINE_START("m_stream->Load<")
-        //     PrintTypeDecl(member->m_member->m_type_declaration.get());
-        //     PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        //     LINE_MIDDLE(">(" << TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
-        //     PrintArrayIndices(modifier);
-        //     LINE_MIDDLE(", ")
-        //     PrintEvaluation(modifier.GetDynamicArraySizeEvaluation());
-        //     LINE_END(");")
-        // }
-    }
-
-    void LoadSinglePointer_Inner(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        // const MemberComputations computations(member);
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE_START(member->m_member->m_type_declaration->m_type->GetFullName()<<"* ptr = ")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(";")
-        // }
-        //
-        // LINE_START("")
-        // PrintAccessMember(info, member, modifier);
-        // LINE_MIDDLE(" = m_stream->Alloc<")
-        // PrintTypeDecl(member->m_member->m_type_declaration.get());
-        // PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        // LINE_MIDDLE(">(alignof(")
-        // PrintTypeDecl(member->m_member->m_type_declaration.get());
-        // PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        // LINE_END(")); // "<<member->m_member->m_type_declaration->m_type->GetAlignment())
-        //
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE("")
-        //     LINE(member->m_member->m_type_declaration->m_type->GetFullName() << "** toInsert = nullptr;")
-        //     LINE("if(ptr == PTR_INSERT)")
-        //     m_intendation++;
-        //     LINE("toInsert = m_stream->InsertPointer<"<<member->m_member->m_type_declaration->m_type->GetFullName()<<">();")
-        //     m_intendation--;
-        //     LINE("")
-        // }
-        //
-        // if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
-        // {
-        //     LINE_START(TypeVarName(member->m_member->m_type_declaration->m_type) << " = ")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(";")
-        //     LINE("Load_"<<SafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true);")
-        //
-        //     if (member->m_type->m_post_load_action)
-        //     {
-        //         PrintCustomAction(member->m_type->m_post_load_action.get());
-        //     }
-        // }
-        // else
-        // {
-        //     LINE_START("m_stream->Load<")
-        //     PrintTypeDecl(member->m_member->m_type_declaration.get());
-        //     PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        //     LINE_MIDDLE(">(")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(");")
-        // }
-        //
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE("")
-        //     LINE("if(toInsert != nullptr)")
-        //     m_intendation++;
-        //     LINE("*toInsert = "<<TypeVarName(info->m_definition)<<"->"<<member->m_member->m_name<<";")
-        //     m_intendation--;
-        // }
-    }
-
-    void LoadSinglePointer_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        // const MemberComputations computations(member);
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE_START("if(")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_MIDDLE(" == PTR_FOLLOWING || ")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(" == PTR_INSERT)")
-        //     LINE("{")
-        //     m_intendation++;
-        //
-        //     LoadSinglePointer_Inner(info, member, modifier);
-        //
-        //     m_intendation--;
-        //     LINE("}")
-        //     LINE("else")
-        //     LINE("{")
-        //     m_intendation++;
-        //
-        //     LINE_START("")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_MIDDLE(" = m_stream->ConvertOffsetToAlias(")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(");")
-        //
-        //     m_intendation--;
-        //     LINE("}")
-        // }
-        // else
-        // {
-        //     LINE_START("if(")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(" == PTR_FOLLOWING)")
-        //     LINE("{")
-        //     m_intendation++;
-        //
-        //     LoadSinglePointer_Inner(info, member, modifier);
-        //
-        //     m_intendation--;
-        //     LINE("}")
-        //     LINE("else")
-        //     LINE("{")
-        //     m_intendation++;
-        //
-        //     LINE_START("")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_MIDDLE(" = m_stream->ConvertOffsetToPointer(")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(");")
-        //
-        //     m_intendation--;
-        //     LINE("}")
-        // }
-    }
-
-    void LoadSinglePointer_Asset(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
-    {
-        // LINE(LoaderClassName(member->m_type) << " loader(m_zone, m_stream);")
-        // LINE_START("AddDependency(loader.Load(&" << TypeVarName(info->m_definition) << "->" << member->m_member->m_name)
-        // PrintArrayIndices(modifier);
-        // LINE_END("));")
-    }
-
-    void LoadSinglePointer_PointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        // LINE_START("if (")
-        // PrintAccessMember(info, member, modifier);
-        // LINE_END(")")
-        // LINE("{")
-        // m_intendation++;
-        //
-        // if (member->m_type && StructureComputations(member->m_type).IsAsset())
-        // {
-        //     LoadSinglePointer_Asset(info, member, modifier);
-        // }
-        // else
-        // {
-        //     if (member->m_is_reusable)
-        //     {
-        //         LoadSinglePointer_Reuse(info, member, modifier);
-        //     }
-        //     else
-        //     {
-        //         LoadSinglePointer_Inner(info, member, modifier);
-        //     }
-        // }
-        //
-        // m_intendation--;
-        // LINE("}")
-    }
-
-    void LoadSinglePointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        const MemberComputations computations(member);
-
-        if (computations.IsNotInDefaultNormalBlock())
-        {
-            LINE("m_stream->PushBlock("<<member->m_fast_file_block->m_name<<");")
-        }
-
-        // if (member->m_is_string)
-        // {
-        //     LoadSinglePointer_String(info, member, modifier);
-        // }
-        // else if (member->m_is_script_string)
-        // {
-        //     LINE("#error Scriptstring "<<member->m_member->m_name)
-        // }
-        // else
-        // {
-        //     LoadSinglePointer_PointerCheck(info, member, modifier);
-        // }
-
-        if (computations.IsNotInDefaultNormalBlock())
-        {
-            LINE("m_stream->PopBlock();")
-        }
-    }
-
-    void LoadArrayPointer_Loading(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        // const MemberComputations computations(member);
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE_START(member->m_member->m_type_declaration->m_type->GetFullName() << "* ptr = ")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(";")
-        // }
-        //
-        // LINE_START("")
-        // PrintAccessMember(info, member, modifier);
-        // LINE_MIDDLE(" = m_stream->Alloc<")
-        // PrintTypeDecl(member->m_member->m_type_declaration.get());
-        // PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        // LINE_MIDDLE(">(alignof(")
-        // PrintTypeDecl(member->m_member->m_type_declaration.get());
-        // PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        // LINE_END(")); // " << member->m_member->m_type_declaration->m_type->GetAlignment())
-        //
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE("")
-        //     LINE(member->m_member->m_type_declaration->m_type->GetFullName() << "** toInsert = nullptr;")
-        //     LINE("if(ptr == PTR_INSERT)")
-        //     m_intendation++;
-        //     LINE("toInsert = m_stream->InsertPointer<" << member->m_member->m_type_declaration->m_type->GetFullName() << ">();")
-        //     m_intendation--;
-        //     LINE("")
-        // }
-        //
-        // if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
-        // {
-        //     LINE_START(TypeVarName(member->m_member->m_type_declaration->m_type) << " = ")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_END(";")
-        //     LINE_START("LoadArray_" << SafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, ")
-        //     PrintEvaluation(computations.GetArrayPointerCountEvaluation());
-        //     LINE_END(");")
-        //
-        //     if (member->m_type->m_post_load_action)
-        //     {
-        //         PrintCustomAction(member->m_type->m_post_load_action.get());
-        //     }
-        // }
-        // else
-        // {
-        //     LINE_START("m_stream->Load<")
-        //     PrintTypeDecl(member->m_member->m_type_declaration.get());
-        //     PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        //     LINE_MIDDLE(">(")
-        //     PrintAccessMember(info, member, modifier);
-        //     LINE_MIDDLE(", ")
-        //     PrintEvaluation(modifier.GetArrayPointerCountEvaluation());
-        //     LINE_END(");")
-        // }
-        //
-        // if (computations.IsInTempBlock())
-        // {
-        //     LINE("")
-        //     LINE("if(toInsert != nullptr)")
-        //     m_intendation++;
-        //     LINE("*toInsert = " << TypeVarName(info->m_definition) << "->" << member->m_member->m_name << ";")
-        //     m_intendation--;
-        // }
-    }
-
-    void LoadArrayPointer_ScriptString(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
-    {
-        // LINE_START("")
-        // PrintAccessMember(info, member, modifier);
-        // LINE_MIDDLE(" = m_stream->Alloc<")
-        // PrintTypeDecl(member->m_member->m_type_declaration.get());
-        // PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        // LINE_MIDDLE(">(alignof(")
-        // PrintTypeDecl(member->m_member->m_type_declaration.get());
-        // PrintFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        // LINE_END(")); // " << member->m_member->m_type_declaration->m_type->GetAlignment())
-        //
-        // LINE_START("varScriptString = ")
-        // PrintAccessMember(info, member, modifier);
-        // LINE_END(";")
-        // LINE_START("LoadScriptStringArray(true, ")
-        // PrintEvaluation(modifier.GetArrayPointerCountEvaluation());
-        // LINE_END(");")
-    }
-
-    void LoadArrayPointer_TypeCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        if (member->m_is_script_string)
-        {
-            LoadArrayPointer_ScriptString(info, member, modifier);
-        }
-        else
-        {
-            LoadArrayPointer_Loading(info, member, modifier);
-        }
-    }
-
-    void LoadArrayPointer_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        //         const MemberComputations computations(member);
-        //         if (computations.IsInTempBlock())
-        //         {
-        //             LINE_START("if(")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_MIDDLE(" == PTR_FOLLOWING || ")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_END(" == PTR_INSERT)")
-        //             LINE("{")
-        //             m_intendation++;
-        //
-        //             LoadArrayPointer_TypeCheck(info, member, modifier);
-        //
-        //             m_intendation--;
-        //             LINE("}")
-        //             LINE("else")
-        //             LINE("{")
-        //             m_intendation++;
-        //
-        //             LINE_START("")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_MIDDLE(" = m_stream->ConvertOffsetToAlias(")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_END(");")
-        //
-        //             m_intendation--;
-        //             LINE("}")
-        //         }
-        //         else
-        //         {
-        //             LINE_START("if(")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_END(" == PTR_FOLLOWING)")
-        //             LINE("{")
-        //             m_intendation++;
-        //
-        //             LoadArrayPointer_TypeCheck(info, member, modifier);
-        //
-        //             m_intendation--;
-        //             LINE("}")
-        //             LINE("else")
-        //             LINE("{")
-        //             m_intendation++;
-        //
-        //             LINE_START("")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_MIDDLE(" = m_stream->ConvertOffsetToPointer(")
-        //             PrintAccessMember(info, member, modifier);
-        //             LINE_END(");")
-        //
-        //             m_intendation--;
-        //             LINE("}")
-        //         }
-    }
-
     void LoadMember_ScriptString(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
     {
-        // if (loadType == MemberLoadType::ARRAY_POINTER)
-        // {
-        //     const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
-        //     const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        //     LINE(MakeMemberAccess(info, member, modifier) << " = m_stream->Alloc<" << typeDecl << followingReferences << ">(alignof(" << typeDecl << followingReferences
-        //         << ")); // " << member->m_member->m_type_declaration->m_type->GetAlignment())
-        // }
-
         if (loadType == MemberLoadType::ARRAY_POINTER)
         {
             LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
@@ -1083,37 +702,6 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
     }
 
-    void LoadArrayPointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
-    {
-        const MemberComputations computations(member);
-
-        if (computations.IsNotInDefaultNormalBlock())
-        {
-            LINE("m_stream->PushBlock(" << member->m_fast_file_block->m_name << ");")
-        }
-
-        LINE("if ("<<MakeMemberAccess(info, member, modifier)<<")")
-        LINE("{")
-        m_intendation++;
-
-        if (member->m_is_reusable)
-        {
-            LoadArrayPointer_Reuse(info, member, modifier);
-        }
-        else
-        {
-            LoadArrayPointer_TypeCheck(info, member, modifier);
-        }
-
-        m_intendation--;
-        LINE("}")
-
-        if (computations.IsNotInDefaultNormalBlock())
-        {
-            LINE("m_stream->PopBlock();")
-        }
-    }
-
     void LoadMember_ReferenceArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
     {
         auto first = true;
@@ -1137,32 +725,26 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (modifier.IsDynamicArray())
         {
             LoadMember_Block(info, member, modifier, MemberLoadType::DYNAMIC_ARRAY);
-            // LoadDynamicArray(info, member, modifier);
         }
         else if (modifier.IsSinglePointer())
         {
             LoadMember_Block(info, member, modifier, MemberLoadType::SINGLE_POINTER);
-            // LoadSinglePointer(info, member, modifier);
         }
         else if (modifier.IsArrayPointer())
         {
             LoadMember_Block(info, member, modifier, MemberLoadType::ARRAY_POINTER);
-            //LoadArrayPointer(info, member, modifier);
         }
         else if (modifier.IsPointerArray())
         {
             LoadMember_Block(info, member, modifier, MemberLoadType::POINTER_ARRAY);
-            // LoadPointerArray(info, member, modifier);
         }
         else if (modifier.IsArray() && modifier.GetNextDeclarationModifier() == nullptr)
         {
             LoadMember_Block(info, member, modifier, MemberLoadType::EMBEDDED_ARRAY);
-            // LoadEmbeddedArray(info, member, modifier);
         }
         else if (modifier.GetDeclarationModifier() == nullptr)
         {
             LoadMember_Block(info, member, modifier, MemberLoadType::EMBEDDED);
-            // LoadEmbedded(info, member, modifier);
         }
         else if (modifier.IsArray())
         {
@@ -1170,6 +752,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else
         {
+            assert(false);
             LINE("#error LoadMemberReference failed @ "<<member->m_member->m_name)
         }
     }
