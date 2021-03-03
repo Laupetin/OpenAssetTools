@@ -1,38 +1,38 @@
 ObjLoading = {}
 
-function ObjLoading:include()
-	if References:include("ObjLoading") then
-		ObjCommon:include()
-		ZoneCommon:include()
+function ObjLoading:include(includes)
+	if includes:handle(self:name()) then
+		ObjCommon:include(includes)
+		ZoneCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjLoading")
 		}
 	end
 end
 
-function ObjLoading:link()
-	if References:link("ObjLoading") then
-		Utils:link()
-		ObjCommon:link()
-		ZoneCommon:link()
-		minilzo:link()
-		minizip:link()
-		zlib:link()
-		links {
-			"ObjLoading"
-		}
-	end
+function ObjLoading:link(links)
+	links:add(self:name())
+	links:linkto(Utils)
+	links:linkto(ObjCommon)
+	links:linkto(ZoneCommon)
+	links:linkto(minilzo)
+	links:linkto(minizip)
+	links:linkto(zlib)
 end
 
 function ObjLoading:use()
 	
 end
 
-function ObjLoading:project()
-	References:reset()
-	local folder = ProjectFolder();
+function ObjLoading:name()
+	return "ObjLoading"
+end
 
-	project "ObjLoading"
+function ObjLoading:project()
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
@@ -49,10 +49,10 @@ function ObjLoading:project()
 			}
 		}
 		
-		self:include()
-		Crypto:include()
-		Utils:include()
-		minilzo:include()
-		minizip:include()
-		zlib:include()
+		self:include(includes)
+		Crypto:include(includes)
+		Utils:include(includes)
+		minilzo:include(includes)
+		minizip:include(includes)
+		zlib:include(includes)
 end

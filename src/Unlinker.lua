@@ -1,26 +1,31 @@
 Unlinker = {}
 
-function Unlinker:include()
-	if References:include("Unlinker") then
+function Unlinker:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ProjectFolder(), "Unlinker")
 		}
 	end
 end
 
-function Unlinker:link()
+function Unlinker:link(links)
     
 end
 
 function Unlinker:use()
-    dependson "Unlinker"
+    dependson(self:name())
+end
+
+function Unlinker:name()
+	return "Unlinker"
 end
 
 function Unlinker:project()
-	References:reset()
-	local folder = ProjectFolder();
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+	local links = Links:create()
 
-	project "Unlinker"
+	project(self:name())
         targetdir(TargetDirectoryBin)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "ConsoleApp"
@@ -31,14 +36,15 @@ function Unlinker:project()
 			path.join(folder, "Unlinker/**.cpp") 
 		}
 		
-		self:include()
-		Utils:include()
-        ZoneLoading:include()
-        ObjLoading:include()
-        ObjWriting:include()
+		self:include(includes)
+		Utils:include(includes)
+        ZoneLoading:include(includes)
+        ObjLoading:include(includes)
+        ObjWriting:include(includes)
 
-		Utils:link()
-        ZoneLoading:link()
-        ObjLoading:link()
-        ObjWriting:link()
+		links:linkto(Utils)
+		links:linkto(ZoneLoading)
+		links:linkto(ObjLoading)
+		links:linkto(ObjWriting)
+		links:linkall()
 end

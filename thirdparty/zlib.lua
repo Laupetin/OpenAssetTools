@@ -1,7 +1,7 @@
 zlib = {}
 
-function zlib:include()
-	if References:include("zlib") then
+function zlib:include(includes)
+	if includes:handle(self:name()) then
 		defines {
 			"ZLIB_CONST"
 		}
@@ -12,21 +12,23 @@ function zlib:include()
 	end
 end
 
-function zlib:link()
-	if References:link("zlib") then
-		links "zlib"
-	end
+function zlib:link(links)
+	links:add(self:name())
 end
 
 function zlib:use()
 	
 end
 
-function zlib:project()
-	References:reset()
-	local folder = ThirdPartyFolder();
+function zlib:name()
+	return "zlib"
+end
 
-	project "zlib"
+function zlib:project()
+	local folder = ThirdPartyFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
@@ -42,7 +44,7 @@ function zlib:project()
 			"_CRT_NONSTDC_NO_DEPRECATE"
 		}
 		
-		self:include()
+		self:include(includes)
 
 		-- Disable warnings. They do not have any value to us since it is not our code.
 		warnings "off"

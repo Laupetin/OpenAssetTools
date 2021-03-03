@@ -1,18 +1,16 @@
 ZoneCodeGenerator = {}
 
-function ZoneCodeGenerator:include()
-	if References:include(self:name()) then
+function ZoneCodeGenerator:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ProjectFolder(), "ZoneCodeGenerator")
 		}
+		Utils:include(includes)
 	end
-	Utils:include()
 end
 
-function ZoneCodeGenerator:link()
-	if References:link(self:name()) then
-		links(self:name())
-	end
+function ZoneCodeGenerator:link(links)
+
 end
 
 function ZoneCodeGenerator:use()
@@ -24,8 +22,9 @@ function ZoneCodeGenerator:name()
 end
 
 function ZoneCodeGenerator:project()
-	References:reset()
-	local folder = ProjectFolder();
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+	local links = Links:create()
 
 	project(self:name())
 		targetdir(TargetDirectoryBin)
@@ -43,9 +42,10 @@ function ZoneCodeGenerator:project()
 			}
 		}
 		
-		self:include()
-		ZoneCodeGeneratorLib:include()
+		self:include(includes)
+		ZoneCodeGeneratorLib:include(includes)
 
-		ZoneCodeGeneratorLib:link()
-		Utils:link()
+		links:linkto(Utils)
+		links:linkto(ZoneCodeGeneratorLib)
+		links:linkall()
 end

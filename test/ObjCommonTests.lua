@@ -1,17 +1,15 @@
 ObjCommonTests = {}
 
-function ObjCommonTests:include()
-	if References:include(self:name()) then
+function ObjCommonTests:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(TestFolder(), "ObjCommonTests")
 		}
 	end
 end
 
-function ObjCommonTests:link()
-	if References:link(self:name()) then
-		links(self:name())
-	end
+function ObjCommonTests:link(links)
+	
 end
 
 function ObjCommonTests:use()
@@ -23,8 +21,9 @@ function ObjCommonTests:name()
 end
 
 function ObjCommonTests:project()
-	References:reset()
-	local folder = TestFolder();
+	local folder = TestFolder()
+	local includes = Includes:create()
+	local links = Links:create()
 
 	project(self:name())
         targetdir(TargetDirectoryTest)
@@ -44,9 +43,10 @@ function ObjCommonTests:project()
 			}
 		}
 		
-		self:include()
-		ObjCommon:include()
-		catch2:include()
+		self:include(includes)
+		ObjCommon:include(includes)
+		catch2:include(includes)
 
-		ObjCommon:link()
+		links:linkto(ObjCommon)
+		links:linkall()
 end

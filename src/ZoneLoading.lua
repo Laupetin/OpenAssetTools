@@ -1,35 +1,35 @@
 ZoneLoading = {}
 
-function ZoneLoading:include()
-	if References:include("ZoneLoading") then
-		ZoneCommon:include()
+function ZoneLoading:include(includes)
+	if includes:handle(self:name()) then
+		ZoneCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ZoneLoading")
 		}
 	end
 end
 
-function ZoneLoading:link()
-	if References:link("ZoneLoading") then
-		Crypto:link()
-		Utils:link()
-		ZoneCommon:link()
-		zlib:link()
-		links {
-			"ZoneLoading"
-		}
-	end
+function ZoneLoading:link(links)
+	links:add(self:name())
+	links:linkto(Crypto)
+	links:linkto(Utils)
+	links:linkto(ZoneCommon)
+	links:linkto(zlib)
 end
 
 function ZoneLoading:use()
 	
 end
 
-function ZoneLoading:project()
-	References:reset()
-	local folder = ProjectFolder();
+function ZoneLoading:name()
+	return "ZoneLoading"
+end
 
-	project "ZoneLoading"
+function ZoneLoading:project()
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
@@ -48,11 +48,11 @@ function ZoneLoading:project()
 			}
 		}
 		
-        self:include()
-        Crypto:include()
-		Utils:include()
-		zlib:include()
-		ZoneCode:include()
+        self:include(includes)
+        Crypto:include(includes)
+		Utils:include(includes)
+		zlib:include(includes)
+		ZoneCode:include(includes)
 
 		ZoneCode:use()
 end

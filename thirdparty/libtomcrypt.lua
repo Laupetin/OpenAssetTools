@@ -1,7 +1,7 @@
 libtomcrypt = {}
 
-function libtomcrypt:include()
-	if References:include("libtomcrypt") then
+function libtomcrypt:include(includes)
+	if includes:handle(self:name()) then
 		defines{
 			"LTM_DESC"
 		}
@@ -12,21 +12,24 @@ function libtomcrypt:include()
 	end
 end
 
-function libtomcrypt:link()
-	if References:link("libtomcrypt") then
-		links "libtomcrypt"
-	end
+function libtomcrypt:link(links)
+	links:add(self:name())
+	links:linkto(libtommath)
 end
 
 function libtomcrypt:use()
 	
 end
 
-function libtomcrypt:project()
-	References:reset()
-	local folder = ThirdPartyFolder();
+function libtomcrypt:name()
+	return "libtomcrypt"
+end
 
-	project "libtomcrypt"
+function libtomcrypt:project()
+	local folder = ThirdPartyFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
@@ -45,8 +48,8 @@ function libtomcrypt:project()
 			"LTC_NO_PROTOTYPES"
 		}
 		
-		self:include()
-		libtommath:include()
+		self:include(includes)
+		libtommath:include(includes)
 
 		-- Disable warnings. They do not have any value to us since it is not our code.
 		warnings "off"

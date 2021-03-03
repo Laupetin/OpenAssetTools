@@ -1,17 +1,15 @@
 ZoneCodeGeneratorLibTests = {}
 
-function ZoneCodeGeneratorLibTests:include()
-	if References:include(self:name()) then
+function ZoneCodeGeneratorLibTests:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(TestFolder(), "ZoneCodeGeneratorLibTests")
 		}
 	end
 end
 
-function ZoneCodeGeneratorLibTests:link()
-	if References:link(self:name()) then
-		links(self:name())
-	end
+function ZoneCodeGeneratorLibTests:link(links)
+	
 end
 
 function ZoneCodeGeneratorLibTests:use()
@@ -23,8 +21,9 @@ function ZoneCodeGeneratorLibTests:name()
 end
 
 function ZoneCodeGeneratorLibTests:project()
-	References:reset()
-	local folder = TestFolder();
+	local folder = TestFolder()
+	local includes = Includes:create()
+	local links = Links:create()
 
 	project(self:name())
         targetdir(TargetDirectoryTest)
@@ -43,9 +42,10 @@ function ZoneCodeGeneratorLibTests:project()
 			}
 		}
 		
-		self:include()
-		ZoneCodeGeneratorLib:include()
-		catch2:include()
+		self:include(includes)
+		ZoneCodeGeneratorLib:include(includes)
+		catch2:include(includes)
 
-		ZoneCodeGeneratorLib:link()
+		links:linkto(ZoneCodeGeneratorLib)
+		links:linkall()
 end

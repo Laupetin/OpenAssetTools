@@ -1,28 +1,30 @@
 minilzo = {}
 
-function minilzo:include()
-	if References:include("minilzo") then
+function minilzo:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ThirdPartyFolder(), "minilzo")
 		}
 	end
 end
 
-function minilzo:link()
-	if References:link("minilzo") then
-		links "minilzo"
-	end
+function minilzo:link(links)
+	links:add(self:name())
 end
 
 function minilzo:use()
 	
 end
 
-function minilzo:project()
-	References:reset()
-	local folder = ThirdPartyFolder();
+function minilzo:name()
+	return "minilzo"
+end
 
-	project "minilzo"
+function minilzo:project()
+	local folder = ThirdPartyFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
@@ -33,7 +35,7 @@ function minilzo:project()
 			path.join(folder, "minilzo/*.c") 
 		}
 		
-		self:include()
+		self:include(includes)
 
 		-- Disable warnings. They do not have any value to us since it is not our code.
 		warnings "off"

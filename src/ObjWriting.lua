@@ -1,37 +1,37 @@
 ObjWriting = {}
 
-function ObjWriting:include()
-	if References:include("ObjWriting") then
-		ObjCommon:include()
-		ZoneCommon:include()
+function ObjWriting:include(includes)
+	if includes:handle(self:name()) then
+		ObjCommon:include(includes)
+		ZoneCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjWriting")
 		}
 	end
 end
 
-function ObjWriting:link()
-	if References:link("ObjWriting") then
-		Utils:link()
-		ObjCommon:link()
-		ZoneCommon:link()
-		minilzo:link()
-		minizip:link()
-		links {
-			"ObjWriting"
-		}
-	end
+function ObjWriting:link(links)
+	links:add(self:name())
+	links:linkto(Utils)
+	links:linkto(ObjCommon)
+	links:linkto(ZoneCommon)
+	links:linkto(minilzo)
+	links:linkto(minizip)
 end
 
 function ObjWriting:use()
 	
 end
 
-function ObjWriting:project()
-	References:reset()
-	local folder = ProjectFolder();
+function ObjWriting:name()
+	return "ObjWriting"
+end
 
-	project "ObjWriting"
+function ObjWriting:project()
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
@@ -48,8 +48,8 @@ function ObjWriting:project()
 			}
 		}
 		
-        self:include()
-		Utils:include()
-		minilzo:include()
-		minizip:include()
+        self:include(includes)
+		Utils:include(includes)
+		minilzo:include(includes)
+		minizip:include(includes)
 end

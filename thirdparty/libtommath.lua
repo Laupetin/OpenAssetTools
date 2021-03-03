@@ -1,28 +1,30 @@
 libtommath = {}
 
-function libtommath:include()
-	if References:include("libtommath") then
+function libtommath:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ThirdPartyFolder(), "libtommath")
 		}
 	end
 end
 
-function libtommath:link()
-	if References:link("libtommath") then
-		links "libtommath"
-	end
+function libtommath:link(links)
+	links:add(self:name())
 end
 
 function libtommath:use()
 	
 end
 
-function libtommath:project()
-	References:reset()
-	local folder = ThirdPartyFolder();
+function libtommath:name()
+	return "libtommath"
+end
 
-	project "libtommath"
+function libtommath:project()
+	local folder = ThirdPartyFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
@@ -33,7 +35,7 @@ function libtommath:project()
 			path.join(folder, "libtommath/*.c") 
 		}
 		
-		self:include()
+		self:include(includes)
 
 		-- Disable warnings. They do not have any value to us since it is not our code.
 		warnings "off"

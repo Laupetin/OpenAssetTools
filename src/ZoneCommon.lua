@@ -1,21 +1,19 @@
 ZoneCommon = {}
 
-function ZoneCommon:include()
-	if References:include(self:name()) then
-		Utils:include()
-		ObjCommon:include()
+function ZoneCommon:include(includes)
+	if includes:handle(self:name()) then
+		Utils:include(includes)
+		ObjCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ZoneCommon")
 		}
 	end
 end
 
-function ZoneCommon:link()
-	if References:link(self:name()) then
-		links(self:name())
-		Utils:link()
-		ObjCommon:link()
-	end
+function ZoneCommon:link(links)
+	links:add(self:name())
+	links:linkto(Utils)
+	links:linkto(ObjCommon)
 end
 
 function ZoneCommon:use()
@@ -27,8 +25,8 @@ function ZoneCommon:name()
 end
 
 function ZoneCommon:project()
-	References:reset()
-	local folder = ProjectFolder();
+	local folder = ProjectFolder()
+	local includes = Includes:create()
 
 	project(self:name())
         targetdir(TargetDirectoryLib)
@@ -41,7 +39,5 @@ function ZoneCommon:project()
 			path.join(folder, "ZoneCommon/**.cpp") 
 		}
 		
-        self:include()
-
-		Utils:link()
+        self:include(includes)
 end

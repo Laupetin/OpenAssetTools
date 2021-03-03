@@ -1,17 +1,15 @@
 ZoneCommonTests = {}
 
-function ZoneCommonTests:include()
-    if References:include(self:name()) then
+function ZoneCommonTests:include(includes)
+    if includes:handle(self:name()) then
 		includedirs {
 			path.join(TestFolder(), "ZoneCommonTests")
 		}
 	end
 end
 
-function ZoneCommonTests:link()
-	if References:link(self:name()) then
-		links(self:name())
-	end
+function ZoneCommonTests:link(links)
+	
 end
 
 function ZoneCommonTests:use()
@@ -23,8 +21,9 @@ function ZoneCommonTests:name()
 end
 
 function ZoneCommonTests:project()
-	References:reset()
-	local folder = TestFolder();
+	local folder = TestFolder()
+	local includes = Includes:create()
+	local links = Links:create()
 
 	project(self:name())
         targetdir(TargetDirectoryTest)
@@ -45,11 +44,12 @@ function ZoneCommonTests:project()
 			}
 		}
 		
-		self:include()
-		ZoneCommon:include()
-		catch2:include()
+		self:include(includes)
+		ZoneCommon:include(includes)
+		catch2:include(includes)
 
-		ZoneCommon:link()
+		links:linkto(ZoneCommon)
+		links:linkall()
 
 		ZoneCode:use()
 end

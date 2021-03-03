@@ -1,35 +1,35 @@
 ZoneWriting = {}
 
-function ZoneWriting:include()
-	if References:include("ZoneWriting") then
-		ZoneCommon:include()
+function ZoneWriting:include(includes)
+	if includes:handle(self:name()) then
+		ZoneCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ZoneWriting")
 		}
 	end
 end
 
-function ZoneWriting:link()
-	if References:link("ZoneWriting") then
-		Crypto:link()
-		Utils:link()
-		ZoneCommon:link()
-		zlib:link()
-		links {
-			"ZoneWriting"
-		}
-	end
+function ZoneWriting:link(links)
+	links:add(self:name())
+	links:linkto(Crypto)
+	links:linkto(Utils)
+	links:linkto(ZoneCommon)
+	links:linkto(zlib)
 end
 
 function ZoneWriting:use()
 	
 end
 
-function ZoneWriting:project()
-	References:reset()
-	local folder = ProjectFolder();
+function ZoneWriting:name()
+	return "ZoneWriting"
+end
 
-	project "ZoneWriting"
+function ZoneWriting:project()
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
@@ -46,10 +46,10 @@ function ZoneWriting:project()
 			}
 		}
 		
-        self:include()
-        Crypto:include()
-        Utils:include()
-		zlib:include()
+        self:include(includes)
+        Crypto:include(includes)
+        Utils:include(includes)
+		zlib:include(includes)
 
 		ZoneCode:use()
 end

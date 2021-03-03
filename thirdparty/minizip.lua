@@ -1,30 +1,32 @@
 minizip = {}
 
-function minizip:include()
-	if References:include("minizip") then
-		zlib:include()
+function minizip:include(includes)
+	if includes:handle(self:name()) then
+		zlib:include(includes)
 		includedirs {
 			path.join(ThirdPartyFolder(), "zlib/contrib/minizip")
 		}
 	end
 end
 
-function minizip:link()
-	if References:link("minizip") then
-		zlib:link()
-		links "minizip"
-	end
+function minizip:link(links)
+	links:add(self:name())
+	links:linkto(zlib)
 end
 
 function minizip:use()
 	
 end
 
-function minizip:project()
-	References:reset()
-	local folder = ThirdPartyFolder();
+function minizip:name()
+	return "minizip"
+end
 
-	project "minizip"
+function minizip:project()
+	local folder = ThirdPartyFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
@@ -40,7 +42,7 @@ function minizip:project()
 			path.join(folder, "zlib/contrib/minizip/crypt.h"),
         }
 		
-		self:include()
+		self:include(includes)
 
 		-- Disable warnings. They do not have any value to us since it is not our code.
         warnings "off"

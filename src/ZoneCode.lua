@@ -145,8 +145,8 @@ function ZoneCode:allWriteFiles()
     return result
 end
 
-function ZoneCode:include()
-	if References:include("ZoneCode") then
+function ZoneCode:include(includes)
+	if includes:handle(self:name()) then
         includedirs {
             path.join(ProjectFolder(), "ZoneCode"),
             "%{wks.location}/src/ZoneCode"
@@ -154,19 +154,22 @@ function ZoneCode:include()
     end
 end
 
-function ZoneCode:link()
+function ZoneCode:link(links)
     
 end
 
 function ZoneCode:use()
-	dependson "ZoneCode"
+	dependson(self:name())
+end
+
+function ZoneCode:name()
+    return "ZoneCode"
 end
 
 function ZoneCode:project()
-    References:reset()
-	local folder = ProjectFolder();
+	local folder = ProjectFolder()
 
-	project "ZoneCode"
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "Utility"

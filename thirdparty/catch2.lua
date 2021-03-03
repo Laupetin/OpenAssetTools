@@ -1,7 +1,7 @@
 catch2 = {}
 
-function catch2:include()
-	if References:include(self:name()) then
+function catch2:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ThirdPartyFolder(), "catch2", "single_include")
 		}
@@ -20,5 +20,4 @@ function catch2:name()
 end
 
 function catch2:project()
-	References:reset()
 end

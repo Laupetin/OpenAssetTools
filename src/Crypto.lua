@@ -1,31 +1,33 @@
 Crypto = {}
 
-function Crypto:include()
-	if References:include("Crypto") then
+function Crypto:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ProjectFolder(), "Crypto")
 		}
 	end
 end
 
-function Crypto:link()
-	if References:link("Crypto") then
-		libtomcrypt:link()
-		libtommath:link()
-		salsa20:link()
-		links "Crypto"
-	end
+function Crypto:link(links)
+	links:add(self:name())
+	links:linkto(libtomcrypt)
+	links:linkto(libtommath)
+	links:linkto(salsa20)
 end
 
 function Crypto:use()
 	
 end
 
-function Crypto:project()
-	References:reset()
-	local folder = ProjectFolder();
+function Crypto:name()
+	return "Crypto"
+end
 
-	project "Crypto"
+function Crypto:project()
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
@@ -36,8 +38,8 @@ function Crypto:project()
 			path.join(folder, "Crypto/**.cpp") 
 		}
 		
-		self:include()
-		libtomcrypt:include()
-		libtommath:include()
-        salsa20:include()
+		self:include(includes)
+		libtomcrypt:include(includes)
+		libtommath:include(includes)
+        salsa20:include(includes)
 end

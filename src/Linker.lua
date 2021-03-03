@@ -1,26 +1,31 @@
 Linker = {}
 
-function Linker:include()
-	if References:include("Linker") then
+function Linker:include(includes)
+	if includes:handle(self:name()) then
 		includedirs {
 			path.join(ProjectFolder(), "Linker")
 		}
 	end
 end
 
-function Linker:link()
+function Linker:link(links)
     
 end
 
 function Linker:use()
-    dependson "Linker"
+    dependson(self:name())
+end
+
+function Linker:name()
+	return "Linker"
 end
 
 function Linker:project()
-	References:reset()
-	local folder = ProjectFolder();
+	local folder = ProjectFolder()
+	local includes = Includes:create()
+	local links = Links:create()
 
-	project "Linker"
+	project(self:name())
         targetdir(TargetDirectoryBin)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "ConsoleApp"
@@ -31,10 +36,12 @@ function Linker:project()
 			path.join(folder, "Linker/**.cpp") 
 		}
 		
-		self:include()
-		Utils:include()
-        ZoneWriting:include()
+		self:include(includes)
+		Utils:include(includes)
+        ZoneWriting:include(includes)
 
-		Utils:link()
-        --ZoneWriting:link()
+		links:linkto(Utils)
+		links:linkto(ZoneWriting)
+        --ZoneWriting:link(links)
+		links:linkall()
 end
