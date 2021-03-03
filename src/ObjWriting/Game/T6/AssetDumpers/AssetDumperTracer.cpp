@@ -85,7 +85,7 @@ std::string AssetDumperTracer::GetFileNameForAsset(Zone* zone, XAssetInfo<Tracer
     return "tracer/" + asset->m_name;
 }
 
-void AssetDumperTracer::DumpAsset(Zone* zone, XAssetInfo<TracerDef>* asset, FileAPI::File* out)
+void AssetDumperTracer::DumpAsset(Zone* zone, XAssetInfo<TracerDef>* asset, std::ostream& stream)
 {
     InfoStringFromTracerConverter converter(asset->Asset(), tracer_fields, _countof(tracer_fields), [asset](const scr_string_t scrStr) -> std::string
         {
@@ -98,7 +98,7 @@ void AssetDumperTracer::DumpAsset(Zone* zone, XAssetInfo<TracerDef>* asset, File
 
     const auto infoString = converter.Convert();
     const auto stringValue = infoString.ToString("TRACER");
-    out->Write(stringValue.c_str(), 1, stringValue.length());
+    stream.write(stringValue.c_str(), stringValue.size());
 }
 
 //void AssetDumperTracer::CheckFields()

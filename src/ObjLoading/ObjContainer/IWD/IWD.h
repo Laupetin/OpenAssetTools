@@ -1,5 +1,9 @@
 #pragma once
 
+#include <memory>
+
+#include "Utils/ClassUtils.h"
+#include "Utils/ObjStream.h"
 #include "SearchPath/ISearchPath.h"
 #include "ObjContainer/ObjContainerRepository.h"
 
@@ -11,7 +15,7 @@ class IWD final : public ISearchPath, IObjContainer
 public:
     static ObjContainerRepository<IWD, ISearchPath> Repository;
 
-    IWD(std::string path, FileAPI::IFile* file);
+    IWD(std::string path, std::unique_ptr<std::istream> stream);
     ~IWD();
 
     IWD(const IWD& other) = delete;
@@ -23,9 +27,9 @@ public:
      * \brief Initializes the IWD container.
      * \return \c true when initialization was successful.
      */
-    bool Initialize() const;
+    bool Initialize();
 
-    FileAPI::IFile* Open(const std::string& fileName) override;
+    std::unique_ptr<std::istream> Open(const std::string& fileName) override;
     std::string GetPath() override;
     std::string GetName() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;

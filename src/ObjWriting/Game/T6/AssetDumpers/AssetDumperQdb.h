@@ -10,6 +10,6 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<Qdb>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<Qdb>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<Qdb>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<Qdb>* asset, std::ostream& stream) override;
     };
 }

@@ -241,8 +241,8 @@ class AssetDumperFontIconInternal
     }
 
 public:
-    explicit AssetDumperFontIconInternal(FileAPI::IFile* file)
-        : m_csv(file)
+    explicit AssetDumperFontIconInternal(std::ostream& stream)
+        : m_csv(stream)
     {
     }
 
@@ -265,8 +265,8 @@ std::string AssetDumperFontIcon::GetFileNameForAsset(Zone* zone, XAssetInfo<Font
     return asset->m_name;
 }
 
-void AssetDumperFontIcon::DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, FileAPI::File* out)
+void AssetDumperFontIcon::DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, std::ostream& stream)
 {
-    AssetDumperFontIconInternal dumper(out);
+    AssetDumperFontIconInternal dumper(stream);
     dumper.DumpFontIcon(asset->Asset());
 }

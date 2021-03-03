@@ -1,8 +1,11 @@
 #pragma once
 
-#include "Utils/FileAPI.h"
 #include <cstdint>
 #include <mutex>
+#include <istream>
+
+#include "Utils/ClassUtils.h"
+#include "Utils/ObjStream.h"
 
 class IPakStreamManagerActions
 {
@@ -10,7 +13,7 @@ public:
     virtual void StartReading() = 0;
     virtual void StopReading() = 0;
 
-    virtual void CloseStream(FileAPI::IFile* stream) = 0;
+    virtual void CloseStream(objbuf* stream) = 0;
 };
 
 class IPakStreamManager
@@ -19,7 +22,7 @@ class IPakStreamManager
     Impl* m_impl;
 
 public:
-    explicit IPakStreamManager(FileAPI::IFile* file);
+    explicit IPakStreamManager(std::istream& stream);
     IPakStreamManager(const IPakStreamManager& other) = delete;
     IPakStreamManager(IPakStreamManager&& other) noexcept = delete;
     ~IPakStreamManager();
@@ -27,5 +30,5 @@ public:
     IPakStreamManager& operator=(const IPakStreamManager& other) = delete;
     IPakStreamManager& operator=(IPakStreamManager&& other) noexcept = delete;
 
-    FileAPI::IFile* OpenStream(int64_t startPosition, size_t length) const;
+    _NODISCARD std::unique_ptr<iobjstream> OpenStream(int64_t startPosition, size_t length) const;
 };

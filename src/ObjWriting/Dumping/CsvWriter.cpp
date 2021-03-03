@@ -2,23 +2,21 @@
 
 #include <sstream>
 
-const std::string CsvWriter::LINE_BREAK = "\n";
-
-CsvWriter::CsvWriter(FileAPI::IFile* file)
+CsvWriter::CsvWriter(std::ostream& stream)
+    : m_stream(stream),
+      m_column_count(0),
+      m_current_column(0),
+      m_first_row(true)
 {
-    m_file = file;
-    m_first_row = true;
-    m_current_column = 0;
-    m_column_count = 0;
 }
 
 void CsvWriter::WriteColumn(const std::string& value)
 {
     if (m_current_column++ > 0)
-        m_file->Printf(",");
+        m_stream << ",";
 
-    bool containsSeparator = false;
-    bool containsQuote = false;
+    auto containsSeparator = false;
+    auto containsQuote = false;
     for (const auto& c : value)
     {
         if (c == '"')
@@ -35,7 +33,7 @@ void CsvWriter::WriteColumn(const std::string& value)
     {
         std::ostringstream str;
 
-        for(const auto& c : value)
+        for (const auto& c : value)
         {
             if (c == '"')
                 str << "\"\"";
@@ -43,15 +41,15 @@ void CsvWriter::WriteColumn(const std::string& value)
                 str << c;
         }
 
-        m_file->Printf("\"%s\"", str.str().c_str());
+        m_stream << "\"" << str.str() << "\"";
     }
     else if (containsSeparator)
     {
-        m_file->Printf("\"%s\"", value.c_str());
+        m_stream << "\"" << value << "\"";
     }
     else
     {
-        m_file->Printf("%s", value.c_str());
+        m_stream << value;
     }
 }
 
@@ -64,13 +62,13 @@ void CsvWriter::NextRow()
     }
     else
     {
-        while(m_current_column < m_column_count)
+        while (m_current_column < m_column_count)
         {
-            m_file->Printf(",");
+            m_stream << ",";
             m_current_column++;
         }
     }
 
-    m_file->Printf("\n");
+    m_stream << "\n";
     m_current_column = 0;
 }

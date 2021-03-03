@@ -1,12 +1,13 @@
 #pragma once
 
+#include <ostream>
+
 #include "Zone/Zone.h"
-#include "Utils/FileAPI.h"
 
 class StringFileDumper
 {
     Zone* m_zone;
-    FileAPI::File* m_file;
+    std::ostream& m_stream;
 
     std::string m_config_file;
     std::string m_notes;
@@ -17,7 +18,7 @@ class StringFileDumper
     void WriteHeader();
 
 public:
-    StringFileDumper(Zone* zone, FileAPI::File* file);
+    StringFileDumper(Zone* zone, std::ostream& stream);
 
     void SetConfigFile(std::string configFile);
     void SetNotes(std::string notes);

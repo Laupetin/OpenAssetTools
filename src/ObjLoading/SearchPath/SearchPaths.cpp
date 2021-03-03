@@ -5,15 +5,7 @@
 SearchPaths::SearchPaths() = default;
 
 SearchPaths::~SearchPaths()
-{
-    for(auto searchPathToFree : m_to_free)
-    {
-        delete searchPathToFree;
-    }
-    m_to_free.clear();
-
-    m_search_paths.clear();
-}
+= default;
 
 SearchPaths::SearchPaths(const SearchPaths& other)
     : m_search_paths(other.m_search_paths)
@@ -41,15 +33,15 @@ SearchPaths& SearchPaths::operator=(SearchPaths&& other) noexcept
     return *this;
 }
 
-FileAPI::IFile* SearchPaths::Open(const std::string& fileName)
+std::unique_ptr<std::istream> SearchPaths::Open(const std::string& fileName)
 {
-    for(auto searchPathEntry : m_search_paths)
+    for(auto* searchPathEntry : m_search_paths)
     {
-        auto* file = searchPathEntry->Open(fileName);
+        auto file = searchPathEntry->Open(fileName);
 
-        if(file != nullptr)
+        if(file)
         {
-            return file;
+            return std::move(file);
         }
     }
 
@@ -63,16 +55,16 @@ std::string SearchPaths::GetPath()
 
 void SearchPaths::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
 {
-    for (auto searchPathEntry : m_search_paths)
+    for (auto* searchPathEntry : m_search_paths)
     {
         searchPathEntry->Find(options, callback);
     }
 }
 
-void SearchPaths::CommitSearchPath(ISearchPath* searchPath)
+void SearchPaths::CommitSearchPath(std::unique_ptr<ISearchPath> searchPath)
 {
-    m_search_paths.push_back(searchPath);
-    m_to_free.push_back(searchPath);
+    m_search_paths.push_back(searchPath.get());
+    m_owned_search_paths.emplace_back(std::move(searchPath));
 }
 
 void SearchPaths::IncludeSearchPath(ISearchPath* searchPath)

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "IAssetDumper.h"
-#include "Utils/FileAPI.h"
-#include "Utils/PathUtils.h"
 
-#include <cstdio>
+#include <fstream>
+#include <filesystem>
+#include <iostream>
 
 template<class T>
 class AbstractAssetDumper : public IAssetDumper<T>
@@ -12,7 +12,7 @@ class AbstractAssetDumper : public IAssetDumper<T>
 protected:
     virtual bool ShouldDump(XAssetInfo<T>* asset) = 0;
     virtual std::string GetFileNameForAsset(Zone* zone, XAssetInfo<T>* asset) = 0;
-    virtual void DumpAsset(Zone* zone, XAssetInfo<T>* asset, FileAPI::File* out) = 0;
+    virtual void DumpAsset(Zone* zone, XAssetInfo<T>* asset, std::ostream& stream) = 0;
 
 public:
     void DumpPool(Zone* zone, AssetPool<T>* pool, const std::string& basePath) override
@@ -25,21 +25,23 @@ public:
                 continue;
             }
 
-            std::string assetFilePath = utils::Path::Combine(basePath, GetFileNameForAsset(zone, assetInfo));
+            std::filesystem::path assetFilePath(basePath);
+            assetFilePath.append(GetFileNameForAsset(zone, assetInfo));
 
-            FileAPI::DirectoryCreate(utils::Path::GetDirectory(assetFilePath));
+            auto assetFileFolder(assetFilePath);
+            assetFileFolder.replace_filename("");
+            create_directories(assetFileFolder);
 
-            auto file = FileAPI::Open(assetFilePath, FileAPI::Mode::MODE_WRITE);
-
-            if(file.IsOpen())
+            std::ofstream file(assetFilePath, std::fstream::out | std::fstream::binary);
+            if(file.is_open())
             {
-                DumpAsset(zone, assetInfo, &file);
+                DumpAsset(zone, assetInfo, file);
 
-                file.Close();
+                file.close();
             }
             else
             {
-                printf("Failed to open file '%s' to dump asset '%s'\n", assetFilePath.c_str(), assetInfo->m_name.c_str());
+                std::cout << "Failed to open file '" << assetFilePath.string() << "' to dump asset '" << assetInfo->m_name.c_str() << "'\n";
             }
         }
     }

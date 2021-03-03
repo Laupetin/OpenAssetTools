@@ -52,21 +52,22 @@ const ImageFormat* IwiLoader::GetFormat8(int8_t format)
     return nullptr;
 }
 
-Texture* IwiLoader::LoadIwi8(FileAPI::IFile* file)
+Texture* IwiLoader::LoadIwi8(std::istream& stream) const
 {
     iwi8::IwiHeader header{};
 
-    if (file->Read(&header, sizeof header, 1) != 1)
+    stream.read(reinterpret_cast<char*>(&header), sizeof header);
+    if (stream.gcount() != sizeof header)
         return nullptr;
 
-    const ImageFormat* format = GetFormat8(header.format);
+    const auto* format = GetFormat8(header.format);
     if (format == nullptr)
         return nullptr;
 
-    uint16_t width = header.dimensions[0];
-    uint16_t height = header.dimensions[1];
-    uint16_t depth = header.dimensions[2];
-    bool hasMipMaps = !(header.flags & iwi8::IwiFlags::IMG_FLAG_NOMIPMAPS);
+    auto width = header.dimensions[0];
+    auto height = header.dimensions[1];
+    auto depth = header.dimensions[2];
+    auto hasMipMaps = !(header.flags & iwi8::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
     Texture* texture;
     if ((header.flags & iwi8::IwiFlags::IMG_FLAG_MAPTYPE_MASK) == iwi8::IwiFlags::IMG_FLAG_MAPTYPE_CUBE)
@@ -94,12 +95,12 @@ Texture* IwiLoader::LoadIwi8(FileAPI::IFile* file)
 
     texture->Allocate();
 
-    size_t currentFileSize = sizeof iwi8::IwiHeader + sizeof IwiVersion;
-    const int mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
+    auto currentFileSize = sizeof iwi8::IwiHeader + sizeof IwiVersion;
+    const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
-    for (int currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+    for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
-        const size_t sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
+        const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
         if (currentMipLevel < static_cast<int>(_countof(iwi8::IwiHeader::fileSizeForPicmip))
@@ -111,7 +112,8 @@ Texture* IwiLoader::LoadIwi8(FileAPI::IFile* file)
             return nullptr;
         }
 
-        if (file->Read(texture->GetBufferForMipLevel(currentMipLevel), 1, sizeOfMipLevel) != sizeOfMipLevel)
+        stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
+        if (stream.gcount() != sizeOfMipLevel)
         {
             printf("Unexpected eof of iwi in mip level %i\n", currentMipLevel);
 
@@ -167,21 +169,22 @@ const ImageFormat* IwiLoader::GetFormat27(int8_t format)
     return nullptr;
 }
 
-Texture* IwiLoader::LoadIwi27(FileAPI::IFile* file)
+Texture* IwiLoader::LoadIwi27(std::istream& stream) const
 {
     iwi27::IwiHeader header{};
 
-    if (file->Read(&header, sizeof header, 1) != 1)
+    stream.read(reinterpret_cast<char*>(&header), sizeof header);
+    if (stream.gcount() != sizeof header)
         return nullptr;
 
-    const ImageFormat* format = GetFormat27(header.format);
+    const auto* format = GetFormat27(header.format);
     if (format == nullptr)
         return nullptr;
 
-    uint16_t width = header.dimensions[0];
-    uint16_t height = header.dimensions[1];
-    uint16_t depth = header.dimensions[2];
-    bool hasMipMaps = !(header.flags & iwi27::IwiFlags::IMG_FLAG_NOMIPMAPS);
+    auto width = header.dimensions[0];
+    auto height = header.dimensions[1];
+    auto depth = header.dimensions[2];
+    auto hasMipMaps = !(header.flags & iwi27::IwiFlags::IMG_FLAG_NOMIPMAPS);
 
     Texture* texture;
     if (header.flags & iwi27::IwiFlags::IMG_FLAG_CUBEMAP)
@@ -199,12 +202,12 @@ Texture* IwiLoader::LoadIwi27(FileAPI::IFile* file)
 
     texture->Allocate();
 
-    size_t currentFileSize = sizeof iwi27::IwiHeader + sizeof IwiVersion;
-    const int mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
+    auto currentFileSize = sizeof iwi27::IwiHeader + sizeof IwiVersion;
+    const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
-    for (int currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+    for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
-        const size_t sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
+        const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
         if (currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip))
@@ -216,7 +219,8 @@ Texture* IwiLoader::LoadIwi27(FileAPI::IFile* file)
             return nullptr;
         }
 
-        if (file->Read(texture->GetBufferForMipLevel(currentMipLevel), 1, sizeOfMipLevel) != sizeOfMipLevel)
+        stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
+        if (stream.gcount() != sizeOfMipLevel)
         {
             printf("Unexpected eof of iwi in mip level %i\n", currentMipLevel);
 
@@ -228,11 +232,12 @@ Texture* IwiLoader::LoadIwi27(FileAPI::IFile* file)
     return texture;
 }
 
-Texture* IwiLoader::LoadIwi(FileAPI::IFile* file)
+Texture* IwiLoader::LoadIwi(std::istream& stream)
 {
     IwiVersion iwiVersion{};
 
-    if (file->Read(&iwiVersion, sizeof iwiVersion, 1) != 1)
+    stream.read(reinterpret_cast<char*>(&iwiVersion), sizeof iwiVersion);
+    if (stream.gcount() != sizeof iwiVersion)
         return nullptr;
 
     if (iwiVersion.tag[0] != 'I'
@@ -245,10 +250,10 @@ Texture* IwiLoader::LoadIwi(FileAPI::IFile* file)
     switch (iwiVersion.version)
     {
     case 8:
-        return LoadIwi8(file);
+        return LoadIwi8(stream);
 
     case 27:
-        return LoadIwi27(file);
+        return LoadIwi27(stream);
 
     default:
         break;

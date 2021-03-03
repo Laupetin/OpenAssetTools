@@ -1,6 +1,5 @@
 #include "IWD.h"
 
-#include "Utils/PathUtils.h"
 #include "ObjLoading.h"
 #include "Utils/FileToZlibWrapper.h"
 
@@ -8,10 +7,14 @@
 #include <filesystem>
 #include <cassert>
 #include <map>
+#include <fstream>
+#include <memory>
+
+namespace fs = std::filesystem;
 
 ObjContainerRepository<IWD, ISearchPath> IWD::Repository;
 
-class IWDFile final : public FileAPI::IFile
+class IWDFile final : public objbuf
 {
 public:
     class IParent
@@ -25,99 +28,135 @@ public:
 private:
     IParent* m_parent;
     bool m_open;
-    size_t m_size;
+    int64_t m_size;
     unzFile m_container;
+    bool m_peeked;
+    int_type m_peek_symbol;
 
 public:
-    IWDFile(IParent* parent, const unzFile container, const size_t size)
+    IWDFile(IParent* parent, const unzFile container, const int64_t size)
+        : m_parent(parent),
+          m_open(true),
+          m_size(size),
+          m_container(container),
+          m_peeked(false),
+          m_peek_symbol(0)
     {
-        m_parent = parent;
-        m_container = container;
-        m_size = size;
-        m_open = true;
     }
 
     ~IWDFile() override
     {
-        if(m_open)
+        if (m_open)
         {
-            Close();
+            close();
         }
     }
 
-    bool IsOpen() override
+protected:
+    int_type underflow() override
+    {
+        if (m_peeked)
+            return m_peek_symbol;
+
+        const auto result = unzReadCurrentFile(m_container, &m_peek_symbol, 1u);
+
+        if (result >= 0)
+        {
+            m_peeked = true;
+            return static_cast<int_type>(m_peek_symbol);
+        }
+
+        return EOF;
+    }
+
+    int_type uflow() override
+    {
+        if (m_peeked)
+        {
+            m_peeked = false;
+            return m_peek_symbol;
+        }
+
+        const auto result = unzReadCurrentFile(m_container, &m_peek_symbol, 1u);
+        return result >= 0 ? static_cast<int_type>(m_peek_symbol) : EOF;
+    }
+
+    std::streamsize xsgetn(char* ptr, std::streamsize count) override
+    {
+        if (m_peeked && count >= 1)
+        {
+            *ptr = static_cast<char>(m_peek_symbol);
+            ptr++;
+            count--;
+        }
+
+        const auto result = unzReadCurrentFile(m_container, ptr, static_cast<unsigned>(count));
+
+        return result >= 0 ? static_cast<std::streamsize>(result) : 0;
+    }
+
+    pos_type seekoff(const off_type off, const std::ios_base::seekdir dir, const std::ios_base::openmode mode) override
+    {
+        const auto currentPos = unztell64(m_container);
+
+        pos_type targetPos;
+        if (dir == std::ios_base::beg)
+        {
+            targetPos = off;
+        }
+        else if (dir == std::ios_base::cur)
+        {
+            targetPos = currentPos + off;
+        }
+        else
+        {
+            targetPos = m_size - off;
+        }
+
+        return seekpos(targetPos, mode);
+    }
+
+    pos_type seekpos(const pos_type pos, const std::ios_base::openmode mode) override
+    {
+        const auto currentPos = unztell64(m_container);
+
+        if (static_cast<pos_type>(currentPos) < pos)
+        {
+            auto skipAmount = pos - static_cast<pos_type>(currentPos);
+            while (skipAmount > 0)
+            {
+                char temp[1024];
+                const auto toRead = skipAmount > sizeof temp ? sizeof temp : static_cast<size_t>(skipAmount);
+                unzReadCurrentFile(m_container, temp, toRead);
+                skipAmount -= toRead;
+            }
+
+            return pos;
+        }
+
+        if (currentPos == pos)
+        {
+            // This is fine
+            return currentPos;
+        }
+
+        return std::streampos(-1);
+    }
+
+public:
+    _NODISCARD bool is_open() const override
     {
         return m_open;
     }
 
-    size_t Read(void* buffer, const size_t elementSize, const size_t elementCount) override
-    {
-        const auto result = unzReadCurrentFile(m_container, buffer, elementSize * elementCount);
-
-        return result >= 0 ? static_cast<size_t>(result) / elementSize : 0;
-    }
-
-    size_t Write(const void* data, size_t elementSize, size_t elementCount) override
-    {
-        // This is not meant for writing.
-        assert(false);
-        throw std::runtime_error("This is not a stream for output!");
-    }
-
-    void Skip(int64_t amount) override
-    {
-        while (amount > 0)
-        {
-            char temp[1024];
-            const size_t toRead = amount > sizeof temp ? sizeof temp : static_cast<size_t>(amount);
-            unzReadCurrentFile(m_container, temp, toRead);
-            amount -= toRead;
-        }
-    }
-
-    size_t Printf(const char* fmt, ...) override
-    {
-        // This is not meant for writing.
-        assert(false);
-        throw std::runtime_error("This is not a stream for output!");
-    }
-
-    int64_t Pos() override
-    {
-        return unztell(m_container);
-    }
-
-    void Goto(const int64_t pos) override
-    {
-        const auto current = Pos();
-
-        if(pos > current)
-        {
-            Skip(pos - current);
-        }
-        else if(pos == current)
-        {
-            // This is fine.
-        }
-        else
-        {
-            // Unsupported for zip entries
-            assert(false);
-            throw std::runtime_error("Going backwards is not supported in IWD files!");
-        }
-    }
-
-    void GotoEnd() override
-    {
-        Goto(m_size);
-    }
-
-    void Close() override
+    bool close() override
     {
         unzCloseCurrentFile(m_container);
         m_open = false;
 
         m_parent->OnIWDFileClose();
+
+        return true;
     }
 };
 
@@ -126,12 +165,12 @@ class IWD::Impl : public ISearchPath, public IObjContainer, public IWDFile::IPar
     class IWDEntry
     {
     public:
-        size_t m_size{};
+        int64_t m_size{};
         unz_file_pos m_file_pos{};
     };
 
     std::string m_path;
-    FileAPI::IFile* m_file;
+    std::unique_ptr<std::istream> m_stream;
     unzFile m_unz_file;
 
     IWDFile* m_last_file;
@@ -139,12 +178,12 @@ class IWD::Impl : public ISearchPath, public IObjContainer, public IWDFile::IPar
     std::map<std::string, IWDEntry> m_entry_map;
 
 public:
-    Impl(std::string path, FileAPI::IFile* file)
+    Impl(std::string path, std::unique_ptr<std::istream> stream)
+        : m_path(std::move(path)),
+          m_stream(std::move(stream)),
+          m_unz_file(nullptr),
+          m_last_file(nullptr)
     {
-        m_unz_file = nullptr;
-        m_path = std::move(path);
-        m_file = file;
-        m_last_file = nullptr;
     }
 
     ~Impl() override
@@ -152,13 +191,7 @@ public:
         if (m_unz_file != nullptr)
         {
             unzClose(m_unz_file);
-        }
-
-        if (m_file)
-        {
-            m_file->Close();
-            delete m_file;
-            m_file = nullptr;
+            m_unz_file = nullptr;
         }
     }
 
@@ -169,7 +202,7 @@ public:
 
     bool Initialize()
     {
-        auto ioFunctions = FileToZlibWrapper::CreateFunctions32ForFile(m_file);
+        auto ioFunctions = FileToZlibWrapper::CreateFunctions32ForFile(m_stream.get());
         m_unz_file = unzOpen2("", &ioFunctions);
 
         if (m_unz_file == nullptr)
@@ -181,9 +214,9 @@ public:
         auto ret = unzGoToFirstFile(m_unz_file);
         while (ret == Z_OK)
         {
-            unz_file_info info;
+            unz_file_info64 info;
             char fileNameBuffer[256];
-            unzGetCurrentFileInfo(m_unz_file, &info, fileNameBuffer, sizeof fileNameBuffer, nullptr, 0, nullptr, 0);
+            unzGetCurrentFileInfo64(m_unz_file, &info, fileNameBuffer, sizeof fileNameBuffer, nullptr, 0, nullptr, 0);
 
             std::string fileName(fileNameBuffer);
             std::filesystem::path path(fileName);
@@ -207,21 +240,21 @@ public:
         return true;
     }
 
-    FileAPI::IFile* Open(const std::string& fileName) override
+    std::unique_ptr<std::istream> Open(const std::string& fileName) override
     {
         if (m_unz_file == nullptr)
         {
             return nullptr;
         }
 
-        std::string iwdFilename = fileName;
+        auto iwdFilename = fileName;
         std::replace(iwdFilename.begin(), iwdFilename.end(), '\\', '/');
 
         const auto iwdEntry = m_entry_map.find(iwdFilename);
 
         if (iwdEntry != m_entry_map.end())
         {
-            if(m_last_file != nullptr)
+            if (m_last_file != nullptr)
             {
                 throw std::runtime_error("Trying to open new IWD file while last one was not yet closed.");
             }
@@ -231,10 +264,12 @@ public:
 
             if (unzOpenCurrentFile(m_unz_file) == UNZ_OK)
             {
-                m_last_file = new IWDFile(this, m_unz_file, iwdEntry->second.m_size);
+                auto result = std::make_unique<IWDFile>(this, m_unz_file, iwdEntry->second.m_size);
+                m_last_file = result.get();
+                return std::make_unique<iobjstream>(std::move(result));
             }
 
-            return m_last_file;
+            return nullptr;
         }
 
         return nullptr;
@@ -247,24 +282,24 @@ public:
 
     std::string GetName() override
     {
-        return utils::Path::GetFilename(m_path);
+        return fs::path(m_path).filename().string();
     }
 
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override
     {
-        if(options.m_disk_files_only)
+        if (options.m_disk_files_only)
         {
             return;
         }
 
-        for(auto& [entryName, entry] : m_entry_map)
+        for (auto& [entryName, entry] : m_entry_map)
         {
             std::filesystem::path entryPath(entryName);
 
-            if(!options.m_should_include_subdirectories && entryPath.has_parent_path())
+            if (!options.m_should_include_subdirectories && entryPath.has_parent_path())
                 continue;
 
-            if(options.m_filter_extensions && options.m_extension != entryPath.extension().string())
+            if (options.m_filter_extensions && options.m_extension != entryPath.extension().string())
                 continue;
 
             callback(entryName);
@@ -277,9 +312,9 @@ public:
     }
 };
 
-IWD::IWD(std::string path, FileAPI::IFile* file)
+IWD::IWD(std::string path, std::unique_ptr<std::istream> stream)
 {
-    m_impl = new Impl(std::move(path), file);
+    m_impl = new Impl(std::move(path), std::move(stream));
 }
 
 IWD::~IWD()
@@ -302,12 +337,12 @@ IWD& IWD::operator=(IWD&& other) noexcept
     return *this;
 }
 
-bool IWD::Initialize() const
+bool IWD::Initialize()
 {
     return m_impl->Initialize();
 }
 
-FileAPI::IFile* IWD::Open(const std::string& fileName)
+std::unique_ptr<std::istream> IWD::Open(const std::string& fileName)
 {
     return m_impl->Open(fileName);
 }

@@ -2,28 +2,28 @@
 
 const std::string AbstractZoneDefWriter::META_DATA_KEY_GAME = "game";
 
-AbstractZoneDefWriter::AbstractZoneDefWriter(Zone* zone, FileAPI::IFile* file)
+AbstractZoneDefWriter::AbstractZoneDefWriter(Zone* zone, std::ostream& stream)
+    : m_zone(zone),
+      m_stream(stream)
 {
-    m_zone = zone;
-    m_file = file;
 }
 
 void AbstractZoneDefWriter::EmptyLine() const
 {
-    m_file->Printf("\n");
+    m_stream << "\n";
 }
 
 void AbstractZoneDefWriter::WriteComment(const std::string& comment) const
 {
-    m_file->Printf("// %s\n", comment.c_str());
+    m_stream << "// " << comment << "\n";
 }
 
 void AbstractZoneDefWriter::WriteMetaData(const std::string& metaDataKey, const std::string& metaDataValue) const
 {
-    m_file->Printf(">%s,%s\n", metaDataKey.c_str(), metaDataValue.c_str());
+    m_stream << ">" << metaDataKey << "," << metaDataValue << "\n";
 }
 
 void AbstractZoneDefWriter::WriteEntry(const std::string& entryKey, const std::string& entryValue) const
 {
-    m_file->Printf("%s,%s\n", entryKey.c_str(), entryValue.c_str());
+    m_stream << entryKey << "," << entryValue << "\n";
 }

@@ -1,16 +1,17 @@
 #include "LoadingFileStream.h"
 
-LoadingFileStream::LoadingFileStream(FileAPI::File* file)
+LoadingFileStream::LoadingFileStream(std::istream& stream)
+    : m_stream(stream)
 {
-    m_file = file;
 }
 
 size_t LoadingFileStream::Load(void* buffer, const size_t length)
 {
-    return m_file->Read(buffer, 1, length);
+    m_stream.read(static_cast<char*>(buffer), length);
+    return static_cast<size_t>(m_stream.gcount());
 }
 
 int64_t LoadingFileStream::Pos()
 {
-    return m_file->Pos();
+    return m_stream.tellg();
 }

@@ -1,21 +1,22 @@
 #pragma once
 
-#include "IPakStreamManager.h"
-#include "Utils/FileAPI.h"
-#include "ObjContainer/IPak/IPakTypes.h"
-#include <mutex>
+#include <istream>
 
-class IPakEntryReadStream final : public FileAPI::IFile
+#include "Utils/ObjStream.h"
+#include "IPakStreamManager.h"
+#include "ObjContainer/IPak/IPakTypes.h"
+
+class IPakEntryReadStream final : public objbuf
 {
     static constexpr size_t IPAK_DECOMPRESS_BUFFER_SIZE = 0x8000;
 
     uint8_t* m_chunk_buffer;
 
-    IFile* m_file;
+    std::istream& m_stream;
     IPakStreamManagerActions* m_stream_manager_actions;
 
-    size_t m_file_offset;
-    size_t m_file_head;
+    int64_t m_file_offset;
+    int64_t m_file_head;
 
     size_t m_entry_size;
 
@@ -53,16 +54,17 @@ class IPakEntryReadStream final : public FileAPI::IFile
     bool AdvanceStream();
 
 public:
-    IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t entrySize);
+    IPakEntryReadStream(std::istream& stream, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, int64_t startOffset, size_t entrySize);
     ~IPakEntryReadStream() override;
 
-    bool IsOpen() override;
-    size_t Read(void* buffer, size_t elementSize, size_t elementCount) override;
-    size_t Write(const void* data, size_t elementSize, size_t elementCount) override;
-    void Skip(int64_t amount) override;
-    size_t Printf(const char* fmt, ...) override;
-    int64_t Pos() override;
-    void Goto(int64_t pos) override;
-    void GotoEnd() override;
-    void Close() override;
+    _NODISCARD bool is_open() const override;
+    bool close() override;
+
+protected:
+    std::streamsize showmanyc() override;
+    int_type underflow() override;
+    int_type uflow() override;
+    std::streamsize xsgetn(char* ptr, std::streamsize count) override;
+    pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode mode) override;
+    pos_type seekpos(pos_type pos, std::ios_base::openmode mode) override;
 };

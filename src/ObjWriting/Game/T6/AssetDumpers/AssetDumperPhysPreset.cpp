@@ -86,7 +86,7 @@ std::string AssetDumperPhysPreset::GetFileNameForAsset(Zone* zone, XAssetInfo<Ph
     return "physic/" + asset->m_name;
 }
 
-void AssetDumperPhysPreset::DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset, FileAPI::File* out)
+void AssetDumperPhysPreset::DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset, std::ostream& stream)
 {
     auto* physPresetInfo = new PhysPresetInfo;
     CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
@@ -102,7 +102,7 @@ void AssetDumperPhysPreset::DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset,
 
     const auto infoString = converter.Convert();
     const auto stringValue = infoString.ToString("PHYSIC");
-    out->Write(stringValue.c_str(), 1, stringValue.length());
+    stream.write(stringValue.c_str(), stringValue.size());
 
     delete physPresetInfo;
 }

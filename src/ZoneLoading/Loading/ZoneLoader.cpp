@@ -12,13 +12,13 @@ ZoneLoader::ZoneLoader(Zone* zone)
 
 ZoneLoader::~ZoneLoader()
 {
-    for(auto step : m_steps)
+    for(auto* step : m_steps)
     {
         delete step;
     }
     m_steps.clear();
 
-    for(auto processor : m_processors)
+    for(auto* processor : m_processors)
     {
         delete processor;
     }
@@ -27,9 +27,9 @@ ZoneLoader::~ZoneLoader()
 
 ILoadingStream* ZoneLoader::BuildLoadingChain(ILoadingStream* rootStream)
 {
-    ILoadingStream* currentStream = rootStream;
+    auto* currentStream = rootStream;
 
-    for(auto processor : m_processors)
+    for(auto* processor : m_processors)
     {
         processor->SetBaseStream(currentStream);
 
@@ -74,14 +74,14 @@ void ZoneLoader::RemoveStreamProcessor(StreamProcessor* streamProcessor)
     }
 }
 
-Zone* ZoneLoader::LoadZone(FileAPI::File* file)
+Zone* ZoneLoader::LoadZone(std::istream& stream)
 {
-    LoadingFileStream fileStream(file);
-    ILoadingStream* endStream = BuildLoadingChain(&fileStream);
+    LoadingFileStream fileStream(stream);
+    auto* endStream = BuildLoadingChain(&fileStream);
 
     try
     {
-        for(auto step : m_steps)
+        for(auto* step : m_steps)
         {
             step->PerformStep(this, endStream);
 

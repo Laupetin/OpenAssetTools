@@ -15,7 +15,7 @@ const std::map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE
 
 class DdsWriterInternal
 {
-    FileAPI::IFile* m_file;
+    std::ostream& m_stream;
     Texture* m_texture;
     std::unique_ptr<Texture> m_converted_texture;
     bool m_use_dx10_extension;
@@ -190,8 +190,8 @@ public:
         return ".dds";
     }
 
-    DdsWriterInternal(FileAPI::IFile* file, Texture* texture)
-        : m_file(file),
+    DdsWriterInternal(std::ostream& stream, Texture* texture)
+        : m_stream(stream),
           m_texture(texture),
           m_use_dx10_extension(false)
     {
@@ -204,24 +204,24 @@ public:
         DDS_HEADER header{};
         PopulateDdsHeader(header);
 
-        constexpr uint32_t magic = MakeFourCc('D', 'D', 'S', ' ');
+        constexpr auto magic = MakeFourCc('D', 'D', 'S', ' ');
 
-        m_file->Write(&magic, sizeof magic, 1);
-        m_file->Write(&header, sizeof header, 1);
+        m_stream.write(reinterpret_cast<const char*>(&magic), sizeof magic);
+        m_stream.write(reinterpret_cast<const char*>(&header), sizeof header);
 
         if (m_use_dx10_extension)
         {
             DDS_HEADER_DXT10 dxt10{};
             PopulateDxt10Header(dxt10);
-            m_file->Write(&dxt10, sizeof dxt10, 1);
+            m_stream.write(reinterpret_cast<const char*>(&dxt10), sizeof dxt10);
         }
 
-        const int mipCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
+        const auto mipCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
         for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         {
             const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel);
             const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel) * m_texture->GetFaceCount();
-            m_file->Write(buffer, 1, mipLevelSize);
+            m_stream.write(reinterpret_cast<const char*>(buffer), mipLevelSize);
         }
     }
 };
@@ -239,8 +239,8 @@ std::string DdsWriter::GetFileExtension()
     return DdsWriterInternal::GetFileExtension();
 }
 
-void DdsWriter::DumpImage(FileAPI::IFile* file, Texture* texture)
+void DdsWriter::DumpImage(std::ostream& stream, Texture* texture)
 {
-    DdsWriterInternal internal(file, texture);
+    DdsWriterInternal internal(stream, texture);
     internal.DumpImage();
 }

@@ -138,7 +138,7 @@ std::string AssetDumperPhysConstraints::GetFileNameForAsset(Zone* zone, XAssetIn
     return "physconstraints/" + asset->m_name;
 }
 
-void AssetDumperPhysConstraints::DumpAsset(Zone* zone, XAssetInfo<PhysConstraints>* asset, FileAPI::File* out)
+void AssetDumperPhysConstraints::DumpAsset(Zone* zone, XAssetInfo<PhysConstraints>* asset, std::ostream& stream)
 {
     assert(asset->Asset()->count <= 4);
 
@@ -153,5 +153,5 @@ void AssetDumperPhysConstraints::DumpAsset(Zone* zone, XAssetInfo<PhysConstraint
 
     const auto infoString = converter.Convert();
     const auto stringValue = infoString.ToString("PHYSCONSTRAINTS");
-    out->Write(stringValue.c_str(), 1, stringValue.length());
+    stream.write(stringValue.c_str(), stringValue.size());
 }

@@ -1,25 +1,35 @@
 #include "AssetDumperLocalizeEntry.h"
 
+#include <fstream>
+#include <filesystem>
+
 #include "Dumping/Localize/LocalizeCommon.h"
 #include "Dumping/Localize/StringFileDumper.h"
 
 using namespace IW4;
+namespace fs = std::filesystem;
 
 void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath)
 {
     if (pool->m_asset_lookup.empty())
         return;
 
-    const std::string language = LocalizeCommon::GetNameOfLanguage(zone->m_language);
-    const std::string stringsPath = utils::Path::Combine(basePath, language + "/localizedstrings");
+    const auto language = LocalizeCommon::GetNameOfLanguage(zone->m_language);
+    fs::path stringsPath(basePath);
+    stringsPath.append(language);
+    stringsPath.append("/localizedstrings");
 
-    FileAPI::DirectoryCreate(stringsPath);
+    create_directories(stringsPath);
 
-    FileAPI::File stringFile = FileAPI::Open(utils::Path::Combine(stringsPath, zone->m_name + ".str"), FileAPI::Mode::MODE_WRITE);
+    auto stringFilePath(stringsPath);
+    stringFilePath.append(zone->m_name);
+    stringFilePath.append(".str");
 
-    if (stringFile.IsOpen())
+    std::ofstream stringFile(stringFilePath, std::fstream::out | std::ofstream::binary);
+
+    if (stringFile.is_open())
     {
-        StringFileDumper stringFileDumper(zone, &stringFile);
+        StringFileDumper stringFileDumper(zone, stringFile);
 
         stringFileDumper.SetLanguageName(language);
 
@@ -28,14 +38,14 @@ void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* po
 
         stringFileDumper.SetNotes("");
 
-        for (auto localizeEntry : *pool)
+        for (auto* localizeEntry : *pool)
         {
             stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
         }
 
         stringFileDumper.Finalize();
 
-        stringFile.Close();
+        stringFile.close();
     }
     else
     {

@@ -12,8 +12,8 @@ std::string AssetDumperQdb::GetFileNameForAsset(Zone* zone, XAssetInfo<Qdb>* ass
     return asset->m_name;
 }
 
-void AssetDumperQdb::DumpAsset(Zone* zone, XAssetInfo<Qdb>* asset, FileAPI::File* out)
+void AssetDumperQdb::DumpAsset(Zone* zone, XAssetInfo<Qdb>* asset, std::ostream& stream)
 {
     const auto* qdb = asset->Asset();
-    out->Write(qdb->buffer, 1, qdb->len);
+    stream.write(qdb->buffer, qdb->len);
 }

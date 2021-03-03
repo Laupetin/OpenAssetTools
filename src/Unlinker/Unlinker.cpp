@@ -3,13 +3,13 @@
 #include <set>
 #include <regex>
 #include <filesystem>
+#include <fstream>
 
+#include "Utils/ClassUtils.h"
 #include "Utils/Arguments/ArgumentParser.h"
 #include "ZoneLoading.h"
 #include "ObjWriting.h"
 #include "ContentLister/ContentPrinter.h"
-#include "Utils/PathUtils.h"
-#include "Utils/FileAPI.h"
 #include "ObjLoading.h"
 #include "SearchPath/SearchPaths.h"
 #include "SearchPath/SearchPathFilesystem.h"
@@ -19,6 +19,9 @@
 
 #include "Game/IW4/ZoneDefWriterIW4.h"
 #include "Game/T6/ZoneDefWriterT6.h"
+#include "Utils/ObjFileStream.h"
+
+namespace fs = std::filesystem;
 
 const IZoneDefWriter* const ZONE_DEF_WRITERS[]
 {
@@ -33,7 +36,7 @@ class Unlinker::Impl
     SearchPathFilesystem* m_last_zone_search_path;
     std::set<std::string> m_absolute_search_paths;
 
-    bool ShouldLoadObj() const
+    _NODISCARD bool ShouldLoadObj() const
     {
         return m_args.m_task != UnlinkerArgs::ProcessingTask::LIST;
     }
@@ -80,7 +83,7 @@ class Unlinker::Impl
     SearchPaths GetSearchPathsForZone(const std::string& zonePath)
     {
         SearchPaths searchPathsForZone;
-        const std::string absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+        const auto absoluteZoneDirectory = fs::absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
         if (m_last_zone_search_path != nullptr && m_last_zone_search_path->GetPath() == absoluteZoneDirectory)
         {
@@ -115,19 +118,19 @@ class Unlinker::Impl
     {
         for (const auto& path : m_args.m_user_search_paths)
         {
-            std::string absolutePath = std::filesystem::absolute(path).string();
+            auto absolutePath = fs::absolute(path);
 
-            if (!FileAPI::DirectoryExists(absolutePath))
+            if (!fs::is_directory(absolutePath))
             {
                 printf("Could not find directory of search path: \"%s\"\n", path.c_str());
                 return false;
             }
 
-            auto* searchPath = new SearchPathFilesystem(absolutePath);
-            LoadSearchPath(searchPath);
-            m_search_paths.CommitSearchPath(searchPath);
+            auto searchPath = std::make_unique<SearchPathFilesystem>(absolutePath.string());
+            LoadSearchPath(searchPath.get());
+            m_search_paths.CommitSearchPath(std::move(searchPath));
 
-            m_absolute_search_paths.insert(absolutePath);
+            m_absolute_search_paths.insert(absolutePath.string());
         }
 
         if (m_args.m_verbose)
@@ -161,23 +164,26 @@ class Unlinker::Impl
         }
         else if (m_args.m_task == UnlinkerArgs::ProcessingTask::DUMP)
         {
-            const std::string outputFolderPath = m_args.GetOutputFolderPathForZone(zone);
-            FileAPI::DirectoryCreate(outputFolderPath);
+            const auto outputFolderPath = m_args.GetOutputFolderPathForZone(zone);
+            fs::create_directories(outputFolderPath);
 
-            const std::string zoneDefinitionFileFolder = utils::Path::Combine(outputFolderPath, "zone_source");
-            FileAPI::DirectoryCreate(zoneDefinitionFileFolder);
+            fs::path zoneDefinitionFileFolder(outputFolderPath);
+            zoneDefinitionFileFolder.append("zone_source");
+            fs::create_directories(zoneDefinitionFileFolder);
 
-            FileAPI::File zoneDefinitionFile = FileAPI::Open(
-                utils::Path::Combine(zoneDefinitionFileFolder, zone->m_name + ".zone"),
-                FileAPI::Mode::MODE_WRITE);
+            auto zoneDefinitionFilePath(zoneDefinitionFileFolder);
+            zoneDefinitionFilePath.append(zone->m_name);
+            zoneDefinitionFilePath.replace_extension(".zone");
 
-            if (zoneDefinitionFile.IsOpen())
+            std::ofstream zoneDefinitionFile(zoneDefinitionFilePath, std::fstream::out | std::fstream::binary);
+
+            if (zoneDefinitionFile.is_open())
             {
-                for (auto zoneDefWriter : ZONE_DEF_WRITERS)
+                for (const auto* zoneDefWriter : ZONE_DEF_WRITERS)
                 {
                     if (zoneDefWriter->CanHandleZone(zone))
                     {
-                        zoneDefWriter->WriteZoneDef(zone, &zoneDefinitionFile);
+                        zoneDefWriter->WriteZoneDef(zone, zoneDefinitionFile);
                         break;
                     }
                 }
@@ -189,7 +195,7 @@ class Unlinker::Impl
                 return false;
             }
 
-            zoneDefinitionFile.Close();
+            zoneDefinitionFile.close();
         }
 
         return true;
@@ -214,18 +220,18 @@ public:
 
         for (const auto& zonePath : m_args.m_zones_to_load)
         {
-            if (!FileAPI::FileExists(zonePath))
+            if (!fs::is_regular_file(zonePath))
             {
                 printf("Could not find file \"%s\".\n", zonePath.c_str());
                 continue;
             }
 
-            std::string absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+            auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
-            SearchPaths searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
+            auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
             searchPathsForZone.IncludeSearchPath(&m_search_paths);
 
-            Zone* zone = ZoneLoading::LoadZone(zonePath);
+            auto* zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
             {
                 printf("Failed to load zone \"%s\".\n", zonePath.c_str());

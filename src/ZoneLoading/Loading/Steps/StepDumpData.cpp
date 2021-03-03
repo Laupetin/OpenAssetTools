@@ -1,5 +1,7 @@
 #include "StepDumpData.h"
 
+#include <fstream>
+
 StepDumpData::StepDumpData(const unsigned int dumpCount)
 {
     m_dump_count = dumpCount;
@@ -10,7 +12,7 @@ void StepDumpData::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
     uint8_t tempBuffer[128];
     unsigned int dumpedBytes = 0;
 
-    FileAPI::File tempFile = FileAPI::Open("dump.dat", FileAPI::Mode::MODE_WRITE);
+    std::ofstream tempFile("dump.dat", std::fstream::out | std::fstream::binary);
 
     while (dumpedBytes < m_dump_count)
     {
@@ -25,14 +27,14 @@ void StepDumpData::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
             toDump = sizeof(tempBuffer);
         }
 
-        const size_t loadedSize = stream->Load(tempBuffer, toDump);
+        const auto loadedSize = stream->Load(tempBuffer, toDump);
         dumpedBytes += loadedSize;
 
         if (loadedSize == 0)
             break;
 
-        tempFile.Write(tempBuffer, 1, loadedSize);
+        tempFile.write(reinterpret_cast<char*>(tempBuffer), loadedSize);
     }
 
-    tempFile.Close();
+    tempFile.close();
 }

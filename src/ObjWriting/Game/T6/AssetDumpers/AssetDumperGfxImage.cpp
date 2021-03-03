@@ -42,8 +42,8 @@ std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, XAssetInfo<GfxI
     return "images/" + asset->m_name + m_writer->GetFileExtension();
 }
 
-void AssetDumperGfxImage::DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, FileAPI::File* out)
+void AssetDumperGfxImage::DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, std::ostream& stream)
 {
     const auto* image = asset->Asset();
-    m_writer->DumpImage(out, image->texture.texture);
+    m_writer->DumpImage(stream, image->texture.texture);
 }

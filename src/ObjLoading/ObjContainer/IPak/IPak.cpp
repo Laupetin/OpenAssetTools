@@ -1,27 +1,33 @@
 #include "IPak.h"
-#include "zlib.h"
-#include "Exception/IPakLoadException.h"
-#include "ObjContainer/IPak/IPakTypes.h"
-#include "Utils/PathUtils.h"
-#include "IPakStreamManager.h"
 
 #include <sstream>
 #include <vector>
+#include <memory>
+#include <filesystem>
+
+#include "zlib.h"
+
+#include "Utils/FileUtils.h"
+#include "Exception/IPakLoadException.h"
+#include "ObjContainer/IPak/IPakTypes.h"
+#include "IPakStreamManager.h"
+
+namespace fs = std::filesystem;
 
 ObjContainerRepository<IPak, Zone> IPak::Repository;
 
 class IPak::Impl : public ObjContainerReferenceable
 {
-    static const uint32_t MAGIC = 'IPAK';
+    static const uint32_t MAGIC = MakeMagic32('K', 'A', 'P', 'I');
     static const uint32_t VERSION = 0x50000;
 
     std::string m_path;
-    FileAPI::IFile* m_file;
+    std::unique_ptr<std::istream> m_stream;
 
     bool m_initialized;
 
-    IPakSection* m_index_section;
-    IPakSection* m_data_section;
+    std::unique_ptr<IPakSection> m_index_section;
+    std::unique_ptr<IPakSection> m_data_section;
 
     std::vector<IPakIndexEntry> m_index_entries;
 
@@ -29,7 +35,7 @@ class IPak::Impl : public ObjContainerReferenceable
 
     static uint32_t R_HashString(const char* str, uint32_t hash)
     {
-        for (const char* pos = str; *pos; pos++)
+        for (const auto* pos = str; *pos; pos++)
         {
             hash = 33 * hash ^ (*pos | 0x20);
         }
@@ -39,12 +45,13 @@ class IPak::Impl : public ObjContainerReferenceable
 
     bool ReadIndexSection()
     {
-        m_file->Goto(m_index_section->offset);
+        m_stream->seekg(m_index_section->offset);
         IPakIndexEntry indexEntry{};
 
         for (unsigned itemIndex = 0; itemIndex < m_index_section->itemCount; itemIndex++)
         {
-            if (m_file->Read(&indexEntry, sizeof indexEntry, 1) != 1)
+            m_stream->read(reinterpret_cast<char*>(&indexEntry), sizeof indexEntry);
+            if (m_stream->gcount() != sizeof indexEntry)
             {
                 printf("Unexpected eof when trying to load index entry %u.\n", itemIndex);
                 return false;
@@ -66,7 +73,8 @@ class IPak::Impl : public ObjContainerReferenceable
     {
         IPakSection section{};
 
-        if (m_file->Read(&section, sizeof section, 1) != 1)
+        m_stream->read(reinterpret_cast<char*>(&section), sizeof section);
+        if (m_stream->gcount() != sizeof section)
         {
             printf("Unexpected eof when trying to load section.\n");
             return false;
@@ -75,11 +83,11 @@ class IPak::Impl : public ObjContainerReferenceable
         switch (section.type)
         {
         case 1:
-            m_index_section = new IPakSection(section);
+            m_index_section = std::make_unique<IPakSection>(section);
             break;
 
         case 2:
-            m_data_section = new IPakSection(section);
+            m_data_section = std::make_unique<IPakSection>(section);
             break;
 
         default:
@@ -93,7 +101,8 @@ class IPak::Impl : public ObjContainerReferenceable
     {
         IPakHeader header{};
 
-        if (m_file->Read(&header, sizeof header, 1) != 1)
+        m_stream->read(reinterpret_cast<char*>(&header), sizeof header);
+        if (m_stream->gcount() != sizeof header)
         {
             printf("Unexpected eof when trying to load header.\n");
             return false;
@@ -136,28 +145,22 @@ class IPak::Impl : public ObjContainerReferenceable
     }
 
 public:
-    Impl(std::string path, FileAPI::IFile* file)
-        : m_stream_manager(file)
+    Impl(std::string path, std::unique_ptr<std::istream> stream)
+        : m_path(std::move(path)),
+          m_stream(std::move(stream)),
+          m_initialized(false),
+          m_index_section(nullptr),
+          m_data_section(nullptr),
+          m_stream_manager(*m_stream)
     {
-        m_path = std::move(path);
-        m_file = file;
-        m_initialized = false;
-        m_index_section = nullptr;
-        m_data_section = nullptr;
     }
 
-    ~Impl()
-    {
-        delete m_index_section;
-        m_index_section = nullptr;
-
-        delete m_data_section;
-        m_data_section = nullptr;
-    }
+    ~Impl() override
+    = default;
 
     std::string GetName() override
     {
-        return utils::Path::GetFilenameWithoutExtension(m_path);
+        return fs::path(m_path).filename().replace_extension("").string();
     }
 
     bool Initialize()
@@ -172,7 +175,7 @@ public:
         return true;
     }
 
-    FileAPI::IFile* GetEntryData(const Hash nameHash, const Hash dataHash)
+    std::unique_ptr<iobjstream> GetEntryData(const Hash nameHash, const Hash dataHash)
     {
         IPakIndexEntryKey wantedKey{};
         wantedKey.nameHash = nameHash;
@@ -182,7 +185,7 @@ public:
         {
             if (entry.key.combinedKey == wantedKey.combinedKey)
             {
-                return m_stream_manager.OpenStream(m_data_section->offset + entry.offset, entry.size);
+                return m_stream_manager.OpenStream(static_cast<int64_t>(m_data_section->offset) + entry.offset, entry.size);
             }
             else if (entry.key.combinedKey > wantedKey.combinedKey)
             {
@@ -205,9 +208,9 @@ public:
     }
 };
 
-IPak::IPak(std::string path, FileAPI::IFile* file)
+IPak::IPak(std::string path, std::unique_ptr<std::istream> stream)
 {
-    m_impl = new Impl(std::move(path), file);
+    m_impl = new Impl(std::move(path), std::move(stream));
 }
 
 IPak::~IPak()
@@ -221,12 +224,12 @@ std::string IPak::GetName()
     return m_impl->GetName();
 }
 
-bool IPak::Initialize() const
+bool IPak::Initialize()
 {
     return m_impl->Initialize();
 }
 
-FileAPI::IFile* IPak::GetEntryStream(const Hash nameHash, const Hash dataHash) const
+std::unique_ptr<iobjstream> IPak::GetEntryStream(const Hash nameHash, const Hash dataHash) const
 {
     return m_impl->GetEntryData(nameHash, dataHash);
 }

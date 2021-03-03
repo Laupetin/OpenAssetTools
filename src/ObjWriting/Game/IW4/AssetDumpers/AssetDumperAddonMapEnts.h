@@ -10,6 +10,6 @@ namespace IW4
     protected:
         bool ShouldDump(XAssetInfo<AddonMapEnts>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset, std::ostream& stream) override;
     };
 }

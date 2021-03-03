@@ -1,8 +1,11 @@
 #pragma once
 
-#include "SearchPathSearchOptions.h"
-#include "Utils/FileAPI.h"
 #include <functional>
+#include <istream>
+#include <memory>
+
+#include "Utils/ObjStream.h"
+#include "SearchPathSearchOptions.h"
 
 class ISearchPath
 {
@@ -14,7 +17,7 @@ public:
      * \param fileName The relative path to the file to open.
      * \return A pointer to an \c IFile object to read the found file or \c nullptr when no file could be found.
      */
-    virtual FileAPI::IFile* Open(const std::string& fileName) = 0;
+    virtual std::unique_ptr<std::istream> Open(const std::string& fileName) = 0;
 
     /**
      * \brief Returns the path to the search path.

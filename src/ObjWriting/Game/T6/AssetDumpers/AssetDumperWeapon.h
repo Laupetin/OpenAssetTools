@@ -14,6 +14,6 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<WeaponVariantDef>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asset, std::ostream& stream) override;
     };
 }

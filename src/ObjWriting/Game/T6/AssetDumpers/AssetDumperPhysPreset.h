@@ -14,6 +14,6 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<PhysPreset>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<PhysPreset>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset, std::ostream& stream) override;
     };
 }

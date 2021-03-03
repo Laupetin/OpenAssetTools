@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ISearchPath.h"
 #include <vector>
+
+#include "ISearchPath.h"
 
 class SearchPaths final : public ISearchPath
 {
     std::vector<ISearchPath*> m_search_paths;
-    std::vector<ISearchPath*> m_to_free;
+    std::vector<std::unique_ptr<ISearchPath>> m_owned_search_paths;
 
 public:
     using iterator = std::vector<ISearchPath*>::iterator;
@@ -14,7 +15,7 @@ public:
     SearchPaths();
     ~SearchPaths() override;
 
-    FileAPI::IFile* Open(const std::string& fileName) override;
+    std::unique_ptr<std::istream> Open(const std::string& fileName) override;
     std::string GetPath() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;
 
@@ -27,7 +28,7 @@ public:
      * \brief Adds a search path that gets deleted upon destruction of the \c SearchPaths object.
      * \param searchPath The search path to add.
      */
-    void CommitSearchPath(ISearchPath* searchPath);
+    void CommitSearchPath(std::unique_ptr<ISearchPath> searchPath);
 
     /**
      * \brief Adds a search path that does \b NOT get deleted upon destruction of the \c SearchPaths object.

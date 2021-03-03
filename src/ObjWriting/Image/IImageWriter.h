@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Image/Texture.h"
-#include "Utils/FileAPI.h"
+#include <ostream>
 #include <string>
+
+#include "Image/Texture.h"
 
 class IImageWriter
 {
@@ -11,5 +12,5 @@ public:
 
     virtual bool SupportsImageFormat(const ImageFormat* imageFormat) = 0;
     virtual std::string GetFileExtension() = 0;
-    virtual void DumpImage(FileAPI::IFile* file, Texture* texture) = 0;
+    virtual void DumpImage(std::ostream& stream, Texture* texture) = 0;
 };

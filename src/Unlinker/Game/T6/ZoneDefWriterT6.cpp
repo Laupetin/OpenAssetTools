@@ -80,8 +80,8 @@ namespace T6
         }
 
     public:
-        ZoneDefWriterInternal(Zone* zone, FileAPI::IFile* file)
-            : AbstractZoneDefWriter(zone, file)
+        ZoneDefWriterInternal(Zone* zone, std::ostream& stream)
+            : AbstractZoneDefWriter(zone, stream)
         {
         }
 
@@ -117,8 +117,8 @@ bool ZoneDefWriter::CanHandleZone(Zone* zone) const
     return zone->m_game == &g_GameT6;
 }
 
-void ZoneDefWriter::WriteZoneDef(Zone* zone, FileAPI::IFile* file) const
+void ZoneDefWriter::WriteZoneDef(Zone* zone, std::ostream& stream) const
 {
-    ZoneDefWriterInternal writer(zone, file);
+    ZoneDefWriterInternal writer(zone, stream);
     writer.WriteZoneDef();
 }

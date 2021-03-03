@@ -9,7 +9,7 @@ namespace iwi8
     {
         static IwiFormat GetIwiFormatForImageFormat(const ImageFormat* imageFormat);
 
-        static void WriteVersion(FileAPI::IFile* file);
+        static void WriteVersion(std::ostream& stream);
         static void FillHeader2D(IwiHeader* header, Texture2D* texture);
         static void FillHeaderCube(IwiHeader* header, TextureCube* texture);
         static void FillHeader3D(IwiHeader* header, Texture3D* texture);
@@ -25,6 +25,6 @@ namespace iwi8
 
         bool SupportsImageFormat(const ImageFormat* imageFormat) override;
         std::string GetFileExtension() override;
-        void DumpImage(FileAPI::IFile* file, Texture* texture) override;
+        void DumpImage(std::ostream& stream, Texture* texture) override;
     };
 }

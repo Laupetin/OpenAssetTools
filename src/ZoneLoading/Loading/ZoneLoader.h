@@ -3,10 +3,10 @@
 #include "ILoadingStep.h"
 #include "Zone/Zone.h"
 #include "Zone/XBlock.h"
-#include "Utils/FileAPI.h"
 #include "StreamProcessor.h"
 
 #include <vector>
+#include <istream>
 
 class ILoadingStep;
 
@@ -33,5 +33,5 @@ public:
 
     void RemoveStreamProcessor(StreamProcessor* streamProcessor);
 
-    Zone* LoadZone(FileAPI::File* file);
+    Zone* LoadZone(std::istream& stream);
 };

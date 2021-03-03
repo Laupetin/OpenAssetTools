@@ -1,7 +1,11 @@
 #include "SearchPathFilesystem.h"
-#include "Utils/PathUtils.h"
 
 #include <filesystem>
+#include <fstream>
+
+#include "Utils/ObjFileStream.h"
+
+namespace fs = std::filesystem;
 
 SearchPathFilesystem::SearchPathFilesystem(std::string path)
 {
@@ -13,20 +17,19 @@ std::string SearchPathFilesystem::GetPath()
     return m_path;
 }
 
-FileAPI::IFile* SearchPathFilesystem::Open(const std::string& fileName)
+std::unique_ptr<std::istream> SearchPathFilesystem::Open(const std::string& fileName)
 {
-    FileAPI::File file = FileAPI::Open(utils::Path::Combine(m_path, fileName), FileAPI::Mode::MODE_READ);
+    auto file = std::make_unique<std::ifstream>(fs::path(m_path).append(fileName).string(), std::fstream::in | std::fstream::binary);
 
-    if (file.IsOpen())
+    if (file->is_open())
     {
-        return new FileAPI::File(std::move(file));
+        return std::move(file);
     }
 
     return nullptr;
 }
 
-void SearchPathFilesystem::Find(const SearchPathSearchOptions& options,
-                                const std::function<void(const std::string&)>& callback)
+void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
 {
     try
     {

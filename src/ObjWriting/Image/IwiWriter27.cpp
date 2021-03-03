@@ -1,5 +1,6 @@
 #include "IwiWriter27.h"
 #include <cassert>
+#include <ostream>
 
 using namespace iwi27;
 
@@ -52,7 +53,7 @@ std::string IwiWriter::GetFileExtension()
     return ".iwi";
 }
 
-void IwiWriter::WriteVersion(FileAPI::IFile* file)
+void IwiWriter::WriteVersion(std::ostream& stream)
 {
     IwiVersion version{};
     version.tag[0] = 'I';
@@ -60,7 +61,7 @@ void IwiWriter::WriteVersion(FileAPI::IFile* file)
     version.tag[2] = 'i';
     version.version = 27;
 
-    file->Write(&version, sizeof IwiVersion, 1);
+    stream.write(reinterpret_cast<char*>(&version), sizeof IwiVersion);
 }
 
 void IwiWriter::FillHeader2D(IwiHeader* header, Texture2D* texture)
@@ -86,12 +87,11 @@ void IwiWriter::FillHeader3D(IwiHeader* header, Texture3D* texture)
     header->flags |= IMG_FLAG_VOLMAP;
 }
 
-void IwiWriter::DumpImage(FileAPI::IFile* file, Texture* texture)
+void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
 {
-    assert(file != nullptr);
     assert(texture != nullptr);
 
-    WriteVersion(file);
+    WriteVersion(stream);
 
     IwiHeader header{};
     header.flags = 0;
@@ -102,39 +102,44 @@ void IwiWriter::DumpImage(FileAPI::IFile* file, Texture* texture)
     if (!texture->HasMipMaps())
         header.flags |= IMG_FLAG_NOMIPMAPS;
 
-    for (signed char& i : header.maxGlossForMip)
+    for (auto& i : header.maxGlossForMip)
         i = 0;
 
-    size_t currentFileSize = sizeof IwiVersion + sizeof IwiHeader;
+    auto currentFileSize = sizeof IwiVersion + sizeof IwiHeader;
 
-    const int textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
-    for (int currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
+    const auto textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
+    for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
-        const size_t mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
+        const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
-        if(currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip)))
+        if (currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip)))
             header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
     }
 
-    if(auto* texture2D = dynamic_cast<Texture2D*>(texture))
+    if (auto* texture2D = dynamic_cast<Texture2D*>(texture))
     {
         FillHeader2D(&header, texture2D);
     }
-    else if(auto* textureCube = dynamic_cast<TextureCube*>(texture))
+    else if (auto* textureCube = dynamic_cast<TextureCube*>(texture))
     {
         FillHeaderCube(&header, textureCube);
     }
-    else if(auto* texture3D = dynamic_cast<Texture3D*>(texture))
+    else if (auto* texture3D = dynamic_cast<Texture3D*>(texture))
     {
         FillHeader3D(&header, texture3D);
     }
-
-    file->Write(&header, sizeof IwiHeader, 1);
-
-    for (int currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
+    else
     {
-        const size_t mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
-        file->Write(texture->GetBufferForMipLevel(currentMipLevel), 1, mipLevelSize);
+        assert(false);
+        return;
+    }
+
+    stream.write(reinterpret_cast<char*>(&header), sizeof IwiHeader);
+
+    for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
+    {
+        const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
+        stream.write(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), mipLevelSize);
     }
 }

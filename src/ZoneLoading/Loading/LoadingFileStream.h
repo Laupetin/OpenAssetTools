@@ -1,13 +1,15 @@
 #pragma once
+
+#include <istream>
+
 #include "ILoadingStream.h"
-#include "Utils/FileAPI.h"
 
 class LoadingFileStream final : public ILoadingStream
 {
-    FileAPI::File* m_file;
+    std::istream& m_stream;
 
 public:
-    explicit LoadingFileStream(FileAPI::File* file);
+    explicit LoadingFileStream(std::istream& stream);
 
     size_t Load(void* buffer, size_t length) override;
     int64_t Pos() override;

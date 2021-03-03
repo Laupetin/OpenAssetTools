@@ -10,6 +10,6 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<FontIcon>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<FontIcon>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, std::ostream& stream) override;
     };
 }

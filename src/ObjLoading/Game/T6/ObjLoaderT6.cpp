@@ -1,4 +1,5 @@
 #include "ObjLoaderT6.h"
+
 #include "Game/T6/GameT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "ObjContainer/IPak/IPak.h"
@@ -22,36 +23,32 @@ namespace T6
         if (ObjLoading::Configuration.Verbose)
             printf("Trying to load ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
 
-        IPak* existingIPak = IPak::Repository.GetContainerByName(ipakName);
+        auto* existingIPak = IPak::Repository.GetContainerByName(ipakName);
         if (existingIPak != nullptr)
         {
             if (ObjLoading::Configuration.Verbose)
                 printf("Referencing loaded ipak '%s'.\n", ipakName.c_str());
 
-            IPak::Repository.AddContainer(existingIPak, zone);
+            IPak::Repository.AddContainerReference(existingIPak, zone);
             return;
         }
 
-        const std::string ipakFilename = ipakName + ".ipak";
+        const auto ipakFilename = ipakName + ".ipak";
 
-        auto* file = searchPath->Open(ipakFilename);
-        if (file && file->IsOpen())
+        auto file = searchPath->Open(ipakFilename);
+        if (file)
         {
-            IPak* ipak = new IPak(ipakFilename, file);
+            auto ipak = std::make_unique<IPak>(ipakFilename, std::move(file));
 
             if (ipak->Initialize())
             {
-                IPak::Repository.AddContainer(ipak, zone);
+                IPak::Repository.AddContainer(std::move(ipak), zone);
 
                 if (ObjLoading::Configuration.Verbose)
                     printf("Found and loaded ipak '%s'.\n", ipakFilename.c_str());
             }
             else
             {
-                delete ipak;
-                file->Close();
-                delete file;
-
                 printf("Failed to load ipak '%s'!\n", ipakFilename.c_str());
             }
         }
@@ -108,7 +105,7 @@ namespace T6
     void ObjLoader::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
     {
         auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
-        const int zoneNameHash = CommonT6::Com_HashKey(zone->m_name.c_str(), 64);
+        const auto zoneNameHash = CommonT6::Com_HashKey(zone->m_name.c_str(), 64);
 
         LoadCommonIPaks(searchPath, zone);
 
@@ -117,9 +114,9 @@ namespace T6
             for (auto* keyValuePairsEntry : *assetPoolT6->m_key_value_pairs)
             {
                 auto* keyValuePairs = keyValuePairsEntry->Asset();
-                for (int variableIndex = 0; variableIndex < keyValuePairs->numVariables; variableIndex++)
+                for (auto variableIndex = 0; variableIndex < keyValuePairs->numVariables; variableIndex++)
                 {
-                    KeyValuePair* variable = &keyValuePairs->keyValuePairs[variableIndex];
+                    auto* variable = &keyValuePairs->keyValuePairs[variableIndex];
 
                     if (variable->namespaceHash == zoneNameHash && variable->keyHash == IPAK_READ_HASH)
                     {
@@ -149,14 +146,13 @@ namespace T6
         {
             for (auto* ipak : IPak::Repository)
             {
-                auto* ipakStream = ipak->GetEntryStream(image->hash, image->streamedParts[0].hash);
+                auto ipakStream = ipak->GetEntryStream(image->hash, image->streamedParts[0].hash);
 
-                if (ipakStream != nullptr)
+                if (ipakStream)
                 {
-                    loadedTexture = loader.LoadIwi(ipakStream);
+                    loadedTexture = loader.LoadIwi(*ipakStream);
 
-                    ipakStream->Close();
-                    delete ipakStream;
+                    ipakStream->close();
 
                     if (loadedTexture != nullptr)
                     {
@@ -168,15 +164,14 @@ namespace T6
 
         if (loadedTexture == nullptr)
         {
-            const std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
-            auto* filePathImage = searchPath->Open(imageFileName);
+            const auto imageFileName = "images/" + std::string(image->name) + ".iwi";
 
-            if (filePathImage != nullptr)
             {
-                loadedTexture = loader.LoadIwi(filePathImage);
-
-                filePathImage->Close();
-                delete filePathImage;
+                const auto filePathImage = searchPath->Open(imageFileName);
+                if (filePathImage)
+                {
+                    loadedTexture = loader.LoadIwi(*filePathImage);
+                }
             }
         }
 
@@ -185,8 +180,8 @@ namespace T6
             image->texture.texture = loadedTexture;
             image->loadedSize = 0;
 
-            const int textureMipCount = loadedTexture->GetMipMapCount();
-            for (int mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+            const auto textureMipCount = loadedTexture->GetMipMapCount();
+            for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
                 image->loadedSize += loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount();
         }
         else

@@ -13,7 +13,7 @@ namespace IW4
     protected:
         bool ShouldDump(XAssetInfo<GfxImage>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<GfxImage>* asset, std::ostream& stream) override;
 
     public:
         AssetDumperGfxImage();

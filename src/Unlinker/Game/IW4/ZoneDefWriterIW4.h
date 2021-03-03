@@ -8,6 +8,6 @@ namespace IW4
     {
     public:
         bool CanHandleZone(Zone* zone) const override;
-        void WriteZoneDef(Zone* zone, FileAPI::IFile* file) const override;
+        void WriteZoneDef(Zone* zone, std::ostream& stream) const override;
     };
 }

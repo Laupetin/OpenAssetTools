@@ -1,9 +1,13 @@
 #include "ObjLoading.h"
+
+#include <fstream>
+
 #include "IObjLoader.h"
 #include "Game/IW4/ObjLoaderIW4.h"
 #include "Game/T6/ObjLoaderT6.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "SearchPath/SearchPaths.h"
+#include "Utils/ObjFileStream.h"
 
 ObjLoading::Configuration_t ObjLoading::Configuration;
 
@@ -51,29 +55,20 @@ void ObjLoading::UnloadContainersOfZone(Zone* zone)
 
 void ObjLoading::LoadIWDsInSearchPath(ISearchPath* searchPath)
 {
-    searchPath->Find(SearchPathSearchOptions().IncludeSubdirectories(false).FilterExtensions("iwd"),
-                     [searchPath](const std::string& path) -> void
-                     {
-                         auto file = FileAPI::Open(path, FileAPI::Mode::MODE_READ);
+    searchPath->Find(SearchPathSearchOptions().IncludeSubdirectories(false).FilterExtensions("iwd"), [searchPath](const std::string& path)
+    {
+        auto file = std::make_unique<std::ifstream>(path, std::fstream::in | std::fstream::binary);
 
-                         if (file.IsOpen())
-                         {
-                             auto* fileP = new FileAPI::File(std::move(file));
-                             IWD* iwd = new IWD(path, fileP);
-
-                             if (iwd->Initialize())
-                             {
-                                 IWD::Repository.AddContainer(iwd, searchPath);
-                             }
-                             else
-                             {
-                                 delete iwd;
-
-                                 fileP->Close();
-                                 delete fileP;
-                             }
-                         }
-                     });
+        if (file->is_open())
+        {
+            auto iwd = std::make_unique<IWD>(path, std::move(file));
+            
+            if (iwd->Initialize())
+            {
+                IWD::Repository.AddContainer(std::move(iwd), searchPath);
+            }
+        }
+    });
 }
 
 void ObjLoading::UnloadIWDsInSearchPath(ISearchPath* searchPath)

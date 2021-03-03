@@ -1,48 +1,47 @@
 #include "IPakEntryReadStream.h"
-#include "ObjContainer/IPak/IPakTypes.h"
+
 #include <cassert>
-#include <stdexcept>
+
 #include <minilzo.h>
+
+#include "ObjContainer/IPak/IPakTypes.h"
 
 using namespace ipak_consts;
 
-IPakEntryReadStream::IPakEntryReadStream(IFile* file, IPakStreamManagerActions* streamManagerActions,
+IPakEntryReadStream::IPakEntryReadStream(std::istream& stream, IPakStreamManagerActions* streamManagerActions,
                                          uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
-    : m_decompress_buffer{}
+    : m_chunk_buffer(chunkBuffer),
+      m_stream(stream),
+      m_stream_manager_actions(streamManagerActions),
+      m_file_offset(0),
+      m_file_head(0),
+      m_entry_size(entrySize),
+      m_decompress_buffer{},
+      m_current_block(nullptr),
+      m_next_command(0),
+      m_current_command_buffer(nullptr),
+      m_current_command_length(0),
+      m_current_command_offset(0),
+      m_pos(startOffset),
+      m_base_pos(startOffset),
+      m_end_pos(startOffset + entrySize),
+      m_buffer_start_pos(0),
+      m_buffer_end_pos(0)
 {
-    m_file = file;
-    m_stream_manager_actions = streamManagerActions;
-    m_chunk_buffer = chunkBuffer;
-
-    m_file_offset = 0;
-    m_file_head = 0;
-    m_entry_size = entrySize;
-
-    m_base_pos = startOffset;
-    m_end_pos = startOffset + entrySize;
-    m_pos = m_base_pos;
-    m_buffer_start_pos = 0;
-    m_buffer_end_pos = 0;
-
-    m_current_block = nullptr;
-    m_next_command = 0;
-    m_current_command_buffer = nullptr;
-    m_current_command_length = 0;
-    m_current_command_offset = 0;
-
     lzo_init();
 }
 
 IPakEntryReadStream::~IPakEntryReadStream()
 {
-    Close();
+    close();
 }
 
 size_t IPakEntryReadStream::ReadChunks(uint8_t* buffer, const int64_t startPos, const size_t chunkCount) const
 {
     m_stream_manager_actions->StartReading();
-    m_file->Goto(startPos);
-    const auto readSize = m_file->Read(buffer, 1, chunkCount * IPAK_CHUNK_SIZE);
+    m_stream.seekg(startPos);
+    m_stream.read(reinterpret_cast<char*>(buffer), static_cast<std::streamsize>(chunkCount) * IPAK_CHUNK_SIZE);
+    const auto readSize = static_cast<size_t>(m_stream.gcount());
     m_stream_manager_actions->StopReading();
 
     return readSize / IPAK_CHUNK_SIZE;
@@ -66,47 +65,42 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
         return true;
     }
 
-    const int64_t endPos = startPos + static_cast<int64_t>(chunkCount) * IPAK_CHUNK_SIZE;
+    const auto endPos = startPos + static_cast<int64_t>(chunkCount) * IPAK_CHUNK_SIZE;
 
     if (startPos >= m_buffer_start_pos && startPos < m_buffer_end_pos)
     {
         if (m_buffer_start_pos != startPos)
         {
-            const int64_t moveEnd = endPos < m_buffer_end_pos ? endPos : m_buffer_end_pos;
-            memmove_s(m_chunk_buffer,
-                      IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ,
-                      &m_chunk_buffer[startPos - m_buffer_start_pos],
+            const auto moveEnd = endPos < m_buffer_end_pos ? endPos : m_buffer_end_pos;
+            memmove_s(m_chunk_buffer, IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ, &m_chunk_buffer[startPos - m_buffer_start_pos],
                       static_cast<size_t>(moveEnd - startPos));
             m_buffer_start_pos = startPos;
         }
 
         if (endPos > m_buffer_end_pos)
         {
-            const size_t readChunkCount = ReadChunks(&m_chunk_buffer[m_buffer_end_pos - startPos],
-                                                     m_buffer_end_pos,
-                                                     static_cast<size_t>(endPos - m_buffer_end_pos) / IPAK_CHUNK_SIZE);
+            const auto readChunkCount = ReadChunks(&m_chunk_buffer[m_buffer_end_pos - startPos], m_buffer_end_pos,
+                                                   static_cast<size_t>(endPos - m_buffer_end_pos) / IPAK_CHUNK_SIZE);
 
             m_buffer_end_pos += static_cast<int64_t>(readChunkCount) * IPAK_CHUNK_SIZE;
 
             return m_buffer_end_pos == endPos;
         }
-        else
-        {
-            m_buffer_end_pos = endPos;
 
-            return true;
-        }
+        m_buffer_end_pos = endPos;
+        return true;
     }
-    else if (endPos > m_buffer_start_pos && endPos <= m_buffer_end_pos)
+
+    if (endPos > m_buffer_start_pos && endPos <= m_buffer_end_pos)
     {
         memmove_s(&m_chunk_buffer[m_buffer_start_pos - startPos],
                   IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ - static_cast<size_t>(m_buffer_start_pos - startPos),
                   m_chunk_buffer,
                   static_cast<size_t>(endPos - m_buffer_start_pos));
 
-        const size_t readChunkCount = ReadChunks(m_chunk_buffer,
-                                                 startPos,
-                                                 static_cast<size_t>(m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE);
+        const auto readChunkCount = ReadChunks(m_chunk_buffer,
+                                               startPos,
+                                               static_cast<size_t>(m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE);
 
         m_buffer_start_pos = startPos;
         m_buffer_end_pos = readChunkCount == (m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE
@@ -116,9 +110,7 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
         return m_buffer_end_pos == endPos;
     }
 
-    const size_t readChunkCount = ReadChunks(m_chunk_buffer,
-                                             startPos,
-                                             chunkCount);
+    const auto readChunkCount = ReadChunks(m_chunk_buffer, startPos, chunkCount);
 
     m_buffer_start_pos = startPos;
     m_buffer_end_pos = startPos + static_cast<int64_t>(readChunkCount) * IPAK_CHUNK_SIZE;
@@ -136,12 +128,12 @@ bool IPakEntryReadStream::ValidateBlockHeader(IPakDataBlockHeader* blockHeader) 
     if (blockHeader->offset != m_file_head)
     {
         // A matching offset is only relevant if a command contains data.
-        for(unsigned currentCommand = 0; currentCommand < blockHeader->count; currentCommand++)
+        for (unsigned currentCommand = 0; currentCommand < blockHeader->count; currentCommand++)
         {
-            if(blockHeader->_commands[currentCommand].compressed == 0
+            if (blockHeader->_commands[currentCommand].compressed == 0
                 || blockHeader->_commands[currentCommand].compressed == 1)
             {
-                printf("IPak block offset is not the file head: %u != %u -> Invalid\n", blockHeader->offset, m_file_head);
+                printf("IPak block offset is not the file head: %u != %lld -> Invalid\n", blockHeader->offset, m_file_head);
                 return false;
             }
         }
@@ -190,8 +182,8 @@ bool IPakEntryReadStream::NextBlock()
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
 
-    const size_t sizeLeftToRead = m_entry_size - m_file_head;
-    size_t estimatedChunksToRead = AlignForward(m_entry_size - static_cast<size_t>(m_pos - m_base_pos), IPAK_CHUNK_SIZE)
+    const auto sizeLeftToRead = m_entry_size - m_file_head;
+    auto estimatedChunksToRead = AlignForward(m_entry_size - static_cast<size_t>(m_pos - m_base_pos), IPAK_CHUNK_SIZE)
         / IPAK_CHUNK_SIZE;
 
     if (estimatedChunksToRead > IPAK_CHUNK_COUNT_PER_READ)
@@ -263,18 +255,29 @@ bool IPakEntryReadStream::AdvanceStream()
     return true;
 }
 
-bool IPakEntryReadStream::IsOpen()
+bool IPakEntryReadStream::is_open() const
 {
-    return m_file != nullptr;
+    return !m_stream.eof();
 }
 
-size_t IPakEntryReadStream::Read(void* buffer, const size_t elementSize, const size_t elementCount)
+bool IPakEntryReadStream::close()
 {
-    auto* destBuffer = static_cast<uint8_t*>(buffer);
-    const size_t bufferSize = elementCount * elementSize;
-    size_t countRead = 0;
+    if (is_open())
+    {
+        m_stream_manager_actions->CloseStream(this);
+    }
 
-    while (countRead < bufferSize)
+    return true;
+}
+
+std::streamsize IPakEntryReadStream::showmanyc()
+{
+    return m_end_pos - m_pos;
+}
+
+std::streambuf::int_type IPakEntryReadStream::underflow()
+{
+    while (true)
     {
         if (m_current_command_offset >= m_current_command_length)
         {
@@ -282,68 +285,93 @@ size_t IPakEntryReadStream::Read(void* buffer, const size_t elementSize, const s
                 break;
         }
 
-        size_t sizeToRead = bufferSize - countRead;
+        if (m_current_command_length - m_current_command_offset < 1)
+            continue;
+
+        return m_current_command_buffer[m_current_command_offset];
+    }
+
+    return EOF;
+}
+
+std::streambuf::int_type IPakEntryReadStream::uflow()
+{
+    while (true)
+    {
+        if (m_current_command_offset >= m_current_command_length)
+        {
+            if (!AdvanceStream())
+                break;
+        }
+
+        if (m_current_command_length - m_current_command_offset < 1)
+            continue;
+
+        const auto result = m_current_command_buffer[m_current_command_offset];
+        m_current_command_offset++;
+        m_file_offset++;
+
+        return result;
+    }
+
+    return EOF;
+}
+
+std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize count)
+{
+    auto* destBuffer = reinterpret_cast<uint8_t*>(ptr);
+    int64_t countRead = 0;
+
+    while (countRead < count)
+    {
+        if (m_current_command_offset >= m_current_command_length)
+        {
+            if (!AdvanceStream())
+                break;
+        }
+
+        auto sizeToRead = count - countRead;
         if (sizeToRead > m_current_command_length - m_current_command_offset)
             sizeToRead = m_current_command_length - m_current_command_offset;
 
         if (sizeToRead > 0)
         {
-            memcpy_s(&destBuffer[countRead], bufferSize - countRead,
-                     &m_current_command_buffer[m_current_command_offset], sizeToRead);
+            memcpy_s(&destBuffer[countRead], static_cast<rsize_t>(count - countRead),
+                     &m_current_command_buffer[m_current_command_offset], static_cast<rsize_t>(sizeToRead));
             countRead += sizeToRead;
             m_current_command_offset += sizeToRead;
             m_file_offset += sizeToRead;
         }
     }
 
-    return countRead / elementSize;
+    return countRead;
 }
 
-size_t IPakEntryReadStream::Write(const void* data, size_t elementSize, size_t elementCount)
+std::streambuf::pos_type IPakEntryReadStream::seekoff(const off_type off, const std::ios_base::seekdir dir, const std::ios_base::openmode mode)
 {
-    // This is not meant for writing.
-    assert(false);
-    throw std::runtime_error("This is not a stream for output!");
-}
-
-void IPakEntryReadStream::Skip(const int64_t amount)
-{
-    if (amount > 0)
+    pos_type pos;
+    if (dir == std::ios_base::beg)
     {
-        const size_t targetOffset = m_file_offset + static_cast<size_t>(amount);
-
-        while (m_file_head < targetOffset)
-        {
-            if (!AdvanceStream())
-                break;
-        }
-
-        if (targetOffset <= m_file_head)
-        {
-            m_current_command_offset = m_current_command_length - (m_file_head - targetOffset);
-            m_file_offset = targetOffset;
-        }
-        else
-        {
-            m_current_command_offset = m_current_command_length;
-            m_file_offset = m_file_head;
-        }
+        pos = off;
     }
+    else if (dir == std::ios_base::cur)
+    {
+        pos = off + m_file_offset;
+    }
+    else
+    {
+        pos = -1;
+    }
+
+    if (pos == 0 || pos > m_file_offset)
+    {
+        return seekpos(pos, mode);
+    }
+
+    return std::streampos(-1);
 }
 
-size_t IPakEntryReadStream::Printf(const char* fmt, ...)
-{
-    // This is not meant for writing.
-    assert(false);
-    throw std::runtime_error("This is not a stream for output!");
-}
-
-int64_t IPakEntryReadStream::Pos()
-{
-    return m_file_offset;
-}
-
-void IPakEntryReadStream::Goto(const int64_t pos)
+std::streambuf::pos_type IPakEntryReadStream::seekpos(const pos_type pos, std::ios_base::openmode mode)
 {
     if (pos == 0)
     {
@@ -357,34 +385,31 @@ void IPakEntryReadStream::Goto(const int64_t pos)
         m_current_command_buffer = nullptr;
         m_current_command_length = 0;
         m_current_command_offset = 0;
-    }
-    else if (pos > m_file_offset)
-    {
-        Skip(pos - m_file_offset);
-    }
-    else
-    {
-        // Not implemented due to being too time consuming.
-        // Can be added if necessary.
-        assert(false);
-        throw std::runtime_error("Operation not supported!");
-    }
-}
 
-void IPakEntryReadStream::GotoEnd()
-{
-    // Not implemented due to being too time consuming.
-    // Can be added if necessary.
-    assert(false);
-    throw std::runtime_error("Operation not supported!");
-}
-
-void IPakEntryReadStream::Close()
-{
-    if (IsOpen())
-    {
-        m_file = nullptr;
-
-        m_stream_manager_actions->CloseStream(this);
+        return pos;
     }
+
+    if (pos > m_file_offset)
+    {
+        while (m_file_head < pos)
+        {
+            if (!AdvanceStream())
+                break;
+        }
+
+        if (pos <= m_file_head)
+        {
+            m_current_command_offset = m_current_command_length - (m_file_head - pos);
+            m_file_offset = pos;
+        }
+        else
+        {
+            m_current_command_offset = m_current_command_length;
+            m_file_offset = m_file_head;
+        }
+
+        return pos;
+    }
+
+    return std::streampos(-1);
 }

@@ -14,14 +14,14 @@ std::string AssetDumperStringTable::GetFileNameForAsset(Zone* zone, XAssetInfo<S
     return asset->m_name;
 }
 
-void AssetDumperStringTable::DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, FileAPI::File* out)
+void AssetDumperStringTable::DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, std::ostream& stream)
 {
     const auto* stringTable = asset->Asset();
-    CsvWriter csv(out);
+    CsvWriter csv(stream);
 
-    for (int row = 0; row < stringTable->rowCount; row++)
+    for (auto row = 0; row < stringTable->rowCount; row++)
     {
-        for (int column = 0; column < stringTable->columnCount; column++)
+        for (auto column = 0; column < stringTable->columnCount; column++)
         {
             const auto* cell = &stringTable->values[column + row * stringTable->columnCount];
             csv.WriteColumn(cell->string);

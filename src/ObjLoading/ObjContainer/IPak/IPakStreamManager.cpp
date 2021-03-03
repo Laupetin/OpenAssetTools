@@ -1,8 +1,10 @@
 #include "IPakStreamManager.h"
-#include "IPakEntryReadStream.h"
-#include "ObjContainer/IPak/IPakTypes.h"
+
 #include <vector>
 #include <algorithm>
+
+#include "IPakEntryReadStream.h"
+#include "ObjContainer/IPak/IPakTypes.h"
 
 using namespace ipak_consts;
 
@@ -30,7 +32,7 @@ class IPakStreamManager::Impl final : public IPakStreamManagerActions
         }
     };
 
-    FileAPI::IFile* m_file;
+    std::istream& m_stream;
 
     std::mutex m_read_mutex;
     std::mutex m_stream_mutex;
@@ -39,10 +41,9 @@ class IPakStreamManager::Impl final : public IPakStreamManagerActions
     std::vector<ChunkBuffer*> m_chunk_buffers;
 
 public:
-    explicit Impl(FileAPI::IFile* file)
+    explicit Impl(std::istream& stream)
+        : m_stream(stream)
     {
-        m_file = file;
-
         m_chunk_buffers.push_back(new ChunkBuffer());
     }
 
@@ -55,7 +56,7 @@ public:
 
         for (const auto& openStream : m_open_streams)
         {
-            openStream.m_stream->Close();
+            openStream.m_stream->close();
         }
         m_open_streams.clear();
 
@@ -65,16 +66,15 @@ public:
     Impl& operator=(const Impl& other) = delete;
     Impl& operator=(Impl&& other) noexcept = delete;
 
-    FileAPI::IFile* OpenStream(const int64_t startPosition, const size_t length)
+    std::unique_ptr<iobjstream> OpenStream(const int64_t startPosition, const size_t length)
     {
         m_stream_mutex.lock();
 
         ChunkBuffer* reservedChunkBuffer;
-        const auto freeChunkBuffer = std::find_if(m_chunk_buffers.begin(), m_chunk_buffers.end(),
-                                               [](ChunkBuffer* chunkBuffer)
-                                               {
-                                                   return chunkBuffer->m_using_stream == nullptr;
-                                               });
+        const auto freeChunkBuffer = std::find_if(m_chunk_buffers.begin(), m_chunk_buffers.end(), [](ChunkBuffer* chunkBuffer)
+        {
+            return chunkBuffer->m_using_stream == nullptr;
+        });
 
         if (freeChunkBuffer == m_chunk_buffers.end())
         {
@@ -84,15 +84,15 @@ public:
         else
             reservedChunkBuffer = *freeChunkBuffer;
 
-        auto* stream = new IPakEntryReadStream(m_file, this, reservedChunkBuffer->m_buffer, startPosition, length);
+        auto ipakEntryStream = std::make_unique<IPakEntryReadStream>(m_stream, this, reservedChunkBuffer->m_buffer, startPosition, length);
 
-        reservedChunkBuffer->m_using_stream = stream;
+        reservedChunkBuffer->m_using_stream = ipakEntryStream.get();
 
-        m_open_streams.emplace_back(stream, reservedChunkBuffer);
+        m_open_streams.emplace_back(ipakEntryStream.get(), reservedChunkBuffer);
 
         m_stream_mutex.unlock();
 
-        return stream;
+        return std::make_unique<iobjstream>(std::move(ipakEntryStream));
     }
 
     void StartReading() override
@@ -105,15 +105,14 @@ public:
         m_read_mutex.unlock();
     }
 
-    void CloseStream(FileAPI::IFile* stream) override
+    void CloseStream(objbuf* stream) override
     {
         m_stream_mutex.lock();
 
-        const auto openStreamEntry = std::find_if(m_open_streams.begin(), m_open_streams.end(),
-                                               [stream](const ManagedStream& managedStream)
-                                               {
-                                                   return managedStream.m_stream == stream;
-                                               });
+        const auto openStreamEntry = std::find_if(m_open_streams.begin(), m_open_streams.end(), [stream](const ManagedStream& managedStream)
+        {
+            return managedStream.m_stream == stream;
+        });
 
         if (openStreamEntry != m_open_streams.end())
         {
@@ -138,9 +137,9 @@ public:
     }
 };
 
-IPakStreamManager::IPakStreamManager(FileAPI::IFile* file)
+IPakStreamManager::IPakStreamManager(std::istream& stream)
+    : m_impl(new Impl(stream))
 {
-    m_impl = new Impl(file);
 }
 
 IPakStreamManager::~IPakStreamManager()
@@ -149,7 +148,7 @@ IPakStreamManager::~IPakStreamManager()
     m_impl = nullptr;
 }
 
-FileAPI::IFile* IPakStreamManager::OpenStream(const int64_t startPosition, const size_t length) const
+std::unique_ptr<iobjstream> IPakStreamManager::OpenStream(const int64_t startPosition, const size_t length) const
 {
     return m_impl->OpenStream(startPosition, length);
 }

@@ -1,8 +1,11 @@
 #pragma once
 
-#include "Utils/FileAPI.h"
+#include <istream>
+
+#include "Utils/ClassUtils.h"
 #include "ObjContainer/ObjContainerReferenceable.h"
 #include "ObjContainer/ObjContainerRepository.h"
+#include "Utils/ObjStream.h"
 #include "Zone/Zone.h"
 
 class IPak final : public ObjContainerReferenceable
@@ -15,13 +18,13 @@ public:
 
     static ObjContainerRepository<IPak, Zone> Repository;
 
-    IPak(std::string path, FileAPI::IFile* file);
-    ~IPak();
+    IPak(std::string path, std::unique_ptr<std::istream> stream);
+    ~IPak() override;
 
     std::string GetName() override;
 
-    bool Initialize() const;
-    FileAPI::IFile* GetEntryStream(Hash nameHash, Hash dataHash) const;
+    bool Initialize();
+    _NODISCARD std::unique_ptr<iobjstream> GetEntryStream(Hash nameHash, Hash dataHash) const;
 
     static Hash HashString(const std::string& str);
     static Hash HashData(const void* data, size_t dataSize);

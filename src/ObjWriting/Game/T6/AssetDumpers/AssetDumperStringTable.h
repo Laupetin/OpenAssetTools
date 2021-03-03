@@ -10,6 +10,6 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<StringTable>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<StringTable>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, FileAPI::File* out) override;
+        void DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, std::ostream& stream) override;
     };
 }

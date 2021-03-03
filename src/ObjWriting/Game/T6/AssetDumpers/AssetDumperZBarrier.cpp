@@ -183,7 +183,7 @@ std::string AssetDumperZBarrier::GetFileNameForAsset(Zone* zone, XAssetInfo<ZBar
     return "zbarrier/" + asset->m_name;
 }
 
-void AssetDumperZBarrier::DumpAsset(Zone* zone, XAssetInfo<ZBarrierDef>* asset, FileAPI::File* out)
+void AssetDumperZBarrier::DumpAsset(Zone* zone, XAssetInfo<ZBarrierDef>* asset, std::ostream& stream)
 {
     InfoStringFromZBarrierConverter converter(asset->Asset(), zbarrier_fields, _countof(zbarrier_fields), [asset](const scr_string_t scrStr) -> std::string
         {
@@ -196,7 +196,7 @@ void AssetDumperZBarrier::DumpAsset(Zone* zone, XAssetInfo<ZBarrierDef>* asset, 
 
     const auto infoString = converter.Convert();
     const auto stringValue = infoString.ToString("ZBARRIER");
-    out->Write(stringValue.c_str(), 1, stringValue.length());
+    stream.write(stringValue.c_str(), stringValue.size());
 }
 
 //void AssetDumperZBarrier::CheckFields()

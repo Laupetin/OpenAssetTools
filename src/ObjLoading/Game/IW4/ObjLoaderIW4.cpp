@@ -43,15 +43,14 @@ namespace IW4
         Texture* loadedTexture = nullptr;
         IwiLoader loader(zone->GetMemory());
 
-        const std::string imageFileName = "images/" + std::string(image->name) + ".iwi";
-        auto* filePathImage = searchPath->Open(imageFileName);
+        const auto imageFileName = "images/" + std::string(image->name) + ".iwi";
 
-        if (filePathImage != nullptr)
         {
-            loadedTexture = loader.LoadIwi(filePathImage);
-
-            filePathImage->Close();
-            delete filePathImage;
+            const auto filePathImage = searchPath->Open(imageFileName);
+            if (filePathImage != nullptr)
+            {
+                loadedTexture = loader.LoadIwi(*filePathImage);
+            }
         }
 
         if (loadedTexture != nullptr)
@@ -59,8 +58,8 @@ namespace IW4
             image->texture.texture = loadedTexture;
             image->cardMemory.platform[0] = 0;
 
-            const int textureMipCount = loadedTexture->GetMipMapCount();
-            for (int mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+            const auto textureMipCount = loadedTexture->GetMipMapCount();
+            for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
                 image->cardMemory.platform[0] += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
         }
         else

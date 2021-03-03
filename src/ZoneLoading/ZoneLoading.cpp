@@ -1,8 +1,14 @@
 #include "ZoneLoading.h"
 
-#include "Utils/PathUtils.h"
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
 #include "Game/IW4/ZoneLoaderFactoryIW4.h"
 #include "Game/T6/ZoneLoaderFactoryT6.h"
+#include "Utils/ObjFileStream.h"
+
+namespace fs = std::filesystem;
 
 IZoneLoaderFactory* ZoneLoaderFactories[]
 {
@@ -12,17 +18,22 @@ IZoneLoaderFactory* ZoneLoaderFactories[]
 
 Zone* ZoneLoading::LoadZone(const std::string& path)
 {
-    std::string zoneName = utils::Path::GetFilenameWithoutExtension(path);
-    FileAPI::File file = FileAPI::Open(path, FileAPI::Mode::MODE_READ);
+    auto zoneName = fs::path(path).filename().replace_extension("").string();
+    std::ifstream file(path, std::fstream::in | std::fstream::binary);
 
-    if(!file.IsOpen())
+    if(!file.is_open())
     {
         printf("Could not open file '%s'.\n", path.c_str());
         return nullptr;
     }
 
     ZoneHeader header{};
-    file.Read(&header, sizeof(ZoneHeader), 1);
+    file.read(reinterpret_cast<char*>(&header), sizeof header);
+    if(file.gcount() != sizeof header)
+    {
+        std::cout << "Failed to read zone header from file '" << path << "'.\n";
+        return nullptr;
+    }
 
     ZoneLoader* zoneLoader = nullptr;
     for(auto* factory : ZoneLoaderFactories)
@@ -39,8 +50,9 @@ Zone* ZoneLoading::LoadZone(const std::string& path)
         return nullptr;
     }
 
-    Zone* loadedZone = zoneLoader->LoadZone(&file);
+    auto* loadedZone = zoneLoader->LoadZone(file);
+    delete zoneLoader;
 
-    file.Close();
+    file.close();
     return loadedZone;
 }

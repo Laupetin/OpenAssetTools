@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ISearchPath.h"
 #include <string>
+
+#include "ISearchPath.h"
 
 class SearchPathFilesystem final : public ISearchPath
 {
@@ -10,7 +11,7 @@ class SearchPathFilesystem final : public ISearchPath
 public:
     explicit SearchPathFilesystem(std::string path);
 
-    FileAPI::IFile* Open(const std::string& fileName) override;
+    std::unique_ptr<std::istream> Open(const std::string& fileName) override;
     std::string GetPath() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;
 };
