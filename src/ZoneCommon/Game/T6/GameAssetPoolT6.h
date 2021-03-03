@@ -2,7 +2,7 @@
 
 #include "Pool/ZoneAssetPools.h"
 #include "Pool/AssetPool.h"
-#include "T6.h"
+#include "Game/T6/T6.h"
 
 class GameAssetPoolT6 final : public ZoneAssetPools
 {

@@ -4,7 +4,7 @@
 
 #include "Pool/ZoneAssetPools.h"
 #include "Pool/AssetPool.h"
-#include "IW4.h"
+#include "Game/IW4/IW4.h"
 
 class GameAssetPoolIW4 final : public ZoneAssetPools
 {

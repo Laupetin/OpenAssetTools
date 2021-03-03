@@ -1,13 +1,13 @@
 #include "ObjContainerReferenceable.h"
 
-void ObjContainerReferenceable::AddReference(Zone* referencer)
+void ObjContainerReferenceable::AddReference(void* referencer)
 {
     m_references.insert(referencer);
 }
 
-bool ObjContainerReferenceable::RemoveReference(Zone* zone)
+bool ObjContainerReferenceable::RemoveReference(void* referencer)
 {
-    return m_references.erase(zone) > 0;
+    return m_references.erase(referencer) > 0;
 }
 
 bool ObjContainerReferenceable::IsReferenced() const

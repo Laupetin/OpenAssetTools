@@ -1,16 +1,15 @@
 #pragma once
 
 #include "IObjContainer.h"
-#include "Zone/Zone.h"
 
 #include <set>
 
 class ObjContainerReferenceable : public IObjContainer
 {
-    std::set<Zone*> m_references;
+    std::set<void*> m_references;
 
 public:
-    void AddReference(Zone* referencer);
-    bool RemoveReference(Zone* zone);
+    void AddReference(void* referencer);
+    bool RemoveReference(void* referencer);
     bool IsReferenced() const;
 };

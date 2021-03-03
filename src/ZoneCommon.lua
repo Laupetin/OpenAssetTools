@@ -2,17 +2,19 @@ ZoneCommon = {}
 
 function ZoneCommon:include(includes)
 	if includes:handle(self:name()) then
-		Utils:include(includes)
-		ObjCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ZoneCommon")
 		}
+		Utils:include(includes)
+		Common:include(includes)
+		ObjCommon:include(includes)
 	end
 end
 
 function ZoneCommon:link(links)
 	links:add(self:name())
 	links:linkto(Utils)
+	links:linkto(Common)
 	links:linkto(ObjCommon)
 end
 

@@ -82,6 +82,7 @@ group ""
 -- ========================
 -- Projects
 -- ========================
+include "src/Common.lua"
 include "src/Crypto.lua"
 include "src/Linker.lua"
 include "src/Unlinker.lua"
@@ -99,6 +100,7 @@ include "src/ObjWriting.lua"
 
 -- Components group: All projects assist or are part of a tool
 group "Components"
+    Common:project()
     Crypto:project()
     Utils:project()
     ZoneCode:project()
