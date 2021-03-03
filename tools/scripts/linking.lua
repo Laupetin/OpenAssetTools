@@ -12,7 +12,7 @@ function Links:create()
         local projectName = project:name()
         for i, dependency in ipairs(self.stack) do
             if dependency == projectName then
-                print "Circular dependency detected:"
+                print "ERROR: Circular dependency detected:"
                 local dependencyList = projectName
                 for j = i + 1, #self.stack do
                     dependencyList = dependencyList .. " -> " .. self.stack[j]
