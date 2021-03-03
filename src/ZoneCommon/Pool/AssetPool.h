@@ -4,7 +4,7 @@
 #include <map>
 
 #include "XAssetInfo.h"
-#include "zone/Zone.h"
+#include "Zone/Zone.h"
 
 class Zone;
 

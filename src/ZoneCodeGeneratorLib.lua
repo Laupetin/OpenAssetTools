@@ -40,4 +40,6 @@ function ZoneCodeGeneratorLib:project()
 		}
 		
 		self:include()
+
+		Utils:link()
 end

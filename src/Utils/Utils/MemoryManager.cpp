@@ -1,5 +1,8 @@
 #include "MemoryManager.h"
 
+#include <cstdlib>
+#include <cstring>
+
 MemoryManager::AllocationInfo::AllocationInfo(IDestructible* data, void* dataPtr)
 {
     m_data = data;
@@ -34,7 +37,7 @@ void* MemoryManager::Alloc(const size_t size)
 
 char* MemoryManager::Dup(const char* str)
 {
-    char* result = _strdup(str);
+    char* result = strdup(str);
     m_allocations.push_back(result);
 
     return result;

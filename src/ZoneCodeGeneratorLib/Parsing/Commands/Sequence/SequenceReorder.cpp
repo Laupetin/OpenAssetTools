@@ -1,5 +1,7 @@
 #include "SequenceReorder.h"
 
+#include <list>
+
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 

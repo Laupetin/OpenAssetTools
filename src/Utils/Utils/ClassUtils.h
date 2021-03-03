@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #define STR(x) #x
 
 #if defined(_MSVC_LANG)

@@ -3,6 +3,18 @@
 #ifndef __IW4_ASSETS_H
 #define __IW4_ASSETS_H
 
+#ifndef __align
+#ifdef __zonecodegenerator
+#define __align alignas
+#else
+#if defined(_MSVC_LANG)
+#define __align(x) __declspec(align(x))
+#else
+#define __align(x) alignas(x)
+#endif
+#endif
+#endif
+
 #ifndef __zonecodegenerator
 namespace IW4
 {

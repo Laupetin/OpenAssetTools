@@ -55,6 +55,15 @@ TargetDirectoryBin = "%{wks.location}/bin/%{cfg.buildcfg}_%{cfg.platform}"
 TargetDirectoryLib = "%{wks.location}/lib/%{cfg.buildcfg}_%{cfg.platform}"
 TargetDirectoryTest = "%{wks.location}/lib/%{cfg.buildcfg}_%{cfg.platform}/tests"
 
+-- Platform functions
+function ExecutableByOs(name)
+    if os.host() == "windows" then
+        return name .. ".exe"
+    else
+        return name
+    end
+end
+
 -- ==================
 -- Workspace
 -- ==================

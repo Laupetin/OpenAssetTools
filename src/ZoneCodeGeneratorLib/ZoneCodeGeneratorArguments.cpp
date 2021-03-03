@@ -1,6 +1,7 @@
 #include "ZoneCodeGeneratorArguments.h"
 
 #include <iostream>
+#include <type_traits>
 
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
@@ -103,7 +104,7 @@ ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName
 }
 
 ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, _countof(COMMAND_LINE_OPTIONS)),
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent<decltype(COMMAND_LINE_OPTIONS)>::value),
       m_task_flags(0)
 {
     m_verbose = false;

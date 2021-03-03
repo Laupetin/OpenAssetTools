@@ -1,6 +1,7 @@
 #include "HeaderCommonMatchers.h"
 
 #include <sstream>
+#include <type_traits>
 
 #include "HeaderMatcherFactory.h"
 
@@ -52,7 +53,7 @@ std::unique_ptr<HeaderCommonMatchers::matcher_t> HeaderCommonMatchers::Typename(
         "int",
         "long"
     };
-    static_assert(_countof(BUILT_IN_TYPE_NAMES) == static_cast<int>(HeaderParserValueType::BUILT_IN_LAST) - static_cast<int>(HeaderParserValueType::BUILT_IN_FIRST) + 1);
+    static_assert(std::extent<decltype(BUILT_IN_TYPE_NAMES)>::value == static_cast<int>(HeaderParserValueType::BUILT_IN_LAST) - static_cast<int>(HeaderParserValueType::BUILT_IN_FIRST) + 1);
 
     const HeaderMatcherFactory create(labelSupplier);
 

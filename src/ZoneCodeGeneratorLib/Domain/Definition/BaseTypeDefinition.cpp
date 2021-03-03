@@ -1,5 +1,7 @@
 #include "BaseTypeDefinition.h"
 
+#include <type_traits>
+
 BaseTypeDefinition::BaseTypeDefinition(std::string name, const unsigned size)
     : DataDefinition("", std::move(name)),
       m_size(size)
@@ -57,4 +59,4 @@ const BaseTypeDefinition* const BaseTypeDefinition::ALL_BASE_TYPES[]
     UNSIGNED_LONG_LONG,
     VOID
 };
-const size_t BaseTypeDefinition::ALL_BASE_TYPES_COUNT = _countof(ALL_BASE_TYPES);
+const size_t BaseTypeDefinition::ALL_BASE_TYPES_COUNT = std::extent<decltype(ALL_BASE_TYPES)>::value;

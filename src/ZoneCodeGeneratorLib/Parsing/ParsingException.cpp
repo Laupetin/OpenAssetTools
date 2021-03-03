@@ -26,7 +26,7 @@ std::string ParsingException::FullMessage() const
     return m_full_message;
 }
 
-char const* ParsingException::what() const
+char const* ParsingException::what() const noexcept
 {
     return m_full_message.c_str();
 }

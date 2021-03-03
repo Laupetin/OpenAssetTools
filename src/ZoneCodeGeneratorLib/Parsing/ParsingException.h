@@ -18,5 +18,5 @@ public:
     _NODISCARD TokenPos Position() const;
     _NODISCARD const std::string& Message() const;
     _NODISCARD std::string FullMessage() const;
-    _NODISCARD char const* what() const override;
+    _NODISCARD char const* what() const noexcept override;
 };

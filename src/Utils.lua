@@ -1,7 +1,7 @@
 Utils = {}
 
 function Utils:include()
-	if References:include("Utils") then
+	if References:include(self:name()) then
 		includedirs {
 			path.join(ProjectFolder(), "Utils")
 		}
@@ -9,8 +9,8 @@ function Utils:include()
 end
 
 function Utils:link()
-	if References:link("Utils") then
-		links "Utils"
+	if References:link(self:name()) then
+		links(self:name())
 	end
 end
 
@@ -18,12 +18,16 @@ function Utils:use()
 	
 end
 
+function Utils:name()
+    return "Utils"
+end
+
 function Utils:project()
 	References:reset()
 	local folder = ProjectFolder();
 
-	project "Utils"
-        targetdir(TargetDirectoryLib)
+	project(self:name())
+		targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
 		language "C++"
