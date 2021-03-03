@@ -41,7 +41,6 @@ function Linker:project()
         ZoneWriting:include(includes)
 
 		links:linkto(Utils)
-		links:linkto(ZoneWriting)
-        --ZoneWriting:link(links)
+		--links:linkto(ZoneWriting)
 		links:linkall()
 end
