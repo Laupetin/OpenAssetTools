@@ -3,22 +3,41 @@
 #ifndef __T6_ASSETS_H
 #define __T6_ASSETS_H
 
+#ifdef type_align
+#undef type_align
+#endif
+#ifdef tdef_align
+#undef tdef_align
+#endif
+#ifdef __zonecodegenerator
+#define type_align alignas
+#define tdef_align alignas
+#else
+#ifdef _MSVC_LANG
+#define type_align(x) __declspec(align(x))
+#define tdef_align(x) __declspec(align(x))
+#else
+#define type_align(x) __attribute__((__aligned__(x)))
+#define tdef_align(x) __attribute__((__aligned__(x)))
+#endif
+#endif
+
 #ifndef __zonecodegenerator
 namespace T6
 {
 #endif
 
-    typedef __declspec(align(16)) char char16;
-    typedef __declspec(align(32)) char byte32;
-    typedef __declspec(align(128)) char byte128;
+    typedef tdef_align(16) char char16;
+    typedef tdef_align(32) char byte32;
+    typedef tdef_align(128) char byte128;
 
-    typedef __declspec(align(4)) char char_align4;
-    typedef __declspec(align(128)) char char_align128;
+    typedef tdef_align(4) char char_align4;
+    typedef tdef_align(128) char char_align128;
 
-    typedef __declspec(align(16)) char raw_byte16;
-    typedef __declspec(align(128)) char raw_byte128;
+    typedef tdef_align(16) char raw_byte16;
+    typedef tdef_align(128) char raw_byte128;
 
-    typedef __declspec(align(128)) float float_align128;
+    typedef tdef_align(128) float float_align128;
 
     struct dvar_t;
     struct MenuCell;
@@ -622,7 +641,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(8)) MaterialInfo
+    struct alignas(8) MaterialInfo
     {
         const char* name;
         unsigned int gameFlags;
@@ -638,7 +657,7 @@ namespace T6
         int contents;
     };
 
-    typedef __declspec(align(8)) GfxStateBits GfxStateBitsTable;
+    typedef tdef_align(8) GfxStateBits GfxStateBitsTable;
 
 
     struct Material
@@ -668,7 +687,7 @@ namespace T6
 
     struct MaterialPixelShaderProgram
     {
-        ID3D11PixelShader* ps;
+        void/*ID3D11PixelShader*/* ps;
         GfxPixelShaderLoadDef loadDef;
     };
 
@@ -689,7 +708,7 @@ namespace T6
 
     struct MaterialVertexShaderProgram
     {
-        ID3D11VertexShader* vs;
+        void/*ID3D11VertexShader*/* vs;
         GfxVertexShaderLoadDef loadDef;
     };
 
@@ -711,7 +730,7 @@ namespace T6
 
     union GfxTexture
     {
-        ID3D11ShaderResourceView* basemap;
+        void/*ID3D11ShaderResourceView*/* basemap;
         Texture* texture;
         GfxImageLoadDef* loadDef;
     };
@@ -791,7 +810,7 @@ namespace T6
     };
 
 #pragma pack(push, 1)
-    struct __declspec(align(2)) SndRuntimeAssetBank
+    struct alignas(2) SndRuntimeAssetBank
     {
         const char* zone;
         const char* language;
@@ -805,7 +824,7 @@ namespace T6
     };
 #pragma pack(pop)
 
-    typedef __declspec(align(2048)) char SndChar2048;
+    typedef tdef_align(2048) char SndChar2048;
 
 
     struct SndLoadedAssets
@@ -865,8 +884,8 @@ namespace T6
     };
 
     typedef unsigned short LeafBrush;
-    typedef __declspec(align(128)) cbrush_t cbrush_array_t;
-    typedef __declspec(align(128)) Bounds BoundsArray;
+    typedef tdef_align(128) cbrush_t cbrush_array_t;
+    typedef tdef_align(128) Bounds BoundsArray;
 
 
     struct ClipInfo
@@ -892,7 +911,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) cLeaf_s
+    struct alignas(4) cLeaf_s
     {
         unsigned __int16 firstCollAabbIndex;
         unsigned __int16 collAabbCount;
@@ -1108,14 +1127,14 @@ namespace T6
     struct GfxWorldVertexData0
     {
         byte128* data;
-        ID3D11Buffer* vb;
+        void/*ID3D11Buffer*/* vb;
     };
 
 
     struct GfxWorldVertexData1
     {
         byte128* data;
-        ID3D11Buffer* vb;
+        void/*ID3D11Buffer*/* vb;
     };
 
 
@@ -1135,11 +1154,11 @@ namespace T6
         GfxWorldVertexData1 vd1;
         int indexCount;
         unsigned __int16* indices;
-        ID3D11Buffer* indexBuffer;
+        void/*ID3D11Buffer*/* indexBuffer;
     };
 
-    typedef __declspec(align(4)) char aligned_byte_pointer;
-    typedef __declspec(align(4)) GfxCompressedLightGridCoeffs GfxCompressedLightGridCoeffs_align4;
+    typedef tdef_align(4) char aligned_byte_pointer;
+    typedef tdef_align(4) GfxCompressedLightGridCoeffs GfxCompressedLightGridCoeffs_align4;
 
     struct GfxLightGrid
     {
@@ -1189,7 +1208,7 @@ namespace T6
         vec3_t sunFxPosition;
     };
 
-    typedef __declspec(align(4)) GfxDrawSurf GfxDrawSurf_align4;
+    typedef tdef_align(4) GfxDrawSurf GfxDrawSurf_align4;
 
 
     struct GfxWorldDpvsStatic
@@ -1320,7 +1339,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) GfxLightImage
+    struct alignas(4) GfxLightImage
     {
         GfxImage* image;
         char samplerState;
@@ -1414,7 +1433,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(8)) menuDef_t
+    struct alignas(8) menuDef_t
     {
         windowDef_t window;
         const char* font;
@@ -2640,10 +2659,10 @@ namespace T6
         float* tensionData;
     };
 
-    typedef __declspec(align(16)) unsigned short r_index16_t;
+    typedef tdef_align(16) unsigned short r_index16_t;
 
 
-    struct __declspec(align(16)) XSurface
+    struct alignas(16) XSurface
     {
         char tileMode;
         unsigned char vertListCount;
@@ -2654,9 +2673,9 @@ namespace T6
         r_index16_t (*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
-        ID3D11Buffer* vb0;
+        void/*ID3D11Buffer*/* vb0;
         XRigidVertList* vertList;
-        ID3D11Buffer* indexBuffer;
+        void/*ID3D11Buffer*/* indexBuffer;
         int partBits[5];
     };
 
@@ -2673,7 +2692,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) XBoneInfo
+    struct alignas(4) XBoneInfo
     {
         vec3_t bounds[2];
         vec3_t offset;
@@ -2701,7 +2720,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) MaterialConstantDef
+    struct alignas(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -2712,9 +2731,9 @@ namespace T6
     struct GfxStateBits
     {
         unsigned int loadBits[2];
-        ID3D11BlendState* blendState;
-        ID3D11DepthStencilState* depthStencilState;
-        ID3D11RasterizerState* rasterizerState;
+        void/*ID3D11BlendState*/* blendState;
+        void/*ID3D11DepthStencilState*/* depthStencilState;
+        void/*ID3D11RasterizerState*/* rasterizerState;
     };
 
     /* struct IUnknown
@@ -2767,7 +2786,7 @@ namespace T6
     };*/
 
 
-    struct __declspec(align(4)) GfxImageLoadDef
+    struct alignas(4) GfxImageLoadDef
     {
         char levelCount;
         char flags;
@@ -2787,7 +2806,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) SndIndexEntry
+    struct alignas(4) SndIndexEntry
     {
         unsigned __int16 value;
         unsigned __int16 next;
@@ -2816,7 +2835,7 @@ namespace T6
         float returnHighpass;
     };
 
-    typedef __declspec(align(16)) float SndFloatAlign16;
+    typedef tdef_align(16) float SndFloatAlign16;
 
 
     struct SndDuck
@@ -2912,7 +2931,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) cbrush_t
+    struct alignas(16) cbrush_t
     {
         vec3_t mins;
         int contents;
@@ -2974,7 +2993,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) CollisionAabbTree
+    struct alignas(16) CollisionAabbTree
     {
         vec3_t origin;
         unsigned __int16 materialIndex;
@@ -3075,7 +3094,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) constraint_t
+    struct alignas(4) constraint_t
     {
         vec3_t p;
         rope_constraint_e type;
@@ -3100,7 +3119,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) rope_t
+    struct alignas(4) rope_t
     {
         par_t m_particles[25];
         constraint_t m_constraints[30];
@@ -3220,7 +3239,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) pathnode_dynamic_t
+    struct alignas(4) pathnode_dynamic_t
     {
         SentientHandle pOwner;
         int iFreeTime;
@@ -3260,7 +3279,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) pathbasenode_t
+    struct alignas(16) pathbasenode_t
     {
         vec3_t vOrigin;
         unsigned int type;
@@ -3314,7 +3333,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) GfxStreamingAabbTree
+    struct alignas(16) GfxStreamingAabbTree
     {
         vec4_t mins;
         vec4_t maxs;
@@ -3328,7 +3347,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) float44
+    struct alignas(16) float44
     {
         union
         {
@@ -3338,7 +3357,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) GfxLight
+    struct alignas(16) GfxLight
     {
         char type;
         char canUseShadowMap;
@@ -3489,7 +3508,7 @@ namespace T6
     };*/
 
 
-    struct __declspec(align(4)) GfxLightGridEntry
+    struct alignas(4) GfxLightGridEntry
     {
         unsigned __int16 colorsIndex;
         char primaryLightIndex;
@@ -3497,7 +3516,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) GfxCompressedLightGridColors
+    struct alignas(4) GfxCompressedLightGridColors
     {
         char rgb[56][3];
     };
@@ -3529,7 +3548,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) GfxBrushModel
+    struct alignas(16) GfxBrushModel
     {
         GfxBrushModelWritable writable;
         vec3_t bounds[2];
@@ -3573,7 +3592,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) GfxSceneDynBrush
+    struct alignas(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         unsigned __int16 dynEntId;
@@ -3608,7 +3627,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) SSkinInstance
+    struct alignas(16) SSkinInstance
     {
         union
         {
@@ -3665,7 +3684,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) GfxSurface
+    struct alignas(16) GfxSurface
     {
         srfTriangles_t tris;
         Material* material;
@@ -3693,10 +3712,10 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) GfxStaticModelLmapVertexInfo
+    struct alignas(4) GfxStaticModelLmapVertexInfo
     {
         unsigned int* lmapVertexColors;
-        ID3D11Buffer* lmapVertexColorsVB;
+        void/*ID3D11Buffer*/* lmapVertexColorsVB;
         unsigned __int16 numLmapVertexColors;
     };
 
@@ -3916,7 +3935,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(8)) itemDef_s
+    struct alignas(8) itemDef_s
     {
         windowDef_t window;
         int type;
@@ -5443,7 +5462,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) DevGraph
+    struct alignas(4) DevGraph
     {
         vec2_t* knots;
         int* knotCount;
@@ -5466,7 +5485,7 @@ namespace T6
     };
 
     typedef char ByteVec[3];
-    typedef __declspec(align(4)) unsigned __int16 UShortVec[3];
+    typedef tdef_align(4) unsigned __int16 UShortVec[3];
 
     union XAnimDynamicFrames
     {
@@ -5482,7 +5501,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) XAnimPartTransFrames
+    struct alignas(4) XAnimPartTransFrames
     {
         vec3_t mins;
         vec3_t size;
@@ -5511,9 +5530,9 @@ namespace T6
         unsigned __int16 _2[1];
     };
 
-    typedef __declspec(align(4)) __int16 XQuat2[2];
+    typedef tdef_align(4) __int16 XQuat2[2];
 
-    struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames2
+    struct alignas(4) XAnimDeltaPartQuatDataFrames2
     {
         XQuat2 *frames;
         XAnimDynamicIndicesDeltaQuat2 indices;
@@ -5539,9 +5558,9 @@ namespace T6
         unsigned __int16 _2[1];
     };
 
-    typedef __declspec(align(4))  __int16 XQuat[4];
+    typedef tdef_align(4)  __int16 XQuat[4];
 
-    struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames
+    struct alignas(4) XAnimDeltaPartQuatDataFrames
     {
         XQuat *frames;
         XAnimDynamicIndicesDeltaQuat indices;
@@ -5581,7 +5600,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) GfxPackedVertex
+    struct alignas(16) GfxPackedVertex
     {
         vec3_t xyz;
         float binormalSign;
@@ -5609,7 +5628,7 @@ namespace T6
         vec4_t tvec;
     };
 
-    typedef __declspec(align(16)) PhysGeomInfo PhysGeomInfo16;
+    typedef tdef_align(16) PhysGeomInfo PhysGeomInfo16;
 
 
     struct PhysGeomList
@@ -5649,7 +5668,7 @@ namespace T6
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[16];
-        ID3D11InputLayout* decl[20];
+        void/*ID3D11InputLayout*/* decl[20];
     };
 
 
@@ -5761,7 +5780,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) pathlink_s
+    struct alignas(4) pathlink_s
     {
         float fDist;
         unsigned __int16 nodeNum;
@@ -5882,7 +5901,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(4)) SSkinVert
+    struct alignas(4) SSkinVert
     {
         half4 pos_bone;
         PackedUnitVec normal;
@@ -5979,7 +5998,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(8)) dvar_t
+    struct alignas(8) dvar_t
     {
         const char* name;
         const char* description;
@@ -6510,7 +6529,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) XSurfaceCollisionNode
+    struct alignas(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         unsigned __int16 childBeginIndex;
@@ -6524,7 +6543,7 @@ namespace T6
     };
 
 
-    struct __declspec(align(16)) BrushWrapper
+    struct alignas(16) BrushWrapper
     {
         vec3_t mins;
         int contents;
