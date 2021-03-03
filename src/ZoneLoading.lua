@@ -11,11 +11,14 @@ end
 
 function ZoneLoading:link(links)
 	links:add(self:name())
-	links:add("pthread")
 	links:linkto(Crypto)
 	links:linkto(Utils)
 	links:linkto(ZoneCommon)
 	links:linkto(zlib)
+	
+    if os.host() == "linux" then
+		links:add("pthread")
+	end
 end
 
 function ZoneLoading:use()
