@@ -1,5 +1,7 @@
 #include "loadedsound_actions.h"
 
+#include <cstring>
+
 using namespace IW4;
 
 Actions_LoadedSound::Actions_LoadedSound(Zone* zone)

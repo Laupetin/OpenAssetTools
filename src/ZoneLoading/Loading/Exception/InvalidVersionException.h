@@ -10,5 +10,5 @@ public:
     InvalidVersionException(unsigned int expectedVersion, unsigned int actualVersion);
 
     std::string DetailedMessage() override;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };

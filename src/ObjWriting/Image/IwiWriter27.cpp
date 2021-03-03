@@ -61,7 +61,7 @@ void IwiWriter::WriteVersion(std::ostream& stream)
     version.tag[2] = 'i';
     version.version = 27;
 
-    stream.write(reinterpret_cast<char*>(&version), sizeof IwiVersion);
+    stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
 }
 
 void IwiWriter::FillHeader2D(IwiHeader* header, Texture2D* texture)
@@ -105,7 +105,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
     for (auto& i : header.maxGlossForMip)
         i = 0;
 
-    auto currentFileSize = sizeof IwiVersion + sizeof IwiHeader;
+    auto currentFileSize = sizeof(IwiVersion) + sizeof(IwiHeader);
 
     const auto textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
     for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -113,7 +113,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
         const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
-        if (currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip)))
+        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi27::IwiHeader::fileSizeForPicmip)>::value))
             header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
     }
 
@@ -135,7 +135,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
         return;
     }
 
-    stream.write(reinterpret_cast<char*>(&header), sizeof IwiHeader);
+    stream.write(reinterpret_cast<char*>(&header), sizeof(IwiHeader));
 
     for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {

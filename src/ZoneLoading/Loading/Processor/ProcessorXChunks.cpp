@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <cassert>
+#include <cstring>
 
 class DBLoadStream
 {
@@ -294,14 +295,15 @@ public:
 
             if (sizeToRead > bytesLeftInCurrentChunk)
             {
-                memcpy_s(bufferPos, sizeToRead, &m_current_chunk[m_current_chunk_offset], bytesLeftInCurrentChunk);
+                assert(sizeToRead >= bytesLeftInCurrentChunk);
+                memcpy(bufferPos, &m_current_chunk[m_current_chunk_offset], bytesLeftInCurrentChunk);
                 loadedSize += bytesLeftInCurrentChunk;
 
                 NextStream();
             }
             else
             {
-                memcpy_s(bufferPos, sizeToRead, &m_current_chunk[m_current_chunk_offset], sizeToRead);
+                memcpy(bufferPos, &m_current_chunk[m_current_chunk_offset], sizeToRead);
                 loadedSize += sizeToRead;
                 m_current_chunk_offset += sizeToRead;
 

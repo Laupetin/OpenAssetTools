@@ -1,7 +1,10 @@
 #include "GameAssetPoolIW4.h"
+
+#include <cassert>
+#include <type_traits>
+
 #include "Pool/AssetPoolStatic.h"
 #include "Pool/AssetPoolDynamic.h"
-#include <cassert>
 
 using namespace IW4;
 
@@ -101,7 +104,7 @@ GameAssetPoolIW4::GameAssetPoolIW4(Zone* zone, const int priority)
     : ZoneAssetPools(zone),
       m_priority(priority)
 {
-    assert(_countof(ASSET_TYPE_NAMES) == ASSET_TYPE_COUNT);
+    assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
 
     m_phys_preset = nullptr;
     m_phys_collmap = nullptr;
@@ -382,7 +385,7 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
 
 const std::string& GameAssetPoolIW4::GetAssetTypeName(const asset_type_t assetType) const
 {
-    if (assetType >= 0 && assetType < static_cast<int>(_countof(ASSET_TYPE_NAMES)))
+    if (assetType >= 0 && assetType < static_cast<int>(std::extent<decltype(ASSET_TYPE_NAMES)>::value))
         return ASSET_TYPE_NAMES[assetType];
 
     return ASSET_TYPE_INVALID;

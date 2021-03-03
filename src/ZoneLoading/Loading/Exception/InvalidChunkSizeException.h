@@ -11,5 +11,5 @@ public:
     InvalidChunkSizeException(size_t size, size_t max);
 
     std::string DetailedMessage() override;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };

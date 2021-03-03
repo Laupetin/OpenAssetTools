@@ -9,5 +9,5 @@ public:
     explicit InvalidMagicException(const char* expectedMagic);
 
     std::string DetailedMessage() override;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };

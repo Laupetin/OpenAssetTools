@@ -1,6 +1,6 @@
 #include "ProcessorInflate.h"
 
-#include <exception>
+#include <stdexcept>
 #include <cstdint>
 #include <memory>
 #include <zlib.h>
@@ -33,7 +33,7 @@ public:
 
         if (ret != Z_OK)
         {
-            throw std::exception("Initializing inflate failed");
+            throw std::runtime_error("Initializing inflate failed");
         }
     }
 

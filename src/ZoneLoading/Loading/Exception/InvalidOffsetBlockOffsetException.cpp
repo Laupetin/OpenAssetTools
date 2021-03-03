@@ -12,7 +12,7 @@ std::string InvalidOffsetBlockOffsetException::DetailedMessage()
         + " which is larger than its size " + std::to_string(m_referenced_block->m_buffer_size);
 }
 
-char const* InvalidOffsetBlockOffsetException::what() const
+char const* InvalidOffsetBlockOffsetException::what() const noexcept
 {
     return "Zone referenced offset of block that is out of bounds";
 }

@@ -1,6 +1,7 @@
 #include "AssetDumperRawFile.h"
 
 #include <zlib.h>
+#include <stdexcept>
 
 using namespace IW4;
 
@@ -31,7 +32,7 @@ void AssetDumperRawFile::DumpAsset(Zone* zone, XAssetInfo<RawFile>* asset, std::
 
         if (ret != Z_OK)
         {
-            throw std::exception("Initializing inflate failed");
+            throw std::runtime_error("Initializing inflate failed");
         }
 
         zs.next_in = reinterpret_cast<const Bytef*>(rawFile->data.compressedBuffer);

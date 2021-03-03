@@ -1,17 +1,12 @@
 #include "ZoneLoaderFactoryIW4.h"
+
+#include <cassert>
+#include <cstring>
+#include <type_traits>
+
 #include "Game/IW4/IW4.h"
 
-#include "Loading/Steps/StepVerifyMagic.h"
-#include "Loading/Steps/StepSkipBytes.h"
-#include "Loading/Steps/StepVerifyFileName.h"
-#include "Loading/Steps/StepLoadSignature.h"
-#include "Loading/Steps/StepVerifySignature.h"
-#include "Loading/Steps/StepAddProcessor.h"
-#include "Loading/Steps/StepAllocXBlocks.h"
-
 #include "Utils/ClassUtils.h"
-#include <cassert>
-#include "Loading/Steps/StepLoadZoneContent.h"
 #include "ContentLoaderIW4.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Game/IW4/GameIW4.h"
@@ -19,9 +14,18 @@
 #include "Loading/Processor/ProcessorAuthedBlocks.h"
 #include "Loading/Processor/ProcessorCaptureData.h"
 #include "Loading/Processor/ProcessorInflate.h"
+#include "Loading/Steps/StepVerifyMagic.h"
+#include "Loading/Steps/StepSkipBytes.h"
+#include "Loading/Steps/StepVerifyFileName.h"
+#include "Loading/Steps/StepLoadSignature.h"
+#include "Loading/Steps/StepVerifySignature.h"
+#include "Loading/Steps/StepAddProcessor.h"
+#include "Loading/Steps/StepAllocXBlocks.h"
+#include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepLoadHash.h"
 #include "Loading/Steps/StepRemoveProcessor.h"
 #include "Loading/Steps/StepVerifyHash.h"
+
 
 using namespace IW4;
 
@@ -176,8 +180,7 @@ class ZoneLoaderFactory::Impl
 
         zoneLoader->AddLoadingStep(new StepVerifyFileName(fileName, sizeof IW4::DB_AuthSubHeader::fastfileName));
         zoneLoader->AddLoadingStep(new StepSkipBytes(4)); // Skip reserved
-        auto* masterBlockHashes = new StepLoadHash(sizeof IW4::DB_AuthHash::bytes,
-                                                   _countof(IW4::DB_AuthSubHeader::masterBlockHashes));
+        auto* masterBlockHashes = new StepLoadHash(sizeof IW4::DB_AuthHash::bytes, std::extent<decltype(IW4::DB_AuthSubHeader::masterBlockHashes)>::value);
         zoneLoader->AddLoadingStep(masterBlockHashes);
 
         zoneLoader->AddLoadingStep(new StepRemoveProcessor(subHeaderCapture));
@@ -188,9 +191,8 @@ class ZoneLoaderFactory::Impl
         zoneLoader->AddLoadingStep(new StepSkipBytes(AUTHED_CHUNK_SIZE - sizeof(IW4::DB_AuthHeader)));
 
         zoneLoader->AddLoadingStep(new StepAddProcessor(new ProcessorAuthedBlocks(
-            AUTHED_CHUNK_COUNT_PER_GROUP, AUTHED_CHUNK_SIZE, _countof(IW4::DB_AuthSubHeader::masterBlockHashes),
-            std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()),
-            masterBlockHashes)));
+            AUTHED_CHUNK_COUNT_PER_GROUP, AUTHED_CHUNK_SIZE, std::extent<decltype(IW4::DB_AuthSubHeader::masterBlockHashes)>::value,
+            std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), masterBlockHashes)));
     }
 
 public:

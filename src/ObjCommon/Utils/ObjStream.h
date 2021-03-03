@@ -3,11 +3,11 @@
 #pragma once
 
 #include <cassert>
-
-#include "Utils/ClassUtils.h"
 #include <streambuf>
 #include <iostream>
 #include <memory>
+
+#include "Utils/ClassUtils.h"
 
 template <class Elem, class Traits>
 class basic_objbuf : public std::basic_streambuf<Elem, Traits>
@@ -50,7 +50,7 @@ public:
 
     void swap(basic_objstream& right) noexcept
     {
-        if (this != _STD addressof(right))
+        if (this != std::addressof(right))
         {
             mybase::swap(right);
             m_ob = std::move(right.m_ob);
@@ -115,7 +115,7 @@ public:
 
     void swap(basic_iobjstream& right) noexcept
     {
-        if (this != _STD addressof(right))
+        if (this != std::addressof(right))
         {
             mybase::swap(right);
             m_ob = std::move(right.m_ob);
@@ -180,7 +180,7 @@ public:
 
     void swap(basic_oobjstream& right) noexcept
     {
-        if (this != _STD addressof(right))
+        if (this != std::addressof(right))
         {
             mybase::swap(right);
             m_ob = std::move(right.m_ob);

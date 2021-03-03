@@ -1,7 +1,7 @@
 ZoneCommon = {}
 
 function ZoneCommon:include()
-	if References:include("ZoneCommon") then
+	if References:include(self:name()) then
 		Utils:include()
 		ObjCommon:include()
 		includedirs {
@@ -11,12 +11,10 @@ function ZoneCommon:include()
 end
 
 function ZoneCommon:link()
-	if References:link("ZoneCommon") then
+	if References:link(self:name()) then
+		links(self:name())
 		Utils:link()
 		ObjCommon:link()
-		links {
-			"ZoneCommon"
-		}
 	end
 end
 
@@ -24,11 +22,15 @@ function ZoneCommon:use()
 	
 end
 
+function ZoneCommon:name()
+	return "ZoneCommon"
+end
+
 function ZoneCommon:project()
 	References:reset()
 	local folder = ProjectFolder();
 
-	project "ZoneCommon"
+	project(self:name())
         targetdir(TargetDirectoryLib)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "StaticLib"
@@ -40,4 +42,6 @@ function ZoneCommon:project()
 		}
 		
         self:include()
+
+		Utils:link()
 end

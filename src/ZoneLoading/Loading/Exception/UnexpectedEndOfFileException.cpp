@@ -7,7 +7,7 @@ std::string UnexpectedEndOfFileException::DetailedMessage()
     return "Unexpected end of file";
 }
 
-char const* UnexpectedEndOfFileException::what() const
+char const* UnexpectedEndOfFileException::what() const noexcept
 {
     return "Unexpected end of file";
 }

@@ -1,6 +1,7 @@
 #include "StepVerifyHash.h"
 
 #include <memory>
+#include <cstring>
 
 #include "Loading/Exception/InvalidHashException.h"
 

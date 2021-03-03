@@ -11,5 +11,5 @@ public:
     InvalidOffsetBlockOffsetException(XBlock* block, size_t referencedOffset);
 
     std::string DetailedMessage() override;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };

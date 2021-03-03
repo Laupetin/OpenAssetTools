@@ -1,6 +1,8 @@
 #include "Texture.h"
+
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 // ==============================================
 // ================= Texture ====================

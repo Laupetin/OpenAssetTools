@@ -10,7 +10,7 @@ std::string InvalidOffsetBlockException::DetailedMessage()
     return "Zone tried to reference invalid block " + std::to_string(m_referenced_block);
 }
 
-char const* InvalidOffsetBlockException::what() const
+char const* InvalidOffsetBlockException::what() const noexcept
 {
     return "Zone referenced invalid block";
 }

@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <cstring>
 
 const std::string InfoString::EMPTY_VALUE;
 
@@ -146,7 +147,7 @@ void InfoStringFromStructConverterBase::FillFromStringBuffer(const std::string& 
                                                              const size_t bufferSize)
 {
     const auto* str = reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(m_structure) + offset);
-    const auto strLen = strnlen_s(str, bufferSize);
+    const auto strLen = strnlen(str, bufferSize);
     m_info_string.SetValueForKey(key, std::string(str, strLen));
 }
 

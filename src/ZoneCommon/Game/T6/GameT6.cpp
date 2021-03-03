@@ -1,4 +1,7 @@
 #include "GameT6.h"
+
+#include <algorithm>
+
 #include "T6.h"
 
 using namespace T6;

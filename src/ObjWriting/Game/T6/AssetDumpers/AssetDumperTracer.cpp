@@ -1,6 +1,7 @@
 #include "AssetDumperTracer.h"
 
 #include <cassert>
+#include <type_traits>
 
 #include "Game/T6/InfoStringT6.h"
 
@@ -57,7 +58,7 @@ namespace T6
             switch (static_cast<tracerFieldType_t>(field.iFieldType))
             {
             case TFT_TRACERTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, tracerTypeNames, _countof(tracerTypeNames));
+                FillFromEnumInt(std::string(field.szName), field.iOffset, tracerTypeNames, std::extent<decltype(tracerTypeNames)>::value);
                 break;
 
             case TFT_NUM_FIELD_TYPES:
@@ -87,7 +88,7 @@ std::string AssetDumperTracer::GetFileNameForAsset(Zone* zone, XAssetInfo<Tracer
 
 void AssetDumperTracer::DumpAsset(Zone* zone, XAssetInfo<TracerDef>* asset, std::ostream& stream)
 {
-    InfoStringFromTracerConverter converter(asset->Asset(), tracer_fields, _countof(tracer_fields), [asset](const scr_string_t scrStr) -> std::string
+    InfoStringFromTracerConverter converter(asset->Asset(), tracer_fields, std::extent<decltype(tracer_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {
             assert(scrStr < asset->m_zone->m_script_strings.size());
             if (scrStr >= asset->m_zone->m_script_strings.size())
@@ -100,21 +101,3 @@ void AssetDumperTracer::DumpAsset(Zone* zone, XAssetInfo<TracerDef>* asset, std:
     const auto stringValue = infoString.ToString("TRACER");
     stream.write(stringValue.c_str(), stringValue.size());
 }
-
-//void AssetDumperTracer::CheckFields()
-//{
-//    assert(_countof(tracer_fields) == _countof(fields222));
-//
-//    for(auto i = 0u; i < _countof(tracer_fields); i++)
-//    {
-//        if(tracer_fields[i].iOffset != fields222[i].iOffset)
-//        {
-//            std::string error = "Error in field: " + std::string(tracer_fields[i].szName);
-//            MessageBoxA(NULL, error.c_str(), "", 0);
-//            exit(0);
-//        }
-//    }
-//
-//    MessageBoxA(NULL, "No error", "", 0);
-//    exit(0);
-//}

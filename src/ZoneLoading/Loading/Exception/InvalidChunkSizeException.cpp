@@ -24,7 +24,7 @@ std::string InvalidChunkSizeException::DetailedMessage()
     }
 }
 
-char const* InvalidChunkSizeException::what() const
+char const* InvalidChunkSizeException::what() const noexcept
 {
     return "Zone has invalid chunk size";
 }

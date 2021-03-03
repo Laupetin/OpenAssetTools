@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <type_traits>
 
 #include "Game/T6/InfoStringT6.h"
 
@@ -54,7 +55,7 @@ void AssetDumperPhysPreset::CopyToPhysPresetInfo(const PhysPreset* physPreset, P
     physPresetInfo->mass = std::clamp(physPreset->mass * 1000.0f, 1.0f, 2000.0f);
     physPresetInfo->bounce = physPreset->bounce;
 
-    if(isinf(physPreset->friction))
+    if(std::isinf(physPreset->friction))
     {
         physPresetInfo->isFrictionInfinity = 1;
         physPresetInfo->friction = 0;
@@ -91,7 +92,7 @@ void AssetDumperPhysPreset::DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset,
     auto* physPresetInfo = new PhysPresetInfo;
     CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
 
-    InfoStringFromPhysPresetConverter converter(physPresetInfo, physpreset_fields, _countof(physpreset_fields), [asset](const scr_string_t scrStr) -> std::string
+    InfoStringFromPhysPresetConverter converter(physPresetInfo, physpreset_fields, std::extent<decltype(physpreset_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {
             assert(scrStr < asset->m_zone->m_script_strings.size());
             if (scrStr >= asset->m_zone->m_script_strings.size())
@@ -109,9 +110,9 @@ void AssetDumperPhysPreset::DumpAsset(Zone* zone, XAssetInfo<PhysPreset>* asset,
 
 //void AssetDumperPhysPreset::CheckFields()
 //{
-//    assert(_countof(physpreset_fields) == _countof(fields222));
+//    assert(std::extent<decltype(physpreset_fields)>::value == std::extent<decltype(fields222)>::value);
 //
-//    for(auto i = 0u; i < _countof(physpreset_fields); i++)
+//    for(auto i = 0u; i < std::extent<decltype(physpreset_fields)>::value; i++)
 //    {
 //        if(physpreset_fields[i].iOffset != fields222[i].iOffset)
 //        {

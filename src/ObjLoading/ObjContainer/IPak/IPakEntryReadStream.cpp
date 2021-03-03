@@ -1,6 +1,7 @@
 #include "IPakEntryReadStream.h"
 
 #include <cassert>
+#include <cstring>
 
 #include <minilzo.h>
 
@@ -72,8 +73,8 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
         if (m_buffer_start_pos != startPos)
         {
             const auto moveEnd = endPos < m_buffer_end_pos ? endPos : m_buffer_end_pos;
-            memmove_s(m_chunk_buffer, IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ, &m_chunk_buffer[startPos - m_buffer_start_pos],
-                      static_cast<size_t>(moveEnd - startPos));
+            assert(IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ >= static_cast<size_t>(moveEnd - startPos));
+            memmove(m_chunk_buffer, &m_chunk_buffer[startPos - m_buffer_start_pos], static_cast<size_t>(moveEnd - startPos));
             m_buffer_start_pos = startPos;
         }
 
@@ -93,10 +94,8 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
 
     if (endPos > m_buffer_start_pos && endPos <= m_buffer_end_pos)
     {
-        memmove_s(&m_chunk_buffer[m_buffer_start_pos - startPos],
-                  IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ - static_cast<size_t>(m_buffer_start_pos - startPos),
-                  m_chunk_buffer,
-                  static_cast<size_t>(endPos - m_buffer_start_pos));
+        assert(IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ - static_cast<size_t>(m_buffer_start_pos - startPos) >= static_cast<size_t>(endPos - m_buffer_start_pos));
+        memmove(&m_chunk_buffer[m_buffer_start_pos - startPos], m_chunk_buffer, static_cast<size_t>(endPos - m_buffer_start_pos));
 
         const auto readChunkCount = ReadChunks(m_chunk_buffer,
                                                startPos,
@@ -151,8 +150,7 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHea
         commandsSize += blockHeader->_commands[commandIndex].size;
     }
 
-    const size_t requiredChunkCount = AlignForward<size_t>(
-        blockOffsetInChunk + sizeof IPakDataBlockHeader + commandsSize, IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
+    const size_t requiredChunkCount = AlignForward<size_t>(blockOffsetInChunk + sizeof(IPakDataBlockHeader) + commandsSize, IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
 
     const size_t amountOfReadChunks = static_cast<size_t>(m_buffer_end_pos - m_buffer_start_pos) / IPAK_CHUNK_SIZE;
 
@@ -177,7 +175,7 @@ bool IPakEntryReadStream::NextBlock()
     if (m_pos >= m_end_pos)
         return false;
 
-    m_pos = AlignForward<int64_t>(m_pos, sizeof IPakDataBlockHeader);
+    m_pos = AlignForward<int64_t>(m_pos, sizeof(IPakDataBlockHeader));
 
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
@@ -200,7 +198,7 @@ bool IPakEntryReadStream::NextBlock()
     if (!AdjustChunkBufferWindowForBlockHeader(m_current_block, blockOffsetInChunk))
         return false;
 
-    m_pos += sizeof IPakDataBlockHeader;
+    m_pos += sizeof(IPakDataBlockHeader);
     m_next_command = 0;
 
     return true;
@@ -212,7 +210,7 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
     {
         if (compressed == 1)
         {
-            lzo_uint outputSize = sizeof m_decompress_buffer;
+            lzo_uint outputSize = sizeof(m_decompress_buffer);
             const auto result = lzo1x_decompress_safe(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize,
                                                       m_decompress_buffer, &outputSize, nullptr);
 
@@ -336,8 +334,8 @@ std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize cou
 
         if (sizeToRead > 0)
         {
-            memcpy_s(&destBuffer[countRead], static_cast<rsize_t>(count - countRead),
-                     &m_current_command_buffer[m_current_command_offset], static_cast<rsize_t>(sizeToRead));
+            assert(static_cast<size_t>(count - countRead) >= static_cast<size_t>(sizeToRead));
+            memcpy(&destBuffer[countRead], &m_current_command_buffer[m_current_command_offset], static_cast<size_t>(sizeToRead));
             countRead += sizeToRead;
             m_current_command_offset += sizeToRead;
             m_file_offset += sizeToRead;

@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <memory>
-
+#include <cstring>
 
 #include "Game/IW4/IW4.h"
 #include "Loading/Exception/InvalidHashException.h"
@@ -80,8 +80,7 @@ public:
                                    m_hash_function->GetHashSize()) != 0)
                     throw InvalidHashException();
 
-                memcpy_s(m_chunk_hashes_buffer.get(), m_authed_chunk_count * m_hash_function->GetHashSize(),
-                         m_chunk_buffer.get(), m_authed_chunk_count * m_hash_function->GetHashSize());
+                memcpy(m_chunk_hashes_buffer.get(), m_chunk_buffer.get(), m_authed_chunk_count * m_hash_function->GetHashSize());
 
                 m_current_chunk_in_group++;
             }
@@ -122,8 +121,8 @@ public:
             if (sizeToWrite > m_current_chunk_size - m_current_chunk_offset)
                 sizeToWrite = m_current_chunk_size - m_current_chunk_offset;
 
-            memcpy_s(&static_cast<uint8_t*>(buffer)[loadedSize], length - loadedSize,
-                     &m_chunk_buffer[m_current_chunk_offset], sizeToWrite);
+            assert(length - loadedSize >= sizeToWrite);
+            memcpy(&static_cast<uint8_t*>(buffer)[loadedSize], &m_chunk_buffer[m_current_chunk_offset], sizeToWrite);
             loadedSize += sizeToWrite;
             m_current_chunk_offset += sizeToWrite;
         }

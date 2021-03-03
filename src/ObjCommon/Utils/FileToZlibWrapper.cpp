@@ -60,15 +60,15 @@ long Wrapper_Zlib_FileSeekRead(voidpf opaque, voidpf stream, const uLong offset,
     switch (origin)
     {
     case ZLIB_FILEFUNC_SEEK_CUR:
-        file->seekg(offset, SEEK_CUR);
+        file->seekg(offset, std::ios_base::cur);
         break;
 
     case ZLIB_FILEFUNC_SEEK_END:
-        file->seekg(offset, SEEK_END);
+        file->seekg(offset, std::ios_base::end);
         break;
 
     case ZLIB_FILEFUNC_SEEK_SET:
-        file->seekg(offset, SEEK_SET);
+        file->seekg(offset, std::ios_base::beg);
         break;
 
     default:
@@ -86,15 +86,15 @@ long Wrapper_Zlib_FileSeekWrite(voidpf opaque, voidpf stream, const uLong offset
     switch (origin)
     {
     case ZLIB_FILEFUNC_SEEK_CUR:
-        file->seekp(offset, SEEK_CUR);
+        file->seekp(offset, std::ios_base::cur);
         break;
 
     case ZLIB_FILEFUNC_SEEK_END:
-        file->seekp(offset, SEEK_END);
+        file->seekp(offset, std::ios_base::end);
         break;
 
     case ZLIB_FILEFUNC_SEEK_SET:
-        file->seekp(offset, SEEK_SET);
+        file->seekp(offset, std::ios_base::beg);
         break;
 
     default:

@@ -1,7 +1,10 @@
 #include "ChunkProcessorInflate.h"
+
+#include <stdexcept>
+
 #include "zlib.h"
 #include "zutil.h"
-#include <exception>
+
 #include "Loading/Exception/InvalidCompressionException.h"
 
 size_t ChunkProcessorInflate::Process(int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
@@ -14,7 +17,7 @@ size_t ChunkProcessorInflate::Process(int streamNumber, const uint8_t* input, co
     int ret = inflateInit2(&stream, -DEF_WBITS);
     if(ret != Z_OK)
     {
-        throw std::exception("Initializing inflate failed.");
+        throw std::runtime_error("Initializing inflate failed.");
     }
 
     stream.avail_in = inputLength;

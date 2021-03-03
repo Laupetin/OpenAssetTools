@@ -1,9 +1,11 @@
 #include "XBlockInputStream.h"
+
+#include <cassert>
+#include <cstring>
+
 #include "Loading/Exception/BlockOverflowException.h"
 #include "Loading/Exception/InvalidOffsetBlockException.h"
 #include "Loading/Exception/InvalidOffsetBlockOffsetException.h"
-
-#include <cassert>
 #include "Loading/Exception/OutOfBlockBoundsException.h"
 
 XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, const int blockBitCount,

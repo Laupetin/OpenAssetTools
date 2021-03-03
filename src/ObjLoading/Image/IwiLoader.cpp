@@ -1,6 +1,9 @@
 #include "IwiLoader.h"
-#include "Image/IwiTypes.h"
+
 #include <cassert>
+#include <type_traits>
+
+#include "Image/IwiTypes.h"
 
 IwiLoader::IwiLoader(MemoryManager* memoryManager)
 {
@@ -56,8 +59,8 @@ Texture* IwiLoader::LoadIwi8(std::istream& stream) const
 {
     iwi8::IwiHeader header{};
 
-    stream.read(reinterpret_cast<char*>(&header), sizeof header);
-    if (stream.gcount() != sizeof header)
+    stream.read(reinterpret_cast<char*>(&header), sizeof(header));
+    if (stream.gcount() != sizeof(header))
         return nullptr;
 
     const auto* format = GetFormat8(header.format);
@@ -95,7 +98,7 @@ Texture* IwiLoader::LoadIwi8(std::istream& stream) const
 
     texture->Allocate();
 
-    auto currentFileSize = sizeof iwi8::IwiHeader + sizeof IwiVersion;
+    auto currentFileSize = sizeof(iwi8::IwiHeader) + sizeof(IwiVersion);
     const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
     for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -103,7 +106,7 @@ Texture* IwiLoader::LoadIwi8(std::istream& stream) const
         const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
-        if (currentMipLevel < static_cast<int>(_countof(iwi8::IwiHeader::fileSizeForPicmip))
+        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi8::IwiHeader::fileSizeForPicmip)>::value)
             && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
         {
             printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);
@@ -173,8 +176,8 @@ Texture* IwiLoader::LoadIwi27(std::istream& stream) const
 {
     iwi27::IwiHeader header{};
 
-    stream.read(reinterpret_cast<char*>(&header), sizeof header);
-    if (stream.gcount() != sizeof header)
+    stream.read(reinterpret_cast<char*>(&header), sizeof(header));
+    if (stream.gcount() != sizeof(header))
         return nullptr;
 
     const auto* format = GetFormat27(header.format);
@@ -202,7 +205,7 @@ Texture* IwiLoader::LoadIwi27(std::istream& stream) const
 
     texture->Allocate();
 
-    auto currentFileSize = sizeof iwi27::IwiHeader + sizeof IwiVersion;
+    auto currentFileSize = sizeof(iwi27::IwiHeader) + sizeof(IwiVersion);
     const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
 
     for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -210,7 +213,7 @@ Texture* IwiLoader::LoadIwi27(std::istream& stream) const
         const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
-        if (currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip))
+        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi27::IwiHeader::fileSizeForPicmip)>::value)
             && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
         {
             printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);
@@ -236,8 +239,8 @@ Texture* IwiLoader::LoadIwi(std::istream& stream)
 {
     IwiVersion iwiVersion{};
 
-    stream.read(reinterpret_cast<char*>(&iwiVersion), sizeof iwiVersion);
-    if (stream.gcount() != sizeof iwiVersion)
+    stream.read(reinterpret_cast<char*>(&iwiVersion), sizeof(iwiVersion));
+    if (stream.gcount() != sizeof(iwiVersion))
         return nullptr;
 
     if (iwiVersion.tag[0] != 'I'

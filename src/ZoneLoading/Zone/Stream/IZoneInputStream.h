@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Zone/Stream/IZoneStream.h"
 #include <cstdint>
+#include <cstddef>
+
+#include "Zone/Stream/IZoneStream.h"
 
 class IZoneInputStream : public IZoneStream
 {

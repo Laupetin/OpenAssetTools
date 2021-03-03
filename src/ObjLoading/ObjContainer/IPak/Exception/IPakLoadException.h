@@ -10,5 +10,5 @@ public:
     explicit IPakLoadException(std::string message);
 
     const std::string& DetailedMessage() const;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };

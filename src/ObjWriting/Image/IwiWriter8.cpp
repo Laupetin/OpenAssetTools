@@ -48,21 +48,21 @@ void IwiWriter::WriteVersion(std::ostream& stream)
     version.tag[2] = 'i';
     version.version = 8;
 
-    stream.write(reinterpret_cast<char*>(&version), sizeof IwiVersion);
+    stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
 }
 
 void IwiWriter::FillHeader2D(IwiHeader* header, Texture2D* texture)
 {
     header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
     header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
-    header->dimensions[2] = 1ui16;
+    header->dimensions[2] = 1u;
 }
 
 void IwiWriter::FillHeaderCube(IwiHeader* header, TextureCube* texture)
 {
     header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
     header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
-    header->dimensions[2] = 1ui16;
+    header->dimensions[2] = 1u;
     header->flags |= IMG_FLAG_MAPTYPE_CUBE;
 }
 
@@ -98,7 +98,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
     if (!texture->HasMipMaps())
         header.flags |= IMG_FLAG_NOMIPMAPS;
 
-    auto currentFileSize = sizeof IwiVersion + sizeof IwiHeader;
+    auto currentFileSize = sizeof(IwiVersion) + sizeof(IwiHeader);
 
     const auto textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
     for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
@@ -106,7 +106,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
         const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
-        if (currentMipLevel < static_cast<int>(_countof(iwi27::IwiHeader::fileSizeForPicmip)))
+        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi27::IwiHeader::fileSizeForPicmip)>::value))
             header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
     }
 
@@ -128,7 +128,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
         return;
     }
 
-    stream.write(reinterpret_cast<char*>(&header), sizeof IwiHeader);
+    stream.write(reinterpret_cast<char*>(&header), sizeof(IwiHeader));
 
     for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {

@@ -56,7 +56,7 @@ void TextureConverter::SetPixelFunctions(const unsigned inBitCount, const unsign
             assert(false);
             m_read_pixel_func = [](const void* offset, unsigned bitCount)
             {
-                return 0ui64;
+                return 0ull;
             };
         }
         break;

@@ -1,6 +1,18 @@
 #include "ZoneLoaderFactoryT6.h"
+
+#include <cassert>
+#include <cstring>
+
 #include "Game/T6/T6.h"
 
+#include "Utils/ClassUtils.h"
+#include "ContentLoaderT6.h"
+#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/GameLanguage.h"
+#include "Game/T6/GameT6.h"
+#include "Loading/Processor/ProcessorXChunks.h"
+#include "Loading/Processor/XChunks/ChunkProcessorSalsa20.h"
+#include "Loading/Processor/XChunks/ChunkProcessorInflate.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepSkipBytes.h"
 #include "Loading/Steps/StepVerifyFileName.h"
@@ -8,18 +20,7 @@
 #include "Loading/Steps/StepVerifySignature.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
-
-#include "Loading/Processor/ProcessorXChunks.h"
-#include "Loading/Processor/XChunks/ChunkProcessorSalsa20.h"
-#include "Loading/Processor/XChunks/ChunkProcessorInflate.h"
-
-#include "Utils/ClassUtils.h"
-#include <cassert>
 #include "Loading/Steps/StepLoadZoneContent.h"
-#include "ContentLoaderT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
-#include "Game/T6/GameT6.h"
-#include "Game/GameLanguage.h"
 
 using namespace T6;
 

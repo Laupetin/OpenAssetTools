@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ILoadingStream.h"
 
 class StreamProcessor : public ILoadingStream

@@ -10,7 +10,7 @@ std::string InvalidMagicException::DetailedMessage()
     return "Expected magic '" + std::string(m_expected_magic) + "'";
 }
 
-char const* InvalidMagicException::what() const
+char const* InvalidMagicException::what() const noexcept
 {
     return "Encountered invalid magic when loading.";
 }

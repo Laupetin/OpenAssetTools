@@ -16,24 +16,24 @@ std::string AssetDumperLoadedSound::GetFileNameForAsset(Zone* zone, XAssetInfo<L
 
 void AssetDumperLoadedSound::DumpWavPcm(Zone* zone, const LoadedSound* asset, std::ostream& stream)
 {
-    const auto riffMasterChunkSize = sizeof WAV_CHUNK_ID_RIFF
-        + sizeof uint32_t
-        + sizeof WAV_WAVE_ID
-        + sizeof WavChunkHeader
-        + sizeof WavFormatChunkPcm
-        + sizeof WavChunkHeader
-        + sizeof asset->sound.info.data_len;
+    const auto riffMasterChunkSize = sizeof(WAV_CHUNK_ID_RIFF)
+        + sizeof(uint32_t)
+        + sizeof(WAV_WAVE_ID)
+        + sizeof(WavChunkHeader)
+        + sizeof(WavFormatChunkPcm)
+        + sizeof(WavChunkHeader)
+        + sizeof(asset->sound.info.data_len);
 
-    stream.write(reinterpret_cast<const char*>(&WAV_CHUNK_ID_RIFF), sizeof WAV_CHUNK_ID_RIFF);
-    stream.write(reinterpret_cast<const char*>(&riffMasterChunkSize), sizeof riffMasterChunkSize);
-    stream.write(reinterpret_cast<const char*>(&WAV_WAVE_ID), sizeof WAV_WAVE_ID);
+    stream.write(reinterpret_cast<const char*>(&WAV_CHUNK_ID_RIFF), sizeof(WAV_CHUNK_ID_RIFF));
+    stream.write(reinterpret_cast<const char*>(&riffMasterChunkSize), sizeof(riffMasterChunkSize));
+    stream.write(reinterpret_cast<const char*>(&WAV_WAVE_ID), sizeof(WAV_WAVE_ID));
 
     const WavChunkHeader formatChunkHeader
     {
         WAV_CHUNK_ID_FMT,
-        sizeof WavFormatChunkPcm
+        sizeof(WavFormatChunkPcm)
     };
-    stream.write(reinterpret_cast<const char*>(&formatChunkHeader), sizeof formatChunkHeader);
+    stream.write(reinterpret_cast<const char*>(&formatChunkHeader), sizeof(formatChunkHeader));
 
     WavFormatChunkPcm formatChunk
     {
@@ -44,14 +44,14 @@ void AssetDumperLoadedSound::DumpWavPcm(Zone* zone, const LoadedSound* asset, st
         static_cast<uint16_t>(asset->sound.info.block_size),
         static_cast<uint16_t>(asset->sound.info.bits)
     };
-    stream.write(reinterpret_cast<const char*>(&formatChunk), sizeof formatChunk);
+    stream.write(reinterpret_cast<const char*>(&formatChunk), sizeof(formatChunk));
 
     const WavChunkHeader dataChunkHeader
     {
         WAV_CHUNK_ID_DATA,
         asset->sound.info.data_len
     };
-    stream.write(reinterpret_cast<const char*>(&dataChunkHeader), sizeof dataChunkHeader);
+    stream.write(reinterpret_cast<const char*>(&dataChunkHeader), sizeof(dataChunkHeader));
     stream.write(asset->sound.data, asset->sound.info.data_len);
 }
 

@@ -1,5 +1,7 @@
 #include "gfximage_actions.h"
+
 #include <cassert>
+#include <cstring>
 
 using namespace IW4;
 

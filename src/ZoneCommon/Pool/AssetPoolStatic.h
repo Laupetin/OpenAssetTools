@@ -1,10 +1,11 @@
 #pragma once
 
+#include <cstring>
+#include <stdexcept>
+
 #include "GlobalAssetPool.h"
 #include "AssetPool.h"
 #include "XAssetInfo.h"
-
-#include <cstring>
 
 template <typename T>
 class AssetPoolStatic final : public AssetPool<T>
@@ -85,7 +86,7 @@ public:
     {
         if(m_free == nullptr)
         {
-            throw std::exception("Could not add asset to static asset pool: capacity exhausted.");
+            throw std::runtime_error("Could not add asset to static asset pool: capacity exhausted.");
         }
 
         AssetPoolEntry* poolSlot = m_free;

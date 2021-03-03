@@ -1,6 +1,7 @@
 #include "ProcessorCaptureData.h"
 
 #include <cassert>
+#include <cstring>
 
 ProcessorCaptureData::ProcessorCaptureData(const size_t captureSize)
     : m_data(std::make_unique<uint8_t[]>(captureSize)),
@@ -23,7 +24,8 @@ size_t ProcessorCaptureData::Load(void* buffer, const size_t length)
         dataToCapture = length;
 
     size_t loadedSize = m_base_stream->Load(&m_data[m_captured_data_size], dataToCapture);
-    memcpy_s(buffer, length, &m_data[m_captured_data_size], loadedSize);
+    assert(length >= loadedSize);
+    memcpy(buffer, &m_data[m_captured_data_size], loadedSize);
 
     m_captured_data_size += loadedSize;
 

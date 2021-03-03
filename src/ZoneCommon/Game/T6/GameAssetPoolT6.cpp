@@ -1,7 +1,10 @@
 #include "GameAssetPoolT6.h"
+
+#include <cassert>
+#include <type_traits>
+
 #include "Pool/AssetPoolStatic.h"
 #include "Pool/AssetPoolDynamic.h"
-#include <cassert>
 
 using namespace T6;
 
@@ -74,7 +77,7 @@ GameAssetPoolT6::GameAssetPoolT6(Zone* zone, const int priority)
     : ZoneAssetPools(zone),
       m_priority(priority)
 {
-    assert(_countof(ASSET_TYPE_NAMES) == ASSET_TYPE_COUNT);
+    assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
 
     m_phys_preset = nullptr;
     m_phys_constraints = nullptr;
@@ -477,7 +480,7 @@ XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, std::strin
 
 const std::string& GameAssetPoolT6::GetAssetTypeName(const asset_type_t assetType) const
 {
-    if (assetType >= 0 && assetType < static_cast<int>(_countof(ASSET_TYPE_NAMES)))
+    if (assetType >= 0 && assetType < static_cast<int>(std::extent<decltype(ASSET_TYPE_NAMES)>::value))
         return ASSET_TYPE_NAMES[assetType];
 
     return ASSET_TYPE_INVALID;

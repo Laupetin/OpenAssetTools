@@ -1,6 +1,7 @@
 #include "AssetDumperVehicle.h"
 
 #include <cassert>
+#include <type_traits>
 
 #include "Game/T6/InfoStringT6.h"
 
@@ -606,15 +607,15 @@ namespace T6
             switch (static_cast<VehicleFieldType>(field.iFieldType))
             {
             case VFT_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleClassNames, _countof(s_vehicleClassNames));
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleClassNames, std::extent<decltype(s_vehicleClassNames)>::value);
                 break;
 
             case VFT_CAMERAMODE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleCameraModes, _countof(s_vehicleCameraModes));
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleCameraModes, std::extent<decltype(s_vehicleCameraModes)>::value);
                 break;
 
             case VFT_TRACTION_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_tractionTypeNames, _countof(s_tractionTypeNames));
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_tractionTypeNames, std::extent<decltype(s_tractionTypeNames)>::value);
                 break;
 
             case VFT_MPH_TO_INCHES_PER_SECOND:
@@ -682,7 +683,7 @@ std::string AssetDumperVehicle::GetFileNameForAsset(Zone* zone, XAssetInfo<Vehic
 
 void AssetDumperVehicle::DumpAsset(Zone* zone, XAssetInfo<VehicleDef>* asset, std::ostream& stream)
 {
-    InfoStringFromVehicleConverter converter(asset->Asset(), vehicle_fields, _countof(vehicle_fields), [asset](const scr_string_t scrStr) -> std::string
+    InfoStringFromVehicleConverter converter(asset->Asset(), vehicle_fields, std::extent<decltype(vehicle_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
     {
         assert(scrStr < asset->m_zone->m_script_strings.size());
         if (scrStr >= asset->m_zone->m_script_strings.size())

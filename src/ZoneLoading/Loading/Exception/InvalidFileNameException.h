@@ -10,5 +10,5 @@ public:
     InvalidFileNameException(std::string& actualFileName, std::string& expectedFileName);
 
     std::string DetailedMessage() override;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };

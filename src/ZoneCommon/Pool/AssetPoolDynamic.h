@@ -32,7 +32,7 @@ public:
 
         for(auto* entry : m_assets)
         {
-            delete entry->m_ptr;
+            delete entry->Asset();
             delete entry;
         }
 

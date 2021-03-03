@@ -9,5 +9,5 @@ public:
     explicit UnsupportedAssetTypeException(int assetType);
 
     std::string DetailedMessage() override;
-    char const* what() const override;
+    char const* what() const noexcept override;
 };
