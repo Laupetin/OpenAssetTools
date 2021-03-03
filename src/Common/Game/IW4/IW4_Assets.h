@@ -290,7 +290,7 @@ namespace IW4
         uint16_t _2[1];
     };
 
-    struct alignas(4) XAnimPartTransFrames
+    struct type_align(4) XAnimPartTransFrames
     {
         float mins[3];
         float size[3];
@@ -319,7 +319,7 @@ namespace IW4
 
     typedef tdef_align(4) short XQuat2[2];
 
-    struct alignas(4) XAnimDeltaPartQuatDataFrames2
+    struct type_align(4) XAnimDeltaPartQuatDataFrames2
     {
         XQuat2* frames;
         XAnimDynamicIndicesQuat2 indices;
@@ -423,7 +423,7 @@ namespace IW4
         char array[4];
     };
 
-    struct alignas(16) GfxPackedVertex
+    struct type_align(16) GfxPackedVertex
     {
         float xyz[3];
         float binormalSign;
@@ -439,7 +439,7 @@ namespace IW4
         uint16_t maxs[3];
     };
 
-    struct alignas(16) XSurfaceCollisionNode
+    struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         uint16_t childBeginIndex;
@@ -618,7 +618,7 @@ namespace IW4
         MaterialTextureDefInfo u;
     };
 
-    struct alignas(16) MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -678,7 +678,7 @@ namespace IW4
         GfxStateBits* stateBitsTable;
     };
 
-    struct alignas(4) GfxImageLoadDef
+    struct type_align(4) GfxImageLoadDef
     {
         char levelCount;
         char pad[3];
@@ -1314,7 +1314,7 @@ namespace IW4
         ItemKeyHandler* next;
     };
 
-    struct alignas(4) rectDef_s
+    struct type_align(4) rectDef_s
     {
         float x;
         float y;
@@ -1776,7 +1776,7 @@ namespace IW4
         DATA_COUNT = 0xA,
     };
 
-    struct alignas(4) StructuredDataEnumEntry
+    struct type_align(4) StructuredDataEnumEntry
     {
         const char* string;
         uint16_t index;
@@ -1987,7 +1987,7 @@ namespace IW4
         int partitionIndex;
     };
 
-    struct alignas(16) CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         float midPoint[3];
         uint16_t materialIndex;
@@ -2276,7 +2276,7 @@ namespace IW4
         pathnode_transient_t transient;
     };
 
-    struct alignas(16) pathbasenode_t
+    struct type_align(16) pathbasenode_t
     {
         float vOrigin[3];
         unsigned int type;
@@ -2472,7 +2472,7 @@ namespace IW4
         char endVertIndex;
     };
 
-    union alignas(4) FxGlassGeometryData
+    union type_align(4) FxGlassGeometryData
     {
         FxGlassVertex vert;
         FxGlassHoleHeader hole;
@@ -2664,14 +2664,14 @@ namespace IW4
         r_index_t* indices;
     };
 
-    struct alignas(4) GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
         char primaryLightIndex;
         char needsTrace;
     };
 
-    struct alignas(4) GfxLightGridColors
+    struct type_align(4) GfxLightGridColors
     {
         char rgb[56][3];
     };
@@ -2698,7 +2698,7 @@ namespace IW4
         Bounds bounds;
     };
 
-    struct alignas(4) GfxBrushModel
+    struct type_align(4) GfxBrushModel
     {
         GfxBrushModelWritable writable;
         Bounds bounds;
@@ -2758,7 +2758,7 @@ namespace IW4
         uint16_t surfId;
     };
 
-    struct alignas(4) GfxSceneDynBrush
+    struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;
