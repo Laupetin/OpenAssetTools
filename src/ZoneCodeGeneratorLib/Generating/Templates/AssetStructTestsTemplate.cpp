@@ -13,8 +13,19 @@ class AssetStructTestsTemplate::Internal final : BaseTemplate
         LINE("TEST_CASE(\""<<m_env.m_game<<"::"<<m_env.m_asset->m_definition->GetFullName()<<": Tests for "<<structure->m_definition->GetFullName()<<"\", \"[assetstruct]\")")
         LINE("{")
         m_intendation++;
+
+        for(const auto& member : structure->m_ordered_members)
+        {
+            if(!member->m_member->m_name.empty() && !member->m_member->m_type_declaration->m_has_custom_bit_size)
+            {
+                LINE("REQUIRE(offsetof(" << structure->m_definition->GetFullName() << ", " << member->m_member->m_name << ") == " << member->m_member->m_offset << ");")
+            }
+        }
+
+        LINE("")
+
         LINE("REQUIRE("<<structure->m_definition->GetSize()<<"u == sizeof("<<structure->m_definition->GetFullName()<<"));")
-        LINE("// REQUIRE("<<structure->m_definition->GetAlignment()<<"u == alignof("<<structure->m_definition->GetFullName()<<"));")
+        LINE("REQUIRE("<<structure->m_definition->GetAlignment()<<"u == alignof("<<structure->m_definition->GetFullName()<<"));")
         m_intendation--;
         LINE("}")
     }
@@ -34,6 +45,7 @@ public:
         LINE("// ====================================================================")
         LINE("")
         LINE("#include <catch2/catch.hpp>")
+        LINE("#include <cstddef>")
         LINE("#include \"Game/" << m_env.m_game << "/" << m_env.m_game << ".h\"")
         LINE("")
         LINE("using namespace " << m_env.m_game << ";")

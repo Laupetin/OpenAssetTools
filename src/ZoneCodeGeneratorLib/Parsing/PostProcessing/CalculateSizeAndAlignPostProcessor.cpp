@@ -129,6 +129,7 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
 
         if (member->m_type_declaration->m_has_custom_bit_size)
         {
+            member->m_offset = definition->m_size + currentBitOffset / 8;
             currentBitOffset += member->m_type_declaration->m_custom_bit_size;
         }
         else
@@ -141,6 +142,9 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
             }
 
             definition->m_size = AlignmentUtils::Align(definition->m_size, member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack));
+
+            member->m_offset = definition->m_size;
+
             definition->m_size += member->m_type_declaration->GetSize();
         }
     }
@@ -164,6 +168,8 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
     {
         if (!CalculateFields(repository, member->m_type_declaration.get()))
             return false;
+
+        member->m_offset = 0;
 
         const auto memberSize = member->m_type_declaration->GetSize();
         if (memberSize > definition->m_size)
