@@ -3,7 +3,7 @@ stages:
     - test
         
 build-gcc:
-    image: gcc:latest
+    image: laupetin/gcc-9-multilib:latest
     stage: build
     cache:
       paths:
@@ -13,11 +13,14 @@ build-gcc:
       - docker
       - linux
     script:
+        - "echo pwd: $(pwd)"
+        - "echo ls: $(ls)"
+        - "echo ls ci: $(ls ./ci)"
         - "./generate.sh"
-        - "make -C build -j$(nproc) config=release_x86 all"
+        - "./build-linux.sh"
 
 test-gcc:
-    image: gcc:latest
+    image: laupetin/gcc-9-multilib:latest
     stage: test
     cache:
       paths:
@@ -27,8 +30,6 @@ test-gcc:
       - docker
       - linux
     script:
-        - "./generate.sh"
-        - "make -C build -j$(nproc) config=release_x86 ObjCommonTests ZoneCodeGeneratorLibTests ZoneCommonTests"
         - "./build/lib/Release_x86/tests/ObjCommonTests"
         - "./build/lib/Release_x86/tests/ZoneCodeGeneratorLibTests"
         - "./build/lib/Release_x86/tests/ZoneCommonTests"
