@@ -17,6 +17,7 @@ build-gcc:
         - "make -C build -j$(nproc) config=release_x86 all"
 
 test-gcc:
+    image: gcc:latest
     stage: test
     cache:
       paths:
