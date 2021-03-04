@@ -10,6 +10,9 @@
 #ifdef memb_align
 #undef memb_align
 #endif
+#ifdef gcc_align
+#undef gcc_align
+#endif
 
 #ifdef __zonecodegenerator
 #define type_align(x) alignas(x)
@@ -24,7 +27,7 @@
 #define gcc_align(x)
 #else
 #define type_align(x) __attribute__((__aligned__(x)))
-#define tdef_align(x) /*__attribute__((__aligned__(x)))*/
+#define tdef_align(x)
 #define memb_align(x) __attribute__((__aligned__(x)))
 #define gcc_align(x) __attribute__((__aligned__(x)))
 #endif
