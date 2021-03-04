@@ -14,7 +14,7 @@ class AssetStructTestsTemplate::Internal final : BaseTemplate
         LINE("{")
         m_intendation++;
         LINE("REQUIRE("<<structure->m_definition->GetSize()<<"u == sizeof("<<structure->m_definition->GetFullName()<<"));")
-        LINE("REQUIRE("<<structure->m_definition->GetAlignment()<<"u == alignof("<<structure->m_definition->GetFullName()<<"));")
+        LINE("// REQUIRE("<<structure->m_definition->GetAlignment()<<"u == alignof("<<structure->m_definition->GetFullName()<<"));")
         m_intendation--;
         LINE("}")
     }

@@ -133,7 +133,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, StructureInformation* info) const
     {
-        LINE("*"<< MakeTypePtrVarName(def)<<" = m_stream->Alloc<"<<def->GetFullName()<<">(alignof("<<def->GetFullName()<<")); // "<<def->GetAlignment())
+        LINE("*"<< MakeTypePtrVarName(def)<<" = m_stream->Alloc<"<<def->GetFullName()<<">("<< def->GetAlignment() <<");")
 
         if (info && !info->m_is_leaf)
         {
@@ -237,7 +237,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("for(size_t index = 0; index < count; index++)")
         LINE("{")
         m_intendation++;
-        
+
         LINE(MakeTypeVarName(info->m_definition) << " = var;")
         LINE("Load_"<<info->m_definition->m_name<<"(false);")
         LINE("var++;")
@@ -549,8 +549,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
         const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
         const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
-        LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">(alignof("<<typeDecl<<followingReferences
-            <<")); // " << modifier.GetAlignment())
+
+        // This used to use `alignof()` to calculate alignment but due to inconsistencies between compilers and bugs discovered in MSVC
+        // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a larger alignment than the specified value)
+        // this was changed to make ZoneCodeGenerator calculate what is supposed to be used as alignment when allocating.
+        // This is more reliable when being used with different compilers and the value used can be seen in the source code directly
+        LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">("<<modifier.GetAlignment()<<");")
 
         if (computations.IsInTempBlock())
         {
@@ -949,7 +953,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE(info->m_definition->GetFullName() << "* ptr = *" << MakeTypePtrVarName(info->m_definition) << ";")
-        LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->Alloc<" << info->m_definition->GetFullName() << ">(alignof(" << info->m_definition->GetFullName() << "));")
+        LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->Alloc<" << info->m_definition->GetFullName() << ">("<< info->m_definition->GetAlignment() <<");")
         LINE("")
         LINE(info->m_definition->GetFullName() << "** toInsert = nullptr;")
         LINE("if(ptr == PTR_INSERT)")
