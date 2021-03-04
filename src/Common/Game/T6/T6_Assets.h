@@ -3594,7 +3594,6 @@ namespace T6
         unsigned int m128_u32[4];
     };
 
-
     struct vector3
     {
         __m128 x;
@@ -3602,9 +3601,11 @@ namespace T6
         __m128 z;
     };
 
-
-    struct vector4 : vector3
+    struct vector4
     {
+        __m128 x;
+        __m128 y;
+        __m128 z;
         __m128 w;
     };
 
