@@ -13,11 +13,8 @@ build-gcc:
       - docker
       - linux
     script:
-        - "echo pwd: $(pwd)"
-        - "echo ls: $(ls)"
-        - "echo ls ci: $(ls ./ci)"
         - "./generate.sh"
-        - "./build-linux.sh"
+        - "./scripts/make-release.sh"
 
 test-gcc:
     image: laupetin/gcc-9-multilib:latest
