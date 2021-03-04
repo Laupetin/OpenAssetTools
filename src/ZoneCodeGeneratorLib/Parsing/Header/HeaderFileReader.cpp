@@ -44,7 +44,7 @@ void HeaderFileReader::SetupStreamProxies()
     auto includeProxy = std::make_unique<IncludingStreamProxy>(commentProxy.get());
     auto packProxy = std::make_unique<PackDefinitionStreamProxy>(includeProxy.get());
     auto definesProxy = std::make_unique<DefinesStreamProxy>(packProxy.get());
-    definesProxy->AddDefine(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE);
+    definesProxy->AddDefine(DefinesStreamProxy::Define(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE));
 
     m_pack_value_supplier = packProxy.get();
     m_stream = definesProxy.get();

@@ -43,7 +43,7 @@ void CommandsFileReader::SetupStreamProxies()
     auto commentProxy = std::make_unique<CommentRemovingStreamProxy>(m_stream);
     auto includeProxy = std::make_unique<IncludingStreamProxy>(commentProxy.get());
     auto definesProxy = std::make_unique<DefinesStreamProxy>(includeProxy.get());
-    definesProxy->AddDefine(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE);
+    definesProxy->AddDefine(DefinesStreamProxy::Define(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE));
 
     m_stream = definesProxy.get();
 

@@ -5,10 +5,156 @@
 
 #include "Parsing/ParsingException.h"
 
+DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
+    : m_parameter_index(0u),
+      m_parameter_position(0u)
+{
+}
+
+DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const unsigned position)
+    : m_parameter_index(index),
+      m_parameter_position(position)
+{
+}
+
+DefinesStreamProxy::Define::Define()
+= default;
+
+DefinesStreamProxy::Define::Define(std::string name, std::string value)
+    : m_name(std::move(name)),
+      m_value(std::move(value))
+{
+}
+
+std::string DefinesStreamProxy::Define::Render(std::vector<std::string>& parameterValues)
+{
+    if (parameterValues.empty() || m_parameter_positions.empty())
+        return m_value;
+
+    std::ostringstream str;
+    auto lastPos = 0u;
+    for (const auto& parameterPosition : m_parameter_positions)
+    {
+        if (lastPos < parameterPosition.m_parameter_position)
+            str << std::string(m_value, lastPos, parameterPosition.m_parameter_position - lastPos);
+
+        if (parameterPosition.m_parameter_index < parameterValues.size())
+        {
+            str << parameterValues[parameterPosition.m_parameter_index];
+        }
+
+        lastPos = parameterPosition.m_parameter_position;
+    }
+
+    if (lastPos < m_value.size())
+        str << std::string(m_value, lastPos, m_value.size() - lastPos);
+
+    return str.str();
+}
+
+void DefinesStreamProxy::Define::IdentifyParameters(std::vector<std::string>& parameterNames)
+{
+    if (parameterNames.empty())
+        return;
+
+    auto inWord = false;
+    auto wordStart = 0u;
+    for (auto i = 0u; i < m_value.size(); i++)
+    {
+        const auto c = m_value[i];
+        if (!isalnum(c))
+        {
+            if (inWord)
+            {
+                const std::string word(m_value, wordStart, i - wordStart);
+
+                auto parameterIndex = 0u;
+                for (; parameterIndex < parameterNames.size(); parameterIndex++)
+                {
+                    if (word == parameterNames[parameterIndex])
+                        break;
+                }
+
+                if (parameterIndex < parameterNames.size())
+                {
+                    m_value.erase(wordStart, i - wordStart);
+                    m_parameter_positions.emplace_back(parameterIndex, wordStart);
+                    i = wordStart;
+                }
+
+                inWord = false;
+            }
+        }
+        else
+        {
+            if (!inWord && (isalpha(c) || c == '_'))
+            {
+                inWord = true;
+                wordStart = i;
+            }
+        }
+    }
+
+    if (inWord)
+    {
+        const std::string word(m_value, wordStart, m_value.size() - wordStart);
+
+        auto parameterIndex = 0u;
+        for (; parameterIndex < parameterNames.size(); parameterIndex++)
+        {
+            if (word == parameterNames[parameterIndex])
+                break;
+        }
+
+        if (parameterIndex < parameterNames.size())
+        {
+            m_value.erase(wordStart, m_value.size() - wordStart);
+            m_parameter_positions.emplace_back(parameterIndex, wordStart);
+        }
+    }
+}
+
 DefinesStreamProxy::DefinesStreamProxy(IParserLineStream* stream)
     : m_stream(stream),
       m_ignore_depth(0)
 {
+}
+
+std::vector<std::string> DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition)
+{
+    if (line.m_line[parameterPosition] != '(')
+        return std::vector<std::string>();
+
+    parameterPosition++;
+    std::vector<std::string> parameters;
+
+    while (true)
+    {
+        if (!SkipWhitespace(line, parameterPosition) || parameterPosition >= line.m_line.size())
+            throw ParsingException(CreatePos(line, parameterPosition), "Invalid define parameter list");
+
+        const auto nameStartPos = parameterPosition;
+        if (!ExtractIdentifier(line, parameterPosition))
+            throw ParsingException(CreatePos(line, parameterPosition), "Cannot extract name of parameter of define");
+
+        parameters.emplace_back(std::string(line.m_line, nameStartPos, parameterPosition - nameStartPos));
+
+        if (parameterPosition >= line.m_line.size())
+            throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
+
+        if (line.m_line[parameterPosition] == ')')
+        {
+            parameterPosition++;
+            break;
+        }
+
+        if (line.m_line[parameterPosition] != ',')
+            throw ParsingException(CreatePos(line, parameterPosition), "Unknown symbol in define parameter list");
+
+        parameterPosition++;
+    }
+
+    return parameters;
 }
 
 bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, unsigned directivePosition)
@@ -21,10 +167,16 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, unsigned d
         throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
 
     const auto name = line.m_line.substr(nameStartPos, directivePosition - nameStartPos);
+
+    auto parameters = MatchDefineParameters(line, directivePosition);
+
     std::string value;
     if (directivePosition < line.m_line.size())
         value = line.m_line.substr(directivePosition + 1);
-    m_defines[name] = value;
+
+    Define define(name, value);
+    define.IdentifyParameters(parameters);
+    AddDefine(std::move(define));
 
     return true;
 }
@@ -53,7 +205,7 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, unsigned di
 bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, unsigned directivePosition)
 {
     auto reverse = false;
-    if(!MatchString(line, directivePosition, IFDEF_DIRECTIVE, std::char_traits<char>::length(IFDEF_DIRECTIVE)))
+    if (!MatchString(line, directivePosition, IFDEF_DIRECTIVE, std::char_traits<char>::length(IFDEF_DIRECTIVE)))
     {
         if (!MatchString(line, directivePosition, IFNDEF_DIRECTIVE, std::char_traits<char>::length(IFNDEF_DIRECTIVE)))
             return false;
@@ -71,7 +223,7 @@ bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, unsigned di
         throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
 
     const auto nameStartPos = directivePosition;
-    if(!ExtractIdentifier(line, directivePosition))
+    if (!ExtractIdentifier(line, directivePosition))
         throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
 
     const auto name = line.m_line.substr(nameStartPos, directivePosition - nameStartPos);
@@ -129,7 +281,7 @@ bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
 
     directivePos++;
 
-    if(m_modes.empty() || m_modes.top() == true)
+    if (m_modes.empty() || m_modes.top() == true)
     {
         if (MatchDefineDirective(line, directivePos)
             || MatchUndefDirective(line, directivePos))
@@ -141,17 +293,55 @@ bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
         || MatchEndifDirective(line, directivePos);
 }
 
-bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigned wordStart, const unsigned wordEnd, std::string& value)
+bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigned wordStart, const unsigned wordEnd, Define*& value)
 {
     const std::string word(line.m_line, wordStart, wordEnd - wordStart);
     const auto foundEntry = m_defines.find(word);
-    if(foundEntry != m_defines.end())
+    if (foundEntry != m_defines.end())
     {
-        value = foundEntry->second;
+        value = &foundEntry->second;
         return true;
     }
 
     return false;
+}
+
+void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line, const unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues)
+{
+    if (line.m_line[parameterStart] != '(')
+        return;
+
+    std::ostringstream currentValue;
+    auto pos = parameterStart + 1;
+    auto valueHasStarted = false;
+    while (true)
+    {
+        if (pos >= line.m_line.size())
+            throw ParsingException(CreatePos(line, pos), "Invalid use of define");
+
+        const auto c = line.m_line[pos];
+
+        if (c == ',')
+        {
+            parameterValues.emplace_back(currentValue.str());
+            currentValue.clear();
+            currentValue.str(std::string());
+            valueHasStarted = false;
+        }
+        else if (c == ')')
+        {
+            parameterValues.emplace_back(currentValue.str());
+            parameterEnd = pos + 1;
+            break;
+        }
+        else if (valueHasStarted || !isspace(c))
+        {
+            valueHasStarted = true;
+            currentValue << c;
+        }
+
+        pos++;
+    }
 }
 
 void DefinesStreamProxy::ExpandDefines(ParserLine& line)
@@ -159,7 +349,7 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
     auto wordStart = 0u;
     auto lastWordEnd = 0u;
     auto inWord = false;
-    std::string value;
+    Define* value;
 
     std::ostringstream str;
     auto usesDefines = false;
@@ -181,14 +371,18 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
             {
                 if (FindDefineForWord(line, wordStart, i, value))
                 {
+                    std::vector<std::string> parameterValues;
+                    ExtractParametersFromDefineUsage(line, i, i, parameterValues);
+                    const auto defineValue = value->Render(parameterValues);
+
                     if (!usesDefines)
                     {
-                        str << std::string(line.m_line, 0, wordStart) << value;
+                        str << std::string(line.m_line, 0, wordStart) << defineValue;
                         usesDefines = true;
                     }
                     else
                     {
-                        str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << value;
+                        str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << defineValue;
                     }
                     lastWordEnd = i;
                 }
@@ -201,20 +395,23 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
     {
         if (FindDefineForWord(line, wordStart, line.m_line.size(), value))
         {
+            std::vector<std::string> parameterValues;
+            const auto defineValue = value->Render(parameterValues);
+
             if (!usesDefines)
             {
-                str << std::string(line.m_line, 0, wordStart) << value;
+                str << std::string(line.m_line, 0, wordStart) << defineValue;
                 usesDefines = true;
             }
             else
             {
-                str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << value;
+                str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << defineValue;
             }
             lastWordEnd = line.m_line.size();
         }
     }
 
-    if(usesDefines)
+    if (usesDefines)
     {
         if (lastWordEnd < line.m_line.size())
             str << std::string(line.m_line, lastWordEnd, line.m_line.size() - lastWordEnd);
@@ -222,9 +419,9 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
     }
 }
 
-void DefinesStreamProxy::AddDefine(const std::string& name, std::string value)
+void DefinesStreamProxy::AddDefine(Define define)
 {
-    m_defines[name] = std::move(value);
+    m_defines[define.m_name] = std::move(define);
 }
 
 void DefinesStreamProxy::Undefine(const std::string& name)

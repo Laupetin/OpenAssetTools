@@ -355,4 +355,119 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Ensure define can render parameters", "[parsing][parsingstream]")
+    {
+        DefinesStreamProxy::Define define("helloworld", "hello universe");
+
+        std::vector<std::string> parameterNames({
+            "universe"
+        });
+        define.IdentifyParameters(parameterNames);
+
+        std::vector<std::string> parameterValues({
+            "mr moneyman"
+        });
+        REQUIRE(define.Render(parameterValues) == "hello mr moneyman");
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure define can render parameters in middle of symbols", "[parsing][parsingstream]")
+    {
+        DefinesStreamProxy::Define define("helloworld", "alignas(x)");
+
+        std::vector<std::string> parameterNames({
+            "x"
+        });
+        define.IdentifyParameters(parameterNames);
+
+        std::vector<std::string> parameterValues({
+            "1337"
+        });
+        REQUIRE(define.Render(parameterValues) == "alignas(1337)");
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can add define with parameters", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define test(x) alignas(x)",
+            "struct test(1337) test_struct"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "struct alignas(1337) test_struct");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can use parameter multiple times", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define test(x) x|x|x|x",
+            "struct test(1337) test_struct"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "struct 1337|1337|1337|1337 test_struct");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can use parameterized define in between symbols", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define test(x) x|x|x|x",
+            "%test(5)%"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "%5|5|5|5%");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can define multiple parameters", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define test(a1, a2, a3) a1 + a2 = a3",
+            "make calc test(1, 2, 3);"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "make calc 1 + 2 = 3;");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can define multiple parameters without spacing", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define test(a1,a2,a3) a1+a2=a3",
+            "make calc test(1,2,3);"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "make calc 1+2=3;");
+
+        REQUIRE(proxy.Eof());
+    }
 }
