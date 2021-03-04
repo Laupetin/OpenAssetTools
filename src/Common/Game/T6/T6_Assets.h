@@ -3,24 +3,7 @@
 #ifndef __T6_ASSETS_H
 #define __T6_ASSETS_H
 
-#ifdef type_align
-#undef type_align
-#endif
-#ifdef tdef_align
-#undef tdef_align
-#endif
-#ifdef __zonecodegenerator
-#define type_align alignas
-#define tdef_align alignas
-#else
-#ifdef _MSVC_LANG
-#define type_align(x) __declspec(align(x))
-#define tdef_align(x) __declspec(align(x))
-#else
-#define type_align(x) __attribute__((__aligned__(x)))
-#define tdef_align(x) /*__attribute__((__aligned__(x)))*/
-#endif
-#endif
+#include "../../Utils/TypeAlignment.h"
 
 #ifndef __zonecodegenerator
 namespace T6
@@ -790,7 +773,6 @@ namespace T6
         unsigned int hash;
     };
 
-
     struct SndAssetBankHeader
     {
         unsigned int magic;
@@ -801,9 +783,9 @@ namespace T6
         unsigned int entryCount;
         unsigned int dependencyCount;
         unsigned int pad32;
-        int64_t fileSize;
-        int64_t entryOffset;
-        int64_t checksumOffset;
+        gcc_align(8) int64_t fileSize;
+        gcc_align(8) int64_t entryOffset;
+        gcc_align(8) int64_t checksumOffset;
         char checksumChecksum[16];
         char dependencies[512];
         char padding[1464];
