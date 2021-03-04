@@ -603,7 +603,7 @@ namespace T6
     };
 
 
-    struct GfxDrawSurfFields
+    struct gcc_align(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;
         uint64_t customIndex : 9;
@@ -619,8 +619,8 @@ namespace T6
 
     union GfxDrawSurf
     {
-        GfxDrawSurfFields fields;
-        uint64_t packed;
+        gcc_align(8) GfxDrawSurfFields fields;
+        gcc_align(8) uint64_t packed;
     };
 
 
@@ -1442,8 +1442,8 @@ namespace T6
         GenericEventHandler* onEvent;
         ItemKeyHandler* onKey;
         ExpressionStatement visibleExp;
-        uint64_t showBits;
-        uint64_t hideBits;
+        gcc_align(8) uint64_t showBits;
+        gcc_align(8) uint64_t hideBits;
         const char* allowedBinding;
         const char* soundName;
         int imageTrack;
@@ -3581,7 +3581,7 @@ namespace T6
     };
 
 
-    union __m128
+    union gcc_align(8) __m128
     {
         float m128_f32[4];
         uint64_t m128_u64[2];

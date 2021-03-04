@@ -24,7 +24,7 @@
 #define gcc_align(x)
 #else
 #define type_align(x) __attribute__((__aligned__(x)))
-#define tdef_align(x) __attribute__((__aligned__(x)))
+#define tdef_align(x) /*__attribute__((__aligned__(x)))*/
 #define memb_align(x) __attribute__((__aligned__(x)))
 #define gcc_align(x) __attribute__((__aligned__(x)))
 #endif

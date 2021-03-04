@@ -613,7 +613,7 @@ namespace IW4
         unsigned int loadBits[2];
     };
 
-    struct GfxDrawSurfFields
+    struct gcc_align(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;
         uint64_t reflectionProbeIndex : 8;
@@ -630,8 +630,8 @@ namespace IW4
 
     union GfxDrawSurf
     {
-        GfxDrawSurfFields fields;
-        uint64_t packed;
+        gcc_align(8) GfxDrawSurfFields fields;
+        gcc_align(8) uint64_t packed;
     };
 
     struct MaterialInfo
