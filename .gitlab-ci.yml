@@ -1,0 +1,33 @@
+stages:
+    - build
+    - test
+        
+build-gcc:
+    image: gcc:latest
+    stage: build
+    cache:
+      paths:
+        - build/
+    tags:
+      - build
+      - docker
+      - linux
+    script:
+        - "./generate.sh"
+        - "make -C build -j$(nproc) config=release_x86 all"
+
+test-gcc:
+    stage: test
+    cache:
+      paths:
+        - build/
+    tags:
+      - build
+      - docker
+      - linux
+    script:
+        - "./generate.sh"
+        - "make -C build -j$(nproc) config=release_x86 ObjCommonTests ZoneCodeGeneratorLibTests ZoneCommonTests"
+        - "./build/lib/Release_x86/tests/ObjCommonTests"
+        - "./build/lib/Release_x86/tests/ZoneCodeGeneratorLibTests"
+        - "./build/lib/Release_x86/tests/ZoneCommonTests"
