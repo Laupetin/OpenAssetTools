@@ -8,10 +8,10 @@
 class IZoneInputStream : public IZoneStream
 {
 public:
-    virtual void* Alloc(int align) = 0;
+    virtual void* Alloc(unsigned align) = 0;
 
     template<typename T>
-    T* Alloc(const int align)
+    T* Alloc(const unsigned align)
     {
         return static_cast<T*>(Alloc(align));
     }

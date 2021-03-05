@@ -30,7 +30,7 @@ XBlockInputStream::~XBlockInputStream()
     assert(m_block_stack.empty());
 }
 
-void XBlockInputStream::Align(const int align)
+void XBlockInputStream::Align(const unsigned align)
 {
     assert(!m_block_stack.empty());
 
@@ -78,7 +78,7 @@ block_t XBlockInputStream::PopBlock()
     return poppedBlock->m_index;
 }
 
-void* XBlockInputStream::Alloc(const int align)
+void* XBlockInputStream::Alloc(const unsigned align)
 {
     assert(!m_block_stack.empty());
 

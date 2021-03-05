@@ -4,3 +4,18 @@
 use MemoryBlock;
 set string name;
 set name name;
+
+set condition data::mainData mainMem;
+set count data::mainData size;
+set allocalign data::mainData alignment;
+set block data::mainData XFILE_BLOCK_RUNTIME_VIRTUAL;
+
+set condition data::videoData videoMem;
+set count data::videoData size;
+set allocalign data::videoData alignment;
+set block data::videoData XFILE_BLOCK_RUNTIME_PHYSICAL;
+
+set condition data::streamData streamMem;
+set count data::streamData size;
+set allocalign data::streamData alignment;
+set block data::streamData XFILE_BLOCK_STREAMER_RESERVE;

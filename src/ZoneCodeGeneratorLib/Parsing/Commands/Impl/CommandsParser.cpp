@@ -1,6 +1,7 @@
 #include "CommandsParser.h"
 
 #include "Parsing/Commands/Sequence/SequenceAction.h"
+#include "Parsing/Commands/Sequence/SequenceAllocAlign.h"
 #include "Parsing/Commands/Sequence/SequenceArchitecture.h"
 #include "Parsing/Commands/Sequence/SequenceArrayCount.h"
 #include "Parsing/Commands/Sequence/SequenceArraySize.h"
@@ -27,6 +28,7 @@ const std::vector<CommandsParser::sequence_t*>& CommandsParser::GetTestsForState
 {
     static std::vector<sequence_t*> tests({
         new SequenceAction(),
+        new SequenceAllocAlign(),
         new SequenceArchitecture(),
         new SequenceArrayCount(),
         new SequenceArraySize(),

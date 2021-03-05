@@ -60,6 +60,7 @@ block delay   XFILE_BLOCK_DELAY_VIRTUAL	    default;
 block delay   XFILE_BLOCK_DELAY_PHYSICAL;
 block normal  XFILE_BLOCK_VIRTUAL           default;
 block normal  XFILE_BLOCK_PHYSICAL;
+block normal  XFILE_BLOCK_STREAMER_RESERVE;
 
 // Asset commands
 #include "XAssets/PhysPreset.txt"

@@ -28,7 +28,7 @@
 #include "Game/T6/XAssets/mapents/mapents_load_db.h"
 #include "Game/T6/XAssets/material/material_load_db.h"
 #include "Game/T6/XAssets/materialtechniqueset/materialtechniqueset_load_db.h"
-//#include "Game/T6/XAssets/memoryblock/memoryblock_load_db.h"
+#include "Game/T6/XAssets/memoryblock/memoryblock_load_db.h"
 #include "Game/T6/XAssets/menudef_t/menudef_t_load_db.h"
 #include "Game/T6/XAssets/menulist/menulist_load_db.h"
 #include "Game/T6/XAssets/physconstraints/physconstraints_load_db.h"
@@ -153,7 +153,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree, scriptParseTree)
     LOAD_ASSET(ASSET_TYPE_KEYVALUEPAIRS, KeyValuePairs, keyValuePairs)
     LOAD_ASSET(ASSET_TYPE_VEHICLEDEF, VehicleDef, vehicleDef)
-        // LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
+    LOAD_ASSET(ASSET_TYPE_MEMORYBLOCK, MemoryBlock, memoryBlock);
     LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts)
     LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef)
     LOAD_ASSET(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef, skinnedVertsDef)

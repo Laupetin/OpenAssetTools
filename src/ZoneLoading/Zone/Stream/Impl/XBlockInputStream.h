@@ -19,7 +19,7 @@ class XBlockInputStream final : public IZoneInputStream
     int m_block_bit_count;
     XBlock* m_insert_block;
 
-    void Align(int align);
+    void Align(unsigned align);
 
 public:
     XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, int blockBitCount, block_t insertBlock);
@@ -28,7 +28,7 @@ public:
     void PushBlock(block_t block) override;
     block_t PopBlock() override;
 
-    void* Alloc(int align) override;
+    void* Alloc(unsigned align) override;
 
     void LoadDataRaw(void* dst, size_t size) override;
     void LoadDataInBlock(void* dst, size_t size) override;

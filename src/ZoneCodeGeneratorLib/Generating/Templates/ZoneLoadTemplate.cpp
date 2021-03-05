@@ -554,7 +554,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a larger alignment than the specified value)
         // this was changed to make ZoneCodeGenerator calculate what is supposed to be used as alignment when allocating.
         // This is more reliable when being used with different compilers and the value used can be seen in the source code directly
-        LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">("<<modifier.GetAlignment()<<");")
+        if (member->m_alloc_alignment)
+        {
+            LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">("<<MakeEvaluation(member->m_alloc_alignment.get())<<");")
+        }
+        else
+        {
+            LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">("<<modifier.GetAlignment()<<");")
+        }
 
         if (computations.IsInTempBlock())
         {
