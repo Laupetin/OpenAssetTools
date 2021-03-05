@@ -150,6 +150,39 @@ class Unlinker::Impl
         return true;
     }
 
+    static bool WriteZoneDefinitionFile(Zone* zone, const fs::path& zoneDefinitionFileFolder)
+    {
+        auto zoneDefinitionFilePath(zoneDefinitionFileFolder);
+        zoneDefinitionFilePath.append(zone->m_name);
+        zoneDefinitionFilePath.replace_extension(".zone");
+
+        std::ofstream zoneDefinitionFile(zoneDefinitionFilePath, std::fstream::out | std::fstream::binary);
+        if (!zoneDefinitionFile.is_open())
+        {
+            printf("Failed to open file for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
+            return false;
+        }
+
+        auto result = false;
+        for (const auto* zoneDefWriter : ZONE_DEF_WRITERS)
+        {
+            if (zoneDefWriter->CanHandleZone(zone))
+            {
+                zoneDefWriter->WriteZoneDef(zone, zoneDefinitionFile);
+                result = true;
+                break;
+            }
+        }
+
+        if(!result)
+        {
+            printf("Failed to find writer for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
+        }
+
+        zoneDefinitionFile.close();
+        return result;
+    }
+
     /**
      * \brief Performs the tasks specified by the command line arguments on the specified zone.
      * \param zone The zone to handle.
@@ -171,31 +204,12 @@ class Unlinker::Impl
             zoneDefinitionFileFolder.append("zone_source");
             fs::create_directories(zoneDefinitionFileFolder);
 
-            auto zoneDefinitionFilePath(zoneDefinitionFileFolder);
-            zoneDefinitionFilePath.append(zone->m_name);
-            zoneDefinitionFilePath.replace_extension(".zone");
+            WriteZoneDefinitionFile(zone, zoneDefinitionFileFolder);
 
-            std::ofstream zoneDefinitionFile(zoneDefinitionFilePath, std::fstream::out | std::fstream::binary);
-
-            if (zoneDefinitionFile.is_open())
-            {
-                for (const auto* zoneDefWriter : ZONE_DEF_WRITERS)
-                {
-                    if (zoneDefWriter->CanHandleZone(zone))
-                    {
-                        zoneDefWriter->WriteZoneDef(zone, zoneDefinitionFile);
-                        break;
-                    }
-                }
-                ObjWriting::DumpZone(zone, outputFolderPath);
-            }
-            else
-            {
-                printf("Failed to open file for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
-                return false;
-            }
-
-            zoneDefinitionFile.close();
+            AssetDumpingContext context;
+            context.m_zone = zone;
+            context.m_base_path = outputFolderPath;
+            ObjWriting::DumpZone(context);
         }
 
         return true;

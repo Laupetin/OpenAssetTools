@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Dumping/AbstractAssetDumper.h"
+#include "Dumping/AbstractFileDumper.h"
 #include "Game/IW4/IW4.h"
 
 namespace IW4
 {
-    class AssetDumperWeapon final : public AbstractAssetDumper<WeaponCompleteDef>
+    class AssetDumperWeapon final : public AbstractFileDumper<WeaponCompleteDef>
     {
         static cspField_t weapon_fields[];
 
@@ -14,6 +14,6 @@ namespace IW4
     protected:
         bool ShouldDump(XAssetInfo<WeaponCompleteDef>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponCompleteDef>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream) override;
     };
 }

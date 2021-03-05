@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Zone/Zone.h"
-#include <string>
+#include "Dumping/AssetDumpingContext.h"
 
 class ObjWriting
 {
@@ -20,5 +19,5 @@ public:
 
     } Configuration;
 
-    static bool DumpZone(Zone* zone, const std::string& basePath);
+    static bool DumpZone(AssetDumpingContext& context);
 };

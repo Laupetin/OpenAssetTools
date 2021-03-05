@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Dumping/AbstractAssetDumper.h"
+#include "Dumping/AbstractFileDumper.h"
 #include "Game/T6/T6.h"
 
 namespace T6
@@ -8,6 +8,6 @@ namespace T6
     class AssetDumperLocalizeEntry final : public IAssetDumper<LocalizeEntry>
     {
     public:
-        void DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath) override;
+        void DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool) override;
     };
 }

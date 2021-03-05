@@ -15,7 +15,7 @@ std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFi
     return asset->m_name;
 }
 
-void AssetDumperRawFile::DumpAsset(Zone* zone, XAssetInfo<RawFile>* asset, std::ostream& stream)
+void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream)
 {
     const auto* rawFile = asset->Asset();
     if (rawFile->compressedLen > 0)

@@ -7,15 +7,15 @@
 #include <iostream>
 
 template<class T>
-class AbstractAssetDumper : public IAssetDumper<T>
+class AbstractFileDumper : public IAssetDumper<T>
 {
 protected:
     virtual bool ShouldDump(XAssetInfo<T>* asset) = 0;
     virtual std::string GetFileNameForAsset(Zone* zone, XAssetInfo<T>* asset) = 0;
-    virtual void DumpAsset(Zone* zone, XAssetInfo<T>* asset, std::ostream& stream) = 0;
+    virtual void DumpAsset(AssetDumpingContext& context, XAssetInfo<T>* asset, std::ostream& stream) = 0;
 
 public:
-    void DumpPool(Zone* zone, AssetPool<T>* pool, const std::string& basePath) override
+    void DumpPool(AssetDumpingContext& context, AssetPool<T>* pool) override
     {
         for(auto assetInfo : *pool)
         {
@@ -25,8 +25,8 @@ public:
                 continue;
             }
 
-            std::filesystem::path assetFilePath(basePath);
-            assetFilePath.append(GetFileNameForAsset(zone, assetInfo));
+            std::filesystem::path assetFilePath(context.m_base_path);
+            assetFilePath.append(GetFileNameForAsset(context.m_zone, assetInfo));
 
             auto assetFileFolder(assetFilePath);
             assetFileFolder.replace_filename("");
@@ -35,7 +35,7 @@ public:
             std::ofstream file(assetFilePath, std::fstream::out | std::fstream::binary);
             if(file.is_open())
             {
-                DumpAsset(zone, assetInfo, file);
+                DumpAsset(context, assetInfo, file);
 
                 file.close();
             }

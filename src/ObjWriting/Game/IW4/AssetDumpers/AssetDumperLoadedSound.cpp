@@ -14,7 +14,7 @@ std::string AssetDumperLoadedSound::GetFileNameForAsset(Zone* zone, XAssetInfo<L
     return "sound/" + asset->m_name;
 }
 
-void AssetDumperLoadedSound::DumpWavPcm(Zone* zone, const LoadedSound* asset, std::ostream& stream)
+void AssetDumperLoadedSound::DumpWavPcm(AssetDumpingContext& context, const LoadedSound* asset, std::ostream& stream)
 {
     const auto riffMasterChunkSize = sizeof(WAV_CHUNK_ID_RIFF)
         + sizeof(uint32_t)
@@ -55,13 +55,13 @@ void AssetDumperLoadedSound::DumpWavPcm(Zone* zone, const LoadedSound* asset, st
     stream.write(asset->sound.data, asset->sound.info.data_len);
 }
 
-void AssetDumperLoadedSound::DumpAsset(Zone* zone, XAssetInfo<LoadedSound>* asset, std::ostream& stream)
+void AssetDumperLoadedSound::DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset, std::ostream& stream)
 {
     const auto* loadedSound = asset->Asset();
     switch (static_cast<WavFormat>(loadedSound->sound.info.format))
     {
     case WavFormat::PCM:
-        DumpWavPcm(zone, loadedSound, stream);
+        DumpWavPcm(context, loadedSound, stream);
         break;
 
     default:

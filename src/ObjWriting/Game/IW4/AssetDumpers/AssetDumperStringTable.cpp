@@ -14,7 +14,7 @@ std::string AssetDumperStringTable::GetFileNameForAsset(Zone* zone, XAssetInfo<S
     return asset->m_name;
 }
 
-void AssetDumperStringTable::DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, std::ostream& stream)
+void AssetDumperStringTable::DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset, std::ostream& stream)
 {
     const auto* stringTable = asset->Asset();
     CsvWriter csv(stream);

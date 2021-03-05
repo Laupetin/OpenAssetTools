@@ -6,7 +6,7 @@ namespace T6
     class ZoneDumper final : public IZoneDumper
     {
     public:
-        bool CanHandleZone(Zone* zone) const override;
-        bool DumpZone(Zone* zone, const std::string& basePath) const override;
+        bool CanHandleZone(AssetDumpingContext& context) const override;
+        bool DumpZone(AssetDumpingContext& context) const override;
     };
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Dumping/AbstractAssetDumper.h"
+#include "Dumping/AbstractFileDumper.h"
 #include "Game/T6/T6.h"
 
 namespace T6
 {
-    class AssetDumperWeapon final : public AbstractAssetDumper<WeaponVariantDef>
+    class AssetDumperWeapon final : public AbstractFileDumper<WeaponVariantDef>
     {
         static cspField_t weapon_fields[];
 
@@ -14,6 +14,6 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<WeaponVariantDef>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset, std::ostream& stream) override;
     };
 }

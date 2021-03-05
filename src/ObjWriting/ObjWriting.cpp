@@ -11,18 +11,18 @@ const IZoneDumper* const ZONE_DUMPER[]
     new T6::ZoneDumper()
 };
 
-bool ObjWriting::DumpZone(Zone* zone, const std::string& basePath)
+bool ObjWriting::DumpZone(AssetDumpingContext& context)
 {
-    for (auto dumper : ZONE_DUMPER)
+    for (const auto* dumper : ZONE_DUMPER)
     {
-        if (dumper->CanHandleZone(zone))
+        if (dumper->CanHandleZone(context))
         {
-            if (dumper->DumpZone(zone, basePath))
+            if (dumper->DumpZone(context))
             {
                 return true;
             }
 
-            printf("Dumper for zone '%s' failed!\n", zone->m_name.c_str());
+            printf("Dumper for zone '%s' failed!\n", context.m_zone->m_name.c_str());
             return false;
         }
     }

@@ -265,7 +265,7 @@ std::string AssetDumperFontIcon::GetFileNameForAsset(Zone* zone, XAssetInfo<Font
     return asset->m_name;
 }
 
-void AssetDumperFontIcon::DumpAsset(Zone* zone, XAssetInfo<FontIcon>* asset, std::ostream& stream)
+void AssetDumperFontIcon::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset, std::ostream& stream)
 {
     AssetDumperFontIconInternal dumper(stream);
     dumper.DumpFontIcon(asset->Asset());

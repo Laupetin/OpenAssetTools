@@ -681,7 +681,7 @@ std::string AssetDumperVehicle::GetFileNameForAsset(Zone* zone, XAssetInfo<Vehic
     return "vehicles/" + asset->m_name;
 }
 
-void AssetDumperVehicle::DumpAsset(Zone* zone, XAssetInfo<VehicleDef>* asset, std::ostream& stream)
+void AssetDumperVehicle::DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset, std::ostream& stream)
 {
     InfoStringFromVehicleConverter converter(asset->Asset(), vehicle_fields, std::extent<decltype(vehicle_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
     {

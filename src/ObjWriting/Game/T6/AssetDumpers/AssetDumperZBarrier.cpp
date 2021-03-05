@@ -184,7 +184,7 @@ std::string AssetDumperZBarrier::GetFileNameForAsset(Zone* zone, XAssetInfo<ZBar
     return "zbarrier/" + asset->m_name;
 }
 
-void AssetDumperZBarrier::DumpAsset(Zone* zone, XAssetInfo<ZBarrierDef>* asset, std::ostream& stream)
+void AssetDumperZBarrier::DumpAsset(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset, std::ostream& stream)
 {
     InfoStringFromZBarrierConverter converter(asset->Asset(), zbarrier_fields, std::extent<decltype(zbarrier_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {

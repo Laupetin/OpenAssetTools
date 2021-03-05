@@ -20,21 +20,21 @@
 
 using namespace T6;
 
-bool ZoneDumper::CanHandleZone(Zone* zone) const
+bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
 {
-    return zone->m_game == &g_GameT6;
+    return context.m_zone->m_game == &g_GameT6;
 }
 
-bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
+bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
 {
 #define DUMP_ASSET_POOL(dumperType, poolName) \
     if(assetPools->poolName) \
     { \
         dumperType dumper; \
-        dumper.DumpPool(zone, assetPools->poolName, basePath); \
+        dumper.DumpPool(context, assetPools->poolName); \
     }
 
-    const auto* assetPools = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
+    const auto* assetPools = dynamic_cast<GameAssetPoolT6*>(context.m_zone->m_pools.get());
 
     DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset);
     DUMP_ASSET_POOL(AssetDumperPhysConstraints, m_phys_constraints);

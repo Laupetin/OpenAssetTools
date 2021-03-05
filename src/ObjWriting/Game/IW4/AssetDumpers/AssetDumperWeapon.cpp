@@ -1172,7 +1172,7 @@ std::string AssetDumperWeapon::GetFileNameForAsset(Zone* zone, XAssetInfo<Weapon
     return "weapons/" + asset->m_name;
 }
 
-void AssetDumperWeapon::DumpAsset(Zone* zone, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream)
+void AssetDumperWeapon::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream)
 {
     auto* fullDef = new WeaponFullDef;
     memset(fullDef, 0, sizeof(WeaponFullDef));

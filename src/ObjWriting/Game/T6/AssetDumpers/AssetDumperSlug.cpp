@@ -12,7 +12,7 @@ std::string AssetDumperSlug::GetFileNameForAsset(Zone* zone, XAssetInfo<Slug>* a
     return asset->m_name;
 }
 
-void AssetDumperSlug::DumpAsset(Zone* zone, XAssetInfo<Slug>* asset, std::ostream& stream)
+void AssetDumperSlug::DumpAsset(AssetDumpingContext& context, XAssetInfo<Slug>* asset, std::ostream& stream)
 {
     const auto* slug = asset->Asset();
     stream.write(slug->buffer, slug->len);

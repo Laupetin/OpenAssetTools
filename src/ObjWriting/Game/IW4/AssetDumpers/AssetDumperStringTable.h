@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Dumping/AbstractAssetDumper.h"
+#include "Dumping/AbstractFileDumper.h"
 #include "Game/IW4/IW4.h"
 
 namespace IW4
 {
-    class AssetDumperStringTable final : public AbstractAssetDumper<StringTable>
+    class AssetDumperStringTable final : public AbstractFileDumper<StringTable>
     {
     protected:
         bool ShouldDump(XAssetInfo<StringTable>* asset) override;
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<StringTable>* asset) override;
-        void DumpAsset(Zone* zone, XAssetInfo<StringTable>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset, std::ostream& stream) override;
     };
 }

@@ -14,21 +14,21 @@
 
 using namespace IW4;
 
-bool ZoneDumper::CanHandleZone(Zone* zone) const
+bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
 {
-    return zone->m_game == &g_GameIW4;
+    return context.m_zone->m_game == &g_GameIW4;
 }
 
-bool ZoneDumper::DumpZone(Zone* zone, const std::string& basePath) const
+bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
 {
 #define DUMP_ASSET_POOL(dumperType, poolName) \
     if(assetPools->poolName) \
     { \
         dumperType dumper; \
-        dumper.DumpPool(zone, assetPools->poolName.get(), basePath); \
+        dumper.DumpPool(context, assetPools->poolName.get()); \
     }
 
-    const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(zone->m_pools.get());
+    const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(context.m_zone->m_pools.get());
 
     // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset)
     // DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap)

@@ -15,7 +15,7 @@ std::string AssetDumperAddonMapEnts::GetFileNameForAsset(Zone* zone, XAssetInfo<
     return asset->m_name;
 }
 
-void AssetDumperAddonMapEnts::DumpAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset, std::ostream& stream)
+void AssetDumperAddonMapEnts::DumpAsset(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset, std::ostream& stream)
 {
     const auto* addonMapEnts = asset->Asset();
     stream.write(addonMapEnts->entityString, std::max(addonMapEnts->numEntityChars - 1, 0));

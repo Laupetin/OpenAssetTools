@@ -12,7 +12,7 @@ std::string AssetDumperScriptParseTree::GetFileNameForAsset(Zone* zone, XAssetIn
     return asset->m_name;
 }
 
-void AssetDumperScriptParseTree::DumpAsset(Zone* zone, XAssetInfo<ScriptParseTree>* asset, std::ostream& stream)
+void AssetDumperScriptParseTree::DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset, std::ostream& stream)
 {
     const auto* scriptParseTree = asset->Asset();
     stream.write(scriptParseTree->buffer, scriptParseTree->len);

@@ -9,27 +9,27 @@
 using namespace IW4;
 namespace fs = std::filesystem;
 
-void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* pool, const std::string& basePath)
+void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool)
 {
     if (pool->m_asset_lookup.empty())
         return;
 
-    const auto language = LocalizeCommon::GetNameOfLanguage(zone->m_language);
-    fs::path stringsPath(basePath);
+    const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone->m_language);
+    fs::path stringsPath(context.m_base_path);
     stringsPath.append(language);
     stringsPath.append("/localizedstrings");
 
     create_directories(stringsPath);
 
     auto stringFilePath(stringsPath);
-    stringFilePath.append(zone->m_name);
+    stringFilePath.append(context.m_zone->m_name);
     stringFilePath.append(".str");
 
     std::ofstream stringFile(stringFilePath, std::fstream::out | std::ofstream::binary);
 
     if (stringFile.is_open())
     {
-        StringFileDumper stringFileDumper(zone, stringFile);
+        StringFileDumper stringFileDumper(context.m_zone, stringFile);
 
         stringFileDumper.SetLanguageName(language);
 
@@ -49,6 +49,6 @@ void AssetDumperLocalizeEntry::DumpPool(Zone* zone, AssetPool<LocalizeEntry>* po
     }
     else
     {
-        printf("Could not create string file for dumping localized strings of zone '%s'\n", zone->m_name.c_str());
+        printf("Could not create string file for dumping localized strings of zone '%s'\n", context.m_zone->m_name.c_str());
     }
 }
