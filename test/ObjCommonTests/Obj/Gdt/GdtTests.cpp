@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "Obj/Gdt/Gdt.h"
+#include "Obj/Gdt/GdtStream.h"
 
 namespace obj::gdt
 {
@@ -18,7 +19,8 @@ namespace obj::gdt
 		std::istringstream ss(gdtString);
 
 		Gdt gdt;
-		REQUIRE(gdt.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt));
 
 		REQUIRE(gdt.m_entries.size() == 1);
 
@@ -46,7 +48,8 @@ namespace obj::gdt
 		std::istringstream ss(gdtString);
 
 		Gdt gdt;
-		REQUIRE(gdt.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt));
 
 		REQUIRE(gdt.m_entries.size() == 1);
 
@@ -74,7 +77,8 @@ namespace obj::gdt
 		std::istringstream ss(gdtString);
 
 		Gdt gdt;
-		REQUIRE(gdt.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt));
 
 		REQUIRE(gdt.m_entries.empty());
 		REQUIRE(gdt.m_version.m_game == "t6");
@@ -98,7 +102,8 @@ namespace obj::gdt
 		std::istringstream ss(gdtString);
 
 		Gdt gdt;
-		REQUIRE(gdt.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt));
 
 		REQUIRE(gdt.m_version.m_game == "t6");
 		REQUIRE(gdt.m_version.m_version == 1337);
@@ -144,7 +149,8 @@ namespace obj::gdt
 		std::istringstream ss(gdtString);
 
 		Gdt gdt;
-		REQUIRE(gdt.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt));
 
 		REQUIRE(gdt.m_version.m_game == "t6");
 		REQUIRE(gdt.m_version.m_version == 1337);
@@ -208,7 +214,8 @@ namespace obj::gdt
 		std::istringstream ss(gdtString);
 
 		Gdt gdt;
-		REQUIRE(gdt.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt));
 
 		REQUIRE(gdt.m_version.m_game == "t6");
 		REQUIRE(gdt.m_version.m_version == 1337);
@@ -259,12 +266,13 @@ namespace obj::gdt
 		}
 
 		std::stringstream ss;
-		gdt.WriteToStream(ss);
+		GdtOutputStream::WriteGdt(gdt, ss);
 
 		std::cout << ss.str();
 
 		Gdt gdt2;
-		REQUIRE(gdt2.ReadFromStream(ss));
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt2));
 
 		REQUIRE(gdt2.m_version.m_game == "whatagame");
 		REQUIRE(gdt2.m_version.m_version == 6969);
