@@ -268,7 +268,7 @@ namespace obj::gdt
 		std::stringstream ss;
 		GdtOutputStream::WriteGdt(gdt, ss);
 
-		std::cout << ss.str();
+		std::cout << ss.str() << std::endl;
 
 		Gdt gdt2;
 		GdtReader reader(ss);
@@ -316,7 +316,7 @@ namespace obj::gdt
 		std::stringstream ss;
 		GdtOutputStream::WriteGdt(gdt, ss);
 
-		std::cout << ss.str();
+		std::cout << ss.str() << std::endl;
 
 		Gdt gdt2;
 		GdtReader reader(ss);
