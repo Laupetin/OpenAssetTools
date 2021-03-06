@@ -1,17 +1,26 @@
 #pragma once
 
-#include "Dumping/AbstractFileDumper.h"
+#include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
+#include "Utils/InfoString.h"
 
 namespace T6
 {
-    class AssetDumperTracer final : public AbstractFileDumper<TracerDef>
+    class AssetDumperTracer final : public AbstractAssetDumper<TracerDef>
     {
+        static constexpr const char* FILE_TYPE_STR = "TRACER";
+        static constexpr const char* GDF_NAME = "tracer.gdf";
         static cspField_t tracer_fields[];
+
+        static InfoString CreateInfoString(XAssetInfo<TracerDef>* asset);
 
     protected:
         bool ShouldDump(XAssetInfo<TracerDef>* asset) override;
+        bool CanDumpAsRaw() override;
+        bool CanDumpAsGdtEntry() override;
+
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<TracerDef>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream) override;
+        GdtEntry DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset) override;
+        void DumpRaw(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream) override;
     };
 }

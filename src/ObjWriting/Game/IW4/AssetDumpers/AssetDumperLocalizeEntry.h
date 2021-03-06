@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Dumping/AbstractFileDumper.h"
+#include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
 namespace IW4

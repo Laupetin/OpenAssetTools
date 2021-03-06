@@ -260,12 +260,17 @@ bool AssetDumperFontIcon::ShouldDump(XAssetInfo<FontIcon>* asset)
     return true;
 }
 
+bool AssetDumperFontIcon::CanDumpAsRaw()
+{
+    return true;
+}
+
 std::string AssetDumperFontIcon::GetFileNameForAsset(Zone* zone, XAssetInfo<FontIcon>* asset)
 {
     return asset->m_name;
 }
 
-void AssetDumperFontIcon::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset, std::ostream& stream)
+void AssetDumperFontIcon::DumpRaw(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset, std::ostream& stream)
 {
     AssetDumperFontIconInternal dumper(stream);
     dumper.DumpFontIcon(asset->Asset());

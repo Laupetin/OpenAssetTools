@@ -86,6 +86,17 @@ std::string InfoString::ToString(const std::string& prefix) const
     return ss.str();
 }
 
+void InfoString::ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) const
+{
+    for (const auto& key : m_keys_by_insertion)
+    {
+        const auto value = m_values.find(key);
+        gdtEntry.m_properties[key] = value->second;
+    }
+
+    gdtEntry.m_properties["configstringFileType"] = prefix;
+}
+
 void InfoString::FromString()
 {
 }

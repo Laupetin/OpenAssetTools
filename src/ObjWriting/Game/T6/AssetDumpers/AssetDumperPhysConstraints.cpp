@@ -129,7 +129,33 @@ namespace T6
     };
 }
 
+InfoString AssetDumperPhysConstraints::CreateInfoString(XAssetInfo<PhysConstraints>* asset)
+{
+    assert(asset->Asset()->count <= 4);
+
+    InfoStringFromPhysConstraintsConverter converter(asset->Asset(), phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
+        {
+            assert(scrStr < asset->m_zone->m_script_strings.size());
+            if (scrStr >= asset->m_zone->m_script_strings.size())
+                return "";
+
+            return asset->m_zone->m_script_strings[scrStr];
+        });
+
+    return converter.Convert();
+}
+
 bool AssetDumperPhysConstraints::ShouldDump(XAssetInfo<PhysConstraints>* asset)
+{
+    return true;
+}
+
+bool AssetDumperPhysConstraints::CanDumpAsRaw()
+{
+    return true;
+}
+
+bool AssetDumperPhysConstraints::CanDumpAsGdtEntry()
 {
     return true;
 }
@@ -139,20 +165,18 @@ std::string AssetDumperPhysConstraints::GetFileNameForAsset(Zone* zone, XAssetIn
     return "physconstraints/" + asset->m_name;
 }
 
-void AssetDumperPhysConstraints::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset, std::ostream& stream)
+GdtEntry AssetDumperPhysConstraints::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset)
 {
-    assert(asset->Asset()->count <= 4);
+    const auto infoString = CreateInfoString(asset);
+    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
+    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
 
-    InfoStringFromPhysConstraintsConverter converter(asset->Asset(), phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-    {
-        assert(scrStr < asset->m_zone->m_script_strings.size());
-        if (scrStr >= asset->m_zone->m_script_strings.size())
-            return "";
+    return gdtEntry;
+}
 
-        return asset->m_zone->m_script_strings[scrStr];
-    });
-
-    const auto infoString = converter.Convert();
-    const auto stringValue = infoString.ToString("PHYSCONSTRAINTS");
+void AssetDumperPhysConstraints::DumpRaw(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset, std::ostream& stream)
+{
+    const auto infoString = CreateInfoString(asset);
+    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
     stream.write(stringValue.c_str(), stringValue.size());
 }

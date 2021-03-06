@@ -1162,7 +1162,35 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
     }
 }
 
+InfoString AssetDumperWeapon::CreateInfoString(XAssetInfo<WeaponCompleteDef>* asset)
+{
+    const auto fullDef = std::make_unique<WeaponFullDef>();
+    memset(fullDef.get(), 0, sizeof(WeaponFullDef));
+    CopyToFullDef(asset->Asset(), fullDef.get());
+
+    InfoStringFromWeaponConverter converter(fullDef.get(), weapon_fields, std::extent<decltype(weapon_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
+        {
+            assert(scrStr < asset->m_zone->m_script_strings.size());
+            if (scrStr >= asset->m_zone->m_script_strings.size())
+                return "";
+
+            return asset->m_zone->m_script_strings[scrStr];
+        });
+
+    return converter.Convert();
+}
+
 bool AssetDumperWeapon::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
+{
+    return true;
+}
+
+bool AssetDumperWeapon::CanDumpAsRaw()
+{
+    return true;
+}
+
+bool AssetDumperWeapon::CanDumpAsGdtEntry()
 {
     return true;
 }
@@ -1172,24 +1200,18 @@ std::string AssetDumperWeapon::GetFileNameForAsset(Zone* zone, XAssetInfo<Weapon
     return "weapons/" + asset->m_name;
 }
 
-void AssetDumperWeapon::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream)
+GdtEntry AssetDumperWeapon::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
 {
-    auto* fullDef = new WeaponFullDef;
-    memset(fullDef, 0, sizeof(WeaponFullDef));
-    CopyToFullDef(asset->Asset(), fullDef);
+    const auto infoString = CreateInfoString(asset);
+    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
+    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
 
-    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, std::extent<decltype(weapon_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-    {
-        assert(scrStr < asset->m_zone->m_script_strings.size());
-        if (scrStr >= asset->m_zone->m_script_strings.size())
-            return "";
+    return gdtEntry;
+}
 
-        return asset->m_zone->m_script_strings[scrStr];
-    });
-
-    const auto infoString = converter.Convert();
-    const auto stringValue = infoString.ToString("WEAPONFILE");
+void AssetDumperWeapon::DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream)
+{
+    const auto infoString = CreateInfoString(asset);
+    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
     stream.write(stringValue.c_str(), stringValue.size());
-
-    delete fullDef;
 }

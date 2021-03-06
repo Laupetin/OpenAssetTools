@@ -77,17 +77,7 @@ void AssetDumperPhysPreset::CopyToPhysPresetInfo(const PhysPreset* physPreset, P
     physPresetInfo->buoyancyBoxMax = physPreset->buoyancyBoxMax;
 }
 
-bool AssetDumperPhysPreset::ShouldDump(XAssetInfo<PhysPreset>* asset)
-{
-    return true;
-}
-
-std::string AssetDumperPhysPreset::GetFileNameForAsset(Zone* zone, XAssetInfo<PhysPreset>* asset)
-{
-    return "physic/" + asset->m_name;
-}
-
-void AssetDumperPhysPreset::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset, std::ostream& stream)
+InfoString AssetDumperPhysPreset::CreateInfoString(XAssetInfo<PhysPreset>* asset)
 {
     auto* physPresetInfo = new PhysPresetInfo;
     CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
@@ -101,27 +91,41 @@ void AssetDumperPhysPreset::DumpAsset(AssetDumpingContext& context, XAssetInfo<P
             return asset->m_zone->m_script_strings[scrStr];
         });
 
-    const auto infoString = converter.Convert();
-    const auto stringValue = infoString.ToString("PHYSIC");
-    stream.write(stringValue.c_str(), stringValue.size());
-
-    delete physPresetInfo;
+    return converter.Convert();
 }
 
-//void AssetDumperPhysPreset::CheckFields()
-//{
-//    assert(std::extent<decltype(physpreset_fields)>::value == std::extent<decltype(fields222)>::value);
-//
-//    for(auto i = 0u; i < std::extent<decltype(physpreset_fields)>::value; i++)
-//    {
-//        if(physpreset_fields[i].iOffset != fields222[i].iOffset)
-//        {
-//            std::string error = "Error in field: " + std::string(physpreset_fields[i].szName);
-//            MessageBoxA(NULL, error.c_str(), "", 0);
-//            exit(0);
-//        }
-//    }
-//
-//    MessageBoxA(NULL, "No error", "", 0);
-//    exit(0);
-//}
+bool AssetDumperPhysPreset::ShouldDump(XAssetInfo<PhysPreset>* asset)
+{
+    return true;
+}
+
+bool AssetDumperPhysPreset::CanDumpAsRaw()
+{
+    return true;
+}
+
+bool AssetDumperPhysPreset::CanDumpAsGdtEntry()
+{
+    return true;
+}
+
+std::string AssetDumperPhysPreset::GetFileNameForAsset(Zone* zone, XAssetInfo<PhysPreset>* asset)
+{
+    return "physic/" + asset->m_name;
+}
+
+GdtEntry AssetDumperPhysPreset::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
+{
+    const auto infoString = CreateInfoString(asset);
+    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
+    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+
+    return gdtEntry;
+}
+
+void AssetDumperPhysPreset::DumpRaw(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset, std::ostream& stream)
+{
+    const auto infoString = CreateInfoString(asset);
+    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
+    stream.write(stringValue.c_str(), stringValue.size());
+}

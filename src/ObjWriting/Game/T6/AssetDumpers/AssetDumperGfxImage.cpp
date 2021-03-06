@@ -13,10 +13,10 @@ AssetDumperGfxImage::AssetDumperGfxImage()
     switch (ObjWriting::Configuration.ImageOutputFormat)
     {
     case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
-        m_writer = new DdsWriter();
+        m_writer = std::make_unique<DdsWriter>();
         break;
     case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
-        m_writer = new iwi27::IwiWriter();
+        m_writer = std::make_unique<iwi27::IwiWriter>();
         break;
     default:
         assert(false);
@@ -25,16 +25,15 @@ AssetDumperGfxImage::AssetDumperGfxImage()
     }
 }
 
-AssetDumperGfxImage::~AssetDumperGfxImage()
-{
-    delete m_writer;
-    m_writer = nullptr;
-}
-
 bool AssetDumperGfxImage::ShouldDump(XAssetInfo<GfxImage>* asset)
 {
     const auto* image = asset->Asset();
     return image->loadedSize > 0;
+}
+
+bool AssetDumperGfxImage::CanDumpAsRaw()
+{
+    return true;
 }
 
 std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset)
@@ -42,7 +41,7 @@ std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, XAssetInfo<GfxI
     return "images/" + asset->m_name + m_writer->GetFileExtension();
 }
 
-void AssetDumperGfxImage::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset, std::ostream& stream)
+void AssetDumperGfxImage::DumpRaw(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset, std::ostream& stream)
 {
     const auto* image = asset->Asset();
     m_writer->DumpImage(stream, image->texture.texture);

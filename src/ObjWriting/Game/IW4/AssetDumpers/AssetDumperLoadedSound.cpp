@@ -9,6 +9,11 @@ bool AssetDumperLoadedSound::ShouldDump(XAssetInfo<LoadedSound>* asset)
     return true;
 }
 
+bool AssetDumperLoadedSound::CanDumpAsRaw()
+{
+    return true;
+}
+
 std::string AssetDumperLoadedSound::GetFileNameForAsset(Zone* zone, XAssetInfo<LoadedSound>* asset)
 {
     return "sound/" + asset->m_name;
@@ -55,7 +60,7 @@ void AssetDumperLoadedSound::DumpWavPcm(AssetDumpingContext& context, const Load
     stream.write(asset->sound.data, asset->sound.info.data_len);
 }
 
-void AssetDumperLoadedSound::DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset, std::ostream& stream)
+void AssetDumperLoadedSound::DumpRaw(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset, std::ostream& stream)
 {
     const auto* loadedSound = asset->Asset();
     switch (static_cast<WavFormat>(loadedSound->sound.info.format))

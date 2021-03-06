@@ -1,15 +1,17 @@
 #pragma once
 
-#include "Dumping/AbstractFileDumper.h"
+#include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 
 namespace T6
 {
-    class AssetDumperQdb final : public AbstractFileDumper<Qdb>
+    class AssetDumperQdb final : public AbstractAssetDumper<Qdb>
     {
     protected:
         bool ShouldDump(XAssetInfo<Qdb>* asset) override;
+        bool CanDumpAsRaw() override;
+
         std::string GetFileNameForAsset(Zone* zone, XAssetInfo<Qdb>* asset) override;
-        void DumpAsset(AssetDumpingContext& context, XAssetInfo<Qdb>* asset, std::ostream& stream) override;
+        void DumpRaw(AssetDumpingContext& context, XAssetInfo<Qdb>* asset, std::ostream& stream) override;
     };
 }

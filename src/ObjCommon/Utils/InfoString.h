@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+
+#include "Obj/GDT/GdtEntry.h"
 #include "Zone/ZoneTypes.h"
 
 class InfoString
@@ -21,6 +23,7 @@ public:
 
     std::string ToString() const;
     std::string ToString(const std::string& prefix) const;
+    void ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) const;
 
     void FromString();
     void FromString(const std::string& prefix);

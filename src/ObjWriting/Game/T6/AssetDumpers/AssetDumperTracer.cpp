@@ -76,17 +76,7 @@ namespace T6
     };
 }
 
-bool AssetDumperTracer::ShouldDump(XAssetInfo<TracerDef>* asset)
-{
-    return true;
-}
-
-std::string AssetDumperTracer::GetFileNameForAsset(Zone* zone, XAssetInfo<TracerDef>* asset)
-{
-    return "tracer/" + asset->m_name;
-}
-
-void AssetDumperTracer::DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream)
+InfoString AssetDumperTracer::CreateInfoString(XAssetInfo<TracerDef>* asset)
 {
     InfoStringFromTracerConverter converter(asset->Asset(), tracer_fields, std::extent<decltype(tracer_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {
@@ -97,7 +87,41 @@ void AssetDumperTracer::DumpAsset(AssetDumpingContext& context, XAssetInfo<Trace
             return asset->m_zone->m_script_strings[scrStr];
         });
 
-    const auto infoString = converter.Convert();
+    return converter.Convert();
+}
+
+bool AssetDumperTracer::ShouldDump(XAssetInfo<TracerDef>* asset)
+{
+    return true;
+}
+
+bool AssetDumperTracer::CanDumpAsRaw()
+{
+    return true;
+}
+
+bool AssetDumperTracer::CanDumpAsGdtEntry()
+{
+    return true;
+}
+
+std::string AssetDumperTracer::GetFileNameForAsset(Zone* zone, XAssetInfo<TracerDef>* asset)
+{
+    return "tracer/" + asset->m_name;
+}
+
+GdtEntry AssetDumperTracer::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset)
+{
+    const auto infoString = CreateInfoString(asset);
+    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
+    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+
+    return gdtEntry;
+}
+
+void AssetDumperTracer::DumpRaw(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream)
+{
+    const auto infoString = CreateInfoString(asset);
     const auto stringValue = infoString.ToString("TRACER");
     stream.write(stringValue.c_str(), stringValue.size());
 }
