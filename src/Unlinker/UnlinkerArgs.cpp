@@ -7,52 +7,60 @@
 #include "ObjLoading.h"
 #include "ObjWriting.h"
 
-const CommandLineOption* const OPTION_HELP = CommandLineOption::Builder::Create()
-                                      .WithShortName("?")
-                                      .WithLongName("help")
-                                      .WithDescription("Displays usage information.")
-                                      .Build();
-
-const CommandLineOption* const OPTION_VERBOSE = CommandLineOption::Builder::Create()
-.WithShortName("v")
-.WithLongName("verbose")
-.WithDescription("Outputs a lot more and more detailed messages.")
-.Build();
-
-const CommandLineOption* const OPTION_MINIMAL_ZONE_FILE = CommandLineOption::Builder::Create()
-.WithShortName("min")
-.WithLongName("minimal-zone")
-.WithDescription(
-    "Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
+const CommandLineOption* const OPTION_HELP =
+    CommandLineOption::Builder::Create()
+    .WithShortName("?")
+    .WithLongName("help")
+    .WithDescription("Displays usage information.")
     .Build();
 
-const CommandLineOption* const OPTION_LIST = CommandLineOption::Builder::Create()
-.WithShortName("l")
-.WithLongName("list")
-.WithDescription(
-    "Lists the contents of a zone instead of writing them to the disk.")
+const CommandLineOption* const OPTION_VERBOSE =
+    CommandLineOption::Builder::Create()
+    .WithShortName("v")
+    .WithLongName("verbose")
+    .WithDescription("Outputs a lot more and more detailed messages.")
     .Build();
 
-const CommandLineOption* const OPTION_OUTPUT_FOLDER = CommandLineOption::Builder::Create()
-.WithShortName("o")
-.WithLongName("output-folder")
-.WithDescription(
-    "Specifies the output folder containing the contents of the unlinked zones. Defaults to ./%zoneName%")
+const CommandLineOption* const OPTION_MINIMAL_ZONE_FILE =
+    CommandLineOption::Builder::Create()
+    .WithShortName("min")
+    .WithLongName("minimal-zone")
+    .WithDescription("Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
+    .Build();
+
+const CommandLineOption* const OPTION_LIST =
+    CommandLineOption::Builder::Create()
+    .WithShortName("l")
+    .WithLongName("list")
+    .WithDescription("Lists the contents of a zone instead of writing them to the disk.")
+    .Build();
+
+const CommandLineOption* const OPTION_OUTPUT_FOLDER =
+    CommandLineOption::Builder::Create()
+    .WithShortName("o")
+    .WithLongName("output-folder")
+    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to ./%zoneName%")
     .WithParameter("outputFolderPath")
     .Build();
 
-const CommandLineOption* const OPTION_SEARCH_PATH = CommandLineOption::Builder::Create()
-.WithLongName("search-path")
-.WithDescription(
-    "Specifies a semi-colon separated list of paths to search for additional game files.")
+const CommandLineOption* const OPTION_SEARCH_PATH =
+    CommandLineOption::Builder::Create()
+    .WithLongName("search-path")
+    .WithDescription("Specifies a semi-colon separated list of paths to search for additional game files.")
     .WithParameter("searchPathString")
     .Build();
 
-const CommandLineOption* const OPTION_IMAGE_FORMAT = CommandLineOption::Builder::Create()
-.WithLongName("image-format")
-.WithDescription(
-    "Specifies the format of dumped image files. Valid values are: DDS, IWI")
+const CommandLineOption* const OPTION_IMAGE_FORMAT =
+    CommandLineOption::Builder::Create()
+    .WithLongName("image-format")
+    .WithDescription("Specifies the format of dumped image files. Valid values are: DDS, IWI")
     .WithParameter("imageFormatValue")
+    .Build();
+
+const CommandLineOption* const OPTION_RAW =
+    CommandLineOption::Builder::Create()
+    .WithLongName("raw")
+    .WithDescription("Prevents generation of a GDT and dumps assets as raw whenever possible.")
     .Build();
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]
@@ -63,7 +71,8 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_LIST,
     OPTION_OUTPUT_FOLDER,
     OPTION_SEARCH_PATH,
-    OPTION_IMAGE_FORMAT
+    OPTION_IMAGE_FORMAT,
+    OPTION_RAW
 };
 
 UnlinkerArgs::UnlinkerArgs()
@@ -163,13 +172,13 @@ bool UnlinkerArgs::SetImageDumpingMode()
     for (auto& c : specifiedValue)
         c = tolower(c);
 
-    if(specifiedValue == "dds")
+    if (specifiedValue == "dds")
     {
         ObjWriting::Configuration.ImageOutputFormat = ObjWriting::Configuration_t::ImageOutputFormat_e::DDS;
         return true;
     }
 
-    if(specifiedValue == "iwi")
+    if (specifiedValue == "iwi")
     {
         ObjWriting::Configuration.ImageOutputFormat = ObjWriting::Configuration_t::ImageOutputFormat_e::IWI;
         return true;
@@ -229,13 +238,16 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
     }
 
     // --image-format
-    if(m_argument_parser.IsOptionSpecified(OPTION_IMAGE_FORMAT))
+    if (m_argument_parser.IsOptionSpecified(OPTION_IMAGE_FORMAT))
     {
         if (!SetImageDumpingMode())
         {
             return false;
         }
     }
+
+    // --raw
+    m_raw = m_argument_parser.IsOptionSpecified(OPTION_RAW);
 
     return true;
 }

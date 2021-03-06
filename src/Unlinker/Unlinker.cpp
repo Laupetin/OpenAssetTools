@@ -183,6 +183,22 @@ class Unlinker::Impl
         return result;
     }
 
+    static bool OpenGdtFile(Zone* zone, const fs::path& zoneDefinitionFileFolder, std::ofstream& stream)
+    {
+        auto gdtFilePath(zoneDefinitionFileFolder);
+        gdtFilePath.append(zone->m_name);
+        gdtFilePath.replace_extension(".gdt");
+
+        stream = std::ofstream(gdtFilePath, std::fstream::out | std::fstream::binary);
+        if (!stream.is_open())
+        {
+            printf("Failed to open file for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * \brief Performs the tasks specified by the command line arguments on the specified zone.
      * \param zone The zone to handle.
@@ -204,12 +220,31 @@ class Unlinker::Impl
             zoneDefinitionFileFolder.append("zone_source");
             fs::create_directories(zoneDefinitionFileFolder);
 
-            WriteZoneDefinitionFile(zone, zoneDefinitionFileFolder);
+            if (!WriteZoneDefinitionFile(zone, zoneDefinitionFileFolder))
+                return false;
 
+            std::ofstream gdtStream;
             AssetDumpingContext context;
             context.m_zone = zone;
             context.m_base_path = outputFolderPath;
+
+            if(!m_args.m_raw)
+            {
+                if (!OpenGdtFile(zone, zoneDefinitionFileFolder, gdtStream))
+                    return false;
+                auto gdt = std::make_unique<GdtOutputStream>(gdtStream);
+                gdt->BeginStream();
+                gdt->WriteVersion(GdtVersion(zone->m_game->GetName(), 1));
+                context.m_gdt = std::move(gdt);
+            }
+
             ObjWriting::DumpZone(context);
+
+            if(!m_args.m_raw)
+            {
+                context.m_gdt->EndStream();
+                gdtStream.close();
+            }
         }
 
         return true;
