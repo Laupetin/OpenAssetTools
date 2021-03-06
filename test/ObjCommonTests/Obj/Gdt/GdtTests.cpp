@@ -237,4 +237,59 @@ namespace obj::gdt
 			REQUIRE(entry.m_properties.at("value2") == "22");
 		}
 	}
+
+	TEST_CASE("Gdt: Ensure can write simple gdt and parse it again", "[gdt]")
+	{
+		Gdt gdt;
+		gdt.m_version.m_game = "whatagame";
+		gdt.m_version.m_version = 6969;
+
+		{
+			auto entry = std::make_unique<GdtEntry>("sickentry", "verycool.gdf");
+			entry->m_properties["hello"] = "world";
+			entry->m_properties["hi"] = "universe";
+			gdt.m_entries.emplace_back(std::move(entry));
+		}
+
+		{
+			auto entry = std::make_unique<GdtEntry>("evencoolerentry", gdt.m_entries[0].get());
+			entry->m_properties["nope"] = "xd";
+			entry->m_properties["idk"] = "whattotypeanymore";
+			gdt.m_entries.emplace_back(std::move(entry));
+		}
+
+		std::stringstream ss;
+		gdt.WriteToStream(ss);
+
+		std::cout << ss.str();
+
+		Gdt gdt2;
+		REQUIRE(gdt2.ReadFromStream(ss));
+
+		REQUIRE(gdt2.m_version.m_game == "whatagame");
+		REQUIRE(gdt2.m_version.m_version == 6969);
+
+		REQUIRE(gdt2.m_entries.size() == 2);
+
+		{
+			const auto& entry = *gdt2.m_entries[0];
+			REQUIRE(entry.m_name == "sickentry");
+			REQUIRE(entry.m_gdf_name == "verycool.gdf");
+			REQUIRE(entry.m_parent == nullptr);
+			REQUIRE(entry.m_properties.size() == 2);
+
+			REQUIRE(entry.m_properties.at("hello") == "world");
+			REQUIRE(entry.m_properties.at("hi") == "universe");
+		}
+
+		{
+			const auto& entry = *gdt2.m_entries[1];
+			REQUIRE(entry.m_name == "evencoolerentry");
+			REQUIRE(entry.m_parent == gdt2.m_entries[0].get());
+			REQUIRE(entry.m_properties.size() == 2);
+
+			REQUIRE(entry.m_properties.at("nope") == "xd");
+			REQUIRE(entry.m_properties.at("idk") == "whattotypeanymore");
+		}
+	}
 }

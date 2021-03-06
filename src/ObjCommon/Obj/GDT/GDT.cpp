@@ -270,7 +270,8 @@ class GdtWriter
         if (entry.m_parent)
             m_stream << "[ \"" << entry.m_parent->m_name << "\" ]\n";
         else
-            m_stream << "( \"" << entry.m_gdf_name << " )\n";
+            m_stream << "( \"" << entry.m_gdf_name << "\" )\n";
+        DoIntendation();
         m_stream << "{\n";
 
         m_intendation_level++;
@@ -282,6 +283,7 @@ class GdtWriter
         }
 
         m_intendation_level--;
+        DoIntendation();
         m_stream << "}\n";
     }
 
