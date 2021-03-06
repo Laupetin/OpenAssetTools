@@ -144,6 +144,14 @@ InfoString InfoStringFromStructConverterBase::Convert()
     return std::move(m_info_string);
 }
 
+const char* InfoStringFromStructConverterBase::AssetName(const char* name)
+{
+    if (name && name[0] == ',')
+        return &name[1];
+
+    return name;
+}
+
 void InfoStringFromStructConverterBase::FillFromString(const std::string& key, const size_t offset)
 {
     const auto* str = *reinterpret_cast<const char**>(reinterpret_cast<uintptr_t>(m_structure) + offset);

@@ -65,7 +65,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
             const auto* fx = *reinterpret_cast<FxEffectDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
             if (fx)
-                m_info_string.SetValueForKey(std::string(field.szName), std::string(fx->name));
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(fx->name)));
             else
                 m_info_string.SetValueForKey(std::string(field.szName), "");
             break;
@@ -76,7 +76,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
             const auto* model = *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
             if (model)
-                m_info_string.SetValueForKey(std::string(field.szName), std::string(model->name));
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(model->name)));
             else
                 m_info_string.SetValueForKey(std::string(field.szName), "");
             break;
@@ -89,7 +89,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
                 iOffset);
 
             if (material)
-                m_info_string.SetValueForKey(std::string(field.szName), std::string(material->info.name));
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(material->info.name)));
             else
                 m_info_string.SetValueForKey(std::string(field.szName), "");
             break;
@@ -101,7 +101,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
                 iOffset);
 
             if (physPreset)
-                m_info_string.SetValueForKey(std::string(field.szName), std::string(physPreset->name));
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(physPreset->name)));
             else
                 m_info_string.SetValueForKey(std::string(field.szName), "");
             break;
@@ -116,7 +116,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
             const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
             if (tracer)
-                m_info_string.SetValueForKey(std::string(field.szName), std::string(tracer->name));
+                m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(tracer->name)));
             else
                 m_info_string.SetValueForKey(std::string(field.szName), "");
             break;

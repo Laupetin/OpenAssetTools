@@ -1481,7 +1481,7 @@ namespace T6
                         .iOffset);
 
                     if (camo)
-                        m_info_string.SetValueForKey(std::string(field.szName), std::string(camo->name));
+                        m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(camo->name)));
                     else
                         m_info_string.SetValueForKey(std::string(field.szName), "");
                     break;

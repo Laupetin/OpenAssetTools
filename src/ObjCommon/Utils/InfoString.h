@@ -54,6 +54,7 @@ protected:
     const void* m_structure;
     const std::function<std::string(scr_string_t)> m_get_scr_string;
 
+    static const char* AssetName(const char* name);
     void FillFromString(const std::string& key, size_t offset);
     void FillFromStringBuffer(const std::string& key, size_t offset, size_t bufferSize);
     void FillFromInt(const std::string& key, size_t offset);
