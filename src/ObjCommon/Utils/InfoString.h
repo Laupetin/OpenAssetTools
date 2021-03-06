@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-
-#include "Obj/GDT/GdtEntry.h"
+#include "Obj/Gdt/GdtEntry.h"
 #include "Zone/ZoneTypes.h"
 
 class InfoString

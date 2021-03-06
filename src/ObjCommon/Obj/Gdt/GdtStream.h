@@ -36,6 +36,7 @@ public:
 
     void BeginStream();
     void WriteVersion(const GdtVersion& gdtVersion);
+    void WriteEscaped(const std::string& str) const;
     void WriteEntry(const GdtEntry& entry);
     void EndStream();
 

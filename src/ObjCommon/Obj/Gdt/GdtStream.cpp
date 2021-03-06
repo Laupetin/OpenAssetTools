@@ -63,9 +63,36 @@ bool GdtReader::ReadStringContent(std::string& str)
     }
 
     auto c = m_stream.get();
-    while (c != '"' && c != '\n' && c != EOF)
+    auto escaped = false;
+    while ((escaped || c != '"' && c != '\n') && c != EOF)
     {
-        ss << static_cast<char>(c);
+        if (escaped)
+        {
+            switch (c)
+            {
+            case '\n':
+            case 'n':
+                ss << '\n';
+                break;
+
+            case 'r':
+                ss << '\r';
+                break;
+
+            default:
+                ss << static_cast<char>(c);
+                break;
+            }
+            escaped = false;
+        }
+        else if(c == '\\')
+        {
+            escaped = true;
+        }
+        else
+        {
+            ss << static_cast<char>(c);
+        }
         c = m_stream.get();
     }
 
@@ -267,6 +294,55 @@ void GdtOutputStream::WriteVersion(const GdtVersion& gdtVersion)
     WriteEntry(versionEntry);
 }
 
+void GdtOutputStream::WriteEscaped(const std::string& str) const
+{
+    auto wroteBefore = false;
+    for(auto i = 0u; i < str.size(); i++)
+    {
+        auto needsEscape = false;
+        auto c = str[i];
+        switch(c)
+        {
+        case '\r':
+            needsEscape = true;
+            c = 'r';
+            break;
+
+        case '\n':
+            needsEscape = true;
+            c = 'n';
+            break;
+
+        case '\\':
+            needsEscape = true;
+            break;
+
+        default:
+            break;
+        }
+
+        if(needsEscape)
+        {
+            if(!wroteBefore)
+            {
+                wroteBefore = true;
+                m_stream << std::string(str, 0, i);
+            }
+
+            m_stream << '\\' << c;
+        }
+        else if(wroteBefore)
+        {
+            m_stream << c;
+        }
+    }
+
+    if(!wroteBefore)
+    {
+        m_stream << str;
+    }
+}
+
 void GdtOutputStream::WriteEntry(const GdtEntry& entry)
 {
     DoIntendation();
@@ -283,7 +359,9 @@ void GdtOutputStream::WriteEntry(const GdtEntry& entry)
     for (const auto& [propertyKey, propertyValue] : entry.m_properties)
     {
         DoIntendation();
-        m_stream << "\"" << propertyKey << "\" \"" << propertyValue << "\"\n";
+        m_stream << "\"" << propertyKey << "\" \"";
+        WriteEscaped(propertyValue);
+        m_stream << "\"\n";
     }
 
     m_intendation_level--;

@@ -300,4 +300,41 @@ namespace obj::gdt
 			REQUIRE(entry.m_properties.at("idk") == "whattotypeanymore");
 		}
 	}
+
+	TEST_CASE("Gdt: Ensure can write gdt with escape values and parse it again", "[gdt]")
+	{
+		Gdt gdt;
+		gdt.m_version.m_game = "whatagame";
+		gdt.m_version.m_version = 6969;
+
+		{
+			auto entry = std::make_unique<GdtEntry>("sickentry", "verycool.gdf");
+			entry->m_properties["hello"] = "very\nkewl\\stuff";
+			gdt.m_entries.emplace_back(std::move(entry));
+		}
+
+		std::stringstream ss;
+		GdtOutputStream::WriteGdt(gdt, ss);
+
+		std::cout << ss.str();
+
+		Gdt gdt2;
+		GdtReader reader(ss);
+		REQUIRE(reader.Read(gdt2));
+
+		REQUIRE(gdt2.m_version.m_game == "whatagame");
+		REQUIRE(gdt2.m_version.m_version == 6969);
+
+		REQUIRE(gdt2.m_entries.size() == 1);
+
+		{
+			const auto& entry = *gdt2.m_entries[0];
+			REQUIRE(entry.m_name == "sickentry");
+			REQUIRE(entry.m_gdf_name == "verycool.gdf");
+			REQUIRE(entry.m_parent == nullptr);
+			REQUIRE(entry.m_properties.size() == 1);
+
+			REQUIRE(entry.m_properties.at("hello") == "very\nkewl\\stuff");
+		}
+	}
 }
