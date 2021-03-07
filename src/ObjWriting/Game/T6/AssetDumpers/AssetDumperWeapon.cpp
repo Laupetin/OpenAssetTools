@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <cstring>
 
+#include "Game/T6/CommonT6.h"
 #include "Game/T6/InfoStringT6.h"
 
 using namespace T6;
@@ -1088,20 +1089,6 @@ namespace T6
         "dwlefthand"
     };
 
-    const char* szWeapFireTypeNames[]
-    {
-        "Full Auto",
-        "Single Shot",
-        "2-Round Burst",
-        "3-Round Burst",
-        "4-Round Burst",
-        "5-Round Burst",
-        "Stacked Fire",
-        "Minigun",
-        "Charge Shot",
-        "Jetgun"
-    };
-
     const char* szWeapClipTypeNames[]
     {
         "bottom",
@@ -1120,14 +1107,6 @@ namespace T6
         "Quad Barrel",
         "Quad Barrel Alternate",
         "Quad Barrel Double Alternate"
-    };
-
-    const char* penetrateTypeNames[]
-    {
-        "none",
-        "small",
-        "medium",
-        "large"
     };
 
     const char* impactTypeNames[]
@@ -1625,11 +1604,11 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponVariantDef* weapon, WeaponFull
 
 InfoString AssetDumperWeapon::CreateInfoString(XAssetInfo<WeaponVariantDef>* asset)
 {
-    auto* fullDef = new WeaponFullDef;
-    memset(fullDef, 0, sizeof(WeaponFullDef));
-    CopyToFullDef(asset->Asset(), fullDef);
+    const auto fullDef = std::make_unique<WeaponFullDef>();
+    memset(fullDef.get(), 0, sizeof(WeaponFullDef));
+    CopyToFullDef(asset->Asset(), fullDef.get());
 
-    InfoStringFromWeaponConverter converter(fullDef, weapon_fields, std::extent<decltype(weapon_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
+    InfoStringFromWeaponConverter converter(fullDef.get(), weapon_fields, std::extent<decltype(weapon_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {
             assert(scrStr < asset->m_zone->m_script_strings.size());
             if (scrStr >= asset->m_zone->m_script_strings.size())

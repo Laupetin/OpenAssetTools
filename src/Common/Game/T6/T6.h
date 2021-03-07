@@ -119,8 +119,32 @@ namespace T6
 
     enum constraintsFieldType_t
     {
-        CFT_TYPE = 0x12,
+        CFT_TYPE = CSPFT_NUM_BASE_FIELD_TYPES,
 
-        CFT_NUM
+        CFT_NUM_FIELD_TYPES
     };
+
+    enum attachmentFieldType_t
+    {
+        AFT_ATTACHMENTTYPE = CSPFT_NUM_BASE_FIELD_TYPES,
+        AFT_UNKNOWN1,
+        AFT_UNKNOWN2,
+        AFT_UNKNOWN3,
+        AFT_UNKNOWN4,
+        AFT_PENETRATE_TYPE,
+        AFT_FIRETYPE,
+
+        AFT_NUM
+    };
+
+    enum attachmentUniqueFieldType_t
+    {
+        AUFT_ATTACHMENTTYPE = CSPFT_NUM_BASE_FIELD_TYPES,
+        AUFT_HIDETAGS,
+        AUFT_OVERLAYRETICLE,
+        AUFT_CAMO,
+
+        AUFT_NUM_FIELD_TYPES,
+    };
+
 }

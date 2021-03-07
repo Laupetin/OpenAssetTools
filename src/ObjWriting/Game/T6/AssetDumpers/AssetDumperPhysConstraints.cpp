@@ -3,6 +3,8 @@
 #include <cassert>
 #include <type_traits>
 
+
+#include "Game/T6/CommonT6.h"
 #include "Game/T6/InfoStringT6.h"
 
 using namespace T6;
@@ -89,20 +91,6 @@ cspField_t AssetDumperPhysConstraints::phys_constraints_fields[]
 
 namespace T6
 {
-    const char* s_constraintTypeNames[]
-    {
-        "none",
-        "point",
-        "distance",
-        "hinge",
-        "joint",
-        "actuator",
-        "fake_shake",
-        "launch",
-        "rope",
-        "light",
-    };
-
     class InfoStringFromPhysConstraintsConverter final : public InfoStringFromStructConverter
     {
     protected:
@@ -113,8 +101,7 @@ namespace T6
             case CFT_TYPE:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, s_constraintTypeNames, std::extent<decltype(s_constraintTypeNames)>::value);
                 break;
-
-            case CFT_NUM:
+                
             default:
                 assert(false);
                 break;
