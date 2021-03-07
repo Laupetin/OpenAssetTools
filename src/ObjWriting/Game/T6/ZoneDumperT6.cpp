@@ -17,6 +17,7 @@
 #include "AssetDumpers/AssetDumperVehicle.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
+#include "AssetDumpers/AssetDumperWeaponAttachmentUnique.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
 
 using namespace T6;
@@ -61,7 +62,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize);
     DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon);
     DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment);
-    // DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique);
+    DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique);
     // DUMP_ASSET_POOL(AssetDumperWeaponCamo, m_camo);
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals);
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx);
