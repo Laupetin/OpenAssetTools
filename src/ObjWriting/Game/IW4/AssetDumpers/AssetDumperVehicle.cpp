@@ -4,6 +4,7 @@
 #include <sstream>
 #include <type_traits>
 
+#include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/InfoStringIW4.h"
 
 using namespace IW4;
@@ -157,24 +158,6 @@ cspField_t AssetDumperVehicle::vehicle_fields[]
 
 namespace IW4
 {
-    const char* s_vehicleClassNames[]
-    {
-        "4 wheel",
-        "tank",
-        "plane",
-        "boat",
-        "artillery",
-        "helicopter",
-        "snowmobile",
-    };
-
-    const char* s_vehicleAxleTypeNames[]
-    {
-        "front",
-        "rear",
-        "all",
-    };
-
     class InfoStringFromVehicleConverter final : public InfoStringFromStructConverter
     {
     protected:
