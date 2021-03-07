@@ -3,6 +3,8 @@
 #include <cassert>
 #include <type_traits>
 
+
+#include "Game/T6/CommonT6.h"
 #include "Game/T6/InfoStringT6.h"
 
 using namespace T6;
@@ -569,36 +571,6 @@ cspField_t AssetDumperVehicle::vehicle_fields[]
 
 namespace T6
 {
-    const char* s_vehicleClassNames[]
-    {
-        "4 wheel",
-        "motorcycle",
-        "tank",
-        "plane",
-        "boat",
-        "artillery",
-        "helicopter",
-    };
-
-    const char* s_vehicleCameraModes[]
-    {
-        "first",
-        "chase",
-        "view",
-        "strafe",
-        "horse",
-        "oldtank",
-        "hover",
-        "vtol",
-    };
-
-    const char* s_tractionTypeNames[]
-    {
-        "TRACTION_TYPE_FRONT",
-        "TRACTION_TYPE_BACK",
-        "TRACTION_TYPE_ALL_WD",
-    };
-
     class InfoStringFromVehicleConverter final : public InfoStringFromStructConverter
     {
     protected:

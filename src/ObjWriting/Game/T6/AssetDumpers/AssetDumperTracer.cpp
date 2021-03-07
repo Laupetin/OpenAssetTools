@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include "Game/T6/CommonT6.h"
 #include "Game/T6/InfoStringT6.h"
 
 using namespace T6;
@@ -44,12 +45,6 @@ cspField_t AssetDumperTracer::tracer_fields[]
 
 namespace T6
 {
-    const char* tracerTypeNames[]
-    {
-        "Laser",
-        "Smoke"
-    };
-
     class InfoStringFromTracerConverter final : public InfoStringFromStructConverter
     {
     protected:
