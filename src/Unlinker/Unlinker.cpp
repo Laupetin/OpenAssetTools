@@ -228,7 +228,7 @@ class Unlinker::Impl
             context.m_zone = zone;
             context.m_base_path = outputFolderPath;
 
-            if(!m_args.m_raw)
+            if(m_args.m_use_gdt)
             {
                 if (!OpenGdtFile(zone, zoneDefinitionFileFolder, gdtStream))
                     return false;
@@ -240,7 +240,7 @@ class Unlinker::Impl
 
             ObjWriting::DumpZone(context);
 
-            if(!m_args.m_raw)
+            if(m_args.m_use_gdt)
             {
                 context.m_gdt->EndStream();
                 gdtStream.close();

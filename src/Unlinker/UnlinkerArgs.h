@@ -39,7 +39,7 @@ public:
     std::string m_output_folder;
     bool m_minimal_zone_def;
 
-    bool m_raw;
+    bool m_use_gdt;
 
     bool m_verbose;
 

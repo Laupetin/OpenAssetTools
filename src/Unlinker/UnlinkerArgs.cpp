@@ -57,10 +57,10 @@ const CommandLineOption* const OPTION_IMAGE_FORMAT =
     .WithParameter("imageFormatValue")
     .Build();
 
-const CommandLineOption* const OPTION_RAW =
+const CommandLineOption* const OPTION_GDT =
     CommandLineOption::Builder::Create()
-    .WithLongName("raw")
-    .WithDescription("Prevents generation of a GDT and dumps assets as raw whenever possible.")
+    .WithLongName("gdt")
+    .WithDescription("Dumps assets in a GDT whenever possible.")
     .Build();
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]
@@ -72,7 +72,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_OUTPUT_FOLDER,
     OPTION_SEARCH_PATH,
     OPTION_IMAGE_FORMAT,
-    OPTION_RAW
+    OPTION_GDT
 };
 
 UnlinkerArgs::UnlinkerArgs()
@@ -246,8 +246,8 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
         }
     }
 
-    // --raw
-    m_raw = m_argument_parser.IsOptionSpecified(OPTION_RAW);
+    // --gdt
+    m_use_gdt = m_argument_parser.IsOptionSpecified(OPTION_GDT);
 
     return true;
 }
