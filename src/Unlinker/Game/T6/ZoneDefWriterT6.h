@@ -1,13 +1,19 @@
 #pragma once
 
 #include "ContentLister/ZoneDefWriter.h"
+#include "Game/T6/T6.h"
 
 namespace T6
 {
-    class ZoneDefWriter final : public IZoneDefWriter
+    class ZoneDefWriter final : public AbstractZoneDefWriter
     {
+        static void WriteKeyValuePair(ZoneDefinitionOutputStream& stream, KeyValuePair* kvp);
+
+    protected:
+        void WriteMetaData(ZoneDefinitionOutputStream& stream, Zone* zone) const override;
+        void WriteContent(ZoneDefinitionOutputStream& stream, Zone* zone) const override;
+
     public:
         bool CanHandleZone(Zone* zone) const override;
-        void WriteZoneDef(Zone* zone, std::ostream& stream) const override;
     };
 }

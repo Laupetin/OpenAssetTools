@@ -8,11 +8,14 @@ using namespace IW4;
 
 GameIW4 g_GameIW4;
 
-const std::string GameIW4::NAME = "IW4";
-
-const std::string& GameIW4::GetName()
+std::string GameIW4::GetFullName()
 {
-    return NAME;
+    return "Call Of Duty: Modern Warfare 2";
+}
+
+std::string GameIW4::GetShortName()
+{
+    return "IW4";
 }
 
 void GameIW4::AddZone(Zone* zone)

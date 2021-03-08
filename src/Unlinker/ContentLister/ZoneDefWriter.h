@@ -1,31 +1,30 @@
 #pragma once
 
-#include <ostream>
-
 #include "Zone/Zone.h"
-
-class AbstractZoneDefWriter
-{
-protected:
-    Zone* m_zone;
-    std::ostream& m_stream;
-
-    static const std::string META_DATA_KEY_GAME;
-
-    void EmptyLine() const;
-    void WriteComment(const std::string& comment) const;
-    void WriteMetaData(const std::string& metaDataKey, const std::string& metaDataValue) const;
-    void WriteEntry(const std::string& entryKey, const std::string& entryValue) const;
-
-    AbstractZoneDefWriter(Zone* zone, std::ostream& stream);
-
-public:
-    virtual void WriteZoneDef() = 0;
-};
+#include "Zone/Definition/ZoneDefinitionStream.h"
 
 class IZoneDefWriter
 {
 public:
+    IZoneDefWriter() = default;
+    virtual ~IZoneDefWriter() = default;
+    IZoneDefWriter(const IZoneDefWriter& other) = default;
+    IZoneDefWriter(IZoneDefWriter&& other) noexcept = default;
+    IZoneDefWriter& operator=(const IZoneDefWriter& other) = default;
+    IZoneDefWriter& operator=(IZoneDefWriter&& other) noexcept = default;
+
     virtual bool CanHandleZone(Zone* zone) const = 0;
-    virtual void WriteZoneDef(Zone* zone, std::ostream& stream) const = 0;
+    virtual void WriteZoneDef(std::ostream& stream, Zone* zone) const = 0;
+};
+
+class AbstractZoneDefWriter : public IZoneDefWriter
+{
+protected:
+    static constexpr const char* META_DATA_KEY_GAME = "game";
+    
+    virtual void WriteMetaData(ZoneDefinitionOutputStream& stream, Zone* zone) const = 0;
+    virtual void WriteContent(ZoneDefinitionOutputStream& stream, Zone* zone) const = 0;
+
+public:
+    void WriteZoneDef(std::ostream& stream, Zone* zone) const override;
 };

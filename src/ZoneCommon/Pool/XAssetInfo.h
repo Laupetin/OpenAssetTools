@@ -24,4 +24,9 @@ public:
     {
         return static_cast<T*>(m_ptr);
     }
+
+    const T* Asset() const
+    {
+        return static_cast<const T*>(const_cast<const void*>(m_ptr));
+    }
 };

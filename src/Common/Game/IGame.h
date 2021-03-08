@@ -1,13 +1,21 @@
 #pragma once
-#include "GameLanguage.h"
 #include <vector>
+#include "GameLanguage.h"
 
 class Zone;
 
 class IGame
 {
 public:
-    virtual const std::string& GetName() = 0;
+    IGame() = default;
+    virtual ~IGame() = default;
+    IGame(const IGame& other) = default;
+    IGame(IGame&& other) noexcept = default;
+    IGame& operator=(const IGame& other) = default;
+    IGame& operator=(IGame&& other) noexcept = default;
+
+    virtual std::string GetFullName() = 0;
+    virtual std::string GetShortName() = 0;
     virtual void AddZone(Zone* zone) = 0;
     virtual void RemoveZone(Zone* zone) = 0;
     virtual std::vector<Zone*> GetZones() = 0;

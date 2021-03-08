@@ -168,7 +168,7 @@ class Unlinker::Impl
         {
             if (zoneDefWriter->CanHandleZone(zone))
             {
-                zoneDefWriter->WriteZoneDef(zone, zoneDefinitionFile);
+                zoneDefWriter->WriteZoneDef(zoneDefinitionFile, zone);
                 result = true;
                 break;
             }
@@ -234,7 +234,7 @@ class Unlinker::Impl
                     return false;
                 auto gdt = std::make_unique<GdtOutputStream>(gdtStream);
                 gdt->BeginStream();
-                gdt->WriteVersion(GdtVersion(zone->m_game->GetName(), 1));
+                gdt->WriteVersion(GdtVersion(zone->m_game->GetShortName(), 1));
                 context.m_gdt = std::move(gdt);
             }
 

@@ -8,7 +8,7 @@ ContentPrinter::ContentPrinter(Zone* zone)
 void ContentPrinter::PrintContent() const
 {
     const auto* pools = m_zone->m_pools.get();
-    printf("Zone '%s' (%s)\n", m_zone->m_name.c_str(), m_zone->m_game->GetName().c_str());
+    printf("Zone '%s' (%s)\n", m_zone->m_name.c_str(), m_zone->m_game->GetShortName().c_str());
     puts("Content:");
 
     for(const auto& asset : *pools)

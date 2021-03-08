@@ -8,11 +8,14 @@ using namespace T6;
 
 GameT6 g_GameT6;
 
-const std::string GameT6::NAME = "T6";
-
-const std::string& GameT6::GetName()
+std::string GameT6::GetFullName()
 {
-    return NAME;
+    return "Call Of Duty: Black Ops II";
+}
+
+std::string GameT6::GetShortName()
+{
+    return "T6";
 }
 
 void GameT6::AddZone(Zone* zone)
