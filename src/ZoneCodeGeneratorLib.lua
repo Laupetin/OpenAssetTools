@@ -5,12 +5,14 @@ function ZoneCodeGeneratorLib:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ZoneCodeGeneratorLib")
 		}
+		Parser:include(includes)
 		Utils:include(includes)
 	end
 end
 
 function ZoneCodeGeneratorLib:link(links)
 	links:add(self:name())
+	links:linkto(Parser)
 	links:linkto(Utils)
 end
 

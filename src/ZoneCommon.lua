@@ -13,9 +13,10 @@ end
 
 function ZoneCommon:link(links)
 	links:add(self:name())
-	links:linkto(Utils)
 	links:linkto(Common)
 	links:linkto(ObjCommon)
+	links:linkto(Parser)
+	links:linkto(Utils)
 end
 
 function ZoneCommon:use()
@@ -42,4 +43,5 @@ function ZoneCommon:project()
 		}
 		
         self:include(includes)
+		Parser:include(includes)
 end

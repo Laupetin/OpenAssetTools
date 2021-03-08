@@ -2,8 +2,6 @@
 
 #include <string>
 
-
-
 #include "Domain/Evaluation/OperationType.h"
 #include "Parsing/IParserValue.h"
 #include "Utils/ClassUtils.h"
