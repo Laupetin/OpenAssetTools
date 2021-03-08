@@ -6,6 +6,7 @@
 #include "Utils/Arguments/UsageInformation.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
+#include "Utils/FileUtils.h"
 
 const CommandLineOption* const OPTION_HELP =
     CommandLineOption::Builder::Create()
@@ -82,66 +83,6 @@ UnlinkerArgs::UnlinkerArgs()
     m_output_folder = "./%zoneName%";
 
     m_verbose = false;
-}
-
-bool UnlinkerArgs::ParsePathsString(const std::string& pathsString, std::set<std::string>& output)
-{
-    std::ostringstream currentPath;
-    bool pathStart = true;
-    int quotationPos = 0; // 0 = before quotations, 1 = in quotations, 2 = after quotations
-
-    for (auto character : pathsString)
-    {
-        switch (character)
-        {
-        case '"':
-            if (quotationPos == 0 && pathStart)
-            {
-                quotationPos = 1;
-            }
-            else if (quotationPos == 1)
-            {
-                quotationPos = 2;
-                pathStart = false;
-            }
-            else
-            {
-                return false;
-            }
-            break;
-
-        case ';':
-            if (quotationPos != 1)
-            {
-                std::string path = currentPath.str();
-                if (!path.empty())
-                {
-                    output.insert(path);
-                    currentPath = std::ostringstream();
-                }
-
-                pathStart = true;
-                quotationPos = 0;
-            }
-            else
-            {
-                currentPath << character;
-            }
-            break;
-
-        default:
-            currentPath << character;
-            pathStart = false;
-            break;
-        }
-    }
-
-    if (currentPath.tellp() > 0)
-    {
-        output.insert(currentPath.str());
-    }
-
-    return true;
 }
 
 void UnlinkerArgs::PrintUsage()
@@ -231,7 +172,7 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
     // --search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_SEARCH_PATH))
     {
-        if (!ParsePathsString(m_argument_parser.GetValueForOption(OPTION_SEARCH_PATH), m_user_search_paths))
+        if (!FileUtils::ParsePathsString(m_argument_parser.GetValueForOption(OPTION_SEARCH_PATH), m_user_search_paths))
         {
             return false;
         }

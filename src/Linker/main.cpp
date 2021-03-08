@@ -1,4 +1,8 @@
-int main(int argc, const char** argv)
+#include "Linker.h"
+
+int main(const int argc, const char** argv)
 {
-    return 0;
+    Linker linker;
+
+    return linker.Start(argc, argv) ? 0 : 1;
 }

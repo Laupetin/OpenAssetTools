@@ -38,9 +38,15 @@ function Linker:project()
 		
 		self:include(includes)
 		Utils:include(includes)
+        ZoneLoading:include(includes)
+        ObjLoading:include(includes)
+        ObjWriting:include(includes)
         ZoneWriting:include(includes)
 
 		links:linkto(Utils)
-		--links:linkto(ZoneWriting)
+		links:linkto(ZoneLoading)
+		links:linkto(ZoneWriting)
+		links:linkto(ObjLoading)
+		links:linkto(ObjWriting)
 		links:linkall()
 end

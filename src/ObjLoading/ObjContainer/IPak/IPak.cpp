@@ -18,7 +18,7 @@ ObjContainerRepository<IPak, Zone> IPak::Repository;
 
 class IPak::Impl : public ObjContainerReferenceable
 {
-    static const uint32_t MAGIC = MakeMagic32('K', 'A', 'P', 'I');
+    static const uint32_t MAGIC = FileUtils::MakeMagic32('K', 'A', 'P', 'I');
     static const uint32_t VERSION = 0x50000;
 
     std::string m_path;
