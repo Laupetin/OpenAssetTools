@@ -18,5 +18,7 @@ class ZoneDefinition
 {
 public:
     std::unordered_map<std::string, std::string> m_metadata;
+    std::vector<std::string> m_includes;
+    std::vector<std::string> m_ignores;
     std::vector<ZoneDefinitionEntry> m_assets;
 };

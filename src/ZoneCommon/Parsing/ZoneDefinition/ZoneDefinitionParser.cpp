@@ -1,6 +1,8 @@
 #include "ZoneDefinitionParser.h"
 
 #include "Sequence/SequenceZoneDefinitionEntry.h"
+#include "Sequence/SequenceZoneDefinitionIgnore.h"
+#include "Sequence/SequenceZoneDefinitionInclude.h"
 #include "Sequence/SequenceZoneDefinitionMetaData.h"
 
 ZoneDefinitionParser::ZoneDefinitionParser(SimpleLexer* lexer)
@@ -12,6 +14,8 @@ const std::vector<AbstractParser<SimpleParserValue, ZoneDefinition>::sequence_t*
 {
     static std::vector<sequence_t*> tests({
         new SequenceZoneDefinitionMetaData(),
+        new SequenceZoneDefinitionInclude(),
+        new SequenceZoneDefinitionIgnore(),
         new SequenceZoneDefinitionEntry()
     });
 
