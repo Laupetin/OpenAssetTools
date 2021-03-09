@@ -3,13 +3,23 @@
 #include <memory>
 
 #include "ZoneDefinition.h"
+#include "Parsing/IParserLineStream.h"
 
 class ZoneDefinitionInputStream
 {
-    std::istream& m_stream;
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+
+    std::string m_file_name;
+    bool m_verbose;
+    IParserLineStream* m_stream;
+    std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
+
+    bool OpenBaseStream(std::istream& stream);
+    void SetupStreamProxies();
 
 public:
-    explicit ZoneDefinitionInputStream(std::istream& stream);
+    ZoneDefinitionInputStream(std::istream& stream, std::string fileName, bool verbose);
 
     std::unique_ptr<ZoneDefinition> ReadDefinition();
 };
