@@ -8,6 +8,7 @@ function ZoneCommon:include(includes)
 		Utils:include(includes)
 		Common:include(includes)
 		ObjCommon:include(includes)
+		Parser:include(includes)
 	end
 end
 
@@ -43,5 +44,4 @@ function ZoneCommon:project()
 		}
 		
         self:include(includes)
-		Parser:include(includes)
 end
