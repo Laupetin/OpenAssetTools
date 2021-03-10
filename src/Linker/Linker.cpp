@@ -16,15 +16,17 @@
 #include "LinkerArgs.h"
 
 #include "Utils/ObjFileStream.h"
+#include "Zone/Definition/ZoneDefinitionStream.h"
 
 namespace fs = std::filesystem;
 
 class Linker::Impl
 {
     LinkerArgs m_args;
-    SearchPaths m_search_paths;
-    SearchPathFilesystem* m_last_zone_search_path;
-    std::set<std::string> m_absolute_search_paths;
+    std::vector<std::unique_ptr<ISearchPath>> m_loaded_zone_search_paths;
+    SearchPaths m_asset_search_paths;
+    SearchPaths m_gdt_search_paths;
+    SearchPaths m_source_search_paths;
 
     /**
      * \brief Loads a search path.
@@ -53,33 +55,32 @@ class Linker::Impl
 
         ObjLoading::UnloadIWDsInSearchPath(searchPath);
     }
-
-    /**
-     * \brief Loads all search paths that are valid for the specified zone and returns them.
-     * \param zonePath The path to the zone file that should be prepared for.
-     * \return A \c SearchPaths object that contains all search paths that should be considered when loading the specified zone.
-     */
-    SearchPaths GetSearchPathsForZone(const std::string& zonePath)
+    
+    SearchPaths GetAssetSearchPathsForZone(const std::string& zoneName)
     {
         SearchPaths searchPathsForZone;
-        const auto absoluteZoneDirectory = fs::absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
-        if (m_last_zone_search_path != nullptr && m_last_zone_search_path->GetPath() == absoluteZoneDirectory)
+        for (const auto& searchPathStr : m_args.GetAssetSearchPathsForZone(zoneName))
         {
-            searchPathsForZone.IncludeSearchPath(m_last_zone_search_path);
-        }
-        else if (m_absolute_search_paths.find(absoluteZoneDirectory) == m_absolute_search_paths.end())
-        {
-            if (m_last_zone_search_path != nullptr)
+            auto absolutePath = fs::absolute(searchPathStr);
+
+            if (!fs::is_directory(absolutePath))
             {
-                UnloadSearchPath(m_last_zone_search_path);
-                delete m_last_zone_search_path;
+                if (m_args.m_verbose)
+                    std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
+                continue;
             }
 
-            m_last_zone_search_path = new SearchPathFilesystem(absoluteZoneDirectory);
-            searchPathsForZone.IncludeSearchPath(m_last_zone_search_path);
-            LoadSearchPath(m_last_zone_search_path);
+            if (m_args.m_verbose)
+                std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
+
+            auto searchPath = std::make_unique<SearchPathFilesystem>(searchPathStr);
+            LoadSearchPath(searchPath.get());
+            searchPathsForZone.IncludeSearchPath(searchPath.get());
+            m_loaded_zone_search_paths.emplace_back(std::move(searchPath));
         }
+
+        searchPathsForZone.IncludeSearchPath(&m_asset_search_paths);
 
         for (auto* iwd : IWD::Repository)
         {
@@ -88,62 +89,159 @@ class Linker::Impl
 
         return searchPathsForZone;
     }
+    
+    SearchPaths GetGdtSearchPathsForZone(const std::string& zoneName)
+    {
+        SearchPaths searchPathsForZone;
+
+        for (const auto& searchPathStr : m_args.GetGdtSearchPathsForZone(zoneName))
+        {
+            auto absolutePath = fs::absolute(searchPathStr);
+
+            if (!fs::is_directory(absolutePath))
+            {
+                if (m_args.m_verbose)
+                    std::cout << "Adding gdt search path (Not found): " << absolutePath.string() << std::endl;
+                continue;
+            }
+
+            if (m_args.m_verbose)
+                std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
+
+            searchPathsForZone.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
+        }
+
+        searchPathsForZone.IncludeSearchPath(&m_gdt_search_paths);
+
+        return searchPathsForZone;
+    }
+    
+    SearchPaths GetSourceSearchPathsForZone(const std::string& zoneName)
+    {
+        SearchPaths searchPathsForZone;
+
+        for (const auto& searchPathStr : m_args.GetSourceSearchPathsForZone(zoneName))
+        {
+            auto absolutePath = fs::absolute(searchPathStr);
+
+            if (!fs::is_directory(absolutePath))
+            {
+                if (m_args.m_verbose)
+                    std::cout << "Adding source search path (Not found): " << absolutePath.string() << std::endl;
+                continue;
+            }
+
+            if (m_args.m_verbose)
+                std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
+
+            searchPathsForZone.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
+        }
+        
+        searchPathsForZone.IncludeSearchPath(&m_source_search_paths);
+
+        return searchPathsForZone;
+    }
 
     /**
      * \brief Initializes the Linker object's search paths based on the user's input.
      * \return \c true if building the search paths was successful, otherwise \c false.
      */
-    bool BuildSearchPaths()
+    bool BuildZoneIndependentSearchPaths()
     {
-        for (const auto& path : m_args.m_user_search_paths)
+        for (const auto& path : m_args.GetZoneIndependentAssetSearchPaths())
         {
             auto absolutePath = fs::absolute(path);
 
             if (!fs::is_directory(absolutePath))
             {
-                printf("Could not find directory of search path: \"%s\"\n", path.c_str());
-                return false;
+                if(m_args.m_verbose)
+                    std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
+                continue;
             }
+
+            if(m_args.m_verbose)
+                std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
 
             auto searchPath = std::make_unique<SearchPathFilesystem>(absolutePath.string());
             LoadSearchPath(searchPath.get());
-            m_search_paths.CommitSearchPath(std::move(searchPath));
-
-            m_absolute_search_paths.insert(absolutePath.string());
+            m_asset_search_paths.CommitSearchPath(std::move(searchPath));
         }
 
-        if (m_args.m_verbose)
+        for (const auto& path : m_args.GetZoneIndependentGdtSearchPaths())
         {
-            printf("%u SearchPaths%s\n", m_absolute_search_paths.size(), !m_absolute_search_paths.empty() ? ":" : "");
-            for (const auto& absoluteSearchPath : m_absolute_search_paths)
+            auto absolutePath = fs::absolute(path);
+
+            if (!fs::is_directory(absolutePath))
             {
-                printf("  \"%s\"\n", absoluteSearchPath.c_str());
+                if (m_args.m_verbose)
+                    std::cout << "Loading gdt search path (Not found): " << absolutePath.string() << std::endl;
+                continue;
             }
 
-            if (!m_absolute_search_paths.empty())
+            if (m_args.m_verbose)
+                std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
+
+            m_gdt_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
+        }
+
+        for (const auto& path : m_args.GetZoneIndependentSourceSearchPaths())
+        {
+            auto absolutePath = fs::absolute(path);
+
+            if (!fs::is_directory(absolutePath))
             {
-                puts("");
+                if (m_args.m_verbose)
+                    std::cout << "Loading source search path (Not found): " << absolutePath.string() << std::endl;
+                continue;
             }
+
+            if (m_args.m_verbose)
+                std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
+
+            m_source_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
         }
 
         return true;
     }
-
-    /**
-     * \brief Performs the tasks specified by the command line arguments on the specified zone.
-     * \param zone The zone to handle.
-     * \return \c true if handling the zone was successful, otherwise \c false.
-     */
-    bool BuildZone(const std::string& zoneName) const
+    
+    bool BuildZone(const std::string& zoneName)
     {
+        auto assetSearchPaths = GetAssetSearchPathsForZone(zoneName);
+        auto gdtSearchPaths = GetGdtSearchPathsForZone(zoneName);
+        auto sourceSearchPaths = GetSourceSearchPathsForZone(zoneName);
+
+        std::unique_ptr<ZoneDefinition> zoneDefinition;
+        {
+            const auto definitionFileName = zoneName + ".zone";
+            const auto definitionStream = sourceSearchPaths.Open(definitionFileName);
+            if (!definitionStream)
+            {
+                std::cout << "Could not find zone definition file for zone \"" << zoneName << "\"." << std::endl;
+                return false;
+            }
+
+            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream, definitionFileName, m_args.m_verbose);
+            zoneDefinition = zoneDefinitionInputStream.ReadDefinition();
+        }
+
+        if(!zoneDefinition)
+        {
+            std::cout << "Failed to read zone definition file for zone \"" << zoneName << "\"." << std::endl;
+            return false;
+        }
+
+        for(const auto& loadedSearchPath : m_loaded_zone_search_paths)
+        {
+            UnloadSearchPath(loadedSearchPath.get());
+        }
+        m_loaded_zone_search_paths.clear();
+        
         return true;
     }
 
 public:
     Impl()
-    {
-        m_last_zone_search_path = nullptr;
-    }
+    = default;
 
     /**
      * \copydoc Linker::Start
@@ -153,7 +251,7 @@ public:
         if (!m_args.ParseArgs(argc, argv))
             return false;
 
-        if (!BuildSearchPaths())
+        if (!BuildZoneIndependentSearchPaths())
             return false;
 
         std::vector<std::unique_ptr<Zone>> zones;
@@ -168,9 +266,6 @@ public:
 
             auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
 
-            auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
-            searchPathsForZone.IncludeSearchPath(&m_search_paths);
-
             auto zone = std::unique_ptr<Zone>(ZoneLoading::LoadZone(zonePath));
             if (zone == nullptr)
             {
@@ -182,13 +277,10 @@ public:
             {
                 printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
             }
-
-            ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
-            ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
         }
 
         auto result = true;
-        for(const auto& zone : m_args.m_zones_to_build)
+        for (const auto& zone : m_args.m_zones_to_build)
         {
             if (!BuildZone(zone))
             {
@@ -197,10 +289,6 @@ public:
             }
         }
 
-        for(const auto& zone : zones)
-        {
-            ObjLoading::UnloadContainersOfZone(zone.get());
-        }
         zones.clear();
 
         return result;

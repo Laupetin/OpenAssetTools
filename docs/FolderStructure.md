@@ -12,6 +12,7 @@ The result should be oriented at the original game's modding tools.
 │   ├───source_data
 │   ├───zone_raw
 │   └───zone_source
+├───zone_out
 ├───zone_raw
 └───zone_source
 ```
@@ -38,6 +39,10 @@ Gdts can be referenced inside a zone definition file to be used inside a zone.
 Contains all data dumped using Unlinker which includes raw assets in ``zone_raw``, zone definitions in ``zone_source`` and gdts in ``source_data``.
 
 Separating the data of dumped files serves the purpose of separating it from manually created zones and prevents accidentally overwriting self created data.
+
+## zone_out
+
+The folder that contains the output of the linking process.
 
 ## zone_raw
 

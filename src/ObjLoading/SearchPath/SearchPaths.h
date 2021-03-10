@@ -12,17 +12,17 @@ class SearchPaths final : public ISearchPath
 public:
     using iterator = std::vector<ISearchPath*>::iterator;
 
-    SearchPaths();
-    ~SearchPaths() override;
+    SearchPaths() = default;
+    ~SearchPaths() override = default;
 
     std::unique_ptr<std::istream> Open(const std::string& fileName) override;
     std::string GetPath() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;
 
-    SearchPaths(const SearchPaths& other);
-    SearchPaths(SearchPaths&& other) noexcept;
-    SearchPaths& operator=(const SearchPaths& other);
-    SearchPaths& operator=(SearchPaths&& other) noexcept;
+    SearchPaths(const SearchPaths& other) = delete;
+    SearchPaths(SearchPaths&& other) noexcept = default;
+    SearchPaths& operator=(const SearchPaths& other) = delete;
+    SearchPaths& operator=(SearchPaths&& other) noexcept = default;
 
     /**
      * \brief Adds a search path that gets deleted upon destruction of the \c SearchPaths object.
