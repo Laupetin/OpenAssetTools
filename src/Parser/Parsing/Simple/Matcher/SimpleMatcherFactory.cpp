@@ -1,5 +1,7 @@
 #include "SimpleMatcherFactory.h"
 
+
+#include "SimpleMatcherAnyCharacterBesides.h"
 #include "SimpleMatcherCharacter.h"
 #include "SimpleMatcherKeyword.h"
 #include "SimpleMatcherValueType.h"
@@ -37,4 +39,9 @@ MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::FloatingPoint() c
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Char(char c) const
 {
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherCharacter>(c));
+}
+
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::AnyCharBesides(std::vector<char> chars) const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherAnyCharacterBesides>(std::move(chars)));
 }

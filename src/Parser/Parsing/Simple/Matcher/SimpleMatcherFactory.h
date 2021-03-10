@@ -16,4 +16,5 @@ public:
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Integer() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> FloatingPoint() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Char(char c) const;
+    _NODISCARD MatcherFactoryWrapper<SimpleParserValue> AnyCharBesides(std::vector<char> chars) const;
 };

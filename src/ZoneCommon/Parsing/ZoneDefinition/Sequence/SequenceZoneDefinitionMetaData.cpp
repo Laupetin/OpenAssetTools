@@ -10,7 +10,8 @@ SequenceZoneDefinitionMetaData::SequenceZoneDefinitionMetaData()
         create.Char('>'),
         create.Identifier().Capture(CAPTURE_KEY),
         create.Char(','),
-        create.Identifier().Capture(CAPTURE_VALUE)
+        create.Identifier().Capture(CAPTURE_VALUE),
+        create.Type(SimpleParserValueType::NEW_LINE)
     });
 }
 

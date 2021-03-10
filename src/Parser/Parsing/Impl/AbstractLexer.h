@@ -64,7 +64,7 @@ protected:
         {
             while (peekLine >= m_line_cache.size())
             {
-                if (m_line_cache.back().IsEof())
+                if (!m_line_cache.empty() && m_line_cache.back().IsEof())
                     return EOF;
 
                 m_line_cache.push_back(m_stream->NextLine());

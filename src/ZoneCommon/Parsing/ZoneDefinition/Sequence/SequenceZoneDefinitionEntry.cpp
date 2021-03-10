@@ -1,16 +1,19 @@
 #include "SequenceZoneDefinitionEntry.h"
 
+#include "Parsing/ZoneDefinition/Matcher/ZoneDefinitionCommonMatchers.h"
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 SequenceZoneDefinitionEntry::SequenceZoneDefinitionEntry()
 {
     const SimpleMatcherFactory create(this);
 
+    AddLabeledMatchers(ZoneDefinitionCommonMatchers::AssetName(this), ZoneDefinitionCommonMatchers::LABEL_ASSET_NAME);
     AddMatchers({
         create.Identifier().Capture(CAPTURE_TYPE_NAME),
         create.Char(','),
         create.Optional(create.Char(',').Tag(TAG_REFERENCE)),
-        create.Identifier().Capture(CAPTURE_ASSET_NAME)
+        create.Label(ZoneDefinitionCommonMatchers::LABEL_ASSET_NAME).Capture(CAPTURE_ASSET_NAME),
+        create.Type(SimpleParserValueType::NEW_LINE)
     });
 }
 

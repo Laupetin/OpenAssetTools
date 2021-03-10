@@ -14,6 +14,12 @@ SimpleParserValue SimpleParserValue::EndOfFile(const TokenPos pos)
     return pv;
 }
 
+SimpleParserValue SimpleParserValue::NewLine(const TokenPos pos)
+{
+    SimpleParserValue pv(pos, SimpleParserValueType::NEW_LINE);
+    return pv;
+}
+
 SimpleParserValue SimpleParserValue::Character(const TokenPos pos, const char c)
 {
     SimpleParserValue pv(pos, SimpleParserValueType::CHARACTER);

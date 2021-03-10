@@ -11,6 +11,7 @@ enum class SimpleParserValueType
     // Meta tokens
     INVALID,
     END_OF_FILE,
+    NEW_LINE,
 
     // Single character
     CHARACTER,
@@ -41,6 +42,7 @@ public:
 
     static SimpleParserValue Invalid(TokenPos pos);
     static SimpleParserValue EndOfFile(TokenPos pos);
+    static SimpleParserValue NewLine(TokenPos pos);
     static SimpleParserValue Character(TokenPos pos, char c);
     static SimpleParserValue Integer(TokenPos pos, int value);
     static SimpleParserValue FloatingPoint(TokenPos pos, double value);

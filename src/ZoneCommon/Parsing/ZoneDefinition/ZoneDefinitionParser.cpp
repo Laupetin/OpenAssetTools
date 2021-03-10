@@ -1,5 +1,7 @@
 #include "ZoneDefinitionParser.h"
 
+
+#include "Sequence/SequenceZoneDefinitionConsumeEmptyLines.h"
 #include "Sequence/SequenceZoneDefinitionEntry.h"
 #include "Sequence/SequenceZoneDefinitionIgnore.h"
 #include "Sequence/SequenceZoneDefinitionInclude.h"
@@ -16,7 +18,8 @@ const std::vector<AbstractParser<SimpleParserValue, ZoneDefinition>::sequence_t*
         new SequenceZoneDefinitionMetaData(),
         new SequenceZoneDefinitionInclude(),
         new SequenceZoneDefinitionIgnore(),
-        new SequenceZoneDefinitionEntry()
+        new SequenceZoneDefinitionEntry(),
+        new SequenceZoneDefinitionConsumeEmptyLines()
     });
 
     return tests;

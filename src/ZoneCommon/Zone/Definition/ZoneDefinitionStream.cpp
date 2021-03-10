@@ -7,6 +7,7 @@
 
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Simple/SimpleLexer.h"
+#include "Parsing/ZoneDefinition/ZoneDefinitionLexer.h"
 #include "Parsing/ZoneDefinition/ZoneDefinitionParser.h"
 
 ZoneDefinitionInputStream::ZoneDefinitionInputStream(std::istream& stream, std::string fileName, bool verbose)
@@ -42,7 +43,7 @@ std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
         std::cout << "Reading zone definition file: " << m_file_name << std::endl;
     }
 
-    const auto lexer = std::make_unique<SimpleLexer>(m_stream);
+    const auto lexer = std::make_unique<ZoneDefinitionLexer>(m_stream);
     const auto parser = std::make_unique<ZoneDefinitionParser>(lexer.get());
 
     const auto start = std::chrono::steady_clock::now();
