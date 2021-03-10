@@ -303,8 +303,9 @@ public:
         if (static_cast<int>(m_token_cache.size()) <= amount)
         {
             const auto& lastToken = m_token_cache.back();
-            while (m_line_cache.front().m_line_number != lastToken.GetPos().m_line
-                || m_line_cache.front().m_filename.get() != lastToken.GetPos().m_filename.get())
+            while (!m_line_cache.empty()
+                && (m_line_cache.front().m_line_number != lastToken.GetPos().m_line
+                    || m_line_cache.front().m_filename.get() != lastToken.GetPos().m_filename.get()))
             {
                 m_line_cache.pop_front();
                 m_line_index--;
@@ -336,7 +337,7 @@ public:
 
     _NODISCARD ParserLine GetLineForPos(const TokenPos& pos) const override
     {
-        for(const auto& line : m_line_cache)
+        for (const auto& line : m_line_cache)
         {
             if (line.m_filename.get() == pos.m_filename.get()
                 && line.m_line_number == pos.m_line)

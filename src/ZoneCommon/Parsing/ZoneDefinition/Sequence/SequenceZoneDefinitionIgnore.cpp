@@ -10,7 +10,10 @@ SequenceZoneDefinitionIgnore::SequenceZoneDefinitionIgnore()
         create.Keyword("ignore"),
         create.Char(','),
         create.Identifier().Capture(CAPTURE_IGNORE_NAME),
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Or({
+            create.Type(SimpleParserValueType::NEW_LINE),
+            create.Type(SimpleParserValueType::END_OF_FILE)
+        })
     });
 }
 

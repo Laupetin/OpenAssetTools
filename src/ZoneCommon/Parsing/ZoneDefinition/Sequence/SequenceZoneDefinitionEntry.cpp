@@ -13,7 +13,10 @@ SequenceZoneDefinitionEntry::SequenceZoneDefinitionEntry()
         create.Char(','),
         create.Optional(create.Char(',').Tag(TAG_REFERENCE)),
         create.Label(ZoneDefinitionCommonMatchers::LABEL_ASSET_NAME).Capture(CAPTURE_ASSET_NAME),
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Or({
+            create.Type(SimpleParserValueType::NEW_LINE),
+            create.Type(SimpleParserValueType::END_OF_FILE)
+        })
     });
 }
 

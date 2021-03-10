@@ -13,7 +13,10 @@ std::unique_ptr<ZoneDefinitionCommonMatchers::matcher_t> ZoneDefinitionCommonMat
             create.Identifier(),
             create.AnyCharBesides({',', '<', '>', '"', '\\', '*', '?', '|', ':'})
         })),
-        create.Type(SimpleParserValueType::NEW_LINE).NoConsume()
+        create.Or({
+            create.Type(SimpleParserValueType::NEW_LINE),
+            create.Type(SimpleParserValueType::END_OF_FILE)
+        }).NoConsume()
     }).Transform([](SimpleMatcherFactory::token_list_t& tokens)
     {
         std::ostringstream str;

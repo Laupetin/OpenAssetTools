@@ -10,7 +10,10 @@ SequenceZoneDefinitionInclude::SequenceZoneDefinitionInclude()
         create.Keyword("include"),
         create.Char(','),
         create.Identifier().Capture(CAPTURE_INCLUDE_NAME),
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Or({
+            create.Type(SimpleParserValueType::NEW_LINE),
+            create.Type(SimpleParserValueType::END_OF_FILE)
+        })
     });
 }
 
