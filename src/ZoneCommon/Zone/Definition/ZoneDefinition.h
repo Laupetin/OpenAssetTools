@@ -21,4 +21,6 @@ public:
     std::vector<std::string> m_includes;
     std::vector<std::string> m_ignores;
     std::vector<ZoneDefinitionEntry> m_assets;
+
+    void Include(ZoneDefinition& definitionToInclude);
 };

@@ -4,6 +4,7 @@
 #include <regex>
 #include <filesystem>
 #include <fstream>
+#include <deque>
 
 #include "Utils/ClassUtils.h"
 #include "Utils/Arguments/ArgumentParser.h"
@@ -16,6 +17,8 @@
 #include "LinkerArgs.h"
 
 #include "Utils/ObjFileStream.h"
+#include "Zone/AssetList/AssetList.h"
+#include "Zone/AssetList/AssetListStream.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
 
 namespace fs = std::filesystem;
@@ -203,6 +206,160 @@ class Linker::Impl
 
         return true;
     }
+
+    bool IncludeAdditionalZoneDefinitions(const std::string& initialFileName, ZoneDefinition& zoneDefinition, ISearchPath* sourceSearchPath) const
+    {
+        std::set<std::string> sourceNames;
+        sourceNames.emplace(initialFileName);
+
+        std::deque<std::string> toIncludeQueue;
+        for (const auto& include : zoneDefinition.m_includes)
+            toIncludeQueue.emplace_back(include);
+
+        while(!toIncludeQueue.empty())
+        {
+            const auto& source = toIncludeQueue.front();
+
+            if(sourceNames.find(source) == sourceNames.end())
+            {
+                sourceNames.emplace(source);
+
+                std::unique_ptr<ZoneDefinition> includeDefinition;
+                {
+                    const auto definitionFileName = source + ".zone";
+                    const auto definitionStream = sourceSearchPath->Open(definitionFileName);
+                    if (!definitionStream)
+                    {
+                        std::cout << "Could not find zone definition file for zone \"" << source << "\"." << std::endl;
+                        return false;
+                    }
+
+                    ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream, definitionFileName, m_args.m_verbose);
+                    includeDefinition = zoneDefinitionInputStream.ReadDefinition();
+                }
+
+                if (!includeDefinition)
+                {
+                    std::cout << "Failed to read zone definition file for zone \"" << source << "\"." << std::endl;
+                    return false;
+                }
+
+                for (const auto& include : includeDefinition->m_includes)
+                    toIncludeQueue.emplace_back(include);
+
+                zoneDefinition.Include(*includeDefinition);
+            }
+
+            toIncludeQueue.pop_front();
+        }
+
+        return true;
+    }
+
+    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(const std::string& zoneName, ISearchPath* sourceSearchPath) const
+    {
+        std::unique_ptr<ZoneDefinition> zoneDefinition;
+        {
+            const auto definitionFileName = zoneName + ".zone";
+            const auto definitionStream = sourceSearchPath->Open(definitionFileName);
+            if (!definitionStream)
+            {
+                std::cout << "Could not find zone definition file for zone \"" << zoneName << "\"." << std::endl;
+                return nullptr;
+            }
+
+            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream, definitionFileName, m_args.m_verbose);
+            zoneDefinition = zoneDefinitionInputStream.ReadDefinition();
+        }
+
+        if (!zoneDefinition)
+        {
+            std::cout << "Failed to read zone definition file for zone \"" << zoneName << "\"." << std::endl;
+            return nullptr;
+        }
+
+        if (!IncludeAdditionalZoneDefinitions(zoneName, *zoneDefinition, sourceSearchPath))
+            return nullptr;
+
+        return zoneDefinition;
+    }
+
+    bool ReadAssetList(const std::string& zoneName, std::vector<AssetListEntry>& assetList, ISearchPath* sourceSearchPath) const
+    {
+        {
+            const auto assetListFileName = "assetlist/" + zoneName + ".csv";
+            const auto assetListStream = sourceSearchPath->Open(assetListFileName);
+
+            if (assetListStream)
+            {
+                const AssetListInputStream stream(*assetListStream);
+                AssetListEntry entry;
+
+                while (stream.NextEntry(entry))
+                {
+                    assetList.emplace_back(std::move(entry));
+                }
+                return true;
+            }
+        }
+
+        {
+            const auto zoneDefinition = ReadZoneDefinition(zoneName, sourceSearchPath);
+
+            if(zoneDefinition)
+            {
+                for(const auto& entry : zoneDefinition->m_assets)
+                {
+                    assetList.emplace_back(entry.m_asset_type, entry.m_asset_name);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool ProcessZoneDefinitionIgnores(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* sourceSearchPath) const
+    {
+        if (zoneDefinition.m_ignores.empty())
+            return true;
+
+        std::map<std::string, std::reference_wrapper<ZoneDefinitionEntry>> zoneDefinitionAssetsByName;
+        for (auto& entry : zoneDefinition.m_assets)
+        {
+            zoneDefinitionAssetsByName.try_emplace(entry.m_asset_name, entry);
+        }
+
+        for(const auto& ignore : zoneDefinition.m_ignores)
+        {
+            if(ignore == zoneName)
+                continue;
+
+            std::vector<AssetListEntry> assetList;
+            if(!ReadAssetList(ignore, assetList, sourceSearchPath))
+            {
+                std::cout << "Failed to read asset listing for ignoring assets of zone \"" << ignore << "\"." << std::endl;
+                return false;
+            }
+
+            for(const auto& assetListEntry : assetList)
+            {
+                const auto foundAsset = zoneDefinitionAssetsByName.find(assetListEntry.m_name);
+
+                if(foundAsset != zoneDefinitionAssetsByName.end()
+                    && foundAsset->second.get().m_asset_type == assetListEntry.m_type)
+                {
+                    foundAsset->second.get().m_is_reference = true;
+                }
+            }
+        }
+        return true;
+    }
+
+    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition)
+    {
+        return nullptr;
+    }
     
     bool BuildZone(const std::string& zoneName)
     {
@@ -210,25 +367,14 @@ class Linker::Impl
         auto gdtSearchPaths = GetGdtSearchPathsForZone(zoneName);
         auto sourceSearchPaths = GetSourceSearchPathsForZone(zoneName);
 
-        std::unique_ptr<ZoneDefinition> zoneDefinition;
+        const auto zoneDefinition = ReadZoneDefinition(zoneName, &sourceSearchPaths);
+        if (!zoneDefinition
+            || !ProcessZoneDefinitionIgnores(zoneName, *zoneDefinition, &sourceSearchPaths))
         {
-            const auto definitionFileName = zoneName + ".zone";
-            const auto definitionStream = sourceSearchPaths.Open(definitionFileName);
-            if (!definitionStream)
-            {
-                std::cout << "Could not find zone definition file for zone \"" << zoneName << "\"." << std::endl;
-                return false;
-            }
-
-            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream, definitionFileName, m_args.m_verbose);
-            zoneDefinition = zoneDefinitionInputStream.ReadDefinition();
-        }
-
-        if(!zoneDefinition)
-        {
-            std::cout << "Failed to read zone definition file for zone \"" << zoneName << "\"." << std::endl;
             return false;
         }
+
+        const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition);
 
         for(const auto& loadedSearchPath : m_loaded_zone_search_paths)
         {
