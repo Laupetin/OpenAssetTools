@@ -1,6 +1,6 @@
 #include "AssetDumperStringTable.h"
 
-#include "Dumping/CsvWriter.h"
+#include "Csv/CsvStream.h"
 
 using namespace T6;
 
@@ -22,7 +22,7 @@ std::string AssetDumperStringTable::GetFileNameForAsset(Zone* zone, XAssetInfo<S
 void AssetDumperStringTable::DumpRaw(AssetDumpingContext& context, XAssetInfo<StringTable>* asset, std::ostream& stream)
 {
     const auto* stringTable = asset->Asset();
-    CsvWriter csv(stream);
+    CsvOutputStream csv(stream);
 
     for(auto row = 0; row < stringTable->rowCount; row++)
     {

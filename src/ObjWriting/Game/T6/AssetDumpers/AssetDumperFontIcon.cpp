@@ -1,6 +1,6 @@
 #include "AssetDumperFontIcon.h"
 
-#include "Dumping/CsvWriter.h"
+#include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
 
 #include <sstream>
@@ -141,7 +141,7 @@ class AssetDumperFontIconInternal
         KnownAlias("Remote_LStick")
     };
 
-    CsvWriter m_csv;
+    CsvOutputStream m_csv;
 
     static FontIconEntry* FindEntryByHash(FontIcon* fontIcon, const int hash)
     {
