@@ -15,6 +15,10 @@
 #include "SearchPath/SearchPathFilesystem.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "LinkerArgs.h"
+#include "AssetLoading/AssetLoadingContext.h"
+#include "AssetLoading/IAssetLoader.h"
+#include "Game/IW4/AssetLoaderIW4.h"
+#include "Game/T6/AssetLoaderT6.h"
 
 #include "Utils/ObjFileStream.h"
 #include "Zone/AssetList/AssetList.h"
@@ -23,8 +27,17 @@
 
 namespace fs = std::filesystem;
 
+const IAssetLoader* const ASSET_LOADERS[]
+{
+    new IW4::AssetLoader(),
+    new T6::AssetLoader()
+};
+
 class Linker::Impl
 {
+    static constexpr const char* METADATA_GAME = "game";
+    static constexpr const char* METADATA_GDT = "gdt";
+
     LinkerArgs m_args;
     std::vector<std::unique_ptr<ISearchPath>> m_loaded_zone_search_paths;
     SearchPaths m_asset_search_paths;
@@ -356,9 +369,90 @@ class Linker::Impl
         return true;
     }
 
-    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition)
+    static bool GetGameNameFromZoneDefinition(std::string& gameName, const std::string& zoneName, const ZoneDefinition& zoneDefinition)
     {
+        auto firstGameEntry = true;
+        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata.equal_range(METADATA_GAME);
+        for (auto i = rangeBegin; i != rangeEnd; ++i)
+        {
+            if (firstGameEntry)
+            {
+                gameName = i->second;
+                firstGameEntry = false;
+            }
+            else
+            {
+                if (gameName != i->second)
+                {
+                    std::cout << "Conflicting game names in zone \"" << zoneName << "\": " << gameName << " != " << i->second << std::endl;
+                    return false;
+                }
+            }
+        }
+
+        if (firstGameEntry)
+        {
+            std::cout << "No game name was specified for zone \"" << zoneName << "\"" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    static bool LoadGdtFilesFromZoneDefinition(std::vector<std::unique_ptr<Gdt>>& gdtList, const std::string& zoneName, const ZoneDefinition& zoneDefinition, ISearchPath* gdtSearchPath)
+    {
+        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata.equal_range(METADATA_GDT);
+        for (auto i = rangeBegin; i != rangeEnd; ++i)
+        {
+            const auto gdtFile = gdtSearchPath->Open(i->second + ".gdt");
+            if(!gdtFile)
+            {
+                std::cout << "Failed to open file for gdt \"" << i->second << "\"" << std::endl;
+                return false;
+            }
+
+            GdtReader gdtReader(*gdtFile);
+            auto gdt = std::make_unique<Gdt>();
+            if(!gdtReader.Read(*gdt))
+            {
+                std::cout << "Failed to read gdt file \"" << i->second << "\"" << std::endl;
+                return false;
+            }
+
+            gdtList.emplace_back(std::move(gdt));
+        }
+
+        return true;
+    }
+
+    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath) const
+    {
+        auto context = std::make_unique<AssetLoadingContext>(zoneName, assetSearchPath);
+        if (!GetGameNameFromZoneDefinition(context->m_game_name, zoneName, zoneDefinition))
+            return nullptr;
+        if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneName, zoneDefinition, gdtSearchPath))
+            return nullptr;
+
+        for(const auto* assetLoader : ASSET_LOADERS)
+        {
+            if(assetLoader->SupportsGame(context->m_game_name))
+                return assetLoader->CreateZoneForDefinition(*context);
+        }
+
         return nullptr;
+    }
+
+    bool WriteZoneToFile(Zone* zone)
+    {
+        fs::path zoneFilePath(m_args.GetOutputFolderPathForZone(zone->m_name));
+        zoneFilePath.append(zone->m_name + ".ff");
+
+        std::ifstream stream(zoneFilePath);
+        if (!stream.is_open())
+            return false;
+
+        stream.close();
+        return true;
     }
     
     bool BuildZone(const std::string& zoneName)
@@ -374,7 +468,10 @@ class Linker::Impl
             return false;
         }
 
-        const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition);
+        const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths);
+        auto result = zone != nullptr;
+        if (zone)
+            result = WriteZoneToFile(zone.get());
 
         for(const auto& loadedSearchPath : m_loaded_zone_search_paths)
         {
@@ -382,7 +479,7 @@ class Linker::Impl
         }
         m_loaded_zone_search_paths.clear();
         
-        return true;
+        return result;
     }
 
 public:

@@ -20,5 +20,5 @@ SequenceZoneDefinitionMetaData::SequenceZoneDefinitionMetaData()
 
 void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinition* state, SequenceResult<SimpleParserValue>& result) const
 {
-    state->m_metadata[result.NextCapture(CAPTURE_KEY).IdentifierValue()] = result.NextCapture(CAPTURE_VALUE).IdentifierValue();
+    state->m_metadata.insert(std::make_pair(result.NextCapture(CAPTURE_KEY).IdentifierValue(), result.NextCapture(CAPTURE_VALUE).IdentifierValue()));
 }

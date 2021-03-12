@@ -16,10 +16,7 @@ void ZoneDefinition::Include(ZoneDefinition& definitionToInclude)
 {
     for(const auto& [key, value] : definitionToInclude.m_metadata)
     {
-        if(m_metadata.find(key) == m_metadata.end())
-        {
-            m_metadata.emplace(std::make_pair(key, value));
-        }
+        m_metadata.emplace(std::make_pair(key, value));
     }
 
     for(const auto& ignore : definitionToInclude.m_ignores)
