@@ -6,7 +6,7 @@
 #include "SearchPath/ISearchPath.h"
 #include "Obj/Gdt/Gdt.h"
 
-class AssetLoadingContext
+class ZoneCreationContext
 {
 public:
     ISearchPath* m_asset_search_path;
@@ -14,6 +14,6 @@ public:
     std::string m_game_name;
     std::vector<std::unique_ptr<Gdt>> m_gdt_files;
 
-    AssetLoadingContext();
-    AssetLoadingContext(std::string zoneName, ISearchPath* assetSearchPath);
+    ZoneCreationContext();
+    ZoneCreationContext(std::string zoneName, ISearchPath* assetSearchPath);
 };

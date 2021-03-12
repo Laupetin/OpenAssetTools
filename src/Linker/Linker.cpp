@@ -15,10 +15,10 @@
 #include "SearchPath/SearchPathFilesystem.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "LinkerArgs.h"
-#include "AssetLoading/AssetLoadingContext.h"
-#include "AssetLoading/IAssetLoader.h"
-#include "Game/IW4/AssetLoaderIW4.h"
-#include "Game/T6/AssetLoaderT6.h"
+#include "ZoneCreation/ZoneCreationContext.h"
+#include "ZoneCreation/IZoneCreator.h"
+#include "Game/IW4/ZoneCreatorIW4.h"
+#include "Game/T6/ZoneCreatorT6.h"
 
 #include "Utils/ObjFileStream.h"
 #include "Zone/AssetList/AssetList.h"
@@ -27,10 +27,10 @@
 
 namespace fs = std::filesystem;
 
-const IAssetLoader* const ASSET_LOADERS[]
+const IZoneCreator* const ZONE_CREATORS[]
 {
-    new IW4::AssetLoader(),
-    new T6::AssetLoader()
+    new IW4::ZoneCreator(),
+    new T6::ZoneCreator()
 };
 
 class Linker::Impl
@@ -427,13 +427,13 @@ class Linker::Impl
 
     std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath) const
     {
-        auto context = std::make_unique<AssetLoadingContext>(zoneName, assetSearchPath);
+        auto context = std::make_unique<ZoneCreationContext>(zoneName, assetSearchPath);
         if (!GetGameNameFromZoneDefinition(context->m_game_name, zoneName, zoneDefinition))
             return nullptr;
         if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneName, zoneDefinition, gdtSearchPath))
             return nullptr;
 
-        for(const auto* assetLoader : ASSET_LOADERS)
+        for(const auto* assetLoader : ZONE_CREATORS)
         {
             if(assetLoader->SupportsGame(context->m_game_name))
                 return assetLoader->CreateZoneForDefinition(*context);
