@@ -8,7 +8,6 @@
 #include "Pool/ZoneAssetPools.h"
 #include "Game/IGame.h"
 #include "Game/GameLanguage.h"
-#include "Zone/XBlock.h"
 #include "ZoneMemory.h"
 
 class IGame;
@@ -16,7 +15,6 @@ class ZoneAssetPools;
 
 class Zone
 {
-    std::vector<XBlock*> m_blocks;
     std::unique_ptr<ZoneMemory> m_memory;
 
     bool m_registered;
@@ -31,6 +29,10 @@ public:
 
     Zone(std::string name, zone_priority_t priority, IGame* game);
     ~Zone();
+    Zone(const Zone& other) = delete;
+    Zone(Zone&& other) noexcept = default;
+    Zone& operator=(const Zone& other) = delete;
+    Zone& operator=(Zone&& other) noexcept = default;
 
     void Register();
 
