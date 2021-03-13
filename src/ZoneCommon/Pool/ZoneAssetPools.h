@@ -25,7 +25,7 @@ public:
 
     XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*>& dependencies);
     virtual XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const = 0;
-    virtual const std::string& GetAssetTypeName(asset_type_t assetType) const = 0;
+    virtual const char* GetAssetTypeName(asset_type_t assetType) const = 0;
 
     virtual void InitPoolStatic(asset_type_t type, size_t capacity) = 0;
     virtual void InitPoolDynamic(asset_type_t type) = 0;

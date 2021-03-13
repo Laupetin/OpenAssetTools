@@ -8,8 +8,7 @@
 
 using namespace IW4;
 
-const std::string GameAssetPoolIW4::ASSET_TYPE_INVALID = "invalid_asset";
-const std::string GameAssetPoolIW4::ASSET_TYPE_NAMES[]
+const char* GameAssetPoolIW4::ASSET_TYPE_NAMES[]
 {
     "physpreset",
     "physcollmap",
@@ -383,10 +382,15 @@ XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::stri
 #undef CASE_GET_ASSET
 }
 
-const std::string& GameAssetPoolIW4::GetAssetTypeName(const asset_type_t assetType) const
+const char* GameAssetPoolIW4::AssetTypeNameByType(asset_type_t assetType)
 {
     if (assetType >= 0 && assetType < static_cast<int>(std::extent<decltype(ASSET_TYPE_NAMES)>::value))
         return ASSET_TYPE_NAMES[assetType];
 
     return ASSET_TYPE_INVALID;
+}
+
+const char* GameAssetPoolIW4::GetAssetTypeName(const asset_type_t assetType) const
+{
+    return AssetTypeNameByType(assetType);
 }

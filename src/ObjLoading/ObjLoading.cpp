@@ -87,3 +87,16 @@ SearchPaths ObjLoading::GetIWDSearchPaths()
 
     return iwdPaths;
 }
+
+bool ObjLoading::LoadAssetForZone(AssetLoadingContext* context, const asset_type_t assetType, const std::string& assetName)
+{
+    for (const auto* loader : OBJ_LOADERS)
+    {
+        if (loader->SupportsZone(context->m_zone))
+        {
+            return loader->LoadAssetForZone(context, assetType, assetName);
+        }
+    }
+
+    return false;
+}

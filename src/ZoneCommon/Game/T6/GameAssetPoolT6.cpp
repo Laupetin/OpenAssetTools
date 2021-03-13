@@ -8,8 +8,7 @@
 
 using namespace T6;
 
-const std::string GameAssetPoolT6::ASSET_TYPE_INVALID = "invalid_asset";
-const std::string GameAssetPoolT6::ASSET_TYPE_NAMES[]
+const char* GameAssetPoolT6::ASSET_TYPE_NAMES[]
 {
     "xmodelpieces",
     "physpreset",
@@ -478,10 +477,15 @@ XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, std::strin
 #undef CASE_GET_ASSET
 }
 
-const std::string& GameAssetPoolT6::GetAssetTypeName(const asset_type_t assetType) const
+const char* GameAssetPoolT6::AssetTypeNameByType(asset_type_t assetType)
 {
     if (assetType >= 0 && assetType < static_cast<int>(std::extent<decltype(ASSET_TYPE_NAMES)>::value))
         return ASSET_TYPE_NAMES[assetType];
 
     return ASSET_TYPE_INVALID;
+}
+
+const char* GameAssetPoolT6::GetAssetTypeName(const asset_type_t assetType) const
+{
+    return AssetTypeNameByType(assetType);
 }

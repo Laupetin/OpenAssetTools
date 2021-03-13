@@ -9,7 +9,7 @@ class Zone;
 class XAssetInfoGeneric
 {
 public:
-    int m_type = -1;
+    asset_type_t m_type = -1;
     std::string m_name;
     Zone* m_zone;
     std::vector<XAssetInfoGeneric*> m_dependencies;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AssetLoading/AssetLoadingContext.h"
 #include "Zone/Zone.h"
 #include "SearchPath/ISearchPath.h"
 #include "SearchPath/SearchPaths.h"
@@ -50,4 +51,6 @@ public:
      * \param zone The zone of the assets to load the obj data for.
      */
     static void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone);
+
+    static bool LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName);
 };

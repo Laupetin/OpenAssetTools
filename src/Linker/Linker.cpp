@@ -427,12 +427,12 @@ class Linker::Impl
 
     std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath) const
     {
-        auto context = std::make_unique<ZoneCreationContext>(zoneName, assetSearchPath);
+        auto context = std::make_unique<ZoneCreationContext>(zoneName, assetSearchPath, &zoneDefinition);
         if (!GetGameNameFromZoneDefinition(context->m_game_name, zoneName, zoneDefinition))
             return nullptr;
         if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneName, zoneDefinition, gdtSearchPath))
             return nullptr;
-
+        
         for(const auto* assetLoader : ZONE_CREATORS)
         {
             if(assetLoader->SupportsGame(context->m_game_name))
@@ -523,6 +523,8 @@ public:
             {
                 printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
             }
+
+            zones.emplace_back(std::move(zone));
         }
 
         auto result = true;

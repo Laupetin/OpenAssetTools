@@ -13,7 +13,7 @@ void ContentPrinter::PrintContent() const
 
     for(const auto& asset : *pools)
     {
-        printf("%s, %s\n", pools->GetAssetTypeName(asset->m_type).c_str(), asset->m_name.c_str());
+        printf("%s, %s\n", pools->GetAssetTypeName(asset->m_type), asset->m_name.c_str());
     }
 
     puts("");

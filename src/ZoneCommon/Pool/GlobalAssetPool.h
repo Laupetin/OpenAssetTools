@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <algorithm>
 #include <cassert>
@@ -25,7 +25,7 @@ class GlobalAssetPool
     };
 
     static std::vector<LinkedAssetPool*> m_linked_asset_pools;
-    static std::map<std::string, GameAssetPoolEntry> m_assets;
+    static std::unordered_map<std::string, GameAssetPoolEntry> m_assets;
 
     static void SortLinkedAssetPools()
     {
@@ -159,10 +159,19 @@ public:
             iAssetEntry = m_assets.erase(iAssetEntry);
         }
     }
+
+    static XAssetInfo<T>* GetAssetByName(const std::string& name)
+    {
+        const auto foundEntry = m_assets.find(name);
+        if (foundEntry == m_assets.end())
+            return nullptr;
+
+        return foundEntry->second.m_asset;
+    }
 };
 
 template<typename T>
 std::vector<typename GlobalAssetPool<T>::LinkedAssetPool*> GlobalAssetPool<T>::m_linked_asset_pools = std::vector<LinkedAssetPool*>();
 
 template<typename T>
-std::map<std::string, typename GlobalAssetPool<T>::GameAssetPoolEntry> GlobalAssetPool<T>::m_assets = std::map<std::string, GameAssetPoolEntry>();
+std::unordered_map<std::string, typename GlobalAssetPool<T>::GameAssetPoolEntry> GlobalAssetPool<T>::m_assets = std::unordered_map<std::string, GameAssetPoolEntry>();
