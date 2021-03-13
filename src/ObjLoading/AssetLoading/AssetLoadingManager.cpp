@@ -22,6 +22,10 @@ void AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::stri
 
 XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetType, const std::string& assetName)
 {
+    auto* existingAsset = m_context.m_zone->m_pools->GetAsset(assetType, assetName);
+    if (existingAsset)
+        return existingAsset;
+
     const auto loader = m_asset_loaders_by_type.find(assetType);
     if (loader != m_asset_loaders_by_type.end())
     {
