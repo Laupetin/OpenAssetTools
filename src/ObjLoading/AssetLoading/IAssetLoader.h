@@ -20,6 +20,12 @@ public:
     _NODISCARD virtual asset_type_t GetHandlingAssetType() const = 0;
     _NODISCARD virtual XAssetInfoGeneric* LoadFromGlobalAssetPools(const std::string& assetName) const = 0;
 
+    _NODISCARD virtual void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
+    {
+        // TODO: Make this pure virtual
+        return nullptr;
+    }
+
     _NODISCARD virtual bool CanLoadFromGdt() const
     {
         return false;

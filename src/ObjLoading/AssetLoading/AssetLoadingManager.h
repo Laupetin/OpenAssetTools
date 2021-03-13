@@ -11,6 +11,9 @@ class AssetLoadingManager final : public IAssetLoadingManager
     AssetLoadingContext& m_context;
     XAssetInfoGeneric* m_last_dependency_loaded;
 
+    XAssetInfoGeneric* LoadIgnoredDependency(asset_type_t assetType, const std::string& assetName, IAssetLoader* loader);
+    XAssetInfoGeneric* LoadAssetDependency(asset_type_t assetType, const std::string& assetName, IAssetLoader* loader);
+
 public:
     AssetLoadingManager(const std::unordered_map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType, AssetLoadingContext& context);
 

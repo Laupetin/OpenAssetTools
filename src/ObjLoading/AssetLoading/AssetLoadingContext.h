@@ -17,6 +17,7 @@ public:
     Zone* const m_zone;
     ISearchPath* const m_raw_search_path;
     const std::vector<Gdt*> m_gdt_files;
+    std::unordered_map<std::string, asset_type_t> m_ignored_asset_map;
 
     AssetLoadingContext(Zone* zone, ISearchPath* rawSearchPath, std::vector<Gdt*> gdtFiles);
     GdtEntry* GetGdtEntryByGdfAndName(const std::string& gdfName, const std::string& entryName) override;

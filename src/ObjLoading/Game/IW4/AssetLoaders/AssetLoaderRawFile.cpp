@@ -1,9 +1,19 @@
 #include "AssetLoaderRawFile.h"
 
+#include <cstring>
+
 #include "Game/IW4/IW4.h"
 #include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
+
+void* AssetLoaderRawFile::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
+{
+    auto* rawFile = memory->Create<RawFile>();
+    memset(rawFile, 0, sizeof(RawFile));
+    rawFile->name = memory->Dup(assetName.c_str());
+    return rawFile;
+}
 
 bool AssetLoaderRawFile::CanLoadFromRaw() const
 {

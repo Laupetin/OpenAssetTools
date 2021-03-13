@@ -71,7 +71,7 @@ class Linker::Impl
 
         ObjLoading::UnloadIWDsInSearchPath(searchPath);
     }
-    
+
     SearchPaths GetAssetSearchPathsForZone(const std::string& zoneName)
     {
         SearchPaths searchPathsForZone;
@@ -105,7 +105,7 @@ class Linker::Impl
 
         return searchPathsForZone;
     }
-    
+
     SearchPaths GetGdtSearchPathsForZone(const std::string& zoneName)
     {
         SearchPaths searchPathsForZone;
@@ -131,7 +131,7 @@ class Linker::Impl
 
         return searchPathsForZone;
     }
-    
+
     SearchPaths GetSourceSearchPathsForZone(const std::string& zoneName)
     {
         SearchPaths searchPathsForZone;
@@ -152,7 +152,7 @@ class Linker::Impl
 
             searchPathsForZone.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
         }
-        
+
         searchPathsForZone.IncludeSearchPath(&m_source_search_paths);
 
         return searchPathsForZone;
@@ -170,12 +170,12 @@ class Linker::Impl
 
             if (!fs::is_directory(absolutePath))
             {
-                if(m_args.m_verbose)
+                if (m_args.m_verbose)
                     std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
                 continue;
             }
 
-            if(m_args.m_verbose)
+            if (m_args.m_verbose)
                 std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
 
             auto searchPath = std::make_unique<SearchPathFilesystem>(absolutePath.string());
@@ -229,11 +229,11 @@ class Linker::Impl
         for (const auto& include : zoneDefinition.m_includes)
             toIncludeQueue.emplace_back(include);
 
-        while(!toIncludeQueue.empty())
+        while (!toIncludeQueue.empty())
         {
             const auto& source = toIncludeQueue.front();
 
-            if(sourceNames.find(source) == sourceNames.end())
+            if (sourceNames.find(source) == sourceNames.end())
             {
                 sourceNames.emplace(source);
 
@@ -319,9 +319,9 @@ class Linker::Impl
         {
             const auto zoneDefinition = ReadZoneDefinition(zoneName, sourceSearchPath);
 
-            if(zoneDefinition)
+            if (zoneDefinition)
             {
-                for(const auto& entry : zoneDefinition->m_assets)
+                for (const auto& entry : zoneDefinition->m_assets)
                 {
                     assetList.emplace_back(entry.m_asset_type, entry.m_asset_name);
                 }
@@ -332,38 +332,27 @@ class Linker::Impl
         return false;
     }
 
-    bool ProcessZoneDefinitionIgnores(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* sourceSearchPath) const
+    bool ProcessZoneDefinitionIgnores(const std::string& zoneName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
     {
-        if (zoneDefinition.m_ignores.empty())
+        if (context.m_definition->m_ignores.empty())
             return true;
 
         std::map<std::string, std::reference_wrapper<ZoneDefinitionEntry>> zoneDefinitionAssetsByName;
-        for (auto& entry : zoneDefinition.m_assets)
+        for (auto& entry : context.m_definition->m_assets)
         {
             zoneDefinitionAssetsByName.try_emplace(entry.m_asset_name, entry);
         }
 
-        for(const auto& ignore : zoneDefinition.m_ignores)
+        for (const auto& ignore : context.m_definition->m_ignores)
         {
-            if(ignore == zoneName)
+            if (ignore == zoneName)
                 continue;
 
             std::vector<AssetListEntry> assetList;
-            if(!ReadAssetList(ignore, assetList, sourceSearchPath))
+            if (!ReadAssetList(ignore, context.m_ignored_assets, sourceSearchPath))
             {
                 std::cout << "Failed to read asset listing for ignoring assets of zone \"" << ignore << "\"." << std::endl;
                 return false;
-            }
-
-            for(const auto& assetListEntry : assetList)
-            {
-                const auto foundAsset = zoneDefinitionAssetsByName.find(assetListEntry.m_name);
-
-                if(foundAsset != zoneDefinitionAssetsByName.end()
-                    && foundAsset->second.get().m_asset_type == assetListEntry.m_type)
-                {
-                    foundAsset->second.get().m_is_reference = true;
-                }
             }
         }
         return true;
@@ -405,7 +394,7 @@ class Linker::Impl
         for (auto i = rangeBegin; i != rangeEnd; ++i)
         {
             const auto gdtFile = gdtSearchPath->Open(i->second + ".gdt");
-            if(!gdtFile.IsOpen())
+            if (!gdtFile.IsOpen())
             {
                 std::cout << "Failed to open file for gdt \"" << i->second << "\"" << std::endl;
                 return false;
@@ -413,7 +402,7 @@ class Linker::Impl
 
             GdtReader gdtReader(*gdtFile.m_stream);
             auto gdt = std::make_unique<Gdt>();
-            if(!gdtReader.Read(*gdt))
+            if (!gdtReader.Read(*gdt))
             {
                 std::cout << "Failed to read gdt file \"" << i->second << "\"" << std::endl;
                 return false;
@@ -425,17 +414,20 @@ class Linker::Impl
         return true;
     }
 
-    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath) const
+    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
+                                                  ISearchPath* sourceSearchPath) const
     {
         auto context = std::make_unique<ZoneCreationContext>(zoneName, assetSearchPath, &zoneDefinition);
+        if (!ProcessZoneDefinitionIgnores(zoneName, *context, sourceSearchPath))
+            return nullptr;
         if (!GetGameNameFromZoneDefinition(context->m_game_name, zoneName, zoneDefinition))
             return nullptr;
         if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneName, zoneDefinition, gdtSearchPath))
             return nullptr;
-        
-        for(const auto* assetLoader : ZONE_CREATORS)
+
+        for (const auto* assetLoader : ZONE_CREATORS)
         {
-            if(assetLoader->SupportsGame(context->m_game_name))
+            if (assetLoader->SupportsGame(context->m_game_name))
                 return assetLoader->CreateZoneForDefinition(*context);
         }
 
@@ -457,7 +449,7 @@ class Linker::Impl
         stream.close();
         return true;
     }
-    
+
     bool BuildZone(const std::string& zoneName)
     {
         auto assetSearchPaths = GetAssetSearchPathsForZone(zoneName);
@@ -465,23 +457,20 @@ class Linker::Impl
         auto sourceSearchPaths = GetSourceSearchPathsForZone(zoneName);
 
         const auto zoneDefinition = ReadZoneDefinition(zoneName, &sourceSearchPaths);
-        if (!zoneDefinition
-            || !ProcessZoneDefinitionIgnores(zoneName, *zoneDefinition, &sourceSearchPaths))
-        {
+        if (!zoneDefinition)
             return false;
-        }
 
-        const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths);
+        const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;
         if (zone)
             result = WriteZoneToFile(zone.get());
 
-        for(const auto& loadedSearchPath : m_loaded_zone_search_paths)
+        for (const auto& loadedSearchPath : m_loaded_zone_search_paths)
         {
             UnloadSearchPath(loadedSearchPath.get());
         }
         m_loaded_zone_search_paths.clear();
-        
+
         return result;
     }
 

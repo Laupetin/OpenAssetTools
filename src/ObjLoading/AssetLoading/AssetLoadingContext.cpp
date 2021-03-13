@@ -10,12 +10,12 @@ AssetLoadingContext::AssetLoadingContext(Zone* zone, ISearchPath* rawSearchPath,
 
 void AssetLoadingContext::BuildGdtEntryCache()
 {
-    for(auto* gdt : m_gdt_files)
+    for (auto* gdt : m_gdt_files)
     {
-        for(const auto& entry : gdt->m_entries)
+        for (const auto& entry : gdt->m_entries)
         {
             auto gdfMapEntry = m_entries_by_gdf_and_by_name.find(entry->m_gdf_name);
-            if(gdfMapEntry == m_entries_by_gdf_and_by_name.end())
+            if (gdfMapEntry == m_entries_by_gdf_and_by_name.end())
             {
                 std::unordered_map<std::string, GdtEntry*> entryMap;
                 entryMap.emplace(std::make_pair(entry->m_name, entry.get()));
