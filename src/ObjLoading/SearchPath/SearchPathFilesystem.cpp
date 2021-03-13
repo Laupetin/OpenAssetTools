@@ -17,16 +17,17 @@ std::string SearchPathFilesystem::GetPath()
     return m_path;
 }
 
-std::unique_ptr<std::istream> SearchPathFilesystem::Open(const std::string& fileName)
+SearchPathOpenFile SearchPathFilesystem::Open(const std::string& fileName)
 {
-    auto file = std::make_unique<std::ifstream>(fs::path(m_path).append(fileName).string(), std::fstream::in | std::fstream::binary);
+    const auto filePath = fs::path(m_path).append(fileName);
+    std::ifstream file(filePath.string(), std::fstream::in | std::fstream::binary);
 
-    if (file->is_open())
+    if (file.is_open())
     {
-        return std::move(file);
+        return SearchPathOpenFile(std::make_unique<std::ifstream>(std::move(file)), static_cast<int64_t>(file_size(filePath)));
     }
 
-    return nullptr;
+    return SearchPathOpenFile();
 }
 
 void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)

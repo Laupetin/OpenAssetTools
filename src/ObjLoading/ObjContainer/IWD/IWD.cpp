@@ -240,11 +240,11 @@ public:
         return true;
     }
 
-    std::unique_ptr<std::istream> Open(const std::string& fileName) override
+    SearchPathOpenFile Open(const std::string& fileName) override
     {
         if (m_unz_file == nullptr)
         {
-            return nullptr;
+            return SearchPathOpenFile();
         }
 
         auto iwdFilename = fileName;
@@ -266,13 +266,13 @@ public:
             {
                 auto result = std::make_unique<IWDFile>(this, m_unz_file, iwdEntry->second.m_size);
                 m_last_file = result.get();
-                return std::make_unique<iobjstream>(std::move(result));
+                return SearchPathOpenFile(std::make_unique<iobjstream>(std::move(result)), iwdEntry->second.m_size);
             }
 
-            return nullptr;
+            return SearchPathOpenFile();
         }
 
-        return nullptr;
+        return SearchPathOpenFile();
     }
 
     std::string GetPath() override
@@ -342,7 +342,7 @@ bool IWD::Initialize()
     return m_impl->Initialize();
 }
 
-std::unique_ptr<std::istream> IWD::Open(const std::string& fileName)
+SearchPathOpenFile IWD::Open(const std::string& fileName)
 {
     return m_impl->Open(fileName);
 }

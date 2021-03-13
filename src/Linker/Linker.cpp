@@ -241,13 +241,13 @@ class Linker::Impl
                 {
                     const auto definitionFileName = source + ".zone";
                     const auto definitionStream = sourceSearchPath->Open(definitionFileName);
-                    if (!definitionStream)
+                    if (!definitionStream.IsOpen())
                     {
                         std::cout << "Could not find zone definition file for zone \"" << source << "\"." << std::endl;
                         return false;
                     }
 
-                    ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream, definitionFileName, m_args.m_verbose);
+                    ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream.m_stream, definitionFileName, m_args.m_verbose);
                     includeDefinition = zoneDefinitionInputStream.ReadDefinition();
                 }
 
@@ -275,13 +275,13 @@ class Linker::Impl
         {
             const auto definitionFileName = zoneName + ".zone";
             const auto definitionStream = sourceSearchPath->Open(definitionFileName);
-            if (!definitionStream)
+            if (!definitionStream.IsOpen())
             {
                 std::cout << "Could not find zone definition file for zone \"" << zoneName << "\"." << std::endl;
                 return nullptr;
             }
 
-            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream, definitionFileName, m_args.m_verbose);
+            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream.m_stream, definitionFileName, m_args.m_verbose);
             zoneDefinition = zoneDefinitionInputStream.ReadDefinition();
         }
 
@@ -303,9 +303,9 @@ class Linker::Impl
             const auto assetListFileName = "assetlist/" + zoneName + ".csv";
             const auto assetListStream = sourceSearchPath->Open(assetListFileName);
 
-            if (assetListStream)
+            if (assetListStream.IsOpen())
             {
-                const AssetListInputStream stream(*assetListStream);
+                const AssetListInputStream stream(*assetListStream.m_stream);
                 AssetListEntry entry;
 
                 while (stream.NextEntry(entry))
@@ -405,13 +405,13 @@ class Linker::Impl
         for (auto i = rangeBegin; i != rangeEnd; ++i)
         {
             const auto gdtFile = gdtSearchPath->Open(i->second + ".gdt");
-            if(!gdtFile)
+            if(!gdtFile.IsOpen())
             {
                 std::cout << "Failed to open file for gdt \"" << i->second << "\"" << std::endl;
                 return false;
             }
 
-            GdtReader gdtReader(*gdtFile);
+            GdtReader gdtReader(*gdtFile.m_stream);
             auto gdt = std::make_unique<Gdt>();
             if(!gdtReader.Read(*gdt))
             {

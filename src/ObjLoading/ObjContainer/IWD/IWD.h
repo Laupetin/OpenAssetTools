@@ -16,7 +16,7 @@ public:
     static ObjContainerRepository<IWD, ISearchPath> Repository;
 
     IWD(std::string path, std::unique_ptr<std::istream> stream);
-    ~IWD();
+    ~IWD() override;
 
     IWD(const IWD& other) = delete;
     IWD(IWD&& other) noexcept;
@@ -29,7 +29,7 @@ public:
      */
     bool Initialize();
 
-    std::unique_ptr<std::istream> Open(const std::string& fileName) override;
+    SearchPathOpenFile Open(const std::string& fileName) override;
     std::string GetPath() override;
     std::string GetName() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;

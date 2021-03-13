@@ -36,9 +36,9 @@ namespace T6
         const auto ipakFilename = ipakName + ".ipak";
 
         auto file = searchPath->Open(ipakFilename);
-        if (file)
+        if (file.IsOpen())
         {
-            auto ipak = std::make_unique<IPak>(ipakFilename, std::move(file));
+            auto ipak = std::make_unique<IPak>(ipakFilename, std::move(file.m_stream));
 
             if (ipak->Initialize())
             {
@@ -168,9 +168,9 @@ namespace T6
 
             {
                 const auto filePathImage = searchPath->Open(imageFileName);
-                if (filePathImage)
+                if (filePathImage.IsOpen())
                 {
-                    loadedTexture = loader.LoadIwi(*filePathImage);
+                    loadedTexture = loader.LoadIwi(*filePathImage.m_stream);
                 }
             }
         }

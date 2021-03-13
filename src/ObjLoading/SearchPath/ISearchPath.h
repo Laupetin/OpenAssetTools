@@ -3,21 +3,40 @@
 #include <functional>
 #include <istream>
 #include <memory>
+#include <cstdint>
 
-#include "Utils/ObjStream.h"
+#include "Utils/ClassUtils.h"
 #include "SearchPathSearchOptions.h"
+
+class SearchPathOpenFile
+{
+public:
+    std::unique_ptr<std::istream> m_stream;
+    int64_t m_length;
+
+    _NODISCARD bool IsOpen() const;
+
+    SearchPathOpenFile();
+    SearchPathOpenFile(std::unique_ptr<std::istream> stream, int64_t length);
+};
 
 class ISearchPath
 {
 public:
+    ISearchPath() = default;
     virtual ~ISearchPath() = default;
+
+    ISearchPath(const ISearchPath& other) = default;
+    ISearchPath(ISearchPath&& other) noexcept = default;
+    ISearchPath& operator=(const ISearchPath& other) = default;
+    ISearchPath& operator=(ISearchPath&& other) noexcept = default;
 
     /**
      * \brief Opens a file relative to the search path.
      * \param fileName The relative path to the file to open.
      * \return A pointer to an \c IFile object to read the found file or \c nullptr when no file could be found.
      */
-    virtual std::unique_ptr<std::istream> Open(const std::string& fileName) = 0;
+    virtual SearchPathOpenFile Open(const std::string& fileName) = 0;
 
     /**
      * \brief Returns the path to the search path.

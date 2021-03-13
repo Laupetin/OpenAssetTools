@@ -47,9 +47,9 @@ namespace IW4
 
         {
             const auto filePathImage = searchPath->Open(imageFileName);
-            if (filePathImage != nullptr)
+            if (filePathImage.IsOpen())
             {
-                loadedTexture = loader.LoadIwi(*filePathImage);
+                loadedTexture = loader.LoadIwi(*filePathImage.m_stream);
             }
         }
 

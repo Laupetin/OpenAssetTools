@@ -2,19 +2,19 @@
 
 #include <filesystem>
 
-std::unique_ptr<std::istream> SearchPaths::Open(const std::string& fileName)
+SearchPathOpenFile SearchPaths::Open(const std::string& fileName)
 {
     for(auto* searchPathEntry : m_search_paths)
     {
         auto file = searchPathEntry->Open(fileName);
 
-        if(file)
+        if(file.IsOpen())
         {
-            return std::move(file);
+            return file;
         }
     }
 
-    return nullptr;
+    return SearchPathOpenFile();
 }
 
 std::string SearchPaths::GetPath()
