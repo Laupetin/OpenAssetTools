@@ -3,5 +3,5 @@
 // =========================================
 use FxImpactTable;
 set string name;
-set name name;
+//set name name;
 set count table 21;
