@@ -444,10 +444,13 @@ class Linker::Impl
 
     bool WriteZoneToFile(Zone* zone)
     {
-        fs::path zoneFilePath(m_args.GetOutputFolderPathForZone(zone->m_name));
+        const fs::path zoneFolderPath(m_args.GetOutputFolderPathForZone(zone->m_name));
+        auto zoneFilePath(zoneFolderPath);
         zoneFilePath.append(zone->m_name + ".ff");
 
-        std::ifstream stream(zoneFilePath);
+        fs::create_directories(zoneFolderPath);
+
+        std::ofstream stream(zoneFilePath);
         if (!stream.is_open())
             return false;
 
