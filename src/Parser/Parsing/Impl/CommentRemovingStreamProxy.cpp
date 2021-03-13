@@ -17,7 +17,9 @@ ParserLine CommentRemovingStreamProxy::NextLine()
         return ParserLine(line.m_filename, line.m_line_number, std::string());
     }
 
-    unsigned multiLineCommentStart = 0;
+    auto multiLineCommentStart = 0u;
+    auto inString = false;
+    auto isEscaped = false;
     for (auto i = 0u; i < line.m_line.size(); i++)
     {
         const auto c = line.m_line[i];
@@ -31,9 +33,22 @@ ParserLine CommentRemovingStreamProxy::NextLine()
                 m_inside_multi_line_comment = false;
             }
         }
+        else if(inString)
+        {
+            if (isEscaped)
+                isEscaped = false;
+            else if (c == '\\')
+                isEscaped = true;
+            else if (c == '"')
+                inString = false;
+        }
         else
         {
-            if(c == '/' && i + 1 < line.m_line.size())
+            if(c == '"')
+            {
+                inString = true;
+            }
+            else if(c == '/' && i + 1 < line.m_line.size())
             {
                 const auto c1 = line.m_line[i + 1];
 
