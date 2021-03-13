@@ -36,7 +36,7 @@ std::unique_ptr<ZoneDefinitionCommonMatchers::matcher_t> ZoneDefinitionCommonMat
             case SimpleParserValueType::CHARACTER:
                 if (token.get().CharacterValue() == '/')
                 {
-                    if (previousType == SimpleParserValueType::CHARACTER && !previousCharacterWasSlash)
+                    if (previousType != SimpleParserValueType::CHARACTER || !previousCharacterWasSlash)
                     {
                         str << "/";
                         previousCharacterWasSlash = true;
