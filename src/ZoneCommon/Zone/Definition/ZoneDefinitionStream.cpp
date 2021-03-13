@@ -82,5 +82,35 @@ void ZoneDefinitionOutputStream::WriteMetaData(const std::string& metaDataKey, c
 
 void ZoneDefinitionOutputStream::WriteEntry(const std::string& entryKey, const std::string& entryValue) const
 {
-    m_stream << entryKey << "," << entryValue << "\n";
+    m_stream << entryKey << ",";
+
+    if(entryValue.find('"') != std::string::npos
+        || entryValue.find("//") != std::string::npos)
+    {
+        m_stream << '"';
+        for(const auto& c : entryValue)
+        {
+            switch(c)
+            {
+            case '"':
+                m_stream << "\\\"";
+                break;
+
+            case '\\':
+                m_stream << "\\\\";
+                break;
+
+            default:
+                m_stream << c;
+                break;
+            }
+        }
+        m_stream << '"';
+    }
+    else
+    {
+        m_stream << entryValue;
+    }
+
+    m_stream << "\n";
 }
