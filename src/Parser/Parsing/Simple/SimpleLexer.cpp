@@ -4,6 +4,7 @@ SimpleLexer::SimpleLexer(IParserLineStream* stream)
     : AbstractLexer(stream),
       m_emit_new_line_tokens(false),
       m_read_strings(true),
+      m_read_numbers(true),
       m_last_line(1)
 {
 }
@@ -27,7 +28,7 @@ SimpleParserValue SimpleLexer::GetNextToken()
 {
     PeekChar();
     const auto nextCharPos = GetNextCharacterPos();
-    if(m_emit_new_line_tokens && nextCharPos.m_line > m_last_line)
+    if (m_emit_new_line_tokens && nextCharPos.m_line > m_last_line)
     {
         m_last_line++;
         return SimpleParserValue::NewLine(GetPreviousCharacterPos());
