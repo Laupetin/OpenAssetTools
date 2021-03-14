@@ -76,7 +76,7 @@ const size_t ZoneLoaderFactory::AUTHED_CHUNK_SIZE = 0x2000;
 const size_t ZoneLoaderFactory::AUTHED_CHUNK_COUNT_PER_GROUP = 256;
 
 const int ZoneLoaderFactory::OFFSET_BLOCK_BIT_COUNT = 4;
-const block_t ZoneLoaderFactory::INSERT_BLOCK = IW4::XFILE_BLOCK_VIRTUAL;
+const block_t ZoneLoaderFactory::INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
 
 class ZoneLoaderFactory::Impl
 {
@@ -114,7 +114,7 @@ class ZoneLoaderFactory::Impl
 
     static void SetupBlock(ZoneLoader* zoneLoader)
     {
-#define XBLOCK_DEF(name, type) new XBlock(STR(name), name, type)
+#define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
         zoneLoader->AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
         zoneLoader->AddXBlock(XBLOCK_DEF(IW4::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
@@ -164,35 +164,39 @@ class ZoneLoaderFactory::Impl
         // If file is signed setup a RSA instance.
         IPublicKeyAlgorithm* rsa = SetupRSA(isOfficial);
 
-        zoneLoader->AddLoadingStep(new StepVerifyMagic(MAGIC_AUTH_HEADER.c_str()));
-        zoneLoader->AddLoadingStep(new StepSkipBytes(4)); // Skip reserved
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyMagic>(MAGIC_AUTH_HEADER.c_str()));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        auto* subheaderHash = new StepLoadHash(sizeof IW4::DB_AuthHash::bytes, 1);
-        zoneLoader->AddLoadingStep(subheaderHash);
+        auto subHeaderHash = std::make_unique<StepLoadHash>(sizeof DB_AuthHash::bytes, 1);
+        auto* subHeaderHashPtr = subHeaderHash.get();
+        zoneLoader->AddLoadingStep(std::move(subHeaderHash));
 
-        auto* subheaderHashSignature = new StepLoadSignature(sizeof IW4::DB_AuthSignature::bytes);
-        zoneLoader->AddLoadingStep(subheaderHashSignature);
+        auto subHeaderHashSignature = std::make_unique<StepLoadSignature>(sizeof DB_AuthSignature::bytes);
+        auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
+        zoneLoader->AddLoadingStep(std::move(subHeaderHashSignature));
 
-        zoneLoader->AddLoadingStep(new StepVerifySignature(rsa, subheaderHashSignature, subheaderHash));
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(rsa, subHeaderHashSignaturePtr, subHeaderHashPtr));
 
-        auto* subHeaderCapture = new ProcessorCaptureData(sizeof(IW4::DB_AuthSubHeader));
-        zoneLoader->AddLoadingStep(new StepAddProcessor(subHeaderCapture));
+        auto subHeaderCapture = std::make_unique<ProcessorCaptureData>(sizeof(DB_AuthSubHeader));
+        auto* subHeaderCapturePtr = subHeaderCapture.get();
+        zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(subHeaderCapture)));
 
-        zoneLoader->AddLoadingStep(new StepVerifyFileName(fileName, sizeof IW4::DB_AuthSubHeader::fastfileName));
-        zoneLoader->AddLoadingStep(new StepSkipBytes(4)); // Skip reserved
-        auto* masterBlockHashes = new StepLoadHash(sizeof IW4::DB_AuthHash::bytes, std::extent<decltype(IW4::DB_AuthSubHeader::masterBlockHashes)>::value);
-        zoneLoader->AddLoadingStep(masterBlockHashes);
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        zoneLoader->AddLoadingStep(new StepRemoveProcessor(subHeaderCapture));
-        zoneLoader->AddLoadingStep(new StepVerifyHash(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0,
-                                                      subheaderHash, subHeaderCapture));
+        auto masterBlockHashes = std::make_unique<StepLoadHash>(sizeof DB_AuthHash::bytes, std::extent<decltype(DB_AuthSubHeader::masterBlockHashes)>::value);
+        auto* masterBlockHashesPtr = masterBlockHashes.get();
+        zoneLoader->AddLoadingStep(std::move(masterBlockHashes));
+
+        zoneLoader->AddLoadingStep(std::make_unique<StepRemoveProcessor>(subHeaderCapturePtr));
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyHash>(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0, subHeaderHashPtr, subHeaderCapturePtr));
 
         // Skip the rest of the first chunk
-        zoneLoader->AddLoadingStep(new StepSkipBytes(AUTHED_CHUNK_SIZE - sizeof(IW4::DB_AuthHeader)));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
 
-        zoneLoader->AddLoadingStep(new StepAddProcessor(new ProcessorAuthedBlocks(
-            AUTHED_CHUNK_COUNT_PER_GROUP, AUTHED_CHUNK_SIZE, std::extent<decltype(IW4::DB_AuthSubHeader::masterBlockHashes)>::value,
-            std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), masterBlockHashes)));
+        zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorAuthedBlocks>(
+            AUTHED_CHUNK_COUNT_PER_GROUP, AUTHED_CHUNK_SIZE, std::extent<decltype(DB_AuthSubHeader::masterBlockHashes)>::value,
+            std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), masterBlockHashesPtr)));
     }
 
 public:
@@ -216,24 +220,23 @@ public:
         SetupBlock(zoneLoader);
 
         // Skip unknown 1 byte field that the game ignores as well
-        zoneLoader->AddLoadingStep(new StepSkipBytes(1));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(1));
 
         // Skip timestamp
-        zoneLoader->AddLoadingStep(new StepSkipBytes(8));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));
 
         // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
         AddAuthHeaderSteps(isSecure, isOfficial, zoneLoader, fileName);
 
-        zoneLoader->AddLoadingStep(new StepAddProcessor(new ProcessorInflate(AUTHED_CHUNK_SIZE)));
+        zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorInflate>(AUTHED_CHUNK_SIZE)));
 
         // Start of the XFile struct
-        zoneLoader->AddLoadingStep(new StepSkipBytes(8));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));
         // Skip size and externalSize fields since they are not interesting for us
-        zoneLoader->AddLoadingStep(new StepAllocXBlocks());
+        zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(
-            new StepLoadZoneContent(new ContentLoader(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
 
         // Return the fully setup zoneloader
         return zoneLoader;

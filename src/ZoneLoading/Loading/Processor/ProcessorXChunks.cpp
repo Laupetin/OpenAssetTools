@@ -26,7 +26,7 @@ class DBLoadStream
     std::condition_variable m_loading_finished;
     std::thread m_load_thread;
 
-    std::vector<IXChunkProcessor*>& m_processors;
+    std::vector<std::unique_ptr<IXChunkProcessor>>& m_processors;
 
     void Load()
     {
@@ -34,7 +34,7 @@ class DBLoadStream
 
         bool firstProcessor = true;
 
-        for (auto processor : m_processors)
+        for (const auto& processor : m_processors)
         {
             if (!firstProcessor)
             {
@@ -57,7 +57,7 @@ class DBLoadStream
 
 public:
     DBLoadStream(const int streamIndex, const size_t chunkSize,
-                 std::vector<IXChunkProcessor*>& chunkProcessors) : m_processors(chunkProcessors)
+                 std::vector<std::unique_ptr<IXChunkProcessor>>& chunkProcessors) : m_processors(chunkProcessors)
     {
         m_index = streamIndex;
         m_chunk_size = chunkSize;
@@ -127,10 +127,10 @@ class ProcessorXChunks::ProcessorXChunksImpl
 {
     ProcessorXChunks* m_base;
 
-    std::vector<DBLoadStream*> m_streams;
+    std::vector<std::unique_ptr<DBLoadStream>> m_streams;
     size_t m_chunk_size;
     size_t m_vanilla_buffer_size;
-    std::vector<IXChunkProcessor*> m_chunk_processors;
+    std::vector<std::unique_ptr<IXChunkProcessor>> m_chunk_processors;
 
     bool m_initialized_streams;
     unsigned int m_current_stream;
@@ -175,7 +175,7 @@ class ProcessorXChunks::ProcessorXChunksImpl
             throw InvalidChunkSizeException(chunkSize, m_chunk_size);
         }
 
-        auto* stream = m_streams[streamNum];
+        const auto& stream = m_streams[streamNum];
         const size_t loadedChunkSize = m_base->m_base_stream->Load(stream->GetInputBuffer(), chunkSize);
 
         if (loadedChunkSize != chunkSize)
@@ -232,7 +232,7 @@ public:
 
         for (int streamIndex = 0; streamIndex < numStreams; streamIndex++)
         {
-            m_streams.push_back(new DBLoadStream(streamIndex, xChunkSize, m_chunk_processors));
+            m_streams.emplace_back(std::make_unique<DBLoadStream>(streamIndex, xChunkSize, m_chunk_processors));
         }
 
         m_chunk_size = xChunkSize;
@@ -255,26 +255,11 @@ public:
         m_vanilla_buffer_size = vanillaBufferSize;
     }
 
-    ~ProcessorXChunksImpl()
-    {
-        for (auto* stream : m_streams)
-        {
-            delete stream;
-        }
-        m_streams.clear();
-
-        for (auto* processor : m_chunk_processors)
-        {
-            delete processor;
-        }
-        m_chunk_processors.clear();
-    }
-
-    void AddChunkProcessor(IXChunkProcessor* streamProcessor)
+    void AddChunkProcessor(std::unique_ptr<IXChunkProcessor> streamProcessor)
     {
         assert(streamProcessor != nullptr);
 
-        m_chunk_processors.push_back(streamProcessor);
+        m_chunk_processors.emplace_back(std::move(streamProcessor));
     }
 
     size_t Load(void* buffer, const size_t length)
@@ -339,9 +324,9 @@ ProcessorXChunks::~ProcessorXChunks()
     m_impl = nullptr;
 }
 
-void ProcessorXChunks::AddChunkProcessor(IXChunkProcessor* chunkProcessor) const
+void ProcessorXChunks::AddChunkProcessor(std::unique_ptr<IXChunkProcessor> chunkProcessor) const
 {
-    m_impl->AddChunkProcessor(chunkProcessor);
+    m_impl->AddChunkProcessor(std::move(chunkProcessor));
 }
 
 size_t ProcessorXChunks::Load(void* buffer, const size_t length)

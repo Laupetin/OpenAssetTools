@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "Loading/StreamProcessor.h"
 #include "XChunks/IXChunkProcessor.h"
 
@@ -15,5 +17,5 @@ public:
     size_t Load(void* buffer, size_t length) override;
     int64_t Pos() override;
 
-    void AddChunkProcessor(IXChunkProcessor* chunkProcessor) const;
+    void AddChunkProcessor(std::unique_ptr<IXChunkProcessor> chunkProcessor) const;
 };

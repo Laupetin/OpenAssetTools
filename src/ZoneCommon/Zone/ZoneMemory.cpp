@@ -3,16 +3,7 @@
 ZoneMemory::ZoneMemory()
 = default;
 
-ZoneMemory::~ZoneMemory()
+void ZoneMemory::AddBlock(std::unique_ptr<XBlock> block)
 {
-    for (auto block : m_blocks)
-    {
-        delete block;
-    }
-    m_blocks.clear();
-}
-
-void ZoneMemory::AddBlock(XBlock* block)
-{
-    m_blocks.push_back(block);
+    m_blocks.emplace_back(std::move(block));
 }

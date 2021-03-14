@@ -151,7 +151,7 @@ class ZoneLoaderFactory::Impl
 
     static void SetupBlock(ZoneLoader* zoneLoader)
     {
-#define XBLOCK_DEF(name, type) new XBlock(STR(name), name, type)
+#define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
         zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
         zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
@@ -196,32 +196,33 @@ class ZoneLoaderFactory::Impl
         if(!isSecure)
             return nullptr;
         
-        zoneLoader->AddLoadingStep(new StepVerifyMagic(MAGIC_AUTH_HEADER.c_str()));
-        zoneLoader->AddLoadingStep(new StepSkipBytes(4)); // Loading Flags which are always zero
-        zoneLoader->AddLoadingStep(new StepVerifyFileName(fileName, 32));
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyMagic>(MAGIC_AUTH_HEADER.c_str()));
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Loading Flags which are always zero
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, 32));
 
-        auto* signatureLoadStep = new StepLoadSignature(256);
-        zoneLoader->AddLoadingStep(signatureLoadStep);
+        auto signatureLoadStep = std::make_unique<StepLoadSignature>(256);
+        auto* signatureLoadStepPtr = signatureLoadStep.get();
+        zoneLoader->AddLoadingStep(std::move(signatureLoadStep));
 
-        return signatureLoadStep;
+        return signatureLoadStepPtr;
     }
 
     static ICapturedDataProvider* AddXChunkProcessor(bool isEncrypted, ZoneLoader* zoneLoader, std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
-        auto* xChunkProcessor = new ProcessorXChunks(STREAM_COUNT, XCHUNK_SIZE, VANILLA_BUFFER_SIZE);
+        auto xChunkProcessor = std::make_unique<ProcessorXChunks>(STREAM_COUNT, XCHUNK_SIZE, VANILLA_BUFFER_SIZE);
 
         if(isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
-            auto* chunkProcessorSalsa20 = new ChunkProcessorSalsa20(STREAM_COUNT, fileName, SALSA20_KEY_TREYARCH, sizeof(SALSA20_KEY_TREYARCH));
-            xChunkProcessor->AddChunkProcessor(chunkProcessorSalsa20);
-            result = chunkProcessorSalsa20;
+            auto chunkProcessorSalsa20 = std::make_unique<ChunkProcessorSalsa20>(STREAM_COUNT, fileName, SALSA20_KEY_TREYARCH, sizeof(SALSA20_KEY_TREYARCH));
+            result = chunkProcessorSalsa20.get();
+            xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
         // Decompress the chunks using zlib
-        xChunkProcessor->AddChunkProcessor(new ChunkProcessorInflate());
-        zoneLoader->AddLoadingStep(new StepAddProcessor(xChunkProcessor));
+        xChunkProcessor->AddChunkProcessor(std::make_unique<ChunkProcessorInflate>());
+        zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
         return result;
@@ -258,15 +259,15 @@ public:
         ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, zoneLoader, fileName);
 
         // Start of the XFile struct
-        zoneLoader->AddLoadingStep(new StepSkipBytes(8)); // Skip size and externalSize fields since they are not interesting for us
-        zoneLoader->AddLoadingStep(new StepAllocXBlocks());
+        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8)); // Skip size and externalSize fields since they are not interesting for us
+        zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(new StepLoadZoneContent(new ContentLoader(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zone, OFFSET_BLOCK_BIT_COUNT, INSERT_BLOCK));
 
         if(isSecure)
         {
-            zoneLoader->AddLoadingStep(new StepVerifySignature(rsa, signatureProvider, signatureDataProvider));
+            zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(rsa, signatureProvider, signatureDataProvider));
         }
 
         // Return the fully setup zoneloader

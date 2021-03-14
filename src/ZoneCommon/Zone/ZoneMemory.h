@@ -1,16 +1,17 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "Utils/MemoryManager.h"
 #include "Zone/XBlock.h"
-#include <vector>
 
 class ZoneMemory : public MemoryManager
 {
-    std::vector<XBlock*> m_blocks;
+    std::vector<std::unique_ptr<XBlock>> m_blocks;
 
 public:
     ZoneMemory();
-    ~ZoneMemory() override;
 
-    void AddBlock(XBlock* block);
+    void AddBlock(std::unique_ptr<XBlock> block);
 };
