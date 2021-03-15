@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "Loading/StreamProcessor.h"
-#include "Loading/ICapturedDataProvider.h"
+#include "Utils/ICapturedDataProvider.h"
 
 class ProcessorCaptureData final : public StreamProcessor, public ICapturedDataProvider
 {

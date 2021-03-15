@@ -4,7 +4,7 @@
 
 #include "Crypto.h"
 #include "Loading/ILoadingStep.h"
-#include "Loading/ICapturedDataProvider.h"
+#include "Utils/ICapturedDataProvider.h"
 #include "Loading/IHashProvider.h"
 
 class StepVerifyHash final : public ILoadingStep

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <istream>
 
 #include "ILoadingStream.h"

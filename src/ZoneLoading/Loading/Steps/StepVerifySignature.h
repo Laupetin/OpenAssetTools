@@ -3,7 +3,7 @@
 #include "Loading/ILoadingStep.h"
 #include "Crypto.h"
 #include "Loading/ISignatureProvider.h"
-#include "Loading/ICapturedDataProvider.h"
+#include "Utils/ICapturedDataProvider.h"
 
 class StepVerifySignature final : public ILoadingStep
 {

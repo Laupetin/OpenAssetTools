@@ -1,6 +1,6 @@
 #pragma once
 #include "IXChunkProcessor.h"
-#include "Loading/ICapturedDataProvider.h"
+#include "Utils/ICapturedDataProvider.h"
 #include <string>
 
 class ChunkProcessorSalsa20 : public IXChunkProcessor, public ICapturedDataProvider

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "Loading/ICapturedDataProvider.h"
+#include "Utils/ICapturedDataProvider.h"
 #include "Loading/ILoadingStep.h"
 #include "Loading/IHashProvider.h"
 
