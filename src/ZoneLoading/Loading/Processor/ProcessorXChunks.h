@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "Loading/StreamProcessor.h"
-#include "XChunks/IXChunkProcessor.h"
+#include "Zone/XChunk/IXChunkProcessor.h"
 
 class ProcessorXChunks : public StreamProcessor
 {

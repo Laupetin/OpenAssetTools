@@ -32,7 +32,7 @@ OutputProcessorXChunks& OutputProcessorXChunks::operator=(OutputProcessorXChunks
     return *this;
 }
 
-void OutputProcessorXChunks::AddChunkProcessor(std::unique_ptr<IXChunkOutputProcessor> chunkProcessor) const
+void OutputProcessorXChunks::AddChunkProcessor(std::unique_ptr<IXChunkProcessor> chunkProcessor) const
 {
 }
 

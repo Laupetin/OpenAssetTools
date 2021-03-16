@@ -9,12 +9,14 @@ function ZoneCommon:include(includes)
 		Common:include(includes)
 		ObjCommon:include(includes)
 		Parser:include(includes)
+		Crypto:include(includes)
 	end
 end
 
 function ZoneCommon:link(links)
 	links:add(self:name())
 	links:linkto(Common)
+	links:linkto(Crypto)
 	links:linkto(ObjCommon)
 	links:linkto(Parser)
 	links:linkto(Utils)

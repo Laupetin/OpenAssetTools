@@ -12,8 +12,8 @@
 #include "Game/GameLanguage.h"
 #include "Game/T6/GameT6.h"
 #include "Loading/Processor/ProcessorXChunks.h"
-#include "Loading/Processor/XChunks/ChunkProcessorSalsa20.h"
-#include "Loading/Processor/XChunks/ChunkProcessorInflate.h"
+#include "Zone/XChunk/XChunkProcessorSalsa20Decryption.h"
+#include "Zone/XChunk/XChunkProcessorInflate.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepSkipBytes.h"
 #include "Loading/Steps/StepVerifyFileName.h"
@@ -104,17 +104,15 @@ class ZoneLoaderFactory::Impl
 #undef XBLOCK_DEF
     }
 
-    static IPublicKeyAlgorithm* SetupRSA(const bool isOfficial)
+    static std::unique_ptr<IPublicKeyAlgorithm> SetupRSA(const bool isOfficial)
     {
         if (isOfficial)
         {
-            auto* rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256, Crypto::RSAPaddingMode::RSA_PADDING_PSS);
+            auto rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256, Crypto::RSAPaddingMode::RSA_PADDING_PSS);
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH, sizeof(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH)))
             {
                 printf("Invalid public key for signature checking\n");
-
-                delete rsa;
                 return nullptr;
             }
 
@@ -154,14 +152,14 @@ class ZoneLoaderFactory::Impl
         if (isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
-            auto chunkProcessorSalsa20 = std::make_unique<ChunkProcessorSalsa20>(ZoneConstants::STREAM_COUNT, fileName, ZoneConstants::SALSA20_KEY_TREYARCH,
+            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Decryption>(ZoneConstants::STREAM_COUNT, fileName, ZoneConstants::SALSA20_KEY_TREYARCH,
                                                                                  sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
             result = chunkProcessorSalsa20.get();
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
         // Decompress the chunks using zlib
-        xChunkProcessor->AddChunkProcessor(std::make_unique<ChunkProcessorInflate>());
+        xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorInflate>());
         zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
@@ -190,7 +188,7 @@ public:
         SetupBlock(zoneLoader);
 
         // If file is signed setup a RSA instance.
-        IPublicKeyAlgorithm* rsa = isSecure ? SetupRSA(isOfficial) : nullptr;
+        auto rsa = isSecure ? SetupRSA(isOfficial) : nullptr;
 
         // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
         ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, zoneLoader, fileName);
@@ -207,7 +205,7 @@ public:
 
         if (isSecure)
         {
-            zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(rsa, signatureProvider, signatureDataProvider));
+            zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(std::move(rsa), signatureProvider, signatureDataProvider));
         }
 
         // Return the fully setup zoneloader

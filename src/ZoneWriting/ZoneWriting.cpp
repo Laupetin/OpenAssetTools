@@ -12,5 +12,21 @@ IZoneWriterFactory* ZoneWriterFactories[]
 
 bool ZoneWriting::WriteZone(std::ostream& stream, Zone* zone)
 {
-    return true;
+    std::unique_ptr<ZoneWriter> zoneWriter;
+    for (auto* factory : ZoneWriterFactories)
+    {
+        if(factory->SupportsZone(zone))
+        {
+            zoneWriter = factory->CreateWriter(zone);
+            break;
+        }
+    }
+
+    if (zoneWriter == nullptr)
+    {
+        printf("Could not create ZoneWriter for zone '%s'.\n", zone->m_name.c_str());
+        return false;
+    }
+
+    return zoneWriter->WriteZone(stream);
 }

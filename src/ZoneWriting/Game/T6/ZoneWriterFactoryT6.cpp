@@ -8,8 +8,8 @@
 #include "Game/T6/GameT6.h"
 #include "Game/T6/ZoneConstantsT6.h"
 #include "Writing/Processor/OutputProcessorXChunks.h"
-#include "Writing/Processor/XChunks/XChunkOutputProcessorDeflate.h"
-#include "Writing/Processor/XChunks/XChunkOutputProcessorSalsa20.h"
+#include "Zone/XChunk/XChunkProcessorDeflate.h"
+#include "Zone/XChunk/XChunkProcessorSalsa20Encryption.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
 #include "Writing/Steps/StepWriteXBlockSizes.h"
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
@@ -77,14 +77,14 @@ public:
         if (isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
-            auto chunkProcessorSalsa20 = std::make_unique<XChunkOutputProcessorSalsa20>(ZoneConstants::STREAM_COUNT, m_zone->m_name, ZoneConstants::SALSA20_KEY_TREYARCH,
+            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Encryption>(ZoneConstants::STREAM_COUNT, m_zone->m_name, ZoneConstants::SALSA20_KEY_TREYARCH,
                 sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
             result = chunkProcessorSalsa20.get();
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
         // Decompress the chunks using zlib
-        xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkOutputProcessorDeflate>());
+        xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorDeflate>());
         m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm

@@ -8,10 +8,13 @@
 #include <condition_variable>
 #include <cassert>
 #include <cstring>
+#include <memory>
 
 class DBLoadStream
 {
     int m_index;
+
+    std::unique_ptr<uint8_t[]> m_buffers[2];
 
     uint8_t* m_input_buffer;
     size_t m_input_size;
@@ -62,22 +65,16 @@ public:
         m_index = streamIndex;
         m_chunk_size = chunkSize;
 
-        m_input_buffer = new uint8_t[chunkSize];
-        m_output_buffer = new uint8_t[chunkSize];
+        for(auto& buffer : m_buffers)
+            buffer = std::make_unique<uint8_t[]>(chunkSize);
+        
+        m_input_buffer = m_buffers[0].get();
+        m_output_buffer = m_buffers[1].get();
 
         m_input_size = 0;
         m_output_size = 0;
 
         m_is_loading = false;
-    }
-
-    ~DBLoadStream()
-    {
-        delete[] m_input_buffer;
-        m_input_buffer = nullptr;
-
-        delete[] m_output_buffer;
-        m_output_buffer = nullptr;
     }
 
     uint8_t* GetInputBuffer() const

@@ -79,18 +79,16 @@ class ZoneLoaderFactory::Impl
 #undef XBLOCK_DEF
     }
 
-    static IPublicKeyAlgorithm* SetupRSA(const bool isOfficial)
+    static std::unique_ptr<IPublicKeyAlgorithm> SetupRSA(const bool isOfficial)
     {
         if (isOfficial)
         {
-            auto* rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256,
+            auto rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256,
                                           Crypto::RSAPaddingMode::RSA_PADDING_PSS);
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
             {
                 printf("Invalid public key for signature checking\n");
-
-                delete rsa;
                 return nullptr;
             }
 
@@ -113,7 +111,7 @@ class ZoneLoaderFactory::Impl
             return;
 
         // If file is signed setup a RSA instance.
-        IPublicKeyAlgorithm* rsa = SetupRSA(isOfficial);
+        auto rsa = SetupRSA(isOfficial);
 
         zoneLoader->AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
@@ -126,7 +124,7 @@ class ZoneLoaderFactory::Impl
         auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
         zoneLoader->AddLoadingStep(std::move(subHeaderHashSignature));
 
-        zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(rsa, subHeaderHashSignaturePtr, subHeaderHashPtr));
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(std::move(rsa), subHeaderHashSignaturePtr, subHeaderHashPtr));
 
         auto subHeaderCapture = std::make_unique<ProcessorCaptureData>(sizeof(DB_AuthSubHeader));
         auto* subHeaderCapturePtr = subHeaderCapture.get();

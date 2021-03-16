@@ -4,22 +4,22 @@
 #include "Impl/AlgorithmSalsa20.h"
 #include "Impl/AlgorithmSHA256.h"
 
-IHashFunction* Crypto::CreateSHA1()
+std::unique_ptr<IHashFunction> Crypto::CreateSHA1()
 {
-    return new AlgorithmSHA1();
+    return std::make_unique<AlgorithmSHA1>();
 }
 
-IHashFunction* Crypto::CreateSHA256()
+std::unique_ptr<IHashFunction> Crypto::CreateSHA256()
 {
-    return new AlgorithmSHA256();
+    return std::make_unique<AlgorithmSHA256>();
 }
 
-IStreamCipher* Crypto::CreateSalsa20(const uint8_t* keyBytes, const size_t keySize)
+std::unique_ptr<IStreamCipher> Crypto::CreateSalsa20(const uint8_t* keyBytes, const size_t keySize)
 {
-    return new AlgorithmSalsa20(keyBytes, keySize);
+    return std::make_unique<AlgorithmSalsa20>(keyBytes, keySize);
 }
 
-IPublicKeyAlgorithm* Crypto::CreateRSA(const IPublicKeyAlgorithm::HashingAlgorithm hashingAlgorithm, const RSAPaddingMode paddingMode)
+std::unique_ptr<IPublicKeyAlgorithm> Crypto::CreateRSA(const IPublicKeyAlgorithm::HashingAlgorithm hashingAlgorithm, const RSAPaddingMode paddingMode)
 {
-    return new AlgorithmRSA(hashingAlgorithm, paddingMode);
+    return std::make_unique<AlgorithmRSA>(hashingAlgorithm, paddingMode);
 }

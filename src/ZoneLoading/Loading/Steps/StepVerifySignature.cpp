@@ -2,17 +2,11 @@
 #include "Loading/Exception/InvalidSignatureException.h"
 #include <cassert>
 
-StepVerifySignature::StepVerifySignature(IPublicKeyAlgorithm* signatureAlgorithm, ISignatureProvider* signatureProvider, ICapturedDataProvider* signatureDataProvider)
+StepVerifySignature::StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm, ISignatureProvider* signatureProvider, ICapturedDataProvider* signatureDataProvider)
+    : m_algorithm(std::move(signatureAlgorithm)),
+      m_signature_provider(signatureProvider),
+      m_signature_data_provider(signatureDataProvider)
 {
-    m_algorithm = signatureAlgorithm;
-    m_signature_provider = signatureProvider;
-    m_signature_data_provider = signatureDataProvider;
-}
-
-StepVerifySignature::~StepVerifySignature()
-{
-    delete m_algorithm;
-    m_algorithm = nullptr;
 }
 
 void StepVerifySignature::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
@@ -29,7 +23,7 @@ void StepVerifySignature::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* st
     size_t signatureDataSize;
     m_signature_data_provider->GetCapturedData(&signatureData, &signatureDataSize);
 
-    if(!m_algorithm->Verify(signatureData, signatureDataSize, signature, signatureSize))
+    if (!m_algorithm->Verify(signatureData, signatureDataSize, signature, signatureSize))
     {
         throw InvalidSignatureException();
     }

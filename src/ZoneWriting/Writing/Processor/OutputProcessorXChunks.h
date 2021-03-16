@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "Writing/OutputStreamProcessor.h"
-#include "XChunks/IXChunkOutputProcessor.h"
+#include "Zone/XChunk/IXChunkProcessor.h"
 
 class OutputProcessorXChunks final : public OutputStreamProcessor
 {
@@ -19,7 +19,7 @@ public:
     OutputProcessorXChunks& operator=(const OutputProcessorXChunks& other) = delete;
     OutputProcessorXChunks& operator=(OutputProcessorXChunks&& other) noexcept;
 
-    void AddChunkProcessor(std::unique_ptr<IXChunkOutputProcessor> chunkProcessor) const;
+    void AddChunkProcessor(std::unique_ptr<IXChunkProcessor> chunkProcessor) const;
 
     void Write(const void* buffer, size_t length) override;
     int64_t Pos() override;
