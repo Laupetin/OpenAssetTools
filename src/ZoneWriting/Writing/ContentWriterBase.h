@@ -6,9 +6,6 @@
 class ContentWriterBase
 {
 protected:
-    static constexpr void* PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-    static constexpr void* PTR_INSERT = reinterpret_cast<void*>(-2);
-
     const char** varXString;
 
     Zone* m_zone;
@@ -17,7 +14,7 @@ protected:
     ContentWriterBase();
     ContentWriterBase(Zone* zone, IZoneOutputStream* stream);
 
-    void WriteXString(bool atStreamStart) const;
+    void WriteXString(bool atStreamStart);
     void WriteXStringArray(bool atStreamStart, size_t count);
 
 public:

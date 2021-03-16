@@ -37,12 +37,14 @@ function ZoneWriting:project()
 		
 		files {
 			path.join(folder, "ZoneWriting/**.h"), 
-			path.join(folder, "ZoneWriting/**.cpp") 
+			path.join(folder, "ZoneWriting/**.cpp"),
+			ZoneCode:allWriteFiles()
 		}
 		
         vpaths {
 			["*"] = {
-				path.join(folder, "ZoneWriting")
+				path.join(folder, "ZoneWriting"),
+				path.join(BuildFolder(), "src/ZoneCode")
 			}
 		}
 		
@@ -50,6 +52,7 @@ function ZoneWriting:project()
         Crypto:include(includes)
         Utils:include(includes)
 		zlib:include(includes)
+		ZoneCode:include(includes)
 
 		ZoneCode:use()
 end

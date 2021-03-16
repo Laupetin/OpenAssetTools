@@ -15,6 +15,7 @@
 #include "SearchPath/SearchPathFilesystem.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "LinkerArgs.h"
+#include "ZoneWriting.h"
 #include "ZoneCreation/ZoneCreationContext.h"
 #include "ZoneCreation/IZoneCreator.h"
 #include "Game/IW4/ZoneCreatorIW4.h"
@@ -445,6 +446,13 @@ class Linker::Impl
         std::ofstream stream(zoneFilePath);
         if (!stream.is_open())
             return false;
+
+        if(!ZoneWriting::WriteZone(stream, zone))
+        {
+            std::cout << "Writing zone failed." << std::endl;
+            stream.close();
+            return false;
+        }
 
         stream.close();
         return true;

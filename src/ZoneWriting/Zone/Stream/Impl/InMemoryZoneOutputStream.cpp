@@ -64,7 +64,7 @@ void InMemoryZoneOutputStream::Align(const int align)
 {
     assert(!m_block_stack.empty());
 
-    if (align > 0)
+    if (align > 1)
     {
         auto* block = m_block_stack.top();
 
@@ -75,14 +75,14 @@ void InMemoryZoneOutputStream::Align(const int align)
     }
 }
 
-void* InMemoryZoneOutputStream::WriteDataRaw(void* src, const size_t size)
+void* InMemoryZoneOutputStream::WriteDataRaw(const void* src, const size_t size)
 {
     auto* result = m_zone_data->GetBufferOfSize(size);
     memcpy(result, src, size);
     return result;
 }
 
-void* InMemoryZoneOutputStream::WriteDataInBlock(void* src, const size_t size)
+void* InMemoryZoneOutputStream::WriteDataInBlock(const void* src, const size_t size)
 {
     assert(!m_block_stack.empty());
 
@@ -130,9 +130,9 @@ void InMemoryZoneOutputStream::IncBlockPos(const size_t size)
     }
 }
 
-void InMemoryZoneOutputStream::WriteNullTerminated(void* src)
+void InMemoryZoneOutputStream::WriteNullTerminated(const void* src)
 {
-    const auto len = strlen(static_cast<char*>(src));
+    const auto len = strlen(static_cast<const char*>(src));
     WriteDataInBlock(src, len + 1);
 }
 
@@ -161,9 +161,20 @@ uintptr_t InMemoryZoneOutputStream::InsertPointer()
     return result;
 }
 
+void InMemoryZoneOutputStream::MarkFollowing(void** pPtr)
+{
+    assert(!m_block_stack.empty());
+    assert(pPtr != nullptr);
+    *pPtr = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP ? PTR_INSERT : PTR_FOLLOWING;
+}
+
 bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t entrySize, const size_t entryCount, std::type_index type)
 {
     assert(!m_block_stack.empty());
+    assert(pPtr != nullptr);
+
+    if (*pPtr == nullptr)
+        return false;
 
     const auto inTemp = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP;
     const auto foundEntriesForType = m_reusable_entries.find(type);
@@ -173,8 +184,7 @@ bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t ent
         auto zoneOffset = inTemp ? InsertPointer() : GetCurrentZonePointer();
         entries.emplace_back(*pPtr, entrySize, entryCount, zoneOffset);
         m_reusable_entries.emplace(std::make_pair(type, std::move(entries)));
-
-        *pPtr = inTemp ? PTR_INSERT : PTR_FOLLOWING;
+        
         return true;
     }
 
@@ -190,7 +200,6 @@ bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t ent
 
     auto zoneOffset = inTemp ? InsertPointer() : GetCurrentZonePointer();
     foundEntriesForType->second.emplace_back(*pPtr, entrySize, entryCount, zoneOffset);
-
-    *pPtr = inTemp ? PTR_INSERT : PTR_FOLLOWING;
+    
     return true;
 }

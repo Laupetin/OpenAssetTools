@@ -9,9 +9,6 @@
 
 class InMemoryZoneOutputStream final : public IZoneOutputStream
 {
-    static constexpr void* PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-    static constexpr void* PTR_INSERT = reinterpret_cast<void*>(-2);
-
     class ReusableEntry
     {
     public:
@@ -44,9 +41,10 @@ public:
     void PushBlock(block_t block) override;
     block_t PopBlock() override;
     void Align(int align) override;
-    void* WriteDataRaw(void* src, size_t size) override;
-    void* WriteDataInBlock(void* src, size_t size) override;
+    void* WriteDataRaw(const void* src, size_t size) override;
+    void* WriteDataInBlock(const void* src, size_t size) override;
     void IncBlockPos(size_t size) override;
-    void WriteNullTerminated(void* src) override;
+    void WriteNullTerminated(const void* src) override;
+    void MarkFollowing(void** pPtr) override;
     bool ReusableShouldWrite(void** pPtr, size_t entrySize, size_t entryCount, std::type_index type) override;
 };

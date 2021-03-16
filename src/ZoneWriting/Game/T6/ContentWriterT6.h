@@ -7,13 +7,16 @@ namespace T6
 {
     class ContentWriter final : public ContentWriterBase, public IContentWritingEntryPoint
     {
+        XAssetList* varXAssetList;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
 
-        void LoadScriptStringList(bool atStreamStart);
+        void CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const;
 
-        void LoadXAsset(bool atStreamStart);
-        void LoadXAssetArray(bool atStreamStart, size_t count);
+        void WriteScriptStringList(bool atStreamStart);
+
+        void WriteXAsset(bool atStreamStart);
+        void WriteXAssetArray(bool atStreamStart, size_t count);
 
     public:
         ContentWriter();

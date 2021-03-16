@@ -16,6 +16,11 @@ XAssetInfoGeneric* ZoneAssetPools::AddAsset(const asset_type_t type, std::string
     return assetInfo;
 }
 
+size_t ZoneAssetPools::GetTotalAssetCount() const
+{
+    return m_assets_in_order.size();
+}
+
 ZoneAssetPools::iterator ZoneAssetPools::begin() const
 {
     return m_assets_in_order.begin();

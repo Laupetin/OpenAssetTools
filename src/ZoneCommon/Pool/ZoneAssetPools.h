@@ -1,10 +1,12 @@
 #pragma once
+#include <vector>
+#include <string>
+#include <cstddef>
 
+#include "Utils/ClassUtils.h"
 #include "XAssetInfo.h"
 #include "Zone/ZoneTypes.h"
 #include "Zone/Zone.h"
-#include <vector>
-#include <string>
 
 class Zone;
 class XAssetInfoGeneric;
@@ -29,6 +31,8 @@ public:
 
     virtual void InitPoolStatic(asset_type_t type, size_t capacity) = 0;
     virtual void InitPoolDynamic(asset_type_t type) = 0;
+
+    _NODISCARD size_t GetTotalAssetCount() const;
 
     iterator begin() const;
     iterator end() const;
