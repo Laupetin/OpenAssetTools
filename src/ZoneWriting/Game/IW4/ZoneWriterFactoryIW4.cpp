@@ -43,36 +43,35 @@ public:
 #undef XBLOCK_DEF
     }
 
-    static ZoneHeader CreateHeaderForParams(const bool isSecure, const bool isOfficial, const bool isEncrypted)
+    static ZoneHeader CreateHeaderForParams(const bool isSecure, const bool isOfficial)
     {
-        // ZoneHeader header{};
-        // header.m_version = ZoneConstants::ZONE_VERSION;
-        //
-        // if (isSecure)
-        // {
-        //     if (isOfficial)
-        //         memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, sizeof(ZoneHeader::m_magic));
-        //     else
-        //         memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, sizeof(ZoneHeader::m_magic));
-        // }
-        // else
-        // {
-        //     if (isEncrypted)
-        //         memcpy(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, sizeof(ZoneHeader::m_magic));
-        //     else
-        //         memcpy(header.m_magic, ZoneConstants::MAGIC_UNSIGNED_SERVER, sizeof(ZoneHeader::m_magic));
-        // }
-        //
-        // return header;
+        ZoneHeader header{};
+        header.m_version = ZoneConstants::ZONE_VERSION;
+
+        if (isSecure)
+        {
+            if (isOfficial)
+                memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, sizeof(ZoneHeader::m_magic));
+            else
+                memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_OAT, sizeof(ZoneHeader::m_magic));
+        }
+        else
+        {
+            memcpy(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, sizeof(ZoneHeader::m_magic));
+        }
+
+        return header;
     }
 
     std::unique_ptr<ZoneWriter> CreateWriter()
     {
         // TODO Support signed fastfiles
         bool isSecure = false;
-        bool isEncrypted = true;
 
         SetupBlocks();
+
+        // Write zone header
+        m_writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams(isSecure, false)));
 
         // Return the fully setup zoneloader
         return std::move(m_writer);
