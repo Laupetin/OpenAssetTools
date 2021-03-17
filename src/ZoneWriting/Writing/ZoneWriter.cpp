@@ -75,5 +75,7 @@ bool ZoneWriter::WriteZone(std::ostream& stream)
         return false;
     }
 
+    endStream->Flush();
+
     return true;
 }

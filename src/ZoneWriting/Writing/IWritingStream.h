@@ -14,5 +14,6 @@ public:
     IWritingStream& operator=(IWritingStream&& other) noexcept = default;
 
     virtual void Write(const void* buffer, size_t length) = 0;
+    virtual void Flush() = 0;
     virtual int64_t Pos() = 0;
 };

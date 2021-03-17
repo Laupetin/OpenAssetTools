@@ -5,7 +5,7 @@
 
 class InMemoryZoneData
 {
-    static constexpr size_t BUFFER_SIZE = 0x10000;
+    static constexpr size_t BUFFER_SIZE = 0x400000;
 
 public:
     class MemoryBuffer

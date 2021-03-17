@@ -1,5 +1,7 @@
 #include "XChunkProcessorDeflate.h"
 
+
+#include <cassert>
 #include <zlib.h>
 #include <zutil.h>
 
@@ -11,7 +13,7 @@ size_t XChunkProcessorDeflate::Process(int streamNumber, const uint8_t* input, c
     stream.zalloc = Z_NULL;
     stream.zfree = Z_NULL;
     stream.opaque = Z_NULL;
-
+    
     auto ret = deflateInit2(&stream, Z_BEST_COMPRESSION, Z_DEFLATED, -DEF_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
     if (ret != Z_OK)
         throw XChunkException("Initializing deflate failed.");
@@ -23,7 +25,7 @@ size_t XChunkProcessorDeflate::Process(int streamNumber, const uint8_t* input, c
 
     ret = deflate(&stream, Z_FINISH);
     if (ret != Z_STREAM_END)
-        throw XChunkException("Zone has invalid or unsupported compression. Deflate failed");
+        throw XChunkException("Failed to deflate memory of zone.");
 
     const size_t outputSize = stream.total_out;
 

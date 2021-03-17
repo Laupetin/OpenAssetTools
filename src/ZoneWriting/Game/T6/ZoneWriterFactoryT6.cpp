@@ -15,6 +15,7 @@
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
+#include "Writing/Steps/StepWriteZoneSizes.h"
 
 using namespace T6;
 
@@ -74,6 +75,9 @@ public:
         ICapturedDataProvider* result = nullptr;
         auto xChunkProcessor = std::make_unique<OutputProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
 
+        // Decompress the chunks using zlib
+        xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorDeflate>());
+
         if (isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
@@ -83,8 +87,6 @@ public:
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
-        // Decompress the chunks using zlib
-        xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorDeflate>());
         m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
@@ -111,6 +113,7 @@ public:
 
         // Start of the XFile struct
         //m_writer->AddWritingStep(std::make_unique<StepSkipBytes>(8)); // Skip size and externalSize fields since they are not interesting for us
+        m_writer->AddWritingStep(std::make_unique<StepWriteZoneSizes>(contentInMemoryPtr));
         m_writer->AddWritingStep(std::make_unique<StepWriteXBlockSizes>(m_zone));
 
         // Start of the zone content

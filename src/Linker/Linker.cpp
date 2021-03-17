@@ -443,7 +443,7 @@ class Linker::Impl
 
         fs::create_directories(zoneFolderPath);
 
-        std::ofstream stream(zoneFilePath);
+        std::ofstream stream(zoneFilePath, std::fstream::out | std::fstream::binary);
         if (!stream.is_open())
             return false;
 
