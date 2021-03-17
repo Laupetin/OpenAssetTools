@@ -5,7 +5,7 @@ WritingException::WritingException(std::string message)
 {
 }
 
-char const* WritingException::what() const
+char const* WritingException::what() const noexcept
 {
     return m_error_message.c_str();
 }

@@ -5,7 +5,7 @@ XChunkException::XChunkException(std::string message)
 {
 }
 
-char const* XChunkException::what() const
+char const* XChunkException::what() const noexcept
 {
     return m_message.c_str();
 }

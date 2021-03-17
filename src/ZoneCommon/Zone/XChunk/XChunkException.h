@@ -11,6 +11,6 @@ class XChunkException final : public std::exception
 public:
     explicit XChunkException(std::string message);
 
-    _NODISCARD char const* what() const override;
+    _NODISCARD char const* what() const noexcept override;
     _NODISCARD const std::string& Message() const;
 };
