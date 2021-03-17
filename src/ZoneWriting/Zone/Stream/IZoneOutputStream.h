@@ -9,8 +9,8 @@
 class IZoneOutputStream : public IZoneStream
 {
 public:
-    static constexpr void* PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-    static constexpr void* PTR_INSERT = reinterpret_cast<void*>(-2);
+    inline static void* const PTR_FOLLOWING = reinterpret_cast<void*>(-1);
+    inline static void* const PTR_INSERT = reinterpret_cast<void*>(-2);
 
     virtual void Align(int alignTo) = 0;
 
