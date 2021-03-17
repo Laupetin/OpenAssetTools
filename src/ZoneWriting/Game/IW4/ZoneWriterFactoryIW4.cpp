@@ -1,6 +1,7 @@
 #include "ZoneWriterFactoryIW4.h"
 
 #include <cassert>
+#include <cstring>
 
 #include "ContentWriterIW4.h"
 #include "Utils/ICapturedDataProvider.h"

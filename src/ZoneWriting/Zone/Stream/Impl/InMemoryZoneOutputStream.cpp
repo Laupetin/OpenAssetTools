@@ -1,6 +1,7 @@
 #include "InMemoryZoneOutputStream.h"
 
 #include <cassert>
+#include <cstring>
 
 InMemoryZoneOutputStream::InMemoryZoneOutputStream(InMemoryZoneData* zoneData, std::vector<XBlock*> blocks, const int blockBitCount, const block_t insertBlock)
     : m_zone_data(zoneData),

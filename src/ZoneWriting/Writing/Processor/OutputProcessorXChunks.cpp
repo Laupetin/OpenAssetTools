@@ -1,6 +1,7 @@
 #include "OutputProcessorXChunks.h"
 
 #include <cassert>
+#include <cstring>
 
 #include "Writing/WritingException.h"
 #include "Zone/ZoneTypes.h"
