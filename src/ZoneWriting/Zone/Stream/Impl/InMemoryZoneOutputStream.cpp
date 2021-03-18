@@ -140,6 +140,7 @@ void InMemoryZoneOutputStream::WriteNullTerminated(const void* src)
 uintptr_t InMemoryZoneOutputStream::GetCurrentZonePointer()
 {
     assert(!m_block_stack.empty());
+    assert(m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_NORMAL);
 
     uintptr_t ptr = 0;
     ptr |= static_cast<uintptr_t>(m_block_stack.top()->m_index) << (sizeof(uintptr_t) * 8 - m_block_bit_count);

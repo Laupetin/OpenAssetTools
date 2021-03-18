@@ -208,6 +208,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
                 << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            LINE("m_stream->MarkFollowing("<<MakeMemberAccess(info, member, modifier)<<");")
         }
     }
 
@@ -303,6 +304,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
                 << ">(" << MakeMemberAccess(info, member, modifier) << ");")
+            LINE("m_stream->MarkFollowing("<<MakeMemberAccess(info, member, modifier)<<");")
         }
     }
 
@@ -401,8 +403,6 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("m_stream->Align("<<modifier.GetAlignment()<<");")
         }
-
-        LINE("")
 
         WriteMember_TypeCheck(info, member, modifier, writeType);
     }
@@ -838,8 +838,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         else
         {
             LINE("m_stream->Write<" << def->GetFullName() << ">(*" << MakeTypePtrVarName(def) << ");")
-            LINE("m_stream->MarkFollowing(*"<< MakeTypePtrVarName(def)<<");")
         }
+        LINE("m_stream->MarkFollowing(*"<< MakeTypePtrVarName(def)<<");")
     }
 
     void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
