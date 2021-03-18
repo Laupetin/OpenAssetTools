@@ -13,6 +13,7 @@ public:
     std::string m_name;
     Zone* m_zone;
     std::vector<XAssetInfoGeneric*> m_dependencies;
+    std::vector<scr_string_t> m_used_script_strings;
     void* m_ptr;
 };
 

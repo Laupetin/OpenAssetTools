@@ -329,7 +329,8 @@ void GameAssetPoolT6::InitPoolDynamic(const asset_type_t type)
 #undef CASE_INIT_POOL_STATIC
 }
 
-XAssetInfoGeneric* GameAssetPoolT6::AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*>& dependencies)
+XAssetInfoGeneric* GameAssetPoolT6::AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings,
+                                                   Zone* zone)
 {
     XAsset xAsset{};
 
@@ -340,7 +341,7 @@ XAssetInfoGeneric* GameAssetPoolT6::AddAssetToPool(asset_type_t type, std::strin
     case assetType: \
     { \
         assert((poolName) != nullptr); \
-        return (poolName)->AddAsset(std::move(name), xAsset.header.headerName, m_zone, dependencies); \
+        return (poolName)->AddAsset(std::move(name), xAsset.header.headerName, zone, std::move(dependencies), std::move(usedScriptStrings)); \
     }
 
     switch (xAsset.type)

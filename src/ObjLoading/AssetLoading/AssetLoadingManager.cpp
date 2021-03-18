@@ -13,9 +13,17 @@ bool AssetLoadingManager::LoadAssetFromLoader(const asset_type_t assetType, cons
     return LoadDependency(assetType, assetName) != nullptr;
 }
 
-void AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*>& dependencies)
+void AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings,
+                                   Zone* zone)
 {
-    m_last_dependency_loaded = m_context.m_zone->m_pools->AddAsset(assetType, assetName, asset, dependencies);
+    m_last_dependency_loaded = m_context.m_zone->m_pools->AddAsset(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), zone);
+    if (m_last_dependency_loaded == nullptr)
+        std::cout << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << assetName << "\"" << std::endl;
+}
+
+void AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings)
+{
+    m_last_dependency_loaded = m_context.m_zone->m_pools->AddAsset(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings));
     if (m_last_dependency_loaded == nullptr)
         std::cout << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << assetName << "\"" << std::endl;
 }
@@ -29,8 +37,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
     auto* linkAsset = loader->CreateEmptyAsset(assetName, m_context.m_zone->GetMemory());
     if (linkAsset)
     {
-        std::vector<XAssetInfoGeneric*> dependencies;
-        AddAsset(assetType, assetName, linkAsset, dependencies);
+        AddAsset(assetType, assetName, linkAsset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;
@@ -40,7 +47,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
     if (existingAsset)
     {
         std::vector<XAssetInfoGeneric*> dependencies;
-        AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, dependencies);
+        AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>(), existingAsset->m_zone);
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;
@@ -79,7 +86,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
                 return nullptr;
         }
 
-        AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, dependencies);
+        AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, std::move(dependencies), existingAsset->m_used_script_strings, existingAsset->m_zone);
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;
@@ -99,7 +106,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetT
     if (loader != m_asset_loaders_by_type.end())
     {
         const auto ignoreEntry = m_context.m_ignored_asset_map.find(assetName);
-        if(ignoreEntry != m_context.m_ignored_asset_map.end() && ignoreEntry->second == assetType)
+        if (ignoreEntry != m_context.m_ignored_asset_map.end() && ignoreEntry->second == assetType)
         {
             const auto linkAssetName = ',' + assetName;
 

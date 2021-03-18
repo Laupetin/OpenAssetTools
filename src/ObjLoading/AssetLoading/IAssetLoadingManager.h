@@ -14,11 +14,10 @@ public:
     IAssetLoadingManager& operator=(const IAssetLoadingManager& other) = default;
     IAssetLoadingManager& operator=(IAssetLoadingManager&& other) noexcept = default;
 
-    virtual void AddAsset(asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*>& dependencies) = 0;
+    virtual void AddAsset(asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) = 0;
     void AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset)
     {
-        std::vector<XAssetInfoGeneric*> dependencies;
-        AddAsset(assetType, assetName, asset, dependencies);
+        AddAsset(assetType, assetName, asset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
     }
     virtual XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) = 0;
 };

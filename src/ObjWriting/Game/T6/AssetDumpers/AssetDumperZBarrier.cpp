@@ -178,8 +178,8 @@ InfoString AssetDumperZBarrier::CreateInfoString(XAssetInfo<ZBarrierDef>* asset)
 {
     InfoStringFromZBarrierConverter converter(asset->Asset(), zbarrier_fields, std::extent<decltype(zbarrier_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
     {
-        assert(scrStr < asset->m_zone->m_script_strings.size());
-        if (scrStr >= asset->m_zone->m_script_strings.size())
+        assert(scrStr < asset->m_zone->m_script_strings.Count());
+        if (scrStr >= asset->m_zone->m_script_strings.Count())
             return "";
 
         return asset->m_zone->m_script_strings[scrStr];

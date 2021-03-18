@@ -13,6 +13,8 @@ AssetWriter::AssetWriter(XAssetInfoGeneric* asset, Zone* zone, IZoneOutputStream
 
 scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
 {
+    assert(scrString < m_asset->m_zone->m_script_strings.Count());
+
     if (m_asset->m_zone == m_zone)
         return scrString;
 

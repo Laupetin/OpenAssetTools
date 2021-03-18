@@ -122,8 +122,8 @@ InfoString AssetDumperPhysConstraints::CreateInfoString(XAssetInfo<PhysConstrain
 
     InfoStringFromPhysConstraintsConverter converter(asset->Asset(), phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {
-            assert(scrStr < asset->m_zone->m_script_strings.size());
-            if (scrStr >= asset->m_zone->m_script_strings.size())
+            assert(scrStr < asset->m_zone->m_script_strings.Count());
+            if (scrStr >= asset->m_zone->m_script_strings.Count())
                 return "";
 
             return asset->m_zone->m_script_strings[scrStr];

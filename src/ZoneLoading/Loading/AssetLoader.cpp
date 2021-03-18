@@ -30,11 +30,12 @@ void AssetLoader::AddDependency(XAssetInfoGeneric* assetInfo)
 
 scr_string_t AssetLoader::UseScriptString(const scr_string_t scrString)
 {
-    assert(scrString < m_zone->m_script_strings.size());
+    assert(scrString < m_zone->m_script_strings.Count());
 
-    if (scrString >= m_zone->m_script_strings.size())
+    if (scrString >= m_zone->m_script_strings.Count())
         return 0u;
 
+    m_used_script_strings.emplace(scrString);
     return scrString;
 }
 
@@ -55,7 +56,19 @@ void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t c
 
 XAssetInfoGeneric* AssetLoader::LinkAsset(std::string name, void* asset)
 {
-    return m_zone->m_pools->AddAsset(m_asset_type, std::move(name), asset, m_dependencies);
+    std::vector<scr_string_t> usedScriptStrings;
+    if(!m_used_script_strings.empty())
+    {
+        for(auto scrString : m_used_script_strings)
+        {
+            usedScriptStrings.push_back(scrString);
+        }
+
+        std::sort(usedScriptStrings.begin(), usedScriptStrings.end());
+        m_used_script_strings.clear();
+    }
+
+    return m_zone->m_pools->AddAsset(m_asset_type, std::move(name), asset, std::move(m_dependencies), std::move(usedScriptStrings));
 }
 
 XAssetInfoGeneric* AssetLoader::GetAssetInfo(std::string name) const

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <unordered_set>
+
 #include "Zone/ZoneTypes.h"
 #include "Pool/XAssetInfo.h"
 #include "ContentLoaderBase.h"
@@ -9,6 +12,7 @@ class AssetLoader : public ContentLoaderBase
     asset_type_t m_asset_type;
 
     std::vector<XAssetInfoGeneric*> m_dependencies;
+    std::unordered_set<scr_string_t> m_used_script_strings;
 
 protected:
     scr_string_t* varScriptString;

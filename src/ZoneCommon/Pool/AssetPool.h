@@ -47,7 +47,7 @@ public:
 
     virtual ~AssetPool() = default;
 
-    virtual XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*>& dependencies) = 0;
+    virtual XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) = 0;
 
     XAssetInfo<T>* GetAsset(const std::string& name)
     {

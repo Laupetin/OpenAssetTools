@@ -52,13 +52,13 @@ ContentWriter::ContentWriter()
 
 void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const
 {
-    if (!m_zone->m_script_strings.empty())
+    if (!m_zone->m_script_strings.Empty())
     {
-        assert(m_zone->m_script_strings.size() <= SCR_STRING_MAX + 1);
-        xAssetList.stringList.count = m_zone->m_script_strings.size();
-        xAssetList.stringList.strings = static_cast<const char**>(memory.Alloc(sizeof(const char*) * m_zone->m_script_strings.size()));
+        assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
+        xAssetList.stringList.count = m_zone->m_script_strings.Count();
+        xAssetList.stringList.strings = static_cast<const char**>(memory.Alloc(sizeof(const char*) * m_zone->m_script_strings.Count()));
 
-        for (auto i = 0u; i < m_zone->m_script_strings.size(); i++)
+        for (auto i = 0u; i < m_zone->m_script_strings.Count(); i++)
         {
             xAssetList.stringList.strings[i] = m_zone->m_script_strings[i].c_str();
         }
@@ -93,8 +93,6 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
 
 void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 {
-    assert(m_zone->m_script_strings.empty());
-
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     if (atStreamStart)

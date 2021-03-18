@@ -2,13 +2,14 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
+#include "Utils/ClassUtils.h"
 #include "Zone/ZoneTypes.h"
 #include "Pool/ZoneAssetPools.h"
 #include "Game/IGame.h"
 #include "Game/GameLanguage.h"
 #include "ZoneMemory.h"
+#include "ZoneScriptStrings.h"
 
 class IGame;
 class ZoneAssetPools;
@@ -24,7 +25,7 @@ public:
     zone_priority_t m_priority;
     GameLanguage m_language;
     IGame* m_game;
-    std::vector<std::string> m_script_strings;
+    ZoneScriptStrings m_script_strings;
     std::unique_ptr<ZoneAssetPools> m_pools;
 
     Zone(std::string name, zone_priority_t priority, IGame* game);
@@ -36,5 +37,5 @@ public:
 
     void Register();
 
-    ZoneMemory* GetMemory() const;
+    _NODISCARD ZoneMemory* GetMemory() const;
 };

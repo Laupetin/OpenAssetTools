@@ -50,7 +50,7 @@ ContentLoader::ContentLoader()
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
-    assert(m_zone->m_script_strings.empty());
+    assert(m_zone->m_script_strings.Empty());
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
@@ -69,18 +69,18 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
         {
             if (varScriptStringList->strings[i])
             {
-                m_zone->m_script_strings.emplace_back(varScriptStringList->strings[i]);
+                m_zone->m_script_strings.AddScriptString(varScriptStringList->strings[i]);
             }
             else
             {
-                m_zone->m_script_strings.emplace_back("");
+                m_zone->m_script_strings.AddScriptString("");
             }
         }
     }
 
     m_stream->PopBlock();
 
-    assert(m_zone->m_script_strings.size() <= SCR_STRING_MAX + 1);
+    assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
 
 void ContentLoader::LoadXAsset(const bool atStreamStart)

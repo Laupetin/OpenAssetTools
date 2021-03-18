@@ -12,7 +12,7 @@ class GameAssetPoolT6 final : public ZoneAssetPools
     static const char* ASSET_TYPE_NAMES[];
 
 protected:
-    XAssetInfoGeneric* AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*>& dependencies) override;
+    XAssetInfoGeneric* AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings, Zone* zone) override;
 
 public:
     AssetPool<T6::PhysPreset>* m_phys_preset;

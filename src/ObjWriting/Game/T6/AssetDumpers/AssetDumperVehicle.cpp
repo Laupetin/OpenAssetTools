@@ -646,13 +646,13 @@ namespace T6
 InfoString AssetDumperVehicle::CreateInfoString(XAssetInfo<VehicleDef>* asset)
 {
     InfoStringFromVehicleConverter converter(asset->Asset(), vehicle_fields, std::extent<decltype(vehicle_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-        {
-            assert(scrStr < asset->m_zone->m_script_strings.size());
-            if (scrStr >= asset->m_zone->m_script_strings.size())
-                return "";
+    {
+        assert(scrStr < asset->m_zone->m_script_strings.Count());
+        if (scrStr >= asset->m_zone->m_script_strings.Count())
+            return "";
 
-            return asset->m_zone->m_script_strings[scrStr];
-        });
+        return asset->m_zone->m_script_strings[scrStr];
+    });
 
     return converter.Convert();
 }
