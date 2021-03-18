@@ -53,6 +53,7 @@ void OutputProcessorXChunks::WriteChunk()
     }
 
     m_current_stream = (m_current_stream + 1) % m_stream_count;
+    m_input_size = 0;
 }
 
 OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_t xChunkSize, const size_t xChunkWriteSize)
