@@ -13,6 +13,7 @@ class OutputProcessorXChunks final : public OutputStreamProcessor
 
     int m_stream_count;
     size_t m_chunk_size;
+    size_t m_chunk_write_size;
     size_t m_vanilla_buffer_size;
 
     bool m_initialized;
@@ -28,8 +29,8 @@ class OutputProcessorXChunks final : public OutputStreamProcessor
     void WriteChunk();
 
 public:
-    OutputProcessorXChunks(int numStreams, size_t xChunkSize);
-    OutputProcessorXChunks(int numStreams, size_t xChunkSize, size_t vanillaBufferSize);
+    OutputProcessorXChunks(int numStreams, size_t xChunkSize, size_t xChunkWriteSize);
+    OutputProcessorXChunks(int numStreams, size_t xChunkSize, size_t xChunkWriteSize, size_t vanillaBufferSize);
     ~OutputProcessorXChunks() override = default;
 
     OutputProcessorXChunks(const OutputProcessorXChunks& other) = delete;

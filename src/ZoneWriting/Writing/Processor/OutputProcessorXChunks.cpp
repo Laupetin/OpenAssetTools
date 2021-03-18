@@ -55,9 +55,10 @@ void OutputProcessorXChunks::WriteChunk()
     m_current_stream = (m_current_stream + 1) % m_stream_count;
 }
 
-OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_t xChunkSize)
+OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_t xChunkSize, const size_t xChunkWriteSize)
     : m_stream_count(numStreams),
       m_chunk_size(xChunkSize),
+      m_chunk_write_size(xChunkWriteSize),
       m_vanilla_buffer_size(0),
       m_initialized(false),
       m_current_stream(0),
@@ -68,6 +69,7 @@ OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_
 {
     assert(numStreams > 0);
     assert(xChunkSize > 0);
+    assert(m_chunk_size >= m_chunk_write_size);
 
     for (auto i = 0u; i < 2u; i++)
         m_buffers.emplace_back(std::make_unique<uint8_t[]>(xChunkSize));
@@ -76,8 +78,8 @@ OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_
     m_output_buffer = m_buffers[1].get();
 }
 
-OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_t xChunkSize, const size_t vanillaBufferSize)
-    : OutputProcessorXChunks(numStreams, xChunkSize)
+OutputProcessorXChunks::OutputProcessorXChunks(const int numStreams, const size_t xChunkSize, const size_t xChunkWriteSize, const size_t vanillaBufferSize)
+    : OutputProcessorXChunks(numStreams, xChunkSize, xChunkWriteSize)
 {
     m_vanilla_buffer_size = vanillaBufferSize;
 }
@@ -99,11 +101,11 @@ void OutputProcessorXChunks::Write(const void* buffer, const size_t length)
     auto sizeRemaining = length;
     while (sizeRemaining > 0)
     {
-        const auto toWrite = std::min(m_chunk_size - m_input_size, sizeRemaining);
+        const auto toWrite = std::min(m_chunk_write_size - m_input_size, sizeRemaining);
 
         memcpy(&m_input_buffer[m_input_size], &static_cast<const char*>(buffer)[length - sizeRemaining], toWrite);
         m_input_size += toWrite;
-        if (m_input_size >= m_chunk_size)
+        if (m_input_size >= m_chunk_write_size)
             WriteChunk();
 
         sizeRemaining -= toWrite;

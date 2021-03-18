@@ -74,7 +74,7 @@ public:
     ICapturedDataProvider* AddXChunkProcessor(const bool isEncrypted)
     {
         ICapturedDataProvider* result = nullptr;
-        auto xChunkProcessor = std::make_unique<OutputProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        auto xChunkProcessor = std::make_unique<OutputProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::XCHUNK_MAX_WRITE_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
 
         // Decompress the chunks using zlib
         xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorDeflate>());
