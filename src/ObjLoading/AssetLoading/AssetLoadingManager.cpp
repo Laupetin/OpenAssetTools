@@ -86,6 +86,11 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
                 return nullptr;
         }
 
+        // Make sure any used script string is available in the created zone
+        // The replacement of the scr_string_t values will be done upon writing
+        for(auto scrString : existingAsset->m_used_script_strings)
+            m_context.m_zone->m_script_strings.AddScriptString(existingAsset->m_zone->m_script_strings[scrString]);
+
         AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, std::move(dependencies), existingAsset->m_used_script_strings, existingAsset->m_zone);
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;

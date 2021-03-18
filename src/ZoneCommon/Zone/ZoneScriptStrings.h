@@ -15,6 +15,7 @@ class ZoneScriptStrings
 
 public:
     scr_string_t AddScriptString(const std::string& value);
+    scr_string_t GetScriptString(const std::string& value) const;
     _NODISCARD size_t Count() const;
     _NODISCARD bool Empty() const;
 

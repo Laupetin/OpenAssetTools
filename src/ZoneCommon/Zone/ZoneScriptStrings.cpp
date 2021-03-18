@@ -24,6 +24,17 @@ scr_string_t ZoneScriptStrings::AddScriptString(const std::string& value)
     return newScrStringIndex;
 }
 
+scr_string_t ZoneScriptStrings::GetScriptString(const std::string& value) const
+{
+    const auto existingScriptString = m_scr_string_lookup.find(value);
+    if (existingScriptString != m_scr_string_lookup.end())
+        return existingScriptString->second;
+
+    std::ostringstream str;
+    str << "Unable to find script string \"" << value << "\"";
+    throw std::runtime_error(str.str());
+}
+
 size_t ZoneScriptStrings::Count() const
 {
     return m_scr_strings.size();

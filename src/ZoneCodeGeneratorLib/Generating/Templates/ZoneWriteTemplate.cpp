@@ -128,6 +128,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
             LINE("WriteScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            LINE("m_stream->MarkFollowing("<<MakeMemberAccess(info, member, modifier)<<");")
         }
         else if (writeType == MemberWriteType::EMBEDDED_ARRAY)
         {
@@ -439,9 +440,6 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         WriteMember_Alloc(info, member, modifier, writeType);
-
-        LINE("")
-        LINE("m_stream->MarkFollowing("<<MakeMemberAccess(info, member, modifier)<<");")
 
         m_intendation--;
         LINE("}")
