@@ -1,8 +1,12 @@
 #include "ZoneWriteTemplate.h"
 
+
+#include <cassert>
 #include <iostream>
 #include <sstream>
 
+
+#include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
 
 class ZoneWriteTemplate::Internal final : BaseTemplate
@@ -24,9 +28,43 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         return str.str();
     }
 
-    void PrintHeaderConstructor() const
+    static std::string VariableDecl(const DataDefinition* def)
     {
-        LINE(WriterClassName(m_env.m_asset) << "("<<m_env.m_asset->m_definition->GetFullName()<<"* asset, Zone* zone, IZoneOutputStream* stream);")
+        std::ostringstream str;
+        str << def->GetFullName() << "* var" << MakeSafeTypeName(def) << ";";
+        return str.str();
+    }
+
+    static std::string PointerVariableDecl(const DataDefinition* def)
+    {
+        std::ostringstream str;
+        str << def->GetFullName() << "** var" << MakeSafeTypeName(def) << "Ptr;";
+        return str.str();
+    }
+
+    void PrintHeaderPtrArrayWriteMethodDeclaration(const DataDefinition* def) const
+    {
+        LINE("void WritePtrArray_" << MakeSafeTypeName(def) << "(bool atStreamStart, size_t count);")
+    }
+
+    void PrintHeaderArrayWriteMethodDeclaration(const DataDefinition* def) const
+    {
+        LINE("void WriteArray_" << MakeSafeTypeName(def) << "(bool atStreamStart, size_t count);")
+    }
+
+    void PrintHeaderWriteMethodDeclaration(const StructureInformation* info) const
+    {
+        LINE("void Write_" << MakeSafeTypeName(info->m_definition) << "(bool atStreamStart);")
+    }
+
+    void PrintHeaderTempPtrWriteMethodDeclaration(const StructureInformation* info) const
+    {
+        LINE("void WritePtr_" << MakeSafeTypeName(info->m_definition) << "(bool atStreamStart);")
+    }
+
+    void PrintHeaderGetNameMethodDeclaration(const StructureInformation* info) const
+    {
+        LINE("static std::string GetAssetName(" << info->m_definition->GetFullName() << "* pAsset);")
     }
 
     void PrintHeaderMainWriteMethodDeclaration(const StructureInformation* info) const
@@ -34,9 +72,19 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("void Write(" << info->m_definition->GetFullName() << "** pAsset);")
     }
 
-    void PrintHeaderGetNameMethodDeclaration(const StructureInformation* info) const
+    void PrintHeaderConstructor() const
     {
-        LINE("static std::string GetAssetName("<<info->m_definition->GetFullName()<<"* pAsset);")
+        LINE(WriterClassName(m_env.m_asset) << "("<<m_env.m_asset->m_definition->GetFullName()<<"* asset, Zone* zone, IZoneOutputStream* stream);")
+    }
+
+    void PrintVariableInitialization(const DataDefinition* def) const
+    {
+        LINE("var" << def->m_name << " = nullptr;")
+    }
+
+    void PrintPointerVariableInitialization(const DataDefinition* def) const
+    {
+        LINE("var" << def->m_name << "Ptr = nullptr;")
     }
 
     void PrintConstructorMethod()
@@ -51,6 +99,680 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("{")
         m_intendation++;
 
+        PrintVariableInitialization(m_env.m_asset->m_definition);
+        PrintPointerVariableInitialization(m_env.m_asset->m_definition);
+        LINE("")
+
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+            {
+                PrintVariableInitialization(type->m_type);
+            }
+        }
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_info && type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+            {
+                PrintPointerVariableInitialization(type->m_type);
+            }
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void WriteMember_ScriptString(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    {
+        if (writeType == MemberWriteType::ARRAY_POINTER)
+        {
+            LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("WriteScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+        }
+        else if (writeType == MemberWriteType::EMBEDDED_ARRAY)
+        {
+            LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("WriteScriptStringArray(false, " << MakeArrayCount(dynamic_cast<ArrayDeclarationModifier*>(modifier.GetDeclarationModifier())) << ");")
+        }
+        else if (writeType == MemberWriteType::EMBEDDED)
+        {
+            LINE(MakeMemberAccess(info, member, modifier) << " = UseScriptString(" << MakeMemberAccess(info, member, modifier) << ");")
+        }
+        else
+        {
+            assert(false);
+            LINE("#error unsupported writeType " << static_cast<int>(writeType) << " for scripstring")
+        }
+    }
+
+    void WriteMember_Asset(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    {
+        if (writeType == MemberWriteType::SINGLE_POINTER)
+        {
+            LINE(WriterClassName(member->m_type) << " writer("<<MakeMemberAccess(info, member, modifier)<<", m_zone, m_stream);")
+            LINE("writer.Write(&" << MakeMemberAccess(info, member, modifier) << ");")
+        }
+        else if (writeType == MemberWriteType::POINTER_ARRAY)
+        {
+            WriteMember_PointerArray(info, member, modifier);
+        }
+        else
+        {
+            assert(false);
+            LINE("#error unsupported writeType " << static_cast<int>(writeType) << " for asset")
+        }
+    }
+
+    void WriteMember_String(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    {
+        if (writeType == MemberWriteType::SINGLE_POINTER)
+        {
+            if (member->m_member->m_type_declaration->m_is_const)
+            {
+                LINE("varXString = &" << MakeMemberAccess(info, member, modifier) << ";")
+            }
+            else
+            {
+                LINE("varXString = const_cast<const char**>(&" << MakeMemberAccess(info, member, modifier) << ");")
+            }
+            LINE("WriteXString(false);")
+        }
+        else if (writeType == MemberWriteType::POINTER_ARRAY)
+        {
+            LINE("varXString = " << MakeMemberAccess(info, member, modifier) << ";")
+            if (modifier.IsArray())
+            {
+                LINE("WriteXStringArray(false, " << modifier.GetArraySize() << ");")
+            }
+            else
+            {
+                LINE("WriteXStringArray(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+            }
+        }
+        else
+        {
+            assert(false);
+            LINE("#error unsupported writeType " << static_cast<int>(writeType) << " for string")
+        }
+    }
+
+    void WriteMember_ArrayPointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        const MemberComputations computations(member);
+        if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+        }
+        else
+        {
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+        }
+    }
+
+    void WriteMember_PointerArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        LINE(MakeTypePtrVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+        if (modifier.IsArray())
+        {
+            LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false, " << modifier.GetArraySize() << ");")
+        }
+        else
+        {
+            LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+        }
+    }
+
+    void WriteMember_EmbeddedArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        const MemberComputations computations(member);
+        std::string arraySizeStr;
+
+        if (modifier.HasDynamicArrayCount())
+            arraySizeStr = MakeEvaluation(modifier.GetDynamicArrayCountEvaluation());
+        else
+            arraySizeStr = std::to_string(modifier.GetArraySize());
+
+        if (!member->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+
+            if (computations.IsAfterPartialLoad())
+            {
+                LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << arraySizeStr << ");")
+            }
+            else
+            {
+                LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false, " << arraySizeStr << ");")
+            }
+        }
+        else if (computations.IsAfterPartialLoad())
+        {
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << arraySizeStr << ");")
+        }
+    }
+
+    void WriteMember_DynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        if (member->m_type && !member->m_type->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
+        }
+        else
+        {
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
+        }
+    }
+
+    void WriteMember_Embedded(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        const MemberComputations computations(member);
+        if (!member->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = &" << MakeMemberAccess(info, member, modifier) << ";")
+
+            if (computations.IsAfterPartialLoad())
+            {
+                LINE("Write_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true);")
+            }
+            else
+            {
+                LINE("Write_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false);")
+            }
+        }
+        else if (computations.IsAfterPartialLoad())
+        {
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(&" << MakeMemberAccess(info, member, modifier) << ");")
+        }
+    }
+
+    void WriteMember_SinglePointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
+    {
+        const MemberComputations computations(member);
+        if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
+        {
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("Write_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true);")
+        }
+        else
+        {
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
+                << ">(" << MakeMemberAccess(info, member, modifier) << ");")
+        }
+    }
+
+    void WriteMember_TypeCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    {
+        if (member->m_is_string)
+        {
+            WriteMember_String(info, member, modifier, writeType);
+        }
+        else if (member->m_is_script_string)
+        {
+            WriteMember_ScriptString(info, member, modifier, writeType);
+        }
+        else if (member->m_type && StructureComputations(member->m_type).IsAsset())
+        {
+            WriteMember_Asset(info, member, modifier, writeType);
+        }
+        else
+        {
+            switch (writeType)
+            {
+            case MemberWriteType::ARRAY_POINTER:
+                WriteMember_ArrayPointer(info, member, modifier);
+                break;
+
+            case MemberWriteType::SINGLE_POINTER:
+                WriteMember_SinglePointer(info, member, modifier);
+                break;
+
+            case MemberWriteType::EMBEDDED:
+                WriteMember_Embedded(info, member, modifier);
+                break;
+
+            case MemberWriteType::POINTER_ARRAY:
+                WriteMember_PointerArray(info, member, modifier);
+                break;
+
+            case MemberWriteType::DYNAMIC_ARRAY:
+                WriteMember_DynamicArray(info, member, modifier);
+                break;
+
+            case MemberWriteType::EMBEDDED_ARRAY:
+                WriteMember_EmbeddedArray(info, member, modifier);
+                break;
+
+            default:
+                LINE("// t=" << static_cast<int>(writeType))
+                break;
+            }
+        }
+    }
+
+    static bool WriteMember_ShouldMakeAlloc(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    {
+        if (writeType != MemberWriteType::ARRAY_POINTER
+            && writeType != MemberWriteType::POINTER_ARRAY
+            && writeType != MemberWriteType::SINGLE_POINTER)
+        {
+            return false;
+        }
+
+        if (writeType == MemberWriteType::POINTER_ARRAY)
+        {
+            return !modifier.IsArray();
+        }
+
+        if (member->m_is_string)
+        {
+            return false;
+        }
+
+        if (member->m_type && StructureComputations(member->m_type).IsAsset())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    void WriteMember_Alloc(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    {
+        if (!WriteMember_ShouldMakeAlloc(info, member, modifier, writeType))
+        {
+            WriteMember_TypeCheck(info, member, modifier, writeType);
+            return;
+        }
+
+        const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
+        const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+
+        if (member->m_alloc_alignment)
+        {
+            LINE("m_stream->Align("<<MakeEvaluation(member->m_alloc_alignment.get())<<");")
+        }
+        else
+        {
+            LINE("m_stream->Align("<<modifier.GetAlignment()<<");")
+        }
+
+        LINE("")
+
+        WriteMember_TypeCheck(info, member, modifier, writeType);
+    }
+
+    static bool WriteMember_ShouldMakeReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    {
+        if (writeType != MemberWriteType::ARRAY_POINTER
+            && writeType != MemberWriteType::SINGLE_POINTER
+            && writeType != MemberWriteType::POINTER_ARRAY)
+        {
+            return false;
+        }
+
+        if (writeType == MemberWriteType::POINTER_ARRAY
+            && modifier.IsArray())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    void WriteMember_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    {
+        if (!WriteMember_ShouldMakeReuse(info, member, modifier, writeType)
+            || !member->m_is_reusable)
+        {
+            WriteMember_Alloc(info, member, modifier, writeType);
+            return;
+        }
+
+        LINE("if(m_stream->ReusableShouldWrite(&" << MakeMemberAccess(info, member, modifier) << "))")
+        LINE("{")
+        m_intendation++;
+
+        WriteMember_Alloc(info, member, modifier, writeType);
+
+        LINE("")
+        LINE("m_stream->MarkFollowing("<<MakeMemberAccess(info, member, modifier)<<");")
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    static bool WriteMember_ShouldMakePointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    {
+        if (writeType != MemberWriteType::ARRAY_POINTER
+            && writeType != MemberWriteType::POINTER_ARRAY
+            && writeType != MemberWriteType::SINGLE_POINTER)
+        {
+            return false;
+        }
+
+        if (writeType == MemberWriteType::POINTER_ARRAY)
+        {
+            return !modifier.IsArray();
+        }
+
+        if (member->m_is_string)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    void WriteMember_PointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    {
+        if (WriteMember_ShouldMakePointerCheck(info, member, modifier, writeType))
+        {
+            LINE("if (" << MakeMemberAccess(info, member, modifier) << ")")
+            LINE("{")
+            m_intendation++;
+
+            WriteMember_Reuse(info, member, modifier, writeType);
+
+            m_intendation--;
+            LINE("}")
+        }
+        else
+        {
+            WriteMember_Reuse(info, member, modifier, writeType);
+        }
+    }
+
+    void WriteMember_Block(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, MemberWriteType writeType)
+    {
+        const MemberComputations computations(member);
+
+        const auto notInDefaultNormalBlock = computations.IsNotInDefaultNormalBlock();
+        if (notInDefaultNormalBlock)
+        {
+            LINE("m_stream->PushBlock(" << member->m_fast_file_block->m_name << ");")
+        }
+
+        WriteMember_PointerCheck(info, member, modifier, writeType);
+
+        if (notInDefaultNormalBlock)
+        {
+            LINE("m_stream->PopBlock();")
+        }
+    }
+
+    void WriteMember_ReferenceArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        auto first = true;
+        for (const auto& entry : modifier.GetArrayEntries())
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                LINE("")
+            }
+
+            WriteMember_Reference(info, member, entry);
+        }
+    }
+
+    void WriteMember_Reference(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+    {
+        if (modifier.IsDynamicArray())
+        {
+            WriteMember_Block(info, member, modifier, MemberWriteType::DYNAMIC_ARRAY);
+        }
+        else if (modifier.IsSinglePointer())
+        {
+            WriteMember_Block(info, member, modifier, MemberWriteType::SINGLE_POINTER);
+        }
+        else if (modifier.IsArrayPointer())
+        {
+            WriteMember_Block(info, member, modifier, MemberWriteType::ARRAY_POINTER);
+        }
+        else if (modifier.IsPointerArray())
+        {
+            WriteMember_Block(info, member, modifier, MemberWriteType::POINTER_ARRAY);
+        }
+        else if (modifier.IsArray() && modifier.GetNextDeclarationModifier() == nullptr)
+        {
+            WriteMember_Block(info, member, modifier, MemberWriteType::EMBEDDED_ARRAY);
+        }
+        else if (modifier.GetDeclarationModifier() == nullptr)
+        {
+            WriteMember_Block(info, member, modifier, MemberWriteType::EMBEDDED);
+        }
+        else if (modifier.IsArray())
+        {
+            WriteMember_ReferenceArray(info, member, modifier);
+        }
+        else
+        {
+            assert(false);
+            LINE("#error WriteMemberReference failed @ " << member->m_member->m_name)
+        }
+    }
+
+    void WriteMember_Condition_Struct(StructureInformation* info, MemberInformation* member)
+    {
+        LINE("")
+        if (member->m_condition)
+        {
+            LINE("if(" << MakeEvaluation(member->m_condition.get()) << ")")
+            LINE("{")
+            m_intendation++;
+
+            WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+
+            m_intendation--;
+            LINE("}")
+        }
+        else
+        {
+            WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+        }
+    }
+
+    void WriteMember_Condition_Union(StructureInformation* info, MemberInformation* member)
+    {
+        const MemberComputations computations(member);
+
+        if (computations.IsFirstMember())
+        {
+            LINE("")
+            if (member->m_condition)
+            {
+                LINE("if(" << MakeEvaluation(member->m_condition.get()) << ")")
+                LINE("{")
+                m_intendation++;
+
+                WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+            }
+        }
+        else if (computations.IsLastMember())
+        {
+            if (member->m_condition)
+            {
+                LINE("else if(" << MakeEvaluation(member->m_condition.get()) << ")")
+                LINE("{")
+                m_intendation++;
+
+                WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LINE("else")
+                LINE("{")
+                m_intendation++;
+
+                WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+        }
+        else
+        {
+            if (member->m_condition)
+            {
+                LINE("else if(" << MakeEvaluation(member->m_condition.get()) << ")")
+                LINE("{")
+                m_intendation++;
+
+                WriteMember_Reference(info, member, DeclarationModifierComputations(member));
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LINE("#error Middle member of union must have condition (" << member->m_member->m_name << ")")
+            }
+        }
+    }
+
+    void PrintWriteMemberIfNeedsTreatment(StructureInformation* info, MemberInformation* member)
+    {
+        const MemberComputations computations(member);
+        if (computations.ShouldIgnore())
+            return;
+
+        if (member->m_is_string
+            || member->m_is_script_string
+            || computations.ContainsNonEmbeddedReference()
+            || member->m_type && !member->m_type->m_is_leaf
+            || computations.IsAfterPartialLoad())
+        {
+            if (info->m_definition->GetType() == DataDefinitionType::UNION)
+                WriteMember_Condition_Union(info, member);
+            else
+                WriteMember_Condition_Struct(info, member);
+        }
+    }
+
+    void PrintWriteMethod(StructureInformation* info)
+    {
+        const StructureComputations computations(info);
+        LINE("void " << WriterClassName(m_env.m_asset) << "::Write_" << info->m_definition->m_name << "(const bool atStreamStart)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << MakeTypeVarName(info->m_definition) << " != nullptr);")
+
+        auto* dynamicMember = computations.GetDynamicMember();
+        if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
+        {
+            LINE("")
+            LINE("if(atStreamStart)")
+            m_intendation++;
+
+            if (dynamicMember == nullptr)
+            {
+                LINE(MakeTypeVarName(info->m_definition)<<"= m_stream->Write<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << "); // Size: " << info->
+                    m_definition->GetSize())
+            }
+            else
+            {
+                // TODO: Introduce "full" variable that enables writing of second part
+                LINE(MakeTypeVarName(info->m_definition) << "= m_stream->WritePartial<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << ", offsetof(" << info->
+                    m_definition->GetFullName()
+                    << ", " << dynamicMember->m_member->m_name << "));")
+            }
+
+            m_intendation--;
+        }
+        else
+        {
+            LINE("assert(atStreamStart);")
+        }
+
+        if (info->m_block)
+        {
+            LINE("")
+            LINE("m_stream->PushBlock(" << info->m_block->m_name << ");")
+        }
+        else if (computations.IsAsset())
+        {
+            LINE("")
+            LINE("m_stream->PushBlock(" << m_env.m_default_normal_block->m_name << ");")
+        }
+
+        for (const auto& member : info->m_ordered_members)
+        {
+            PrintWriteMemberIfNeedsTreatment(info, member.get());
+        }
+
+        if (info->m_block || computations.IsAsset())
+        {
+            LINE("")
+            LINE("m_stream->PopBlock();")
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintWriteTempPtrMethod(StructureInformation* info)
+    {
+        LINE("void " << WriterClassName(m_env.m_asset) << "::WritePtr_" << MakeSafeTypeName(info->m_definition) << "(const bool atStreamStart)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << MakeTypePtrVarName(info->m_definition) << " != nullptr);")
+        LINE("")
+
+        LINE("if(atStreamStart)")
+        m_intendation++;
+        LINE(MakeTypePtrVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << "*>(" << MakeTypePtrVarName(info->m_definition) << ");")
+        m_intendation--;
+
+        LINE("")
+        LINE("m_stream->PushBlock(" << m_env.m_default_temp_block->m_name << ");")
+        LINE("")
+        LINE("if(m_stream->ReusableShouldWrite(" << MakeTypePtrVarName(info->m_definition) << "))")
+        LINE("{")
+        m_intendation++;
+
+        LINE("m_stream->Align(" << info->m_definition->GetAlignment() << ");")
+
+        LINE("")
+        if (!info->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(info->m_definition) << " = *" << MakeTypePtrVarName(info->m_definition) << ";")
+            LINE("Write_" << MakeSafeTypeName(info->m_definition) << "(true);")
+        }
+        else
+        {
+            LINE("#error Temp method cannot have leaf type")
+        }
+
+        LINE("")
+        LINE("m_stream->MarkFollowing(*"<<MakeTypePtrVarName(info->m_definition)<<");")
+
+        m_intendation--;
+        LINE("}")
+
+        LINE("")
+        LINE("m_stream->PopBlock();")
+
         m_intendation--;
         LINE("}")
     }
@@ -62,6 +784,9 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE("assert(pAsset != nullptr);")
+        LINE("")
+        LINE(MakeTypePtrVarName(m_env.m_asset->m_definition) << " = pAsset;")
+        LINE("WritePtr_" << MakeSafeTypeName(m_env.m_asset->m_definition) << "(false);")
 
         m_intendation--;
         LINE("}")
@@ -101,6 +826,117 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
+    void PrintWritePtrArrayMethod_Loading(const DataDefinition* def, StructureInformation* info) const
+    {
+        LINE("m_stream->Align("<<def->GetAlignment()<<");")
+
+        if (info && !info->m_is_leaf)
+        {
+            LINE(MakeTypeVarName(info->m_definition) << " = *" << MakeTypePtrVarName(def) << ";")
+            LINE("Write_" << MakeSafeTypeName(def) << "(true);")
+        }
+        else
+        {
+            LINE("m_stream->Write<" << def->GetFullName() << ">(*" << MakeTypePtrVarName(def) << ");")
+            LINE("m_stream->MarkFollowing(*"<< MakeTypePtrVarName(def)<<");")
+        }
+    }
+
+    void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+    {
+        LINE("if (*" << MakeTypePtrVarName(def) << ")")
+        LINE("{")
+        m_intendation++;
+
+        if (info && StructureComputations(info).IsAsset())
+        {
+            LINE(WriterClassName(info) << " writer(*"<<MakeTypePtrVarName(def)<<", m_zone, m_stream);")
+            LINE("writer.Write(" << MakeTypePtrVarName(def) << ");")
+        }
+        else
+        {
+            if (reusable)
+            {
+                LINE("if(m_stream->ReusableShouldWrite(" << MakeTypePtrVarName(def) << "))")
+                LINE("{")
+                m_intendation++;
+
+                PrintWritePtrArrayMethod_Loading(def, info);
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                PrintWritePtrArrayMethod_Loading(def, info);
+            }
+        }
+
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintWritePtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+    {
+        LINE("void " << WriterClassName(m_env.m_asset) << "::WritePtrArray_" << MakeSafeTypeName(def) << "(const bool atStreamStart, const size_t count)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << MakeTypePtrVarName(def) << " != nullptr);")
+        LINE("")
+
+        LINE("if(atStreamStart)")
+        m_intendation++;
+        LINE(MakeTypePtrVarName(def)<<" = m_stream->Write<" << def->GetFullName() << "*>(" << MakeTypePtrVarName(def) << ", count);")
+        m_intendation--;
+
+        LINE("")
+        LINE(def->GetFullName() << "** var = " << MakeTypePtrVarName(def) << ";")
+        LINE("for(size_t index = 0; index < count; index++)")
+        LINE("{")
+        m_intendation++;
+
+        LINE(MakeTypePtrVarName(def) << " = var;")
+        PrintWritePtrArrayMethod_PointerCheck(def, info, reusable);
+        LINE("")
+        LINE("var++;")
+
+        m_intendation--;
+        LINE("}")
+        m_intendation--;
+        LINE("}")
+    }
+
+    void PrintWriteArrayMethod(const DataDefinition* def, StructureInformation* info)
+    {
+        LINE("void " << WriterClassName(m_env.m_asset) << "::WriteArray_" << MakeSafeTypeName(def) << "(const bool atStreamStart, const size_t count)")
+        LINE("{")
+        m_intendation++;
+
+        LINE("assert(" << MakeTypeVarName(def) << " != nullptr);")
+        LINE("")
+        LINE("if(atStreamStart)")
+        m_intendation++;
+        LINE(MakeTypeVarName(def)<<" = m_stream->Write<" << def->GetFullName() << ">(" << MakeTypeVarName(def) << ", count);")
+        m_intendation--;
+
+        LINE("")
+        LINE(def->GetFullName() << "* var = " << MakeTypeVarName(def) << ";")
+        LINE("for(size_t index = 0; index < count; index++)")
+        LINE("{")
+        m_intendation++;
+
+        LINE(MakeTypeVarName(info->m_definition) << " = var;")
+        LINE("Write_" << info->m_definition->m_name << "(false);")
+        LINE("var++;")
+
+        m_intendation--;
+        LINE("}")
+
+        m_intendation--;
+        LINE("}")
+    }
+
 public:
     Internal(std::ostream& stream, RenderingContext* context)
         : BaseTemplate(stream, context)
@@ -128,14 +964,59 @@ public:
         LINE("{")
         m_intendation++;
 
-        PrintHeaderGetNameMethodDeclaration(m_env.m_asset);
+        LINE(VariableDecl(m_env.m_asset->m_definition))
+        LINE(PointerVariableDecl(m_env.m_asset->m_definition))
         LINE("")
 
+        // Variable Declarations: type varType;
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+            {
+                LINE(VariableDecl(type->m_type))
+            }
+        }
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+            {
+                LINE(PointerVariableDecl(type->m_type))
+            }
+        }
+
+        LINE("")
+
+        // Method Declarations
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_pointer_array_reference_exists)
+            {
+                PrintHeaderPtrArrayWriteMethodDeclaration(type->m_type);
+            }
+        }
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_array_reference_exists && type->m_info && !type->m_info->m_is_leaf && type->m_non_runtime_reference_exists)
+            {
+                PrintHeaderArrayWriteMethodDeclaration(type->m_type);
+            }
+        }
+        for (auto* type : m_env.m_used_structures)
+        {
+            if (type->m_non_runtime_reference_exists && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+            {
+                PrintHeaderWriteMethodDeclaration(type->m_info);
+            }
+        }
+        PrintHeaderWriteMethodDeclaration(m_env.m_asset);
+        PrintHeaderTempPtrWriteMethodDeclaration(m_env.m_asset);
+        LINE("")
         m_intendation--;
         LINE("public:")
         m_intendation++;
         PrintHeaderConstructor();
         PrintHeaderMainWriteMethodDeclaration(m_env.m_asset);
+        PrintHeaderGetNameMethodDeclaration(m_env.m_asset);
 
         m_intendation--;
         LINE("};")
@@ -167,6 +1048,35 @@ public:
         LINE("using namespace " << m_env.m_game << ";")
         LINE("")
         PrintConstructorMethod();
+
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_pointer_array_reference_exists)
+            {
+                LINE("")
+                PrintWritePtrArrayMethod(type->m_type, type->m_info, type->m_pointer_array_reference_is_reusable);
+            }
+        }
+        for (auto* type : m_env.m_used_types)
+        {
+            if (type->m_array_reference_exists && type->m_info && !type->m_info->m_is_leaf && type->m_non_runtime_reference_exists)
+            {
+                LINE("")
+                PrintWriteArrayMethod(type->m_type, type->m_info);
+            }
+        }
+        for (auto* type : m_env.m_used_structures)
+        {
+            if (type->m_non_runtime_reference_exists && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+            {
+                LINE("")
+                PrintWriteMethod(type->m_info);
+            }
+        }
+        LINE("")
+        PrintWriteMethod(m_env.m_asset);
+        LINE("")
+        PrintWriteTempPtrMethod(m_env.m_asset);
         LINE("")
         PrintMainWriteMethod();
         LINE("")

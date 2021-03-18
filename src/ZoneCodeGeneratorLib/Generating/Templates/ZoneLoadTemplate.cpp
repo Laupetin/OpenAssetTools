@@ -980,6 +980,10 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE(MakeTypeVarName(info->m_definition)<<" = *"<< MakeTypePtrVarName(info->m_definition)<<";")
             LINE("Load_"<<MakeSafeTypeName(info->m_definition)<<"(true);")
         }
+        else
+        {
+            LINE("#error Temp method cannot have leaf type")
+        }
 
         if (info->m_post_load_action)
         {
