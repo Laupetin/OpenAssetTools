@@ -37,7 +37,11 @@ void* MemoryManager::Alloc(const size_t size)
 
 char* MemoryManager::Dup(const char* str)
 {
-    char* result = strdup(str);
+#ifdef _MSC_VER
+    auto* result = _strdup(str);
+#else
+    auto* result = strdup(str);
+#endif
     m_allocations.push_back(result);
 
     return result;
