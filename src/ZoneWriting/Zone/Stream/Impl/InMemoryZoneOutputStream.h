@@ -46,5 +46,6 @@ public:
     void IncBlockPos(size_t size) override;
     void WriteNullTerminated(const void* src) override;
     void MarkFollowing(void** pPtr) override;
-    bool ReusableShouldWrite(void** pPtr, size_t entrySize, size_t entryCount, std::type_index type) override;
+    bool ReusableShouldWrite(void** pPtr, size_t entrySize, std::type_index type) override;
+    void ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type) override;
 };

@@ -19,19 +19,26 @@ public:
     virtual void IncBlockPos(size_t size) = 0;
     virtual void WriteNullTerminated(const void* dst) = 0;
 
-    virtual bool ReusableShouldWrite(void** pPtr, size_t size, size_t count, std::type_index type) = 0;
+    virtual bool ReusableShouldWrite(void** pPtr, size_t size, std::type_index type) = 0;
+    virtual void ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type) = 0;
     virtual void MarkFollowing(void** pPtr) = 0;
 
     template<typename T>
     bool ReusableShouldWrite(T** pPtr)
     {
-        return ReusableShouldWrite(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(pPtr)), sizeof(T), 1, std::type_index(typeid(T)));
+        return ReusableShouldWrite(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(pPtr)), sizeof(T), std::type_index(typeid(T)));
     }
 
     template<typename T>
-    bool ReusableShouldWrite(T** pPtr, const size_t count)
+    void ReusableAddOffset(T* ptr)
     {
-        return ReusableShouldWrite(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(pPtr)), sizeof(T), count, std::type_index(typeid(T)));
+        ReusableAddOffset(const_cast<void*>(reinterpret_cast<const void*>(ptr)), sizeof(T), 1, std::type_index(typeid(T)));
+    }
+
+    template<typename T>
+    void ReusableAddOffset(T* ptr, const size_t count)
+    {
+        ReusableAddOffset(const_cast<void*>(reinterpret_cast<const void*>(ptr)), sizeof(T), count, std::type_index(typeid(T)));
     }
 
     template<typename T>

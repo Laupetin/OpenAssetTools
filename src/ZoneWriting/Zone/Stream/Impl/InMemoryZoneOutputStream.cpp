@@ -170,7 +170,7 @@ void InMemoryZoneOutputStream::MarkFollowing(void** pPtr)
     *pPtr = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP ? PTR_INSERT : PTR_FOLLOWING;
 }
 
-bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t entrySize, const size_t entryCount, std::type_index type)
+bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t entrySize, const std::type_index type)
 {
     assert(!m_block_stack.empty());
     assert(pPtr != nullptr);
@@ -178,15 +178,9 @@ bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t ent
     if (*pPtr == nullptr)
         return false;
 
-    const auto inTemp = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP;
     const auto foundEntriesForType = m_reusable_entries.find(type);
     if (foundEntriesForType == m_reusable_entries.end())
     {
-        std::vector<ReusableEntry> entries;
-        auto zoneOffset = inTemp ? InsertPointer() : GetCurrentZonePointer();
-        entries.emplace_back(*pPtr, entrySize, entryCount, zoneOffset);
-        m_reusable_entries.emplace(std::make_pair(type, std::move(entries)));
-        
         return true;
     }
 
@@ -199,9 +193,25 @@ bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t ent
             return false;
         }
     }
-
-    auto zoneOffset = inTemp ? InsertPointer() : GetCurrentZonePointer();
-    foundEntriesForType->second.emplace_back(*pPtr, entrySize, entryCount, zoneOffset);
     
     return true;
+}
+
+void InMemoryZoneOutputStream::ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type)
+{
+    assert(!m_block_stack.empty());
+
+    const auto inTemp = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP;
+    auto zoneOffset = inTemp ? InsertPointer() : GetCurrentZonePointer();
+    const auto foundEntriesForType = m_reusable_entries.find(type);
+    if (foundEntriesForType == m_reusable_entries.end())
+    {
+        std::vector<ReusableEntry> entries;
+        entries.emplace_back(ptr, size, count, zoneOffset);
+        m_reusable_entries.emplace(std::make_pair(type, std::move(entries)));
+    }
+    else
+    {
+        foundEntriesForType->second.emplace_back(ptr, size, count, zoneOffset);
+    }
 }

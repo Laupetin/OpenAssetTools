@@ -98,6 +98,15 @@ std::string BaseTemplate::MakeMemberAccess(StructureInformation* info, MemberInf
     return str.str();
 }
 
+std::string BaseTemplate::MakeMemberAccess(const std::string& variableName, StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+{
+    std::ostringstream str;
+    str << variableName << "->" << member->m_member->m_name;
+    MakeArrayIndicesInternal(modifier, str);
+
+    return str.str();
+}
+
 std::string BaseTemplate::MakeTypeDecl(const TypeDeclaration* decl)
 {
     std::ostringstream str;
