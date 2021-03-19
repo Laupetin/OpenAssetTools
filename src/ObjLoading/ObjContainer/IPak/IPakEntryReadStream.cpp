@@ -337,7 +337,7 @@ std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize cou
             assert(static_cast<size_t>(count - countRead) >= static_cast<size_t>(sizeToRead));
             memcpy(&destBuffer[countRead], &m_current_command_buffer[m_current_command_offset], static_cast<size_t>(sizeToRead));
             countRead += sizeToRead;
-            m_current_command_offset += sizeToRead;
+            m_current_command_offset += static_cast<size_t>(sizeToRead);
             m_file_offset += sizeToRead;
         }
     }
@@ -397,7 +397,7 @@ std::streambuf::pos_type IPakEntryReadStream::seekpos(const pos_type pos, std::i
 
         if (pos <= m_file_head)
         {
-            m_current_command_offset = m_current_command_length - (m_file_head - pos);
+            m_current_command_offset = m_current_command_length - static_cast<size_t>(m_file_head - pos);
             m_file_offset = pos;
         }
         else
