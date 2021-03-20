@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "ObjLoading.h"
+#include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
@@ -57,6 +58,60 @@ void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
         zone->m_pools->InitPoolDynamic(assetType);
 }
 
+void ZoneCreator::HandleMetadata(Zone* zone, ZoneCreationContext& context) const
+{
+    std::vector<KeyValuePair> kvpList;
+
+    for (const auto& [metaKey, metaValue] : context.m_definition->m_metadata)
+    {
+        if (metaKey.rfind("level.", 0) == 0)
+        {
+            const std::string strValue = metaKey.substr(std::char_traits<char>::length("level."));
+            if(strValue.empty())
+                continue;
+
+            int keyHash;
+            if(strValue[0] == '@')
+            {
+                char* endPtr;
+                keyHash = strtol(&strValue[1], &endPtr, 16);
+
+                if(endPtr != &strValue[strValue.size()])
+                {
+                    std::cout << "Could not parse metadata key \"" << metaKey << "\" as hash" << std::endl;
+                    continue;
+                }
+            }
+            else
+            {
+                keyHash = CommonT6::Com_HashKey(strValue.c_str(), 64);
+            }
+
+
+            KeyValuePair kvp
+            {
+                keyHash,
+                CommonT6::Com_HashKey(zone->m_name.c_str(), 64),
+                zone->GetMemory()->Dup(metaValue.c_str())
+            };
+            kvpList.push_back(kvp);
+        }
+    }
+
+    if(!kvpList.empty())
+    {
+        auto* kvps = zone->GetMemory()->Create<KeyValuePairs>();
+        kvps->name = zone->GetMemory()->Dup(zone->m_name.c_str());
+        kvps->numVariables = kvpList.size();
+        kvps->keyValuePairs = static_cast<KeyValuePair*>(zone->GetMemory()->Alloc(sizeof(KeyValuePair) * kvpList.size()));
+
+        for(auto i = 0u; i < kvpList.size(); i++)
+            kvps->keyValuePairs[i] = kvpList[i];
+
+        zone->m_pools->AddAsset(ASSET_TYPE_KEYVALUEPAIRS, zone->m_name, kvps, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
+    }
+}
+
 bool ZoneCreator::SupportsGame(const std::string& gameName) const
 {
     return gameName == g_GameT6.GetShortName();
@@ -69,7 +124,7 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
 
     for (const auto& assetEntry : context.m_definition->m_assets)
     {
-        if(!assetEntry.m_is_reference)
+        if (!assetEntry.m_is_reference)
             continue;
 
         context.m_ignored_assets.emplace_back(assetEntry.m_asset_type, assetEntry.m_asset_name);
@@ -78,6 +133,8 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
     const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(zone.get(), context.m_asset_search_path, CreateGdtList(context));
     if (!CreateIgnoredAssetMap(context, assetLoadingContext->m_ignored_asset_map))
         return nullptr;
+
+    HandleMetadata(zone.get(), context);
 
     for (const auto& assetEntry : context.m_definition->m_assets)
     {

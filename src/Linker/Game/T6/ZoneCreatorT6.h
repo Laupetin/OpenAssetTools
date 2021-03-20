@@ -15,6 +15,7 @@ namespace T6
         static std::vector<Gdt*> CreateGdtList(ZoneCreationContext& context);
         bool CreateIgnoredAssetMap(ZoneCreationContext& context, std::unordered_map<std::string, asset_type_t>& ignoredAssetMap) const;
         void CreateZoneAssetPools(Zone* zone) const;
+        void HandleMetadata(Zone* zone, ZoneCreationContext& context) const;
 
     public:
         ZoneCreator();
