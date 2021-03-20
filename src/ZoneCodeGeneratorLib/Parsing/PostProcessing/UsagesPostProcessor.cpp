@@ -48,6 +48,9 @@ bool UsagesPostProcessor::ProcessAsset(StructureInformation* info)
             if (computations.IsNotInDefaultNormalBlock())
                 member->m_type->m_reference_from_non_default_normal_block_exists = true;
 
+            if (member->m_is_reusable)
+                member->m_type->m_reusable_reference_exists = true;
+
             member->m_type->m_usages.push_back(currentStructure);
             processingQueue.push(member->m_type);
         }

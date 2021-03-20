@@ -381,6 +381,9 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     static bool WriteMember_ShouldMakeInsertReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
     {
+        if (member->m_type == nullptr || !member->m_type->m_reusable_reference_exists)
+            return false;
+
         if (writeType != MemberWriteType::ARRAY_POINTER
             && writeType != MemberWriteType::SINGLE_POINTER
             && writeType != MemberWriteType::POINTER_ARRAY)
@@ -399,8 +402,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     void WriteMember_InsertReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
     {
-        if (!WriteMember_ShouldMakeInsertReuse(info, member, modifier, writeType)
-            || !member->m_is_reusable)
+        if (!WriteMember_ShouldMakeInsertReuse(info, member, modifier, writeType))
         {
             WriteMember_TypeCheck(info, member, modifier, writeType);
             return;
@@ -487,13 +489,12 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             return false;
         }
 
-        return true;
+        return member->m_is_reusable;
     }
 
     void WriteMember_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
     {
-        if (!WriteMember_ShouldMakeReuse(info, member, modifier, writeType)
-            || !member->m_is_reusable)
+        if (!WriteMember_ShouldMakeReuse(info, member, modifier, writeType))
         {
             WriteMember_Align(info, member, modifier, writeType);
             return;
