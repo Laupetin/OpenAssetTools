@@ -7,7 +7,7 @@ class SequenceZoneDefinitionInclude final : public ZoneDefinitionParser::sequenc
     static constexpr auto CAPTURE_INCLUDE_NAME = 1;
 
 protected:
-    void ProcessMatch(ZoneDefinition* state, SequenceResult<SimpleParserValue>& result) const override;
+    void ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const override;
 
 public:
     SequenceZoneDefinitionInclude();

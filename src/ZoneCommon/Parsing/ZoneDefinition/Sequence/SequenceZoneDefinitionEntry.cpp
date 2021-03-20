@@ -1,44 +1,38 @@
 #include "SequenceZoneDefinitionEntry.h"
 
-#include "Parsing/ZoneDefinition/Matcher/ZoneDefinitionCommonMatchers.h"
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Parsing/ZoneDefinition/Matcher/ZoneDefinitionMatcherFactory.h"
 
 SequenceZoneDefinitionEntry::SequenceZoneDefinitionEntry()
 {
-    const SimpleMatcherFactory create(this);
-
-    AddLabeledMatchers(ZoneDefinitionCommonMatchers::AssetName(this), ZoneDefinitionCommonMatchers::LABEL_ASSET_NAME);
+    const ZoneDefinitionMatcherFactory create(this);
+    
     AddMatchers({
-        create.Identifier().Capture(CAPTURE_TYPE_NAME),
+        create.Field().Capture(CAPTURE_TYPE_NAME),
         create.Char(','),
         create.Optional(create.Char(',').Tag(TAG_REFERENCE)),
         create.Or({
-            create.Type(SimpleParserValueType::STRING),
-            create.Label(ZoneDefinitionCommonMatchers::LABEL_ASSET_NAME)
-        }).Capture(CAPTURE_ASSET_NAME),
-        create.Or({
-            create.Type(SimpleParserValueType::NEW_LINE),
-            create.Type(SimpleParserValueType::END_OF_FILE)
-        })
+            create.String(),
+            create.Field()
+        }).Capture(CAPTURE_ASSET_NAME)
     });
 }
 
-void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinition* state, SequenceResult<SimpleParserValue>& result) const
+void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const
 {
     const auto& assetNameCapture = result.NextCapture(CAPTURE_ASSET_NAME);
 
     std::string assetName;
-    if (assetNameCapture.m_type == SimpleParserValueType::STRING)
+    if (assetNameCapture.m_type == ZoneDefinitionParserValueType::STRING)
     {
         assetName = assetNameCapture.StringValue();
     }
     else
     {
-        assetName = assetNameCapture.IdentifierValue();
+        assetName = assetNameCapture.FieldValue();
     }
 
     state->m_assets.emplace_back(
-        result.NextCapture(CAPTURE_TYPE_NAME).IdentifierValue(),
+        result.NextCapture(CAPTURE_TYPE_NAME).FieldValue(),
         assetName,
         result.NextTag() == TAG_REFERENCE);
 }

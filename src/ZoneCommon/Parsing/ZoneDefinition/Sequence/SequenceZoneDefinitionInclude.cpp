@@ -1,23 +1,19 @@
 #include "SequenceZoneDefinitionInclude.h"
 
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Parsing/ZoneDefinition/Matcher/ZoneDefinitionMatcherFactory.h"
 
 SequenceZoneDefinitionInclude::SequenceZoneDefinitionInclude()
 {
-    const SimpleMatcherFactory create(this);
+    const ZoneDefinitionMatcherFactory create(this);
 
     AddMatchers({
         create.Keyword("include"),
         create.Char(','),
-        create.Identifier().Capture(CAPTURE_INCLUDE_NAME),
-        create.Or({
-            create.Type(SimpleParserValueType::NEW_LINE),
-            create.Type(SimpleParserValueType::END_OF_FILE)
-        })
+        create.Field().Capture(CAPTURE_INCLUDE_NAME)
     });
 }
 
-void SequenceZoneDefinitionInclude::ProcessMatch(ZoneDefinition* state, SequenceResult<SimpleParserValue>& result) const
+void SequenceZoneDefinitionInclude::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const
 {
-    state->m_includes.emplace_back(result.NextCapture(CAPTURE_INCLUDE_NAME).IdentifierValue());
+    state->m_includes.emplace_back(result.NextCapture(CAPTURE_INCLUDE_NAME).FieldValue());
 }

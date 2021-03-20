@@ -1,6 +1,5 @@
 #include "SimpleMatcherFactory.h"
 
-
 #include "SimpleMatcherAnyCharacterBesides.h"
 #include "SimpleMatcherCharacter.h"
 #include "SimpleMatcherKeyword.h"

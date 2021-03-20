@@ -1,25 +1,22 @@
 #include "ZoneDefinitionParser.h"
 
-
-#include "Sequence/SequenceZoneDefinitionConsumeEmptyLines.h"
 #include "Sequence/SequenceZoneDefinitionEntry.h"
 #include "Sequence/SequenceZoneDefinitionIgnore.h"
 #include "Sequence/SequenceZoneDefinitionInclude.h"
 #include "Sequence/SequenceZoneDefinitionMetaData.h"
 
-ZoneDefinitionParser::ZoneDefinitionParser(SimpleLexer* lexer)
+ZoneDefinitionParser::ZoneDefinitionParser(ZoneDefinitionLexer* lexer)
     : AbstractParser(lexer, std::make_unique<ZoneDefinition>())
 {
 }
 
-const std::vector<AbstractParser<SimpleParserValue, ZoneDefinition>::sequence_t*>& ZoneDefinitionParser::GetTestsForState()
+const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>::sequence_t*>& ZoneDefinitionParser::GetTestsForState()
 {
     static std::vector<sequence_t*> tests({
         new SequenceZoneDefinitionMetaData(),
         new SequenceZoneDefinitionInclude(),
         new SequenceZoneDefinitionIgnore(),
-        new SequenceZoneDefinitionEntry(),
-        new SequenceZoneDefinitionConsumeEmptyLines()
+        new SequenceZoneDefinitionEntry()
     });
 
     return tests;
