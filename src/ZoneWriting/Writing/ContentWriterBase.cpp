@@ -26,6 +26,7 @@ void ContentWriterBase::WriteXString(const bool atStreamStart)
     if (m_stream->ReusableShouldWrite(varXString))
     {
         m_stream->Align(alignof(const char));
+        m_stream->ReusableAddOffset(*varXString);
         m_stream->WriteNullTerminated(*varXString);
 
         m_stream->MarkFollowing(*varXString);

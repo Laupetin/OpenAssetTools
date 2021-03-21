@@ -397,6 +397,16 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             return false;
         }
 
+        if (member->m_is_string)
+        {
+            return false;
+        }
+
+        if (member->m_type && StructureComputations(member->m_type).IsAsset())
+        {
+            return false;
+        }
+
         return true;
     }
 
