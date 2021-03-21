@@ -8,9 +8,9 @@
 
 class AssetWriter : public ContentWriterBase
 {
+protected:
     XAssetInfoGeneric* m_asset;
 
-protected:
     scr_string_t* varScriptString;
 
     AssetWriter(XAssetInfoGeneric* asset, Zone* zone, IZoneOutputStream* stream);

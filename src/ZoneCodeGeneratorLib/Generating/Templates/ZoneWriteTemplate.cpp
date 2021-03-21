@@ -865,9 +865,13 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE("assert(pAsset != nullptr);")
+        LINE("assert(m_asset != nullptr);")
+        LINE("assert(m_asset->m_ptr != nullptr);")
         LINE("")
-        LINE(MakeTypePtrVarName(m_env.m_asset->m_definition) << " = pAsset;")
+        LINE("auto* zoneAsset = static_cast<"<<m_env.m_asset->m_definition->GetFullName()<<"*>(m_asset->m_ptr);")
+        LINE(MakeTypePtrVarName(m_env.m_asset->m_definition) << " = &zoneAsset;")
         LINE("WritePtr_" << MakeSafeTypeName(m_env.m_asset->m_definition) << "(false);")
+        LINE("*pAsset = zoneAsset;")
 
         m_intendation--;
         LINE("}")
