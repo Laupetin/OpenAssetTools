@@ -362,17 +362,17 @@ class Linker::Impl
     static bool GetGameNameFromZoneDefinition(std::string& gameName, const std::string& zoneName, const ZoneDefinition& zoneDefinition)
     {
         auto firstGameEntry = true;
-        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata.equal_range(METADATA_GAME);
+        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_GAME);
         for (auto i = rangeBegin; i != rangeEnd; ++i)
         {
             if (firstGameEntry)
             {
-                gameName = i->second;
+                gameName = i->second->m_value;
                 firstGameEntry = false;
             }
             else
             {
-                if (gameName != i->second)
+                if (gameName != i->second->m_value)
                 {
                     std::cout << "Conflicting game names in zone \"" << zoneName << "\": " << gameName << " != " << i->second << std::endl;
                     return false;
@@ -391,10 +391,10 @@ class Linker::Impl
 
     static bool LoadGdtFilesFromZoneDefinition(std::vector<std::unique_ptr<Gdt>>& gdtList, const std::string& zoneName, const ZoneDefinition& zoneDefinition, ISearchPath* gdtSearchPath)
     {
-        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata.equal_range(METADATA_GDT);
+        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_GDT);
         for (auto i = rangeBegin; i != rangeEnd; ++i)
         {
-            const auto gdtFile = gdtSearchPath->Open(i->second + ".gdt");
+            const auto gdtFile = gdtSearchPath->Open(i->second->m_value + ".gdt");
             if (!gdtFile.IsOpen())
             {
                 std::cout << "Failed to open file for gdt \"" << i->second << "\"" << std::endl;

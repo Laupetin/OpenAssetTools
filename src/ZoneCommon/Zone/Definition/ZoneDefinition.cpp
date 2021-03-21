@@ -5,26 +5,43 @@ ZoneDefinitionEntry::ZoneDefinitionEntry()
 {
 }
 
-ZoneDefinitionEntry::ZoneDefinitionEntry(std::string type, std::string name, bool isReference)
+ZoneDefinitionEntry::ZoneDefinitionEntry(std::string type, std::string name, const bool isReference)
     : m_asset_type(std::move(type)),
       m_asset_name(std::move(name)),
       m_is_reference(isReference)
 {
 }
 
+ZoneMetaDataEntry::ZoneMetaDataEntry()
+= default;
+
+ZoneMetaDataEntry::ZoneMetaDataEntry(std::string key, std::string value)
+    : m_key(std::move(key)),
+      m_value(std::move(value))
+{
+}
+
+void ZoneDefinition::AddMetaData(std::string key, std::string value)
+{
+    auto metaData = std::make_unique<ZoneMetaDataEntry>(std::move(key), std::move(value));
+    auto* metaDataPtr = metaData.get();
+    m_metadata.emplace_back(std::move(metaData));
+    m_metadata_lookup.emplace(std::make_pair(metaDataPtr->m_key, metaDataPtr));
+}
+
 void ZoneDefinition::Include(ZoneDefinition& definitionToInclude)
 {
-    for(const auto& [key, value] : definitionToInclude.m_metadata)
+    for (const auto& metaData : definitionToInclude.m_metadata)
     {
-        m_metadata.emplace(std::make_pair(key, value));
+        AddMetaData(metaData->m_key, metaData->m_value);
     }
 
-    for(const auto& ignore : definitionToInclude.m_ignores)
+    for (const auto& ignore : definitionToInclude.m_ignores)
     {
         m_ignores.emplace_back(ignore);
     }
 
-    for(const auto& asset : definitionToInclude.m_assets)
+    for (const auto& asset : definitionToInclude.m_assets)
     {
         m_assets.emplace_back(asset);
     }

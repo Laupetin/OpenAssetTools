@@ -62,23 +62,23 @@ void ZoneCreator::HandleMetadata(Zone* zone, ZoneCreationContext& context) const
 {
     std::vector<KeyValuePair> kvpList;
 
-    for (const auto& [metaKey, metaValue] : context.m_definition->m_metadata)
+    for (const auto& metaData : context.m_definition->m_metadata)
     {
-        if (metaKey.rfind("level.", 0) == 0)
+        if (metaData->m_key.rfind("level.", 0) == 0)
         {
-            const std::string strValue = metaKey.substr(std::char_traits<char>::length("level."));
-            if(strValue.empty())
+            const std::string strValue = metaData->m_key.substr(std::char_traits<char>::length("level."));
+            if (strValue.empty())
                 continue;
 
             int keyHash;
-            if(strValue[0] == '@')
+            if (strValue[0] == '@')
             {
                 char* endPtr;
                 keyHash = strtol(&strValue[1], &endPtr, 16);
 
-                if(endPtr != &strValue[strValue.size()])
+                if (endPtr != &strValue[strValue.size()])
                 {
-                    std::cout << "Could not parse metadata key \"" << metaKey << "\" as hash" << std::endl;
+                    std::cout << "Could not parse metadata key \"" << metaData->m_key << "\" as hash" << std::endl;
                     continue;
                 }
             }
@@ -87,25 +87,24 @@ void ZoneCreator::HandleMetadata(Zone* zone, ZoneCreationContext& context) const
                 keyHash = CommonT6::Com_HashKey(strValue.c_str(), 64);
             }
 
-
             KeyValuePair kvp
             {
                 keyHash,
                 CommonT6::Com_HashKey(zone->m_name.c_str(), 64),
-                zone->GetMemory()->Dup(metaValue.c_str())
+                zone->GetMemory()->Dup(metaData->m_value.c_str())
             };
             kvpList.push_back(kvp);
         }
     }
 
-    if(!kvpList.empty())
+    if (!kvpList.empty())
     {
         auto* kvps = zone->GetMemory()->Create<KeyValuePairs>();
         kvps->name = zone->GetMemory()->Dup(zone->m_name.c_str());
         kvps->numVariables = kvpList.size();
         kvps->keyValuePairs = static_cast<KeyValuePair*>(zone->GetMemory()->Alloc(sizeof(KeyValuePair) * kvpList.size()));
 
-        for(auto i = 0u; i < kvpList.size(); i++)
+        for (auto i = 0u; i < kvpList.size(); i++)
             kvps->keyValuePairs[i] = kvpList[i];
 
         zone->m_pools->AddAsset(ASSET_TYPE_KEYVALUEPAIRS, zone->m_name, kvps, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
