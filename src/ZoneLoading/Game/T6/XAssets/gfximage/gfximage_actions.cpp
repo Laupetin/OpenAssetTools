@@ -17,15 +17,16 @@ void Actions_GfxImage::OnImageLoaded(GfxImage* image) const
 
 void Actions_GfxImage::LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const
 {
-    if(loadDef->resourceSize > 0)
-    {
-        const size_t loadDefSize = offsetof(T6::GfxImageLoadDef, data) + loadDef->resourceSize;
+    // if(loadDef->resourceSize > 0)
+    // {
+    //     
+    // }
+    // else
+    // {
+    //     image->texture.loadDef = nullptr;
+    // }
+    const size_t loadDefSize = offsetof(T6::GfxImageLoadDef, data) + loadDef->resourceSize;
 
-        image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone->GetMemory()->Alloc(loadDefSize));
-        memcpy(image->texture.loadDef, loadDef, loadDefSize);
-    }
-    else
-    {
-        image->texture.loadDef = nullptr;
-    }
+    image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone->GetMemory()->Alloc(loadDefSize));
+    memcpy(image->texture.loadDef, loadDef, loadDefSize);
 }
