@@ -14,8 +14,9 @@ class ZoneScriptStrings
     std::unordered_map<std::string, scr_string_t> m_scr_string_lookup;
 
 public:
-    scr_string_t AddScriptString(const std::string& value);
-    scr_string_t GetScriptString(const std::string& value) const;
+    void AddScriptString(const std::string& value);
+    scr_string_t AddOrGetScriptString(const std::string& value);
+    _NODISCARD scr_string_t GetScriptString(const std::string& value) const;
     _NODISCARD size_t Count() const;
     _NODISCARD bool Empty() const;
 

@@ -3,9 +3,16 @@
 #include <stdexcept>
 #include <sstream>
 
-scr_string_t ZoneScriptStrings::AddScriptString(const std::string& value)
+void ZoneScriptStrings::AddScriptString(const std::string& value)
 {
-    if(m_scr_strings.empty())
+    const auto newScrStringIndex = static_cast<scr_string_t>(m_scr_strings.size());
+    m_scr_strings.emplace_back(value);
+    m_scr_string_lookup[value] = newScrStringIndex;
+}
+
+scr_string_t ZoneScriptStrings::AddOrGetScriptString(const std::string& value)
+{
+    if (m_scr_strings.empty())
     {
         m_scr_strings.emplace_back("");
         m_scr_string_lookup[""] = static_cast<scr_string_t>(0);
