@@ -34,6 +34,7 @@ bool AssetLoaderRawFile::LoadFromRaw(const std::string& assetName, ISearchPath* 
     file.m_stream->read(fileBuffer, file.m_length);
     if (file.m_stream->gcount() != file.m_length)
         return false;
+    fileBuffer[rawFile->len] = '\0';
 
     rawFile->data.buffer = fileBuffer;
     manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
