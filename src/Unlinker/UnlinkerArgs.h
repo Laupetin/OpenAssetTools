@@ -1,13 +1,19 @@
 #pragma once
+#include <regex>
+#include <set>
+#include <vector>
+
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Zone/Zone.h"
 
-#include <vector>
-#include <set>
-
 class UnlinkerArgs
 {
+public:
+    static constexpr const char* DEFAULT_OUTPUT_FOLDER = "zone_dump/zone_raw/?zone?";
+
+private:
     ArgumentParser m_argument_parser;
+    std::regex m_zone_pattern;
 
     /**
      * \brief Prints a command line usage help text for the Unlinker tool to stdout.
