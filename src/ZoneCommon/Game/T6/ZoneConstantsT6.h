@@ -30,6 +30,9 @@ namespace T6
         static constexpr int OFFSET_BLOCK_BIT_COUNT = 3;
         static constexpr block_t INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
 
+        static constexpr size_t FILE_SUFFIX_ZERO_MIN_SIZE = 0x40;
+        static constexpr size_t FILE_SUFFIX_ZERO_ALIGN = 0x40;
+
         static constexpr const char* MAGIC_AUTH_HEADER = "PHEEBs71";
         inline static const uint8_t SALSA20_KEY_TREYARCH[]
         {

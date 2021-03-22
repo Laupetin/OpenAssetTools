@@ -12,7 +12,10 @@
 #include "Zone/XChunk/XChunkProcessorDeflate.h"
 #include "Zone/XChunk/XChunkProcessorSalsa20Encryption.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
+#include "Writing/Steps/StepAlign.h"
+#include "Writing/Steps/StepRemoveOutputProcessor.h"
 #include "Writing/Steps/StepWriteXBlockSizes.h"
+#include "Writing/Steps/StepWriteZero.h"
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
@@ -71,10 +74,11 @@ public:
         return header;
     }
 
-    ICapturedDataProvider* AddXChunkProcessor(const bool isEncrypted)
+    void AddXChunkProcessor(const bool isEncrypted, ICapturedDataProvider** dataToSignProviderPtr, OutputProcessorXChunks** xChunkProcessorPtr) const
     {
-        ICapturedDataProvider* result = nullptr;
         auto xChunkProcessor = std::make_unique<OutputProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::XCHUNK_MAX_WRITE_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        if (xChunkProcessorPtr)
+            *xChunkProcessorPtr = xChunkProcessor.get();
 
         // Decompress the chunks using zlib
         xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorDeflate>());
@@ -84,14 +88,16 @@ public:
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
             auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Encryption>(ZoneConstants::STREAM_COUNT, m_zone->m_name, ZoneConstants::SALSA20_KEY_TREYARCH,
                 sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
-            result = chunkProcessorSalsa20.get();
+
+            // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
+            if (dataToSignProviderPtr)
+                *dataToSignProviderPtr = chunkProcessorSalsa20.get();
+
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
 
         m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::move(xChunkProcessor)));
 
-        // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
-        return result;
     }
 
     std::unique_ptr<ZoneWriter> CreateWriter()
@@ -110,7 +116,9 @@ public:
         m_writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams(isSecure, false, isEncrypted)));
 
         // Setup loading XChunks from the zone from this point on.
-        auto* signatureDataProvider = AddXChunkProcessor(isEncrypted);
+        ICapturedDataProvider* dataToSignProvider;
+        OutputProcessorXChunks* xChunksProcessor;
+        AddXChunkProcessor(isEncrypted, &dataToSignProvider, &xChunksProcessor);
 
         // Start of the XFile struct
         //m_writer->AddWritingStep(std::make_unique<StepSkipBytes>(8)); // Skip size and externalSize fields since they are not interesting for us
@@ -119,6 +127,14 @@ public:
 
         // Start of the zone content
         m_writer->AddWritingStep(std::make_unique<StepWriteZoneContentToFile>(contentInMemoryPtr));
+
+        // Stop writing in XChunks
+        m_writer->AddWritingStep(std::make_unique<StepRemoveOutputProcessor>(xChunksProcessor));
+
+        // Pad ending with zeros like the original linker does it. The game's reader needs it for some reason.
+        // From my observations this is most likely the logic behind the amount of bytes: At least 0x40 bytes and aligned to the next 0x40
+        m_writer->AddWritingStep(std::make_unique<StepWriteZero>(ZoneConstants::FILE_SUFFIX_ZERO_MIN_SIZE));
+        m_writer->AddWritingStep(std::make_unique<StepAlign>(ZoneConstants::FILE_SUFFIX_ZERO_ALIGN, '\0'));
 
         // Return the fully setup zoneloader
         return std::move(m_writer);

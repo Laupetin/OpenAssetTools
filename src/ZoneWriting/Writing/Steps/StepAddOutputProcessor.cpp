@@ -6,11 +6,12 @@ StepAddOutputProcessor::StepAddOutputProcessor(std::unique_ptr<OutputStreamProce
 {
 }
 
-void StepAddOutputProcessor::PerformStep(ZoneWriter* zoneLoader, IWritingStream* stream)
+void StepAddOutputProcessor::PerformStep(ZoneWriter* zoneWriter, IWritingStream* stream)
 {
-    assert(zoneLoader != nullptr);
+    assert(zoneWriter != nullptr);
     assert(m_stream_processor != nullptr);
 
-    zoneLoader->AddStreamProcessor(std::move(m_stream_processor));
+    stream->Flush();
+    zoneWriter->AddStreamProcessor(std::move(m_stream_processor));
     m_stream_processor = nullptr;
 }

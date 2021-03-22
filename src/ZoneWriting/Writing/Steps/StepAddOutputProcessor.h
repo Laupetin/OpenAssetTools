@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "Writing/OutputStreamProcessor.h"
 #include "Writing/IWritingStep.h"
 
 class StepAddOutputProcessor final : public IWritingStep
@@ -11,5 +12,5 @@ class StepAddOutputProcessor final : public IWritingStep
 public:
     explicit StepAddOutputProcessor(std::unique_ptr<OutputStreamProcessor> streamProcessor);
 
-    void PerformStep(ZoneWriter* zoneLoader, IWritingStream* stream) override;
+    void PerformStep(ZoneWriter* zoneWriter, IWritingStream* stream) override;
 };
