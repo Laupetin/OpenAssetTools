@@ -4,7 +4,10 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderQdb.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
+#include "AssetLoaders/AssetLoaderScriptParseTree.h"
+#include "AssetLoaders/AssetLoaderSlug.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
@@ -57,14 +60,14 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_DDL, ddlRoot_t))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GLASSES, Glasses))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_EMBLEMSET, EmblemSet))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree))
+        REGISTER_ASSET_LOADER(AssetLoaderScriptParseTree)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VEHICLEDEF, VehicleDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MEMORYBLOCK, MemoryBlock))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TRACER, TracerDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_QDB, Qdb))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SLUG, Slug))
+        REGISTER_ASSET_LOADER(AssetLoaderQdb)
+        REGISTER_ASSET_LOADER(AssetLoaderSlug)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ZBARRIER, ZBarrierDef))
