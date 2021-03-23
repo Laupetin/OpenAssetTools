@@ -44,7 +44,8 @@ void StringFileDumper::WriteLocalizeEntry(const std::string& reference, const st
     m_stream << "\n";
     m_stream << "REFERENCE           " << reference <<"\n";
 
-    const auto escapedValue = std::regex_replace(value, std::regex("\n"), "\\n");
+    auto escapedValue = std::regex_replace(value, std::regex("\n"), "\\n");
+    escapedValue = std::regex_replace(escapedValue, std::regex("\r"), "\\r");
 
     const auto valueSpacing = std::string(15 - m_language_caps.length(), ' ');
     m_stream << "LANG_" << m_language_caps << valueSpacing << "\"" << escapedValue << "\"\n";

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "Dumping/Localize/LocalizeCommon.h"
+#include "Localize/LocalizeCommon.h"
 #include "Dumping/Localize/StringFileDumper.h"
 
 using namespace IW4;

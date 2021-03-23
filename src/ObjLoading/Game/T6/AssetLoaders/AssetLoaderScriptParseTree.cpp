@@ -20,7 +20,7 @@ bool AssetLoaderScriptParseTree::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderScriptParseTree::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager) const
+bool AssetLoaderScriptParseTree::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())

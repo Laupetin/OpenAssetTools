@@ -22,7 +22,7 @@ bool AssetLoaderStringTable::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager) const
+bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())

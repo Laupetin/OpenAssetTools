@@ -4,6 +4,7 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderQdb.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
@@ -46,7 +47,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONTICON, FontIcon))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENULIST, MenuList))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry))
+        REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON, WeaponVariantDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ATTACHMENT, WeaponAttachment))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique))

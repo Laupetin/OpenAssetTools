@@ -3,6 +3,7 @@
 #include "SimpleMatcherAnyCharacterBesides.h"
 #include "SimpleMatcherCharacter.h"
 #include "SimpleMatcherKeyword.h"
+#include "SimpleMatcherKeywordPrefix.h"
 #include "SimpleMatcherValueType.h"
 
 SimpleMatcherFactory::SimpleMatcherFactory(const IMatcherForLabelSupplier<SimpleParserValue>* labelSupplier)
@@ -20,9 +21,19 @@ MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Keyword(std::stri
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherKeyword>(std::move(value)));
 }
 
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::KeywordPrefix(std::string value) const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherKeywordPrefix>(std::move(value)));
+}
+
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Identifier() const
 {
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherValueType>(SimpleParserValueType::IDENTIFIER));
+}
+
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::String() const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherValueType>(SimpleParserValueType::STRING));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Integer() const

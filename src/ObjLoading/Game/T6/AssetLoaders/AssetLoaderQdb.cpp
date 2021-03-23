@@ -20,7 +20,7 @@ bool AssetLoaderQdb::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderQdb::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager) const
+bool AssetLoaderQdb::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())
