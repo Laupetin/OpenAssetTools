@@ -8,6 +8,7 @@
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
 #include "AssetLoaders/AssetLoaderSlug.h"
+#include "AssetLoaders/AssetLoaderStringTable.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
@@ -54,7 +55,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMPACT_FX, FxImpactTable))
         REGISTER_ASSET_LOADER(AssetLoaderRawFile)
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_STRINGTABLE, StringTable))
+        REGISTER_ASSET_LOADER(AssetLoaderStringTable)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LEADERBOARD, LeaderboardDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XGLOBALS, XGlobals))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_DDL, ddlRoot_t))

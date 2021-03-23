@@ -19,6 +19,22 @@ int CommonT6::Com_HashKey(const char* str, const int maxLen)
     return hash ^ ((hash ^ (hash >> 10)) >> 10);
 }
 
+int CommonT6::Com_HashString(const char* str)
+{
+    if (!str)
+        return 0;
+
+    auto result = 0x1505;
+    auto offset = 0;
+    while(str[offset])
+    {
+        const auto c = tolower(str[offset++]);
+        result = c + 33 * result;
+    }
+
+    return result;
+}
+
 int CommonT6::Com_HashString(const char* str, const int len)
 {
     if (!str)
