@@ -25,9 +25,20 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
             col.clear();
             col.str(std::string());
         }
+        else if(c == '\r')
+        {
+            c = m_stream.get();
+            if (c == '\n')
+                break;
+            col << '\r';
+        }
+        else if(c == '\n')
+        {
+            break;
+        }
         else
         {
-            col << c;
+            col << static_cast<char>(c);
         }
 
         c = m_stream.get();
@@ -35,10 +46,7 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
 
     if(!isEof)
     {
-        const auto lastEntry = col.str();
-
-        if(!lastEntry.empty())
-            out.emplace_back(col.str());
+        out.emplace_back(col.str());
     }
 
     return !isEof;
