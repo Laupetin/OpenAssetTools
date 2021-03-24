@@ -1,51 +1,8 @@
 #pragma once
 #include <functional>
-#include <unordered_map>
-#include <string>
-#include <vector>
 
-#include "Obj/Gdt/GdtEntry.h"
+#include "InfoString/InfoString.h"
 #include "Zone/ZoneTypes.h"
-
-class InfoString
-{
-    static const std::string EMPTY_VALUE;
-    std::unordered_map<std::string, std::string> m_values;
-    std::vector<std::string> m_keys_by_insertion;
-
-public:
-    bool HasKey(const std::string& key) const;
-    const std::string& GetValueForKey(const std::string& key) const;
-    const std::string& GetValueForKey(const std::string& key, bool* foundValue) const;
-    void SetValueForKey(const std::string& key, std::string value);
-    void RemoveKey(const std::string& key);
-
-    std::string ToString() const;
-    std::string ToString(const std::string& prefix) const;
-    void ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) const;
-
-    void FromString();
-    void FromString(const std::string& prefix);
-};
-
-class InfoStringToStructConverterBase
-{
-protected:
-    const InfoString& m_info_string;
-    void* m_structure;
-
-    virtual void FillStructure() = 0;
-
-public:
-    InfoStringToStructConverterBase(const InfoString& infoString, void* structure);
-    virtual ~InfoStringToStructConverterBase();
-    InfoStringToStructConverterBase(const InfoStringToStructConverterBase& other) = delete;
-    InfoStringToStructConverterBase(InfoStringToStructConverterBase&& other) noexcept = delete;
-    InfoStringToStructConverterBase& operator=(const InfoStringToStructConverterBase& other) = delete;
-    InfoStringToStructConverterBase& operator=(InfoStringToStructConverterBase&& other) noexcept = delete;
-
-    void Convert();
-};
 
 class InfoStringFromStructConverterBase
 {

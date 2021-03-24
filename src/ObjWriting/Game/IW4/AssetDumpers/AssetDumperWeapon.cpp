@@ -6,7 +6,7 @@
 #include <type_traits>
 
 #include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/InfoStringIW4.h"
+#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
 
 using namespace IW4;
 

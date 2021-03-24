@@ -3,7 +3,7 @@
 #include <cassert>
 #include <type_traits>
 
-#include "Game/T6/InfoStringT6.h"
+#include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 
 using namespace T6;
 

@@ -2,7 +2,7 @@
 
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
-#include "Utils/InfoString.h"
+#include "InfoString/InfoString.h"
 
 namespace IW4
 {
