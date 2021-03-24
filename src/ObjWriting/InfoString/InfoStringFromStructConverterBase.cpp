@@ -1,6 +1,7 @@
 #include "InfoStringFromStructConverterBase.h"
 
 #include <cassert>
+#include <cstring>
 
 InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure)
     : m_structure(structure),
