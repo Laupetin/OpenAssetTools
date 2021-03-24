@@ -4,6 +4,7 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderFontIcon.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderQdb.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
@@ -44,7 +45,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GFXWORLD, GfxWorld))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LIGHT_DEF, GfxLightDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONT, Font_s))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONTICON, FontIcon))
+        REGISTER_ASSET_LOADER(AssetLoaderFontIcon)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENULIST, MenuList))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
         REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
