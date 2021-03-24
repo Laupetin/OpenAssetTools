@@ -10,7 +10,6 @@ namespace T6
     {
         static constexpr const char* FILE_TYPE_STR = "PHYSIC";
         static constexpr const char* GDF_NAME = "physpreset.gdf";
-        static cspField_t physpreset_fields[];
 
         static void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo);
         static InfoString CreateInfoString(XAssetInfo<PhysPreset>* asset);

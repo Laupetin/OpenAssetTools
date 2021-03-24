@@ -10,7 +10,6 @@ namespace T6
     {
         static constexpr const char* FILE_TYPE_STR = "PHYSCONSTRAINTS";
         static constexpr const char* GDF_NAME = "physconstraints.gdf";
-        static cspField_t phys_constraints_fields[];
 
         static InfoString CreateInfoString(XAssetInfo<PhysConstraints>* asset);
 

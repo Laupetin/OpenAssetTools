@@ -10,7 +10,6 @@ namespace T6
     {
         static constexpr const char* FILE_TYPE_STR = "VEHICLEFILE";
         static constexpr const char* GDF_NAME = "vehicle.gdf";
-        static cspField_t vehicle_fields[];
 
         static InfoString CreateInfoString(XAssetInfo<VehicleDef>* asset);
 

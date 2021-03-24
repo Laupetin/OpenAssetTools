@@ -10,7 +10,6 @@ namespace T6
     {
         static constexpr const char* FILE_TYPE_STR = "TRACER";
         static constexpr const char* GDF_NAME = "tracer.gdf";
-        static cspField_t tracer_fields[];
 
         static InfoString CreateInfoString(XAssetInfo<TracerDef>* asset);
 

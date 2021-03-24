@@ -10,7 +10,6 @@ namespace T6
     {
         static constexpr const char* FILE_TYPE_STR = "ATTACHMENTUNIQUEFILE";
         static constexpr const char* GDF_NAME = "attachmentunique.gdf";
-        static cspField_t attachment_unique_fields[];
 
         static void CopyToFullDef(const WeaponAttachmentUnique* attachment, WeaponAttachmentUniqueFull* fullDef);
         static InfoString CreateInfoString(XAssetInfo<WeaponAttachmentUnique>* asset);

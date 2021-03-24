@@ -10,7 +10,6 @@ namespace T6
     {
         static constexpr const char* FILE_TYPE_STR = "ATTACHMENTFILE";
         static constexpr const char* GDF_NAME = "attachment.gdf";
-        static cspField_t attachment_fields[];
         
         static InfoString CreateInfoString(XAssetInfo<WeaponAttachment>* asset);
 

@@ -6,31 +6,9 @@
 #include <type_traits>
 
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
+#include "Game/T6/InfoString/PhysPresetFields.h"
 
 using namespace T6;
-
-cspField_t AssetDumperPhysPreset::physpreset_fields[]
-{
-    { "mass", offsetof(PhysPresetInfo, mass), CSPFT_FLOAT },
-    { "bounce", offsetof(PhysPresetInfo, bounce), CSPFT_FLOAT },
-    { "friction", offsetof(PhysPresetInfo, friction), CSPFT_FLOAT },
-    { "isFrictionInfinity", offsetof(PhysPresetInfo, isFrictionInfinity), CSPFT_QBOOLEAN },
-    { "bulletForceScale", offsetof(PhysPresetInfo, bulletForceScale), CSPFT_FLOAT },
-    { "explosiveForceScale", offsetof(PhysPresetInfo, explosiveForceScale), CSPFT_FLOAT },
-    { "piecesSpreadFraction", offsetof(PhysPresetInfo, piecesSpreadFraction), CSPFT_FLOAT },
-    { "piecesUpwardVelocity", offsetof(PhysPresetInfo, piecesUpwardVelocity), CSPFT_FLOAT },
-    { "canFloat", offsetof(PhysPresetInfo, canFloat), CSPFT_INT },
-    { "gravityScale", offsetof(PhysPresetInfo, gravityScale), CSPFT_FLOAT },
-    { "massOffsetX", offsetof(PhysPresetInfo, centerOfMassOffset.x), CSPFT_FLOAT },
-    { "massOffsetY", offsetof(PhysPresetInfo, centerOfMassOffset.y), CSPFT_FLOAT },
-    { "massOffsetZ", offsetof(PhysPresetInfo, centerOfMassOffset.z), CSPFT_FLOAT },
-    { "buoyancyMinX", offsetof(PhysPresetInfo, buoyancyBoxMin.x), CSPFT_FLOAT },
-    { "buoyancyMinY", offsetof(PhysPresetInfo, buoyancyBoxMin.y), CSPFT_FLOAT },
-    { "buoyancyMinZ", offsetof(PhysPresetInfo, buoyancyBoxMin.z), CSPFT_FLOAT },
-    { "buoyancyMaxX", offsetof(PhysPresetInfo, buoyancyBoxMax.x), CSPFT_FLOAT },
-    { "buoyancyMaxY", offsetof(PhysPresetInfo, buoyancyBoxMax.y), CSPFT_FLOAT },
-    { "buoyancyMaxZ", offsetof(PhysPresetInfo, buoyancyBoxMax.z), CSPFT_FLOAT },
-};
 
 namespace T6
 {
@@ -82,7 +60,7 @@ InfoString AssetDumperPhysPreset::CreateInfoString(XAssetInfo<PhysPreset>* asset
     auto* physPresetInfo = new PhysPresetInfo;
     CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
 
-    InfoStringFromPhysPresetConverter converter(physPresetInfo, physpreset_fields, std::extent<decltype(physpreset_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
+    InfoStringFromPhysPresetConverter converter(physPresetInfo, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
         {
             assert(scrStr < asset->m_zone->m_script_strings.Count());
             if (scrStr >= asset->m_zone->m_script_strings.Count())
