@@ -74,6 +74,9 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
     }
 
     auto* existingAsset = loader->LoadFromGlobalAssetPools(assetName);
+    if (!existingAsset && !assetName.empty() && assetName[0] != ',')
+        existingAsset = loader->LoadFromGlobalAssetPools(',' + assetName);
+
     if (existingAsset)
     {
         std::vector<XAssetInfoGeneric*> dependencies;
