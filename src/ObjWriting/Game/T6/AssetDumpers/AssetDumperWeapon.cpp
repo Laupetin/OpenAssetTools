@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <cstring>
 
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/WeaponFields.h"
@@ -390,8 +391,8 @@ std::string AssetDumperWeapon::GetFileNameForAsset(Zone* zone, XAssetInfo<Weapon
 GdtEntry AssetDumperWeapon::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
 {
     const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
-    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON);
+    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, gdtEntry);
 
     return gdtEntry;
 }
@@ -399,6 +400,6 @@ GdtEntry AssetDumperWeapon::DumpGdtEntry(AssetDumpingContext& context, XAssetInf
 void AssetDumperWeapon::DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset, std::ostream& stream)
 {
     const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
+    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON);
     stream.write(stringValue.c_str(), stringValue.size());
 }

@@ -8,9 +8,6 @@ namespace T6
 {
     class AssetDumperPhysConstraints final : public AbstractAssetDumper<PhysConstraints>
     {
-        static constexpr const char* FILE_TYPE_STR = "PHYSCONSTRAINTS";
-        static constexpr const char* GDF_NAME = "physconstraints.gdf";
-
         static InfoString CreateInfoString(XAssetInfo<PhysConstraints>* asset);
 
     protected:

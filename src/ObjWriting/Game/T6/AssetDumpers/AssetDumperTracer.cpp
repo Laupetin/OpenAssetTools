@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/TracerFields.h"
@@ -74,8 +75,8 @@ std::string AssetDumperTracer::GetFileNameForAsset(Zone* zone, XAssetInfo<Tracer
 GdtEntry AssetDumperTracer::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset)
 {
     const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
-    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_TRACER);
+    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_TRACER, gdtEntry);
 
     return gdtEntry;
 }
@@ -83,6 +84,6 @@ GdtEntry AssetDumperTracer::DumpGdtEntry(AssetDumpingContext& context, XAssetInf
 void AssetDumperTracer::DumpRaw(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream)
 {
     const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString("TRACER");
+    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_TRACER);
     stream.write(stringValue.c_str(), stringValue.size());
 }

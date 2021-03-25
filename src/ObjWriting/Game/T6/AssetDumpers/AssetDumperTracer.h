@@ -8,9 +8,6 @@ namespace T6
 {
     class AssetDumperTracer final : public AbstractAssetDumper<TracerDef>
     {
-        static constexpr const char* FILE_TYPE_STR = "TRACER";
-        static constexpr const char* GDF_NAME = "tracer.gdf";
-
         static InfoString CreateInfoString(XAssetInfo<TracerDef>* asset);
 
     protected:

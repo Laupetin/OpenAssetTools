@@ -8,9 +8,6 @@ namespace T6
 {
     class AssetDumperVehicle final : public AbstractAssetDumper<VehicleDef>
     {
-        static constexpr const char* FILE_TYPE_STR = "VEHICLEFILE";
-        static constexpr const char* GDF_NAME = "vehicle.gdf";
-
         static InfoString CreateInfoString(XAssetInfo<VehicleDef>* asset);
 
     protected:

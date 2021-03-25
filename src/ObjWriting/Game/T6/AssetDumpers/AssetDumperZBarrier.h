@@ -8,9 +8,6 @@ namespace T6
 {
     class AssetDumperZBarrier final : public AbstractAssetDumper<ZBarrierDef>
     {
-        static constexpr const char* FILE_TYPE_STR = "ZBARRIER";
-        static constexpr const char* GDF_NAME = "zbarrier.gdf";
-
         static InfoString CreateInfoString(XAssetInfo<ZBarrierDef>* asset);
 
     protected:

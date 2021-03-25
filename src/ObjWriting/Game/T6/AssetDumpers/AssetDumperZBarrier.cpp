@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/ZBarrierFields.h"
 
@@ -63,8 +64,8 @@ std::string AssetDumperZBarrier::GetFileNameForAsset(Zone* zone, XAssetInfo<ZBar
 GdtEntry AssetDumperZBarrier::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset)
 {
     const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
-    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_ZBARRIER);
+    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, gdtEntry);
 
     return gdtEntry;
 }
@@ -72,6 +73,6 @@ GdtEntry AssetDumperZBarrier::DumpGdtEntry(AssetDumpingContext& context, XAssetI
 void AssetDumperZBarrier::DumpRaw(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset, std::ostream& stream)
 {
     const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
+    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_ZBARRIER);
     stream.write(stringValue.c_str(), stringValue.size());
 }

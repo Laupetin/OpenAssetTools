@@ -3,6 +3,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/VehicleFields.h"
@@ -120,8 +121,8 @@ std::string AssetDumperVehicle::GetFileNameForAsset(Zone* zone, XAssetInfo<Vehic
 GdtEntry AssetDumperVehicle::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset)
 {
     const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
-    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_VEHICLE);
+    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, gdtEntry);
 
     return gdtEntry;
 }
@@ -129,6 +130,6 @@ GdtEntry AssetDumperVehicle::DumpGdtEntry(AssetDumpingContext& context, XAssetIn
 void AssetDumperVehicle::DumpRaw(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset, std::ostream& stream)
 {
     const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
+    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_VEHICLE);
     stream.write(stringValue.c_str(), stringValue.size());
 }

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <type_traits>
 
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/PhysPresetFields.h"
 
@@ -95,8 +96,8 @@ std::string AssetDumperPhysPreset::GetFileNameForAsset(Zone* zone, XAssetInfo<Ph
 GdtEntry AssetDumperPhysPreset::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
 {
     const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
-    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
+    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
 
     return gdtEntry;
 }
@@ -104,6 +105,6 @@ GdtEntry AssetDumperPhysPreset::DumpGdtEntry(AssetDumpingContext& context, XAsse
 void AssetDumperPhysPreset::DumpRaw(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset, std::ostream& stream)
 {
     const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
+    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET);
     stream.write(stringValue.c_str(), stringValue.size());
 }

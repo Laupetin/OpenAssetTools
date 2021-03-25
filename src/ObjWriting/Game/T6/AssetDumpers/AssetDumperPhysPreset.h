@@ -8,9 +8,6 @@ namespace T6
 {
     class AssetDumperPhysPreset final : public AbstractAssetDumper<PhysPreset>
     {
-        static constexpr const char* FILE_TYPE_STR = "PHYSIC";
-        static constexpr const char* GDF_NAME = "physpreset.gdf";
-
         static void CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo);
         static InfoString CreateInfoString(XAssetInfo<PhysPreset>* asset);
 

@@ -1,10 +1,9 @@
 #include "AssetDumperWeaponAttachment.h"
 
 #include <cassert>
-#include <sstream>
 #include <type_traits>
-#include <cstring>
 
+#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/WeaponAttachmentFields.h"
@@ -82,8 +81,8 @@ std::string AssetDumperWeaponAttachment::GetFileNameForAsset(Zone* zone, XAssetI
 GdtEntry AssetDumperWeaponAttachment::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
 {
     const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, GDF_NAME);
-    infoString.ToGdtProperties(FILE_TYPE_STR, gdtEntry);
+    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT);
+    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, gdtEntry);
 
     return gdtEntry;
 }
@@ -91,6 +90,6 @@ GdtEntry AssetDumperWeaponAttachment::DumpGdtEntry(AssetDumpingContext& context,
 void AssetDumperWeaponAttachment::DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset, std::ostream& stream)
 {
     const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(FILE_TYPE_STR);
+    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT);
     stream.write(stringValue.c_str(), stringValue.size());
 }

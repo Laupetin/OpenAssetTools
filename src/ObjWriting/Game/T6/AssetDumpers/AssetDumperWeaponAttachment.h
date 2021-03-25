@@ -8,9 +8,6 @@ namespace T6
 {
     class AssetDumperWeaponAttachment final : public AbstractAssetDumper<WeaponAttachment>
     {
-        static constexpr const char* FILE_TYPE_STR = "ATTACHMENTFILE";
-        static constexpr const char* GDF_NAME = "attachment.gdf";
-        
         static InfoString CreateInfoString(XAssetInfo<WeaponAttachment>* asset);
 
     protected:
