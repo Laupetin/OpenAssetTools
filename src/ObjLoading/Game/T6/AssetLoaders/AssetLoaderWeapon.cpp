@@ -328,6 +328,7 @@ void AssetLoaderWeapon::LinkWeaponFullDefSubStructs(WeaponFullDef* weapon)
 {
     weapon->weapVariantDef.weapDef = &weapon->weapDef;
     weapon->weapVariantDef.attachments = weapon->attachments;
+    weapon->weapVariantDef.attachmentUniques = weapon->attachmentUniques;
     weapon->weapDef.gunXModel = weapon->gunXModel;
     weapon->weapVariantDef.szXAnims = weapon->szXAnims;
     weapon->weapVariantDef.hideTags = weapon->hideTags;
