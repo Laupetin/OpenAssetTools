@@ -300,7 +300,7 @@ namespace T6
                 return ConvertHideTags(field, value);
 
             case WFT_EXPLOSION_TAG:
-                return ConvertScriptString(std::string(field.szName), field.iOffset);
+                return ConvertScriptString(value, field.iOffset);
 
             case WFT_NOTETRACKSOUNDMAP:
                 return ConvertNotetrackSoundMap(field, value);
