@@ -344,11 +344,33 @@ void AssetLoaderWeapon::LinkWeaponFullDefSubStructs(WeaponFullDef* weapon)
     weapon->weapDef.locationDamageMultipliers = weapon->locationDamageMultipliers;
 }
 
+void AssetLoaderWeapon::CalculateWeaponFields(WeaponFullDef* weapon)
+{
+    // iAttachments
+    weapon->weapVariantDef.iAttachments = 0;
+    for(auto i = 1u; i < sizeof(WeaponVariantDef::iAttachments) * 8; i++) // Bit for default attachment always 0
+    {
+        if (weapon->attachments[i])
+            weapon->weapVariantDef.iAttachments |= 1 << i;
+    }
+
+    if (weapon->weapVariantDef.iAdsTransInTime <= 0)
+        weapon->weapVariantDef.fOOPosAnimLength[0] = 0.0033333334f;
+    else
+        weapon->weapVariantDef.fOOPosAnimLength[0] = 1.0f / static_cast<float>(weapon->weapVariantDef.iAdsTransInTime);
+
+    if (weapon->weapVariantDef.iAdsTransOutTime <= 0)
+        weapon->weapVariantDef.fOOPosAnimLength[1] = 0.0020000001f;
+    else
+        weapon->weapVariantDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon->weapVariantDef.iAdsTransOutTime);
+}
+
 void* AssetLoaderWeapon::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* weaponFullDef = memory->Create<WeaponFullDef>();
     memset(weaponFullDef, 0, sizeof(WeaponFullDef));
     LinkWeaponFullDefSubStructs(weaponFullDef);
+    CalculateWeaponFields(weaponFullDef);
     weaponFullDef->weapVariantDef.szInternalName = memory->Dup(assetName.c_str());
     return weaponFullDef;
 }
@@ -385,7 +407,10 @@ bool AssetLoaderWeapon::LoadFromRaw(const std::string& assetName, ISearchPath* s
 
     weaponFullDef->weapVariantDef.szInternalName = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_WEAPON, assetName, weaponFullDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    // TODO: Load accuracy graph and flametable
+    CalculateWeaponFields(weaponFullDef);
+
+    manager->AddAsset(ASSET_TYPE_WEAPON, assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }

@@ -9,6 +9,7 @@ namespace T6
     class AssetLoaderWeapon final : public BasicAssetLoader<ASSET_TYPE_WEAPON, WeaponVariantDef>
     {
         static void LinkWeaponFullDefSubStructs(WeaponFullDef* weapon);
+        static void CalculateWeaponFields(WeaponFullDef* weapon);
 
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
