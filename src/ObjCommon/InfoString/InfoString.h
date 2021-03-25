@@ -1,4 +1,5 @@
 #pragma once
+#include <istream>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -23,6 +24,6 @@ public:
     _NODISCARD std::string ToString(const std::string& prefix) const;
     void ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) const;
 
-    void FromString();
-    void FromString(const std::string& prefix);
+    bool FromStream(std::istream& stream);
+    bool FromStream(const std::string& prefix, std::istream& stream);
 };

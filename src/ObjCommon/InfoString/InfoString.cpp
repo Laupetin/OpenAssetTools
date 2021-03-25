@@ -96,10 +96,90 @@ void InfoString::ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) 
     gdtEntry.m_properties["configstringFileType"] = prefix;
 }
 
-void InfoString::FromString()
+class InfoStringInputStream
 {
+    std::istream& m_stream;
+
+public:
+    explicit InfoStringInputStream(std::istream& stream)
+        : m_stream(stream)
+    {
+    }
+
+    bool NextField(std::string& value) const
+    {
+        std::ostringstream str;
+
+        auto c = m_stream.get();
+        if (c == EOF)
+            return false;
+
+        while (c != EOF && c != '\\')
+        {
+            str << static_cast<char>(c);
+            c = m_stream.get();
+        }
+
+        value = str.str();
+        return true;
+    }
+};
+
+bool InfoString::FromStream(std::istream& stream)
+{
+    const InfoStringInputStream infoStream(stream);
+
+    std::string key;
+    while (infoStream.NextField(key))
+    {
+        std::string value;
+        if (!infoStream.NextField(value))
+            return false;
+
+        const auto existingEntry = m_values.find(key);
+        if (existingEntry == m_values.end())
+        {
+            m_keys_by_insertion.push_back(key);
+            m_values.emplace(std::make_pair(key, value));
+        }
+        else
+        {
+            existingEntry->second = value;
+        }
+    }
+
+    return true;
 }
 
-void InfoString::FromString(const std::string& prefix)
+bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
 {
+    const InfoStringInputStream infoStream(stream);
+
+    std::string readPrefix;
+    if (!infoStream.NextField(readPrefix))
+        return false;
+
+    if (prefix != readPrefix)
+        return false;
+
+    std::string key;
+    while(infoStream.NextField(key))
+    {
+        std::string value;
+        if (!infoStream.NextField(value))
+            return false;
+
+        const auto existingEntry = m_values.find(key);
+        if(existingEntry == m_values.end())
+        {
+            m_keys_by_insertion.push_back(key);
+            m_values.emplace(std::make_pair(key, value));
+        }
+        else
+        {
+            existingEntry->second = value;
+        }
+    }
+
+    return true;
 }

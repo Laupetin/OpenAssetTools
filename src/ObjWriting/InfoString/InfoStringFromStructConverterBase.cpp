@@ -19,9 +19,6 @@ InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void*
 {
 }
 
-InfoStringFromStructConverterBase::~InfoStringFromStructConverterBase()
-= default;
-
 InfoString InfoStringFromStructConverterBase::Convert()
 {
     FillInfoString();

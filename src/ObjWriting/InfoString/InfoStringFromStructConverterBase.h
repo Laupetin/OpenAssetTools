@@ -28,7 +28,7 @@ protected:
 public:
     explicit InfoStringFromStructConverterBase(const void* structure);
     InfoStringFromStructConverterBase(const void* structure, std::function<std::string(scr_string_t)> scriptStringValueCallback);
-    virtual ~InfoStringFromStructConverterBase();
+    virtual ~InfoStringFromStructConverterBase() = default;
     InfoStringFromStructConverterBase(const InfoStringFromStructConverterBase& other) = delete;
     InfoStringFromStructConverterBase(InfoStringFromStructConverterBase&& other) noexcept = delete;
     InfoStringFromStructConverterBase& operator=(const InfoStringFromStructConverterBase& other) = delete;
