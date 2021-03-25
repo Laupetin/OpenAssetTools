@@ -11,6 +11,7 @@
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
 #include "AssetLoaders/AssetLoaderSlug.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
+#include "AssetLoaders/AssetLoaderVehicle.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
@@ -64,7 +65,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GLASSES, Glasses))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_EMBLEMSET, EmblemSet))
         REGISTER_ASSET_LOADER(AssetLoaderScriptParseTree)
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VEHICLEDEF, VehicleDef))
+        REGISTER_ASSET_LOADER(AssetLoaderVehicle)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MEMORYBLOCK, MemoryBlock))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TRACER, TracerDef))
