@@ -331,4 +331,40 @@ namespace T6
         "Laser",
         "Smoke"
     };
+
+    inline const char* bounceSoundSuffixes[]
+    {
+        "_default",
+        "_bark",
+        "_brick",
+        "_carpet",
+        "_cloth",
+        "_concrete",
+        "_dirt",
+        "_flesh",
+        "_foliage",
+        "_glass",
+        "_grass",
+        "_gravel",
+        "_ice",
+        "_metal",
+        "_mud",
+        "_paper",
+        "_plaster",
+        "_rock",
+        "_sand",
+        "_snow",
+        "_water",
+        "_wood",
+        "_asphalt",
+        "_ceramic",
+        "_plastic",
+        "_rubber",
+        "_cushion",
+        "_fruit",
+        "_paintedmetal",
+        "_player",
+        "_tallgrass",
+        "_riotshield"
+    };
 }
