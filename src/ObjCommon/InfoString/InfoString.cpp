@@ -99,20 +99,31 @@ void InfoString::ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) 
 class InfoStringInputStream
 {
     std::istream& m_stream;
+    int m_last_separator;
 
 public:
     explicit InfoStringInputStream(std::istream& stream)
-        : m_stream(stream)
+        : m_stream(stream),
+          m_last_separator(EOF)
     {
     }
 
-    bool NextField(std::string& value) const
+    bool NextField(std::string& value)
     {
         std::ostringstream str;
 
         auto c = m_stream.get();
         if (c == EOF)
+        {
+            if(m_last_separator != EOF)
+            {
+                m_last_separator = EOF;
+                value = std::string();
+                return true;
+            }
+
             return false;
+        }
 
         while (c != EOF && c != '\\')
         {
@@ -120,6 +131,7 @@ public:
             c = m_stream.get();
         }
 
+        m_last_separator = c;
         value = str.str();
         return true;
     }
@@ -127,7 +139,7 @@ public:
 
 bool InfoString::FromStream(std::istream& stream)
 {
-    const InfoStringInputStream infoStream(stream);
+    InfoStringInputStream infoStream(stream);
 
     std::string key;
     while (infoStream.NextField(key))
@@ -153,7 +165,7 @@ bool InfoString::FromStream(std::istream& stream)
 
 bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
 {
-    const InfoStringInputStream infoStream(stream);
+    InfoStringInputStream infoStream(stream);
 
     std::string readPrefix;
     if (!infoStream.NextField(readPrefix))
@@ -163,14 +175,14 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
         return false;
 
     std::string key;
-    while(infoStream.NextField(key))
+    while (infoStream.NextField(key))
     {
         std::string value;
         if (!infoStream.NextField(value))
             return false;
 
         const auto existingEntry = m_values.find(key);
-        if(existingEntry == m_values.end())
+        if (existingEntry == m_values.end())
         {
             m_keys_by_insertion.push_back(key);
             m_values.emplace(std::make_pair(key, value));
