@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <iostream>
-#include <sstream>
+#include <cassert>
 
 #include "Utils/ClassUtils.h"
 #include "Game/T6/ObjConstantsT6.h"
@@ -11,7 +11,6 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/WeaponFields.h"
 #include "InfoString/InfoString.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace T6;
 
