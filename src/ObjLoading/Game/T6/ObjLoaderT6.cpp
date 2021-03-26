@@ -13,6 +13,8 @@
 #include "AssetLoaders/AssetLoaderStringTable.h"
 #include "AssetLoaders/AssetLoaderVehicle.h"
 #include "AssetLoaders/AssetLoaderWeapon.h"
+#include "AssetLoaders/AssetLoaderWeaponAttachment.h"
+#include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
@@ -52,8 +54,8 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
         REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
         REGISTER_ASSET_LOADER(AssetLoaderWeapon)
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ATTACHMENT, WeaponAttachment))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique))
+        REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachment)
+        REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachmentUnique)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON_CAMO, WeaponCamo))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))

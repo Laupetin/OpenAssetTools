@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cassert>
 
+
+#include "AssetLoaderWeaponAttachmentUnique.h"
 #include "Utils/ClassUtils.h"
 #include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/T6.h"
@@ -399,6 +401,111 @@ void AssetLoaderWeapon::CalculateWeaponFields(WeaponFullDef* weapon)
         weapon->weapVariantDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon->weapVariantDef.iAdsTransOutTime);
 }
 
+bool AssetLoaderWeapon::IsStringOverride(const char* str1, const char* str2)
+{
+    if ((str1 == nullptr) != (str2 == nullptr))
+        return true;
+
+    if (str1 == nullptr)
+        return false;
+
+    return strcmp(str1, str2) != 0;
+}
+
+bool AssetLoaderWeapon::IsFxOverride(FxEffectDef* effect1, FxEffectDef* effect2)
+{
+    if ((effect1 == nullptr) != (effect2 == nullptr))
+        return true;
+
+    if (effect1 == nullptr)
+        return false;
+
+    return strcmp(effect1->name, effect2->name) != 0;
+}
+
+void AssetLoaderWeapon::HandleSoundOverride(WeaponAttachmentUnique* attachmentUnique, const char* snd1, const char* snd2, const eAttachmentOverrideSounds sndOverrideIndex)
+{
+    if (IsStringOverride(snd1, snd2))
+        attachmentUnique->soundOverrides |= 1 << static_cast<unsigned>(sndOverrideIndex);
+}
+
+void AssetLoaderWeapon::HandleFxOverride(WeaponAttachmentUnique* attachmentUnique, FxEffectDef* effect1, FxEffectDef* effect2, const eAttachmentOverrideEffects fxOverrideIndex)
+{
+    if (IsFxOverride(effect1, effect2))
+        attachmentUnique->effectOverrides |= 1 << static_cast<unsigned>(fxOverrideIndex);
+}
+
+void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigned attachmentIndex, WeaponAttachmentUnique* attachmentUnique)
+{
+    for (auto& val : attachmentUnique->animationOverrides)
+        val = 0;
+
+    for (auto animIndex = 0u; animIndex < std::extent<decltype(WeaponFullDef::szXAnims)>::value; animIndex++)
+    {
+        if (IsStringOverride(weapon->szXAnims[animIndex], attachmentUnique->szXAnims[animIndex]))
+            attachmentUnique->animationOverrides[animIndex / 32] |= 1 << (animIndex % 32);
+    }
+
+    attachmentUnique->soundOverrides = 0;
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireSound, attachmentUnique->fireSound, ATTACHMENT_OVERRIDE_SOUND_FIRE);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireSoundPlayer, attachmentUnique->fireSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_PLAYER);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopSound, attachmentUnique->fireLoopSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopSoundPlayer, attachmentUnique->fireLoopSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_PLAYER);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopEndSound, attachmentUnique->fireLoopEndSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_END);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopEndSoundPlayer, attachmentUnique->fireLoopEndSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_END_PLAYER);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStartSound, attachmentUnique->fireStartSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_START);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStopSound, attachmentUnique->fireStopSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_STOP);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStartSoundPlayer, attachmentUnique->fireStartSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_START_PLAYER);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStopSoundPlayer, attachmentUnique->fireStopSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_STOP_PLAYER);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLastSound, attachmentUnique->fireLastSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_LAST);
+    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLastSoundPlayer, attachmentUnique->fireLastSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LAST_PLAYER);
+
+    attachmentUnique->effectOverrides = 0;
+    HandleFxOverride(attachmentUnique, weapon->weapDef.viewFlashEffect, attachmentUnique->viewFlashEffect, ATTACHMENT_OVERRIDE_EFFECT_VIEW_FLASH);
+    HandleFxOverride(attachmentUnique, weapon->weapDef.worldFlashEffect, attachmentUnique->worldFlashEffect, ATTACHMENT_OVERRIDE_EFFECT_WORLD_FLASH);
+
+    attachmentUnique->childLink = 0;
+    if (attachmentUnique->combinedAttachmentTypeMask == 0)
+    {
+        WeaponAttachmentUnique* lastSibling = nullptr;
+        for (auto attachmentUniqueIndex = std::extent<decltype(WeaponFullDef::attachments)>::value; attachmentUniqueIndex < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value;
+             attachmentUniqueIndex++)
+        {
+            if (weapon->attachmentUniques[attachmentUniqueIndex] != nullptr
+                && weapon->attachmentUniques[attachmentUniqueIndex]->combinedAttachmentTypeMask & (1 << static_cast<unsigned>(attachmentUnique->attachmentType))
+                && weapon->attachmentUniques[attachmentUniqueIndex]->attachmentType != attachmentUnique->attachmentType)
+            {
+                std::vector<eAttachment> attachments;
+                if(AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(weapon->attachmentUniques[attachmentUniqueIndex]->szInternalName, attachments)
+                    && attachments.front() == attachmentUnique->attachmentType)
+                {
+                    if (lastSibling == nullptr)
+                    {
+                        attachmentUnique->childLink = attachmentUniqueIndex;
+                        lastSibling = weapon->attachmentUniques[attachmentUniqueIndex];
+                    }
+                    else
+                    {
+                        lastSibling->siblingLink = attachmentUniqueIndex;
+                        lastSibling = weapon->attachmentUniques[attachmentUniqueIndex];
+                    }
+                }
+            }
+        }
+    }
+}
+
+void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon)
+{
+    for (auto attachmentUniqueIndex = 0u; attachmentUniqueIndex < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value; attachmentUniqueIndex++)
+    {
+        if (weapon->attachmentUniques[attachmentUniqueIndex] == nullptr)
+            continue;
+
+        CalculateAttachmentFields(weapon, attachmentUniqueIndex, weapon->attachmentUniques[attachmentUniqueIndex]);
+    }
+}
+
 void* AssetLoaderWeapon::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* weaponFullDef = memory->Create<WeaponFullDef>();
@@ -443,6 +550,7 @@ bool AssetLoaderWeapon::LoadFromRaw(const std::string& assetName, ISearchPath* s
 
     // TODO: Load accuracy graph and flametable
     CalculateWeaponFields(weaponFullDef);
+    CalculateAttachmentFields(weaponFullDef);
 
     manager->AddAsset(ASSET_TYPE_WEAPON, assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
