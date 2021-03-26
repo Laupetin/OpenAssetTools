@@ -21,60 +21,32 @@ namespace T6
     {
         bool ConvertHideTags(const cspField_t& field, const std::string& value)
         {
+            std::vector<std::string> valueArray;
+            if (!ParseAsArray(value, valueArray))
+            {
+                std::cout << "Failed to parse hide tags as array" << std::endl;
+                return false;
+            }
+
+            if (valueArray.size() > std::extent<decltype(WeaponFullDef::hideTags)>::value)
+            {
+                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << "hide tags!" << std::endl;
+                return false;
+            }
+
             auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-            std::ostringstream hideTag;
             auto currentHideTag = 0u;
-            auto hasHideTagText = false;
 
-            for (auto ci = 0u; ci < value.size(); ci++)
-            {
-                auto c = value[ci];
-
-                if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
-                    c = value[++ci];
-
-                if (c == '\n')
-                {
-                    if (hasHideTagText)
-                    {
-                        if (currentHideTag >= std::extent<decltype(WeaponFullDef::hideTags)>::value)
-                        {
-                            std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << "hide tags!" << std::endl;
-                            return false;
-                        }
-
-                        auto scrString = m_zone_script_strings.AddOrGetScriptString(hideTag.str());
-                        hideTags[currentHideTag++] = scrString;
-                        m_used_script_string_list.emplace(scrString);
-
-                        hasHideTagText = false;
-                        hideTag.clear();
-                        hideTag.str(std::string());
-                    }
-                }
-                else
-                {
-                    hideTag << c;
-                    hasHideTagText = true;
-                }
-            }
-
-            if (hasHideTagText)
-            {
-                if (currentHideTag >= std::extent<decltype(WeaponFullDef::hideTags)>::value)
-                {
-                    std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << "hide tags!" << std::endl;
-                    return false;
-                }
-
-                auto scrString = m_zone_script_strings.AddOrGetScriptString(hideTag.str());
-                hideTags[currentHideTag++] = scrString;
-                m_used_script_string_list.emplace(scrString);
-            }
-
-            if (currentHideTag < std::extent<decltype(WeaponFullDef::hideTags)>::value)
+            if (valueArray.size() < std::extent<decltype(WeaponFullDef::hideTags)>::value)
             {
                 m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
+            }
+
+            for (; currentHideTag < valueArray.size(); currentHideTag++)
+            {
+                const auto scrString = m_zone_script_strings.AddOrGetScriptString(valueArray[currentHideTag]);
+                hideTags[currentHideTag] = scrString;
+                m_used_script_string_list.emplace(scrString);
             }
 
             for (; currentHideTag < std::extent<decltype(WeaponFullDef::hideTags)>::value; currentHideTag++)
@@ -106,90 +78,38 @@ namespace T6
 
         _NODISCARD bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
         {
-            auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-            auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value];
-
-            std::ostringstream str;
-            std::string key;
-            auto isKey = true;
-            auto currentEntryNum = 0u;
-
-            for (auto ci = 0u; ci < value.size(); ci++)
+            std::vector<std::pair<std::string, std::string>> pairs;
+            if(!ParseAsPairs(value, pairs))
             {
-                auto c = value[ci];
-
-                if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
-                    c = value[++ci];
-
-                if (c == '\n' && !isKey)
-                {
-                    std::cout << "Expected notetracksoundmap value but got new line" << std::endl;
-                    return false;
-                }
-
-                if(isspace(c))
-                    continue;
-
-                int separator;
-                while(true)
-                {
-                    str << c;
-
-                    ci++;
-                    if(ci >= value.size())
-                    {
-                        separator = EOF;
-                        break;
-                    }
-                    c = value[ci];
-                    if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
-                        c = value[++ci];
-                    if(isspace(c))
-                    {
-                        separator = static_cast<int>(static_cast<unsigned char>(c));
-                        break;
-                    }
-                }
-
-                if(isKey)
-                {
-                    if(separator == '\n' || separator == EOF)
-                    {
-                        std::cout << "Expected notetracksoundmap value but got new line" << std::endl;
-                        return false;
-                    }
-                    key = str.str();
-                    str.clear();
-                    str.str("");
-                }
-                else
-                {
-                    auto parsedValue = str.str();
-                    str.clear();
-                    str.str("");
-
-                    if(currentEntryNum >= std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
-                    {
-                        std::cout << "Too many notetracksoundmap entries: Max is " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << std::endl;
-                        return false;
-                    }
-
-                    keys[currentEntryNum] = m_zone_script_strings.AddOrGetScriptString(key);
-                    m_used_script_string_list.emplace(keys[currentEntryNum]);
-
-                    values[currentEntryNum] = m_zone_script_strings.AddOrGetScriptString(parsedValue);
-                    m_used_script_string_list.emplace(values[currentEntryNum]);
-
-                    currentEntryNum++;
-                }
-                isKey = !isKey;
+                std::cout << "Failed to parse notetracksoundmap as pairs" << std::endl;
+                return false;
             }
 
-            if(currentEntryNum < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
+            if(pairs.size() > std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
+            {
+                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << "notetracksoundmap entries!" << std::endl;
+                return false;
+            }
+
+            auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+            auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value];
+            auto currentEntryNum = 0u;
+
+            if (pairs.size() < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
             {
                 m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
             }
-            for(; currentEntryNum < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value; currentEntryNum++)
+
+            for (; currentEntryNum < pairs.size(); currentEntryNum++)
+            {
+                keys[currentEntryNum] = m_zone_script_strings.AddOrGetScriptString(pairs[currentEntryNum].first);
+                m_used_script_string_list.emplace(keys[currentEntryNum]);
+
+                values[currentEntryNum] = m_zone_script_strings.AddOrGetScriptString(pairs[currentEntryNum].second);
+                m_used_script_string_list.emplace(values[currentEntryNum]);
+            }
+
+            for (; currentEntryNum < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value; currentEntryNum++)
             {
                 const auto emptyScr = m_zone_script_strings.GetScriptString("");
                 keys[currentEntryNum] = emptyScr;

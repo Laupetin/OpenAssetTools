@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_set>
+#include <utility>
 
 #include "Utils/ClassUtils.h"
 #include "InfoString/InfoString.h"
@@ -18,6 +19,9 @@ protected:
     std::unordered_set<XAssetInfoGeneric*> m_dependencies;
     MemoryManager* m_memory;
     void* m_structure;
+
+    static bool ParseAsArray(const std::string& value, std::vector<std::string>& valueArray);
+    bool ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray) const;
     
     bool ConvertString(const std::string& value, size_t offset);
     bool ConvertStringBuffer(const std::string& value, size_t offset, size_t bufferSize);
