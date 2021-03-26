@@ -30,7 +30,7 @@ namespace T6
 
             if (valueArray.size() > std::extent<decltype(WeaponFullDef::hideTags)>::value)
             {
-                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << "hide tags!" << std::endl;
+                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << " hide tags!" << std::endl;
                 return false;
             }
 
@@ -79,15 +79,15 @@ namespace T6
         _NODISCARD bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
         {
             std::vector<std::pair<std::string, std::string>> pairs;
-            if(!ParseAsPairs(value, pairs))
+            if (!ParseAsPairs(value, pairs))
             {
                 std::cout << "Failed to parse notetracksoundmap as pairs" << std::endl;
                 return false;
             }
 
-            if(pairs.size() > std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
+            if (pairs.size() > std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
             {
-                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << "notetracksoundmap entries!" << std::endl;
+                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << " notetracksoundmap entries!" << std::endl;
                 return false;
             }
 
@@ -137,6 +137,115 @@ namespace T6
 
             m_dependencies.emplace(camo);
             *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = camo->m_ptr;
+
+            return true;
+        }
+
+        _NODISCARD bool ConvertAttachments(const cspField_t& field, const std::string& value)
+        {
+            std::vector<std::string> valueArray;
+            if (!ParseAsArray(value, valueArray))
+            {
+                std::cout << "Failed to parse attachments as array" << std::endl;
+                return false;
+            }
+
+            auto** attachments = reinterpret_cast<WeaponAttachment**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+
+            for (const auto& attachmentName : valueArray)
+            {
+                auto* attachmentAssetInfo = m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT, attachmentName);
+                if (attachmentAssetInfo == nullptr)
+                {
+                    std::cout << "Failed to load attachment asset \"" << attachmentName << "\"" << std::endl;
+                    return false;
+                }
+
+                auto* attachmentAsset = static_cast<WeaponAttachment*>(attachmentAssetInfo->m_ptr);
+
+                if (static_cast<unsigned>(attachmentAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
+                {
+                    std::cout << "Invalid attachment type " << attachmentAsset->attachmentType << " for attachment asset \"" << attachmentName << "\"" << std::endl;
+                    return false;
+                }
+
+                if (attachments[attachmentAsset->attachmentType] != nullptr)
+                {
+                    std::cout << "Already loaded attachment with same type " << attachmentAsset->attachmentType
+                        << ": \"" << attachments[attachmentAsset->attachmentType]->szInternalName << "\", \""
+                        << attachmentName << "\"" << std::endl;
+                    return false;
+                }
+
+                attachments[attachmentAsset->attachmentType] = attachmentAsset;
+                m_dependencies.emplace(attachmentAssetInfo);
+            }
+
+            return true;
+        }
+
+        _NODISCARD static bool HasMoreThanOneAttachmentSetInMask(const int mask)
+        {
+            // Check if int has more than 1 bit set
+            return (mask & (mask - 1)) != 0;
+        }
+
+        _NODISCARD bool ConvertAttachmentUniques(const cspField_t& field, const std::string& value)
+        {
+            std::vector<std::string> valueArray;
+            if (!ParseAsArray(value, valueArray))
+            {
+                std::cout << "Failed to parse attachment uniques as array" << std::endl;
+                return false;
+            }
+
+            auto** attachmentUniques = reinterpret_cast<WeaponAttachmentUnique**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+            auto attachmentCombinationIndex = std::extent<decltype(WeaponFullDef::attachments)>::value;
+
+            for (const auto& attachmentUniqueName : valueArray)
+            {
+                auto* attachmentUniqueAssetInfo = m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT_UNIQUE, attachmentUniqueName);
+                if (attachmentUniqueAssetInfo == nullptr)
+                {
+                    std::cout << "Failed to load attachment unique asset \"" << attachmentUniqueName << "\"" << std::endl;
+                    return false;
+                }
+
+                auto* attachmentUniqueAsset = static_cast<WeaponAttachmentUnique*>(attachmentUniqueAssetInfo->m_ptr);
+
+                if (HasMoreThanOneAttachmentSetInMask(attachmentUniqueAsset->combinedAttachmentTypeMask))
+                {
+                    if (attachmentCombinationIndex >= std::extent<decltype(WeaponFullDef::attachmentUniques)>::value)
+                    {
+                        std::cout << "Cannot have more than "
+                            << (std::extent<decltype(WeaponFullDef::attachmentUniques)>::value - std::extent<decltype(WeaponFullDef::attachments)>::value)
+                            << " combined attachment attachment unique entries!" << std::endl;
+                        return false;
+                    }
+
+                    attachmentUniques[attachmentCombinationIndex++] = attachmentUniqueAsset;
+                    m_dependencies.emplace(attachmentUniqueAssetInfo);
+                }
+                else
+                {
+                    if (static_cast<unsigned>(attachmentUniqueAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
+                    {
+                        std::cout << "Invalid attachment type " << attachmentUniqueAsset->attachmentType << " for attachment unique asset \"" << attachmentUniqueName << "\"" << std::endl;
+                        return false;
+                    }
+
+                    if (attachmentUniques[attachmentUniqueAsset->attachmentType] != nullptr)
+                    {
+                        std::cout << "Already loaded attachment unique with same type " << attachmentUniqueAsset->attachmentType
+                            << ": \"" << attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName << "\", \""
+                            << attachmentUniqueName << "\"" << std::endl;
+                        return false;
+                    }
+
+                    attachmentUniques[attachmentUniqueAsset->attachmentType] = attachmentUniqueAsset;
+                    m_dependencies.emplace(attachmentUniqueAssetInfo);
+                }
+            }
 
             return true;
         }
@@ -228,6 +337,12 @@ namespace T6
             case WFT_WEAPON_CAMO:
                 return ConvertWeaponCamo(field, value);
 
+            case WFT_ATTACHMENTS:
+                return ConvertAttachments(field, value);
+
+            case WFT_ATTACHMENT_UNIQUES:
+                return ConvertAttachmentUniques(field, value);
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -268,7 +383,7 @@ void AssetLoaderWeapon::CalculateWeaponFields(WeaponFullDef* weapon)
 {
     // iAttachments
     weapon->weapVariantDef.iAttachments = 0;
-    for(auto i = 1u; i < sizeof(WeaponVariantDef::iAttachments) * 8; i++) // Bit for default attachment always 0
+    for (auto i = 1u; i < sizeof(WeaponVariantDef::iAttachments) * 8; i++) // Bit for default attachment always 0
     {
         if (weapon->attachments[i])
             weapon->weapVariantDef.iAttachments |= 1 << i;

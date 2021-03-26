@@ -214,6 +214,50 @@ namespace T6
                     break;
                 }
 
+            case WFT_ATTACHMENTS:
+                {
+                    const auto* attachments = reinterpret_cast<WeaponAttachment**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                    std::stringstream ss;
+                    auto first = true;
+
+                    for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::attachments)>::value; i++)
+                    {
+                        if (attachments[i])
+                        {
+                            if (!first)
+                                ss << "\n";
+                            else
+                                first = false;
+                            ss << AssetName(attachments[i]->szInternalName);
+                        }
+                    }
+
+                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                    break;
+                }
+
+            case WFT_ATTACHMENT_UNIQUES:
+                {
+                    const auto* attachmentUniques = reinterpret_cast<WeaponAttachmentUnique**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                    std::stringstream ss;
+                    auto first = true;
+
+                    for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value; i++)
+                    {
+                        if (attachmentUniques[i])
+                        {
+                            if (!first)
+                                ss << "\n";
+                            else
+                                first = false;
+                            ss << AssetName(attachmentUniques[i]->szInternalName);
+                        }
+                    }
+
+                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                    break;
+                }
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);

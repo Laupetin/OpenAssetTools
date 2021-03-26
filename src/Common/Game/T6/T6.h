@@ -91,6 +91,8 @@ namespace T6
         WFT_EXPLOSION_TAG,
         WFT_NOTETRACKSOUNDMAP,
         WFT_WEAPON_CAMO,
+        WFT_ATTACHMENTS,
+        WFT_ATTACHMENT_UNIQUES,
 
         WFT_NUM_FIELD_TYPES
     };

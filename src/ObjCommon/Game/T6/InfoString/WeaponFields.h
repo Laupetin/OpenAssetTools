@@ -1031,5 +1031,7 @@ namespace T6
         {"customBool0", offsetof(WeaponFullDef, weapDef.customBool0), CSPFT_BOOL},
         {"customBool1", offsetof(WeaponFullDef, weapDef.customBool1), CSPFT_BOOL},
         {"customBool2", offsetof(WeaponFullDef, weapDef.customBool2), CSPFT_BOOL},
+        {"attachments", offsetof(WeaponFullDef, attachments), WFT_ATTACHMENTS},
+        {"attachmentUniques", offsetof(WeaponFullDef, attachmentUniques), WFT_ATTACHMENT_UNIQUES}
     };
 }
