@@ -15,6 +15,7 @@
 #include "AssetLoaders/AssetLoaderWeapon.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachment.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
+#include "AssetLoaders/AssetLoaderZBarrier.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
@@ -77,7 +78,7 @@ namespace T6
         REGISTER_ASSET_LOADER(AssetLoaderSlug)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FOOTSTEP_TABLE, FootstepTableDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FOOTSTEPFX_TABLE, FootstepFXTableDef))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ZBARRIER, ZBarrierDef))
+        REGISTER_ASSET_LOADER(AssetLoaderZBarrier)
 
 #undef BASIC_LOADER
 #undef REGISTER_ASSET_LOADER
