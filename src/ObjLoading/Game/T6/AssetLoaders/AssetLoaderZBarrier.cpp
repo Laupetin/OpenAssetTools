@@ -43,6 +43,7 @@ void AssetLoaderZBarrier::CalculateZBarrierFields(ZBarrierDef* zbarrier)
             {
                 foundEnd = true;
                 zbarrier->numBoardsInBarrier = i;
+                break;
             }
         }
 
