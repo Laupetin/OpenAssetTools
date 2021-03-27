@@ -11,6 +11,7 @@
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
 #include "AssetLoaders/AssetLoaderSlug.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
+#include "AssetLoaders/AssetLoaderTracer.h"
 #include "AssetLoaders/AssetLoaderVehicle.h"
 #include "AssetLoaders/AssetLoaderWeapon.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachment.h"
@@ -72,7 +73,7 @@ namespace T6
         REGISTER_ASSET_LOADER(AssetLoaderVehicle)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MEMORYBLOCK, MemoryBlock))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TRACER, TracerDef))
+        REGISTER_ASSET_LOADER(AssetLoaderTracer)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SKINNEDVERTS, SkinnedVertsDef))
         REGISTER_ASSET_LOADER(AssetLoaderQdb)
         REGISTER_ASSET_LOADER(AssetLoaderSlug)
