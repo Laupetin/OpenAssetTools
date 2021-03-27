@@ -1,26 +1,27 @@
 #include "ZoneLoader.h"
-#include "Exception/LoadingException.h"
-#include "LoadingFileStream.h"
 
 #include <algorithm>
 
-ZoneLoader::ZoneLoader(Zone* zone)
+#include "Exception/LoadingException.h"
+#include "LoadingFileStream.h"
+
+ZoneLoader::ZoneLoader(std::unique_ptr<Zone> zone)
+    : m_processor_chain_dirty(false),
+      m_zone(std::move(zone))
 {
-    m_zone = zone;
-    m_processor_chain_dirty = false;
 }
 
 ILoadingStream* ZoneLoader::BuildLoadingChain(ILoadingStream* rootStream)
 {
     auto* currentStream = rootStream;
 
-    for(const auto& processor : m_processors)
+    for (const auto& processor : m_processors)
     {
         processor->SetBaseStream(currentStream);
 
         currentStream = processor.get();
     }
-    
+
     m_processor_chain_dirty = false;
     return currentStream;
 }
@@ -50,9 +51,9 @@ void ZoneLoader::AddStreamProcessor(std::unique_ptr<StreamProcessor> streamProce
 
 void ZoneLoader::RemoveStreamProcessor(StreamProcessor* streamProcessor)
 {
-    for(auto i = m_processors.begin(); i < m_processors.end(); ++i)
+    for (auto i = m_processors.begin(); i < m_processors.end(); ++i)
     {
-        if(i->get() == streamProcessor)
+        if (i->get() == streamProcessor)
         {
             m_processors.erase(i);
             m_processor_chain_dirty = true;
@@ -61,18 +62,18 @@ void ZoneLoader::RemoveStreamProcessor(StreamProcessor* streamProcessor)
     }
 }
 
-Zone* ZoneLoader::LoadZone(std::istream& stream)
+std::unique_ptr<Zone> ZoneLoader::LoadZone(std::istream& stream)
 {
     LoadingFileStream fileStream(stream);
     auto* endStream = BuildLoadingChain(&fileStream);
 
     try
     {
-        for(const auto& step : m_steps)
+        for (const auto& step : m_steps)
         {
             step->PerformStep(this, endStream);
 
-            if(m_processor_chain_dirty)
+            if (m_processor_chain_dirty)
             {
                 endStream = BuildLoadingChain(&fileStream);
             }
@@ -83,12 +84,10 @@ Zone* ZoneLoader::LoadZone(std::istream& stream)
         const auto detailedMessage = e.DetailedMessage();
         printf("Loading fastfile failed: %s\n", detailedMessage.c_str());
 
-        delete m_zone;
-    
         return nullptr;
     }
 
     m_zone->Register();
 
-    return m_zone;
+    return std::move(m_zone);
 }

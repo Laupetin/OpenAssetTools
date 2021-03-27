@@ -31,6 +31,7 @@ public:
     };
 
     std::vector<std::string> m_zones_to_load;
+    std::vector<std::string> m_zones_to_unlink;
     std::set<std::string> m_user_search_paths;
 
     ProcessingTask m_task;

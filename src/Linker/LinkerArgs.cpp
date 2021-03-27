@@ -253,6 +253,7 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
             return false;
     }
 
+    // -l; --load
     if (m_argument_parser.IsOptionSpecified(OPTION_LOAD))
         m_zones_to_load = m_argument_parser.GetParametersForOption(OPTION_LOAD);
 

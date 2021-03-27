@@ -29,9 +29,17 @@ const CommandLineOption* const OPTION_MINIMAL_ZONE_FILE =
     .WithDescription("Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
     .Build();
 
-const CommandLineOption* const OPTION_LIST =
+const CommandLineOption* const OPTION_LOAD =
     CommandLineOption::Builder::Create()
     .WithShortName("l")
+    .WithLongName("load")
+    .WithDescription("Loads an existing zone before trying to unlink any zone.")
+    .WithParameter("zonePath")
+    .Reusable()
+    .Build();
+
+const CommandLineOption* const OPTION_LIST =
+    CommandLineOption::Builder::Create()
     .WithLongName("list")
     .WithDescription("Lists the contents of a zone instead of writing them to the disk.")
     .Build();
@@ -69,6 +77,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_HELP,
     OPTION_VERBOSE,
     OPTION_MINIMAL_ZONE_FILE,
+    OPTION_LOAD,
     OPTION_LIST,
     OPTION_OUTPUT_FOLDER,
     OPTION_SEARCH_PATH,
@@ -146,8 +155,8 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
         return false;
     }
 
-    m_zones_to_load = m_argument_parser.GetArguments();
-    const size_t zoneCount = m_zones_to_load.size();
+    m_zones_to_unlink = m_argument_parser.GetArguments();
+    const size_t zoneCount = m_zones_to_unlink.size();
     if (zoneCount < 1)
     {
         // No zones to load specified...
@@ -162,7 +171,11 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
     // -min; --minimal-zone
     m_minimal_zone_def = m_argument_parser.IsOptionSpecified(OPTION_MINIMAL_ZONE_FILE);
 
-    // -l; --list
+    // -l; --load
+    if (m_argument_parser.IsOptionSpecified(OPTION_LOAD))
+        m_zones_to_load = m_argument_parser.GetParametersForOption(OPTION_LOAD);
+
+    // --list
     if (m_argument_parser.IsOptionSpecified(OPTION_LIST))
         m_task = ProcessingTask::LIST;
 

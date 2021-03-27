@@ -159,12 +159,13 @@ public:
             return nullptr;
 
         // Create new zone
-        auto* zone = new Zone(fileName, 0, &g_GameIW4);
-        zone->m_pools = std::make_unique<GameAssetPoolIW4>(zone, 0);
+        auto zone = std::make_unique<Zone>(fileName, 0, &g_GameIW4);
+        auto* zonePtr = zone.get();
+        zone->m_pools = std::make_unique<GameAssetPoolIW4>(zonePtr, 0);
         zone->m_language = GetZoneLanguage(fileName);
 
         // File is supported. Now setup all required steps for loading this file.
-        auto* zoneLoader = new ZoneLoader(zone);
+        auto* zoneLoader = new ZoneLoader(std::move(zone));
 
         SetupBlock(zoneLoader);
 
@@ -185,7 +186,7 @@ public:
         zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
         // Return the fully setup zoneloader
         return zoneLoader;

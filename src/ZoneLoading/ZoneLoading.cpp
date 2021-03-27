@@ -16,7 +16,7 @@ IZoneLoaderFactory* ZoneLoaderFactories[]
     new T6::ZoneLoaderFactory()
 };
 
-Zone* ZoneLoading::LoadZone(const std::string& path)
+std::unique_ptr<Zone> ZoneLoading::LoadZone(const std::string& path)
 {
     auto zoneName = fs::path(path).filename().replace_extension("").string();
     std::ifstream file(path, std::fstream::in | std::fstream::binary);
@@ -50,9 +50,9 @@ Zone* ZoneLoading::LoadZone(const std::string& path)
         return nullptr;
     }
 
-    auto* loadedZone = zoneLoader->LoadZone(file);
+    auto loadedZone = zoneLoader->LoadZone(file);
     delete zoneLoader;
 
     file.close();
-    return loadedZone;
+    return std::move(loadedZone);
 }

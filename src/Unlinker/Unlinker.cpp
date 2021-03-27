@@ -36,6 +36,8 @@ class Unlinker::Impl
     SearchPathFilesystem* m_last_zone_search_path;
     std::set<std::string> m_absolute_search_paths;
 
+    std::vector<std::unique_ptr<Zone>> m_loaded_zones;
+
     _NODISCARD bool ShouldLoadObj() const
     {
         return m_args.m_task != UnlinkerArgs::ProcessingTask::LIST;
@@ -102,7 +104,7 @@ class Unlinker::Impl
             LoadSearchPath(m_last_zone_search_path);
         }
 
-        for(auto* iwd : IWD::Repository)
+        for (auto* iwd : IWD::Repository)
         {
             searchPathsForZone.IncludeSearchPath(iwd);
         }
@@ -174,7 +176,7 @@ class Unlinker::Impl
             }
         }
 
-        if(!result)
+        if (!result)
         {
             printf("Failed to find writer for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
         }
@@ -228,7 +230,7 @@ class Unlinker::Impl
             context.m_zone = zone;
             context.m_base_path = outputFolderPath;
 
-            if(m_args.m_use_gdt)
+            if (m_args.m_use_gdt)
             {
                 if (!OpenGdtFile(zone, zoneDefinitionFileFolder, gdtStream))
                     return false;
@@ -240,11 +242,106 @@ class Unlinker::Impl
 
             ObjWriting::DumpZone(context);
 
-            if(m_args.m_use_gdt)
+            if (m_args.m_use_gdt)
             {
                 context.m_gdt->EndStream();
                 gdtStream.close();
             }
+        }
+
+        return true;
+    }
+
+    bool LoadZones()
+    {
+        for (const auto& zonePath : m_args.m_zones_to_load)
+        {
+            if (!fs::is_regular_file(zonePath))
+            {
+                printf("Could not find file \"%s\".\n", zonePath.c_str());
+                continue;
+            }
+
+            auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+
+            auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
+            searchPathsForZone.IncludeSearchPath(&m_search_paths);
+
+            auto zone = ZoneLoading::LoadZone(zonePath);
+            if (zone == nullptr)
+            {
+                printf("Failed to load zone \"%s\".\n", zonePath.c_str());
+                return false;
+            }
+
+            if (m_args.m_verbose)
+            {
+                printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
+            }
+
+            if (ShouldLoadObj())
+            {
+                ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
+                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
+            }
+
+
+            m_loaded_zones.emplace_back(std::move(zone));
+        }
+
+        return true;
+    }
+
+    void UnloadZones()
+    {
+        if (ShouldLoadObj())
+        {
+            for (auto& loadedZone : m_loaded_zones)
+            {
+                ObjLoading::UnloadContainersOfZone(loadedZone.get());
+            }
+        }
+        m_loaded_zones.clear();
+    }
+
+    bool UnlinkZones()
+    {
+        for (const auto& zonePath : m_args.m_zones_to_unlink)
+        {
+            if (!fs::is_regular_file(zonePath))
+            {
+                printf("Could not find file \"%s\".\n", zonePath.c_str());
+                continue;
+            }
+
+            auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+
+            auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
+            searchPathsForZone.IncludeSearchPath(&m_search_paths);
+
+            auto zone = ZoneLoading::LoadZone(zonePath);
+            if (zone == nullptr)
+            {
+                printf("Failed to load zone \"%s\".\n", zonePath.c_str());
+                return false;
+            }
+
+            if (m_args.m_verbose)
+            {
+                printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
+            }
+
+            if (ShouldLoadObj())
+            {
+                ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
+                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
+            }
+
+            if (!HandleZone(zone.get()))
+                return false;
+
+            if (ShouldLoadObj())
+                ObjLoading::UnloadContainersOfZone(zone.get());
         }
 
         return true;
@@ -267,51 +364,13 @@ public:
         if (!BuildSearchPaths())
             return false;
 
-        for (const auto& zonePath : m_args.m_zones_to_load)
-        {
-            if (!fs::is_regular_file(zonePath))
-            {
-                printf("Could not find file \"%s\".\n", zonePath.c_str());
-                continue;
-            }
+        if (!LoadZones())
+            return false;
 
-            auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+        const auto result = UnlinkZones();
 
-            auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
-            searchPathsForZone.IncludeSearchPath(&m_search_paths);
-
-            auto* zone = ZoneLoading::LoadZone(zonePath);
-            if (zone == nullptr)
-            {
-                printf("Failed to load zone \"%s\".\n", zonePath.c_str());
-                return false;
-            }
-
-            if (m_args.m_verbose)
-            {
-                printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
-            }
-
-            if (ShouldLoadObj())
-            {
-                ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone);
-                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone);
-            }
-
-            if (!HandleZone(zone))
-            {
-                return false;
-            }
-
-            if (ShouldLoadObj())
-            {
-                ObjLoading::UnloadContainersOfZone(zone);
-            }
-
-            delete zone;
-        }
-
-        return true;
+        UnloadZones();
+        return result;
     }
 };
 

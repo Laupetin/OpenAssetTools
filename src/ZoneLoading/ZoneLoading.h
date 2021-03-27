@@ -6,5 +6,5 @@
 class ZoneLoading
 {
 public:
-    static Zone* LoadZone(const std::string& path);
+    static std::unique_ptr<Zone> LoadZone(const std::string& path);
 };
