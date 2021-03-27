@@ -1,6 +1,7 @@
 #include "InfoStringFromStructConverter.h"
 
 #include <cassert>
+#include <sstream>
 
 using namespace T6;
 
@@ -114,7 +115,9 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
     {
         // TODO: Search sound files for files matching the hash
         const auto* hash = reinterpret_cast<unsigned*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-        m_info_string.SetValueForKey(std::string(field.szName), "@" + std::to_string(*hash));
+        std::ostringstream str;
+        str << '@' << std::hex << *hash;
+        m_info_string.SetValueForKey(std::string(field.szName), str.str());
         break;
     }
 
