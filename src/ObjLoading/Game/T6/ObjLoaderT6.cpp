@@ -6,6 +6,7 @@
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderFontIcon.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderPhysConstraints.h"
 #include "AssetLoaders/AssetLoaderPhysPreset.h"
 #include "AssetLoaders/AssetLoaderQdb.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
@@ -34,7 +35,7 @@ namespace T6
 #define BASIC_LOADER(assetType, assetClass) BasicAssetLoader<assetType, assetClass>
 
         REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints))
+        REGISTER_ASSET_LOADER(AssetLoaderPhysConstraints)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XANIMPARTS, XAnimParts))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL, XModel))
