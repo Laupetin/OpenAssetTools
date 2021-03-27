@@ -6,6 +6,7 @@
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderFontIcon.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderPhysPreset.h"
 #include "AssetLoaders/AssetLoaderQdb.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
@@ -32,7 +33,7 @@ namespace T6
 #define REGISTER_ASSET_LOADER(t) {auto l = std::make_unique<t>(); m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);}
 #define BASIC_LOADER(assetType, assetClass) BasicAssetLoader<assetType, assetClass>
 
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PHYSPRESET, PhysPreset))
+        REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XANIMPARTS, XAnimParts))
