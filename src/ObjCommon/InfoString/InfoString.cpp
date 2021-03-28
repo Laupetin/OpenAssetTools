@@ -205,8 +205,8 @@ bool InfoString::FromGdtProperties(const GdtEntry& gdtEntry)
         const auto* currentEntry = &gdtEntry;
         while (currentEntry)
         {
-            entryStack.push(&gdtEntry);
-            currentEntry = gdtEntry.m_parent;
+            entryStack.push(currentEntry);
+            currentEntry = currentEntry->m_parent;
         }
     }
 
