@@ -41,12 +41,52 @@ namespace T6
     };
 }
 
+bool AssetLoaderTracer::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+{
+    auto* tracer = memory->Create<TracerDef>();
+    memset(tracer, 0, sizeof(TracerDef));
+
+    InfoStringToTracerConverter converter(infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent<decltype(tracer_fields)>::value);
+    if (!converter.Convert())
+    {
+        std::cout << "Failed to parse tracer: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    tracer->name = memory->Dup(assetName.c_str());
+
+    manager->AddAsset(ASSET_TYPE_TRACER, assetName, tracer, converter.GetDependencies(), converter.GetUsedScriptStrings());
+
+    return true;
+}
+
 void* AssetLoaderTracer::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* tracer = memory->Create<TracerDef>();
     memset(tracer, 0, sizeof(TracerDef));
     tracer->name = memory->Dup(assetName.c_str());
     return tracer;
+}
+
+bool AssetLoaderTracer::CanLoadFromGdt() const
+{
+    return true;
+}
+
+bool AssetLoaderTracer::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_TRACER, assetName);
+    if (gdtEntry == nullptr)
+        return false;
+
+    InfoString infoString;
+    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_TRACER, *gdtEntry))
+    {
+        std::cout << "Failed to read tracer gdt entry: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
 
 bool AssetLoaderTracer::CanLoadFromRaw() const
@@ -68,19 +108,5 @@ bool AssetLoaderTracer::LoadFromRaw(const std::string& assetName, ISearchPath* s
         return true;
     }
 
-    auto* tracer = memory->Create<TracerDef>();
-    memset(tracer, 0, sizeof(TracerDef));
-
-    InfoStringToTracerConverter converter(infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent<decltype(tracer_fields)>::value);
-    if (!converter.Convert())
-    {
-        std::cout << "Failed to parse tracer raw file: \"" << fileName << "\"" << std::endl;
-        return true;
-    }
-    
-    tracer->name = memory->Dup(assetName.c_str());
-
-    manager->AddAsset(ASSET_TYPE_TRACER, assetName, tracer, converter.GetDependencies(), converter.GetUsedScriptStrings());
-
-    return true;
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }

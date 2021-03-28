@@ -506,6 +506,30 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon)
     }
 }
 
+bool AssetLoaderWeapon::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+{
+    auto* weaponFullDef = memory->Create<WeaponFullDef>();
+    memset(weaponFullDef, 0, sizeof(WeaponFullDef));
+    LinkWeaponFullDefSubStructs(weaponFullDef);
+
+    InfoStringToWeaponConverter converter(infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent<decltype(weapon_fields)>::value);
+    if (!converter.Convert())
+    {
+        std::cout << "Failed to parse weapon: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    weaponFullDef->weapVariantDef.szInternalName = memory->Dup(assetName.c_str());
+
+    // TODO: Load accuracy graph and flametable
+    CalculateWeaponFields(weaponFullDef);
+    CalculateAttachmentFields(weaponFullDef);
+
+    manager->AddAsset(ASSET_TYPE_WEAPON, assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
+
+    return true;
+}
+
 void* AssetLoaderWeapon::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* weaponFullDef = memory->Create<WeaponFullDef>();
@@ -514,6 +538,27 @@ void* AssetLoaderWeapon::CreateEmptyAsset(const std::string& assetName, MemoryMa
     CalculateWeaponFields(weaponFullDef);
     weaponFullDef->weapVariantDef.szInternalName = memory->Dup(assetName.c_str());
     return weaponFullDef;
+}
+
+bool AssetLoaderWeapon::CanLoadFromGdt() const
+{
+    return true;
+}
+
+bool AssetLoaderWeapon::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON, assetName);
+    if (gdtEntry == nullptr)
+        return false;
+
+    InfoString infoString;
+    if(!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, *gdtEntry))
+    {
+        std::cout << "Failed to read weapon gdt entry: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
 
 bool AssetLoaderWeapon::CanLoadFromRaw() const
@@ -535,24 +580,5 @@ bool AssetLoaderWeapon::LoadFromRaw(const std::string& assetName, ISearchPath* s
         return true;
     }
 
-    auto* weaponFullDef = memory->Create<WeaponFullDef>();
-    memset(weaponFullDef, 0, sizeof(WeaponFullDef));
-    LinkWeaponFullDefSubStructs(weaponFullDef);
-
-    InfoStringToWeaponConverter converter(infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent<decltype(weapon_fields)>::value);
-    if (!converter.Convert())
-    {
-        std::cout << "Failed to parse weapon raw file: \"" << fileName << "\"" << std::endl;
-        return true;
-    }
-
-    weaponFullDef->weapVariantDef.szInternalName = memory->Dup(assetName.c_str());
-
-    // TODO: Load accuracy graph and flametable
-    CalculateWeaponFields(weaponFullDef);
-    CalculateAttachmentFields(weaponFullDef);
-
-    manager->AddAsset(ASSET_TYPE_WEAPON, assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
-
-    return true;
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }

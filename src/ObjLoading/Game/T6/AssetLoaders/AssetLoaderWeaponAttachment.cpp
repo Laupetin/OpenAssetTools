@@ -91,6 +91,26 @@ void AssetLoaderWeaponAttachment::CalculateAttachmentFields(WeaponAttachment* at
     }
 }
 
+bool AssetLoaderWeaponAttachment::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+{
+    auto* attachment = memory->Create<WeaponAttachment>();
+    memset(attachment, 0, sizeof(WeaponAttachment));
+
+    InfoStringToWeaponAttachmentConverter converter(infoString, attachment, zone->m_script_strings, memory, manager, attachment_fields, std::extent<decltype(attachment_fields)>::value);
+    if (!converter.Convert())
+    {
+        std::cout << "Failed to parse attachment: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    CalculateAttachmentFields(attachment);
+    attachment->szInternalName = memory->Dup(assetName.c_str());
+
+    manager->AddAsset(ASSET_TYPE_ATTACHMENT, assetName, attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
+
+    return true;
+}
+
 void* AssetLoaderWeaponAttachment::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* attachment = memory->Create<WeaponAttachment>();
@@ -98,6 +118,27 @@ void* AssetLoaderWeaponAttachment::CreateEmptyAsset(const std::string& assetName
     CalculateAttachmentFields(attachment);
     attachment->szInternalName = memory->Dup(assetName.c_str());
     return attachment;
+}
+
+bool AssetLoaderWeaponAttachment::CanLoadFromGdt() const
+{
+    return true;
+}
+
+bool AssetLoaderWeaponAttachment::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT, assetName);
+    if (gdtEntry == nullptr)
+        return false;
+
+    InfoString infoString;
+    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, *gdtEntry))
+    {
+        std::cout << "Failed to read attachment gdt entry: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
 
 bool AssetLoaderWeaponAttachment::CanLoadFromRaw() const
@@ -119,20 +160,5 @@ bool AssetLoaderWeaponAttachment::LoadFromRaw(const std::string& assetName, ISea
         return true;
     }
 
-    auto* attachment = memory->Create<WeaponAttachment>();
-    memset(attachment, 0, sizeof(WeaponAttachment));
-
-    InfoStringToWeaponAttachmentConverter converter(infoString, attachment, zone->m_script_strings, memory, manager, attachment_fields, std::extent<decltype(attachment_fields)>::value);
-    if (!converter.Convert())
-    {
-        std::cout << "Failed to parse attachment raw file: \"" << fileName << "\"" << std::endl;
-        return true;
-    }
-
-    CalculateAttachmentFields(attachment);
-    attachment->szInternalName = memory->Dup(assetName.c_str());
-
-    manager->AddAsset(ASSET_TYPE_ATTACHMENT, assetName, attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
-
-    return true;
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }

@@ -184,11 +184,32 @@ bool AssetLoaderWeaponAttachmentUnique::CalculateAttachmentUniqueFields(const st
         }
     }
 
-    // animationOverrides
-    // siblingLink
-    // childLink
-    // soundOverrides
-    // effectOverrides
+    return true;
+}
+
+bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+{
+
+    auto* attachmentUniqueFull = memory->Create<WeaponAttachmentUniqueFull>();
+    memset(attachmentUniqueFull, 0, sizeof(WeaponAttachmentUniqueFull));
+    LinkAttachmentUniqueFullSubStructs(attachmentUniqueFull);
+
+    InfoStringToWeaponAttachmentUniqueConverter converter(infoString, attachmentUniqueFull, zone->m_script_strings, memory, manager, attachment_unique_fields, std::extent<decltype(attachment_unique_fields)>::value);
+    if (!converter.Convert())
+    {
+        std::cout << "Failed to parse attachment unique: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    if (!CalculateAttachmentUniqueFields(assetName, attachmentUniqueFull))
+        return true;
+
+    attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());
+
+    auto* assetInfo = GlobalAssetPool<WeaponAttachmentUnique>::GetAssetByName(assetName);
+    auto* asset = assetInfo ? assetInfo->Asset() : nullptr;
+
+    manager->AddAsset(ASSET_TYPE_ATTACHMENT_UNIQUE, assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }
@@ -201,6 +222,27 @@ void* AssetLoaderWeaponAttachmentUnique::CreateEmptyAsset(const std::string& ass
     CalculateAttachmentUniqueFields(assetName, attachmentUniqueFull);
     attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());
     return attachmentUniqueFull;
+}
+
+bool AssetLoaderWeaponAttachmentUnique::CanLoadFromGdt() const
+{
+    return true;
+}
+
+bool AssetLoaderWeaponAttachmentUnique::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE, assetName);
+    if (gdtEntry == nullptr)
+        return false;
+
+    InfoString infoString;
+    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, *gdtEntry))
+    {
+        std::cout << "Failed to read attachment unique gdt entry: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
 
 bool AssetLoaderWeaponAttachmentUnique::CanLoadFromRaw() const
@@ -222,26 +264,5 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromRaw(const std::string& assetName
         return true;
     }
 
-    auto* attachmentUniqueFull = memory->Create<WeaponAttachmentUniqueFull>();
-    memset(attachmentUniqueFull, 0, sizeof(WeaponAttachmentUniqueFull));
-    LinkAttachmentUniqueFullSubStructs(attachmentUniqueFull);
-
-    InfoStringToWeaponAttachmentUniqueConverter converter(infoString, attachmentUniqueFull, zone->m_script_strings, memory, manager, attachment_unique_fields, std::extent<decltype(attachment_unique_fields)>::value);
-    if (!converter.Convert())
-    {
-        std::cout << "Failed to parse attachment unique raw file: \"" << fileName << "\"" << std::endl;
-        return true;
-    }
-
-    if (!CalculateAttachmentUniqueFields(assetName, attachmentUniqueFull))
-        return true;
-
-    attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());
-
-    auto* assetInfo = GlobalAssetPool<WeaponAttachmentUnique>::GetAssetByName(assetName);
-    auto* asset = assetInfo ? assetInfo->Asset() : nullptr;
-
-    manager->AddAsset(ASSET_TYPE_ATTACHMENT_UNIQUE, assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
-
-    return true;
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }

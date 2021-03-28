@@ -97,12 +97,52 @@ namespace T6
     };
 }
 
+bool AssetLoaderVehicle::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+{
+    auto* vehicleDef = memory->Create<VehicleDef>();
+    memset(vehicleDef, 0, sizeof(VehicleDef));
+
+    InfoStringToVehicleConverter converter(infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent<decltype(vehicle_fields)>::value);
+    if (!converter.Convert())
+    {
+        std::cout << "Failed to parse vehicle: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    vehicleDef->name = memory->Dup(assetName.c_str());
+
+    manager->AddAsset(ASSET_TYPE_VEHICLEDEF, assetName, vehicleDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
+
+    return true;
+}
+
 void* AssetLoaderVehicle::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* vehicleDef = memory->Create<VehicleDef>();
     memset(vehicleDef, 0, sizeof(VehicleDef));
     vehicleDef->name = memory->Dup(assetName.c_str());
     return vehicleDef;
+}
+
+bool AssetLoaderVehicle::CanLoadFromGdt() const
+{
+    return true;
+}
+
+bool AssetLoaderVehicle::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_VEHICLE, assetName);
+    if (gdtEntry == nullptr)
+        return false;
+
+    InfoString infoString;
+    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, *gdtEntry))
+    {
+        std::cout << "Failed to read vehicle gdt entry: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
 
 bool AssetLoaderVehicle::CanLoadFromRaw() const
@@ -124,19 +164,5 @@ bool AssetLoaderVehicle::LoadFromRaw(const std::string& assetName, ISearchPath* 
         return true;
     }
 
-    auto* vehicleDef = memory->Create<VehicleDef>();
-    memset(vehicleDef, 0, sizeof(VehicleDef));
-
-    InfoStringToVehicleConverter converter(infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent<decltype(vehicle_fields)>::value);
-    if(!converter.Convert())
-    {
-        std::cout << "Failed to parse vehicle raw file: \"" << fileName << "\"" << std::endl;
-        return true;
-    }
-
-    vehicleDef->name = memory->Dup(assetName.c_str());
-
-    manager->AddAsset(ASSET_TYPE_VEHICLEDEF, assetName, vehicleDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
-
-    return true;
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }

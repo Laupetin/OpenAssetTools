@@ -59,7 +59,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
 
 XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t assetType, const std::string& assetName, IAssetLoader* loader)
 {
-    if (loader->CanLoadFromGdt() && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone->GetMemory(), this, m_context.m_zone))
+    if (loader->CanLoadFromGdt() && !m_context.m_gdt_files.empty() && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone->GetMemory(), this, m_context.m_zone))
     {
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;

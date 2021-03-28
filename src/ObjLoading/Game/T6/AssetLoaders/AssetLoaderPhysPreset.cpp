@@ -55,12 +55,54 @@ void AssetLoaderPhysPreset::CopyFromPhysPresetInfo(const PhysPresetInfo* physPre
     physPreset->buoyancyBoxMax = physPresetInfo->buoyancyBoxMax;
 }
 
+bool AssetLoaderPhysPreset::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+{
+    const auto presetInfo = std::make_unique<PhysPresetInfo>();
+    memset(presetInfo.get(), 0, sizeof(PhysPresetInfo));
+    InfoStringToPhysPresetConverter converter(infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
+    if (!converter.Convert())
+    {
+        std::cout << "Failed to parse phys preset: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    auto* physPreset = memory->Create<PhysPreset>();
+
+    CopyFromPhysPresetInfo(presetInfo.get(), physPreset);
+    physPreset->name = memory->Dup(assetName.c_str());
+
+    manager->AddAsset(ASSET_TYPE_PHYSPRESET, assetName, physPreset, converter.GetDependencies(), converter.GetUsedScriptStrings());
+
+    return true;
+}
+
 void* AssetLoaderPhysPreset::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
     auto* physPreset = memory->Create<PhysPreset>();
     memset(physPreset, 0, sizeof(PhysPreset));
     physPreset->name = memory->Dup(assetName.c_str());
     return physPreset;
+}
+
+bool AssetLoaderPhysPreset::CanLoadFromGdt() const
+{
+    return true;
+}
+
+bool AssetLoaderPhysPreset::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_PHYS_PRESET, assetName);
+    if (gdtEntry == nullptr)
+        return false;
+
+    InfoString infoString;
+    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *gdtEntry))
+    {
+        std::cout << "Failed to read phys preset gdt entry: \"" << assetName << "\"" << std::endl;
+        return true;
+    }
+
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
 
 bool AssetLoaderPhysPreset::CanLoadFromRaw() const
@@ -82,21 +124,5 @@ bool AssetLoaderPhysPreset::LoadFromRaw(const std::string& assetName, ISearchPat
         return true;
     }
 
-    auto presetInfo = std::make_unique<PhysPresetInfo>();
-    memset(presetInfo.get(), 0, sizeof(PhysPresetInfo));
-    InfoStringToPhysPresetConverter converter(infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
-    if (!converter.Convert())
-    {
-        std::cout << "Failed to parse phys preset raw file: \"" << fileName << "\"" << std::endl;
-        return true;
-    }
-
-    auto* physPreset = memory->Create<PhysPreset>();
-
-    CopyFromPhysPresetInfo(presetInfo.get(), physPreset);
-    physPreset->name = memory->Dup(assetName.c_str());
-
-    manager->AddAsset(ASSET_TYPE_PHYSPRESET, assetName, physPreset, converter.GetDependencies(), converter.GetUsedScriptStrings());
-
-    return true;
+    return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }

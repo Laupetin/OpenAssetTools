@@ -9,6 +9,8 @@
 
 class InfoString
 {
+    static constexpr const char* GDT_PREFIX_FIELD = "configstringFileType";
+
     static const std::string EMPTY_VALUE;
     std::unordered_map<std::string, std::string> m_values;
     std::vector<std::string> m_keys_by_insertion;
@@ -26,4 +28,5 @@ public:
 
     bool FromStream(std::istream& stream);
     bool FromStream(const std::string& prefix, std::istream& stream);
+    bool FromGdtProperties(const std::string& prefix, const GdtEntry& gdtEntry);
 };

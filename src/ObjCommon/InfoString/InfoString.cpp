@@ -93,7 +93,7 @@ void InfoString::ToGdtProperties(const std::string& prefix, GdtEntry& gdtEntry) 
         gdtEntry.m_properties[key] = value->second;
     }
 
-    gdtEntry.m_properties["configstringFileType"] = prefix;
+    gdtEntry.m_properties[GDT_PREFIX_FIELD] = prefix;
 }
 
 class InfoStringInputStream
@@ -191,6 +191,24 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
         {
             existingEntry->second = value;
         }
+    }
+
+    return true;
+}
+
+bool InfoString::FromGdtProperties(const std::string& prefix, const GdtEntry& gdtEntry)
+{
+    const auto foundPrefixEntry = gdtEntry.m_properties.find(GDT_PREFIX_FIELD);
+    if (foundPrefixEntry == gdtEntry.m_properties.end() || foundPrefixEntry->second != prefix)
+        return false;
+
+    for(const auto& [key, value] : gdtEntry.m_properties)
+    {
+        if(key == GDT_PREFIX_FIELD)
+            continue;
+
+        m_keys_by_insertion.push_back(key);
+        m_values.emplace(std::make_pair(key, value));
     }
 
     return true;
