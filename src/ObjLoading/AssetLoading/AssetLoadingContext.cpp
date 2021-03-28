@@ -23,7 +23,12 @@ void AssetLoadingContext::BuildGdtEntryCache()
             }
             else
             {
-                gdfMapEntry->second.emplace(std::make_pair(entry->m_name, entry.get()));
+                auto entryMapEntry = gdfMapEntry->second.find(entry->m_name);
+
+                if (entryMapEntry == gdfMapEntry->second.end())
+                    gdfMapEntry->second.emplace(std::make_pair(entry->m_name, entry.get()));
+                else
+                    entryMapEntry->second = entry.get();
             }
         }
     }
