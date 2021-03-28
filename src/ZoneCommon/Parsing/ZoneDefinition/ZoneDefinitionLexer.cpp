@@ -14,6 +14,7 @@ std::string ZoneDefinitionLexer::ReadField()
 
     const auto startPos = m_current_line_offset - 1;
     const auto lineSize = currentLine.m_line.size();
+    auto lastNonSpaceOffset = m_current_line_offset;
     while (m_current_line_offset < lineSize)
     {
         const auto c = currentLine.m_line[m_current_line_offset];
@@ -36,9 +37,12 @@ std::string ZoneDefinitionLexer::ReadField()
             break;
 
         m_current_line_offset++;
+
+        if (!isspace(c))
+            lastNonSpaceOffset = m_current_line_offset;
     }
 
-    return std::string(currentLine.m_line, startPos, m_current_line_offset - startPos);
+    return std::string(currentLine.m_line, startPos, lastNonSpaceOffset - startPos);
 }
 
 ZoneDefinitionParserValue ZoneDefinitionLexer::GetNextToken()
