@@ -236,7 +236,7 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromGdt(const std::string& assetName
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read attachment unique gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

@@ -132,7 +132,7 @@ bool AssetLoaderWeaponAttachment::LoadFromGdt(const std::string& assetName, IGdt
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read attachment gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

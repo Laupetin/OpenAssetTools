@@ -113,7 +113,7 @@ bool AssetLoaderPhysConstraints::LoadFromGdt(const std::string& assetName, IGdtQ
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read phys constraints gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

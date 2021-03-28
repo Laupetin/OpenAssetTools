@@ -552,7 +552,7 @@ bool AssetLoaderWeapon::LoadFromGdt(const std::string& assetName, IGdtQueryable*
         return false;
 
     InfoString infoString;
-    if(!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, *gdtEntry))
+    if(!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read weapon gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

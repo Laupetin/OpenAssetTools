@@ -28,5 +28,5 @@ public:
 
     bool FromStream(std::istream& stream);
     bool FromStream(const std::string& prefix, std::istream& stream);
-    bool FromGdtProperties(const std::string& prefix, const GdtEntry& gdtEntry);
+    bool FromGdtProperties(const GdtEntry& gdtEntry);
 };

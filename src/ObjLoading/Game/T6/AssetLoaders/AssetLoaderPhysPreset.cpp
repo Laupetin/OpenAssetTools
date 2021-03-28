@@ -96,7 +96,7 @@ bool AssetLoaderPhysPreset::LoadFromGdt(const std::string& assetName, IGdtQuerya
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read phys preset gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

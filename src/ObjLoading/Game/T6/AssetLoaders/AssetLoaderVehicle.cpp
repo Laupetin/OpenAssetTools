@@ -136,7 +136,7 @@ bool AssetLoaderVehicle::LoadFromGdt(const std::string& assetName, IGdtQueryable
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read vehicle gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

@@ -93,7 +93,7 @@ bool AssetLoaderZBarrier::LoadFromGdt(const std::string& assetName, IGdtQueryabl
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read zbarrier gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

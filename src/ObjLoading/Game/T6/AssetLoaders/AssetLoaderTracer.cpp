@@ -80,7 +80,7 @@ bool AssetLoaderTracer::LoadFromGdt(const std::string& assetName, IGdtQueryable*
         return false;
 
     InfoString infoString;
-    if (!infoString.FromGdtProperties(ObjConstants::INFO_STRING_PREFIX_TRACER, *gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read tracer gdt entry: \"" << assetName << "\"" << std::endl;
         return true;

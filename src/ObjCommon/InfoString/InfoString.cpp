@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <cstring>
+#include <stack>
 
 const std::string InfoString::EMPTY_VALUE;
 
@@ -196,19 +197,37 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
     return true;
 }
 
-bool InfoString::FromGdtProperties(const std::string& prefix, const GdtEntry& gdtEntry)
+bool InfoString::FromGdtProperties(const GdtEntry& gdtEntry)
 {
-    const auto foundPrefixEntry = gdtEntry.m_properties.find(GDT_PREFIX_FIELD);
-    if (foundPrefixEntry == gdtEntry.m_properties.end() || foundPrefixEntry->second != prefix)
-        return false;
+    std::stack<const GdtEntry*> entryStack;
 
-    for(const auto& [key, value] : gdtEntry.m_properties)
     {
-        if(key == GDT_PREFIX_FIELD)
-            continue;
+        const auto* currentEntry = &gdtEntry;
+        while (currentEntry)
+        {
+            entryStack.push(&gdtEntry);
+            currentEntry = gdtEntry.m_parent;
+        }
+    }
 
-        m_keys_by_insertion.push_back(key);
-        m_values.emplace(std::make_pair(key, value));
+    while(!entryStack.empty())
+    {
+        const auto* currentEntry = entryStack.top();
+        entryStack.pop();
+
+        for (const auto& [key, value] : currentEntry->m_properties)
+        {
+            auto existingEntry = m_values.find(key);
+            if(existingEntry == m_values.end())
+            {
+                m_keys_by_insertion.push_back(key);
+                m_values.emplace(std::make_pair(key, value));
+            }
+            else
+            {
+                existingEntry->second = value;
+            }
+        }
     }
 
     return true;
