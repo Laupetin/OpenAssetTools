@@ -152,7 +152,7 @@ class Unlinker::Impl
         return true;
     }
 
-    static bool WriteZoneDefinitionFile(Zone* zone, const fs::path& zoneDefinitionFileFolder)
+    bool WriteZoneDefinitionFile(Zone* zone, const fs::path& zoneDefinitionFileFolder) const
     {
         auto zoneDefinitionFilePath(zoneDefinitionFileFolder);
         zoneDefinitionFilePath.append(zone->m_name);
@@ -170,7 +170,7 @@ class Unlinker::Impl
         {
             if (zoneDefWriter->CanHandleZone(zone))
             {
-                zoneDefWriter->WriteZoneDef(zoneDefinitionFile, zone);
+                zoneDefWriter->WriteZoneDef(zoneDefinitionFile, &m_args, zone);
                 result = true;
                 break;
             }
@@ -185,9 +185,13 @@ class Unlinker::Impl
         return result;
     }
 
-    static bool OpenGdtFile(Zone* zone, const fs::path& zoneDefinitionFileFolder, std::ofstream& stream)
+    static bool OpenGdtFile(Zone* zone, const fs::path& outputFolder, std::ofstream& stream)
     {
-        auto gdtFilePath(zoneDefinitionFileFolder);
+        auto gdtFilePath(outputFolder);
+        gdtFilePath.append("source_data");
+
+        fs::create_directories(gdtFilePath);
+
         gdtFilePath.append(zone->m_name);
         gdtFilePath.replace_extension(".gdt");
 
@@ -232,7 +236,7 @@ class Unlinker::Impl
 
             if (m_args.m_use_gdt)
             {
-                if (!OpenGdtFile(zone, zoneDefinitionFileFolder, gdtStream))
+                if (!OpenGdtFile(zone, outputFolderPath, gdtStream))
                     return false;
                 auto gdt = std::make_unique<GdtOutputStream>(gdtStream);
                 gdt->BeginStream();

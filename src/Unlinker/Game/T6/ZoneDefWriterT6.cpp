@@ -54,10 +54,9 @@ void ZoneDefWriter::WriteKeyValuePair(ZoneDefinitionOutputStream& stream, KeyVal
     stream.WriteMetaData(str.str(), kvp->value);
 }
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, Zone* zone) const
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
 {
     auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
-
     if (assetPoolT6 && !assetPoolT6->m_key_value_pairs->m_asset_lookup.empty())
     {
         for (const auto* kvpAsset : *assetPoolT6->m_key_value_pairs)
@@ -73,7 +72,7 @@ void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, Zone* zone
     }
 }
 
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, Zone* zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
 {
     const auto* pools = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
 

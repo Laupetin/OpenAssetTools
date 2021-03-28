@@ -12,11 +12,11 @@ bool ZoneDefWriter::CanHandleZone(Zone* zone) const
     return zone->m_game == &g_GameIW4;
 }
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, Zone* zone) const
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
 {
 }
 
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, Zone* zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
 {
     const auto* pools = dynamic_cast<GameAssetPoolIW4*>(zone->m_pools.get());
 

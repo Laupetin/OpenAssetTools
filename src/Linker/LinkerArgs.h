@@ -17,7 +17,7 @@ public:
     static constexpr const char* DEFAULT_BASE_FOLDER_MOD_TOOLS = "..";
     static constexpr const char* DEFAULT_OUTPUT_FOLDER = "?base?/zone_out/?zone?";
     static constexpr const char* DEFAULT_ASSET_SEARCH_PATH = "?base?/raw;?base?/zone_raw/?zone?";
-    static constexpr const char* DEFAULT_GDT_SEARCH_PATH = "?base?/source_data";
+    static constexpr const char* DEFAULT_GDT_SEARCH_PATH = "?base?/source_data;?base?/zone_raw/?zone?/source_data";
     static constexpr const char* DEFAULT_SOURCE_SEARCH_PATH = "?base?/zone_source;?base?/zone_raw/?zone?/zone_source";
 
 private:
