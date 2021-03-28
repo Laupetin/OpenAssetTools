@@ -126,14 +126,11 @@ bool GdtReader::ReadProperties(GdtEntry& entry)
         if (!ReadStringContent(propertyKey))
             return false;
 
-        if (PeekChar() != '"')
+        if (PeekChar() != '"' || !ReadStringContent(propertyValue))
         {
             PrintError("Expected value string");
             return false;
         }
-
-        if (!ReadStringContent(propertyValue))
-            return false;
 
         entry.m_properties.emplace(std::move(propertyKey), std::move(propertyValue));
     }
@@ -207,7 +204,10 @@ bool GdtReader::Read(Gdt& gdt)
         {
             NextChar();
             if (!ReadStringContent(entry.m_gdf_name))
+            {
+                PrintError("Expected gdf name string");
                 return false;
+            }
             if (NextChar() != ')')
             {
                 PrintError("Expected closing parenthesis");
@@ -219,7 +219,10 @@ bool GdtReader::Read(Gdt& gdt)
             NextChar();
             std::string parentName;
             if (!ReadStringContent(parentName))
+            {
+                PrintError("Expected parent name string");
                 return false;
+            }
             if (NextChar() != ']')
             {
                 PrintError("Expected closing square brackets");
@@ -238,6 +241,7 @@ bool GdtReader::Read(Gdt& gdt)
         }
         else
         {
+            PrintError("Expected gdf or parent opening");
             return false;
         }
 

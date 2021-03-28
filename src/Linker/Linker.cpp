@@ -397,7 +397,7 @@ class Linker::Impl
             const auto gdtFile = gdtSearchPath->Open(i->second->m_value + ".gdt");
             if (!gdtFile.IsOpen())
             {
-                std::cout << "Failed to open file for gdt \"" << i->second << "\"" << std::endl;
+                std::cout << "Failed to open file for gdt \"" << i->second->m_value << "\"" << std::endl;
                 return false;
             }
 
