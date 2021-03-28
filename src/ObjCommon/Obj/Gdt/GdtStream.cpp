@@ -231,6 +231,10 @@ bool GdtReader::Read(Gdt& gdt)
                 PrintError("Could not find parent with name");
                 return false;
             }
+            auto* currentParentEntry = entry.m_parent;
+            while (currentParentEntry->m_parent)
+                currentParentEntry = currentParentEntry->m_parent;
+            entry.m_gdf_name = currentParentEntry->m_gdf_name;
         }
         else
         {
