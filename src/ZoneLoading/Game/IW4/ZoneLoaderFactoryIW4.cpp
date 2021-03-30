@@ -137,8 +137,8 @@ class ZoneLoaderFactory::Impl
         auto* masterBlockHashesPtr = masterBlockHashes.get();
         zoneLoader->AddLoadingStep(std::move(masterBlockHashes));
 
-        zoneLoader->AddLoadingStep(std::make_unique<StepRemoveProcessor>(subHeaderCapturePtr));
         zoneLoader->AddLoadingStep(std::make_unique<StepVerifyHash>(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0, subHeaderHashPtr, subHeaderCapturePtr));
+        zoneLoader->AddLoadingStep(std::make_unique<StepRemoveProcessor>(subHeaderCapturePtr));
 
         // Skip the rest of the first chunk
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));

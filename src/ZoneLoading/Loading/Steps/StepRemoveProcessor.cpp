@@ -2,18 +2,8 @@
 #include <cassert>
 
 StepRemoveProcessor::StepRemoveProcessor(StreamProcessor* streamProcessor)
-    : m_stream_processor(streamProcessor),
-      m_removed(false)
+    : m_stream_processor(streamProcessor)
 {
-}
-
-StepRemoveProcessor::~StepRemoveProcessor()
-{
-    if(m_removed)
-    {
-        delete m_stream_processor;
-        m_stream_processor = nullptr;
-    }
 }
 
 void StepRemoveProcessor::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
@@ -22,5 +12,4 @@ void StepRemoveProcessor::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* st
     assert(m_stream_processor != nullptr);
 
     zoneLoader->RemoveStreamProcessor(m_stream_processor);
-    m_removed = true;
 }
