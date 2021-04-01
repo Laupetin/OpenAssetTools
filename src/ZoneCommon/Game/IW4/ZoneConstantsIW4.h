@@ -15,7 +15,14 @@ namespace IW4
         static constexpr const char* MAGIC_SIGNED_INFINITY_WARD = "IWff0100";
         static constexpr const char* MAGIC_SIGNED_OAT = "ABff0100";
         static constexpr const char* MAGIC_UNSIGNED = "IWffu100";
+        static constexpr const char* MAGIC_IW4X = "IW4x";
         static constexpr int ZONE_VERSION = 276;
+        static constexpr int IW4X_ZONE_VERSION = 3;
+
+        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_INFINITY_WARD) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_SIGNED_OAT) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_UNSIGNED) == sizeof(ZoneHeader::m_magic));
+        static_assert(std::char_traits<char>::length(MAGIC_IW4X) == sizeof(ZoneHeader::m_magic) - sizeof(uint32_t));
 
         static constexpr const char* MAGIC_AUTH_HEADER = "IWffs100";
         inline static const uint8_t RSA_PUBLIC_KEY_INFINITY_WARD[]

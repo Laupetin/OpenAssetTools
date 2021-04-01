@@ -15,6 +15,7 @@
 #include "Loading/Processor/ProcessorAuthedBlocks.h"
 #include "Loading/Processor/ProcessorCaptureData.h"
 #include "Loading/Processor/ProcessorInflate.h"
+#include "Loading/Processor/ProcessorIW4xDecryption.h"
 #include "Loading/Steps/StepVerifyMagic.h"
 #include "Loading/Steps/StepSkipBytes.h"
 #include "Loading/Steps/StepVerifyFileName.h"
@@ -36,27 +37,43 @@ class ZoneLoaderFactory::Impl
         return GameLanguage::LANGUAGE_NONE;
     }
 
-    static bool CanLoad(ZoneHeader& header, bool* isSecure, bool* isOfficial)
+    static bool CanLoad(ZoneHeader& header, bool* isSecure, bool* isOfficial, bool* isIw4x)
     {
         assert(isSecure != nullptr);
         assert(isOfficial != nullptr);
+        assert(isIw4x != nullptr);
 
         if (header.m_version != ZoneConstants::ZONE_VERSION)
         {
             return false;
         }
 
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, 8))
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_IW4X, std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)))
+        {
+            if(*reinterpret_cast<uint32_t*>(&header.m_magic[std::char_traits<char>::length(ZoneConstants::MAGIC_IW4X)]) == ZoneConstants::IW4X_ZONE_VERSION)
+            {
+                *isSecure = false;
+                *isOfficial = false;
+                *isIw4x = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_SIGNED_INFINITY_WARD, std::char_traits<char>::length(ZoneConstants::MAGIC_SIGNED_INFINITY_WARD)))
         {
             *isSecure = true;
             *isOfficial = true;
+            *isIw4x = false;
             return true;
         }
 
-        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, 8))
+        if (!memcmp(header.m_magic, ZoneConstants::MAGIC_UNSIGNED, std::char_traits<char>::length(ZoneConstants::MAGIC_UNSIGNED)))
         {
             *isSecure = false;
             *isOfficial = true;
+            *isIw4x = false;
             return true;
         }
 
@@ -153,9 +170,10 @@ public:
     {
         bool isSecure;
         bool isOfficial;
+        bool isIw4x;
 
         // Check if this file is a supported IW4 zone.
-        if (!CanLoad(header, &isSecure, &isOfficial))
+        if (!CanLoad(header, &isSecure, &isOfficial, &isIw4x))
             return nullptr;
 
         // Create new zone
@@ -179,6 +197,12 @@ public:
         AddAuthHeaderSteps(isSecure, isOfficial, zoneLoader, fileName);
 
         zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorInflate>(ZoneConstants::AUTHED_CHUNK_SIZE)));
+
+        if (isIw4x) // IW4x has one extra byte of padding here for protection purposes
+        {
+            zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorIW4xDecryption>()));
+            zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(1));
+        }
 
         // Start of the XFile struct
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));

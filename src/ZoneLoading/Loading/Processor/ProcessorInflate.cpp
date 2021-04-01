@@ -69,7 +69,7 @@ public:
                 throw InvalidCompressionException();
         }
 
-        return m_stream.avail_out;
+        return length - m_stream.avail_out;
     }
 };
 

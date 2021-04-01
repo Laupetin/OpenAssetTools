@@ -17,13 +17,12 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
     const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone->m_language);
     fs::path stringsPath(context.m_base_path);
     stringsPath.append(language);
-    stringsPath.append("/localizedstrings");
+    stringsPath.append("localizedstrings");
 
     create_directories(stringsPath);
 
     auto stringFilePath(stringsPath);
-    stringFilePath.append(context.m_zone->m_name);
-    stringFilePath.append(".str");
+    stringFilePath.append(context.m_zone->m_name + ".str");
 
     std::ofstream stringFile(stringFilePath, std::fstream::out | std::ofstream::binary);
 
