@@ -46,11 +46,6 @@ void AssetDumperSndBank::DumpSndBank(AssetDumpingContext& context, const XAssetI
 {
     const auto* sndBank = sndBankInfo->Asset();
 
-    // auto* streamAssetBank = SoundBank::Repository.GetContainerByName(SoundBank::GetFileNameForDefinition(true, sndBank->streamAssetBank.zone, sndBank->streamAssetBank.language));
-    // SoundBank* loadedAssetBank = nullptr;
-    // if (sndBank->runtimeAssetLoad && sndBank->loadAssetBank.zone)
-    //     loadedAssetBank = SoundBank::Repository.GetContainerByName(SoundBank::GetFileNameForDefinition(false, sndBank->loadAssetBank.zone, sndBank->loadAssetBank.language));
-
     std::map<unsigned int, std::string> aliasMappings;
     for (auto i = 0u; i < sndBank->aliasCount; i++)
     {
