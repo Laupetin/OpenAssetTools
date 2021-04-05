@@ -1,0 +1,45 @@
+#pragma once
+
+#include <cstdint>
+
+class SoundBankConsts
+{
+    SoundBankConsts() = default;
+
+public:
+    static constexpr unsigned OFFSET_DATA_START = 0x800;
+};
+
+struct SndAssetBankChecksum
+{
+    char checksumBytes[16];
+};
+
+struct SndAssetBankHeader
+{
+    unsigned int magic;                     // + 0x0
+    unsigned int version;                   // + 0x4
+    unsigned int entrySize;                 // + 0x8
+    unsigned int checksumSize;              // + 0xC
+    unsigned int dependencySize;            // + 0x10
+    unsigned int entryCount;                // + 0x14
+    unsigned int dependencyCount;           // + 0x18
+    unsigned int pad32;                     // + 0x1C
+    int64_t fileSize;                       // + 0x20
+    int64_t entryOffset;                    // + 0x28
+    int64_t checksumOffset;                 // + 0x30
+    SndAssetBankChecksum checksumChecksum;  // + 0x38
+    char dependencies[512];                 // + 0x48
+};
+
+struct SndAssetBankEntry
+{
+    unsigned int id;
+    unsigned int size;
+    unsigned int offset;
+    unsigned int frameCount;
+    char frameRateIndex;
+    char channelCount;
+    char looping;
+    char format;
+};

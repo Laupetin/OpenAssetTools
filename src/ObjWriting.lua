@@ -3,6 +3,7 @@ ObjWriting = {}
 function ObjWriting:include(includes)
 	if includes:handle(self:name()) then
 		ObjCommon:include(includes)
+		ObjLoading:include(includes)
 		ZoneCommon:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjWriting")
@@ -14,6 +15,7 @@ function ObjWriting:link(links)
 	links:add(self:name())
 	links:linkto(Utils)
 	links:linkto(ObjCommon)
+	links:linkto(ObjLoading)
 	links:linkto(ZoneCommon)
 	links:linkto(minilzo)
 	links:linkto(minizip)

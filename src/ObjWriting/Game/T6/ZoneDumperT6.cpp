@@ -13,6 +13,7 @@
 #include "AssetDumpers/AssetDumperFontIcon.h"
 #include "AssetDumpers/AssetDumperPhysConstraints.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
+#include "AssetDumpers/AssetDumperSndBank.h"
 #include "AssetDumpers/AssetDumperTracer.h"
 #include "AssetDumpers/AssetDumperVehicle.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
@@ -46,7 +47,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material);
     // DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set);
     DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);
-    // DUMP_ASSET_POOL(AssetDumperSndBank, m_sound_bank);
+    DUMP_ASSET_POOL(AssetDumperSndBank, m_sound_bank);
     // DUMP_ASSET_POOL(AssetDumperSndPatch, m_sound_patch);
     // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map);
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world);

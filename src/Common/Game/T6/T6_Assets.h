@@ -5755,6 +5755,14 @@ namespace T6
         MaterialArgumentDef u;
     };
 
+    enum SndAliasType
+    {
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_PRIMED = 0x3,
+        SAT_COUNT = 0x4,
+    };
 
     struct SndAlias
     {
@@ -5764,7 +5772,7 @@ namespace T6
         const char* secondaryname;
         unsigned int assetId;
         const char* assetFileName;
-        unsigned int flags0;
+        unsigned int flags0;        // Bits 15/16 are SndAliasType
         unsigned int flags1;
         unsigned int duck;
         unsigned int contextType;

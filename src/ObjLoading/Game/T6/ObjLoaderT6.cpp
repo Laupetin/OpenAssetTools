@@ -1,5 +1,7 @@
 #include "ObjLoaderT6.h"
 
+#include <sstream>
+
 #include "Game/T6/GameT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "ObjContainer/IPak/IPak.h"
@@ -90,6 +92,115 @@ namespace T6
     bool ObjLoader::SupportsZone(Zone* zone) const
     {
         return zone->m_game == &g_GameT6;
+    }
+
+    bool ObjLoader::VerifySoundBankChecksum(const SoundBank* soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank)
+    {
+        SndAssetBankChecksum checksum{};
+        static_assert(sizeof(SndAssetBankChecksum::checksumBytes) == sizeof(SndRuntimeAssetBank::linkTimeChecksum));
+        for (auto i = 0u; i < sizeof(SndAssetBankChecksum::checksumBytes); i++)
+            checksum.checksumBytes[i] = sndRuntimeAssetBank.linkTimeChecksum[i];
+
+        return soundBank->VerifyChecksum(checksum);
+    }
+
+    SoundBank* ObjLoader::LoadSoundBankForZone(ISearchPath* searchPath, const std::string& soundBankFileName, Zone* zone)
+    {
+        if (ObjLoading::Configuration.Verbose)
+            std::cout << "Trying to load sound bank '" << soundBankFileName << "' for zone '" << zone->m_name << "'" << std::endl;
+
+        auto* existingSoundBank = SoundBank::Repository.GetContainerByName(soundBankFileName);
+        if (existingSoundBank != nullptr)
+        {
+            if (ObjLoading::Configuration.Verbose)
+                std::cout << "Referencing loaded sound bank '" << soundBankFileName << "'." << std::endl;
+
+            SoundBank::Repository.AddContainerReference(existingSoundBank, zone);
+            return existingSoundBank;
+        }
+
+        auto file = searchPath->Open(soundBankFileName);
+        if (file.IsOpen())
+        {
+            auto sndBank = std::make_unique<SoundBank>(soundBankFileName, std::move(file.m_stream), file.m_length);
+            auto* sndBankPtr = sndBank.get();
+
+            if (!sndBank->Initialize())
+            {
+                std::cout << "Failed to load sound bank '" << soundBankFileName << "'" << std::endl;
+                return nullptr;
+            }
+
+            SoundBank::Repository.AddContainer(std::move(sndBank), zone);
+
+            if (ObjLoading::Configuration.Verbose)
+                std::cout << "Found and loaded sound bank '" << soundBankFileName << "'" << std::endl;
+
+            return sndBankPtr;
+        }
+
+        std::cout << "Failed to load sound bank '" << soundBankFileName << "'" << std::endl;
+        return nullptr;
+    }
+
+    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath* searchPath, const std::string& soundBankFileName, const SndRuntimeAssetBank* sndBankLinkedInfo, Zone* zone, std::set<std::string>& loadedBanksForZone, std::stack<std::string>& dependenciesToLoad)
+    {
+        if (loadedBanksForZone.find(soundBankFileName) == loadedBanksForZone.end())
+        {
+            auto* soundBank = LoadSoundBankForZone(searchPath, soundBankFileName, zone);
+
+            if (soundBank)
+            {
+                if (!VerifySoundBankChecksum(soundBank, *sndBankLinkedInfo))
+                {
+                    std::cout << "Checksum of sound bank does not match link time checksum for '" << soundBankFileName << "'" << std::endl;
+                }
+                loadedBanksForZone.emplace(soundBankFileName);
+
+                for (const auto& dependency : soundBank->GetDependencies())
+                {
+                    dependenciesToLoad.emplace(dependency);
+                }
+            }
+        }
+    }
+
+    void ObjLoader::LoadSoundBanksFromAsset(ISearchPath* searchPath, const SndBank* sndBank, Zone* zone, std::set<std::string>& loadedBanksForZone)
+    {
+        std::stack<std::string> dependenciesToLoad;
+
+        if (sndBank->streamAssetBank.zone)
+        {
+            const auto soundBankFileName = SoundBank::GetFileNameForDefinition(true, sndBank->streamAssetBank.zone, sndBank->streamAssetBank.language);
+            LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, &sndBank->streamAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
+        }
+
+        if (sndBank->runtimeAssetLoad && sndBank->loadAssetBank.zone)
+        {
+            const auto soundBankFileName = SoundBank::GetFileNameForDefinition(false, sndBank->loadAssetBank.zone, sndBank->loadAssetBank.language);
+            LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, &sndBank->loadAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
+        }
+
+        while(!dependenciesToLoad.empty())
+        {
+            auto dependencyFileName = dependenciesToLoad.top();
+            dependenciesToLoad.pop();
+
+            if (loadedBanksForZone.find(dependencyFileName) == loadedBanksForZone.end())
+            {
+                auto* soundBank = LoadSoundBankForZone(searchPath, dependencyFileName, zone);
+
+                if (soundBank)
+                {
+                    loadedBanksForZone.emplace(dependencyFileName);
+
+                    for (const auto& dependency : soundBank->GetDependencies())
+                    {
+                        dependenciesToLoad.emplace(dependency);
+                    }
+                }
+            }
+        }
     }
 
     void ObjLoader::LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone)
@@ -197,6 +308,16 @@ namespace T6
                         LoadIPakForZone(searchPath, variable->value, zone);
                     }
                 }
+            }
+        }
+
+        if (assetPoolT6->m_sound_bank != nullptr)
+        {
+            std::set<std::string> loadedSoundBanksForZone;
+
+            for (auto* sndBankAssetInfo : *assetPoolT6->m_sound_bank)
+            {
+                LoadSoundBanksFromAsset(searchPath, sndBankAssetInfo->Asset(), zone, loadedSoundBanksForZone);
             }
         }
     }
