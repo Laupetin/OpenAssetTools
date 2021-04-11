@@ -1,6 +1,7 @@
 #include "AssetDumperSndBank.h"
 
 #include <filesystem>
+#include <unordered_map>
 
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
@@ -8,7 +9,36 @@
 using namespace T6;
 namespace fs = std::filesystem;
 
-std::unique_ptr<std::ostream> AssetDumperSndBank::OpenOutputFile(AssetDumpingContext& context, const std::string& outputFileName) const
+std::string AssetDumperSndBank::GetExtensionForFormat(const snd_asset_format format)
+{
+    switch(format)
+    {
+    case SND_ASSET_FORMAT_MP3:
+        return ".mp3";
+
+    case SND_ASSET_FORMAT_FLAC:
+        return ".flac";
+
+    case SND_ASSET_FORMAT_PCMS16:
+    case SND_ASSET_FORMAT_PCMS24:
+    case SND_ASSET_FORMAT_PCMS32:
+    case SND_ASSET_FORMAT_IEEE:
+    case SND_ASSET_FORMAT_XMA4:
+    case SND_ASSET_FORMAT_MSADPCM:
+    case SND_ASSET_FORMAT_WMA:
+    case SND_ASSET_FORMAT_WIIUADPCM:
+    case SND_ASSET_FORMAT_MPC:
+        std::cout << "Unsupported sound format " << format << std::endl;
+        return std::string();
+
+    default:
+        assert(false);
+        std::cout << "Unknown sound format " << format << std::endl;
+        return std::string();
+    }
+}
+
+std::unique_ptr<std::ostream> AssetDumperSndBank::OpenAssetOutputFile(AssetDumpingContext& context, const std::string& outputFileName, const SoundAssetBankEntry& entry) const
 {
     fs::path assetPath(context.m_base_path);
 
@@ -27,6 +57,10 @@ std::unique_ptr<std::ostream> AssetDumperSndBank::OpenOutputFile(AssetDumpingCon
         assetPath.append(part.string());
     }
 
+    const auto extension = GetExtensionForFormat(static_cast<snd_asset_format>(entry.format));
+    if(!extension.empty())
+        assetPath.concat(extension);
+
     auto assetDir(assetPath);
     assetDir.remove_filename();
 
@@ -42,11 +76,13 @@ std::unique_ptr<std::ostream> AssetDumperSndBank::OpenOutputFile(AssetDumpingCon
     return nullptr;
 }
 
-void AssetDumperSndBank::DumpSndBank(AssetDumpingContext& context, const XAssetInfo<SndBank>* sndBankInfo)
+std::unique_ptr<std::ostream> AssetDumperSndBank::OpenAliasOutputFile(AssetDumpingContext& context, SndBank* sndBank) const
 {
-    const auto* sndBank = sndBankInfo->Asset();
+    return nullptr;
+}
 
-    std::map<unsigned int, std::string> aliasMappings;
+void AssetDumperSndBank::DumpSndBankAliases(AssetDumpingContext& context, SndBank* sndBank, std::unordered_map<unsigned, std::string>& aliasFiles)
+{
     for (auto i = 0u; i < sndBank->aliasCount; i++)
     {
         const auto& aliasList = sndBank->alias[i];
@@ -54,9 +90,16 @@ void AssetDumperSndBank::DumpSndBank(AssetDumpingContext& context, const XAssetI
         {
             const auto& alias = aliasList.head[j];
             if (alias.assetId && alias.assetFileName)
-                aliasMappings[alias.assetId] = alias.assetFileName;
+                aliasFiles[alias.assetId] = alias.assetFileName;
         }
     }
+}
+
+void AssetDumperSndBank::DumpSndBank(AssetDumpingContext& context, const XAssetInfo<SndBank>* sndBankInfo)
+{
+    const auto* sndBank = sndBankInfo->Asset();
+
+    std::unordered_map<unsigned int, std::string> aliasMappings;
 
     for (const auto& [id, filename] : aliasMappings)
     {
@@ -67,16 +110,16 @@ void AssetDumperSndBank::DumpSndBank(AssetDumpingContext& context, const XAssetI
             auto soundFile = soundBank->GetEntryStream(id);
             if (soundFile.IsOpen())
             {
-                auto outFile = OpenOutputFile(context, filename);
+                auto outFile = OpenAssetOutputFile(context, filename, soundFile.m_entry);
                 if (!outFile)
                 {
                     std::cout << "Failed to open sound outputfile: \"" << filename << "\"" << std::endl;
                     break;
                 }
 
-                char buffer[2048];
                 while (!soundFile.m_stream->eof())
                 {
+                    char buffer[2048];
                     soundFile.m_stream->read(buffer, sizeof(buffer));
                     const auto readSize = soundFile.m_stream->gcount();
                     outFile->write(buffer, readSize);

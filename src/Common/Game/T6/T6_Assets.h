@@ -2874,6 +2874,22 @@ namespace T6
         int updateWhilePaused;
     };
 
+    enum snd_asset_format
+    {
+        SND_ASSET_FORMAT_PCMS16 = 0x0,
+        SND_ASSET_FORMAT_PCMS24 = 0x1,
+        SND_ASSET_FORMAT_PCMS32 = 0x2,
+        SND_ASSET_FORMAT_IEEE = 0x3,
+        SND_ASSET_FORMAT_XMA4 = 0x4,
+        SND_ASSET_FORMAT_MP3 = 0x5,
+        SND_ASSET_FORMAT_MSADPCM = 0x6,
+        SND_ASSET_FORMAT_WMA = 0x7,
+        SND_ASSET_FORMAT_FLAC = 0x8,
+        SND_ASSET_FORMAT_WIIUADPCM = 0x9,
+        SND_ASSET_FORMAT_MPC = 0xA,
+
+        SND_ASSET_FORMAT_COUNT
+    };
 
     struct SndAssetBankEntry
     {

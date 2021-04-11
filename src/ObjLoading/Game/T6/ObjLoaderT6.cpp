@@ -98,9 +98,9 @@ namespace T6
 
     bool ObjLoader::VerifySoundBankChecksum(const SoundBank* soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank)
     {
-        SndAssetBankChecksum checksum{};
-        static_assert(sizeof(SndAssetBankChecksum::checksumBytes) == sizeof(SndRuntimeAssetBank::linkTimeChecksum));
-        for (auto i = 0u; i < sizeof(SndAssetBankChecksum::checksumBytes); i++)
+        SoundAssetBankChecksum checksum{};
+        static_assert(sizeof(SoundAssetBankChecksum::checksumBytes) == sizeof(SndRuntimeAssetBank::linkTimeChecksum));
+        for (auto i = 0u; i < sizeof(SoundAssetBankChecksum::checksumBytes); i++)
             checksum.checksumBytes[i] = sndRuntimeAssetBank.linkTimeChecksum[i];
 
         return soundBank->VerifyChecksum(checksum);

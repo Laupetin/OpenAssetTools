@@ -61,12 +61,12 @@ protected:
 
     pos_type seekoff(const off_type off, const std::ios_base::seekdir dir, const std::ios_base::openmode mode) override
     {
-        if(dir == std::ios_base::beg)
+        if (dir == std::ios_base::beg)
         {
             return seekpos(off, mode);
         }
 
-        if(dir == std::ios_base::end)
+        if (dir == std::ios_base::end)
         {
             if (off > m_size)
                 return pos_type(-1);
@@ -110,6 +110,22 @@ public:
     }
 };
 
+SoundBankEntryInputStream::SoundBankEntryInputStream()
+    : m_entry{}
+{
+}
+
+SoundBankEntryInputStream::SoundBankEntryInputStream(std::unique_ptr<std::istream> stream, SoundAssetBankEntry entry)
+    : m_stream(std::move(stream)),
+      m_entry(entry)
+{
+}
+
+bool SoundBankEntryInputStream::IsOpen() const
+{
+    return m_stream.get() != nullptr;
+}
+
 bool SoundBank::ReadHeader()
 {
     m_stream->read(reinterpret_cast<char*>(&m_header), sizeof(m_header));
@@ -131,9 +147,9 @@ bool SoundBank::ReadHeader()
         return false;
     }
 
-    if (m_header.entrySize != sizeof(SndAssetBankEntry))
+    if (m_header.entrySize != sizeof(SoundAssetBankEntry))
     {
-        std::cout << "Invalid sndbank entry size 0x" << std::hex << m_header.entrySize << " (should be 0x" << std::hex << sizeof(SndAssetBankEntry) << ")" << std::endl;
+        std::cout << "Invalid sndbank entry size 0x" << std::hex << m_header.entrySize << " (should be 0x" << std::hex << sizeof(SoundAssetBankEntry) << ")" << std::endl;
         return false;
     }
 
@@ -144,19 +160,19 @@ bool SoundBank::ReadHeader()
     }
 
     if (m_header.entryCount
-        && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SndAssetBankEntry) * m_header.entryCount > m_file_size))
+        && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > m_file_size))
     {
         std::cout << "Invalid sndbank entry offset " << m_header.entryOffset << " (filesize is " << m_file_size << ")" << std::endl;
         return false;
     }
 
-    if (m_header.checksumOffset <= 0 || m_header.checksumOffset + sizeof(SndAssetBankChecksum) * m_header.entryCount > m_file_size)
+    if (m_header.checksumOffset <= 0 || m_header.checksumOffset + sizeof(SoundAssetBankChecksum) * m_header.entryCount > m_file_size)
     {
         std::cout << "Invalid sndbank checksum offset " << m_header.checksumOffset << " (filesize is " << m_file_size << ")" << std::endl;
         return false;
     }
 
-    if (m_header.dependencyCount * m_header.dependencySize > sizeof(SndAssetBankHeader::dependencies))
+    if (m_header.dependencyCount * m_header.dependencySize > sizeof(SoundAssetBankHeader::dependencies))
     {
         std::cout << "Invalid sndbank dependency sizes (count is " << m_header.dependencyCount << "; size is " << m_header.dependencySize << ")" << std::endl;
         return false;
@@ -182,7 +198,7 @@ bool SoundBank::ReadEntries()
 
     for (auto i = 0u; i < m_header.entryCount; i++)
     {
-        SndAssetBankEntry entry{};
+        SoundAssetBankEntry entry{};
         m_stream->read(reinterpret_cast<char*>(&entry), sizeof(entry));
 
         if (m_stream->gcount() != sizeof(entry))
@@ -210,7 +226,7 @@ bool SoundBank::ReadChecksums()
 
     for (auto i = 0u; i < m_header.entryCount; i++)
     {
-        SndAssetBankChecksum checksum{};
+        SoundAssetBankChecksum checksum{};
         m_stream->read(reinterpret_cast<char*>(&checksum), sizeof(checksum));
 
         if (m_stream->gcount() != sizeof(checksum))
@@ -278,23 +294,23 @@ const std::vector<std::string>& SoundBank::GetDependencies() const
     return m_dependencies;
 }
 
-bool SoundBank::VerifyChecksum(const SndAssetBankChecksum& checksum) const
+bool SoundBank::VerifyChecksum(const SoundAssetBankChecksum& checksum) const
 {
-    return m_initialized && memcmp(checksum.checksumBytes, m_header.checksumChecksum.checksumBytes, sizeof(SndAssetBankChecksum)) == 0;
+    return m_initialized && memcmp(checksum.checksumBytes, m_header.checksumChecksum.checksumBytes, sizeof(SoundAssetBankChecksum)) == 0;
 }
 
-SearchPathOpenFile SoundBank::GetEntryStream(const unsigned id) const
+SoundBankEntryInputStream SoundBank::GetEntryStream(const unsigned id) const
 {
     const auto foundEntry = m_entries_by_id.find(id);
 
     if (foundEntry != m_entries_by_id.end())
     {
         const auto& entry = m_entries[foundEntry->second];
-        
+
         m_stream->seekg(entry.offset);
 
-        return SearchPathOpenFile(std::make_unique<iobjstream>(std::make_unique<SoundBankInputBuffer>(*m_stream, entry.offset, entry.size)), entry.size);
+        return SoundBankEntryInputStream(std::make_unique<iobjstream>(std::make_unique<SoundBankInputBuffer>(*m_stream, entry.offset, entry.size)), entry);
     }
 
-    return SearchPathOpenFile();
+    return SoundBankEntryInputStream();
 }

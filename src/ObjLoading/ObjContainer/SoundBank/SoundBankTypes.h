@@ -10,12 +10,12 @@ public:
     static constexpr unsigned OFFSET_DATA_START = 0x800;
 };
 
-struct SndAssetBankChecksum
+struct SoundAssetBankChecksum
 {
     char checksumBytes[16];
 };
 
-struct SndAssetBankHeader
+struct SoundAssetBankHeader
 {
     unsigned int magic;                     // + 0x0
     unsigned int version;                   // + 0x4
@@ -28,11 +28,11 @@ struct SndAssetBankHeader
     int64_t fileSize;                       // + 0x20
     int64_t entryOffset;                    // + 0x28
     int64_t checksumOffset;                 // + 0x30
-    SndAssetBankChecksum checksumChecksum;  // + 0x38
+    SoundAssetBankChecksum checksumChecksum;  // + 0x38
     char dependencies[512];                 // + 0x48
 };
 
-struct SndAssetBankEntry
+struct SoundAssetBankEntry
 {
     unsigned int id;
     unsigned int size;
