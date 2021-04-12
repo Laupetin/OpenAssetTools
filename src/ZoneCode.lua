@@ -1,6 +1,34 @@
 ZoneCode = {}
 
 ZoneCode.Assets = {
+    IW3 = {
+        "PhysPreset",
+        "XAnimParts",
+        "XModel",
+        "Material",
+        "MaterialTechniqueSet",
+        "GfxImage",
+        "snd_alias_list_t",
+        "SndCurve",
+        "LoadedSound",
+        "clipMap_t",
+        "ComWorld",
+        "GameWorldSp",
+        "GameWorldMp",
+        "MapEnts",
+        "GfxWorld",
+        "GfxLightDef",
+        "Font_s",
+        "MenuList",
+        "menuDef_t",
+        "LocalizeEntry",
+        "WeaponDef",
+        "FxEffectDef",
+        "FxImpactTable",
+        "RawFile",
+        "StringTable"
+    },
+
     IW4 = {
         "PhysPreset",
         "PhysCollmap",
@@ -205,6 +233,10 @@ function ZoneCode:project()
                 path.join(ProjectFolder(), "Common/Game/%{file.basename}/%{file.basename}_Assets.h"),
                 TargetDirectoryBin .. "/" .. ExecutableByOs('ZoneCodeGenerator')
             }
+        filter {}
+        
+        filter "files:**/IW3.gen"
+            self:outputForAssets(self.Assets.IW3)
         filter {}
         
         filter "files:**/IW4.gen"

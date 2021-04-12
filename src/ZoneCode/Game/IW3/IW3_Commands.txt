@@ -1,0 +1,69 @@
+// Game: Modern Warfare (IW3)
+game IW3;
+architecture x86;
+
+// Game Assets
+asset PhysPreset ASSET_TYPE_PHYSPRESET;
+asset XAnimParts ASSET_TYPE_XANIMPARTS;
+asset XModel ASSET_TYPE_XMODEL;
+asset Material ASSET_TYPE_MATERIAL;
+asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
+asset GfxImage ASSET_TYPE_IMAGE;
+asset snd_alias_list_t ASSET_TYPE_SOUND;
+asset SndCurve ASSET_TYPE_SOUND_CURVE;
+asset LoadedSound ASSET_TYPE_LOADED_SOUND;
+asset clipMap_t ASSET_TYPE_CLIPMAP_MP;
+asset ComWorld ASSET_TYPE_COMWORLD;
+asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
+asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
+asset MapEnts ASSET_TYPE_MAP_ENTS;
+asset GfxWorld ASSET_TYPE_GFXWORLD;
+asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
+asset Font_s ASSET_TYPE_FONT;
+asset MenuList ASSET_TYPE_MENULIST;
+asset menuDef_t ASSET_TYPE_MENU;
+asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
+asset WeaponDef ASSET_TYPE_WEAPON;
+asset FxEffectDef ASSET_TYPE_FX;
+asset FxImpactTable ASSET_TYPE_IMPACT_FX;
+asset RawFile ASSET_TYPE_RAWFILE;
+asset StringTable ASSET_TYPE_STRINGTABLE;
+
+// Setup blocks
+block temp    XFILE_BLOCK_TEMP              default;
+block runtime XFILE_BLOCK_RUNTIME           default;
+block runtime XFILE_BLOCK_LARGE_RUNTIME;
+block runtime XFILE_BLOCK_PHYSICAL_RUNTIME;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_LARGE;
+block normal  XFILE_BLOCK_PHYSICAL;
+block normal  XFILE_BLOCK_VERTEX;
+block normal  XFILE_BLOCK_INDEX;
+
+#include "XAssets/PhysPreset.txt"
+#include "XAssets/XAnimParts.txt"
+#include "XAssets/XModel.txt"
+#include "XAssets/Material.txt"
+#include "XAssets/MaterialTechniqueSet.txt"
+#include "XAssets/GfxImage.txt"
+#include "XAssets/snd_alias_list_t.txt"
+#include "XAssets/SndCurve.txt"
+#include "XAssets/LoadedSound.txt"
+#include "XAssets/clipMap_t.txt"
+#include "XAssets/ComWorld.txt"
+#include "XAssets/GameWorldSp.txt"
+#include "XAssets/GameWorldMp.txt"
+#include "XAssets/MapEnts.txt"
+#include "XAssets/GfxWorld.txt"
+#include "XAssets/LocalizeEntry.txt"
+#include "XAssets/WeaponDef.txt"
+#include "XAssets/MenuList.txt"
+#include "XAssets/menuDef_t.txt"
+#include "XAssets/FxEffectDef.txt"
+#include "XAssets/FxImpactTable.txt"
+#include "XAssets/GfxLightDef.txt"
+#include "XAssets/Font_s.txt"
+#include "XAssets/RawFile.txt"
+#include "XAssets/StringTable.txt"
+
+// EOF
