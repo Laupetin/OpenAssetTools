@@ -1,0 +1,50 @@
+// =========================================
+// MaterialTechniqueSet
+// =========================================
+use MaterialTechniqueSet;
+set string name;
+set name name;
+set condition remappedTechniqueSet never;
+set reusable techniques;
+
+// MaterialTechnique
+use MaterialTechnique;
+set string name;
+set arraysize passArray passCount;
+reorder:
+    passArray
+    name;
+
+// MaterialPass
+use MaterialPass;
+set count args perPrimArgCount + perObjArgCount + stableArgCount;
+
+// MaterialShaderArgument
+use MaterialShaderArgument;
+set condition u::literalConst type == MTL_ARG_LITERAL_VERTEX_CONST 
+|| type == MTL_ARG_LITERAL_PIXEL_CONST;
+set reusable u::literalConst;
+
+// MaterialPixelShader
+set string MaterialPixelShader::name;
+
+// GfxPixelShaderLoadDef
+set count GfxPixelShaderLoadDef::program programSize;
+
+// MaterialPixelShaderProgram
+set condition MaterialPixelShaderProgram::ps never;
+
+// MaterialVertexDeclaration
+set string MaterialVertexDeclaration::name;
+
+// MaterialVertexStreamRouting
+set condition MaterialVertexStreamRouting::decl never;
+
+// MaterialVertexShader
+set string MaterialVertexShader::name;
+
+// GfxVertexShaderLoadDef
+set count GfxVertexShaderLoadDef::program programSize;
+
+// MaterialVertexShaderProgram
+set condition MaterialVertexShaderProgram::vs never;
