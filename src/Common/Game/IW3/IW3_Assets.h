@@ -55,12 +55,10 @@ namespace IW3
     enum XFileBlock
     {
         XFILE_BLOCK_TEMP,
-        XFILE_BLOCK_RUNTIME_BEGIN,
-        XFILE_BLOCK_RUNTIME = XFILE_BLOCK_RUNTIME_BEGIN,
+        XFILE_BLOCK_RUNTIME,
         XFILE_BLOCK_LARGE_RUNTIME,
         XFILE_BLOCK_PHYSICAL_RUNTIME,
-        XFILE_BLOCK_RUNTIME_END,
-        XFILE_BLOCK_VIRTUAL = XFILE_BLOCK_RUNTIME_END,
+        XFILE_BLOCK_VIRTUAL,
         XFILE_BLOCK_LARGE,
         XFILE_BLOCK_PHYSICAL,
         XFILE_BLOCK_VERTEX,
@@ -252,7 +250,7 @@ namespace IW3
         uint16_t numframes;
         bool bLoop;
         bool bDelta;
-        char boneCount[10];
+        unsigned char boneCount[10];
         char notifyCount;
         char assetType;
         bool isDefault;

@@ -10,14 +10,11 @@ using namespace IW3;
 
 const char* GameAssetPoolIW3::ASSET_TYPE_NAMES[]
 {
+    "xmodelpieces",
     "physpreset",
     "xanim",
-    "xmodelsurfs",
     "xmodel",
     "material",
-    "pixelshader",
-    "vertexshader",
-    "vertexdecl",
     "techniqueset",
     "image",
     "sound",
@@ -86,7 +83,7 @@ GameAssetPoolIW3::GameAssetPoolIW3(Zone* zone, const int priority)
     : ZoneAssetPools(zone),
     m_priority(priority)
 {
-    assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
+    static_assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
 
     m_phys_preset = nullptr;
     m_xanim_parts = nullptr;

@@ -18,6 +18,9 @@ reorder:
 // MaterialPass
 use MaterialPass;
 set count args perPrimArgCount + perObjArgCount + stableArgCount;
+set reusable vertexDecl;
+set reusable vertexShader;
+set reusable pixelShader;
 
 // MaterialShaderArgument
 use MaterialShaderArgument;
