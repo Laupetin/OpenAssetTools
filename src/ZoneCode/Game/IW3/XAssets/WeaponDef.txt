@@ -1,0 +1,51 @@
+// =========================================
+// WeaponCompleteDef
+// =========================================
+use WeaponDef;
+set string szInternalName;
+set name szInternalName;
+set string szDisplayName;
+set string szOverlayName;
+set string szXAnims;
+set string szModeName;
+set scriptstring hideTags;
+set scriptstring notetrackSoundMapKeys;
+set scriptstring notetrackSoundMapValues;
+set reusable bounceSound;
+set count bounceSound 29;
+set string szAmmoName;
+set string szClipName;
+set string szSharedAmmoCapName;
+set string szAltWeaponName;
+set string accuracyGraphName0;
+set string accuracyGraphName1;
+set reusable accuracyGraphKnots0;
+set reusable accuracyGraphKnots1;
+set reusable originalAccuracyGraphKnots0;
+set reusable originalAccuracyGraphKnots1;
+set count accuracyGraphKnots0 WeaponCompleteDef::accuracyGraphKnotCount[0];
+set count accuracyGraphKnots1 WeaponCompleteDef::accuracyGraphKnotCount[1];
+set count originalAccuracyGraphKnots0 WeaponCompleteDef::accuracyGraphKnotCount[0]; // yeah it uses accuracyGraphKnotCount
+set count originalAccuracyGraphKnots1 WeaponCompleteDef::accuracyGraphKnotCount[1];
+set string szUseHintString;
+set string dropHintString;
+set string szScript;
+set string fireRumble;
+set string meleeImpactRumble;
+reorder:
+    ...
+    accuracyGraphName0
+    accuracyGraphKnots0
+    originalAccuracyGraphKnots0
+    accuracyGraphName1
+    accuracyGraphKnots1;
+    originalAccuracyGraphKnots1;
+
+// SndAliasCustom
+use SndAliasCustom;
+set count name 1;
+set reusable name;
+set condition sound never;
+
+// snd_alias_list_name
+set string snd_alias_list_name::soundName;

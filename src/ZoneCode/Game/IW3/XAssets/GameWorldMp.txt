@@ -1,0 +1,6 @@
+// =========================================
+// GameWorldMp
+// =========================================
+use GameWorldMp;
+set string name;
+set name name;

@@ -1,0 +1,8 @@
+// =========================================
+// StringTable
+// =========================================
+use StringTable;
+set string name;
+set name name;
+set string values;
+set count values columnCount * rowCount;

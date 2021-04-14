@@ -136,6 +136,7 @@ namespace IW3
     typedef char cbrushedge_t;
     typedef float vec2_t[2];
     typedef float vec3_t[3];
+    typedef tdef_align(128) unsigned int raw_uint128;
 
     struct XModelPiece
     {
@@ -1399,7 +1400,7 @@ namespace IW3
         GfxPortalWritable writable;
         DpvsPlane plane;
         GfxCell* cell;
-        float(*vertices)[3];
+        vec3_t* vertices;
         char vertexCount;
         float hullAxis[2][3];
     };
@@ -1635,14 +1636,14 @@ namespace IW3
         unsigned int surfaceVisDataCount;
         char* smodelVisData[3];
         char* surfaceVisData[3];
-        unsigned int* lodData;
+        raw_uint128* lodData;
         uint16_t* sortedSurfIndex;
         GfxStaticModelInst* smodelInsts;
         GfxSurface* surfaces;
         GfxCullGroup* cullGroups;
         GfxStaticModelDrawInst* smodelDrawInsts;
         GfxDrawSurf* surfaceMaterials;
-        unsigned int* surfaceCastsSunShadow;
+        raw_uint128* surfaceCastsSunShadow;
         volatile int usageCount;
     };
 
@@ -1654,6 +1655,11 @@ namespace IW3
         char* dynEntVisData[2][3];
     };
 
+    struct GfxWorldStreamInfo
+    {
+        
+    };
+
     struct GfxWorld
     {
         const char* name;
@@ -1663,7 +1669,7 @@ namespace IW3
         int indexCount;
         uint16_t* indices;
         int surfaceCount;
-        //GfxWorldStreamInfo streamInfo;
+        GfxWorldStreamInfo streamInfo;
         int skySurfCount;
         int* skyStartSurfs;
         GfxImage* skyImage;
@@ -1804,6 +1810,12 @@ namespace IW3
     {
         int op;
         Operand operand;
+    };
+
+    enum expressionEntryType : int
+    {
+        EET_OPERATOR = 0x0,
+        EET_OPERAND = 0x1,
     };
 
     struct expressionEntry
@@ -2112,6 +2124,17 @@ namespace IW3
         MISSILE_GUIDANCE_COUNT = 0x4,
     };
 
+    struct snd_alias_list_name
+    {
+        const char* soundName;
+    };
+
+    union SndAliasCustom
+    {
+        snd_alias_list_name* name;
+        snd_alias_list_t* sound;
+    };
+
     struct WeaponDef
     {
         const char* szInternalName;
@@ -2135,52 +2158,52 @@ namespace IW3
         weapStance_t stance;
         FxEffectDef* viewFlashEffect;
         FxEffectDef* worldFlashEffect;
-        snd_alias_list_t* pickupSound;
-        snd_alias_list_t* pickupSoundPlayer;
-        snd_alias_list_t* ammoPickupSound;
-        snd_alias_list_t* ammoPickupSoundPlayer;
-        snd_alias_list_t* projectileSound;
-        snd_alias_list_t* pullbackSound;
-        snd_alias_list_t* pullbackSoundPlayer;
-        snd_alias_list_t* fireSound;
-        snd_alias_list_t* fireSoundPlayer;
-        snd_alias_list_t* fireLoopSound;
-        snd_alias_list_t* fireLoopSoundPlayer;
-        snd_alias_list_t* fireStopSound;
-        snd_alias_list_t* fireStopSoundPlayer;
-        snd_alias_list_t* fireLastSound;
-        snd_alias_list_t* fireLastSoundPlayer;
-        snd_alias_list_t* emptyFireSound;
-        snd_alias_list_t* emptyFireSoundPlayer;
-        snd_alias_list_t* meleeSwipeSound;
-        snd_alias_list_t* meleeSwipeSoundPlayer;
-        snd_alias_list_t* meleeHitSound;
-        snd_alias_list_t* meleeMissSound;
-        snd_alias_list_t* rechamberSound;
-        snd_alias_list_t* rechamberSoundPlayer;
-        snd_alias_list_t* reloadSound;
-        snd_alias_list_t* reloadSoundPlayer;
-        snd_alias_list_t* reloadEmptySound;
-        snd_alias_list_t* reloadEmptySoundPlayer;
-        snd_alias_list_t* reloadStartSound;
-        snd_alias_list_t* reloadStartSoundPlayer;
-        snd_alias_list_t* reloadEndSound;
-        snd_alias_list_t* reloadEndSoundPlayer;
-        snd_alias_list_t* detonateSound;
-        snd_alias_list_t* detonateSoundPlayer;
-        snd_alias_list_t* nightVisionWearSound;
-        snd_alias_list_t* nightVisionWearSoundPlayer;
-        snd_alias_list_t* nightVisionRemoveSound;
-        snd_alias_list_t* nightVisionRemoveSoundPlayer;
-        snd_alias_list_t* altSwitchSound;
-        snd_alias_list_t* altSwitchSoundPlayer;
-        snd_alias_list_t* raiseSound;
-        snd_alias_list_t* raiseSoundPlayer;
-        snd_alias_list_t* firstRaiseSound;
-        snd_alias_list_t* firstRaiseSoundPlayer;
-        snd_alias_list_t* putawaySound;
-        snd_alias_list_t* putawaySoundPlayer;
-        snd_alias_list_t** bounceSound;
+        SndAliasCustom pickupSound;
+        SndAliasCustom pickupSoundPlayer;
+        SndAliasCustom ammoPickupSound;
+        SndAliasCustom ammoPickupSoundPlayer;
+        SndAliasCustom projectileSound;
+        SndAliasCustom pullbackSound;
+        SndAliasCustom pullbackSoundPlayer;
+        SndAliasCustom fireSound;
+        SndAliasCustom fireSoundPlayer;
+        SndAliasCustom fireLoopSound;
+        SndAliasCustom fireLoopSoundPlayer;
+        SndAliasCustom fireStopSound;
+        SndAliasCustom fireStopSoundPlayer;
+        SndAliasCustom fireLastSound;
+        SndAliasCustom fireLastSoundPlayer;
+        SndAliasCustom emptyFireSound;
+        SndAliasCustom emptyFireSoundPlayer;
+        SndAliasCustom meleeSwipeSound;
+        SndAliasCustom meleeSwipeSoundPlayer;
+        SndAliasCustom meleeHitSound;
+        SndAliasCustom meleeMissSound;
+        SndAliasCustom rechamberSound;
+        SndAliasCustom rechamberSoundPlayer;
+        SndAliasCustom reloadSound;
+        SndAliasCustom reloadSoundPlayer;
+        SndAliasCustom reloadEmptySound;
+        SndAliasCustom reloadEmptySoundPlayer;
+        SndAliasCustom reloadStartSound;
+        SndAliasCustom reloadStartSoundPlayer;
+        SndAliasCustom reloadEndSound;
+        SndAliasCustom reloadEndSoundPlayer;
+        SndAliasCustom detonateSound;
+        SndAliasCustom detonateSoundPlayer;
+        SndAliasCustom nightVisionWearSound;
+        SndAliasCustom nightVisionWearSoundPlayer;
+        SndAliasCustom nightVisionRemoveSound;
+        SndAliasCustom nightVisionRemoveSoundPlayer;
+        SndAliasCustom altSwitchSound;
+        SndAliasCustom altSwitchSoundPlayer;
+        SndAliasCustom raiseSound;
+        SndAliasCustom raiseSoundPlayer;
+        SndAliasCustom firstRaiseSound;
+        SndAliasCustom firstRaiseSoundPlayer;
+        SndAliasCustom putawaySound;
+        SndAliasCustom putawaySoundPlayer;
+        SndAliasCustom* bounceSound;
         FxEffectDef* viewShellEjectEffect;
         FxEffectDef* worldShellEjectEffect;
         FxEffectDef* viewLastShotEjectEffect;
@@ -2377,8 +2400,8 @@ namespace IW3
         FxEffectDef* projExplosionEffect;
         int projExplosionEffectForceNormalUp;
         FxEffectDef* projDudEffect;
-        snd_alias_list_t* projExplosionSound;
-        snd_alias_list_t* projDudSound;
+        SndAliasCustom projExplosionSound;
+        SndAliasCustom projDudSound;
         int bProjImpactExplode;
         WeapStickinessType stickiness;
         int hasDetonator;
@@ -2395,7 +2418,7 @@ namespace IW3
         float maxSteeringAccel;
         int projIgnitionDelay;
         FxEffectDef* projIgnitionEffect;
-        snd_alias_list_t* projIgnitionSound;
+        SndAliasCustom projIgnitionSound;
         float fAdsAimPitch;
         float fAdsCrosshairInFrac;
         float fAdsCrosshairOutFrac;
@@ -2436,9 +2459,18 @@ namespace IW3
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        const char* accuracyGraphName[2];
-        float(*accuracyGraphKnots[2])[2];
-        float(*originalAccuracyGraphKnots[2])[2];
+        // TODO: Order is accuracyGraphName[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
+        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
+        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
+        //const char* accuracyGraphName[2];
+        const char* accuracyGraphName0;
+        const char* accuracyGraphName1;
+        //float(*accuracyGraphKnots[2])[2];
+        vec2_t* accuracyGraphKnots0;
+        vec2_t* accuracyGraphKnots1;
+        //float(*originalAccuracyGraphKnots[2])[2];
+        vec2_t* originalAccuracyGraphKnots0;
+        vec2_t* originalAccuracyGraphKnots1;
         int accuracyGraphKnotCount[2];
         int originalAccuracyGraphKnotCount[2];
         int iPositionReloadTransTime;
@@ -2561,6 +2593,24 @@ namespace IW3
     {
         FxEffectDef* handle;
         const char* name;
+    };
+
+    enum FxElemType
+    {
+        FX_ELEM_TYPE_SPRITE_BILLBOARD = 0x0,
+        FX_ELEM_TYPE_SPRITE_ORIENTED = 0x1,
+        FX_ELEM_TYPE_TAIL = 0x2,
+        FX_ELEM_TYPE_TRAIL = 0x3,
+        FX_ELEM_TYPE_CLOUD = 0x4,
+        FX_ELEM_TYPE_MODEL = 0x5,
+        FX_ELEM_TYPE_OMNI_LIGHT = 0x6,
+        FX_ELEM_TYPE_SPOT_LIGHT = 0x7,
+        FX_ELEM_TYPE_SOUND = 0x8,
+        FX_ELEM_TYPE_DECAL = 0x9,
+        FX_ELEM_TYPE_RUNNER = 0xA,
+        FX_ELEM_TYPE_COUNT = 0xB,
+        FX_ELEM_TYPE_LAST_SPRITE = 0x3,
+        FX_ELEM_TYPE_LAST_DRAWN = 0x7,
     };
 
     union FxElemVisuals

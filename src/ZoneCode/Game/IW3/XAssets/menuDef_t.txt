@@ -1,0 +1,82 @@
+// =========================================
+// menuDef_t
+// =========================================
+use menuDef_t;
+set string window::name;
+set name window::name;
+set string font;
+set string onOpen;
+set string onClose;
+set string onESC;
+set reusable visibleExp;
+set string allowedBinding;
+set string soundName;
+set reusable rectXExp;
+set reusable rectYExp;
+set count items itemCount;
+
+// windowDef_t
+use windowDef_t;
+set string name;
+set string group;
+
+// ItemKeyHandler
+set string ItemKeyHandler::action;
+
+// statement_s
+set count statement_s::entries numEntries;
+
+// expressionEntry
+set condition expressionEntry::data::operand type == EET_OPERAND;
+
+// Operand
+use Operand;
+set condition internals::intVal dataType == VAL_INT;
+set condition internals::floatVal dataType == VAL_FLOAT;
+set condition internals::stringVal dataType == VAL_STRING;
+set string internal::stringVal;
+
+// itemDef_s
+use itemDef_s;
+set string text;
+set condition parent never;
+set string mouseEnterText;
+set string mouseExitText;
+set string mouseEnter;
+set string mouseExit;
+set string action;
+set string onAccept;
+set string onFocus;
+set string leaveFocus;
+set string dvar;
+set string dvarTest;
+set string enableDvar;
+
+// itemDefData_t
+use itemDefData_t;
+set string enumDvarName;
+set condition data never;
+set condition listBox itemDef_s::type == 6;
+set condition editField itemDef_s::type == 0
+    || itemDef_s::type == 4
+    || itemDef_s::type == 9
+    || itemDef_s::type == 10
+    || itemDef_s::type == 11
+    || itemDef_s::type == 14
+    || itemDef_s::type == 16
+    || itemDef_s::type == 17
+    || itemDef_s::type == 18
+    || itemDef_s::type == 22
+    || itemDef_s::type == 23;
+set condition multi itemDef_s::type == 12;
+set condition enumDvarName itemDef_s::type == 13;
+set condition ticker itemDef_s::type == 20;
+set condition scroll itemDef_s::type == 21;
+
+// listBoxDef_s
+set string listBoxDef_s::doubleClick;
+
+// multiDef_s
+use multiDef_s;
+set string dvarList;
+set string dvarStr;
