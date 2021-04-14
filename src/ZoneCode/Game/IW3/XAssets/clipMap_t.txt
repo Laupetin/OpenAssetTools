@@ -23,9 +23,8 @@ set count partitions partitionCount;
 set count aabbTrees aabbTreeCount;
 set count cmodels numSubModels;
 set count brushes numBrushes;
-set count brushBounds numBrushes;
-set count brushContents numBrushes;
-set count smodelNodes smodelNodeCount;
+set visibility numClusters * clusterBytes;
+set reusable box_brush;
 set count dynEntDefList[0] dynEntCount[0];
 set count dynEntDefList[1] dynEntCount[1];
 set block dynEntPoseList XFILE_BLOCK_RUNTIME;
@@ -42,14 +41,6 @@ reorder:
     leafs
     leafbrushes
     leafbrushNodes;
-reorder:
-    ...
-    brushContents
-    smodelNodes
-    mapEnts;
-
-// ClipMaterial
-set string ClipMaterial::name;
 
 // cNode_t
 set reusable cNode_t::plane;
@@ -68,3 +59,11 @@ set reusable borders;
 use cbrush_t;
 set reusable sides;
 set reusable baseAdjacentSide;
+
+// DynEntityDef
+set reusable DynEntityDef::destroyPieces;
+
+// XModelPieces
+use XModelPieces;
+set string name;
+set count pieces numpieces;

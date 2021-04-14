@@ -137,6 +137,19 @@ namespace IW3
     typedef float vec2_t[2];
     typedef float vec3_t[3];
 
+    struct XModelPiece
+    {
+        XModel* model;
+        float offset[3];
+    };
+    
+    struct XModelPieces
+    {
+        const char* name;
+        int numpieces;
+        XModelPiece* pieces;
+    };
+
     struct PhysPreset
     {
         const char *name;
@@ -808,6 +821,14 @@ namespace IW3
         StreamedSound streamSnd;
     };
 
+    enum snd_alias_type_t
+    {
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_COUNT = 0x3,
+    };
+
     struct SoundFile
     {
         char type;
@@ -1044,6 +1065,8 @@ namespace IW3
         float linkMaxs[2];
     };
 
+    typedef unsigned short LeafBrush;
+
     struct clipMap_t
     {
         const char* name;
@@ -1065,11 +1088,11 @@ namespace IW3
         unsigned int leafbrushNodesCount;
         cLeafBrushNode_s* leafbrushNodes;
         unsigned int numLeafBrushes;
-        uint16_t* leafbrushes;
+        LeafBrush* leafbrushes;
         unsigned int numLeafSurfaces;
         unsigned int* leafsurfaces;
         unsigned int vertCount;
-        float(*verts)[3];
+        vec3_t *verts;
         int triCount;
         uint16_t* triIndices;
         char* triEdgeIsWalkable;
