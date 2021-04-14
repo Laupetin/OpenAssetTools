@@ -28,8 +28,8 @@ set count sceneDynBrush dpvsDyn::dynEntClientCount[1];
 set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
 set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x2000;
 set block primaryLightDynEntShadowVis XFILE_BLOCK_RUNTIME;
-set count primaryLightDynEntShadowVis[0] dpvsDyn::dynEntClientCount[0] * (primaryLightCount - lastSunPrimaryLightIndex - 1);
-set count primaryLightDynEntShadowVis[1] dpvsDyn::dynEntClientCount[1] * (primaryLightCount - lastSunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis[0] dpvsDyn::dynEntClientCount[0] * (primaryLightCount - sunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis[1] dpvsDyn::dynEntClientCount[1] * (primaryLightCount - sunPrimaryLightIndex - 1);
 set block nonSunPrimaryLightForModelDynEnt XFILE_BLOCK_RUNTIME;
 set count nonSunPrimaryLightForModelDynEnt dpvsDyn::dynEntClientCount[0];
 set count shadowGeom primaryLightCount;
@@ -74,10 +74,14 @@ set count entries entryCount;
 set count colors colorCount;
 
 // GfxWorldVertexData
-set count GfxWorldVertexData::vertices GfxWorld::vertexCount;
+use GfxWorldVertexData;
+set count vertices GfxWorld::vertexCount;
+set condition worldVb never;
 
 // GfxWorldVertexLayerData
-set count GfxWorldVertexLayerData::data GfxWorld::vertexLayerDataSize;
+use GfxWorldVertexLayerData;
+set count data GfxWorld::vertexLayerDataSize;
+set condition layerVb never;
 
 // GfxShadowGeometry
 use GfxShadowGeometry;
@@ -101,8 +105,7 @@ set count lodData 2 * smodelVisDataCount;
 set count sortedSurfIndex staticSurfaceCount + staticSurfaceCountNoDecal;
 set count smodelInsts smodelCount;
 set count surfaces GfxWorld::surfaceCount;
-set count cullGroups cullGroupCount;
-set count surfacesBounds GfxWorld::surfaceCount;
+set count cullGroups GfxWorld::cullGroupCount;
 set count smodelDrawInsts smodelCount;
 set block surfaceMaterials XFILE_BLOCK_RUNTIME;
 set count surfaceMaterials staticSurfaceCount;

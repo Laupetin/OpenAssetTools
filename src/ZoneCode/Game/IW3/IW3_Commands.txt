@@ -12,7 +12,7 @@ asset GfxImage ASSET_TYPE_IMAGE;
 asset snd_alias_list_t ASSET_TYPE_SOUND;
 asset SndCurve ASSET_TYPE_SOUND_CURVE;
 asset LoadedSound ASSET_TYPE_LOADED_SOUND;
-asset clipMap_t ASSET_TYPE_CLIPMAP_MP;
+asset clipMap_t ASSET_TYPE_CLIPMAP_PVS;
 asset ComWorld ASSET_TYPE_COMWORLD;
 asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
 asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;

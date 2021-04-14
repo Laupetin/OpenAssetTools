@@ -36,11 +36,6 @@ use FxEffectDefRef;
 set condition handle never;
 set string name;
 
-// FxElemExtendedDefPtr
-use FxElemExtendedDefPtr;
-set condition trailDef FxElemDef::elemType == FX_ELEM_TYPE_TRAIL;
-set condition sparkFountainDef FxElemDef::elemType == FX_ELEM_TYPE_SPARK_FOUNTAIN;
-
 // FxTrailDef
 use FxTrailDef;
 set count verts vertCount;

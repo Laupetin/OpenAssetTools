@@ -37,30 +37,3 @@ set reusable u::child;
 
 // pathnode_tree_nodes_t
 set count pathnode_tree_nodes_t::nodes nodeCount;
-
-// VehicleTrack
-use VehicleTrack;
-set reusable segments;
-set count segments segmentCount;
-
-// VehicleTrackSegment
-use VehicleTrackSegment;
-set string targetName;
-set count sectors sectorCount;
-set reusable nextBranches;
-set count nextBranches nextBranchesCount;
-set reusable prevBranches;
-set count prevBranches prevBranchesCount;
-
-// VehicleTrackSector
-set count VehicleTrackSector::obstacles obstacleCount;
-
-// G_GlassData
-use G_GlassData;
-set count glassPieces pieceCount;
-set count glassNames glassNameCount;
-
-// G_GlassName
-use G_GlassName;
-set string nameStr;
-set count pieceIndices pieceCount;

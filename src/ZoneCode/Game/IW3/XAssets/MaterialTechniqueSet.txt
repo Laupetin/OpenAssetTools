@@ -34,9 +34,6 @@ set count GfxPixelShaderLoadDef::program programSize;
 // MaterialPixelShaderProgram
 set condition MaterialPixelShaderProgram::ps never;
 
-// MaterialVertexDeclaration
-set string MaterialVertexDeclaration::name;
-
 // MaterialVertexStreamRouting
 set condition MaterialVertexStreamRouting::decl never;
 

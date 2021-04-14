@@ -23,7 +23,7 @@ set count partitions partitionCount;
 set count aabbTrees aabbTreeCount;
 set count cmodels numSubModels;
 set count brushes numBrushes;
-set visibility numClusters * clusterBytes;
+set count visibility numClusters * clusterBytes;
 set reusable box_brush;
 set count dynEntDefList[0] dynEntCount[0];
 set count dynEntDefList[1] dynEntCount[1];

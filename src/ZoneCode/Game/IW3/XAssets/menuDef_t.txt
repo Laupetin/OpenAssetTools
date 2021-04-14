@@ -34,7 +34,7 @@ use Operand;
 set condition internals::intVal dataType == VAL_INT;
 set condition internals::floatVal dataType == VAL_FLOAT;
 set condition internals::stringVal dataType == VAL_STRING;
-set string internal::stringVal;
+set string internals::stringVal;
 
 // itemDef_s
 use itemDef_s;
@@ -70,8 +70,6 @@ set condition editField itemDef_s::type == 0
     || itemDef_s::type == 23;
 set condition multi itemDef_s::type == 12;
 set condition enumDvarName itemDef_s::type == 13;
-set condition ticker itemDef_s::type == 20;
-set condition scroll itemDef_s::type == 21;
 
 // listBoxDef_s
 set string listBoxDef_s::doubleClick;

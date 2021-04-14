@@ -1,6 +1,6 @@
 #include "ObjLoaderIW3.h"
-#include "Game/IW4/GameIW4.h"
-#include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW3/GameIW3.h"
+#include "Game/IW3/GameAssetPoolIW3.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
@@ -49,7 +49,7 @@ ObjLoader::ObjLoader()
 
 bool ObjLoader::SupportsZone(Zone* zone) const
 {
-    return zone->m_game == &g_GameIW4;
+    return zone->m_game == &g_GameIW3;
 }
 
 bool ObjLoader::IsMpZone(Zone* zone)
@@ -109,7 +109,7 @@ void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone*
 
 void ObjLoader::LoadImageData(ISearchPath* searchPath, Zone* zone)
 {
-    auto* assetPool = dynamic_cast<GameAssetPoolIW4*>(zone->m_pools.get());
+    auto* assetPool = dynamic_cast<GameAssetPoolIW3*>(zone->m_pools.get());
 
     if (assetPool && assetPool->m_image != nullptr)
     {
