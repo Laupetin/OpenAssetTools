@@ -51,7 +51,7 @@ protected:
             m_stream.read(ptr, count);
 
             const auto readSize = m_stream.gcount();
-            m_offset += readSize;
+            m_offset += static_cast<size_t>(readSize);
             return readSize;
         }
 
