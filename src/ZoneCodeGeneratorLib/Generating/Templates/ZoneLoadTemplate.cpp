@@ -908,15 +908,15 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("assert(atStreamStart);")
         }
 
-        if (info->m_block)
+        if (computations.IsAsset())
+        {
+            LINE("")
+            LINE("m_stream->PushBlock(" << m_env.m_default_normal_block->m_name << ");")
+        }
+        else if (info->m_block)
         {
             LINE("")
             LINE("m_stream->PushBlock("<<info->m_block->m_name<<");")
-        }
-        else if (computations.IsAsset())
-        {
-            LINE("")
-            LINE("m_stream->PushBlock("<<m_env.m_default_normal_block->m_name<<");")
         }
 
         for (const auto& member : info->m_ordered_members)
@@ -934,8 +934,9 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void PrintLoadTempPtrMethod(StructureInformation* info)
+    void PrintLoadPtrMethod(StructureInformation* info)
     {
+        const bool inTemp = info->m_block && info->m_block->m_type == FastFileBlockType::TEMP;
         LINE("void "<<LoaderClassName(m_env.m_asset)<<"::LoadPtr_"<<MakeSafeTypeName(info->m_definition)<<"(const bool atStreamStart)")
         LINE("{")
         m_intendation++;
@@ -949,24 +950,42 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         m_intendation--;
 
         LINE("")
-        LINE("m_stream->PushBlock("<<m_env.m_default_temp_block->m_name<<");")
-        LINE("")
+        if (inTemp)
+        {
+            LINE("m_stream->PushBlock(" << m_env.m_default_temp_block->m_name << ");")
+            LINE("")
+        }
+
         LINE("if(*"<< MakeTypePtrVarName(info->m_definition)<<" != nullptr)")
         LINE("{")
         m_intendation++;
 
-        LINE("if(*" << MakeTypePtrVarName(info->m_definition) << " == PTR_FOLLOWING || *" << MakeTypePtrVarName(info->m_definition) << " == PTR_INSERT)")
+        if (inTemp)
+        {
+            LINE("if(*" << MakeTypePtrVarName(info->m_definition) << " == PTR_FOLLOWING || *" << MakeTypePtrVarName(info->m_definition) << " == PTR_INSERT)")
+        }
+        else
+        {
+            LINE("if(*" << MakeTypePtrVarName(info->m_definition) << " == PTR_FOLLOWING)")
+        }
         LINE("{")
         m_intendation++;
 
-        LINE(info->m_definition->GetFullName() << "* ptr = *" << MakeTypePtrVarName(info->m_definition) << ";")
+        if (inTemp)
+        {
+            LINE(info->m_definition->GetFullName() << "* ptr = *" << MakeTypePtrVarName(info->m_definition) << ";")
+        }
         LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->Alloc<" << info->m_definition->GetFullName() << ">("<< info->m_definition->GetAlignment() <<");")
-        LINE("")
-        LINE(info->m_definition->GetFullName() << "** toInsert = nullptr;")
-        LINE("if(ptr == PTR_INSERT)")
-        m_intendation++;
-        LINE("toInsert = m_stream->InsertPointer<"<<info->m_definition->GetFullName()<<">();")
-        m_intendation--;
+
+        if (inTemp)
+        {
+            LINE("")
+            LINE(info->m_definition->GetFullName() << "** toInsert = nullptr;")
+            LINE("if(ptr == PTR_INSERT)")
+            m_intendation++;
+            LINE("toInsert = m_stream->InsertPointer<" << info->m_definition->GetFullName() << ">();")
+            m_intendation--;
+        }
 
         auto startLoadSection = true;
 
@@ -982,7 +1001,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("#error Temp method cannot have leaf type")
+            LINE("#error Ptr method cannot have leaf type")
         }
 
         if (info->m_post_load_action)
@@ -997,15 +1016,18 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("LoadAsset_"<<MakeSafeTypeName(info->m_definition)<<"("<<MakeTypePtrVarName(info->m_definition)<<");")
         }
 
-        if (!startLoadSection)
+        if (inTemp)
         {
-            LINE("")
-        }
+            if (!startLoadSection)
+            {
+                LINE("")
+            }
 
-        LINE("if(toInsert != nullptr)")
-        m_intendation++;
-        LINE("*toInsert = *"<<MakeTypePtrVarName(info->m_definition)<<";")
-        m_intendation--;
+            LINE("if(toInsert != nullptr)")
+            m_intendation++;
+            LINE("*toInsert = *" << MakeTypePtrVarName(info->m_definition) << ";")
+            m_intendation--;
+        }
 
         m_intendation--;
         LINE("}")
@@ -1013,7 +1035,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("{")
         m_intendation++;
 
-        LINE("*"<<MakeTypePtrVarName(info->m_definition)<<" = m_stream->ConvertOffsetToAlias(*"<<MakeTypePtrVarName(info->m_definition)<<");")
+        if (inTemp)
+        {
+            LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->ConvertOffsetToAlias(*" << MakeTypePtrVarName(info->m_definition) << ");")
+        }
+        else
+        {
+            LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->ConvertOffsetToPointer(*" << MakeTypePtrVarName(info->m_definition) << ");")
+        }
 
         m_intendation--;
         LINE("}")
@@ -1021,8 +1050,11 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         m_intendation--;
         LINE("}")
 
-        LINE("")
-        LINE("m_stream->PopBlock();")
+        if (inTemp)
+        {
+            LINE("")
+            LINE("m_stream->PopBlock();")
+        }
 
         m_intendation--;
         LINE("}")
@@ -1249,7 +1281,7 @@ public:
         LINE("")
         PrintLoadMethod(m_env.m_asset);
         LINE("")
-        PrintLoadTempPtrMethod(m_env.m_asset);
+        PrintLoadPtrMethod(m_env.m_asset);
         LINE("")
         PrintLoadAssetMethod(m_env.m_asset);
         LINE("")

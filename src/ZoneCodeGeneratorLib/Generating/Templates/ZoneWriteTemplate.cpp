@@ -267,7 +267,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     void WriteMember_DynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
         std::string memberAccess;
-        if(!(info->m_definition->GetType() == DataDefinitionType::UNION && StructureComputations(info).GetDynamicMember()))
+        if (!(info->m_definition->GetType() == DataDefinitionType::UNION && StructureComputations(info).GetDynamicMember()))
             memberAccess = MakeMemberAccess("originalData", info, member, modifier);
         else
             memberAccess = MakeMemberAccess(info, member, modifier);
@@ -418,11 +418,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             return;
         }
 
-        if(writeType == MemberWriteType::ARRAY_POINTER)
+        if (writeType == MemberWriteType::ARRAY_POINTER)
         {
             LINE("m_stream->ReusableAddOffset("<<MakeMemberAccess(info, member, modifier)<<", "<<MakeEvaluation(modifier.GetArrayPointerCountEvaluation())<<");")
         }
-        else if(writeType == MemberWriteType::POINTER_ARRAY)
+        else if (writeType == MemberWriteType::POINTER_ARRAY)
         {
             LINE("m_stream->ReusableAddOffset("<<MakeMemberAccess(info, member, modifier)<<", "<<MakeEvaluation(modifier.GetPointerArrayCountEvaluation())<<");")
         }
@@ -755,7 +755,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("")
 
-            if(dynamicMember)
+            if (dynamicMember)
             {
                 LINE("auto* originalData = "<<MakeTypeVarName(info->m_definition)<<";")
             }
@@ -785,15 +785,15 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             LINE("assert(atStreamStart);")
         }
 
-        if (info->m_block)
-        {
-            LINE("")
-            LINE("m_stream->PushBlock(" << info->m_block->m_name << ");")
-        }
-        else if (computations.IsAsset())
+        if (computations.IsAsset())
         {
             LINE("")
             LINE("m_stream->PushBlock(" << m_env.m_default_normal_block->m_name << ");")
+        }
+        else if (info->m_block)
+        {
+            LINE("")
+            LINE("m_stream->PushBlock(" << info->m_block->m_name << ");")
         }
 
         for (const auto& member : info->m_ordered_members)
@@ -811,8 +811,9 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void PrintWriteTempPtrMethod(StructureInformation* info)
+    void PrintWritePtrMethod(StructureInformation* info)
     {
+        const bool inTemp = info->m_block && info->m_block->m_type == FastFileBlockType::TEMP;
         LINE("void " << WriterClassName(m_env.m_asset) << "::WritePtr_" << MakeSafeTypeName(info->m_definition) << "(const bool atStreamStart)")
         LINE("{")
         m_intendation++;
@@ -826,8 +827,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation--;
 
         LINE("")
-        LINE("m_stream->PushBlock(" << m_env.m_default_temp_block->m_name << ");")
-        LINE("")
+        if (inTemp)
+        {
+            LINE("m_stream->PushBlock(" << m_env.m_default_temp_block->m_name << ");")
+            LINE("")
+        }
         LINE("if(m_stream->ReusableShouldWrite(" << MakeTypePtrVarName(info->m_definition) << "))")
         LINE("{")
         m_intendation++;
@@ -842,7 +846,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("#error Temp method cannot have leaf type")
+            LINE("#error Ptr method cannot have leaf type")
         }
 
         LINE("")
@@ -851,8 +855,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation--;
         LINE("}")
 
-        LINE("")
-        LINE("m_stream->PopBlock();")
+        if (inTemp)
+        {
+            LINE("")
+            LINE("m_stream->PopBlock();")
+        }
 
         m_intendation--;
         LINE("}")
@@ -915,7 +922,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     {
         LINE("m_stream->Align("<<def->GetAlignment()<<");")
 
-        if(reusable)
+        if (reusable)
         {
             LINE("m_stream->ReusableAddOffset(*"<<MakeTypePtrVarName(def)<< ");")
         }
@@ -1166,7 +1173,7 @@ public:
         LINE("")
         PrintWriteMethod(m_env.m_asset);
         LINE("")
-        PrintWriteTempPtrMethod(m_env.m_asset);
+        PrintWritePtrMethod(m_env.m_asset);
         LINE("")
         PrintMainWriteMethod();
         LINE("")

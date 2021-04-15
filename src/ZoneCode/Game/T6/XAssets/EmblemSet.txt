@@ -2,6 +2,7 @@
 // EmblemSet
 // =========================================
 use EmblemSet;
+set block XFILE_BLOCK_TEMP;
 set count layers layerCount;
 set count categories categoryCount;
 set count iconTypes iconTypeCount;

@@ -2,6 +2,7 @@
 // StringTable
 // =========================================
 use StringTable;
+// String table is not in the temp block for some reason. nice.
 set string name;
 set name name;
 set string values;

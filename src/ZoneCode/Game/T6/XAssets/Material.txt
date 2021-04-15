@@ -2,6 +2,7 @@
 // Material
 // =========================================
 use Material;
+set block XFILE_BLOCK_TEMP;
 set string info::name;
 set name info::name;
 set reusable textureTable;

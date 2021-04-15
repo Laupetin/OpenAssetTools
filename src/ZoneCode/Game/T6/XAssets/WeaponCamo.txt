@@ -2,6 +2,7 @@
 // WeaponCamo
 // =========================================
 use WeaponCamo;
+set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
 set count camoSets numCamoSets;

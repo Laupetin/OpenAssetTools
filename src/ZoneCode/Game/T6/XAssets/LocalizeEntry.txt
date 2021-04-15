@@ -2,6 +2,7 @@
 // LocalizeEntry
 // =========================================
 use LocalizeEntry;
+set block XFILE_BLOCK_TEMP;
 set string value;
 set string name;
 set name name;

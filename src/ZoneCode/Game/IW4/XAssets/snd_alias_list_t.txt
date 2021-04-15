@@ -2,6 +2,7 @@
 // snd_alias_list_t
 // =========================================
 use snd_alias_list_t;
+set block XFILE_BLOCK_TEMP;
 set string aliasName;
 set name aliasName;
 set reusable head;

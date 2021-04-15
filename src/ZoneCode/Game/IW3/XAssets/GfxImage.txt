@@ -2,6 +2,7 @@
 // GfxImage
 // =========================================
 use GfxImage;
+set block XFILE_BLOCK_TEMP;
 set action OnImageLoaded(GfxImage);
 set string name;
 set name name;
