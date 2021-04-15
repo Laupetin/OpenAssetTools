@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <memory>
+#include <cstring>
 
 #include "zlib.h"
 

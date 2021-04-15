@@ -558,7 +558,7 @@ namespace IW3
         MaterialTextureDefInfo u;
     };
 
-    struct GfxDrawSurfFields
+    struct gcc_align(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;
         uint64_t reflectionProbeIndex : 8;
@@ -573,8 +573,8 @@ namespace IW3
 
     union GfxDrawSurf
     {
-        GfxDrawSurfFields fields;
-        uint64_t packed;
+        gcc_align(8) GfxDrawSurfFields fields;
+        gcc_align(8) uint64_t packed;
     };
 
     struct MaterialInfo
@@ -1355,7 +1355,7 @@ namespace IW3
         float angles[3];
     };
 
-    struct __declspec(align(4)) GfxLightImage
+    struct type_align(4) GfxLightImage
     {
         GfxImage* image;
         char samplerState;
