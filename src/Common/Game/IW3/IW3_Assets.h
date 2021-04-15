@@ -177,14 +177,14 @@ namespace IW3
         float time;
     };
 
-    union XAnimDynamicIndices
+    typedef unsigned char ByteVec[3];
+    typedef tdef_align(4) unsigned short UShortVec[3];
+
+    union XAnimDynamicIndicesTrans
     {
         char _1[1];
         uint16_t _2[1];
     };
-
-    typedef unsigned char ByteVec[3];
-    typedef tdef_align(4) unsigned short UShortVec[3];
 
     union XAnimDynamicFrames
     {
@@ -197,7 +197,7 @@ namespace IW3
         float mins[3];
         float size[3];
         XAnimDynamicFrames frames;
-        XAnimDynamicIndices indices;
+        XAnimDynamicIndicesTrans indices;
     };
 
     union XAnimPartTransData
@@ -215,10 +215,16 @@ namespace IW3
 
     typedef tdef_align(4) short XQuat[2];
 
+    union XAnimDynamicIndicesQuat
+    {
+        char _1[1];
+        uint16_t _2[1];
+    };
+
     struct type_align(4) XAnimDeltaPartQuatDataFrames
     {
         XQuat *frames;
-        XAnimDynamicIndices indices;
+        XAnimDynamicIndicesQuat indices;
     };
 
     union XAnimDeltaPartQuatData
