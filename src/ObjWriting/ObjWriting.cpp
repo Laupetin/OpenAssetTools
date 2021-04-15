@@ -1,5 +1,6 @@
 #include "ObjWriting.h"
 #include "Dumping/IZoneDumper.h"
+#include "Game/IW3/ZoneDumperIW3.h"
 #include "Game/IW4/ZoneDumperIW4.h"
 #include "Game/T6/ZoneDumperT6.h"
 
@@ -7,6 +8,7 @@ ObjWriting::Configuration_t ObjWriting::Configuration;
 
 const IZoneDumper* const ZONE_DUMPER[]
 {
+    new IW3::ZoneDumper(),
     new IW4::ZoneDumper(),
     new T6::ZoneDumper()
 };

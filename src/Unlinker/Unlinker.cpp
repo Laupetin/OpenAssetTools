@@ -16,6 +16,7 @@
 #include "ContentLister/ZoneDefWriter.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "UnlinkerArgs.h"
+#include "Game/IW3/ZoneDefWriterIW3.h"
 
 #include "Game/IW4/ZoneDefWriterIW4.h"
 #include "Game/T6/ZoneDefWriterT6.h"
@@ -25,6 +26,7 @@ namespace fs = std::filesystem;
 
 const IZoneDefWriter* const ZONE_DEF_WRITERS[]
 {
+    new IW3::ZoneDefWriter(),
     new IW4::ZoneDefWriter(),
     new T6::ZoneDefWriter()
 };
