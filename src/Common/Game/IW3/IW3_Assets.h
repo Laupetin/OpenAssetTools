@@ -472,9 +472,9 @@ namespace IW3
     struct XModel
     {
         const char* name;
-        char numBones;
-        char numRootBones;
-        char numsurfs;
+        unsigned char numBones;
+        unsigned char numRootBones;
+        unsigned char numsurfs;
         char lodRampType;
         uint16_t* boneNames;
         char* parentList;
@@ -994,8 +994,8 @@ namespace IW3
 
     struct CollisionPartition
     {
-        char triCount;
-        char borderCount;
+        unsigned char triCount;
+        unsigned char borderCount;
         int firstTri;
         CollisionBorder* borders;
     };
@@ -1023,7 +1023,7 @@ namespace IW3
         cLeaf_t leaf;
     };
 
-    struct cbrush_t
+    struct type_align(16) cbrush_t
     {
         float mins[3];
         int contents;
@@ -1129,13 +1129,13 @@ namespace IW3
         unsigned int numSubModels;
         cmodel_t* cmodels;
         uint16_t numBrushes;
-        cbrush_array_t* brushes;
+        cbrush_t* brushes;
         int numClusters;
         int clusterBytes;
         char* visibility;
         int vised;
         MapEnts* mapEnts;
-        cbrush_array_t* box_brush;
+        cbrush_t* box_brush;
         cmodel_t box_model;
         uint16_t dynEntCount[2];
         DynEntityDef* dynEntDefList[2];
