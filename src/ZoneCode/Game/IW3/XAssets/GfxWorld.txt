@@ -27,7 +27,7 @@ set count sceneDynModel dpvsDyn::dynEntClientCount[0];
 set block sceneDynBrush XFILE_BLOCK_RUNTIME;
 set count sceneDynBrush dpvsDyn::dynEntClientCount[1];
 set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
-set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x2000;
+set count primaryLightEntityShadowVis (primaryLightCount - sunPrimaryLightIndex - 1) * 0x1000;
 set block primaryLightDynEntShadowVis XFILE_BLOCK_RUNTIME;
 set count primaryLightDynEntShadowVis[0] dpvsDyn::dynEntClientCount[0] * (primaryLightCount - sunPrimaryLightIndex - 1);
 set count primaryLightDynEntShadowVis[1] dpvsDyn::dynEntClientCount[1] * (primaryLightCount - sunPrimaryLightIndex - 1);
@@ -47,7 +47,7 @@ set reusable planes;
 set count planes GfxWorld::planeCount;
 set count nodes GfxWorld::nodeCount;
 set block sceneEntCellBits XFILE_BLOCK_RUNTIME;
-set count sceneEntCellBits cellCount * 0x200;
+set count sceneEntCellBits cellCount * 0x100;
 
 // GfxCell
 use GfxCell;
