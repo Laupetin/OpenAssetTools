@@ -29,13 +29,9 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     const auto* assetPools = dynamic_cast<GameAssetPoolIW3*>(context.m_zone->m_pools.get());
 
     // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset)
-    // DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts)
     // DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel)
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material)
-    // DUMP_ASSET_POOL(AssetDumperMaterialPixelShader, m_material_pixel_shader)
-    // DUMP_ASSET_POOL(AssetDumperMaterialVertexShader, m_material_vertex_shader)
-    // DUMP_ASSET_POOL(AssetDumperMaterialVertexDeclaration, m_material_vertex_decl)
     // DUMP_ASSET_POOL(AssetDumperMaterialTechniqueSet, m_technique_set)
     DUMP_ASSET_POOL(AssetDumperGfxImage, m_image)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound)
@@ -46,7 +42,6 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp)
     // DUMP_ASSET_POOL(AssetDumperGameWorldMp, m_game_world_mp)
     // DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents)
-    // DUMP_ASSET_POOL(AssetDumperFxWorld, m_fx_world)
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font)
