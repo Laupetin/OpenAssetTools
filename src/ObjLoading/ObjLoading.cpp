@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "IObjLoader.h"
+#include "Game/IW3/ObjLoaderIW3.h"
 #include "Game/IW4/ObjLoaderIW4.h"
 #include "Game/T6/ObjLoaderT6.h"
 #include "ObjContainer/IWD/IWD.h"
@@ -13,6 +14,7 @@ ObjLoading::Configuration_t ObjLoading::Configuration;
 
 const IObjLoader* const OBJ_LOADERS[]
 {
+    new IW3::ObjLoader(),
     new IW4::ObjLoader(),
     new T6::ObjLoader()
 };
