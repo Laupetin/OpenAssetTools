@@ -89,7 +89,7 @@ void* XBlockInputStream::Alloc(const unsigned align)
 
     Align(align);
 
-    if (m_block_offsets[block->m_index] >= block->m_buffer_size)
+    if (m_block_offsets[block->m_index] > block->m_buffer_size)
     {
         throw BlockOverflowException(block);
     }
