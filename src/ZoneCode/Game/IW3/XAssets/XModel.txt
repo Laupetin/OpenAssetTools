@@ -29,8 +29,15 @@ use PhysGeomList;
 set reusable geoms;
 set count geoms count;
 
-// PhysGeomInfo
-use PhysGeomInfo;
+// BrushWrapper
+use BrushWrapper;
+set count sides numsides;
+set count baseAdjacentSide totalEdgeCount;
+set reusable planes;
+set count planes numsides;
+
+// cbrushside_t
+set reusable cbrushside_t::plane;
 
 // XSurface
 use XSurface;

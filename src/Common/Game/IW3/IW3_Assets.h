@@ -192,7 +192,7 @@ namespace IW3
         UShortVec* _2;
     };
 
-    struct __declspec(align(4)) XAnimPartTransFrames
+    struct type_align(4) XAnimPartTransFrames
     {
         float mins[3];
         float size[3];
@@ -215,7 +215,7 @@ namespace IW3
 
     typedef tdef_align(4) short XQuat[2];
 
-    struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames
+    struct type_align(4) XAnimDeltaPartQuatDataFrames
     {
         XQuat *frames;
         XAnimDynamicIndices indices;
@@ -283,7 +283,7 @@ namespace IW3
         uint16_t maxs[3];
     };
 
-    struct XSurfaceCollisionNode
+    struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         uint16_t childBeginIndex;
@@ -331,7 +331,7 @@ namespace IW3
         char array[4];
     };
 
-    struct GfxPackedVertex
+    struct type_align(16) GfxPackedVertex
     {
         float xyz[3];
         float binormalSign;
@@ -501,7 +501,7 @@ namespace IW3
         unsigned int loadBits[2];
     };
 
-    struct MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -607,7 +607,7 @@ namespace IW3
 
     union MaterialArgumentDef
     {
-        const float* literalConst;
+        const float(*literalConst)[4];
         MaterialArgumentCodeConst codeConst;
         unsigned int codeSampler;
         unsigned int nameHash;
@@ -734,7 +734,7 @@ namespace IW3
         char platform[2];
     };
 
-    struct __declspec(align(4)) GfxImageLoadDef
+    struct type_align(4) GfxImageLoadDef
     {
         char levelCount;
         char flags;
@@ -1083,6 +1083,8 @@ namespace IW3
 
     typedef unsigned short LeafBrush;
 
+    typedef tdef_align(16) cbrush_t cbrush_array_t;
+
     struct clipMap_t
     {
         const char* name;
@@ -1121,13 +1123,13 @@ namespace IW3
         unsigned int numSubModels;
         cmodel_t* cmodels;
         uint16_t numBrushes;
-        cbrush_t* brushes;
+        cbrush_array_t* brushes;
         int numClusters;
         int clusterBytes;
         char* visibility;
         int vised;
         MapEnts* mapEnts;
-        cbrush_t* box_brush;
+        cbrush_array_t* box_brush;
         cmodel_t box_model;
         uint16_t dynEntCount[2];
         DynEntityDef* dynEntDefList[2];
@@ -1185,7 +1187,7 @@ namespace IW3
         pathnode_tree_info_t u;
     };
 
-    struct pathbasenode_t
+    struct type_align(16) pathbasenode_t
     {
         float vOrigin[3];
         unsigned int type;
@@ -1454,14 +1456,14 @@ namespace IW3
         GfxImage* secondary;
     };
 
-    struct GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
         char primaryLightIndex;
         char needsTrace;
     };
 
-    struct GfxLightGridColors
+    struct type_align(4) GfxLightGridColors
     {
         char rgb[56][3];
     };
@@ -1547,7 +1549,7 @@ namespace IW3
         uint16_t surfId;
     };
 
-    struct GfxSceneDynBrush
+    struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;
@@ -1675,6 +1677,8 @@ namespace IW3
         char pad;
     };
 
+    typedef tdef_align(4) GfxSceneDynModel GfxSceneDynModel4;
+
     struct GfxWorld
     {
         const char* name;
@@ -1721,7 +1725,7 @@ namespace IW3
         float outdoorLookupMatrix[4][4];
         GfxImage* outdoorImage;
         unsigned int* cellCasterBits;
-        GfxSceneDynModel* sceneDynModel;
+        GfxSceneDynModel4* sceneDynModel;
         GfxSceneDynBrush* sceneDynBrush;
         unsigned int* primaryLightEntityShadowVis;
         unsigned int* primaryLightDynEntShadowVis[2];

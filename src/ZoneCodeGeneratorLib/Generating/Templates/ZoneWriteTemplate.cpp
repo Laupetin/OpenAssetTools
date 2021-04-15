@@ -320,7 +320,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("Write_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true);")
+            LINE("Write_" << MakeSafeTypeName(member->m_type->m_definition) << "(true);")
         }
         else
         {
