@@ -85,12 +85,6 @@ public:
 
         SetupBlock(zoneLoader);
 
-        // Skip unknown 1 byte field that the game ignores as well
-        // zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(1));
-
-        // Skip timestamp
-        // zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));
-
         zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorInflate>(ZoneConstants::AUTHED_CHUNK_SIZE)));
 
         // Start of the XFile struct

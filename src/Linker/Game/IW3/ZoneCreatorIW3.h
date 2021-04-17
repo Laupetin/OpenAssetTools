@@ -12,6 +12,8 @@ namespace IW3
         std::unordered_map<std::string, asset_type_t> m_asset_types_by_name;
 
         void AddAssetTypeName(asset_type_t assetType, std::string name);
+        static std::vector<Gdt*> CreateGdtList(ZoneCreationContext& context);
+        bool CreateIgnoredAssetMap(ZoneCreationContext& context, std::unordered_map<std::string, asset_type_t>& ignoredAssetMap) const;
         void CreateZoneAssetPools(Zone* zone) const;
 
     public:

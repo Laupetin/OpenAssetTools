@@ -16,6 +16,7 @@
 #include "ObjContainer/IWD/IWD.h"
 #include "LinkerArgs.h"
 #include "ZoneWriting.h"
+#include "Game/IW3/ZoneCreatorIW3.h"
 #include "ZoneCreation/ZoneCreationContext.h"
 #include "ZoneCreation/IZoneCreator.h"
 #include "Game/IW4/ZoneCreatorIW4.h"
@@ -30,6 +31,7 @@ namespace fs = std::filesystem;
 
 const IZoneCreator* const ZONE_CREATORS[]
 {
+    new IW3::ZoneCreator(),
     new IW4::ZoneCreator(),
     new T6::ZoneCreator()
 };

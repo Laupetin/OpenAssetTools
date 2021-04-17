@@ -84,13 +84,13 @@ void ZoneDefinitionOutputStream::WriteEntry(const std::string& entryKey, const s
 {
     m_stream << entryKey << ",";
 
-    if(entryValue.find('"') != std::string::npos
+    if (entryValue.find('"') != std::string::npos
         || entryValue.find("//") != std::string::npos)
     {
         m_stream << '"';
-        for(const auto& c : entryValue)
+        for (const auto& c : entryValue)
         {
-            switch(c)
+            switch (c)
             {
             case '"':
                 m_stream << "\\\"";
@@ -106,6 +106,10 @@ void ZoneDefinitionOutputStream::WriteEntry(const std::string& entryKey, const s
             }
         }
         m_stream << '"';
+    }
+    else if (entryValue.empty())
+    {
+        m_stream << R"("")";
     }
     else
     {
