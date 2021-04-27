@@ -73,6 +73,12 @@ namespace T6
                         return true;
                     }
 
+                    if (value == "neutral")
+                    {
+                        *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = TEAM_FOUR;
+                        return true;
+                    }
+
                     *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = TEAM_BAD;
                     std::cout << "Failed to parse value \"" << value << "\" as team" << std::endl;
                     return false;

@@ -58,6 +58,10 @@ namespace T6
                         m_info_string.SetValueForKey(std::string(field.szName), "allies");
                         break;
 
+                    case TEAM_FOUR:
+                        m_info_string.SetValueForKey(std::string(field.szName), "neutral");
+                        break;
+
                     default:
                         assert(false);
                         m_info_string.SetValueForKey(std::string(field.szName), "");
