@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include "D3DFormat.h"
 #include "DxgiFormat.h"
 
 enum class ImageFormatId
@@ -37,15 +38,17 @@ class ImageFormatBlockCompressed;
 class ImageFormat
 {
     ImageFormatId m_id;
+    D3DFORMAT m_d3d_format;
     DXGI_FORMAT m_dxgi_format;
 
 protected:
-    ImageFormat(ImageFormatId id, DXGI_FORMAT dxgiFormat);
+    ImageFormat(ImageFormatId id, D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat);
 
 public:
     virtual ~ImageFormat() = default;
 
     ImageFormatId GetId() const;
+    D3DFORMAT GetD3DFormat() const;
     DXGI_FORMAT GetDxgiFormat() const;
 
     virtual ImageFormatType GetType() const = 0;
@@ -81,7 +84,7 @@ public:
     unsigned m_a_offset;
     unsigned m_a_size;
 
-    ImageFormatUnsigned(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned bitsPerPixel, unsigned rOffset,
+    ImageFormatUnsigned(ImageFormatId id, D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat, unsigned bitsPerPixel, unsigned rOffset,
                         unsigned rSize, unsigned gOffset, unsigned gSize, unsigned bOffset, unsigned bSize,
                         unsigned aOffset, unsigned aSize);
 
@@ -101,7 +104,7 @@ public:
     unsigned m_block_size;
     unsigned m_bits_per_block;
 
-    ImageFormatBlockCompressed(ImageFormatId id, DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
+    ImageFormatBlockCompressed(ImageFormatId id, D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
 
     ImageFormatType GetType() const override;
     size_t GetPitch(unsigned mipLevel, unsigned width) const override;

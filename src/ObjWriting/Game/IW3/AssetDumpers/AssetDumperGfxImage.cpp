@@ -38,7 +38,21 @@ bool AssetDumperGfxImage::CanDumpAsRaw()
 
 std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset)
 {
-    return "images/" + asset->m_name + m_writer->GetFileExtension();
+    std::string cleanAssetName = asset->m_name;
+    for (auto& c : cleanAssetName)
+    {
+        switch (c)
+        {
+        case '*':
+            c = '_';
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return "images/" + cleanAssetName + m_writer->GetFileExtension();
 }
 
 void AssetDumperGfxImage::DumpRaw(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset, std::ostream& stream)

@@ -25,6 +25,8 @@
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
 #include "Game/T6/CommonT6.h"
+#include "Image/Dx12TextureLoader.h"
+#include "Image/IwiTypes.h"
 
 namespace T6
 {
@@ -329,7 +331,31 @@ namespace T6
 
     void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
     {
-        // TODO: Load Texture from LoadDef here
+        const auto* loadDef = image->texture.loadDef;
+        Dx12TextureLoader textureLoader(zone->GetMemory());
+
+        textureLoader.Width(image->width).Height(image->height).Depth(image->depth);
+
+        if (loadDef->flags & iwi27::IMG_FLAG_VOLMAP)
+            textureLoader.Type(TextureType::T_3D);
+        else if (loadDef->flags & iwi27::IMG_FLAG_CUBEMAP)
+            textureLoader.Type(TextureType::T_CUBE);
+        else
+            textureLoader.Type(TextureType::T_2D);
+
+        textureLoader.Format(static_cast<DXGI_FORMAT>(loadDef->format));
+        textureLoader.HasMipMaps(!(loadDef->flags & iwi27::IMG_FLAG_NOMIPMAPS));
+        Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
+
+        if (loadedTexture != nullptr)
+        {
+            image->texture.texture = loadedTexture;
+            image->loadedSize = 0;
+
+            const auto textureMipCount = loadedTexture->GetMipMapCount();
+            for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+                image->loadedSize += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
+        }
     }
 
     void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone* zone)

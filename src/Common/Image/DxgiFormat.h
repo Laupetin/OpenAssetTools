@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * Copyright 2016 Józef Kucia for CodeWeavers
  *
@@ -18,7 +20,7 @@
 
 const unsigned int DXGI_FORMAT_DEFINED = 1;
 
-typedef enum DXGI_FORMAT
+enum DXGI_FORMAT
 {
     DXGI_FORMAT_UNKNOWN                     = 0x00,
     DXGI_FORMAT_R32G32B32A32_TYPELESS       = 0x01,
@@ -142,4 +144,4 @@ typedef enum DXGI_FORMAT
     DXGI_FORMAT_V408                        = 0x84,
 
     DXGI_FORMAT_FORCE_UINT                  = 0xffffffff,
-} DXGI_FORMAT;
+};

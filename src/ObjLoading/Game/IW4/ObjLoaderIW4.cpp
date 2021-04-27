@@ -1,12 +1,15 @@
 #include "ObjLoaderIW4.h"
+
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoading/AssetLoadingManager.h"
+#include "Image/Dx9TextureLoader.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
+#include "Image/IwiTypes.h"
 
 using namespace IW4;
 
@@ -84,7 +87,31 @@ void ObjLoader::UnloadContainersOfZone(Zone* zone) const
 
 void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
 {
-    // TODO: Load Texture from LoadDef here
+    const auto* loadDef = image->texture.loadDef;
+    Dx9TextureLoader textureLoader(zone->GetMemory());
+
+    textureLoader.Width(image->width).Height(image->height).Depth(image->depth);
+
+    if ((loadDef->flags & iwi8::IMG_FLAG_MAPTYPE_MASK) == iwi8::IMG_FLAG_MAPTYPE_3D)
+        textureLoader.Type(TextureType::T_3D);
+    else if ((loadDef->flags & iwi8::IMG_FLAG_MAPTYPE_MASK) == iwi8::IMG_FLAG_MAPTYPE_CUBE)
+        textureLoader.Type(TextureType::T_CUBE);
+    else
+        textureLoader.Type(TextureType::T_2D);
+
+    textureLoader.Format(static_cast<D3DFORMAT>(loadDef->format));
+    textureLoader.HasMipMaps(!(loadDef->flags & iwi8::IMG_FLAG_NOMIPMAPS));
+    Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
+
+    if (loadedTexture != nullptr)
+    {
+        image->texture.texture = loadedTexture;
+        image->cardMemory.platform[0] = 0;
+
+        const auto textureMipCount = loadedTexture->GetMipMapCount();
+        for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+            image->cardMemory.platform[0] += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
+    }
 }
 
 void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone* zone)

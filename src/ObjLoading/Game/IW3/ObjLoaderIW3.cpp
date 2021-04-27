@@ -1,12 +1,15 @@
 #include "ObjLoaderIW3.h"
+
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoading/AssetLoadingManager.h"
+#include "Image/Dx9TextureLoader.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
+#include "Image/IwiTypes.h"
 
 using namespace IW3;
 
@@ -74,7 +77,31 @@ void ObjLoader::UnloadContainersOfZone(Zone* zone) const
 
 void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
 {
-    // TODO: Load Texture from LoadDef here
+    const auto* loadDef = image->texture.loadDef;
+    Dx9TextureLoader textureLoader(zone->GetMemory());
+
+    textureLoader.Width(loadDef->dimensions[0]).Height(loadDef->dimensions[1]).Depth(loadDef->dimensions[2]);
+
+    if (loadDef->flags & iwi6::IMG_FLAG_VOLMAP)
+        textureLoader.Type(TextureType::T_3D);
+    else if (loadDef->flags & iwi6::IMG_FLAG_CUBEMAP)
+        textureLoader.Type(TextureType::T_CUBE);
+    else
+        textureLoader.Type(TextureType::T_2D);
+
+    textureLoader.Format(static_cast<D3DFORMAT>(loadDef->format));
+    textureLoader.HasMipMaps(!(loadDef->flags & iwi6::IMG_FLAG_NOMIPMAPS));
+    Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
+
+    if (loadedTexture != nullptr)
+    {
+        image->texture.texture = loadedTexture;
+        image->cardMemory.platform[0] = 0;
+
+        const auto textureMipCount = loadedTexture->GetMipMapCount();
+        for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+            image->cardMemory.platform[0] += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
+    }
 }
 
 void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone* zone)
@@ -145,7 +172,7 @@ void ObjLoader::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) const
     LoadImageData(searchPath, zone);
 }
 
-bool ObjLoader::LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName) const
+bool ObjLoader::LoadAssetForZone(AssetLoadingContext* context, const asset_type_t assetType, const std::string& assetName) const
 {
     AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, *context);
     return assetLoadingManager.LoadAssetFromLoader(assetType, assetName);
