@@ -67,6 +67,41 @@ ZoneCode.Assets = {
         "AddonMapEnts"
     },
 
+    T5 = {
+        "PhysPreset",
+        "PhysConstraints",
+        "DestructibleDef",
+        "XAnimParts",
+        "XModel",
+        "Material",
+        "MaterialTechniqueSet",
+        "GfxImage",
+        "SndBank",
+        "SndPatch",
+        "clipMap_t",
+        "ComWorld",
+        "GameWorldSp",
+        "GameWorldMp",
+        "MapEnts",
+        "GfxWorld",
+        "GfxLightDef",
+        "Font_s",
+        "MenuList",
+        "menuDef_t",
+        "LocalizeEntry",
+        "WeaponVariantDef",
+        "SndDriverGlobals",
+        "FxEffectDef",
+        "FxImpactTable",
+        "RawFile",
+        "StringTable",
+        "PackIndex",
+        "XGlobals",
+        "ddlRoot_t",
+        "Glasses",
+        "EmblemSet"
+    },
+
     T6 = {
         "PhysPreset",
         "PhysConstraints",
@@ -241,6 +276,10 @@ function ZoneCode:project()
         
         filter "files:**/IW4.gen"
             self:outputForAssets(self.Assets.IW4)
+        filter {}
+        
+        filter "files:**/T5.gen"
+            self:outputForAssets(self.Assets.T5)
         filter {}
         
         filter "files:**/T6.gen"

@@ -192,7 +192,7 @@ namespace IW3
         UShortVec* _2;
     };
 
-    struct type_align(4) XAnimPartTransFrames
+    struct XAnimPartTransFrames
     {
         float mins[3];
         float size[3];
@@ -221,7 +221,7 @@ namespace IW3
         uint16_t _2[1];
     };
 
-    struct type_align(4) XAnimDeltaPartQuatDataFrames
+    struct XAnimDeltaPartQuatDataFrames
     {
         XQuat *frames;
         XAnimDynamicIndicesQuat indices;
@@ -740,7 +740,7 @@ namespace IW3
         char platform[2];
     };
 
-    struct type_align(4) GfxImageLoadDef
+    struct GfxImageLoadDef
     {
         char levelCount;
         char flags;
@@ -1368,7 +1368,7 @@ namespace IW3
         float angles[3];
     };
 
-    struct type_align(4) GfxLightImage
+    struct GfxLightImage
     {
         GfxImage* image;
         char samplerState;
