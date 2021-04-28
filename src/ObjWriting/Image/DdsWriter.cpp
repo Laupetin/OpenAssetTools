@@ -4,7 +4,6 @@
 #include <map>
 #include <memory>
 
-
 #include "Image/DdsTypes.h"
 #include "Image/TextureConverter.h"
 

@@ -4,6 +4,7 @@
 #include "Game/IW3/GameAssetPoolIW3.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderGfxImage.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Dx9TextureLoader.h"
@@ -23,7 +24,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL, XModel))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MATERIAL, Material))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMAGE, GfxImage))
+    REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND, snd_alias_list_t))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND_CURVE, SndCurve))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LOADED_SOUND, LoadedSound))
