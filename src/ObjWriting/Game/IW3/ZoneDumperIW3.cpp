@@ -6,6 +6,7 @@
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
+#include "AssetDumpers/AssetDumperMapEnts.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
@@ -41,7 +42,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world)
     // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp)
     // DUMP_ASSET_POOL(AssetDumperGameWorldMp, m_game_world_mp)
-    // DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents)
+    DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents)
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font)
