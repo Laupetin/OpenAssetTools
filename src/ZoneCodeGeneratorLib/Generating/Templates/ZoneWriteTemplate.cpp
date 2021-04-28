@@ -381,9 +381,6 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     static bool WriteMember_ShouldMakeInsertReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
     {
-        if (member->m_type == nullptr || !member->m_type->m_reusable_reference_exists)
-            return false;
-
         if (writeType != MemberWriteType::ARRAY_POINTER
             && writeType != MemberWriteType::SINGLE_POINTER
             && writeType != MemberWriteType::POINTER_ARRAY)
@@ -407,6 +404,12 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             return false;
         }
 
+        if (member->m_is_reusable)
+            return true;
+
+        if (member->m_type == nullptr || !member->m_type->m_reusable_reference_exists)
+            return false;
+
         return true;
     }
 
@@ -424,7 +427,16 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else if (writeType == MemberWriteType::POINTER_ARRAY)
         {
-            LINE("m_stream->ReusableAddOffset("<<MakeMemberAccess(info, member, modifier)<<", "<<MakeEvaluation(modifier.GetPointerArrayCountEvaluation())<<");")
+            const auto* evaluation = modifier.GetPointerArrayCountEvaluation();
+
+            if(evaluation)
+            {
+                LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+            }
+            else
+            {
+                LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ", " << modifier.GetArraySize() << ");")
+            }
         }
         else
         {
