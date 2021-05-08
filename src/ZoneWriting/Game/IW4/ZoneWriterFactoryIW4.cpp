@@ -8,7 +8,9 @@
 #include "Game/IW4/ZoneConstantsIW4.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
+#include "Writing/Steps/StepWriteTimestamp.h"
 #include "Writing/Steps/StepWriteXBlockSizes.h"
+#include "Writing/Steps/StepWriteZero.h"
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
@@ -77,6 +79,12 @@ public:
 
         // Write zone header
         m_writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams(isSecure, false)));
+
+        // Write dummy byte that the game ignores as well. No clue what it means.
+        m_writer->AddWritingStep(std::make_unique<StepWriteZero>(1));
+
+        // Write timestamp
+        m_writer->AddWritingStep(std::make_unique<StepWriteTimestamp>());
 
         m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::make_unique<OutputProcessorDeflate>()));
 
