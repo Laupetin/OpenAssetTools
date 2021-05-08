@@ -5,7 +5,8 @@
 AssetWriter::AssetWriter(XAssetInfoGeneric* asset, Zone* zone, IZoneOutputStream* stream)
     : ContentWriterBase(zone, stream),
       m_asset(asset),
-      varScriptString(nullptr)
+      varScriptString(nullptr),
+      varScriptStringWritten(nullptr)
 {
 }
 
@@ -22,12 +23,15 @@ scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
 
 void AssetWriter::WriteScriptStringArray(const bool atStreamStart, const size_t count)
 {
-    assert(varScriptString != nullptr);
-
     if (atStreamStart)
-        varScriptString = m_stream->Write<scr_string_t>(varScriptString, count);
+    {
+        assert(varScriptString != nullptr);
+        varScriptStringWritten = m_stream->Write<scr_string_t>(varScriptString, count);
+    }
 
-    auto* ptr = varScriptString;
+    assert(varScriptStringWritten != nullptr);
+
+    auto* ptr = varScriptStringWritten;
     for (size_t index = 0; index < count; index++)
     {
         *ptr = UseScriptString(*ptr);

@@ -4,6 +4,7 @@
 
 ContentWriterBase::ContentWriterBase()
     : varXString(nullptr),
+      varXStringWritten(nullptr),
       m_zone(nullptr),
       m_stream(nullptr)
 {
@@ -11,6 +12,7 @@ ContentWriterBase::ContentWriterBase()
 
 ContentWriterBase::ContentWriterBase(Zone* zone, IZoneOutputStream* stream)
     : varXString(nullptr),
+      varXStringWritten(nullptr),
       m_zone(zone),
       m_stream(stream)
 {
@@ -18,31 +20,37 @@ ContentWriterBase::ContentWriterBase(Zone* zone, IZoneOutputStream* stream)
 
 void ContentWriterBase::WriteXString(const bool atStreamStart)
 {
-    assert(varXString != nullptr);
-
     if (atStreamStart)
-        varXString = m_stream->Write<const char*>(varXString);
+    {
+        assert(varXString != nullptr);
+        varXStringWritten = m_stream->Write<const char*>(varXString);
+    }
 
-    if (m_stream->ReusableShouldWrite(varXString))
+    assert(varXStringWritten != nullptr);
+
+    if (m_stream->ReusableShouldWrite(varXStringWritten))
     {
         m_stream->Align(alignof(const char));
-        m_stream->ReusableAddOffset(*varXString);
-        m_stream->WriteNullTerminated(*varXString);
+        m_stream->ReusableAddOffset(*varXStringWritten);
+        m_stream->WriteNullTerminated(*varXStringWritten);
 
-        m_stream->MarkFollowing(*varXString);
+        m_stream->MarkFollowing(*varXStringWritten);
     }
 }
 
 void ContentWriterBase::WriteXStringArray(const bool atStreamStart, const size_t count)
 {
-    assert(varXString != nullptr);
-
     if (atStreamStart)
-        varXString = m_stream->Write<const char*>(varXString, count);
+    {
+        assert(varXString != nullptr);
+        varXStringWritten = m_stream->Write<const char*>(varXString, count);
+    }
+
+    assert(varXStringWritten != nullptr);
 
     for (size_t index = 0; index < count; index++)
     {
         WriteXString(false);
-        varXString++;
+        varXStringWritten++;
     }
 }

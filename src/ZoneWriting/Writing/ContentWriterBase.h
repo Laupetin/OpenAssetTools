@@ -7,6 +7,7 @@ class ContentWriterBase
 {
 protected:
     const char** varXString;
+    const char** varXStringWritten;
 
     Zone* m_zone;
     IZoneOutputStream* m_stream;

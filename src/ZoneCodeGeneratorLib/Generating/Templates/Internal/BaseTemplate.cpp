@@ -52,11 +52,25 @@ void BaseTemplate::MakeTypeVarNameInternal(const DataDefinition* def, std::ostri
     MakeSafeTypeNameInternal(def, str);
 }
 
+void BaseTemplate::MakeTypeWrittenVarNameInternal(const DataDefinition* def, std::ostringstream& str)
+{
+    str << "var";
+    MakeSafeTypeNameInternal(def, str);
+    str << "Written";
+}
+
 void BaseTemplate::MakeTypePtrVarNameInternal(const DataDefinition* def, std::ostringstream& str)
 {
     str << "var";
     MakeSafeTypeNameInternal(def, str);
     str << "Ptr";
+}
+
+void BaseTemplate::MakeTypeWrittenPtrVarNameInternal(const DataDefinition* def, std::ostringstream& str)
+{
+    str << "var";
+    MakeSafeTypeNameInternal(def, str);
+    str << "PtrWritten";
 }
 
 void BaseTemplate::MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str)
@@ -74,10 +88,25 @@ std::string BaseTemplate::MakeTypeVarName(const DataDefinition* def)
     return str.str();
 }
 
+
+std::string BaseTemplate::MakeTypeWrittenVarName(const DataDefinition* def)
+{
+    std::ostringstream str;
+    MakeTypeWrittenVarNameInternal(def, str);
+    return str.str();
+}
+
 std::string BaseTemplate::MakeTypePtrVarName(const DataDefinition* def)
 {
     std::ostringstream str;
     MakeTypePtrVarNameInternal(def, str);
+    return str.str();
+}
+
+std::string BaseTemplate::MakeTypeWrittenPtrVarName(const DataDefinition* def)
+{
+    std::ostringstream str;
+    MakeTypeWrittenPtrVarNameInternal(def, str);
     return str.str();
 }
 
@@ -92,6 +121,16 @@ std::string BaseTemplate::MakeMemberAccess(StructureInformation* info, MemberInf
 {
     std::ostringstream str;
     MakeTypeVarNameInternal(info->m_definition, str);
+    str << "->" << member->m_member->m_name;
+    MakeArrayIndicesInternal(modifier, str);
+
+    return str.str();
+}
+
+std::string BaseTemplate::MakeWrittenMemberAccess(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+{
+    std::ostringstream str;
+    MakeTypeWrittenVarNameInternal(info->m_definition, str);
     str << "->" << member->m_member->m_name;
     MakeArrayIndicesInternal(modifier, str);
 

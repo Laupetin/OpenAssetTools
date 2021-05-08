@@ -1,10 +1,8 @@
 #include "ZoneWriteTemplate.h"
 
-
 #include <cassert>
 #include <iostream>
 #include <sstream>
-
 
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
@@ -35,10 +33,24 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         return str.str();
     }
 
+    static std::string WrittenVariableDecl(const DataDefinition* def)
+    {
+        std::ostringstream str;
+        str << def->GetFullName() << "* var" << MakeSafeTypeName(def) << "Written;";
+        return str.str();
+    }
+
     static std::string PointerVariableDecl(const DataDefinition* def)
     {
         std::ostringstream str;
         str << def->GetFullName() << "** var" << MakeSafeTypeName(def) << "Ptr;";
+        return str.str();
+    }
+
+    static std::string WrittenPointerVariableDecl(const DataDefinition* def)
+    {
+        std::ostringstream str;
+        str << def->GetFullName() << "** var" << MakeSafeTypeName(def) << "PtrWritten;";
         return str.str();
     }
 
@@ -82,9 +94,19 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("var" << def->m_name << " = nullptr;")
     }
 
+    void PrintWrittenVariableInitialization(const DataDefinition* def) const
+    {
+        LINE("var" << def->m_name << "Written = nullptr;")
+    }
+
     void PrintPointerVariableInitialization(const DataDefinition* def) const
     {
         LINE("var" << def->m_name << "Ptr = nullptr;")
+    }
+
+    void PrintWrittenPointerVariableInitialization(const DataDefinition* def) const
+    {
+        LINE("var" << def->m_name << "PtrWritten = nullptr;")
     }
 
     void PrintConstructorMethod()
@@ -100,7 +122,9 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         PrintVariableInitialization(m_env.m_asset->m_definition);
+        PrintWrittenVariableInitialization(m_env.m_asset->m_definition);
         PrintPointerVariableInitialization(m_env.m_asset->m_definition);
+        PrintWrittenPointerVariableInitialization(m_env.m_asset->m_definition);
         LINE("")
 
         for (auto* type : m_env.m_used_types)
@@ -108,6 +132,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
             {
                 PrintVariableInitialization(type->m_type);
+                PrintWrittenVariableInitialization(type->m_type);
             }
         }
         for (auto* type : m_env.m_used_types)
@@ -115,6 +140,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             if (type->m_info && type->m_pointer_array_reference_exists && !type->m_is_context_asset)
             {
                 PrintPointerVariableInitialization(type->m_type);
+                PrintWrittenPointerVariableInitialization(type->m_type);
             }
         }
 
@@ -128,11 +154,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
             LINE("WriteScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
-            LINE("m_stream->MarkFollowing("<<MakeMemberAccess("writtenData", info, member, modifier)<<");")
+            LINE("m_stream->MarkFollowing("<<MakeWrittenMemberAccess(info, member, modifier)<<");")
         }
         else if (writeType == MemberWriteType::EMBEDDED_ARRAY)
         {
-            LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
+            LINE("varScriptStringWritten = " << MakeWrittenMemberAccess(info, member, modifier) << ";")
             LINE("WriteScriptStringArray(false, " << MakeArrayCount(dynamic_cast<ArrayDeclarationModifier*>(modifier.GetDeclarationModifier())) << ");")
         }
         else if (writeType == MemberWriteType::EMBEDDED)
@@ -151,7 +177,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         if (writeType == MemberWriteType::SINGLE_POINTER)
         {
             LINE(WriterClassName(member->m_type) << " writer("<<MakeMemberAccess(info, member, modifier)<<", m_zone, m_stream);")
-            LINE("writer.Write(&" << MakeMemberAccess(info, member, modifier) << ");")
+            LINE("writer.Write(&" << MakeWrittenMemberAccess(info, member, modifier) << ");")
         }
         else if (writeType == MemberWriteType::POINTER_ARRAY)
         {
@@ -170,25 +196,26 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             if (member->m_member->m_type_declaration->m_is_const)
             {
-                LINE("varXString = &" << MakeMemberAccess(info, member, modifier) << ";")
+                LINE("varXStringWritten = &" << MakeWrittenMemberAccess(info, member, modifier) << ";")
             }
             else
             {
-                LINE("varXString = const_cast<const char**>(&" << MakeMemberAccess(info, member, modifier) << ");")
+                LINE("varXStringWritten = const_cast<const char**>(&" << MakeWrittenMemberAccess(info, member, modifier) << ");")
             }
             LINE("WriteXString(false);")
         }
         else if (writeType == MemberWriteType::POINTER_ARRAY)
         {
-            LINE("varXString = " << MakeMemberAccess(info, member, modifier) << ";")
             if (modifier.IsArray())
             {
+                LINE("varXStringWritten = " << MakeWrittenMemberAccess(info, member, modifier) << ";")
                 LINE("WriteXStringArray(false, " << modifier.GetArraySize() << ");")
             }
             else
             {
+                LINE("varXString = " << MakeMemberAccess(info, member, modifier) << ";")
                 LINE("WriteXStringArray(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
-                LINE("m_stream->MarkFollowing(" << MakeMemberAccess("writtenData", info, member, modifier) << ");")
+                LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
             }
         }
         else
@@ -211,7 +238,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
                 << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
-        LINE("m_stream->MarkFollowing(" << MakeMemberAccess("writtenData", info, member, modifier) << ");")
+        LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
     }
 
     void WriteMember_PointerArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
@@ -219,12 +246,13 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE(MakeTypePtrVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
         if (modifier.IsArray())
         {
+            LINE(MakeTypeWrittenPtrVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeWrittenMemberAccess(info, member, modifier) << ";")
             LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false, " << modifier.GetArraySize() << ");")
         }
         else
         {
             LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
-            LINE("m_stream->MarkFollowing("<<MakeMemberAccess("writtenData", info, member, modifier)<<");")
+            LINE("m_stream->MarkFollowing("<<MakeWrittenMemberAccess(info, member, modifier)<<");")
         }
     }
 
@@ -238,49 +266,38 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         else
             arraySizeStr = std::to_string(modifier.GetArraySize());
 
-        std::string memberAccess;
-        if (!(info->m_definition->GetType() == DataDefinitionType::UNION && StructureComputations(info).GetDynamicMember()))
-            memberAccess = MakeMemberAccess("originalData", info, member, modifier);
-        else
-            memberAccess = MakeMemberAccess(info, member, modifier);
-
         if (!member->m_is_leaf)
         {
             if (computations.IsAfterPartialLoad())
             {
-                LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type)<<" = "<<memberAccess<<";")
+                LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type)<<" = "<< MakeMemberAccess(info, member, modifier) <<";")
                 LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << arraySizeStr << ");")
             }
             else
             {
                 LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
+                LINE(MakeTypeWrittenVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeWrittenMemberAccess(info, member, modifier) << ";")
                 LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false, " << arraySizeStr << ");")
             }
         }
         else if (computations.IsAfterPartialLoad())
         {
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << memberAccess << ", " << arraySizeStr << ");")
+                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << arraySizeStr << ");")
         }
     }
 
     void WriteMember_DynamicArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
-        std::string memberAccess;
-        if (!(info->m_definition->GetType() == DataDefinitionType::UNION && StructureComputations(info).GetDynamicMember()))
-            memberAccess = MakeMemberAccess("originalData", info, member, modifier);
-        else
-            memberAccess = MakeMemberAccess(info, member, modifier);
-
         if (member->m_type && !member->m_type->m_is_leaf)
         {
-            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << memberAccess << ";")
+            LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
             LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
         }
         else
         {
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << memberAccess << ", " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
+                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
         }
     }
 
@@ -288,29 +305,24 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     {
         const MemberComputations computations(member);
 
-        std::string memberAccess;
-        if (!(info->m_definition->GetType() == DataDefinitionType::UNION && StructureComputations(info).GetDynamicMember()))
-            memberAccess = MakeMemberAccess("originalData", info, member, modifier);
-        else
-            memberAccess = MakeMemberAccess(info, member, modifier);
-
         if (!member->m_is_leaf)
         {
             if (computations.IsAfterPartialLoad())
             {
-                LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = &" << memberAccess << ";")
+                LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = &" << MakeMemberAccess(info, member, modifier) << ";")
                 LINE("Write_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true);")
             }
             else
             {
                 LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = &" << MakeMemberAccess(info, member, modifier) << ";")
+                LINE(MakeTypeWrittenVarName(member->m_member->m_type_declaration->m_type) << " = &" << MakeWrittenMemberAccess(info, member, modifier) << ";")
                 LINE("Write_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false);")
             }
         }
         else if (computations.IsAfterPartialLoad())
         {
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(&" << memberAccess << ");")
+                << ">(&" << MakeMemberAccess(info, member, modifier) << ");")
         }
     }
 
@@ -327,7 +339,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
                 << ">(" << MakeMemberAccess(info, member, modifier) << ");")
         }
-        LINE("m_stream->MarkFollowing(" << MakeMemberAccess("writtenData", info, member, modifier) << ");")
+        LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
     }
 
     void WriteMember_TypeCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
@@ -429,7 +441,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             const auto* evaluation = modifier.GetPointerArrayCountEvaluation();
 
-            if(evaluation)
+            if (evaluation)
             {
                 LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
             }
@@ -522,7 +534,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             return;
         }
 
-        LINE("if(m_stream->ReusableShouldWrite(&" << MakeMemberAccess(info, member, modifier) << "))")
+        LINE("if(m_stream->ReusableShouldWrite(&" << MakeWrittenMemberAccess(info, member, modifier) << "))")
         LINE("{")
         m_intendation++;
 
@@ -761,36 +773,29 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE("assert(" << MakeTypeVarName(info->m_definition) << " != nullptr);")
+        LINE("")
 
         auto* dynamicMember = computations.GetDynamicMember();
         if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
         {
-            LINE("")
-
-            if (dynamicMember)
-            {
-                LINE("auto* originalData = "<<MakeTypeVarName(info->m_definition)<<";")
-            }
-
             LINE("if(atStreamStart)")
             m_intendation++;
 
             if (dynamicMember == nullptr)
             {
-                LINE(MakeTypeVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << "); // Size: " << info->
-                    m_definition->GetSize())
+                LINE(MakeTypeWrittenVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << "); // Size: "
+                    << info->m_definition->GetSize())
             }
             else
             {
-                LINE(MakeTypeVarName(info->m_definition) << " = m_stream->WritePartial<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << ", offsetof(" << info->
-                    m_definition->GetFullName()
-                    << ", " << dynamicMember->m_member->m_name << "));")
+                LINE(MakeTypeWrittenVarName(info->m_definition) << " = m_stream->WritePartial<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << ", offsetof(" <<
+                    info->m_definition->GetFullName() << ", " << dynamicMember->m_member->m_name << "));")
             }
 
             m_intendation--;
 
             LINE("")
-            LINE("auto* writtenData = "<<MakeTypeVarName(info->m_definition)<<";")
+            LINE("assert(" << MakeTypeWrittenVarName(info->m_definition) << " != nullptr);")
         }
         else
         {
@@ -835,8 +840,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE(MakeTypePtrVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << "*>(" << MakeTypePtrVarName(info->m_definition) << ");")
+        LINE(MakeTypeWrittenPtrVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << "*>(" << MakeTypePtrVarName(info->m_definition) << ");")
         m_intendation--;
+
+        LINE("")
+        LINE("assert(" << MakeTypeWrittenPtrVarName(info->m_definition) << " != nullptr);")
 
         LINE("")
         if (inTemp)
@@ -844,7 +852,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             LINE("m_stream->PushBlock(" << m_env.m_default_temp_block->m_name << ");")
             LINE("")
         }
-        LINE("if(m_stream->ReusableShouldWrite(" << MakeTypePtrVarName(info->m_definition) << "))")
+        LINE("if(m_stream->ReusableShouldWrite(" << MakeTypeWrittenPtrVarName(info->m_definition) << "))")
         LINE("{")
         m_intendation++;
 
@@ -862,7 +870,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
 
         LINE("")
-        LINE("m_stream->MarkFollowing(*"<<MakeTypePtrVarName(info->m_definition)<<");")
+        LINE("m_stream->MarkFollowing(*"<<MakeTypeWrittenPtrVarName(info->m_definition)<<");")
 
         m_intendation--;
         LINE("}")
@@ -889,6 +897,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("")
         LINE("auto* zoneAsset = static_cast<"<<m_env.m_asset->m_definition->GetFullName()<<"*>(m_asset->m_ptr);")
         LINE(MakeTypePtrVarName(m_env.m_asset->m_definition) << " = &zoneAsset;")
+        LINE(MakeTypeWrittenPtrVarName(m_env.m_asset->m_definition) << " = &zoneAsset;")
         LINE("WritePtr_" << MakeSafeTypeName(m_env.m_asset->m_definition) << "(false);")
         LINE("*pAsset = zoneAsset;")
 
@@ -948,7 +957,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("m_stream->Write<" << def->GetFullName() << ">(*" << MakeTypePtrVarName(def) << ");")
         }
-        LINE("m_stream->MarkFollowing(*"<< MakeTypePtrVarName(def)<<");")
+        LINE("m_stream->MarkFollowing(*"<< MakeTypeWrittenPtrVarName(def)<<");")
     }
 
     void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
@@ -959,14 +968,14 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         if (info && StructureComputations(info).IsAsset())
         {
-            LINE(WriterClassName(info) << " writer(*"<<MakeTypePtrVarName(def)<<", m_zone, m_stream);")
-            LINE("writer.Write(" << MakeTypePtrVarName(def) << ");")
+            LINE(WriterClassName(info) << " writer(*"<< MakeTypePtrVarName(def)<<", m_zone, m_stream);")
+            LINE("writer.Write(" << MakeTypeWrittenPtrVarName(def) << ");")
         }
         else
         {
             if (reusable)
             {
-                LINE("if(m_stream->ReusableShouldWrite(" << MakeTypePtrVarName(def) << "))")
+                LINE("if(m_stream->ReusableShouldWrite(" << MakeTypeWrittenPtrVarName(def) << "))")
                 LINE("{")
                 m_intendation++;
 
@@ -996,19 +1005,25 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE(MakeTypePtrVarName(def)<<" = m_stream->Write<" << def->GetFullName() << "*>(" << MakeTypePtrVarName(def) << ", count);")
+        LINE(MakeTypeWrittenPtrVarName(def)<<" = m_stream->Write<" << def->GetFullName() << "*>(" << MakeTypePtrVarName(def) << ", count);")
         m_intendation--;
 
         LINE("")
+        LINE("assert(" << MakeTypeWrittenPtrVarName(def) << " != nullptr);")
+
+        LINE("")
         LINE(def->GetFullName() << "** var = " << MakeTypePtrVarName(def) << ";")
+        LINE(def->GetFullName() << "** varWritten = " << MakeTypeWrittenPtrVarName(def) << ";")
         LINE("for(size_t index = 0; index < count; index++)")
         LINE("{")
         m_intendation++;
 
         LINE(MakeTypePtrVarName(def) << " = var;")
+        LINE(MakeTypeWrittenPtrVarName(def) << " = varWritten;")
         PrintWritePtrArrayMethod_PointerCheck(def, info, reusable);
         LINE("")
         LINE("var++;")
+        LINE("varWritten++;")
 
         m_intendation--;
         LINE("}")
@@ -1026,18 +1041,24 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("")
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE(MakeTypeVarName(def)<<" = m_stream->Write<" << def->GetFullName() << ">(" << MakeTypeVarName(def) << ", count);")
+        LINE(MakeTypeWrittenVarName(def)<<" = m_stream->Write<" << def->GetFullName() << ">(" << MakeTypeVarName(def) << ", count);")
         m_intendation--;
 
         LINE("")
+        LINE("assert(" << MakeTypeWrittenVarName(def) << " != nullptr);")
+
+        LINE("")
         LINE(def->GetFullName() << "* var = " << MakeTypeVarName(def) << ";")
+        LINE(def->GetFullName() << "* varWritten = " << MakeTypeWrittenVarName(def) << ";")
         LINE("for(size_t index = 0; index < count; index++)")
         LINE("{")
         m_intendation++;
 
         LINE(MakeTypeVarName(info->m_definition) << " = var;")
+        LINE(MakeTypeWrittenVarName(info->m_definition) << " = varWritten;")
         LINE("Write_" << info->m_definition->m_name << "(false);")
         LINE("var++;")
+        LINE("varWritten++;")
 
         m_intendation--;
         LINE("}")
@@ -1074,7 +1095,9 @@ public:
         m_intendation++;
 
         LINE(VariableDecl(m_env.m_asset->m_definition))
+        LINE(WrittenVariableDecl(m_env.m_asset->m_definition))
         LINE(PointerVariableDecl(m_env.m_asset->m_definition))
+        LINE(WrittenPointerVariableDecl(m_env.m_asset->m_definition))
         LINE("")
 
         // Variable Declarations: type varType;
@@ -1083,6 +1106,7 @@ public:
             if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
             {
                 LINE(VariableDecl(type->m_type))
+                LINE(WrittenVariableDecl(type->m_type))
             }
         }
         for (auto* type : m_env.m_used_types)
@@ -1090,6 +1114,7 @@ public:
             if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
             {
                 LINE(PointerVariableDecl(type->m_type))
+                LINE(WrittenPointerVariableDecl(type->m_type))
             }
         }
 

@@ -12,6 +12,7 @@ protected:
     XAssetInfoGeneric* m_asset;
 
     scr_string_t* varScriptString;
+    scr_string_t* varScriptStringWritten;
 
     AssetWriter(XAssetInfoGeneric* asset, Zone* zone, IZoneOutputStream* stream);
 
