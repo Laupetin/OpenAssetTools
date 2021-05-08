@@ -1,18 +1,18 @@
 #include "ZoneWriterFactoryIW4.h"
 
-#include <cassert>
 #include <cstring>
 
 #include "ContentWriterIW4.h"
-#include "Utils/ICapturedDataProvider.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/ZoneConstantsIW4.h"
+#include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
 #include "Writing/Steps/StepWriteXBlockSizes.h"
 #include "Writing/Steps/StepWriteZoneContentToFile.h"
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
+#include "Writing/Steps/StepWriteZoneSizes.h"
 
 using namespace IW4;
 
@@ -71,8 +71,21 @@ public:
 
         SetupBlocks();
 
+        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+        auto* contentInMemoryPtr = contentInMemory.get();
+        m_writer->AddWritingStep(std::move(contentInMemory));
+
         // Write zone header
         m_writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams(isSecure, false)));
+
+        m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::make_unique<OutputProcessorDeflate>()));
+
+        // Start of the XFile struct
+        m_writer->AddWritingStep(std::make_unique<StepWriteZoneSizes>(contentInMemoryPtr));
+        m_writer->AddWritingStep(std::make_unique<StepWriteXBlockSizes>(m_zone));
+
+        // Start of the zone content
+        m_writer->AddWritingStep(std::make_unique<StepWriteZoneContentToFile>(contentInMemoryPtr));
 
         // Return the fully setup zoneloader
         return std::move(m_writer);
