@@ -25,6 +25,7 @@ set count boneInfo numBones;
 // XModelLodInfo
 use XModelLodInfo;
 set block modelSurfs XFILE_BLOCK_TEMP;
+set action modelSurfs SetModelSurfs(XModelLodInfo, XModelSurfs);
 set reusable modelSurfs;
 set condition surfs never;
 
