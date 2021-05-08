@@ -1,5 +1,7 @@
 #include "Dx12TextureLoader.h"
 
+#include <cstring>
+
 Dx12TextureLoader::Dx12TextureLoader(MemoryManager* memoryManager)
     : m_memory_manager(memoryManager),
     m_format(DXGI_FORMAT_UNKNOWN),

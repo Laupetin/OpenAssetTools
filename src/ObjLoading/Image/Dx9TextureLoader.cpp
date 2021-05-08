@@ -1,5 +1,7 @@
 #include "Dx9TextureLoader.h"
 
+#include <cstring>
+
 Dx9TextureLoader::Dx9TextureLoader(MemoryManager* memoryManager)
     : m_memory_manager(memoryManager),
       m_format(D3DFMT_UNKNOWN),
