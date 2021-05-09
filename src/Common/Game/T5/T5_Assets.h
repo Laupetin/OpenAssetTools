@@ -108,6 +108,10 @@ namespace T5
         MAX_XFILE_COUNT
     };
 
+    typedef float vec2_t[2];
+    typedef float vec3_t[3];
+    typedef float vec4_t[4];
+
     union XAssetHeader
     {
         //XModelPieces *xmodelPieces;  // Not an asset
@@ -211,15 +215,15 @@ namespace T5
 
     struct PhysConstraint
     {
-        unsigned __int16 targetname;
+        uint16_t targetname;
         ConstraintType type;
         AttachPointType attach_point_type1;
         int target_index1;
-        unsigned __int16 target_ent1;
+        uint16_t target_ent1;
         const char* target_bone1;
         AttachPointType attach_point_type2;
         int target_index2;
-        unsigned __int16 target_ent2;
+        uint16_t target_ent2;
         const char* target_bone2;
         float offset[3];
         float pos[3];
@@ -251,7 +255,7 @@ namespace T5
 
     struct DestructibleStage
     {
-        unsigned __int16 showBone;
+        uint16_t showBone;
         float breakHealth;
         float maxTime;
         unsigned int flags;
@@ -278,7 +282,7 @@ namespace T5
         const char* damageSound;
         FxEffectDef* burnEffect;
         const char* burnSound;
-        unsigned __int16 enableLabel;
+        uint16_t enableLabel;
         int hideBones[5];
     };
 
@@ -295,13 +299,13 @@ namespace T5
     union XAnimIndices
     {
         char* _1;
-        unsigned __int16* _2;
+        uint16_t* _2;
         void* data;
     };
 
     struct XAnimNotifyInfo
     {
-        unsigned __int16 name;
+        uint16_t name;
         float time;
     };
 
@@ -376,12 +380,12 @@ namespace T5
     struct XAnimParts
     {
         const char* name;
-        unsigned __int16 dataByteCount;
-        unsigned __int16 dataShortCount;
-        unsigned __int16 dataIntCount;
-        unsigned __int16 randomDataByteCount;
-        unsigned __int16 randomDataIntCount;
-        unsigned __int16 numframes;
+        uint16_t dataByteCount;
+        uint16_t dataShortCount;
+        uint16_t dataIntCount;
+        uint16_t randomDataByteCount;
+        uint16_t randomDataIntCount;
+        uint16_t numframes;
         bool bLoop;
         bool bDelta;
         bool bLeftHandGripIK;
@@ -397,11 +401,11 @@ namespace T5
         float frequency;
         float primedLength;
         float loopEntryTime;
-        unsigned __int16* names;
+        uint16_t* names;
         char* dataByte;
-        __int16* dataShort;
+        int16_t* dataShort;
         int* dataInt;
-        __int16* randomDataShort;
+        int16_t* randomDataShort;
         char* randomDataByte;
         int* randomDataInt;
         XAnimIndices indices;
@@ -418,8 +422,8 @@ namespace T5
 
     struct XSurfaceVertexInfo
     {
-        __int16 vertCount[4];
-        unsigned __int16* vertsBlend;
+        int16_t vertCount[4];
+        uint16_t* vertsBlend;
         float* tensionData;
     };
 
@@ -452,20 +456,20 @@ namespace T5
 
     struct XSurfaceCollisionLeaf
     {
-        unsigned __int16 triangleBeginIndex;
+        uint16_t triangleBeginIndex;
     };
 
     struct XSurfaceCollisionAabb
     {
-        unsigned __int16 mins[3];
-        unsigned __int16 maxs[3];
+        uint16_t mins[3];
+        uint16_t maxs[3];
     };
 
     struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
-        unsigned __int16 childBeginIndex;
-        unsigned __int16 childCount;
+        uint16_t childBeginIndex;
+        uint16_t childCount;
     };
 
     struct XSurfaceCollisionTree
@@ -480,10 +484,10 @@ namespace T5
 
     struct XRigidVertList
     {
-        unsigned __int16 boneOffset;
-        unsigned __int16 vertCount;
-        unsigned __int16 triOffset;
-        unsigned __int16 triCount;
+        uint16_t boneOffset;
+        uint16_t vertCount;
+        uint16_t triOffset;
+        uint16_t triCount;
         XSurfaceCollisionTree* collisionTree;
     };
 
@@ -491,12 +495,12 @@ namespace T5
     {
         char tileMode;
         char vertListCount;
-        unsigned __int16 flags;
-        unsigned __int16 vertCount;
-        unsigned __int16 triCount;
-        unsigned __int16 baseTriIndex;
-        unsigned __int16 baseVertIndex;
-        unsigned __int16* triIndices;
+        uint16_t flags;
+        uint16_t vertCount;
+        uint16_t triCount;
+        uint16_t baseTriIndex;
+        uint16_t baseVertIndex;
+        uint16_t* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         void/*IDirect3DVertexBuffer9*/* vb0;
@@ -508,8 +512,8 @@ namespace T5
     struct XModelLodInfo
     {
         float dist;
-        unsigned __int16 numsurfs;
-        unsigned __int16 surfIndex;
+        uint16_t numsurfs;
+        uint16_t surfIndex;
         int partBits[5];
         char lod;
         char smcIndexPlusOne;
@@ -535,7 +539,7 @@ namespace T5
         int surfFlags;
     };
 
-    struct __declspec(align(4)) XBoneInfo
+    struct XBoneInfo
     {
         float bounds[2][3];
         float offset[3];
@@ -612,9 +616,9 @@ namespace T5
         char numRootBones;
         char numsurfs;
         char lodRampType;
-        unsigned __int16* boneNames;
+        uint16_t* boneNames;
         char* parentList;
-        __int16* quats;
+        int16_t* quats;
         float* trans;
         char* partClassification;
         DObjAnimMat* baseMat;
@@ -629,8 +633,8 @@ namespace T5
         float radius;
         float mins[3];
         float maxs[3];
-        __int16 numLods;
-        __int16 collLod;
+        int16_t numLods;
+        int16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
         int flags;
@@ -641,30 +645,30 @@ namespace T5
         PhysConstraints* physConstraints;
     };
 
-    struct GfxDrawSurfFields
+    struct gcc_align(8) GfxDrawSurfFields
     {
-        unsigned __int64 objectId : 16;
-        unsigned __int64 fade : 4;
-        unsigned __int64 customIndex : 5;
-        unsigned __int64 reflectionProbeIndex : 3;
-        unsigned __int64 hdrBits : 1;
-        unsigned __int64 glightRender : 1;
-        unsigned __int64 dlightRender : 1;
-        unsigned __int64 materialSortedIndex : 12;
-        unsigned __int64 primaryLightIndex : 8;
-        unsigned __int64 surfType : 4;
-        unsigned __int64 prepass : 2;
-        unsigned __int64 noDynamicShadow : 1;
-        unsigned __int64 primarySortKey : 6;
+        uint64_t objectId : 16;
+        uint64_t fade : 4;
+        uint64_t customIndex : 5;
+        uint64_t reflectionProbeIndex : 3;
+        uint64_t hdrBits : 1;
+        uint64_t glightRender : 1;
+        uint64_t dlightRender : 1;
+        uint64_t materialSortedIndex : 12;
+        uint64_t primaryLightIndex : 8;
+        uint64_t surfType : 4;
+        uint64_t prepass : 2;
+        uint64_t noDynamicShadow : 1;
+        uint64_t primarySortKey : 6;
     };
 
     union GfxDrawSurf
     {
-        GfxDrawSurfFields fields;
-        unsigned __int64 packed;
+        gcc_align(8) GfxDrawSurfFields fields;
+        gcc_align(8) uint64_t packed;
     };
 
-    struct __declspec(align(8)) MaterialInfo
+    struct MaterialInfo
     {
         const char* name;
         unsigned int gameFlags;
@@ -675,7 +679,7 @@ namespace T5
         GfxDrawSurf drawSurf;
         unsigned int surfaceTypeBits;
         unsigned int layeredSurfaceTypes;
-        unsigned __int16 hashIndex;
+        uint16_t hashIndex;
     };
 
     struct WaterWritable
@@ -772,10 +776,10 @@ namespace T5
         MaterialVertexStreamRouting routing;
     };
 
-    struct __declspec(align(4)) GfxVertexShaderLoadDef
+    struct GfxVertexShaderLoadDef
     {
         unsigned int* program;
-        unsigned __int16 programSize;
+        uint16_t programSize;
     };
 
     struct MaterialVertexShaderProgram
@@ -790,10 +794,10 @@ namespace T5
         MaterialVertexShaderProgram prog;
     };
 
-    struct __declspec(align(4)) GfxPixelShaderLoadDef
+    struct GfxPixelShaderLoadDef
     {
         unsigned int* program;
-        unsigned __int16 programSize;
+        uint16_t programSize;
     };
 
     struct MaterialPixelShaderProgram
@@ -810,7 +814,7 @@ namespace T5
 
     struct MaterialArgumentCodeConst
     {
-        unsigned __int16 index;
+        uint16_t index;
         char firstRow;
         char rowCount;
     };
@@ -825,8 +829,8 @@ namespace T5
 
     struct MaterialShaderArgument
     {
-        unsigned __int16 type;
-        unsigned __int16 dest;
+        uint16_t type;
+        uint16_t dest;
         MaterialArgumentDef u;
     };
 
@@ -845,8 +849,8 @@ namespace T5
     struct MaterialTechnique
     {
         const char* name;
-        unsigned __int16 flags;
-        unsigned __int16 passCount;
+        uint16_t flags;
+        uint16_t passCount;
         MaterialPass passArray[1];
     };
 
@@ -855,7 +859,7 @@ namespace T5
         const char* name;
         char worldVertFormat;
         char unused[1];
-        unsigned __int16 techsetFlags;
+        uint16_t techsetFlags;
         MaterialTechnique* techniques[130];
     };
 
@@ -899,9 +903,9 @@ namespace T5
         bool noPicmip;
         char track;
         CardMemory cardMemory;
-        unsigned __int16 width;
-        unsigned __int16 height;
-        unsigned __int16 depth;
+        uint16_t width;
+        uint16_t height;
+        uint16_t depth;
         char levelCount;
         char streaming;
         unsigned int baseSize;
@@ -986,14 +990,14 @@ namespace T5
         StreamedSound* streamSnd;
     };
 
-    struct __declspec(align(4)) SoundFile
+    struct SoundFile
     {
         SoundFileRef u;
         char type;
         char exists;
     };
 
-    struct __declspec(align(2)) snd_alias_t
+    struct snd_alias_t
     {
         const char* name;
         unsigned int id;
@@ -1004,22 +1008,22 @@ namespace T5
         unsigned int duck;
         unsigned int contextType;
         unsigned int contextValue;
-        unsigned __int16 fluxTime;
-        unsigned __int16 startDelay;
-        unsigned __int16 reverbSend;
-        unsigned __int16 centerSend;
-        unsigned __int16 volMin;
-        unsigned __int16 volMax;
-        unsigned __int16 teamVolMod;
-        unsigned __int16 pitchMin;
-        unsigned __int16 pitchMax;
-        unsigned __int16 teamPitchMod;
-        unsigned __int16 distMin;
-        unsigned __int16 distMax;
-        unsigned __int16 distReverbMax;
-        unsigned __int16 envelopMin;
-        unsigned __int16 envelopMax;
-        unsigned __int16 envelopPercentage;
+        uint16_t fluxTime;
+        uint16_t startDelay;
+        uint16_t reverbSend;
+        uint16_t centerSend;
+        uint16_t volMin;
+        uint16_t volMax;
+        uint16_t teamVolMod;
+        uint16_t pitchMin;
+        uint16_t pitchMax;
+        uint16_t teamPitchMod;
+        uint16_t distMin;
+        uint16_t distMax;
+        uint16_t distReverbMax;
+        uint16_t envelopMin;
+        uint16_t envelopMax;
+        uint16_t envelopPercentage;
         char minPriorityThreshold;
         char maxPriorityThreshold;
         char probability;
@@ -1048,8 +1052,8 @@ namespace T5
 
     struct SndIndexEntry
     {
-        unsigned __int16 value;
-        unsigned __int16 next;
+        uint16_t value;
+        uint16_t next;
     };
 
     struct snd_radverb
@@ -1112,7 +1116,7 @@ namespace T5
 
     struct cStaticModelWritable
     {
-        unsigned __int16 nextModelInWorldSector;
+        uint16_t nextModelInWorldSector;
     };
 
     struct cStaticModel_s
@@ -1135,31 +1139,31 @@ namespace T5
     struct cNode_t
     {
         cplane_s* plane;
-        __int16 children[2];
+        int16_t children[2];
     };
 
-    struct __declspec(align(4)) cLeaf_s
+    struct cLeaf_s
     {
-        unsigned __int16 firstCollAabbIndex;
-        unsigned __int16 collAabbCount;
+        uint16_t firstCollAabbIndex;
+        uint16_t collAabbCount;
         int brushContents;
         int terrainContents;
         float mins[3];
         float maxs[3];
         int leafBrushNode;
-        __int16 cluster;
+        int16_t cluster;
     };
 
     struct cLeafBrushNodeChildren_t
     {
         float dist;
         float range;
-        unsigned __int16 childOffset[2];
+        uint16_t childOffset[2];
     };
 
     struct cLeafBrushNodeLeaf_t
     {
-        unsigned __int16* brushes;
+        uint16_t* brushes;
     };
 
     union cLeafBrushNodeData_t
@@ -1171,7 +1175,7 @@ namespace T5
     struct cLeafBrushNode_s
     {
         char axis;
-        __int16 leafBrushCount;
+        int16_t leafBrushCount;
         int contents;
         cLeafBrushNodeData_t data;
     };
@@ -1204,8 +1208,8 @@ namespace T5
     struct CollisionAabbTree
     {
         float origin[3];
-        unsigned __int16 materialIndex;
-        unsigned __int16 childCount;
+        uint16_t materialIndex;
+        uint16_t childCount;
         float halfSize[3];
         CollisionAabbTreeIndex u;
     };
@@ -1264,18 +1268,18 @@ namespace T5
         GfxPlacement pose;
         XModel* xModel;
         XModel* destroyedxModel;
-        unsigned __int16 brushModel;
-        unsigned __int16 physicsBrushModel;
+        uint16_t brushModel;
+        uint16_t physicsBrushModel;
         FxEffectDef* destroyFx;
         unsigned int destroySound;
         XModelPieces* destroyPieces;
         PhysPreset* physPreset;
-        __int16 physConstraints[4];
+        int16_t physConstraints[4];
         int health;
         int flags;
         int contents;
-        unsigned __int16 targetname;
-        unsigned __int16 target;
+        uint16_t targetname;
+        uint16_t target;
     };
 
     struct DynEntityPose
@@ -1287,24 +1291,24 @@ namespace T5
     struct DynEntityClient
     {
         int physObjId;
-        unsigned __int16 flags;
-        unsigned __int16 lightingHandle;
+        uint16_t flags;
+        uint16_t lightingHandle;
         int health;
-        unsigned __int16 burnTime;
-        unsigned __int16 fadeTime;
+        uint16_t burnTime;
+        uint16_t fadeTime;
         int physicsStartTime;
     };
 
     struct DynEntityServer
     {
-        unsigned __int16 flags;
+        uint16_t flags;
         int health;
     };
 
     struct DynEntityColl
     {
-        unsigned __int16 sector;
-        unsigned __int16 nextEntInSector;
+        uint16_t sector;
+        uint16_t nextEntInSector;
         float linkMins[3];
         float linkMaxs[3];
         int contents;
@@ -1326,7 +1330,7 @@ namespace T5
         ROPE_CENTITY_CONSTRAINT = 0x3,
     };
 
-    struct __declspec(align(4)) constraint_t
+    struct constraint_t
     {
         float p[3];
         rope_constraint_e type;
@@ -1348,7 +1352,7 @@ namespace T5
         unsigned int frame_index;
     };
 
-    struct __declspec(align(4)) rope_t
+    struct rope_t
     {
         par_t m_particles[25];
         constraint_t m_constraints[30];
@@ -1376,7 +1380,7 @@ namespace T5
         int m_frame;
         int m_stable_count;
         int m_static_rope;
-        unsigned __int16 m_lightingHandle;
+        uint16_t m_lightingHandle;
     };
 
     struct clipMap_t
@@ -1398,7 +1402,7 @@ namespace T5
         unsigned int leafbrushNodesCount;
         cLeafBrushNode_s* leafbrushNodes;
         unsigned int numLeafBrushes;
-        unsigned __int16* leafbrushes;
+        uint16_t* leafbrushes;
         unsigned int numLeafSurfaces;
         unsigned int* leafsurfaces;
         unsigned int vertCount;
@@ -1406,9 +1410,9 @@ namespace T5
         unsigned int numBrushVerts;
         float(*brushVerts)[3];
         unsigned int nuinds;
-        unsigned __int16* uinds;
+        uint16_t* uinds;
         int triCount;
-        unsigned __int16* triIndices;
+        uint16_t* triIndices;
         char* triEdgeIsWalkable;
         int borderCount;
         CollisionBorder* borders;
@@ -1418,7 +1422,7 @@ namespace T5
         CollisionAabbTree* aabbTrees;
         unsigned int numSubModels;
         cmodel_t* cmodels;
-        unsigned __int16 numBrushes;
+        uint16_t numBrushes;
         cbrush_t* brushes;
         int numClusters;
         int clusterBytes;
@@ -1427,8 +1431,8 @@ namespace T5
         MapEnts* mapEnts;
         cbrush_t* box_brush;
         cmodel_t box_model;
-        unsigned __int16 originalDynEntCount;
-        unsigned __int16 dynEntCount[4];
+        uint16_t originalDynEntCount;
+        uint16_t dynEntCount[4];
         DynEntityDef* dynEntDefList[2];
         DynEntityPose* dynEntPoseList[2];
         DynEntityClient* dynEntClientList[2];
@@ -1447,7 +1451,7 @@ namespace T5
         char canUseShadowMap;
         char exponent;
         char priority;
-        __int16 cullDist;
+        int16_t cullDist;
         char _pad[2];
         float color[3];
         float dir[3];
@@ -1481,7 +1485,7 @@ namespace T5
 
     struct ComWaterCell
     {
-        __int16 waterheight;
+        int16_t waterheight;
         char flooroffset;
         char shoredist;
         char color[4];
@@ -1553,7 +1557,7 @@ namespace T5
     struct pathlink_s
     {
         float fDist;
-        unsigned __int16 nodeNum;
+        uint16_t nodeNum;
         char disconnectCount;
         char negotiationLink;
         char ubBadPlaceCount[4];
@@ -1562,30 +1566,30 @@ namespace T5
     struct pathnode_constant_t
     {
         nodeType type;
-        unsigned __int16 spawnflags;
-        unsigned __int16 targetname;
-        unsigned __int16 script_linkName;
-        unsigned __int16 script_noteworthy;
-        unsigned __int16 target;
-        unsigned __int16 animscript;
+        uint16_t spawnflags;
+        uint16_t targetname;
+        uint16_t script_linkName;
+        uint16_t script_noteworthy;
+        uint16_t target;
+        uint16_t animscript;
         int animscriptfunc;
         float vOrigin[3];
         float fAngle;
         float forward[2];
         float fRadius;
         float minUseDistSq;
-        __int16 wOverlapNode[2];
-        __int16 wChainId;
-        __int16 wChainDepth;
-        __int16 wChainParent;
-        unsigned __int16 totalLinkCount;
+        int16_t wOverlapNode[2];
+        int16_t wChainId;
+        int16_t wChainDepth;
+        int16_t wChainParent;
+        uint16_t totalLinkCount;
         pathlink_s* Links;
     };
 
     struct SentientHandle
     {
-        unsigned __int16 number;
-        unsigned __int16 infoIndex;
+        uint16_t number;
+        uint16_t infoIndex;
     };
 
     struct pathnode_dynamic_t
@@ -1594,10 +1598,10 @@ namespace T5
         int iFreeTime;
         int iValidTime[3];
         int inPlayerLOSTime;
-        __int16 wLinkCount;
-        __int16 wOverlapCount;
-        __int16 turretEntNumber;
-        __int16 userCount;
+        int16_t wLinkCount;
+        int16_t wOverlapCount;
+        int16_t turretEntNumber;
+        int16_t userCount;
     };
 
     struct pathnode_transient_t
@@ -1629,7 +1633,7 @@ namespace T5
     struct pathnode_tree_nodes_t
     {
         int nodeCount;
-        unsigned __int16* nodes;
+        uint16_t* nodes;
     };
 
     union pathnode_tree_info_t
@@ -1651,8 +1655,8 @@ namespace T5
         pathnode_t* nodes;
         pathbasenode_t* basenodes;
         unsigned int chainNodeCount;
-        unsigned __int16* chainNodeForNode;
-        unsigned __int16* nodeForChainNode;
+        uint16_t* chainNodeForNode;
+        uint16_t* nodeForChainNode;
         int visBytes;
         char* pathVis;
         int nodeTreeCount;
@@ -1680,10 +1684,10 @@ namespace T5
 
     struct GfxStreamingAabbTree
     {
-        unsigned __int16 firstItem;
-        unsigned __int16 itemCount;
-        unsigned __int16 firstChild;
-        unsigned __int16 childCount;
+        uint16_t firstItem;
+        uint16_t itemCount;
+        uint16_t firstChild;
+        uint16_t childCount;
         float mins[3];
         float maxs[3];
     };
@@ -1718,20 +1722,20 @@ namespace T5
         GfxWorldSunColor sunSettings[1];
     };
 
-    struct float44
+    struct type_align(16) float44
     {
         union
         {
-            float m[4][4];
+            vec4_t m[4];
             float member[16];
         };
     };
 
-    struct __declspec(align(16)) GfxLight
+    struct type_align(16) GfxLight
     {
         char type;
         char canUseShadowMap;
-        __int16 cullDist;
+        int16_t cullDist;
         float color[3];
         float dir[3];
         float origin[3];
@@ -1751,7 +1755,7 @@ namespace T5
         float cookieControl0[4];
         float cookieControl1[4];
         float cookieControl2[4];
-        __declspec(align(8)) float44 viewMatrix;
+        float44 viewMatrix;
         float44 projMatrix;
         GfxLightDef* def;
     };
@@ -1799,7 +1803,7 @@ namespace T5
     {
         int cellCount;
         cplane_s* planes;
-        unsigned __int16* nodes;
+        uint16_t* nodes;
         unsigned int* sceneEntCellBits;
     };
 
@@ -1837,11 +1841,11 @@ namespace T5
     {
         float mins[3];
         float maxs[3];
-        unsigned __int16 childCount;
-        unsigned __int16 surfaceCount;
-        unsigned __int16 startSurfIndex;
-        unsigned __int16 smodelIndexCount;
-        unsigned __int16* smodelIndexes;
+        uint16_t childCount;
+        uint16_t surfaceCount;
+        uint16_t startSurfIndex;
+        uint16_t smodelIndexCount;
+        uint16_t* smodelIndexes;
         int childrenOffset;
     };
 
@@ -1919,12 +1923,12 @@ namespace T5
         GfxWorldVertexLayerData vld;
         unsigned int vertexStream2DataSize;
         int indexCount;
-        unsigned __int16* indices;
+        uint16_t* indices;
     };
 
     struct type_align(4) GfxLightGridEntry
     {
-        unsigned __int16 colorsIndex;
+        uint16_t colorsIndex;
         char primaryLightIndex;
         char needsTrace;
     };
@@ -1938,11 +1942,11 @@ namespace T5
     {
         bool hasLightRegions;
         unsigned int sunPrimaryLightIndex;
-        unsigned __int16 mins[3];
-        unsigned __int16 maxs[3];
+        uint16_t mins[3];
+        uint16_t maxs[3];
         unsigned int rowAxis;
         unsigned int colAxis;
-        unsigned __int16* rowDataStart;
+        uint16_t* rowDataStart;
         unsigned int rawRowDataSize;
         char* rawRowData;
         unsigned int entryCount;
@@ -2000,33 +2004,33 @@ namespace T5
 
     struct XModelDrawInfo
     {
-        unsigned __int16 lod;
-        unsigned __int16 surfId;
+        uint16_t lod;
+        uint16_t surfId;
     };
 
     struct GfxSceneDynModel
     {
         XModelDrawInfo info;
-        unsigned __int16 dynEntId;
+        uint16_t dynEntId;
     };
 
     struct BModelDrawInfo
     {
-        unsigned __int16 surfId;
+        uint16_t surfId;
     };
 
     struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
-        unsigned __int16 dynEntId;
+        uint16_t dynEntId;
     };
 
     struct GfxShadowGeometry
     {
-        unsigned __int16 surfaceCount;
-        unsigned __int16 smodelCount;
-        unsigned __int16* sortedSurfIndex;
-        unsigned __int16* smodelIndex;
+        uint16_t surfaceCount;
+        uint16_t smodelCount;
+        uint16_t* sortedSurfIndex;
+        uint16_t* smodelIndex;
     };
 
     struct GfxLightRegionAxis
@@ -2064,8 +2068,8 @@ namespace T5
         int vertexLayerData;
         float maxs[3];
         int firstVertex;
-        unsigned __int16 vertexCount;
-        unsigned __int16 triCount;
+        uint16_t vertexCount;
+        uint16_t triCount;
         int baseIndex;
         float himipRadiusSq;
         int stream2ByteOffset;
@@ -2103,8 +2107,8 @@ namespace T5
         GfxPackedPlacement placement;
         XModel* model;
         int flags;
-        unsigned __int16 smodelCacheIndex[4];
-        unsigned __int16 lightingHandle;
+        uint16_t smodelCacheIndex[4];
+        uint16_t lightingHandle;
         char reflectionProbeIndex;
         char primaryLightIndex;
     };
@@ -2127,7 +2131,7 @@ namespace T5
         char* smodelVisDataCameraSaved;
         char* surfaceVisDataCameraSaved;
         unsigned int* lodData;
-        unsigned __int16* sortedSurfIndex;
+        uint16_t* sortedSurfIndex;
         GfxStaticModelInst* smodelInsts;
         GfxSurface* surfaces;
         GfxCullGroup* cullGroups;
@@ -2145,19 +2149,19 @@ namespace T5
         char* dynEntVisData[2][3];
     };
 
-    struct __declspec(align(4)) GfxWorldLodChain
+    struct GfxWorldLodChain
     {
         float origin[3];
         float lastDist;
         unsigned int firstLodInfo;
-        unsigned __int16 lodInfoCount;
+        uint16_t lodInfoCount;
     };
 
-    struct __declspec(align(4)) GfxWorldLodInfo
+    struct GfxWorldLodInfo
     {
         float dist;
         unsigned int firstSurf;
-        unsigned __int16 surfCount;
+        uint16_t surfCount;
     };
 
     struct GfxWaterBuffer
@@ -2288,7 +2292,7 @@ namespace T5
 
     struct Glyph
     {
-        unsigned __int16 letter;
+        uint16_t letter;
         char x0;
         char y0;
         char dx;
@@ -2614,7 +2618,7 @@ namespace T5
         int animDuration;
     };
 
-    struct __declspec(align(8)) itemDef_s
+    struct type_align(8) itemDef_s
     {
         windowDef_t window;
         int type;
@@ -2628,15 +2632,15 @@ namespace T5
         menuDef_t* parent;
         rectData_s* rectExpData;
         ExpressionStatement visibleExp;
-        unsigned __int64 showBits;
-        unsigned __int64 hideBits;
+        uint64_t showBits;
+        uint64_t hideBits;
         ExpressionStatement forecolorAExp;
         int ui3dWindowId;
         GenericEventHandler* onEvent;
         UIAnimInfo* animInfo;
     };
 
-    struct __declspec(align(8)) menuDef_t
+    struct type_align(8) menuDef_t
     {
         windowDef_t window;
         const char* font;
@@ -2663,8 +2667,8 @@ namespace T5
         GenericEventHandler* onEvent;
         ItemKeyHandler* onKey;
         ExpressionStatement visibleExp;
-        unsigned __int64 showBits;
-        unsigned __int64 hideBits;
+        uint64_t showBits;
+        uint64_t hideBits;
         const char* allowedBinding;
         const char* soundName;
         int imageTrack;
@@ -3022,8 +3026,8 @@ namespace T5
         XModel** gunXModel;
         XModel* handXModel;
         const char* szModeName;
-        unsigned __int16* notetrackSoundMapKeys;
-        unsigned __int16* notetrackSoundMapValues;
+        uint16_t* notetrackSoundMapKeys;
+        uint16_t* notetrackSoundMapValues;
         int playerAnimType;
         weapType_t weapType;
         weapClass_t weapClass;
@@ -3194,7 +3198,7 @@ namespace T5
         int playerDamage;
         int iMeleeDamage;
         int iDamageType;
-        unsigned __int16 explosionTag;
+        uint16_t explosionTag;
         int iFireDelay;
         int iMeleeDelay;
         int meleeChargeDelay;
@@ -3464,8 +3468,8 @@ namespace T5
         float fightDist;
         float maxDist;
         const char* accuracyGraphName[2];
-        float(*accuracyGraphKnots[2])[2];
-        float(*originalAccuracyGraphKnots[2])[2];
+        vec2_t* accuracyGraphKnots[2];
+        vec2_t* originalAccuracyGraphKnots[2];
         int accuracyGraphKnotCount[2];
         int originalAccuracyGraphKnotCount[2];
         int iPositionReloadTransTime;
@@ -3527,7 +3531,7 @@ namespace T5
         const char* szDisplayName;
         const char** szXAnims;
         const char* szAltWeaponName;
-        unsigned __int16* hideTags;
+        uint16_t* hideTags;
         unsigned int altWeaponIndex;
         int iClipSize;
         int iReloadTime;
@@ -3576,9 +3580,9 @@ namespace T5
         WeaponDef weapDef;
         XModel* gunXModel[16];
         const char* szXAnims[66];
-        unsigned __int16 hideTags[32];
-        unsigned __int16 notetrackSoundMapKeys[20];
-        unsigned __int16 notetrackSoundMapValues[20];
+        uint16_t hideTags[32];
+        uint16_t notetrackSoundMapKeys[20];
+        uint16_t notetrackSoundMapValues[20];
         XModel* worldModel[16];
         float parallelBounce[31];
         float perpendicularBounce[31];
@@ -3601,8 +3605,8 @@ namespace T5
         unsigned int id;
         int parentIndex;
         snd_category_t category;
-        unsigned __int16 attenuationSp;
-        unsigned __int16 attenuationMp;
+        uint16_t attenuationSp;
+        uint16_t attenuationMp;
     };
 
     struct snd_curve
@@ -3737,7 +3741,7 @@ namespace T5
         char loopCount;
         char colIndexBits;
         char rowIndexBits;
-        unsigned __int16 entryCountAndIndexRange;
+        uint16_t entryCountAndIndexRange;
     };
 
     struct FxElemVelStateInFrame
@@ -3809,7 +3813,7 @@ namespace T5
         int vertCount;
         FxTrailVertex* verts;
         int indCount;
-        unsigned __int16* inds;
+        uint16_t* inds;
     };
 
     struct FxBillboardTrim
@@ -3869,10 +3873,10 @@ namespace T5
         char sortOrder;
         char lightingFrac;
         char unused[2];
-        unsigned __int16 alphaFadeTimeMsec;
-        unsigned __int16 maxWindStrength;
-        unsigned __int16 spawnIntervalAtMaxWind;
-        unsigned __int16 lifespanAtMaxWind;
+        uint16_t alphaFadeTimeMsec;
+        uint16_t maxWindStrength;
+        uint16_t spawnIntervalAtMaxWind;
+        uint16_t lifespanAtMaxWind;
         FxElemDefUnion u;
         FxElemSpawnSound spawnSound;
         float billboardPivot[2];
@@ -3925,7 +3929,7 @@ namespace T5
         int columnCount;
         int rowCount;
         StringTableCell* values;
-        __int16* cellIndex;
+        int16_t* cellIndex;
     };
 
     struct PackIndexHeader
@@ -4114,7 +4118,7 @@ namespace T5
         int backgroundCount;
         EmblemBackground* backgrounds;
         int backgroundLookupCount;
-        __int16* backgroundLookup;
+        int16_t* backgroundLookup;
     };
 
 #ifndef __zonecodegenerator
