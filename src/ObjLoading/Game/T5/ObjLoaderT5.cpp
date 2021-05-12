@@ -8,8 +8,10 @@
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
 #include "AssetLoading/AssetLoadingManager.h"
+#include "Image/Dx9TextureLoader.h"
 #include "Image/Texture.h"
 #include "Image/IwiLoader.h"
+#include "Image/IwiTypes.h"
 
 using namespace T5;
 
@@ -83,7 +85,31 @@ void ObjLoader::UnloadContainersOfZone(Zone* zone) const
 
 void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
 {
-    // TODO: Load Texture from LoadDef here
+    const auto* loadDef = image->texture.loadDef;
+    Dx9TextureLoader textureLoader(zone->GetMemory());
+
+    textureLoader.Width(image->width).Height(image->height).Depth(image->depth);
+
+    if (loadDef->flags & iwi13::IMG_FLAG_VOLMAP)
+        textureLoader.Type(TextureType::T_3D);
+    else if (loadDef->flags & iwi13::IMG_FLAG_CUBEMAP)
+        textureLoader.Type(TextureType::T_CUBE);
+    else
+        textureLoader.Type(TextureType::T_2D);
+
+    textureLoader.Format(static_cast<D3DFORMAT>(loadDef->format));
+    textureLoader.HasMipMaps(!(loadDef->flags & iwi13::IMG_FLAG_NOMIPMAPS));
+    Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
+
+    if (loadedTexture != nullptr)
+    {
+        image->texture.texture = loadedTexture;
+        image->cardMemory.platform[0] = 0;
+
+        const auto textureMipCount = loadedTexture->GetMipMapCount();
+        for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
+            image->cardMemory.platform[0] += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
+    }
 }
 
 void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone* zone)

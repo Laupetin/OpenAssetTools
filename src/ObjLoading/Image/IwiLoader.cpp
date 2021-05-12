@@ -228,6 +228,111 @@ Texture* IwiLoader::LoadIwi8(std::istream& stream) const
     return texture;
 }
 
+const ImageFormat* IwiLoader::GetFormat13(int8_t format)
+{
+    switch (static_cast<iwi13::IwiFormat>(format))
+    {
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGBA:
+        return &ImageFormat::FORMAT_R8_G8_B8_A8;
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB:
+        return &ImageFormat::FORMAT_R8_G8_B8;
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_ALPHA:
+        return &ImageFormat::FORMAT_A8;
+    case iwi13::IwiFormat::IMG_FORMAT_DXT1:
+        return &ImageFormat::FORMAT_BC1;
+    case iwi13::IwiFormat::IMG_FORMAT_DXT3:
+        return &ImageFormat::FORMAT_BC2;
+    case iwi13::IwiFormat::IMG_FORMAT_DXT5:
+        return &ImageFormat::FORMAT_BC3;
+    case iwi13::IwiFormat::IMG_FORMAT_DXN:
+        return &ImageFormat::FORMAT_BC5;
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE_ALPHA:
+        return &ImageFormat::FORMAT_R8_A8;
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
+        return &ImageFormat::FORMAT_R8;
+    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
+    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGB: // used
+    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
+    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
+    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB565:
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGB5A3:
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_C8:
+    case iwi13::IwiFormat::IMG_FORMAT_BITMAP_RGBA8:
+    case iwi13::IwiFormat::IMG_FORMAT_A16B16G16R16F:
+        printf("Unsupported IWI format: %i\n", format);
+        break;
+    default:
+        printf("Unknown IWI format: %i\n", format);
+        break;
+    }
+
+    return nullptr;
+}
+
+Texture* IwiLoader::LoadIwi13(std::istream& stream) const
+{
+    iwi13::IwiHeader header{};
+
+    stream.read(reinterpret_cast<char*>(&header), sizeof(header));
+    if (stream.gcount() != sizeof(header))
+        return nullptr;
+
+    const auto* format = GetFormat6(header.format);
+    if (format == nullptr)
+        return nullptr;
+
+    auto width = header.dimensions[0];
+    auto height = header.dimensions[1];
+    auto depth = header.dimensions[2];
+    auto hasMipMaps = !(header.flags & iwi13::IwiFlags::IMG_FLAG_NOMIPMAPS);
+
+    Texture* texture;
+    if (header.flags & iwi13::IwiFlags::IMG_FLAG_CUBEMAP)
+    {
+        texture = m_memory_manager->Create<TextureCube>(format, width, height, hasMipMaps);
+    }
+    else if (header.flags & iwi13::IwiFlags::IMG_FLAG_VOLMAP)
+    {
+        texture = m_memory_manager->Create<Texture3D>(format, width, height, depth, hasMipMaps);
+    }
+    else
+    {
+        texture = m_memory_manager->Create<Texture2D>(format, width, height, hasMipMaps);
+    }
+
+    texture->Allocate();
+
+    auto currentFileSize = sizeof(iwi13::IwiHeader) + sizeof(IwiVersion);
+    const auto mipMapCount = hasMipMaps ? texture->GetMipMapCount() : 1;
+
+    for (auto currentMipLevel = mipMapCount - 1; currentMipLevel >= 0; currentMipLevel--)
+    {
+        const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
+        currentFileSize += sizeOfMipLevel;
+
+        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi13::IwiHeader::fileSizeForPicmip)>::value)
+            && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
+        {
+            printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);
+
+            m_memory_manager->Delete(texture);
+            return nullptr;
+        }
+
+        stream.read(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), sizeOfMipLevel);
+        if (stream.gcount() != sizeOfMipLevel)
+        {
+            printf("Unexpected eof of iwi in mip level %i\n", currentMipLevel);
+
+            m_memory_manager->Delete(texture);
+            return nullptr;
+        }
+    }
+
+    return texture;
+}
+
 const ImageFormat* IwiLoader::GetFormat27(int8_t format)
 {
     switch (static_cast<iwi27::IwiFormat>(format))
@@ -357,6 +462,9 @@ Texture* IwiLoader::LoadIwi(std::istream& stream)
 
     case 8:
         return LoadIwi8(stream);
+
+    case 13:
+        return LoadIwi13(stream);
 
     case 27:
         return LoadIwi27(stream);

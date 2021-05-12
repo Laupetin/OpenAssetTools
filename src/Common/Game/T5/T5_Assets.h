@@ -616,9 +616,9 @@ namespace T5
     struct XModel
     {
         const char* name;
-        char numBones;
-        char numRootBones;
-        char numsurfs;
+        unsigned char numBones;
+        unsigned char numRootBones;
+        unsigned char numsurfs;
         char lodRampType;
         uint16_t* boneNames;
         char* parentList;

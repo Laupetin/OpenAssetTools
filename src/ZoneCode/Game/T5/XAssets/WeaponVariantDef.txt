@@ -16,6 +16,11 @@ set count hideTags 32;
 set reusable hideTags;
 set string szAmmoName;
 set string szClipName;
+reorder:
+...
+szDisplayName
+szAltWeaponName
+szXAnims;
 
 // WeaponDef
 use WeaponDef;
