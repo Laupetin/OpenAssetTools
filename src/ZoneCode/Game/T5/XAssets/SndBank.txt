@@ -1,0 +1,50 @@
+// =========================================
+// SndBank
+// =========================================
+use SndBank;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set count alias aliasCount;
+set count aliasIndex aliasCount;
+set count radverbs radverbCount;
+set count snapshots snapshotCount;
+
+// snd_alias_list_t
+use snd_alias_list_t;
+set string name;
+set reusable head;
+set count head count;
+
+// snd_alias_t
+use snd_alias_t;
+set string name;
+set string subtitle;
+set string secondaryname;
+set reusable soundFile;
+
+// SoundFile
+use SoundFile;
+set condition u::loadSnd type == SAT_LOADED;
+set reusable u::loadSnd;
+set reusable u::streamSnd;
+
+// LoadedSound
+set string LoadedSound::name;
+
+// snd_asset
+use snd_asset;
+set count seek_table seek_table_count;
+set count data data_size;
+set block data XFILE_BLOCK_PHYSICAL;
+
+// StreamedSound
+use StreamedSound;
+set string filename;
+set reusable primeSnd;
+
+// PrimedSound
+use PrimedSound;
+set string name;
+set count buffer size;
+set block buffer XFILE_BLOCK_LARGE;

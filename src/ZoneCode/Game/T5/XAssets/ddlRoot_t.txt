@@ -1,0 +1,28 @@
+// =========================================
+// ddlRoot_t
+// =========================================
+use ddlRoot_t;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set count ddlDef 1;
+
+// ddlDef_t
+use ddlDef_t;
+set count structList structCount;
+set count enumList enumCount;
+set count next 1;
+
+// ddlStructDef_t
+use ddlStructDef_t;
+set string name;
+set count members memberCount;
+
+// ddlMemberDef_t
+set string ddlMemberDef_t::name;
+
+// ddlEnumDef_t
+use ddlEnumDef_t;
+set string name;
+set string members;
+set count members memberCount;

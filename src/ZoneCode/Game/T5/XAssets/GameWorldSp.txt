@@ -1,0 +1,38 @@
+// =========================================
+// GameWorldSp
+// =========================================
+use GameWorldSp;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+
+// PathData
+use PathData;
+set count nodes nodeCount + 128;
+set block basenodes XFILE_BLOCK_RUNTIME;
+set count basenodes nodeCount + 128;
+set count chainNodeForNode nodeCount;
+set count nodeForChainNode nodeCount;
+set count pathVis visBytes;
+set count nodeTree nodeTreeCount;
+
+// pathnode_t
+set condition pathnode_t::transient never;
+
+// pathnode_constant_t
+use pathnode_constant_t;
+set scriptstring targetname;
+set scriptstring script_linkName;
+set scriptstring script_noteworthy;
+set scriptstring target;
+set scriptstring animscript;
+set count Links totalLinkCount;
+
+// pathnode_tree_t
+use pathnode_tree_t;
+set condition u::s axis < 0;
+set reusable u::child;
+
+// pathnode_tree_nodes_t
+use pathnode_tree_nodes_t;
+set count nodes nodeCount;

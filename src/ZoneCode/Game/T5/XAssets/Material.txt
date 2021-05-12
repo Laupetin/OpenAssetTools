@@ -1,0 +1,23 @@
+// =========================================
+// Material
+// =========================================
+use Material;
+set block XFILE_BLOCK_TEMP;
+set string info::name;
+set name info::name;
+set reusable textureTable;
+set count textureTable textureCount;
+set reusable constantTable;
+set count constantTable constantCount;
+set reusable stateBitsTable;
+set count stateBitsTable stateBitsCount;
+
+// MaterialTextureDef
+use MaterialTextureDef;
+set condition u::water semantic == TS_WATER_MAP;
+set reusable u::water;
+
+// water_t
+use water_t;
+set count H0 N * M;
+set count wTerm N * M;

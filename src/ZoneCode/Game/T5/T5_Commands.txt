@@ -30,6 +30,7 @@ asset FxEffectDef ASSET_TYPE_FX;
 asset FxImpactTable ASSET_TYPE_IMPACT_FX;
 asset RawFile ASSET_TYPE_RAWFILE;
 asset StringTable ASSET_TYPE_STRINGTABLE;
+asset PackIndex ASSET_TYPE_PACK_INDEX;
 asset XGlobals ASSET_TYPE_XGLOBALS;
 asset ddlRoot_t ASSET_TYPE_DDL;
 asset Glasses ASSET_TYPE_GLASSES;
@@ -72,6 +73,7 @@ block normal  XFILE_BLOCK_PHYSICAL;
 #include "XAssets/FxImpactTable.txt"
 #include "XAssets/RawFile.txt"
 #include "XAssets/StringTable.txt"
+#include "XAssets/PackIndex.txt"
 #include "XAssets/XGlobals.txt"
 #include "XAssets/ddlRoot_t.txt"
 #include "XAssets/Glasses.txt"

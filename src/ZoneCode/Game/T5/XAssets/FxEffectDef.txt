@@ -1,0 +1,48 @@
+// =========================================
+// FxEffectDef
+// =========================================
+use FxEffectDef;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set count elemDefs elemDefCountLooping + elemDefCountOneShot + elemDefCountEmission;
+
+// FxElemDef
+use FxElemDef;
+set count velSamples velIntervalCount + 1;
+set count visSamples visStateIntervalCount + 1;
+
+// FxElemDefVisuals
+use FxElemDefVisuals;
+set condition markArray FxElemDef::elemType == FX_ELEM_TYPE_DECAL;
+set count markArray FxElemDef::visualCount;
+set condition array FxElemDef::visualCount > 1;
+set count array FxElemDef::visualCount;
+
+// FxElemVisuals
+use FxElemVisuals;
+set condition anonymous never;
+set condition model FxElemDef::elemType == FX_ELEM_TYPE_MODEL;
+set condition effectDef FxElemDef::elemType == FX_ELEM_TYPE_RUNNER;
+set condition soundName FxElemDef::elemType == FX_ELEM_TYPE_SOUND;
+set string soundName;
+set condition material FxElemDef::elemType == FX_ELEM_TYPE_SPRITE_BILLBOARD
+|| FxElemDef::elemType == FX_ELEM_TYPE_SPRITE_ORIENTED
+|| FxElemDef::elemType == FX_ELEM_TYPE_SPRITE_ROTATED
+|| FxElemDef::elemType == FX_ELEM_TYPE_TAIL
+|| FxElemDef::elemType == FX_ELEM_TYPE_LINE
+|| FxElemDef::elemType == FX_ELEM_TYPE_TRAIL
+|| FxElemDef::elemType == FX_ELEM_TYPE_CLOUD;
+
+// FxEffectDefRef
+use FxEffectDefRef;
+set condition handle never;
+set string name;
+
+// FxTrailDef
+use FxTrailDef;
+set count verts vertCount;
+set count inds indCount;
+
+// FxElemSpawnSound
+set string FxElemSpawnSound::spawnSound;

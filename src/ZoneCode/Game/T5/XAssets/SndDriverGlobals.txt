@@ -1,0 +1,13 @@
+// =========================================
+// SndDriverGlobals
+// =========================================
+use SndDriverGlobals;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set count groups groupCount;
+set count curves curveCount;
+set count pans panCount;
+set count snapshotGroups snapshotGroupCount;
+set count contexts contextCount;
+set count masters masterCount;

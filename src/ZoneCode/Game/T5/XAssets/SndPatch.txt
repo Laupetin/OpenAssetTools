@@ -1,0 +1,10 @@
+// =========================================
+// SndPatch
+// =========================================
+use SndPatch;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set count elements elementCount;
+set count files fileCount;
+set reusable files;

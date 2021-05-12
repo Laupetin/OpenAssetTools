@@ -1,0 +1,85 @@
+// =========================================
+// clipMap_t
+// =========================================
+use clipMap_t;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set reusable planes;
+set count planes planeCount;
+set count staticModelList numStaticModels;
+set count materials numMaterials;
+set count brushsides numBrushSides;
+set count nodes numNodes;
+set count leafs numLeafs;
+set count leafbrushes numLeafBrushes;
+set count leafbrushNodes leafbrushNodesCount;
+set count leafsurfaces numLeafSurfaces;
+set count verts vertCount;
+set count brushVerts numBrushVerts;
+set count uinds nuinds;
+set count triIndices 3 * triCount;
+set count triEdgeIsWalkable ((3 * triCount + 31) / 32) * 4;
+set count borders borderCount;
+set count partitions partitionCount;
+set count aabbTrees aabbTreeCount;
+set count cmodels numSubModels;
+set count brushes numBrushes;
+set count visibility numClusters * clusterBytes;
+set reusable box_brush;
+set count dynEntDefList[0] dynEntCount[0];
+set count dynEntDefList[1] dynEntCount[1];
+set block dynEntPoseList XFILE_BLOCK_RUNTIME;
+set count dynEntPoseList[0] dynEntCount[0];
+set count dynEntPoseList[1] dynEntCount[1];
+set block dynEntClientList XFILE_BLOCK_RUNTIME;
+set count dynEntClientList[0] dynEntCount[0];
+set count dynEntClientList[1] dynEntCount[1];
+set block dynEntServerList XFILE_BLOCK_RUNTIME;
+set count dynEntServerList[0] dynEntCount[2];
+set count dynEntServerList[1] dynEntCount[3];
+set block dynEntCollList XFILE_BLOCK_RUNTIME;
+set count dynEntCollList[0] dynEntCount[0];
+set count dynEntCollList[1] dynEntCount[1];
+set count dynEntCollList[2] dynEntCount[2];
+set count dynEntCollList[3] dynEntCount[3];
+set count constraints num_constraints;
+set block ropes XFILE_BLOCK_RUNTIME;
+set count ropes max_ropes;
+reorder:
+    leafs
+    leafbrushes
+    leafbrushNodes
+    leafsurfaces;
+
+// cbrushside_t
+set reusable cbrushside_t::plane;
+
+// cNode_t
+set reusable cNode_t::plane;
+
+// cLeafBrushNode_s
+use cLeafBrushNode_s;
+set condition data::leaf leafBrushCount > 0;
+set reusable data::leaf::brushes;
+set count data::leaf::brushes leafBrushCount;
+
+// CollisionPartition
+set reusable CollisionPartition::borders;
+
+// cbrush_t
+use cbrush_t;
+set reusable sides;
+set reusable verts;
+
+// DynEntityDef
+use DynEntityDef;
+set reusable destroyPieces;
+set scriptstring targetname;
+set scriptstring target;
+
+// XModelPieces
+use XModelPieces;
+set string name;
+set name name;
+set count pieces numpieces;

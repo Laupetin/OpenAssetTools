@@ -184,9 +184,9 @@ namespace T5
         float piecesUpwardVelocity;
         int canFloat;
         float gravityScale;
-        float centerOfMassOffset[3];
-        float buoyancyBoxMin[3];
-        float buoyancyBoxMax[3];
+        vec3_t centerOfMassOffset;
+        vec3_t buoyancyBoxMin;
+        vec3_t buoyancyBoxMax;
     };
 
     enum ConstraintType
@@ -225,10 +225,10 @@ namespace T5
         int target_index2;
         uint16_t target_ent2;
         const char* target_bone2;
-        float offset[3];
-        float pos[3];
-        float pos2[3];
-        float dir[3];
+        vec3_t offset;
+        vec3_t pos;
+        vec3_t pos2;
+        vec3_t dir;
         int flags;
         int timeout;
         int min_health;
@@ -236,7 +236,7 @@ namespace T5
         float distance;
         float damp;
         float power;
-        float scale[3];
+        vec3_t scale;
         float spin_scale;
         float minAngle;
         float maxAngle;
@@ -391,8 +391,8 @@ namespace T5
         bool bLeftHandGripIK;
         bool bStreamable;
         unsigned int streamedFileSize;
-        char boneCount[10];
-        char notifyCount;
+        unsigned char boneCount[10];
+        unsigned char notifyCount;
         char assetType;
         bool isDefault;
         unsigned int randomDataShortCount;
@@ -491,6 +491,8 @@ namespace T5
         XSurfaceCollisionTree* collisionTree;
     };
 
+    typedef tdef_align(16) unsigned short r_index16_t;
+
     struct XSurface
     {
         char tileMode;
@@ -500,7 +502,7 @@ namespace T5
         uint16_t triCount;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        uint16_t* triIndices;
+        r_index16_t(*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         void/*IDirect3DVertexBuffer9*/* vb0;
@@ -560,7 +562,7 @@ namespace T5
 
     struct cplane_s
     {
-        float normal[3];
+        vec3_t normal;
         float dist;
         char type;
         char signbits;
@@ -574,17 +576,17 @@ namespace T5
         int sflags;
     };
 
-    struct BrushWrapper
+    struct type_align(16) BrushWrapper
     {
-        float mins[3];
+        vec3_t mins;
         int contents;
-        float maxs[3];
+        vec3_t maxs;
         unsigned int numsides;
         cbrushside_t* sides;
         int axial_cflags[2][3];
         int axial_sflags[2][3];
         unsigned int numverts;
-        float(*verts)[3];
+        vec3_t* verts;
         cplane_s* planes;
     };
 
@@ -592,15 +594,17 @@ namespace T5
     {
         BrushWrapper* brush;
         int type;
-        float orientation[3][3];
-        float offset[3];
-        float halfLengths[3];
+        vec3_t orientation[3];
+        vec3_t offset;
+        vec3_t halfLengths;
     };
+
+    typedef tdef_align(16) PhysGeomInfo PhysGeomInfo16;
 
     struct PhysGeomList
     {
         unsigned int count;
-        PhysGeomInfo* geoms;
+        PhysGeomInfo16* geoms;
         int contents;
     };
 
@@ -618,8 +622,8 @@ namespace T5
         char lodRampType;
         uint16_t* boneNames;
         char* parentList;
-        int16_t* quats;
-        float* trans;
+        int16_t(*quats)[4];
+        float(*trans)[4];
         char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
@@ -821,10 +825,26 @@ namespace T5
 
     union MaterialArgumentDef
     {
-        const float* literalConst;
+        const float(*literalConst)[4];
         MaterialArgumentCodeConst codeConst;
         unsigned int codeSampler;
         unsigned int nameHash;
+    };
+
+    enum MaterialShaderArgumentType
+    {
+        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
+        MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
+        MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2,
+        MTL_ARG_CODE_PRIM_BEGIN = 0x3,
+        MTL_ARG_CODE_VERTEX_CONST = 0x3,
+        MTL_ARG_CODE_PIXEL_SAMPLER = 0x4,
+        MTL_ARG_CODE_PIXEL_CONST = 0x5,
+        MTL_ARG_CODE_PRIM_END = 0x6,
+        MTL_ARG_MATERIAL_PIXEL_CONST = 0x6,
+        MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
+
+        MLT_ARG_COUNT
     };
 
     struct MaterialShaderArgument
@@ -892,6 +912,52 @@ namespace T5
         int platform[2];
     };
 
+    enum TextureSemantic
+    {
+        TS_2D = 0x0,
+        TS_FUNCTION = 0x1,
+        TS_COLOR_MAP = 0x2,
+        TS_UNUSED_1 = 0x3,
+        TS_UNUSED_2 = 0x4,
+        TS_NORMAL_MAP = 0x5,
+        TS_UNUSED_3 = 0x6,
+        TS_UNUSED_4 = 0x7,
+        TS_SPECULAR_MAP = 0x8,
+        TS_UNUSED_5 = 0x9,
+        TS_UNUSED_6 = 0xA,
+        TS_WATER_MAP = 0xB,
+        TS_COLOR0_MAP = 0xC,
+        TS_COLOR1_MAP = 0xD,
+        TS_COLOR2_MAP = 0xE,
+        TS_COLOR3_MAP = 0xF,
+        TS_COLOR4_MAP = 0x10,
+        TS_COLOR5_MAP = 0x11,
+        TS_COLOR6_MAP = 0x12,
+        TS_COLOR7_MAP = 0x13,
+        TS_COLOR8_MAP = 0x14,
+        TS_COLOR9_MAP = 0x15,
+        TS_COLOR10_MAP = 0x16,
+        TS_COLOR11_MAP = 0x17,
+        TS_COLOR12_MAP = 0x18,
+        TS_COLOR13_MAP = 0x19,
+        TS_COLOR14_MAP = 0x1A,
+        TS_COLOR15_MAP = 0x1B,
+        TS_THROW_MAP = 0x1C,
+    };
+
+    enum ImageCategory
+    {
+        IMG_CATEGORY_UNKNOWN = 0x0,
+        IMG_CATEGORY_AUTO_GENERATED = 0x1,
+        IMG_CATEGORY_LIGHTMAP = 0x2,
+        IMG_CATEGORY_LOAD_FROM_FILE = 0x3,
+        IMG_CATEGORY_RAW = 0x4,
+        IMG_CATEGORY_FIRST_UNMANAGED = 0x5,
+        IMG_CATEGORY_WATER = 0x5,
+        IMG_CATEGORY_RENDERTARGET = 0x6,
+        IMG_CATEGORY_TEMP = 0x7,
+    };
+
     struct GfxImage
     {
         GfxTexture texture;
@@ -947,6 +1013,8 @@ namespace T5
         SND_ASSET_FLAG_PAD_LOOP_BUFFER = 0x2,
     };
 
+    typedef tdef_align(2048) char snd_align_char;
+
     struct snd_asset
     {
         unsigned int version;
@@ -962,7 +1030,7 @@ namespace T5
         unsigned int seek_table_count;
         unsigned int* seek_table;
         unsigned int data_size;
-        char* data;
+        snd_align_char* data;
     };
 
     struct LoadedSound
@@ -971,10 +1039,12 @@ namespace T5
         snd_asset sound;
     };
 
+    typedef tdef_align(2048) char char_align_2048;
+
     struct PrimedSound
     {
         const char* name;
-        char* buffer;
+        char_align_2048* buffer;
         unsigned int size;
     };
 
@@ -988,6 +1058,15 @@ namespace T5
     {
         LoadedSound* loadSnd;
         StreamedSound* streamSnd;
+    };
+
+    enum snd_alias_type_t
+    {
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_PRIMED = 0x3,
+        SAT_COUNT = 0x4,
     };
 
     struct SoundFile
@@ -1232,7 +1311,7 @@ namespace T5
         int axial_cflags[2][3];
         int axial_sflags[2][3];
         unsigned int numverts;
-        float(*verts)[3];
+        vec3_t* verts;
     };
 
     enum DynEntityType
@@ -1406,9 +1485,9 @@ namespace T5
         unsigned int numLeafSurfaces;
         unsigned int* leafsurfaces;
         unsigned int vertCount;
-        float(*verts)[3];
+        vec3_t* verts;
         unsigned int numBrushVerts;
-        float(*brushVerts)[3];
+        vec3_t* brushVerts;
         unsigned int nuinds;
         uint16_t* uinds;
         int triCount;
@@ -1832,7 +1911,7 @@ namespace T5
         GfxPortalWritable writable;
         DpvsPlane plane;
         GfxCell* cell;
-        float(*vertices)[3];
+        vec3_t* vertices;
         char vertexCount;
         float hullAxis[2][3];
     };
@@ -1938,6 +2017,8 @@ namespace T5
         char rgb[56][3];
     };
 
+    typedef tdef_align(4) char aligned_byte_pointer;
+
     struct GfxLightGrid
     {
         bool hasLightRegions;
@@ -1948,7 +2029,7 @@ namespace T5
         unsigned int colAxis;
         uint16_t* rowDataStart;
         unsigned int rawRowDataSize;
-        char* rawRowData;
+        aligned_byte_pointer* rawRowData;
         unsigned int entryCount;
         GfxLightGridEntry* entries;
         unsigned int colorCount;
@@ -2130,14 +2211,14 @@ namespace T5
         char* surfaceVisData[3];
         char* smodelVisDataCameraSaved;
         char* surfaceVisDataCameraSaved;
-        unsigned int* lodData;
+        raw_uint128* lodData;
         uint16_t* sortedSurfIndex;
         GfxStaticModelInst* smodelInsts;
         GfxSurface* surfaces;
         GfxCullGroup* cullGroups;
         GfxStaticModelDrawInst* smodelDrawInsts;
         GfxDrawSurf* surfaceMaterials;
-        unsigned int* surfaceCastsSunShadow;
+        raw_uint128* surfaceCastsSunShadow;
         volatile int usageCount;
     };
 
@@ -2167,7 +2248,7 @@ namespace T5
     struct GfxWaterBuffer
     {
         unsigned int bufferSize;
-        float(*buffer)[4];
+        vec4_t* buffer;
     };
 
     struct Occluder
@@ -2383,6 +2464,14 @@ namespace T5
     {
         expDataType dataType;
         operandInternalDataUnion internals;
+    };
+
+    enum expressionRpnEnum
+    {
+        RPN_CONSTANT = 0x0,
+        RPN_CMD_IDX = 0x1,
+        RPN_CMD = 0x2,
+        RPN_END = 0x3,
     };
 
     union expressionRpnDataUnion
@@ -2895,6 +2984,140 @@ namespace T5
         MISSILE_GUIDANCE_WIREGUIDED = 0x5,
         MISSILE_GUIDANCE_TVGUIDED = 0x6,
         MISSILE_GUIDANCE_COUNT = 0x7,
+    };
+
+    enum weapAnimFiles_t
+    {
+        WEAP_ANIM_ROOT = 0x0,
+        WEAP_ANIM_IDLE = 0x1,
+        WEAP_ANIM_EMPTY_IDLE = 0x2,
+        WEAP_ANIM_FIRE = 0x3,
+        WEAP_ANIM_HOLD_FIRE = 0x4,
+        WEAP_ANIM_LASTSHOT = 0x5,
+        WEAP_ANIM_RECHAMBER = 0x6,
+        WEAP_ANIM_MELEE = 0x7,
+        WEAP_ANIM_MELEE_CHARGE = 0x8,
+        WEAP_ANIM_RELOAD = 0x9,
+        WEAP_ANIM_RELOAD_RIGHT = 0xA,
+        WEAP_ANIM_RELOAD_EMPTY = 0xB,
+        WEAP_ANIM_RELOAD_START = 0xC,
+        WEAP_ANIM_RELOAD_END = 0xD,
+        WEAP_ANIM_RELOAD_QUICK = 0xE,
+        WEAP_ANIM_RELOAD_QUICK_EMPTY = 0xF,
+        WEAP_ANIM_RAISE = 0x10,
+        WEAP_ANIM_FIRST_RAISE = 0x11,
+        WEAP_ANIM_DROP = 0x12,
+        WEAP_ANIM_ALT_RAISE = 0x13,
+        WEAP_ANIM_ALT_DROP = 0x14,
+        WEAP_ANIM_QUICK_RAISE = 0x15,
+        WEAP_ANIM_QUICK_DROP = 0x16,
+        WEAP_ANIM_EMPTY_RAISE = 0x17,
+        WEAP_ANIM_EMPTY_DROP = 0x18,
+        WEAP_ANIM_SPRINT_IN = 0x19,
+        WEAP_ANIM_SPRINT_LOOP = 0x1A,
+        WEAP_ANIM_SPRINT_OUT = 0x1B,
+        WEAP_ANIM_SPRINT_EMPTY_IN = 0x1C,
+        WEAP_ANIM_SPRINT_EMPTY_LOOP = 0x1D,
+        WEAP_ANIM_SPRINT_EMPTY_OUT = 0x1E,
+        WEAP_ANIM_LOWREADY_IN = 0x1F,
+        WEAP_ANIM_LOWREADY_LOOP = 0x20,
+        WEAP_ANIM_LOWREADY_OUT = 0x21,
+        WEAP_ANIM_CONT_FIRE_IN = 0x22,
+        WEAP_ANIM_CONT_FIRE_LOOP = 0x23,
+        WEAP_ANIM_CONT_FIRE_OUT = 0x24,
+        WEAP_ANIM_DEPLOY = 0x25,
+        WEAP_ANIM_BREAKDOWN = 0x26,
+        WEAP_ANIM_DETONATE = 0x27,
+        WEAP_ANIM_NIGHTVISION_WEAR = 0x28,
+        WEAP_ANIM_NIGHTVISION_REMOVE = 0x29,
+        WEAP_ANIM_ADS_FIRE = 0x2A,
+        WEAP_ANIM_ADS_LASTSHOT = 0x2B,
+        WEAP_ANIM_ADS_RECHAMBER = 0x2C,
+        WEAP_ANIM_DTP_IN = 0x2D,
+        WEAP_ANIM_DTP_LOOP = 0x2E,
+        WEAP_ANIM_DTP_OUT = 0x2F,
+        WEAP_ANIM_DTP_EMPTY_IN = 0x30,
+        WEAP_ANIM_DTP_EMPTY_LOOP = 0x31,
+        WEAP_ANIM_DTP_EMPTY_OUT = 0x32,
+        WEAP_ANIM_SLIDE_IN = 0x33,
+        WEAP_ANIM_MANTLE = 0x34,
+        WEAP_ANIM_CAMERA_SPRINT_LOOP = 0x35,
+        WEAP_ANIM_CAMERA_DTP_IN = 0x36,
+        WEAP_ANIM_CAMERA_DTP_LOOP = 0x37,
+        WEAP_ANIM_CAMERA_DTP_OUT = 0x38,
+        WEAP_ANIM_CAMERA_MANTLE = 0x39,
+        WEAP_ANIM_FIRE_LEFT = 0x3A,
+        WEAP_ANIM_LASTSHOT_LEFT = 0x3B,
+        WEAP_ANIM_IDLE_LEFT = 0x3C,
+        WEAP_ANIM_EMPTY_IDLE_LEFT = 0x3D,
+        WEAP_ANIM_RELOAD_EMPTY_LEFT = 0x3E,
+        WEAP_ANIM_RELOAD_LEFT = 0x3F,
+        WEAP_ANIM_ADS_UP = 0x40,
+        WEAP_ANIM_ADS_DOWN = 0x41,
+
+        NUM_WEAP_ANIMS
+    };
+
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_PLAYER,
+        SURF_TYPE_TALL_GRASS,
+
+        SURF_TYPE_NUM
+    };
+
+    enum hitLocation_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_LWR = 0x5,
+        HITLOC_R_ARM_UPR = 0x6,
+        HITLOC_L_ARM_UPR = 0x7,
+        HITLOC_R_ARM_LWR = 0x8,
+        HITLOC_L_ARM_LWR = 0x9,
+        HITLOC_R_HAND = 0xA,
+        HITLOC_L_HAND = 0xB,
+        HITLOC_R_LEG_UPR = 0xC,
+        HITLOC_L_LEG_UPR = 0xD,
+        HITLOC_R_LEG_LWR = 0xE,
+        HITLOC_L_LEG_LWR = 0xF,
+        HITLOC_R_FOOT = 0x10,
+        HITLOC_L_FOOT = 0x11,
+        HITLOC_GUN = 0x12,
+
+        HITLOC_NUM
     };
 
     struct flameTable
@@ -3467,9 +3690,17 @@ namespace T5
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        const char* accuracyGraphName[2];
-        vec2_t* accuracyGraphKnots[2];
-        vec2_t* originalAccuracyGraphKnots[2];
+        //const char *accuracyGraphName[2];   // TODO: Order is accuracyGraphName[0] -> accuracyGraphKnots[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
+        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
+        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
+        const char* accuracyGraphName0;
+        const char* accuracyGraphName1;
+        //vec2_t *accuracyGraphKnots[2];
+        vec2_t* accuracyGraphKnots0;
+        vec2_t* accuracyGraphKnots1;
+        //vec2_t *originalAccuracyGraphKnots[2];
+        vec2_t* originalAccuracyGraphKnots0;
+        vec2_t* originalAccuracyGraphKnots1;
         int accuracyGraphKnotCount[2];
         int originalAccuracyGraphKnotCount[2];
         int iPositionReloadTransTime;
@@ -3833,6 +4064,26 @@ namespace T5
         const char* spawnSound;
     };
 
+    enum FxElemType : char
+    {
+        FX_ELEM_TYPE_SPRITE_BILLBOARD = 0x0,
+        FX_ELEM_TYPE_SPRITE_ORIENTED = 0x1,
+        FX_ELEM_TYPE_SPRITE_ROTATED = 0x2,
+        FX_ELEM_TYPE_TAIL = 0x3,
+        FX_ELEM_TYPE_LINE = 0x4,
+        FX_ELEM_TYPE_TRAIL = 0x5,
+        FX_ELEM_TYPE_CLOUD = 0x6,
+        FX_ELEM_TYPE_MODEL = 0x7,
+        FX_ELEM_TYPE_OMNI_LIGHT = 0x8,
+        FX_ELEM_TYPE_SPOT_LIGHT = 0x9,
+        FX_ELEM_TYPE_SOUND = 0xA,
+        FX_ELEM_TYPE_DECAL = 0xB,
+        FX_ELEM_TYPE_RUNNER = 0xC,
+        FX_ELEM_TYPE_COUNT = 0xD,
+        FX_ELEM_TYPE_LAST_SPRITE = 0x5,
+        FX_ELEM_TYPE_LAST_DRAWN = 0x9,
+    };
+
     struct FxElemDef
     {
         int flags;
@@ -4038,15 +4289,15 @@ namespace T5
         GlassDef* glassDef;
         unsigned int index;
         unsigned int brushModel;
-        float origin[3];
-        float angles[3];
-        float absmin[3];
-        float absmax[3];
+        vec3_t origin;
+        vec3_t angles;
+        vec3_t absmin;
+        vec3_t absmax;
         bool isPlanar;
         char numOutlineVerts;
-        float(*outline)[2];
-        float outlineAxis[3][3];
-        float outlineOrigin[3];
+        vec2_t* outline;
+        vec3_t outlineAxis[3];
+        vec3_t outlineOrigin;
         float uvScale;
         float thickness;
     };

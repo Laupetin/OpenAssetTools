@@ -1,0 +1,90 @@
+// =========================================
+// XModel
+// =========================================
+use XModel;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set scriptstring boneNames;
+set reusable boneNames;
+set count boneNames numBones;
+set reusable parentList;
+set count parentList numBones - numRootBones;
+set reusable quats;
+set count quats numBones - numRootBones;
+set reusable trans;
+set count trans numBones - numRootBones;
+set reusable partClassification;
+set count partClassification numBones;
+set reusable baseMat;
+set count baseMat numBones;
+set count surfs numsurfs;
+set count materialHandles numsurfs;
+set count collSurfs numCollSurfs;
+set count boneInfo numBones;
+set count streamInfo::highMipBounds numsurfs;
+set count collmaps numCollmaps;
+
+// XSurface
+use XSurface;
+set reusable verts0;
+set count verts0 vertCount;
+set condition vb0 never;
+set reusable vertList;
+set count vertList vertListCount;
+set reusable triIndices;
+set count triIndices triCount;
+set condition indexBuffer never;
+reorder:
+	vertInfo
+	verts0
+	vertList
+	triIndices;
+
+// XSurfaceVertexInfo
+use XSurfaceVertexInfo;
+set reusable vertsBlend;
+set count vertsBlend vertCount[0] 
+						+ 3 * vertCount[1] 
+						+ 5 * vertCount[2]
+						+ 7 * vertCount[3];
+set reusable tensionData;
+set count tensionData vertCount[0] 
+						+ vertCount[1] 
+						+ vertCount[2]
+						+ vertCount[3];
+
+// XRigidVertList
+set reusable XRigidVertList::collisionTree;
+
+// XSurfaceCollisionTree
+use XSurfaceCollisionTree;
+set count nodes nodeCount;
+set count leafs leafCount;
+
+// XModelCollSurf_s
+set count XModelCollSurf_s::collTris numCollTris;
+
+// Collmap
+set count Collmap::geomList 1;
+
+// PhysGeomList
+set count PhysGeomList::geoms count;
+
+// PhysGeomInfo
+use PhysGeomInfo;
+set reusable brush;
+set count brush 1;
+
+// BrushWrapper
+use BrushWrapper;
+set count sides numsides;
+set reusable verts;
+set count verts numverts;
+set reusable planes;
+set count planes numsides;
+
+// cbrushside_t
+use cbrushside_t;
+set reusable plane;
+set count plane 1;

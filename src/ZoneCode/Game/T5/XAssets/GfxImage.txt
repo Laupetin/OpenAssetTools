@@ -1,0 +1,23 @@
+// =========================================
+// GfxImage
+// =========================================
+use GfxImage;
+set block XFILE_BLOCK_TEMP;
+set action OnImageLoaded(GfxImage);
+set string name;
+set name name;
+set condition pixels never;
+reorder:
+    name
+    texture;
+
+// GfxTexture
+use GfxTexture;
+set reusable loadDef;
+set block loadDef XFILE_BLOCK_TEMP;
+set condition texture never;
+
+// GfxImageLoadDef
+use GfxImageLoadDef;
+set action LoadImageData(GfxImageLoadDef, GfxImage);
+set arraysize data resourceSize;

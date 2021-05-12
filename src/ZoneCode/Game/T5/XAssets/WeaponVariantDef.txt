@@ -1,0 +1,166 @@
+// =========================================
+// WeaponVariantDef
+// =========================================
+use WeaponVariantDef;
+set block XFILE_BLOCK_TEMP;
+set string szInternalName;
+set name szInternalName;
+set reusable weapDef;
+set string szDisplayName;
+set string szAltWeaponName;
+set string szXAnims;
+set count szXAnims NUM_WEAP_ANIMS;
+set reusable szXAnims;
+set scriptstring hideTags;
+set count hideTags 32;
+set reusable hideTags;
+set string szAmmoName;
+set string szClipName;
+
+// WeaponDef
+use WeaponDef;
+set string szOverlayName;
+set count gunXModel 16;
+set reusable gunXModel;
+set string szModeName;
+set scriptstring notetrackSoundMapKeys;
+set count notetrackSoundMapKeys 20;
+set reusable notetrackSoundMapKeys;
+set scriptstring notetrackSoundMapValues;
+set count notetrackSoundMapValues 20;
+set reusable notetrackSoundMapValues;
+set string parentWeaponName;
+set string pickupSound;
+set string pickupSoundPlayer;
+set string ammoPickupSound;
+set string ammoPickupSoundPlayer;
+set string projectileSound;
+set string pullbackSound;
+set string pullbackSoundPlayer;
+set string fireSound;
+set string fireSoundPlayer;
+set string fireLoopSound;
+set string fireLoopSoundPlayer;
+set string fireLoopEndSound;
+set string fireLoopEndSoundPlayer;
+set string fireStopSound;
+set string fireStopSoundPlayer;
+set string fireLastSound;
+set string fireLastSoundPlayer;
+set string emptyFireSound;
+set string emptyFireSoundPlayer;
+set string crackSound;
+set string whizbySound;
+set string meleeSwipeSound;
+set string meleeSwipeSoundPlayer;
+set string meleeHitSound;
+set string meleeMissSound;
+set string rechamberSound;
+set string rechamberSoundPlayer;
+set string reloadSound;
+set string reloadSoundPlayer;
+set string reloadEmptySound;
+set string reloadEmptySoundPlayer;
+set string reloadStartSound;
+set string reloadStartSoundPlayer;
+set string reloadEndSound;
+set string reloadEndSoundPlayer;
+set string rotateLoopSound;
+set string rotateLoopSoundPlayer;
+set string deploySound;
+set string deploySoundPlayer;
+set string finishDeploySound;
+set string finishDeploySoundPlayer;
+set string breakdownSound;
+set string breakdownSoundPlayer;
+set string finishBreakdownSound;
+set string finishBreakdownSoundPlayer;
+set string detonateSound;
+set string detonateSoundPlayer;
+set string nightVisionWearSound;
+set string nightVisionWearSoundPlayer;
+set string nightVisionRemoveSound;
+set string nightVisionRemoveSoundPlayer;
+set string altSwitchSound;
+set string altSwitchSoundPlayer;
+set string raiseSound;
+set string raiseSoundPlayer;
+set string firstRaiseSound;
+set string firstRaiseSoundPlayer;
+set string putawaySound;
+set string putawaySoundPlayer;
+set string overheatSound;
+set string overheatSoundPlayer;
+set string adsZoomSound;
+set string bounceSound;
+set count bounceSound SURF_TYPE_NUM;
+set reusable bounceSound;
+set string standMountedWeapdef;
+set string crouchMountedWeapdef;
+set string proneMountedWeapdef;
+set count worldModel 16;
+set reusable worldModel;
+set string szSharedAmmoCapName;
+set scriptstring explosionTag;
+set string spinLoopSound;
+set string spinLoopSoundPlayer;
+set string startSpinSound;
+set string startSpinSoundPlayer;
+set string stopSpinSound;
+set string stopSpinSoundPlayer;
+set string stackSound;
+set string szSpawnedGrenadeWeaponName;
+set string szDualWieldWeaponName;
+set string projExplosionSound;
+set string projDudSound;
+set string mortarShellSound;
+set string tankShellSound;
+set count parallelBounce SURF_TYPE_NUM;
+set reusable parallelBounce;
+set count perpendicularBounce SURF_TYPE_NUM;
+set reusable perpendicularBounce;
+set string projIgnitionSound;
+set string accuracyGraphName0;
+set string accuracyGraphName1;
+set reusable accuracyGraphKnots0;
+set reusable accuracyGraphKnots1;
+set count accuracyGraphKnots0 accuracyGraphKnotCount[0];
+set count accuracyGraphKnots1 accuracyGraphKnotCount[1];
+set reusable originalAccuracyGraphKnots0;
+set reusable originalAccuracyGraphKnots1;
+set count originalAccuracyGraphKnots0 accuracyGraphKnotCount[0];
+set count originalAccuracyGraphKnots1 accuracyGraphKnotCount[1];
+set string szUseHintString;
+set string dropHintString;
+set string szScript;
+set count locationDamageMultipliers HITLOC_NUM;
+set reusable locationDamageMultipliers;
+set string fireRumble;
+set string meleeImpactRumble;
+set string reloadRumble;
+set string flameTableFirstPerson;
+set string flameTableThirdPerson;
+set reusable flameTableFirstPersonPtr;
+set reusable flameTableThirdPersonPtr;
+
+reorder:
+...
+accuracyGraphName0
+accuracyGraphKnots0
+originalAccuracyGraphKnots0
+accuracyGraphName1
+accuracyGraphKnots1
+originalAccuracyGraphKnots1;
+
+reorder:
+...
+killIcon
+indicatorIcon;
+
+// flameTable
+use flameTable;
+set string name;
+set string flameOffLoopSound;
+set string flameIgniteSound;
+set string flameOnLoopSound;
+set string flameCooldownSound;

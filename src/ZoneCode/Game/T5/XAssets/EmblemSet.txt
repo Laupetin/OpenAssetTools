@@ -1,0 +1,21 @@
+// =========================================
+// EmblemSet
+// =========================================
+use EmblemSet;
+set block XFILE_BLOCK_TEMP;
+set count layers layerCount;
+set count categories categoryCount;
+set count icons iconCount;
+set count backgrounds backgroundCount;
+set count backgroundLookup backgroundLookupCount;
+
+// EmblemCategory
+use EmblemCategory;
+set string name;
+set string description;
+
+// EmblemIcon
+set string EmblemIcon::description;
+
+// EmblemBackground
+set string EmblemBackground::description;
