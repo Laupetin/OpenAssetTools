@@ -2721,8 +2721,8 @@ namespace T5
         menuDef_t* parent;
         rectData_s* rectExpData;
         ExpressionStatement visibleExp;
-        uint64_t showBits;
-        uint64_t hideBits;
+        gcc_align(8) uint64_t showBits;
+        gcc_align(8) uint64_t hideBits;
         ExpressionStatement forecolorAExp;
         int ui3dWindowId;
         GenericEventHandler* onEvent;
@@ -2756,8 +2756,8 @@ namespace T5
         GenericEventHandler* onEvent;
         ItemKeyHandler* onKey;
         ExpressionStatement visibleExp;
-        uint64_t showBits;
-        uint64_t hideBits;
+        gcc_align(8) uint64_t showBits;
+        gcc_align(8) uint64_t hideBits;
         const char* allowedBinding;
         const char* soundName;
         int imageTrack;
