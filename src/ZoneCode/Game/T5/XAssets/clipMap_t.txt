@@ -47,6 +47,7 @@ set count constraints num_constraints;
 set block ropes XFILE_BLOCK_RUNTIME;
 set count ropes max_ropes;
 reorder:
+    ...
     leafs
     leafbrushes
     leafbrushNodes

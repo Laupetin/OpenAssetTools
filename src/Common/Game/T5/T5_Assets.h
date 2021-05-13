@@ -1129,7 +1129,7 @@ namespace T5
         int sequence;
     };
 
-    struct SndIndexEntry
+    struct type_align(4) SndIndexEntry
     {
         uint16_t value;
         uint16_t next;
@@ -1284,7 +1284,7 @@ namespace T5
         int partitionIndex;
     };
 
-    struct CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         float origin[3];
         uint16_t materialIndex;

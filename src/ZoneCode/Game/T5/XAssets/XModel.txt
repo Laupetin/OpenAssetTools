@@ -49,10 +49,10 @@ set count vertsBlend vertCount[0]
 						+ 5 * vertCount[2]
 						+ 7 * vertCount[3];
 set reusable tensionData;
-set count tensionData vertCount[0] 
+set count tensionData 12 * (vertCount[0] 
 						+ vertCount[1] 
 						+ vertCount[2]
-						+ vertCount[3];
+						+ vertCount[3]);
 
 // XRigidVertList
 set reusable XRigidVertList::collisionTree;
