@@ -491,7 +491,7 @@ namespace T5
         XSurfaceCollisionTree* collisionTree;
     };
 
-    typedef tdef_align(16) unsigned short r_index16_t;
+    typedef tdef_align(16) uint16_t r_index16_t;
 
     struct XSurface
     {
@@ -1562,7 +1562,7 @@ namespace T5
         int maxy;
     };
 
-    struct ComWaterCell
+    struct type_align(4) ComWaterCell
     {
         int16_t waterheight;
         char flooroffset;
@@ -1972,7 +1972,7 @@ namespace T5
         PackedUnitVec normal;
         PackedUnitVec tangent;
     };
-
+    
     struct GfxWorldVertexData
     {
         GfxWorldVertex* vertices;
@@ -2095,6 +2095,8 @@ namespace T5
         uint16_t dynEntId;
     };
 
+    typedef tdef_align(4) GfxSceneDynModel GfxSceneDynModel4;
+
     struct BModelDrawInfo
     {
         uint16_t surfId;
@@ -2156,7 +2158,7 @@ namespace T5
         int stream2ByteOffset;
     };
 
-    struct GfxSurface
+    struct type_align(16) GfxSurface
     {
         srfTriangles_t tris;
         Material* material;
@@ -2328,7 +2330,7 @@ namespace T5
         float outdoorLookupMatrix[4][4];
         GfxImage* outdoorImage;
         unsigned int* cellCasterBits;
-        GfxSceneDynModel* sceneDynModel;
+        GfxSceneDynModel4* sceneDynModel;
         GfxSceneDynBrush* sceneDynBrush;
         unsigned int* primaryLightEntityShadowVis;
         unsigned int* primaryLightDynEntShadowVis[2];
