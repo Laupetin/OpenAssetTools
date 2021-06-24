@@ -153,8 +153,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         if (writeType == MemberWriteType::ARRAY_POINTER)
         {
             LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("WriteScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
             LINE("m_stream->MarkFollowing("<<MakeWrittenMemberAccess(info, member, modifier)<<");")
+            LINE("WriteScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
         else if (writeType == MemberWriteType::EMBEDDED_ARRAY)
         {
@@ -214,8 +214,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             else
             {
                 LINE("varXString = " << MakeMemberAccess(info, member, modifier) << ";")
-                LINE("WriteXStringArray(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
                 LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
+                LINE("WriteXStringArray(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
             }
         }
         else
@@ -228,6 +228,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     void WriteMember_ArrayPointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
         const MemberComputations computations(member);
+        LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
         if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
@@ -238,7 +239,6 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
                 << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
-        LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
     }
 
     void WriteMember_PointerArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
@@ -251,8 +251,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else
         {
+            LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
             LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
-            LINE("m_stream->MarkFollowing("<<MakeWrittenMemberAccess(info, member, modifier)<<");")
         }
     }
 
@@ -329,6 +329,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     void WriteMember_SinglePointer(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier) const
     {
         const MemberComputations computations(member);
+        LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
         if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
@@ -339,7 +340,6 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
             LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
                 << ">(" << MakeMemberAccess(info, member, modifier) << ");")
         }
-        LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
     }
 
     void WriteMember_TypeCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
