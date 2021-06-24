@@ -2,6 +2,7 @@
 
 #include "Game/IW3/ZoneWriterFactoryIW3.h"
 #include "Game/IW4/ZoneWriterFactoryIW4.h"
+#include "Game/T5/ZoneWriterFactoryT5.h"
 #include "Game/T6/ZoneWriterFactoryT6.h"
 #include "Writing/IZoneWriterFactory.h"
 
@@ -9,6 +10,7 @@ IZoneWriterFactory* ZoneWriterFactories[]
 {
     new IW3::ZoneWriterFactory(),
     new IW4::ZoneWriterFactory(),
+    new T5::ZoneWriterFactory(),
     new T6::ZoneWriterFactory()
 };
 

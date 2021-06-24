@@ -20,6 +20,7 @@
 #include "ZoneCreation/ZoneCreationContext.h"
 #include "ZoneCreation/IZoneCreator.h"
 #include "Game/IW4/ZoneCreatorIW4.h"
+#include "Game/T5/ZoneCreatorT5.h"
 #include "Game/T6/ZoneCreatorT6.h"
 
 #include "Utils/ObjFileStream.h"
@@ -33,6 +34,7 @@ const IZoneCreator* const ZONE_CREATORS[]
 {
     new IW3::ZoneCreator(),
     new IW4::ZoneCreator(),
+    new T5::ZoneCreator(),
     new T6::ZoneCreator()
 };
 
