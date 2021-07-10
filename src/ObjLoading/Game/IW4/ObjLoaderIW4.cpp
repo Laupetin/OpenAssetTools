@@ -4,6 +4,7 @@
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Dx9TextureLoader.h"
@@ -44,7 +45,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONT, Font_s))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENULIST, MenuList))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry))
+    REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON, WeaponCompleteDef))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMPACT_FX, FxImpactTable))
