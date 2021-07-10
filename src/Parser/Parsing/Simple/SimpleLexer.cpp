@@ -26,7 +26,7 @@ void SimpleLexer::SetShouldReadNumbers(const bool value)
 
 SimpleParserValue SimpleLexer::GetNextToken()
 {
-    PeekChar();
+    auto c = PeekChar();
     const auto nextCharPos = GetNextCharacterPos();
     if (m_emit_new_line_tokens && nextCharPos.m_line > m_last_line)
     {
@@ -34,23 +34,30 @@ SimpleParserValue SimpleLexer::GetNextToken()
         return SimpleParserValue::NewLine(GetPreviousCharacterPos());
     }
 
-    auto c = NextChar();
-
     while (isspace(c))
     {
         if (m_emit_new_line_tokens && c == '\n')
             return SimpleParserValue::NewLine(GetPreviousCharacterPos());
 
-        c = NextChar();
+        NextChar();
+        c = PeekChar();
     }
+    
+    const auto pos = GetNextCharacterPos();
+    if (m_emit_new_line_tokens && pos.m_line > m_last_line)
+    {
+        m_last_line++;
+        return SimpleParserValue::NewLine(GetPreviousCharacterPos());
+    }
+
+    c = NextChar();
 
     if (c == EOF)
         return SimpleParserValue::EndOfFile(TokenPos());
 
     if (m_read_strings && c == '\"')
         return SimpleParserValue::String(GetPreviousCharacterPos(), new std::string(ReadString()));
-
-    const auto pos = GetPreviousCharacterPos();
+    
     if (m_read_numbers && isdigit(c))
     {
         bool isFloatingPointValue;
