@@ -2402,7 +2402,7 @@ namespace IW4
 
     union FxGlassPiecePlace
     {
-        union
+        struct
         {
             FxSpatialFrame frame;
             float radius;
