@@ -1,0 +1,27 @@
+// =========================================
+// MaterialTechniqueSet
+// =========================================
+use MaterialTechniqueSet;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set condition remappedTechniqueSet never;
+set reusable techniques;
+
+// MaterialTechnique
+use MaterialTechnique;
+set string name;
+set arraysize passArray passCount;
+reorder:
+    passArray
+    name;
+
+// MaterialPass
+use MaterialPass;
+set count args perPrimArgCount + perObjArgCount + stableArgCount;
+
+// MaterialShaderArgument
+use MaterialShaderArgument;
+set condition u::literalConst type == MTL_ARG_LITERAL_VERTEX_CONST 
+|| type == MTL_ARG_LITERAL_PIXEL_CONST;
+set reusable u::literalConst;

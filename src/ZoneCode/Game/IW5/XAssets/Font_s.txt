@@ -1,0 +1,9 @@
+// =========================================
+// Font_s
+// =========================================
+use Font_s;
+set block XFILE_BLOCK_TEMP;
+set string fontName;
+set name fontName;
+set reusable glyphs;
+set count glyphs glyphCount;

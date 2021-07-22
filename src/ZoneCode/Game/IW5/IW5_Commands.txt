@@ -1,0 +1,97 @@
+// Game: Modern Warfare 3 (IW5)
+game IW5;
+architecture x86;
+
+// Game Assets
+asset PhysPreset ASSET_TYPE_PHYSPRESET;
+asset PhysCollmap ASSET_TYPE_PHYSCOLLMAP;
+asset XAnimParts ASSET_TYPE_XANIMPARTS;
+asset XModelSurfs ASSET_TYPE_XMODEL_SURFS;
+asset XModel ASSET_TYPE_XMODEL;
+asset Material ASSET_TYPE_MATERIAL;
+asset MaterialPixelShader ASSET_TYPE_PIXELSHADER;
+asset MaterialVertexShader ASSET_TYPE_VERTEXSHADER;
+asset MaterialVertexDeclaration ASSET_TYPE_VERTEXDECL;
+asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
+asset GfxImage ASSET_TYPE_IMAGE;
+asset snd_alias_list_t ASSET_TYPE_SOUND;
+asset SndCurve ASSET_TYPE_SOUND_CURVE;
+asset LoadedSound ASSET_TYPE_LOADED_SOUND;
+asset clipMap_t ASSET_TYPE_CLIPMAP;
+asset ComWorld ASSET_TYPE_COMWORLD;
+asset GlassWorld ASSET_TYPE_GLASSWORLD;
+asset PathData ASSET_TYPE_PATHDATA;
+asset VehicleTrack ASSET_TYPE_VEHICLE_TRACK;
+asset MapEnts ASSET_TYPE_MAP_ENTS;
+asset FxWorld ASSET_TYPE_FXWORLD;
+asset GfxWorld ASSET_TYPE_GFXWORLD;
+asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
+asset Font_s ASSET_TYPE_FONT;
+asset MenuList ASSET_TYPE_MENULIST;
+asset menuDef_t ASSET_TYPE_MENU;
+asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
+asset WeaponAttachment ASSET_TYPE_ATTACHMENT;
+asset WeaponCompleteDef ASSET_TYPE_WEAPON;
+asset FxEffectDef ASSET_TYPE_FX;
+asset FxImpactTable ASSET_TYPE_IMPACT_FX;
+asset SurfaceFxTable ASSET_TYPE_SURFACE_FX;
+asset RawFile ASSET_TYPE_RAWFILE;
+asset ScriptFile ASSET_TYPE_SCRIPTFILE;
+asset StringTable ASSET_TYPE_STRINGTABLE;
+asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
+asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
+asset TracerDef ASSET_TYPE_TRACER;
+asset VehicleDef ASSET_TYPE_VEHICLE;
+asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
+
+// Setup blocks
+block temp    XFILE_BLOCK_TEMP              default;
+block normal  XFILE_BLOCK_PHYSICAL;
+block runtime XFILE_BLOCK_RUNTIME           default;
+block normal  XFILE_BLOCK_VIRTUAL           default;
+block normal  XFILE_BLOCK_LARGE;
+block normal  XFILE_BLOCK_CALLBACK;
+block normal  XFILE_BLOCK_SCRIPT;
+
+#include "XAssets/PhysPreset.txt"
+#include "XAssets/PhysCollmap.txt"
+#include "XAssets/XAnimParts.txt"
+#include "XAssets/XModelSurfs.txt"
+#include "XAssets/XModel.txt"
+#include "XAssets/Material.txt"
+#include "XAssets/MaterialPixelShader.txt"
+#include "XAssets/MaterialVertexShader.txt"
+#include "XAssets/MaterialVertexDeclaration.txt"
+#include "XAssets/MaterialTechniqueSet.txt"
+#include "XAssets/GfxImage.txt"
+#include "XAssets/snd_alias_list_t.txt"
+#include "XAssets/SndCurve.txt"
+#include "XAssets/LoadedSound.txt"
+#include "XAssets/clipMap_t.txt"
+#include "XAssets/ComWorld.txt"
+#include "XAssets/GlassWorld.txt"
+#include "XAssets/PathData.txt"
+#include "XAssets/VehicleTrack.txt"
+#include "XAssets/MapEnts.txt"
+#include "XAssets/FxWorld.txt"
+#include "XAssets/GfxWorld.txt"
+#include "XAssets/GfxLightDef.txt"
+#include "XAssets/Font_s.txt"
+#include "XAssets/MenuList.txt"
+#include "XAssets/menuDef_t.txt"
+#include "XAssets/LocalizeEntry.txt"
+#include "XAssets/WeaponAttachment.txt"
+#include "XAssets/WeaponCompleteDef.txt"
+#include "XAssets/FxEffectDef.txt"
+#include "XAssets/FxImpactTable.txt"
+#include "XAssets/SurfaceFxTable.txt"
+#include "XAssets/RawFile.txt"
+#include "XAssets/ScriptFile.txt"
+#include "XAssets/StringTable.txt"
+#include "XAssets/LeaderboardDef.txt"
+#include "XAssets/StructuredDataDefSet.txt"
+#include "XAssets/TracerDef.txt"
+#include "XAssets/VehicleDef.txt"
+#include "XAssets/AddonMapEnts.txt"
+
+// EOF

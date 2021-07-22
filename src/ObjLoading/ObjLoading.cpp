@@ -5,6 +5,7 @@
 #include "IObjLoader.h"
 #include "Game/IW3/ObjLoaderIW3.h"
 #include "Game/IW4/ObjLoaderIW4.h"
+#include "Game/IW5/ObjLoaderIW5.h"
 #include "Game/T5/ObjLoaderT5.h"
 #include "Game/T6/ObjLoaderT6.h"
 #include "ObjContainer/IWD/IWD.h"
@@ -17,6 +18,7 @@ const IObjLoader* const OBJ_LOADERS[]
 {
     new IW3::ObjLoader(),
     new IW4::ObjLoader(),
+    new IW5::ObjLoader(),
     new T5::ObjLoader(),
     new T6::ObjLoader()
 };

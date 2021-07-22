@@ -1,0 +1,38 @@
+// =========================================
+// FxWorld
+// =========================================
+use FxWorld;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+
+// FxGlassSystem
+use FxGlassSystem;
+set count defs defCount;
+set block piecePlaces XFILE_BLOCK_RUNTIME;
+set count piecePlaces pieceLimit;
+set block pieceStates XFILE_BLOCK_RUNTIME;
+set count pieceStates pieceLimit;
+set block pieceDynamics XFILE_BLOCK_RUNTIME;
+set count pieceDynamics pieceLimit;
+set block geoData XFILE_BLOCK_RUNTIME;
+set count geoData geoDataLimit;
+set block isInUse XFILE_BLOCK_RUNTIME;
+set count isInUse pieceWordCount;
+set block cellBits XFILE_BLOCK_RUNTIME;
+set count cellBits pieceWordCount * cellCount;
+set block visData XFILE_BLOCK_RUNTIME;
+set count visData (pieceLimit + 15) / 16 * 16;
+set block linkOrg XFILE_BLOCK_RUNTIME;
+set count linkOrg pieceLimit;
+set block halfThickness XFILE_BLOCK_RUNTIME;
+set count halfThickness (pieceLimit + 3) / 4 * 4;
+set count lightingHandles initPieceCount;
+set count initPieceStates initPieceCount;
+set count initGeoData initGeoDataCount;
+
+// FxGlassDef
+reorder FxGlassDef:
+    physPreset
+    material
+    materialShattered;

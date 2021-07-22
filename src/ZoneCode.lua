@@ -67,6 +67,49 @@ ZoneCode.Assets = {
         "AddonMapEnts"
     },
 
+    IW5 = {
+        "PhysPreset",
+        "PhysCollmap",
+        "XAnimParts",
+        "XModelSurfs",
+        "XModel",
+        "Material",
+        "MaterialPixelShader",
+        "MaterialVertexShader",
+        "MaterialVertexDeclaration",
+        "MaterialTechniqueSet",
+        "GfxImage",
+        "snd_alias_list_t",
+        "SndCurve",
+        "LoadedSound",
+        "clipMap_t",
+        "ComWorld",
+        "GlassWorld",
+        "PathData",
+        "VehicleTrack",
+        "MapEnts",
+        "FxWorld",
+        "GfxWorld",
+        "GfxLightDef",
+        "Font_s",
+        "MenuList",
+        "menuDef_t",
+        "LocalizeEntry",
+        "WeaponAttachment",
+        "WeaponCompleteDef",
+        "FxEffectDef",
+        "FxImpactTable",
+        "SurfaceFxTable",
+        "RawFile",
+        "ScriptFile",
+        "StringTable",
+        "LeaderboardDef",
+        "StructuredDataDefSet",
+        "TracerDef",
+        "VehicleDef",
+        "AddonMapEnts",
+    },
+
     T5 = {
         "PhysPreset",
         "PhysConstraints",
@@ -276,6 +319,10 @@ function ZoneCode:project()
         
         filter "files:**/IW4.gen"
             self:outputForAssets(self.Assets.IW4)
+        filter {}
+        
+        filter "files:**/IW5.gen"
+            self:outputForAssets(self.Assets.IW5)
         filter {}
         
         filter "files:**/T5.gen"

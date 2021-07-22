@@ -1,0 +1,128 @@
+// =========================================
+// GfxWorld
+// =========================================
+use GfxWorld;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set string baseName;
+set count skies skyCount;
+set count aabbTreeCounts dpvsPlanes::cellCount;
+set count aabbTrees dpvsPlanes::cellCount;
+set count cells dpvsPlanes::cellCount;
+set count models modelCount;
+set count materialMemory materialMemoryCount;
+set block cellCasterBits XFILE_BLOCK_RUNTIME;
+set count cellCasterBits dpvsPlanes::cellCount * ((dpvsPlanes::cellCount + 31) / 32);
+set block cellHasSunLitSurfsBits XFILE_BLOCK_RUNTIME;
+set count cellHasSunLitSurfsBits (dpvsPlanes::cellCount + 31) / 32;
+set block sceneDynModel XFILE_BLOCK_RUNTIME;
+set count sceneDynModel dpvsDyn::dynEntClientCount[0];
+set block sceneDynBrush XFILE_BLOCK_RUNTIME;
+set count sceneDynBrush dpvsDyn::dynEntClientCount[1];
+set block primaryLightEntityShadowVis XFILE_BLOCK_RUNTIME;
+set count primaryLightEntityShadowVis (primaryLightCount - lastSunPrimaryLightIndex - 1) * 0x2000;
+set block primaryLightDynEntShadowVis XFILE_BLOCK_RUNTIME;
+set count primaryLightDynEntShadowVis[0] dpvsDyn::dynEntClientCount[0] * (primaryLightCount - lastSunPrimaryLightIndex - 1);
+set count primaryLightDynEntShadowVis[1] dpvsDyn::dynEntClientCount[1] * (primaryLightCount - lastSunPrimaryLightIndex - 1);
+set block nonSunPrimaryLightForModelDynEnt XFILE_BLOCK_RUNTIME;
+set count nonSunPrimaryLightForModelDynEnt dpvsDyn::dynEntClientCount[0];
+set count shadowGeom primaryLightCount;
+set count lightRegion primaryLightCount;
+set count heroOnlyLights heroOnlyLightCount;
+
+// GfxSky
+set count GfxSky::skyStartSurfs skySurfCount;
+
+// GfxWorldDpvsPlanes
+use GfxWorldDpvsPlanes;
+set reusable planes;
+set count planes GfxWorld::planeCount;
+set count nodes GfxWorld::nodeCount;
+set block sceneEntCellBits XFILE_BLOCK_RUNTIME;
+set count sceneEntCellBits cellCount * 0x200;
+
+// GfxCellTree
+// Extremly dirty hack caused by IW doing an extremly dirty hack in their code as well.
+// No idea why they decided to separate the count from the pointer that uses the count.
+// Thank you Treyarch for doing better in your games at least.
+set count GfxCellTree::aabbTree GfxWorld::aabbTreeCounts[GfxCellTree - GfxWorld::aabbTrees];
+
+// GfxAabbTree
+use GfxAabbTree;
+set reusable smodelIndexes;
+set count smodelIndexes smodelIndexCount;
+
+// GfxCell
+use GfxCell;
+set count portals portalCount;
+set count reflectionProbes reflectionProbeCount;
+
+// GfxPortal
+use GfxPortal;
+set condition writable never;
+set count vertices vertexCount;
+
+// GfxWorldDraw
+use GfxWorldDraw;
+set count reflectionProbes reflectionProbeCount;
+set count reflectionProbeOrigins reflectionProbeCount;
+set block reflectionProbeTextures XFILE_BLOCK_RUNTIME;
+set count reflectionProbeTextures reflectionProbeCount;
+set count lightmaps lightmapCount;
+set block lightmapPrimaryTextures XFILE_BLOCK_RUNTIME;
+set count lightmapPrimaryTextures lightmapCount;
+set block lightmapSecondaryTextures XFILE_BLOCK_RUNTIME;
+set count lightmapSecondaryTextures lightmapCount;
+set count vd::vertices vertexCount;
+set condition vd::worldVb never;
+set count vld::data vertexLayerDataSize;
+set condition vld::layerVb never;
+set count indices indexCount;
+
+// GfxLightGrid
+use GfxLightGrid;
+set count rowDataStart maxs[rowAxis] - mins[rowAxis] + 1;
+set count rawRowData rawRowDataSize;
+set count entries entryCount;
+set count colors colorCount;
+
+// GfxShadowGeometry
+use GfxShadowGeometry;
+set count sortedSurfIndex surfaceCount;
+set count smodelIndex smodelCount;
+
+// GfxLightRegion
+set count GfxLightRegion::hulls hullCount;
+
+// GfxLightRegionHull
+set count GfxLightRegionHull::axis axisCount;
+
+// GfxWorldDpvsStatic
+use GfxWorldDpvsStatic;
+set block smodelVisData XFILE_BLOCK_RUNTIME;
+set count smodelVisData smodelCount;
+set block surfaceVisData XFILE_BLOCK_RUNTIME;
+set count surfaceVisData staticSurfaceCount;
+set count sortedSurfIndex staticSurfaceCount + staticSurfaceCountNoDecal;
+set count smodelInsts smodelCount;
+set count surfaces GfxWorld::surfaceCount;
+set count surfacesBounds GfxWorld::surfaceCount;
+set count smodelDrawInsts smodelCount;
+set block surfaceMaterials XFILE_BLOCK_RUNTIME;
+set count surfaceMaterials GfxWorld::surfaceCount;
+set block surfaceCastsSunShadow XFILE_BLOCK_RUNTIME;
+set count surfaceCastsSunShadow surfaceVisDataCount;
+
+// GfxWorldDpvsDynamic
+use GfxWorldDpvsDynamic;
+set block dynEntCellBits XFILE_BLOCK_RUNTIME;
+set count dynEntCellBits[0] dynEntClientWordCount[0] * GfxWorld::dpvsPlanes::cellCount;
+set count dynEntCellBits[1] dynEntClientWordCount[1] * GfxWorld::dpvsPlanes::cellCount;
+set block dynEntVisData XFILE_BLOCK_RUNTIME;
+set count dynEntVisData[0][0] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][0] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][1] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][1] 32 * dynEntClientWordCount[1];
+set count dynEntVisData[0][2] 32 * dynEntClientWordCount[0];
+set count dynEntVisData[1][2] 32 * dynEntClientWordCount[1];

@@ -2,6 +2,7 @@
 #include "Dumping/IZoneDumper.h"
 #include "Game/IW3/ZoneDumperIW3.h"
 #include "Game/IW4/ZoneDumperIW4.h"
+#include "Game/IW5/ZoneDumperIW5.h"
 #include "Game/T5/ZoneDumperT5.h"
 #include "Game/T6/ZoneDumperT6.h"
 
@@ -11,6 +12,7 @@ const IZoneDumper* const ZONE_DUMPER[]
 {
     new IW3::ZoneDumper(),
     new IW4::ZoneDumper(),
+    new IW5::ZoneDumper(),
     new T5::ZoneDumper(),
     new T6::ZoneDumper()
 };

@@ -1,0 +1,150 @@
+// =========================================
+// menuDef_t
+// =========================================
+use menuDef_t;
+set block XFILE_BLOCK_TEMP;
+set string window::name;
+set name window::name;
+set string font;
+set reusable visibleExp;
+set string allowedBinding;
+set string soundName;
+set reusable rectXExp;
+set reusable rectYExp;
+set reusable rectWExp;
+set reusable rectHExp;
+set reusable openSoundExp;
+set reusable closeSoundExp;
+set count items itemCount;
+set reusable expressionData;
+reorder:
+    expressionData
+    window
+    font
+    onOpen
+    onClose
+    onCloseRequest
+    onESC
+    onKey
+    visibleExp
+    allowedBinding
+    soundName
+    rectXExp
+    rectYExp
+    rectWExp
+    rectHExp
+    openSoundExp
+    closeSoundExp
+    items;
+
+// windowDef_t
+use windowDef_t;
+set string name;
+set string group;
+
+// MenuEventHandlerSet
+set count MenuEventHandlerSet::eventHandlers eventHandlerCount;
+
+// MenuEventHandler
+use MenuEventHandler;
+set string eventData::unconditionalScript;
+set condition eventData::unconditionalScript eventType == EVENT_UNCONDITIONAL;
+set condition eventData::conditionalScript eventType == EVENT_IF;
+set condition eventData::elseScript eventType == EVENT_ELSE;
+set condition eventData::setLocalVarData eventType == EVENT_SET_LOCAL_VAR_BOOL
+    || eventType == EVENT_SET_LOCAL_VAR_INT
+    || eventType == EVENT_SET_LOCAL_VAR_FLOAT
+    || eventType == EVENT_SET_LOCAL_VAR_STRING;
+
+// ConditionalScript
+use ConditionalScript;
+set reusable eventExpression;
+reorder:
+    eventExpression
+    eventHandlerSet;
+
+// SetLocalVarData
+use SetLocalVarData;
+set string localVarName;
+set reusable expression;
+
+// Statement_s
+use Statement_s;
+set count entries numEntries;
+set reusable supportingData;
+set condition lastResult never;
+
+// expressionEntry
+set condition expressionEntry::data::operand type == EET_OPERAND;
+
+// Operand
+use Operand;
+set reusable internals::function;
+set condition internals::intVal dataType == VAL_INT;
+set condition internals::floatVal dataType == VAL_FLOAT;
+set condition internals::stringVal dataType == VAL_STRING;
+set condition internals::function dataType == VAL_FUNCTION;
+
+// ExpressionString
+set string ExpressionString::string;
+
+// itemDef_s
+use itemDef_s;
+set string text;
+set condition parent never;
+set string dvar;
+set string dvarTest;
+set string enableDvar;
+set string localVar;
+set count floatExpressions floatExpressionCount;
+set reusable visibleExp;
+set reusable disabledExp;
+set reusable textExp;
+set reusable materialExp;
+
+// itemDefData_t
+use itemDefData_t;
+set string enumDvarName;
+set condition data never;
+set condition listBox itemDef_s::type == 6;
+set condition editField itemDef_s::type == 0
+    || itemDef_s::type == 4
+    || itemDef_s::type == 9
+    || itemDef_s::type == 10
+    || itemDef_s::type == 11
+    || itemDef_s::type == 14
+    || itemDef_s::type == 16
+    || itemDef_s::type == 17
+    || itemDef_s::type == 18
+    || itemDef_s::type == 22
+    || itemDef_s::type == 23;
+set condition multi itemDef_s::type == 12;
+set condition enumDvarName itemDef_s::type == 13;
+set condition ticker itemDef_s::type == 20;
+set condition scroll itemDef_s::type == 21;
+
+// multiDef_s
+use multiDef_s;
+set string dvarList;
+set string dvarStr;
+
+// ItemFloatExpression
+set reusable ItemFloatExpression::expression;
+
+// UIFunctionList
+use UIFunctionList;
+set count functions totalFunctions;
+set reusable functions; // This statement makes both the array of pointers and the pointers in the array reusable. only the second one is correct however this shouldn't be a problem with vanilla fastfiles.
+
+// StaticDvarList
+set count StaticDvarList::staticDvars numStaticDvars;
+
+// StaticDvar
+use StaticDvar;
+set condition dvar never;
+set string dvarName;
+
+// StringList
+use StringList;
+set count strings totalStrings;
+set string strings;

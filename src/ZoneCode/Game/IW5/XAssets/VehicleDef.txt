@@ -1,0 +1,16 @@
+// =========================================
+// VehicleDef
+// =========================================
+use VehicleDef;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set string useHintString;
+set string turretWeaponName;
+set scriptstring trophyTags;
+set string surfaceSndPrefix;
+
+// VehiclePhysDef
+use VehiclePhysDef;
+set string physPresetName;
+set string accelGraphName;

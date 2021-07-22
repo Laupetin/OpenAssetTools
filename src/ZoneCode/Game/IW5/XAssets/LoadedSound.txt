@@ -1,0 +1,16 @@
+// =========================================
+// LoadedSound
+// =========================================
+use LoadedSound;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+
+// MssSound
+use MssSound;
+set block data XFILE_BLOCK_TEMP;
+set reusable data;
+set count data info::data_len;
+set condition info::data_ptr never;
+set condition info::initial_ptr never;
+set action SetSoundData(MssSound);

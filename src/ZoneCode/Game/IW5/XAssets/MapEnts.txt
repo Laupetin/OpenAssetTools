@@ -1,0 +1,18 @@
+// =========================================
+// MapEnts
+// =========================================
+use MapEnts;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set count entityString numEntityChars;
+set count stages stageCount;
+
+// MapTriggers
+use MapTriggers;
+set count models count;
+set count hulls hullCount;
+set count slabs slabCount;
+
+// Stage
+set string Stage::name;

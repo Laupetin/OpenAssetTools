@@ -1,0 +1,83 @@
+// =========================================
+// XAnimParts
+// =========================================
+use XAnimParts;
+set block XFILE_BLOCK_TEMP;
+set string name;
+set name name;
+set scriptstring names;
+set count names boneCount[9];
+set count notify notifyCount;
+set count deltaPart 1;
+set count dataByte dataByteCount;
+set count dataShort dataShortCount;
+set count dataInt dataIntCount;
+set count randomDataShort randomDataShortCount;
+set count randomDataByte randomDataByteCount;
+set count randomDataInt randomDataIntCount;
+set count indices::_1 indexCount;
+set count indices::_2 indexCount;
+set condition indices::_1 numframes < 256;
+set condition indices::data never;
+reorder:
+    name
+    names
+    notify
+    deltaPart
+    dataByte
+    dataShort
+    dataInt
+    randomDataShort
+    randomDataByte
+    randomDataInt
+    indices;
+
+// XAnimNotifyInfo
+set scriptstring XAnimNotifyInfo::name;
+
+// XAnimDeltaPart
+use XAnimDeltaPart;
+set count trans 1;
+set count quat2 1;
+set count quat 1;
+
+// XAnimPartTrans
+use XAnimPartTrans;
+set condition u::frames size > 0;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set condition u::frames::frames::_1 smallTrans;
+set count u::frames::frames::_1 size + 1;
+set count u::frames::frames::_2 size + 1;
+
+// XAnimPartTransFrames
+reorder XAnimPartTransFrames:
+    indices
+    frames;
+
+// XAnimDeltaPartQuat2
+use XAnimDeltaPartQuat2;
+set condition u::frames size > 0;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set count u::frames::frames size + 1;
+
+// XAnimDeltaPartQuatDataFrames2
+reorder XAnimDeltaPartQuatDataFrames2:
+    indices
+    frames;
+
+// XAnimDeltaPartQuat
+use XAnimDeltaPartQuat;
+set condition u::frames size > 0;
+set condition u::frames::indices::_1 XAnimParts::numframes < 256;
+set arraysize u::frames::indices::_1 size + 1;
+set arraysize u::frames::indices::_2 size + 1;
+set count u::frames::frames size + 1;
+
+// XAnimDeltaPartQuatDataFrames
+reorder XAnimDeltaPartQuatDataFrames:
+    indices
+    frames;
