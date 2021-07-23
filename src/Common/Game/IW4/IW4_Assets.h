@@ -1297,7 +1297,7 @@ namespace IW4
         ItemKeyHandler* next;
     };
 
-    struct type_align(4) rectDef_s
+    struct rectDef_s
     {
         float x;
         float y;
@@ -1759,7 +1759,7 @@ namespace IW4
         DATA_COUNT = 0xA,
     };
 
-    struct type_align(4) StructuredDataEnumEntry
+    struct StructuredDataEnumEntry
     {
         const char* string;
         uint16_t index;
