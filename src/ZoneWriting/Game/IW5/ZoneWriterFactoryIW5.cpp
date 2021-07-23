@@ -40,6 +40,8 @@ public:
         m_writer->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
         m_writer->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_LARGE, XBlock::Type::BLOCK_TYPE_NORMAL));
         m_writer->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_CALLBACK, XBlock::Type::BLOCK_TYPE_NORMAL));
+        m_writer->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VERTEX, XBlock::Type::BLOCK_TYPE_NORMAL));
+        m_writer->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_INDEX, XBlock::Type::BLOCK_TYPE_NORMAL));
         m_writer->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_SCRIPT, XBlock::Type::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF

@@ -40,7 +40,7 @@ void AssetDumperRawFile::DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFil
             throw std::runtime_error("Initializing inflate failed");
         }
 
-        zs.next_in = reinterpret_cast<const Bytef*>(rawFile->data.compressedBuffer);
+        zs.next_in = reinterpret_cast<const Bytef*>(rawFile->buffer);
         zs.avail_in = rawFile->compressedLen;
 
         Bytef buffer[0x1000];
@@ -65,6 +65,6 @@ void AssetDumperRawFile::DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFil
     }
     else if (rawFile->len > 0)
     {
-        stream.write(rawFile->data.buffer, rawFile->len);
+        stream.write(rawFile->buffer, rawFile->len);
     }
 }

@@ -51,6 +51,8 @@ block runtime XFILE_BLOCK_RUNTIME           default;
 block normal  XFILE_BLOCK_VIRTUAL           default;
 block normal  XFILE_BLOCK_LARGE;
 block normal  XFILE_BLOCK_CALLBACK;
+block normal  XFILE_BLOCK_VERTEX;
+block normal  XFILE_BLOCK_INDEX;
 block normal  XFILE_BLOCK_SCRIPT;
 
 #include "XAssets/PhysPreset.txt"

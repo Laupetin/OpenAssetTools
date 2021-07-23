@@ -5,17 +5,11 @@ use clipMap_t;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
-set reusable planes;
-set count planes planeCount;
+set block pInfo XFILE_BLOCK_TEMP;
+set reusable pInfo;
 set count staticModelList numStaticModels;
-set count materials numMaterials;
-set count brushsides numBrushSides;
-set count brushEdges numBrushEdges;
 set count nodes numNodes;
 set count leafs numLeafs;
-set count leafbrushNodes leafbrushNodesCount;
-set count leafbrushes numLeafBrushes;
-set count leafsurfaces numLeafSurfaces;
 set count verts vertCount;
 set count triIndices 3 * triCount;
 set count triEdgeIsWalkable ((3 * triCount + 31) / 32) * 4;
@@ -23,10 +17,8 @@ set count borders borderCount;
 set count partitions partitionCount;
 set count aabbTrees aabbTreeCount;
 set count cmodels numSubModels;
-set count brushes numBrushes;
-set count brushBounds numBrushes;
-set count brushContents numBrushes;
 set count smodelNodes smodelNodeCount;
+set count stages stageCount;
 set count dynEntDefList[0] dynEntCount[0];
 set count dynEntDefList[1] dynEntCount[1];
 set block dynEntPoseList XFILE_BLOCK_RUNTIME;
@@ -38,19 +30,33 @@ set count dynEntClientList[1] dynEntCount[1];
 set block dynEntCollList XFILE_BLOCK_RUNTIME;
 set count dynEntCollList[0] dynEntCount[0];
 set count dynEntCollList[1] dynEntCount[1];
-reorder:
-    ...
-    leafs
-    leafbrushes
-    leafbrushNodes;
-reorder:
-    ...
-    brushContents
-    smodelNodes
-    mapEnts;
+
+// ClipInfo
+use ClipInfo;
+set reusable planes;
+set count planes planeCount;
+set reusable materials;
+set count materials numMaterials;
+set reusable brushsides;
+set count brushsides numBrushSides;
+set reusable brushEdges;
+set count brushEdges numBrushEdges;
+set reusable leafbrushNodes;
+set count leafbrushNodes leafbrushNodesCount;
+set reusable leafbrushes;
+set count leafbrushes numLeafBrushes;
+set reusable brushes;
+set count brushes numBrushes;
+set reusable brushBounds;
+set count brushBounds numBrushes;
+set reusable brushContents;
+set count brushContents numBrushes;
 
 // ClipMaterial
 set string ClipMaterial::name;
+
+// cbrushside_t
+// see PhysCollmap
 
 // cNode_t
 set reusable cNode_t::plane;
@@ -62,10 +68,15 @@ set reusable data::leaf::brushes;
 set count data::leaf::brushes leafBrushCount;
 
 // CollisionPartition
-use CollisionPartition;
-set reusable borders;
+set reusable CollisionPartition::borders;
 
 // cbrush_t
 use cbrush_t;
 set reusable sides;
 set reusable baseAdjacentSide;
+
+// Stage
+set string Stage::name;
+
+// DynEntityDef
+set reusable DynEntityDef::hinge;

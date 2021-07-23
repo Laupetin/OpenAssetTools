@@ -5,3 +5,17 @@ use VehicleTrack;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
+set reusable segments;
+set count segments segmentCount;
+
+// VehicleTrackSegment
+use VehicleTrackSegment;
+set string targetName;
+set count sectors sectorCount;
+set reusable nextBranches;
+set count nextBranches nextBranchesCount;
+set reusable prevBranches;
+set count prevBranches prevBranchesCount;
+
+// VehicleTrackSector
+set count VehicleTrackSector::obstacles obstacleCount;

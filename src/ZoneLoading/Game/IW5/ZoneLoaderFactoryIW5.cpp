@@ -67,13 +67,15 @@ class ZoneLoaderFactory::Impl
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_LARGE, XBlock::Type::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_CALLBACK, XBlock::Type::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(IW5::XFILE_BLOCK_SCRIPT, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_LARGE, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_CALLBACK, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_VERTEX, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_INDEX, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader->AddXBlock(XBLOCK_DEF(XFILE_BLOCK_SCRIPT, XBlock::Type::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }

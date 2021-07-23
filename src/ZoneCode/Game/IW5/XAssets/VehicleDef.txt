@@ -8,6 +8,8 @@ set name name;
 set string useHintString;
 set string turretWeaponName;
 set scriptstring trophyTags;
+set scriptstring audioOriginTag;
+set scriptstring audioOriginTagAlt;
 set string surfaceSndPrefix;
 
 // VehiclePhysDef

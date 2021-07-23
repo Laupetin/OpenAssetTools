@@ -5,7 +5,16 @@ use menuDef_t;
 set block XFILE_BLOCK_TEMP;
 set string window::name;
 set name window::name;
-set string font;
+set count items itemCount;
+
+// windowDef_t
+use windowDef_t;
+set string name;
+set string group;
+
+// menuData_t
+use menuData_t;
+set reusable expressionData;
 set reusable visibleExp;
 set string allowedBinding;
 set string soundName;
@@ -15,32 +24,10 @@ set reusable rectWExp;
 set reusable rectHExp;
 set reusable openSoundExp;
 set reusable closeSoundExp;
-set count items itemCount;
-set reusable expressionData;
+set reusable soundLoopExp;
 reorder:
     expressionData
-    window
-    font
-    onOpen
-    onClose
-    onCloseRequest
-    onESC
-    onKey
-    visibleExp
-    allowedBinding
-    soundName
-    rectXExp
-    rectYExp
-    rectWExp
-    rectHExp
-    openSoundExp
-    closeSoundExp
-    items;
-
-// windowDef_t
-use windowDef_t;
-set string name;
-set string group;
+    onOpen;
 
 // MenuEventHandlerSet
 set count MenuEventHandlerSet::eventHandlers eventHandlerCount;
@@ -72,7 +59,7 @@ set reusable expression;
 use Statement_s;
 set count entries numEntries;
 set reusable supportingData;
-set condition lastResult never;
+set condition persistentState never;
 
 // expressionEntry
 set condition expressionEntry::data::operand type == EET_OPERAND;
@@ -122,6 +109,9 @@ set condition multi itemDef_s::type == 12;
 set condition enumDvarName itemDef_s::type == 13;
 set condition ticker itemDef_s::type == 20;
 set condition scroll itemDef_s::type == 21;
+
+// listBoxDef_s
+set reusable listBoxDef_s::elementHeightExp;
 
 // multiDef_s
 use multiDef_s;

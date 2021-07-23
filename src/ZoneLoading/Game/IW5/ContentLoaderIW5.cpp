@@ -97,7 +97,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart)
             loader.Load(&varXAsset->header.headerEntry); \
             break; \
         }
-#define SKIP_ASSET(type_index, typeName, headerEntry) \
+#define SKIP_ASSET(type_index) \
     case type_index: \
         break;
 
@@ -137,6 +137,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart)
     LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
     LOAD_ASSET(ASSET_TYPE_ATTACHMENT, WeaponAttachment, attachment)
     LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon)
+    SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS)
     LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
     LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
     LOAD_ASSET(ASSET_TYPE_SURFACE_FX, SurfaceFxTable, surfaceFx)

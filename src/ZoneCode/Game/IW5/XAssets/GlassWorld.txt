@@ -5,3 +5,13 @@ use GlassWorld;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
+
+// G_GlassData
+use G_GlassData;
+set count glassPieces pieceCount;
+set count glassNames glassNameCount;
+
+// G_GlassName
+use G_GlassName;
+set string nameStr;
+set count pieceIndices pieceCount;

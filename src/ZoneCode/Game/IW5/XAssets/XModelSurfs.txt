@@ -5,3 +5,43 @@ use XModelSurfs;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
+set count surfs numsurfs;
+
+// XSurface
+use XSurface;
+set reusable vertList;
+set count vertList vertListCount;
+set reusable triIndices;
+set block triIndices XFILE_BLOCK_INDEX;
+set count triIndices triCount;
+reorder:
+    zoneHandle
+    vertInfo
+    verts0
+    vertList
+    triIndices;
+
+// XSurfaceVertexInfo
+use XSurfaceVertexInfo;
+set reusable vertsBlend;
+set count vertsBlend vertCount[0] 
+						+ 3 * vertCount[1] 
+						+ 5 * vertCount[2]
+						+ 7 * vertCount[3];
+
+// GfxVertexUnion0
+use GfxVertexUnion0;
+set condition quantizedNoColorVerts0 never;
+set condition quantizedVerts0 never;
+set condition verts0 never;
+set reusable packedVerts0;
+set block packedVerts0 XFILE_BLOCK_VERTEX;
+set count packedVerts0 XSurface::vertCount;
+
+// XRigidVertList
+set reusable XRigidVertList::collisionTree;
+
+// XSurfaceCollisionTree
+use XSurfaceCollisionTree;
+set count nodes nodeCount;
+set count leafs leafCount;

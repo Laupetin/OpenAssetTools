@@ -10,13 +10,43 @@ set string szDisplayName;
 set reusable hideTags;
 set scriptstring hideTags;
 set count hideTags 32;
+set reusable scopes;
+set count scopes 6;
+set reusable underBarrels;
+set count underBarrels 3;
+set reusable others;
+set count others 4;
 set string szXAnims;
 set reusable szXAnims;
-set count szXAnims 37;
+set count szXAnims NUM_WEAP_ANIMS;
+set reusable animOverrides;
+set count animOverrides numAnimOverrides;
+set reusable soundOverrides;
+set count soundOverrides numSoundOverrides;
+set reusable fxOverrides;
+set count fxOverrides numFXOverrides;
+set reusable reloadOverrides;
+set count reloadOverrides numReloadStateTimerOverrides;
+set reusable notetrackOverrides;
+set count notetrackOverrides numNotetrackOverrides;
 set string szAltWeaponName;
 set reusable accuracyGraphKnots;
 set count accuracyGraphKnots[0] accuracyGraphKnotCount[0];
 set count accuracyGraphKnots[1] accuracyGraphKnotCount[1];
+
+// AnimOverrideEntry
+use AnimOverrideEntry;
+set string overrideAnim;
+set string altmodeAnim;
+
+// NoteTrackToSoundEntry
+use NoteTrackToSoundEntry;
+set reusable notetrackSoundMapKeys;
+set scriptstring notetrackSoundMapKeys;
+set count notetrackSoundMapKeys 24;
+set reusable notetrackSoundMapValues;
+set scriptstring notetrackSoundMapValues;
+set count notetrackSoundMapValues 24;
 
 // WeaponDef
 use WeaponDef;
@@ -25,17 +55,17 @@ set reusable gunXModel;
 set count gunXModel 16;
 set reusable szXAnimsRightHanded;
 set string szXAnimsRightHanded;
-set count szXAnimsRightHanded 37;
+set count szXAnimsRightHanded NUM_WEAP_ANIMS;
 set reusable szXAnimsLeftHanded;
 set string szXAnimsLeftHanded;
-set count szXAnimsLeftHanded 37;
+set count szXAnimsLeftHanded NUM_WEAP_ANIMS;
 set string szModeName;
 set reusable notetrackSoundMapKeys;
 set scriptstring notetrackSoundMapKeys;
-set count notetrackSoundMapKeys 16;
+set count notetrackSoundMapKeys 24;
 set reusable notetrackSoundMapValues;
 set scriptstring notetrackSoundMapValues;
-set count notetrackSoundMapValues 16;
+set count notetrackSoundMapValues 24;
 set reusable notetrackRumbleMapKeys;
 set scriptstring notetrackRumbleMapKeys;
 set count notetrackRumbleMapKeys 16;
@@ -44,6 +74,8 @@ set scriptstring notetrackRumbleMapValues;
 set count notetrackRumbleMapValues 16;
 set reusable bounceSound;
 set count bounceSound 31;
+set reusable rollingSound;
+set count rollingSound 31;
 set reusable worldModel;
 set count worldModel 16;
 set string szAmmoName;
@@ -63,10 +95,11 @@ set string szUseHintString;
 set string dropHintString;
 set string szScript;
 set reusable locationDamageMultipliers;
-set count locationDamageMultipliers 20;
+set count locationDamageMultipliers HITLOC_NUM;
 set string fireRumble;
 set string meleeImpactRumble;
 set string turretBarrelSpinRumble;
+set scriptstring stowTag;
 reorder:
     ...
     accuracyGraphName0

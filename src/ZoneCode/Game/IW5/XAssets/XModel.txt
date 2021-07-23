@@ -24,49 +24,7 @@ set count boneInfo numBones;
 
 // XModelLodInfo
 use XModelLodInfo;
-set block modelSurfs XFILE_BLOCK_TEMP;
-set action modelSurfs SetModelSurfs(XModelLodInfo, XModelSurfs);
-set reusable modelSurfs;
 set condition surfs never;
-
-// XModelSurfs
-use XModelSurfs;
-set block XFILE_BLOCK_VIRTUAL;
-set string name;
-set count surfs XModelLodInfo::numsurfs; // No this is not a mistake. This is how the game does it.
-
-// XSurface
-use XSurface;
-set reusable verts0;
-set block verts0 XFILE_BLOCK_VERTEX;
-set count verts0 vertCount;
-set reusable vertList;
-set count vertList vertListCount;
-set reusable triIndices;
-set block triIndices XFILE_BLOCK_INDEX;
-set count triIndices triCount;
-reorder:
-    zoneHandle
-    vertInfo
-    verts0
-    vertList
-    triIndices;
-
-// XSurfaceVertexInfo
-use XSurfaceVertexInfo;
-set reusable vertsBlend;
-set count vertsBlend vertCount[0] 
-						+ 3 * vertCount[1] 
-						+ 5 * vertCount[2]
-						+ 7 * vertCount[3];
-
-// XRigidVertList
-set reusable XRigidVertList::collisionTree;
-
-// XSurfaceCollisionTree
-use XSurfaceCollisionTree;
-set count nodes nodeCount;
-set count leafs leafCount;
 
 // XModelCollSurf_s
 set count XModelCollSurf_s::collTris numCollTris;

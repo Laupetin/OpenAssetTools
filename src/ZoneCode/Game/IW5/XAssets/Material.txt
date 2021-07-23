@@ -11,6 +11,7 @@ set reusable constantTable;
 set count constantTable constantCount;
 set reusable stateBitsTable;
 set count stateBitsTable stateBitsCount;
+set condition subMaterials never;
 
 // MaterialTextureDef
 use MaterialTextureDef;

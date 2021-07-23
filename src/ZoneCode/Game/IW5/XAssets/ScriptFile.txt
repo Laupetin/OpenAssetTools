@@ -5,3 +5,7 @@ use ScriptFile;
 set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
+set block buffer XFILE_BLOCK_SCRIPT;
+set count buffer compressedLen;
+set block bytecode XFILE_BLOCK_SCRIPT;
+set count bytecode bytecodeLen;

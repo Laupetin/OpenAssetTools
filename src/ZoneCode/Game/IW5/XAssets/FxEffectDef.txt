@@ -43,6 +43,7 @@ set string name;
 use FxElemExtendedDefPtr;
 set condition trailDef FxElemDef::elemType == FX_ELEM_TYPE_TRAIL;
 set condition sparkFountainDef FxElemDef::elemType == FX_ELEM_TYPE_SPARK_FOUNTAIN;
+set condition spotLightDef FxElemDef::elemType == FX_ELEM_TYPE_SPOT_LIGHT;
 
 // FxTrailDef
 use FxTrailDef;

@@ -6,3 +6,13 @@ set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
 set count entityString numEntityChars;
+
+// MapTriggers
+// see MapEnts
+
+// ClipInfo
+// see clipMap_t
+
+// cmodel2_t
+use cmodel2_t;
+set reusable info;

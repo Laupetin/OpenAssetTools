@@ -28,15 +28,15 @@ bool AssetLoaderRawFile::LoadFromRaw(const std::string& assetName, ISearchPath* 
 
     auto* rawFile = memory->Create<RawFile>();
     rawFile->name = memory->Dup(assetName.c_str());
-    rawFile->len = static_cast<int>(file.m_length);
+    rawFile->compressedLen = static_cast<int>(file.m_length + 1);
 
     auto* fileBuffer = static_cast<char*>(memory->Alloc(static_cast<size_t>(file.m_length + 1)));
     file.m_stream->read(fileBuffer, file.m_length);
     if (file.m_stream->gcount() != file.m_length)
         return false;
-    fileBuffer[rawFile->len] = '\0';
+    fileBuffer[file.m_length] = '\0';
 
-    rawFile->data.buffer = fileBuffer;
+    rawFile->buffer = fileBuffer;
     manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
 
     return true;

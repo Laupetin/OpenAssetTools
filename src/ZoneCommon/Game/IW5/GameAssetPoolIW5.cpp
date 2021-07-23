@@ -40,6 +40,7 @@ const char* GameAssetPoolIW5::ASSET_TYPE_NAMES[]
     "localize",
     "attachment",
     "weapon",
+    "snddriverglobals",
     "fx",
     "impactfx",
     "surfacefx",

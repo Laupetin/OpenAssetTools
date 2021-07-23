@@ -3,8 +3,10 @@
 #ifndef __IW5_ASSETS_H
 #define __IW5_ASSETS_H
 
+#ifndef __zonecodegenerator
 #ifndef __cplusplus
 #define __ida
+#endif
 #endif
 
 #include "../../Utils/TypeAlignment.h"
@@ -47,6 +49,7 @@ namespace IW5
         ASSET_TYPE_LOCALIZE_ENTRY = 0x1B,
         ASSET_TYPE_ATTACHMENT = 0x1C,
         ASSET_TYPE_WEAPON = 0x1D,
+        ASSET_TYPE_SNDDRIVER_GLOBALS = 0x1E,
         ASSET_TYPE_FX = 0x1F,
         ASSET_TYPE_IMPACT_FX = 0x20,
         ASSET_TYPE_SURFACE_FX = 0x21,
@@ -78,6 +81,8 @@ namespace IW5
         XFILE_BLOCK_VIRTUAL,
         XFILE_BLOCK_LARGE,
         XFILE_BLOCK_CALLBACK,
+        XFILE_BLOCK_VERTEX,
+        XFILE_BLOCK_INDEX,
         XFILE_BLOCK_SCRIPT,
 
         MAX_XFILE_COUNT
@@ -236,7 +241,7 @@ namespace IW5
 
     typedef unsigned char cbrushedge_t;
 
-    struct cbrush_t
+    struct cbrushWrapper_t
     {
         unsigned short numsides;
         unsigned short glassPieceIndex;
@@ -246,8 +251,6 @@ namespace IW5
         unsigned char firstAdjacentSideOffsets[2][3];
         unsigned char edgeCount[2][3];
     };
-
-    typedef struct cbrush_t cbrushWrapper_t;
 
     struct BrushWrapper
     {
@@ -674,6 +677,23 @@ namespace IW5
         GfxImage* image;
     };
 
+    enum TextureSemantic
+    {
+        TS_2D = 0x0,
+        TS_FUNCTION = 0x1,
+        TS_COLOR_MAP = 0x2,
+        TS_DETAIL_MAP = 0x3,
+        TS_UNUSED_2 = 0x4,
+        TS_NORMAL_MAP = 0x5,
+        TS_UNUSED_3 = 0x6,
+        TS_UNUSED_4 = 0x7,
+        TS_SPECULAR_MAP = 0x8,
+        TS_UNUSED_5 = 0x9,
+        TS_UNUSED_6 = 0xA,
+        TS_WATER_MAP = 0xB,
+        TS_DISPLACEMENT_MAP = 0xC
+    };
+
     union MaterialTextureDefInfo
     {
         GfxImage* image;
@@ -733,7 +753,7 @@ namespace IW5
         uint16_t loadForRenderer;
     };
 
-    union MaterialPixelShaderProgram
+    struct MaterialPixelShaderProgram
     {
         void* ps;
         GfxPixelShaderLoadDef loadDef;
@@ -782,6 +802,23 @@ namespace IW5
         char streamCount;
         bool hasOptionalSource;
         MaterialVertexStreamRouting routing;
+    };
+
+    enum MaterialShaderArgumentType
+    {
+        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
+        MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
+        MTL_ARG_MATERIAL_VERTEX_SAMPLER = 0x2,
+        MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x3,
+        MTL_ARG_CODE_PRIM_BEGIN = 0x4,
+        MTL_ARG_CODE_VERTEX_CONST = 0x4,
+        MTL_ARG_CODE_PIXEL_SAMPLER = 0x5,
+        MTL_ARG_CODE_PIXEL_CONST = 0x6,
+        MTL_ARG_CODE_PRIM_END = 0x7,
+        MTL_ARG_MATERIAL_PIXEL_CONST = 0x7,
+        MTL_ARG_LITERAL_PIXEL_CONST = 0x8,
+
+        MTL_ARG_COUNT
     };
 
     struct MaterialArgumentCodeConst
@@ -883,6 +920,15 @@ namespace IW5
         unsigned short depth;
         unsigned char levelCount;
         const char* name;
+    };
+
+    enum snd_alias_type_t
+    {
+        SAT_UNKNOWN = 0x0,
+        SAT_LOADED = 0x1,
+        SAT_STREAMED = 0x2,
+        SAT_VOICED = 0x3,
+        SAT_COUNT = 0x4
     };
 
     struct StreamedSound
@@ -1029,6 +1075,18 @@ namespace IW5
         int contents;
         cLeafBrushNodeData_t data;
     };
+
+    struct cbrush_t
+    {
+        unsigned short numsides;
+        unsigned short glassPieceIndex;
+        cbrushside_t* sides;
+        cbrushedge_t* baseAdjacentSide;
+        short axialMaterialNum[2][3];
+        unsigned char firstAdjacentSideOffsets[2][3];
+        unsigned char edgeCount[2][3];
+    };
+
     typedef tdef_align(128) cbrush_t cbrush_array_t;
     typedef tdef_align(128) Bounds BoundsArray;
 
@@ -2102,7 +2160,7 @@ namespace IW5
         unsigned int sortKeyEffectAuto;
         unsigned int sortKeyDistortion;
         GfxWorldDpvsPlanes dpvsPlanes;
-        GfxCellTreeCount* aabbTreeCounts;
+        int/*GfxCellTreeCount*/* aabbTreeCounts;
         GfxCellTree128* aabbTrees;
         GfxCell* cells;
         GfxWorldDraw draw;
@@ -2185,10 +2243,9 @@ namespace IW5
         VAL_INT = 0x0,
         VAL_FLOAT = 0x1,
         VAL_STRING = 0x2,
-        NUM_INTERNAL_DATATYPES = 0x3,
         VAL_FUNCTION = 0x3,
 
-        NUM_DATATYPES
+        NUM_DATATYPES,
     };
 
     struct ExpressionString
@@ -2545,6 +2602,12 @@ namespace IW5
         NUM_OPERATORS
     };
 
+    enum expressionEntryType : int
+    {
+        EET_OPERATOR = 0x0,
+        EET_OPERAND = 0x1,
+    };
+
     union entryInternalData
     {
         operationEnum op;
@@ -2678,6 +2741,19 @@ namespace IW5
         SetLocalVarData* setLocalVarData;
     };
 
+    enum EventType
+    {
+        EVENT_UNCONDITIONAL = 0x0,
+        EVENT_IF = 0x1,
+        EVENT_ELSE = 0x2,
+        EVENT_SET_LOCAL_VAR_BOOL = 0x3,
+        EVENT_SET_LOCAL_VAR_INT = 0x4,
+        EVENT_SET_LOCAL_VAR_FLOAT = 0x5,
+        EVENT_SET_LOCAL_VAR_STRING = 0x6,
+
+        EVENT_COUNT
+    };
+
     struct MenuEventHandler
     {
         EventData eventData;
@@ -2732,11 +2808,11 @@ namespace IW5
         Statement_s* openSoundExp;
         Statement_s* closeSoundExp;
         Statement_s* soundLoopExp;
-        int cursorItem[4];
-        menuTransition scaleTransition[4];
-        menuTransition alphaTransition[4];
-        menuTransition xTransition[4];
-        menuTransition yTransition[4];
+        int cursorItem[1];
+        menuTransition scaleTransition[1];
+        menuTransition alphaTransition[1];
+        menuTransition xTransition[1];
+        menuTransition yTransition[1];
         ExpressionSupportingData* expressionData;
         unsigned char priority;
     };
@@ -2763,7 +2839,7 @@ namespace IW5
         int ownerDrawFlags;
         float borderSize;
         int staticFlags;
-        int dynamicFlags[4];
+        int dynamicFlags[1];
         int nextTime;
         float foreColor[4];
         float backColor[4];
@@ -2785,8 +2861,9 @@ namespace IW5
 
     struct listBoxDef_s
     {
-        int startPos[4];
-        int endPos[4];
+        int mousePos;
+        int startPos[1];
+        int endPos[1];
         int drawPadding;
         float elementWidth;
         float elementHeight;
@@ -2852,10 +2929,10 @@ namespace IW5
         Statement_s* expression;
     };
 
-    struct itemDef_t
+    struct itemDef_s
     {
         windowDef_t window;
-        rectDef_s textRect[4];
+        rectDef_s textRect[1];
         int type;
         int dataType;
         int alignment;
@@ -2887,7 +2964,7 @@ namespace IW5
         int dvarFlags;
         snd_alias_list_t* focusSound;
         float special;
-        int cursorPos[4];
+        int cursorPos[1];
         itemDefData_t typeData;
         int floatExpressionCount;
         ItemFloatExpression* floatExpressions;
@@ -2910,7 +2987,7 @@ namespace IW5
         menuData_t* data;
         windowDef_t window;
         int itemCount;
-        itemDef_t** items;
+        itemDef_s** items;
     };
 
     struct LocalizeEntry
@@ -3255,6 +3332,17 @@ namespace IW5
         WEAPPROJEXP_NUM
     };
 
+    struct snd_alias_list_name
+    {
+        const char* soundName;
+    };
+
+    union SndAliasCustom
+    {
+        snd_alias_list_name* name;
+        snd_alias_list_t* sound;
+    };
+
     struct AttProjectile
     {
         int explosionRadius;
@@ -3269,9 +3357,9 @@ namespace IW5
         weapProjExposion_t projExplosionType;
         FxEffectDef* projExplosionEffect;
         bool projExplosionEffectForceNormalUp;
-        snd_alias_list_t* projExplosionSound;
+        SndAliasCustom projExplosionSound;
         FxEffectDef* projDudEffect;
-        snd_alias_list_t* projDudSound;
+        SndAliasCustom projDudSound;
         bool projImpactExplode;
         float destabilizationRateTime;
         float destabilizationCurvatureMax;
@@ -3279,7 +3367,7 @@ namespace IW5
         FxEffectDef* projTrailEffect;
         int projIgnitionDelay;
         FxEffectDef* projIgnitionEffect;
-        snd_alias_list_t* projIgnitionSound;
+        SndAliasCustom projIgnitionSound;
     };
 
     struct WeaponAttachment
@@ -3454,6 +3542,80 @@ namespace IW5
         MISSILE_GUIDANCE_COUNT
     };
 
+    enum weapAnimFiles_t
+    {
+        WEAP_ANIM_ROOT = 0x0,
+        WEAP_ANIM_IDLE = 0x1,
+        WEAP_ANIM_EMPTY_IDLE = 0x2,
+        WEAP_ANIM_FIRE = 0x3,
+        WEAP_ANIM_HOLD_FIRE = 0x4,
+        WEAP_ANIM_LASTSHOT = 0x5,
+        WEAP_ANIM_RECHAMBER = 0x6,
+        WEAP_ANIM_MELEE = 0x7,
+        WEAP_ANIM_MELEE_CHARGE = 0x8,
+        WEAP_ANIM_RELOAD = 0x9,
+        WEAP_ANIM_RELOAD_EMPTY = 0xA,
+        WEAP_ANIM_RELOAD_START = 0xB,
+        WEAP_ANIM_RELOAD_END = 0xC,
+        WEAP_ANIM_RAISE = 0xD,
+        WEAP_ANIM_FIRST_RAISE = 0xE,
+        WEAP_ANIM_BREACH_RAISE = 0xF,
+        WEAP_ANIM_DROP = 0x10,
+        WEAP_ANIM_ALT_RAISE = 0x11,
+        WEAP_ANIM_ALT_DROP = 0x12,
+        WEAP_ANIM_QUICK_RAISE = 0x13,
+        WEAP_ANIM_QUICK_DROP = 0x14,
+        WEAP_ANIM_EMPTY_RAISE = 0x15,
+        WEAP_ANIM_EMPTY_DROP = 0x16,
+        WEAP_ANIM_SPRINT_IN = 0x17,
+        WEAP_ANIM_SPRINT_LOOP = 0x18,
+        WEAP_ANIM_SPRINT_OUT = 0x19,
+        WEAP_ANIM_STUNNED_START = 0x1A,
+        WEAP_ANIM_STUNNED_LOOP = 0x1B,
+        WEAP_ANIM_STUNNED_END = 0x1C,
+        WEAP_ANIM_DETONATE = 0x1D,
+        WEAP_ANIM_NIGHTVISION_WEAR = 0x1E,
+        WEAP_ANIM_NIGHTVISION_REMOVE = 0x1F,
+        WEAP_ANIM_ADS_FIRE = 0x20,
+        WEAP_ANIM_ADS_LASTSHOT = 0x21,
+        WEAP_ANIM_ADS_RECHAMBER = 0x22,
+        WEAP_ANIM_BLAST_FRONT = 0x23,
+        WEAP_ANIM_BLAST_RIGHT = 0x24,
+        WEAP_ANIM_BLAST_BACK = 0x25,
+        WEAP_ANIM_BLAST_LEFT = 0x26,
+        WEAP_ANIM_ADS_UP = 0x27,
+        WEAP_ANIM_ADS_DOWN = 0x28,
+        WEAP_ALT_ANIM_ADJUST = 0x29,
+
+        NUM_WEAP_ANIMS
+    };
+
+    enum hitLocation_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_LWR = 0x5,
+        HITLOC_R_ARM_UPR = 0x6,
+        HITLOC_L_ARM_UPR = 0x7,
+        HITLOC_R_ARM_LWR = 0x8,
+        HITLOC_L_ARM_LWR = 0x9,
+        HITLOC_R_HAND = 0xA,
+        HITLOC_L_HAND = 0xB,
+        HITLOC_R_LEG_UPR = 0xC,
+        HITLOC_L_LEG_UPR = 0xD,
+        HITLOC_R_LEG_LWR = 0xE,
+        HITLOC_L_LEG_LWR = 0xF,
+        HITLOC_R_FOOT = 0x10,
+        HITLOC_L_FOOT = 0x11,
+        HITLOC_GUN = 0x12,
+        HITLOC_SHIELD = 0x13,
+
+        HITLOC_NUM
+    };
+
     struct WeaponDef
     {
         const char* szOverlayName;
@@ -3462,10 +3624,10 @@ namespace IW5
         const char** szXAnimsRightHanded;
         const char** szXAnimsLeftHanded;
         const char* szModeName;
-        unsigned short* notetrackSoundMapKeys;
-        unsigned short* notetrackSoundMapValues;
-        unsigned short* notetrackRumbleMapKeys;
-        unsigned short* notetrackRumbleMapValues;
+        ScriptString* notetrackSoundMapKeys;
+        ScriptString* notetrackSoundMapValues;
+        ScriptString* notetrackRumbleMapKeys;
+        ScriptString* notetrackRumbleMapValues;
         int playerAnimType;
         weapType_t weapType;
         weapClass_t weapClass;
@@ -3476,56 +3638,56 @@ namespace IW5
         weapStance_t stance;
         FxEffectDef* viewFlashEffect;
         FxEffectDef* worldFlashEffect;
-        snd_alias_list_t* pickupSound;
-        snd_alias_list_t* pickupSoundPlayer;
-        snd_alias_list_t* ammoPickupSound;
-        snd_alias_list_t* ammoPickupSoundPlayer;
-        snd_alias_list_t* projectileSound;
-        snd_alias_list_t* pullbackSound;
-        snd_alias_list_t* pullbackSoundPlayer;
-        snd_alias_list_t* fireSound;
-        snd_alias_list_t* fireSoundPlayer;
-        snd_alias_list_t* fireSoundPlayerAkimbo;
-        snd_alias_list_t* fireLoopSound;
-        snd_alias_list_t* fireLoopSoundPlayer;
-        snd_alias_list_t* fireStopSound;
-        snd_alias_list_t* fireStopSoundPlayer;
-        snd_alias_list_t* fireLastSound;
-        snd_alias_list_t* fireLastSoundPlayer;
-        snd_alias_list_t* emptyFireSound;
-        snd_alias_list_t* emptyFireSoundPlayer;
-        snd_alias_list_t* meleeSwipeSound;
-        snd_alias_list_t* meleeSwipeSoundPlayer;
-        snd_alias_list_t* meleeHitSound;
-        snd_alias_list_t* meleeMissSound;
-        snd_alias_list_t* rechamberSound;
-        snd_alias_list_t* rechamberSoundPlayer;
-        snd_alias_list_t* reloadSound;
-        snd_alias_list_t* reloadSoundPlayer;
-        snd_alias_list_t* reloadEmptySound;
-        snd_alias_list_t* reloadEmptySoundPlayer;
-        snd_alias_list_t* reloadStartSound;
-        snd_alias_list_t* reloadStartSoundPlayer;
-        snd_alias_list_t* reloadEndSound;
-        snd_alias_list_t* reloadEndSoundPlayer;
-        snd_alias_list_t* detonateSound;
-        snd_alias_list_t* detonateSoundPlayer;
-        snd_alias_list_t* nightVisionWearSound;
-        snd_alias_list_t* nightVisionWearSoundPlayer;
-        snd_alias_list_t* nightVisionRemoveSound;
-        snd_alias_list_t* nightVisionRemoveSoundPlayer;
-        snd_alias_list_t* altSwitchSound;
-        snd_alias_list_t* altSwitchSoundPlayer;
-        snd_alias_list_t* raiseSound;
-        snd_alias_list_t* raiseSoundPlayer;
-        snd_alias_list_t* firstRaiseSound;
-        snd_alias_list_t* firstRaiseSoundPlayer;
-        snd_alias_list_t* putawaySound;
-        snd_alias_list_t* putawaySoundPlayer;
-        snd_alias_list_t* scanSound;
-        snd_alias_list_t* changeVariableZoomSound;
-        snd_alias_list_t** bounceSound;
-        snd_alias_list_t** rollingSound;
+        SndAliasCustom pickupSound;
+        SndAliasCustom pickupSoundPlayer;
+        SndAliasCustom ammoPickupSound;
+        SndAliasCustom ammoPickupSoundPlayer;
+        SndAliasCustom projectileSound;
+        SndAliasCustom pullbackSound;
+        SndAliasCustom pullbackSoundPlayer;
+        SndAliasCustom fireSound;
+        SndAliasCustom fireSoundPlayer;
+        SndAliasCustom fireSoundPlayerAkimbo;
+        SndAliasCustom fireLoopSound;
+        SndAliasCustom fireLoopSoundPlayer;
+        SndAliasCustom fireStopSound;
+        SndAliasCustom fireStopSoundPlayer;
+        SndAliasCustom fireLastSound;
+        SndAliasCustom fireLastSoundPlayer;
+        SndAliasCustom emptyFireSound;
+        SndAliasCustom emptyFireSoundPlayer;
+        SndAliasCustom meleeSwipeSound;
+        SndAliasCustom meleeSwipeSoundPlayer;
+        SndAliasCustom meleeHitSound;
+        SndAliasCustom meleeMissSound;
+        SndAliasCustom rechamberSound;
+        SndAliasCustom rechamberSoundPlayer;
+        SndAliasCustom reloadSound;
+        SndAliasCustom reloadSoundPlayer;
+        SndAliasCustom reloadEmptySound;
+        SndAliasCustom reloadEmptySoundPlayer;
+        SndAliasCustom reloadStartSound;
+        SndAliasCustom reloadStartSoundPlayer;
+        SndAliasCustom reloadEndSound;
+        SndAliasCustom reloadEndSoundPlayer;
+        SndAliasCustom detonateSound;
+        SndAliasCustom detonateSoundPlayer;
+        SndAliasCustom nightVisionWearSound;
+        SndAliasCustom nightVisionWearSoundPlayer;
+        SndAliasCustom nightVisionRemoveSound;
+        SndAliasCustom nightVisionRemoveSoundPlayer;
+        SndAliasCustom altSwitchSound;
+        SndAliasCustom altSwitchSoundPlayer;
+        SndAliasCustom raiseSound;
+        SndAliasCustom raiseSoundPlayer;
+        SndAliasCustom firstRaiseSound;
+        SndAliasCustom firstRaiseSoundPlayer;
+        SndAliasCustom putawaySound;
+        SndAliasCustom putawaySoundPlayer;
+        SndAliasCustom scanSound;
+        SndAliasCustom changeVariableZoomSound;
+        SndAliasCustom* bounceSound;
+        SndAliasCustom* rollingSound;
         FxEffectDef* viewShellEjectEffect;
         FxEffectDef* worldShellEjectEffect;
         FxEffectDef* viewLastShotEjectEffect;
@@ -3662,8 +3824,8 @@ namespace IW5
         weapProjExposion_t projExplosion;
         FxEffectDef* projExplosionEffect;
         FxEffectDef* projDudEffect;
-        snd_alias_list_t* projExplosionSound;
-        snd_alias_list_t* projDudSound;
+        SndAliasCustom projExplosionSound;
+        SndAliasCustom projDudSound;
         WeapStickinessType stickiness;
         float lowAmmoWarningThreshold;
         float ricochetChance;
@@ -3679,7 +3841,7 @@ namespace IW5
         float maxSteeringAccel;
         int projIgnitionDelay;
         FxEffectDef* projIgnitionEffect;
-        snd_alias_list_t* projIgnitionSound;
+        SndAliasCustom projIgnitionSound;
         float fAdsAimPitch;
         float fAdsCrosshairInFrac;
         float fAdsCrosshairOutFrac;
@@ -3718,8 +3880,14 @@ namespace IW5
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        const char* accuracyGraphName[2];
-        float(*originalAccuracyGraphKnots[2])[2];
+        // const char* accuracyGraphName[2];// TODO: Order is accuracyGraphName[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
+        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
+        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
+        // vec2_t* originalAccuracyGraphKnots[2];
+        const char* accuracyGraphName0;
+        const char* accuracyGraphName1;
+        vec2_t* originalAccuracyGraphKnots0;
+        vec2_t* originalAccuracyGraphKnots1;
         unsigned short originalAccuracyGraphKnotCount[2];
         int iPositionReloadTransTime;
         float leftArc;
@@ -3769,17 +3937,17 @@ namespace IW5
         float turretOverheatUpRate;
         float turretOverheatDownRate;
         float turretOverheatPenalty;
-        snd_alias_list_t* turretOverheatSound;
+        SndAliasCustom turretOverheatSound;
         FxEffectDef* turretOverheatEffect;
         const char* turretBarrelSpinRumble;
         float turretBarrelSpinSpeed;
         float turretBarrelSpinUpTime;
         float turretBarrelSpinDownTime;
-        snd_alias_list_t* turretBarrelSpinMaxSnd;
-        snd_alias_list_t* turretBarrelSpinUpSnd[4];
-        snd_alias_list_t* turretBarrelSpinDownSnd[4];
-        snd_alias_list_t* missileConeSoundAlias;
-        snd_alias_list_t* missileConeSoundAliasAtBase;
+        SndAliasCustom turretBarrelSpinMaxSnd;
+        SndAliasCustom turretBarrelSpinUpSnd[4];
+        SndAliasCustom turretBarrelSpinDownSnd[4];
+        SndAliasCustom missileConeSoundAlias;
+        SndAliasCustom missileConeSoundAliasAtBase;
         float missileConeSoundRadiusAtTop;
         float missileConeSoundRadiusAtBase;
         float missileConeSoundHeight;
@@ -3845,7 +4013,7 @@ namespace IW5
         bool missileConeSoundCrossfadeEnabled;
         bool offhandHoldIsCancelable;
         bool doNotAllowAttachmentsToOverrideSpread;
-        unsigned short stowTag;
+        ScriptString stowTag;
         XModel* stowOffsetModel;
     };
 
@@ -3864,8 +4032,8 @@ namespace IW5
     {
         unsigned short attachment1;
         unsigned short attachment2;
-        snd_alias_list_t* overrideSound;
-        snd_alias_list_t* altmodeSound;
+        SndAliasCustom overrideSound;
+        SndAliasCustom altmodeSound;
         unsigned int soundType;
     };
 
@@ -3888,8 +4056,8 @@ namespace IW5
     struct NoteTrackToSoundEntry
     {
         int attachment;
-        unsigned short* notetrackSoundMapKeys;
-        unsigned short* notetrackSoundMapValues;
+        ScriptString* notetrackSoundMapKeys;
+        ScriptString* notetrackSoundMapValues;
     };
 
     struct WeaponCompleteDef
@@ -3897,7 +4065,7 @@ namespace IW5
         const char* szInternalName;
         WeaponDef* weapDef;
         const char* szDisplayName;
-        unsigned short* hideTags;
+        ScriptString* hideTags;
         WeaponAttachment** scopes;
         WeaponAttachment** underBarrels;
         WeaponAttachment** others;
@@ -3937,7 +4105,7 @@ namespace IW5
         float adsDofStart;
         float adsDofEnd;
         unsigned short accuracyGraphKnotCount[2];
-        float(*accuracyGraphKnots[2])[2];
+        vec2_t* accuracyGraphKnots[2];
         bool motionTracker;
         bool enhanced;
         bool dpadIconShowsAmmo;
@@ -4096,7 +4264,27 @@ namespace IW5
         FxTrailDef* trailDef;
         FxSparkFountainDef* sparkFountainDef;
         FxSpotLightDef* spotLightDef;
-        void* unknownDef;
+        char* unknownDef;
+    };
+
+    enum FxElemType
+    {
+        FX_ELEM_TYPE_SPRITE_BILLBOARD = 0x0,
+        FX_ELEM_TYPE_SPRITE_ORIENTED = 0x1,
+        FX_ELEM_TYPE_TAIL = 0x2,
+        FX_ELEM_TYPE_TRAIL = 0x3,
+        FX_ELEM_TYPE_CLOUD = 0x4,
+        FX_ELEM_TYPE_SPARK_CLOUD = 0x5,
+        FX_ELEM_TYPE_SPARK_FOUNTAIN = 0x6,
+        FX_ELEM_TYPE_MODEL = 0x7,
+        FX_ELEM_TYPE_OMNI_LIGHT = 0x8,
+        FX_ELEM_TYPE_SPOT_LIGHT = 0x9,
+        FX_ELEM_TYPE_SOUND = 0xA,
+        FX_ELEM_TYPE_DECAL = 0xB,
+        FX_ELEM_TYPE_RUNNER = 0xC,
+        FX_ELEM_TYPE_COUNT = 0xD,
+        FX_ELEM_TYPE_LAST_SPRITE = 0x3,
+        FX_ELEM_TYPE_LAST_DRAWN = 0x9
     };
 
     struct FxElemDef
@@ -4178,18 +4366,12 @@ namespace IW5
         SurfaceFxEntry* table;
     };
 
-    union RawFileBuffer
-    {
-        const char* compressedBuffer;
-        const char* buffer;
-    };
-
     struct RawFile
     {
         const char* name;
         int compressedLen;
         int len;
-        RawFileBuffer data;
+        const char* buffer;
     };
 
     struct ScriptFile
@@ -4598,14 +4780,14 @@ namespace IW5
         float turretVertResistUp;
         float turretVertResistDown;
         float turretRotRate;
-        snd_alias_list_t* turretSpinSnd;
-        snd_alias_list_t* turretStopSnd;
+        SndAliasCustom turretSpinSnd;
+        SndAliasCustom turretStopSnd;
         int trophyEnabled;
         float trophyRadius;
         float trophyInactiveRadius;
         int trophyAmmoCount;
         float trophyReloadTime;
-        unsigned short trophyTags[4];
+        ScriptString trophyTags[4];
         FxEffectDef* trophyExplodeFx;
         FxEffectDef* trophyFlashFx;
         Material* compassFriendlyIcon;
@@ -4614,43 +4796,51 @@ namespace IW5
         Material* compassEnemyAltIcon;
         int compassIconWidth;
         int compassIconHeight;
-        snd_alias_list_t* idleLowSnd;
-        snd_alias_list_t* idleHighSnd;
-        snd_alias_list_t* engineLowSnd;
-        snd_alias_list_t* engineHighSnd;
+        SndAliasCustom idleLowSnd;
+        SndAliasCustom idleHighSnd;
+        SndAliasCustom engineLowSnd;
+        SndAliasCustom engineHighSnd;
         float engineSndSpeed;
-        unsigned short audioOriginTag;
-        snd_alias_list_t* idleLowSndAlt;
-        snd_alias_list_t* idleHighSndAlt;
-        snd_alias_list_t* engineLowSndAlt;
-        snd_alias_list_t* engineHighSndAlt;
+        ScriptString audioOriginTag;
+        SndAliasCustom idleLowSndAlt;
+        SndAliasCustom idleHighSndAlt;
+        SndAliasCustom engineLowSndAlt;
+        SndAliasCustom engineHighSndAlt;
         float engineSndSpeedAlt;
-        unsigned short audioOriginTagAlt;
-        snd_alias_list_t* turretSpinSndAlt;
-        snd_alias_list_t* turretStopSndAlt;
-        snd_alias_list_t* engineStartUpSnd;
+        ScriptString audioOriginTagAlt;
+        SndAliasCustom turretSpinSndAlt;
+        SndAliasCustom turretStopSndAlt;
+        SndAliasCustom engineStartUpSnd;
         int engineStartUpLength;
-        snd_alias_list_t* engineShutdownSnd;
-        snd_alias_list_t* engineIdleSnd;
-        snd_alias_list_t* engineSustainSnd;
-        snd_alias_list_t* engineRampUpSnd;
+        SndAliasCustom engineShutdownSnd;
+        SndAliasCustom engineIdleSnd;
+        SndAliasCustom engineSustainSnd;
+        SndAliasCustom engineRampUpSnd;
         int engineRampUpLength;
-        snd_alias_list_t* engineRampDownSnd;
+        SndAliasCustom engineRampDownSnd;
         int engineRampDownLength;
-        snd_alias_list_t* suspensionSoftSnd;
+        SndAliasCustom suspensionSoftSnd;
         float suspensionSoftCompression;
-        snd_alias_list_t* suspensionHardSnd;
+        SndAliasCustom suspensionHardSnd;
         float suspensionHardCompression;
-        snd_alias_list_t* collisionSnd;
+        SndAliasCustom collisionSnd;
         float collisionBlendSpeed;
-        snd_alias_list_t* speedSnd;
+        SndAliasCustom speedSnd;
         float speedSndBlendSpeed;
         const char* surfaceSndPrefix;
-        snd_alias_list_t* surfaceSnds[31];
+        SndAliasCustom surfaceSnds[31];
         float surfaceSndBlendSpeed;
         float slideVolume;
         float slideBlendSpeed;
         float inAirPitch;
+    };
+
+    struct cmodel2_t
+    {
+        Bounds bounds;
+        float radius;
+        ClipInfo* info;
+        cLeaf_t leaf;
     };
 
     struct AddonMapEnts
@@ -4661,7 +4851,7 @@ namespace IW5
         MapTriggers trigger;
         ClipInfo* info;
         unsigned int numSubModels;
-        cmodel_t* cmodels;
+        cmodel2_t* cmodels;
         GfxBrushModel* models;
     };
 
