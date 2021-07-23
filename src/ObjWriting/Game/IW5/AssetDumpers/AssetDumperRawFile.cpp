@@ -17,7 +17,21 @@ bool AssetDumperRawFile::CanDumpAsRaw()
 
 std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset)
 {
-    return asset->m_name;
+    std::string cleanAssetName = asset->m_name;
+    for (auto& c : cleanAssetName)
+    {
+        switch (c)
+        {
+        case '*':
+            c = '_';
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return cleanAssetName;
 }
 
 void AssetDumperRawFile::DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream)
