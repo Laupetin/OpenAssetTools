@@ -21,6 +21,7 @@ set count baseMat numBones;
 set count materialHandles numsurfs;
 set count collSurfs numCollSurfs;
 set count boneInfo numBones;
+set condition invHighMipRadius never;
 
 // XModelLodInfo
 use XModelLodInfo;
