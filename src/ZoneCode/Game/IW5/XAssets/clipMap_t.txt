@@ -30,6 +30,12 @@ set count dynEntClientList[1] dynEntCount[1];
 set block dynEntCollList XFILE_BLOCK_RUNTIME;
 set count dynEntCollList[0] dynEntCount[0];
 set count dynEntCollList[1] dynEntCount[1];
+reorder:
+...
+cmodels
+smodelNodes
+mapEnts
+stages;
 
 // ClipInfo
 use ClipInfo;
@@ -69,6 +75,11 @@ set count data::leaf::brushes leafBrushCount;
 
 // CollisionPartition
 set reusable CollisionPartition::borders;
+
+// cmodel_t
+use cmodel_t;
+set block info XFILE_BLOCK_TEMP;
+set reusable info;
 
 // cbrush_t
 use cbrush_t;

@@ -12,3 +12,12 @@ use MapTriggers;
 set count models count;
 set count hulls hullCount;
 set count slabs slabCount;
+
+// ClientTriggers
+use ClientTriggers;
+set count triggerString triggerStringLength;
+set count triggerStringOffsets trigger::count;
+set count triggerType trigger::count;
+set count origins trigger::count;
+set count scriptDelay trigger::count;
+set count audioTriggers trigger::count;

@@ -1158,7 +1158,7 @@ namespace IW5
         int partitionIndex;
     };
 
-    struct CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         float midPoint[3];
         unsigned short materialIndex;
@@ -1694,7 +1694,7 @@ namespace IW5
         unsigned char endVertIndex;
     };
 
-    union FxGlassGeometryData
+    union type_align(4) FxGlassGeometryData
     {
         FxGlassVertex vert;
         FxGlassHoleHeader hole;
