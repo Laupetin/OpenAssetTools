@@ -70,6 +70,7 @@ set count reflectionProbes reflectionProbeCount;
 set count reflectionProbeOrigins reflectionProbeCount;
 set block reflectionProbeTextures XFILE_BLOCK_RUNTIME;
 set count reflectionProbeTextures reflectionProbeCount;
+set count reflectionProbeReferenceOrigins reflectionProbeReferenceCount;
 set count reflectionProbeReferences reflectionProbeReferenceCount;
 set count lightmaps lightmapCount;
 set block lightmapPrimaryTextures XFILE_BLOCK_RUNTIME;

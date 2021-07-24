@@ -88,6 +88,7 @@ set reusable visibleExp;
 set reusable disabledExp;
 set reusable textExp;
 set reusable materialExp;
+set reusable textAlignYExp;
 
 // itemDefData_t
 use itemDefData_t;

@@ -161,7 +161,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart)
 
 void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count)
 {
-    assert(varXAsset != nullptr);
+    assert(count == 0 || varXAsset != nullptr);
 
     if (atStreamStart)
         m_stream->Load<XAsset>(varXAsset, count);

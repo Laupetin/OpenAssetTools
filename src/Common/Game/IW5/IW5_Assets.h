@@ -660,10 +660,16 @@ namespace IW5
         float floatTime;
     };
 
+    struct complex_s
+    {
+        float real;
+        float imag;
+    };
+
     struct water_t
     {
         WaterWritable writable;
-        float* H0;
+        complex_s* H0;
         float* wTerm;
         int M;
         int N;
@@ -3370,6 +3376,8 @@ namespace IW5
         SndAliasCustom projIgnitionSound;
     };
 
+    typedef tdef_align(4) AttSight AttSight4;
+
     struct WeaponAttachment
     {
         const char* szInternalName;
@@ -3381,7 +3389,7 @@ namespace IW5
         XModel** viewModels;
         XModel** reticleViewModels;
         AttAmmoGeneral* ammogeneral;
-        AttSight* sight;
+        AttSight4* sight;
         AttReload* reload;
         AttAddOns* addOns;
         AttGeneral* general;

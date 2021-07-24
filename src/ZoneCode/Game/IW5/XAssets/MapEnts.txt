@@ -9,12 +9,16 @@ set count entityString numEntityChars;
 
 // MapTriggers
 use MapTriggers;
+set reusable models;
 set count models count;
+set reusable hulls;
 set count hulls hullCount;
+set reusable slabs;
 set count slabs slabCount;
 
 // ClientTriggers
 use ClientTriggers;
+set count clientTriggerAabbTree numClientTriggerNodes;
 set count triggerString triggerStringLength;
 set count triggerStringOffsets trigger::count;
 set count triggerType trigger::count;

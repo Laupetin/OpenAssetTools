@@ -6,6 +6,9 @@ set block XFILE_BLOCK_TEMP;
 set string name;
 set name name;
 set count entityString numEntityChars;
+set reusable info;
+set count cmodels numSubModels;
+set count models numSubModels;
 
 // MapTriggers
 // see MapEnts
@@ -14,5 +17,4 @@ set count entityString numEntityChars;
 // see clipMap_t
 
 // cmodel2_t
-use cmodel2_t;
-set reusable info;
+set reusable cmodel2_t::info;
