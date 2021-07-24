@@ -37,48 +37,43 @@ std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFi
 void AssetDumperRawFile::DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream)
 {
     const auto* rawFile = asset->Asset();
-    if (rawFile->compressedLen > 0)
+    if (rawFile->compressedLen <= 0)
+        return;
+
+    z_stream_s zs{};
+    zs.zalloc = Z_NULL;
+    zs.zfree = Z_NULL;
+    zs.opaque = Z_NULL;
+    zs.avail_in = 0;
+    zs.next_in = Z_NULL;
+
+    int ret = inflateInit(&zs);
+
+    if (ret != Z_OK)
     {
-        z_stream_s zs{};
+        throw std::runtime_error("Initializing inflate failed");
+    }
 
-        zs.zalloc = Z_NULL;
-        zs.zfree = Z_NULL;
-        zs.opaque = Z_NULL;
-        zs.avail_in = 0;
-        zs.next_in = Z_NULL;
+    zs.next_in = reinterpret_cast<const Bytef*>(rawFile->buffer);
+    zs.avail_in = rawFile->compressedLen;
 
-        int ret = inflateInit(&zs);
+    Bytef buffer[0x1000];
 
-        if (ret != Z_OK)
+    while (zs.avail_in > 0)
+    {
+        zs.next_out = buffer;
+        zs.avail_out = sizeof buffer;
+        ret = inflate(&zs, Z_SYNC_FLUSH);
+
+        if (ret < 0)
         {
-            throw std::runtime_error("Initializing inflate failed");
+            printf("Inflate failed for dumping rawfile '%s'\n", rawFile->name);
+            inflateEnd(&zs);
+            return;
         }
 
-        zs.next_in = reinterpret_cast<const Bytef*>(rawFile->buffer);
-        zs.avail_in = rawFile->compressedLen;
-
-        Bytef buffer[0x1000];
-
-        while (zs.avail_in > 0)
-        {
-            zs.next_out = buffer;
-            zs.avail_out = sizeof buffer;
-            ret = inflate(&zs, Z_SYNC_FLUSH);
-
-            if (ret < 0)
-            {
-                printf("Inflate failed for dumping rawfile '%s'\n", rawFile->name);
-                inflateEnd(&zs);
-                return;
-            }
-
-            stream.write(reinterpret_cast<char*>(buffer), sizeof buffer - zs.avail_out);
-        }
-
-        inflateEnd(&zs);
+        stream.write(reinterpret_cast<char*>(buffer), sizeof buffer - zs.avail_out);
     }
-    else if (rawFile->len > 0)
-    {
-        stream.write(rawFile->buffer, rawFile->len);
-    }
+
+    inflateEnd(&zs);
 }
