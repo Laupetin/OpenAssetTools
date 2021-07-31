@@ -108,7 +108,7 @@ void AssetDumperXModel::DumpObjLod(AssetDumpingContext& context, XAssetInfo<XMod
         for (auto vi = 0; vi < surf->vertCount; vi++)
         {
             const auto* vertex = &surf->verts0[vi];
-            stream << "v " << vertex->xyz[0] << " " << vertex->xyz[1] << " " << vertex->xyz[2] << "\n";
+            stream << "v " << vertex->xyz[0] << " " << vertex->xyz[2] << " " << -vertex->xyz[1] << "\n";
         }
 
         stream << "\n";
@@ -130,7 +130,7 @@ void AssetDumperXModel::DumpObjLod(AssetDumpingContext& context, XAssetInfo<XMod
             vec3_t normalVec;
             Common::Vec3UnpackUnitVec(vertex->normal, &normalVec);
             
-            stream << "vn " << normalVec[0] << " " << normalVec[1] << " " << normalVec[2] << "\n";
+            stream << "vn " << normalVec[0] << " " << normalVec[2] << " " << -normalVec[1] << "\n";
         }
 
         stream << "\n";
