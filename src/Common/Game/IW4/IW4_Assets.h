@@ -650,9 +650,9 @@ namespace IW4
     {
         MaterialInfo info;
         char stateBitsEntry[48];
-        char textureCount;
-        char constantCount;
-        char stateBitsCount;
+        unsigned char textureCount;
+        unsigned char constantCount;
+        unsigned char stateBitsCount;
         char stateFlags;
         char cameraRegion;
         MaterialTechniqueSet* techniqueSet;

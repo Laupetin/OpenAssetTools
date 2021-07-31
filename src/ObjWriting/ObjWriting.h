@@ -14,8 +14,15 @@ public:
             IWI
         };
 
+        enum class ModelOutputFormat_e
+        {
+            XMODEL_EXPORT,
+            OBJ
+        };
+
         bool Verbose = false;
         ImageOutputFormat_e ImageOutputFormat = ImageOutputFormat_e::DDS;
+        ModelOutputFormat_e ModelOutputFormat = ModelOutputFormat_e::XMODEL_EXPORT;
 
     } Configuration;
 

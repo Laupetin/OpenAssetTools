@@ -66,6 +66,13 @@ const CommandLineOption* const OPTION_IMAGE_FORMAT =
     .WithParameter("imageFormatValue")
     .Build();
 
+const CommandLineOption* const OPTION_MODEL_FORMAT =
+    CommandLineOption::Builder::Create()
+    .WithLongName("model-format")
+    .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ")
+    .WithParameter("modelFormatValue")
+    .Build();
+
 const CommandLineOption* const OPTION_GDT =
     CommandLineOption::Builder::Create()
     .WithLongName("gdt")
@@ -82,6 +89,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_OUTPUT_FOLDER,
     OPTION_SEARCH_PATH,
     OPTION_IMAGE_FORMAT,
+    OPTION_MODEL_FORMAT,
     OPTION_GDT
 };
 
@@ -137,6 +145,29 @@ bool UnlinkerArgs::SetImageDumpingMode()
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_IMAGE_FORMAT);
     printf("Illegal value: \"%s\" is not a valid image output format. Use -? to see usage information.\n", originalValue.c_str());
+    return false;
+}
+
+bool UnlinkerArgs::SetModelDumpingMode()
+{
+    auto specifiedValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
+    for (auto& c : specifiedValue)
+        c = static_cast<char>(tolower(c));
+
+    if (specifiedValue == "xmodel_export")
+    {
+        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT;
+        return true;
+    }
+
+    if (specifiedValue == "obj")
+    {
+        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT;
+        return true;
+    }
+
+    const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
+    printf("Illegal value: \"%s\" is not a valid model output format. Use -? to see usage information.\n", originalValue.c_str());
     return false;
 }
 
@@ -198,6 +229,15 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
     if (m_argument_parser.IsOptionSpecified(OPTION_IMAGE_FORMAT))
     {
         if (!SetImageDumpingMode())
+        {
+            return false;
+        }
+    }
+
+    // --model-format
+    if (m_argument_parser.IsOptionSpecified(OPTION_MODEL_FORMAT))
+    {
+        if (!SetModelDumpingMode())
         {
             return false;
         }

@@ -22,6 +22,7 @@ private:
 
     void SetVerbose(bool isVerbose);
     bool SetImageDumpingMode();
+    bool SetModelDumpingMode();
 
 public:
     enum class ProcessingTask
