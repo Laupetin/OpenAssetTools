@@ -9,8 +9,6 @@ namespace IW3
     {
     protected:
         bool ShouldDump(XAssetInfo<MapEnts>* asset) override;
-        bool CanDumpAsRaw() override;
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<MapEnts>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset) override;
     };
 }

@@ -13,11 +13,6 @@ namespace T6
 
     protected:
         bool ShouldDump(XAssetInfo<WeaponAttachmentUnique>* asset) override;
-        bool CanDumpAsRaw() override;
-        bool CanDumpAsGdtEntry() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponAttachmentUnique>* asset) override;
-        GdtEntry DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset) override;
     };
 }

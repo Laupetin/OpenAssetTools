@@ -7,10 +7,10 @@ namespace IW5
 {
     class AssetDumperRawFile final : public AbstractAssetDumper<RawFile>
     {
+        static std::string GetAssetFileName(XAssetInfo<GfxImage>* asset);
+
     protected:
         bool ShouldDump(XAssetInfo<RawFile>* asset) override;
-        bool CanDumpAsRaw() override;
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset) override;
     };
 }

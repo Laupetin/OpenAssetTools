@@ -57,33 +57,26 @@ bool AssetDumperTracer::ShouldDump(XAssetInfo<TracerDef>* asset)
     return true;
 }
 
-bool AssetDumperTracer::CanDumpAsRaw()
+void AssetDumperTracer::DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_TRACER);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_TRACER, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("tracer/" + asset->m_name);
 
-bool AssetDumperTracer::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperTracer::GetFileNameForAsset(Zone* zone, XAssetInfo<TracerDef>* asset)
-{
-    return "tracer/" + asset->m_name;
-}
-
-GdtEntry AssetDumperTracer::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_TRACER);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_TRACER, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperTracer::DumpRaw(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_TRACER);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_TRACER);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

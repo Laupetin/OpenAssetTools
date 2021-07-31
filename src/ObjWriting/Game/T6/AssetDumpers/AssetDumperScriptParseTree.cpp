@@ -7,18 +7,14 @@ bool AssetDumperScriptParseTree::ShouldDump(XAssetInfo<ScriptParseTree>* asset)
     return true;
 }
 
-bool AssetDumperScriptParseTree::CanDumpAsRaw()
-{
-    return true;
-}
-
-std::string AssetDumperScriptParseTree::GetFileNameForAsset(Zone* zone, XAssetInfo<ScriptParseTree>* asset)
-{
-    return asset->m_name;
-}
-
-void AssetDumperScriptParseTree::DumpRaw(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset, std::ostream& stream)
+void AssetDumperScriptParseTree::DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset)
 {
     const auto* scriptParseTree = asset->Asset();
+    const auto assetFile = context.OpenAssetFile(asset->m_name);
+
+    if (!assetFile)
+        return;
+
+    auto& stream = *assetFile;
     stream.write(scriptParseTree->buffer, scriptParseTree->len);
 }

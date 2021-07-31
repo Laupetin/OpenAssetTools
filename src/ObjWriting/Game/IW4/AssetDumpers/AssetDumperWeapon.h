@@ -17,11 +17,6 @@ namespace IW4
 
     protected:
         bool ShouldDump(XAssetInfo<WeaponCompleteDef>* asset) override;
-        bool CanDumpAsRaw() override;
-        bool CanDumpAsGdtEntry() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponCompleteDef>* asset) override;
-        GdtEntry DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset) override;
     };
 }

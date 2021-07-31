@@ -78,33 +78,26 @@ bool AssetDumperPhysPreset::ShouldDump(XAssetInfo<PhysPreset>* asset)
     return true;
 }
 
-bool AssetDumperPhysPreset::CanDumpAsRaw()
+void AssetDumperPhysPreset::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("physic/" + asset->m_name);
 
-bool AssetDumperPhysPreset::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperPhysPreset::GetFileNameForAsset(Zone* zone, XAssetInfo<PhysPreset>* asset)
-{
-    return "physic/" + asset->m_name;
-}
-
-GdtEntry AssetDumperPhysPreset::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_PRESET);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperPhysPreset::DumpRaw(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

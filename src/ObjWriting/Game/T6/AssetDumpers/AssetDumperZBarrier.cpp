@@ -46,33 +46,26 @@ bool AssetDumperZBarrier::ShouldDump(XAssetInfo<ZBarrierDef>* asset)
     return true;
 }
 
-bool AssetDumperZBarrier::CanDumpAsRaw()
+void AssetDumperZBarrier::DumpAsset(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_ZBARRIER);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("zbarrier/" + asset->m_name);
 
-bool AssetDumperZBarrier::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperZBarrier::GetFileNameForAsset(Zone* zone, XAssetInfo<ZBarrierDef>* asset)
-{
-    return "zbarrier/" + asset->m_name;
-}
-
-GdtEntry AssetDumperZBarrier::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_ZBARRIER);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperZBarrier::DumpRaw(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_ZBARRIER);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_ZBARRIER);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

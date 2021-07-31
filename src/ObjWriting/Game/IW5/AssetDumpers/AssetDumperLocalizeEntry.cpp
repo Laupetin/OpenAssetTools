@@ -1,13 +1,11 @@
 #include "AssetDumperLocalizeEntry.h"
 
-#include <fstream>
-#include <filesystem>
+#include <sstream>
 
 #include "Localize/LocalizeCommon.h"
 #include "Dumping/Localize/StringFileDumper.h"
 
 using namespace IW5;
-namespace fs = std::filesystem;
 
 void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool)
 {
@@ -15,20 +13,14 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
         return;
 
     const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone->m_language);
-    fs::path stringsPath(context.m_base_path);
-    stringsPath.append(language);
-    stringsPath.append("localizedstrings");
 
-    create_directories(stringsPath);
+    std::ostringstream ss;
+    ss << language << "/localizedstrings/" << context.m_zone->m_name << ".str";
+    const auto assetFile = context.OpenAssetFile(ss.str());
 
-    auto stringFilePath(stringsPath);
-    stringFilePath.append(context.m_zone->m_name + ".str");
-
-    std::ofstream stringFile(stringFilePath, std::fstream::out | std::ofstream::binary);
-
-    if (stringFile.is_open())
+    if (assetFile)
     {
-        StringFileDumper stringFileDumper(context.m_zone, stringFile);
+        StringFileDumper stringFileDumper(context.m_zone, *assetFile);
 
         stringFileDumper.SetLanguageName(language);
 
@@ -43,8 +35,6 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
         }
 
         stringFileDumper.Finalize();
-
-        stringFile.close();
     }
     else
     {

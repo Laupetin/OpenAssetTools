@@ -31,18 +31,33 @@ bool AssetDumperGfxImage::ShouldDump(XAssetInfo<GfxImage>* asset)
     return image->loadedSize > 0;
 }
 
-bool AssetDumperGfxImage::CanDumpAsRaw()
+std::string AssetDumperGfxImage::GetAssetFileName(XAssetInfo<GfxImage>* asset) const
 {
-    return true;
+    std::string cleanAssetName = asset->m_name;
+    for (auto& c : cleanAssetName)
+    {
+        switch (c)
+        {
+        case '*':
+            c = '_';
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return "images/" + cleanAssetName + m_writer->GetFileExtension();
 }
 
-std::string AssetDumperGfxImage::GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset)
-{
-    return "images/" + asset->m_name + m_writer->GetFileExtension();
-}
-
-void AssetDumperGfxImage::DumpRaw(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset, std::ostream& stream)
+void AssetDumperGfxImage::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
 {
     const auto* image = asset->Asset();
+    const auto assetFile = context.OpenAssetFile(GetAssetFileName(asset));
+
+    if (!assetFile)
+        return;
+
+    auto& stream = *assetFile;
     m_writer->DumpImage(stream, image->texture.texture);
 }

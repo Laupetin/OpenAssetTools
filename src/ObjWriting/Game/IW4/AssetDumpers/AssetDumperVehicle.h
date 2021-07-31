@@ -16,11 +16,6 @@ namespace IW4
 
     protected:
         bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
-        bool CanDumpAsRaw() override;
-        bool CanDumpAsGdtEntry() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<VehicleDef>* asset) override;
-        GdtEntry DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
     };
 }

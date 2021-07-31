@@ -10,18 +10,15 @@ bool AssetDumperAddonMapEnts::ShouldDump(XAssetInfo<AddonMapEnts>* asset)
     return true;
 }
 
-bool AssetDumperAddonMapEnts::CanDumpAsRaw()
-{
-    return true;
-}
-
-std::string AssetDumperAddonMapEnts::GetFileNameForAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset)
-{
-    return asset->m_name;
-}
-
-void AssetDumperAddonMapEnts::DumpRaw(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset, std::ostream& stream)
+void AssetDumperAddonMapEnts::DumpAsset(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset)
 {
     const auto* addonMapEnts = asset->Asset();
+    const auto assetFile = context.OpenAssetFile(asset->m_name);
+
+    if (!assetFile)
+        return;
+
+    auto& stream = *assetFile;
+
     stream.write(addonMapEnts->entityString, std::max(addonMapEnts->numEntityChars - 1, 0));
 }

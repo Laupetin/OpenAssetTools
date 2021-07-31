@@ -9,20 +9,15 @@ bool AssetDumperStringTable::ShouldDump(XAssetInfo<StringTable>* asset)
     return true;
 }
 
-bool AssetDumperStringTable::CanDumpAsRaw()
-{
-    return true;
-}
-
-std::string AssetDumperStringTable::GetFileNameForAsset(Zone* zone, XAssetInfo<StringTable>* asset)
-{
-    return asset->m_name;
-}
-
-void AssetDumperStringTable::DumpRaw(AssetDumpingContext& context, XAssetInfo<StringTable>* asset, std::ostream& stream)
+void AssetDumperStringTable::DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset)
 {
     const auto* stringTable = asset->Asset();
-    CsvOutputStream csv(stream);
+    const auto assetFile = context.OpenAssetFile(asset->m_name);
+
+    if (!assetFile)
+        return;
+
+    CsvOutputStream csv(*assetFile);
 
     for (auto row = 0; row < stringTable->rowCount; row++)
     {

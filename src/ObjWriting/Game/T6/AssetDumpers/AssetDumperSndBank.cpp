@@ -1,5 +1,6 @@
 #include "AssetDumperSndBank.h"
 
+#include <fstream>
 #include <filesystem>
 #include <unordered_map>
 

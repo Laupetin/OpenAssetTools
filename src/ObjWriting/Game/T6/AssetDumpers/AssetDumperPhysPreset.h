@@ -13,11 +13,6 @@ namespace T6
 
     protected:
         bool ShouldDump(XAssetInfo<PhysPreset>* asset) override;
-        bool CanDumpAsRaw() override;
-        bool CanDumpAsGdtEntry() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<PhysPreset>* asset) override;
-        GdtEntry DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset) override;
     };
 }

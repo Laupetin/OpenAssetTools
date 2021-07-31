@@ -417,33 +417,26 @@ bool AssetDumperWeapon::ShouldDump(XAssetInfo<WeaponVariantDef>* asset)
     return true;
 }
 
-bool AssetDumperWeapon::CanDumpAsRaw()
+void AssetDumperWeapon::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("weapons/" + asset->m_name);
 
-bool AssetDumperWeapon::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperWeapon::GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponVariantDef>* asset)
-{
-    return "weapons/" + asset->m_name;
-}
-
-GdtEntry AssetDumperWeapon::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperWeapon::DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

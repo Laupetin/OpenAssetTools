@@ -9,13 +9,10 @@ namespace T5
     {
         constexpr static size_t GSC_MAX_SIZE = 0xC000000;
 
-        void DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream);
+        static void DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream);
 
     protected:
         bool ShouldDump(XAssetInfo<RawFile>* asset) override;
-        bool CanDumpAsRaw() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset) override;
     };
 }

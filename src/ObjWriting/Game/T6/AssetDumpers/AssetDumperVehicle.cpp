@@ -107,33 +107,26 @@ bool AssetDumperVehicle::ShouldDump(XAssetInfo<VehicleDef>* asset)
     return true;
 }
 
-bool AssetDumperVehicle::CanDumpAsRaw()
+void AssetDumperVehicle::DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_VEHICLE);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("vehicles/" + asset->m_name);
 
-bool AssetDumperVehicle::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperVehicle::GetFileNameForAsset(Zone* zone, XAssetInfo<VehicleDef>* asset)
-{
-    return "vehicles/" + asset->m_name;
-}
-
-GdtEntry AssetDumperVehicle::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_VEHICLE);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_VEHICLE, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperVehicle::DumpRaw(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_VEHICLE);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_VEHICLE);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

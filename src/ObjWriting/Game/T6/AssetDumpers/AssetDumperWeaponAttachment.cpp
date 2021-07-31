@@ -63,33 +63,26 @@ bool AssetDumperWeaponAttachment::ShouldDump(XAssetInfo<WeaponAttachment>* asset
     return true;
 }
 
-bool AssetDumperWeaponAttachment::CanDumpAsRaw()
+void AssetDumperWeaponAttachment::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("attachment/" + asset->m_name);
 
-bool AssetDumperWeaponAttachment::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperWeaponAttachment::GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponAttachment>* asset)
-{
-    return "attachment/" + asset->m_name;
-}
-
-GdtEntry AssetDumperWeaponAttachment::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperWeaponAttachment::DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

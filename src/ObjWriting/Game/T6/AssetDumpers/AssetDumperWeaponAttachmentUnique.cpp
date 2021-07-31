@@ -131,33 +131,26 @@ bool AssetDumperWeaponAttachmentUnique::ShouldDump(XAssetInfo<WeaponAttachmentUn
     return true;
 }
 
-bool AssetDumperWeaponAttachmentUnique::CanDumpAsRaw()
+void AssetDumperWeaponAttachmentUnique::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("attachmentunique/" + asset->m_name);
 
-bool AssetDumperWeaponAttachmentUnique::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperWeaponAttachmentUnique::GetFileNameForAsset(Zone* zone, XAssetInfo<WeaponAttachmentUnique>* asset)
-{
-    return "attachmentunique/" + asset->m_name;
-}
-
-GdtEntry AssetDumperWeaponAttachmentUnique::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperWeaponAttachmentUnique::DumpRaw(AssetDumpingContext& context, XAssetInfo<WeaponAttachmentUnique>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

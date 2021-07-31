@@ -10,12 +10,7 @@ bool AssetDumperRawFile::ShouldDump(XAssetInfo<RawFile>* asset)
     return true;
 }
 
-bool AssetDumperRawFile::CanDumpAsRaw()
-{
-    return true;
-}
-
-std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFile>* asset)
+std::string AssetDumperRawFile::GetAssetFileName(XAssetInfo<GfxImage>* asset)
 {
     std::string cleanAssetName = asset->m_name;
     for (auto& c : cleanAssetName)
@@ -34,9 +29,15 @@ std::string AssetDumperRawFile::GetFileNameForAsset(Zone* zone, XAssetInfo<RawFi
     return cleanAssetName;
 }
 
-void AssetDumperRawFile::DumpRaw(AssetDumpingContext& context, XAssetInfo<RawFile>* asset, std::ostream& stream)
+void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
 {
     const auto* rawFile = asset->Asset();
+    const auto assetFile = context.OpenAssetFile(asset->m_name);
+
+    if (!assetFile)
+        return;
+
+    auto& stream = *assetFile;
     if (rawFile->compressedLen <= 0)
         return;
 

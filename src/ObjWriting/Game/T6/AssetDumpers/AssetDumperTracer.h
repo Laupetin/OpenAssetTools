@@ -12,11 +12,6 @@ namespace T6
 
     protected:
         bool ShouldDump(XAssetInfo<TracerDef>* asset) override;
-        bool CanDumpAsRaw() override;
-        bool CanDumpAsGdtEntry() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<TracerDef>* asset) override;
-        GdtEntry DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset) override;
     };
 }

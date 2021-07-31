@@ -58,33 +58,26 @@ bool AssetDumperPhysConstraints::ShouldDump(XAssetInfo<PhysConstraints>* asset)
     return true;
 }
 
-bool AssetDumperPhysConstraints::CanDumpAsRaw()
+void AssetDumperPhysConstraints::DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset)
 {
-    return true;
-}
+    // Only dump raw when no gdt available
+    if (context.m_gdt)
+    {
+        const auto infoString = CreateInfoString(asset);
+        GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_CONSTRAINTS);
+        infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, gdtEntry);
+        context.m_gdt->WriteEntry(gdtEntry);
+    }
+    else
+    {
+        const auto assetFile = context.OpenAssetFile("physconstraints/" + asset->m_name);
 
-bool AssetDumperPhysConstraints::CanDumpAsGdtEntry()
-{
-    return true;
-}
+        if (!assetFile)
+            return;
 
-std::string AssetDumperPhysConstraints::GetFileNameForAsset(Zone* zone, XAssetInfo<PhysConstraints>* asset)
-{
-    return "physconstraints/" + asset->m_name;
-}
-
-GdtEntry AssetDumperPhysConstraints::DumpGdtEntry(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset)
-{
-    const auto infoString = CreateInfoString(asset);
-    GdtEntry gdtEntry(asset->m_name, ObjConstants::GDF_FILENAME_PHYS_CONSTRAINTS);
-    infoString.ToGdtProperties(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, gdtEntry);
-
-    return gdtEntry;
-}
-
-void AssetDumperPhysConstraints::DumpRaw(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset, std::ostream& stream)
-{
-    const auto infoString = CreateInfoString(asset);
-    const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS);
-    stream.write(stringValue.c_str(), stringValue.size());
+        auto& stream = *assetFile;
+        const auto infoString = CreateInfoString(asset);
+        const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS);
+        stream.write(stringValue.c_str(), stringValue.size());
+    }
 }

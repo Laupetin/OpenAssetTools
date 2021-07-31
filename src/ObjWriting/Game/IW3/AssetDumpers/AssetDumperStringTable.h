@@ -9,9 +9,6 @@ namespace IW3
     {
     protected:
         bool ShouldDump(XAssetInfo<StringTable>* asset) override;
-        bool CanDumpAsRaw() override;
-
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<StringTable>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<StringTable>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset) override;
     };
 }

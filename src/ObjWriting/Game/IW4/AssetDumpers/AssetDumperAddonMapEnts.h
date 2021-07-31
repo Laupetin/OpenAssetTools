@@ -9,8 +9,6 @@ namespace IW4
     {
     protected:
         bool ShouldDump(XAssetInfo<AddonMapEnts>* asset) override;
-        bool CanDumpAsRaw() override;
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<AddonMapEnts>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset) override;
     };
 }

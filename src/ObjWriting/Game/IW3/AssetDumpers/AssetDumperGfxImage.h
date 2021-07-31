@@ -12,11 +12,11 @@ namespace IW3
     {
         std::unique_ptr<IImageWriter> m_writer;
 
+        std::string GetAssetFileName(XAssetInfo<GfxImage>* asset) const;
+
     protected:
         bool ShouldDump(XAssetInfo<GfxImage>* asset) override;
-        bool CanDumpAsRaw() override;
-        std::string GetFileNameForAsset(Zone* zone, XAssetInfo<GfxImage>* asset) override;
-        void DumpRaw(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset, std::ostream& stream) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset) override;
 
     public:
         AssetDumperGfxImage();
