@@ -95,7 +95,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(const std::string& assetName, ISearchPath*
     const auto faceCount = texture->GetFaceCount();
 
     size_t dataSize = 0;
-    for (auto mipLevel = 0u; mipLevel < mipCount; mipLevel++)
+    for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         dataSize += texture->GetSizeOfMipLevel(mipLevel) * faceCount;
 
     auto* loadDef = static_cast<GfxImageLoadDef*>(zone->GetMemory()->Alloc(offsetof(GfxImageLoadDef, data) + dataSize));
