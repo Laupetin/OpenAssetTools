@@ -44,7 +44,7 @@ void AssetDumperXModel::DumpObjMatMaterial(AssetDumpingContext& context, const M
     }
 
     if (colorMap)
-        stream << "map_Ka " << colorMap->name << ".dds\n";
+        stream << "map_Kd " << colorMap->name << ".dds\n";
 
     if (normalMap)
         stream << "map_bump " << normalMap->name << ".dds\n";
