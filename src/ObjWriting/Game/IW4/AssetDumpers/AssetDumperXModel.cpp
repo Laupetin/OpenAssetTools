@@ -56,7 +56,7 @@ void AssetDumperXModel::DumpObjMatMaterial(AssetDumpingContext& context, const M
 void AssetDumperXModel::DumpObjMat(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
     const auto* model = asset->Asset();
-    const auto matFile = context.OpenAssetFile("xmodelsurfs/" + std::string(model->name) + ".mat");
+    const auto matFile = context.OpenAssetFile("xmodelsurfs/" + std::string(model->name) + ".mtl");
 
     if (!matFile)
         return;
