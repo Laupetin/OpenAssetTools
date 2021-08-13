@@ -41,7 +41,8 @@ void AssetDumperXModel::AddObjMaterials(ObjWriter& writer, DistinctMapper<Materi
             switch (texture.semantic)
             {
             case TS_COLOR_MAP:
-                colorMap = texture.u.image;
+                if (texture.nameStart == 'c' && texture.nameEnd == 'p')
+                    colorMap = texture.u.image;
                 break;
 
             // Disabled due to looking weird in Blender
@@ -92,11 +93,9 @@ void AssetDumperXModel::AddObjVertices(ObjWriter& writer, const XModelSurfs* mod
             const auto& v = surface.verts0[vertexIndex];
             vec2_t uv;
             vec3_t normalVec;
-            vec4_t color;
 
             Common::Vec2UnpackTexCoords(v.texCoord, &uv);
             Common::Vec3UnpackUnitVec(v.normal, &normalVec);
-            Common::Vec4UnpackGfxColor(v.color, &color);
 
             ObjVertex objVertex{};
             ObjNormal objNormal{};
@@ -254,7 +253,7 @@ void AssetDumperXModel::AddXModelMaterials(AbstractXModelWriter& writer, Distinc
             for (auto textureIndex = 0; textureIndex < material->textureCount; textureIndex++)
             {
                 const auto* textureTableEntry = &material->textureTable[textureIndex];
-                if (textureTableEntry->semantic == TS_COLOR_MAP && textureTableEntry->u.image)
+                if (textureTableEntry->semantic == TS_COLOR_MAP && textureTableEntry->nameStart == 'c' && textureTableEntry->nameEnd == 'p' && textureTableEntry->u.image)
                 {
                     xMaterial.colorMapName = textureTableEntry->u.image->name;
                     break;
