@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <limits>
+#include <tuple>
 
 bool operator==(const ObjVertex& lhs, const ObjVertex& rhs)
 {

@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <limits>
+#include <tuple>
 
 void XModelMaterial::ApplyDefaults()
 {
