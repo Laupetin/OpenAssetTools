@@ -195,19 +195,24 @@ void AssetDumperXModel::AddBonesToWriter(const AssetDumpingContext& context, Abs
         bone.scale[1] = 1.0f;
         bone.scale[2] = 1.0f;
 
+        bone.globalOffset[0] = model->baseMat[boneNum].trans[0];
+        bone.globalOffset[1] = model->baseMat[boneNum].trans[1];
+        bone.globalOffset[2] = model->baseMat[boneNum].trans[2];
+        bone.globalRotation = Quaternion32(model->baseMat[boneNum].quat[0], model->baseMat[boneNum].quat[1], model->baseMat[boneNum].quat[2], model->baseMat[boneNum].quat[3]);
+
         if (boneNum < model->numRootBones)
         {
-            bone.offset[0] = 0;
-            bone.offset[1] = 0;
-            bone.offset[2] = 0;
-            bone.rotation = Quaternion32(0, 0, 0, 1);
+            bone.localOffset[0] = 0;
+            bone.localOffset[1] = 0;
+            bone.localOffset[2] = 0;
+            bone.localRotation = Quaternion32(0, 0, 0, 1);
         }
         else
         {
-            bone.offset[0] = model->trans[boneNum - model->numRootBones][0];
-            bone.offset[1] = model->trans[boneNum - model->numRootBones][1];
-            bone.offset[2] = model->trans[boneNum - model->numRootBones][2];
-            bone.rotation = Quaternion32(
+            bone.localOffset[0] = model->trans[boneNum - model->numRootBones][0];
+            bone.localOffset[1] = model->trans[boneNum - model->numRootBones][1];
+            bone.localOffset[2] = model->trans[boneNum - model->numRootBones][2];
+            bone.localRotation = Quaternion32(
                 QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][0]),
                 QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][1]),
                 QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][2]),
@@ -262,6 +267,7 @@ void AssetDumperXModel::AddVerticesToWriter(AbstractXModelWriter& writer, const 
     for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
     {
         const auto& surface = modelSurfs->surfs[surfIndex];
+
         for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
         {
             const auto& v = surface.verts0[vertexIndex];
@@ -286,7 +292,194 @@ void AssetDumperXModel::AddVerticesToWriter(AbstractXModelWriter& writer, const 
             vertex.color[3] = color[3];
             vertex.uv[0] = uv[0];
             vertex.uv[1] = uv[1];
+
             writer.AddVertex(vertex);
+        }
+    }
+}
+
+void AssetDumperXModel::AllocateBoneWeights(const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
+{
+    weightCollection.totalWeightCount = 0u;
+    for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
+    {
+        const auto& surface = modelSurfs->surfs[surfIndex];
+
+        if (surface.vertList)
+        {
+            weightCollection.totalWeightCount += surface.vertListCount;
+        }
+
+        if (surface.vertInfo.vertsBlend)
+        {
+            weightCollection.totalWeightCount += surface.vertInfo.vertCount[0] * 1;
+            weightCollection.totalWeightCount += surface.vertInfo.vertCount[1] * 2;
+            weightCollection.totalWeightCount += surface.vertInfo.vertCount[2] * 3;
+            weightCollection.totalWeightCount += surface.vertInfo.vertCount[3] * 4;
+        }
+    }
+
+    weightCollection.weights = std::make_unique<XModelBoneWeight[]>(weightCollection.totalWeightCount);
+}
+
+void AssetDumperXModel::AddVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
+{
+    size_t weightOffset = 0u;
+
+    for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
+    {
+        const auto& surface = modelSurfs->surfs[surfIndex];
+        auto handledVertices = 0u;
+
+        if (surface.vertList)
+        {
+            for (auto vertListIndex = 0u; vertListIndex < surface.vertListCount; vertListIndex++)
+            {
+                const auto& vertList = surface.vertList[vertListIndex];
+                const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
+
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    static_cast<int>(vertList.boneOffset / sizeof(DObjSkelMat)),
+                    1.0f
+                };
+
+                for (auto vertListVertexOffset = 0u; vertListVertexOffset < vertList.vertCount; vertListVertexOffset++)
+                {
+                    writer.AddVertexBoneWeights(XModelVertexBoneWeights{
+                        boneWeightOffset,
+                        1
+                    });
+                }
+                handledVertices += vertList.vertCount;
+            }
+        }
+
+        auto vertsBlendOffset = 0u;
+        if (surface.vertInfo.vertsBlend)
+        {
+            // 1 bone weight
+            for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[0]; vertIndex++)
+            {
+                const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
+                const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex0,
+                    1.0f
+                };
+
+                vertsBlendOffset += 1;
+
+                writer.AddVertexBoneWeights(XModelVertexBoneWeights{
+                    boneWeightOffset,
+                    1
+                });
+            }
+
+            // 2 bone weights
+            for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[1]; vertIndex++)
+            {
+                const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
+                const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
+                const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
+                const auto boneWeight1 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
+                const auto boneWeight0 = 1.0f - boneWeight1;
+
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex0,
+                    boneWeight0
+                };
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex1,
+                    boneWeight1
+                };
+
+                vertsBlendOffset += 3;
+
+                writer.AddVertexBoneWeights(XModelVertexBoneWeights{
+                    boneWeightOffset,
+                    2
+                });
+            }
+
+            // 3 bone weights
+            for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[2]; vertIndex++)
+            {
+                const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
+                const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
+                const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
+                const auto boneWeight1 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
+                const auto boneIndex2 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat));
+                const auto boneWeight2 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
+                const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2;
+
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex0,
+                    boneWeight0
+                };
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex1,
+                    boneWeight1
+                };
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex2,
+                    boneWeight2
+                };
+
+                vertsBlendOffset += 5;
+
+                writer.AddVertexBoneWeights(XModelVertexBoneWeights{
+                    boneWeightOffset,
+                    3
+                });
+            }
+
+            // 4 bone weights
+            for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[3]; vertIndex++)
+            {
+                const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
+                const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
+                const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
+                const auto boneWeight1 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
+                const auto boneIndex2 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat));
+                const auto boneWeight2 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
+                const auto boneIndex3 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 5] / sizeof(DObjSkelMat));
+                const auto boneWeight3 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 6]);
+                const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2 - boneWeight3;
+
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex0,
+                    boneWeight0
+                };
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex1,
+                    boneWeight1
+                };
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex2,
+                    boneWeight2
+                };
+                weightCollection.weights[weightOffset++] = XModelBoneWeight{
+                    boneIndex3,
+                    boneWeight3
+                };
+
+                vertsBlendOffset += 7;
+
+                writer.AddVertexBoneWeights(XModelVertexBoneWeights{
+                    boneWeightOffset,
+                    4
+                });
+            }
+
+            handledVertices += surface.vertInfo.vertCount[0] + surface.vertInfo.vertCount[1] + surface.vertInfo.vertCount[2] + surface.vertInfo.vertCount[3];
+        }
+
+        for (; handledVertices < surface.vertCount; handledVertices++)
+        {
+            writer.AddVertexBoneWeights(XModelVertexBoneWeights{
+                nullptr,
+                0
+            });
         }
     }
 }
@@ -327,11 +520,14 @@ void AssetDumperXModel::DumpXModelExportLod(const AssetDumpingContext& context, 
 
     const auto writer = XModelExportWriter::CreateWriterForVersion6(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
     DistinctMapper<Material*> materialMapper(model->numsurfs);
+    XModelVertexBoneWeightCollection boneWeightCollection;
+    AllocateBoneWeights(modelSurfs, boneWeightCollection);
 
     AddBonesToWriter(context, *writer, model);
     AddMaterialsToWriter(*writer, materialMapper, model);
     AddObjectsToWriter(*writer, modelSurfs);
     AddVerticesToWriter(*writer, modelSurfs);
+    AddVertexBoneWeights(*writer, modelSurfs, boneWeightCollection);
     AddFacesToWriter(*writer, materialMapper, modelSurfs, model->lodInfo[lod].surfIndex);
 
     writer->Write(*assetFile);

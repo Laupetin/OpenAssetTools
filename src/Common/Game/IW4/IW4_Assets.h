@@ -384,6 +384,12 @@ namespace IW4
         XAnimDeltaPart* deltaPart;
     };
 
+    struct DObjSkelMat
+    {
+        float axis[3][4];
+        float origin[4];
+    };
+
     struct XSurfaceVertexInfo
     {
         int16_t vertCount[4];

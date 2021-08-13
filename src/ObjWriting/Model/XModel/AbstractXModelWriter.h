@@ -11,6 +11,7 @@ protected:
     std::vector<XModelBone> m_bones;
     std::vector<XModelMaterial> m_materials;
     std::vector<XModelVertex> m_vertices;
+    std::vector<XModelVertexBoneWeights> m_vertex_bone_weights;
     std::vector<XModelFace> m_faces;
 
 public:
@@ -20,5 +21,6 @@ public:
     void AddBone(XModelBone bone);
     void AddMaterial(XModelMaterial material);
     void AddVertex(XModelVertex vertex);
+    void AddVertexBoneWeights(XModelVertexBoneWeights vertexBoneWeights);
     void AddFace(XModelFace face);
 };

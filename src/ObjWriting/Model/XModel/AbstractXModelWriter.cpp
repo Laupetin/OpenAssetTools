@@ -23,6 +23,11 @@ void AbstractXModelWriter::AddVertex(XModelVertex vertex)
     m_vertices.emplace_back(vertex);
 }
 
+void AbstractXModelWriter::AddVertexBoneWeights(XModelVertexBoneWeights vertexBoneWeights)
+{
+    m_vertex_bone_weights.emplace_back(vertexBoneWeights);
+}
+
 void AbstractXModelWriter::AddFace(XModelFace face)
 {
     m_faces.emplace_back(face);

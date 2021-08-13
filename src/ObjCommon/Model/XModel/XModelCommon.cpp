@@ -1,5 +1,8 @@
 #include "XModelCommon.h"
 
+#include <cmath>
+#include <limits>
+
 void XModelMaterial::ApplyDefaults()
 {
     // Phong = Color, Bump, Spec, CosinePower
@@ -41,4 +44,57 @@ void XModelMaterial::ApplyDefaults()
     blinn[0] = -1;
     blinn[1] = -1;
     phong = -1;
+}
+
+bool operator==(const VertexMergerPos& lhs, const VertexMergerPos& rhs)
+{
+    const auto coordinatesMatch = std::fabs(lhs.x - rhs.x) < std::numeric_limits<float>::epsilon()
+        && std::fabs(lhs.y - rhs.y) < std::numeric_limits<float>::epsilon()
+        && std::fabs(lhs.z - rhs.z) < std::numeric_limits<float>::epsilon();
+
+    if (!coordinatesMatch || lhs.weightCount != rhs.weightCount)
+        return false;
+
+    for (auto weightIndex = 0u; weightIndex < lhs.weightCount; weightIndex++)
+    {
+        if (lhs.weights[weightIndex].boneIndex != rhs.weights[weightIndex].boneIndex
+            || std::fabs(lhs.weights[weightIndex].weight - rhs.weights[weightIndex].weight) >= std::numeric_limits<float>::epsilon())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool operator!=(const VertexMergerPos& lhs, VertexMergerPos& rhs)
+{
+    return !(lhs == rhs);
+}
+
+bool operator<(const VertexMergerPos& lhs, const VertexMergerPos& rhs)
+{
+    const auto t0 = std::tie(lhs.x, lhs.y, lhs.z, rhs.weightCount);
+    const auto t1 = std::tie(rhs.x, rhs.y, rhs.z, rhs.weightCount);
+    if (t0 < t1)
+        return true;
+
+    if (!(t0 == t1))
+        return false;
+
+    for (auto weightIndex = 0u; weightIndex < lhs.weightCount; weightIndex++)
+    {
+        const auto& lhsWeight = lhs.weights[weightIndex];
+        const auto& rhsWeight = rhs.weights[weightIndex];
+
+        const auto t2 = std::tie(lhsWeight.boneIndex, lhsWeight.weight);
+        const auto t3 = std::tie(rhsWeight.boneIndex, rhsWeight.weight);
+        if (t2 < t3)
+            return true;
+
+        if (!(t2 == t3))
+            return false;
+    }
+
+    return false;
 }

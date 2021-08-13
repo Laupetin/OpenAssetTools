@@ -1,7 +1,9 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
+#include "Utils/DistinctMapper.h"
 #include "Math/Quaternion.h"
 
 struct XModelObject
@@ -14,8 +16,28 @@ struct XModelBone
     std::string name;
     int parentIndex;
     float scale[3];
-    float offset[3];
-    Quaternion32 rotation;
+    float globalOffset[3];
+    float localOffset[3];
+    Quaternion32 globalRotation;
+    Quaternion32 localRotation;
+};
+
+struct XModelBoneWeight
+{
+    int boneIndex;
+    float weight;
+};
+
+struct XModelVertexBoneWeightCollection
+{
+    std::unique_ptr<XModelBoneWeight[]> weights;
+    size_t totalWeightCount;
+};
+
+struct XModelVertexBoneWeights
+{
+    const XModelBoneWeight* weights;
+    size_t weightCount;
 };
 
 struct XModelVertex
@@ -64,3 +86,18 @@ struct XModelMaterial
 
     void ApplyDefaults();
 };
+
+struct VertexMergerPos
+{
+    float x;
+    float y;
+    float z;
+    const XModelBoneWeight* weights;
+    size_t weightCount;
+
+    friend bool operator==(const VertexMergerPos& lhs, const VertexMergerPos& rhs);
+    friend bool operator!=(const VertexMergerPos& lhs, const VertexMergerPos& rhs);
+    friend bool operator<(const VertexMergerPos& lhs, const VertexMergerPos& rhs);
+};
+
+typedef DistinctMapper<VertexMergerPos> VertexMerger;

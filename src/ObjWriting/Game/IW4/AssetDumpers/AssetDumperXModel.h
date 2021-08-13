@@ -20,6 +20,8 @@ namespace IW4
         static void AddMaterialsToWriter(AbstractXModelWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model);
         static void AddObjectsToWriter(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs);
         static void AddVerticesToWriter(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs);
+        static void AllocateBoneWeights(const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection);
+        static void AddVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection);
         static void AddFacesToWriter(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, int baseSurfaceIndex);
         static void DumpXModelExportLod(const AssetDumpingContext& context, XAssetInfo<XModel>* asset, const unsigned lod);
         static void DumpXModelExport(const AssetDumpingContext& context, XAssetInfo<XModel>* asset);

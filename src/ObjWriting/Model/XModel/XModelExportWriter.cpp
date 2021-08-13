@@ -1,8 +1,8 @@
 #include "XModelExportWriter.h"
 
 #include <iomanip>
+#include <iostream>
 
-#include "Model/VertexMerger.h"
 #include "Math/Quaternion.h"
 
 class XModelExportWriterBase : public XModelExportWriter
@@ -16,13 +16,27 @@ protected:
     void PrepareVertexMerger()
     {
         m_vertex_merger = VertexMerger(m_vertices.size());
+
+        auto vertexOffset = 0u;
         for (const auto& vertex : m_vertices)
         {
+            XModelVertexBoneWeights weights{
+                nullptr,
+                0
+            };
+
+            if(vertexOffset < m_vertex_bone_weights.size())
+                weights = m_vertex_bone_weights[vertexOffset];
+
             m_vertex_merger.Add(VertexMergerPos{
                 vertex.coordinates[0],
                 vertex.coordinates[1],
-                vertex.coordinates[2]
+                vertex.coordinates[2],
+                weights.weights,
+                weights.weightCount
             });
+
+            vertexOffset++;
         }
     }
 
@@ -58,16 +72,16 @@ protected:
         {
             stream << "BONE " << boneNum << "\n";
             stream << "OFFSET ";
-            stream << std::setprecision(6) << std::fixed << bone.offset[0]
-                << ", " << std::setprecision(6) << std::fixed << bone.offset[1]
-                << ", " << std::setprecision(6) << std::fixed << bone.offset[2] << "\n";
+            stream << std::setprecision(6) << std::fixed << bone.globalOffset[0]
+                << ", " << std::setprecision(6) << std::fixed << bone.globalOffset[1]
+                << ", " << std::setprecision(6) << std::fixed << bone.globalOffset[2] << "\n";
 
             stream << "SCALE ";
             stream << std::setprecision(6) << std::fixed << bone.scale[0]
                 << ", " << std::setprecision(6) << std::fixed << bone.scale[1]
                 << ", " << std::setprecision(6) << std::fixed << bone.scale[2] << "\n";
 
-            const Matrix32 mat = bone.rotation.ToMatrix();
+            const Matrix32 mat = bone.globalRotation.ToMatrix();
             stream << "X " << std::setprecision(6) << std::fixed << mat.m_data[0][0]
                 << ", " << std::setprecision(6) << std::fixed << mat.m_data[1][0]
                 << ", " << std::setprecision(6) << std::fixed << mat.m_data[2][0] << "\n";
@@ -103,8 +117,13 @@ class XModelExportWriter6 final : public XModelExportWriterBase
             stream << std::setprecision(6) << std::fixed << vertexPos.x
                 << ", " << std::setprecision(6) << std::fixed << vertexPos.y
                 << ", " << std::setprecision(6) << std::fixed << vertexPos.z << "\n";
-            stream << "BONES 1\n"; // TODO: FIXME with bone weights
-            stream << "BONE 0 1.000000\n"; // TODO: FIXME with bone weights
+            stream << "BONES " << vertexPos.weightCount << "\n";
+
+            for (auto weightIndex = 0u; weightIndex < vertexPos.weightCount; weightIndex++)
+            {
+                stream << "BONE " << vertexPos.weights[weightIndex].boneIndex
+                    << " " << std::setprecision(6) << std::fixed << vertexPos.weights[weightIndex].weight << "\n";
+            }
             stream << "\n";
             vertexNum++;
         }
@@ -166,7 +185,8 @@ class XModelExportWriter6 final : public XModelExportWriterBase
         size_t materialNum = 0u;
         for (const auto& material : m_materials)
         {
-            stream << "MATERIAL " << materialNum << " \"" << material.name << "\" \"" << material.materialTypeName << "\" \"" << material.colorMapName << "\"\n";
+            const auto colorMapPath = "../images/" + material.colorMapName + ".dds";
+            stream << "MATERIAL " << materialNum << " \"" << material.name << "\" \"" << material.materialTypeName << "\" \"" << colorMapPath << "\"\n";
             stream << "COLOR " << std::setprecision(6) << std::fixed << material.color[0]
                 << " " << std::setprecision(6) << std::fixed << material.color[1]
                 << " " << std::setprecision(6) << std::fixed << material.color[2]
