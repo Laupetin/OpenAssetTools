@@ -179,6 +179,7 @@ namespace IW5
 
     typedef float vec2_t[2];
     typedef float vec3_t[3];
+    typedef float vec4_t[4];
 
     typedef tdef_align(16) uint16_t r_index16_t;
     typedef tdef_align(16) char raw_byte16;
@@ -422,6 +423,12 @@ namespace IW5
         XAnimDeltaPart* deltaPart;
     };
 
+    struct DObjSkelMat
+    {
+        float axis[3][4];
+        float origin[4];
+    };
+
     struct XSurfaceVertexInfo
     {
         short vertCount[4];
@@ -450,8 +457,8 @@ namespace IW5
 
     union GfxColor
     {
-        unsigned char array[4];
         unsigned int packed;
+        unsigned char array[4];
     };
 
     struct GfxQuantizedVertex
@@ -526,9 +533,9 @@ namespace IW5
         unsigned short vertCount;
         unsigned short triCount;
         char zoneHandle;
-        float quantizeScale;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
+        float quantizeScale;
         r_index16_t(*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxVertexUnion0 verts0;
