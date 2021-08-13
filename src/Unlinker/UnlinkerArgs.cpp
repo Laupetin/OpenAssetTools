@@ -162,7 +162,7 @@ bool UnlinkerArgs::SetModelDumpingMode()
 
     if (specifiedValue == "obj")
     {
-        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT;
+        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ;
         return true;
     }
 

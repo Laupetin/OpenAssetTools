@@ -1,8 +1,6 @@
 #include "AssetDumperXModel.h"
 
 #include <cassert>
-#include <set>
-#include <iomanip>
 
 #include "ObjWriting.h"
 #include "Game/IW4/CommonIW4.h"
@@ -18,151 +16,168 @@ bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
     return !asset->m_name.empty() && asset->m_name[0] != ',';
 }
 
-void AssetDumperXModel::DumpObjMatMaterial(AssetDumpingContext& context, const Material* material, std::ostream& stream)
+void AssetDumperXModel::AddObjMaterials(ObjWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model)
 {
-    stream << "\n";
-    stream << "newmtl " << material->info.name << "\n";
+    if (!model->materialHandles)
+        return;
 
-    GfxImage* colorMap = nullptr;
-    GfxImage* normalMap = nullptr;
-    GfxImage* specularMap = nullptr;
-
-    for (auto i = 0u; i < material->textureCount; i++)
+    for (auto surfIndex = 0u; surfIndex < model->numsurfs; surfIndex++)
     {
-        const auto& texture = material->textureTable[i];
+        Material* material = model->materialHandles[surfIndex];
+        if (!materialMapper.Add(material))
+            continue;
 
-        switch (texture.semantic)
+        MtlMaterial mtl;
+        mtl.materialName = std::string(material->info.name);
+
+        GfxImage* colorMap = nullptr;
+        GfxImage* normalMap = nullptr;
+        GfxImage* specularMap = nullptr;
+
+        for (auto i = 0u; i < material->textureCount; i++)
         {
-        case TS_COLOR_MAP:
-            colorMap = texture.u.image;
-            break;
+            const auto& texture = material->textureTable[i];
 
-        case TS_NORMAL_MAP:
-            normalMap = texture.u.image;
-            break;
+            switch (texture.semantic)
+            {
+            case TS_COLOR_MAP:
+                colorMap = texture.u.image;
+                break;
 
-        case TS_SPECULAR_MAP:
-            specularMap = texture.u.image;
-            break;
+            // Disabled due to looking weird in Blender
+            // case TS_NORMAL_MAP:
+            //    normalMap = texture.u.image;
+            //    break;
 
-        default:
-            break;
+            case TS_SPECULAR_MAP:
+                specularMap = texture.u.image;
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        if (colorMap != nullptr)
+            mtl.colorMapName = colorMap->name;
+        if (normalMap != nullptr)
+            mtl.normalMapName = normalMap->name;
+        if (specularMap != nullptr)
+            mtl.specularMapName = specularMap->name;
+
+        writer.AddMaterial(std::move(mtl));
+    }
+}
+
+void AssetDumperXModel::AddObjObjects(ObjWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, int baseSurfaceIndex)
+{
+    for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
+    {
+        ObjObject object;
+        object.name = "surf" + std::to_string(surfIndex);
+        object.materialIndex = static_cast<int>(materialMapper.GetDistinctPositionByInputPosition(surfIndex + baseSurfaceIndex));
+
+        writer.AddObject(std::move(object));
+    }
+}
+
+void AssetDumperXModel::AddObjVertices(ObjWriter& writer, const XModelSurfs* modelSurfs)
+{
+    for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
+    {
+        const auto& surface = modelSurfs->surfs[surfIndex];
+
+        for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
+        {
+            const auto& v = surface.verts0[vertexIndex];
+            vec2_t uv;
+            vec3_t normalVec;
+            vec4_t color;
+
+            Common::Vec2UnpackTexCoords(v.texCoord, &uv);
+            Common::Vec3UnpackUnitVec(v.normal, &normalVec);
+            Common::Vec4UnpackGfxColor(v.color, &color);
+
+            ObjVertex objVertex{};
+            ObjNormal objNormal{};
+            ObjUv objUv{};
+            objVertex.coordinates[0] = v.xyz[0];
+            objVertex.coordinates[1] = v.xyz[2];
+            objVertex.coordinates[2] = -v.xyz[1];
+            objNormal.normal[0] = normalVec[0];
+            objNormal.normal[1] = normalVec[2];
+            objNormal.normal[2] = -normalVec[1];
+            objUv.uv[0] = uv[0];
+            objUv.uv[1] = 1.0f - uv[1];
+
+            writer.AddVertex(static_cast<int>(surfIndex), objVertex);
+            writer.AddNormal(static_cast<int>(surfIndex), objNormal);
+            writer.AddUv(static_cast<int>(surfIndex), objUv);
         }
     }
+}
 
-    if (colorMap)
-        stream << "map_Kd " << colorMap->name << ".dds\n";
+void AssetDumperXModel::AddObjFaces(ObjWriter& writer, const XModelSurfs* modelSurfs)
+{
+    for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
+    {
+        const auto& surface = modelSurfs->surfs[surfIndex];
+        for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
+        {
+            const auto& tri = surface.triIndices[triIndex];
 
-    if (normalMap)
-        stream << "map_bump " << normalMap->name << ".dds\n";
-
-    if (specularMap)
-        stream << "map_Ks " << specularMap->name << ".dds\n";
+            ObjFace face{};
+            face.vertexIndex[0] = tri[2] + surface.baseVertIndex;
+            face.vertexIndex[1] = tri[1] + surface.baseVertIndex;
+            face.vertexIndex[2] = tri[0] + surface.baseVertIndex;
+            face.normalIndex[0] = face.vertexIndex[0];
+            face.normalIndex[1] = face.vertexIndex[1];
+            face.normalIndex[2] = face.vertexIndex[2];
+            face.uvIndex[0] = face.vertexIndex[0];
+            face.uvIndex[1] = face.vertexIndex[1];
+            face.uvIndex[2] = face.vertexIndex[2];
+            writer.AddFace(static_cast<int>(surfIndex), face);
+        }
+    }
 }
 
 void AssetDumperXModel::DumpObjMat(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
     const auto* model = asset->Asset();
-    const auto matFile = context.OpenAssetFile("xmodelsurfs/" + std::string(model->name) + ".mtl");
+    const auto matFile = context.OpenAssetFile("model_export/" + std::string(model->name) + ".mtl");
 
     if (!matFile)
         return;
 
-    auto& stream = *matFile;
-    stream << "# OpenAssetTools MAT File (IW4)\n";
+    ObjWriter writer(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+    DistinctMapper<Material*> materialMapper(model->numsurfs);
 
-    if (model->numsurfs == 0 || model->materialHandles == nullptr)
-        return;
-
-    std::set<Material*> uniqueMaterials;
-    for (auto i = 0u; i < model->numsurfs; i++)
-    {
-        if (model->materialHandles[i] != nullptr)
-            uniqueMaterials.emplace(model->materialHandles[i]);
-    }
-
-    stream << "# Material count: " << uniqueMaterials.size() << "\n";
-
-    for (const auto* material : uniqueMaterials)
-    {
-        DumpObjMatMaterial(context, material, stream);
-    }
+    AddObjMaterials(writer, materialMapper, model);
+    writer.WriteMtl(*matFile);
 }
 
 void AssetDumperXModel::DumpObjLod(AssetDumpingContext& context, XAssetInfo<XModel>* asset, const unsigned lod)
 {
     const auto* model = asset->Asset();
     const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
-    const auto assetFile = context.OpenAssetFile("xmodelsurfs/" + std::string(modelSurfs->name) + ".obj");
+
+    if (modelSurfs->name[0] == ',' || modelSurfs->surfs == nullptr)
+        return;
+
+    const auto assetFile = context.OpenAssetFile("model_export/" + std::string(modelSurfs->name) + ".obj");
 
     if (!assetFile)
         return;
 
-    auto& stream = *assetFile;
-    stream << "# OpenAssetTools OBJ File (IW4)\n";
+    ObjWriter writer(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+    DistinctMapper<Material*> materialMapper(model->numsurfs);
 
-    stream << "mtllib " << model->name << ".mtl\n";
+    AddObjMaterials(writer, materialMapper, model);
+    AddObjObjects(writer, materialMapper, modelSurfs, model->lodInfo[lod].surfIndex);
+    AddObjVertices(writer, modelSurfs);
+    AddObjFaces(writer, modelSurfs);
 
-    if (model->lodInfo[lod].modelSurfs == nullptr || model->lodInfo[lod].modelSurfs->surfs == nullptr)
-        return;
-
-    for (auto i = 0; i < model->lodInfo[lod].numsurfs; i++)
-    {
-        const auto* surf = &modelSurfs->surfs[i];
-
-        stream << "o surf" << i << "\n";
-
-        for (auto vi = 0; vi < surf->vertCount; vi++)
-        {
-            const auto* vertex = &surf->verts0[vi];
-            stream << "v " << vertex->xyz[0] << " " << vertex->xyz[2] << " " << -vertex->xyz[1] << "\n";
-        }
-
-        stream << "\n";
-
-        for (auto vi = 0; vi < surf->vertCount; vi++)
-        {
-            const auto* vertex = &surf->verts0[vi];
-            vec2_t texCoords;
-            Common::Vec2UnpackTexCoords(vertex->texCoord, &texCoords);
-
-            stream << "vt " << texCoords[0] << " " << (1.0f - texCoords[1]) << "\n";
-        }
-
-        stream << "\n";
-
-        for (auto vi = 0; vi < surf->vertCount; vi++)
-        {
-            const auto* vertex = &surf->verts0[vi];
-            vec3_t normalVec;
-            Common::Vec3UnpackUnitVec(vertex->normal, &normalVec);
-
-            stream << "vn " << normalVec[0] << " " << normalVec[2] << " " << -normalVec[1] << "\n";
-        }
-
-        stream << "\n";
-
-        if (model->numsurfs > i && model->materialHandles && model->materialHandles[i])
-        {
-            stream << "usemtl " << model->materialHandles[i]->info.name << "\n";
-        }
-
-        stream << "\n";
-
-        for (auto ti = 0; ti < surf->triCount; ti++)
-        {
-            const auto* indices = reinterpret_cast<r_index16_t*>(surf->triIndices);
-
-            const auto i0 = surf->baseVertIndex + indices[ti * 3 + 0] + 1;
-            const auto i1 = surf->baseVertIndex + indices[ti * 3 + 1] + 1;
-            const auto i2 = surf->baseVertIndex + indices[ti * 3 + 2] + 1;
-
-            stream << "f " << i2 << "/" << i2 << "/" << i2
-                << " " << i1 << "/" << i1 << "/" << i1
-                << " " << i0 << "/" << i0 << "/" << i0
-                << "\n";
-        }
-    }
+    writer.WriteObj(*assetFile, std::string(model->name) + ".mtl");
 }
 
 void AssetDumperXModel::DumpObj(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
@@ -176,7 +191,7 @@ void AssetDumperXModel::DumpObj(AssetDumpingContext& context, XAssetInfo<XModel>
     }
 }
 
-void AssetDumperXModel::AddBonesToWriter(const AssetDumpingContext& context, AbstractXModelWriter& writer, const XModel* model)
+void AssetDumperXModel::AddXModelBones(const AssetDumpingContext& context, AbstractXModelWriter& writer, const XModel* model)
 {
     for (auto boneNum = 0u; boneNum < model->numBones; boneNum++)
     {
@@ -224,7 +239,7 @@ void AssetDumperXModel::AddBonesToWriter(const AssetDumpingContext& context, Abs
     }
 }
 
-void AssetDumperXModel::AddMaterialsToWriter(AbstractXModelWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model)
+void AssetDumperXModel::AddXModelMaterials(AbstractXModelWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model)
 {
     for (auto surfaceMaterialNum = 0; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
     {
@@ -251,7 +266,7 @@ void AssetDumperXModel::AddMaterialsToWriter(AbstractXModelWriter& writer, Disti
     }
 }
 
-void AssetDumperXModel::AddObjectsToWriter(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
+void AssetDumperXModel::AddXModelObjects(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
 {
     for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
     {
@@ -262,7 +277,7 @@ void AssetDumperXModel::AddObjectsToWriter(AbstractXModelWriter& writer, const X
     }
 }
 
-void AssetDumperXModel::AddVerticesToWriter(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
+void AssetDumperXModel::AddXModelVertices(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
 {
     for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
     {
@@ -298,7 +313,7 @@ void AssetDumperXModel::AddVerticesToWriter(AbstractXModelWriter& writer, const 
     }
 }
 
-void AssetDumperXModel::AllocateBoneWeights(const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
+void AssetDumperXModel::AllocateXModelBoneWeights(const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
 {
     weightCollection.totalWeightCount = 0u;
     for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
@@ -322,7 +337,7 @@ void AssetDumperXModel::AllocateBoneWeights(const XModelSurfs* modelSurfs, XMode
     weightCollection.weights = std::make_unique<XModelBoneWeight[]>(weightCollection.totalWeightCount);
 }
 
-void AssetDumperXModel::AddVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
+void AssetDumperXModel::AddXModelVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
 {
     size_t weightOffset = 0u;
 
@@ -484,8 +499,8 @@ void AssetDumperXModel::AddVertexBoneWeights(AbstractXModelWriter& writer, const
     }
 }
 
-void AssetDumperXModel::AddFacesToWriter(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs,
-                                         const int baseSurfaceIndex)
+void AssetDumperXModel::AddXModelFaces(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs,
+                                       const int baseSurfaceIndex)
 {
     for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
     {
@@ -521,14 +536,14 @@ void AssetDumperXModel::DumpXModelExportLod(const AssetDumpingContext& context, 
     const auto writer = XModelExportWriter::CreateWriterForVersion6(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
     DistinctMapper<Material*> materialMapper(model->numsurfs);
     XModelVertexBoneWeightCollection boneWeightCollection;
-    AllocateBoneWeights(modelSurfs, boneWeightCollection);
+    AllocateXModelBoneWeights(modelSurfs, boneWeightCollection);
 
-    AddBonesToWriter(context, *writer, model);
-    AddMaterialsToWriter(*writer, materialMapper, model);
-    AddObjectsToWriter(*writer, modelSurfs);
-    AddVerticesToWriter(*writer, modelSurfs);
-    AddVertexBoneWeights(*writer, modelSurfs, boneWeightCollection);
-    AddFacesToWriter(*writer, materialMapper, modelSurfs, model->lodInfo[lod].surfIndex);
+    AddXModelBones(context, *writer, model);
+    AddXModelMaterials(*writer, materialMapper, model);
+    AddXModelObjects(*writer, modelSurfs);
+    AddXModelVertices(*writer, modelSurfs);
+    AddXModelVertexBoneWeights(*writer, modelSurfs, boneWeightCollection);
+    AddXModelFaces(*writer, materialMapper, modelSurfs, model->lodInfo[lod].surfIndex);
 
     writer->Write(*assetFile);
 }

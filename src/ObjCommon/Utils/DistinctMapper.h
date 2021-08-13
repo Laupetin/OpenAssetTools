@@ -5,59 +5,6 @@
 
 #include "Utils/ClassUtils.h"
 
-/*
-template <typename T>
-class Deduplicator
-{
-public:
-    Deduplicator()
-        : m_current_entry_index(0)
-    {
-    }
-
-    explicit Deduplicator(const size_t totalEntryCount)
-        : m_current_entry_index(0)
-    {
-        m_position_lookup.reserve(totalEntryCount);
-    }
-
-    bool AddEntry(T pos)
-    {
-        const auto mapEntry = m_index_map.find(pos);
-        if (mapEntry == m_index_map.end())
-        {
-            m_position_lookup.push_back(m_current_entry_index);
-            m_unique_entry_position_indices.push_back(m_current_entry_index);
-            m_index_map.emplace(std::make_pair(pos, m_current_entry_index));
-            m_current_entry_index++;
-            return true;
-        }
-
-        m_position_lookup.push_back(mapEntry->second);
-        m_current_entry_index++;
-        return false;
-    }
-
-    size_t GetUniqueIndexForIndex(const size_t entryIndex)
-    {
-        if (entryIndex >= m_position_lookup.size())
-            return 0;
-
-        return m_position_lookup[entryIndex];
-    }
-
-    _NODISCARD const std::vector<size_t>& GetUniqueEntryIndices() const
-    {
-        return m_unique_entry_position_indices;
-    }
-
-private:
-    size_t m_current_entry_index;
-    std::vector<size_t> m_unique_entry_position_indices;
-    std::vector<size_t> m_position_lookup;
-    std::map<T, int> m_index_map;
-};*/
-
 template <typename T>
 class DistinctMapper
 {
@@ -121,6 +68,16 @@ public:
     _NODISCARD const std::vector<T>& GetDistinctValues() const
     {
         return m_distinct_values;
+    }
+
+    _NODISCARD size_t GetInputValueCount() const
+    {
+        return m_input_entry_index;
+    }
+
+    _NODISCARD size_t GetDistinctValueCount() const
+    {
+        return m_distinct_entry_index;
     }
 
 private:
