@@ -1,6 +1,9 @@
 #include "Pack.h"
 
+#include <algorithm>
 #include <cassert>
+
+#include "HalfFloat.h"
 
 union PackUtil32
 {
@@ -13,8 +16,8 @@ union PackUtil32
 
 uint32_t Pack32::Vec2PackTexCoords(const float* in)
 {
-    // TODO
-    return 0;
+    return static_cast<uint32_t>(HalfFloat::ToHalf(in[0])) << 16
+        | HalfFloat::ToHalf(in[1]);
 }
 
 uint32_t Pack32::Vec3PackUnitVec(const float* in)
@@ -23,26 +26,23 @@ uint32_t Pack32::Vec3PackUnitVec(const float* in)
     return 0;
 }
 
+uint32_t Pack32::Vec4PackGfxColor(const float* in)
+{
+    return static_cast<uint8_t>(std::clamp(in[0], 0.0f, 1.0f) * 255.0f)
+        | static_cast<uint8_t>(std::clamp(in[1], 0.0f, 1.0f) * 255.0f) << 8
+        | static_cast<uint8_t>(std::clamp(in[2], 0.0f, 1.0f) * 255.0f) << 16
+        | static_cast<uint8_t>(std::clamp(in[3], 0.0f, 1.0f) * 255.0f) << 24;
+}
+
 void Pack32::Vec2UnpackTexCoords(const uint32_t in, float* out)
 {
     PackUtil32 packTemp{};
 
-    const auto inHiDw = (in >> 16) & UINT16_MAX;
-    const auto inLoDw = in & UINT16_MAX;
+    const auto inHiDw = static_cast<half_float_t>((in >> 16) & UINT16_MAX);
+    const auto inLoDw = static_cast<half_float_t>(in & UINT16_MAX);
 
-    if (inHiDw)
-        packTemp.u = ((inHiDw << 16) & 0x80000000) | (((((inHiDw << 14) & 0xFFFC000)
-            - (~(inHiDw << 14) & 0x10000000)) ^ 0x80000000) >> 1);
-    else
-        packTemp.f = 0.0f;
-    out[0] = packTemp.f;
-
-    if (inLoDw)
-        packTemp.u = ((inLoDw << 16) & 0x80000000) | (((((inLoDw << 14) & 0xFFFC000)
-            - (~(inLoDw << 14) & 0x10000000)) ^ 0x80000000) >> 1);
-    else
-        packTemp.f = 0.0f;
-    out[1] = packTemp.f;
+    out[0] = HalfFloat::ToFloat(inHiDw);
+    out[1] = HalfFloat::ToFloat(inLoDw);
 }
 
 void Pack32::Vec3UnpackUnitVec(const uint32_t in, float* out)
@@ -54,4 +54,12 @@ void Pack32::Vec3UnpackUnitVec(const uint32_t in, float* out)
     out[0] = (static_cast<float>(_in.uc[0]) + -127.0f) * decodeScale;
     out[1] = (static_cast<float>(_in.uc[1]) + -127.0f) * decodeScale;
     out[2] = (static_cast<float>(_in.uc[2]) + -127.0f) * decodeScale;
+}
+
+void Pack32::Vec4UnpackGfxColor(uint32_t in, float* out)
+{
+    out[0] = static_cast<float>(in & UINT8_MAX) / 255.0f;
+    out[1] = static_cast<float>((in >> 8) & UINT8_MAX) / 255.0f;
+    out[2] = static_cast<float>((in >> 16) & UINT8_MAX) / 255.0f;
+    out[3] = static_cast<float>((in >> 24) & UINT8_MAX) / 255.0f;
 }

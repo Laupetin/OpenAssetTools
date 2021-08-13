@@ -163,6 +163,7 @@ namespace IW4
     typedef unsigned short r_index_t;
     typedef float vec2_t[2];
     typedef float vec3_t[3];
+    typedef float vec4_t[4];
 
     struct PhysPreset
     {
@@ -534,10 +535,10 @@ namespace IW4
         float scale;
         unsigned int noScalePartBits[6];
         uint16_t* boneNames;
-        char* parentList;
+        unsigned char* parentList;
         int16_t(*quats)[4];
         float(*trans)[3];
-        char* partClassification;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         Material** materialHandles;
         XModelLodInfo lodInfo[4];

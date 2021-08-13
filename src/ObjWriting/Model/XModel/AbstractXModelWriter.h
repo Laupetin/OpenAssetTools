@@ -1,0 +1,24 @@
+#pragma once
+
+#include <vector>
+
+#include "Model/XModel/XModelCommon.h"
+
+class AbstractXModelWriter
+{
+protected:
+    std::vector<XModelObject> m_objects;
+    std::vector<XModelBone> m_bones;
+    std::vector<XModelMaterial> m_materials;
+    std::vector<XModelVertex> m_vertices;
+    std::vector<XModelFace> m_faces;
+
+public:
+    AbstractXModelWriter();
+
+    void AddObject(XModelObject object);
+    void AddBone(XModelBone bone);
+    void AddMaterial(XModelMaterial material);
+    void AddVertex(XModelVertex vertex);
+    void AddFace(XModelFace face);
+};
