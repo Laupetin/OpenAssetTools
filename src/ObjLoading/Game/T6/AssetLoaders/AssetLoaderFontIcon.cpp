@@ -84,7 +84,7 @@ bool AssetLoaderFontIcon::ParseHashStr(int& value, const std::string& str)
     }
     else
     {
-        value = CommonT6::Com_HashString(str.c_str());
+        value = Common::Com_HashString(str.c_str());
     }
 
     return true;
@@ -121,7 +121,7 @@ bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row, FontI
 
     icon.fontIconMaterialHandle = static_cast<Material*>(materialDependency->m_ptr);
     icon.fontIconName.string = memory->Dup(row[ROW_ICON_NAME].c_str());
-    icon.fontIconName.hash = CommonT6::Com_HashString(icon.fontIconName.string);
+    icon.fontIconName.hash = Common::Com_HashString(icon.fontIconName.string);
 
     return true;
 }

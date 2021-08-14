@@ -18,7 +18,7 @@ class AssetDumperFontIconInternal
         explicit KnownAlias(std::string aliasName)
             : m_name(std::move(aliasName))
         {
-            m_hash = CommonT6::Com_HashString(m_name.c_str(), 0);
+            m_hash = Common::Com_HashString(m_name.c_str(), 0);
         }
     };
 

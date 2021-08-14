@@ -84,13 +84,13 @@ void ZoneCreator::HandleMetadata(Zone* zone, ZoneCreationContext& context) const
             }
             else
             {
-                keyHash = CommonT6::Com_HashKey(strValue.c_str(), 64);
+                keyHash = Common::Com_HashKey(strValue.c_str(), 64);
             }
 
             KeyValuePair kvp
             {
                 keyHash,
-                CommonT6::Com_HashKey(zone->m_name.c_str(), 64),
+                Common::Com_HashKey(zone->m_name.c_str(), 64),
                 zone->GetMemory()->Dup(metaData->m_value.c_str())
             };
             kvpList.push_back(kvp);

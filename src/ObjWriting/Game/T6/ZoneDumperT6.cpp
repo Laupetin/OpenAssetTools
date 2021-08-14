@@ -19,6 +19,7 @@
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
 #include "AssetDumpers/AssetDumperWeaponAttachmentUnique.h"
+#include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
 
 using namespace T6;
@@ -43,7 +44,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperPhysConstraints, m_phys_constraints);
     // DUMP_ASSET_POOL(AssetDumperDestructibleDef, m_destructible_def);
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts);
-    // DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel);
+    DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel);
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material);
     // DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set);
     DUMP_ASSET_POOL(AssetDumperGfxImage, m_image);

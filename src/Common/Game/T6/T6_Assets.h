@@ -375,14 +375,16 @@ namespace T6
         void* data;
     };
 
-
-    struct XModelPieces
+    union vec2_t
     {
-        const char* name;
-        int numpieces;
-        XModelPiece* pieces;
-    };
+        float v[2];
 
+        struct
+        {
+            float x;
+            float y;
+        };
+    };
 
     union vec3_t
     {
@@ -394,6 +396,34 @@ namespace T6
         };
 
         float v[3];
+    };
+
+    union vec4_t
+    {
+        float v[4];
+
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        struct
+        {
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+    };
+
+    struct XModelPieces
+    {
+        const char* name;
+        int numpieces;
+        XModelPiece* pieces;
     };
 
     struct PhysPresetInfo
@@ -555,6 +585,11 @@ namespace T6
         XAnimDeltaPart* deltaPart;
     };
 
+    struct DObjSkelMat
+    {
+        vec4_t axis[3];
+        vec4_t origin;
+    };
 
     struct XModelLodInfo
     {
@@ -573,8 +608,8 @@ namespace T6
         unsigned char numsurfs;
         char lodRampType;
         uint16_t* boneNames;
-        char* parentList;
-        int16_t (*quats)[4];
+        unsigned char* parentList;
+        uint16_t (*quats)[4];
         float (*trans)[4];
         char* partClassification;
         DObjAnimMat* baseMat;
@@ -588,14 +623,14 @@ namespace T6
         float radius;
         vec3_t mins;
         vec3_t maxs;
-        int16_t numLods;
-        int16_t collLod;
+        uint16_t numLods;
+        uint16_t collLod;
         float* himipInvSqRadii;
         int memUsage;
         int flags;
         bool bad;
         PhysPreset* physPreset;
-        char numCollmaps;
+        unsigned char numCollmaps;
         Collmap* collmaps;
         PhysConstraints* physConstraints;
         vec3_t lightingOriginOffset;
@@ -647,9 +682,9 @@ namespace T6
     {
         MaterialInfo info;
         char stateBitsEntry[36];
-        char textureCount;
-        char constantCount;
-        char stateBitsCount;
+        unsigned char textureCount;
+        unsigned char constantCount;
+        unsigned char stateBitsCount;
         char stateFlags;
         char cameraRegion;
         char probeMipBits;
@@ -746,6 +781,50 @@ namespace T6
         uint32_t valid : 1;
     };
 
+    enum TextureSemantic
+    {
+        TS_2D = 0x0,
+        TS_FUNCTION = 0x1,
+        TS_COLOR_MAP = 0x2,
+        TS_UNUSED_1 = 0x3,
+        TS_UNUSED_2 = 0x4,
+        TS_NORMAL_MAP = 0x5,
+        TS_UNUSED_3 = 0x6,
+        TS_UNUSED_4 = 0x7,
+        TS_SPECULAR_MAP = 0x8,
+        TS_UNUSED_5 = 0x9,
+        TS_OCCLUSION_MAP = 0xA,
+        TS_UNUSED_6 = 0xB,
+        TS_COLOR0_MAP = 0xC,
+        TS_COLOR1_MAP = 0xD,
+        TS_COLOR2_MAP = 0xE,
+        TS_COLOR3_MAP = 0xF,
+        TS_COLOR4_MAP = 0x10,
+        TS_COLOR5_MAP = 0x11,
+        TS_COLOR6_MAP = 0x12,
+        TS_COLOR7_MAP = 0x13,
+        TS_COLOR8_MAP = 0x14,
+        TS_COLOR9_MAP = 0x15,
+        TS_COLOR10_MAP = 0x16,
+        TS_COLOR11_MAP = 0x17,
+        TS_COLOR12_MAP = 0x18,
+        TS_COLOR13_MAP = 0x19,
+        TS_COLOR14_MAP = 0x1A,
+        TS_COLOR15_MAP = 0x1B,
+        TS_THROW_MAP = 0x1C,
+    };
+
+    enum ImageCategory
+    {
+        IMG_CATEGORY_UNKNOWN = 0x0,
+        IMG_CATEGORY_AUTO_GENERATED = 0x1,
+        IMG_CATEGORY_LIGHTMAP = 0x2,
+        IMG_CATEGORY_LOAD_FROM_FILE = 0x3,
+        IMG_CATEGORY_RAW = 0x4,
+        IMG_CATEGORY_FIRST_UNMANAGED = 0x5,
+        IMG_CATEGORY_RENDERTARGET = 0x5,
+        IMG_CATEGORY_TEMP = 0x6,
+    };
 
     struct GfxImage
     {
@@ -1026,29 +1105,6 @@ namespace T6
         int leafRefCount;
         int* leafRefs;
     };
-
-
-    union vec4_t
-    {
-        float v[4];
-
-        struct
-        {
-            float x;
-            float y;
-            float z;
-            float w;
-        };
-
-        struct
-        {
-            float r;
-            float g;
-            float b;
-            float a;
-        };
-    };
-
 
     struct GfxWorldSun
     {
@@ -2024,19 +2080,6 @@ namespace T6
         float vertResistUp;
         float vertResistDown;
     };
-
-
-    union vec2_t
-    {
-        float v[2];
-
-        struct
-        {
-            float x;
-            float y;
-        };
-    };
-
 
     enum TractionType
     {

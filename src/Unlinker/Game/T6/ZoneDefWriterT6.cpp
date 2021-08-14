@@ -20,7 +20,7 @@ namespace T6
         explicit KeyValuePairKnownKey(std::string key)
         {
             m_key = std::move(key);
-            m_hash = CommonT6::Com_HashKey(m_key.c_str(), 64);
+            m_hash = Common::Com_HashKey(m_key.c_str(), 64);
         }
     };
 

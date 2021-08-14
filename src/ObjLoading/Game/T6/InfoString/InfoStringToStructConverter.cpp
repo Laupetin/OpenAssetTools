@@ -25,7 +25,7 @@ bool InfoStringToStructConverter::GetHashValue(const std::string& value, unsigne
         return endPtr == &value[value.size()];
     }
 
-    hash = CommonT6::Com_HashString(value.c_str());
+    hash = Common::Com_HashString(value.c_str());
     return true;
 }
 

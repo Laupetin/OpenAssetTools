@@ -30,8 +30,8 @@
 
 namespace T6
 {
-    const int ObjLoader::IPAK_READ_HASH = CommonT6::Com_HashKey("ipak_read", 64);
-    const int ObjLoader::GLOBAL_HASH = CommonT6::Com_HashKey("GLOBAL", 64);
+    const int ObjLoader::IPAK_READ_HASH = Common::Com_HashKey("ipak_read", 64);
+    const int ObjLoader::GLOBAL_HASH = Common::Com_HashKey("GLOBAL", 64);
 
     ObjLoader::ObjLoader()
     {
@@ -292,7 +292,7 @@ namespace T6
     void ObjLoader::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
     {
         auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
-        const auto zoneNameHash = CommonT6::Com_HashKey(zone->m_name.c_str(), 64);
+        const auto zoneNameHash = Common::Com_HashKey(zone->m_name.c_str(), 64);
 
         LoadCommonIPaks(searchPath, zone);
 
