@@ -36,7 +36,19 @@ GfxImage* AssetDumperXModel::GetMaterialColorMap(const Material* material)
 
     for(const auto* def : potentialTextureDefs)
     {
-        if (def->nameStart == 'c' && def->nameEnd == 'p')
+        if (tolower(def->nameStart) == 'c' && tolower(def->nameEnd) == 'p')
+            return def->image;
+    }
+
+    for(const auto* def : potentialTextureDefs)
+    {
+        if (tolower(def->nameStart) == 'r' && tolower(def->nameEnd) == 'k')
+            return def->image;
+    }
+
+    for(const auto* def : potentialTextureDefs)
+    {
+        if (tolower(def->nameStart) == 'd' && tolower(def->nameEnd) == 'p')
             return def->image;
     }
 
