@@ -2,7 +2,11 @@
 
 #include <cctype>
 
-int CommonT5::Com_HashKey(const char* str, const int maxLen)
+#include "Utils/Pack.h"
+
+using namespace T5;
+
+int Common::Com_HashKey(const char* str, const int maxLen)
 {
     if (str == nullptr)
         return 0;
@@ -19,7 +23,7 @@ int CommonT5::Com_HashKey(const char* str, const int maxLen)
     return hash ^ ((hash ^ (hash >> 10)) >> 10);
 }
 
-int CommonT5::Com_HashString(const char* str)
+int Common::Com_HashString(const char* str)
 {
     if (!str)
         return 0;
@@ -35,7 +39,7 @@ int CommonT5::Com_HashString(const char* str)
     return result;
 }
 
-int CommonT5::Com_HashString(const char* str, const int len)
+int Common::Com_HashString(const char* str, const int len)
 {
     if (!str)
         return 0;
@@ -52,4 +56,34 @@ int CommonT5::Com_HashString(const char* str, const int len)
     }
 
     return result;
+}
+
+PackedTexCoords Common::Vec2PackTexCoords(const vec2_t* in)
+{
+    return PackedTexCoords{Pack32::Vec2PackTexCoords(reinterpret_cast<const float*>(in))};
+}
+
+PackedUnitVec Common::Vec3PackUnitVec(const vec3_t* in)
+{
+    return PackedUnitVec{Pack32::Vec3PackUnitVec(reinterpret_cast<const float*>(in))};
+}
+
+GfxColor Common::Vec4PackGfxColor(const vec4_t* in)
+{
+    return GfxColor{Pack32::Vec4PackGfxColor(reinterpret_cast<const float*>(in))};
+}
+
+void Common::Vec2UnpackTexCoords(const PackedTexCoords& in, vec2_t* out)
+{
+    Pack32::Vec2UnpackTexCoords(in.packed, reinterpret_cast<float*>(out));
+}
+
+void Common::Vec3UnpackUnitVec(const PackedUnitVec& in, vec3_t* out)
+{
+    Pack32::Vec3UnpackUnitVec(in.packed, reinterpret_cast<float*>(out));
+}
+
+void Common::Vec4UnpackGfxColor(const GfxColor& in, vec4_t* out)
+{
+    Pack32::Vec4UnpackGfxColor(in.packed, reinterpret_cast<float*>(out));
 }

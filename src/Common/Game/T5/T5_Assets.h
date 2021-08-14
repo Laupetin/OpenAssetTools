@@ -413,6 +413,12 @@ namespace T5
         XAnimDeltaPart* deltaPart;
     };
 
+    struct DObjSkelMat
+    {
+        float axis[3][4];
+        float origin[4];
+    };
+
     struct DObjAnimMat
     {
         float quat[4];
@@ -496,7 +502,7 @@ namespace T5
     struct XSurface
     {
         char tileMode;
-        char vertListCount;
+        unsigned char vertListCount;
         uint16_t flags;
         uint16_t vertCount;
         uint16_t triCount;
@@ -637,14 +643,14 @@ namespace T5
         float radius;
         float mins[3];
         float maxs[3];
-        int16_t numLods;
-        int16_t collLod;
+        uint16_t numLods;
+        uint16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
         int flags;
         bool bad;
         PhysPreset* physPreset;
-        char numCollmaps;
+        unsigned char numCollmaps;
         Collmap* collmaps;
         PhysConstraints* physConstraints;
     };
@@ -748,12 +754,12 @@ namespace T5
     {
         MaterialInfo info;
         char stateBitsEntry[130];
-        char textureCount;
-        char constantCount;
-        char stateBitsCount;
+        unsigned char textureCount;
+        unsigned char constantCount;
+        unsigned char stateBitsCount;
         char stateFlags;
         char cameraRegion;
-        char maxStreamedMips;
+        unsigned char maxStreamedMips;
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;

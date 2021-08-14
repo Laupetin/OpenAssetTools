@@ -66,7 +66,7 @@ bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPa
                 else
                     cell.string = memory->Dup(rowValues[col].c_str());
 
-                cell.hash = CommonT5::Com_HashString(cell.string);
+                cell.hash = Common::Com_HashString(cell.string);
             }
         }
 
