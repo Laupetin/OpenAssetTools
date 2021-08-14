@@ -134,6 +134,7 @@ namespace IW3
     typedef char cbrushedge_t;
     typedef float vec2_t[2];
     typedef float vec3_t[3];
+    typedef float vec4_t[4];
     typedef tdef_align(128) unsigned int raw_uint128;
 
     struct XModelPiece
@@ -274,6 +275,12 @@ namespace IW3
         XAnimIndices indices;
         XAnimNotifyInfo* notify;
         XAnimDeltaPart* deltaPart;
+    };
+
+    struct DObjSkelMat
+    {
+        float axis[3][4];
+        float origin[4];
     };
 
     struct DObjAnimMat
@@ -492,8 +499,8 @@ namespace IW3
         float radius;
         float mins[3];
         float maxs[3];
-        int16_t numLods;
-        int16_t collLod;
+        uint16_t numLods;
+        uint16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
         char flags;
@@ -593,10 +600,10 @@ namespace IW3
     {
         MaterialInfo info;
         char stateBitsEntry[34];
-        char textureCount;
-        char constantCount;
-        char stateBitsCount;
-        char stateFlags;
+        unsigned char textureCount;
+        unsigned char constantCount;
+        unsigned char stateBitsCount;
+        unsigned char stateFlags;
         char cameraRegion;
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;

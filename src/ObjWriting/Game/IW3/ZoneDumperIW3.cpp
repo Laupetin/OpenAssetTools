@@ -10,6 +10,7 @@
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
+#include "AssetDumpers/AssetDumperXModel.h"
 
 using namespace IW3;
 
@@ -31,7 +32,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
 
     // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts)
-    // DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel)
+    DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel)
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material)
     // DUMP_ASSET_POOL(AssetDumperMaterialTechniqueSet, m_technique_set)
     DUMP_ASSET_POOL(AssetDumperGfxImage, m_image)
