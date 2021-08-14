@@ -10,6 +10,10 @@ namespace IW3
 {
     class AssetDumperXModel final : public AbstractAssetDumper<XModel>
     {
+        static GfxImage* GetMaterialColorMap(const Material* material);
+        static GfxImage* GetMaterialNormalMap(const Material* material);
+        static GfxImage* GetMaterialSpecularMap(const Material* material);
+
         static void AddObjMaterials(ObjWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model);
         static void AddObjObjects(ObjWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModel* model, unsigned lod);
         static void AddObjVertices(ObjWriter& writer, const XModel* model, unsigned lod);

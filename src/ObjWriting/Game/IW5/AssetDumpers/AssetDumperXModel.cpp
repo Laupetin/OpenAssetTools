@@ -16,6 +16,84 @@ bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
     return !asset->m_name.empty() && asset->m_name[0] != ',';
 }
 
+GfxImage* AssetDumperXModel::GetMaterialColorMap(const Material* material)
+{
+    std::vector<MaterialTextureDef*> potentialTextureDefs;
+
+    for (auto textureIndex = 0u; textureIndex < material->textureCount; textureIndex++)
+    {
+        MaterialTextureDef* def = &material->textureTable[textureIndex];
+
+        if (def->semantic == TS_COLOR_MAP)
+            potentialTextureDefs.push_back(def);
+    }
+
+    if (potentialTextureDefs.empty())
+        return nullptr;
+    if (potentialTextureDefs.size() == 1)
+        return potentialTextureDefs[0]->u.image;
+
+    for (const auto* def : potentialTextureDefs)
+    {
+        if (def->nameStart == 'c' && def->nameEnd == 'p')
+            return def->u.image;
+    }
+
+    return potentialTextureDefs[0]->u.image;
+}
+
+GfxImage* AssetDumperXModel::GetMaterialNormalMap(const Material* material)
+{
+    std::vector<MaterialTextureDef*> potentialTextureDefs;
+
+    for (auto textureIndex = 0u; textureIndex < material->textureCount; textureIndex++)
+    {
+        MaterialTextureDef* def = &material->textureTable[textureIndex];
+
+        if (def->semantic == TS_NORMAL_MAP)
+            potentialTextureDefs.push_back(def);
+    }
+
+    if (potentialTextureDefs.empty())
+        return nullptr;
+    if (potentialTextureDefs.size() == 1)
+        return potentialTextureDefs[0]->u.image;
+
+    for (const auto* def : potentialTextureDefs)
+    {
+        if (def->nameStart == 'n' && def->nameEnd == 'p')
+            return def->u.image;
+    }
+
+    return potentialTextureDefs[0]->u.image;
+}
+
+GfxImage* AssetDumperXModel::GetMaterialSpecularMap(const Material* material)
+{
+    std::vector<MaterialTextureDef*> potentialTextureDefs;
+
+    for (auto textureIndex = 0u; textureIndex < material->textureCount; textureIndex++)
+    {
+        MaterialTextureDef* def = &material->textureTable[textureIndex];
+
+        if (def->semantic == TS_SPECULAR_MAP)
+            potentialTextureDefs.push_back(def);
+    }
+
+    if (potentialTextureDefs.empty())
+        return nullptr;
+    if (potentialTextureDefs.size() == 1)
+        return potentialTextureDefs[0]->u.image;
+
+    for (const auto* def : potentialTextureDefs)
+    {
+        if (def->nameStart == 's' && def->nameEnd == 'p')
+            return def->u.image;
+    }
+
+    return potentialTextureDefs[0]->u.image;
+}
+
 void AssetDumperXModel::AddObjMaterials(ObjWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model)
 {
     if (!model->materialHandles)
@@ -29,35 +107,9 @@ void AssetDumperXModel::AddObjMaterials(ObjWriter& writer, DistinctMapper<Materi
 
         MtlMaterial mtl;
         mtl.materialName = std::string(material->info.name);
-
-        GfxImage* colorMap = nullptr;
-        GfxImage* normalMap = nullptr;
-        GfxImage* specularMap = nullptr;
-
-        for (auto i = 0u; i < material->textureCount; i++)
-        {
-            const auto& texture = material->textureTable[i];
-
-            switch (texture.semantic)
-            {
-            case TS_COLOR_MAP:
-                if(texture.nameStart == 'c' && texture.nameEnd == 'p')
-                    colorMap = texture.u.image;
-                break;
-
-            // Disabled due to looking weird in Blender
-            // case TS_NORMAL_MAP:
-            //    normalMap = texture.u.image;
-            //    break;
-
-            case TS_SPECULAR_MAP:
-                specularMap = texture.u.image;
-                break;
-
-            default:
-                break;
-            }
-        }
+        GfxImage* colorMap = GetMaterialColorMap(material);
+        GfxImage* normalMap = GetMaterialNormalMap(material);
+        GfxImage* specularMap = GetMaterialSpecularMap(material);
 
         if (colorMap != nullptr)
             mtl.colorMapName = colorMap->name;
@@ -249,16 +301,9 @@ void AssetDumperXModel::AddXModelMaterials(AbstractXModelWriter& writer, Distinc
             xMaterial.ApplyDefaults();
 
             xMaterial.name = material->info.name;
-
-            for (auto textureIndex = 0; textureIndex < material->textureCount; textureIndex++)
-            {
-                const auto* textureTableEntry = &material->textureTable[textureIndex];
-                if (textureTableEntry->semantic == TS_COLOR_MAP && textureTableEntry->nameStart == 'c' && textureTableEntry->nameEnd == 'p' && textureTableEntry->u.image)
-                {
-                    xMaterial.colorMapName = textureTableEntry->u.image->name;
-                    break;
-                }
-            }
+            const auto* colorMap = GetMaterialColorMap(material);
+            if (colorMap)
+                xMaterial.colorMapName = std::string(colorMap->name);
 
             writer.AddMaterial(std::move(xMaterial));
         }
