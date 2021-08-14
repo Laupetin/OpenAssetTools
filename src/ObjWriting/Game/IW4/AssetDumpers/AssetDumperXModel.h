@@ -14,8 +14,8 @@ namespace IW4
         static void AddObjObjects(ObjWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, int baseSurfaceIndex);
         static void AddObjVertices(ObjWriter& writer, const XModelSurfs* modelSurfs);
         static void AddObjFaces(ObjWriter& writer, const XModelSurfs* modelSurfs);
-        static void DumpObjLod(AssetDumpingContext& context, XAssetInfo<XModel>* asset, unsigned lod);
-        static void DumpObjMat(AssetDumpingContext& context, XAssetInfo<XModel>* asset);
+        static void DumpObjLod(const AssetDumpingContext& context, XAssetInfo<XModel>* asset, const unsigned lod);
+        static void DumpObjMat(const AssetDumpingContext& context, XAssetInfo<XModel>* asset);
         static void DumpObj(AssetDumpingContext& context, XAssetInfo<XModel>* asset);
 
         static void AddXModelBones(const AssetDumpingContext& context, AbstractXModelWriter& writer, const XModel* model);

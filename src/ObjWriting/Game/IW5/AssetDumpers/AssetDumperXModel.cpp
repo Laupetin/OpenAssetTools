@@ -140,7 +140,7 @@ void AssetDumperXModel::AddObjFaces(ObjWriter& writer, const XModelSurfs* modelS
     }
 }
 
-void AssetDumperXModel::DumpObjMat(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+void AssetDumperXModel::DumpObjMat(const AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
     const auto* model = asset->Asset();
     const auto matFile = context.OpenAssetFile("model_export/" + std::string(model->name) + ".mtl");
@@ -155,7 +155,7 @@ void AssetDumperXModel::DumpObjMat(AssetDumpingContext& context, XAssetInfo<XMod
     writer.WriteMtl(*matFile);
 }
 
-void AssetDumperXModel::DumpObjLod(AssetDumpingContext& context, XAssetInfo<XModel>* asset, const unsigned lod)
+void AssetDumperXModel::DumpObjLod(const AssetDumpingContext& context, XAssetInfo<XModel>* asset, const unsigned lod)
 {
     const auto* model = asset->Asset();
     const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
