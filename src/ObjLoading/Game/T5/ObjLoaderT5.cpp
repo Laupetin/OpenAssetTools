@@ -104,11 +104,11 @@ void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
     if (loadedTexture != nullptr)
     {
         image->texture.texture = loadedTexture;
-        image->cardMemory.platform[0] = 0;
+        image->loadedSize = 0;
 
         const auto textureMipCount = loadedTexture->GetMipMapCount();
         for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
-            image->cardMemory.platform[0] += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
+            image->loadedSize += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
     }
 }
 
@@ -130,11 +130,11 @@ void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone*
     if (loadedTexture != nullptr)
     {
         image->texture.texture = loadedTexture;
-        image->cardMemory.platform[0] = 0;
+        image->loadedSize = 0;
 
         const auto textureMipCount = loadedTexture->GetMipMapCount();
         for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
-            image->cardMemory.platform[0] += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
+            image->loadedSize += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
     }
     else
     {
@@ -152,7 +152,7 @@ void ObjLoader::LoadImageData(ISearchPath* searchPath, Zone* zone)
         {
             auto* image = imageEntry->Asset();
 
-            if (image->cardMemory.platform[0] > 0)
+            if (image->loadedSize > 0)
             {
                 continue;
             }
