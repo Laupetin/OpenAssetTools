@@ -163,7 +163,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else if (writeType == MemberWriteType::EMBEDDED)
         {
-            LINE(MakeMemberAccess(info, member, modifier) << " = UseScriptString(" << MakeMemberAccess(info, member, modifier) << ");")
+            LINE(MakeWrittenMemberAccess(info, member, modifier) << " = UseScriptString(" << MakeMemberAccess(info, member, modifier) << ");")
         }
         else
         {
