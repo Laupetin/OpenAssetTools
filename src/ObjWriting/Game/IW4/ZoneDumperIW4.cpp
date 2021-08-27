@@ -7,6 +7,8 @@
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
+#include "AssetDumpers/AssetDumperMenuDef.h"
+#include "AssetDumpers/AssetDumperMenuList.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperVehicle.h"
@@ -53,8 +55,8 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font)
-    // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list)
-    // DUMP_ASSET_POOL(AssetDumpermenuDef_t, m_menu_def)
+    DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list)
+    DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def)
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize)
     DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon)
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals)

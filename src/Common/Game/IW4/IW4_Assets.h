@@ -1314,6 +1314,21 @@ namespace IW4
         char vertAlign;
     };
 
+    enum WindowDefStaticFlag : unsigned int
+    {
+        WINDOW_FLAG_DECORATION = 0x100000,
+        WINDOW_FLAG_HORIZONTAL_SCROLL = 0x200000,
+        WINDOW_FLAG_OUT_OF_BOUNDS_CLICK = 0x2000000,
+        WINDOW_FLAG_SCREEN_SPACE = 0x400000,
+        WINDOW_FLAG_AUTO_WRAPPED = 0x800000,
+        WINDOW_FLAG_POPUP = 0x1000000,
+        WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x4000000,
+        WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000,
+        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000,
+        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000,
+        WINDOW_FLAG_TEXT_ONLY_FOCUS = 0x80000000,
+    };
+
     struct windowDef_t
     {
         const char* name;
@@ -1334,6 +1349,21 @@ namespace IW4
         float outlineColor[4];
         float disableColor[4];
         Material* background;
+    };
+
+    enum ItemDefFlag : unsigned int
+    {
+        ITEM_FLAG_SAVE_GAME_INFO = 0x1,
+        ITEM_FLAG_CINEMATIC_SUBTITLE = 0x2,
+    };
+
+    enum ItemDefDvarFlag
+    {
+        ITEM_DVAR_FLAG_ENABLE = 0x1,
+        ITEM_DVAR_FLAG_DISABLE = 0x2,
+        ITEM_DVAR_FLAG_SHOW = 0x4,
+        ITEM_DVAR_FLAG_HIDE = 0x8,
+        ITEM_DVAR_FLAG_FOCUS = 0x10,
     };
 
     enum ItemDefType
