@@ -2715,6 +2715,40 @@ namespace T5
         int animDuration;
     };
 
+    enum ItemDefType
+    {
+        ITEM_TYPE_DEFAULT = 0x0,
+        ITEM_TYPE_TEXT = 0x1,
+        ITEM_TYPE_IMAGE = 0x2,
+        ITEM_TYPE_BUTTON = 0x3,
+        ITEM_TYPE_LISTBOX = 0x4,
+        ITEM_TYPE_EDITFIELD = 0x5,
+        ITEM_TYPE_OWNERDRAW = 0x6,
+        ITEM_TYPE_NUMERICFIELD = 0x7,
+        ITEM_TYPE_SLIDER = 0x8,
+        ITEM_TYPE_YESNO = 0x9,
+        ITEM_TYPE_MULTI = 0xA,
+        ITEM_TYPE_DVARENUM = 0xB,
+        ITEM_TYPE_BIND = 0xC,
+        ITEM_TYPE_VALIDFILEFIELD = 0xD,
+        ITEM_TYPE_UPREDITFIELD = 0xE,
+        ITEM_TYPE_GAME_MESSAGE_WINDOW = 0xF,
+        ITEM_TYPE_BIND2 = 0x10,
+        ITEM_TYPE_HIGHLIGHT = 0x11,
+        ITEM_TYPE_OWNERDRAW_TEXT = 0x12,
+        ITEM_TYPE_OD_BUTTON = 0x13,
+        ITEM_TYPE_OD_TEXT_BUTTON = 0x14,
+        ITEM_TYPE_BUTTON_NO_TEXT = 0x15,
+        ITEM_TYPE_ALPHANUMERICFIELD = 0x16,
+        ITEM_TYPE_RADIOBUTTON = 0x19,
+        ITEM_TYPE_MODEL = 0x1A,
+        ITEM_TYPE_CHECKBOX = 0x1B,
+        ITEM_TYPE_COMBO = 0x1C,
+        ITEM_TYPE_DECIMALFIELD = 0x1E,
+        ITEM_TYPE_CONFEDITFIELD = 0x1F,
+        ITEM_TYPE_MENUMODEL = 0x27
+    };
+
     struct type_align(8) itemDef_s
     {
         windowDef_t window;

@@ -106,22 +106,22 @@ set reusable materialExp;
 use itemDefData_t;
 set string enumDvarName;
 set condition data never;
-set condition listBox itemDef_s::type == 6;
-set condition editField itemDef_s::type == 0
-    || itemDef_s::type == 4
-    || itemDef_s::type == 9
-    || itemDef_s::type == 10
-    || itemDef_s::type == 11
-    || itemDef_s::type == 14
-    || itemDef_s::type == 16
-    || itemDef_s::type == 17
-    || itemDef_s::type == 18
-    || itemDef_s::type == 22
-    || itemDef_s::type == 23;
-set condition multi itemDef_s::type == 12;
-set condition enumDvarName itemDef_s::type == 13;
-set condition ticker itemDef_s::type == 20;
-set condition scroll itemDef_s::type == 21;
+set condition listBox itemDef_s::type == ITEM_TYPE_LISTBOX;
+set condition editField itemDef_s::type == ITEM_TYPE_TEXT
+    || itemDef_s::type == ITEM_TYPE_EDITFIELD
+    || itemDef_s::type == ITEM_TYPE_NUMERICFIELD
+    || itemDef_s::type == ITEM_TYPE_SLIDER
+    || itemDef_s::type == ITEM_TYPE_YESNO
+    || itemDef_s::type == ITEM_TYPE_BIND
+    || itemDef_s::type == ITEM_TYPE_VALIDFILEFIELD
+    || itemDef_s::type == ITEM_TYPE_DECIMALFIELD
+    || itemDef_s::type == ITEM_TYPE_UPREDITFIELD
+    || itemDef_s::type == ITEM_TYPE_EMAILFIELD
+    || itemDef_s::type == ITEM_TYPE_PASSWORDFIELD;
+set condition multi itemDef_s::type == ITEM_TYPE_MULTI;
+set condition enumDvarName itemDef_s::type == ITEM_TYPE_DVARENUM;
+set condition ticker itemDef_s::type == ITEM_TYPE_NEWS_TICKER;
+set condition scroll itemDef_s::type == ITEM_TYPE_TEXT_SCROLL;
 
 // multiDef_s
 use multiDef_s;

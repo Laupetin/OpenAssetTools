@@ -49,30 +49,30 @@ set string dvarTest;
 set string enableDvar;
 set condition parent never;
 set condition typeData::textDef 
-type == 1 || type == 3 || type == 4
-|| type == 5  || type == 7 || type == 8
-|| type == 9 || type == 10 || type == 11
-|| type == 12 || type == 13 || type == 14
-|| type == 15 || type == 16 || type == 18
-|| type == 20 || type == 22;
-set condition typeData::imageDef type == 2;
-set condition typeData::blankButtonDef type == 19 || type == 21;
-set condition typeData::ownerDrawDef type == 6;
+type == ITEM_TYPE_TEXT || type == ITEM_TYPE_BUTTON || type == ITEM_TYPE_LISTBOX
+|| type == ITEM_TYPE_EDITFIELD  || type == ITEM_TYPE_NUMERICFIELD || type == ITEM_TYPE_SLIDER
+|| type == ITEM_TYPE_YESNO || type == ITEM_TYPE_MULTI || type == ITEM_TYPE_DVARENUM
+|| type == ITEM_TYPE_BIND || type == ITEM_TYPE_VALIDFILEFIELD || type == ITEM_TYPE_UPREDITFIELD
+|| type == ITEM_TYPE_GAME_MESSAGE_WINDOW || type == ITEM_TYPE_BIND2 || type == ITEM_TYPE_OWNERDRAW_TEXT
+|| type == ITEM_TYPE_OD_TEXT_BUTTON || type == ITEM_TYPE_PROFILEMULTI;
+set condition typeData::imageDef type == ITEM_TYPE_IMAGE;
+set condition typeData::blankButtonDef type == ITEM_TYPE_OD_BUTTON || type == ITEM_TYPE_BUTTON_NO_TEXT;
+set condition typeData::ownerDrawDef type == ITEM_TYPE_OWNERDRAW;
 set condition typeData::data never;
 
 // textDef_s
 use textDef_s;
 set string text;
-set condition textTypeData::focusItemDef itemDef_s::type == 3
-|| itemDef_s::type == 4 || itemDef_s::type == 5
-|| itemDef_s::type == 7 || itemDef_s::type == 8
-|| itemDef_s::type == 9 || itemDef_s::type == 10
-|| itemDef_s::type == 11 || itemDef_s::type == 12
-|| itemDef_s::type == 13 || itemDef_s::type == 14
-|| itemDef_s::type == 16 || itemDef_s::type == 20
-|| itemDef_s::type == 21 || itemDef_s::type == 22
-|| itemDef_s::type == 30;
-set condition textTypeData::gameMsgDef itemDef_s::type == 15;
+set condition textTypeData::focusItemDef itemDef_s::type == ITEM_TYPE_BUTTON
+|| itemDef_s::type == ITEM_TYPE_LISTBOX || itemDef_s::type == ITEM_TYPE_EDITFIELD
+|| itemDef_s::type == ITEM_TYPE_NUMERICFIELD || itemDef_s::type == ITEM_TYPE_SLIDER
+|| itemDef_s::type == ITEM_TYPE_YESNO || itemDef_s::type == ITEM_TYPE_MULTI
+|| itemDef_s::type == ITEM_TYPE_DVARENUM || itemDef_s::type == ITEM_TYPE_BIND
+|| itemDef_s::type == ITEM_TYPE_VALIDFILEFIELD || itemDef_s::type == ITEM_TYPE_UPREDITFIELD
+|| itemDef_s::type == ITEM_TYPE_BIND2 || itemDef_s::type == ITEM_TYPE_OD_TEXT_BUTTON
+|| itemDef_s::type == ITEM_TYPE_BUTTON_NO_TEXT || itemDef_s::type == ITEM_TYPE_PROFILEMULTI
+|| itemDef_s::type == ITEM_TYPE_DVAR_FLOAT;
+set condition textTypeData::gameMsgDef itemDef_s::type == ITEM_TYPE_GAME_MESSAGE_WINDOW;
 set condition textTypeData::data never;
 
 // focusItemDef_s
@@ -81,19 +81,19 @@ set string mouseEnterText;
 set string mouseExitText;
 set string mouseEnter;
 set string mouseExit;
-set condition focusTypeData::listBox itemDef_s::type == 4;
-set condition focusTypeData::multi itemDef_s::type == 10;
-set condition focusTypeData::profileMulti itemDef_s::type == 22;
-set condition focusTypeData::editField itemDef_s::type == 5
-|| itemDef_s::type == 7
-|| itemDef_s::type == 8
-|| itemDef_s::type == 9
-|| itemDef_s::type == 12
-|| itemDef_s::type == 13
-|| itemDef_s::type == 14
-|| itemDef_s::type == 16
-|| itemDef_s::type == 30;
-set condition focusTypeData::enumDvar itemDef_s::type == 11;
+set condition focusTypeData::listBox itemDef_s::type == ITEM_TYPE_LISTBOX;
+set condition focusTypeData::multi itemDef_s::type == ITEM_TYPE_MULTI;
+set condition focusTypeData::profileMulti itemDef_s::type == ITEM_TYPE_PROFILEMULTI;
+set condition focusTypeData::editField itemDef_s::type == ITEM_TYPE_EDITFIELD
+|| itemDef_s::type == ITEM_TYPE_NUMERICFIELD
+|| itemDef_s::type == ITEM_TYPE_SLIDER
+|| itemDef_s::type == ITEM_TYPE_YESNO
+|| itemDef_s::type == ITEM_TYPE_BIND
+|| itemDef_s::type == ITEM_TYPE_VALIDFILEFIELD
+|| itemDef_s::type == ITEM_TYPE_UPREDITFIELD
+|| itemDef_s::type == ITEM_TYPE_BIND2
+|| itemDef_s::type == ITEM_TYPE_DVAR_FLOAT;
+set condition focusTypeData::enumDvar itemDef_s::type == ITEM_TYPE_DVARENUM;
 set condition focusTypeData::data never;
 
 // listBoxDef_s

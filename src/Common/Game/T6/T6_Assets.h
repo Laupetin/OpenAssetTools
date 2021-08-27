@@ -3968,40 +3968,36 @@ namespace T6
 
     enum ItemType
     {
-        // ITEM_TYPE_XYZ = 1, // ? some kind of read only text field
-        ITEM_TYPE_IMAGE = 2,
-        // Confirmed
-        // ITEM_TYPE_XYZ = 3, // ? some kind of read only text field
-        ITEM_TYPE_LISTBOX = 4,
-        // Confirmed
-        ITEM_TYPE_EDITFIELD = 5,
-        // editable text field
-        ITEM_TYPE_OWNERDRAW = 6,
-        // Confirmed
-        ITEM_TYPE_NUMERICFIELD = 7,
-        // editable text field
-        ITEM_TYPE_SLIDER = 8,
-        // Confirmed
-        ITEM_TYPE_YESNO = 9,
-        // Confirmed
-        ITEM_TYPE_MULTI = 10,
-        // Confirmed
-        ITEM_TYPE_DVARENUM = 11,
-        // Confirmed
-        ITEM_TYPE_BIND_PRIMARY = 12,
-        // Confirmed
-        ITEM_TYPE_NAMEFIELD = 13,
-        // editable text field
-        ITEM_TYPE_UPPERTEXTFIELD = 14,
-        // editable text field
-        ITEM_TYPE_GAME_MESSAGE_WINDOW = 15,
-        // Confirmed
-        ITEM_TYPE_BIND_SECONDARY = 16,
-        // Confirmed
-        ITEM_TYPE_PROFILEMULTI = 22,
-        // Confirmed
-        ITEM_TYPE_DVAR_FLOAT = 30,
-        // editable text field
+        ITEM_TYPE_DEFAULT = 0x0,
+        ITEM_TYPE_TEXT = 0x1,
+        ITEM_TYPE_IMAGE = 0x2,
+        ITEM_TYPE_BUTTON = 0x3,
+        ITEM_TYPE_LISTBOX = 0x4,
+        ITEM_TYPE_EDITFIELD = 0x5,
+        ITEM_TYPE_OWNERDRAW = 0x6,
+        ITEM_TYPE_NUMERICFIELD = 0x7,
+        ITEM_TYPE_SLIDER = 0x8,
+        ITEM_TYPE_YESNO = 0x9,
+        ITEM_TYPE_MULTI = 0xA,
+        ITEM_TYPE_DVARENUM = 0xB,
+        ITEM_TYPE_BIND = 0xC,
+        ITEM_TYPE_VALIDFILEFIELD = 0xD,
+        ITEM_TYPE_UPREDITFIELD = 0xE,
+        ITEM_TYPE_GAME_MESSAGE_WINDOW = 0xF,
+        ITEM_TYPE_BIND2 = 0x10,
+        ITEM_TYPE_HIGHLIGHT = 0x11,
+        ITEM_TYPE_OWNERDRAW_TEXT = 0x12,
+        ITEM_TYPE_OD_BUTTON = 0x13,
+        ITEM_TYPE_OD_TEXT_BUTTON = 0x14,
+        ITEM_TYPE_BUTTON_NO_TEXT = 0x15,
+        ITEM_TYPE_PROFILEMULTI = 0x16,
+        ITEM_TYPE_RADIOBUTTON = 0x19,
+        ITEM_TYPE_MODEL = 0x1A,
+        ITEM_TYPE_CHECKBOX = 0x1B,
+        ITEM_TYPE_COMBO = 0x1C,
+        ITEM_TYPE_DVAR_FLOAT = 0x1E,
+        ITEM_TYPE_CONFEDITFIELD = 0x1F,
+        ITEM_TYPE_MENUMODEL = 0x27
     };
 
 
