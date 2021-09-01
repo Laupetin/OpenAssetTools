@@ -11,6 +11,199 @@ namespace fs = std::filesystem;
 
 using namespace IW4;
 
+namespace IW4
+{
+    const char* g_expFunctionNames[]
+    {
+        "NOOP",
+        ")",
+        "*",
+        "/",
+        "%",
+        "+",
+        "-",
+        "!",
+        "<",
+        "<=",
+        ">",
+        ">=",
+        "==",
+        "!=",
+        "&&",
+        "||",
+        "(",
+        ",",
+        "&",
+        "|",
+        "~",
+        "<<",
+        ">>",
+        "dvarint(static)\x01\x02",
+        "dvarbool(static)\x01\x03",
+        "dvarfloat(static)\x01\x04",
+        "dvarstring(static)\x01\x05",
+        "int",
+        "string",
+        "float",
+        "sin",
+        "cos",
+        "min",
+        "max",
+        "milliseconds",
+        "dvarint",
+        "dvarbool",
+        "dvarfloat",
+        "dvarstring",
+        "stat",
+        "ui_active",
+        "flashbanged",
+        "usingvehicle",
+        "missilecam",
+        "scoped",
+        "scopedthermal",
+        "scoreboard_visible",
+        "inkillcam",
+        "inkillcamnpc",
+        "player",
+        "getperk",
+        "selecting_location",
+        "selecting_direction",
+        "team",
+        "otherteam",
+        "marinesfield",
+        "opforfield",
+        "menuisopen",
+        "writingdata",
+        "inlobby",
+        "inprivateparty",
+        "privatepartyhost",
+        "privatepartyhostinlobby",
+        "aloneinparty",
+        "adsjavelin",
+        "weaplockblink",
+        "weapattacktop",
+        "weapattackdirect",
+        "weaplocking",
+        "weaplocked",
+        "weaplocktooclose",
+        "weaplockscreenposx",
+        "weaplockscreenposy",
+        "secondsastime",
+        "tablelookup",
+        "tablelookupbyrow",
+        "tablegetrownum",
+        "locstring",
+        "localvarint",
+        "localvarbool",
+        "localvarfloat",
+        "localvarstring",
+        "timeleft",
+        "secondsascountdown",
+        "gamemsgwndactive",
+        "gametypename",
+        "gametype",
+        "gametypedescription",
+        "scoreatrank",
+        "friendsonline",
+        "spectatingclient",
+        "spectatingfree",
+        "statrangeanybitsset",
+        "keybinding",
+        "actionslotusable",
+        "hudfade",
+        "maxrecommendedplayers",
+        "acceptinginvite",
+        "isintermission",
+        "gamehost",
+        "partyismissingmappack",
+        "partymissingmappackerror",
+        "anynewmappacks",
+        "amiselected",
+        "partystatusstring",
+        "attachedcontrollercount",
+        "issplitscreenonlinepossible",
+        "splitscreenplayercount",
+        "getplayerdata",
+        "getplayerdatasplitscreen",
+        "experienceforlevel",
+        "levelforexperience",
+        "isitemunlocked",
+        "isitemunlockedsplitscreen",
+        "debugprint",
+        "getplayerdataanybooltrue",
+        "weaponclassnew",
+        "weaponname",
+        "isreloading",
+        "savegameavailable",
+        "unlockeditemcount",
+        "unlockeditemcountsplitscreen",
+        "unlockeditem",
+        "unlockeditemsplitscreen",
+        "mailsubject",
+        "mailfrom",
+        "mailreceived",
+        "mailbody",
+        "maillootlocalized",
+        "mailgivesloot",
+        "anynewmail",
+        "mailtimetofollowup",
+        "mailloottype",
+        "mailranlottery",
+        "lotterylootlocalized",
+        "radarisjammed",
+        "radarjamintensity",
+        "radarisenabled",
+        "isempjammed",
+        "playerads",
+        "weaponheatactive",
+        "weaponheatvalue",
+        "weaponheatoverheated",
+        "getsplashtext",
+        "getsplashdescription",
+        "getsplashmaterial",
+        "splashhasicon",
+        "splashrownum",
+        "getfocuseditemname",
+        "getfocuseditemx",
+        "getfocuseditemy",
+        "getfocuseditemwidth",
+        "getfocuseditemheight",
+        "getitemx",
+        "getitemy",
+        "getitemwidth",
+        "getitemheight",
+        "playlist",
+        "scoreboardexternalmutenotice",
+        "getclientmatchdata",
+        "getclientmatchdatadef",
+        "getmapname",
+        "getmapimage",
+        "getmapcustom",
+        "getmigrationstatus",
+        "getplayercardinfo",
+        "isofflineprofileselected",
+        "coopplayer",
+        "iscoop",
+        "getpartystatus",
+        "getsearchparams",
+        "gettimeplayed",
+        "isselectedplayerfriend",
+        "getcharbyindex",
+        "getprofiledata",
+        "isprofilesignedin",
+        "getwaitpopupstatus",
+        "getnattype",
+        "getlocalizednattype",
+        "getadjustedsafeareahorizontal",
+        "getadjustedsafeareavertical",
+        "connectioninfo",
+        "offlineprofilecansave",
+        "allsplitscreenprofilescansave",
+        "allsplitscreenprofilesaresignedin",
+        "coopready",
+    };
+}
+
 class MenuDumperIw4 : public MenuDumper
 {
     static constexpr auto MENU_KEY_SPACING = 28u;
@@ -154,6 +347,52 @@ class MenuDumperIw4 : public MenuDumper
 
         Indent();
         WriteKey(propertyKey);
+
+        if (isBooleanStatement)
+        {
+            m_stream << "when";
+        }
+
+        for (auto i = 0; i < statementValue->numEntries; i++)
+        {
+            const auto& expEntry = statementValue->entries[i];
+
+            if (i > 0)
+                m_stream << " ";
+
+            if (expEntry.type == EET_OPERATOR)
+            {
+                if (expEntry.data.op >= 0 && static_cast<unsigned>(expEntry.data.op) < std::extent_v<decltype(g_expFunctionNames)>)
+                    m_stream << g_expFunctionNames[expEntry.data.op];
+            }
+            else
+            {
+                const auto& operand = expEntry.data.operand;
+
+                switch (operand.dataType)
+                {
+                case VAL_FLOAT:
+                    m_stream << operand.internals.floatVal;
+                    break;
+
+                case VAL_INT:
+                    m_stream << operand.internals.intVal;
+                    break;
+
+                case VAL_STRING:
+                    m_stream << "\"" << operand.internals.stringVal.string << "\"";
+                    break;
+
+                case VAL_FUNCTION:
+                    m_stream << "FUNC";
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+
         m_stream << "\n";
     }
 
@@ -214,15 +453,15 @@ class MenuDumperIw4 : public MenuDumper
         WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
         WriteStringProperty("dvarTest", item->dvarTest);
 
-        if(item->dvarFlags & ITEM_DVAR_FLAG_ENABLE)
+        if (item->dvarFlags & ITEM_DVAR_FLAG_ENABLE)
             WriteStringProperty("enableDvar", item->enableDvar);
-        else if(item->dvarFlags & ITEM_DVAR_FLAG_DISABLE)
+        else if (item->dvarFlags & ITEM_DVAR_FLAG_DISABLE)
             WriteStringProperty("disableDvar", item->enableDvar);
-        else if(item->dvarFlags & ITEM_DVAR_FLAG_SHOW)
+        else if (item->dvarFlags & ITEM_DVAR_FLAG_SHOW)
             WriteStringProperty("showDvar", item->enableDvar);
-        else if(item->dvarFlags & ITEM_DVAR_FLAG_HIDE)
+        else if (item->dvarFlags & ITEM_DVAR_FLAG_HIDE)
             WriteStringProperty("hideDvar", item->enableDvar);
-        else if(item->dvarFlags & ITEM_DVAR_FLAG_FOCUS)
+        else if (item->dvarFlags & ITEM_DVAR_FLAG_FOCUS)
             WriteStringProperty("focusDvar", item->enableDvar);
 
         WriteItemKeyHandlerProperty(item->onKey);
@@ -237,7 +476,7 @@ class MenuDumperIw4 : public MenuDumper
 
     void WriteItemDefs(const itemDef_s* const* itemDefs, const size_t itemCount)
     {
-        for(auto i = 0u; i < itemCount; i++)
+        for (auto i = 0u; i < itemCount; i++)
         {
             Indent();
             m_stream << "itemDef\n";

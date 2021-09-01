@@ -2482,6 +2482,36 @@ namespace T5
         RPN_END = 0x3,
     };
 
+    enum expressionOperatorType_e
+    {
+        OP_NOOP = 0x0,
+        OP_RIGHTPAREN = 0x1,
+        OP_MUL = 0x2,
+        OP_DIV = 0x3,
+        OP_MOD = 0x4,
+        OP_PLUS = 0x5,
+        OP_MINUS = 0x6,
+        OP_MINUS_2 = 0x7,
+        OP_NEG = 0x8,
+        OP_SMALLER = 0x9,
+        OP_SMALLEREQ = 0xA,
+        OP_GREATER = 0xB,
+        OP_GREATEREQ = 0xC,
+        OP_EQ = 0xD,
+        OP_NOTEQ = 0xE,
+        OP_LOGAND = 0xF,
+        OP_LOGOR = 0x10,
+        OP_LEFTPAREN = 0x11,
+        OP_COMMA = 0x12,
+        OP_BITAND = 0x13,
+        OP_BITOR = 0x14,
+        OP_BITNEG = 0x15,
+        OP_SHIFTLEFT = 0x16,
+        OP_SHIFTRIGHT = 0x17,
+
+        OP_COUNT
+    };
+
     union expressionRpnDataUnion
     {
         Operand constant;
