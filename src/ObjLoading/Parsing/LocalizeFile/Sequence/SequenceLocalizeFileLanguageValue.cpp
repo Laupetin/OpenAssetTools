@@ -20,7 +20,7 @@ std::string SequenceLocalizeFileLanguageValue::UnescapeValue(const std::string& 
     std::ostringstream str;
 
     auto isEscaped = false;
-    for(auto c : value)
+    for(const auto c : value)
     {
         if(isEscaped)
         {
@@ -38,6 +38,7 @@ std::string SequenceLocalizeFileLanguageValue::UnescapeValue(const std::string& 
                 str << c;
                 break;
             }
+            isEscaped = false;
         }
         else if(c == '\\')
         {
