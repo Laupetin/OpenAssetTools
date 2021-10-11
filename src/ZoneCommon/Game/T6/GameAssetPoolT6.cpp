@@ -77,112 +77,6 @@ GameAssetPoolT6::GameAssetPoolT6(Zone* zone, const int priority)
       m_priority(priority)
 {
     assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
-
-    m_phys_preset = nullptr;
-    m_phys_constraints = nullptr;
-    m_destructible_def = nullptr;
-    m_xanim_parts = nullptr;
-    m_xmodel = nullptr;
-    m_material = nullptr;
-    m_technique_set = nullptr;
-    m_image = nullptr;
-    m_sound_bank = nullptr;
-    m_sound_patch = nullptr;
-    m_clip_map = nullptr;
-    m_com_world = nullptr;
-    m_game_world_sp = nullptr;
-    m_game_world_mp = nullptr;
-    m_map_ents = nullptr;
-    m_gfx_world = nullptr;
-    m_gfx_light_def = nullptr;
-    m_font = nullptr;
-    m_font_icon = nullptr;
-    m_menu_list = nullptr;
-    m_menu_def = nullptr;
-    m_localize = nullptr;
-    m_weapon = nullptr;
-    m_attachment = nullptr;
-    m_attachment_unique = nullptr;
-    m_camo = nullptr;
-    m_snd_driver_globals = nullptr;
-    m_fx = nullptr;
-    m_fx_impact_table = nullptr;
-    m_raw_file = nullptr;
-    m_string_table = nullptr;
-    m_leaderboard = nullptr;
-    m_xglobals = nullptr;
-    m_ddl = nullptr;
-    m_glasses = nullptr;
-    m_emblem_set = nullptr;
-    m_script = nullptr;
-    m_key_value_pairs = nullptr;
-    m_vehicle = nullptr;
-    m_memory_block = nullptr;
-    m_addon_map_ents = nullptr;
-    m_tracer = nullptr;
-    m_skinned_verts = nullptr;
-    m_qdb = nullptr;
-    m_slug = nullptr;
-    m_footstep_table = nullptr;
-    m_footstep_fx_table = nullptr;
-    m_zbarrier = nullptr;
-}
-
-GameAssetPoolT6::~GameAssetPoolT6()
-{
-#define DELETE_POOL(poolName) \
-    delete (poolName); (poolName) = nullptr;
-
-    DELETE_POOL(m_phys_preset);
-    DELETE_POOL(m_phys_constraints);
-    DELETE_POOL(m_destructible_def);
-    DELETE_POOL(m_xanim_parts);
-    DELETE_POOL(m_xmodel);
-    DELETE_POOL(m_material);
-    DELETE_POOL(m_technique_set);
-    DELETE_POOL(m_image);
-    DELETE_POOL(m_sound_bank);
-    DELETE_POOL(m_sound_patch);
-    DELETE_POOL(m_clip_map);
-    DELETE_POOL(m_com_world);
-    DELETE_POOL(m_game_world_sp);
-    DELETE_POOL(m_game_world_mp);
-    DELETE_POOL(m_map_ents);
-    DELETE_POOL(m_gfx_world);
-    DELETE_POOL(m_gfx_light_def);
-    DELETE_POOL(m_font);
-    DELETE_POOL(m_font_icon);
-    DELETE_POOL(m_menu_list);
-    DELETE_POOL(m_menu_def);
-    DELETE_POOL(m_localize);
-    DELETE_POOL(m_weapon);
-    DELETE_POOL(m_attachment);
-    DELETE_POOL(m_attachment_unique);
-    DELETE_POOL(m_camo);
-    DELETE_POOL(m_snd_driver_globals);
-    DELETE_POOL(m_fx);
-    DELETE_POOL(m_fx_impact_table);
-    DELETE_POOL(m_raw_file);
-    DELETE_POOL(m_string_table);
-    DELETE_POOL(m_leaderboard);
-    DELETE_POOL(m_xglobals);
-    DELETE_POOL(m_ddl);
-    DELETE_POOL(m_glasses);
-    DELETE_POOL(m_emblem_set);
-    DELETE_POOL(m_script);
-    DELETE_POOL(m_key_value_pairs);
-    DELETE_POOL(m_vehicle);
-    DELETE_POOL(m_memory_block);
-    DELETE_POOL(m_addon_map_ents);
-    DELETE_POOL(m_tracer);
-    DELETE_POOL(m_skinned_verts);
-    DELETE_POOL(m_qdb);
-    DELETE_POOL(m_slug);
-    DELETE_POOL(m_footstep_table);
-    DELETE_POOL(m_footstep_fx_table);
-    DELETE_POOL(m_zbarrier);
-
-#undef DELETE_POOL
 }
 
 void GameAssetPoolT6::InitPoolStatic(const asset_type_t type, const size_t capacity)
@@ -192,7 +86,7 @@ void GameAssetPoolT6::InitPoolStatic(const asset_type_t type, const size_t capac
     { \
         if((poolName) == nullptr && capacity > 0)  \
         { \
-            (poolName) = new AssetPoolStatic<poolType>(capacity, m_priority, (assetType)); \
+            (poolName) = std::make_unique<AssetPoolStatic<poolType>>(capacity, m_priority, (assetType)); \
         } \
         break; \
     }
@@ -264,7 +158,7 @@ void GameAssetPoolT6::InitPoolDynamic(const asset_type_t type)
     { \
         if((poolName) == nullptr) \
         { \
-            (poolName) = new AssetPoolDynamic<poolType>(m_priority, (assetType)); \
+            (poolName) = std::make_unique<AssetPoolDynamic<poolType>>(m_priority, (assetType)); \
         } \
         break; \
     }
@@ -489,4 +383,14 @@ const char* GameAssetPoolT6::AssetTypeNameByType(asset_type_t assetType)
 const char* GameAssetPoolT6::GetAssetTypeName(const asset_type_t assetType) const
 {
     return AssetTypeNameByType(assetType);
+}
+
+asset_type_t GameAssetPoolT6::AssetTypeCount()
+{
+    return ASSET_TYPE_COUNT;
+}
+
+asset_type_t GameAssetPoolT6::GetAssetTypeCount() const
+{
+    return AssetTypeCount();
 }

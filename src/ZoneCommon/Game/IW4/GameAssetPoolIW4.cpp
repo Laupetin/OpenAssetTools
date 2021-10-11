@@ -104,42 +104,6 @@ GameAssetPoolIW4::GameAssetPoolIW4(Zone* zone, const int priority)
       m_priority(priority)
 {
     assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
-
-    m_phys_preset = nullptr;
-    m_phys_collmap = nullptr;
-    m_xanim_parts = nullptr;
-    m_xmodel = nullptr;
-    m_material = nullptr;
-    m_material_pixel_shader = nullptr;
-    m_material_vertex_shader = nullptr;
-    m_material_vertex_decl = nullptr;
-    m_technique_set = nullptr;
-    m_image = nullptr;
-    m_sound = nullptr;
-    m_sound_curve = nullptr;
-    m_loaded_sound = nullptr;
-    m_clip_map = nullptr;
-    m_com_world = nullptr;
-    m_game_world_sp = nullptr;
-    m_game_world_mp = nullptr;
-    m_map_ents = nullptr;
-    m_fx_world = nullptr;
-    m_gfx_world = nullptr;
-    m_gfx_light_def = nullptr;
-    m_font = nullptr;
-    m_menu_list = nullptr;
-    m_menu_def = nullptr;
-    m_localize = nullptr;
-    m_weapon = nullptr;
-    m_fx = nullptr;
-    m_fx_impact_table = nullptr;
-    m_raw_file = nullptr;
-    m_string_table = nullptr;
-    m_leaderboard = nullptr;
-    m_structed_data_def_set = nullptr;
-    m_tracer = nullptr;
-    m_vehicle = nullptr;
-    m_addon_map_ents = nullptr;
 }
 
 void GameAssetPoolIW4::InitPoolStatic(const asset_type_t type, const size_t capacity)
@@ -393,4 +357,14 @@ const char* GameAssetPoolIW4::AssetTypeNameByType(asset_type_t assetType)
 const char* GameAssetPoolIW4::GetAssetTypeName(const asset_type_t assetType) const
 {
     return AssetTypeNameByType(assetType);
+}
+
+asset_type_t GameAssetPoolIW4::AssetTypeCount()
+{
+    return ASSET_TYPE_COUNT;
+}
+
+asset_type_t GameAssetPoolIW4::GetAssetTypeCount() const
+{
+    return AssetTypeCount();
 }

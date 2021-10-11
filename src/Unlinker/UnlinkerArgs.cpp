@@ -79,6 +79,22 @@ const CommandLineOption* const OPTION_GDT =
     .WithDescription("Dumps assets in a GDT whenever possible.")
     .Build();
 
+const CommandLineOption* const OPTION_EXCLUDE_ASSETS =
+    CommandLineOption::Builder::Create()
+    .WithLongName("exclude-assets")
+    .WithDescription("Specify all asset types that should be excluded.")
+    .WithParameter("assetTypeList")
+    .Reusable()
+    .Build();
+
+const CommandLineOption* const OPTION_INCLUDE_ASSETS =
+    CommandLineOption::Builder::Create()
+    .WithLongName("include-assets")
+    .WithDescription("Specify all asset types that should be included.")
+    .WithParameter("assetTypeList")
+    .Reusable()
+    .Build();
+
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 {
     OPTION_HELP,
@@ -90,7 +106,9 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_SEARCH_PATH,
     OPTION_IMAGE_FORMAT,
     OPTION_MODEL_FORMAT,
-    OPTION_GDT
+    OPTION_GDT,
+    OPTION_EXCLUDE_ASSETS,
+    OPTION_INCLUDE_ASSETS
 };
 
 UnlinkerArgs::UnlinkerArgs()
@@ -98,6 +116,7 @@ UnlinkerArgs::UnlinkerArgs()
       m_zone_pattern(R"(\?zone\?)"),
       m_task(ProcessingTask::DUMP),
       m_minimal_zone_def(false),
+      m_asset_type_handling(AssetTypeHandling::EXCLUDE),
       m_use_gdt(false),
       m_verbose(false)
 {
@@ -169,6 +188,25 @@ bool UnlinkerArgs::SetModelDumpingMode()
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
     printf("Illegal value: \"%s\" is not a valid model output format. Use -? to see usage information.\n", originalValue.c_str());
     return false;
+}
+
+void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
+{
+    auto currentPos = 0u;
+    size_t endPos;
+
+    std::string lowerInput(input);
+    for (auto& c : lowerInput)
+        c = static_cast<char>(tolower(c));
+
+    while (currentPos < lowerInput.size() && (endPos = lowerInput.find_first_of(',', currentPos)) != std::string::npos)
+    {
+        m_specified_asset_types.emplace(lowerInput, currentPos, endPos - currentPos);
+        currentPos = endPos + 1;
+    }
+
+    if (currentPos < lowerInput.size())
+        m_specified_asset_types.emplace(lowerInput, currentPos, lowerInput.size() - currentPos);
 }
 
 bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
@@ -245,6 +283,27 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
 
     // --gdt
     m_use_gdt = m_argument_parser.IsOptionSpecified(OPTION_GDT);
+
+    // --exclude-assets
+    // --include-assets
+    if (m_argument_parser.IsOptionSpecified(OPTION_EXCLUDE_ASSETS) && m_argument_parser.IsOptionSpecified(OPTION_INCLUDE_ASSETS))
+    {
+        std::cout << "You can only asset types to either exclude or include, not both\n";
+        return false;
+    }
+
+    if (m_argument_parser.IsOptionSpecified(OPTION_EXCLUDE_ASSETS))
+    {
+        m_asset_type_handling = AssetTypeHandling::EXCLUDE;
+        for (const auto& exclude : m_argument_parser.GetParametersForOption(OPTION_EXCLUDE_ASSETS))
+            ParseCommaSeparatedAssetTypeString(exclude);
+    }
+    else if (m_argument_parser.IsOptionSpecified(OPTION_INCLUDE_ASSETS))
+    {
+        m_asset_type_handling = AssetTypeHandling::INCLUDE;
+        for (const auto& include : m_argument_parser.GetParametersForOption(OPTION_INCLUDE_ASSETS))
+            ParseCommaSeparatedAssetTypeString(include);
+    }
 
     return true;
 }

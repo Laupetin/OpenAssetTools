@@ -210,6 +210,23 @@ class Unlinker::Impl
         return true;
     }
 
+    void UpdateAssetIncludesAndExcludes(const AssetDumpingContext& context) const
+    {
+        const auto assetTypeCount = context.m_zone->m_pools->GetAssetTypeCount();
+
+        ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector<bool>(assetTypeCount);
+
+        for(auto i = 0; i < assetTypeCount; i++)
+        {
+            const auto assetTypeName = std::string(context.m_zone->m_pools->GetAssetTypeName(i));
+
+            if (m_args.m_specified_asset_types.find(assetTypeName) != m_args.m_specified_asset_types.end())
+                ObjWriting::Configuration.AssetTypesToHandleBitfield[i] = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::INCLUDE;
+            else
+                ObjWriting::Configuration.AssetTypesToHandleBitfield[i] = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::EXCLUDE;
+        }
+    }
+
     /**
      * \brief Performs the tasks specified by the command line arguments on the specified zone.
      * \param zone The zone to handle.
@@ -249,6 +266,7 @@ class Unlinker::Impl
                 context.m_gdt = std::move(gdt);
             }
 
+            UpdateAssetIncludesAndExcludes(context);
             ObjWriting::DumpZone(context);
 
             if (m_args.m_use_gdt)

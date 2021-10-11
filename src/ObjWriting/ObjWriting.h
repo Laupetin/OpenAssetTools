@@ -1,6 +1,9 @@
 #pragma once
 
+#include <vector>
+
 #include "Dumping/AssetDumpingContext.h"
+#include "Zone/ZoneTypes.h"
 
 class ObjWriting
 {
@@ -21,10 +24,13 @@ public:
         };
 
         bool Verbose = false;
+        std::vector<bool> AssetTypesToHandleBitfield;
+
         ImageOutputFormat_e ImageOutputFormat = ImageOutputFormat_e::DDS;
         ModelOutputFormat_e ModelOutputFormat = ModelOutputFormat_e::XMODEL_EXPORT;
 
     } Configuration;
 
     static bool DumpZone(AssetDumpingContext& context);
+    static bool ShouldHandleAssetType(asset_type_t assetType);
 };

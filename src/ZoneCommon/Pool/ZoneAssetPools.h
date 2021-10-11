@@ -33,6 +33,7 @@ public:
     XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings);
     XAssetInfoGeneric* AddAsset(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings, Zone* zone);
     _NODISCARD virtual XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const = 0;
+    _NODISCARD virtual asset_type_t GetAssetTypeCount() const = 0;
     _NODISCARD virtual const char* GetAssetTypeName(asset_type_t assetType) const = 0;
 
     virtual void InitPoolStatic(asset_type_t type, size_t capacity) = 0;

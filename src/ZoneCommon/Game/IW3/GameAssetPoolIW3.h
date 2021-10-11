@@ -53,6 +53,10 @@ public:
     void InitPoolDynamic(asset_type_t type) override;
 
     _NODISCARD XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
+
     static const char* AssetTypeNameByType(asset_type_t assetType);
     _NODISCARD const char* GetAssetTypeName(asset_type_t assetType) const override;
+
+    static asset_type_t AssetTypeCount();
+    _NODISCARD asset_type_t GetAssetTypeCount() const override;
 };

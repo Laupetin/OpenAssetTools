@@ -84,35 +84,6 @@ GameAssetPoolIW3::GameAssetPoolIW3(Zone* zone, const int priority)
     m_priority(priority)
 {
     static_assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
-
-    m_phys_preset = nullptr;
-    m_xanim_parts = nullptr;
-    m_xmodel = nullptr;
-    m_material = nullptr;
-    m_material_pixel_shader = nullptr;
-    m_material_vertex_shader = nullptr;
-    m_material_vertex_decl = nullptr;
-    m_technique_set = nullptr;
-    m_image = nullptr;
-    m_sound = nullptr;
-    m_sound_curve = nullptr;
-    m_loaded_sound = nullptr;
-    m_clip_map = nullptr;
-    m_com_world = nullptr;
-    m_game_world_sp = nullptr;
-    m_game_world_mp = nullptr;
-    m_map_ents = nullptr;
-    m_gfx_world = nullptr;
-    m_gfx_light_def = nullptr;
-    m_font = nullptr;
-    m_menu_list = nullptr;
-    m_menu_def = nullptr;
-    m_localize = nullptr;
-    m_weapon = nullptr;
-    m_fx = nullptr;
-    m_fx_impact_table = nullptr;
-    m_raw_file = nullptr;
-    m_string_table = nullptr;
 }
 
 void GameAssetPoolIW3::InitPoolStatic(const asset_type_t type, const size_t capacity)
@@ -326,4 +297,14 @@ const char* GameAssetPoolIW3::AssetTypeNameByType(asset_type_t assetType)
 const char* GameAssetPoolIW3::GetAssetTypeName(const asset_type_t assetType) const
 {
     return AssetTypeNameByType(assetType);
+}
+
+asset_type_t GameAssetPoolIW3::AssetTypeCount()
+{
+    return ASSET_TYPE_COUNT;
+}
+
+asset_type_t GameAssetPoolIW3::GetAssetTypeCount() const
+{
+    return AssetTypeCount();
 }

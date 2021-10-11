@@ -2,6 +2,7 @@
 #include <regex>
 #include <set>
 #include <vector>
+#include <string>
 
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Zone/Zone.h"
@@ -24,11 +25,19 @@ private:
     bool SetImageDumpingMode();
     bool SetModelDumpingMode();
 
+    void ParseCommaSeparatedAssetTypeString(const std::string& input);
+
 public:
     enum class ProcessingTask
     {
         DUMP,
         LIST
+    };
+
+    enum class AssetTypeHandling
+    {
+        EXCLUDE,
+        INCLUDE
     };
 
     std::vector<std::string> m_zones_to_load;
@@ -38,6 +47,9 @@ public:
     ProcessingTask m_task;
     std::string m_output_folder;
     bool m_minimal_zone_def;
+
+    std::set<std::string> m_specified_asset_types;
+    AssetTypeHandling m_asset_type_handling;
 
     bool m_use_gdt;
 

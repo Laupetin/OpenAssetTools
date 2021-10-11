@@ -60,80 +60,6 @@ GameAssetPoolT5::GameAssetPoolT5(Zone* zone, const int priority)
     m_priority(priority)
 {
     assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
-
-    m_phys_preset = nullptr;
-    m_phys_constraints = nullptr;
-    m_destructible_def = nullptr;
-    m_xanim_parts = nullptr;
-    m_xmodel = nullptr;
-    m_material = nullptr;
-    m_technique_set = nullptr;
-    m_image = nullptr;
-    m_sound_bank = nullptr;
-    m_sound_patch = nullptr;
-    m_clip_map = nullptr;
-    m_com_world = nullptr;
-    m_game_world_sp = nullptr;
-    m_game_world_mp = nullptr;
-    m_map_ents = nullptr;
-    m_gfx_world = nullptr;
-    m_gfx_light_def = nullptr;
-    m_font = nullptr;
-    m_menu_list = nullptr;
-    m_menu_def = nullptr;
-    m_localize = nullptr;
-    m_weapon = nullptr;
-    m_snd_driver_globals = nullptr;
-    m_fx = nullptr;
-    m_fx_impact_table = nullptr;
-    m_raw_file = nullptr;
-    m_string_table = nullptr;
-    m_pack_index = nullptr;
-    m_xglobals = nullptr;
-    m_ddl = nullptr;
-    m_glasses = nullptr;
-    m_emblem_set = nullptr;
-}
-
-GameAssetPoolT5::~GameAssetPoolT5()
-{
-#define DELETE_POOL(poolName) \
-    delete (poolName); (poolName) = nullptr;
-
-    DELETE_POOL(m_phys_preset);
-    DELETE_POOL(m_phys_constraints);
-    DELETE_POOL(m_destructible_def);
-    DELETE_POOL(m_xanim_parts);
-    DELETE_POOL(m_xmodel);
-    DELETE_POOL(m_material);
-    DELETE_POOL(m_technique_set);
-    DELETE_POOL(m_image);
-    DELETE_POOL(m_sound_bank);
-    DELETE_POOL(m_sound_patch);
-    DELETE_POOL(m_clip_map);
-    DELETE_POOL(m_com_world);
-    DELETE_POOL(m_game_world_sp);
-    DELETE_POOL(m_game_world_mp);
-    DELETE_POOL(m_map_ents);
-    DELETE_POOL(m_gfx_world);
-    DELETE_POOL(m_gfx_light_def);
-    DELETE_POOL(m_font);
-    DELETE_POOL(m_menu_list);
-    DELETE_POOL(m_menu_def);
-    DELETE_POOL(m_localize);
-    DELETE_POOL(m_weapon);
-    DELETE_POOL(m_snd_driver_globals);
-    DELETE_POOL(m_fx);
-    DELETE_POOL(m_fx_impact_table);
-    DELETE_POOL(m_raw_file);
-    DELETE_POOL(m_string_table);
-    DELETE_POOL(m_pack_index);
-    DELETE_POOL(m_xglobals);
-    DELETE_POOL(m_ddl);
-    DELETE_POOL(m_glasses);
-    DELETE_POOL(m_emblem_set);
-
-#undef DELETE_POOL
 }
 
 void GameAssetPoolT5::InitPoolStatic(const asset_type_t type, const size_t capacity)
@@ -143,7 +69,7 @@ void GameAssetPoolT5::InitPoolStatic(const asset_type_t type, const size_t capac
     { \
         if((poolName) == nullptr && capacity > 0)  \
         { \
-            (poolName) = new AssetPoolStatic<poolType>(capacity, m_priority, (assetType)); \
+            (poolName) = std::make_unique<AssetPoolStatic<poolType>>(capacity, m_priority, (assetType)); \
         } \
         break; \
     }
@@ -199,7 +125,7 @@ void GameAssetPoolT5::InitPoolDynamic(const asset_type_t type)
     { \
         if((poolName) == nullptr) \
         { \
-            (poolName) = new AssetPoolDynamic<poolType>(m_priority, (assetType)); \
+            (poolName) = std::make_unique<AssetPoolDynamic<poolType>>(m_priority, (assetType)); \
         } \
         break; \
     }
@@ -376,4 +302,14 @@ const char* GameAssetPoolT5::AssetTypeNameByType(asset_type_t assetType)
 const char* GameAssetPoolT5::GetAssetTypeName(const asset_type_t assetType) const
 {
     return AssetTypeNameByType(assetType);
+}
+
+asset_type_t GameAssetPoolT5::AssetTypeCount()
+{
+    return ASSET_TYPE_COUNT;
+}
+
+asset_type_t GameAssetPoolT5::GetAssetTypeCount() const
+{
+    return AssetTypeCount();
 }

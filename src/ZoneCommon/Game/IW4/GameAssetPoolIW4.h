@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "Utils/ClassUtils.h"
 #include "Pool/ZoneAssetPools.h"
 #include "Pool/AssetPool.h"
 #include "Game/IW4/IW4.h"
@@ -59,7 +60,11 @@ public:
     void InitPoolStatic(asset_type_t type, size_t capacity) override;
     void InitPoolDynamic(asset_type_t type) override;
 
-    XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
+    _NODISCARD XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const override;
+
     static const char* AssetTypeNameByType(asset_type_t assetType);
-    const char* GetAssetTypeName(asset_type_t assetType) const override;
+    _NODISCARD const char* GetAssetTypeName(asset_type_t assetType) const override;
+
+    static asset_type_t AssetTypeCount();
+    _NODISCARD asset_type_t GetAssetTypeCount() const override;
 };
