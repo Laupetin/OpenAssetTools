@@ -1,5 +1,6 @@
 #include "AssetDumperMenuDef.h"
 
+#include <cassert>
 #include <filesystem>
 #include <ostream>
 #include <cmath>
@@ -326,10 +327,13 @@ class MenuDumperIw4 : public MenuDumper
 
     void WriteMaterialProperty(const std::string& propertyKey, const Material* materialValue) const
     {
-        if (materialValue == nullptr)
+        if (materialValue == nullptr || materialValue->info.name == nullptr)
             return;
 
-        WriteStringProperty(propertyKey, materialValue->info.name);
+        if (materialValue->info.name[0] == ',')
+            WriteStringProperty(propertyKey, &materialValue->info.name[1]);
+        else
+            WriteStringProperty(propertyKey, materialValue->info.name);
     }
 
     void WriteSoundAliasProperty(const std::string& propertyKey, const snd_alias_list_t* soundAliasValue) const
@@ -340,60 +344,236 @@ class MenuDumperIw4 : public MenuDumper
         WriteStringProperty(propertyKey, soundAliasValue->aliasName);
     }
 
+    static size_t FindStatementClosingParenthesis(const Statement_s* statement, const size_t openingParenthesisPosition)
+    {
+        assert(statement->numEntries >= 0);
+        assert(openingParenthesisPosition < static_cast<size_t>(statement->numEntries));
+
+        const auto statementEnd = static_cast<size_t>(statement->numEntries);
+
+        // The openingParenthesisPosition does not necessarily point to an actual opening parenthesis operator. That's fine though.
+        // We will pretend it does since the game does sometimes leave out opening parenthesis from the entries.
+        auto currentParenthesisDepth = 1;
+        for (auto currentSearchPosition = openingParenthesisPosition + 1; currentSearchPosition < statementEnd; currentSearchPosition++)
+        {
+            const auto& expEntry = statement->entries[currentSearchPosition];
+            if (expEntry.type != EET_OPERATOR)
+                continue;
+
+            // Any function means a "left out" left paren
+            if (expEntry.data.op == OP_LEFTPAREN || expEntry.data.op >= OP_COUNT)
+            {
+                currentParenthesisDepth++;
+            }
+            else if (expEntry.data.op == OP_RIGHTPAREN)
+            {
+                if (currentParenthesisDepth > 0)
+                    currentParenthesisDepth--;
+                if (currentParenthesisDepth == 0)
+                    return currentSearchPosition;
+            }
+        }
+
+        return statementEnd;
+    }
+
+    void WriteStatementOperator(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const
+    {
+        const auto& expEntry = statement->entries[currentPos];
+
+        if (spaceNext && expEntry.data.op != OP_COMMA)
+            m_stream << " ";
+
+        if (expEntry.data.op == OP_LEFTPAREN)
+        {
+            const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
+            m_stream << "(";
+            WriteStatementEntryRange(statement, currentPos + 1, closingParenPos);
+            m_stream << ")";
+
+            currentPos = closingParenPos + 1;
+            spaceNext = true;
+        }
+        else if(expEntry.data.op >= EXP_FUNC_STATIC_DVAR_INT && expEntry.data.op <= EXP_FUNC_STATIC_DVAR_STRING)
+        {
+            switch(expEntry.data.op)
+            {
+            case EXP_FUNC_STATIC_DVAR_INT:
+                m_stream << "dvarint";
+                break;
+
+            case EXP_FUNC_STATIC_DVAR_BOOL:
+                m_stream << "dvarbool";
+                break;
+
+            case EXP_FUNC_STATIC_DVAR_FLOAT:
+                m_stream << "dvarfloat";
+                break;
+
+            case EXP_FUNC_STATIC_DVAR_STRING:
+                m_stream << "dvarstring";
+                break;
+
+            default:
+                break;
+            }
+
+            // Functions do not have opening parenthesis in the entries. We can just pretend they do though
+            const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
+            m_stream << "(";
+
+            if(closingParenPos - currentPos + 1 >= 1)
+            {
+                const auto& staticDvarEntry = statement->entries[currentPos + 1];
+                if(staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
+                {
+                    if(statement->supportingData
+                        && statement->supportingData->staticDvarList.staticDvars
+                        && staticDvarEntry.data.operand.internals.intVal >= 0 
+                        && staticDvarEntry.data.operand.internals.intVal < statement->supportingData->staticDvarList.numStaticDvars)
+                    {
+                        const auto* staticDvar = statement->supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
+                        if(staticDvar && staticDvar->dvarName)
+                            m_stream << staticDvar->dvarName;
+                    }
+                    else
+                    {
+                        m_stream << "#INVALID_DVAR_INDEX";
+                    }
+                }
+                else
+                {
+                    m_stream << "#INVALID_DVAR_OPERAND";
+                }
+            }
+
+            m_stream << ")";
+            currentPos = closingParenPos + 1;
+            spaceNext = true;
+        }
+        else
+        {
+            if (expEntry.data.op >= 0 && static_cast<unsigned>(expEntry.data.op) < std::extent_v<decltype(g_expFunctionNames)>)
+                m_stream << g_expFunctionNames[expEntry.data.op];
+
+            if (expEntry.data.op >= OP_COUNT)
+            {
+                // Functions do not have opening parenthesis in the entries. We can just pretend they do though
+                const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
+                m_stream << "(";
+                WriteStatementEntryRange(statement, currentPos + 1, closingParenPos);
+                m_stream << ")";
+                currentPos = closingParenPos + 1;
+            }
+            else
+                currentPos++;
+
+            spaceNext = expEntry.data.op != OP_NEG;
+        }
+    }
+
+    void WriteStatementOperand(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const
+    {
+        const auto& expEntry = statement->entries[currentPos];
+
+        if (spaceNext)
+            m_stream << " ";
+
+        const auto& operand = expEntry.data.operand;
+
+        switch (operand.dataType)
+        {
+        case VAL_FLOAT:
+            m_stream << operand.internals.floatVal;
+            break;
+
+        case VAL_INT:
+            m_stream << operand.internals.intVal;
+            break;
+
+        case VAL_STRING:
+            m_stream << "\"" << operand.internals.stringVal.string << "\"";
+            break;
+
+        case VAL_FUNCTION:
+        {
+            int functionIndex = -1;
+            if (statement->supportingData && statement->supportingData->uifunctions.functions)
+            {
+                for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement->supportingData->uifunctions.totalFunctions; supportingFunctionIndex++)
+                {
+                    if (statement->supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
+                    {
+                        functionIndex = supportingFunctionIndex;
+                        break;
+                    }
+                }
+            }
+
+            if (functionIndex >= 0)
+                m_stream << "FUNC_" << functionIndex;
+            else
+                m_stream << "INVALID_FUNC";
+
+            break;
+        }
+
+        default:
+            break;
+        }
+
+        currentPos++;
+        spaceNext = true;
+    }
+
+    void WriteStatementEntryRange(const Statement_s* statement, const size_t startOffset, const size_t endOffset) const
+    {
+        assert(startOffset <= endOffset);
+        assert(endOffset <= static_cast<size_t>(statement->numEntries));
+
+        auto currentPos = startOffset;
+        auto spaceNext = false;
+        while (currentPos < endOffset)
+        {
+            const auto& expEntry = statement->entries[currentPos];
+            
+            if (expEntry.type == EET_OPERATOR)
+            {
+                WriteStatementOperator(statement, currentPos, spaceNext);
+            }
+            else
+            {
+                WriteStatementOperand(statement, currentPos, spaceNext);
+            }
+        }
+    }
+
     void WriteStatementProperty(const std::string& propertyKey, const Statement_s* statementValue, const bool isBooleanStatement) const
     {
-        if (statementValue == nullptr)
+        if (statementValue == nullptr || statementValue->numEntries < 0)
             return;
 
         Indent();
         WriteKey(propertyKey);
 
+        const auto statementEnd = static_cast<size_t>(statementValue->numEntries);
+
         if (isBooleanStatement)
         {
             m_stream << "when";
-        }
 
-        for (auto i = 0; i < statementValue->numEntries; i++)
-        {
-            const auto& expEntry = statementValue->entries[i];
-
-            if (i > 0)
+            // Add a space when first entry is not (
+            if (statementEnd < 1
+                || statementValue->entries[0].type != EET_OPERATOR
+                || statementValue->entries[0].data.op != OP_LEFTPAREN)
+            {
                 m_stream << " ";
-
-            if (expEntry.type == EET_OPERATOR)
-            {
-                if (expEntry.data.op >= 0 && static_cast<unsigned>(expEntry.data.op) < std::extent_v<decltype(g_expFunctionNames)>)
-                    m_stream << g_expFunctionNames[expEntry.data.op];
-            }
-            else
-            {
-                const auto& operand = expEntry.data.operand;
-
-                switch (operand.dataType)
-                {
-                case VAL_FLOAT:
-                    m_stream << operand.internals.floatVal;
-                    break;
-
-                case VAL_INT:
-                    m_stream << operand.internals.intVal;
-                    break;
-
-                case VAL_STRING:
-                    m_stream << "\"" << operand.internals.stringVal.string << "\"";
-                    break;
-
-                case VAL_FUNCTION:
-                    m_stream << "FUNC";
-                    break;
-
-                default:
-                    break;
-                }
             }
         }
 
-        m_stream << "\n";
+        WriteStatementEntryRange(statementValue, 0, statementEnd);
+
+        m_stream << ";\n";
     }
 
     void WriteMenuEventHandlerSetProperty(const std::string& propertyKey, const MenuEventHandlerSet* eventHandlerValue) const

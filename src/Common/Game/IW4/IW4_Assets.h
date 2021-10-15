@@ -1145,6 +1145,14 @@ namespace IW4
         OP_COUNT
     };
 
+    enum expressionFunction_e
+    {
+        EXP_FUNC_STATIC_DVAR_INT = OP_COUNT,
+        EXP_FUNC_STATIC_DVAR_BOOL,
+        EXP_FUNC_STATIC_DVAR_FLOAT,
+        EXP_FUNC_STATIC_DVAR_STRING,
+    };
+
     union entryInternalData
     {
         int op;
