@@ -1206,6 +1206,38 @@ namespace IW4
         int endTriggerType;
     };
 
+    enum ItemFloatExpressionTarget
+    {
+        ITEM_FLOATEXP_TGT_RECT_X = 0x0,
+        ITEM_FLOATEXP_TGT_RECT_Y = 0x1,
+        ITEM_FLOATEXP_TGT_RECT_W = 0x2,
+        ITEM_FLOATEXP_TGT_RECT_H = 0x3,
+        ITEM_FLOATEXP_TGT_FORECOLOR_R = 0x4,
+        ITEM_FLOATEXP_TGT_FORECOLOR_G = 0x5,
+        ITEM_FLOATEXP_TGT_FORECOLOR_B = 0x6,
+        ITEM_FLOATEXP_TGT_FORECOLOR_RGB = 0x7,
+        ITEM_FLOATEXP_TGT_FORECOLOR_A = 0x8,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_R = 0x9,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_G = 0xA,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_B = 0xB,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB = 0xC,
+        ITEM_FLOATEXP_TGT_GLOWCOLOR_A = 0xD,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_R = 0xE,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_G = 0xF,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_B = 0x10,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_RGB = 0x11,
+        ITEM_FLOATEXP_TGT_BACKCOLOR_A = 0x12,
+
+        ITEM_FLOATEXP_TGT_COUNT
+    };
+
+    struct ItemExpressionTargetBinding
+    {
+        int target;
+        const char* name;
+        const char* componentName;
+    };
+
     struct ItemFloatExpression
     {
         int target;

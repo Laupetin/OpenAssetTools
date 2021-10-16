@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <ostream>
 #include <cmath>
+#include <string>
 
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Menu/MenuDumper.h"
@@ -203,6 +204,29 @@ namespace IW4
         "allsplitscreenprofilesaresignedin",
         "coopready",
     };
+
+    const ItemExpressionTargetBinding floatExpressionTargetBindings[ITEM_FLOATEXP_TGT_COUNT]
+    {
+        {ITEM_FLOATEXP_TGT_RECT_X, "rect", "x"},
+        {ITEM_FLOATEXP_TGT_RECT_Y, "rect", "y"},
+        {ITEM_FLOATEXP_TGT_RECT_W, "rect", "w"},
+        {ITEM_FLOATEXP_TGT_RECT_H, "rect", "h"},
+        {ITEM_FLOATEXP_TGT_FORECOLOR_R, "forecolor", "r"},
+        {ITEM_FLOATEXP_TGT_FORECOLOR_G, "forecolor", "g"},
+        {ITEM_FLOATEXP_TGT_FORECOLOR_B, "forecolor", "b"},
+        {ITEM_FLOATEXP_TGT_FORECOLOR_RGB, "forecolor", "rgb"},
+        {ITEM_FLOATEXP_TGT_FORECOLOR_A, "forecolor", "a"},
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_R, "glowcolor", "r"},
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_G, "glowcolor", "g"},
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_B, "glowcolor", "b"},
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, "glowcolor", "rgb"},
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_A, "glowcolor", "a"},
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_R, "backcolor", "r"},
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_G, "backcolor", "g"},
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_B, "backcolor", "b"},
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, "backcolor", "rgb"},
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_A, "backcolor", "a"},
+    };
 }
 
 class MenuDumperIw4 : public MenuDumper
@@ -344,6 +368,16 @@ class MenuDumperIw4 : public MenuDumper
         WriteStringProperty(propertyKey, soundAliasValue->aliasName);
     }
 
+    void WriteDecodeEffectProperty(const std::string& propertyKey, const itemDef_s* item) const
+    {
+        if (!item->decayActive)
+            return;
+
+        Indent();
+        WriteKey(propertyKey);
+        m_stream << item->fxLetterTime << " " << item->fxDecayStartTime << " " << item->fxDecayDuration << "\n";
+    }
+
     static size_t FindStatementClosingParenthesis(const Statement_s* statement, const size_t openingParenthesisPosition)
     {
         assert(statement->numEntries >= 0);
@@ -394,9 +428,9 @@ class MenuDumperIw4 : public MenuDumper
             currentPos = closingParenPos + 1;
             spaceNext = true;
         }
-        else if(expEntry.data.op >= EXP_FUNC_STATIC_DVAR_INT && expEntry.data.op <= EXP_FUNC_STATIC_DVAR_STRING)
+        else if (expEntry.data.op >= EXP_FUNC_STATIC_DVAR_INT && expEntry.data.op <= EXP_FUNC_STATIC_DVAR_STRING)
         {
-            switch(expEntry.data.op)
+            switch (expEntry.data.op)
             {
             case EXP_FUNC_STATIC_DVAR_INT:
                 m_stream << "dvarint";
@@ -422,18 +456,18 @@ class MenuDumperIw4 : public MenuDumper
             const auto closingParenPos = FindStatementClosingParenthesis(statement, currentPos);
             m_stream << "(";
 
-            if(closingParenPos - currentPos + 1 >= 1)
+            if (closingParenPos - currentPos + 1 >= 1)
             {
                 const auto& staticDvarEntry = statement->entries[currentPos + 1];
-                if(staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
+                if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
                 {
-                    if(statement->supportingData
+                    if (statement->supportingData
                         && statement->supportingData->staticDvarList.staticDvars
-                        && staticDvarEntry.data.operand.internals.intVal >= 0 
+                        && staticDvarEntry.data.operand.internals.intVal >= 0
                         && staticDvarEntry.data.operand.internals.intVal < statement->supportingData->staticDvarList.numStaticDvars)
                     {
                         const auto* staticDvar = statement->supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
-                        if(staticDvar && staticDvar->dvarName)
+                        if (staticDvar && staticDvar->dvarName)
                             m_stream << staticDvar->dvarName;
                     }
                     else
@@ -496,27 +530,27 @@ class MenuDumperIw4 : public MenuDumper
             break;
 
         case VAL_FUNCTION:
-        {
-            int functionIndex = -1;
-            if (statement->supportingData && statement->supportingData->uifunctions.functions)
             {
-                for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement->supportingData->uifunctions.totalFunctions; supportingFunctionIndex++)
+                int functionIndex = -1;
+                if (statement->supportingData && statement->supportingData->uifunctions.functions)
                 {
-                    if (statement->supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
+                    for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement->supportingData->uifunctions.totalFunctions; supportingFunctionIndex++)
                     {
-                        functionIndex = supportingFunctionIndex;
-                        break;
+                        if (statement->supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
+                        {
+                            functionIndex = supportingFunctionIndex;
+                            break;
+                        }
                     }
                 }
+
+                if (functionIndex >= 0)
+                    m_stream << "FUNC_" << functionIndex;
+                else
+                    m_stream << "INVALID_FUNC";
+
+                break;
             }
-
-            if (functionIndex >= 0)
-                m_stream << "FUNC_" << functionIndex;
-            else
-                m_stream << "INVALID_FUNC";
-
-            break;
-        }
 
         default:
             break;
@@ -536,7 +570,7 @@ class MenuDumperIw4 : public MenuDumper
         while (currentPos < endOffset)
         {
             const auto& expEntry = statement->entries[currentPos];
-            
+
             if (expEntry.type == EET_OPERATOR)
             {
                 WriteStatementOperator(statement, currentPos, spaceNext);
@@ -588,6 +622,25 @@ class MenuDumperIw4 : public MenuDumper
 
     void WriteItemKeyHandlerProperty(const ItemKeyHandler* itemKeyHandlerValue) const
     {
+    }
+
+    void WriteFloatExpressionsProperty(const ItemFloatExpression* floatExpressions, const int floatExpressionCount) const
+    {
+        if (!floatExpressions)
+            return;
+
+        for (int i = 0; i < floatExpressionCount; i++)
+        {
+            const auto& floatExpression = floatExpressions[i];
+
+            if (floatExpression.target < 0 || floatExpression.target >= ITEM_FLOATEXP_TGT_COUNT)
+                continue;
+
+            std::string propertyName = std::string("exp ") + floatExpressionTargetBindings[floatExpression.target].name + std::string(" ")
+                + floatExpressionTargetBindings[floatExpression.target].componentName;
+
+            WriteStatementProperty(propertyName, floatExpression.expression, false);
+        }
     }
 
     void WriteItemData(const itemDef_s* item)
@@ -648,10 +701,10 @@ class MenuDumperIw4 : public MenuDumper
         WriteStatementProperty("exp text", item->textExp, false);
         WriteStatementProperty("exp material", item->materialExp, false);
         WriteStatementProperty("exp disabled", item->disabledExp, false);
-        // floatexpressions
+        WriteFloatExpressionsProperty(item->floatExpressions, item->floatExpressionCount);
         WriteIntProperty("gamemsgwindowindex", item->gameMsgWindowIndex, 0);
         WriteIntProperty("gamemsgwindowmode", item->gameMsgWindowMode, 0);
-        // decodeEffect
+        WriteDecodeEffectProperty("decodeEffect", item);
     }
 
     void WriteItemDefs(const itemDef_s* const* itemDefs, const size_t itemCount)
