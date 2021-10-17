@@ -5,6 +5,7 @@
 #include <ostream>
 #include <cmath>
 #include <string>
+#include <sstream>
 
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Menu/MenuDumper.h"
@@ -582,6 +583,14 @@ class MenuDumperIw4 : public MenuDumper
         }
     }
 
+    void WriteStatement(const Statement_s* statement) const
+    {
+        if (statement == nullptr || statement->numEntries < 0)
+            return;
+
+        WriteStatementEntryRange(statement, 0, static_cast<size_t>(statement->numEntries));
+    }
+
     void WriteStatementProperty(const std::string& propertyKey, const Statement_s* statementValue, const bool isBooleanStatement) const
     {
         if (statementValue == nullptr || statementValue->numEntries < 0)
@@ -610,18 +619,126 @@ class MenuDumperIw4 : public MenuDumper
         m_stream << ";\n";
     }
 
-    void WriteMenuEventHandlerSetProperty(const std::string& propertyKey, const MenuEventHandlerSet* eventHandlerValue) const
+    void WriteSetLocalVarData(const std::string& setFunction, const SetLocalVarData* setLocalVarData) const
     {
-        if (eventHandlerValue == nullptr)
+        if (setLocalVarData == nullptr)
+            return;
+
+        Indent();
+        m_stream << setFunction << " " << setLocalVarData->localVarName << " ";
+        WriteStatement(setLocalVarData->expression);
+        m_stream << ";\n";
+    }
+
+    void WriteMenuEventHandlerSet(const MenuEventHandlerSet* eventHandlerSet)
+    {
+        Indent();
+        m_stream << "{\n";
+        IncIndent();
+
+        for (auto i = 0; i < eventHandlerSet->eventHandlerCount; i++)
+        {
+            const auto* eventHandler = eventHandlerSet->eventHandlers[i];
+            if (eventHandler == nullptr)
+                continue;
+
+            switch (eventHandler->eventType)
+            {
+            case EVENT_UNCONDITIONAL:
+                Indent();
+                m_stream << eventHandler->eventData.unconditionalScript << "\n";
+                break;
+
+            case EVENT_IF:
+                if (eventHandler->eventData.conditionalScript == nullptr
+                    || eventHandler->eventData.conditionalScript->eventExpression == nullptr
+                    || eventHandler->eventData.conditionalScript->eventHandlerSet == nullptr)
+                {
+                    continue;
+                }
+
+                Indent();
+                m_stream << "if (";
+                WriteStatement(eventHandler->eventData.conditionalScript->eventExpression);
+                m_stream << ")\n";
+                Indent();
+                m_stream << "{\n";
+                IncIndent();
+                WriteMenuEventHandlerSet(eventHandler->eventData.conditionalScript->eventHandlerSet);
+                DecIndent();
+                Indent();
+                m_stream << "}\n";
+                break;
+
+            case EVENT_ELSE:
+                if (eventHandler->eventData.elseScript == nullptr)
+                    continue;
+
+                Indent();
+                m_stream << "else\n";
+                Indent();
+                m_stream << "{\n";
+                IncIndent();
+                WriteMenuEventHandlerSet(eventHandler->eventData.elseScript);
+                DecIndent();
+                Indent();
+                m_stream << "}\n";
+                break;
+
+            case EVENT_SET_LOCAL_VAR_BOOL:
+                WriteSetLocalVarData("setLocalVarBool", eventHandler->eventData.setLocalVarData);
+                break;
+
+            case EVENT_SET_LOCAL_VAR_INT:
+                WriteSetLocalVarData("setLocalVarInt", eventHandler->eventData.setLocalVarData);
+                break;
+
+            case EVENT_SET_LOCAL_VAR_FLOAT:
+                WriteSetLocalVarData("setLocalVarFloat", eventHandler->eventData.setLocalVarData);
+                break;
+
+            case EVENT_SET_LOCAL_VAR_STRING:
+                WriteSetLocalVarData("setLocalVarString", eventHandler->eventData.setLocalVarData);
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        DecIndent();
+        Indent();
+        m_stream << "}\n";
+    }
+
+    void WriteMenuEventHandlerSetProperty(const std::string& propertyKey, const MenuEventHandlerSet* eventHandlerSetValue)
+    {
+        if (eventHandlerSetValue == nullptr)
             return;
 
         Indent();
         WriteKey(propertyKey);
         m_stream << "\n";
+        WriteMenuEventHandlerSet(eventHandlerSetValue);
     }
 
-    void WriteItemKeyHandlerProperty(const ItemKeyHandler* itemKeyHandlerValue) const
+    void WriteItemKeyHandlerProperty(const ItemKeyHandler* itemKeyHandlerValue)
     {
+        for (const auto* currentHandler = itemKeyHandlerValue; currentHandler; currentHandler = currentHandler->next)
+        {
+            if (currentHandler->key >= '!' && currentHandler->key <= '~' && currentHandler->key != '"')
+            {
+                std::ostringstream ss;
+                ss << "execKey \"" << static_cast<char>(currentHandler->key) << "\"";
+                WriteMenuEventHandlerSetProperty(ss.str(), currentHandler->action);
+            }
+            else
+            {
+                std::ostringstream ss;
+                ss << "execKeyInt " << currentHandler->key;
+                WriteMenuEventHandlerSetProperty(ss.str(), currentHandler->action);
+            }
+        }
     }
 
     void WriteFloatExpressionsProperty(const ItemFloatExpression* floatExpressions, const int floatExpressionCount) const
