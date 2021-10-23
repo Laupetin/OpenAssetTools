@@ -2,33 +2,23 @@
 
 SimpleLexer::SimpleLexer(IParserLineStream* stream)
     : AbstractLexer(stream),
-      m_emit_new_line_tokens(false),
-      m_read_strings(true),
-      m_read_numbers(true),
-      m_last_line(1)
+    m_config{false, true, true},
+    m_last_line(1)
 {
 }
 
-void SimpleLexer::SetShouldEmitNewLineTokens(const bool value)
+SimpleLexer::SimpleLexer(IParserLineStream* stream, Config config)
+    : AbstractLexer(stream),
+    m_config(config),
+    m_last_line(1)
 {
-    m_emit_new_line_tokens = value;
-}
-
-void SimpleLexer::SetShouldReadStrings(const bool value)
-{
-    m_read_strings = value;
-}
-
-void SimpleLexer::SetShouldReadNumbers(const bool value)
-{
-    m_read_numbers = value;
 }
 
 SimpleParserValue SimpleLexer::GetNextToken()
 {
     auto c = PeekChar();
     const auto nextCharPos = GetNextCharacterPos();
-    if (m_emit_new_line_tokens && nextCharPos.m_line > m_last_line)
+    if (m_config.m_emit_new_line_tokens && nextCharPos.m_line > m_last_line)
     {
         m_last_line++;
         return SimpleParserValue::NewLine(GetPreviousCharacterPos());
@@ -36,7 +26,7 @@ SimpleParserValue SimpleLexer::GetNextToken()
 
     while (isspace(c))
     {
-        if (m_emit_new_line_tokens && c == '\n')
+        if (m_config.m_emit_new_line_tokens && c == '\n')
             return SimpleParserValue::NewLine(GetPreviousCharacterPos());
 
         NextChar();
@@ -44,7 +34,7 @@ SimpleParserValue SimpleLexer::GetNextToken()
     }
     
     const auto pos = GetNextCharacterPos();
-    if (m_emit_new_line_tokens && pos.m_line > m_last_line)
+    if (m_config.m_emit_new_line_tokens && pos.m_line > m_last_line)
     {
         m_last_line++;
         return SimpleParserValue::NewLine(GetPreviousCharacterPos());
@@ -55,10 +45,10 @@ SimpleParserValue SimpleLexer::GetNextToken()
     if (c == EOF)
         return SimpleParserValue::EndOfFile(TokenPos());
 
-    if (m_read_strings && c == '\"')
+    if (m_config.m_read_strings && c == '\"')
         return SimpleParserValue::String(GetPreviousCharacterPos(), new std::string(ReadString()));
     
-    if (m_read_numbers && isdigit(c))
+    if (m_config.m_read_numbers && isdigit(c))
     {
         bool isFloatingPointValue;
         double doubleValue;

@@ -1,6 +1,5 @@
 #include "LocalizeFileReader.h"
 
-#include "LocalizeFileLexer.h"
 #include "LocalizeFileParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserInputStream.h"
@@ -30,7 +29,7 @@ void LocalizeFileReader::SetupStreamProxies()
 
 std::vector<LocalizeFileEntry> LocalizeFileReader::ReadLocalizeFile()
 {
-    const auto lexer = std::make_unique<LocalizeFileLexer>(m_stream);
+    const auto lexer = std::make_unique<SimpleLexer>(m_stream, SimpleLexer::Config{true, true, false});
     const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language);
 
     if (parser->Parse())

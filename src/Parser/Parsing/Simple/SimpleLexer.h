@@ -5,18 +5,22 @@
 
 class SimpleLexer : public AbstractLexer<SimpleParserValue>
 {
-    bool m_emit_new_line_tokens;
-    bool m_read_strings;
-    bool m_read_numbers;
+public:
+    class Config
+    {
+    public:
+        bool m_emit_new_line_tokens;
+        bool m_read_strings;
+        bool m_read_numbers;
+    };
+
+    Config m_config;
     int m_last_line;
 
 protected:
     SimpleParserValue GetNextToken() override;
 
-    void SetShouldEmitNewLineTokens(bool value);
-    void SetShouldReadStrings(bool value);
-    void SetShouldReadNumbers(bool value);
-
 public:
     explicit SimpleLexer(IParserLineStream* stream);
+    SimpleLexer(IParserLineStream* stream, Config config);
 };
