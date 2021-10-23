@@ -711,8 +711,16 @@ class MenuDumperIw4 : public MenuDumper
         return hasNonIdentifierCharacter;
     }
 
+//#define WRITE_ORIGINAL_SCRIPT
+
     void WriteUnconditionalScript(const char* script) const
     {
+#ifdef WRITE_ORIGINAL_SCRIPT
+        Indent();
+        m_stream << script << "\n";
+        return;
+#endif
+
         const auto tokenList = CreateScriptTokenList(script);
 
         auto isNewStatement = true;
@@ -865,6 +873,156 @@ class MenuDumperIw4 : public MenuDumper
         }
     }
 
+    void WriteColumnProperty(const std::string& propertyKey, const listBoxDef_s* listBox) const
+    {
+        if (listBox->numColumns <= 0)
+            return;
+
+        Indent();
+        WriteKey(propertyKey);
+        m_stream << listBox->numColumns << "\n";
+
+        for (auto col = 0; col < listBox->numColumns; col++)
+        {
+            Indent();
+            for (auto i = 0u; i < MENU_KEY_SPACING; i++)
+                m_stream << " ";
+
+            m_stream << listBox->columnInfo[col].pos
+                << " " << listBox->columnInfo[col].width
+                << " " << listBox->columnInfo[col].maxChars
+                << " " << listBox->columnInfo[col].alignment << "\n";
+        }
+        
+    }
+
+    void WriteListBoxProperties(const itemDef_s* item)
+    {
+        if (item->type != ITEM_TYPE_LISTBOX || item->typeData.listBox == nullptr)
+            return;
+
+        const auto* listBox = item->typeData.listBox;
+        WriteKeywordProperty("notselectable", listBox->notselectable != 0);
+        WriteKeywordProperty("noscrollbars", listBox->noScrollBars != 0);
+        WriteKeywordProperty("usepaging", listBox->usePaging != 0);
+        WriteFloatProperty("elementwidth", listBox->elementWidth, 0.0f);
+        WriteFloatProperty("elementheight", listBox->elementHeight, 0.0f);
+        WriteFloatProperty("feeder", item->special, 0.0f);
+        WriteIntProperty("elementtype", listBox->elementStyle, 0);
+        WriteColumnProperty("columns", listBox);
+        WriteMenuEventHandlerSetProperty("doubleclick", listBox->onDoubleClick);
+        WriteColorProperty("selectBorder", listBox->selectBorder, COLOR_0000);
+        WriteMaterialProperty("selectIcon", listBox->selectIcon);
+    }
+
+    void WriteDvarFloatProperty(const std::string& propertyKey, const itemDef_s* item, const editFieldDef_s* editField) const
+    {
+        if (item->dvar == nullptr)
+            return;
+
+        Indent();
+        WriteKey(propertyKey);
+        m_stream << "\"" << item->dvar << "\" " << editField->defVal << " " << editField->minVal << " " << editField->maxVal << "\n";
+    }
+
+    void WriteEditFieldProperties(const itemDef_s* item) const
+    {
+        switch (item->type)
+        {
+        case ITEM_TYPE_TEXT:
+        case ITEM_TYPE_EDITFIELD:
+        case ITEM_TYPE_NUMERICFIELD:
+        case ITEM_TYPE_SLIDER:
+        case ITEM_TYPE_YESNO:
+        case ITEM_TYPE_BIND:
+        case ITEM_TYPE_VALIDFILEFIELD:
+        case ITEM_TYPE_DECIMALFIELD:
+        case ITEM_TYPE_UPREDITFIELD:
+        case ITEM_TYPE_EMAILFIELD:
+        case ITEM_TYPE_PASSWORDFIELD:
+            break;
+
+        default:
+            return;
+        }
+
+        if (item->typeData.editField == nullptr)
+            return;
+
+        const auto* editField = item->typeData.editField;
+        if(std::fabs(-1.0f - editField->defVal) >= std::numeric_limits<float>::epsilon()
+            || std::fabs(-1.0f - editField->minVal) >= std::numeric_limits<float>::epsilon()
+            || std::fabs(-1.0f - editField->maxVal) >= std::numeric_limits<float>::epsilon())
+        {
+            WriteDvarFloatProperty("dvarFloat", item, editField);
+        }
+        else
+        {
+            WriteStringProperty("dvar", item->dvar);
+        }
+        WriteStringProperty("localvar", item->localVar);
+        WriteIntProperty("maxChars", editField->maxChars, 0);
+        WriteKeywordProperty("maxCharsGotoNext", editField->maxCharsGotoNext != 0);
+        WriteIntProperty("maxPaintChars", editField->maxPaintChars, 0);
+    }
+
+    void WriteMultiValueProperty(const multiDef_s* multiDef) const
+    {
+        Indent();
+        if (multiDef->strDef)
+            WriteKey("dvarStrList");
+        else
+            WriteKey("dvarFloatList");
+
+        m_stream << "{";
+        for (auto i = 0; i < multiDef->count; i++)
+        {
+            if (multiDef->dvarList[i] == nullptr || multiDef->strDef && multiDef->dvarStr[i] == nullptr)
+                continue;
+
+            m_stream << " \"" << multiDef->dvarList[i] << "\"";
+
+            if (multiDef->strDef)
+                m_stream << " \"" << multiDef->dvarStr[i] << "\"";
+            else
+                m_stream << " " << multiDef->dvarValue[i] << "";
+        }
+        m_stream << " }\n";
+    }
+
+    void WriteMultiProperties(const itemDef_s* item) const
+    {
+        if (item->type != ITEM_TYPE_MULTI || item->typeData.multi == nullptr)
+            return;
+
+        const auto* multiDef = item->typeData.multi;
+
+        if (multiDef->count <= 0)
+            return;
+
+        WriteStringProperty("dvar", item->dvar);
+        WriteMultiValueProperty(multiDef);
+    }
+
+    void WriteEnumDvarProperties(const itemDef_s* item) const
+    {
+        if (item->type != ITEM_TYPE_DVARENUM)
+            return;
+
+        WriteStringProperty("dvarEnumList", item->typeData.enumDvarName);
+    }
+
+    void WriteTickerProperties(const itemDef_s* item) const
+    {
+        if (item->type != ITEM_TYPE_NEWS_TICKER)
+            return;
+
+        const auto* newsTickerDef = item->typeData.ticker;
+        WriteIntProperty("spacing", newsTickerDef->spacing, 0);
+        WriteIntProperty("speed", newsTickerDef->speed, 0);
+        WriteIntProperty("newsfeed", newsTickerDef->feedId, 0);
+    }
+
     void WriteItemData(const itemDef_s* item)
     {
         WriteStringProperty("name", item->window.name);
@@ -875,6 +1033,8 @@ class MenuDumperIw4 : public MenuDumper
         WriteRectProperty("rect", item->window.rect);
         WriteIntProperty("style", item->window.style, 0);
         WriteKeywordProperty("decoration", item->window.staticFlags & WINDOW_FLAG_DECORATION);
+        WriteKeywordProperty("autowrapped", item->window.staticFlags & WINDOW_FLAG_AUTO_WRAPPED);
+        WriteKeywordProperty("horizontalscroll", item->window.staticFlags & WINDOW_FLAG_HORIZONTAL_SCROLL);
         WriteIntProperty("type", item->type, ITEM_TYPE_TEXT);
         WriteIntProperty("border", item->window.border, 0);
         WriteFloatProperty("borderSize", item->window.borderSize, 0.0f);
@@ -893,7 +1053,7 @@ class MenuDumperIw4 : public MenuDumper
         WriteColorProperty("bordercolor", item->window.borderColor, COLOR_0000);
         WriteColorProperty("outlinecolor", item->window.outlineColor, COLOR_0000);
         WriteColorProperty("disablecolor", item->window.disableColor, COLOR_0000);
-        WriteColorProperty("disablecolor", item->glowColor, COLOR_0000);
+        WriteColorProperty("glowcolor", item->glowColor, COLOR_0000);
         WriteMaterialProperty("background", item->window.background);
         WriteMenuEventHandlerSetProperty("onFocus", item->onFocus);
         WriteMenuEventHandlerSetProperty("leaveFocus", item->leaveFocus);
@@ -903,7 +1063,7 @@ class MenuDumperIw4 : public MenuDumper
         WriteMenuEventHandlerSetProperty("mouseExitText", item->mouseExitText);
         WriteMenuEventHandlerSetProperty("action", item->action);
         WriteMenuEventHandlerSetProperty("accept", item->accept);
-        WriteFloatProperty("special", item->special, 0.0f);
+        // WriteFloatProperty("special", item->special, 0.0f);
         WriteSoundAliasProperty("focusSound", item->focusSound);
         WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
         WriteStringProperty("dvarTest", item->dvarTest);
@@ -927,6 +1087,12 @@ class MenuDumperIw4 : public MenuDumper
         WriteIntProperty("gamemsgwindowindex", item->gameMsgWindowIndex, 0);
         WriteIntProperty("gamemsgwindowmode", item->gameMsgWindowMode, 0);
         WriteDecodeEffectProperty("decodeEffect", item);
+
+        WriteListBoxProperties(item);
+        WriteEditFieldProperties(item);
+        WriteMultiProperties(item);
+        WriteEnumDvarProperties(item);
+        WriteTickerProperties(item);
     }
 
     void WriteItemDefs(const itemDef_s* const* itemDefs, const size_t itemCount)
