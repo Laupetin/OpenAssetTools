@@ -9,6 +9,8 @@
 
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Menu/MenuDumper.h"
+#include "Parsing/Impl/ParserInputStream.h"
+#include "Parsing/Simple/SimpleLexer.h"
 
 namespace fs = std::filesystem;
 
@@ -630,6 +632,103 @@ class MenuDumperIw4 : public MenuDumper
         m_stream << ";\n";
     }
 
+    static std::vector<std::string> CreateScriptTokenList(const char* script)
+    {
+        const std::string scriptString(script);
+        std::istringstream stringStream(scriptString);
+        ParserInputStream inputStream(stringStream, "MenuScript");
+        SimpleLexer lexer(&inputStream, SimpleLexer::Config{ false, true, false });
+
+        std::vector<std::string> result;
+        auto hasLexerTokens = true;
+        while(hasLexerTokens)
+        {
+            const auto& token = lexer.GetToken(0);
+            switch(token.m_type)
+            {
+            case SimpleParserValueType::IDENTIFIER:
+                result.emplace_back(token.IdentifierValue());
+                break;
+
+            case SimpleParserValueType::STRING:
+                result.emplace_back(token.StringValue());
+                break;
+
+            case SimpleParserValueType::CHARACTER:
+                result.emplace_back(1, token.CharacterValue());
+                break;
+
+            case SimpleParserValueType::INVALID:
+            case SimpleParserValueType::END_OF_FILE:
+                hasLexerTokens = false;
+                break;
+
+            default:
+                assert(false);
+                break;
+            }
+
+            lexer.PopTokens(1);
+        }
+
+        return result;
+    }
+
+    static bool DoesTokenNeedQuotationMarks(const std::string& token)
+    {
+        const auto hasAlNumCharacter = std::any_of(token.begin(), token.end(), [](const char& c)
+        {
+            return isalnum(c);
+        });
+
+        if (!hasAlNumCharacter)
+            return false;
+
+        const auto hasNonIdentifierCharacter = std::any_of(token.begin(), token.end(), [](const char& c)
+        {
+            return !isalnum(c) && c != '_';
+        });
+
+        return hasNonIdentifierCharacter;
+    }
+
+    void WriteUnconditionalScript(const char* script) const
+    {
+        const auto tokenList = CreateScriptTokenList(script);
+
+        auto isNewStatement = true;
+        for (const auto& token : tokenList)
+        {
+            if (isNewStatement)
+            {
+                if (token == ";")
+                    continue;
+
+                Indent();
+            }
+
+            if (token == ";")
+            {
+                m_stream << ";\n";
+                isNewStatement = true;
+                continue;
+            }
+
+            if(!isNewStatement)
+                m_stream << " ";
+            else
+                isNewStatement = false;
+
+            if (DoesTokenNeedQuotationMarks(token))
+                m_stream << "\"" << token << "\"";
+            else
+                m_stream << token;
+        }
+
+        if (!isNewStatement)
+            m_stream << ";\n";
+    }
+
     void WriteMenuEventHandlerSet(const MenuEventHandlerSet* eventHandlerSet)
     {
         Indent();
@@ -645,8 +744,7 @@ class MenuDumperIw4 : public MenuDumper
             switch (eventHandler->eventType)
             {
             case EVENT_UNCONDITIONAL:
-                Indent();
-                m_stream << eventHandler->eventData.unconditionalScript << "\n";
+                WriteUnconditionalScript(eventHandler->eventData.unconditionalScript);
                 break;
 
             case EVENT_IF:
@@ -661,13 +759,7 @@ class MenuDumperIw4 : public MenuDumper
                 m_stream << "if (";
                 WriteStatement(eventHandler->eventData.conditionalScript->eventExpression);
                 m_stream << ")\n";
-                Indent();
-                m_stream << "{\n";
-                IncIndent();
                 WriteMenuEventHandlerSet(eventHandler->eventData.conditionalScript->eventHandlerSet);
-                DecIndent();
-                Indent();
-                m_stream << "}\n";
                 break;
 
             case EVENT_ELSE:
@@ -676,13 +768,7 @@ class MenuDumperIw4 : public MenuDumper
 
                 Indent();
                 m_stream << "else\n";
-                Indent();
-                m_stream << "{\n";
-                IncIndent();
                 WriteMenuEventHandlerSet(eventHandler->eventData.elseScript);
-                DecIndent();
-                Indent();
-                m_stream << "}\n";
                 break;
 
             case EVENT_SET_LOCAL_VAR_BOOL:
