@@ -593,6 +593,32 @@ class MenuDumperIw4 : public MenuDumper
         WriteStatementEntryRange(statement, 0, static_cast<size_t>(statement->numEntries));
     }
 
+    void WriteStatementSkipInitialUnnecessaryParenthesis(const Statement_s* statementValue) const
+    {
+        if (statementValue == nullptr || statementValue->numEntries < 0)
+            return;
+
+        const auto statementEnd = static_cast<size_t>(statementValue->numEntries);
+
+        if (statementValue->numEntries >= 1
+            && statementValue->entries[0].type == EET_OPERATOR
+            && statementValue->entries[0].data.op == OP_LEFTPAREN)
+        {
+            const auto parenthesisEnd = FindStatementClosingParenthesis(statementValue, 0);
+
+            if (parenthesisEnd >= statementEnd)
+                WriteStatementEntryRange(statementValue, 1, statementEnd);
+            else if (parenthesisEnd == statementEnd - 1)
+                WriteStatementEntryRange(statementValue, 1, statementEnd - 1);
+            else
+                WriteStatementEntryRange(statementValue, 0, statementEnd);
+        }
+        else
+        {
+            WriteStatementEntryRange(statementValue, 0, statementEnd);
+        }
+    }
+
     void WriteStatementProperty(const std::string& propertyKey, const Statement_s* statementValue, const bool isBooleanStatement) const
     {
         if (statementValue == nullptr || statementValue->numEntries < 0)
@@ -601,24 +627,17 @@ class MenuDumperIw4 : public MenuDumper
         Indent();
         WriteKey(propertyKey);
 
-        const auto statementEnd = static_cast<size_t>(statementValue->numEntries);
-
         if (isBooleanStatement)
         {
-            m_stream << "when";
-
-            // Add a space when first entry is not (
-            if (statementEnd < 1
-                || statementValue->entries[0].type != EET_OPERATOR
-                || statementValue->entries[0].data.op != OP_LEFTPAREN)
-            {
-                m_stream << " ";
-            }
+            m_stream << "when(";
+            WriteStatementSkipInitialUnnecessaryParenthesis(statementValue);
+            m_stream << ");\n";
         }
-
-        WriteStatementEntryRange(statementValue, 0, statementEnd);
-
-        m_stream << ";\n";
+        else
+        {
+            WriteStatementSkipInitialUnnecessaryParenthesis(statementValue);
+            m_stream << ";\n";
+        }
     }
 
     void WriteSetLocalVarData(const std::string& setFunction, const SetLocalVarData* setLocalVarData) const
@@ -637,14 +656,14 @@ class MenuDumperIw4 : public MenuDumper
         const std::string scriptString(script);
         std::istringstream stringStream(scriptString);
         ParserInputStream inputStream(stringStream, "MenuScript");
-        SimpleLexer lexer(&inputStream, SimpleLexer::Config{ false, true, false });
+        SimpleLexer lexer(&inputStream, SimpleLexer::Config{false, true, false});
 
         std::vector<std::string> result;
         auto hasLexerTokens = true;
-        while(hasLexerTokens)
+        while (hasLexerTokens)
         {
             const auto& token = lexer.GetToken(0);
-            switch(token.m_type)
+            switch (token.m_type)
             {
             case SimpleParserValueType::IDENTIFIER:
                 result.emplace_back(token.IdentifierValue());
@@ -714,7 +733,7 @@ class MenuDumperIw4 : public MenuDumper
                 continue;
             }
 
-            if(!isNewStatement)
+            if (!isNewStatement)
                 m_stream << " ";
             else
                 isNewStatement = false;
@@ -757,7 +776,7 @@ class MenuDumperIw4 : public MenuDumper
 
                 Indent();
                 m_stream << "if (";
-                WriteStatement(eventHandler->eventData.conditionalScript->eventExpression);
+                WriteStatementSkipInitialUnnecessaryParenthesis(eventHandler->eventData.conditionalScript->eventExpression);
                 m_stream << ")\n";
                 WriteMenuEventHandlerSet(eventHandler->eventData.conditionalScript->eventHandlerSet);
                 break;
