@@ -632,7 +632,7 @@ void MenuDumper::WriteEnumDvarProperties(const itemDef_s* item) const
 
 void MenuDumper::WriteTickerProperties(const itemDef_s* item) const
 {
-    if (item->type != ITEM_TYPE_NEWS_TICKER)
+    if (item->type != ITEM_TYPE_NEWS_TICKER || item->typeData.ticker == nullptr)
         return;
 
     const auto* newsTickerDef = item->typeData.ticker;
