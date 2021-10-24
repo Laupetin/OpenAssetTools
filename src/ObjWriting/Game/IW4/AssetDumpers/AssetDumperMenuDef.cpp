@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 
+#include "ObjWriting.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Menu/MenuDumper.h"
 #include "Parsing/Impl/ParserInputStream.h"
@@ -509,6 +510,41 @@ class MenuDumperIw4 : public MenuDumper
         }
     }
 
+    void WriteStatementOperandFunction(const Statement_s* statement, const size_t currentPos) const
+    {
+        const auto& operand = statement->entries[currentPos].data.operand;
+
+        if (operand.internals.function == nullptr)
+            return;
+
+        if(!ObjWriting::Configuration.MenuLegacyMode)
+        {
+            int functionIndex = -1;
+            if (statement->supportingData && statement->supportingData->uifunctions.functions)
+            {
+                for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement->supportingData->uifunctions.totalFunctions; supportingFunctionIndex++)
+                {
+                    if (statement->supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
+                    {
+                        functionIndex = supportingFunctionIndex;
+                        break;
+                    }
+                }
+            }
+
+            if (functionIndex >= 0)
+                m_stream << "FUNC_" << functionIndex;
+            else
+                m_stream << "INVALID_FUNC";
+        }
+        else
+        {
+            m_stream << "(";
+            WriteStatementSkipInitialUnnecessaryParenthesis(operand.internals.function);
+            m_stream << ")";
+        }
+    }
+
     void WriteStatementOperand(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const
     {
         const auto& expEntry = statement->entries[currentPos];
@@ -533,27 +569,8 @@ class MenuDumperIw4 : public MenuDumper
             break;
 
         case VAL_FUNCTION:
-            {
-                int functionIndex = -1;
-                if (statement->supportingData && statement->supportingData->uifunctions.functions)
-                {
-                    for (auto supportingFunctionIndex = 0; supportingFunctionIndex < statement->supportingData->uifunctions.totalFunctions; supportingFunctionIndex++)
-                    {
-                        if (statement->supportingData->uifunctions.functions[supportingFunctionIndex] == operand.internals.function)
-                        {
-                            functionIndex = supportingFunctionIndex;
-                            break;
-                        }
-                    }
-                }
-
-                if (functionIndex >= 0)
-                    m_stream << "FUNC_" << functionIndex;
-                else
-                    m_stream << "INVALID_FUNC";
-
-                break;
-            }
+            WriteStatementOperandFunction(statement, currentPos);
+            break;
 
         default:
             break;
