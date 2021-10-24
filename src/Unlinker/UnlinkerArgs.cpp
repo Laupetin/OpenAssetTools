@@ -95,6 +95,12 @@ const CommandLineOption* const OPTION_INCLUDE_ASSETS =
     .Reusable()
     .Build();
 
+const CommandLineOption* const OPTION_LEGACY_MENUS =
+    CommandLineOption::Builder::Create()
+    .WithLongName("legacy-menus")
+    .WithDescription("Dumps menus with a compatibility mode to work with applications not compatible with the newer dumping mode.")
+    .Build();
+
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 {
     OPTION_HELP,
@@ -108,11 +114,12 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_MODEL_FORMAT,
     OPTION_GDT,
     OPTION_EXCLUDE_ASSETS,
-    OPTION_INCLUDE_ASSETS
+    OPTION_INCLUDE_ASSETS,
+    OPTION_LEGACY_MENUS
 };
 
 UnlinkerArgs::UnlinkerArgs()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent<decltype(COMMAND_LINE_OPTIONS)>::value),
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
       m_zone_pattern(R"(\?zone\?)"),
       m_task(ProcessingTask::DUMP),
       m_minimal_zone_def(false),
@@ -305,10 +312,14 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
             ParseCommaSeparatedAssetTypeString(include);
     }
 
+    // --legacy-menus
+    if (m_argument_parser.IsOptionSpecified(OPTION_LEGACY_MENUS))
+        ObjWriting::Configuration.MenuLegacyMode = true;
+
     return true;
 }
 
-std::string UnlinkerArgs::GetOutputFolderPathForZone(Zone* zone) const
+std::string UnlinkerArgs::GetOutputFolderPathForZone(const Zone* zone) const
 {
     return std::regex_replace(m_output_folder, m_zone_pattern, zone->m_name);
 }
