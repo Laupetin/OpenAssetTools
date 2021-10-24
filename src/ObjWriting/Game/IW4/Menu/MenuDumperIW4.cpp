@@ -776,6 +776,16 @@ MenuDumper::MenuDumper(std::ostream& stream)
 {
 }
 
+void MenuDumper::WriteFunctionDef(const std::string& functionName, const Statement_s* statement)
+{
+    StartFunctionDefScope();
+
+    WriteStringProperty("name", functionName);
+    WriteStatementProperty("value", statement, false);
+
+    EndScope();
+}
+
 void MenuDumper::WriteMenu(const menuDef_t* menu)
 {
     StartMenuDefScope();

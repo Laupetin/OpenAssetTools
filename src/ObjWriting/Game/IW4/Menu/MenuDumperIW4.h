@@ -48,6 +48,7 @@ namespace IW4
     public:
         explicit MenuDumper(std::ostream& stream);
 
+        void WriteFunctionDef(const std::string& functionName, const Statement_s* statement);
         void WriteMenu(const menuDef_t* menu);
     };
 }
