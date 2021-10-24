@@ -1,13 +1,13 @@
-#include "MenuDumperIW4.h"
+#include "MenuDumperIW5.h"
 
 #include <cmath>
 #include <cassert>
 #include <sstream>
 
 #include "ObjWriting.h"
-#include "Game/IW4/MenuConstantsIW4.h"
+#include "Game/IW5/MenuConstantsIW5.h"
 
-using namespace IW4;
+using namespace IW5;
 
 size_t MenuDumper::FindStatementClosingParenthesis(const Statement_s* statement, size_t openingParenthesisPosition)
 {
@@ -507,8 +507,10 @@ void MenuDumper::WriteColumnProperty(const std::string& propertyKey, const listB
         for (auto i = 0u; i < MENU_KEY_SPACING; i++)
             m_stream << " ";
 
-        m_stream << listBox->columnInfo[col].pos
+        m_stream << listBox->columnInfo[col].xpos
+            << " " << listBox->columnInfo[col].ypos
             << " " << listBox->columnInfo[col].width
+            << " " << listBox->columnInfo[col].height
             << " " << listBox->columnInfo[col].maxChars
             << " " << listBox->columnInfo[col].alignment << "\n";
     }
@@ -540,7 +542,7 @@ void MenuDumper::WriteDvarFloatProperty(const std::string& propertyKey, const it
 
     Indent();
     WriteKey(propertyKey);
-    m_stream << "\"" << item->dvar << "\" " << editField->defVal << " " << editField->minVal << " " << editField->maxVal << "\n";
+    m_stream << "\"" << item->dvar << "\" " << editField->stepVal << " " << editField->minVal << " " << editField->maxVal << "\n";
 }
 
 void MenuDumper::WriteEditFieldProperties(const itemDef_s* item) const
@@ -568,7 +570,7 @@ void MenuDumper::WriteEditFieldProperties(const itemDef_s* item) const
         return;
 
     const auto* editField = item->typeData.editField;
-    if (std::fabs(-1.0f - editField->defVal) >= std::numeric_limits<float>::epsilon()
+    if (std::fabs(-1.0f - editField->stepVal) >= std::numeric_limits<float>::epsilon()
         || std::fabs(-1.0f - editField->minVal) >= std::numeric_limits<float>::epsilon()
         || std::fabs(-1.0f - editField->maxVal) >= std::numeric_limits<float>::epsilon())
     {
@@ -728,7 +730,7 @@ void MenuDumper::WriteItemDefs(const itemDef_s* const* itemDefs, size_t itemCoun
 void MenuDumper::WriteMenuData(const menuDef_t* menu)
 {
     WriteStringProperty("name", menu->window.name);
-    WriteBoolProperty("fullscreen", menu->fullScreen, false);
+    WriteBoolProperty("fullscreen", menu->data->fullScreen, false);
     WriteKeywordProperty("screenSpace", menu->window.staticFlags & WINDOW_FLAG_SCREEN_SPACE);
     WriteKeywordProperty("decoration", menu->window.staticFlags & WINDOW_FLAG_DECORATION);
     WriteRectProperty("rect", menu->window.rect);
@@ -738,36 +740,36 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteColorProperty("backcolor", menu->window.backColor, COLOR_0000);
     WriteColorProperty("forecolor", menu->window.foreColor, COLOR_1111);
     WriteColorProperty("bordercolor", menu->window.borderColor, COLOR_0000);
-    WriteColorProperty("focuscolor", menu->focusColor, COLOR_0000);
+    WriteColorProperty("focuscolor", menu->data->focusColor, COLOR_0000);
     WriteMaterialProperty("background", menu->window.background);
     WriteIntProperty("ownerdraw", menu->window.ownerDraw, 0);
     WriteFlagsProperty("ownerdrawFlag", menu->window.ownerDrawFlags);
     WriteKeywordProperty("outOfBoundsClick", menu->window.staticFlags & WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
-    WriteStringProperty("soundLoop", menu->soundName);
+    WriteStringProperty("soundLoop", menu->data->soundName);
     WriteKeywordProperty("popup", menu->window.staticFlags & WINDOW_FLAG_POPUP);
-    WriteFloatProperty("fadeClamp", menu->fadeClamp, 0.0f);
-    WriteIntProperty("fadeCycle", menu->fadeCycle, 0);
-    WriteFloatProperty("fadeAmount", menu->fadeAmount, 0.0f);
-    WriteFloatProperty("fadeInAmount", menu->fadeInAmount, 0.0f);
-    WriteFloatProperty("blurWorld", menu->blurRadius, 0.0f);
+    WriteFloatProperty("fadeClamp", menu->data->fadeClamp, 0.0f);
+    WriteIntProperty("fadeCycle", menu->data->fadeCycle, 0);
+    WriteFloatProperty("fadeAmount", menu->data->fadeAmount, 0.0f);
+    WriteFloatProperty("fadeInAmount", menu->data->fadeInAmount, 0.0f);
+    WriteFloatProperty("blurWorld", menu->data->blurRadius, 0.0f);
     WriteKeywordProperty("legacySplitScreenScale", menu->window.staticFlags & WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
     WriteKeywordProperty("hiddenDuringScope", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_SCOPE);
     WriteKeywordProperty("hiddenDuringFlashbang", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
     WriteKeywordProperty("hiddenDuringUI", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_UI);
-    WriteStringProperty("allowedBinding", menu->allowedBinding);
+    WriteStringProperty("allowedBinding", menu->data->allowedBinding);
     WriteKeywordProperty("textOnlyFocus", menu->window.staticFlags & WINDOW_FLAG_TEXT_ONLY_FOCUS);
-    WriteStatementProperty("visible", menu->visibleExp, true);
-    WriteStatementProperty("exp rect X", menu->rectXExp, false);
-    WriteStatementProperty("exp rect Y", menu->rectYExp, false);
-    WriteStatementProperty("exp rect W", menu->rectWExp, false);
-    WriteStatementProperty("exp rect H", menu->rectHExp, false);
-    WriteStatementProperty("exp openSound", menu->openSoundExp, false);
-    WriteStatementProperty("exp closeSound", menu->closeSoundExp, false);
-    WriteMenuEventHandlerSetProperty("onOpen", menu->onOpen);
-    WriteMenuEventHandlerSetProperty("onClose", menu->onClose);
-    WriteMenuEventHandlerSetProperty("onRequestClose", menu->onCloseRequest);
-    WriteMenuEventHandlerSetProperty("onESC", menu->onESC);
-    WriteItemKeyHandlerProperty(menu->onKey);
+    WriteStatementProperty("visible", menu->data->visibleExp, true);
+    WriteStatementProperty("exp rect X", menu->data->rectXExp, false);
+    WriteStatementProperty("exp rect Y", menu->data->rectYExp, false);
+    WriteStatementProperty("exp rect W", menu->data->rectWExp, false);
+    WriteStatementProperty("exp rect H", menu->data->rectHExp, false);
+    WriteStatementProperty("exp openSound", menu->data->openSoundExp, false);
+    WriteStatementProperty("exp closeSound", menu->data->closeSoundExp, false);
+    WriteMenuEventHandlerSetProperty("onOpen", menu->data->onOpen);
+    WriteMenuEventHandlerSetProperty("onClose", menu->data->onClose);
+    WriteMenuEventHandlerSetProperty("onRequestClose", menu->data->onCloseRequest);
+    WriteMenuEventHandlerSetProperty("onESC", menu->data->onESC);
+    WriteItemKeyHandlerProperty(menu->data->onKey);
     WriteItemDefs(menu->items, menu->itemCount);
 }
 

@@ -8,6 +8,8 @@
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
+#include "AssetDumpers/AssetDumperMenuDef.h"
+#include "AssetDumpers/AssetDumperMenuList.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperXModel.h"
@@ -53,8 +55,8 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
-    // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
-    // DUMP_ASSET_POOL(AssetDumpermenuDef_t, m_menu_def, ASSET_TYPE_MENU)
+    DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
+    DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     // DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment, ASSET_TYPE_ATTACHMENT)
     // DUMP_ASSET_POOL(AssetDumperWeaponCompleteDef, m_weapon, ASSET_TYPE_WEAPON)
