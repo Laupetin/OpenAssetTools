@@ -12,13 +12,6 @@ using namespace IW4;
 
 bool AssetDumperMenuList::ShouldDump(XAssetInfo<MenuList>* asset)
 {
-    const auto* menuList = asset->Asset();
-    const fs::path p(asset->Asset()->name);
-    const auto extension = p.extension().string();
-
-    if (extension == ".menu" && menuList->menuCount == 1)
-        return false;
-
     return true;
 }
 
@@ -45,7 +38,14 @@ void AssetDumperMenuList::DumpAsset(AssetDumpingContext& context, XAssetInfo<Men
 
         std::ostringstream ss;
         ss << parentPath << menu->window.name << ".menu";
-        menuDumper.IncludeMenu(ss.str());
+
+        const auto menuName = ss.str();
+
+        // If the menu was embedded directly as menu list write its data in the menu list file
+        if(menuName == menuList->name)
+            menuDumper.WriteMenu(menu);
+        else
+            menuDumper.IncludeMenu(ss.str());
     }
 
     menuDumper.End();

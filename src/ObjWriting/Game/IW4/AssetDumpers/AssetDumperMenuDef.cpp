@@ -53,7 +53,17 @@ bool AssetDumperMenuDef::ShouldDump(XAssetInfo<menuDef_t>* asset)
 void AssetDumperMenuDef::DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset)
 {
     const auto* menu = asset->Asset();
-    const auto assetFile = context.OpenAssetFile(GetPathForMenu(asset));
+    const auto menuFilePath = GetPathForMenu(asset);
+
+    if(ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
+    {
+        // Don't dump menu file separately if the name matches the menu list
+        const auto* menuListParent = GetParentMenuList(asset);
+        if (menuListParent && menuFilePath == menuListParent->name)
+            return;
+    }
+
+    const auto assetFile = context.OpenAssetFile(menuFilePath);
 
     if (!assetFile)
         return;
