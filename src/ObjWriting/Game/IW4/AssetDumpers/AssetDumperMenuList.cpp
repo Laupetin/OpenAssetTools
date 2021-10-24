@@ -80,9 +80,12 @@ void AssetDumperMenuList::DumpMenus(MenuDumper& menuDumper, const MenuList* menu
     for (auto menuNum = 0; menuNum < menuList->menuCount; menuNum++)
     {
         const auto* menu = menuList->menus[menuNum];
+        const auto* menuAssetName = menu->window.name;
+        if (menuAssetName && menuAssetName[0] == ',')
+            menuAssetName = &menuAssetName[1];
 
         std::ostringstream ss;
-        ss << parentPath << menu->window.name << ".menu";
+        ss << parentPath << menuAssetName << ".menu";
 
         const auto menuName = ss.str();
 
