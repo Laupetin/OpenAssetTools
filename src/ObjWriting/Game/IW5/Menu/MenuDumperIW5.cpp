@@ -533,6 +533,7 @@ void MenuDumper::WriteListBoxProperties(const itemDef_s* item)
     WriteMenuEventHandlerSetProperty("doubleclick", listBox->onDoubleClick);
     WriteColorProperty("selectBorder", listBox->selectBorder, COLOR_0000);
     WriteMaterialProperty("selectIcon", listBox->selectIcon);
+    WriteStatementProperty("exp elementHeight", listBox->elementHeightExp, false);
 }
 
 void MenuDumper::WriteDvarFloatProperty(const std::string& propertyKey, const itemDef_s* item, const editFieldDef_s* editField) const
@@ -676,6 +677,7 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteColorProperty("glowcolor", item->glowColor, COLOR_0000);
     WriteMaterialProperty("background", item->window.background);
     WriteMenuEventHandlerSetProperty("onFocus", item->onFocus);
+    WriteMenuEventHandlerSetProperty("hasFocus", item->hasFocus);
     WriteMenuEventHandlerSetProperty("leaveFocus", item->leaveFocus);
     WriteMenuEventHandlerSetProperty("mouseEnter", item->mouseEnter);
     WriteMenuEventHandlerSetProperty("mouseExit", item->mouseExit);
@@ -701,6 +703,7 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
 
     WriteItemKeyHandlerProperty(item->onKey);
     WriteStatementProperty("exp text", item->textExp, false);
+    WriteStatementProperty("exp textaligny", item->textAlignYExp, false);
     WriteStatementProperty("exp material", item->materialExp, false);
     WriteStatementProperty("exp disabled", item->disabledExp, false);
     WriteFloatExpressionsProperty(item->floatExpressions, item->floatExpressionCount);
@@ -765,10 +768,12 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteStatementProperty("exp rect H", menu->data->rectHExp, false);
     WriteStatementProperty("exp openSound", menu->data->openSoundExp, false);
     WriteStatementProperty("exp closeSound", menu->data->closeSoundExp, false);
+    WriteStatementProperty("exp soundLoop", menu->data->soundLoopExp, false);
     WriteMenuEventHandlerSetProperty("onOpen", menu->data->onOpen);
     WriteMenuEventHandlerSetProperty("onClose", menu->data->onClose);
     WriteMenuEventHandlerSetProperty("onRequestClose", menu->data->onCloseRequest);
     WriteMenuEventHandlerSetProperty("onESC", menu->data->onESC);
+    WriteMenuEventHandlerSetProperty("onFocusDueToClose", menu->data->onFocusDueToClose);
     WriteItemKeyHandlerProperty(menu->data->onKey);
     WriteItemDefs(menu->items, menu->itemCount);
 }
