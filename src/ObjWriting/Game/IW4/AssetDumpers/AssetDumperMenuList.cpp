@@ -3,7 +3,8 @@
 #include <filesystem>
 #include <sstream>
 
-#include "Menu/MenuDumper.h"
+#include "Game/IW4/Menu/MenuDumperIW4.h"
+#include "Menu/AbstractMenuDumper.h"
 
 namespace fs = std::filesystem;
 
