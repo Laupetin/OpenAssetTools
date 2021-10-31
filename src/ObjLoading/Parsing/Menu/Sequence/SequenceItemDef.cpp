@@ -14,7 +14,7 @@ SequenceItemDef::SequenceItemDef()
 
 void SequenceItemDef::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const
 {
-    assert(!state->m_current_menu);
+    assert(state->m_current_menu);
 
     state->m_current_item = std::make_unique<CommonItemDef>();
 }

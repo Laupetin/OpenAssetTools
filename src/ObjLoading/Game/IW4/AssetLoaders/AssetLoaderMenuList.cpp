@@ -48,7 +48,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
 
         std::cout << "  " << menuFileResult->m_menus.size() << " menus:\n";
         for (const auto& menu : menuFileResult->m_menus)
-            std::cout << "    " << menu->m_name << "\n";
+            std::cout << "    " << menu->m_name << " (" << menu->m_items.size() << " items)\n";
 
         std::cout << "  " << menuFileResult->m_functions.size() << " functions:\n";
         for (const auto& function : menuFileResult->m_functions)

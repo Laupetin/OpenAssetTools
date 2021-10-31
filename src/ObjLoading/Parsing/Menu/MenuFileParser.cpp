@@ -6,6 +6,7 @@
 #include "Sequence/SequenceLoadMenu.h"
 #include "Sequence/SequenceMenuDef.h"
 #include "Sequence/SequenceOpenGlobalScopeBlock.h"
+#include "Sequence/Properties/SequenceName.h"
 
 MenuFileParser::MenuFileParser(SimpleLexer* lexer, const MenuFeatureLevel featureLevel)
     : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel))
@@ -34,17 +35,20 @@ void MenuFileParser::CreateGlobalScopeTests()
 
 void MenuFileParser::CreateFunctionScopeTests()
 {
+    AddTest(m_function_scope_tests, std::make_unique<SequenceName>());
     AddTest(m_function_scope_tests, std::make_unique<SequenceCloseBlock>());
 }
 
 void MenuFileParser::CreateMenuScopeTests()
 {
+    AddTest(m_menu_scope_tests, std::make_unique<SequenceName>());
     AddTest(m_menu_scope_tests, std::make_unique<SequenceCloseBlock>());
     AddTest(m_menu_scope_tests, std::make_unique<SequenceItemDef>());
 }
 
 void MenuFileParser::CreateItemScopeTests()
 {
+    AddTest(m_item_scope_tests, std::make_unique<SequenceName>());
     AddTest(m_item_scope_tests, std::make_unique<SequenceCloseBlock>());
 }
 
