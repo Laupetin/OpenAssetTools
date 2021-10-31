@@ -80,3 +80,8 @@ const std::vector<MenuFileParser::sequence_t*>& MenuFileParser::GetTestsForState
 
     return m_global_scope_tests;
 }
+
+MenuFileParserState* MenuFileParser::GetState() const
+{
+    return m_state.get();
+}

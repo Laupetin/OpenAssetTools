@@ -37,10 +37,25 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         return std::move(foundFileToInclude.m_stream);
     });
 
-    if(!reader.ReadMenuFile())
+    const auto menuFileResult = reader.ReadMenuFile();
+    if(menuFileResult)
     {
-        std::cout << "Could not read menu list \"" << assetName << "\"\n";
+        std::cout << "Successfully read menu list \"" << assetName << "\":\n";
+
+        std::cout << "  " << menuFileResult->m_menus_to_load.size() << " menus to load:\n";
+        for (const auto& menuToLoad : menuFileResult->m_menus_to_load)
+            std::cout << "    " << menuToLoad << "\n";
+
+        std::cout << "  " << menuFileResult->m_menus.size() << " menus:\n";
+        for (const auto& menu : menuFileResult->m_menus)
+            std::cout << "    " << menu->m_name << "\n";
+
+        std::cout << "  " << menuFileResult->m_functions.size() << " functions:\n";
+        for (const auto& function : menuFileResult->m_functions)
+            std::cout << "    " << function->m_name << "\n";
     }
+    else
+        std::cout << "Could not read menu list \"" << assetName << "\"\n";
 
     return true;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
 #include "MenuFileParserState.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
@@ -27,4 +28,5 @@ protected:
 
 public:
     MenuFileParser(SimpleLexer* lexer, MenuFeatureLevel featureLevel);
+    _NODISCARD MenuFileParserState* GetState() const;
 };

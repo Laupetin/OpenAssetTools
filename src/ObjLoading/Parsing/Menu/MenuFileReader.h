@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "MenuFileParserState.h"
 #include "Domain/MenuFeatureLevel.h"
+#include "Domain/MenuParsingResult.h"
 #include "Parsing/IParserLineStream.h"
 
 class MenuFileReader
@@ -23,9 +25,12 @@ private:
     void SetupDefinesProxy();
     void SetupStreamProxies();
 
+    bool IsValidEndState(const MenuFileParserState* state) const;
+    std::unique_ptr<MenuParsingResult> CreateParsingResult(MenuFileParserState* state) const;
+
 public:
     MenuFileReader(std::istream& stream, std::string fileName, MenuFeatureLevel featureLevel);
     MenuFileReader(std::istream& stream, std::string fileName, MenuFeatureLevel featureLevel, include_callback_t includeCallback);
 
-    bool ReadMenuFile();
+    std::unique_ptr<MenuParsingResult> ReadMenuFile();
 };

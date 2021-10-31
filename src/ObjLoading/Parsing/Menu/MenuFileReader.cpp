@@ -68,14 +68,59 @@ void MenuFileReader::SetupStreamProxies()
     m_stream = m_open_streams.back().get();
 }
 
-bool MenuFileReader::ReadMenuFile()
+bool MenuFileReader::IsValidEndState(const MenuFileParserState* state) const
+{
+    if(state->m_current_item)
+    {
+        std::cout << "In \"" << m_file_name << "\": Unclosed item at end of file!\n";
+        return false;
+    }
+
+    if(state->m_current_menu)
+    {
+        std::cout << "In \"" << m_file_name << "\": Unclosed menu at end of file!\n";
+        return false;
+    }
+
+    if(state->m_current_function)
+    {
+        std::cout << "In \"" << m_file_name << "\": Unclosed function at end of file!\n";
+        return false;
+    }
+
+    if(state->m_in_global_scope)
+    {
+        std::cout << "In \"" << m_file_name << "\": Did not close global scope!\n";
+        return false;
+    }
+
+    return true;
+}
+
+std::unique_ptr<MenuParsingResult> MenuFileReader::CreateParsingResult(MenuFileParserState* state) const
+{
+    auto result = std::make_unique<MenuParsingResult>();
+    result->m_menus = std::move(state->m_menus);
+    result->m_functions = std::move(state->m_functions);
+    result->m_menus_to_load = std::move(state->m_menus_to_load);
+
+    return result;
+}
+
+std::unique_ptr<MenuParsingResult> MenuFileReader::ReadMenuFile()
 {
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, SimpleLexer::Config{false, true, false});
     const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level);
 
-    if (parser->Parse())
-        return true;
+    if (!parser->Parse())
+    {
+        std::cout << "Parsing menu file failed!" << std::endl;
+        return nullptr;
+    }
 
-    std::cout << "Parsing menu file failed!" << std::endl;
-    return false;
+    auto* parserEndState = parser->GetState();
+    if (!IsValidEndState(parserEndState))
+        return nullptr;
+
+    return CreateParsingResult(parserEndState);
 }
