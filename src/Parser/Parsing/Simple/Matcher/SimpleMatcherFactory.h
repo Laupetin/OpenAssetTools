@@ -12,6 +12,7 @@ public:
 
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Type(SimpleParserValueType type) const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Keyword(std::string value) const;
+    _NODISCARD MatcherFactoryWrapper<SimpleParserValue> KeywordIgnoreCase(std::string value) const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> KeywordPrefix(std::string value) const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Identifier() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> String() const;

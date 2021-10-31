@@ -3,6 +3,7 @@
 #include "SimpleMatcherAnyCharacterBesides.h"
 #include "SimpleMatcherCharacter.h"
 #include "SimpleMatcherKeyword.h"
+#include "SimpleMatcherKeywordIgnoreCase.h"
 #include "SimpleMatcherKeywordPrefix.h"
 #include "SimpleMatcherValueType.h"
 
@@ -19,6 +20,11 @@ MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Type(SimpleParser
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Keyword(std::string value) const
 {
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherKeyword>(std::move(value)));
+}
+
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::KeywordIgnoreCase(std::string value) const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherKeywordIgnoreCase>(std::move(value)));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::KeywordPrefix(std::string value) const
