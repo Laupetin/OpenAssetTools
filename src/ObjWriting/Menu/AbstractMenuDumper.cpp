@@ -4,7 +4,7 @@
 #include <sstream>
 #include <cmath>
 
-#include "Parsing/Impl/ParserInputStream.h"
+#include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
 
 AbstractMenuDumper::AbstractMenuDumper(std::ostream& stream)
@@ -65,7 +65,7 @@ std::vector<std::string> AbstractMenuDumper::CreateScriptTokenList(const char* s
 {
     const std::string scriptString(script);
     std::istringstream stringStream(scriptString);
-    ParserInputStream inputStream(stringStream, "MenuScript");
+    ParserSingleInputStream inputStream(stringStream, "MenuScript");
     SimpleLexer lexer(&inputStream, SimpleLexer::Config{false, true, false});
 
     std::vector<std::string> result;

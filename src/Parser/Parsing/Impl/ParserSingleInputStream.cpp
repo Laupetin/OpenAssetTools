@@ -1,15 +1,15 @@
-#include "ParserInputStream.h"
+#include "ParserSingleInputStream.h"
 
 #include <sstream>
 
-ParserInputStream::ParserInputStream(std::istream& stream, std::string fileName)
+ParserSingleInputStream::ParserSingleInputStream(std::istream& stream, std::string fileName)
     : m_stream(stream),
       m_file_name(std::move(fileName)),
       m_line_number(1)
 {
 }
 
-ParserLine ParserInputStream::NextLine()
+ParserLine ParserSingleInputStream::NextLine()
 {
     std::ostringstream str;
     auto hasLength = false;
@@ -45,21 +45,21 @@ ParserLine ParserInputStream::NextLine()
     return ParserLine();
 }
 
-bool ParserInputStream::IncludeFile(const std::string& filename)
+bool ParserSingleInputStream::IncludeFile(const std::string& filename)
 {
     return false;
 }
 
-void ParserInputStream::PopCurrentFile()
+void ParserSingleInputStream::PopCurrentFile()
 {
 }
 
-bool ParserInputStream::IsOpen() const
+bool ParserSingleInputStream::IsOpen() const
 {
     return !m_stream.eof();
 }
 
-bool ParserInputStream::Eof() const
+bool ParserSingleInputStream::Eof() const
 {
     return !m_stream.eof();
 }

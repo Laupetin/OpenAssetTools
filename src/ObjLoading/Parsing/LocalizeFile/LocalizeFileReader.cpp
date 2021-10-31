@@ -2,7 +2,7 @@
 
 #include "LocalizeFileParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
-#include "Parsing/Impl/ParserInputStream.h"
+#include "Parsing/Impl/ParserSingleInputStream.h"
 
 LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language)
     : m_file_name(std::move(fileName)),
@@ -16,7 +16,7 @@ LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileNam
 
 bool LocalizeFileReader::OpenBaseStream(std::istream& stream)
 {
-    m_open_streams.emplace_back(std::make_unique<ParserInputStream>(stream, m_file_name));
+    m_open_streams.emplace_back(std::make_unique<ParserSingleInputStream>(stream, m_file_name));
     return true;
 }
 

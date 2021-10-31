@@ -65,7 +65,7 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, unsigne
     unsigned filenameStart, filenameEnd;
 
     if (!ExtractIncludeFilename(line, directivePosition, filenameStart, filenameEnd))
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, directivePosition), INCLUDE_QUOTES_ERROR);
+        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, static_cast<int>(directivePosition)), INCLUDE_QUOTES_ERROR);
 
     if (filenameEnd <= filenameStart)
         throw ParsingException(CreatePos(line, directivePosition), "No filename specified");
