@@ -79,7 +79,7 @@ bool ParserMultiInputStream::IncludeFile(const std::string& filename)
     if (!m_include_callback)
         return false;
 
-    auto newFile = m_include_callback(filename);
+    auto newFile = m_include_callback(filename, m_files.empty() ? "" : m_files.top().m_file_path);
     if (!newFile)
         return false;
 

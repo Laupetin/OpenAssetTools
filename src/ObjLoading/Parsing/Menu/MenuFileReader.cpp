@@ -8,7 +8,7 @@
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
 
-MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, MenuFeatureLevel featureLevel, include_callback_t includeCallback)
+MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const MenuFeatureLevel featureLevel, include_callback_t includeCallback)
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr)
@@ -18,7 +18,7 @@ MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, MenuF
     m_stream = m_open_streams.back().get();
 }
 
-MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, MenuFeatureLevel featureLevel)
+MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const MenuFeatureLevel featureLevel)
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr)

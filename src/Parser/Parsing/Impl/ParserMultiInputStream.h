@@ -10,7 +10,7 @@
 class ParserMultiInputStream final : public IParserLineStream
 {
 public:
-    using include_callback_t = std::function<std::unique_ptr<std::istream>(const std::string& filename)>;
+    using include_callback_t = std::function<std::unique_ptr<std::istream>(const std::string& filename, const std::string& sourceFile)>;
 
 private:
     class FileInfo
