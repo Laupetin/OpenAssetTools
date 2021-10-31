@@ -15,6 +15,8 @@ class DefinesStreamProxy final : public AbstractDirectiveStreamProxy
     static constexpr const char* ELSE_DIRECTIVE = "else";
     static constexpr const char* ENDIF_DIRECTIVE = "endif";
 
+    static constexpr auto MAX_DEFINE_ITERATIONS = 128u;
+
 public:
     class DefineParameterPosition
     {
@@ -35,8 +37,8 @@ public:
 
         Define();
         Define(std::string name, std::string value);
-        void IdentifyParameters(std::vector<std::string>& parameterNames);
-        std::string Render(std::vector<std::string>& parameterValues);
+        void IdentifyParameters(const std::vector<std::string>& parameterNames);
+        std::string Render(const std::vector<std::string>& parameterValues);
     };
 
 private:
@@ -44,16 +46,16 @@ private:
     std::unordered_map<std::string, Define> m_defines;
     std::stack<bool> m_modes;
     unsigned m_ignore_depth;
-    
-    std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
+
+    static std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
     _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchElseDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directivePosition);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
-    
-    void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
+
+    static void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
     bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, Define*& value);
     void ExpandDefines(ParserLine& line);
 

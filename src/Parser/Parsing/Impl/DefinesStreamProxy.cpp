@@ -26,7 +26,7 @@ DefinesStreamProxy::Define::Define(std::string name, std::string value)
 {
 }
 
-std::string DefinesStreamProxy::Define::Render(std::vector<std::string>& parameterValues)
+std::string DefinesStreamProxy::Define::Render(const std::vector<std::string>& parameterValues)
 {
     if (parameterValues.empty() || m_parameter_positions.empty())
         return m_value;
@@ -52,7 +52,7 @@ std::string DefinesStreamProxy::Define::Render(std::vector<std::string>& paramet
     return str.str();
 }
 
-void DefinesStreamProxy::Define::IdentifyParameters(std::vector<std::string>& parameterNames)
+void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::string>& parameterNames)
 {
     if (parameterNames.empty())
         return;
@@ -168,7 +168,7 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, unsigned d
 
     const auto name = line.m_line.substr(nameStartPos, directivePosition - nameStartPos);
 
-    auto parameters = MatchDefineParameters(line, directivePosition);
+    const auto parameters = MatchDefineParameters(line, directivePosition);
 
     std::string value;
     if (directivePosition < line.m_line.size())
@@ -346,77 +346,88 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
 
 void DefinesStreamProxy::ExpandDefines(ParserLine& line)
 {
-    auto wordStart = 0u;
-    auto lastWordEnd = 0u;
-    auto inWord = false;
-    Define* value;
+    bool usesDefines;
+    auto defineIterations = 0u;
 
-    std::ostringstream str;
-    auto usesDefines = false;
-
-    for (auto i = 0u; i < line.m_line.size(); i++)
+    do
     {
-        const auto c = line.m_line[i];
-        if (!inWord)
+        if (defineIterations > MAX_DEFINE_ITERATIONS)
+            throw ParsingException(CreatePos(line, 1), "Potential define loop? Exceeded max define iterations of " + std::to_string(MAX_DEFINE_ITERATIONS) + " iterations.");
+
+        usesDefines = false;
+
+        auto wordStart = 0u;
+        auto lastWordEnd = 0u;
+        auto inWord = false;
+        Define* value;
+        std::ostringstream str;
+
+        for (auto i = 0u; i < line.m_line.size(); i++)
         {
-            if (isalpha(c) || c == '_')
+            const auto c = line.m_line[i];
+            if (!inWord)
             {
-                wordStart = i;
-                inWord = true;
-            }
-        }
-        else
-        {
-            if (!isalnum(c) && c != '_')
-            {
-                if (FindDefineForWord(line, wordStart, i, value))
+                if (isalpha(c) || c == '_')
                 {
-                    std::vector<std::string> parameterValues;
-                    ExtractParametersFromDefineUsage(line, i, i, parameterValues);
-                    const auto defineValue = value->Render(parameterValues);
-
-                    if (!usesDefines)
-                    {
-                        str << std::string(line.m_line, 0, wordStart) << defineValue;
-                        usesDefines = true;
-                    }
-                    else
-                    {
-                        str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << defineValue;
-                    }
-                    lastWordEnd = i;
+                    wordStart = i;
+                    inWord = true;
                 }
-                inWord = false;
-            }
-        }
-    }
-
-    if (inWord)
-    {
-        if (FindDefineForWord(line, wordStart, line.m_line.size(), value))
-        {
-            std::vector<std::string> parameterValues;
-            const auto defineValue = value->Render(parameterValues);
-
-            if (!usesDefines)
-            {
-                str << std::string(line.m_line, 0, wordStart) << defineValue;
-                usesDefines = true;
             }
             else
             {
-                str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << defineValue;
-            }
-            lastWordEnd = line.m_line.size();
-        }
-    }
+                if (!isalnum(c) && c != '_')
+                {
+                    if (FindDefineForWord(line, wordStart, i, value))
+                    {
+                        std::vector<std::string> parameterValues;
+                        ExtractParametersFromDefineUsage(line, i, i, parameterValues);
+                        const auto defineValue = value->Render(parameterValues);
 
-    if (usesDefines)
-    {
-        if (lastWordEnd < line.m_line.size())
-            str << std::string(line.m_line, lastWordEnd, line.m_line.size() - lastWordEnd);
-        line.m_line = str.str();
-    }
+                        if (!usesDefines)
+                        {
+                            str << std::string(line.m_line, 0, wordStart) << defineValue;
+                            usesDefines = true;
+                        }
+                        else
+                        {
+                            str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << defineValue;
+                        }
+                        lastWordEnd = i;
+                    }
+                    inWord = false;
+                }
+            }
+        }
+
+        if (inWord)
+        {
+            if (FindDefineForWord(line, wordStart, line.m_line.size(), value))
+            {
+                const std::vector<std::string> parameterValues;
+                const auto defineValue = value->Render(parameterValues);
+
+                if (!usesDefines)
+                {
+                    str << std::string(line.m_line, 0, wordStart) << defineValue;
+                    usesDefines = true;
+                }
+                else
+                {
+                    str << std::string(line.m_line, lastWordEnd, wordStart - lastWordEnd) << defineValue;
+                }
+                lastWordEnd = line.m_line.size();
+            }
+        }
+
+        if (usesDefines)
+        {
+            if (lastWordEnd < line.m_line.size())
+                str << std::string(line.m_line, lastWordEnd, line.m_line.size() - lastWordEnd);
+            line.m_line = str.str();
+        }
+
+        defineIterations++;
+    } while (usesDefines);
 }
 
 void DefinesStreamProxy::AddDefine(Define define)
