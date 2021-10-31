@@ -28,7 +28,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
     if (!file.IsOpen())
         return false;
 
-    MenuFileReader reader(*file.m_stream, assetName, [searchPath](const std::string& filename) -> std::unique_ptr<std::istream>
+    MenuFileReader reader(*file.m_stream, assetName, MenuFeatureLevel::IW4, [searchPath](const std::string& filename) -> std::unique_ptr<std::istream>
     {
         auto foundFileToInclude = searchPath->Open(filename);
         if (!foundFileToInclude.IsOpen() || !foundFileToInclude.m_stream)
@@ -37,7 +37,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         return std::move(foundFileToInclude.m_stream);
     });
 
-    if(!reader.ReadMenuFile(MenuFeatureLevel::IW4))
+    if(!reader.ReadMenuFile())
     {
         std::cout << "Could not read menu list \"" << assetName << "\"\n";
     }
