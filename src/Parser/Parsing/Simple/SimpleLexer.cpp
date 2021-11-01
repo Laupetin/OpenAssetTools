@@ -48,7 +48,7 @@ SimpleParserValue SimpleLexer::GetNextToken()
     if (m_config.m_read_strings && c == '\"')
         return SimpleParserValue::String(GetPreviousCharacterPos(), new std::string(ReadString()));
     
-    if (m_config.m_read_numbers && isdigit(c))
+    if (m_config.m_read_numbers && (isdigit(c) || c == '.' && isdigit(PeekChar())))
     {
         bool isFloatingPointValue;
         double doubleValue;
