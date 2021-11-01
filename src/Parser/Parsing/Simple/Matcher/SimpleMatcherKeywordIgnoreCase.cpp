@@ -19,7 +19,7 @@ MatcherResult<SimpleParserValue> SimpleMatcherKeywordIgnoreCase::CanMatch(ILexer
     const auto& identifierValue = token.IdentifierValue();
     const auto isEqual = std::equal(identifierValue.begin(), identifierValue.end(), m_value.begin(), m_value.end(), [](const char a, const char b)
     {
-        return a == tolower(b);
+        return tolower(a) == b;
     });
 
     if (isEqual)
