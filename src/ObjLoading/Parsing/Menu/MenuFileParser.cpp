@@ -6,6 +6,7 @@
 #include "Sequence/SequenceLoadMenu.h"
 #include "Sequence/SequenceMenuDef.h"
 #include "Sequence/SequenceOpenGlobalScopeBlock.h"
+#include "Sequence/Properties/SequenceFullScreen.h"
 #include "Sequence/Properties/SequenceName.h"
 
 using namespace menu;
@@ -43,8 +44,10 @@ void MenuFileParser::CreateFunctionScopeTests()
 
 void MenuFileParser::CreateMenuScopeTests()
 {
-    AddTest(m_menu_scope_tests, std::make_unique<SequenceName>());
     AddTest(m_menu_scope_tests, std::make_unique<SequenceCloseBlock>());
+    AddTest(m_menu_scope_tests, std::make_unique<SequenceName>());
+    AddTest(m_menu_scope_tests, std::make_unique<SequenceFullScreen>());
+
     AddTest(m_menu_scope_tests, std::make_unique<SequenceItemDef>());
 }
 

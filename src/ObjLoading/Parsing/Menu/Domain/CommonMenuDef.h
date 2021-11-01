@@ -11,6 +11,8 @@ namespace menu
     {
     public:
         std::string m_name;
+        bool m_fullscreen;
+
         std::vector<std::unique_ptr<CommonItemDef>> m_items;
     };
 }
