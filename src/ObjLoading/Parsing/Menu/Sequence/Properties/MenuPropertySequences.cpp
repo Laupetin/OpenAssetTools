@@ -1,36 +1,14 @@
 #include "MenuPropertySequences.h"
 
+#include "GenericBoolPropertySequence.h"
+#include "GenericKeywordPropertySequence.h"
+#include "GenericStringPropertySequence.h"
 #include "Parsing/Menu/MenuMatcherFactory.h"
 
 using namespace menu;
 
 namespace menu::menu_properties
 {
-    class SequenceName final : public MenuFileParser::sequence_t
-    {
-        static constexpr auto CAPTURE_NAME = 1;
-
-    public:
-        SequenceName()
-        {
-            const MenuMatcherFactory create(this);
-
-            AddMatchers({
-                create.KeywordIgnoreCase("name"),
-                create.Text().Capture(CAPTURE_NAME)
-            });
-        }
-
-    protected:
-        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
-        {
-            assert(state->m_current_menu);
-
-            const auto nameValue = MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_NAME));
-            state->m_current_menu->m_name = nameValue;
-        }
-    };
-
     class SequenceFullScreen final : public MenuFileParser::sequence_t
     {
         static constexpr auto CAPTURE_VALUE = 1;
@@ -52,7 +30,7 @@ namespace menu::menu_properties
             assert(state->m_current_menu);
 
             const auto value = MenuMatcherFactory::TokenNumericIntValue(result.NextCapture(CAPTURE_VALUE));
-            state->m_current_menu->m_fullscreen = value > 0;
+            state->m_current_menu->m_full_screen = value > 0;
         }
     };
 }
@@ -66,6 +44,20 @@ MenuPropertySequences::MenuPropertySequences(std::vector<std::unique_ptr<MenuFil
 
 void MenuPropertySequences::AddSequences(FeatureLevel featureLevel)
 {
-    AddSequence(std::make_unique<SequenceName>());
-    AddSequence(std::make_unique<SequenceFullScreen>());
+    AddSequence(std::make_unique<GenericStringPropertySequence>("name", [](const MenuFileParserState* state, const std::string& value)
+    {
+        state->m_current_menu->m_name = value;
+    }));
+    AddSequence(std::make_unique<GenericBoolPropertySequence>("fullScreen", [](const MenuFileParserState* state, const bool value)
+    {
+        state->m_current_menu->m_full_screen = value;
+    }));
+    AddSequence(std::make_unique<GenericKeywordPropertySequence>("screenSpace", [](const MenuFileParserState* state)
+    {
+        state->m_current_menu->m_screen_space = true;
+    }));
+    AddSequence(std::make_unique<GenericKeywordPropertySequence>("decoration", [](const MenuFileParserState* state)
+    {
+        state->m_current_menu->m_decoration = true;
+    }));
 }
