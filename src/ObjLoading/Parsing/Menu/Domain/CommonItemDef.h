@@ -2,8 +2,11 @@
 
 #include <string>
 
-class CommonItemDef
+namespace menu
 {
-public:
-    std::string m_name;
-};
+    class CommonItemDef
+    {
+    public:
+        std::string m_name;
+    };
+}

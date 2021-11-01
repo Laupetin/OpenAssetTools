@@ -5,9 +5,12 @@
 
 #include "CommonItemDef.h"
 
-class CommonMenuDef
+namespace menu
 {
-public:
-    std::string m_name;
-    std::vector<std::unique_ptr<CommonItemDef>> m_items;
-};
+    class CommonMenuDef
+    {
+    public:
+        std::string m_name;
+        std::vector<std::unique_ptr<CommonItemDef>> m_items;
+    };
+}

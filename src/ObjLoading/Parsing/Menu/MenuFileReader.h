@@ -9,28 +9,31 @@
 #include "Domain/MenuParsingResult.h"
 #include "Parsing/IParserLineStream.h"
 
-class MenuFileReader
+namespace menu
 {
-public:
-    using include_callback_t = std::function<std::unique_ptr<std::istream>(const std::string& filename, const std::string& sourceFile)>;
-    
-private:
-    const MenuFeatureLevel m_feature_level;
-    const std::string m_file_name;
+    class MenuFileReader
+    {
+    public:
+        using include_callback_t = std::function<std::unique_ptr<std::istream>(const std::string& filename, const std::string& sourceFile)>;
 
-    IParserLineStream* m_stream;
-    std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
+    private:
+        const FeatureLevel m_feature_level;
+        const std::string m_file_name;
 
-    bool OpenBaseStream(std::istream& stream, include_callback_t includeCallback);
-    void SetupDefinesProxy();
-    void SetupStreamProxies();
+        IParserLineStream* m_stream;
+        std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
 
-    bool IsValidEndState(const MenuFileParserState* state) const;
-    std::unique_ptr<MenuParsingResult> CreateParsingResult(MenuFileParserState* state) const;
+        bool OpenBaseStream(std::istream& stream, include_callback_t includeCallback);
+        void SetupDefinesProxy();
+        void SetupStreamProxies();
 
-public:
-    MenuFileReader(std::istream& stream, std::string fileName, MenuFeatureLevel featureLevel);
-    MenuFileReader(std::istream& stream, std::string fileName, MenuFeatureLevel featureLevel, include_callback_t includeCallback);
+        bool IsValidEndState(const MenuFileParserState* state) const;
+        std::unique_ptr<ParsingResult> CreateParsingResult(MenuFileParserState* state) const;
 
-    std::unique_ptr<MenuParsingResult> ReadMenuFile();
-};
+    public:
+        MenuFileReader(std::istream& stream, std::string fileName, FeatureLevel featureLevel);
+        MenuFileReader(std::istream& stream, std::string fileName, FeatureLevel featureLevel, include_callback_t includeCallback);
+
+        std::unique_ptr<ParsingResult> ReadMenuFile();
+    };
+}

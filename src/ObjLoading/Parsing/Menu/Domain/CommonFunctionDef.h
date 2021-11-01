@@ -2,8 +2,11 @@
 
 #include <string>
 
-class CommonFunctionDef
+namespace menu
 {
-public:
-    std::string m_name;
-};
+    class CommonFunctionDef
+    {
+    public:
+        std::string m_name;
+    };
+}

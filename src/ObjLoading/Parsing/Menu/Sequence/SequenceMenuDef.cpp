@@ -2,6 +2,8 @@
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
+using namespace menu;
+
 SequenceMenuDef::SequenceMenuDef()
 {
     const SimpleMatcherFactory create(this);

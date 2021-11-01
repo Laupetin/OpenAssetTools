@@ -2,6 +2,8 @@
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
+using namespace menu;
+
 SequenceFunctionDef::SequenceFunctionDef()
 {
     const SimpleMatcherFactory create(this);

@@ -8,7 +8,9 @@
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
 
-MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const MenuFeatureLevel featureLevel, include_callback_t includeCallback)
+using namespace menu;
+
+MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel, include_callback_t includeCallback)
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr)
@@ -18,7 +20,7 @@ MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const
     m_stream = m_open_streams.back().get();
 }
 
-MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const MenuFeatureLevel featureLevel)
+MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel)
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr)
@@ -45,10 +47,10 @@ void MenuFileReader::SetupDefinesProxy()
     defines->AddDefine(DefinesStreamProxy::Define("PC", "1"));
     switch(m_feature_level)
     {
-    case MenuFeatureLevel::IW4:
+    case FeatureLevel::IW4:
         defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW4", "1"));
         break;
-    case MenuFeatureLevel::IW5:
+    case FeatureLevel::IW5:
         defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW5", "1"));
         break;
     default:
@@ -97,9 +99,9 @@ bool MenuFileReader::IsValidEndState(const MenuFileParserState* state) const
     return true;
 }
 
-std::unique_ptr<MenuParsingResult> MenuFileReader::CreateParsingResult(MenuFileParserState* state) const
+std::unique_ptr<ParsingResult> MenuFileReader::CreateParsingResult(MenuFileParserState* state) const
 {
-    auto result = std::make_unique<MenuParsingResult>();
+    auto result = std::make_unique<ParsingResult>();
     result->m_menus = std::move(state->m_menus);
     result->m_functions = std::move(state->m_functions);
     result->m_menus_to_load = std::move(state->m_menus_to_load);
@@ -107,9 +109,9 @@ std::unique_ptr<MenuParsingResult> MenuFileReader::CreateParsingResult(MenuFileP
     return result;
 }
 
-std::unique_ptr<MenuParsingResult> MenuFileReader::ReadMenuFile()
+std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
 {
-    const auto lexer = std::make_unique<SimpleLexer>(m_stream, SimpleLexer::Config{false, true, false});
+    const auto lexer = std::make_unique<SimpleLexer>(m_stream, SimpleLexer::Config{false, true, true});
     const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level);
 
     if (!parser->Parse())

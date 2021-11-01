@@ -8,7 +8,9 @@
 #include "Sequence/SequenceOpenGlobalScopeBlock.h"
 #include "Sequence/Properties/SequenceName.h"
 
-MenuFileParser::MenuFileParser(SimpleLexer* lexer, const MenuFeatureLevel featureLevel)
+using namespace menu;
+
+MenuFileParser::MenuFileParser(SimpleLexer* lexer, const FeatureLevel featureLevel)
     : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel))
 {
     CreateTestCollections();

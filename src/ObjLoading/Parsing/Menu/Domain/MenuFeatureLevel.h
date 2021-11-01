@@ -1,7 +1,10 @@
 #pragma once
 
-enum class MenuFeatureLevel
+namespace menu
 {
-    IW4,
-    IW5
-};
+    enum class FeatureLevel
+    {
+        IW4,
+        IW5
+    };
+}

@@ -4,6 +4,8 @@
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
+using namespace menu;
+
 SequenceCloseBlock::SequenceCloseBlock()
 {
     const SimpleMatcherFactory create(this);
