@@ -1,5 +1,8 @@
 #include "ItemPropertySequences.h"
 
+#include <vector>
+#include <string>
+
 #include "GenericColorPropertySequence.h"
 #include "GenericFloatingPointPropertySequence.h"
 #include "GenericIntPropertySequence.h"
@@ -89,6 +92,52 @@ namespace menu::item_properties
             state->m_current_item->m_fx_letter_time = result.NextCapture(CAPTURE_LETTER_TIME).IntegerValue();
             state->m_current_item->m_fx_decay_start_time = result.NextCapture(CAPTURE_DECAY_START_TIME).IntegerValue();
             state->m_current_item->m_fx_decay_duration = result.NextCapture(CAPTURE_DECAY_DURATION).IntegerValue();
+        }
+    };
+
+    class SequenceMultiTokenBlock final : public MenuFileParser::sequence_t
+    {
+    public:
+        using callback_t = std::function<void(MenuFileParserState* state, std::vector<std::string> value)>;
+
+    private:
+        static constexpr auto CAPTURE_VALUE = 1;
+
+        callback_t m_set_callback;
+
+    public:
+        SequenceMultiTokenBlock(std::string keyName, callback_t setCallback)
+            : m_set_callback(std::move(setCallback))
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase(std::move(keyName)),
+                create.Char('{'),
+                create.Optional(create.And({
+                    create.Text().Capture(CAPTURE_VALUE),
+                    create.OptionalLoop(create.And({
+                        create.Char(';'),
+                        create.Text().Capture(CAPTURE_VALUE)
+                    }))
+                })),
+                create.Char('}'),
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            if (!m_set_callback)
+                return;
+
+            std::vector<std::string> values;
+            while (result.HasNextCapture(CAPTURE_VALUE))
+            {
+                values.emplace_back(MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_VALUE)));
+            }
+
+            m_set_callback(state, std::move(values));
         }
     };
 }
@@ -222,6 +271,26 @@ void ItemPropertySequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(std::make_unique<GenericStringPropertySequence>("dvarTest", [](const MenuFileParserState* state, const std::string& value)
     {
         state->m_current_item->m_dvar_test = value;
+    }));
+    AddSequence(std::make_unique<SequenceMultiTokenBlock>("enableDvar", [](const MenuFileParserState* state, std::vector<std::string> value)
+    {
+        state->m_current_item->m_enable_dvar = std::move(value);
+    }));
+    AddSequence(std::make_unique<SequenceMultiTokenBlock>("disableDvar", [](const MenuFileParserState* state, std::vector<std::string> value)
+    {
+        state->m_current_item->m_disable_dvar = std::move(value);
+    }));
+    AddSequence(std::make_unique<SequenceMultiTokenBlock>("showDvar", [](const MenuFileParserState* state, std::vector<std::string> value)
+    {
+        state->m_current_item->m_show_dvar = std::move(value);
+    }));
+    AddSequence(std::make_unique<SequenceMultiTokenBlock>("hideDvar", [](const MenuFileParserState* state, std::vector<std::string> value)
+    {
+        state->m_current_item->m_hide_dvar = std::move(value);
+    }));
+    AddSequence(std::make_unique<SequenceMultiTokenBlock>("focusDvar", [](const MenuFileParserState* state, std::vector<std::string> value)
+    {
+        state->m_current_item->m_focus_dvar = std::move(value);
     }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("gamemsgwindowindex", [](const MenuFileParserState* state, const int value)
     {

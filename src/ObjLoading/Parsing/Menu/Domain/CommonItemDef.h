@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <string>
 
 #include "CommonMenuTypes.h"
@@ -40,6 +41,11 @@ namespace menu
         std::string m_background;
         std::string m_focus_sound;
         std::string m_dvar_test;
+        std::vector<std::string> m_enable_dvar;
+        std::vector<std::string> m_disable_dvar;
+        std::vector<std::string> m_show_dvar;
+        std::vector<std::string> m_hide_dvar;
+        std::vector<std::string> m_focus_dvar;
         int m_game_message_window_index;
         int m_game_message_window_mode;
         int m_fx_letter_time;
