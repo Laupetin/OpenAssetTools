@@ -492,6 +492,31 @@ void MenuDumper::WriteFloatExpressionsProperty(const ItemFloatExpression* floatE
     }
 }
 
+void MenuDumper::WriteMultiTokenStringProperty(const std::string& propertyKey, const char* value) const
+{
+    if (!value)
+        return;
+
+    Indent();
+    WriteKey(propertyKey);
+
+    const auto tokenList = CreateScriptTokenList(value);
+
+    auto firstToken = true;
+    m_stream << "{ ";
+    for (const auto& token : tokenList)
+    {
+        if (firstToken)
+            firstToken = false;
+        else
+            m_stream << ";";
+        m_stream << "\"" << token << "\"";
+    }
+    if (!firstToken)
+        m_stream << " ";
+    m_stream << "}\n";
+}
+
 void MenuDumper::WriteColumnProperty(const std::string& propertyKey, const listBoxDef_s* listBox) const
 {
     if (listBox->numColumns <= 0)
@@ -658,7 +683,8 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteFloatProperty("borderSize", item->window.borderSize, 0.0f);
     WriteStatementProperty("visible", item->visibleExp, true);
     WriteStatementProperty("disabled", item->disabledExp, true);
-    WriteIntProperty("ownerDraw", item->window.ownerDraw, 0);
+    WriteIntProperty("ownerdraw", item->window.ownerDraw, 0);
+    WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
     WriteIntProperty("align", item->alignment, 0);
     WriteIntProperty("textalign", item->textAlignMode, 0);
     WriteFloatProperty("textalignx", item->textalignx, 0.0f);
@@ -683,19 +709,18 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteMenuEventHandlerSetProperty("accept", item->accept);
     // WriteFloatProperty("special", item->special, 0.0f);
     WriteSoundAliasProperty("focusSound", item->focusSound);
-    WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
     WriteStringProperty("dvarTest", item->dvarTest);
-
+    
     if (item->dvarFlags & ITEM_DVAR_FLAG_ENABLE)
-        WriteStringProperty("enableDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("enableDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_DISABLE)
-        WriteStringProperty("disableDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("disableDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_SHOW)
-        WriteStringProperty("showDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("showDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_HIDE)
-        WriteStringProperty("hideDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("hideDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_FOCUS)
-        WriteStringProperty("focusDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("focusDvar", item->enableDvar);
 
     WriteItemKeyHandlerProperty(item->onKey);
     WriteStatementProperty("exp text", item->textExp, false);
