@@ -13,4 +13,14 @@ namespace menu
         };
         double array[4];
     };
+
+    struct CommonRect
+    {
+        double x;
+        double y;
+        double w;
+        double h;
+        int horizontalAlign;
+        int verticalAlign;
+    };
 }
