@@ -8,10 +8,10 @@
 
 class DefinesStreamProxy final : public AbstractDirectiveStreamProxy
 {
-    static constexpr const char* DEFINE_DIRECTIVE = "define ";
-    static constexpr const char* UNDEF_DIRECTIVE = "undef ";
-    static constexpr const char* IFDEF_DIRECTIVE = "ifdef ";
-    static constexpr const char* IFNDEF_DIRECTIVE = "ifndef ";
+    static constexpr const char* DEFINE_DIRECTIVE = "define";
+    static constexpr const char* UNDEF_DIRECTIVE = "undef";
+    static constexpr const char* IFDEF_DIRECTIVE = "ifdef";
+    static constexpr const char* IFNDEF_DIRECTIVE = "ifndef";
     static constexpr const char* ELSE_DIRECTIVE = "else";
     static constexpr const char* ENDIF_DIRECTIVE = "endif";
 
@@ -48,11 +48,11 @@ private:
     unsigned m_ignore_depth;
 
     static std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
-    _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directivePosition);
-    _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directivePosition);
-    _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directivePosition);
-    _NODISCARD bool MatchElseDirective(const ParserLine& line, unsigned directivePosition);
-    _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directivePosition);
+    _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchElseDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
     static void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);

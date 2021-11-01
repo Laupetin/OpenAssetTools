@@ -94,17 +94,29 @@ bool AbstractDirectiveStreamProxy::MatchNextString(const ParserLine& line, unsig
     return SkipWhitespace(line, position) && MatchString(line, position, str, len);
 }
 
-bool AbstractDirectiveStreamProxy::FindDirective(const ParserLine& line, unsigned& directivePosition)
+bool AbstractDirectiveStreamProxy::FindDirective(const ParserLine& line, unsigned& directiveStartPosition, unsigned& directiveEndPos)
 {
-    directivePosition = 0;
-    for (; directivePosition < line.m_line.size(); directivePosition++)
+    directiveStartPosition = 0;
+    for (; directiveStartPosition < line.m_line.size(); directiveStartPosition++)
     {
-        const auto c = line.m_line[directivePosition];
+        const auto c = line.m_line[directiveStartPosition];
 
         if (isspace(c))
             continue;
 
-        return c == '#';
+        if (c != '#')
+            continue;
+
+        directiveEndPos = directiveStartPosition + 1;
+        for(; directiveEndPos < line.m_line.size(); directiveEndPos++)
+        {
+            const auto c2 = line.m_line[directiveEndPos];
+            
+            if (isspace(c2))
+                break;
+        }
+
+        return true;
     }
 
     return false;

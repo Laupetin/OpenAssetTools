@@ -7,37 +7,50 @@ PackDefinitionStreamProxy::PackDefinitionStreamProxy(IParserLineStream* stream)
 {
 }
 
-bool PackDefinitionStreamProxy::MatchPackDirective(const ParserLine& line, unsigned directivePosition)
+bool PackDefinitionStreamProxy::MatchPackDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
     auto packValue = 0;
+    auto currentPosition = directiveStartPosition;
 
-    if (!MatchString(line, directivePosition, PRAGMA_PACK_DIRECTIVE, std::char_traits<char>::length(PRAGMA_PACK_DIRECTIVE)))
-        return false;
-
-    if (!MatchNextCharacter(line, directivePosition, '('))
-        throw ParsingException(CreatePos(line, directivePosition), "Invalid pack directive.");
-
-    bool isPush;
-    if (MatchNextString(line, directivePosition, PUSH_KEYWORD, std::char_traits<char>::length(PUSH_KEYWORD)))
-        isPush = true;
-    else if (MatchNextString(line, directivePosition, POP_KEYWORD, std::char_traits<char>::length(POP_KEYWORD)))
-        isPush = false;
-    else
-        throw ParsingException(CreatePos(line, directivePosition), "Unknown pack directive command.");
-
-    if(isPush)
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
+        || !MatchString(line, currentPosition, PRAGMA_DIRECTIVE, std::char_traits<char>::length(PRAGMA_DIRECTIVE)))
     {
-        if (!MatchNextCharacter(line, directivePosition, ','))
-            throw ParsingException(CreatePos(line, directivePosition), "Invalid pack directive.");
-
-        if (!ExtractInteger(line, directivePosition, packValue))
-            throw ParsingException(CreatePos(line, directivePosition), "Invalid pack value.");
+        return false;
     }
 
-    if (!MatchNextCharacter(line, directivePosition, ')'))
-        throw ParsingException(CreatePos(line, directivePosition), "Invalid pack directive.");
+    if (!SkipWhitespace(line, currentPosition))
+        return false;
 
-    if(isPush)
+    if (!MatchString(line, currentPosition, PACK_PRAGMA_COMMAND, std::char_traits<char>::length(PACK_PRAGMA_COMMAND)))
+        return false;
+
+    if (!SkipWhitespace(line, currentPosition))
+        throw ParsingException(CreatePos(line, currentPosition), "Invalid pack directive.");
+
+    if (!MatchNextCharacter(line, currentPosition, '('))
+        throw ParsingException(CreatePos(line, currentPosition), "Invalid pack directive.");
+
+    bool isPush;
+    if (MatchNextString(line, currentPosition, PUSH_KEYWORD, std::char_traits<char>::length(PUSH_KEYWORD)))
+        isPush = true;
+    else if (MatchNextString(line, currentPosition, POP_KEYWORD, std::char_traits<char>::length(POP_KEYWORD)))
+        isPush = false;
+    else
+        throw ParsingException(CreatePos(line, currentPosition), "Unknown pack directive command.");
+
+    if (isPush)
+    {
+        if (!MatchNextCharacter(line, currentPosition, ','))
+            throw ParsingException(CreatePos(line, currentPosition), "Invalid pack directive.");
+
+        if (!ExtractInteger(line, currentPosition, packValue))
+            throw ParsingException(CreatePos(line, currentPosition), "Invalid pack value.");
+    }
+
+    if (!MatchNextCharacter(line, currentPosition, ')'))
+        throw ParsingException(CreatePos(line, currentPosition), "Invalid pack directive.");
+
+    if (isPush)
         m_current_pack.push(packValue);
     else if (!m_current_pack.empty())
         m_current_pack.pop();
@@ -47,13 +60,13 @@ bool PackDefinitionStreamProxy::MatchPackDirective(const ParserLine& line, unsig
 
 bool PackDefinitionStreamProxy::MatchDirectives(const ParserLine& line)
 {
-    unsigned directivePos;
+    unsigned directiveStartPos, directiveEndPos;
 
-    if (!FindDirective(line, directivePos))
+    if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;
 
-    directivePos++;
-    return MatchPackDirective(line, directivePos);
+    directiveStartPos++;
+    return MatchPackDirective(line, directiveStartPos, directiveEndPos);
 }
 
 ParserLine PackDefinitionStreamProxy::NextLine()

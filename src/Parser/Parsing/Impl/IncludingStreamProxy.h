@@ -8,15 +8,16 @@
 class IncludingStreamProxy final : public AbstractDirectiveStreamProxy
 {
     static constexpr const char* INCLUDE_QUOTES_ERROR = "Invalid include directive. Expected \"\" or <>";
-    static constexpr const char* INCLUDE_DIRECTIVE = "include ";
-    static constexpr const char* PRAGMA_ONCE_DIRECTIVE = "pragma once";
+    static constexpr const char* INCLUDE_DIRECTIVE = "include";
+    static constexpr const char* PRAGMA_DIRECTIVE = "pragma";
+    static constexpr const char* ONCE_PRAGMA_COMMAND = "once";
 
     IParserLineStream* const m_stream;
     std::set<std::string> m_included_files;
     
-    _NODISCARD static bool ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
-    _NODISCARD bool MatchIncludeDirective(const ParserLine& line, unsigned directivePosition) const;
-    _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, unsigned directivePosition);
+    _NODISCARD static bool ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& directiveStartPos, unsigned& filenameEndPos);
+    _NODISCARD bool MatchIncludeDirective(const ParserLine& line, unsigned directiveStartPos, unsigned directiveEndPos) const;
+    _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, unsigned directiveStartPos, unsigned directiveEndPos);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
 public:

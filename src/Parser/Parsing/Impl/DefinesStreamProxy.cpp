@@ -157,22 +157,30 @@ std::vector<std::string> DefinesStreamProxy::MatchDefineParameters(const ParserL
     return parameters;
 }
 
-bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, unsigned directivePosition)
+bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
-    if (!MatchString(line, directivePosition, DEFINE_DIRECTIVE, std::char_traits<char>::length(DEFINE_DIRECTIVE)))
+    auto currentPos = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(DEFINE_DIRECTIVE)
+        || !MatchString(line, currentPos, DEFINE_DIRECTIVE, std::char_traits<char>::length(DEFINE_DIRECTIVE)))
+    {
         return false;
+    }
 
-    const auto nameStartPos = directivePosition;
-    if (!ExtractIdentifier(line, directivePosition))
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
+    if (!SkipWhitespace(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot define without a name.");
 
-    const auto name = line.m_line.substr(nameStartPos, directivePosition - nameStartPos);
+    const auto nameStartPos = currentPos;
+    if (!ExtractIdentifier(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot define without a name.");
 
-    const auto parameters = MatchDefineParameters(line, directivePosition);
+    const auto name = line.m_line.substr(nameStartPos, currentPos - nameStartPos);
+
+    const auto parameters = MatchDefineParameters(line, currentPos);
 
     std::string value;
-    if (directivePosition < line.m_line.size())
-        value = line.m_line.substr(directivePosition + 1);
+    if (currentPos < line.m_line.size())
+        value = line.m_line.substr(currentPos + 1);
 
     Define define(name, value);
     define.IdentifyParameters(parameters);
@@ -181,19 +189,24 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, unsigned d
     return true;
 }
 
-bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, unsigned directivePosition)
+bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
-    if (!MatchString(line, directivePosition, UNDEF_DIRECTIVE, std::char_traits<char>::length(UNDEF_DIRECTIVE)))
+    auto currentPos = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(UNDEF_DIRECTIVE)
+        || !MatchString(line, currentPos, UNDEF_DIRECTIVE, std::char_traits<char>::length(UNDEF_DIRECTIVE)))
+    {
         return false;
+    }
 
-    if (!SkipWhitespace(line, directivePosition))
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot undef without a name.");
+    if (!SkipWhitespace(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot undef without a name.");
 
-    const auto nameStartPos = directivePosition;
-    if (!ExtractIdentifier(line, directivePosition))
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
+    const auto nameStartPos = currentPos;
+    if (!ExtractIdentifier(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot undef without a name.");
 
-    const auto name = line.m_line.substr(nameStartPos, directivePosition - nameStartPos);
+    const auto name = line.m_line.substr(nameStartPos, currentPos - nameStartPos);
     const auto entry = m_defines.find(name);
 
     if (entry != m_defines.end())
@@ -202,13 +215,19 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, unsigned di
     return true;
 }
 
-bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, unsigned directivePosition)
+bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
+    auto currentPos = directiveStartPosition;
+
     auto reverse = false;
-    if (!MatchString(line, directivePosition, IFDEF_DIRECTIVE, std::char_traits<char>::length(IFDEF_DIRECTIVE)))
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(IFDEF_DIRECTIVE)
+        || !MatchString(line, currentPos, IFDEF_DIRECTIVE, std::char_traits<char>::length(IFDEF_DIRECTIVE)))
     {
-        if (!MatchString(line, directivePosition, IFNDEF_DIRECTIVE, std::char_traits<char>::length(IFNDEF_DIRECTIVE)))
+        if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(IFNDEF_DIRECTIVE)
+            || !MatchString(line, currentPos, IFNDEF_DIRECTIVE, std::char_traits<char>::length(IFNDEF_DIRECTIVE)))
+        {
             return false;
+        }
 
         reverse = true;
     }
@@ -219,14 +238,14 @@ bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, unsigned di
         return true;
     }
 
-    if (!SkipWhitespace(line, directivePosition))
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
+    if (!SkipWhitespace(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot ifdef without a name.");
 
-    const auto nameStartPos = directivePosition;
-    if (!ExtractIdentifier(line, directivePosition))
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot ifdef without a name.");
+    const auto nameStartPos = currentPos;
+    if (!ExtractIdentifier(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot ifdef without a name.");
 
-    const auto name = line.m_line.substr(nameStartPos, directivePosition - nameStartPos);
+    const auto name = line.m_line.substr(nameStartPos, currentPos - nameStartPos);
     const auto entry = m_defines.find(name);
 
     if (entry != m_defines.end())
@@ -237,10 +256,15 @@ bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, unsigned di
     return true;
 }
 
-bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, unsigned directivePosition)
+bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
-    if (!MatchString(line, directivePosition, ELSE_DIRECTIVE, std::char_traits<char>::length(ELSE_DIRECTIVE)))
+    auto currentPos = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(ELSE_DIRECTIVE)
+        || !MatchString(line, currentPos, ELSE_DIRECTIVE, std::char_traits<char>::length(ELSE_DIRECTIVE)))
+    {
         return false;
+    }
 
     if (m_ignore_depth > 0)
         return true;
@@ -248,15 +272,20 @@ bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, unsigned dir
     if (!m_modes.empty())
         m_modes.top() = !m_modes.top();
     else
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot use else without ifdef");
+        throw ParsingException(CreatePos(line, currentPos), "Cannot use else without ifdef");
 
     return true;
 }
 
-bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, unsigned directivePosition)
+bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
-    if (!MatchString(line, directivePosition, ENDIF_DIRECTIVE, std::char_traits<char>::length(ENDIF_DIRECTIVE)))
+    auto currentPos = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(ENDIF_DIRECTIVE)
+        || !MatchString(line, currentPos, ENDIF_DIRECTIVE, std::char_traits<char>::length(ENDIF_DIRECTIVE)))
+    {
         return false;
+    }
 
     if (m_ignore_depth > 0)
     {
@@ -267,30 +296,31 @@ bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, unsigned di
     if (!m_modes.empty())
         m_modes.pop();
     else
-        throw ParsingException(CreatePos(line, directivePosition), "Cannot use endif without ifdef");
+        throw ParsingException(CreatePos(line, currentPos), "Cannot use endif without ifdef");
 
     return true;
 }
 
 bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
 {
-    unsigned directivePos;
+    unsigned directiveStartPos;
+    unsigned directiveEndPos;
 
-    if (!FindDirective(line, directivePos))
+    if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;
 
-    directivePos++;
+    directiveStartPos++;
 
     if (m_modes.empty() || m_modes.top() == true)
     {
-        if (MatchDefineDirective(line, directivePos)
-            || MatchUndefDirective(line, directivePos))
+        if (MatchDefineDirective(line, directiveStartPos, directiveEndPos)
+            || MatchUndefDirective(line, directiveStartPos, directiveEndPos))
             return true;
     }
 
-    return MatchIfdefDirective(line, directivePos)
-        || MatchElseDirective(line, directivePos)
-        || MatchEndifDirective(line, directivePos);
+    return MatchIfdefDirective(line, directiveStartPos, directiveEndPos)
+        || MatchElseDirective(line, directiveStartPos, directiveEndPos)
+        || MatchEndifDirective(line, directiveStartPos, directiveEndPos);
 }
 
 bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigned wordStart, const unsigned wordEnd, Define*& value)
@@ -427,7 +457,8 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
         }
 
         defineIterations++;
-    } while (usesDefines);
+    }
+    while (usesDefines);
 }
 
 void DefinesStreamProxy::AddDefine(Define define)

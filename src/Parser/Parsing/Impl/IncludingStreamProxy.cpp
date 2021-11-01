@@ -57,18 +57,23 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const 
     return false;
 }
 
-bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, unsigned directivePosition) const
+bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const unsigned directiveStartPos, const unsigned directiveEndPos) const
 {
-    if (!MatchString(line, directivePosition, INCLUDE_DIRECTIVE, std::char_traits<char>::length(INCLUDE_DIRECTIVE)))
+    auto currentPos = directiveStartPos;
+
+    if (directiveEndPos - directiveStartPos != std::char_traits<char>::length(INCLUDE_DIRECTIVE)
+        || !MatchString(line, currentPos, INCLUDE_DIRECTIVE, std::char_traits<char>::length(INCLUDE_DIRECTIVE)))
+    {
         return false;
+    }
     
     unsigned filenameStart, filenameEnd;
 
-    if (!ExtractIncludeFilename(line, directivePosition, filenameStart, filenameEnd))
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, static_cast<int>(directivePosition)), INCLUDE_QUOTES_ERROR);
+    if (!ExtractIncludeFilename(line, currentPos, filenameStart, filenameEnd))
+        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, static_cast<int>(currentPos)), INCLUDE_QUOTES_ERROR);
 
     if (filenameEnd <= filenameStart)
-        throw ParsingException(CreatePos(line, directivePosition), "No filename specified");
+        throw ParsingException(CreatePos(line, currentPos), "No filename specified");
 
     const auto filename = line.m_line.substr(filenameStart, filenameEnd - filenameStart);
 
@@ -76,15 +81,26 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, unsigne
     {
         std::ostringstream errorStr;
         errorStr << "Could not include file \"" << filename << "\"";
-        throw ParsingException(CreatePos(line, directivePosition), errorStr.str());
+        throw ParsingException(CreatePos(line, currentPos), errorStr.str());
     }
 
     return true;
 }
 
-bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, unsigned directivePosition)
+bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, const unsigned directiveStartPos, const unsigned directiveEndPos)
 {
-    if(!MatchString(line, directivePosition, PRAGMA_ONCE_DIRECTIVE, std::char_traits<char>::length(PRAGMA_ONCE_DIRECTIVE)))
+    auto currentPos = directiveStartPos;
+
+    if(directiveEndPos - directiveStartPos != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
+        || !MatchString(line, currentPos, PRAGMA_DIRECTIVE, std::char_traits<char>::length(PRAGMA_DIRECTIVE)))
+    {
+        return false;
+    }
+
+    if (!SkipWhitespace(line, currentPos))
+        return false;
+
+    if (!MatchString(line, currentPos, ONCE_PRAGMA_COMMAND, std::char_traits<char>::length(ONCE_PRAGMA_COMMAND)))
         return false;
 
     const auto absolutePath = absolute(fs::path(line.m_filename.get()));
@@ -101,14 +117,14 @@ bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, unsi
 
 bool IncludingStreamProxy::MatchDirectives(const ParserLine& line)
 {
-    unsigned directivePos;
+    unsigned directiveStartPos, directiveEndPos;
 
-    if (!FindDirective(line, directivePos))
+    if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;
 
-    directivePos++;
-    return MatchIncludeDirective(line, directivePos)
-        || MatchPragmaOnceDirective(line, directivePos);
+    directiveStartPos++;
+    return MatchIncludeDirective(line, directiveStartPos, directiveEndPos)
+        || MatchPragmaOnceDirective(line, directiveStartPos, directiveEndPos);
 }
 
 ParserLine IncludingStreamProxy::NextLine()

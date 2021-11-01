@@ -12,14 +12,15 @@ public:
     static constexpr int DEFAULT_PACK = 8;
 
 private:
-    static constexpr const char* PRAGMA_PACK_DIRECTIVE = "pragma pack";
+    static constexpr const char* PRAGMA_DIRECTIVE = "pragma";
+    static constexpr const char* PACK_PRAGMA_COMMAND = "pack";
     static constexpr const char* PUSH_KEYWORD = "push";
     static constexpr const char* POP_KEYWORD = "pop";
 
     IParserLineStream* const m_stream;
     std::stack<int> m_current_pack;
 
-    _NODISCARD bool MatchPackDirective(const ParserLine& line, unsigned directivePosition);
+    _NODISCARD bool MatchPackDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
 public:

@@ -18,5 +18,5 @@ protected:
     static bool MatchString(const ParserLine& line, unsigned& position, const char* str, unsigned len);
     static bool MatchNextString(const ParserLine& line, unsigned& position, const char* str, unsigned len);
 
-    static bool FindDirective(const ParserLine& line, unsigned& directivePosition);
+    static bool FindDirective(const ParserLine& line, unsigned& directiveStartPosition, unsigned& directiveEndPos);
 };
