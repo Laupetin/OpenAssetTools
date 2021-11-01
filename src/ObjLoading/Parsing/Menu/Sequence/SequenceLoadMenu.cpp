@@ -1,12 +1,12 @@
 #include "SequenceLoadMenu.h"
 
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Parsing/Menu/MenuMatcherFactory.h"
 
 using namespace menu;
 
 SequenceLoadMenu::SequenceLoadMenu()
 {
-    const SimpleMatcherFactory create(this);
+    const MenuMatcherFactory create(this);
 
     AddMatchers({
         create.Keyword("loadMenu"),

@@ -1,12 +1,12 @@
 #include "SequenceOpenGlobalScopeBlock.h"
 
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Parsing/Menu/MenuMatcherFactory.h"
 
 using namespace menu;
 
 SequenceOpenGlobalScopeBlock::SequenceOpenGlobalScopeBlock()
 {
-    const SimpleMatcherFactory create(this);
+    const MenuMatcherFactory create(this);
 
     AddMatchers({
         create.Char('{')

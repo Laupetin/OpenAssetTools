@@ -5,7 +5,7 @@
 #include "Parsing/Simple/SimpleParserValue.h"
 #include "Parsing/Matcher/AbstractMatcherFactory.h"
 
-class SimpleMatcherFactory final : public AbstractMatcherFactory<SimpleParserValue>
+class SimpleMatcherFactory : public AbstractMatcherFactory<SimpleParserValue>
 {
 public:
     explicit SimpleMatcherFactory(const IMatcherForLabelSupplier<SimpleParserValue>* labelSupplier);

@@ -2,13 +2,13 @@
 
 #include <sstream>
 
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Parsing/Menu/MenuMatcherFactory.h"
 
 using namespace menu;
 
 SequenceCloseBlock::SequenceCloseBlock()
 {
-    const SimpleMatcherFactory create(this);
+    const MenuMatcherFactory create(this);
 
     AddMatchers({
         create.Char('}').Capture(CAPTURE_TOKEN)
