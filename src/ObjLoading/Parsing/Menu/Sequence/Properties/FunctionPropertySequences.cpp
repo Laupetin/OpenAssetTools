@@ -1,7 +1,7 @@
 #include "FunctionPropertySequences.h"
 
 #include "GenericStringPropertySequence.h"
-#include "Parsing/Menu/MenuMatcherFactory.h"
+#include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
 using namespace menu;
 
