@@ -106,7 +106,7 @@ static constexpr int TAG_EVALUATION_OPERATION = std::numeric_limits<int>::max() 
 static constexpr int CAPTURE_OPERAND_TYPENAME = std::numeric_limits<int>::max() - 1;
 static constexpr int CAPTURE_OPERAND_ARRAY = std::numeric_limits<int>::max() - 2;
 static constexpr int CAPTURE_OPERAND_INTEGER = std::numeric_limits<int>::max() - 3;
-static constexpr int CAPTURE_OPERATION_TYPE = std::numeric_limits<int>::max() - 4;
+static constexpr int CAPTURE_BINARY_OPERATION_TYPE = std::numeric_limits<int>::max() - 4;
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ParseOperandArray(const supplier_t* labelSupplier)
 {
@@ -209,7 +209,7 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Parse
         {
             return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_OR);
         })
-    }).Capture(CAPTURE_OPERATION_TYPE);
+    }).Capture(CAPTURE_BINARY_OPERATION_TYPE);
 }
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Evaluation(const supplier_t* labelSupplier)
@@ -324,7 +324,7 @@ std::unique_ptr<IEvaluation> CommandsCommonMatchers::ProcessEvaluation(CommandsP
         operands.emplace_back(std::move(firstStatementPart));
 
         if (result.PeekAndRemoveIfTag(TAG_EVALUATION_OPERATION) == TAG_EVALUATION_OPERATION)
-            operators.emplace_back(operators.size(), result.NextCapture(CAPTURE_OPERATION_TYPE).OpTypeValue());
+            operators.emplace_back(operators.size(), result.NextCapture(CAPTURE_BINARY_OPERATION_TYPE).OpTypeValue());
         else
             break;
 

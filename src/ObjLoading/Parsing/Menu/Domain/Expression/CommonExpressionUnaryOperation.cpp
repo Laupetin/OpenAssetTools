@@ -31,9 +31,15 @@ const CommonExpressionUnaryOperationType CommonExpressionUnaryOperationType::OPE
     }
 );
 
-CommonExpressionUnaryOperation::CommonExpressionUnaryOperation(std::unique_ptr<ICommonExpression> operand, const CommonExpressionUnaryOperationType* operationType)
-    : m_operand(std::move(operand)),
-      m_operation_type(operationType)
+const CommonExpressionUnaryOperationType* const CommonExpressionUnaryOperationType::ALL_OPERATION_TYPES[static_cast<int>(UnaryOperationId::COUNT)]
+{
+    &OPERATION_NOT,
+    &OPERATION_BITWISE_NOT,
+};
+
+CommonExpressionUnaryOperation::CommonExpressionUnaryOperation(const CommonExpressionUnaryOperationType* operationType, std::unique_ptr<ICommonExpression> operand)
+    : m_operation_type(operationType),
+      m_operand(std::move(operand))
 {
 }
 

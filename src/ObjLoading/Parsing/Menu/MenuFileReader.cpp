@@ -1,5 +1,6 @@
 #include "MenuFileReader.h"
 
+#include "MenuFileLexing.h"
 #include "MenuFileParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
@@ -45,7 +46,7 @@ void MenuFileReader::SetupDefinesProxy()
     auto defines = std::make_unique<DefinesStreamProxy>(m_open_streams.back().get());
 
     defines->AddDefine(DefinesStreamProxy::Define("PC", "1"));
-    switch(m_feature_level)
+    switch (m_feature_level)
     {
     case FeatureLevel::IW4:
         defines->AddDefine(DefinesStreamProxy::Define("FEATURE_LEVEL_IW4", "1"));
@@ -72,25 +73,25 @@ void MenuFileReader::SetupStreamProxies()
 
 bool MenuFileReader::IsValidEndState(const MenuFileParserState* state) const
 {
-    if(state->m_current_item)
+    if (state->m_current_item)
     {
         std::cout << "In \"" << m_file_name << "\": Unclosed item at end of file!\n";
         return false;
     }
 
-    if(state->m_current_menu)
+    if (state->m_current_menu)
     {
         std::cout << "In \"" << m_file_name << "\": Unclosed menu at end of file!\n";
         return false;
     }
 
-    if(state->m_current_function)
+    if (state->m_current_function)
     {
         std::cout << "In \"" << m_file_name << "\": Unclosed function at end of file!\n";
         return false;
     }
 
-    if(state->m_in_global_scope)
+    if (state->m_in_global_scope)
     {
         std::cout << "In \"" << m_file_name << "\": Did not close global scope!\n";
         return false;
@@ -115,6 +116,16 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
     lexerConfig.m_emit_new_line_tokens = false;
     lexerConfig.m_read_strings = true;
     lexerConfig.m_read_numbers = true;
+    lexerConfig.m_multi_character_tokens = std::vector<SimpleLexer::Config::MultiCharacterToken>({
+        {static_cast<int>(MenuFileLexing::MultiChar::SHIFT_LEFT), "<<"},
+        {static_cast<int>(MenuFileLexing::MultiChar::SHIFT_RIGHT), ">>"},
+        {static_cast<int>(MenuFileLexing::MultiChar::GREATER_EQUAL), ">="},
+        {static_cast<int>(MenuFileLexing::MultiChar::LESS_EQUAL), "<="},
+        {static_cast<int>(MenuFileLexing::MultiChar::EQUALS), "=="},
+        {static_cast<int>(MenuFileLexing::MultiChar::NOT_EQUAL), "!="},
+        {static_cast<int>(MenuFileLexing::MultiChar::LOGICAL_AND), "&&"},
+        {static_cast<int>(MenuFileLexing::MultiChar::LOGICAL_OR), "||"},
+    });
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
 
     const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level);

@@ -9,6 +9,14 @@
 
 namespace menu
 {
+    enum class UnaryOperationId
+    {
+        NOT,
+        BITWISE_NOT,
+
+        COUNT
+    };
+
     class CommonExpressionUnaryOperationType
     {
     public:
@@ -20,20 +28,20 @@ namespace menu
     private:
         CommonExpressionUnaryOperationType(std::string syntax, evaluation_function_t evaluationFunction);
 
+    public:
         static const CommonExpressionUnaryOperationType OPERATION_NOT;
         static const CommonExpressionUnaryOperationType OPERATION_BITWISE_NOT;
 
-        static const CommonExpressionUnaryOperationType* const ALL_OPERATION_TYPES[];
+        static const CommonExpressionUnaryOperationType* const ALL_OPERATION_TYPES[static_cast<int>(UnaryOperationId::COUNT)];
     };
 
     class CommonExpressionUnaryOperation final : public ICommonExpression
     {
     public:
-        std::unique_ptr<ICommonExpression> m_operand;
         const CommonExpressionUnaryOperationType* m_operation_type;
+        std::unique_ptr<ICommonExpression> m_operand;
 
-        CommonExpressionUnaryOperation(std::unique_ptr<ICommonExpression> operand,
-            const CommonExpressionUnaryOperationType* operationType);
+        CommonExpressionUnaryOperation(const CommonExpressionUnaryOperationType* operationType, std::unique_ptr<ICommonExpression> operand);
 
         _NODISCARD bool OperandNeedsParenthesis() const;
 

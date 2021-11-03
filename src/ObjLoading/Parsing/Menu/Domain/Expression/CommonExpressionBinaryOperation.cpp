@@ -385,11 +385,32 @@ const CommonExpressionBinaryOperationType CommonExpressionBinaryOperationType::O
     }
 );
 
-CommonExpressionBinaryOperation::CommonExpressionBinaryOperation(std::unique_ptr<ICommonExpression> operand1, std::unique_ptr<ICommonExpression> operand2,
-                                                                 const CommonExpressionBinaryOperationType* operationType)
-    : m_operand1(std::move(operand1)),
-      m_operand2(std::move(operand2)),
-      m_operation_type(operationType)
+const CommonExpressionBinaryOperationType* const CommonExpressionBinaryOperationType::ALL_OPERATION_TYPES[static_cast<int>(BinaryOperationId::COUNT)]
+{
+    &OPERATION_ADD,
+    &OPERATION_SUBTRACT,
+    &OPERATION_MULTIPLY,
+    &OPERATION_DIVIDE,
+    &OPERATION_REMAINDER,
+    &OPERATION_BITWISE_AND,
+    &OPERATION_BITWISE_OR,
+    &OPERATION_SHIFT_LEFT,
+    &OPERATION_SHIFT_RIGHT,
+    &OPERATION_GREATER_THAN,
+    &OPERATION_GREATER_EQUAL_THAN,
+    &OPERATION_LESS_THAN,
+    &OPERATION_LESS_EQUAL_THAN,
+    &OPERATION_EQUALS,
+    &OPERATION_NOT_EQUAL,
+    &OPERATION_AND,
+    &OPERATION_OR
+};
+
+CommonExpressionBinaryOperation::CommonExpressionBinaryOperation(const CommonExpressionBinaryOperationType* operationType, std::unique_ptr<ICommonExpression> operand1,
+                                                                 std::unique_ptr<ICommonExpression> operand2)
+    : m_operation_type(operationType),
+      m_operand1(std::move(operand1)),
+      m_operand2(std::move(operand2))
 {
 }
 

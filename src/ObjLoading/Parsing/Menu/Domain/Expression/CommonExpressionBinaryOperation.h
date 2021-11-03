@@ -23,6 +23,29 @@ namespace menu
         LOGICAL_OR = 10
     };
 
+    enum class BinaryOperationId
+    {
+        ADD,
+        SUBTRACT,
+        MULTIPLY,
+        DIVIDE,
+        REMAINDER,
+        BITWISE_AND,
+        BITWISE_OR,
+        SHIFT_LEFT,
+        SHIFT_RIGHT,
+        GREATER_THAN,
+        GREATER_EQUAL_THAN,
+        LESS_THAN,
+        LESS_EQUAL_THAN,
+        EQUALS,
+        NOT_EQUAL,
+        AND,
+        OR,
+
+        COUNT
+    };
+
     class CommonExpressionBinaryOperationType
     {
     public:
@@ -35,6 +58,7 @@ namespace menu
     private:
         CommonExpressionBinaryOperationType(std::string syntax, OperationPrecedence precedence, evaluation_function_t evaluationFunction);
 
+    public:
         static const CommonExpressionBinaryOperationType OPERATION_ADD;
         static const CommonExpressionBinaryOperationType OPERATION_SUBTRACT;
         static const CommonExpressionBinaryOperationType OPERATION_MULTIPLY;
@@ -53,19 +77,19 @@ namespace menu
         static const CommonExpressionBinaryOperationType OPERATION_AND;
         static const CommonExpressionBinaryOperationType OPERATION_OR;
 
-        static const CommonExpressionBinaryOperationType* const ALL_OPERATION_TYPES[];
+        static const CommonExpressionBinaryOperationType* const ALL_OPERATION_TYPES[static_cast<int>(BinaryOperationId::COUNT)];
     };
 
     class CommonExpressionBinaryOperation final : public ICommonExpression
     {
     public:
+        const CommonExpressionBinaryOperationType* m_operation_type;
         std::unique_ptr<ICommonExpression> m_operand1;
         std::unique_ptr<ICommonExpression> m_operand2;
-        const CommonExpressionBinaryOperationType* m_operation_type;
 
-        CommonExpressionBinaryOperation(std::unique_ptr<ICommonExpression> operand1,
-                                        std::unique_ptr<ICommonExpression> operand2,
-                                        const CommonExpressionBinaryOperationType* operationType);
+        CommonExpressionBinaryOperation(const CommonExpressionBinaryOperationType* operationType,
+                                        std::unique_ptr<ICommonExpression> operand1,
+                                        std::unique_ptr<ICommonExpression> operand2);
 
         _NODISCARD bool Operand1NeedsParenthesis() const;
         _NODISCARD bool Operand2NeedsParenthesis() const;
