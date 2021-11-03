@@ -29,7 +29,12 @@ void LocalizeFileReader::SetupStreamProxies()
 
 std::vector<LocalizeFileEntry> LocalizeFileReader::ReadLocalizeFile()
 {
-    const auto lexer = std::make_unique<SimpleLexer>(m_stream, SimpleLexer::Config{true, true, false});
+    SimpleLexer::Config lexerConfig;
+    lexerConfig.m_emit_new_line_tokens = true;
+    lexerConfig.m_read_strings = true;
+    lexerConfig.m_read_numbers = false;
+    const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
+
     const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language);
 
     if (parser->Parse())

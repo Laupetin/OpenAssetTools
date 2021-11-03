@@ -111,7 +111,12 @@ std::unique_ptr<ParsingResult> MenuFileReader::CreateParsingResult(MenuFileParse
 
 std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
 {
-    const auto lexer = std::make_unique<SimpleLexer>(m_stream, SimpleLexer::Config{false, true, true});
+    SimpleLexer::Config lexerConfig;
+    lexerConfig.m_emit_new_line_tokens = false;
+    lexerConfig.m_read_strings = true;
+    lexerConfig.m_read_numbers = true;
+    const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
+
     const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level);
 
     if (!parser->Parse())

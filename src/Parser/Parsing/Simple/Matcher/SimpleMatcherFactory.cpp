@@ -5,6 +5,7 @@
 #include "SimpleMatcherKeyword.h"
 #include "SimpleMatcherKeywordIgnoreCase.h"
 #include "SimpleMatcherKeywordPrefix.h"
+#include "SimpleMatcherMultiCharacter.h"
 #include "SimpleMatcherValueType.h"
 
 SimpleMatcherFactory::SimpleMatcherFactory(const IMatcherForLabelSupplier<SimpleParserValue>* labelSupplier)
@@ -55,6 +56,11 @@ MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::FloatingPoint() c
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Char(char c) const
 {
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherCharacter>(c));
+}
+
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::MultiChar(int multiCharacterSequenceId) const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherMultiCharacter>(multiCharacterSequenceId));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::AnyCharBesides(std::vector<char> chars) const

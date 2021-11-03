@@ -13,8 +13,9 @@ enum class SimpleParserValueType
     END_OF_FILE,
     NEW_LINE,
 
-    // Single character
+    // Character sequences
     CHARACTER,
+    MULTI_CHARACTER,
 
     // Generic token types
     INTEGER,
@@ -36,6 +37,7 @@ public:
     {
         char char_value;
         int int_value;
+        int multi_character_sequence_id;
         double double_value;
         std::string* string_value;
     } m_value;
@@ -44,6 +46,7 @@ public:
     static SimpleParserValue EndOfFile(TokenPos pos);
     static SimpleParserValue NewLine(TokenPos pos);
     static SimpleParserValue Character(TokenPos pos, char c);
+    static SimpleParserValue MultiCharacter(TokenPos pos, int multiCharacterSequenceId);
     static SimpleParserValue Integer(TokenPos pos, int value);
     static SimpleParserValue FloatingPoint(TokenPos pos, double value);
     static SimpleParserValue String(TokenPos pos, std::string* stringValue);
@@ -63,6 +66,7 @@ public:
     _NODISCARD const TokenPos& GetPos() const override;
 
     _NODISCARD char CharacterValue() const;
+    _NODISCARD int MultiCharacterValue() const;
     _NODISCARD int IntegerValue() const;
     _NODISCARD double FloatingPointValue() const;
     _NODISCARD std::string& StringValue() const;

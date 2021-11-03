@@ -66,7 +66,12 @@ std::vector<std::string> AbstractMenuDumper::CreateScriptTokenList(const char* s
     const std::string scriptString(script);
     std::istringstream stringStream(scriptString);
     ParserSingleInputStream inputStream(stringStream, "MenuScript");
-    SimpleLexer lexer(&inputStream, SimpleLexer::Config{false, true, false});
+
+    SimpleLexer::Config lexerConfig;
+    lexerConfig.m_emit_new_line_tokens = false;
+    lexerConfig.m_read_strings = true;
+    lexerConfig.m_read_numbers = false;
+    SimpleLexer lexer(&inputStream, std::move(lexerConfig));
 
     std::vector<std::string> result;
     auto hasLexerTokens = true;

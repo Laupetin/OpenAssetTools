@@ -27,6 +27,13 @@ SimpleParserValue SimpleParserValue::Character(const TokenPos pos, const char c)
     return pv;
 }
 
+SimpleParserValue SimpleParserValue::MultiCharacter(const TokenPos pos, const int multiCharacterSequenceId)
+{
+    SimpleParserValue pv(pos, SimpleParserValueType::MULTI_CHARACTER);
+    pv.m_value.multi_character_sequence_id = multiCharacterSequenceId;
+    return pv;
+}
+
 SimpleParserValue SimpleParserValue::Integer(const TokenPos pos, const int value)
 {
     SimpleParserValue pv(pos, SimpleParserValueType::INTEGER);
@@ -114,6 +121,12 @@ char SimpleParserValue::CharacterValue() const
 {
     assert(m_type == SimpleParserValueType::CHARACTER);
     return m_value.char_value;
+}
+
+int SimpleParserValue::MultiCharacterValue() const
+{
+    assert(m_type == SimpleParserValueType::MULTI_CHARACTER);
+    return m_value.multi_character_sequence_id;
 }
 
 int SimpleParserValue::IntegerValue() const
