@@ -5,6 +5,7 @@
 
 #include "CommonItemDef.h"
 #include "CommonMenuTypes.h"
+#include "Expression/ICommonExpression.h"
 
 namespace menu
 {
@@ -30,6 +31,13 @@ namespace menu
         double m_fade_in_amount;
         double m_blur_radius;
         std::string m_allowed_binding;
+        std::unique_ptr<ICommonExpression> m_visible_expression;
+        std::unique_ptr<ICommonExpression> m_rect_x_exp;
+        std::unique_ptr<ICommonExpression> m_rect_y_exp;
+        std::unique_ptr<ICommonExpression> m_rect_w_exp;
+        std::unique_ptr<ICommonExpression> m_rect_h_exp;
+        std::unique_ptr<ICommonExpression> m_open_sound_exp;
+        std::unique_ptr<ICommonExpression> m_close_sound_exp;
 
         bool m_full_screen;
         bool m_screen_space;

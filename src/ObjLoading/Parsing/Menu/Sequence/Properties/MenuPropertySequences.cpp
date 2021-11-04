@@ -2,6 +2,7 @@
 
 #include "GenericBoolPropertySequence.h"
 #include "GenericColorPropertySequence.h"
+#include "GenericExpressionPropertySequence.h"
 #include "GenericFloatingPointPropertySequence.h"
 #include "GenericIntPropertySequence.h"
 #include "GenericKeywordPropertySequence.h"
@@ -62,52 +63,6 @@ namespace menu::menu_properties
             }
 
             state->m_current_menu->m_rect = rect;
-        }
-    };
-
-    class SequenceBooleanExpression final : public MenuFileParser::sequence_t
-    {
-        static constexpr auto CAPTURE_EXPRESSION = 1;
-
-    public:
-        explicit SequenceBooleanExpression(std::string keyword)
-        {
-            const MenuMatcherFactory create(this);
-
-            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
-
-            AddMatchers({
-                create.KeywordIgnoreCase(std::move(keyword)),
-                create.Or({
-                    create.And({
-                        create.KeywordIgnoreCase("when"),
-                        create.Char('('),
-                        create.Label(MenuCommonMatchers::LABEL_EXPRESSION).Capture(CAPTURE_EXPRESSION),
-                        create.Char(')')
-                    }),
-                    create.Label(MenuCommonMatchers::LABEL_EXPRESSION)
-                }),
-                create.Char(';')
-            });
-        }
-
-    protected:
-        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
-        {
-            assert(state->m_current_menu);
-
-            const auto expression = MenuCommonMatchers::ProcessExpression(state, result);
-            
-            std::cout << "Evaluated expression!\n";
-            std::cout << "  IsStatic: " << expression->IsStatic() << "\n";
-
-            const auto value = expression->Evaluate();
-            if(value.m_type == CommonExpressionValue::Type::DOUBLE)
-                std::cout << "  Value: " << value.m_double_value << "\n";
-            else if(value.m_type == CommonExpressionValue::Type::INT)
-                std::cout << "  Value: " << value.m_int_value << "\n";
-            else if (value.m_type == CommonExpressionValue::Type::STRING)
-                std::cout << "  Value: \"" << *value.m_string_value << "\"\n";
         }
     };
 }
@@ -234,6 +189,24 @@ void MenuPropertySequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_text_only_focus = true;
     }));
-
-    AddSequence(std::make_unique<SequenceBooleanExpression>("visible"));
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)
+    {
+        state->m_current_menu->m_visible_expression = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)
+    {
+        state->m_current_menu->m_rect_x_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)
+    {
+        state->m_current_menu->m_rect_y_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)
+    {
+        state->m_current_menu->m_rect_w_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)
+    {
+        state->m_current_menu->m_rect_h_exp = std::move(value);
+    }));
 }
