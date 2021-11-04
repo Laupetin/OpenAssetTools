@@ -35,4 +35,9 @@ public:
         : m_matchers(std::make_move_iterator(matchers.begin()), std::make_move_iterator(matchers.end()))
     {
     }
+
+    explicit MatcherOr(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers)
+        : m_matchers(std::move(matchers))
+    {
+    }
 };

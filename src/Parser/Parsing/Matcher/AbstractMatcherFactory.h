@@ -90,9 +90,19 @@ public:
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherAnd<TokenType>>(matchers));
     }
 
+    _NODISCARD MatcherFactoryWrapper<TokenType> And(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
+    {
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherAnd<TokenType>>(std::move(matchers)));
+    }
+
     _NODISCARD MatcherFactoryWrapper<TokenType> Or(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOr<TokenType>>(matchers));
+    }
+
+    _NODISCARD MatcherFactoryWrapper<TokenType> Or(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
+    {
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOr<TokenType>>(std::move(matchers)));
     }
 
     _NODISCARD MatcherFactoryWrapper<TokenType> Loop(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
