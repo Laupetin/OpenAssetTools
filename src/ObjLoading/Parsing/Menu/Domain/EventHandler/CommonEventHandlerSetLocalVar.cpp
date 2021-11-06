@@ -3,10 +3,13 @@
 using namespace menu;
 
 CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar()
-= default;
+    : m_type(SetLocalVarType::UNKNOWN)
+{
+}
 
-CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar(std::string varName, std::unique_ptr<ICommonExpression> value)
-    : m_var_name(std::move(varName)),
+CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ICommonExpression> value)
+    : m_type(type),
+      m_var_name(std::move(varName)),
       m_value(std::move(value))
 {
 }
