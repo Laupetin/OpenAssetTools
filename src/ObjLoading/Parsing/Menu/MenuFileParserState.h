@@ -20,9 +20,9 @@ namespace menu
         {
         public:
             bool m_in_condition_elements;
-            std::unique_ptr<CommonEventHandlerCondition> m_condition;
+            CommonEventHandlerCondition* m_condition;
 
-            explicit EventHandlerConditionState(std::unique_ptr<CommonEventHandlerCondition> condition);
+            explicit EventHandlerConditionState(CommonEventHandlerCondition* condition);
         };
 
         const FeatureLevel m_feature_level;
@@ -41,7 +41,8 @@ namespace menu
         CommonEventHandlerSet* m_current_event_handler_set;
         
         std::ostringstream m_current_script;
-        std::stack<EventHandlerConditionState> m_current_condition;
+        std::stack<EventHandlerConditionState> m_condition_stack;
+        CommonEventHandlerSet* m_current_nested_event_handler_set;
 
         explicit MenuFileParserState(FeatureLevel featureLevel);
     };
