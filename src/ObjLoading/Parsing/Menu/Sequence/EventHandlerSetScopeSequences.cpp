@@ -26,6 +26,7 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
+            state->m_current_event_handler_set = nullptr;
         }
     };
 }
