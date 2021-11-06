@@ -16,14 +16,10 @@ namespace menu
         std::vector<sequence_t*> m_function_scope_tests;
         std::vector<sequence_t*> m_menu_scope_tests;
         std::vector<sequence_t*> m_item_scope_tests;
+        std::vector<sequence_t*> m_event_handler_set_scope_tests;
 
         void AddSequence(std::vector<sequence_t*>& collection, std::unique_ptr<sequence_t> test);
-        void CreateNoScopeTests();
-        void CreateGlobalScopeTests();
-        void CreateFunctionScopeTests();
-        void CreateMenuScopeTests();
-        void CreateItemScopeTests();
-        void CreateTestCollections();
+        void CreateSequenceCollections();
 
     protected:
         const std::vector<sequence_t*>& GetTestsForState() override;

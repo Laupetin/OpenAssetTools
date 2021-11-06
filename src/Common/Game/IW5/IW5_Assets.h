@@ -2456,7 +2456,7 @@ namespace IW5
         SetLocalVarData* setLocalVarData;
     };
 
-    enum EventType
+    enum EventType : unsigned char
     {
         EVENT_UNCONDITIONAL = 0x0,
         EVENT_IF = 0x1,
@@ -2472,7 +2472,7 @@ namespace IW5
     struct MenuEventHandler
     {
         EventData eventData;
-        unsigned char eventType;
+        EventType eventType;
     };
 
     struct MenuEventHandlerSet

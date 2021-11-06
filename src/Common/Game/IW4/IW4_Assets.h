@@ -1274,7 +1274,7 @@ namespace IW4
         SetLocalVarData* setLocalVarData;
     };
 
-    enum EventType : char
+    enum EventType : unsigned char
     {
         EVENT_UNCONDITIONAL = 0x0,
         EVENT_IF = 0x1,
