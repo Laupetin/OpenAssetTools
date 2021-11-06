@@ -5,6 +5,7 @@
 
 #include "CommonItemDef.h"
 #include "CommonMenuTypes.h"
+#include "EventHandler/CommonEventHandlerSet.h"
 #include "Expression/ICommonExpression.h"
 
 namespace menu
@@ -38,6 +39,11 @@ namespace menu
         std::unique_ptr<ICommonExpression> m_rect_h_exp;
         std::unique_ptr<ICommonExpression> m_open_sound_exp;
         std::unique_ptr<ICommonExpression> m_close_sound_exp;
+        std::unique_ptr<CommonEventHandlerSet> m_on_open;
+        std::unique_ptr<CommonEventHandlerSet> m_on_close;
+        std::unique_ptr<CommonEventHandlerSet> m_on_request_close;
+        std::unique_ptr<CommonEventHandlerSet> m_on_esc;
+        std::map<int, std::unique_ptr<CommonEventHandlerSet>> m_key_handler;
 
         bool m_full_screen;
         bool m_screen_space;

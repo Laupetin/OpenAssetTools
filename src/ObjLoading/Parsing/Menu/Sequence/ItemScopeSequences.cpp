@@ -29,7 +29,6 @@ namespace menu::item_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            state->m_current_menu->m_items.emplace_back(std::move(state->m_current_item));
             state->m_current_item = nullptr;
         }
     };

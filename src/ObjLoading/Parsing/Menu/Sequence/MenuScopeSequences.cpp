@@ -8,6 +8,7 @@
 #include "Generic/GenericFloatingPointPropertySequence.h"
 #include "Generic/GenericIntPropertySequence.h"
 #include "Generic/GenericKeywordPropertySequence.h"
+#include "Generic/GenericMenuEventHandlerSetPropertySequence.h"
 #include "Generic/GenericStringPropertySequence.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 #include "Parsing/Menu/Domain/CommonMenuTypes.h"
@@ -40,8 +41,7 @@ namespace menu::menu_scope_sequences
             const auto existingMenu = state->m_menus_by_name.find(state->m_current_menu->m_name);
             if (existingMenu == state->m_menus_by_name.end())
             {
-                state->m_menus_by_name.emplace(std::make_pair(state->m_current_menu->m_name, state->m_current_menu.get()));
-                state->m_menus.emplace_back(std::move(state->m_current_menu));
+                state->m_menus_by_name.emplace(std::make_pair(state->m_current_menu->m_name, state->m_current_menu));
                 state->m_current_menu = nullptr;
             }
             else
@@ -71,7 +71,9 @@ namespace menu::menu_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            state->m_current_item = std::make_unique<CommonItemDef>();
+            auto newItemDef = std::make_unique<CommonItemDef>();
+            state->m_current_item = newItemDef.get();
+            state->m_current_menu->m_items.emplace_back(std::move(newItemDef));
         }
     };
 
@@ -270,5 +272,21 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)
     {
         state->m_current_menu->m_rect_h_exp = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_open = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_close = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_request_close = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_esc = std::move(value);
     }));
 }

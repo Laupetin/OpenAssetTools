@@ -19,6 +19,10 @@ GenericMenuEventHandlerSetPropertySequence::GenericMenuEventHandlerSetPropertySe
 
 void GenericMenuEventHandlerSetPropertySequence::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const
 {
-    state->m_current_event_handler_set = std::make_unique<CommonEventHandlerSet>();
-    state->m_event_handler_set_callback = m_set_callback;
+    if (m_set_callback)
+    {
+        auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
+        state->m_current_event_handler_set = newEventHandlerSet.get();
+        m_set_callback(state, std::move(newEventHandlerSet));
+    }
 }

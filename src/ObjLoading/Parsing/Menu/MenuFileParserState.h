@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <memory>
 #include <vector>
@@ -36,12 +35,11 @@ namespace menu
         std::map<std::string, CommonMenuDef*> m_menus_by_name;
 
         bool m_in_global_scope;
-        std::unique_ptr<CommonFunctionDef> m_current_function;
-        std::unique_ptr<CommonMenuDef> m_current_menu;
-        std::unique_ptr<CommonItemDef> m_current_item;
-        std::unique_ptr<CommonEventHandlerSet> m_current_event_handler_set;
-
-        std::function<void(MenuFileParserState* state, std::unique_ptr<CommonEventHandlerSet> value)> m_event_handler_set_callback;
+        CommonFunctionDef* m_current_function;
+        CommonMenuDef* m_current_menu;
+        CommonItemDef* m_current_item;
+        CommonEventHandlerSet* m_current_event_handler_set;
+        
         std::ostringstream m_current_script;
         std::stack<EventHandlerConditionState> m_current_condition;
 

@@ -10,6 +10,10 @@ MenuFileParserState::EventHandlerConditionState::EventHandlerConditionState(std:
 
 MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel)
     : m_feature_level(featureLevel),
-      m_in_global_scope(false)
+      m_in_global_scope(false),
+      m_current_function(nullptr),
+      m_current_menu(nullptr),
+      m_current_item(nullptr),
+      m_current_event_handler_set(nullptr)
 {
 }

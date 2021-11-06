@@ -42,7 +42,9 @@ namespace menu::global_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            state->m_current_function = std::make_unique<CommonFunctionDef>();
+            auto newFunction = std::make_unique<CommonFunctionDef>();
+            state->m_current_function = newFunction.get();
+            state->m_functions.emplace_back(std::move(newFunction));
         }
     };
 
@@ -62,7 +64,9 @@ namespace menu::global_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            state->m_current_menu = std::make_unique<CommonMenuDef>();
+            auto newMenu = std::make_unique<CommonMenuDef>();
+            state->m_current_menu = newMenu.get();
+            state->m_menus.emplace_back(std::move(newMenu));
         }
     };
 

@@ -29,8 +29,7 @@ namespace menu::function_scope_sequences
             const auto existingFunction = state->m_functions_by_name.find(state->m_current_function->m_name);
             if (existingFunction == state->m_functions_by_name.end())
             {
-                state->m_functions_by_name.emplace(std::make_pair(state->m_current_function->m_name, state->m_current_function.get()));
-                state->m_functions.emplace_back(std::move(state->m_current_function));
+                state->m_functions_by_name.emplace(std::make_pair(state->m_current_function->m_name, state->m_current_function));
                 state->m_current_function = nullptr;
             }
             else
