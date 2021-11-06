@@ -1,20 +1,80 @@
-#include "MenuPropertySequences.h"
+#include "MenuScopeSequences.h"
 
-#include "GenericBoolPropertySequence.h"
-#include "GenericColorPropertySequence.h"
-#include "GenericExpressionPropertySequence.h"
-#include "GenericFloatingPointPropertySequence.h"
-#include "GenericIntPropertySequence.h"
-#include "GenericKeywordPropertySequence.h"
-#include "GenericStringPropertySequence.h"
+#include <sstream>
+
+#include "Generic/GenericBoolPropertySequence.h"
+#include "Generic/GenericColorPropertySequence.h"
+#include "Generic/GenericExpressionPropertySequence.h"
+#include "Generic/GenericFloatingPointPropertySequence.h"
+#include "Generic/GenericIntPropertySequence.h"
+#include "Generic/GenericKeywordPropertySequence.h"
+#include "Generic/GenericStringPropertySequence.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 #include "Parsing/Menu/Domain/CommonMenuTypes.h"
 #include "Parsing/Menu/Matcher/MenuCommonMatchers.h"
 
 using namespace menu;
 
-namespace menu::menu_properties
+namespace menu::menu_scope_sequences
 {
+    class SequenceCloseBlock final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_TOKEN = 1;
+
+    public:
+        SequenceCloseBlock()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.Char('}').Capture(CAPTURE_TOKEN)
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            if (state->m_current_menu->m_name.empty())
+                throw ParsingException(result.NextCapture(CAPTURE_TOKEN).GetPos(), "Menu must have a name");
+
+            const auto existingMenu = state->m_menus_by_name.find(state->m_current_menu->m_name);
+            if (existingMenu == state->m_menus_by_name.end())
+            {
+                state->m_menus_by_name.emplace(std::make_pair(state->m_current_menu->m_name, state->m_current_menu.get()));
+                state->m_menus.emplace_back(std::move(state->m_current_menu));
+                state->m_current_menu = nullptr;
+            }
+            else
+            {
+                std::ostringstream ss;
+                ss << "Menu with name \"" << state->m_current_menu->m_name << "\" already exists";
+                throw ParsingException(result.NextCapture(CAPTURE_TOKEN).GetPos(), ss.str());
+            }
+        }
+    };
+
+    class SequenceItemDef final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_TOKEN = 1;
+
+    public:
+        SequenceItemDef()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.Keyword("itemDef"),
+                create.Char('{')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            state->m_current_item = std::make_unique<CommonItemDef>();
+        }
+    };
+
     class SequenceRect final : public MenuFileParser::sequence_t
     {
         static constexpr auto CAPTURE_X = 1;
@@ -67,15 +127,17 @@ namespace menu::menu_properties
     };
 }
 
-using namespace menu_properties;
+using namespace menu_scope_sequences;
 
-MenuPropertySequences::MenuPropertySequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
-    : AbstractPropertySequenceHolder(allSequences, scopeSequences)
+MenuScopeSequences::MenuScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
+    : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }
 
-void MenuPropertySequences::AddSequences(FeatureLevel featureLevel)
+void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
 {
+    AddSequence(std::make_unique<SequenceCloseBlock>());
+    AddSequence(std::make_unique<SequenceItemDef>());
     AddSequence(std::make_unique<GenericStringPropertySequence>("name", [](const MenuFileParserState* state, const std::string& value)
     {
         state->m_current_menu->m_name = value;

@@ -1,19 +1,39 @@
-#include "ItemPropertySequences.h"
+#include "ItemScopeSequences.h"
 
 #include <vector>
 #include <string>
 
-#include "GenericColorPropertySequence.h"
-#include "GenericFloatingPointPropertySequence.h"
-#include "GenericIntPropertySequence.h"
-#include "GenericKeywordPropertySequence.h"
-#include "GenericStringPropertySequence.h"
+#include "Generic/GenericColorPropertySequence.h"
+#include "Generic/GenericFloatingPointPropertySequence.h"
+#include "Generic/GenericIntPropertySequence.h"
+#include "Generic/GenericKeywordPropertySequence.h"
+#include "Generic/GenericStringPropertySequence.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
 using namespace menu;
 
-namespace menu::item_properties
+namespace menu::item_scope_sequences
 {
+    class SequenceCloseBlock final : public MenuFileParser::sequence_t
+    {
+    public:
+        SequenceCloseBlock()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.Char('}')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            state->m_current_menu->m_items.emplace_back(std::move(state->m_current_item));
+            state->m_current_item = nullptr;
+        }
+    };
+
     class SequenceRect final : public MenuFileParser::sequence_t
     {
         static constexpr auto CAPTURE_X = 1;
@@ -142,15 +162,16 @@ namespace menu::item_properties
     };
 }
 
-using namespace item_properties;
+using namespace item_scope_sequences;
 
-ItemPropertySequences::ItemPropertySequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
-    : AbstractPropertySequenceHolder(allSequences, scopeSequences)
+ItemScopeSequences::ItemScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
+    : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }
 
-void ItemPropertySequences::AddSequences(FeatureLevel featureLevel)
+void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
 {
+    AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<GenericStringPropertySequence>("name", [](const MenuFileParserState* state, const std::string& value)
     {
         state->m_current_item->m_name = value;

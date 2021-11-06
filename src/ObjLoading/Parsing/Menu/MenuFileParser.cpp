@@ -1,14 +1,10 @@
 #include "MenuFileParser.h"
 
-#include "Sequence/SequenceCloseBlock.h"
-#include "Sequence/SequenceFunctionDef.h"
-#include "Sequence/SequenceItemDef.h"
-#include "Sequence/SequenceLoadMenu.h"
-#include "Sequence/SequenceMenuDef.h"
-#include "Sequence/SequenceOpenGlobalScopeBlock.h"
-#include "Sequence/Properties/FunctionPropertySequences.h"
-#include "Sequence/Properties/ItemPropertySequences.h"
-#include "Sequence/Properties/MenuPropertySequences.h"
+#include "Sequence/FunctionScopeSequences.h"
+#include "Sequence/GlobalScopeSequences.h"
+#include "Sequence/ItemScopeSequences.h"
+#include "Sequence/MenuScopeSequences.h"
+#include "Sequence/NoScopeSequences.h"
 
 using namespace menu;
 
@@ -26,39 +22,31 @@ void MenuFileParser::AddSequence(std::vector<sequence_t*>& collection, std::uniq
 
 void MenuFileParser::CreateNoScopeTests()
 {
-    AddSequence(m_no_scope_tests, std::make_unique<SequenceOpenGlobalScopeBlock>());
+    NoScopeSequences noScopeSequences(m_all_tests, m_no_scope_tests);
+    noScopeSequences.AddSequences(m_state->m_feature_level);
 }
 
 void MenuFileParser::CreateGlobalScopeTests()
 {
-    AddSequence(m_global_scope_tests, std::make_unique<SequenceCloseBlock>());
-    AddSequence(m_global_scope_tests, std::make_unique<SequenceMenuDef>());
-    AddSequence(m_global_scope_tests, std::make_unique<SequenceFunctionDef>());
-    AddSequence(m_global_scope_tests, std::make_unique<SequenceLoadMenu>());
+    GlobalScopeSequences globalScopeSequences(m_all_tests, m_global_scope_tests);
+    globalScopeSequences.AddSequences(m_state->m_feature_level);
 }
 
 void MenuFileParser::CreateFunctionScopeTests()
 {
-    AddSequence(m_function_scope_tests, std::make_unique<SequenceCloseBlock>());
-
-    FunctionPropertySequences functionPropertySequences(m_all_tests, m_function_scope_tests);
+    FunctionScopeSequences functionPropertySequences(m_all_tests, m_function_scope_tests);
     functionPropertySequences.AddSequences(m_state->m_feature_level);
 }
 
 void MenuFileParser::CreateMenuScopeTests()
 {
-    AddSequence(m_menu_scope_tests, std::make_unique<SequenceCloseBlock>());
-    AddSequence(m_menu_scope_tests, std::make_unique<SequenceItemDef>());
-
-    MenuPropertySequences menuPropertySequences(m_all_tests, m_menu_scope_tests);
+    MenuScopeSequences menuPropertySequences(m_all_tests, m_menu_scope_tests);
     menuPropertySequences.AddSequences(m_state->m_feature_level);
 }
 
 void MenuFileParser::CreateItemScopeTests()
 {
-    AddSequence(m_item_scope_tests, std::make_unique<SequenceCloseBlock>());
-
-    ItemPropertySequences itemPropertySequences(m_all_tests, m_item_scope_tests);
+    ItemScopeSequences itemPropertySequences(m_all_tests, m_item_scope_tests);
     itemPropertySequences.AddSequences(m_state->m_feature_level);
 }
 
@@ -80,9 +68,6 @@ void MenuFileParser::CreateTestCollections()
 
 const std::vector<MenuFileParser::sequence_t*>& MenuFileParser::GetTestsForState()
 {
-    if (!m_state->m_in_global_scope)
-        return m_no_scope_tests;
-
     if (m_state->m_current_item)
         return m_item_scope_tests;
 
@@ -92,7 +77,10 @@ const std::vector<MenuFileParser::sequence_t*>& MenuFileParser::GetTestsForState
     if (m_state->m_current_menu)
         return m_menu_scope_tests;
 
-    return m_global_scope_tests;
+    if (m_state->m_in_global_scope)
+        return m_global_scope_tests;
+
+    return m_no_scope_tests;
 }
 
 MenuFileParserState* MenuFileParser::GetState() const
