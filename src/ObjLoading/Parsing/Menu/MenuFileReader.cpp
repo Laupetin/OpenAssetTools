@@ -14,7 +14,8 @@ using namespace menu;
 MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel, include_callback_t includeCallback)
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
-      m_stream(nullptr)
+      m_stream(nullptr),
+    m_zone_state(nullptr)
 {
     OpenBaseStream(stream, std::move(includeCallback));
     SetupStreamProxies();
@@ -24,7 +25,8 @@ MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const
 MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel)
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
-      m_stream(nullptr)
+      m_stream(nullptr),
+      m_zone_state(nullptr)
 {
     OpenBaseStream(stream, nullptr);
     SetupStreamProxies();
@@ -108,6 +110,11 @@ std::unique_ptr<ParsingResult> MenuFileReader::CreateParsingResult(MenuFileParse
     result->m_menus_to_load = std::move(state->m_menus_to_load);
 
     return result;
+}
+
+void MenuFileReader::IncludeZoneState(const MenuAssetZoneState* zoneState)
+{
+    m_zone_state = zoneState;
 }
 
 std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()

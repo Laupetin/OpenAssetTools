@@ -37,6 +37,8 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         return std::move(foundFileToInclude.m_stream);
     });
 
+    reader.IncludeZoneState(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<menu::MenuAssetZoneState>());
+
     const auto menuFileResult = reader.ReadMenuFile();
     if(menuFileResult)
     {

@@ -6,9 +6,11 @@
 #include <sstream>
 #include <stack>
 
+#include "MenuAssetZoneState.h"
 #include "Domain/CommonFunctionDef.h"
 #include "Domain/CommonMenuDef.h"
 #include "Domain/MenuFeatureLevel.h"
+#include "Domain/EventHandler/CommonEventHandlerSet.h"
 #include "Domain/EventHandler/CommonEventHandlerCondition.h"
 
 namespace menu
@@ -45,5 +47,6 @@ namespace menu
         CommonEventHandlerSet* m_current_nested_event_handler_set;
 
         explicit MenuFileParserState(FeatureLevel featureLevel);
+        MenuFileParserState(FeatureLevel featureLevel, const MenuAssetZoneState* zoneState);
     };
 }

@@ -8,6 +8,7 @@
 #include "Domain/MenuFeatureLevel.h"
 #include "Domain/MenuParsingResult.h"
 #include "Parsing/IParserLineStream.h"
+#include "MenuAssetZoneState.h"
 
 namespace menu
 {
@@ -23,6 +24,8 @@ namespace menu
         IParserLineStream* m_stream;
         std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
 
+        const MenuAssetZoneState* m_zone_state;
+
         bool OpenBaseStream(std::istream& stream, include_callback_t includeCallback);
         void SetupDefinesProxy();
         void SetupStreamProxies();
@@ -33,6 +36,8 @@ namespace menu
     public:
         MenuFileReader(std::istream& stream, std::string fileName, FeatureLevel featureLevel);
         MenuFileReader(std::istream& stream, std::string fileName, FeatureLevel featureLevel, include_callback_t includeCallback);
+
+        void IncludeZoneState(const MenuAssetZoneState* zoneState);
 
         std::unique_ptr<ParsingResult> ReadMenuFile();
     };

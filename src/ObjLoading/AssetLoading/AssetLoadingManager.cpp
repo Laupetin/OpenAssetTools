@@ -13,6 +13,11 @@ bool AssetLoadingManager::LoadAssetFromLoader(const asset_type_t assetType, cons
     return LoadDependency(assetType, assetName) != nullptr;
 }
 
+AssetLoadingContext* AssetLoadingManager::GetAssetLoadingContext() const
+{
+    return &m_context;
+}
+
 void AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings,
                                    Zone* zone)
 {

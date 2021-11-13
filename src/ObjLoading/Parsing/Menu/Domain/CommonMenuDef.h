@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <memory>
 
 #include "CommonItemDef.h"
 #include "CommonMenuTypes.h"

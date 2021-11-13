@@ -18,3 +18,17 @@ MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel)
       m_current_nested_event_handler_set(nullptr)
 {
 }
+
+MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel, const MenuAssetZoneState* zoneState)
+    : MenuFileParserState(featureLevel)
+{
+    for(const auto& function : zoneState->m_functions)
+    {
+        m_functions_by_name.emplace(std::make_pair(function->m_name, function.get()));
+    }
+
+    for(const auto& menu : zoneState->m_menus)
+    {
+        m_menus_by_name.emplace(std::make_pair(menu->m_name, menu.get()));
+    }
+}

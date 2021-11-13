@@ -15,6 +15,12 @@ MenuFileParser::MenuFileParser(SimpleLexer* lexer, const FeatureLevel featureLev
     CreateSequenceCollections();
 }
 
+MenuFileParser::MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, const MenuAssetZoneState* zoneState)
+    : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel, zoneState))
+{
+    CreateSequenceCollections();
+}
+
 void MenuFileParser::AddSequence(std::vector<sequence_t*>& collection, std::unique_ptr<sequence_t> test)
 {
     collection.push_back(test.get());

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MenuAssetZoneState.h"
 #include "Utils/ClassUtils.h"
 #include "MenuFileParserState.h"
 #include "Parsing/Simple/SimpleLexer.h"
@@ -26,6 +27,7 @@ namespace menu
 
     public:
         MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel);
+        MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, const MenuAssetZoneState* zoneState);
         _NODISCARD MenuFileParserState* GetState() const;
     };
 }
