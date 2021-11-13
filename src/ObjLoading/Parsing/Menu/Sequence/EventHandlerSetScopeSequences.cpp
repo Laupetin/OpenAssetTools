@@ -379,6 +379,34 @@ namespace menu::event_handler_set_scope_sequences
                 EmitDynamicSetLocalVar(state, typeTag, varName, std::move(expression));
         }
     };
+
+    class SequenceLerp final : public SequenceGenericScriptStatement
+    {
+    public:
+        explicit SequenceLerp()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddMatchers({
+                create.And({
+                    create.ScriptKeyword("lerp"),
+                    create.Or({
+                        create.ScriptKeyword("scale"),
+                        create.ScriptKeyword("alpha"),
+                        create.ScriptKeyword("x"),
+                        create.ScriptKeyword("y"),
+                    }),
+                    create.ScriptKeyword("from"),
+                    create.ScriptNumeric(),
+                    create.ScriptKeyword("to"),
+                    create.ScriptNumeric(),
+                    create.ScriptKeyword("over"),
+                    create.ScriptNumeric()
+                }).Capture(CAPTURE_SCRIPT_TOKEN),
+                create.Optional(create.Char(';'))
+            });
+        }
+    };
 }
 
 using namespace event_handler_set_scope_sequences;
@@ -447,10 +475,10 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     // statClearPerkNew
     // statSetUsingTable
     // statClearBitMask
-    AddSequence(SequenceGenericScriptStatement::Create({ create.ScriptKeyword("kickPlayer") }));
-    AddSequence(SequenceGenericScriptStatement::Create({ create.ScriptKeyword("getKickPlayerQuestion") }));
-    AddSequence(SequenceGenericScriptStatement::Create({ create.ScriptKeyword("partyUpdateMissingMapPackDvar") }));
-    AddSequence(SequenceGenericScriptStatement::Create({ create.ScriptKeyword("togglePlayerMute") }));
-    AddSequence(SequenceGenericScriptStatement::Create({ create.ScriptKeyword("resolveError") }));
-    // lerp
+    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("kickPlayer")}));
+    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getKickPlayerQuestion")}));
+    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("partyUpdateMissingMapPackDvar")}));
+    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("togglePlayerMute")}));
+    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
+    AddSequence(std::make_unique<SequenceLerp>());
 }
