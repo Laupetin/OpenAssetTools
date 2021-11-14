@@ -4,12 +4,24 @@
 #include <string>
 
 #include "CommonMenuTypes.h"
+#include "EventHandler/CommonEventHandlerSet.h"
+#include "Expression/ICommonExpression.h"
 
 namespace menu
 {
     class CommonItemDef
     {
     public:
+        class ColorExpressions
+        {
+        public:
+            std::unique_ptr<ICommonExpression> m_r_exp;
+            std::unique_ptr<ICommonExpression> m_g_exp;
+            std::unique_ptr<ICommonExpression> m_b_exp;
+            std::unique_ptr<ICommonExpression> m_a_exp;
+            std::unique_ptr<ICommonExpression> m_rgb_exp;
+        };
+
         std::string m_name;
         std::string m_text;
         bool m_text_save_game;
@@ -51,5 +63,25 @@ namespace menu
         int m_fx_letter_time;
         int m_fx_decay_start_time;
         int m_fx_decay_duration;
+
+        std::unique_ptr<ICommonExpression> m_visible_expression;
+        std::unique_ptr<ICommonExpression> m_disabled_expression;
+        std::unique_ptr<ICommonExpression> m_text_expression;
+        std::unique_ptr<ICommonExpression> m_material_expression;
+        std::unique_ptr<ICommonExpression> m_rect_x_exp;
+        std::unique_ptr<ICommonExpression> m_rect_y_exp;
+        std::unique_ptr<ICommonExpression> m_rect_w_exp;
+        std::unique_ptr<ICommonExpression> m_rect_h_exp;
+        ColorExpressions m_forecolor_expressions;
+        ColorExpressions m_glowcolor_expressions;
+        ColorExpressions m_backcolor_expressions;
+        std::unique_ptr<CommonEventHandlerSet> m_on_focus;
+        std::unique_ptr<CommonEventHandlerSet> m_on_leave_focus;
+        std::unique_ptr<CommonEventHandlerSet> m_on_mouse_enter;
+        std::unique_ptr<CommonEventHandlerSet> m_on_mouse_exit;
+        std::unique_ptr<CommonEventHandlerSet> m_on_mouse_enter_text;
+        std::unique_ptr<CommonEventHandlerSet> m_on_mouse_exit_text;
+        std::unique_ptr<CommonEventHandlerSet> m_on_action;
+        std::unique_ptr<CommonEventHandlerSet> m_on_accept;
     };
 }
