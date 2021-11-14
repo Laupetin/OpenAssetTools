@@ -30,7 +30,7 @@ protected:
     virtual const std::vector<sequence_t*>& GetTestsForState() = 0;
 
 public:
-    virtual ~AbstractParser() override = default;
+    ~AbstractParser() override = default;
     AbstractParser(const AbstractParser& other) = default;
     AbstractParser(AbstractParser&& other) noexcept = default;
     AbstractParser& operator=(const AbstractParser& other) = default;

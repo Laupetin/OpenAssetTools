@@ -263,7 +263,9 @@ protected:
     {
         const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
-        assert(isdigit(currentLine.m_line[m_current_line_offset - 1]) || currentLine.m_line[m_current_line_offset - 1] == '.');
+        assert(isdigit(currentLine.m_line[m_current_line_offset - 1])
+            || currentLine.m_line[m_current_line_offset - 1] == '.'
+            || currentLine.m_line[m_current_line_offset - 1] == '-');
 
         const auto lineLength = currentLine.m_line.size();
         if (lineLength - m_current_line_offset >= 1
