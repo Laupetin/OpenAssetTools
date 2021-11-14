@@ -24,6 +24,13 @@ public:
     {
     }
 
+    MockLexer(std::vector<TokenType> tokens, TokenType eof)
+        : m_tokens(std::move(tokens)),
+        m_eof(std::move(eof)),
+        m_pop_count(0)
+    {
+    }
+
     ~MockLexer() override = default;
     MockLexer(const MockLexer& other) = delete;
     MockLexer(MockLexer&& other) noexcept = default;

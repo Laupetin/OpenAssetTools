@@ -29,7 +29,7 @@ namespace menu
         {
         }
 
-        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptNumeric() const
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptStrictNumeric() const
         {
             return Or({
                 Type(SimpleParserValueType::INTEGER).Transform([](const token_list_t& tokens)-> SimpleParserValue
@@ -41,7 +41,14 @@ namespace menu
                 {
                     const auto& firstToken = tokens[0].get();
                     return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.FloatingPointValue())));
-                }),
+                })
+            });
+        }
+
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptNumeric() const
+        {
+            return Or({
+                ScriptStrictNumeric(),
                 Or({
                     Type(SimpleParserValueType::CHARACTER),
                     Type(SimpleParserValueType::STRING),
@@ -97,10 +104,10 @@ namespace menu
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptColor() const
         {
             return And({
-                Optional(ScriptNumeric()),
-                Optional(ScriptNumeric()),
-                Optional(ScriptNumeric()),
-                Optional(ScriptNumeric())
+                ScriptStrictNumeric(),
+                Optional(ScriptStrictNumeric()),
+                Optional(ScriptStrictNumeric()),
+                Optional(ScriptStrictNumeric())
             });
         }
     };
