@@ -31,10 +31,24 @@ const CommonExpressionUnaryOperationType CommonExpressionUnaryOperationType::OPE
     }
 );
 
+const CommonExpressionUnaryOperationType CommonExpressionUnaryOperationType::OPERATION_NEGATIVE(
+    "-",
+    [](const CommonExpressionValue& operand) -> CommonExpressionValue
+    {
+        if(operand.m_type == CommonExpressionValue::Type::INT)
+            return CommonExpressionValue(-operand.m_int_value);
+        if (operand.m_type == CommonExpressionValue::Type::DOUBLE)
+            return CommonExpressionValue(-operand.m_double_value);
+
+        return CommonExpressionValue(0);
+    }
+);
+
 const CommonExpressionUnaryOperationType* const CommonExpressionUnaryOperationType::ALL_OPERATION_TYPES[static_cast<int>(UnaryOperationId::COUNT)]
 {
     &OPERATION_NOT,
     &OPERATION_BITWISE_NOT,
+    &OPERATION_NEGATIVE,
 };
 
 CommonExpressionUnaryOperation::CommonExpressionUnaryOperation(const CommonExpressionUnaryOperationType* operationType, std::unique_ptr<ICommonExpression> operand)

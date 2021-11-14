@@ -276,6 +276,10 @@ std::unique_ptr<MenuCommonMatchers::matcher_t> MenuCommonMatchers::ParseUnaryOpe
         {
             return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(UnaryOperationId::BITWISE_NOT));
         }),
+        create.Char('-').Transform([](const MenuMatcherFactory::token_list_t& values)
+        {
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(UnaryOperationId::NEGATIVE));
+        }),
     }).Tag(TAG_EXPRESSION_UNARY_OPERATION).Capture(CAPTURE_UNARY_OPERATION_TYPE);
 }
 

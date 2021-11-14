@@ -13,6 +13,7 @@ namespace menu
     {
         NOT,
         BITWISE_NOT,
+        NEGATIVE,
 
         COUNT
     };
@@ -31,6 +32,7 @@ namespace menu
     public:
         static const CommonExpressionUnaryOperationType OPERATION_NOT;
         static const CommonExpressionUnaryOperationType OPERATION_BITWISE_NOT;
+        static const CommonExpressionUnaryOperationType OPERATION_NEGATIVE;
 
         static const CommonExpressionUnaryOperationType* const ALL_OPERATION_TYPES[static_cast<int>(UnaryOperationId::COUNT)];
     };
