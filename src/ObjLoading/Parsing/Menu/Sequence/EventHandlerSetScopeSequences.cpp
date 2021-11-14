@@ -444,6 +444,11 @@ namespace menu::event_handler_set_scope_sequences
             if (!expression)
                 throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Could not parse expression");
 
+            auto remainingScript = state->m_current_script.str();
+            if (!remainingScript.empty())
+                state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
+            state->m_current_script.clear();
+
             auto newCondition = std::make_unique<CommonEventHandlerCondition>(std::move(expression), std::make_unique<CommonEventHandlerSet>(), nullptr);
             auto* newConditionPtr = newCondition.get();
             state->m_current_nested_event_handler_set->m_elements.emplace_back(std::move(newCondition));
@@ -465,6 +470,7 @@ namespace menu::event_handler_set_scope_sequences
             AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
 
             AddMatchers({
+                create.Char('}'),
                 create.Keyword("elseif").Capture(CAPTURE_KEYWORD),
                 create.Char('('),
                 create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
@@ -483,6 +489,11 @@ namespace menu::event_handler_set_scope_sequences
 
             if (state->m_condition_stack.empty())
                 throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Not in an if statement");
+
+            auto remainingScript = state->m_current_script.str();
+            if (!remainingScript.empty())
+                state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
+            state->m_current_script.clear();
 
             auto& currentCondition = state->m_condition_stack.top();
 
@@ -513,6 +524,7 @@ namespace menu::event_handler_set_scope_sequences
             AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
 
             AddMatchers({
+                create.Char('}'),
                 create.Keyword("else").Capture(CAPTURE_KEYWORD),
                 create.Char('{')
             });
@@ -530,6 +542,11 @@ namespace menu::event_handler_set_scope_sequences
             if (!currentCondition.m_in_condition_elements)
                 throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Cannot specify second else block");
 
+            auto remainingScript = state->m_current_script.str();
+            if (!remainingScript.empty())
+                state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
+            state->m_current_script.clear();
+
             currentCondition.m_in_condition_elements = false;
             currentCondition.m_condition->m_else_elements = std::make_unique<CommonEventHandlerSet>();
             state->m_current_nested_event_handler_set = currentCondition.m_condition->m_else_elements.get();
@@ -546,7 +563,6 @@ EventHandlerSetScopeSequences::EventHandlerSetScopeSequences(std::vector<std::un
 
 void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
 {
-    AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<SequenceSkipEmptyStatements>());
     // If else and stuff
 
@@ -609,7 +625,9 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("togglePlayerMute")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
     AddSequence(std::make_unique<SequenceLerp>());
+
     AddSequence(std::make_unique<SequenceIf>());
     AddSequence(std::make_unique<SequenceElseIf>());
     AddSequence(std::make_unique<SequenceElse>());
+    AddSequence(std::make_unique<SequenceCloseBlock>());
 }
