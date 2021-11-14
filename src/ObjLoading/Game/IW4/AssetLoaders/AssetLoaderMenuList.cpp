@@ -45,6 +45,15 @@ void AssetLoaderMenuList::AddMenuFilesToLoadToQueue(std::deque<std::string>& que
     }
 }
 
+void AssetLoaderMenuList::AddResultsToZoneState(menu::ParsingResult* parsingResult, menu::MenuAssetZoneState* zoneState)
+{
+    for (auto& function : parsingResult->m_functions)
+        zoneState->m_functions.emplace_back(std::move(function));
+
+    for (auto& menu : parsingResult->m_menus)
+        zoneState->m_menus.emplace_back(std::move(menu));
+}
+
 void AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,
                                                menu::MenuAssetZoneState* zoneState)
 {
@@ -61,6 +70,8 @@ void AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, Mem
     std::cout << "  " << parsingResult->m_functions.size() << " functions:\n";
     for (const auto& function : parsingResult->m_functions)
         std::cout << "    " << function->m_name << "\n";
+
+    AddResultsToZoneState(parsingResult, zoneState);
 }
 
 bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
