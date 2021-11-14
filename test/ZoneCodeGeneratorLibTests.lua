@@ -44,8 +44,10 @@ function ZoneCodeGeneratorLibTests:project()
 		
 		self:include(includes)
 		ZoneCodeGeneratorLib:include(includes)
+		ParserTestUtils:include(includes)
 		catch2:include(includes)
 
 		links:linkto(ZoneCodeGeneratorLib)
+		links:linkto(ParserTestUtils)
 		links:linkall()
 end

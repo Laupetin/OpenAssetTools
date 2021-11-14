@@ -10,7 +10,7 @@ CommonEventHandlerScript::CommonEventHandlerScript(std::string script)
 {
 }
 
-CommonEventHandlerElementType CommonEventHandlerScript::GetType()
+CommonEventHandlerElementType CommonEventHandlerScript::GetType() const
 {
     return CommonEventHandlerElementType::SCRIPT;
 }

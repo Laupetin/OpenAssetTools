@@ -14,7 +14,7 @@ CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar(SetLocalVarType typ
 {
 }
 
-CommonEventHandlerElementType CommonEventHandlerSetLocalVar::GetType()
+CommonEventHandlerElementType CommonEventHandlerSetLocalVar::GetType() const
 {
     return CommonEventHandlerElementType::SET_LOCAL_VAR;
 }

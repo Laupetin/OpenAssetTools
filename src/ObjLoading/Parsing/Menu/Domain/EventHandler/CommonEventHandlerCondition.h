@@ -16,9 +16,9 @@ namespace menu
         std::unique_ptr<CommonEventHandlerSet> m_else_elements;
 
         CommonEventHandlerCondition();
-        explicit CommonEventHandlerCondition(std::unique_ptr<ICommonExpression> condition, std::unique_ptr<CommonEventHandlerSet> conditionElements,
-                                             std::unique_ptr<CommonEventHandlerSet> elseElements);
+        CommonEventHandlerCondition(std::unique_ptr<ICommonExpression> condition, std::unique_ptr<CommonEventHandlerSet> conditionElements,
+                                    std::unique_ptr<CommonEventHandlerSet> elseElements);
 
-        CommonEventHandlerElementType GetType() override;
+        _NODISCARD CommonEventHandlerElementType GetType() const override;
     };
 }

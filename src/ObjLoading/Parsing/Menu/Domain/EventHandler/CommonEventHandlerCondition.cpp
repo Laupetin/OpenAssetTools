@@ -13,7 +13,7 @@ CommonEventHandlerCondition::CommonEventHandlerCondition(std::unique_ptr<ICommon
 {
 }
 
-CommonEventHandlerElementType CommonEventHandlerCondition::GetType()
+CommonEventHandlerElementType CommonEventHandlerCondition::GetType() const
 {
     return CommonEventHandlerElementType::CONDITION;
 }

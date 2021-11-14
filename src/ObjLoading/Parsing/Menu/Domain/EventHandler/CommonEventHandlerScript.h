@@ -14,6 +14,6 @@ namespace menu
         CommonEventHandlerScript();
         explicit CommonEventHandlerScript(std::string script);
 
-        CommonEventHandlerElementType GetType() override;
+        _NODISCARD CommonEventHandlerElementType GetType() const override;
     };
 }

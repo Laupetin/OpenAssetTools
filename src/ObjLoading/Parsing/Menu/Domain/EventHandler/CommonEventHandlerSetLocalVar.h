@@ -26,6 +26,6 @@ namespace menu
         CommonEventHandlerSetLocalVar();
         CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ICommonExpression> value);
 
-        CommonEventHandlerElementType GetType() override;
+        _NODISCARD CommonEventHandlerElementType GetType() const override;
     };
 }
