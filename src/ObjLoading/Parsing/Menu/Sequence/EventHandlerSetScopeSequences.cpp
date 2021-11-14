@@ -130,26 +130,34 @@ namespace menu::event_handler_set_scope_sequences
                 state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
             state->m_current_script.clear();
 
-            if (!state->m_condition_stack.empty())
-            {
-                state->m_condition_stack.pop();
+            bool conditionWasAutoSkip;
 
+            do
+            {
+                conditionWasAutoSkip = false;
                 if (!state->m_condition_stack.empty())
                 {
-                    const auto& newConditionState = state->m_condition_stack.top();
-                    if (newConditionState.m_in_condition_elements)
-                        state->m_current_nested_event_handler_set = newConditionState.m_condition->m_condition_elements.get();
+                    conditionWasAutoSkip = state->m_condition_stack.top().m_auto_skip;
+                    state->m_condition_stack.pop();
+
+                    if (!state->m_condition_stack.empty())
+                    {
+                        const auto& newConditionState = state->m_condition_stack.top();
+                        if (newConditionState.m_in_condition_elements)
+                            state->m_current_nested_event_handler_set = newConditionState.m_condition->m_condition_elements.get();
+                        else
+                            state->m_current_nested_event_handler_set = newConditionState.m_condition->m_else_elements.get();
+                    }
                     else
-                        state->m_current_nested_event_handler_set = newConditionState.m_condition->m_else_elements.get();
+                        state->m_current_nested_event_handler_set = state->m_current_event_handler_set;
                 }
                 else
-                    state->m_current_nested_event_handler_set = state->m_current_event_handler_set;
+                {
+                    state->m_current_event_handler_set = nullptr;
+                    state->m_current_nested_event_handler_set = nullptr;
+                }
             }
-            else
-            {
-                state->m_current_event_handler_set = nullptr;
-                state->m_current_nested_event_handler_set = nullptr;
-            }
+            while (conditionWasAutoSkip);
         }
     };
 
@@ -252,6 +260,34 @@ namespace menu::event_handler_set_scope_sequences
 
             AddMatchers({
                 create.And({
+                }).Capture(CAPTURE_SCRIPT_TOKEN),
+                create.Optional(create.Char(';'))
+            });
+        }
+    };
+
+    class SequenceLerp final : public SequenceGenericScriptStatement
+    {
+    public:
+        explicit SequenceLerp()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddMatchers({
+                create.And({
+                    create.ScriptKeyword("lerp"),
+                    create.Or({
+                        create.ScriptKeyword("scale"),
+                        create.ScriptKeyword("alpha"),
+                        create.ScriptKeyword("x"),
+                        create.ScriptKeyword("y"),
+                    }),
+                    create.ScriptKeyword("from"),
+                    create.ScriptNumeric(),
+                    create.ScriptKeyword("to"),
+                    create.ScriptNumeric(),
+                    create.ScriptKeyword("over"),
+                    create.ScriptNumeric()
                 }).Capture(CAPTURE_SCRIPT_TOKEN),
                 create.Optional(create.Char(';'))
             });
@@ -380,31 +416,123 @@ namespace menu::event_handler_set_scope_sequences
         }
     };
 
-    class SequenceLerp final : public SequenceGenericScriptStatement
+    class SequenceIf final : public MenuFileParser::sequence_t
     {
+        static constexpr auto CAPTURE_KEYWORD = 1;
+
     public:
-        explicit SequenceLerp()
+        SequenceIf()
         {
             const ScriptMatcherFactory create(this);
 
+            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+
             AddMatchers({
-                create.And({
-                    create.ScriptKeyword("lerp"),
-                    create.Or({
-                        create.ScriptKeyword("scale"),
-                        create.ScriptKeyword("alpha"),
-                        create.ScriptKeyword("x"),
-                        create.ScriptKeyword("y"),
-                    }),
-                    create.ScriptKeyword("from"),
-                    create.ScriptNumeric(),
-                    create.ScriptKeyword("to"),
-                    create.ScriptNumeric(),
-                    create.ScriptKeyword("over"),
-                    create.ScriptNumeric()
-                }).Capture(CAPTURE_SCRIPT_TOKEN),
-                create.Optional(create.Char(';'))
+                create.Keyword("if").Capture(CAPTURE_KEYWORD),
+                create.Char('('),
+                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+                create.Char(')'),
+                create.Char('{')
             });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            auto expression = MenuCommonMatchers::ProcessExpression(state, result);
+
+            if (!expression)
+                throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Could not parse expression");
+
+            auto newCondition = std::make_unique<CommonEventHandlerCondition>(std::move(expression), std::make_unique<CommonEventHandlerSet>(), nullptr);
+            auto* newConditionPtr = newCondition.get();
+            state->m_current_nested_event_handler_set->m_elements.emplace_back(std::move(newCondition));
+
+            state->m_condition_stack.emplace(newConditionPtr);
+            state->m_current_nested_event_handler_set = newConditionPtr->m_condition_elements.get();
+        }
+    };
+
+    class SequenceElseIf final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_KEYWORD = 1;
+
+    public:
+        SequenceElseIf()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+
+            AddMatchers({
+                create.Keyword("elseif").Capture(CAPTURE_KEYWORD),
+                create.Char('('),
+                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+                create.Char(')'),
+                create.Char('{')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            auto expression = MenuCommonMatchers::ProcessExpression(state, result);
+
+            if (!expression)
+                throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Could not parse expression");
+
+            if (state->m_condition_stack.empty())
+                throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Not in an if statement");
+
+            auto& currentCondition = state->m_condition_stack.top();
+
+            assert(currentCondition.m_in_condition_elements == (currentCondition.m_condition->m_else_elements == nullptr));
+            if (!currentCondition.m_in_condition_elements)
+                throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Cannot specify elseif after else");
+            currentCondition.m_in_condition_elements = false;
+
+            auto newCondition = std::make_unique<CommonEventHandlerCondition>(std::move(expression), std::make_unique<CommonEventHandlerSet>(), nullptr);
+            auto* newConditionPtr = newCondition.get();
+            currentCondition.m_condition->m_else_elements = std::make_unique<CommonEventHandlerSet>();
+            currentCondition.m_condition->m_else_elements->m_elements.emplace_back(std::move(newCondition));
+
+            state->m_condition_stack.emplace(newConditionPtr, true);
+            state->m_current_nested_event_handler_set = newConditionPtr->m_condition_elements.get();
+        }
+    };
+
+    class SequenceElse final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_KEYWORD = 1;
+
+    public:
+        SequenceElse()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+
+            AddMatchers({
+                create.Keyword("else").Capture(CAPTURE_KEYWORD),
+                create.Char('{')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            if (state->m_condition_stack.empty())
+                throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Not in an if statement");
+
+            auto& currentCondition = state->m_condition_stack.top();
+
+            assert(currentCondition.m_in_condition_elements == (currentCondition.m_condition->m_else_elements == nullptr));
+            if (!currentCondition.m_in_condition_elements)
+                throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Cannot specify second else block");
+
+            currentCondition.m_in_condition_elements = false;
+            currentCondition.m_condition->m_else_elements = std::make_unique<CommonEventHandlerSet>();
+            state->m_current_nested_event_handler_set = currentCondition.m_condition->m_else_elements.get();
         }
     };
 }
@@ -457,7 +585,7 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-    AddSequence(std::make_unique<SequenceSetPlayerData>());
+    //AddSequence(std::make_unique<SequenceSetPlayerData>());
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
@@ -481,4 +609,7 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("togglePlayerMute")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
     AddSequence(std::make_unique<SequenceLerp>());
+    AddSequence(std::make_unique<SequenceIf>());
+    AddSequence(std::make_unique<SequenceElseIf>());
+    AddSequence(std::make_unique<SequenceElse>());
 }

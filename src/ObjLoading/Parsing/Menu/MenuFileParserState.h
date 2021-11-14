@@ -22,9 +22,11 @@ namespace menu
         {
         public:
             bool m_in_condition_elements;
+            bool m_auto_skip;
             CommonEventHandlerCondition* m_condition;
 
             explicit EventHandlerConditionState(CommonEventHandlerCondition* condition);
+            EventHandlerConditionState(CommonEventHandlerCondition* condition, bool autoSkip);
         };
 
         const FeatureLevel m_feature_level;
