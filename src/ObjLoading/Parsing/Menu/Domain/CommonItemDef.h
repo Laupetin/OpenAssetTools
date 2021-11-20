@@ -19,6 +19,63 @@ namespace menu
         NEWS_TICKER
     };
 
+    class CommonItemFeaturesListBox
+    {
+    public:
+        class Column
+        {
+        public:
+            int m_x_pos;
+            int m_y_pos;
+            int m_width;
+            int m_height;
+            int m_max_chars;
+            int m_alignment;
+        };
+
+        bool m_not_selectable;
+        bool m_no_scrollbars;
+        bool m_use_paging;
+        double m_element_width;
+        double m_element_height;
+        double m_feeder;
+        int m_element_style;
+        CommonColor m_select_border;
+        std::string m_select_icon;
+
+        std::unique_ptr<CommonEventHandlerSet> m_on_double_click;
+        std::vector<Column> m_columns;
+    };
+
+    class CommonItemFeaturesEditField
+    {
+    public:
+        std::string m_dvar;
+        std::string m_local_var;
+        double m_def_val;
+        double m_min_val;
+        double m_max_val;
+        int m_max_chars;
+        int m_max_paint_chars;
+        bool m_max_chars_goto_next;
+    };
+
+    class CommonItemFeaturesMultiValue
+    {
+    public:
+        std::vector<std::string> m_step_names;
+        std::vector<std::string> m_string_values;
+        std::vector<double> m_double_values;
+    };
+
+    class CommonItemFeaturesNewsTicker
+    {
+    public:
+        int m_spacing;
+        int m_speed;
+        int m_news_feed_id;
+    };
+
     class CommonItemDef
     {
     public:
@@ -63,6 +120,7 @@ namespace menu
         CommonColor m_glow_color;
         std::string m_background;
         std::string m_focus_sound;
+        std::string m_dvar;
         std::string m_dvar_test;
         std::vector<std::string> m_enable_dvar;
         std::vector<std::string> m_disable_dvar;
@@ -94,5 +152,11 @@ namespace menu
         std::unique_ptr<CommonEventHandlerSet> m_on_mouse_exit_text;
         std::unique_ptr<CommonEventHandlerSet> m_on_action;
         std::unique_ptr<CommonEventHandlerSet> m_on_accept;
+
+        std::unique_ptr<CommonItemFeaturesListBox> m_list_box_features;
+        std::unique_ptr<CommonItemFeaturesEditField> m_edit_field_features;
+        std::unique_ptr<CommonItemFeaturesMultiValue> m_multi_value_features;
+        std::string m_enum_dvar_name;
+        std::unique_ptr<CommonItemFeaturesNewsTicker> m_news_ticker_features;
     };
 }

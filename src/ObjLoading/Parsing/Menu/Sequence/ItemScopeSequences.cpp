@@ -14,6 +14,111 @@
 
 using namespace menu;
 
+class ItemScopeOperations
+{
+    inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]
+    {
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_TEXT
+        CommonItemFeatureType::NONE, // ITEM_TYPE_BUTTON
+        CommonItemFeatureType::NONE, // ITEM_TYPE_RADIOBUTTON
+        CommonItemFeatureType::NONE, // ITEM_TYPE_CHECKBOX
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_EDITFIELD
+        CommonItemFeatureType::NONE, // ITEM_TYPE_COMBO
+        CommonItemFeatureType::LISTBOX, // ITEM_TYPE_LISTBOX
+        CommonItemFeatureType::NONE, // ITEM_TYPE_MODEL
+        CommonItemFeatureType::NONE, // ITEM_TYPE_OWNERDRAW
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_NUMERICFIELD
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_SLIDER
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_YESNO
+        CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
+        CommonItemFeatureType::ENUM_DVAR, // ITEM_TYPE_DVARENUM
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_BIND
+        CommonItemFeatureType::NONE, // ITEM_TYPE_MENUMODEL
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_VALIDFILEFIELD
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_DECIMALFIELD
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_UPREDITFIELD
+        CommonItemFeatureType::NONE, // ITEM_TYPE_GAME_MESSAGE_WINDOW
+        CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
+        CommonItemFeatureType::NONE, // ITEM_TYPE_TEXT_SCROLL
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_EMAILFIELD
+        CommonItemFeatureType::EDIT_FIELD // ITEM_TYPE_PASSWORDFIELD
+    };
+
+public:
+    static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
+    {
+        if (type < 0)
+            throw ParsingException(pos, "Invalid item type");
+
+        if (item.m_feature_type != CommonItemFeatureType::NONE)
+            throw ParsingException(pos, "Item type has already been set");
+
+        item.m_type = type;
+
+        switch (featureLevel)
+        {
+        case FeatureLevel::IW4:
+            if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
+                throw ParsingException(pos, "Invalid item type");
+            item.m_feature_type = IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
+            break;
+
+        case FeatureLevel::IW5:
+        default:
+            assert(false);
+            throw ParsingException(pos, "Unimplemented item types for feature level");
+        }
+
+        switch (item.m_feature_type)
+        {
+        case CommonItemFeatureType::LISTBOX:
+            item.m_list_box_features = std::make_unique<CommonItemFeaturesListBox>();
+            break;
+        case CommonItemFeatureType::EDIT_FIELD:
+            item.m_edit_field_features = std::make_unique<CommonItemFeaturesEditField>();
+            break;
+        case CommonItemFeatureType::MULTI_VALUE:
+            item.m_multi_value_features = std::make_unique<CommonItemFeaturesMultiValue>();
+            break;
+        case CommonItemFeatureType::NEWS_TICKER:
+            item.m_news_ticker_features = std::make_unique<CommonItemFeaturesNewsTicker>();
+            break;
+        default:
+            break;
+        }
+    }
+
+    static void EnsureHasListboxFeatures(const CommonItemDef& item, const TokenPos& pos)
+    {
+        if (item.m_feature_type != CommonItemFeatureType::LISTBOX || !item.m_list_box_features)
+            throw ParsingException(pos, "Item must have be listbox to use this declaration");
+    }
+
+    static void EnsureHasEditFieldFeatures(const CommonItemDef& item, const TokenPos& pos)
+    {
+        if (item.m_feature_type != CommonItemFeatureType::EDIT_FIELD || !item.m_edit_field_features)
+            throw ParsingException(pos, "Item must have be edit field to use this declaration");
+    }
+
+    static void EnsureHasMultiValueFeatures(const CommonItemDef& item, const TokenPos& pos)
+    {
+        if (item.m_feature_type != CommonItemFeatureType::MULTI_VALUE || !item.m_multi_value_features)
+            throw ParsingException(pos, "Item must have be multi value to use this declaration");
+    }
+
+    static void EnsureHasEnumDvarFeatures(const CommonItemDef& item, const TokenPos& pos)
+    {
+        if (item.m_feature_type != CommonItemFeatureType::ENUM_DVAR)
+            throw ParsingException(pos, "Item must have be enum dvar to use this declaration");
+    }
+
+    static void EnsureHasNewsTickerFeatures(const CommonItemDef& item, const TokenPos& pos)
+    {
+        if (item.m_feature_type != CommonItemFeatureType::NEWS_TICKER || !item.m_news_ticker_features)
+            throw ParsingException(pos, "Item must have be news ticker to use this declaration");
+    }
+};
+
 namespace menu::item_scope_sequences
 {
     class SequenceCloseBlock final : public MenuFileParser::sequence_t
@@ -162,63 +267,120 @@ namespace menu::item_scope_sequences
             m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(values));
         }
     };
+
+    class SequenceDvarFloat final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+        static constexpr auto CAPTURE_DVAR_NAME = 2;
+        static constexpr auto CAPTURE_DEF_VALUE = 3;
+        static constexpr auto CAPTURE_MIN_VALUE = 4;
+        static constexpr auto CAPTURE_MAX_VALUE = 5;
+
+    public:
+        SequenceDvarFloat()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("dvarFloat").Capture(CAPTURE_FIRST_TOKEN),
+                create.Text().Capture(CAPTURE_DVAR_NAME),
+                create.Numeric().Capture(CAPTURE_DEF_VALUE),
+                create.Numeric().Capture(CAPTURE_MIN_VALUE),
+                create.Numeric().Capture(CAPTURE_MAX_VALUE),
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_item);
+
+            ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
+            state->m_current_item->m_dvar = MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_DVAR_NAME));
+            state->m_current_item->m_edit_field_features->m_def_val = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_DEF_VALUE));
+            state->m_current_item->m_edit_field_features->m_min_val = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_MIN_VALUE));
+            state->m_current_item->m_edit_field_features->m_max_val = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_MAX_VALUE));
+        }
+    };
+
+    class SequenceDvarStrList final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+        static constexpr auto CAPTURE_STEP_NAME = 2;
+        static constexpr auto CAPTURE_STEP_VALUE = 3;
+
+    public:
+        SequenceDvarStrList()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("dvarStrList").Capture(CAPTURE_FIRST_TOKEN),
+                create.Char('{'),
+                create.OptionalLoop(create.And({
+                    create.Text().Capture(CAPTURE_STEP_NAME),
+                    create.Text().Capture(CAPTURE_STEP_VALUE),
+                })),
+                create.Char('}')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_item);
+
+            ItemScopeOperations::EnsureHasMultiValueFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
+
+            const auto& multiValueFeatures = state->m_current_item->m_multi_value_features;
+            while (result.HasNextCapture(CAPTURE_STEP_NAME))
+            {
+                multiValueFeatures->m_step_names.emplace_back(MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_STEP_NAME)));
+                multiValueFeatures->m_string_values.emplace_back(MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_STEP_VALUE)));
+            }
+        }
+    };
+
+    class SequenceDvarFloatList final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+        static constexpr auto CAPTURE_STEP_NAME = 2;
+        static constexpr auto CAPTURE_STEP_VALUE = 3;
+
+    public:
+        SequenceDvarFloatList()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("dvarFloatList").Capture(CAPTURE_FIRST_TOKEN),
+                create.Char('{'),
+                create.OptionalLoop(create.And({
+                    create.Text().Capture(CAPTURE_STEP_NAME),
+                    create.Numeric().Capture(CAPTURE_STEP_VALUE),
+                })),
+                create.Char('}')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_item);
+
+            ItemScopeOperations::EnsureHasMultiValueFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
+
+            const auto& multiValueFeatures = state->m_current_item->m_multi_value_features;
+            while (result.HasNextCapture(CAPTURE_STEP_NAME))
+            {
+                multiValueFeatures->m_step_names.emplace_back(MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_STEP_NAME)));
+                multiValueFeatures->m_double_values.emplace_back(MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_STEP_VALUE)));
+            }
+        }
+    };
 }
 
 using namespace item_scope_sequences;
-
-class ItemScopeOperations
-{
-    inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]
-    {
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_TEXT
-        CommonItemFeatureType::NONE, // ITEM_TYPE_BUTTON
-        CommonItemFeatureType::NONE, // ITEM_TYPE_RADIOBUTTON
-        CommonItemFeatureType::NONE, // ITEM_TYPE_CHECKBOX
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_EDITFIELD
-        CommonItemFeatureType::NONE, // ITEM_TYPE_COMBO
-        CommonItemFeatureType::LISTBOX, // ITEM_TYPE_LISTBOX
-        CommonItemFeatureType::NONE, // ITEM_TYPE_MODEL
-        CommonItemFeatureType::NONE, // ITEM_TYPE_OWNERDRAW
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_NUMERICFIELD
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_SLIDER
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_YESNO
-        CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
-        CommonItemFeatureType::ENUM_DVAR, // ITEM_TYPE_DVARENUM
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_BIND
-        CommonItemFeatureType::NONE, // ITEM_TYPE_MENUMODEL
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_VALIDFILEFIELD
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_DECIMALFIELD
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_UPREDITFIELD
-        CommonItemFeatureType::NONE, // ITEM_TYPE_GAME_MESSAGE_WINDOW
-        CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
-        CommonItemFeatureType::NONE, // ITEM_TYPE_TEXT_SCROLL
-        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_EMAILFIELD
-        CommonItemFeatureType::EDIT_FIELD // ITEM_TYPE_PASSWORDFIELD
-    };
-
-public:
-    static void SetItemType(CommonItemDef& item, const FeatureLevel featureLevel, const TokenPos& pos, const int type)
-    {
-        if (type < 0)
-            throw ParsingException(pos, "Invalid item type");
-
-        item.m_type = type;
-
-        switch (featureLevel)
-        {
-        case FeatureLevel::IW4:
-            if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW4_FEATURE_TYPE_BY_TYPE)>)
-                throw ParsingException(pos, "Invalid item type");
-            item.m_feature_type = IW4_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
-            break;
-
-        case FeatureLevel::IW5:
-        default:
-            assert(false);
-            throw ParsingException(pos, "Unimplemented item types for feature level");
-        }
-    }
-};
 
 ItemScopeSequences::ItemScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
@@ -344,6 +506,10 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(std::make_unique<GenericIntPropertySequence>("ownerdrawFlag", [](const MenuFileParserState* state, const TokenPos&, const int value)
     {
         state->m_current_item->m_owner_draw_flags |= value;
+    }));
+    AddSequence(std::make_unique<GenericStringPropertySequence>("dvar", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
+    {
+        state->m_current_item->m_dvar = value;
     }));
     AddSequence(std::make_unique<GenericStringPropertySequence>("dvarTest", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
     {
@@ -509,5 +675,108 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("accept", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
     {
         state->m_current_item->m_on_accept = std::move(value);
+    }));
+
+    // ============== ListBox ==============
+    AddSequence(std::make_unique<GenericKeywordPropertySequence>("notselectable", [](const MenuFileParserState* state, const TokenPos& pos)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_not_selectable = true;
+    }));
+    AddSequence(std::make_unique<GenericKeywordPropertySequence>("noscrollbars", [](const MenuFileParserState* state, const TokenPos& pos)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_no_scrollbars = true;
+    }));
+    AddSequence(std::make_unique<GenericKeywordPropertySequence>("usepaging", [](const MenuFileParserState* state, const TokenPos& pos)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_use_paging = true;
+    }));
+    AddSequence(std::make_unique<GenericFloatingPointPropertySequence>("elementwidth", [](const MenuFileParserState* state, const TokenPos& pos, const double value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_element_width = value;
+    }));
+    AddSequence(std::make_unique<GenericFloatingPointPropertySequence>("elementheight", [](const MenuFileParserState* state, const TokenPos& pos, const double value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_element_height = value;
+    }));
+    AddSequence(std::make_unique<GenericFloatingPointPropertySequence>("feeder", [](const MenuFileParserState* state, const TokenPos& pos, const double value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_feeder = value;
+    }));
+    AddSequence(std::make_unique<GenericIntPropertySequence>("elementtype", [](const MenuFileParserState* state, const TokenPos& pos, const int value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_element_style = value;
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("doubleclick", [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_on_double_click = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericColorPropertySequence>("selectBorder", [](const MenuFileParserState* state, const TokenPos& pos, const CommonColor value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_select_border = value;
+    }));
+    AddSequence(std::make_unique<GenericStringPropertySequence>("selectIcon", [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
+    {
+        ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_list_box_features->m_select_icon = value;
+    }));
+
+    // ============== Edit Field ==============
+    AddSequence(std::make_unique<SequenceDvarFloat>());
+    AddSequence(std::make_unique<GenericStringPropertySequence>("localvar", [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
+    {
+        ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_edit_field_features->m_local_var = value;
+    }));
+    AddSequence(std::make_unique<GenericIntPropertySequence>("maxChars", [](const MenuFileParserState* state, const TokenPos& pos, const int value)
+    {
+        ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_edit_field_features->m_max_chars = value;
+    }));
+    AddSequence(std::make_unique<GenericIntPropertySequence>("maxPaintChars", [](const MenuFileParserState* state, const TokenPos& pos, const int value)
+    {
+        ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_edit_field_features->m_max_paint_chars = value;
+    }));
+    AddSequence(std::make_unique<GenericKeywordPropertySequence>("maxCharsGotoNext", [](const MenuFileParserState* state, const TokenPos& pos)
+    {
+        ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_edit_field_features->m_max_chars_goto_next = true;
+    }));
+
+    // ============== Multi Value ==============
+    AddSequence(std::make_unique<SequenceDvarStrList>());
+    AddSequence(std::make_unique<SequenceDvarFloatList>());
+
+    // ============== Enum Dvar ==============
+    AddSequence(std::make_unique<GenericStringPropertySequence>("dvarEnumList", [](const MenuFileParserState* state, const TokenPos& pos, const std::string& value)
+    {
+        ItemScopeOperations::EnsureHasEnumDvarFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_enum_dvar_name = value;
+    }));
+
+    // ============== News Ticker ==============
+    AddSequence(std::make_unique<GenericIntPropertySequence>("spacing", [](const MenuFileParserState* state, const TokenPos& pos, const int value)
+    {
+        ItemScopeOperations::EnsureHasNewsTickerFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_news_ticker_features->m_spacing = value;
+    }));
+    AddSequence(std::make_unique<GenericIntPropertySequence>("speed", [](const MenuFileParserState* state, const TokenPos& pos, const int value)
+    {
+        ItemScopeOperations::EnsureHasNewsTickerFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_news_ticker_features->m_speed = value;
+    }));
+    AddSequence(std::make_unique<GenericIntPropertySequence>("newsfeed", [](const MenuFileParserState* state, const TokenPos& pos, const int value)
+    {
+        ItemScopeOperations::EnsureHasNewsTickerFeatures(*state->m_current_item, pos);
+        state->m_current_item->m_news_ticker_features->m_news_feed_id = value;
     }));
 }
