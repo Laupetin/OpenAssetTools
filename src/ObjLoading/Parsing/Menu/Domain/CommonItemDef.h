@@ -152,6 +152,7 @@ namespace menu
         std::unique_ptr<CommonEventHandlerSet> m_on_mouse_exit_text;
         std::unique_ptr<CommonEventHandlerSet> m_on_action;
         std::unique_ptr<CommonEventHandlerSet> m_on_accept;
+        std::map<int, std::unique_ptr<CommonEventHandlerSet>> m_key_handlers;
 
         std::unique_ptr<CommonItemFeaturesListBox> m_list_box_features;
         std::unique_ptr<CommonItemFeaturesEditField> m_edit_field_features;

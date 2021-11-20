@@ -382,10 +382,11 @@ namespace menu::item_scope_sequences
     class SequenceColumns final : public MenuFileParser::sequence_t
     {
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
-        static constexpr auto CAPTURE_POS = 2;
-        static constexpr auto CAPTURE_WIDTH = 3;
-        static constexpr auto CAPTURE_MAX_CHARS = 4;
-        static constexpr auto CAPTURE_ALIGNMENT = 5;
+        static constexpr auto CAPTURE_COLUMN_COUNT = 2;
+        static constexpr auto CAPTURE_POS = 3;
+        static constexpr auto CAPTURE_WIDTH = 4;
+        static constexpr auto CAPTURE_MAX_CHARS = 5;
+        static constexpr auto CAPTURE_ALIGNMENT = 6;
 
     public:
         SequenceColumns()
@@ -394,6 +395,7 @@ namespace menu::item_scope_sequences
 
             AddMatchers({
                 create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
+                create.Integer().Capture(CAPTURE_COLUMN_COUNT),
                 create.Loop(create.And({
                     create.Integer().Capture(CAPTURE_POS),
                     create.Integer().Capture(CAPTURE_WIDTH),
@@ -424,6 +426,76 @@ namespace menu::item_scope_sequences
                 };
                 listBoxFeatures->m_columns.emplace_back(column);
             }
+        }
+    };
+
+    class SequenceExecKey final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_KEY = 1;
+
+    public:
+        SequenceExecKey()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("execKey"),
+                create.String().Capture(CAPTURE_KEY),
+                create.Char('{')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_item);
+
+            const auto& keyToken = result.NextCapture(CAPTURE_KEY);
+            const auto& keyValue = keyToken.StringValue();
+
+            if (keyValue.empty() || keyValue.size() > 1)
+                throw ParsingException(keyToken.GetPos(), "Key handler string must have exactly one character");
+
+            const auto key = static_cast<int>(static_cast<unsigned char>(keyValue[0]));
+
+            auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
+            state->m_current_event_handler_set = newEventHandlerSet.get();
+            state->m_current_nested_event_handler_set = newEventHandlerSet.get();
+            state->m_current_item->m_key_handlers.emplace(std::make_pair(key, std::move(newEventHandlerSet)));
+        }
+    };
+
+    class SequenceExecKeyInt final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_KEY = 1;
+
+    public:
+        SequenceExecKeyInt()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("execKeyInt"),
+                create.Integer().Capture(CAPTURE_KEY),
+                create.Char('{')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_item);
+
+            const auto& keyToken = result.NextCapture(CAPTURE_KEY);
+            const auto& keyValue = keyToken.IntegerValue();
+
+            if (keyValue < 0)
+                throw ParsingException(keyToken.GetPos(), "Key handler value must be positive");
+
+            auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
+            state->m_current_event_handler_set = newEventHandlerSet.get();
+            state->m_current_nested_event_handler_set = newEventHandlerSet.get();
+            state->m_current_item->m_key_handlers.emplace(std::make_pair(keyValue, std::move(newEventHandlerSet)));
         }
     };
 }
@@ -724,6 +796,8 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_item->m_on_accept = std::move(value);
     }));
+    AddSequence(std::make_unique<SequenceExecKey>());
+    AddSequence(std::make_unique<SequenceExecKeyInt>());
 
     // ============== ListBox ==============
     AddSequence(std::make_unique<SequenceColumns>());

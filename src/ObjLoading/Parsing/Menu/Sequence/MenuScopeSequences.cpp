@@ -127,6 +127,76 @@ namespace menu::menu_scope_sequences
             state->m_current_menu->m_rect = rect;
         }
     };
+
+    class SequenceExecKey final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_KEY = 1;
+
+    public:
+        SequenceExecKey()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("execKey"),
+                create.String().Capture(CAPTURE_KEY),
+                create.Char('{')
+                });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_menu);
+
+            const auto& keyToken = result.NextCapture(CAPTURE_KEY);
+            const auto& keyValue = keyToken.StringValue();
+
+            if (keyValue.empty() || keyValue.size() > 1)
+                throw ParsingException(keyToken.GetPos(), "Key handler string must have exactly one character");
+
+            const auto key = static_cast<int>(static_cast<unsigned char>(keyValue[0]));
+
+            auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
+            state->m_current_event_handler_set = newEventHandlerSet.get();
+            state->m_current_nested_event_handler_set = newEventHandlerSet.get();
+            state->m_current_menu->m_key_handlers.emplace(std::make_pair(key, std::move(newEventHandlerSet)));
+        }
+    };
+
+    class SequenceExecKeyInt final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_KEY = 1;
+
+    public:
+        SequenceExecKeyInt()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("execKeyInt"),
+                create.Integer().Capture(CAPTURE_KEY),
+                create.Char('{')
+                });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_menu);
+
+            const auto& keyToken = result.NextCapture(CAPTURE_KEY);
+            const auto& keyValue = keyToken.IntegerValue();
+
+            if (keyValue < 0)
+                throw ParsingException(keyToken.GetPos(), "Key handler value must be positive");
+
+            auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
+            state->m_current_event_handler_set = newEventHandlerSet.get();
+            state->m_current_nested_event_handler_set = newEventHandlerSet.get();
+            state->m_current_menu->m_key_handlers.emplace(std::make_pair(keyValue, std::move(newEventHandlerSet)));
+        }
+    };
 }
 
 using namespace menu_scope_sequences;
@@ -289,4 +359,6 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_on_esc = std::move(value);
     }));
+    AddSequence(std::make_unique<SequenceExecKey>());
+    AddSequence(std::make_unique<SequenceExecKeyInt>());
 }
