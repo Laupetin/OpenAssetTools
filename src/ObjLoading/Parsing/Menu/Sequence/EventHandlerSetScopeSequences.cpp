@@ -9,6 +9,8 @@
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerSetLocalVar.h"
 #include "Parsing/Menu/Matcher/MenuCommonMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+#include "Parsing/Menu/Matcher/MenuMatcherScriptInt.h"
+#include "Parsing/Menu/Matcher/MenuMatcherScriptNumeric.h"
 
 using namespace menu;
 
@@ -31,16 +33,16 @@ namespace menu
 
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptStrictNumeric() const
         {
-            return Or({
-                Type(SimpleParserValueType::INTEGER).Transform([](const token_list_t& tokens)-> SimpleParserValue
+            return And({
+                MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<MenuMatcherScriptNumeric>()).Transform([](const token_list_t& tokens)-> SimpleParserValue
                 {
                     const auto& firstToken = tokens[0].get();
-                    return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
-                }),
-                Type(SimpleParserValueType::FLOATING_POINT).Transform([](const token_list_t& tokens)-> SimpleParserValue
-                {
-                    const auto& firstToken = tokens[0].get();
-                    return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.FloatingPointValue())));
+
+                    if (firstToken.m_type == SimpleParserValueType::INTEGER)
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
+                    if (firstToken.m_type == SimpleParserValueType::FLOATING_POINT)
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.FloatingPointValue())));
+                    return SimpleParserValue::String(firstToken.GetPos(), new std::string(firstToken.StringValue()));
                 })
             });
         }
@@ -55,19 +57,29 @@ namespace menu
                     Type(SimpleParserValueType::IDENTIFIER),
                 }).Transform([](const token_list_t& tokens) -> SimpleParserValue
                 {
-                    return SimpleParserValue::Integer(tokens[0].get().GetPos(), static_cast<int>(ExpectedScriptToken::INT));
+                    return SimpleParserValue::Integer(tokens[0].get().GetPos(), static_cast<int>(ExpectedScriptToken::NUMERIC));
                 })
             });
+        }
+
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptStrictInt() const
+        {
+            return And({
+                MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<MenuMatcherScriptInt>()).Transform([](const token_list_t& tokens)-> SimpleParserValue
+                {
+                    const auto& firstToken = tokens[0].get();
+
+                    if (firstToken.m_type == SimpleParserValueType::INTEGER)
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
+                    return SimpleParserValue::String(firstToken.GetPos(), new std::string(firstToken.StringValue()));
+                })
+                });
         }
 
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptInt() const
         {
             return Or({
-                Type(SimpleParserValueType::INTEGER).Transform([](const token_list_t& tokens)-> SimpleParserValue
-                {
-                    const auto& firstToken = tokens[0].get();
-                    return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
-                }),
+                ScriptStrictInt(),
                 Or({
                     Type(SimpleParserValueType::CHARACTER),
                     Type(SimpleParserValueType::FLOATING_POINT),
