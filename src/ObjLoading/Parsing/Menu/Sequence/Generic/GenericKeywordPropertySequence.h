@@ -10,9 +10,11 @@ namespace menu
     class GenericKeywordPropertySequence final : public MenuFileParser::sequence_t
     {
     public:
-        using callback_t = std::function<void(MenuFileParserState* state)>;
+        using callback_t = std::function<void(MenuFileParserState* state, const TokenPos& pos)>;
 
     private:
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+
         const callback_t m_set_callback;
 
     protected:

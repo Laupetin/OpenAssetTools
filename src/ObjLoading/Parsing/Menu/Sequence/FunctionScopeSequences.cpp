@@ -52,7 +52,7 @@ FunctionScopeSequences::FunctionScopeSequences(std::vector<std::unique_ptr<MenuF
 void FunctionScopeSequences::AddSequences(FeatureLevel featureLevel)
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
-    AddSequence(std::make_unique<GenericStringPropertySequence>("name", [](const MenuFileParserState* state, const std::string& value)
+    AddSequence(std::make_unique<GenericStringPropertySequence>("name", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
     {
         state->m_current_function->m_name = value;
     }));

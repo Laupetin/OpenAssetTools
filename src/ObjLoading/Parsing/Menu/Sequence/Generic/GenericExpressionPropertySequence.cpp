@@ -19,7 +19,7 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
 
     const MenuMatcherFactory create(result.get());
     result->AddMatchers({
-        create.KeywordIgnoreCase(std::move(keyword)),
+        create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
         create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
         create.Optional(create.Char(';'))
     });
@@ -37,7 +37,7 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
         keywordMatchers.emplace_back(create.KeywordIgnoreCase(std::move(keyword)));
 
     result->AddMatchers({
-        create.And(std::move(keywordMatchers)),
+        create.And(std::move(keywordMatchers)).Capture(CAPTURE_FIRST_TOKEN),
         create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
         create.Optional(create.Char(';'))
     });
@@ -51,12 +51,12 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
 
     const MenuMatcherFactory create(result.get());
     result->AddMatchers({
-        create.KeywordIgnoreCase(std::move(keyword)),
+        create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
         create.Or({
             create.And({
                 create.KeywordIgnoreCase("when"),
                 create.Char('('),
-                create.Label(MenuCommonMatchers::LABEL_EXPRESSION).Capture(CAPTURE_VALUE),
+                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
                 create.Char(')')
             }),
             create.Label(MenuCommonMatchers::LABEL_EXPRESSION)
@@ -72,6 +72,6 @@ void GenericExpressionPropertySequence::ProcessMatch(MenuFileParserState* state,
     if (m_set_callback)
     {
         auto expression = MenuCommonMatchers::ProcessExpression(state, result);
-        m_set_callback(state, std::move(expression));
+        m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(expression));
     }
 }

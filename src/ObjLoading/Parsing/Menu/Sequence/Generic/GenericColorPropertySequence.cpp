@@ -12,7 +12,7 @@ GenericColorPropertySequence::GenericColorPropertySequence(std::string keywordNa
     const MenuMatcherFactory create(this);
 
     AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)),
+        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
         create.Numeric().Capture(CAPTURE_R),
         create.Numeric().Capture(CAPTURE_G),
         create.Numeric().Capture(CAPTURE_B),
@@ -30,6 +30,6 @@ void GenericColorPropertySequence::ProcessMatch(MenuFileParserState* state, Sequ
         color.b = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_B));
         color.a = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_A));
 
-        m_set_callback(state, color);
+        m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), color);
     }
 }

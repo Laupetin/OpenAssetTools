@@ -12,7 +12,7 @@ GenericMenuEventHandlerSetPropertySequence::GenericMenuEventHandlerSetPropertySe
     const MenuMatcherFactory create(this);
 
     AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)),
+        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
         create.Char('{')
     });
 }
@@ -24,6 +24,6 @@ void GenericMenuEventHandlerSetPropertySequence::ProcessMatch(MenuFileParserStat
         auto newEventHandlerSet = std::make_unique<CommonEventHandlerSet>();
         state->m_current_event_handler_set = newEventHandlerSet.get();
         state->m_current_nested_event_handler_set = newEventHandlerSet.get();
-        m_set_callback(state, std::move(newEventHandlerSet));
+        m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(newEventHandlerSet));
     }
 }

@@ -12,7 +12,7 @@ GenericBoolPropertySequence::GenericBoolPropertySequence(std::string keywordName
     const MenuMatcherFactory create(this);
 
     AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)),
+        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
         create.Integer().Capture(CAPTURE_VALUE)
     });
 }
@@ -22,6 +22,6 @@ void GenericBoolPropertySequence::ProcessMatch(MenuFileParserState* state, Seque
     if (m_set_callback)
     {
         const auto value = result.NextCapture(CAPTURE_VALUE).IntegerValue();
-        m_set_callback(state, value > 0);
+        m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value > 0);
     }
 }

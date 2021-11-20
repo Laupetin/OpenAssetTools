@@ -11,10 +11,10 @@ namespace menu
     class GenericExpressionPropertySequence final : public MenuFileParser::sequence_t
     {
     public:
-        using callback_t = std::function<void(MenuFileParserState* state, std::unique_ptr<ICommonExpression> value)>;
+        using callback_t = std::function<void(MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ICommonExpression> value)>;
 
     private:
-        static constexpr auto CAPTURE_VALUE = 1;
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
 
         const callback_t m_set_callback;
 

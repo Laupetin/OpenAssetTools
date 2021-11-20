@@ -9,6 +9,16 @@
 
 namespace menu
 {
+    enum class CommonItemFeatureType
+    {
+        NONE,
+        LISTBOX,
+        EDIT_FIELD,
+        MULTI_VALUE,
+        ENUM_DVAR,
+        NEWS_TICKER
+    };
+
     class CommonItemDef
     {
     public:
@@ -33,6 +43,7 @@ namespace menu
         bool m_auto_wrapped;
         bool m_horizontal_scroll;
         int m_type;
+        CommonItemFeatureType m_feature_type;
         int m_border;
         double m_border_size;
         int m_owner_draw;

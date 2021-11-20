@@ -12,7 +12,7 @@ GenericStringPropertySequence::GenericStringPropertySequence(std::string keyword
     const MenuMatcherFactory create(this);
 
     AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)),
+        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
         create.Text().Capture(CAPTURE_VALUE)
     });
 }
@@ -22,6 +22,6 @@ void GenericStringPropertySequence::ProcessMatch(MenuFileParserState* state, Seq
     if (m_set_callback)
     {
         const auto& value = MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_VALUE));
-        m_set_callback(state, value);
+        m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value);
     }
 }

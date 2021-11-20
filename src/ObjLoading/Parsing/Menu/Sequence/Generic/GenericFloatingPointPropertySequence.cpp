@@ -12,7 +12,7 @@ GenericFloatingPointPropertySequence::GenericFloatingPointPropertySequence(std::
     const MenuMatcherFactory create(this);
 
     AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)),
+        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
         create.Numeric().Capture(CAPTURE_VALUE)
     });
 }
@@ -22,6 +22,6 @@ void GenericFloatingPointPropertySequence::ProcessMatch(MenuFileParserState* sta
     if (m_set_callback)
     {
         const auto value = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_VALUE));
-        m_set_callback(state, value);
+        m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value);
     }
 }

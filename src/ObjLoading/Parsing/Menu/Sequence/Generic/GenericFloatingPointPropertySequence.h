@@ -10,10 +10,11 @@ namespace menu
     class GenericFloatingPointPropertySequence final : public MenuFileParser::sequence_t
     {
     public:
-        using callback_t = std::function<void(MenuFileParserState* state, double value)>;
+        using callback_t = std::function<void(MenuFileParserState* state, const TokenPos& pos, double value)>;
 
     private:
-        static constexpr auto CAPTURE_VALUE = 1;
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+        static constexpr auto CAPTURE_VALUE = 2;
 
         const callback_t m_set_callback;
 
