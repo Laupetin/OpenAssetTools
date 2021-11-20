@@ -73,7 +73,7 @@ namespace menu
                         return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
                     return SimpleParserValue::String(firstToken.GetPos(), new std::string(firstToken.StringValue()));
                 })
-                });
+            });
         }
 
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptInt() const
@@ -147,7 +147,7 @@ namespace menu::event_handler_set_scope_sequences
             auto remainingScript = state->m_current_script.str();
             if (!remainingScript.empty())
                 state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
-            state->m_current_script.clear();
+            state->m_current_script.str(std::string());
 
             bool conditionWasAutoSkip;
 
@@ -466,7 +466,7 @@ namespace menu::event_handler_set_scope_sequences
             auto remainingScript = state->m_current_script.str();
             if (!remainingScript.empty())
                 state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
-            state->m_current_script.clear();
+            state->m_current_script.str(std::string());
 
             auto newCondition = std::make_unique<CommonEventHandlerCondition>(std::move(expression), std::make_unique<CommonEventHandlerSet>(), nullptr);
             auto* newConditionPtr = newCondition.get();
@@ -512,7 +512,7 @@ namespace menu::event_handler_set_scope_sequences
             auto remainingScript = state->m_current_script.str();
             if (!remainingScript.empty())
                 state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
-            state->m_current_script.clear();
+            state->m_current_script.str(std::string());
 
             auto& currentCondition = state->m_condition_stack.top();
 
@@ -564,7 +564,7 @@ namespace menu::event_handler_set_scope_sequences
             auto remainingScript = state->m_current_script.str();
             if (!remainingScript.empty())
                 state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
-            state->m_current_script.clear();
+            state->m_current_script.str(std::string());
 
             currentCondition.m_in_condition_elements = false;
             currentCondition.m_condition->m_else_elements = std::make_unique<CommonEventHandlerSet>();
@@ -606,7 +606,7 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("focusFirst")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setDvar"), create.ScriptText(), create.ScriptText()}));
+    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
@@ -620,7 +620,7 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-    //AddSequence(std::make_unique<SequenceSetPlayerData>());
+    //AddSequence(std::make_unique<SequenceSetPlayerData>()); // TODO
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
@@ -635,9 +635,9 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showGamerCard")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openForGameType"), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForGameType"), create.ScriptText()}));
-    // statClearPerkNew
-    // statSetUsingTable
-    // statClearBitMask
+    // statClearPerkNew // TODO
+    // statSetUsingTable // TODO
+    // statClearBitMask // TODO
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("kickPlayer")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getKickPlayerQuestion")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("partyUpdateMissingMapPackDvar")}));
