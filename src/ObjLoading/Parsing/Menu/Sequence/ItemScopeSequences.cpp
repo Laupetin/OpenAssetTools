@@ -378,6 +378,54 @@ namespace menu::item_scope_sequences
             }
         }
     };
+
+    class SequenceColumns final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+        static constexpr auto CAPTURE_POS = 2;
+        static constexpr auto CAPTURE_WIDTH = 3;
+        static constexpr auto CAPTURE_MAX_CHARS = 4;
+        static constexpr auto CAPTURE_ALIGNMENT = 5;
+
+    public:
+        SequenceColumns()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
+                create.Loop(create.And({
+                    create.Integer().Capture(CAPTURE_POS),
+                    create.Integer().Capture(CAPTURE_WIDTH),
+                    create.Integer().Capture(CAPTURE_MAX_CHARS),
+                    create.Integer().Capture(CAPTURE_ALIGNMENT),
+                })),
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_item);
+
+            ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
+
+            const auto& listBoxFeatures = state->m_current_item->m_list_box_features;
+            while (result.HasNextCapture(CAPTURE_POS))
+            {
+                CommonItemFeaturesListBox::Column column
+                {
+                    result.NextCapture(CAPTURE_POS).IntegerValue(),
+                    0,
+                    result.NextCapture(CAPTURE_WIDTH).IntegerValue(),
+                    0,
+                    result.NextCapture(CAPTURE_MAX_CHARS).IntegerValue(),
+                    result.NextCapture(CAPTURE_ALIGNMENT).IntegerValue()
+                };
+                listBoxFeatures->m_columns.emplace_back(column);
+            }
+        }
+    };
 }
 
 using namespace item_scope_sequences;
@@ -678,6 +726,7 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
     }));
 
     // ============== ListBox ==============
+    AddSequence(std::make_unique<SequenceColumns>());
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("notselectable", [](const MenuFileParserState* state, const TokenPos& pos)
     {
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
