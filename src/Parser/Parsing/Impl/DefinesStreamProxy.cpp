@@ -137,6 +137,9 @@ std::vector<std::string> DefinesStreamProxy::MatchDefineParameters(const ParserL
         if (!ExtractIdentifier(line, parameterPosition))
             throw ParsingException(CreatePos(line, parameterPosition), "Cannot extract name of parameter of define");
 
+        if(!SkipWhitespace(line, parameterPosition))
+            throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
+
         parameters.emplace_back(std::string(line.m_line, nameStartPos, parameterPosition - nameStartPos));
 
         if (parameterPosition >= line.m_line.size())
