@@ -2,8 +2,6 @@
 
 #include <algorithm>
 
-const std::string MockParserLineStream::MOCK_FILENAME = "Mockfile";
-
 MockParserLineStream::MockParserLineStream(const std::vector<std::string>& lines)
 {
     AddIncludeLines(MOCK_FILENAME, lines);
@@ -11,7 +9,7 @@ MockParserLineStream::MockParserLineStream(const std::vector<std::string>& lines
 }
 
 MockParserLineStream::IncludePos::IncludePos(std::string filename, const std::vector<std::string>& lines)
-    : m_filename(std::move(filename)),
+    : m_filename(std::make_shared<std::string>(std::move(filename))),
       m_lines(lines),
       m_pos(0)
 {

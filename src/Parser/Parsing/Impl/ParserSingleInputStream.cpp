@@ -4,7 +4,7 @@
 
 ParserSingleInputStream::ParserSingleInputStream(std::istream& stream, std::string fileName)
     : m_stream(stream),
-      m_file_name(std::move(fileName)),
+      m_file_name(std::make_shared<std::string>(std::move(fileName))),
       m_line_number(1)
 {
 }

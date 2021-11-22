@@ -100,7 +100,7 @@ protected:
     _NODISCARD TokenPos GetPreviousCharacterPos() const
     {
         const auto& currentLine = CurrentLine();
-        return TokenPos(currentLine.m_filename, currentLine.m_line_number, m_current_line_offset);
+        return TokenPos(*currentLine.m_filename, currentLine.m_line_number, m_current_line_offset);
     }
 
     _NODISCARD TokenPos GetNextCharacterPos()
@@ -109,10 +109,10 @@ protected:
         if (m_current_line_offset + 1 >= currentLine.m_line.size())
         {
             PeekChar();
-            return TokenPos(m_line_cache.back().m_filename, m_line_cache.back().m_line_number, 1);
+            return TokenPos(*m_line_cache.back().m_filename, m_line_cache.back().m_line_number, 1);
         }
 
-        return TokenPos(currentLine.m_filename, currentLine.m_line_number, m_current_line_offset + 1);
+        return TokenPos(*currentLine.m_filename, currentLine.m_line_number, m_current_line_offset + 1);
     }
 
     /**
@@ -155,7 +155,7 @@ protected:
         while (true)
         {
             if (m_current_line_offset >= lineSize)
-                throw ParsingException(TokenPos(currentLine.m_filename, currentLine.m_line_number, m_current_line_offset), "Unclosed string");
+                throw ParsingException(TokenPos(*currentLine.m_filename, currentLine.m_line_number, m_current_line_offset), "Unclosed string");
 
             if (currentLine.m_line[m_current_line_offset] == '\"')
                 break;
@@ -189,7 +189,7 @@ protected:
         auto exponent = false;
 
         if (*currentCharacter == '-' || *currentCharacter == '+')
-            currentCharacter++;
+            ++currentCharacter;
 
         while (*currentCharacter)
         {
@@ -208,7 +208,7 @@ protected:
                 if (exponent)
                     throw ParsingException(GetPreviousCharacterPos(), "Invalid number");
                 if (currentCharacter[1] == '-')
-                    currentCharacter++;
+                    ++currentCharacter;
                 exponent = true;
                 isInteger = false;
             }
@@ -221,7 +221,7 @@ protected:
                 break;
             }
 
-            currentCharacter++;
+            ++currentCharacter;
         }
 
         return isInteger;
@@ -290,7 +290,6 @@ protected:
 public:
     const TokenType& GetToken(unsigned index) override
     {
-        assert(index >= 0);
         while (index >= m_token_cache.size())
             m_token_cache.emplace_back(GetNextToken());
 
@@ -307,7 +306,7 @@ public:
             const auto& lastToken = m_token_cache.back();
             while (!m_line_cache.empty()
                 && (m_line_cache.front().m_line_number != lastToken.GetPos().m_line
-                    || m_line_cache.front().m_filename.get() != lastToken.GetPos().m_filename.get()))
+                    || *m_line_cache.front().m_filename != lastToken.GetPos().m_filename.get()))
             {
                 m_line_cache.pop_front();
                 m_line_index--;
@@ -319,7 +318,7 @@ public:
             m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
             const auto& firstToken = m_token_cache.front();
             while (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
-                || m_line_cache.front().m_filename.get() != firstToken.GetPos().m_filename.get())
+                || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get())
             {
                 m_line_cache.pop_front();
                 m_line_index--;
@@ -341,7 +340,7 @@ public:
     {
         for (const auto& line : m_line_cache)
         {
-            if (line.m_filename.get() == pos.m_filename.get()
+            if (*line.m_filename == pos.m_filename.get()
                 && line.m_line_number == pos.m_line)
                 return line;
         }

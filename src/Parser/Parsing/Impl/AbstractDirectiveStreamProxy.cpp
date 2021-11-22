@@ -2,7 +2,7 @@
 
 TokenPos AbstractDirectiveStreamProxy::CreatePos(const ParserLine& line, const unsigned position)
 {
-    return TokenPos(line.m_filename.get(), line.m_line_number, static_cast<int>(position + 1));
+    return TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(position + 1));
 }
 
 bool AbstractDirectiveStreamProxy::SkipWhitespace(const ParserLine& line, unsigned& position)

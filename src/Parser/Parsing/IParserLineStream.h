@@ -2,20 +2,19 @@
 
 #include <string>
 #include <functional>
+#include <memory>
 
 #include "Utils/ClassUtils.h"
 
 class ParserLine
 {
-    static const std::string EMPTY_STRING;
-
 public:
-    std::reference_wrapper<const std::string> m_filename;
+    std::shared_ptr<std::string> m_filename;
     int m_line_number;
     std::string m_line;
 
     ParserLine();
-    ParserLine(const std::string& filename, int lineNumber, std::string line);
+    ParserLine(std::shared_ptr<std::string> filename, int lineNumber, std::string line);
 
     _NODISCARD bool IsEof() const;
 };

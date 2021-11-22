@@ -18,7 +18,7 @@ private:
     public:
         std::unique_ptr<std::istream> m_owned_stream;
         std::istream& m_stream;
-        std::string m_file_path;
+        std::shared_ptr<std::string> m_file_path;
         int m_line_number;
 
         FileInfo(std::unique_ptr<std::istream> stream, std::string filePath);

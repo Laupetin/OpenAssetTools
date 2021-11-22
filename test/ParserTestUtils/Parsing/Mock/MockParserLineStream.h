@@ -8,13 +8,13 @@
 class MockParserLineStream final : public IParserLineStream
 {
 public:
-    static const std::string MOCK_FILENAME;
+    static constexpr const char* MOCK_FILENAME = "MockFile";
 
 private:
     class IncludePos
     {
     public:
-        std::string m_filename;
+        std::shared_ptr<std::string> m_filename;
         const std::vector<std::string>& m_lines;
         unsigned m_pos;
 

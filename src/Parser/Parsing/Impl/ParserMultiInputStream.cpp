@@ -5,14 +5,14 @@
 ParserMultiInputStream::FileInfo::FileInfo(std::unique_ptr<std::istream> stream, std::string filePath)
     : m_owned_stream(std::move(stream)),
       m_stream(*m_owned_stream),
-      m_file_path(std::move(filePath)),
+      m_file_path(std::make_shared<std::string>(std::move(filePath))),
       m_line_number(1)
 {
 }
 
 ParserMultiInputStream::FileInfo::FileInfo(std::istream& stream, std::string filePath)
     : m_stream(stream),
-      m_file_path(std::move(filePath)),
+      m_file_path(std::make_shared<std::string>(std::move(filePath))),
       m_line_number(1)
 {
 }
@@ -79,7 +79,7 @@ bool ParserMultiInputStream::IncludeFile(const std::string& filename)
     if (!m_include_callback)
         return false;
 
-    auto newFile = m_include_callback(filename, m_files.empty() ? "" : m_files.top().m_file_path);
+    auto newFile = m_include_callback(filename, m_files.empty() ? "" : *m_files.top().m_file_path);
     if (!newFile)
         return false;
 

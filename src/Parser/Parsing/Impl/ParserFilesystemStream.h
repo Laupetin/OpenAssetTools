@@ -10,7 +10,7 @@ class ParserFilesystemStream final : public IParserLineStream
     class FileInfo
     {
     public:
-        std::string m_file_path;
+        std::shared_ptr<std::string> m_file_path;
         std::ifstream m_stream;
         int m_line_number;
 
@@ -19,7 +19,7 @@ class ParserFilesystemStream final : public IParserLineStream
     std::stack<FileInfo> m_files;
 
 public:
-    explicit ParserFilesystemStream(std::string path);
+    explicit ParserFilesystemStream(const std::string& path);
 
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;

@@ -70,7 +70,7 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const u
     unsigned filenameStart, filenameEnd;
 
     if (!ExtractIncludeFilename(line, currentPos, filenameStart, filenameEnd))
-        throw ParsingException(TokenPos(line.m_filename, line.m_line_number, static_cast<int>(currentPos)), INCLUDE_QUOTES_ERROR);
+        throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(currentPos)), INCLUDE_QUOTES_ERROR);
 
     if (filenameEnd <= filenameStart)
         throw ParsingException(CreatePos(line, currentPos), "No filename specified");
@@ -103,7 +103,7 @@ bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, cons
     if (!MatchString(line, currentPos, ONCE_PRAGMA_COMMAND, std::char_traits<char>::length(ONCE_PRAGMA_COMMAND)))
         return false;
 
-    const auto absolutePath = absolute(fs::path(line.m_filename.get()));
+    const auto absolutePath = absolute(fs::path(*line.m_filename));
     const auto absolutePathStr = absolutePath.string();
 
     const auto existingPath = m_included_files.find(absolutePathStr);

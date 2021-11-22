@@ -27,21 +27,21 @@ namespace test::parsing::impl::including_stream_proxy
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "Hello world");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == "ASDF.txt");
+            REQUIRE(*line.m_filename == "ASDF.txt");
             REQUIRE(line.m_line == "Hello galaxy");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 3);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "and bye");
         }
 
@@ -70,21 +70,21 @@ namespace test::parsing::impl::including_stream_proxy
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "Hello world");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == "ASDF.txt");
+            REQUIRE(*line.m_filename == "ASDF.txt");
             REQUIRE(line.m_line == "Hello galaxy");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 3);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "and bye");
         }
 
@@ -113,21 +113,21 @@ namespace test::parsing::impl::including_stream_proxy
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "Hello world");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == "ASDF.txt");
+            REQUIRE(*line.m_filename == "ASDF.txt");
             REQUIRE(line.m_line == "Hello galaxy");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 3);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "and bye");
         }
 
@@ -158,21 +158,21 @@ namespace test::parsing::impl::including_stream_proxy
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 1);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "Hello world");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 2);
-            REQUIRE(line.m_filename.get() == "ASDF.txt");
+            REQUIRE(*line.m_filename == "ASDF.txt");
             REQUIRE(line.m_line == "Hello galaxy");
         }
 
         {
             auto line = proxy.NextLine();
             REQUIRE(line.m_line_number == 4);
-            REQUIRE(line.m_filename.get() == MockParserLineStream::MOCK_FILENAME);
+            REQUIRE(*line.m_filename == MockParserLineStream::MOCK_FILENAME);
             REQUIRE(line.m_line == "and bye");
         }
 

@@ -6,13 +6,13 @@
 namespace fs = std::filesystem;
 
 ParserFilesystemStream::FileInfo::FileInfo(std::string filePath)
-    : m_file_path(std::move(filePath)),
-      m_stream(m_file_path),
+    : m_file_path(std::make_shared<std::string>(std::move(filePath))),
+      m_stream(*m_file_path),
       m_line_number(1)
 {
 }
 
-ParserFilesystemStream::ParserFilesystemStream(std::string path)
+ParserFilesystemStream::ParserFilesystemStream(const std::string& path)
 {
     const auto absolutePath = absolute(fs::path(path));
     m_files.emplace(FileInfo(absolutePath.string()));
@@ -74,7 +74,7 @@ bool ParserFilesystemStream::IncludeFile(const std::string& filename)
     if (m_files.empty())
         return false;
     
-    auto newFilePath = fs::path(m_files.top().m_file_path);
+    auto newFilePath = fs::path(*m_files.top().m_file_path);
     newFilePath.remove_filename().concat(filename);
     newFilePath = absolute(newFilePath);
 

@@ -2,6 +2,7 @@
 
 #include <stack>
 
+#include "Utils/ClassUtils.h"
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IPackValueSupplier.h"
 #include "Parsing/IParserLineStream.h"
@@ -32,5 +33,5 @@ public:
     _NODISCARD bool IsOpen() const override;
     _NODISCARD bool Eof() const override;
 
-    int GetCurrentPack() const override;
+    _NODISCARD int GetCurrentPack() const override;
 };

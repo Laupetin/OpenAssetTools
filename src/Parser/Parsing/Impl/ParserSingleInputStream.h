@@ -1,13 +1,14 @@
 #pragma once
 
 #include <istream>
+#include <memory>
 
 #include "Parsing/IParserLineStream.h"
 
 class ParserSingleInputStream final : public IParserLineStream
 {
     std::istream& m_stream;
-    std::string m_file_name;
+    std::shared_ptr<std::string> m_file_name;
     int m_line_number;
 
 public:
