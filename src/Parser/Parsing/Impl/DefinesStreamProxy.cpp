@@ -116,8 +116,46 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
 DefinesStreamProxy::DefinesStreamProxy(IParserLineStream* stream)
     : m_stream(stream),
-      m_ignore_depth(0)
+      m_ignore_depth(0),
+      m_in_define(false)
 {
+}
+
+int DefinesStreamProxy::GetLineEndEscapePos(const ParserLine& line)
+{
+    for (auto linePos = line.m_line.size(); linePos > 0; linePos--)
+    {
+        const auto c = line.m_line[linePos - 1];
+        if (c == '\\')
+            return static_cast<int>(linePos) - 1;
+
+        if (!isspace(c))
+            return -1;
+    }
+
+    return -1;
+}
+
+void DefinesStreamProxy::ContinueDefine(const ParserLine& line)
+{
+    const auto lineEndEscapePos = GetLineEndEscapePos(line);
+    if (lineEndEscapePos < 0)
+    {
+        m_current_define_value << line.m_line << " ";
+        m_current_define.m_value = m_current_define_value.str();
+        m_current_define.IdentifyParameters(m_current_define_parameters);
+        AddDefine(std::move(m_current_define));
+
+        m_in_define = false;
+        m_current_define = Define();
+        m_current_define_value.str(std::string());
+        m_current_define_parameters.clear();
+    }
+    else
+    {
+        if (line.m_line.size() > static_cast<unsigned>(lineEndEscapePos))
+            m_current_define_value << line.m_line.substr(0, static_cast<unsigned>(lineEndEscapePos)) << " ";
+    }
 }
 
 std::vector<std::string> DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition)
@@ -137,10 +175,10 @@ std::vector<std::string> DefinesStreamProxy::MatchDefineParameters(const ParserL
         if (!ExtractIdentifier(line, parameterPosition))
             throw ParsingException(CreatePos(line, parameterPosition), "Cannot extract name of parameter of define");
 
-        if(!SkipWhitespace(line, parameterPosition))
-            throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
-
         parameters.emplace_back(std::string(line.m_line, nameStartPos, parameterPosition - nameStartPos));
+
+        if (!SkipWhitespace(line, parameterPosition))
+            throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
 
         if (parameterPosition >= line.m_line.size())
             throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
@@ -179,15 +217,29 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsi
 
     const auto name = line.m_line.substr(nameStartPos, currentPos - nameStartPos);
 
-    const auto parameters = MatchDefineParameters(line, currentPos);
+    auto parameters = MatchDefineParameters(line, currentPos);
 
-    std::string value;
-    if (currentPos < line.m_line.size())
-        value = line.m_line.substr(currentPos + 1);
+    const auto lineEndEscapePos = GetLineEndEscapePos(line);
+    if (lineEndEscapePos < 0)
+    {
+        std::string value;
+        if (currentPos < line.m_line.size())
+            value = line.m_line.substr(currentPos + 1);
 
-    Define define(name, value);
-    define.IdentifyParameters(parameters);
-    AddDefine(std::move(define));
+        Define define(name, value);
+        define.IdentifyParameters(parameters);
+        AddDefine(std::move(define));
+    }
+    else
+    {
+        m_in_define = true;
+        m_current_define = Define(name, std::string());
+        m_current_define_value.str(std::string());
+        m_current_define_parameters = std::move(parameters);
+
+        if (currentPos < line.m_line.size() && (currentPos + 1) > static_cast<unsigned>(lineEndEscapePos))
+            m_current_define_value << line.m_line.substr(currentPos + 1, static_cast<unsigned>(lineEndEscapePos) - (currentPos + 1)) << " ";
+    }
 
     return true;
 }
@@ -481,8 +533,12 @@ ParserLine DefinesStreamProxy::NextLine()
 {
     auto line = m_stream->NextLine();
 
-    if (MatchDirectives(line)
-        || !m_modes.empty() && !m_modes.top())
+    if (m_in_define)
+    {
+        ContinueDefine(line);
+        line.m_line.clear();
+    }
+    else if (MatchDirectives(line) || !m_modes.empty() && !m_modes.top())
     {
         line.m_line.clear();
     }

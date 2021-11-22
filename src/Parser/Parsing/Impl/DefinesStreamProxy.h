@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <stack>
+#include <sstream>
 
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IParserLineStream.h"
@@ -47,7 +48,14 @@ private:
     std::stack<bool> m_modes;
     unsigned m_ignore_depth;
 
+    bool m_in_define;
+    Define m_current_define;
+    std::ostringstream m_current_define_value;
+    std::vector<std::string> m_current_define_parameters;
+
+    static int GetLineEndEscapePos(const ParserLine& line);
     static std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
+    void ContinueDefine(const ParserLine& line);
     _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
