@@ -5,7 +5,7 @@
 
 #include "CommonMenuTypes.h"
 #include "EventHandler/CommonEventHandlerSet.h"
-#include "Expression/ICommonExpression.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace menu
 {
@@ -82,11 +82,11 @@ namespace menu
         class ColorExpressions
         {
         public:
-            std::unique_ptr<ICommonExpression> m_r_exp;
-            std::unique_ptr<ICommonExpression> m_g_exp;
-            std::unique_ptr<ICommonExpression> m_b_exp;
-            std::unique_ptr<ICommonExpression> m_a_exp;
-            std::unique_ptr<ICommonExpression> m_rgb_exp;
+            std::unique_ptr<ISimpleExpression> m_r_exp;
+            std::unique_ptr<ISimpleExpression> m_g_exp;
+            std::unique_ptr<ISimpleExpression> m_b_exp;
+            std::unique_ptr<ISimpleExpression> m_a_exp;
+            std::unique_ptr<ISimpleExpression> m_rgb_exp;
         };
 
         std::string m_name;
@@ -133,14 +133,14 @@ namespace menu
         int m_fx_decay_start_time;
         int m_fx_decay_duration;
 
-        std::unique_ptr<ICommonExpression> m_visible_expression;
-        std::unique_ptr<ICommonExpression> m_disabled_expression;
-        std::unique_ptr<ICommonExpression> m_text_expression;
-        std::unique_ptr<ICommonExpression> m_material_expression;
-        std::unique_ptr<ICommonExpression> m_rect_x_exp;
-        std::unique_ptr<ICommonExpression> m_rect_y_exp;
-        std::unique_ptr<ICommonExpression> m_rect_w_exp;
-        std::unique_ptr<ICommonExpression> m_rect_h_exp;
+        std::unique_ptr<ISimpleExpression> m_visible_expression;
+        std::unique_ptr<ISimpleExpression> m_disabled_expression;
+        std::unique_ptr<ISimpleExpression> m_text_expression;
+        std::unique_ptr<ISimpleExpression> m_material_expression;
+        std::unique_ptr<ISimpleExpression> m_rect_x_exp;
+        std::unique_ptr<ISimpleExpression> m_rect_y_exp;
+        std::unique_ptr<ISimpleExpression> m_rect_w_exp;
+        std::unique_ptr<ISimpleExpression> m_rect_h_exp;
         ColorExpressions m_forecolor_expressions;
         ColorExpressions m_glowcolor_expressions;
         ColorExpressions m_backcolor_expressions;

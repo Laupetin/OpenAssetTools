@@ -12,7 +12,7 @@ bool CommonExpressionFunctionCall::IsStatic()
     return false;
 }
 
-CommonExpressionValue CommonExpressionFunctionCall::Evaluate()
+SimpleExpressionValue CommonExpressionFunctionCall::Evaluate()
 {
-    return CommonExpressionValue(0);
+    return SimpleExpressionValue(0);
 }

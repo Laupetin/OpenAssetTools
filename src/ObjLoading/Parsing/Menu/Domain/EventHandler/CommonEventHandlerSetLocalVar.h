@@ -3,7 +3,7 @@
 #include <string>
 
 #include "ICommonEventHandlerElement.h"
-#include "Parsing/Menu/Domain/Expression/ICommonExpression.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace menu
 {
@@ -21,10 +21,10 @@ namespace menu
     public:
         SetLocalVarType m_type;
         std::string m_var_name;
-        std::unique_ptr<ICommonExpression> m_value;
+        std::unique_ptr<ISimpleExpression> m_value;
 
         CommonEventHandlerSetLocalVar();
-        CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ICommonExpression> value);
+        CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ISimpleExpression> value);
 
         _NODISCARD CommonEventHandlerElementType GetType() const override;
     };

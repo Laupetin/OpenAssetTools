@@ -7,7 +7,7 @@ CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar()
 {
 }
 
-CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ICommonExpression> value)
+CommonEventHandlerSetLocalVar::CommonEventHandlerSetLocalVar(SetLocalVarType type, std::string varName, std::unique_ptr<ISimpleExpression> value)
     : m_type(type),
       m_var_name(std::move(varName)),
       m_value(std::move(value))

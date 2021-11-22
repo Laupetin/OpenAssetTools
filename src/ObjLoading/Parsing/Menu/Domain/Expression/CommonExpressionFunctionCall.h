@@ -1,19 +1,19 @@
 #pragma once
 #include <vector>
 
-#include "ICommonExpression.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace menu
 {
-    class CommonExpressionFunctionCall final : public ICommonExpression
+    class CommonExpressionFunctionCall final : public ISimpleExpression
     {
     public:
         std::string m_function_name;
-        std::vector<std::unique_ptr<ICommonExpression>> m_args;
+        std::vector<std::unique_ptr<ISimpleExpression>> m_args;
 
         explicit CommonExpressionFunctionCall(std::string functionName);
 
         bool IsStatic() override;
-        CommonExpressionValue Evaluate() override;
+        SimpleExpressionValue Evaluate() override;
     };
 }

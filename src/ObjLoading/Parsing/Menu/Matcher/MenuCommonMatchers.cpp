@@ -4,9 +4,9 @@
 
 #include "MenuMatcherFactory.h"
 #include "Parsing/Menu/MenuFileLexing.h"
-#include "Parsing/Menu/Domain/Expression/CommonExpressionBinaryOperation.h"
+#include "Parsing/Simple/Expression/SimpleExpressionBinaryOperation.h"
 #include "Parsing/Menu/Domain/Expression/CommonExpressionFunctionCall.h"
-#include "Parsing/Menu/Domain/Expression/CommonExpressionUnaryOperation.h"
+#include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
 
 using namespace menu;
 
@@ -24,7 +24,7 @@ static constexpr int CAPTURE_UNARY_OPERATION_TYPE = std::numeric_limits<int>::ma
 static constexpr int CAPTURE_BINARY_OPERATION_TYPE = std::numeric_limits<int>::max() - 3;
 static constexpr int CAPTURE_FUNCTION_NAME = std::numeric_limits<int>::max() - 4;
 
-std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpressionInParenthesis(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
+std::unique_ptr<ISimpleExpression> MenuCommonMatchers::ProcessExpressionInParenthesis(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     auto processedEvaluation = ProcessExpression(state, result);
 
@@ -34,26 +34,26 @@ std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpressionInParent
     return processedEvaluation;
 }
 
-std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessOperand(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
+std::unique_ptr<ISimpleExpression> MenuCommonMatchers::ProcessOperand(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     const auto& operandToken = result.NextCapture(CAPTURE_OPERAND);
 
     switch (operandToken.m_type)
     {
     case SimpleParserValueType::INTEGER:
-        return std::make_unique<CommonExpressionValue>(operandToken.IntegerValue());
+        return std::make_unique<SimpleExpressionValue>(operandToken.IntegerValue());
     case SimpleParserValueType::FLOATING_POINT:
-        return std::make_unique<CommonExpressionValue>(operandToken.FloatingPointValue());
+        return std::make_unique<SimpleExpressionValue>(operandToken.FloatingPointValue());
     case SimpleParserValueType::STRING:
-        return std::make_unique<CommonExpressionValue>(operandToken.StringValue());
+        return std::make_unique<SimpleExpressionValue>(operandToken.StringValue());
     case SimpleParserValueType::IDENTIFIER:
-        return std::make_unique<CommonExpressionValue>(operandToken.IdentifierValue());
+        return std::make_unique<SimpleExpressionValue>(operandToken.IdentifierValue());
     default:
         throw ParsingException(TokenPos(), "Unknown operand type @ Operand");
     }
 }
 
-std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessFunctionCall(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
+std::unique_ptr<ISimpleExpression> MenuCommonMatchers::ProcessFunctionCall(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     auto functionCall = std::make_unique<CommonExpressionFunctionCall>(result.NextCapture(CAPTURE_FUNCTION_NAME).IdentifierValue());
 
@@ -65,17 +65,17 @@ std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessFunctionCall(MenuF
     return std::move(functionCall);
 }
 
-std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpression(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
+std::unique_ptr<ISimpleExpression> MenuCommonMatchers::ProcessExpression(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     if (result.PeekAndRemoveIfTag(TAG_EXPRESSION) != TAG_EXPRESSION)
         return nullptr;
 
-    std::vector<std::unique_ptr<ICommonExpression>> operands;
-    std::list<std::pair<unsigned, const CommonExpressionBinaryOperationType*>> operators;
+    std::vector<std::unique_ptr<ISimpleExpression>> operands;
+    std::list<std::pair<unsigned, const SimpleExpressionBinaryOperationType*>> operators;
 
     while (true)
     {
-        std::unique_ptr<ICommonExpression> firstStatementPart;
+        std::unique_ptr<ISimpleExpression> firstStatementPart;
         std::vector<int> unaryOperations;
         auto nextTag = result.NextTag();
 
@@ -106,9 +106,9 @@ std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpression(MenuFil
         for (auto i = unaryOperations.size(); i > 0; i--)
         {
             const auto operationIndex = unaryOperations[i - 1];
-            if (operationIndex < 0 || operationIndex >= static_cast<int>(UnaryOperationId::COUNT))
+            if (operationIndex < 0 || operationIndex >= static_cast<int>(SimpleUnaryOperationId::COUNT))
                 throw ParsingException(TokenPos(), "Invalid unary operation id @ Expression");
-            firstStatementPart = std::make_unique<CommonExpressionUnaryOperation>(CommonExpressionUnaryOperationType::ALL_OPERATION_TYPES[operationIndex],
+            firstStatementPart = std::make_unique<SimpleExpressionUnaryOperation>(SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES[operationIndex],
                                                                                   std::move(firstStatementPart));
         }
 
@@ -117,10 +117,10 @@ std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpression(MenuFil
         if (result.PeekAndRemoveIfTag(TAG_EXPRESSION_BINARY_OPERATION) == TAG_EXPRESSION_BINARY_OPERATION)
         {
             const auto operationIndex = result.NextCapture(CAPTURE_BINARY_OPERATION_TYPE).IntegerValue();
-            if (operationIndex < 0 || operationIndex >= static_cast<int>(BinaryOperationId::COUNT))
+            if (operationIndex < 0 || operationIndex >= static_cast<int>(SimpleBinaryOperationId::COUNT))
                 throw ParsingException(TokenPos(), "Invalid binary operation id @ Expression");
 
-            operators.emplace_back(operators.size(), CommonExpressionBinaryOperationType::ALL_OPERATION_TYPES[operationIndex]);
+            operators.emplace_back(operators.size(), SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[operationIndex]);
         }
         else
             break;
@@ -129,7 +129,7 @@ std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpression(MenuFil
             throw ParsingException(TokenPos(), "Expected EvaluationTag @ Evaluation");
     }
 
-    operators.sort([](const std::pair<unsigned, const CommonExpressionBinaryOperationType*>& p1, const std::pair<unsigned, const CommonExpressionBinaryOperationType*>& p2)
+    operators.sort([](const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p1, const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p2)
     {
         if (p1.second->m_precedence != p2.second->m_precedence)
             return p1.second->m_precedence > p2.second->m_precedence;
@@ -141,7 +141,7 @@ std::unique_ptr<ICommonExpression> MenuCommonMatchers::ProcessExpression(MenuFil
     {
         const auto [operatorIndex, operatorType] = operators.back();
 
-        auto operation = std::make_unique<CommonExpressionBinaryOperation>(operatorType, std::move(operands[operatorIndex]), std::move(operands[operatorIndex + 1]));
+        auto operation = std::make_unique<SimpleExpressionBinaryOperation>(operatorType, std::move(operands[operatorIndex]), std::move(operands[operatorIndex + 1]));
         operands.erase(operands.begin() + static_cast<int>(operatorIndex));
         operands[operatorIndex] = std::move(operation);
 
@@ -176,71 +176,71 @@ std::unique_ptr<MenuCommonMatchers::matcher_t> MenuCommonMatchers::ParseBinaryOp
     return create.Or({
         create.Char('+').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::ADD));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::ADD));
         }),
         create.Char('-').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::SUBTRACT));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::SUBTRACT));
         }),
         create.Char('*').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::MULTIPLY));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::MULTIPLY));
         }),
         create.Char('/').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::DIVIDE));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::DIVIDE));
         }),
         create.Char('%').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::REMAINDER));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::REMAINDER));
         }),
         create.Char('&').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::BITWISE_AND));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::BITWISE_AND));
         }),
         create.Char('|').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::BITWISE_OR));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::BITWISE_OR));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::SHIFT_LEFT)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::SHIFT_LEFT));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::SHIFT_LEFT));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::SHIFT_RIGHT)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::SHIFT_RIGHT));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::SHIFT_RIGHT));
         }),
         create.Char('>').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::GREATER_THAN));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::GREATER_THAN));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::GREATER_EQUAL)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::GREATER_EQUAL_THAN));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::GREATER_EQUAL_THAN));
         }),
         create.Char('<').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::LESS_THAN));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::LESS_THAN));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::LESS_EQUAL)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::LESS_EQUAL_THAN));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::LESS_EQUAL_THAN));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::EQUALS)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::EQUALS));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::EQUALS));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::NOT_EQUAL)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::NOT_EQUAL));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::NOT_EQUAL));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::LOGICAL_AND)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::AND));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::AND));
         }),
         create.MultiChar(static_cast<int>(MenuFileLexing::MultiChar::LOGICAL_OR)).Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(BinaryOperationId::OR));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::OR));
         }),
     }).Capture(CAPTURE_BINARY_OPERATION_TYPE);
 }
@@ -270,15 +270,15 @@ std::unique_ptr<MenuCommonMatchers::matcher_t> MenuCommonMatchers::ParseUnaryOpe
     return create.Or({
         create.Char('!').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(UnaryOperationId::NOT));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleUnaryOperationId::NOT));
         }),
         create.Char('~').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(UnaryOperationId::BITWISE_NOT));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleUnaryOperationId::BITWISE_NOT));
         }),
         create.Char('-').Transform([](const MenuMatcherFactory::token_list_t& values)
         {
-            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(UnaryOperationId::NEGATIVE));
+            return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleUnaryOperationId::NEGATIVE));
         }),
     }).Tag(TAG_EXPRESSION_UNARY_OPERATION).Capture(CAPTURE_UNARY_OPERATION_TYPE);
 }

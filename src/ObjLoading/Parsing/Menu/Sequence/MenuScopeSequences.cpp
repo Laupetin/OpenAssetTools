@@ -323,23 +323,23 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_text_only_focus = true;
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_menu->m_visible_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_menu->m_rect_x_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_menu->m_rect_y_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_menu->m_rect_w_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_menu->m_rect_h_exp = std::move(value);
     }));

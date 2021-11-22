@@ -360,40 +360,40 @@ namespace menu::event_handler_set_scope_sequences
             }
         }
 
-        static void EmitStaticValue(MenuFileParserState* state, const CommonExpressionValue& value)
+        static void EmitStaticValue(MenuFileParserState* state, const SimpleExpressionValue& value)
         {
             switch (value.m_type)
             {
-            case CommonExpressionValue::Type::DOUBLE:
+            case SimpleExpressionValue::Type::DOUBLE:
                 state->m_current_script << value.m_double_value;
                 break;
 
-            case CommonExpressionValue::Type::INT:
+            case SimpleExpressionValue::Type::INT:
                 state->m_current_script << value.m_int_value;
                 break;
 
-            case CommonExpressionValue::Type::STRING:
+            case SimpleExpressionValue::Type::STRING:
                 state->m_current_script << *value.m_string_value;
                 break;
             }
         }
 
-        static void CheckStaticValueType(const TokenPos& pos, const SetLocalVarType type, const CommonExpressionValue& staticValue)
+        static void CheckStaticValueType(const TokenPos& pos, const SetLocalVarType type, const SimpleExpressionValue& staticValue)
         {
             switch (type)
             {
             case SetLocalVarType::BOOL:
-                if (staticValue.m_type != CommonExpressionValue::Type::INT)
+                if (staticValue.m_type != SimpleExpressionValue::Type::INT)
                     throw ParsingException(pos, "Static value must be BOOL");
                 break;
 
             case SetLocalVarType::INT:
-                if (staticValue.m_type != CommonExpressionValue::Type::INT)
+                if (staticValue.m_type != SimpleExpressionValue::Type::INT)
                     throw ParsingException(pos, "Static value must be INT");
                 break;
 
             case SetLocalVarType::FLOAT:
-                if (staticValue.m_type != CommonExpressionValue::Type::DOUBLE && staticValue.m_type != CommonExpressionValue::Type::INT)
+                if (staticValue.m_type != SimpleExpressionValue::Type::DOUBLE && staticValue.m_type != SimpleExpressionValue::Type::INT)
                     throw ParsingException(pos, "Static value must be FLOAT");
                 break;
 
@@ -403,7 +403,7 @@ namespace menu::event_handler_set_scope_sequences
             }
         }
 
-        static void EmitStaticSetLocalVar(MenuFileParserState* state, const TokenPos& pos, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ICommonExpression> expression)
+        static void EmitStaticSetLocalVar(MenuFileParserState* state, const TokenPos& pos, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ISimpleExpression> expression)
         {
             state->m_current_script << "\"" << ScriptKeywordForType(type) << "\" \"" << varName << "\" \"";
             const auto staticValue = expression->Evaluate();
@@ -412,7 +412,7 @@ namespace menu::event_handler_set_scope_sequences
             state->m_current_script << "\" ; ";
         }
 
-        static void EmitDynamicSetLocalVar(const MenuFileParserState* state, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ICommonExpression> expression)
+        static void EmitDynamicSetLocalVar(const MenuFileParserState* state, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ISimpleExpression> expression)
         {
             state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerSetLocalVar>(type, varName, std::move(expression)));
         }

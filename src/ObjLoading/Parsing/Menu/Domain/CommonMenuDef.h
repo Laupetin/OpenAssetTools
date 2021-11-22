@@ -8,7 +8,7 @@
 #include "CommonItemDef.h"
 #include "CommonMenuTypes.h"
 #include "EventHandler/CommonEventHandlerSet.h"
-#include "Expression/ICommonExpression.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace menu
 {
@@ -34,13 +34,13 @@ namespace menu
         double m_fade_in_amount;
         double m_blur_radius;
         std::string m_allowed_binding;
-        std::unique_ptr<ICommonExpression> m_visible_expression;
-        std::unique_ptr<ICommonExpression> m_rect_x_exp;
-        std::unique_ptr<ICommonExpression> m_rect_y_exp;
-        std::unique_ptr<ICommonExpression> m_rect_w_exp;
-        std::unique_ptr<ICommonExpression> m_rect_h_exp;
-        std::unique_ptr<ICommonExpression> m_open_sound_exp;
-        std::unique_ptr<ICommonExpression> m_close_sound_exp;
+        std::unique_ptr<ISimpleExpression> m_visible_expression;
+        std::unique_ptr<ISimpleExpression> m_rect_x_exp;
+        std::unique_ptr<ISimpleExpression> m_rect_y_exp;
+        std::unique_ptr<ISimpleExpression> m_rect_w_exp;
+        std::unique_ptr<ISimpleExpression> m_rect_h_exp;
+        std::unique_ptr<ISimpleExpression> m_open_sound_exp;
+        std::unique_ptr<ISimpleExpression> m_close_sound_exp;
         std::unique_ptr<CommonEventHandlerSet> m_on_open;
         std::unique_ptr<CommonEventHandlerSet> m_on_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_request_close;

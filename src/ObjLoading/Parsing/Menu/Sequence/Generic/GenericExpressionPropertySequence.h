@@ -4,14 +4,14 @@
 #include <functional>
 
 #include "Parsing/Menu/MenuFileParser.h"
-#include "Parsing/Menu/Domain/Expression/ICommonExpression.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace menu
 {
     class GenericExpressionPropertySequence final : public MenuFileParser::sequence_t
     {
     public:
-        using callback_t = std::function<void(MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ICommonExpression> value)>;
+        using callback_t = std::function<void(MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)>;
 
     private:
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;

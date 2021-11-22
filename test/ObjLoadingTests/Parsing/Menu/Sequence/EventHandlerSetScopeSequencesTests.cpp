@@ -986,7 +986,7 @@ namespace test::parsing::menu::sequence::event_handler_set
         REQUIRE(conditionElement->m_condition != nullptr);
         REQUIRE(conditionElement->m_condition->IsStatic());
         const auto staticValue = conditionElement->m_condition->Evaluate();
-        REQUIRE(staticValue.m_type == CommonExpressionValue::Type::INT);
+        REQUIRE(staticValue.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(staticValue.m_int_value == 1337);
 
         REQUIRE(conditionElement->m_condition_elements);
@@ -1079,7 +1079,7 @@ namespace test::parsing::menu::sequence::event_handler_set
         REQUIRE(conditionElement->m_condition != nullptr);
         REQUIRE(conditionElement->m_condition->IsStatic());
         const auto staticValue = conditionElement->m_condition->Evaluate();
-        REQUIRE(staticValue.m_type == CommonExpressionValue::Type::INT);
+        REQUIRE(staticValue.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(staticValue.m_int_value == 1337);
 
         REQUIRE(conditionElement->m_condition_elements);

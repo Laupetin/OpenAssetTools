@@ -664,103 +664,103 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
         state->m_current_item->m_game_message_window_mode = value;
     }));
     AddSequence(std::make_unique<SequenceDecodeEffect>());
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_visible_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("disabled", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("disabled", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_disabled_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "disabled"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "disabled"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_disabled_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "text"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "text"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_text_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_material_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_material_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_rect_x_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_rect_y_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_rect_w_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_rect_h_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_forecolor_expressions.m_r_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_forecolor_expressions.m_g_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_forecolor_expressions.m_b_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_forecolor_expressions.m_a_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_forecolor_expressions.m_rgb_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_glowcolor_expressions.m_r_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_glowcolor_expressions.m_g_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_glowcolor_expressions.m_b_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_glowcolor_expressions.m_a_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_glowcolor_expressions.m_rgb_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_backcolor_expressions.m_r_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_backcolor_expressions.m_g_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_backcolor_expressions.m_b_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_backcolor_expressions.m_a_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ICommonExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
     {
         state->m_current_item->m_backcolor_expressions.m_rgb_exp = std::move(value);
     }));
