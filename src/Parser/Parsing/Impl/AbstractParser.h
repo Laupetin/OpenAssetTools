@@ -80,7 +80,7 @@ public:
             const auto pos = e.Position();
             const auto line = m_lexer->GetLineForPos(pos);
 
-            if (!line.IsEof())
+            if (!line.IsEof() && line.m_line.size() > static_cast<unsigned>(pos.m_column - 1))
             {
                 std::cout << "Error: " << e.FullMessage() << "\n" << line.m_line.substr(pos.m_column - 1) << std::endl;
             }
