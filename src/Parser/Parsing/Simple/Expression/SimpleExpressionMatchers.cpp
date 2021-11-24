@@ -63,7 +63,7 @@ std::vector<const SimpleExpressionUnaryOperationType*> SimpleExpressionMatchers:
 std::vector<const SimpleExpressionBinaryOperationType*> SimpleExpressionMatchers::EnabledBinaryOperations() const
 {
     return std::vector(&SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[0],
-                       &SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[std::extent_v<decltype(SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES)>]);
+                       &SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[std::extent_v<decltype(SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES)>]);
 }
 
 std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpressionInParenthesis(SequenceResult<SimpleParserValue>& result) const
@@ -171,7 +171,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
         if (p1.second->m_precedence != p2.second->m_precedence)
             return p1.second->m_precedence > p2.second->m_precedence;
 
-        return p1.first > p2.first;
+        return p1.first < p2.first;
     });
 
     while (!operators.empty())

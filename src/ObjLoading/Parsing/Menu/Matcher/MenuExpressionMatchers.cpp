@@ -38,6 +38,9 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> MenuExpressionMatchers::Par
 
 std::unique_ptr<ISimpleExpression> MenuExpressionMatchers::ProcessOperandExtension(SequenceResult<SimpleParserValue>& result) const
 {
+    if (result.PeekAndRemoveIfTag(TAG_EXPRESSION_FUNCTION_CALL) != TAG_EXPRESSION_FUNCTION_CALL)
+        throw ParsingException(TokenPos(), "Menu Operand Extension must be function call");
+
     auto functionCall = std::make_unique<CommonExpressionFunctionCall>(result.NextCapture(CAPTURE_FUNCTION_NAME).IdentifierValue());
 
     while (result.PeekAndRemoveIfTag(TAG_EXPRESSION_FUNCTION_CALL_END) != TAG_EXPRESSION_FUNCTION_CALL_END)
