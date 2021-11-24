@@ -7,7 +7,7 @@
 #include "Generic/GenericStringPropertySequence.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerScript.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerSetLocalVar.h"
-#include "Parsing/Menu/Matcher/MenuCommonMatchers.h"
+#include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 #include "Parsing/Menu/Matcher/MenuMatcherScriptInt.h"
 #include "Parsing/Menu/Matcher/MenuMatcherScriptNumeric.h"
@@ -326,8 +326,9 @@ namespace menu::event_handler_set_scope_sequences
         SequenceSetLocalVar()
         {
             const ScriptMatcherFactory create(this);
+            const MenuExpressionMatchers expressionMatchers;
 
-            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+            AddLabeledMatchers(expressionMatchers.Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 
             AddMatchers({
                 create.Or({
@@ -337,7 +338,7 @@ namespace menu::event_handler_set_scope_sequences
                     create.ScriptKeyword("setLocalVarString").Tag(TAG_STRING)
                 }),
                 create.ScriptText().Capture(CAPTURE_VAR_NAME),
-                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+                create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
                 create.Optional(create.Char(';'))
             });
         }
@@ -420,10 +421,12 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
+            const MenuExpressionMatchers expressionMatchers;
+
             const auto typeTag = static_cast<SetLocalVarType>(result.NextTag());
             const auto& varNameToken = result.NextCapture(CAPTURE_VAR_NAME);
             const auto& varName = MenuMatcherFactory::TokenTextValue(varNameToken);
-            auto expression = MenuCommonMatchers::ProcessExpression(state, result);
+            auto expression = expressionMatchers.ProcessExpression(result);
 
             if (!expression)
                 throw ParsingException(varNameToken.GetPos(), "No expression");
@@ -443,13 +446,14 @@ namespace menu::event_handler_set_scope_sequences
         SequenceIf()
         {
             const ScriptMatcherFactory create(this);
+            const MenuExpressionMatchers expressionMatchers;
 
-            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+            AddLabeledMatchers(expressionMatchers.Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 
             AddMatchers({
                 create.Keyword("if").Capture(CAPTURE_KEYWORD),
                 create.Char('('),
-                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+                create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
                 create.Char(')'),
                 create.Char('{')
             });
@@ -458,7 +462,8 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            auto expression = MenuCommonMatchers::ProcessExpression(state, result);
+            const MenuExpressionMatchers expressionMatchers;
+            auto expression = expressionMatchers.ProcessExpression(result);
 
             if (!expression)
                 throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Could not parse expression");
@@ -485,14 +490,15 @@ namespace menu::event_handler_set_scope_sequences
         SequenceElseIf()
         {
             const ScriptMatcherFactory create(this);
+            const MenuExpressionMatchers expressionMatchers;
 
-            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+            AddLabeledMatchers(expressionMatchers.Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 
             AddMatchers({
                 create.Char('}'),
                 create.Keyword("elseif").Capture(CAPTURE_KEYWORD),
                 create.Char('('),
-                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+                create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
                 create.Char(')'),
                 create.Char('{')
             });
@@ -501,7 +507,8 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            auto expression = MenuCommonMatchers::ProcessExpression(state, result);
+            const MenuExpressionMatchers expressionMatchers;
+            auto expression = expressionMatchers.ProcessExpression(result);
 
             if (!expression)
                 throw ParsingException(result.NextCapture(CAPTURE_KEYWORD).GetPos(), "Could not parse expression");
@@ -539,8 +546,9 @@ namespace menu::event_handler_set_scope_sequences
         SequenceElse()
         {
             const ScriptMatcherFactory create(this);
+            const MenuExpressionMatchers expressionMatchers;
 
-            AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+            AddLabeledMatchers(expressionMatchers.Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 
             AddMatchers({
                 create.Char('}'),

@@ -49,12 +49,13 @@ class SimpleExpressionBinaryOperationType
 public:
     using evaluation_function_t = std::function<SimpleExpressionValue(const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2)>;
 
+    SimpleBinaryOperationId m_id;
     std::string m_syntax;
     SimpleOperationPrecedence m_precedence;
     evaluation_function_t m_evaluation_function;
 
 private:
-    SimpleExpressionBinaryOperationType(std::string syntax, SimpleOperationPrecedence precedence, evaluation_function_t evaluationFunction);
+    SimpleExpressionBinaryOperationType(SimpleBinaryOperationId id, std::string syntax, SimpleOperationPrecedence precedence, evaluation_function_t evaluationFunction);
 
 public:
     static const SimpleExpressionBinaryOperationType OPERATION_ADD;

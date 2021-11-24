@@ -3,7 +3,52 @@
 #include <sstream>
 #include <utility>
 
+#include "AbstractParser.h"
+#include "ParserSingleInputStream.h"
 #include "Parsing/ParsingException.h"
+#include "Parsing/Simple/SimpleLexer.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+class DefinesIfDirectiveParsingState
+{
+public:
+    std::unique_ptr<ISimpleExpression> m_expression;
+};
+
+class DefinesIfDirectiveParser final : public AbstractParser<SimpleParserValue, DefinesIfDirectiveParsingState>
+{
+protected:
+    explicit DefinesIfDirectiveParser(ILexer<SimpleParserValue>* lexer)
+        : AbstractParser<SimpleParserValue, DefinesIfDirectiveParsingState>(lexer, std::make_unique<DefinesIfDirectiveParsingState>())
+    {
+    }
+
+    const std::vector<sequence_t*>& GetTestsForState() override
+    {
+        static std::vector<sequence_t*> sequences
+        {
+        };
+        return sequences;
+    }
+
+public:
+    static bool EvaluateIfDirective(std::map<std::string, DefinesStreamProxy::Define>& defines, const std::string& value)
+    {
+        std::istringstream ss(value);
+        ParserSingleInputStream inputStream(ss, "");
+        SimpleLexer::Config config{};
+        config.m_emit_new_line_tokens = false;
+        config.m_read_numbers = true;
+        config.m_read_strings = false;
+        SimpleLexer lexer(&inputStream, std::move(config));
+        DefinesIfDirectiveParser parser(&lexer);
+        if (!parser.Parse())
+            return false;
+
+        const auto& expression = parser.m_state->m_expression;
+        return expression->IsStatic() && expression->Evaluate().IsTruthy();
+    }
+};
 
 DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
     : m_parameter_index(0u),

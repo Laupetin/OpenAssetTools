@@ -7,6 +7,8 @@
 #include "MatcherAnd.h"
 #include "MatcherLabel.h"
 #include "MatcherLoop.h"
+#include "MatcherFalse.h"
+#include "MatcherTrue.h"
 #include "MatcherOptional.h"
 #include "MatcherOr.h"
 #include "Parsing/IParserValue.h"
@@ -83,6 +85,16 @@ public:
     explicit AbstractMatcherFactory(const IMatcherForLabelSupplier<TokenType>* labelSupplier)
         : m_label_supplier(labelSupplier)
     {
+    }
+
+    _NODISCARD MatcherFactoryWrapper<TokenType> False() const
+    {
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherFalse<TokenType>>());
+    }
+
+    _NODISCARD MatcherFactoryWrapper<TokenType> True() const
+    {
+        return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherTrue<TokenType>>());
     }
 
     _NODISCARD MatcherFactoryWrapper<TokenType> And(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const

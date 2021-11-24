@@ -3,14 +3,17 @@
 #include <cassert>
 #include <cmath>
 
-SimpleExpressionBinaryOperationType::SimpleExpressionBinaryOperationType(std::string syntax, const SimpleOperationPrecedence precedence, evaluation_function_t evaluationFunction)
-    : m_syntax(std::move(syntax)),
+SimpleExpressionBinaryOperationType::SimpleExpressionBinaryOperationType(const SimpleBinaryOperationId id, std::string syntax, const SimpleOperationPrecedence precedence,
+                                                                         evaluation_function_t evaluationFunction)
+    : m_id(id),
+      m_syntax(std::move(syntax)),
       m_precedence(precedence),
       m_evaluation_function(std::move(evaluationFunction))
 {
 }
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_ADD(
+    SimpleBinaryOperationId::ADD,
     "+",
     SimpleOperationPrecedence::ADDITION_SUBTRACTION,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -48,6 +51,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT(
+    SimpleBinaryOperationId::SUBTRACT,
     "-",
     SimpleOperationPrecedence::ADDITION_SUBTRACTION,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -72,6 +76,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_MULTIPLY(
+    SimpleBinaryOperationId::MULTIPLY,
     "*",
     SimpleOperationPrecedence::MULTIPLICATION_DIVISION_REMAINDER,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -96,6 +101,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_DIVIDE(
+    SimpleBinaryOperationId::DIVIDE,
     "/",
     SimpleOperationPrecedence::MULTIPLICATION_DIVISION_REMAINDER,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -120,6 +126,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_REMAINDER(
+    SimpleBinaryOperationId::REMAINDER,
     "%",
     SimpleOperationPrecedence::MULTIPLICATION_DIVISION_REMAINDER,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -132,6 +139,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_BITWISE_AND(
+    SimpleBinaryOperationId::BITWISE_AND,
     "&",
     SimpleOperationPrecedence::BITWISE_AND,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -144,6 +152,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_BITWISE_OR(
+    SimpleBinaryOperationId::BITWISE_OR,
     "|",
     SimpleOperationPrecedence::BITWISE_OR,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -156,6 +165,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_SHIFT_LEFT(
+    SimpleBinaryOperationId::SHIFT_LEFT,
     "<<",
     SimpleOperationPrecedence::BITWISE_SHIFT,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -168,6 +178,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_SHIFT_RIGHT(
+    SimpleBinaryOperationId::SHIFT_RIGHT,
     ">>",
     SimpleOperationPrecedence::BITWISE_SHIFT,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -180,6 +191,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_GREATER_THAN(
+    SimpleBinaryOperationId::GREATER_THAN,
     ">",
     SimpleOperationPrecedence::RELATIONAL_GREATER_LESS_THAN,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -207,6 +219,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_GREATER_EQUAL_THAN(
+    SimpleBinaryOperationId::GREATER_EQUAL_THAN,
     ">=",
     SimpleOperationPrecedence::RELATIONAL_GREATER_LESS_THAN,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -234,6 +247,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_LESS_THAN(
+    SimpleBinaryOperationId::LESS_THAN,
     "<",
     SimpleOperationPrecedence::RELATIONAL_GREATER_LESS_THAN,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -261,6 +275,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_LESS_EQUAL_THAN(
+    SimpleBinaryOperationId::LESS_EQUAL_THAN,
     "<=",
     SimpleOperationPrecedence::RELATIONAL_GREATER_LESS_THAN,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -288,6 +303,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_EQUALS(
+    SimpleBinaryOperationId::EQUALS,
     "==",
     SimpleOperationPrecedence::RELATIONAL_EQUALS,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -325,6 +341,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_NOT_EQUAL(
+    SimpleBinaryOperationId::NOT_EQUAL,
     "!=",
     SimpleOperationPrecedence::RELATIONAL_EQUALS,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -362,6 +379,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_AND(
+    SimpleBinaryOperationId::AND,
     "&&",
     SimpleOperationPrecedence::LOGICAL_AND,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
@@ -373,6 +391,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
 );
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_OR(
+    SimpleBinaryOperationId::OR,
     "||",
     SimpleOperationPrecedence::LOGICAL_OR,
     [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue

@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include "Parsing/Menu/Matcher/MenuCommonMatchers.h"
+#include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
 using namespace menu;
@@ -10,7 +10,8 @@ using namespace menu;
 GenericExpressionPropertySequence::GenericExpressionPropertySequence(callback_t setCallback)
     : m_set_callback(std::move(setCallback))
 {
-    AddLabeledMatchers(MenuCommonMatchers::Expression(this), MenuCommonMatchers::LABEL_EXPRESSION);
+    const MenuExpressionMatchers expressionMatchers;
+    AddLabeledMatchers(expressionMatchers.Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 }
 
 std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequence::WithKeyword(std::string keyword, callback_t setCallback)
@@ -20,7 +21,7 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
     const MenuMatcherFactory create(result.get());
     result->AddMatchers({
         create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
         create.Optional(create.Char(';'))
     });
 
@@ -38,7 +39,7 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
 
     result->AddMatchers({
         create.And(std::move(keywordMatchers)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
         create.Optional(create.Char(';'))
     });
 
@@ -56,10 +57,10 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
             create.And({
                 create.KeywordIgnoreCase("when"),
                 create.Char('('),
-                create.Label(MenuCommonMatchers::LABEL_EXPRESSION),
+                create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
                 create.Char(')')
             }),
-            create.Label(MenuCommonMatchers::LABEL_EXPRESSION)
+            create.Label(MenuExpressionMatchers::LABEL_EXPRESSION)
         }),
         create.Optional(create.Char(';'))
     });
@@ -71,7 +72,8 @@ void GenericExpressionPropertySequence::ProcessMatch(MenuFileParserState* state,
 {
     if (m_set_callback)
     {
-        auto expression = MenuCommonMatchers::ProcessExpression(state, result);
+        const MenuExpressionMatchers expressionMatchers;
+        auto expression = expressionMatchers.ProcessExpression(result);
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(expression));
     }
 }

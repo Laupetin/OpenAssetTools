@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <stack>
 #include <sstream>
 
@@ -44,7 +44,7 @@ public:
 
 private:
     IParserLineStream* const m_stream;
-    std::unordered_map<std::string, Define> m_defines;
+    std::map<std::string, Define> m_defines;
     std::stack<bool> m_modes;
     unsigned m_ignore_depth;
 

@@ -4,13 +4,15 @@
 
 #include "SimpleExpressionBinaryOperation.h"
 
-SimpleExpressionUnaryOperationType::SimpleExpressionUnaryOperationType(std::string syntax, evaluation_function_t evaluationFunction)
-    : m_syntax(std::move(syntax)),
+SimpleExpressionUnaryOperationType::SimpleExpressionUnaryOperationType(const SimpleUnaryOperationId id, std::string syntax, evaluation_function_t evaluationFunction)
+    : m_id(id),
+      m_syntax(std::move(syntax)),
       m_evaluation_function(std::move(evaluationFunction))
 {
 }
 
 const SimpleExpressionUnaryOperationType SimpleExpressionUnaryOperationType::OPERATION_NOT(
+    SimpleUnaryOperationId::NOT,
     "!",
     [](const SimpleExpressionValue& operand) -> SimpleExpressionValue
     {
@@ -19,10 +21,11 @@ const SimpleExpressionUnaryOperationType SimpleExpressionUnaryOperationType::OPE
 );
 
 const SimpleExpressionUnaryOperationType SimpleExpressionUnaryOperationType::OPERATION_BITWISE_NOT(
+    SimpleUnaryOperationId::BITWISE_NOT,
     "~",
     [](const SimpleExpressionValue& operand) -> SimpleExpressionValue
     {
-        if(operand.m_type == SimpleExpressionValue::Type::INT)
+        if (operand.m_type == SimpleExpressionValue::Type::INT)
             return SimpleExpressionValue(~operand.m_int_value);
 
         return SimpleExpressionValue(0);
@@ -30,10 +33,11 @@ const SimpleExpressionUnaryOperationType SimpleExpressionUnaryOperationType::OPE
 );
 
 const SimpleExpressionUnaryOperationType SimpleExpressionUnaryOperationType::OPERATION_NEGATIVE(
+    SimpleUnaryOperationId::NEGATIVE,
     "-",
     [](const SimpleExpressionValue& operand) -> SimpleExpressionValue
     {
-        if(operand.m_type == SimpleExpressionValue::Type::INT)
+        if (operand.m_type == SimpleExpressionValue::Type::INT)
             return SimpleExpressionValue(-operand.m_int_value);
         if (operand.m_type == SimpleExpressionValue::Type::DOUBLE)
             return SimpleExpressionValue(-operand.m_double_value);

@@ -12,7 +12,7 @@
 #include "Generic/GenericStringPropertySequence.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 #include "Parsing/Menu/Domain/CommonMenuTypes.h"
-#include "Parsing/Menu/Matcher/MenuCommonMatchers.h"
+#include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 
 using namespace menu;
 

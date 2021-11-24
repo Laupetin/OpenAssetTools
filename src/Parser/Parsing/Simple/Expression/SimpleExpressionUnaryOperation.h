@@ -21,11 +21,12 @@ class SimpleExpressionUnaryOperationType
 public:
     using evaluation_function_t = std::function<SimpleExpressionValue(const SimpleExpressionValue& operand)>;
 
+    SimpleUnaryOperationId m_id;
     std::string m_syntax;
     evaluation_function_t m_evaluation_function;
 
 private:
-    SimpleExpressionUnaryOperationType(std::string syntax, evaluation_function_t evaluationFunction);
+    SimpleExpressionUnaryOperationType(SimpleUnaryOperationId id, std::string syntax, evaluation_function_t evaluationFunction);
 
 public:
     static const SimpleExpressionUnaryOperationType OPERATION_NOT;

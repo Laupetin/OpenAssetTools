@@ -1,7 +1,7 @@
 #include "MenuFileReader.h"
 
-#include "MenuFileLexing.h"
 #include "MenuFileParser.h"
+#include "Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
@@ -123,18 +123,9 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
     lexerConfig.m_emit_new_line_tokens = false;
     lexerConfig.m_read_strings = true;
     lexerConfig.m_read_numbers = true;
-    lexerConfig.m_multi_character_tokens = std::vector<SimpleLexer::Config::MultiCharacterToken>({
-        {static_cast<int>(MenuFileLexing::MultiChar::SHIFT_LEFT), "<<"},
-        {static_cast<int>(MenuFileLexing::MultiChar::SHIFT_RIGHT), ">>"},
-        {static_cast<int>(MenuFileLexing::MultiChar::GREATER_EQUAL), ">="},
-        {static_cast<int>(MenuFileLexing::MultiChar::LESS_EQUAL), "<="},
-        {static_cast<int>(MenuFileLexing::MultiChar::EQUALS), "=="},
-        {static_cast<int>(MenuFileLexing::MultiChar::NOT_EQUAL), "!="},
-        {static_cast<int>(MenuFileLexing::MultiChar::LOGICAL_AND), "&&"},
-        {static_cast<int>(MenuFileLexing::MultiChar::LOGICAL_OR), "||"},
-    });
-    const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
+    MenuExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
 
+    const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
     const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level);
 
     if (!parser->Parse())
