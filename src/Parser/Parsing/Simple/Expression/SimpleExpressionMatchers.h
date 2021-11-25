@@ -34,6 +34,7 @@ private:
 
 public:
     SimpleExpressionMatchers();
+    SimpleExpressionMatchers(bool enableStringOperands, bool enableIdentifierOperands, bool enableFloatingPointOperands, bool enableIntOperands);
     virtual ~SimpleExpressionMatchers();
     SimpleExpressionMatchers(const SimpleExpressionMatchers& other) = default;
     SimpleExpressionMatchers(SimpleExpressionMatchers&& other) noexcept = default;
@@ -41,8 +42,6 @@ public:
     SimpleExpressionMatchers& operator=(SimpleExpressionMatchers&& other) noexcept = default;
 
 protected:
-    SimpleExpressionMatchers(bool enableStringOperands, bool enableIdentifierOperands, bool enableFloatingPointOperands, bool enableIntOperands);
-
     virtual std::unique_ptr<matcher_t> ParseOperandExtension(const supplier_t* labelSupplier) const;
     virtual std::unique_ptr<ISimpleExpression> ProcessOperandExtension(SequenceResult<SimpleParserValue>& result) const;
 
