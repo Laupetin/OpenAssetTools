@@ -581,4 +581,93 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can use elif", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define someStuff 1",
+            "#if defined(someStuff) && defined(thisIsNotDefined)",
+            "Hello World",
+            "#elif 1",
+            "Hello Universe",
+            "#elif 1",
+            "Hello Galaxy",
+            "#endif",
+            "#if defined(thisIsNotDefined)",
+            "Hello World",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "Hello Universe");
+        ExpectLine(&proxy, 6, "");
+        ExpectLine(&proxy, 7, "");
+        ExpectLine(&proxy, 8, "");
+        ExpectLine(&proxy, 9, "");
+        ExpectLine(&proxy, 10, "");
+        ExpectLine(&proxy, 11, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure elif does not work when if was true", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define someStuff 1",
+            "#if defined(someStuff)",
+            "Hello World",
+            "#elif 1",
+            "Hello Universe",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "Hello World");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can use else when no elif matched", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define someStuff 1",
+            "#if 0",
+            "Hello World",
+            "#elif 0",
+            "Hello Universe",
+            "#else",
+            "Hello Galaxy",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "");
+        ExpectLine(&proxy, 7, "Hello Galaxy");
+        ExpectLine(&proxy, 8, "");
+
+        REQUIRE(proxy.Eof());
+    }
 }
