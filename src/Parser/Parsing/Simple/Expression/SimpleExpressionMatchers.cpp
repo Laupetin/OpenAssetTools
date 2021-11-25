@@ -171,12 +171,12 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
         if (p1.second->m_precedence != p2.second->m_precedence)
             return p1.second->m_precedence > p2.second->m_precedence;
 
-        return p1.first < p2.first;
+        return p1.first > p2.first;
     });
 
     while (!operators.empty())
     {
-        const auto& [operatorIndex, operatorType] = operators.back();
+        const auto [operatorIndex, operatorType] = operators.back(); // This must not be a reference
 
         auto operation = std::make_unique<SimpleExpressionBinaryOperation>(operatorType, std::move(operands[operatorIndex]), std::move(operands[operatorIndex + 1]));
         operands.erase(operands.begin() + static_cast<int>(operatorIndex));
