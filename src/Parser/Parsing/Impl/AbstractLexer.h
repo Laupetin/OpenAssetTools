@@ -317,8 +317,9 @@ public:
         {
             m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
             const auto& firstToken = m_token_cache.front();
-            while (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
-                || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get())
+            while (!m_line_cache.empty()
+                && (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
+                    || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get()))
             {
                 m_line_cache.pop_front();
                 m_line_index--;

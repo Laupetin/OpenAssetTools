@@ -6,11 +6,14 @@
 
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IParserLineStream.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 class DefinesStreamProxy final : public AbstractDirectiveStreamProxy
 {
     static constexpr const char* DEFINE_DIRECTIVE = "define";
     static constexpr const char* UNDEF_DIRECTIVE = "undef";
+    static constexpr const char* IF_DIRECTIVE = "if";
+    static constexpr const char* ELIF_DIRECTIVE = "elif";
     static constexpr const char* IFDEF_DIRECTIVE = "ifdef";
     static constexpr const char* IFNDEF_DIRECTIVE = "ifndef";
     static constexpr const char* ELSE_DIRECTIVE = "else";
@@ -43,9 +46,16 @@ public:
     };
 
 private:
+    enum class BlockMode
+    {
+        NOT_IN_BLOCK,
+        IN_BLOCK,
+        BLOCK_BLOCKED
+    };
+
     IParserLineStream* const m_stream;
     std::map<std::string, Define> m_defines;
-    std::stack<bool> m_modes;
+    std::stack<BlockMode> m_modes;
     unsigned m_ignore_depth;
 
     bool m_in_define;
@@ -56,8 +66,11 @@ private:
     static int GetLineEndEscapePos(const ParserLine& line);
     static std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
     void ContinueDefine(const ParserLine& line);
+    _NODISCARD std::unique_ptr<ISimpleExpression> ParseIfExpression(const std::string& expressionString) const;
     _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchIfDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchElIfDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchElseDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);

@@ -3,52 +3,15 @@
 #include <sstream>
 #include <utility>
 
+#include "Utils/ClassUtils.h"
 #include "AbstractParser.h"
 #include "ParserSingleInputStream.h"
+#include "Defines/DefinesIfDirectiveParser.h"
 #include "Parsing/ParsingException.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
-
-class DefinesIfDirectiveParsingState
-{
-public:
-    std::unique_ptr<ISimpleExpression> m_expression;
-};
-
-class DefinesIfDirectiveParser final : public AbstractParser<SimpleParserValue, DefinesIfDirectiveParsingState>
-{
-protected:
-    explicit DefinesIfDirectiveParser(ILexer<SimpleParserValue>* lexer)
-        : AbstractParser<SimpleParserValue, DefinesIfDirectiveParsingState>(lexer, std::make_unique<DefinesIfDirectiveParsingState>())
-    {
-    }
-
-    const std::vector<sequence_t*>& GetTestsForState() override
-    {
-        static std::vector<sequence_t*> sequences
-        {
-        };
-        return sequences;
-    }
-
-public:
-    static bool EvaluateIfDirective(std::map<std::string, DefinesStreamProxy::Define>& defines, const std::string& value)
-    {
-        std::istringstream ss(value);
-        ParserSingleInputStream inputStream(ss, "");
-        SimpleLexer::Config config{};
-        config.m_emit_new_line_tokens = false;
-        config.m_read_numbers = true;
-        config.m_read_strings = false;
-        SimpleLexer lexer(&inputStream, std::move(config));
-        DefinesIfDirectiveParser parser(&lexer);
-        if (!parser.Parse())
-            return false;
-
-        const auto& expression = parser.m_state->m_expression;
-        return expression->IsStatic() && expression->Evaluate().IsTruthy();
-    }
-};
+#include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
+#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
     : m_parameter_index(0u),
@@ -315,6 +278,101 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsig
     return true;
 }
 
+std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseIfExpression(const std::string& expressionString) const
+{
+    std::istringstream ss(expressionString);
+    ParserSingleInputStream inputStream(ss, "#if expression");
+
+    SimpleLexer::Config lexerConfig;
+    lexerConfig.m_emit_new_line_tokens = false;
+    lexerConfig.m_read_numbers = true;
+    lexerConfig.m_read_strings = false;
+    SimpleExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
+
+    SimpleLexer lexer(&inputStream, std::move(lexerConfig));
+    DefinesIfDirectiveParser parser(&lexer, m_defines);
+
+    if (!parser.Parse())
+        return nullptr;
+
+    return parser.GetParsedExpression();
+}
+
+bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+{
+    auto currentPos = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(IF_DIRECTIVE)
+        || !MatchString(line, currentPos, IF_DIRECTIVE, std::char_traits<char>::length(IF_DIRECTIVE)))
+    {
+        return false;
+    }
+
+    if (!m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
+    {
+        m_ignore_depth++;
+        return true;
+    }
+
+    if (!SkipWhitespace(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot if without an expression.");
+
+    const auto expressionString = line.m_line.substr(currentPos, line.m_line.size() - currentPos);
+
+    if (expressionString.empty())
+        throw ParsingException(CreatePos(line, currentPos), "Cannot if without an expression.");
+
+    const auto expression = ParseIfExpression(expressionString);
+    if (!expression)
+        throw ParsingException(CreatePos(line, currentPos), "Failed to parse if expression");
+
+    m_modes.push(expression->Evaluate().IsTruthy() ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK);
+
+    return true;
+}
+
+bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+{
+    auto currentPos = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(ELIF_DIRECTIVE)
+        || !MatchString(line, currentPos, ELIF_DIRECTIVE, std::char_traits<char>::length(ELIF_DIRECTIVE)))
+    {
+        return false;
+    }
+
+    if (m_ignore_depth > 0)
+        return true;
+
+    if (m_modes.empty())
+        throw ParsingException(CreatePos(line, currentPos), "Cannot use elif without if");
+
+    if (m_modes.top() == BlockMode::BLOCK_BLOCKED)
+        return true;
+
+    if(m_modes.top() == BlockMode::IN_BLOCK)
+    {
+        m_modes.top() = BlockMode::BLOCK_BLOCKED;
+        return true;
+    }
+
+    if (!SkipWhitespace(line, currentPos))
+        throw ParsingException(CreatePos(line, currentPos), "Cannot elif without an expression.");
+
+    const auto expressionString = line.m_line.substr(currentPos, line.m_line.size() - currentPos);
+
+    if (expressionString.empty())
+        throw ParsingException(CreatePos(line, currentPos), "Cannot elif without an expression.");
+
+    const auto expression = ParseIfExpression(expressionString);
+    if (!expression)
+        throw ParsingException(CreatePos(line, currentPos), "Failed to parse elif expression");
+
+    m_modes.top() = expression->Evaluate().IsTruthy() ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK;
+
+    return true;
+}
+
 bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
@@ -332,7 +390,7 @@ bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const unsig
         reverse = true;
     }
 
-    if (!m_modes.empty() && !m_modes.top())
+    if (!m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
     {
         m_ignore_depth++;
         return true;
@@ -349,9 +407,9 @@ bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const unsig
     const auto entry = m_defines.find(name);
 
     if (entry != m_defines.end())
-        m_modes.push(!reverse);
+        m_modes.push(!reverse ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK);
     else
-        m_modes.push(reverse);
+        m_modes.push(reverse ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK);
 
     return true;
 }
@@ -369,10 +427,10 @@ bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, const unsign
     if (m_ignore_depth > 0)
         return true;
 
-    if (!m_modes.empty())
-        m_modes.top() = !m_modes.top();
-    else
+    if (m_modes.empty())
         throw ParsingException(CreatePos(line, currentPos), "Cannot use else without ifdef");
+
+    m_modes.top() = m_modes.top() == BlockMode::NOT_IN_BLOCK ? BlockMode::IN_BLOCK : BlockMode::BLOCK_BLOCKED;
 
     return true;
 }
@@ -411,7 +469,7 @@ bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
 
     directiveStartPos++;
 
-    if (m_modes.empty() || m_modes.top() == true)
+    if (m_modes.empty() || m_modes.top() == BlockMode::IN_BLOCK)
     {
         if (MatchDefineDirective(line, directiveStartPos, directiveEndPos)
             || MatchUndefDirective(line, directiveStartPos, directiveEndPos))
@@ -419,6 +477,8 @@ bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
     }
 
     return MatchIfdefDirective(line, directiveStartPos, directiveEndPos)
+        || MatchIfDirective(line, directiveStartPos, directiveEndPos)
+        || MatchElIfDirective(line, directiveStartPos, directiveEndPos)
         || MatchElseDirective(line, directiveStartPos, directiveEndPos)
         || MatchEndifDirective(line, directiveStartPos, directiveEndPos);
 }
@@ -583,7 +643,7 @@ ParserLine DefinesStreamProxy::NextLine()
         ContinueDefine(line);
         line.m_line.clear();
     }
-    else if (MatchDirectives(line) || !m_modes.empty() && !m_modes.top())
+    else if (MatchDirectives(line) || !m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
     {
         line.m_line.clear();
     }

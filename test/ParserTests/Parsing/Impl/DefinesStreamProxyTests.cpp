@@ -470,4 +470,115 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Ensure simple if is working with truthy value", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#if 1",
+            "Hello World",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "Hello World");
+        ExpectLine(&proxy, 3, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure simple if is working with non-truthy value", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#if 0",
+            "Hello World",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure simple if is working with calculated values", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#if 0 || 1",
+            "Hello World",
+            "#endif",
+            "#if 0 && 1",
+            "Hello World",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "Hello World");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can handle defined operator with defined definition", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define someStuff 1",
+            "#if defined(someStuff)",
+            "Hello World",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "Hello World");
+        ExpectLine(&proxy, 4, "");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can handle defined operator with undefined definition", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define someStuff 1",
+            "#if defined(someStuff) && defined(thisIsNotDefined)",
+            "Hello World",
+            "#endif",
+            "#if defined(thisIsNotDefined)",
+            "Hello World",
+            "#endif",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "");
+        ExpectLine(&proxy, 7, "");
+
+        REQUIRE(proxy.Eof());
+    }
 }
