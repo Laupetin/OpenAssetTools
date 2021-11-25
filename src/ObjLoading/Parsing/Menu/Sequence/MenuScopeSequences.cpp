@@ -141,7 +141,7 @@ namespace menu::menu_scope_sequences
                 create.KeywordIgnoreCase("execKey"),
                 create.String().Capture(CAPTURE_KEY),
                 create.Char('{')
-                });
+            });
         }
 
     protected:
@@ -177,7 +177,7 @@ namespace menu::menu_scope_sequences
                 create.KeywordIgnoreCase("execKeyInt"),
                 create.Integer().Capture(CAPTURE_KEY),
                 create.Char('{')
-                });
+            });
         }
 
     protected:
@@ -227,9 +227,33 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
         state->m_current_menu->m_decoration = true;
     }));
     AddSequence(std::make_unique<SequenceRect>());
+    // rect480
+    // rect720
+    // pos480
+    // pos720
     AddSequence(std::make_unique<GenericIntPropertySequence>("style", [](const MenuFileParserState* state, const TokenPos&, const int value)
     {
         state->m_current_menu->m_style = value;
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_visible_expression = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_open = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_close = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_request_close = std::move(value);
+    }));
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    {
+        state->m_current_menu->m_on_esc = std::move(value);
     }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("border", [](const MenuFileParserState* state, const TokenPos&, const int value)
     {
@@ -255,6 +279,10 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_focus_color = value;
     }));
+    AddSequence(std::make_unique<GenericColorPropertySequence>("outlinecolor", [](const MenuFileParserState* state, const TokenPos&, const CommonColor value)
+    {
+        state->m_current_menu->m_outline_color = value;
+    }));
     AddSequence(std::make_unique<GenericStringPropertySequence>("background", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
     {
         state->m_current_menu->m_background = value;
@@ -274,6 +302,22 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(std::make_unique<GenericStringPropertySequence>("soundLoop", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
     {
         state->m_current_menu->m_sound_loop = value;
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_rect_x_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_rect_y_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_rect_w_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_rect_h_exp = std::move(value);
     }));
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("popup", [](const MenuFileParserState* state, const TokenPos&)
     {
@@ -295,6 +339,8 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_fade_in_amount = value;
     }));
+    AddSequence(std::make_unique<SequenceExecKey>());
+    AddSequence(std::make_unique<SequenceExecKeyInt>());
     AddSequence(std::make_unique<GenericFloatingPointPropertySequence>("blurWorld", [](const MenuFileParserState* state, const TokenPos&, const double value)
     {
         state->m_current_menu->m_blur_radius = value;
@@ -323,42 +369,4 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_text_only_focus = true;
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
-    {
-        state->m_current_menu->m_visible_expression = std::move(value);
-    }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
-    {
-        state->m_current_menu->m_rect_x_exp = std::move(value);
-    }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
-    {
-        state->m_current_menu->m_rect_y_exp = std::move(value);
-    }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
-    {
-        state->m_current_menu->m_rect_w_exp = std::move(value);
-    }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
-    {
-        state->m_current_menu->m_rect_h_exp = std::move(value);
-    }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
-    {
-        state->m_current_menu->m_on_open = std::move(value);
-    }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
-    {
-        state->m_current_menu->m_on_close = std::move(value);
-    }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
-    {
-        state->m_current_menu->m_on_request_close = std::move(value);
-    }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
-    {
-        state->m_current_menu->m_on_esc = std::move(value);
-    }));
-    AddSequence(std::make_unique<SequenceExecKey>());
-    AddSequence(std::make_unique<SequenceExecKeyInt>());
 }

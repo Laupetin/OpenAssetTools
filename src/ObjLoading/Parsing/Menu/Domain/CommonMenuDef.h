@@ -24,6 +24,7 @@ namespace menu
         CommonColor m_fore_color;
         CommonColor m_border_color;
         CommonColor m_focus_color;
+        CommonColor m_outline_color;
         std::string m_background;
         int m_owner_draw;
         int m_owner_draw_flags;
