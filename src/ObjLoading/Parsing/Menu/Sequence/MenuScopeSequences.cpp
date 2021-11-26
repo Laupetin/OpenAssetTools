@@ -53,6 +53,24 @@ namespace menu::menu_scope_sequences
         }
     };
 
+    class SequenceConsumeSemicolons final : public MenuFileParser::sequence_t
+    {
+    public:
+        SequenceConsumeSemicolons()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.Char(';')
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+        }
+    };
+
     class SequenceItemDef final : public MenuFileParser::sequence_t
     {
         static constexpr auto CAPTURE_TOKEN = 1;
@@ -370,4 +388,5 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel)
     {
         state->m_current_menu->m_text_only_focus = true;
     }));
+    AddSequence(std::make_unique<SequenceConsumeSemicolons>());
 }

@@ -141,6 +141,24 @@ namespace menu::item_scope_sequences
         }
     };
 
+    class SequenceConsumeSemicolons final : public MenuFileParser::sequence_t
+    {
+    public:
+        SequenceConsumeSemicolons()
+        {
+            const MenuMatcherFactory create(this);
+
+            AddMatchers({
+                create.Char(';')
+                });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+        }
+    };
+
     class SequenceRect final : public MenuFileParser::sequence_t
     {
         static constexpr auto CAPTURE_ALIGN_HORIZONTAL = 1;
@@ -938,4 +956,6 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel)
         ItemScopeOperations::EnsureHasNewsTickerFeatures(*state->m_current_item, pos);
         state->m_current_item->m_news_ticker_features->m_news_feed_id = value;
     }));
+
+    AddSequence(std::make_unique<SequenceConsumeSemicolons>());
 }
