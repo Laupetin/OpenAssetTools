@@ -31,10 +31,11 @@ private:
     bool m_enable_identifier_operands;
     bool m_enable_floating_point_operands;
     bool m_enable_int_operands;
+    bool m_enable_conditional_operator;
 
 public:
     SimpleExpressionMatchers();
-    SimpleExpressionMatchers(bool enableStringOperands, bool enableIdentifierOperands, bool enableFloatingPointOperands, bool enableIntOperands);
+    SimpleExpressionMatchers(bool enableStringOperands, bool enableIdentifierOperands, bool enableFloatingPointOperands, bool enableIntOperands, bool enableConditionalOperator);
     virtual ~SimpleExpressionMatchers();
     SimpleExpressionMatchers(const SimpleExpressionMatchers& other) = default;
     SimpleExpressionMatchers(SimpleExpressionMatchers&& other) noexcept = default;
@@ -52,8 +53,10 @@ private:
     std::unique_ptr<matcher_t> ParseBinaryOperationType(const supplier_t* labelSupplier) const;
     std::unique_ptr<matcher_t> ParseOperand(const supplier_t* labelSupplier) const;
     std::unique_ptr<matcher_t> ParseUnaryOperationType(const supplier_t* labelSupplier) const;
+    std::unique_ptr<matcher_t> ParseConditionalOperator(const supplier_t* labelSupplier) const;
 
     std::unique_ptr<ISimpleExpression> ProcessExpressionInParenthesis(SequenceResult<SimpleParserValue>& result) const;
+    std::unique_ptr<ISimpleExpression> ProcessConditionalOperation(std::unique_ptr<ISimpleExpression> condition, SequenceResult<SimpleParserValue>& result) const;
     std::unique_ptr<ISimpleExpression> ProcessOperand(SequenceResult<SimpleParserValue>& result) const;
 
 public:

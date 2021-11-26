@@ -12,7 +12,7 @@ static constexpr int CAPTURE_FUNCTION_NAME = SimpleExpressionMatchers::CAPTURE_O
 
 
 MenuExpressionMatchers::MenuExpressionMatchers()
-    : SimpleExpressionMatchers(true, true, true, true)
+    : SimpleExpressionMatchers(true, true, true, true, true)
 {
 }
 

@@ -22,7 +22,7 @@ namespace test::parsing::simple::expression
 
     public:
         SimpleExpressionSequence()
-            : m_expression_matchers(true, true, true, true)
+            : m_expression_matchers(true, true, true, true, true)
         {
             const SimpleMatcherFactory create(this);
 
@@ -72,7 +72,7 @@ namespace test::parsing::simple::expression
             return m_sequence->MatchSequence(m_lexer.get(), m_state.get(), m_consumed_token_count);
         }
     };
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with add operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -96,7 +96,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with subtract operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -120,7 +120,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with multiply operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -144,7 +144,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with divide operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -168,7 +168,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with remainder operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -192,7 +192,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with bitwise and operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -216,7 +216,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 0x2AAAAAA0);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with bitwise or operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -240,7 +240,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 7);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with shift left operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -264,7 +264,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with shift right operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -288,7 +288,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with greater operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -312,7 +312,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with greater equal operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -336,7 +336,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with less operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -360,7 +360,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with less equal operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -384,7 +384,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with equals operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -408,7 +408,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with not equal operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -432,7 +432,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 0);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with and operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -456,7 +456,7 @@ namespace test::parsing::simple::expression
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
-    
+
     TEST_CASE("SimpleExpressions: Can parse expression with or operation", "[parsing][simple][expression]")
     {
         SimpleExpressionTestsHelper helper;
@@ -494,7 +494,7 @@ namespace test::parsing::simple::expression
             SimpleParserValue::Character(pos, '+'),
             SimpleParserValue::Integer(pos, 220),
             SimpleParserValue::EndOfFile(pos)
-            });
+        });
 
         const auto result = helper.PerformTest();
 
@@ -522,7 +522,7 @@ namespace test::parsing::simple::expression
             SimpleParserValue::Character(pos, '*'),
             SimpleParserValue::Integer(pos, 10),
             SimpleParserValue::EndOfFile(pos)
-            });
+        });
 
         const auto result = helper.PerformTest();
 
@@ -535,5 +535,207 @@ namespace test::parsing::simple::expression
         const auto value = expression->Evaluate();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can be used with true value", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 5);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 420);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can be used with false value", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 5);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 1337);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can be used within parenthesis with true value", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 9);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 421);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can be used within parenthesis with false value", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 9);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 1338);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can have an expression as condition", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, -1),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 9);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 420);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can have an expression as true value", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 210),
+            SimpleParserValue::Character(pos, '*'),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 9);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 420);
+    }
+
+    TEST_CASE("SimpleExpressions: Simple conditional operator can have an expression as false value", "[parsing][simple][expression]")
+    {
+        SimpleExpressionTestsHelper helper;
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1336),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 9);
+
+        const auto& expression = helper.m_state->m_expression;
+        REQUIRE(expression->IsStatic());
+
+        const auto value = expression->Evaluate();
+        REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+        REQUIRE(value.m_int_value == 1337);
     }
 }
