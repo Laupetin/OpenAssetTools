@@ -14,7 +14,6 @@ namespace menu
 
     private:
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
-        static constexpr auto CAPTURE_VALUE = 2;
 
         const callback_t m_set_callback;
 

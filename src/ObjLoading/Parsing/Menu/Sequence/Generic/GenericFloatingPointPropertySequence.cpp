@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
 using namespace menu;
@@ -11,9 +12,10 @@ GenericFloatingPointPropertySequence::GenericFloatingPointPropertySequence(std::
 {
     const MenuMatcherFactory create(this);
 
+    AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
     AddMatchers({
         create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Numeric().Capture(CAPTURE_VALUE)
+        create.NumericExpression()
     });
 }
 
@@ -21,7 +23,7 @@ void GenericFloatingPointPropertySequence::ProcessMatch(MenuFileParserState* sta
 {
     if (m_set_callback)
     {
-        const auto value = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_VALUE));
+        const auto value = MenuMatcherFactory::TokenNumericExpressionValue(result);
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value);
     }
 }

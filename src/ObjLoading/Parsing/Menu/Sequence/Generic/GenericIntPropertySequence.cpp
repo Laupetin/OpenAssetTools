@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
 using namespace menu;
@@ -11,9 +12,10 @@ GenericIntPropertySequence::GenericIntPropertySequence(std::string keywordName, 
 {
     const MenuMatcherFactory create(this);
 
+    AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
     AddMatchers({
         create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Integer().Capture(CAPTURE_VALUE)
+        create.IntExpression(), // value
     });
 }
 
@@ -21,7 +23,7 @@ void GenericIntPropertySequence::ProcessMatch(MenuFileParserState* state, Sequen
 {
     if (m_set_callback)
     {
-        const auto value = result.NextCapture(CAPTURE_VALUE).IntegerValue();
+        const auto value = MenuMatcherFactory::TokenIntExpressionValue(result);
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value);
     }
 }
