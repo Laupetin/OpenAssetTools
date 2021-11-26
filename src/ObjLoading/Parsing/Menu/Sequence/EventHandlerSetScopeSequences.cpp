@@ -270,6 +270,29 @@ namespace menu::event_handler_set_scope_sequences
         }
     };
 
+    class SequenceUiScriptStatement final : public SequenceGenericScriptStatement
+    {
+    public:
+        explicit SequenceUiScriptStatement(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<SimpleParserValue>>>> matchers)
+            : SequenceGenericScriptStatement()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddMatchers({
+                create.And({
+                    create.ScriptKeyword("uiScript"),
+                    create.And(matchers)
+                }).Capture(CAPTURE_SCRIPT_TOKEN),
+                create.Optional(create.Char(';'))
+            });
+        }
+
+        static std::unique_ptr<SequenceUiScriptStatement> Create(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<SimpleParserValue>>>> matchers)
+        {
+            return std::make_unique<SequenceUiScriptStatement>(matchers);
+        }
+    };
+
     class SequenceSetPlayerData final : public SequenceGenericScriptStatement
     {
     public:
@@ -652,6 +675,30 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("togglePlayerMute")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
     AddSequence(std::make_unique<SequenceLerp>());
+
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StartServer")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadArenas")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadGameInfo")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearError")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Quit")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Controls")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Leave")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeingame")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("update"), create.ScriptText()}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startSingleplayer")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("getLanguage")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("verifyLanguage")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("updateLanguage")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("mutePlayer")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("openMenuOnDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+    AddSequence(
+        SequenceUiScriptStatement::Create({create.ScriptKeyword("openMenuOnDvarNot"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeMenuOnDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+    AddSequence(SequenceUiScriptStatement::Create(
+        {create.ScriptKeyword("closeMenuOnDvarNot"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("setRecommended")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearLoadErrorsSummary")}));
+    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearClientMatchData")}));
 
     AddSequence(std::make_unique<SequenceIf>());
     AddSequence(std::make_unique<SequenceElseIf>());

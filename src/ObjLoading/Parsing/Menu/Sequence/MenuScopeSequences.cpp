@@ -79,10 +79,6 @@ namespace menu::menu_scope_sequences
 
     class SequenceRect final : public MenuFileParser::sequence_t
     {
-        static constexpr auto CAPTURE_X = 1;
-        static constexpr auto CAPTURE_Y = 2;
-        static constexpr auto CAPTURE_W = 3;
-        static constexpr auto CAPTURE_H = 4;
         static constexpr auto CAPTURE_ALIGN_HORIZONTAL = 5;
         static constexpr auto CAPTURE_ALIGN_VERTICAL = 6;
 
@@ -91,12 +87,13 @@ namespace menu::menu_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
+            AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
             AddMatchers({
                 create.KeywordIgnoreCase("rect"),
-                create.Numeric().Capture(CAPTURE_X),
-                create.Numeric().Capture(CAPTURE_Y),
-                create.Numeric().Capture(CAPTURE_W),
-                create.Numeric().Capture(CAPTURE_H),
+                create.NumericExpression(), // x
+                create.NumericExpression(), // y
+                create.NumericExpression(), // w
+                create.NumericExpression(), // h
                 create.Optional(create.And({
                     create.Integer().Capture(CAPTURE_ALIGN_HORIZONTAL),
                     create.Integer().Capture(CAPTURE_ALIGN_VERTICAL)
@@ -109,12 +106,16 @@ namespace menu::menu_scope_sequences
         {
             assert(state->m_current_menu);
 
+            const auto x = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            const auto y = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            const auto w = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            const auto h = MenuMatcherFactory::TokenNumericExpressionValue(result);
             CommonRect rect
             {
-                MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_X)),
-                MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_Y)),
-                MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_W)),
-                MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_H)),
+                x,
+                y,
+                w,
+                h,
                 0, 0
             };
 
