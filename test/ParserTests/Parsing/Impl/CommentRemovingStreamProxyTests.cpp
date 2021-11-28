@@ -223,4 +223,30 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("CommentRemovingStreamProxy: Can have multiple comment blocks in one line", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "Hello/* lovely*/ world and/* beautiful*/ universe",
+            "Hello/* lovely*/ world// and beautiful universe",
+        };
+
+        MockParserLineStream mockStream(lines);
+        CommentRemovingStreamProxy proxy(&mockStream);
+
+        {
+            auto line = proxy.NextLine();
+            REQUIRE(line.m_line_number == 1);
+            REQUIRE(line.m_line == "Hello world and universe");
+        }
+
+        {
+            auto line = proxy.NextLine();
+            REQUIRE(line.m_line_number == 2);
+            REQUIRE(line.m_line == "Hello world");
+        }
+
+        REQUIRE(proxy.Eof());
+    }
 }

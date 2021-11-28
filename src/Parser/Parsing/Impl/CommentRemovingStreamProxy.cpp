@@ -29,6 +29,7 @@ ParserLine CommentRemovingStreamProxy::NextLine()
             if (c == '*' && i + 1 < line.m_line.size() && line.m_line[i + 1] == '/')
             {
                 line.m_line.erase(multiLineCommentStart, i + 2 - multiLineCommentStart);
+                i = multiLineCommentStart - 1;
                 multiLineCommentStart = 0;
                 m_inside_multi_line_comment = false;
             }
