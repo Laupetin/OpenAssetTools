@@ -15,7 +15,8 @@ MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr),
-    m_zone_state(nullptr)
+      m_zone_state(nullptr),
+      m_permissive_mode(false)
 {
     OpenBaseStream(stream, std::move(includeCallback));
     SetupStreamProxies();
@@ -26,7 +27,8 @@ MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const
     : m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr),
-      m_zone_state(nullptr)
+      m_zone_state(nullptr),
+      m_permissive_mode(false)
 {
     OpenBaseStream(stream, nullptr);
     SetupStreamProxies();
@@ -117,6 +119,11 @@ void MenuFileReader::IncludeZoneState(const MenuAssetZoneState* zoneState)
     m_zone_state = zoneState;
 }
 
+void MenuFileReader::SetPermissiveMode(const bool usePermissiveMode)
+{
+    m_permissive_mode = usePermissiveMode;
+}
+
 std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
 {
     SimpleLexer::Config lexerConfig;
@@ -126,7 +133,7 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
     MenuExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
 
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
-    const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level);
+    const auto parser = std::make_unique<MenuFileParser>(lexer.get(), m_feature_level, m_permissive_mode, m_zone_state);
 
     if (!parser->Parse())
     {

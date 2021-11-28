@@ -22,13 +22,13 @@ namespace test::parsing::menu::sequence::event_handler_set
 
         unsigned m_consumed_token_count;
 
-        explicit EventHandlerSetSequenceTestsHelper(FeatureLevel featureLevel)
-            : m_state(std::make_unique<MenuFileParserState>(featureLevel)),
+        explicit EventHandlerSetSequenceTestsHelper(FeatureLevel featureLevel, bool permissive)
+            : m_state(std::make_unique<MenuFileParserState>(featureLevel, false)),
               m_event_handler_set(std::make_unique<CommonEventHandlerSet>()),
               m_consumed_token_count(0u)
         {
             EventHandlerSetScopeSequences scopeSequences(m_all_sequences, m_scope_sequences);
-            scopeSequences.AddSequences(m_state->m_feature_level);
+            scopeSequences.AddSequences(m_state->m_feature_level, permissive);
 
             m_state->m_current_menu = m_state->m_menus.emplace_back(std::make_unique<CommonMenuDef>()).get();
             m_state->m_current_event_handler_set = m_event_handler_set.get();
@@ -54,7 +54,10 @@ namespace test::parsing::menu::sequence::event_handler_set
             {
                 const auto couldMatch = sequence->MatchSequence(m_lexer.get(), m_state.get(), m_consumed_token_count);
                 if (couldMatch)
+                {
+                    m_lexer->PopTokens(static_cast<int>(m_consumed_token_count));
                     return couldMatch;
+                }
             }
 
             return false;
@@ -64,7 +67,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 #pragma region General
     TEST_CASE("EventHandlerSetScopeSequences: Keyword casing doesnt matter", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("fadein")),
@@ -84,7 +87,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Invalid keywords are not recognized", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("noScriptCommand")),
@@ -99,6 +102,43 @@ namespace test::parsing::menu::sequence::event_handler_set
         REQUIRE(helper.m_consumed_token_count == 0);
     }
 
+    TEST_CASE("EventHandlerSetScopeSequences: Permissive mode ignores unknown script tokens and adds them to script", "[parsing][sequence][menu]")
+    {
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, true);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("uiScript")),
+            SimpleParserValue::Identifier(pos, new std::string("somethingUnknown")),
+            SimpleParserValue::String(pos, new std::string("anArgumentForTheUnknownScript")),
+            SimpleParserValue::Character(pos, ';'),
+            SimpleParserValue::EndOfFile(pos)
+        });
+
+        auto result = helper.PerformTest();
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 1);
+        auto script = helper.m_state->m_current_script.str();
+        REQUIRE(script == R"("uiScript" )");
+
+        result = helper.PerformTest();
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 1);
+        script = helper.m_state->m_current_script.str();
+        REQUIRE(script == R"("uiScript" "somethingUnknown" )");
+
+        result = helper.PerformTest();
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 1);
+        script = helper.m_state->m_current_script.str();
+        REQUIRE(script == R"("uiScript" "somethingUnknown" "anArgumentForTheUnknownScript" )");
+
+        result = helper.PerformTest();
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 1);
+        script = helper.m_state->m_current_script.str();
+        REQUIRE(script == R"("uiScript" "somethingUnknown" "anArgumentForTheUnknownScript" ; )");
+    }
+
 #pragma endregion
 
     void TestGenericScriptStatement(const std::initializer_list<Movable<SimpleParserValue>> tokens, const std::string& expectedScript)
@@ -109,7 +149,7 @@ namespace test::parsing::menu::sequence::event_handler_set
         tokenList.emplace_back(SimpleParserValue::Character(TokenPos(), ';'));
         tokenList.emplace_back(SimpleParserValue::EndOfFile(TokenPos()));
 
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         helper.Tokens(std::move(tokenList));
 
         const auto result = helper.PerformTest();
@@ -220,7 +260,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure cannot use setColor with no color", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("setColor")),
@@ -761,7 +801,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure setLocalVarBool is setLocalVar handler on non-static value", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarBool")),
@@ -796,7 +836,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure setLocalVarInt is setLocalVar handler on non-static value", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarInt")),
@@ -831,7 +871,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure setLocalVarFloat is setLocalVar handler on non-static value", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarFloat")),
@@ -866,7 +906,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure setLocalVarString is setLocalVar handler on non-static value", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarString")),
@@ -905,7 +945,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Closing block terminates EventHandlerSet", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -926,7 +966,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Closing block finishes current script", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -955,7 +995,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: If opens new condition", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("if")),
@@ -1001,7 +1041,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: If applies current script", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("if")),
@@ -1040,7 +1080,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: ElseIf opens new condition", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1094,7 +1134,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: ElseIf applies current script", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1138,7 +1178,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: ElseIf cannot be specified when not in if", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1155,7 +1195,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: ElseIf cannot be specified when else was already used", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1177,7 +1217,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Else switches to else element", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1209,7 +1249,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Else keeps auto_skip value", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1241,7 +1281,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Else cannot be specified when not in if", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1255,7 +1295,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: Else cannot be specified when else was already used", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1274,7 +1314,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: CloseBlock closes if statements", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1299,7 +1339,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: CloseBlock closes nested if statements to parent if statement", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1328,7 +1368,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: CloseBlock closes nested if statements to parent else statement", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1358,7 +1398,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: CloseBlock closes all autoskip conditions to parent if statement", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),
@@ -1391,7 +1431,7 @@ namespace test::parsing::menu::sequence::event_handler_set
 
     TEST_CASE("EventHandlerSetScopeSequences: CloseBlock closes all autoskip conditions to base", "[parsing][sequence][menu]")
     {
-        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4);
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Character(pos, '}'),

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "Pool/GlobalAssetPool.h"
@@ -101,6 +102,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         });
 
         reader.IncludeZoneState(zoneState);
+        reader.SetPermissiveMode(ObjLoading::Configuration.PermissiveMenuParsing);
 
         const auto menuFileResult = reader.ReadMenuFile();
         if (menuFileResult)

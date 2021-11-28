@@ -25,6 +25,7 @@ namespace menu
         std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
 
         const MenuAssetZoneState* m_zone_state;
+        bool m_permissive_mode;
 
         bool OpenBaseStream(std::istream& stream, include_callback_t includeCallback);
         void SetupDefinesProxy();
@@ -38,6 +39,7 @@ namespace menu
         MenuFileReader(std::istream& stream, std::string fileName, FeatureLevel featureLevel, include_callback_t includeCallback);
 
         void IncludeZoneState(const MenuAssetZoneState* zoneState);
+        void SetPermissiveMode(bool usePermissiveMode);
 
         std::unique_ptr<ParsingResult> ReadMenuFile();
     };

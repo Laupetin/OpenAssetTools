@@ -9,14 +9,14 @@
 
 using namespace menu;
 
-MenuFileParser::MenuFileParser(SimpleLexer* lexer, const FeatureLevel featureLevel)
-    : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel))
+MenuFileParser::MenuFileParser(SimpleLexer* lexer, const FeatureLevel featureLevel, bool permissiveMode)
+    : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel, permissiveMode))
 {
     CreateSequenceCollections();
 }
 
-MenuFileParser::MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, const MenuAssetZoneState* zoneState)
-    : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel, zoneState))
+MenuFileParser::MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, bool permissiveMode, const MenuAssetZoneState* zoneState)
+    : AbstractParser(lexer, std::make_unique<MenuFileParserState>(featureLevel, permissiveMode, zoneState))
 {
     CreateSequenceCollections();
 }
@@ -38,24 +38,25 @@ void MenuFileParser::CreateSequenceCollections()
     m_event_handler_set_scope_tests.clear();
 
     const auto featureLevel = m_state->m_feature_level;
+    const auto permissive = m_state->m_permissive_mode;
 
     NoScopeSequences noScopeSequences(m_all_tests, m_no_scope_tests);
-    noScopeSequences.AddSequences(featureLevel);
+    noScopeSequences.AddSequences(featureLevel, permissive);
 
     GlobalScopeSequences globalScopeSequences(m_all_tests, m_global_scope_tests);
-    globalScopeSequences.AddSequences(featureLevel);
+    globalScopeSequences.AddSequences(featureLevel, permissive);
 
     MenuScopeSequences menuPropertySequences(m_all_tests, m_menu_scope_tests);
-    menuPropertySequences.AddSequences(featureLevel);
+    menuPropertySequences.AddSequences(featureLevel, permissive);
 
     ItemScopeSequences itemPropertySequences(m_all_tests, m_item_scope_tests);
-    itemPropertySequences.AddSequences(featureLevel);
+    itemPropertySequences.AddSequences(featureLevel, permissive);
 
     FunctionScopeSequences functionPropertySequences(m_all_tests, m_function_scope_tests);
-    functionPropertySequences.AddSequences(featureLevel);
+    functionPropertySequences.AddSequences(featureLevel, permissive);
 
     EventHandlerSetScopeSequences eventHandlerSetScopeSequences(m_all_tests, m_event_handler_set_scope_tests);
-    eventHandlerSetScopeSequences.AddSequences(featureLevel);
+    eventHandlerSetScopeSequences.AddSequences(featureLevel, permissive);
 }
 
 const std::vector<MenuFileParser::sequence_t*>& MenuFileParser::GetTestsForState()

@@ -22,8 +22,8 @@ namespace menu
         AbstractScopeSequenceHolder(const AbstractScopeSequenceHolder& other) = delete;
         AbstractScopeSequenceHolder(AbstractScopeSequenceHolder&& other) noexcept = default;
         AbstractScopeSequenceHolder& operator=(const AbstractScopeSequenceHolder& other) = delete;
-        AbstractScopeSequenceHolder& operator=(AbstractScopeSequenceHolder&& other) noexcept = default;
+        AbstractScopeSequenceHolder& operator=(AbstractScopeSequenceHolder&& other) noexcept = delete;
 
-        virtual void AddSequences(FeatureLevel featureLevel) = 0;
+        virtual void AddSequences(FeatureLevel featureLevel, bool permissive) = 0;
     };
 }

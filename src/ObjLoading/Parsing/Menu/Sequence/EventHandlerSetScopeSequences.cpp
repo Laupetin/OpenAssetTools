@@ -195,6 +195,59 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
+            if (!state->m_current_script_statement_terminated)
+            {
+                state->m_current_script << "; ";
+                state->m_current_script_statement_terminated = true;
+            }
+        }
+    };
+
+    class SequenceSkipScriptToken final : public MenuFileParser::sequence_t
+    {
+        static constexpr auto CAPTURE_SCRIPT_TOKEN = 1;
+
+    public:
+        SequenceSkipScriptToken()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddMatchers({
+                create.Or({
+                    create.Text(),
+                    create.Numeric()
+                }).Capture(CAPTURE_SCRIPT_TOKEN)
+            });
+        }
+
+    protected:
+        void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            const auto& capture = result.NextCapture(CAPTURE_SCRIPT_TOKEN);
+
+            switch(capture.m_type)
+            {
+            case SimpleParserValueType::STRING:
+                state->m_current_script << "\"" << capture.StringValue() << "\" ";
+                break;
+
+            case SimpleParserValueType::IDENTIFIER:
+                state->m_current_script << "\"" << capture.IdentifierValue() << "\" ";
+                break;
+
+            case SimpleParserValueType::INTEGER:
+                state->m_current_script << "\"" << capture.IntegerValue() << "\" ";
+                break;
+
+            case SimpleParserValueType::FLOATING_POINT:
+                state->m_current_script << "\"" << capture.FloatingPointValue() << "\" ";
+                break;
+
+            default:
+                throw ParsingException(capture.GetPos(), "Invalid script token type for skipping");
+            }
+
+            state->m_current_script_statement_terminated = false;
         }
     };
 
@@ -611,7 +664,7 @@ EventHandlerSetScopeSequences::EventHandlerSetScopeSequences(std::vector<std::un
 {
 }
 
-void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
+void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive)
 {
     AddSequence(std::make_unique<SequenceSkipEmptyStatements>());
     // If else and stuff
@@ -704,4 +757,9 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel)
     AddSequence(std::make_unique<SequenceElseIf>());
     AddSequence(std::make_unique<SequenceElse>());
     AddSequence(std::make_unique<SequenceCloseBlock>());
+
+    if (permissive)
+    {
+        AddSequence(std::make_unique<SequenceSkipScriptToken>());
+    }
 }

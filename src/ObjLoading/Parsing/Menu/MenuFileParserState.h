@@ -30,6 +30,7 @@ namespace menu
         };
 
         const FeatureLevel m_feature_level;
+        const bool m_permissive_mode;
 
         std::vector<std::string> m_menus_to_load;
         std::vector<std::unique_ptr<CommonFunctionDef>> m_functions;
@@ -45,10 +46,11 @@ namespace menu
         CommonEventHandlerSet* m_current_event_handler_set;
         
         std::ostringstream m_current_script;
+        bool m_current_script_statement_terminated;
         std::stack<EventHandlerConditionState> m_condition_stack;
         CommonEventHandlerSet* m_current_nested_event_handler_set;
 
-        explicit MenuFileParserState(FeatureLevel featureLevel);
-        MenuFileParserState(FeatureLevel featureLevel, const MenuAssetZoneState* zoneState);
+        explicit MenuFileParserState(FeatureLevel featureLevel, bool permissiveMode);
+        MenuFileParserState(FeatureLevel featureLevel, bool permissiveMode, const MenuAssetZoneState* zoneState);
     };
 }

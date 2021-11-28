@@ -14,19 +14,21 @@ MenuFileParserState::EventHandlerConditionState::EventHandlerConditionState(Comm
 {
 }
 
-MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel)
+MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel, const bool permissiveMode)
     : m_feature_level(featureLevel),
+      m_permissive_mode(permissiveMode),
       m_in_global_scope(false),
       m_current_function(nullptr),
       m_current_menu(nullptr),
       m_current_item(nullptr),
       m_current_event_handler_set(nullptr),
+      m_current_script_statement_terminated(true),
       m_current_nested_event_handler_set(nullptr)
 {
 }
 
-MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel, const MenuAssetZoneState* zoneState)
-    : MenuFileParserState(featureLevel)
+MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel, const bool permissiveMode, const MenuAssetZoneState* zoneState)
+    : MenuFileParserState(featureLevel, permissiveMode)
 {
     for (const auto& function : zoneState->m_functions)
     {

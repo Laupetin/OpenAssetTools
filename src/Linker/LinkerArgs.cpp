@@ -70,6 +70,12 @@ const CommandLineOption* const OPTION_LOAD =
     .Reusable()
     .Build();
 
+const CommandLineOption* const OPTION_MENU_PERMISSIVE =
+    CommandLineOption::Builder::Create()
+    .WithLongName("menu-permissive")
+    .WithDescription("Allows the usage of unknown script commands that can be compiled.")
+    .Build();
+
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 {
     OPTION_HELP,
@@ -79,7 +85,8 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_ASSET_SEARCH_PATH,
     OPTION_GDT_SEARCH_PATH,
     OPTION_SOURCE_SEARCH_PATH,
-    OPTION_LOAD
+    OPTION_LOAD,
+    OPTION_MENU_PERMISSIVE
 };
 
 LinkerArgs::LinkerArgs()
@@ -256,6 +263,10 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
     // -l; --load
     if (m_argument_parser.IsOptionSpecified(OPTION_LOAD))
         m_zones_to_load = m_argument_parser.GetParametersForOption(OPTION_LOAD);
+
+    // --menu-permissive
+    if (m_argument_parser.IsOptionSpecified(OPTION_MENU_PERMISSIVE))
+        ObjLoading::Configuration.PermissiveMenuParsing = true;
 
     return true;
 }

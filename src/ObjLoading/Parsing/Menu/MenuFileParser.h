@@ -26,8 +26,8 @@ namespace menu
         const std::vector<sequence_t*>& GetTestsForState() override;
 
     public:
-        MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel);
-        MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, const MenuAssetZoneState* zoneState);
+        MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, bool permissiveMode);
+        MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, bool permissiveMode, const MenuAssetZoneState* zoneState);
         _NODISCARD MenuFileParserState* GetState() const;
     };
 }
