@@ -138,6 +138,10 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
     if (!parser->Parse())
     {
         std::cout << "Parsing menu file failed!" << std::endl;
+
+        const auto* parserEndState = parser->GetState();
+        if(parserEndState->m_current_event_handler_set && !parserEndState->m_permissive_mode)
+            std::cout << "You can use the --menu-permissive option to try to compile the event handler script anyway." << std::endl;
         return nullptr;
     }
 
