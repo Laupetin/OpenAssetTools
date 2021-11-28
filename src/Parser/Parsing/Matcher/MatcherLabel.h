@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 #include "Utils/ClassUtils.h"
 #include "Parsing/IParserValue.h"
 #include "AbstractMatcher.h"
@@ -35,6 +37,7 @@ protected:
     {
         AbstractMatcher<TokenType>* matcher = m_supplier->GetMatcherForLabel(m_label);
 
+        assert(matcher);
         if (matcher)
             return matcher->Match(lexer, tokenOffset);
 

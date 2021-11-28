@@ -150,7 +150,7 @@ namespace menu::item_scope_sequences
 
             AddMatchers({
                 create.Char(';')
-                });
+            });
         }
 
     protected:
@@ -213,18 +213,16 @@ namespace menu::item_scope_sequences
 
     class SequenceOrigin final : public MenuFileParser::sequence_t
     {
-        static constexpr auto CAPTURE_X = 1;
-        static constexpr auto CAPTURE_Y = 2;
-
     public:
         SequenceOrigin()
         {
             const MenuMatcherFactory create(this);
 
+            AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
             AddMatchers({
                 create.KeywordIgnoreCase("origin"),
-                create.Numeric().Capture(CAPTURE_X),
-                create.Numeric().Capture(CAPTURE_Y)
+                create.NumericExpression(), // x
+                create.NumericExpression() // y
             });
         }
 
@@ -233,8 +231,8 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            state->m_current_item->m_rect.x = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_X));
-            state->m_current_item->m_rect.y = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_Y));
+            state->m_current_item->m_rect.x = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            state->m_current_item->m_rect.y = MenuMatcherFactory::TokenNumericExpressionValue(result);
         }
     };
 
@@ -249,11 +247,12 @@ namespace menu::item_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
+            AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
             AddMatchers({
                 create.KeywordIgnoreCase("decodeEffect"),
-                create.Integer().Capture(CAPTURE_LETTER_TIME),
-                create.Integer().Capture(CAPTURE_DECAY_START_TIME),
-                create.Integer().Capture(CAPTURE_DECAY_DURATION),
+                create.IntExpression(), // letter time
+                create.IntExpression(), // decay start time
+                create.IntExpression(), // decay duration
             });
         }
 
@@ -262,9 +261,9 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            state->m_current_item->m_fx_letter_time = result.NextCapture(CAPTURE_LETTER_TIME).IntegerValue();
-            state->m_current_item->m_fx_decay_start_time = result.NextCapture(CAPTURE_DECAY_START_TIME).IntegerValue();
-            state->m_current_item->m_fx_decay_duration = result.NextCapture(CAPTURE_DECAY_DURATION).IntegerValue();
+            state->m_current_item->m_fx_letter_time = MenuMatcherFactory::TokenIntExpressionValue(result);
+            state->m_current_item->m_fx_decay_start_time = MenuMatcherFactory::TokenIntExpressionValue(result);
+            state->m_current_item->m_fx_decay_duration = MenuMatcherFactory::TokenIntExpressionValue(result);
         }
     };
 
@@ -319,21 +318,19 @@ namespace menu::item_scope_sequences
     {
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_DVAR_NAME = 2;
-        static constexpr auto CAPTURE_DEF_VALUE = 3;
-        static constexpr auto CAPTURE_MIN_VALUE = 4;
-        static constexpr auto CAPTURE_MAX_VALUE = 5;
 
     public:
         SequenceDvarFloat()
         {
             const MenuMatcherFactory create(this);
 
+            AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
             AddMatchers({
                 create.KeywordIgnoreCase("dvarFloat").Capture(CAPTURE_FIRST_TOKEN),
                 create.Text().Capture(CAPTURE_DVAR_NAME),
-                create.Numeric().Capture(CAPTURE_DEF_VALUE),
-                create.Numeric().Capture(CAPTURE_MIN_VALUE),
-                create.Numeric().Capture(CAPTURE_MAX_VALUE),
+                create.NumericExpression(), // def value
+                create.NumericExpression(), // min value
+                create.NumericExpression(), // max value
             });
         }
 
@@ -344,9 +341,9 @@ namespace menu::item_scope_sequences
 
             ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
             state->m_current_item->m_dvar = MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_DVAR_NAME));
-            state->m_current_item->m_edit_field_features->m_def_val = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_DEF_VALUE));
-            state->m_current_item->m_edit_field_features->m_min_val = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_MIN_VALUE));
-            state->m_current_item->m_edit_field_features->m_max_val = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_MAX_VALUE));
+            state->m_current_item->m_edit_field_features->m_def_val = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            state->m_current_item->m_edit_field_features->m_min_val = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            state->m_current_item->m_edit_field_features->m_max_val = MenuMatcherFactory::TokenNumericExpressionValue(result);
         }
     };
 
@@ -392,19 +389,19 @@ namespace menu::item_scope_sequences
     {
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_STEP_NAME = 2;
-        static constexpr auto CAPTURE_STEP_VALUE = 3;
 
     public:
         SequenceDvarFloatList()
         {
             const MenuMatcherFactory create(this);
 
+            AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
             AddMatchers({
                 create.KeywordIgnoreCase("dvarFloatList").Capture(CAPTURE_FIRST_TOKEN),
                 create.Char('{'),
                 create.OptionalLoop(create.And({
                     create.Text().Capture(CAPTURE_STEP_NAME),
-                    create.Numeric().Capture(CAPTURE_STEP_VALUE),
+                    create.NumericExpression(),
                 })),
                 create.Char('}')
             });
@@ -421,7 +418,7 @@ namespace menu::item_scope_sequences
             while (result.HasNextCapture(CAPTURE_STEP_NAME))
             {
                 multiValueFeatures->m_step_names.emplace_back(MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_STEP_NAME)));
-                multiValueFeatures->m_double_values.emplace_back(MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_STEP_VALUE)));
+                multiValueFeatures->m_double_values.emplace_back(MenuMatcherFactory::TokenNumericExpressionValue(result));
             }
         }
     };
