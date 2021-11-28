@@ -504,6 +504,7 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
     std::ostringstream currentValue;
     auto pos = parameterStart + 1;
     auto valueHasStarted = false;
+    auto parenthesisDepth = 0;
     while (true)
     {
         if (pos >= line.m_line.size())
@@ -518,11 +519,26 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
             currentValue.str(std::string());
             valueHasStarted = false;
         }
+        else if(c == '(')
+        {
+            valueHasStarted = true;
+            parenthesisDepth++;
+            currentValue << c;
+        }
         else if (c == ')')
         {
-            parameterValues.emplace_back(currentValue.str());
-            parameterEnd = pos + 1;
-            break;
+            if(parenthesisDepth > 0)
+            {
+                valueHasStarted = true;
+                parenthesisDepth--;
+                currentValue << c;
+            }
+            else
+            {
+                parameterValues.emplace_back(currentValue.str());
+                parameterEnd = pos + 1;
+                break;
+            }
         }
         else if (valueHasStarted || !isspace(c))
         {
