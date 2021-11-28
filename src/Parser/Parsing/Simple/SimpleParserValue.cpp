@@ -41,10 +41,26 @@ SimpleParserValue SimpleParserValue::Integer(const TokenPos pos, const int value
     return pv;
 }
 
+SimpleParserValue SimpleParserValue::Integer(const TokenPos pos, const int value, const bool hasSignPrefix)
+{
+    SimpleParserValue pv(pos, SimpleParserValueType::INTEGER);
+    pv.m_value.int_value = value;
+    pv.m_has_sign_prefix = hasSignPrefix;
+    return pv;
+}
+
 SimpleParserValue SimpleParserValue::FloatingPoint(const TokenPos pos, const double value)
 {
     SimpleParserValue pv(pos, SimpleParserValueType::FLOATING_POINT);
     pv.m_value.double_value = value;
+    return pv;
+}
+
+SimpleParserValue SimpleParserValue::FloatingPoint(const TokenPos pos, const double value, const bool hasSignPrefix)
+{
+    SimpleParserValue pv(pos, SimpleParserValueType::FLOATING_POINT);
+    pv.m_value.double_value = value;
+    pv.m_has_sign_prefix = hasSignPrefix;
     return pv;
 }
 
@@ -67,6 +83,7 @@ SimpleParserValue::SimpleParserValue(const TokenPos pos, const SimpleParserValue
     : m_pos(pos),
       m_type(type),
       m_hash(0),
+      m_has_sign_prefix(false),
       m_value{}
 {
 }
@@ -91,6 +108,7 @@ SimpleParserValue::SimpleParserValue(SimpleParserValue&& other) noexcept
     : m_pos(other.m_pos),
       m_type(other.m_type),
       m_hash(other.m_hash),
+      m_has_sign_prefix(other.m_has_sign_prefix),
       m_value(other.m_value)
 {
     other.m_value = ValueType();
@@ -102,6 +120,7 @@ SimpleParserValue& SimpleParserValue::operator=(SimpleParserValue&& other) noexc
     m_type = other.m_type;
     m_value = other.m_value;
     m_hash = other.m_hash;
+    m_has_sign_prefix = other.m_has_sign_prefix;
     other.m_value = ValueType();
 
     return *this;

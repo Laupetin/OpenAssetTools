@@ -7,6 +7,7 @@
 #include "SimpleMatcherKeywordPrefix.h"
 #include "SimpleMatcherMultiCharacter.h"
 #include "SimpleMatcherValueType.h"
+#include "SimpleMatcherValueTypeAndHasSignPrefix.h"
 
 SimpleMatcherFactory::SimpleMatcherFactory(const IMatcherForLabelSupplier<SimpleParserValue>* labelSupplier)
     : AbstractMatcherFactory(labelSupplier)
@@ -48,9 +49,19 @@ MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Integer() const
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherValueType>(SimpleParserValueType::INTEGER));
 }
 
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::IntegerWithSign() const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherValueTypeAndHasSignPrefix>(SimpleParserValueType::INTEGER, true));
+}
+
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::FloatingPoint() const
 {
     return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherValueType>(SimpleParserValueType::FLOATING_POINT));
+}
+
+MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::FloatingPointWithSign() const
+{
+    return MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<SimpleMatcherValueTypeAndHasSignPrefix>(SimpleParserValueType::FLOATING_POINT, true));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> SimpleMatcherFactory::Char(char c) const

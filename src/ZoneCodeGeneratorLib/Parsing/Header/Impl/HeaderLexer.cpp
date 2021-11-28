@@ -138,10 +138,11 @@ HeaderParserValue HeaderLexer::GetNextToken()
                 if(isdigit(c))
                 {
                     bool isFloatingPointValue;
+                    bool hasSignPrefix;
                     double doubleValue;
                     int integerValue;
 
-                    ReadNumber(isFloatingPointValue, doubleValue, integerValue);
+                    ReadNumber(isFloatingPointValue, hasSignPrefix, doubleValue, integerValue);
 
                     if (isFloatingPointValue)
                         return HeaderParserValue::FloatingPoint(pos, doubleValue);

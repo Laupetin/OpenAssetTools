@@ -1,6 +1,9 @@
 #include <catch2/catch.hpp>
 
+#include <sstream>
+
 #include "Parsing/Impl/AbstractParser.h"
+#include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Utils/ClassUtils.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
@@ -33,22 +36,54 @@ namespace test::parsing::simple::expression
     protected:
         void ProcessMatch(SimpleExpressionTestState* state, SequenceResult<SimpleParserValue>& result) const override
         {
+            if (state->m_expression)
+                throw ParsingException(TokenPos(), "Expression already set");
+
             state->m_expression = m_expression_matchers.ProcessExpression(result);
+        }
+    };
+
+    class SimpleExpressionParser final : public AbstractParser<SimpleParserValue, SimpleExpressionTestState>
+    {
+    public:
+        explicit SimpleExpressionParser(ILexer<SimpleParserValue>* lexer)
+            : AbstractParser(lexer, std::make_unique<SimpleExpressionTestState>())
+        {
+        }
+
+        _NODISCARD SimpleExpressionTestState* GetState() const
+        {
+            return m_state.get();
+        }
+
+    protected:
+        const std::vector<sequence_t*>& GetTestsForState() override
+        {
+            static std::vector<sequence_t*> tests({
+                new SimpleExpressionSequence()
+            });
+
+            return tests;
         }
     };
 
     class SimpleExpressionTestsHelper
     {
     public:
-        std::unique_ptr<SimpleExpressionTestState> m_state;
+        SimpleExpressionTestState* m_state;
+        std::unique_ptr<SimpleExpressionTestState> m_state_holder;
+        std::string m_str;
+        std::istringstream m_ss;
+        std::unique_ptr<IParserLineStream> m_stream;
         std::unique_ptr<ILexer<SimpleParserValue>> m_lexer;
+        std::unique_ptr<SimpleExpressionParser> m_parser;
 
         std::unique_ptr<SimpleExpressionSequence> m_sequence;
 
         unsigned m_consumed_token_count;
 
-        explicit SimpleExpressionTestsHelper()
-            : m_state(std::make_unique<SimpleExpressionTestState>()),
+        SimpleExpressionTestsHelper()
+            : m_state(nullptr),
               m_sequence(std::make_unique<SimpleExpressionSequence>()),
               m_consumed_token_count(0u)
         {
@@ -56,12 +91,32 @@ namespace test::parsing::simple::expression
 
         void Tokens(std::initializer_list<Movable<SimpleParserValue>> tokens)
         {
+            m_state_holder = std::make_unique<SimpleExpressionTestState>();
+            m_state = m_state_holder.get();
             m_lexer = std::make_unique<MockLexer<SimpleParserValue>>(tokens, SimpleParserValue::EndOfFile(TokenPos()));
         }
 
         void Tokens(std::vector<SimpleParserValue> tokens)
         {
+            m_state_holder = std::make_unique<SimpleExpressionTestState>();
+            m_state = m_state_holder.get();
             m_lexer = std::make_unique<MockLexer<SimpleParserValue>>(std::move(tokens), SimpleParserValue::EndOfFile(TokenPos()));
+        }
+
+        void String(std::string str)
+        {
+            m_str = std::move(str);
+            m_ss = std::istringstream(m_str);
+            m_stream = std::make_unique<ParserSingleInputStream>(m_ss, "InputString");
+
+            SimpleLexer::Config lexerConfig;
+            lexerConfig.m_read_strings = true;
+            lexerConfig.m_read_numbers = true;
+            lexerConfig.m_emit_new_line_tokens = false;
+            SimpleExpressionMatchers(true, true, true, true, true).ApplyTokensToLexerConfig(lexerConfig);
+            m_lexer = std::make_unique<SimpleLexer>(m_stream.get(), std::move(lexerConfig));
+            m_parser = std::make_unique<SimpleExpressionParser>(m_lexer.get());
+            m_state = m_parser->GetState();
         }
 
         bool PerformTest()
@@ -69,7 +124,15 @@ namespace test::parsing::simple::expression
             REQUIRE(m_lexer);
 
             m_consumed_token_count = 0;
-            return m_sequence->MatchSequence(m_lexer.get(), m_state.get(), m_consumed_token_count);
+            return m_sequence->MatchSequence(m_lexer.get(), m_state, m_consumed_token_count);
+        }
+
+        _NODISCARD bool PerformIntegrationTest() const
+        {
+            REQUIRE(m_lexer);
+            REQUIRE(m_parser);
+
+            return m_parser->Parse();
         }
     };
 
@@ -737,5 +800,42 @@ namespace test::parsing::simple::expression
         const auto value = expression->Evaluate();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
+    }
+
+    namespace it
+    {
+        TEST_CASE("SimpleExpressionsIT: Can parse subtraction without space", "[parsing][simple][expression][it]")
+        {
+            SimpleExpressionTestsHelper helper;
+            helper.String("6-5");
+
+            const auto result = helper.PerformIntegrationTest();
+
+            REQUIRE(result);
+
+            const auto& expression = helper.m_state->m_expression;
+            REQUIRE(expression->IsStatic());
+
+            const auto value = expression->Evaluate();
+            REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+            REQUIRE(value.m_int_value == 1);
+        }
+
+        TEST_CASE("SimpleExpressionsIT: Can parse addition without space", "[parsing][simple][expression][it]")
+        {
+            SimpleExpressionTestsHelper helper;
+            helper.String("6+5");
+
+            const auto result = helper.PerformIntegrationTest();
+
+            REQUIRE(result);
+
+            const auto& expression = helper.m_state->m_expression;
+            REQUIRE(expression->IsStatic());
+
+            const auto value = expression->Evaluate();
+            REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
+            REQUIRE(value.m_int_value == 11);
+        }
     }
 }

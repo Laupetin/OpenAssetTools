@@ -1,5 +1,6 @@
 #include "SimpleExpressionMatchers.h"
 
+#include <algorithm>
 #include <list>
 
 #include "SimpleExpressionConditionalOperator.h"
@@ -272,6 +273,30 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
                       }));
         }
     }
+
+    const auto hasAddOperation = std::any_of(enabledBinaryOperations.begin(), enabledBinaryOperations.end(), [](const SimpleExpressionBinaryOperationType* type)
+    {
+        return type == &SimpleExpressionBinaryOperationType::OPERATION_ADD;
+    });
+    const auto hasSubtractOperation = std::any_of(enabledBinaryOperations.begin(), enabledBinaryOperations.end(), [](const SimpleExpressionBinaryOperationType* type)
+    {
+        return type == &SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT;
+    });
+
+    if (hasAddOperation && hasSubtractOperation)
+    {
+        binaryOperationsMatchers.emplace_back(
+            create.Or({
+                      create.IntegerWithSign(),
+                      create.FloatingPointWithSign()
+                  })
+                  .NoConsume()
+                  .Transform([](const SimpleMatcherFactory::token_list_t& values)
+                  {
+                      return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::ADD));
+                  }));
+    }
+
 
     return create.Or(std::move(binaryOperationsMatchers)).Capture(CAPTURE_BINARY_OPERATION_TYPE);
 }

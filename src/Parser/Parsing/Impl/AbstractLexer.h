@@ -259,13 +259,15 @@ protected:
         return floatingPointValue;
     }
 
-    void ReadNumber(bool& isFloatingPoint, double& floatingPointValue, int& integerValue)
+    void ReadNumber(bool& isFloatingPoint, bool& hasSignPrefix, double& floatingPointValue, int& integerValue)
     {
         const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
         assert(isdigit(currentLine.m_line[m_current_line_offset - 1])
             || currentLine.m_line[m_current_line_offset - 1] == '.'
+            || currentLine.m_line[m_current_line_offset - 1] == '+'
             || currentLine.m_line[m_current_line_offset - 1] == '-');
+        hasSignPrefix = currentLine.m_line[m_current_line_offset - 1] == '+' || currentLine.m_line[m_current_line_offset - 1] == '-';
 
         const auto lineLength = currentLine.m_line.size();
         if (lineLength - m_current_line_offset >= 1
@@ -341,9 +343,12 @@ public:
     {
         for (const auto& line : m_line_cache)
         {
-            if (*line.m_filename == pos.m_filename.get()
+            if (line.m_filename
+                && *line.m_filename == pos.m_filename.get()
                 && line.m_line_number == pos.m_line)
+            {
                 return line;
+            }
         }
 
         return ParserLine();

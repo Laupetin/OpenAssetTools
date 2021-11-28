@@ -120,18 +120,19 @@ SimpleParserValue SimpleLexer::GetNextToken()
     if (m_config.m_read_strings && c == '\"')
         return SimpleParserValue::String(pos, new std::string(ReadString()));
 
-    if (m_config.m_read_numbers && (isdigit(c) || (c == '-' || c == '.') && isdigit(PeekChar())))
+    if (m_config.m_read_numbers && (isdigit(c) || (c == '+' || c == '-' || c == '.') && isdigit(PeekChar())))
     {
         bool isFloatingPointValue;
+        bool hasSignPrefix;
         double doubleValue;
         int integerValue;
 
-        ReadNumber(isFloatingPointValue, doubleValue, integerValue);
+        ReadNumber(isFloatingPointValue, hasSignPrefix, doubleValue, integerValue);
 
         if (isFloatingPointValue)
-            return SimpleParserValue::FloatingPoint(pos, doubleValue);
+            return SimpleParserValue::FloatingPoint(pos, doubleValue, hasSignPrefix);
 
-        return SimpleParserValue::Integer(pos, integerValue);
+        return SimpleParserValue::Integer(pos, integerValue, hasSignPrefix);
     }
 
     if (isalpha(c) || c == '_')

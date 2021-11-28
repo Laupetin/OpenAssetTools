@@ -17,7 +17,9 @@ public:
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Identifier() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> String() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Integer() const;
+    _NODISCARD MatcherFactoryWrapper<SimpleParserValue> IntegerWithSign() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> FloatingPoint() const;
+    _NODISCARD MatcherFactoryWrapper<SimpleParserValue> FloatingPointWithSign() const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Char(char c) const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> MultiChar(int multiCharacterSequenceId) const;
     _NODISCARD MatcherFactoryWrapper<SimpleParserValue> AnyCharBesides(std::vector<char> chars) const;

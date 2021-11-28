@@ -33,6 +33,7 @@ public:
     TokenPos m_pos;
     SimpleParserValueType m_type;
     size_t m_hash;
+    bool m_has_sign_prefix;
     union ValueType
     {
         char char_value;
@@ -48,7 +49,9 @@ public:
     static SimpleParserValue Character(TokenPos pos, char c);
     static SimpleParserValue MultiCharacter(TokenPos pos, int multiCharacterSequenceId);
     static SimpleParserValue Integer(TokenPos pos, int value);
+    static SimpleParserValue Integer(TokenPos pos, int value, bool hasSignPrefix);
     static SimpleParserValue FloatingPoint(TokenPos pos, double value);
+    static SimpleParserValue FloatingPoint(TokenPos pos, double value, bool hasSignPrefix);
     static SimpleParserValue String(TokenPos pos, std::string* stringValue);
     static SimpleParserValue Identifier(TokenPos pos, std::string* identifier);
 
