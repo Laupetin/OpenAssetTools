@@ -149,7 +149,7 @@ void DefinesStreamProxy::ContinueDefine(const ParserLine& line)
     const auto lineEndEscapePos = GetLineEndEscapePos(line);
     if (lineEndEscapePos < 0)
     {
-        m_current_define_value << line.m_line << " ";
+        m_current_define_value << line.m_line;
         m_current_define.m_value = m_current_define_value.str();
         m_current_define.IdentifyParameters(m_current_define_parameters);
         AddDefine(std::move(m_current_define));
@@ -162,7 +162,7 @@ void DefinesStreamProxy::ContinueDefine(const ParserLine& line)
     else
     {
         if (line.m_line.size() > static_cast<unsigned>(lineEndEscapePos))
-            m_current_define_value << line.m_line.substr(0, static_cast<unsigned>(lineEndEscapePos)) << " ";
+            m_current_define_value << line.m_line.substr(0, static_cast<unsigned>(lineEndEscapePos));
     }
 }
 
@@ -245,8 +245,8 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsi
         m_current_define_value.str(std::string());
         m_current_define_parameters = std::move(parameters);
 
-        if (currentPos < line.m_line.size() && (currentPos + 1) > static_cast<unsigned>(lineEndEscapePos))
-            m_current_define_value << line.m_line.substr(currentPos + 1, static_cast<unsigned>(lineEndEscapePos) - (currentPos + 1)) << " ";
+        if (currentPos < line.m_line.size() && (currentPos + 1) < static_cast<unsigned>(lineEndEscapePos))
+            m_current_define_value << line.m_line.substr(currentPos + 1, static_cast<unsigned>(lineEndEscapePos) - (currentPos + 1));
     }
 
     return true;

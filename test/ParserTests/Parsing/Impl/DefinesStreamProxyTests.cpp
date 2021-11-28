@@ -687,4 +687,23 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Ensure defines can go over multiple lines", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define someStuff(param1) Hello param1 World \\",
+            "and hello universe",
+            "someStuff(lovely)"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "Hello lovely World and hello universe");
+
+        REQUIRE(proxy.Eof());
+    }
 }
