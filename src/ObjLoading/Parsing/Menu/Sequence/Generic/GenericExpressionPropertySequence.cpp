@@ -53,15 +53,8 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
     const MenuMatcherFactory create(result.get());
     result->AddMatchers({
         create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Or({
-            create.And({
-                create.KeywordIgnoreCase("when"),
-                create.Char('('),
-                create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-                create.Char(')')
-            }),
-            create.Label(MenuExpressionMatchers::LABEL_EXPRESSION)
-        }),
+        create.Optional(create.KeywordIgnoreCase("when")),
+        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
         create.Optional(create.Char(';'))
     });
 
