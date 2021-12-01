@@ -363,7 +363,9 @@ namespace menu::item_scope_sequences
                 create.Char('{'),
                 create.OptionalLoop(create.And({
                     create.Text().Capture(CAPTURE_STEP_NAME),
+                    create.Optional(create.Char(';')),
                     create.Text().Capture(CAPTURE_STEP_VALUE),
+                    create.Optional(create.Char(';')),
                 })),
                 create.Char('}')
             });
@@ -401,7 +403,9 @@ namespace menu::item_scope_sequences
                 create.Char('{'),
                 create.OptionalLoop(create.And({
                     create.Text().Capture(CAPTURE_STEP_NAME),
+                    create.Optional(create.Char(';')),
                     create.NumericExpression(),
+                    create.Optional(create.Char(';')),
                 })),
                 create.Char('}')
             });
