@@ -471,6 +471,23 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Ensure can define parameters with underscore", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines
+        {
+            "#define test(test_parameter) this is test_parameter",
+            "Apparently test(a very cool text);"
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "Apparently this is a very cool text;");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure simple if is working with truthy value", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines

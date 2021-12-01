@@ -70,7 +70,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
     for (auto i = 0u; i < m_value.size(); i++)
     {
         const auto c = m_value[i];
-        if (!isalnum(c))
+        if (!isalnum(c) && c != '_')
         {
             if (inWord)
             {
