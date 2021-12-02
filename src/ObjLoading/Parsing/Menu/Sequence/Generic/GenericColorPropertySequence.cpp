@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
 using namespace menu;
@@ -11,13 +12,22 @@ GenericColorPropertySequence::GenericColorPropertySequence(std::string keywordNa
 {
     const MenuMatcherFactory create(this);
 
+    AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
     AddMatchers({
         create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Numeric().Capture(CAPTURE_R),
-        create.Numeric().Capture(CAPTURE_G),
-        create.Numeric().Capture(CAPTURE_B),
-        create.Numeric().Capture(CAPTURE_A)
+        create.NumericExpression().Tag(TAG_COLOR), // r
+        create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // g
+        create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // b
+        create.Optional(create.NumericExpression().Tag(TAG_COLOR)) // a
     });
+}
+
+double GenericColorPropertySequence::ReadColorValue(SequenceResult<SimpleParserValue>& result)
+{
+    if (result.PeekAndRemoveIfTag(TAG_COLOR) == TAG_COLOR)
+        return MenuMatcherFactory::TokenNumericExpressionValue(result);
+
+    return 0.0;
 }
 
 void GenericColorPropertySequence::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const
@@ -25,10 +35,10 @@ void GenericColorPropertySequence::ProcessMatch(MenuFileParserState* state, Sequ
     if (m_set_callback)
     {
         CommonColor color{};
-        color.r = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_R));
-        color.g = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_G));
-        color.b = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_B));
-        color.a = MenuMatcherFactory::TokenNumericFloatingPointValue(result.NextCapture(CAPTURE_A));
+        color.r = ReadColorValue(result);
+        color.g = ReadColorValue(result);
+        color.b = ReadColorValue(result);
+        color.a = ReadColorValue(result);
 
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), color);
     }

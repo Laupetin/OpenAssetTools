@@ -15,12 +15,12 @@ namespace menu
 
     private:
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
-        static constexpr auto CAPTURE_R = 2;
-        static constexpr auto CAPTURE_G = 3;
-        static constexpr auto CAPTURE_B = 4;
-        static constexpr auto CAPTURE_A = 5;
+
+        static constexpr auto TAG_COLOR = 1;
 
         const callback_t m_set_callback;
+
+        static double ReadColorValue(SequenceResult<SimpleParserValue>& result);
 
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override;
