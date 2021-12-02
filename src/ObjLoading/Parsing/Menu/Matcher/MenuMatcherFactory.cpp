@@ -1,5 +1,7 @@
 #include "MenuMatcherFactory.h"
 
+#include <sstream>
+
 #include "MenuExpressionMatchers.h"
 
 using namespace menu;
@@ -9,9 +11,30 @@ MenuMatcherFactory::MenuMatcherFactory(const IMatcherForLabelSupplier<SimplePars
 {
 }
 
+MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::StringChain() const
+{
+    return Or({
+        And({
+            String(),
+            Loop(String())
+        }).Transform([](const token_list_t& tokens) -> SimpleParserValue
+        {
+            std::ostringstream ss;
+
+            for (const auto& token : tokens)
+            {
+                ss << token.get().StringValue();
+            }
+
+            return SimpleParserValue::String(tokens[0].get().GetPos(), new std::string(ss.str()));
+        }),
+        String()
+    });
+}
+
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Text() const
 {
-    return MatcherFactoryWrapper(Or({String(), Identifier()}));
+    return MatcherFactoryWrapper(Or({StringChain(), Identifier()}));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Numeric() const

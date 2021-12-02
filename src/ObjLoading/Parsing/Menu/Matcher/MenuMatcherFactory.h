@@ -18,6 +18,7 @@ namespace menu
     public:
         explicit MenuMatcherFactory(const IMatcherForLabelSupplier<SimpleParserValue>* labelSupplier);
 
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> StringChain() const;
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Text() const;
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Numeric() const;
 
