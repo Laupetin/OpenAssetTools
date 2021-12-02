@@ -514,10 +514,18 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
 
         if (c == ',')
         {
-            parameterValues.emplace_back(currentValue.str());
-            currentValue.clear();
-            currentValue.str(std::string());
-            valueHasStarted = false;
+            if (parenthesisDepth > 0)
+            {
+                valueHasStarted = true;
+                currentValue << c;
+            }
+            else
+            {
+                parameterValues.emplace_back(currentValue.str());
+                currentValue.clear();
+                currentValue.str(std::string());
+                valueHasStarted = false;
+            }
         }
         else if(c == '(')
         {
