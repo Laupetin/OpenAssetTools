@@ -488,7 +488,7 @@ namespace menu::item_scope_sequences
 
             AddMatchers({
                 create.KeywordIgnoreCase("execKey"),
-                create.String().Capture(CAPTURE_KEY),
+                create.StringChain().Capture(CAPTURE_KEY),
                 create.Char('{')
             });
         }

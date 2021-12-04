@@ -82,7 +82,7 @@ namespace menu::global_scope_sequences
             AddMatchers({
                 create.Keyword("loadMenu"),
                 create.Char('{'),
-                create.String().Capture(CAPTURE_MENU_NAME),
+                create.StringChain().Capture(CAPTURE_MENU_NAME),
                 create.Char('}'),
             });
         }
