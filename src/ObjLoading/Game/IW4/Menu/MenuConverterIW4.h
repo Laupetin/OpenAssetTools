@@ -1,0 +1,26 @@
+#pragma once
+
+#include "Utils/ClassUtils.h"
+#include "AssetLoading/IAssetLoadingManager.h"
+#include "Game/IW4/IW4.h"
+#include "Parsing/Menu/Domain/CommonMenuDef.h"
+#include "Utils/MemoryManager.h"
+#include "SearchPath/ISearchPath.h"
+
+namespace IW4
+{
+    class MenuConverter
+    {
+        bool m_legacy_mode;
+        ISearchPath* m_search_path;
+        MemoryManager* m_memory;
+        IAssetLoadingManager* m_manager;
+        std::vector<XAssetInfoGeneric*> m_dependencies;
+
+    public:
+        MenuConverter(bool legacyMode, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
+
+        std::vector<XAssetInfoGeneric*>& GetDependencies();
+        _NODISCARD menuDef_t* ConvertMenu(const menu::CommonMenuDef& commonMenu);
+    };
+}

@@ -7,12 +7,12 @@ CommonExpressionFunctionCall::CommonExpressionFunctionCall(std::string functionN
 {
 }
 
-bool CommonExpressionFunctionCall::IsStatic()
+bool CommonExpressionFunctionCall::IsStatic() const
 {
     return false;
 }
 
-SimpleExpressionValue CommonExpressionFunctionCall::Evaluate()
+SimpleExpressionValue CommonExpressionFunctionCall::Evaluate() const
 {
     return SimpleExpressionValue(0);
 }

@@ -8,8 +8,8 @@ public:
     std::unique_ptr<ISimpleExpression> m_true_value;
     std::unique_ptr<ISimpleExpression> m_false_value;
 
-    bool IsStatic() override;
-    SimpleExpressionValue Evaluate() override;
+    _NODISCARD bool IsStatic() const override;
+    _NODISCARD SimpleExpressionValue Evaluate() const override;
 
     SimpleExpressionConditionalOperator();
     SimpleExpressionConditionalOperator(std::unique_ptr<ISimpleExpression> condition, std::unique_ptr<ISimpleExpression> trueExpression, std::unique_ptr<ISimpleExpression> falseExpression);

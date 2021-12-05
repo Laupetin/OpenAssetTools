@@ -24,12 +24,12 @@ SimpleExpressionValue::SimpleExpressionValue(const int intValue)
     m_int_value = intValue;
 }
 
-bool SimpleExpressionValue::IsStatic()
+bool SimpleExpressionValue::IsStatic() const
 {
     return true;
 }
 
-SimpleExpressionValue SimpleExpressionValue::Evaluate()
+SimpleExpressionValue SimpleExpressionValue::Evaluate() const
 {
     return *this;
 }

@@ -5,6 +5,7 @@
 
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Menu/MenuConverterIW4.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "Pool/GlobalAssetPool.h"
 
@@ -55,8 +56,8 @@ void AssetLoaderMenuList::AddResultsToZoneState(menu::ParsingResult* parsingResu
         zoneState->m_menus.emplace_back(std::move(menu));
 }
 
-void AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,
-                                               menu::MenuAssetZoneState* zoneState)
+bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,
+                                               menu::MenuAssetZoneState* zoneState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
 {
     std::cout << "Successfully read menu list \"" << assetName << "\":\n";
 
@@ -72,12 +73,52 @@ void AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, Mem
     for (const auto& function : parsingResult->m_functions)
         std::cout << "    " << function->m_name << "\n";
 
+    for (const auto& menu : parsingResult->m_menus)
+    {
+        // TODO: Use command line arguments to activate legacy mode
+        MenuConverter converter(false, searchPath, memory, manager);
+        auto* menuAsset = converter.ConvertMenu(*menu);
+        if(menuAsset == nullptr)
+        {
+            std::cout << "Failed to convert menu \"" << menu->m_name << "\"\n";
+            return false;
+        }
+
+        menus.push_back(menuAsset);
+        auto* menuAssetInfo = manager->AddAsset(ASSET_TYPE_MENU, menu->m_name, menuAsset, std::move(converter.GetDependencies()), std::vector<scr_string_t>());
+
+        if (menuAssetInfo)
+            menuListDependencies.push_back(menuAssetInfo);
+    }
+
     AddResultsToZoneState(parsingResult, zoneState);
+
+    return true;
+}
+
+MenuList* AssetLoaderMenuList::CreateMenuListAsset(const std::string& assetName, MemoryManager* memory, const std::vector<menuDef_t*>& menus)
+{
+    auto* menuListAsset = memory->Create<MenuList>();
+    menuListAsset->name = memory->Dup(assetName.c_str());
+    menuListAsset->menuCount = static_cast<int>(menus.size());
+
+    if (menuListAsset->menuCount > 0)
+    {
+        menuListAsset->menus = static_cast<menuDef_t**>(memory->Alloc(sizeof(uintptr_t) * menuListAsset->menuCount));
+        for(auto i = 0; i < menuListAsset->menuCount; i++)
+            menuListAsset->menus[i] = menus[i];
+    }
+    else
+        menuListAsset->menus = nullptr;
+
+    return menuListAsset;
 }
 
 bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     std::deque<std::string> menuFileQueue;
+    std::vector<menuDef_t*> menus;
+    std::vector<XAssetInfoGeneric*> menuListDependencies;
 
     auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<menu::MenuAssetZoneState>();
     menuFileQueue.push_back(assetName);
@@ -107,7 +148,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         const auto menuFileResult = reader.ReadMenuFile();
         if (menuFileResult)
         {
-            ProcessParsedResults(nextMenuFile, memory, manager, menuFileResult.get(), zoneState);
+            ProcessParsedResults(nextMenuFile, searchPath, memory, manager, menuFileResult.get(), zoneState, menus, menuListDependencies);
             AddMenuFilesToLoadToQueue(menuFileQueue, menuFileResult.get(), zoneState);
         }
         else
@@ -115,6 +156,11 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
 
         menuFileQueue.pop_front();
     }
+
+    auto* menuListAsset = CreateMenuListAsset(assetName, memory, menus);
+
+    if(menuListAsset)
+        manager->AddAsset(ASSET_TYPE_MENULIST, assetName, menuListAsset);
 
     return true;
 }

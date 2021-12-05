@@ -18,10 +18,10 @@ public:
 
     _NODISCARD virtual AssetLoadingContext* GetAssetLoadingContext() const = 0;
 
-    virtual void AddAsset(asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) = 0;
-    void AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset)
+    virtual XAssetInfoGeneric* AddAsset(asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) = 0;
+    XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset)
     {
-        AddAsset(assetType, assetName, asset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
+        return AddAsset(assetType, assetName, asset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
     }
     virtual XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) = 0;
 };

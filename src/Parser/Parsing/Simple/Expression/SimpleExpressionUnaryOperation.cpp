@@ -64,14 +64,14 @@ bool SimpleExpressionUnaryOperation::OperandNeedsParenthesis() const
     return dynamic_cast<const SimpleExpressionBinaryOperation*>(m_operand.get()) != nullptr;
 }
 
-bool SimpleExpressionUnaryOperation::IsStatic()
+bool SimpleExpressionUnaryOperation::IsStatic() const
 {
     assert(m_operand);
 
     return m_operand->IsStatic();
 }
 
-SimpleExpressionValue SimpleExpressionUnaryOperation::Evaluate()
+SimpleExpressionValue SimpleExpressionUnaryOperation::Evaluate() const
 {
     return m_operation_type->m_evaluation_function(m_operand->Evaluate());
 }

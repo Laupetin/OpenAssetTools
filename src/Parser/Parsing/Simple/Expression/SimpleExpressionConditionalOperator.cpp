@@ -11,12 +11,12 @@ SimpleExpressionConditionalOperator::SimpleExpressionConditionalOperator(std::un
 {
 }
 
-bool SimpleExpressionConditionalOperator::IsStatic()
+bool SimpleExpressionConditionalOperator::IsStatic() const
 {
     return m_condition->IsStatic() && m_true_value->IsStatic() && m_false_value->IsStatic();
 }
 
-SimpleExpressionValue SimpleExpressionConditionalOperator::Evaluate()
+SimpleExpressionValue SimpleExpressionConditionalOperator::Evaluate() const
 {
     return m_condition->Evaluate().IsTruthy() ? m_true_value->Evaluate() : m_false_value->Evaluate();
 }

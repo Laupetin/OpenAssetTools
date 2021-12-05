@@ -93,6 +93,6 @@ public:
     _NODISCARD bool Operand1NeedsParenthesis() const;
     _NODISCARD bool Operand2NeedsParenthesis() const;
 
-    bool IsStatic() override;
-    SimpleExpressionValue Evaluate() override;
+    _NODISCARD bool IsStatic() const override;
+    _NODISCARD SimpleExpressionValue Evaluate() const override;
 };

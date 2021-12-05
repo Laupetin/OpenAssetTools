@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
+
 class SimpleExpressionValue;
 class ISimpleExpression
 {
@@ -12,8 +14,8 @@ public:
     ISimpleExpression& operator=(const ISimpleExpression& other) = default;
     ISimpleExpression& operator=(ISimpleExpression&& other) noexcept = default;
 
-    virtual bool IsStatic() = 0;
-    virtual SimpleExpressionValue Evaluate() = 0;
+    _NODISCARD virtual bool IsStatic() const = 0;
+    _NODISCARD virtual SimpleExpressionValue Evaluate() const = 0;
 };
 
 // Include SimpleExpressionValue after definition to avoid "base class not defined"

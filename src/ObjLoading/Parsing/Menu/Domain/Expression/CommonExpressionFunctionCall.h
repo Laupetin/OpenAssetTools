@@ -13,7 +13,7 @@ namespace menu
 
         explicit CommonExpressionFunctionCall(std::string functionName);
 
-        bool IsStatic() override;
-        SimpleExpressionValue Evaluate() override;
+        _NODISCARD bool IsStatic() const override;
+        _NODISCARD SimpleExpressionValue Evaluate() const override;
     };
 }

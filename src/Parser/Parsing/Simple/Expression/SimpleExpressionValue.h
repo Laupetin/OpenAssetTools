@@ -29,7 +29,7 @@ public:
     explicit SimpleExpressionValue(double doubleValue);
     explicit SimpleExpressionValue(int intValue);
 
-    bool IsStatic() override;
-    SimpleExpressionValue Evaluate() override;
+    _NODISCARD bool IsStatic() const override;
+    _NODISCARD SimpleExpressionValue Evaluate() const override;
     _NODISCARD bool IsTruthy() const;
 };

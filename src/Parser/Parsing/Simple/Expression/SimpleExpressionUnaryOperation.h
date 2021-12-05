@@ -46,6 +46,6 @@ public:
 
     _NODISCARD bool OperandNeedsParenthesis() const;
 
-    bool IsStatic() override;
-    SimpleExpressionValue Evaluate() override;
+    _NODISCARD bool IsStatic() const override;
+    _NODISCARD SimpleExpressionValue Evaluate() const override;
 };

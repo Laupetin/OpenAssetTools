@@ -443,14 +443,14 @@ bool SimpleExpressionBinaryOperation::Operand2NeedsParenthesis() const
     return operation && operation->m_operation_type->m_precedence > m_operation_type->m_precedence;
 }
 
-bool SimpleExpressionBinaryOperation::IsStatic()
+bool SimpleExpressionBinaryOperation::IsStatic() const
 {
     assert(m_operand1 && m_operand2);
 
     return m_operand1->IsStatic() && m_operand2->IsStatic();
 }
 
-SimpleExpressionValue SimpleExpressionBinaryOperation::Evaluate()
+SimpleExpressionValue SimpleExpressionBinaryOperation::Evaluate() const
 {
     return m_operation_type->m_evaluation_function(m_operand1->Evaluate(), m_operand2->Evaluate());
 }
