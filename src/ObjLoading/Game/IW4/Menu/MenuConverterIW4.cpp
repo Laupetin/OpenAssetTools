@@ -57,7 +57,17 @@ namespace IW4
             flags |= flagValue;
         }
 
-        _NODISCARD Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item) const
+        static int ConvertItemType(const int input)
+        {
+            return input;
+        }
+
+        static int ConvertTextFont(const int input)
+        {
+            return input;
+        }
+
+        _NODISCARD Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (materialName.empty())
                 return nullptr;
@@ -68,12 +78,7 @@ namespace IW4
 
             return static_cast<Material*>(materialDependency->m_ptr);
         }
-
-        _NODISCARD Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu) const
-        {
-            return ConvertMaterial(materialName, menu, nullptr);
-        }
-
+        
         _NODISCARD Statement_s* ConvertExpression(const ISimpleExpression* expression) const
         {
             if (!expression)
@@ -110,6 +115,59 @@ namespace IW4
             return ConvertExpression(expression);
         }
 
+        _NODISCARD Statement_s* ConvertOrApplyStatement(const char*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        {
+            if (m_legacy_mode)
+                return ConvertExpression(expression);
+
+            if (!expression)
+                return nullptr;
+
+            if (expression->IsStatic())
+            {
+                const auto value = expression->Evaluate();
+                switch (value.m_type)
+                {
+                case SimpleExpressionValue::Type::STRING:
+                    staticValue = m_memory->Dup(value.m_string_value->c_str());
+                    break;
+
+                case SimpleExpressionValue::Type::DOUBLE:
+                case SimpleExpressionValue::Type::INT:
+                    throw MenuConversionException("Cannot convert numeric expression value to string", menu, item);
+                }
+                return nullptr;
+            }
+
+            return ConvertExpression(expression);
+        }
+        _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        {
+            if (m_legacy_mode)
+                return ConvertExpression(expression);
+
+            if (!expression)
+                return nullptr;
+
+            if (expression->IsStatic())
+            {
+                const auto value = expression->Evaluate();
+                switch (value.m_type)
+                {
+                case SimpleExpressionValue::Type::STRING:
+                    staticValue = ConvertMaterial(*value.m_string_value, menu, item);
+                    break;
+
+                case SimpleExpressionValue::Type::DOUBLE:
+                case SimpleExpressionValue::Type::INT:
+                    throw MenuConversionException("Cannot convert numeric expression value to string", menu, item);
+                }
+                return nullptr;
+            }
+
+            return ConvertExpression(expression);
+        }
+
         _NODISCARD MenuEventHandlerSet* ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet) const
         {
             if (!eventHandlerSet)
@@ -126,13 +184,63 @@ namespace IW4
             return nullptr;
         }
 
-        _NODISCARD itemDef_s* ConvertItem(const CommonItemDef& commonItem) const
+        _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory->Create<itemDef_s>();
             ApplyItemDefaults(item);
 
-            item->window.name = m_memory->Dup(commonItem.m_name.c_str());
-            item->text = m_memory->Dup(commonItem.m_text.c_str());
+            item->window.name = ConvertString(commonItem.m_name);
+            item->text = ConvertString(commonItem.m_text);
+            ApplyFlag(item->itemFlags, commonItem.m_text_save_game, ITEM_FLAG_SAVE_GAME_INFO);
+            ApplyFlag(item->itemFlags, commonItem.m_text_cinematic_subtitle, ITEM_FLAG_CINEMATIC_SUBTITLE);
+            item->window.group = ConvertString(commonItem.m_group);
+            item->window.rect = ConvertRectDef(commonItem.m_rect);
+            item->window.style = commonItem.m_style;
+            ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
+            ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
+            ApplyFlag(item->window.staticFlags, commonItem.m_horizontal_scroll, WINDOW_FLAG_HORIZONTAL_SCROLL);
+            item->type = ConvertItemType(commonItem.m_type);
+            item->window.border = commonItem.m_border;
+            item->window.borderSize = static_cast<float>(commonItem.m_border_size);
+            item->visibleExp = ConvertExpression(commonItem.m_visible_expression.get());
+            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get());
+            item->window.ownerDraw = commonItem.m_owner_draw;
+            item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;
+            item->alignment = commonItem.m_align;
+            item->textAlignMode = commonItem.m_text_align;
+            item->textalignx = static_cast<float>(commonItem.m_text_align_x);
+            item->textaligny = static_cast<float>(commonItem.m_text_align_y);
+            item->textscale = static_cast<float>(commonItem.m_text_scale);
+            item->textStyle = commonItem.m_text_style;
+            item->fontEnum = ConvertTextFont(commonItem.m_text_font);
+            ConvertColor(item->window.backColor, commonItem.m_back_color);
+            ConvertColor(item->window.foreColor, commonItem.m_fore_color);
+            ConvertColor(item->window.borderColor, commonItem.m_border_color);
+            ConvertColor(item->window.outlineColor, commonItem.m_outline_color);
+            ConvertColor(item->window.disableColor, commonItem.m_disable_color);
+            ConvertColor(item->glowColor, commonItem.m_glow_color);
+            item->window.background = ConvertMaterial(commonItem.m_background, &parentMenu, &commonItem);
+            item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get());
+            item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get());
+            item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get());
+            item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get());
+            item->mouseEnterText = ConvertEventHandlerSet(commonItem.m_on_mouse_enter_text.get());
+            item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get());
+            item->action = ConvertEventHandlerSet(commonItem.m_on_action.get());
+            item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get());
+            // item->focusSound
+            item->dvarTest = ConvertString(commonItem.m_dvar_test);
+            // enableDvar
+            item->onKey = ConvertKeyHandler(commonItem.m_key_handlers);
+            item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
+            item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
+            item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get());
+            // FloatExpressions
+            item->gameMsgWindowIndex = commonItem.m_game_message_window_index;
+            item->gameMsgWindowMode = commonItem.m_game_message_window_mode;
+            item->fxLetterTime = commonItem.m_fx_letter_time;
+            item->fxDecayStartTime = commonItem.m_fx_decay_start_time;
+            item->fxDecayDuration = commonItem.m_fx_decay_duration;
 
             return item;
         }
@@ -146,7 +254,7 @@ namespace IW4
             memset(items, 0, sizeof(void*) * commonMenu.m_items.size());
 
             for(auto i = 0u; i < commonMenu.m_items.size(); i++)
-                items[i] = ConvertItem(*commonMenu.m_items[i]);
+                items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
 
             return items;
         }
