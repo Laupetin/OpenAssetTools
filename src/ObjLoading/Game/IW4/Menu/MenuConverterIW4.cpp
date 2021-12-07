@@ -1,8 +1,13 @@
 #include "MenuConverterIW4.h"
 
+#include <cassert>
 #include <cstring>
 
+#include "Utils/ClassUtils.h"
 #include "Menu/AbstractMenuConverter.h"
+#include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerCondition.h"
+#include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerScript.h"
+#include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerSetLocalVar.h"
 
 using namespace IW4;
 using namespace menu;
@@ -78,7 +83,7 @@ namespace IW4
 
             return static_cast<Material*>(materialDependency->m_ptr);
         }
-        
+
         _NODISCARD Statement_s* ConvertExpression(const ISimpleExpression* expression) const
         {
             if (!expression)
@@ -141,6 +146,7 @@ namespace IW4
 
             return ConvertExpression(expression);
         }
+
         _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (m_legacy_mode)
@@ -168,12 +174,141 @@ namespace IW4
             return ConvertExpression(expression);
         }
 
+        _NODISCARD static EventType SetLocalVarTypeToEventType(const SetLocalVarType setLocalVarType)
+        {
+            switch (setLocalVarType)
+            {
+            case SetLocalVarType::BOOL:
+                return EVENT_SET_LOCAL_VAR_BOOL;
+            case SetLocalVarType::STRING:
+                return EVENT_SET_LOCAL_VAR_STRING;
+            case SetLocalVarType::FLOAT:
+                return EVENT_SET_LOCAL_VAR_FLOAT;
+            case SetLocalVarType::INT:
+                return EVENT_SET_LOCAL_VAR_INT;
+            default:
+            case SetLocalVarType::UNKNOWN:
+                assert(false);
+                return EVENT_SET_LOCAL_VAR_INT;
+            }
+        }
+
+        MenuEventHandler* ConvertEventHandlerSetLocalVar(const CommonEventHandlerSetLocalVar* setLocalVar) const
+        {
+            assert(setLocalVar);
+            if (!setLocalVar)
+                return nullptr;
+
+            auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(SetLocalVarData)));
+            auto* outputSetLocalVar = reinterpret_cast<SetLocalVarData*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
+
+            outputHandler->eventType = SetLocalVarTypeToEventType(setLocalVar->m_type);
+            outputHandler->eventData.setLocalVarData = outputSetLocalVar;
+
+            outputSetLocalVar->localVarName = m_memory->Dup(setLocalVar->m_var_name.c_str());
+            outputSetLocalVar->expression = ConvertExpression(setLocalVar->m_value.get());
+
+            return outputHandler;
+        }
+
+        MenuEventHandler* ConvertEventHandlerScript(const CommonEventHandlerScript* script) const
+        {
+            assert(script);
+            if (!script)
+                return nullptr;
+
+            auto* outputHandler = m_memory->Create<MenuEventHandler>();
+            outputHandler->eventType = EVENT_UNCONDITIONAL;
+            outputHandler->eventData.unconditionalScript = m_memory->Dup(script->m_script.c_str());
+
+            return outputHandler;
+        }
+
+        void ConvertEventHandlerCondition(MenuEventHandler** eventHandlerArray, size_t& eventHandlerArrayIndex, const CommonEventHandlerCondition* condition) const
+        {
+            assert(condition);
+            if (!condition)
+                return;
+
+            auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(ConditionalScript)));
+            auto* outputCondition = reinterpret_cast<ConditionalScript*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
+
+            outputHandler->eventType = EVENT_IF;
+            outputHandler->eventData.conditionalScript = outputCondition;
+
+            outputCondition->eventExpression = ConvertExpression(condition->m_condition.get());
+            outputCondition->eventHandlerSet = ConvertEventHandlerSet(condition->m_condition_elements.get());
+
+            eventHandlerArray[eventHandlerArrayIndex] = outputHandler;
+
+            if(condition->m_else_elements)
+            {
+                eventHandlerArrayIndex++;
+
+                auto* outputElseHandler = m_memory->Create<MenuEventHandler>();
+                outputElseHandler->eventType = EVENT_ELSE;
+                outputElseHandler->eventData.elseScript = ConvertEventHandlerSet(condition->m_else_elements.get());
+
+                eventHandlerArray[eventHandlerArrayIndex] = outputElseHandler;
+            }
+        }
+
+        void ConvertEventHandler(MenuEventHandler** eventHandlerArray, size_t& eventHandlerArrayIndex, const ICommonEventHandlerElement* eventHandler) const
+        {
+            assert(eventHandler);
+            if (!eventHandler)
+                return;
+
+            switch (eventHandler->GetType())
+            {
+            case CommonEventHandlerElementType::CONDITION:
+                ConvertEventHandlerCondition(eventHandlerArray, eventHandlerArrayIndex, dynamic_cast<const CommonEventHandlerCondition*>(eventHandler));
+                break;
+
+            case CommonEventHandlerElementType::SCRIPT:
+                eventHandlerArray[eventHandlerArrayIndex] = ConvertEventHandlerScript(dynamic_cast<const CommonEventHandlerScript*>(eventHandler));
+                break;
+
+            case CommonEventHandlerElementType::SET_LOCAL_VAR:
+                eventHandlerArray[eventHandlerArrayIndex] = ConvertEventHandlerSetLocalVar(dynamic_cast<const CommonEventHandlerSetLocalVar*>(eventHandler));
+                break;
+            }
+        }
+
+        _NODISCARD static size_t EventHandlerSetElementCount(const CommonEventHandlerSet* eventHandlerSet)
+        {
+            auto elementCount = 0u;
+            for (const auto& element : eventHandlerSet->m_elements)
+            {
+                auto* condition = dynamic_cast<const CommonEventHandlerCondition*>(element.get());
+                if (condition && condition->m_else_elements)
+                    elementCount += 2;
+                else
+                    elementCount++;
+            }
+            return elementCount;
+        }
+
         _NODISCARD MenuEventHandlerSet* ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet) const
         {
             if (!eventHandlerSet)
                 return nullptr;
 
-            return nullptr;
+            const auto elementCount = EventHandlerSetElementCount(eventHandlerSet);
+            auto* outputSet = static_cast<MenuEventHandlerSet*>(m_memory->Alloc(sizeof(MenuEventHandlerSet) + sizeof(void*) * elementCount));
+            auto* outputElements = reinterpret_cast<MenuEventHandler**>(reinterpret_cast<int8_t*>(outputSet) + sizeof(MenuEventHandlerSet));
+
+            outputSet->eventHandlerCount = static_cast<int>(elementCount);
+            outputSet->eventHandlers = outputElements;
+
+            auto eventHandlerIndex = 0u;
+            for (const auto& element : eventHandlerSet->m_elements)
+            {
+                ConvertEventHandler(outputElements, eventHandlerIndex, element.get());
+                eventHandlerIndex++;
+            }
+
+            return outputSet;
         }
 
         _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::map<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers) const
@@ -181,7 +316,22 @@ namespace IW4
             if (keyHandlers.empty())
                 return nullptr;
 
-            return nullptr;
+            const auto keyHandlerCount = keyHandlers.size();
+            auto* output = static_cast<ItemKeyHandler*>(m_memory->Alloc(sizeof(ItemKeyHandler) * keyHandlerCount));
+            auto currentKeyHandler = keyHandlers.cbegin();
+            for (auto i = 0u; i < keyHandlerCount; i++)
+            {
+                output[i].key = currentKeyHandler->first;
+                output[i].action = ConvertEventHandlerSet(currentKeyHandler->second.get());
+
+                if (i + 1 < keyHandlerCount)
+                    output[i].next = &output[i + 1];
+                else
+                    output[i].next = nullptr;
+                ++currentKeyHandler;
+            }
+
+            return output;
         }
 
         _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
@@ -253,7 +403,7 @@ namespace IW4
             auto* items = static_cast<itemDef_s**>(m_memory->Alloc(sizeof(void*) * commonMenu.m_items.size()));
             memset(items, 0, sizeof(void*) * commonMenu.m_items.size());
 
-            for(auto i = 0u; i < commonMenu.m_items.size(); i++)
+            for (auto i = 0u; i < commonMenu.m_items.size(); i++)
                 items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
 
             return items;
