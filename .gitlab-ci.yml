@@ -28,5 +28,7 @@ test-gcc:
       - linux
     script:
         - "./build/lib/Release_x86/tests/ObjCommonTests"
+        - "./build/lib/Release_x86/tests/ObjLoadingTests"
+        - "./build/lib/Release_x86/tests/ParserTests"
         - "./build/lib/Release_x86/tests/ZoneCodeGeneratorLibTests"
         - "./build/lib/Release_x86/tests/ZoneCommonTests"
