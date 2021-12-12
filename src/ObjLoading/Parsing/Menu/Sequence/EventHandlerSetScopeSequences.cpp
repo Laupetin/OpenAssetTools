@@ -41,7 +41,11 @@ namespace menu
                     if (firstToken.m_type == SimpleParserValueType::INTEGER)
                         return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
                     if (firstToken.m_type == SimpleParserValueType::FLOATING_POINT)
-                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.FloatingPointValue())));
+                    {
+                        std::ostringstream ss;
+                        ss << std::noshowpoint << firstToken.FloatingPointValue();
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(ss.str()));
+                    }
                     return SimpleParserValue::String(firstToken.GetPos(), new std::string(firstToken.StringValue()));
                 })
             });
