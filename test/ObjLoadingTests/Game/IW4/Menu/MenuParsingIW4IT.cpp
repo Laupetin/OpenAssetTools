@@ -13,9 +13,7 @@ using namespace menu;
 using namespace IW4;
 using namespace std::literals;
 
-#define L(x) x "\n"
-
-namespace test::game::iw4::menu::parsing
+namespace test::game::iw4::menu::parsing::it
 {
 	class MenuParsingItHelper
 	{
@@ -71,14 +69,14 @@ namespace test::game::iw4::menu::parsing
 	{
 		MenuParsingItHelper helper;
 
-		helper.AddFile(""
-			L("{")
-			L("  menuDef")
-			L("  {")
-			L("    name  \"Hello\"")
-			L("  }")
-			L("}")
-		);
+		helper.AddFile(R"testmenu(
+{
+	menuDef
+	{
+		name "Hello"
+	}
+}
+			)testmenu");
 
 		const auto result = helper.RunIntegrationTest();
 		REQUIRE(result);
@@ -100,21 +98,42 @@ namespace test::game::iw4::menu::parsing
 	{
 		MenuParsingItHelper helper;
 
-		helper.AddFile(""
-			L("#define COOL_STYLE 5")
-			L("")
-			L("{")
-			L("  menuDef")
-			L("  {")
-			L("    name  \"Bla\"")
-			L("    fullScreen 1")
-			L("    screenSpace")
-			L("    decoration")
-			L("    rect (351 + 69) (1336 + 1) 12 64 1 2")
-			L("    style COOL_STYLE")
-			L("  }")
-			L("}")
-		);
+		helper.AddFile(R"testmenu(
+#define COOL_STYLE 5
+#define VISIBILITY_ENABLED 1
+#define HIDE_STUPID_ELEMENTS 0
+{
+	menuDef
+	{
+		name  "Bla"
+		fullScreen 1
+		screenSpace
+		decoration
+		rect (351 + 69) (1336 + 1) 12 64 1 2
+		style COOL_STYLE
+		visible when( VISIBILITY_ENABLED && !HIDE_STUPID_ELEMENTS )
+		onOpen
+		{
+			focusFirst;
+			play "fart_sound";
+			exec "wait 1; set r_fullbright 1";
+		}
+		onClose
+		{
+			setBackground "cute_cat.jpg";
+			if( anynewmappacks() && isreloading() )
+			{
+				exec "quit";
+			}
+			else
+			{
+				uiScript startSingleplayer;
+			}
+			setGameMode "dm"
+		}
+	}
+}
+			)testmenu");
 
 		const auto result = helper.RunIntegrationTest();
 		REQUIRE(result);
@@ -138,6 +157,56 @@ namespace test::game::iw4::menu::parsing
 		REQUIRE(menu->window.rect.horzAlign == 1);
 		REQUIRE(menu->window.rect.vertAlign == 2);
 		REQUIRE(menu->window.style == 5);
+
+		REQUIRE(menu->visibleExp != nullptr);
+		REQUIRE(menu->visibleExp->entries != nullptr);
+		REQUIRE(menu->visibleExp->numEntries == 1);
+		REQUIRE(menu->visibleExp->entries[0].type == expressionEntryType::EET_OPERAND);
+		REQUIRE(menu->visibleExp->entries[0].data.operand.dataType == expDataType::VAL_INT);
+		REQUIRE(menu->visibleExp->entries[0].data.operand.internals.intVal > 0);
+
+		REQUIRE(menu->onOpen != nullptr);
+		REQUIRE(menu->onOpen->eventHandlerCount == 1);
+		REQUIRE(menu->onOpen->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript == R"("focusFirst" ; "play" "fart_sound" ; "exec" "wait 1; set r_fullbright 1" ; )"s);
+
+		REQUIRE(menu->onClose != nullptr);
+		REQUIRE(menu->onClose->eventHandlerCount == 4);
+		REQUIRE(menu->onClose->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onClose->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[0]->eventData.unconditionalScript == R"("setBackground" "cute_cat.jpg" ; )"s);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventType == EventType::EVENT_IF);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->numEntries == 5);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[0].type == expressionEntryType::EET_OPERATOR);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[0].data.op == 102); // anynewmappacks
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[1].type == expressionEntryType::EET_OPERATOR);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[1].data.op == OP_RIGHTPAREN);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[2].type == expressionEntryType::EET_OPERATOR);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[2].data.op == OP_AND);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[3].type == expressionEntryType::EET_OPERATOR);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[3].data.op == 118); // isreloading
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[4].type == expressionEntryType::EET_OPERATOR);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventExpression->entries[4].data.op == OP_RIGHTPAREN);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlerCount == 1);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0] != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onClose->eventHandlers[1]->eventData.conditionalScript->eventHandlerSet->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "quit" ; )"s);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventType == EventType::EVENT_ELSE);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlerCount == 1);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0] != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onClose->eventHandlers[2]->eventData.elseScript->eventHandlers[0]->eventData.unconditionalScript == R"("uiScript" "startSingleplayer" ; )"s);
+		REQUIRE(menu->onClose->eventHandlers[3]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript == R"("setGameMode" "dm" ; )"s);
+
 		REQUIRE(menu->itemCount == 0);
 		REQUIRE(menu->items == nullptr);
 	}
