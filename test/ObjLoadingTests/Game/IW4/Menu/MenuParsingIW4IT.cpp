@@ -41,6 +41,16 @@ namespace test::game::iw4::menu::parsing::it
 			AddFile(DEFAULT_ASSET_NAME, std::move(data));
 		}
 
+		Material* AddMaterial(const std::string& name)
+		{
+			auto* material = m_zone.GetMemory()->Create<Material>();
+			material->info.name = m_zone.GetMemory()->Dup(name.c_str());
+
+			m_manager.MockAddAvailableDependency(ASSET_TYPE_MATERIAL, name, material);
+
+			return material;
+		}
+
 		bool RunIntegrationTest()
 		{
 			return m_asset_loader.LoadFromRaw(DEFAULT_ASSET_NAME, &m_search_path, m_zone.GetMemory(), &m_manager, &m_zone);
@@ -102,6 +112,7 @@ namespace test::game::iw4::menu::parsing::it
 #define COOL_STYLE 5
 #define VISIBILITY_ENABLED 1
 #define HIDE_STUPID_ELEMENTS 0
+#define KEY_LEET 1337
 {
 	menuDef
 	{
@@ -131,9 +142,32 @@ namespace test::game::iw4::menu::parsing::it
 			}
 			setGameMode "dm"
 		}
+		onRequestClose
+		{
+			play "nope";
+		}
+		onESC
+		{
+			setColor 1 0.5 0.1 1;
+		}
+		border 1
+		borderSize 1.25
+		backColor 1 0.8 0.4 0.95
+		foreColor 0.7
+		background	"funny_dog.png"
+		execKey "q"
+		{
+			exec "quit"
+		}
+		execKeyInt KEY_LEET
+		{
+			exec "vid_restart"
+		}
 	}
 }
 			)testmenu");
+
+		const auto* funnyDogMaterial = helper.AddMaterial("funny_dog.png");
 
 		const auto result = helper.RunIntegrationTest();
 		REQUIRE(result);
@@ -206,6 +240,65 @@ namespace test::game::iw4::menu::parsing::it
 		REQUIRE(menu->onClose->eventHandlers[3]->eventType == EventType::EVENT_UNCONDITIONAL);
 		REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript != nullptr);
 		REQUIRE(menu->onClose->eventHandlers[3]->eventData.unconditionalScript == R"("setGameMode" "dm" ; )"s);
+
+		REQUIRE(menu->onCloseRequest != nullptr);
+		REQUIRE(menu->onCloseRequest->eventHandlerCount == 1);
+		REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onCloseRequest->eventHandlers[0]->eventData.unconditionalScript == R"("play" "nope" ; )"s);
+
+		REQUIRE(menu->onESC != nullptr);
+		REQUIRE(menu->onESC->eventHandlerCount == 1);
+		REQUIRE(menu->onESC->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript == R"("setColor" "1" "0.5" "0.1" "1" ; )"s);
+
+		REQUIRE(menu->window.border == 1);
+		REQUIRE(menu->window.borderSize == Approx(1.25));
+		REQUIRE(menu->window.borderSize == Approx(1.25));
+		REQUIRE(menu->window.backColor[0] == Approx(1));
+		REQUIRE(menu->window.backColor[1] == Approx(0.8));
+		REQUIRE(menu->window.backColor[2] == Approx(0.4));
+		REQUIRE(menu->window.backColor[3] == Approx(0.95));
+		REQUIRE(menu->window.foreColor[0] == Approx(0.7));
+		REQUIRE(menu->window.foreColor[1] == Approx(0));
+		REQUIRE(menu->window.foreColor[2] == Approx(0));
+		REQUIRE(menu->window.foreColor[3] == Approx(0));
+		REQUIRE(menu->window.background == funnyDogMaterial);
+
+		REQUIRE(menu->onKey != nullptr);
+		REQUIRE(menu->onKey->next != nullptr);
+		REQUIRE(menu->onKey->next->next == nullptr);
+
+		const auto keyHandler1 = menu->onKey;
+		const auto keyHandler2 = menu->onKey->next;
+
+		ItemKeyHandler* qKeyHandler;
+		ItemKeyHandler* leetKeyHandler;
+		if(keyHandler1->key == 'q')
+		{
+			qKeyHandler = keyHandler1;
+			leetKeyHandler = keyHandler2;
+		}
+		else
+		{
+			leetKeyHandler = keyHandler1;
+			qKeyHandler = keyHandler2;
+		}
+
+		REQUIRE(qKeyHandler->key == 'q');
+		REQUIRE(qKeyHandler->action->eventHandlerCount == 1);
+		REQUIRE(qKeyHandler->action->eventHandlers != nullptr);
+		REQUIRE(qKeyHandler->action->eventHandlers[0] != nullptr);
+		REQUIRE(qKeyHandler->action->eventHandlers[0]->eventType == EVENT_UNCONDITIONAL);
+		REQUIRE(qKeyHandler->action->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "quit" ; )"s);
+
+		REQUIRE(leetKeyHandler->key == 1337);
+		REQUIRE(leetKeyHandler->action->eventHandlerCount == 1);
+		REQUIRE(leetKeyHandler->action->eventHandlers != nullptr);
+		REQUIRE(leetKeyHandler->action->eventHandlers[0] != nullptr);
+		REQUIRE(leetKeyHandler->action->eventHandlers[0]->eventType == EVENT_UNCONDITIONAL);
+		REQUIRE(leetKeyHandler->action->eventHandlers[0]->eventData.unconditionalScript == R"("exec" "vid_restart" ; )"s);
 
 		REQUIRE(menu->itemCount == 0);
 		REQUIRE(menu->items == nullptr);
