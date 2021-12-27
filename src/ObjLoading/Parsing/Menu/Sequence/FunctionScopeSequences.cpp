@@ -27,17 +27,39 @@ namespace menu::function_scope_sequences
 	protected:
 		void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
 		{
+			if (!state->m_current_function->m_value)
+			{
+				std::ostringstream ss;
+				ss << "Cannot define function name \"" << state->m_current_function->m_name << "\" without a value";
+				throw ParsingException(result.NextCapture(CAPTURE_TOKEN).GetPos(), ss.str());
+			}
+
 			const auto existingFunction = state->m_functions_by_name.find(state->m_current_function->m_name);
 			if (existingFunction == state->m_functions_by_name.end())
 			{
 				state->m_functions_by_name.emplace(std::make_pair(state->m_current_function->m_name, state->m_current_function));
 				state->m_current_function = nullptr;
 			}
-			else
+			else if (!state->m_current_function->m_value->Equals(existingFunction->second->m_value.get()))
 			{
 				std::ostringstream ss;
 				ss << "Function with name \"" << state->m_current_function->m_name << "\" already exists";
 				throw ParsingException(result.NextCapture(CAPTURE_TOKEN).GetPos(), ss.str());
+			}
+			else
+			{
+				// Remove definition of function to not re-add it
+				const auto foundFunction = std::find_if(state->m_functions.rbegin(), state->m_functions.rend(), [state](const auto& element)
+				{
+					return element.get() == state->m_current_function;
+				});
+				
+				assert(foundFunction != state->m_functions.rend());
+				assert((foundFunction + 1).base()->get() == state->m_current_function);
+				if (foundFunction != state->m_functions.rend())
+					state->m_functions.erase((foundFunction + 1).base());
+
+				state->m_current_function = nullptr;
 			}
 		}
 	};
