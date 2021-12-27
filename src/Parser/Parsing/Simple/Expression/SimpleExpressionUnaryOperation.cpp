@@ -64,6 +64,13 @@ bool SimpleExpressionUnaryOperation::OperandNeedsParenthesis() const
     return dynamic_cast<const SimpleExpressionBinaryOperation*>(m_operand.get()) != nullptr;
 }
 
+bool SimpleExpressionUnaryOperation::Equals(const ISimpleExpression* other) const
+{
+    const auto* otherUnaryOperation = dynamic_cast<const SimpleExpressionUnaryOperation*>(other);
+
+    return otherUnaryOperation && m_operation_type->m_id == otherUnaryOperation->m_operation_type->m_id && m_operand->Equals(otherUnaryOperation->m_operand.get());
+}
+
 bool SimpleExpressionUnaryOperation::IsStatic() const
 {
     assert(m_operand);

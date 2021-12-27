@@ -24,6 +24,23 @@ SimpleExpressionValue::SimpleExpressionValue(const int intValue)
     m_int_value = intValue;
 }
 
+bool SimpleExpressionValue::Equals(const ISimpleExpression* other) const
+{
+    const auto* otherExpressionValue = dynamic_cast<const SimpleExpressionValue*>(other);
+
+    if (!otherExpressionValue || m_type != otherExpressionValue->m_type)
+        return false;
+
+    if (m_type == Type::INT)
+        return m_int_value == otherExpressionValue->m_int_value;
+    if (m_type == Type::DOUBLE)
+        return std::fabs(m_double_value - otherExpressionValue->m_double_value) < std::numeric_limits<double>::epsilon();
+    if (m_type == Type::STRING)
+        return *m_string_value == *otherExpressionValue->m_string_value;
+
+    return true;
+}
+
 bool SimpleExpressionValue::IsStatic() const
 {
     return true;

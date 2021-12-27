@@ -7,6 +7,29 @@ CommonExpressionFunctionCall::CommonExpressionFunctionCall(std::string functionN
 {
 }
 
+bool CommonExpressionFunctionCall::Equals(const ISimpleExpression* other) const
+{
+    const auto otherFunctionCall = dynamic_cast<const CommonExpressionFunctionCall*>(other);
+
+    if (!otherFunctionCall 
+        || m_function_name != otherFunctionCall->m_function_name
+        || m_args.size() != otherFunctionCall->m_args.size())
+    {
+        return false;
+    }
+
+    for(auto i = 0u; i < m_args.size(); i++)
+    {
+        const auto* arg = m_args[i].get();
+        const auto* otherArg = otherFunctionCall->m_args[i].get();
+
+        if (!arg->Equals(otherArg))
+            return false;
+    }
+
+    return true;
+}
+
 bool CommonExpressionFunctionCall::IsStatic() const
 {
     return false;

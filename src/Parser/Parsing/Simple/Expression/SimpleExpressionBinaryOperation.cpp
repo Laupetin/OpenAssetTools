@@ -443,6 +443,16 @@ bool SimpleExpressionBinaryOperation::Operand2NeedsParenthesis() const
     return operation && operation->m_operation_type->m_precedence > m_operation_type->m_precedence;
 }
 
+bool SimpleExpressionBinaryOperation::Equals(const ISimpleExpression* other) const
+{
+    const auto* otherBinaryOperation = dynamic_cast<const SimpleExpressionBinaryOperation*>(other);
+
+    return otherBinaryOperation
+        && m_operation_type->m_id == otherBinaryOperation->m_operation_type->m_id
+        && m_operand1->Equals(otherBinaryOperation->m_operand1.get())
+        && m_operand2->Equals(otherBinaryOperation->m_operand2.get());
+}
+
 bool SimpleExpressionBinaryOperation::IsStatic() const
 {
     assert(m_operand1 && m_operand2);

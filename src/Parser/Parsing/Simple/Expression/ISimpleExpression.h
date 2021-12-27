@@ -14,6 +14,7 @@ public:
     ISimpleExpression& operator=(const ISimpleExpression& other) = default;
     ISimpleExpression& operator=(ISimpleExpression&& other) noexcept = default;
 
+    _NODISCARD virtual bool Equals(const ISimpleExpression* other) const = 0;
     _NODISCARD virtual bool IsStatic() const = 0;
     _NODISCARD virtual SimpleExpressionValue Evaluate() const = 0;
 };

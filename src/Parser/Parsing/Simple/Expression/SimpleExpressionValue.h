@@ -29,6 +29,7 @@ public:
     explicit SimpleExpressionValue(double doubleValue);
     explicit SimpleExpressionValue(int intValue);
 
+    _NODISCARD bool Equals(const ISimpleExpression* other) const override;
     _NODISCARD bool IsStatic() const override;
     _NODISCARD SimpleExpressionValue Evaluate() const override;
     _NODISCARD bool IsTruthy() const;

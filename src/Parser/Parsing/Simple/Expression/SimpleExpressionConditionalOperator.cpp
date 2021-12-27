@@ -11,6 +11,16 @@ SimpleExpressionConditionalOperator::SimpleExpressionConditionalOperator(std::un
 {
 }
 
+bool SimpleExpressionConditionalOperator::Equals(const ISimpleExpression* other) const
+{
+    const auto* otherConditionalOperator = dynamic_cast<const SimpleExpressionConditionalOperator*>(other);
+
+    return otherConditionalOperator
+        && m_condition->Equals(otherConditionalOperator->m_condition.get())
+        && m_true_value->Equals(otherConditionalOperator->m_true_value.get())
+        && m_false_value->Equals(otherConditionalOperator->m_false_value.get());
+}
+
 bool SimpleExpressionConditionalOperator::IsStatic() const
 {
     return m_condition->IsStatic() && m_true_value->IsStatic() && m_false_value->IsStatic();
