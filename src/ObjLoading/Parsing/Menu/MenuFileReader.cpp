@@ -79,25 +79,25 @@ bool MenuFileReader::IsValidEndState(const MenuFileParserState* state) const
 {
     if (state->m_current_item)
     {
-        std::cout << "In \"" << m_file_name << "\": Unclosed item at end of file!\n";
+        std::cerr << "In \"" << m_file_name << "\": Unclosed item at end of file!\n";
         return false;
     }
 
     if (state->m_current_menu)
     {
-        std::cout << "In \"" << m_file_name << "\": Unclosed menu at end of file!\n";
+        std::cerr << "In \"" << m_file_name << "\": Unclosed menu at end of file!\n";
         return false;
     }
 
     if (state->m_current_function)
     {
-        std::cout << "In \"" << m_file_name << "\": Unclosed function at end of file!\n";
+        std::cerr << "In \"" << m_file_name << "\": Unclosed function at end of file!\n";
         return false;
     }
 
     if (state->m_in_global_scope)
     {
-        std::cout << "In \"" << m_file_name << "\": Did not close global scope!\n";
+        std::cerr << "In \"" << m_file_name << "\": Did not close global scope!\n";
         return false;
     }
 
@@ -137,11 +137,11 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
 
     if (!parser->Parse())
     {
-        std::cout << "Parsing menu file failed!" << std::endl;
+        std::cerr << "Parsing menu file failed!" << std::endl;
 
         const auto* parserEndState = parser->GetState();
         if(parserEndState->m_current_event_handler_set && !parserEndState->m_permissive_mode)
-            std::cout << "You can use the --menu-permissive option to try to compile the event handler script anyway." << std::endl;
+            std::cerr << "You can use the --menu-permissive option to try to compile the event handler script anyway." << std::endl;
         return nullptr;
     }
 
