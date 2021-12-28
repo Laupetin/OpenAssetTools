@@ -29,7 +29,7 @@ bool AssetLoaderMenuList::ShouldLoadMenuFile(const std::string& menuFilePath, me
     const auto alreadyLoadedFile = zoneState->m_loaded_files.find(menuFilePath);
     if (alreadyLoadedFile == zoneState->m_loaded_files.end())
     {
-        zoneState->m_loaded_files.emplace(menuFilePath);
+        zoneState->AddLoadedFile(menuFilePath);
         return true;
     }
 
@@ -50,10 +50,10 @@ void AssetLoaderMenuList::AddMenuFilesToLoadToQueue(std::deque<std::string>& que
 void AssetLoaderMenuList::AddResultsToZoneState(menu::ParsingResult* parsingResult, menu::MenuAssetZoneState* zoneState)
 {
     for (auto& function : parsingResult->m_functions)
-        zoneState->m_functions.emplace_back(std::move(function));
+        zoneState->AddFunction(std::move(function));
 
     for (auto& menu : parsingResult->m_menus)
-        zoneState->m_menus.emplace_back(std::move(menu));
+        zoneState->AddMenu(std::move(menu));
 }
 
 bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,

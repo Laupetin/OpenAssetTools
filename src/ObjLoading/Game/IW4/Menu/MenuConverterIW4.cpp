@@ -3,14 +3,16 @@
 #include <cassert>
 #include <cstring>
 
+#include "MenuConversionZoneStateIW4.h"
 #include "Game/IW4/MenuConstantsIW4.h"
-#include "Game/T5/T5_Assets.h"
 #include "Utils/ClassUtils.h"
 #include "Menu/AbstractMenuConverter.h"
+#include "Parsing/Menu/MenuAssetZoneState.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerCondition.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerScript.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerSetLocalVar.h"
-#include "Parsing/Menu/Domain/Expression/CommonExpressionFunctionCall.h"
+#include "Parsing/Menu/Domain/Expression/CommonExpressionBaseFunctionCall.h"
+#include "Parsing/Menu/Domain/Expression/CommonExpressionCustomFunctionCall.h"
 #include "Parsing/Simple/Expression/SimpleExpressionBinaryOperation.h"
 #include "Parsing/Simple/Expression/SimpleExpressionConditionalOperator.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
@@ -22,6 +24,9 @@ namespace IW4
 {
     class MenuConverterImpl : public AbstractMenuConverter
     {
+        MenuConversionZoneState* m_conversion_zone_state;
+        MenuAssetZoneState* m_parsing_zone_state;
+
         static void ApplyMenuDefaults(menuDef_t* menu)
         {
             memset(menu, 0, sizeof(menuDef_t));
@@ -90,39 +95,16 @@ namespace IW4
             return static_cast<Material*>(materialDependency->m_ptr);
         }
 
-        static const std::map<std::string, int>& GetFunctionMap()
+        void ConvertExpressionEntryBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
+                                                    const CommonItemDef* item) const
         {
-            static std::map<std::string, int> mappings;
-            static bool initialized = false;
-
-            if(!initialized)
-            {
-                for(size_t i = EXP_FUNC_DYN_START; i < std::extent_v<decltype(g_expFunctionNames)>; i++)
-                {
-                    mappings[g_expFunctionNames[i]] = static_cast<int>(i);
-                }
-                initialized = true;
-            }
-
-            return mappings;
-        }
-
-        void ConvertExpressionEntryFunctionCall(std::vector<expressionEntry>& entries, const CommonExpressionFunctionCall* functionCall, const CommonMenuDef* menu,
-            const CommonItemDef* item) const
-        {
-            const auto& functionMappings = GetFunctionMap();
-
-            const auto foundMapping = functionMappings.find(functionCall->m_function_name);
-            if (foundMapping == functionMappings.end())
-                throw MenuConversionException("Could not find function \"" + functionCall->m_function_name + "\"", menu, item);
-
             expressionEntry functionEntry{};
             functionEntry.type = EET_OPERATOR;
-            functionEntry.data.op = foundMapping->second;
+            functionEntry.data.op = static_cast<int>(functionCall->m_function_index);
             entries.emplace_back(functionEntry);
 
             auto firstArg = true;
-            for(const auto& arg : functionCall->m_args)
+            for (const auto& arg : functionCall->m_args)
             {
                 if (!firstArg)
                 {
@@ -134,13 +116,40 @@ namespace IW4
                 else
                     firstArg = false;
 
-                ConvertExpressionEntry(entries, arg.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, arg.get(), menu, item);
             }
 
             expressionEntry parenRight{};
             parenRight.type = EET_OPERATOR;
             parenRight.data.op = OP_RIGHTPAREN;
             entries.emplace_back(parenRight);
+        }
+
+        void ConvertExpressionEntryCustomFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionCustomFunctionCall* functionCall, const CommonMenuDef* menu,
+                                                      const CommonItemDef* item) const
+        {
+            Statement_s* functionStatement = m_conversion_zone_state->FindFunction(functionCall->m_function_name);
+
+            if (functionStatement == nullptr)
+            {
+                // Function was not converted yet: Convert it now
+                const auto foundCommonFunction = m_parsing_zone_state->m_functions_by_name.find(functionCall->m_function_name);
+
+                if (foundCommonFunction == m_parsing_zone_state->m_functions_by_name.end())
+                    throw MenuConversionException("Failed to find definition for custom function \"" + functionCall->m_function_name + "\"", menu, item);
+
+                functionStatement = ConvertExpression(foundCommonFunction->second->m_value.get(), menu, item);
+                functionStatement = m_conversion_zone_state->AddFunction(foundCommonFunction->second->m_name, functionStatement);
+            }
+
+            expressionEntry functionEntry{};
+            functionEntry.type = EET_OPERATOR;
+            functionEntry.data.operand.dataType = VAL_FUNCTION;
+            functionEntry.data.operand.internals.function = functionStatement;
+            entries.emplace_back(functionEntry);
+
+            // Statement uses custom function so it needs supporting data
+            gameStatement->supportingData = m_conversion_zone_state->m_supporting_data;
         }
 
         constexpr static expressionOperatorType_e UNARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleUnaryOperationId::COUNT)]
@@ -150,7 +159,7 @@ namespace IW4
             OP_SUBTRACT
         };
 
-        void ConvertExpressionEntryUnaryOperation(std::vector<expressionEntry>& entries, const SimpleExpressionUnaryOperation* unaryOperation, const CommonMenuDef* menu,
+        void ConvertExpressionEntryUnaryOperation(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const SimpleExpressionUnaryOperation* unaryOperation, const CommonMenuDef* menu,
                                                   const CommonItemDef* item) const
         {
             assert(static_cast<unsigned>(unaryOperation->m_operation_type->m_id) < static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
@@ -166,7 +175,7 @@ namespace IW4
                 parenLeft.data.op = OP_LEFTPAREN;
                 entries.emplace_back(parenLeft);
 
-                ConvertExpressionEntry(entries, unaryOperation->m_operand.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, unaryOperation->m_operand.get(), menu, item);
 
                 expressionEntry parenRight{};
                 parenRight.type = EET_OPERATOR;
@@ -174,7 +183,7 @@ namespace IW4
                 entries.emplace_back(parenRight);
             }
             else
-                ConvertExpressionEntry(entries, unaryOperation->m_operand.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, unaryOperation->m_operand.get(), menu, item);
         }
 
         constexpr static expressionOperatorType_e BINARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleBinaryOperationId::COUNT)]
@@ -198,7 +207,7 @@ namespace IW4
             OP_OR
         };
 
-        void ConvertExpressionEntryBinaryOperation(std::vector<expressionEntry>& entries, const SimpleExpressionBinaryOperation* binaryOperation, const CommonMenuDef* menu,
+        void ConvertExpressionEntryBinaryOperation(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const SimpleExpressionBinaryOperation* binaryOperation, const CommonMenuDef* menu,
                                                    const CommonItemDef* item) const
         {
             if (binaryOperation->Operand1NeedsParenthesis())
@@ -208,7 +217,7 @@ namespace IW4
                 parenLeft.data.op = OP_LEFTPAREN;
                 entries.emplace_back(parenLeft);
 
-                ConvertExpressionEntry(entries, binaryOperation->m_operand1.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand1.get(), menu, item);
 
                 expressionEntry parenRight{};
                 parenRight.type = EET_OPERATOR;
@@ -216,7 +225,7 @@ namespace IW4
                 entries.emplace_back(parenRight);
             }
             else
-                ConvertExpressionEntry(entries, binaryOperation->m_operand1.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand1.get(), menu, item);
 
             assert(static_cast<unsigned>(binaryOperation->m_operation_type->m_id) < static_cast<unsigned>(SimpleBinaryOperationId::COUNT));
             expressionEntry operation{};
@@ -231,7 +240,7 @@ namespace IW4
                 parenLeft.data.op = OP_LEFTPAREN;
                 entries.emplace_back(parenLeft);
 
-                ConvertExpressionEntry(entries, binaryOperation->m_operand2.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand2.get(), menu, item);
 
                 expressionEntry parenRight{};
                 parenRight.type = EET_OPERATOR;
@@ -239,7 +248,7 @@ namespace IW4
                 entries.emplace_back(parenRight);
             }
             else
-                ConvertExpressionEntry(entries, binaryOperation->m_operand2.get(), menu, item);
+                ConvertExpressionEntry(gameStatement, entries, binaryOperation->m_operand2.get(), menu, item);
         }
 
         void ConvertExpressionEntryExpressionValue(std::vector<expressionEntry>& entries, const SimpleExpressionValue* expressionValue) const
@@ -266,7 +275,7 @@ namespace IW4
             entries.emplace_back(entry);
         }
 
-        void ConvertExpressionEntry(std::vector<expressionEntry>& entries, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item) const
+        void ConvertExpressionEntry(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item) const
         {
             if (!m_disable_optimizations && expression->IsStatic())
             {
@@ -279,15 +288,19 @@ namespace IW4
             }
             else if (const auto* binaryOperation = dynamic_cast<const SimpleExpressionBinaryOperation*>(expression))
             {
-                ConvertExpressionEntryBinaryOperation(entries, binaryOperation, menu, item);
+                ConvertExpressionEntryBinaryOperation(gameStatement, entries, binaryOperation, menu, item);
             }
             else if (const auto* unaryOperation = dynamic_cast<const SimpleExpressionUnaryOperation*>(expression))
             {
-                ConvertExpressionEntryUnaryOperation(entries, unaryOperation, menu, item);
+                ConvertExpressionEntryUnaryOperation(gameStatement, entries, unaryOperation, menu, item);
             }
-            else if (const auto* functionCall = dynamic_cast<const CommonExpressionFunctionCall*>(expression))
+            else if (const auto* baseFunctionCall = dynamic_cast<const CommonExpressionBaseFunctionCall*>(expression))
             {
-                ConvertExpressionEntryFunctionCall(entries, functionCall, menu, item);
+                ConvertExpressionEntryBaseFunctionCall(gameStatement, entries, baseFunctionCall, menu, item);
+            }
+            else if (const auto* customFunctionCall = dynamic_cast<const CommonExpressionCustomFunctionCall*>(expression))
+            {
+                ConvertExpressionEntryCustomFunctionCall(gameStatement, entries, customFunctionCall, menu, item);
             }
             else if (dynamic_cast<const SimpleExpressionConditionalOperator*>(expression))
             {
@@ -308,19 +321,17 @@ namespace IW4
             auto* statement = m_memory->Create<Statement_s>();
             statement->lastResult = Operand{};
             statement->lastExecuteTime = 0;
+            statement->supportingData = nullptr; // Supporting data is set upon using it
 
             std::vector<expressionEntry> expressionEntries;
 
-            ConvertExpressionEntry(expressionEntries, expression, menu, item);
+            ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
 
             auto* outputExpressionEntries = static_cast<expressionEntry*>(m_memory->Alloc(sizeof(expressionEntry) * expressionEntries.size()));
             memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
 
             statement->entries = outputExpressionEntries;
             statement->numEntries = static_cast<int>(expressionEntries.size());
-
-            // TODO: Add supporting data
-            statement->supportingData = nullptr;
 
             return statement;
         }
@@ -646,8 +657,12 @@ namespace IW4
 
     public:
         MenuConverterImpl(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
-            : AbstractMenuConverter(disableOptimizations, searchPath, memory, manager)
+            : AbstractMenuConverter(disableOptimizations, searchPath, memory, manager),
+              m_conversion_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<MenuConversionZoneState>()),
+              m_parsing_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<MenuAssetZoneState>())
         {
+            assert(m_conversion_zone_state);
+            assert(m_parsing_zone_state);
         }
 
         _NODISCARD menuDef_t* ConvertMenu(const CommonMenuDef& commonMenu) const
@@ -697,6 +712,7 @@ namespace IW4
             menu->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
             menu->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
             menu->items = ConvertMenuItems(commonMenu);
+            menu->expressionData = m_conversion_zone_state->m_supporting_data;
 
             return menu;
         }

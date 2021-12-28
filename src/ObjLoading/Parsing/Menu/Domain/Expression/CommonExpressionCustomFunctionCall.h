@@ -1,17 +1,15 @@
 #pragma once
-#include <vector>
 
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace menu
 {
-    class CommonExpressionFunctionCall final : public ISimpleExpression
+    class CommonExpressionCustomFunctionCall final : public ISimpleExpression
     {
     public:
         std::string m_function_name;
-        std::vector<std::unique_ptr<ISimpleExpression>> m_args;
 
-        explicit CommonExpressionFunctionCall(std::string functionName);
+        explicit CommonExpressionCustomFunctionCall(std::string functionName);
 
         _NODISCARD bool Equals(const ISimpleExpression* other) const override;
         _NODISCARD bool IsStatic() const override;

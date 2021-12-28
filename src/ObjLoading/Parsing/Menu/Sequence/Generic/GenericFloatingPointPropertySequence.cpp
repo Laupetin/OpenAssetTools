@@ -23,7 +23,7 @@ void GenericFloatingPointPropertySequence::ProcessMatch(MenuFileParserState* sta
 {
     if (m_set_callback)
     {
-        const auto value = MenuMatcherFactory::TokenNumericExpressionValue(result);
+        const auto value = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value);
     }
 }

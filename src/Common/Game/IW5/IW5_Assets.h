@@ -2315,6 +2315,8 @@ namespace IW5
         EXP_FUNC_STATIC_DVAR_BOOL,
         EXP_FUNC_STATIC_DVAR_FLOAT,
         EXP_FUNC_STATIC_DVAR_STRING,
+
+        EXP_FUNC_DYN_START
     };
 
     enum expressionEntryType : int

@@ -65,7 +65,7 @@ void GenericExpressionPropertySequence::ProcessMatch(MenuFileParserState* state,
 {
     if (m_set_callback)
     {
-        const MenuExpressionMatchers expressionMatchers;
+        const MenuExpressionMatchers expressionMatchers(state);
         auto expression = expressionMatchers.ProcessExpression(result);
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(expression));
     }

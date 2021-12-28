@@ -101,7 +101,7 @@ std::string& MenuMatcherFactory::TokenTextValue(const SimpleParserValue& value)
     return value.StringValue();
 }
 
-int MenuMatcherFactory::TokenIntExpressionValue(SequenceResult<SimpleParserValue>& result)
+int MenuMatcherFactory::TokenIntExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     const auto nextTag = result.PeekTag();
 
@@ -115,7 +115,7 @@ int MenuMatcherFactory::TokenIntExpressionValue(SequenceResult<SimpleParserValue
     if (nextTag == TAG_EXPRESSION)
     {
         result.NextTag();
-        const auto expression = MenuExpressionMatchers().ProcessExpression(result);
+        const auto expression = MenuExpressionMatchers(state).ProcessExpression(result);
 
         if (!expression || !expression->IsStatic())
             throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Not a valid static expression");
@@ -131,7 +131,7 @@ int MenuMatcherFactory::TokenIntExpressionValue(SequenceResult<SimpleParserValue
     throw ParsingException(TokenPos(), "TokenIntExpressionValue must be expression or int");
 }
 
-double MenuMatcherFactory::TokenNumericExpressionValue(SequenceResult<SimpleParserValue>& result)
+double MenuMatcherFactory::TokenNumericExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     const auto nextTag = result.PeekTag();
 
@@ -145,7 +145,7 @@ double MenuMatcherFactory::TokenNumericExpressionValue(SequenceResult<SimplePars
     if (nextTag == TAG_EXPRESSION)
     {
         result.NextTag();
-        const auto expression = MenuExpressionMatchers().ProcessExpression(result);
+        const auto expression = MenuExpressionMatchers(state).ProcessExpression(result);
 
         if (!expression || !expression->IsStatic())
             throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Not a valid static expression");

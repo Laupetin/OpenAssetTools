@@ -124,10 +124,10 @@ namespace menu::menu_scope_sequences
         {
             assert(state->m_current_menu);
 
-            const auto x = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            const auto y = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            const auto w = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            const auto h = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            const auto x = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            const auto y = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            const auto w = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            const auto h = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
             CommonRect rect
             {
                 x,

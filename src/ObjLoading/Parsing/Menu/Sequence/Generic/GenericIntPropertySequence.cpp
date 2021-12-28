@@ -23,7 +23,7 @@ void GenericIntPropertySequence::ProcessMatch(MenuFileParserState* state, Sequen
 {
     if (m_set_callback)
     {
-        const auto value = MenuMatcherFactory::TokenIntExpressionValue(result);
+        const auto value = MenuMatcherFactory::TokenIntExpressionValue(state, result);
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), value);
     }
 }

@@ -22,10 +22,10 @@ GenericColorPropertySequence::GenericColorPropertySequence(std::string keywordNa
     });
 }
 
-double GenericColorPropertySequence::ReadColorValue(SequenceResult<SimpleParserValue>& result)
+double GenericColorPropertySequence::ReadColorValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
 {
     if (result.PeekAndRemoveIfTag(TAG_COLOR) == TAG_COLOR)
-        return MenuMatcherFactory::TokenNumericExpressionValue(result);
+        return MenuMatcherFactory::TokenNumericExpressionValue(state, result);
 
     return 0.0;
 }
@@ -35,10 +35,10 @@ void GenericColorPropertySequence::ProcessMatch(MenuFileParserState* state, Sequ
     if (m_set_callback)
     {
         CommonColor color{};
-        color.r = ReadColorValue(result);
-        color.g = ReadColorValue(result);
-        color.b = ReadColorValue(result);
-        color.a = ReadColorValue(result);
+        color.r = ReadColorValue(state, result);
+        color.g = ReadColorValue(state, result);
+        color.b = ReadColorValue(state, result);
+        color.a = ReadColorValue(state, result);
 
         m_set_callback(state, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), color);
     }

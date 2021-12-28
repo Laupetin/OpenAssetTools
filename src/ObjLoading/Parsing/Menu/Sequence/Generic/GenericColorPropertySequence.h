@@ -20,7 +20,7 @@ namespace menu
 
         const callback_t m_set_callback;
 
-        static double ReadColorValue(SequenceResult<SimpleParserValue>& result);
+        static double ReadColorValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
 
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override;

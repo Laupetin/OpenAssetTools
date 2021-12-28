@@ -582,7 +582,7 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            const MenuExpressionMatchers expressionMatchers;
+            const MenuExpressionMatchers expressionMatchers(state);
 
             const auto typeTag = static_cast<SetLocalVarType>(result.NextTag());
             const auto& varNameToken = result.NextCapture(CAPTURE_VAR_NAME);
@@ -623,7 +623,7 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            const MenuExpressionMatchers expressionMatchers;
+            const MenuExpressionMatchers expressionMatchers(state);
             auto expression = expressionMatchers.ProcessExpression(result);
 
             if (!expression)
@@ -668,7 +668,7 @@ namespace menu::event_handler_set_scope_sequences
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            const MenuExpressionMatchers expressionMatchers;
+            const MenuExpressionMatchers expressionMatchers(state);
             auto expression = expressionMatchers.ProcessExpression(result);
 
             if (!expression)
@@ -708,9 +708,7 @@ namespace menu::event_handler_set_scope_sequences
         {
             const ScriptMatcherFactory create(this);
             const MenuExpressionMatchers expressionMatchers;
-
-            AddLabeledMatchers(expressionMatchers.Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
-
+            
             AddMatchers({
                 create.Char('}'),
                 create.Keyword("else").Capture(CAPTURE_KEYWORD),

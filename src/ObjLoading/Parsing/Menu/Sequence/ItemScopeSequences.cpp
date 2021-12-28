@@ -188,10 +188,10 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            const auto x = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            const auto y = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            const auto w = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            const auto h = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            const auto x = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            const auto y = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            const auto w = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            const auto h = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
             CommonRect rect
             {
                 x,
@@ -231,8 +231,8 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            state->m_current_item->m_rect.x = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            state->m_current_item->m_rect.y = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            state->m_current_item->m_rect.x = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            state->m_current_item->m_rect.y = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
         }
     };
 
@@ -261,9 +261,9 @@ namespace menu::item_scope_sequences
         {
             assert(state->m_current_item);
 
-            state->m_current_item->m_fx_letter_time = MenuMatcherFactory::TokenIntExpressionValue(result);
-            state->m_current_item->m_fx_decay_start_time = MenuMatcherFactory::TokenIntExpressionValue(result);
-            state->m_current_item->m_fx_decay_duration = MenuMatcherFactory::TokenIntExpressionValue(result);
+            state->m_current_item->m_fx_letter_time = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+            state->m_current_item->m_fx_decay_start_time = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+            state->m_current_item->m_fx_decay_duration = MenuMatcherFactory::TokenIntExpressionValue(state, result);
         }
     };
 
@@ -341,9 +341,9 @@ namespace menu::item_scope_sequences
 
             ItemScopeOperations::EnsureHasEditFieldFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
             state->m_current_item->m_dvar = MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_DVAR_NAME));
-            state->m_current_item->m_edit_field_features->m_def_val = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            state->m_current_item->m_edit_field_features->m_min_val = MenuMatcherFactory::TokenNumericExpressionValue(result);
-            state->m_current_item->m_edit_field_features->m_max_val = MenuMatcherFactory::TokenNumericExpressionValue(result);
+            state->m_current_item->m_edit_field_features->m_def_val = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            state->m_current_item->m_edit_field_features->m_min_val = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
+            state->m_current_item->m_edit_field_features->m_max_val = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
         }
     };
 
@@ -422,7 +422,7 @@ namespace menu::item_scope_sequences
             while (result.HasNextCapture(CAPTURE_STEP_NAME))
             {
                 multiValueFeatures->m_step_names.emplace_back(MenuMatcherFactory::TokenTextValue(result.NextCapture(CAPTURE_STEP_NAME)));
-                multiValueFeatures->m_double_values.emplace_back(MenuMatcherFactory::TokenNumericExpressionValue(result));
+                multiValueFeatures->m_double_values.emplace_back(MenuMatcherFactory::TokenNumericExpressionValue(state, result));
             }
         }
     };
