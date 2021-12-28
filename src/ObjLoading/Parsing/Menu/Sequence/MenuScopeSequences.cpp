@@ -338,6 +338,14 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_menu->m_rect_h_exp = std::move(value);
     }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "openSound"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_open_sound_exp = std::move(value);
+    }));
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "closeSound"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    {
+        state->m_current_menu->m_close_sound_exp = std::move(value);
+    }));
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("popup", [](const MenuFileParserState* state, const TokenPos&)
     {
         state->m_current_menu->m_popup = true;
