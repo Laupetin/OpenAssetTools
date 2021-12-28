@@ -148,5 +148,7 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
             return nullptr;
     }
 
+    ObjLoading::FinalizeAssetsForZone(assetLoadingContext.get());
+
     return zone;
 }

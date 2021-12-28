@@ -185,3 +185,9 @@ bool ObjLoader::LoadAssetForZone(AssetLoadingContext* context, asset_type_t asse
     AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, *context);
     return assetLoadingManager.LoadAssetFromLoader(assetType, assetName);
 }
+
+void ObjLoader::FinalizeAssetsForZone(AssetLoadingContext* context) const
+{
+    for (const auto& [type, loader] : m_asset_loaders_by_type)
+        loader->FinalizeAssetsForZone(context);
+}

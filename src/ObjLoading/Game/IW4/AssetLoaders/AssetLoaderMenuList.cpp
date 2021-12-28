@@ -5,6 +5,7 @@
 
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/Menu/MenuConversionZoneStateIW4.h"
 #include "Game/IW4/Menu/MenuConverterIW4.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "Pool/GlobalAssetPool.h"
@@ -157,4 +158,9 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         manager->AddAsset(ASSET_TYPE_MENULIST, assetName, menuListAsset);
 
     return true;
+}
+
+void AssetLoaderMenuList::FinalizeAssetsForZone(AssetLoadingContext* context) const
+{
+    context->GetZoneAssetLoaderState<MenuConversionZoneState>()->FinalizeSupportingData();
 }

@@ -23,5 +23,6 @@ namespace IW4
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
         _NODISCARD bool CanLoadFromRaw() const override;
         bool LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
+        void FinalizeAssetsForZone(AssetLoadingContext* context) const override;
     };
 }

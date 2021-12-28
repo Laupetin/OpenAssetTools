@@ -55,4 +55,5 @@ public:
     static void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone);
 
     static bool LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName);
+    static void FinalizeAssetsForZone(AssetLoadingContext* context);
 };

@@ -68,7 +68,7 @@ void ObjLoading::LoadIWDsInSearchPath(ISearchPath* searchPath)
         if (file->is_open())
         {
             auto iwd = std::make_unique<IWD>(path, std::move(file));
-            
+
             if (iwd->Initialize())
             {
                 IWD::Repository.AddContainer(std::move(iwd), searchPath);
@@ -105,4 +105,16 @@ bool ObjLoading::LoadAssetForZone(AssetLoadingContext* context, const asset_type
     }
 
     return false;
+}
+
+void ObjLoading::FinalizeAssetsForZone(AssetLoadingContext* context)
+{
+    for (const auto* loader : OBJ_LOADERS)
+    {
+        if (loader->SupportsZone(context->m_zone))
+        {
+            loader->FinalizeAssetsForZone(context);
+            return;
+        }
+    }
 }

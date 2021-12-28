@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -19,7 +19,7 @@ namespace T6
         static const int IPAK_READ_HASH;
         static const int GLOBAL_HASH;
 
-        std::unordered_map<asset_type_t, std::unique_ptr<IAssetLoader>> m_asset_loaders_by_type;
+        std::map<asset_type_t, std::unique_ptr<IAssetLoader>> m_asset_loaders_by_type;
 
         static bool VerifySoundBankChecksum(const SoundBank* soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank);
         static SoundBank* LoadSoundBankForZone(ISearchPath* searchPath, const std::string& soundBankFileName, Zone* zone);
@@ -48,5 +48,6 @@ namespace T6
         void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) const override;
 
         bool LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName) const override;
+        void FinalizeAssetsForZone(AssetLoadingContext* context) const override;
     };
 }

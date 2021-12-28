@@ -1,7 +1,7 @@
 #include "AssetLoadingManager.h"
 #include <iostream>
 
-AssetLoadingManager::AssetLoadingManager(const std::unordered_map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType, AssetLoadingContext& context):
+AssetLoadingManager::AssetLoadingManager(const std::map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType, AssetLoadingContext& context):
     m_asset_loaders_by_type(assetLoadersByType),
     m_context(context),
     m_last_dependency_loaded(nullptr)

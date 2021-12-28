@@ -37,4 +37,5 @@ public:
     virtual void LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) const = 0;
 
     virtual bool LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName) const = 0;
+    virtual void FinalizeAssetsForZone(AssetLoadingContext* context) const = 0;
 };

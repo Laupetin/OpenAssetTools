@@ -145,7 +145,8 @@ namespace T6
         return nullptr;
     }
 
-    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath* searchPath, const std::string& soundBankFileName, const SndRuntimeAssetBank* sndBankLinkedInfo, Zone* zone, std::set<std::string>& loadedBanksForZone, std::stack<std::string>& dependenciesToLoad)
+    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath* searchPath, const std::string& soundBankFileName, const SndRuntimeAssetBank* sndBankLinkedInfo, Zone* zone,
+                                                std::set<std::string>& loadedBanksForZone, std::stack<std::string>& dependenciesToLoad)
     {
         if (loadedBanksForZone.find(soundBankFileName) == loadedBanksForZone.end())
         {
@@ -183,7 +184,7 @@ namespace T6
             LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, &sndBank->loadAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
         }
 
-        while(!dependenciesToLoad.empty())
+        while (!dependenciesToLoad.empty())
         {
             auto dependencyFileName = dependenciesToLoad.top();
             dependenciesToLoad.pop();
@@ -453,5 +454,11 @@ namespace T6
     {
         AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, *context);
         return assetLoadingManager.LoadAssetFromLoader(assetType, assetName);
+    }
+
+    void ObjLoader::FinalizeAssetsForZone(AssetLoadingContext* context) const
+    {
+        for (const auto& [type, loader] : m_asset_loaders_by_type)
+            loader->FinalizeAssetsForZone(context);
     }
 }

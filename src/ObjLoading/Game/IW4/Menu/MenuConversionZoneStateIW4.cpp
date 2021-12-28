@@ -1,5 +1,7 @@
 #include "MenuConversionZoneStateIW4.h"
 
+#include <cstring>
+
 using namespace IW4;
 
 MenuConversionZoneState::MenuConversionZoneState()
