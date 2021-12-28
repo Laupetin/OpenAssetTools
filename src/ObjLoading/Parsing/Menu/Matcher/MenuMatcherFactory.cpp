@@ -37,6 +37,11 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Text() const
     return MatcherFactoryWrapper(Or({StringChain(), Identifier()}));
 }
 
+MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextNoChain() const
+{
+    return MatcherFactoryWrapper(Or({String(), Identifier()}));
+}
+
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Numeric() const
 {
     return MatcherFactoryWrapper(Or({FloatingPoint(), Integer()}));

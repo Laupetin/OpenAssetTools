@@ -20,6 +20,7 @@ namespace menu
 
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> StringChain() const;
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Text() const;
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> TextNoChain() const;
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> Numeric() const;
 
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> IntExpression() const;

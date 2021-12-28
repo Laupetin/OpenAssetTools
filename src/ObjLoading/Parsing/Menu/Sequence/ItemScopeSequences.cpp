@@ -362,9 +362,9 @@ namespace menu::item_scope_sequences
                 create.KeywordIgnoreCase("dvarStrList").Capture(CAPTURE_FIRST_TOKEN),
                 create.Char('{'),
                 create.OptionalLoop(create.And({
-                    create.Text().Capture(CAPTURE_STEP_NAME),
+                    create.TextNoChain().Capture(CAPTURE_STEP_NAME),
                     create.Optional(create.Char(';')),
-                    create.Text().Capture(CAPTURE_STEP_VALUE),
+                    create.TextNoChain().Capture(CAPTURE_STEP_VALUE),
                     create.Optional(create.Char(';')),
                 })),
                 create.Char('}')
