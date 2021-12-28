@@ -57,5 +57,6 @@ public:
         return &allocation->m_entry;
     }
 
+    void Free(void* data);
     void Delete(void* data);
 };

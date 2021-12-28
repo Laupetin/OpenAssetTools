@@ -47,6 +47,19 @@ char* MemoryManager::Dup(const char* str)
     return result;
 }
 
+void MemoryManager::Free(void* data)
+{
+    for (auto iAlloc = m_allocations.begin(); iAlloc != m_allocations.end(); ++iAlloc)
+    {
+        if (*iAlloc == data)
+        {
+            free(*iAlloc);
+            m_allocations.erase(iAlloc);
+            return;
+        }
+    }
+}
+
 void MemoryManager::Delete(void* data)
 {
     for (auto iAlloc = m_destructible.begin(); iAlloc != m_destructible.end(); ++iAlloc)
