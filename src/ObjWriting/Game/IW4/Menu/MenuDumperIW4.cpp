@@ -163,6 +163,7 @@ void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, siz
             m_stream << "FUNC_" << functionIndex;
         else
             m_stream << "INVALID_FUNC";
+        m_stream << "()";
     }
     else
     {
