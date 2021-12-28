@@ -76,6 +76,12 @@ const CommandLineOption* const OPTION_MENU_PERMISSIVE =
     .WithDescription("Allows the usage of unknown script commands that can be compiled.")
     .Build();
 
+const CommandLineOption* const OPTION_MENU_NO_OPTIMIZATION =
+    CommandLineOption::Builder::Create()
+    .WithLongName("menu-no-optimization")
+    .WithDescription("Refrain from applying optimizations to parsed menus. (Optimizations increase menu performance and size. May result in less source information when dumped though.)")
+    .Build();
+
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 {
     OPTION_HELP,
@@ -266,7 +272,11 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
 
     // --menu-permissive
     if (m_argument_parser.IsOptionSpecified(OPTION_MENU_PERMISSIVE))
-        ObjLoading::Configuration.PermissiveMenuParsing = true;
+        ObjLoading::Configuration.MenuPermissiveParsing = true;
+
+    // --menu-no-optimization
+    if (m_argument_parser.IsOptionSpecified(OPTION_MENU_NO_OPTIMIZATION))
+        ObjLoading::Configuration.MenuNoOptimization = true;
 
     return true;
 }

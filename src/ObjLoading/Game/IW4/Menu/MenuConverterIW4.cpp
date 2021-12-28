@@ -268,7 +268,7 @@ namespace IW4
 
         void ConvertExpressionEntry(std::vector<expressionEntry>& entries, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item) const
         {
-            if (!m_legacy_mode && expression->IsStatic())
+            if (!m_disable_optimizations && expression->IsStatic())
             {
                 const auto expressionStaticValue = expression->Evaluate();
                 ConvertExpressionEntryExpressionValue(entries, &expressionStaticValue);
@@ -327,7 +327,7 @@ namespace IW4
 
         _NODISCARD Statement_s* ConvertOrApplyStatement(float& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
-            if (m_legacy_mode)
+            if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
 
             if (!expression)
@@ -355,7 +355,7 @@ namespace IW4
 
         _NODISCARD Statement_s* ConvertOrApplyStatement(const char*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
-            if (m_legacy_mode)
+            if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
 
             if (!expression)
@@ -382,7 +382,7 @@ namespace IW4
 
         _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
-            if (m_legacy_mode)
+            if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
 
             if (!expression)
@@ -645,8 +645,8 @@ namespace IW4
         }
 
     public:
-        MenuConverterImpl(const bool legacyMode, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
-            : AbstractMenuConverter(legacyMode, searchPath, memory, manager)
+        MenuConverterImpl(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
+            : AbstractMenuConverter(disableOptimizations, searchPath, memory, manager)
         {
         }
 
@@ -705,8 +705,8 @@ namespace IW4
     };
 }
 
-MenuConverter::MenuConverter(const bool legacyMode, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
-    : m_legacy_mode(legacyMode),
+MenuConverter::MenuConverter(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
+    : m_disable_optimizations(disableOptimizations),
       m_search_path(searchPath),
       m_memory(memory),
       m_manager(manager)
@@ -720,7 +720,7 @@ std::vector<XAssetInfoGeneric*>& MenuConverter::GetDependencies()
 
 menuDef_t* MenuConverter::ConvertMenu(const CommonMenuDef& commonMenu)
 {
-    MenuConverterImpl impl(m_legacy_mode, m_search_path, m_memory, m_manager);
+    MenuConverterImpl impl(m_disable_optimizations, m_search_path, m_memory, m_manager);
 
     try
     {

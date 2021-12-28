@@ -4,8 +4,8 @@
 
 using namespace menu;
 
-AbstractMenuConverter::AbstractMenuConverter(const bool legacyMode, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
-    : m_legacy_mode(legacyMode),
+AbstractMenuConverter::AbstractMenuConverter(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
+    : m_disable_optimizations(disableOptimizations),
       m_search_path(searchPath),
       m_memory(memory),
       m_manager(manager)

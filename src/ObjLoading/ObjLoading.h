@@ -12,7 +12,8 @@ public:
     {
     public:
         bool Verbose = false;
-        bool PermissiveMenuParsing = false;
+        bool MenuPermissiveParsing = false;
+        bool MenuNoOptimization = false;
     } Configuration;
 
     /**

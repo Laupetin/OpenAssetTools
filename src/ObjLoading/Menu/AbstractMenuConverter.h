@@ -11,12 +11,12 @@ namespace menu
     class AbstractMenuConverter
     {
     protected:
-        bool m_legacy_mode;
+        bool m_disable_optimizations;
         ISearchPath* m_search_path;
         MemoryManager* m_memory;
         IAssetLoadingManager* m_manager;
 
-        AbstractMenuConverter(bool legacyMode, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
+        AbstractMenuConverter(bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
 
         _NODISCARD const char* ConvertString(const std::string& str) const;
 

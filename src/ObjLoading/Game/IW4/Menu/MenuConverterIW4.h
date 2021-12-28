@@ -11,14 +11,14 @@ namespace IW4
 {
     class MenuConverter
     {
-        bool m_legacy_mode;
+        bool m_disable_optimizations;
         ISearchPath* m_search_path;
         MemoryManager* m_memory;
         IAssetLoadingManager* m_manager;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
     public:
-        MenuConverter(bool legacyMode, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
+        MenuConverter(bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
 
         std::vector<XAssetInfoGeneric*>& GetDependencies();
         _NODISCARD menuDef_t* ConvertMenu(const menu::CommonMenuDef& commonMenu);

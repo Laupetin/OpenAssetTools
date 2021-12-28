@@ -75,8 +75,7 @@ bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISe
 
     for (const auto& menu : parsingResult->m_menus)
     {
-        // TODO: Use command line arguments to activate legacy mode
-        MenuConverter converter(false, searchPath, memory, manager);
+        MenuConverter converter(ObjLoading::Configuration.MenuNoOptimization, searchPath, memory, manager);
         auto* menuAsset = converter.ConvertMenu(*menu);
         if(menuAsset == nullptr)
         {
@@ -143,7 +142,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         });
 
         reader.IncludeZoneState(zoneState);
-        reader.SetPermissiveMode(ObjLoading::Configuration.PermissiveMenuParsing);
+        reader.SetPermissiveMode(ObjLoading::Configuration.MenuPermissiveParsing);
 
         const auto menuFileResult = reader.ReadMenuFile();
         if (menuFileResult)
