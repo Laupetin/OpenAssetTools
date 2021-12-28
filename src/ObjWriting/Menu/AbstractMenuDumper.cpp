@@ -110,6 +110,9 @@ std::vector<std::string> AbstractMenuDumper::CreateScriptTokenList(const char* s
 
 bool AbstractMenuDumper::DoesTokenNeedQuotationMarks(const std::string& token)
 {
+    if (token.empty())
+        return true;
+
     const auto hasAlNumCharacter = std::any_of(token.begin(), token.end(), [](const char& c)
     {
         return isalnum(c);
