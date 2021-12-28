@@ -839,6 +839,41 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool
     AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearLoadErrorsSummary")}));
     AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearClientMatchData")}));
 
+    if(featureLevel == FeatureLevel::IW4)
+    {
+        // IW4x UiScripts
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("LoadMods") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RunMod") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ClearMods") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("security_increase_cancel") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("mod_download_cancel") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("LoadFriends") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("JoinFriend") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("downloadDLC") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("checkFirstLaunch") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitWebsite") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitWiki") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitDiscord") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("updateui_mousePitch") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ServerStatus") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("UpdateFilter") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RefreshFilter") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RefreshServers") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("JoinServer") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ServerSort") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateListFavorite") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateFavorite") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateCurrentServerFavorite") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("DeleteFavorite") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("nextStartupMessage") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("UpdateClasses") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("loadDemos") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("launchDemo") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("deleteDemo") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ApplyMap") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ApplyInitialMap") }));
+    }
+
     AddSequence(std::make_unique<SequenceIf>());
     AddSequence(std::make_unique<SequenceElseIf>());
     AddSequence(std::make_unique<SequenceElse>());
