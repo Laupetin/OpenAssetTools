@@ -80,6 +80,22 @@ namespace menu
             });
         }
 
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptChar(const char c) const
+        {
+            return Or({
+                Char(c),
+                Or({
+                    Type(SimpleParserValueType::INTEGER),
+                    Type(SimpleParserValueType::FLOATING_POINT),
+                    Type(SimpleParserValueType::STRING),
+                    Type(SimpleParserValueType::IDENTIFIER),
+                }).Transform([](const token_list_t& tokens) -> SimpleParserValue
+                {
+                    return SimpleParserValue::Integer(tokens[0].get().GetPos(), static_cast<int>(ExpectedScriptToken::INT));
+                })
+            });
+        }
+
         _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptInt() const
         {
             return Or({
@@ -229,7 +245,7 @@ namespace menu::event_handler_set_scope_sequences
         {
             const auto& capture = result.NextCapture(CAPTURE_SCRIPT_TOKEN);
 
-            switch(capture.m_type)
+            switch (capture.m_type)
             {
             case SimpleParserValueType::STRING:
                 state->m_current_script << "\"" << capture.StringValue() << "\" ";
@@ -312,6 +328,10 @@ namespace menu::event_handler_set_scope_sequences
                 {
                     state->m_current_script << "\"" << capture.StringValue() << "\" ";
                 }
+                else if (capture.m_type == SimpleParserValueType::CHARACTER)
+                {
+                    state->m_current_script << capture.CharacterValue() << " ";
+                }
                 else if (capture.m_type == SimpleParserValueType::INTEGER)
                 {
                     std::ostringstream ss;
@@ -350,15 +370,76 @@ namespace menu::event_handler_set_scope_sequences
         }
     };
 
-    class SequenceSetPlayerData final : public SequenceGenericScriptStatement
+    class AbstractSequenceWithPlayerData : public SequenceGenericScriptStatement
+    {
+    protected:
+        static constexpr auto LABEL_PLAYER_DATA_PATH_ELEMENT = 1;
+
+        static std::unique_ptr<matcher_t> PlayerDataPathMatchers(const ScriptMatcherFactory& create)
+        {
+            return create.Or({
+                create.ScriptKeyword("false"),
+                create.ScriptKeyword("true"),
+                create.And({
+                    create.Or({
+                        create.ScriptKeyword("localvarstring"),
+                        create.ScriptKeyword("localvarint"),
+                        create.ScriptKeyword("localvarbool"),
+                    }),
+                    create.ScriptChar('('),
+                    create.ScriptText(),
+                    create.ScriptChar(')'),
+                }),
+                create.ScriptStrictInt(),
+                create.ScriptText()
+            });
+        }
+    };
+
+    class SequenceSetPlayerData final : public AbstractSequenceWithPlayerData
     {
     public:
         explicit SequenceSetPlayerData()
         {
-            const MenuMatcherFactory create(this);
+            const ScriptMatcherFactory create(this);
 
+            AddLabeledMatchers(PlayerDataPathMatchers(create), LABEL_PLAYER_DATA_PATH_ELEMENT);
             AddMatchers({
                 create.And({
+                    create.ScriptKeyword("setPlayerData"),
+                    create.ScriptChar('('),
+                    create.Label(LABEL_PLAYER_DATA_PATH_ELEMENT),
+                    create.Loop(create.And({
+                        create.ScriptChar(','),
+                        create.Label(LABEL_PLAYER_DATA_PATH_ELEMENT)
+                    })),
+                    create.ScriptChar(')'),
+                }).Capture(CAPTURE_SCRIPT_TOKEN),
+                create.Optional(create.Char(';'))
+            });
+        }
+    };
+
+    class SequenceSetPlayerDataSplitscreen final : public AbstractSequenceWithPlayerData
+    {
+    public:
+        explicit SequenceSetPlayerDataSplitscreen()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddLabeledMatchers(PlayerDataPathMatchers(create), LABEL_PLAYER_DATA_PATH_ELEMENT);
+            AddMatchers({
+                create.And({
+                    create.ScriptKeyword("setPlayerDataSplitscreen"),
+                    create.ScriptChar('('),
+                    create.ScriptInt(),
+                    create.ScriptChar(','),
+                    create.Label(LABEL_PLAYER_DATA_PATH_ELEMENT),
+                    create.Loop(create.And({
+                        create.ScriptChar(','),
+                        create.Label(LABEL_PLAYER_DATA_PATH_ELEMENT)
+                    })),
+                    create.ScriptChar(')'),
                 }).Capture(CAPTURE_SCRIPT_TOKEN),
                 create.Optional(create.Char(';'))
             });
@@ -708,7 +789,8 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-    //AddSequence(std::make_unique<SequenceSetPlayerData>()); // TODO
+    AddSequence(std::make_unique<SequenceSetPlayerData>());
+    AddSequence(std::make_unique<SequenceSetPlayerDataSplitscreen>());
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
     AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));

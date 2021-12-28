@@ -757,6 +757,28 @@ namespace test::parsing::menu::sequence::event_handler_set
             }, R"("lerp" "y" "from" "1" "to" "2" "over" "3" ; )");
     }
 
+    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setPlayerData", "[parsing][sequence][menu]")
+    {
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("setPlayerData")),
+                SimpleParserValue::Character(TokenPos(), '('),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("customClasses")),
+                SimpleParserValue::Character(TokenPos(), ','),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("localVarInt")),
+                SimpleParserValue::Character(TokenPos(), '('),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("classIndex")),
+                SimpleParserValue::Character(TokenPos(), ')'),
+                SimpleParserValue::Character(TokenPos(), ','),
+                SimpleParserValue::String(TokenPos(), new std::string("perks")),
+                SimpleParserValue::Character(TokenPos(), ','),
+                SimpleParserValue::Integer(TokenPos(), 0),
+                SimpleParserValue::Character(TokenPos(), ','),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("speciality_null")),
+                SimpleParserValue::Character(TokenPos(), ')'),
+            }, R"("setPlayerData" ( "customClasses" , "localVarInt" ( "classIndex" ) , "perks" , "0" , "speciality_null" ) ; )");
+    }
+
 #pragma endregion
 
 #pragma region Unit Tests for setLocalVar
