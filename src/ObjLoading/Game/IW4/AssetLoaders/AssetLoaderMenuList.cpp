@@ -59,19 +59,14 @@ void AssetLoaderMenuList::AddResultsToZoneState(menu::ParsingResult* parsingResu
 bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,
                                                menu::MenuAssetZoneState* zoneState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
 {
-    std::cout << "Successfully read menu list \"" << assetName << "\":\n";
-
-    std::cout << "  " << parsingResult->m_menus_to_load.size() << " menus to load:\n";
-    for (const auto& menuToLoad : parsingResult->m_menus_to_load)
-        std::cout << "    " << menuToLoad << "\n";
-
-    std::cout << "  " << parsingResult->m_menus.size() << " menus:\n";
+    const auto menuCount = parsingResult->m_menus.size();
+    const auto functionCount = parsingResult->m_functions.size();
+    const auto menuLoadCount = parsingResult->m_menus_to_load.size();
+    auto totalItemCount = 0u;
     for (const auto& menu : parsingResult->m_menus)
-        std::cout << "    " << menu->m_name << " (" << menu->m_items.size() << " items)\n";
+        totalItemCount += menu->m_items.size();
 
-    std::cout << "  " << parsingResult->m_functions.size() << " functions:\n";
-    for (const auto& function : parsingResult->m_functions)
-        std::cout << "    " << function->m_name << "\n";
+    std::cout << "Successfully read menu file \"" << assetName << "\" (" << menuLoadCount << " loads, " << menuCount << " menus, " << functionCount << " functions, " << totalItemCount << " items)\n";
 
     for (const auto& menu : parsingResult->m_menus)
     {
@@ -151,7 +146,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
             AddMenuFilesToLoadToQueue(menuFileQueue, menuFileResult.get(), zoneState);
         }
         else
-            std::cout << "Could not read menu list \"" << nextMenuFile << "\"\n";
+            std::cout << "Could not read menu file \"" << nextMenuFile << "\"\n";
 
         menuFileQueue.pop_front();
     }
