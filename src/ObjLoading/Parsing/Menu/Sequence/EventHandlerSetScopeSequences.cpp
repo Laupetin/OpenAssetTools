@@ -849,7 +849,7 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("mod_download_cancel") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("LoadFriends") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("JoinFriend") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("downloadDLC") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("downloadDLC"), create.ScriptInt() }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("checkFirstLaunch") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitWebsite") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitWiki") }));
@@ -860,7 +860,7 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RefreshFilter") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RefreshServers") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("JoinServer") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ServerSort") }));
+        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ServerSort"), create.ScriptInt() }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateListFavorite") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateFavorite") }));
         AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateCurrentServerFavorite") }));
