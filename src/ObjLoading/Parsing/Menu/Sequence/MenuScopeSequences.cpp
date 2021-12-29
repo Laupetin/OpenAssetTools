@@ -86,17 +86,10 @@ namespace menu::menu_scope_sequences
             });
         }
 
-    private:
-        static void ApplyDefaults(CommonItemDef& item)
-        {
-            item.m_fore_color = CommonColor(1.0, 1.0, 1.0, 1.0);
-        }
-
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             auto newItemDef = std::make_unique<CommonItemDef>();
-            ApplyDefaults(*newItemDef);
             state->m_current_item = newItemDef.get();
             state->m_current_menu->m_items.emplace_back(std::move(newItemDef));
         }

@@ -25,5 +25,9 @@ namespace menu
         double h;
         int horizontalAlign;
         int verticalAlign;
+
+        CommonRect();
+        CommonRect(double x, double y, double w, double h);
+        CommonRect(double x, double y, double w, double h, int horizontalAlign, int verticalAlign);
     };
 }

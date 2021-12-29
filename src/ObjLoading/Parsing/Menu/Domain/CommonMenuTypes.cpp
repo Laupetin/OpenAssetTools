@@ -19,3 +19,23 @@ CommonColor::CommonColor(const double r, const double g, const double b, const d
     this->b = b;
     this->a = a;
 }
+
+CommonRect::CommonRect()
+    : CommonRect(0, 0, 0, 0)
+{
+}
+
+CommonRect::CommonRect(const double x, const double y, const double w, const double h)
+    : CommonRect(x, y, w, h, 0, 0)
+{
+}
+
+CommonRect::CommonRect(const double x, const double y, const double w, const double h, const int horizontalAlign, const int verticalAlign)
+    : x(x),
+      y(y),
+      w(w),
+      h(h),
+      horizontalAlign(horizontalAlign),
+      verticalAlign(verticalAlign)
+{
+}
