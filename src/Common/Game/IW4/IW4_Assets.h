@@ -1413,6 +1413,18 @@ namespace IW4
         WINDOW_FLAG_TEXT_ONLY_FOCUS = 0x80000000,
     };
 
+    enum WindowDefDynamicFlag : unsigned int
+    {
+        WINDOW_FLAG_HOVERED = 0x1, // guessed
+        WINDOW_FLAG_FOCUSED = 0x2,
+        WINDOW_FLAG_VISIBLE = 0x4,
+        WINDOW_FLAG_FADING_OUT = 0x10,
+        WINDOW_FLAG_FADING_IN = 0x20,
+        WINDOW_FLAG_80 = 0x80,
+        WINDOW_FLAG_SCRIPT_BACKCOLOR = 0x8000,
+        WINDOW_FLAG_SCRIPT_FORECOLOR = 0x10000
+    };
+
     struct windowDef_t
     {
         const char* name;

@@ -388,7 +388,6 @@ namespace IW4
             statement->supportingData = nullptr; // Supporting data is set upon using it
 
             std::vector<expressionEntry> expressionEntries;
-
             ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
 
             auto* outputExpressionEntries = static_cast<expressionEntry*>(m_memory->Alloc(sizeof(expressionEntry) * expressionEntries.size()));
@@ -480,6 +479,23 @@ namespace IW4
             }
 
             return ConvertExpression(expression, menu, item);
+        }
+
+        _NODISCARD Statement_s* ConvertVisibleExpression(itemDef_s* item, const ISimpleExpression* expression, const CommonMenuDef* commonMenu, const CommonItemDef* commonItem = nullptr) const
+        {
+            if (expression == nullptr)
+                return nullptr;
+
+            if(expression->IsStatic())
+            {
+                const auto staticValue = expression->Evaluate();
+                if(staticValue.IsTruthy())
+                    item->window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
+                return nullptr;
+            }
+
+            item->window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
+            return ConvertExpression(expression, commonMenu, commonItem);
         }
 
         _NODISCARD static EventType SetLocalVarTypeToEventType(const SetLocalVarType setLocalVarType)
@@ -889,7 +905,7 @@ namespace IW4
             item->type = ConvertItemType(commonItem.m_type);
             item->window.border = commonItem.m_border;
             item->window.borderSize = static_cast<float>(commonItem.m_border_size);
-            item->visibleExp = ConvertExpression(commonItem.m_visible_expression.get(), &parentMenu, &commonItem);
+            item->visibleExp = ConvertVisibleExpression(item, commonItem.m_visible_expression.get(), &parentMenu, &commonItem);
             item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
             item->window.ownerDraw = commonItem.m_owner_draw;
             item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;

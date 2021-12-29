@@ -682,7 +682,12 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteIntProperty("type", item->type, ITEM_TYPE_TEXT);
     WriteIntProperty("border", item->window.border, 0);
     WriteFloatProperty("borderSize", item->window.borderSize, 0.0f);
-    WriteStatementProperty("visible", item->visibleExp, true);
+
+    if (item->visibleExp)
+        WriteStatementProperty("visible", item->visibleExp, true);
+    else if (item->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
+        WriteIntProperty("visible", 1, 0);
+
     WriteStatementProperty("disabled", item->disabledExp, true);
     WriteIntProperty("ownerdraw", item->window.ownerDraw, 0);
     WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
