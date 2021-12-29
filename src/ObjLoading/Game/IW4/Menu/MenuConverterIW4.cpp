@@ -327,7 +327,7 @@ namespace IW4
             else if (expressionValue->m_type == SimpleExpressionValue::Type::STRING)
             {
                 entry.data.operand.dataType = VAL_STRING;
-                entry.data.operand.internals.stringVal.string = m_memory->Dup(expressionValue->m_string_value->c_str());
+                entry.data.operand.internals.stringVal.string = m_conversion_zone_state->AddString(*expressionValue->m_string_value);
             }
 
             entries.emplace_back(entry);
