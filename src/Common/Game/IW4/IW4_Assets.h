@@ -1152,7 +1152,20 @@ namespace IW4
         EXP_FUNC_STATIC_DVAR_FLOAT,
         EXP_FUNC_STATIC_DVAR_STRING,
 
-        EXP_FUNC_DYN_START
+        EXP_FUNC_DYN_START,
+
+        EXP_FUNC_INT = EXP_FUNC_DYN_START,
+        EXP_FUNC_STRING,
+        EXP_FUNC_FLOAT,
+        EXP_FUNC_SIN,
+        EXP_FUNC_COS,
+        EXP_FUNC_MIN,
+        EXP_FUNC_MAX,
+        EXP_FUNC_MILLISECONDS,
+        EXP_FUNC_DVAR_INT,
+        EXP_FUNC_DVAR_BOOL,
+        EXP_FUNC_DVAR_FLOAT,
+        EXP_FUNC_DVAR_STRING
     };
 
     union entryInternalData

@@ -95,37 +95,95 @@ namespace IW4
             return static_cast<Material*>(materialDependency->m_ptr);
         }
 
-        void ConvertExpressionEntryBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
-                                                    const CommonItemDef* item) const
+        bool HandleStaticDvarFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const int targetFunctionIndex) const
         {
+            if (functionCall->m_args.size() != 1)
+                return false;
+
+            const auto* dvarNameExpression = functionCall->m_args[0].get();
+            if (!dvarNameExpression->IsStatic())
+                return false;
+
+            const auto staticDvarNameExpressionValue = dvarNameExpression->Evaluate();
+            if (staticDvarNameExpressionValue.m_type != SimpleExpressionValue::Type::STRING)
+                return false;
+
             expressionEntry functionEntry{};
             functionEntry.type = EET_OPERATOR;
-            functionEntry.data.op = static_cast<int>(functionCall->m_function_index);
+            functionEntry.data.op = targetFunctionIndex;
             entries.emplace_back(functionEntry);
 
-            auto firstArg = true;
-            for (const auto& arg : functionCall->m_args)
-            {
-                if (!firstArg)
-                {
-                    expressionEntry argSeparator{};
-                    argSeparator.type = EET_OPERATOR;
-                    argSeparator.data.op = OP_COMMA;
-                    entries.emplace_back(argSeparator);
-                }
-                else
-                    firstArg = false;
-
-                ConvertExpressionEntry(gameStatement, entries, arg.get(), menu, item);
-            }
+            expressionEntry staticDvarIndexEntry{};
+            staticDvarIndexEntry.type = EET_OPERAND;
+            staticDvarIndexEntry.data.operand.dataType = VAL_INT;
+            staticDvarIndexEntry.data.operand.internals.intVal = static_cast<int>(m_conversion_zone_state->AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
+            entries.emplace_back(staticDvarIndexEntry);
 
             expressionEntry parenRight{};
             parenRight.type = EET_OPERATOR;
             parenRight.data.op = OP_RIGHTPAREN;
             entries.emplace_back(parenRight);
+
+            gameStatement->supportingData = m_conversion_zone_state->m_supporting_data;
+
+            return true;
         }
 
-        void ConvertExpressionEntryCustomFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionCustomFunctionCall* functionCall, const CommonMenuDef* menu,
+        bool HandleSpecialBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
+                                           const CommonItemDef* item) const
+        {
+            switch(functionCall->m_function_index)
+            {
+            case EXP_FUNC_DVAR_INT:
+                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_INT);
+            case EXP_FUNC_DVAR_BOOL:
+                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_BOOL);
+            case EXP_FUNC_DVAR_FLOAT:
+                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_FLOAT);
+            case EXP_FUNC_DVAR_STRING:
+                return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_STRING);
+            default:
+                break;
+            }
+
+            return false;
+        }
+
+        void ConvertExpressionEntryBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
+                                                    const CommonItemDef* item) const
+        {
+            if (!HandleSpecialBaseFunctionCall(gameStatement, entries, functionCall, menu, item))
+            {
+                expressionEntry functionEntry{};
+                functionEntry.type = EET_OPERATOR;
+                functionEntry.data.op = static_cast<int>(functionCall->m_function_index);
+                entries.emplace_back(functionEntry);
+
+                auto firstArg = true;
+                for (const auto& arg : functionCall->m_args)
+                {
+                    if (!firstArg)
+                    {
+                        expressionEntry argSeparator{};
+                        argSeparator.type = EET_OPERATOR;
+                        argSeparator.data.op = OP_COMMA;
+                        entries.emplace_back(argSeparator);
+                    }
+                    else
+                        firstArg = false;
+
+                    ConvertExpressionEntry(gameStatement, entries, arg.get(), menu, item);
+                }
+
+                expressionEntry parenRight{};
+                parenRight.type = EET_OPERATOR;
+                parenRight.data.op = OP_RIGHTPAREN;
+                entries.emplace_back(parenRight);
+            }
+        }
+
+        void ConvertExpressionEntryCustomFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionCustomFunctionCall* functionCall,
+                                                      const CommonMenuDef* menu,
                                                       const CommonItemDef* item) const
         {
             Statement_s* functionStatement = m_conversion_zone_state->FindFunction(functionCall->m_function_name);
