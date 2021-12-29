@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <sstream>
 
 #include "MenuConversionZoneStateIW4.h"
 #include "Utils/ClassUtils.h"
@@ -710,6 +711,55 @@ namespace IW4
             return floatExpressions;
         }
 
+        _NODISCARD const char* CreateEnableDvarString(const std::vector<std::string>& stringElements) const
+        {
+            std::ostringstream ss;
+
+            for(const auto& element : stringElements)
+            {
+                ss << "\"" << element << "\" ";
+            }
+
+            return m_memory->Dup(ss.str().c_str());
+        }
+
+        _NODISCARD const char* ConvertEnableDvar(const CommonItemDef& commonItem, int& dvarFlags) const
+        {
+            dvarFlags = 0;
+
+            if(!commonItem.m_enable_dvar.empty())
+            {
+                dvarFlags |= ITEM_DVAR_FLAG_ENABLE;
+                return CreateEnableDvarString(commonItem.m_enable_dvar);
+            }
+
+            if(!commonItem.m_disable_dvar.empty())
+            {
+                dvarFlags |= ITEM_DVAR_FLAG_DISABLE;
+                return CreateEnableDvarString(commonItem.m_disable_dvar);
+            }
+
+            if(!commonItem.m_show_dvar.empty())
+            {
+                dvarFlags |= ITEM_DVAR_FLAG_SHOW;
+                return CreateEnableDvarString(commonItem.m_show_dvar);
+            }
+
+            if(!commonItem.m_hide_dvar.empty())
+            {
+                dvarFlags |= ITEM_DVAR_FLAG_HIDE;
+                return CreateEnableDvarString(commonItem.m_hide_dvar);
+            }
+
+            if(!commonItem.m_focus_dvar.empty())
+            {
+                dvarFlags |= ITEM_DVAR_FLAG_FOCUS;
+                return CreateEnableDvarString(commonItem.m_focus_dvar);
+            }
+
+            return nullptr;
+        }
+
         _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory->Create<itemDef_s>();
@@ -756,7 +806,7 @@ namespace IW4
             item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &parentMenu, &commonItem);
             item->focusSound = ConvertSound(commonItem.m_focus_sound, &parentMenu, &commonItem);
             item->dvarTest = ConvertString(commonItem.m_dvar_test);
-            // enableDvar
+            item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
             item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &parentMenu, &commonItem);
             item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
             item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
