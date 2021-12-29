@@ -4,6 +4,7 @@
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderGfxImage.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderMaterial.h"
 #include "AssetLoaders/AssetLoaderMenuList.h"
@@ -31,7 +32,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMAGE, GfxImage))
+    REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND, snd_alias_list_t))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND_CURVE, SndCurve))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LOADED_SOUND, LoadedSound))
