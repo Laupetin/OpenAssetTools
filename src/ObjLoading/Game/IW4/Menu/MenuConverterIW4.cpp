@@ -668,7 +668,7 @@ namespace IW4
             for (auto& [expression, expressionIsStatic, target, staticValue] : locations)
             {
                 expressionIsStatic = !m_disable_optimizations && staticValue != nullptr && expression && expression->IsStatic();
-                
+
                 if (expressionIsStatic)
                 {
                     const auto evaluatedValue = expression->Evaluate();
@@ -715,7 +715,7 @@ namespace IW4
         {
             std::ostringstream ss;
 
-            for(const auto& element : stringElements)
+            for (const auto& element : stringElements)
             {
                 ss << "\"" << element << "\" ";
             }
@@ -727,37 +727,135 @@ namespace IW4
         {
             dvarFlags = 0;
 
-            if(!commonItem.m_enable_dvar.empty())
+            if (!commonItem.m_enable_dvar.empty())
             {
                 dvarFlags |= ITEM_DVAR_FLAG_ENABLE;
                 return CreateEnableDvarString(commonItem.m_enable_dvar);
             }
 
-            if(!commonItem.m_disable_dvar.empty())
+            if (!commonItem.m_disable_dvar.empty())
             {
                 dvarFlags |= ITEM_DVAR_FLAG_DISABLE;
                 return CreateEnableDvarString(commonItem.m_disable_dvar);
             }
 
-            if(!commonItem.m_show_dvar.empty())
+            if (!commonItem.m_show_dvar.empty())
             {
                 dvarFlags |= ITEM_DVAR_FLAG_SHOW;
                 return CreateEnableDvarString(commonItem.m_show_dvar);
             }
 
-            if(!commonItem.m_hide_dvar.empty())
+            if (!commonItem.m_hide_dvar.empty())
             {
                 dvarFlags |= ITEM_DVAR_FLAG_HIDE;
                 return CreateEnableDvarString(commonItem.m_hide_dvar);
             }
 
-            if(!commonItem.m_focus_dvar.empty())
+            if (!commonItem.m_focus_dvar.empty())
             {
                 dvarFlags |= ITEM_DVAR_FLAG_FOCUS;
                 return CreateEnableDvarString(commonItem.m_focus_dvar);
             }
 
             return nullptr;
+        }
+
+        _NODISCARD listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item, CommonItemFeaturesListBox* commonListBox, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        {
+            if (commonListBox == nullptr)
+                return nullptr;
+
+            auto* listBox = static_cast<listBoxDef_s*>(m_memory->Alloc(sizeof(listBoxDef_s)));
+            memset(listBox, 0, sizeof(listBoxDef_s));
+
+            listBox->notselectable = commonListBox->m_not_selectable ? 1 : 0;
+            listBox->noScrollBars = commonListBox->m_no_scrollbars ? 1 : 0;
+            listBox->usePaging = commonListBox->m_use_paging ? 1 : 0;
+            listBox->elementWidth = static_cast<float>(commonListBox->m_element_width);
+            listBox->elementHeight = static_cast<float>(commonListBox->m_element_height);
+            item->special = static_cast<float>(commonListBox->m_feeder);
+            listBox->elementStyle = commonListBox->m_element_style;
+            listBox->onDoubleClick = ConvertEventHandlerSet(commonListBox->m_on_double_click.get(), &parentMenu, &commonItem);
+            ConvertColor(listBox->selectBorder, commonListBox->m_select_border);
+            listBox->selectIcon = ConvertMaterial(commonListBox->m_select_icon, &parentMenu, &commonItem);
+
+            listBox->numColumns = static_cast<int>(std::min(std::extent_v<decltype(listBoxDef_s::columnInfo)>, commonListBox->m_columns.size()));
+            for (auto i = 0; i < listBox->numColumns; i++)
+            {
+                auto& col = listBox->columnInfo[i];
+                const auto& commonCol = commonListBox->m_columns[i];
+
+                col.pos = commonCol.m_x_pos;
+                col.width = commonCol.m_width;
+                col.maxChars = commonCol.m_max_chars;
+                col.alignment = commonCol.m_alignment;
+            }
+
+            return listBox;
+        }
+
+        _NODISCARD editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item, CommonItemFeaturesEditField* commonEditField, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        {
+            if (commonEditField == nullptr)
+                return nullptr;
+
+            auto* editField = static_cast<editFieldDef_s*>(m_memory->Alloc(sizeof(editFieldDef_s)));
+            memset(editField, 0, sizeof(editFieldDef_s));
+
+            editField->defVal = static_cast<float>(commonEditField->m_def_val);
+            editField->minVal = static_cast<float>(commonEditField->m_min_val);
+            editField->maxVal = static_cast<float>(commonEditField->m_max_val);
+            item->localVar = ConvertString(commonEditField->m_local_var);
+            editField->maxChars = commonEditField->m_max_chars;
+            editField->maxCharsGotoNext = commonEditField->m_max_chars_goto_next ? 1 : 0;
+            editField->maxPaintChars = commonEditField->m_max_paint_chars;
+
+            return editField;
+        }
+
+        _NODISCARD multiDef_s* ConvertMultiValueFeatures(itemDef_s* item, CommonItemFeaturesMultiValue* commonMultiValue, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        {
+            if (commonMultiValue == nullptr)
+                return nullptr;
+
+            auto* multiValue = static_cast<multiDef_s*>(m_memory->Alloc(sizeof(multiDef_s)));
+            memset(multiValue, 0, sizeof(multiDef_s));
+
+            multiValue->count = static_cast<int>(std::min(std::extent_v<decltype(multiDef_s::dvarList)>, commonMultiValue->m_step_names.size()));
+            multiValue->strDef = !commonMultiValue->m_string_values.empty() ? 1 : 0;
+
+            for(auto i = 0; i < multiValue->count; i++)
+            {
+                multiValue->dvarList[i] = ConvertString(commonMultiValue->m_step_names[i]);
+
+                if(multiValue->strDef)
+                {
+                    if(commonMultiValue->m_string_values.size() > static_cast<unsigned>(i))
+                        multiValue->dvarStr[i] = ConvertString(commonMultiValue->m_string_values[i]);
+                }
+                else
+                {
+                    if (commonMultiValue->m_double_values.size() > static_cast<unsigned>(i))
+                        multiValue->dvarValue[i] = static_cast<float>(commonMultiValue->m_double_values[i]);
+                }
+            }
+
+            return multiValue;
+        }
+
+        _NODISCARD newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item, CommonItemFeaturesNewsTicker* commonNewsTicker, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        {
+            if (commonNewsTicker == nullptr)
+                return nullptr;
+
+            auto* newsTicker = static_cast<newsTickerDef_s*>(m_memory->Alloc(sizeof(newsTickerDef_s)));
+            memset(newsTicker, 0, sizeof(newsTickerDef_s));
+
+            newsTicker->spacing = commonNewsTicker->m_spacing;
+            newsTicker->speed = commonNewsTicker->m_speed;
+            newsTicker->feedId = commonNewsTicker->m_news_feed_id;
+
+            return newsTicker;
         }
 
         _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
@@ -817,6 +915,34 @@ namespace IW4
             item->fxLetterTime = commonItem.m_fx_letter_time;
             item->fxDecayStartTime = commonItem.m_fx_decay_start_time;
             item->fxDecayDuration = commonItem.m_fx_decay_duration;
+            item->dvar = ConvertString(commonItem.m_dvar);
+
+            switch (commonItem.m_feature_type)
+            {
+            case CommonItemFeatureType::LISTBOX:
+                item->typeData.listBox = ConvertListBoxFeatures(item, commonItem.m_list_box_features.get(), parentMenu, commonItem);
+                break;
+
+            case CommonItemFeatureType::EDIT_FIELD:
+                item->typeData.editField = ConvertEditFieldFeatures(item, commonItem.m_edit_field_features.get(), parentMenu, commonItem);
+                break;
+
+            case CommonItemFeatureType::MULTI_VALUE:
+                item->typeData.multi = ConvertMultiValueFeatures(item, commonItem.m_multi_value_features.get(), parentMenu, commonItem);
+                break;
+
+            case CommonItemFeatureType::ENUM_DVAR:
+                item->typeData.enumDvarName = ConvertString(commonItem.m_enum_dvar_name);
+                break;
+
+            case CommonItemFeatureType::NEWS_TICKER:
+                item->typeData.ticker = ConvertNewsTickerFeatures(item, commonItem.m_news_ticker_features.get(), parentMenu, commonItem);
+                break;
+
+            case CommonItemFeatureType::NONE:
+            default:
+                break;
+            }
 
             return item;
         }
