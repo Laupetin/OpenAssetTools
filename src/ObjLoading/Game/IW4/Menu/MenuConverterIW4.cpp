@@ -39,6 +39,18 @@ namespace IW4
             };
         }
 
+        _NODISCARD static rectDef_s ConvertRectDefRelativeTo(const CommonRect& rect, const CommonRect& rectRelativeTo)
+        {
+            return rectDef_s{
+                static_cast<float>(rectRelativeTo.x + rect.x),
+                static_cast<float>(rectRelativeTo.y + rect.y),
+                static_cast<float>(rect.w),
+                static_cast<float>(rect.h),
+                static_cast<char>(rect.horizontalAlign),
+                static_cast<char>(rect.verticalAlign)
+            };
+        }
+
         static void ConvertColor(float (&output)[4], const CommonColor& input)
         {
             output[0] = static_cast<float>(input.r);
@@ -643,10 +655,10 @@ namespace IW4
             };
             FloatExpressionLocation locations[]
             {
-                {commonItem->m_rect_x_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_X, &item->window.rect.x},
-                {commonItem->m_rect_y_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_Y, &item->window.rect.y},
-                {commonItem->m_rect_w_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_W, &item->window.rect.w},
-                {commonItem->m_rect_h_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_H, &item->window.rect.h},
+                {commonItem->m_rect_x_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_X, &item->window.rectClient.x},
+                {commonItem->m_rect_y_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_Y, &item->window.rectClient.y},
+                {commonItem->m_rect_w_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_W, &item->window.rectClient.w},
+                {commonItem->m_rect_h_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_H, &item->window.rectClient.h},
                 {commonItem->m_forecolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_R, &item->window.foreColor[0]},
                 {commonItem->m_forecolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_G, &item->window.foreColor[1]},
                 {commonItem->m_forecolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_B, &item->window.foreColor[2]},
@@ -868,7 +880,8 @@ namespace IW4
             ApplyFlag(item->itemFlags, commonItem.m_text_save_game, ITEM_FLAG_SAVE_GAME_INFO);
             ApplyFlag(item->itemFlags, commonItem.m_text_cinematic_subtitle, ITEM_FLAG_CINEMATIC_SUBTITLE);
             item->window.group = ConvertString(commonItem.m_group);
-            item->window.rect = ConvertRectDef(commonItem.m_rect);
+            item->window.rectClient = ConvertRectDef(commonItem.m_rect);
+            item->window.rect = ConvertRectDefRelativeTo(commonItem.m_rect, parentMenu.m_rect);
             item->window.style = commonItem.m_style;
             ApplyFlag(item->window.staticFlags, commonItem.m_decoration, WINDOW_FLAG_DECORATION);
             ApplyFlag(item->window.staticFlags, commonItem.m_auto_wrapped, WINDOW_FLAG_AUTO_WRAPPED);
