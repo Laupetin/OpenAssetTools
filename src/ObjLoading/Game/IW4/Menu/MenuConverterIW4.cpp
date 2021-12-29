@@ -223,6 +223,11 @@ namespace IW4
             OP_SUBTRACT
         };
 
+        static bool IsOperation(const ISimpleExpression* expression)
+        {
+            return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression);
+        }
+
         void ConvertExpressionEntryUnaryOperation(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const SimpleExpressionUnaryOperation* unaryOperation, const CommonMenuDef* menu,
                                                   const CommonItemDef* item) const
         {
@@ -232,7 +237,7 @@ namespace IW4
             operation.data.op = UNARY_OPERATION_MAPPING[static_cast<unsigned>(unaryOperation->m_operation_type->m_id)];
             entries.emplace_back(operation);
 
-            if (unaryOperation->OperandNeedsParenthesis())
+            if (IsOperation(unaryOperation->m_operand.get()))
             {
                 expressionEntry parenLeft{};
                 parenLeft.type = EET_OPERATOR;
@@ -274,7 +279,8 @@ namespace IW4
         void ConvertExpressionEntryBinaryOperation(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const SimpleExpressionBinaryOperation* binaryOperation, const CommonMenuDef* menu,
                                                    const CommonItemDef* item) const
         {
-            if (binaryOperation->Operand1NeedsParenthesis())
+            // Game needs all nested operations to have parenthesis
+            if (IsOperation(binaryOperation->m_operand1.get()))
             {
                 expressionEntry parenLeft{};
                 parenLeft.type = EET_OPERATOR;
@@ -297,7 +303,8 @@ namespace IW4
             operation.data.op = BINARY_OPERATION_MAPPING[static_cast<unsigned>(binaryOperation->m_operation_type->m_id)];
             entries.emplace_back(operation);
 
-            if (binaryOperation->Operand2NeedsParenthesis())
+            // Game needs all nested operations to have parenthesis
+            if (IsOperation(binaryOperation->m_operand2.get()))
             {
                 expressionEntry parenLeft{};
                 parenLeft.type = EET_OPERATOR;
