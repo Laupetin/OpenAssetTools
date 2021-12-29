@@ -710,10 +710,14 @@ namespace IW4
             return item;
         }
 
-        _NODISCARD itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu) const
+        void ConvertMenuItems(menuDef_t* menu, const CommonMenuDef& commonMenu) const
         {
             if (commonMenu.m_items.empty())
-                return nullptr;
+            {
+                menu->itemCount = 0;
+                menu->items = nullptr;
+                return;
+            }
 
             auto* items = static_cast<itemDef_s**>(m_memory->Alloc(sizeof(void*) * commonMenu.m_items.size()));
             memset(items, 0, sizeof(void*) * commonMenu.m_items.size());
@@ -721,7 +725,8 @@ namespace IW4
             for (auto i = 0u; i < commonMenu.m_items.size(); i++)
                 items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
 
-            return items;
+            menu->items = items;
+            menu->itemCount = commonMenu.m_items.size();
         }
 
     public:
@@ -780,7 +785,7 @@ namespace IW4
             menu->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
             menu->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
             menu->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
-            menu->items = ConvertMenuItems(commonMenu);
+            ConvertMenuItems(menu, commonMenu);
             menu->expressionData = m_conversion_zone_state->m_supporting_data;
 
             return menu;
