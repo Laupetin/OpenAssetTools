@@ -125,7 +125,7 @@ namespace IW4
         bool HandleSpecialBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
                                            const CommonItemDef* item) const
         {
-            switch(functionCall->m_function_index)
+            switch (functionCall->m_function_index)
             {
             case EXP_FUNC_DVAR_INT:
                 return HandleStaticDvarFunctionCall(gameStatement, entries, functionCall, EXP_FUNC_STATIC_DVAR_INT);
@@ -631,6 +631,64 @@ namespace IW4
             return output;
         }
 
+        ItemFloatExpression* ConvertFloatExpressions(const CommonItemDef* item, const CommonMenuDef* parentMenu, int& floatExpressionCount) const
+        {
+            struct FloatExpressionLocation
+            {
+                ISimpleExpression* m_expression;
+                ItemFloatExpressionTarget m_target;
+            };
+            FloatExpressionLocation locations[]
+            {
+                {item->m_rect_x_exp.get(), ITEM_FLOATEXP_TGT_RECT_X},
+                {item->m_rect_y_exp.get(), ITEM_FLOATEXP_TGT_RECT_Y},
+                {item->m_rect_w_exp.get(), ITEM_FLOATEXP_TGT_RECT_W},
+                {item->m_rect_h_exp.get(), ITEM_FLOATEXP_TGT_RECT_H},
+                {item->m_forecolor_expressions.m_r_exp.get(), ITEM_FLOATEXP_TGT_FORECOLOR_R},
+                {item->m_forecolor_expressions.m_g_exp.get(), ITEM_FLOATEXP_TGT_FORECOLOR_G},
+                {item->m_forecolor_expressions.m_b_exp.get(), ITEM_FLOATEXP_TGT_FORECOLOR_B},
+                {item->m_forecolor_expressions.m_a_exp.get(), ITEM_FLOATEXP_TGT_FORECOLOR_A},
+                {item->m_forecolor_expressions.m_rgb_exp.get(), ITEM_FLOATEXP_TGT_FORECOLOR_RGB},
+                {item->m_glowcolor_expressions.m_r_exp.get(), ITEM_FLOATEXP_TGT_GLOWCOLOR_R},
+                {item->m_glowcolor_expressions.m_g_exp.get(), ITEM_FLOATEXP_TGT_GLOWCOLOR_G},
+                {item->m_glowcolor_expressions.m_b_exp.get(), ITEM_FLOATEXP_TGT_GLOWCOLOR_B},
+                {item->m_glowcolor_expressions.m_a_exp.get(), ITEM_FLOATEXP_TGT_GLOWCOLOR_A},
+                {item->m_glowcolor_expressions.m_rgb_exp.get(), ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB},
+                {item->m_backcolor_expressions.m_r_exp.get(), ITEM_FLOATEXP_TGT_BACKCOLOR_R},
+                {item->m_backcolor_expressions.m_g_exp.get(), ITEM_FLOATEXP_TGT_BACKCOLOR_G},
+                {item->m_backcolor_expressions.m_b_exp.get(), ITEM_FLOATEXP_TGT_BACKCOLOR_B},
+                {item->m_backcolor_expressions.m_a_exp.get(), ITEM_FLOATEXP_TGT_BACKCOLOR_A},
+                {item->m_backcolor_expressions.m_rgb_exp.get(), ITEM_FLOATEXP_TGT_BACKCOLOR_RGB},
+            };
+
+            floatExpressionCount = 0;
+            for(const auto& [expression, target] : locations)
+            {
+                if (expression)
+                    floatExpressionCount++;
+            }
+
+            if (floatExpressionCount <= 0)
+                return nullptr;
+
+            auto* floatExpressions = static_cast<ItemFloatExpression*>(m_memory->Alloc(sizeof(ItemFloatExpression) * floatExpressionCount));
+            auto floatExpressionIndex = 0;
+            for (const auto& [expression, target] : locations)
+            {
+                if (!expression)
+                    continue;
+
+                assert(floatExpressionIndex < floatExpressionCount && floatExpressionIndex >= 0);
+
+                floatExpressions[floatExpressionIndex].target = target;
+                floatExpressions[floatExpressionIndex].expression = ConvertExpression(expression, parentMenu, item);
+
+                floatExpressionIndex++;
+            }
+
+            return floatExpressions;
+        }
+
         _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory->Create<itemDef_s>();
@@ -682,7 +740,7 @@ namespace IW4
             item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
             item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
             item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
-            // FloatExpressions
+            item->floatExpressions = ConvertFloatExpressions(&commonItem, &parentMenu, item->floatExpressionCount);
             item->gameMsgWindowIndex = commonItem.m_game_message_window_index;
             item->gameMsgWindowMode = commonItem.m_game_message_window_mode;
             item->fxLetterTime = commonItem.m_fx_letter_time;
@@ -692,13 +750,12 @@ namespace IW4
             return item;
         }
 
-        void ConvertMenuItems(menuDef_t* menu, const CommonMenuDef& commonMenu) const
+        itemDef_s** ConvertMenuItems(const CommonMenuDef& commonMenu, int& itemCount) const
         {
             if (commonMenu.m_items.empty())
             {
-                menu->itemCount = 0;
-                menu->items = nullptr;
-                return;
+                itemCount = 0;
+                return nullptr;
             }
 
             auto* items = static_cast<itemDef_s**>(m_memory->Alloc(sizeof(void*) * commonMenu.m_items.size()));
@@ -707,8 +764,9 @@ namespace IW4
             for (auto i = 0u; i < commonMenu.m_items.size(); i++)
                 items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
 
-            menu->items = items;
-            menu->itemCount = commonMenu.m_items.size();
+            itemCount = static_cast<int>(commonMenu.m_items.size());
+
+            return items;
         }
 
     public:
@@ -767,7 +825,7 @@ namespace IW4
             menu->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
             menu->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
             menu->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
-            ConvertMenuItems(menu, commonMenu);
+            menu->items = ConvertMenuItems(commonMenu, menu->itemCount);
             menu->expressionData = m_conversion_zone_state->m_supporting_data;
 
             return menu;
