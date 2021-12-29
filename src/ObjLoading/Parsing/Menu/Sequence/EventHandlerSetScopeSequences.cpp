@@ -234,8 +234,9 @@ namespace menu::event_handler_set_scope_sequences
 
             AddMatchers({
                 create.Or({
+                    create.Numeric(),
                     create.Text(),
-                    create.Numeric()
+                    create.Type(SimpleParserValueType::CHARACTER),
                 }).Capture(CAPTURE_SCRIPT_TOKEN)
             });
         }
@@ -257,6 +258,10 @@ namespace menu::event_handler_set_scope_sequences
 
             case SimpleParserValueType::INTEGER:
                 state->m_current_script << "\"" << capture.IntegerValue() << "\" ";
+                break;
+
+            case SimpleParserValueType::CHARACTER:
+                state->m_current_script << capture.CharacterValue() << " ";
                 break;
 
             case SimpleParserValueType::FLOATING_POINT:
@@ -708,7 +713,7 @@ namespace menu::event_handler_set_scope_sequences
         {
             const ScriptMatcherFactory create(this);
             const MenuExpressionMatchers expressionMatchers;
-            
+
             AddMatchers({
                 create.Char('}'),
                 create.Keyword("else").Capture(CAPTURE_KEYWORD),
@@ -755,123 +760,129 @@ void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool
     // Creating factory with no label supplier. Cannot use labels with it.
     const ScriptMatcherFactory create(nullptr);
 
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeIn"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeOut"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("show"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hide"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showMenu"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hideMenu"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setColor"), create.ScriptColor()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("open"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("close"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("escape"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForAllPlayers"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameOpen"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameClose"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackground"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setItemColor"), create.ScriptText(), create.ScriptText(), create.ScriptColor()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("focusFirst")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("play"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("scriptMenuResponse"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-    AddSequence(std::make_unique<SequenceSetPlayerData>());
-    AddSequence(std::make_unique<SequenceSetPlayerDataSplitscreen>());
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteMail")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("doMailLottery")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsConfirm")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsCancel")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setGameMode"), create.ScriptText()}));
-    AddSequence(std::make_unique<SequenceSetLocalVar>());
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showGamerCard")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openForGameType"), create.ScriptText()}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForGameType"), create.ScriptText()}));
-    // statClearPerkNew // TODO
-    // statSetUsingTable // TODO
-    // statClearBitMask // TODO
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("kickPlayer")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getKickPlayerQuestion")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("partyUpdateMissingMapPackDvar")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("togglePlayerMute")}));
-    AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
-    AddSequence(std::make_unique<SequenceLerp>());
-
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StartServer")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadArenas")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadGameInfo")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearError")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Quit")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Controls")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Leave")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeingame")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("update"), create.ScriptText()}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startSingleplayer")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("getLanguage")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("verifyLanguage")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("updateLanguage")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("mutePlayer")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("openMenuOnDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
-    AddSequence(
-        SequenceUiScriptStatement::Create({create.ScriptKeyword("openMenuOnDvarNot"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeMenuOnDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
-    AddSequence(SequenceUiScriptStatement::Create(
-        {create.ScriptKeyword("closeMenuOnDvarNot"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("setRecommended")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearLoadErrorsSummary")}));
-    AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearClientMatchData")}));
-
-    if(featureLevel == FeatureLevel::IW4)
+    if (!permissive)
     {
-        // IW4x UiScripts
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("LoadMods") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RunMod") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ClearMods") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("security_increase_cancel") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("mod_download_cancel") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("LoadFriends") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("JoinFriend") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("downloadDLC"), create.ScriptInt() }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("checkFirstLaunch") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitWebsite") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitWiki") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("visitDiscord") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("updateui_mousePitch") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ServerStatus") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("UpdateFilter") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RefreshFilter") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("RefreshServers") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("JoinServer") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ServerSort"), create.ScriptInt() }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateListFavorite") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateFavorite") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("CreateCurrentServerFavorite") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("DeleteFavorite") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("nextStartupMessage") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("UpdateClasses") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("loadDemos") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("launchDemo") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("deleteDemo") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ApplyMap") }));
-        AddSequence(SequenceUiScriptStatement::Create({ create.ScriptKeyword("ApplyInitialMap") }));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeIn"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeOut"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("show"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hide"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showMenu"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hideMenu"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setColor"), create.ScriptColor()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("open"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("close"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("escape"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForAllPlayers"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameOpen"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameClose"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackground"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setItemColor"), create.ScriptText(), create.ScriptText(), create.ScriptColor()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("focusFirst")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("play"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("scriptMenuResponse"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
+        AddSequence(std::make_unique<SequenceSetPlayerData>());
+        AddSequence(std::make_unique<SequenceSetPlayerDataSplitscreen>());
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteMail")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("doMailLottery")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsConfirm")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsCancel")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setGameMode"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showGamerCard")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openForGameType"), create.ScriptText()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForGameType"), create.ScriptText()}));
+        // statClearPerkNew // TODO
+        // statSetUsingTable // TODO
+        // statClearBitMask // TODO
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("kickPlayer")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getKickPlayerQuestion")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("partyUpdateMissingMapPackDvar")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("togglePlayerMute")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
+        AddSequence(std::make_unique<SequenceLerp>());
+
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StartServer")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadArenas")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadGameInfo")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearError")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Quit")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Controls")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("Leave")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeingame")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("update"), create.ScriptText()}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startSingleplayer")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("getLanguage")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("verifyLanguage")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("updateLanguage")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("mutePlayer")}));
+        AddSequence(SequenceUiScriptStatement::Create(
+            {create.ScriptKeyword("openMenuOnDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+        AddSequence(
+            SequenceUiScriptStatement::Create({create.ScriptKeyword("openMenuOnDvarNot"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+        AddSequence(SequenceUiScriptStatement::Create({
+            create.ScriptKeyword("closeMenuOnDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()
+        }));
+        AddSequence(SequenceUiScriptStatement::Create(
+            {create.ScriptKeyword("closeMenuOnDvarNot"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()}), create.ScriptText()}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("setRecommended")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearLoadErrorsSummary")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("clearClientMatchData")}));
+
+        if (featureLevel == FeatureLevel::IW4)
+        {
+            // IW4x UiScripts
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadMods")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RunMod")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ClearMods")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("security_increase_cancel")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("mod_download_cancel")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadFriends")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("JoinFriend")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("downloadDLC"), create.ScriptInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("checkFirstLaunch")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("visitWebsite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("visitWiki")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("visitDiscord")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("updateui_mousePitch")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ServerStatus")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("UpdateFilter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshFilter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshServers")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("JoinServer")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ServerSort"), create.ScriptInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("CreateListFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("CreateFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("CreateCurrentServerFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("DeleteFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("nextStartupMessage")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("UpdateClasses")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadDemos")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("launchDemo")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deleteDemo")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ApplyMap")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ApplyInitialMap")}));
+        }
     }
 
+    AddSequence(std::make_unique<SequenceSetLocalVar>());
     AddSequence(std::make_unique<SequenceIf>());
     AddSequence(std::make_unique<SequenceElseIf>());
     AddSequence(std::make_unique<SequenceElse>());
