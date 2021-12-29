@@ -4,7 +4,6 @@
 #include <cstring>
 
 #include "MenuConversionZoneStateIW4.h"
-#include "Game/IW4/MenuConstantsIW4.h"
 #include "Utils/ClassUtils.h"
 #include "Menu/AbstractMenuConverter.h"
 #include "Parsing/Menu/MenuAssetZoneState.h"
@@ -93,6 +92,18 @@ namespace IW4
                 throw MenuConversionException("Failed to load material \"" + materialName + "\"", menu, item);
 
             return static_cast<Material*>(materialDependency->m_ptr);
+        }
+
+        _NODISCARD snd_alias_list_t* ConvertSound(const std::string& soundName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        {
+            if (soundName.empty())
+                return nullptr;
+
+            auto* soundDependency = m_manager->LoadDependency(ASSET_TYPE_SOUND, soundName);
+            if (!soundDependency)
+                throw MenuConversionException("Failed to load sound \"" + soundName + "\"", menu, item);
+
+            return static_cast<snd_alias_list_t*>(soundDependency->m_ptr);
         }
 
         bool HandleStaticDvarFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const int targetFunctionIndex) const
@@ -682,7 +693,7 @@ namespace IW4
             item->mouseExitText = ConvertEventHandlerSet(commonItem.m_on_mouse_exit_text.get(), &parentMenu, &commonItem);
             item->action = ConvertEventHandlerSet(commonItem.m_on_action.get(), &parentMenu, &commonItem);
             item->accept = ConvertEventHandlerSet(commonItem.m_on_accept.get(), &parentMenu, &commonItem);
-            // item->focusSound
+            item->focusSound = ConvertSound(commonItem.m_focus_sound, &parentMenu, &commonItem);
             item->dvarTest = ConvertString(commonItem.m_dvar_test);
             // enableDvar
             item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &parentMenu, &commonItem);
