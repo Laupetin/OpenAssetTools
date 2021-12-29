@@ -486,10 +486,10 @@ namespace IW4
             if (expression == nullptr)
                 return nullptr;
 
-            if(expression->IsStatic())
+            if (expression->IsStatic())
             {
                 const auto staticValue = expression->Evaluate();
-                if(staticValue.IsTruthy())
+                if (staticValue.IsTruthy())
                     item->window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
                 return nullptr;
             }
@@ -852,13 +852,13 @@ namespace IW4
             multiValue->count = static_cast<int>(std::min(std::extent_v<decltype(multiDef_s::dvarList)>, commonMultiValue->m_step_names.size()));
             multiValue->strDef = !commonMultiValue->m_string_values.empty() ? 1 : 0;
 
-            for(auto i = 0; i < multiValue->count; i++)
+            for (auto i = 0; i < multiValue->count; i++)
             {
                 multiValue->dvarList[i] = ConvertString(commonMultiValue->m_step_names[i]);
 
-                if(multiValue->strDef)
+                if (multiValue->strDef)
                 {
-                    if(commonMultiValue->m_string_values.size() > static_cast<unsigned>(i))
+                    if (commonMultiValue->m_string_values.size() > static_cast<unsigned>(i))
                         multiValue->dvarStr[i] = ConvertString(commonMultiValue->m_string_values[i]);
                 }
                 else
@@ -917,7 +917,11 @@ namespace IW4
             item->textStyle = commonItem.m_text_style;
             item->fontEnum = ConvertTextFont(commonItem.m_text_font);
             ConvertColor(item->window.backColor, commonItem.m_back_color);
+
             ConvertColor(item->window.foreColor, commonItem.m_fore_color);
+            if (!commonItem.m_fore_color.Equals(CommonColor(1.0, 1.0, 1.0, 1.0)))
+                item->window.dynamicFlags[0] |= WINDOW_FLAG_NON_DEFAULT_FORECOLOR;
+
             ConvertColor(item->window.borderColor, commonItem.m_border_color);
             ConvertColor(item->window.outlineColor, commonItem.m_outline_color);
             ConvertColor(item->window.disableColor, commonItem.m_disable_color);

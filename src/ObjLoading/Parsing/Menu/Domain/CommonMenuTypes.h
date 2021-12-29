@@ -15,6 +15,8 @@ namespace menu
 
         CommonColor();
         CommonColor(double r, double g, double b, double a);
+
+        bool Equals(const CommonColor& other) const;
     };
 
     struct CommonRect

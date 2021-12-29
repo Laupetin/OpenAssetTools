@@ -1,5 +1,8 @@
 #include "CommonMenuTypes.h"
 
+#include <limits>
+#include <cmath>
+
 using namespace menu;
 
 CommonColor::CommonColor()
@@ -18,6 +21,14 @@ CommonColor::CommonColor(const double r, const double g, const double b, const d
     this->g = g;
     this->b = b;
     this->a = a;
+}
+
+bool CommonColor::Equals(const CommonColor& other) const
+{
+    return std::fabs(this->r - other.r) < std::numeric_limits<double>::epsilon()
+        && std::fabs(this->g - other.g) < std::numeric_limits<double>::epsilon()
+        && std::fabs(this->b - other.b) < std::numeric_limits<double>::epsilon()
+        && std::fabs(this->a - other.a) < std::numeric_limits<double>::epsilon();
 }
 
 CommonRect::CommonRect()
