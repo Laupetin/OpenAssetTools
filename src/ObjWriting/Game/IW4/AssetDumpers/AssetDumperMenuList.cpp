@@ -56,13 +56,13 @@ void AssetDumperMenuList::DumpFunctions(MenuDumper& menuDumper, const MenuList* 
         for(auto i = 0; i < supportingData->uifunctions.totalFunctions; i++)
         {
             const auto* function = supportingData->uifunctions.functions[i];
-            if(function == nullptr)
-                continue;
+            if(function != nullptr)
+            {
+                std::stringstream ss;
+                ss << "FUNC_" << functionIndex;
 
-            std::stringstream ss;
-            ss << "FUNC_" << functionIndex;
-
-            menuDumper.WriteFunctionDef(ss.str(), function);
+                menuDumper.WriteFunctionDef(ss.str(), function);
+            }
 
             functionIndex++;
         }
