@@ -12,6 +12,9 @@ namespace menu
             double a;
         };
         double array[4];
+
+        CommonColor();
+        CommonColor(double r, double g, double b, double a);
     };
 
     struct CommonRect

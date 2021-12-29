@@ -61,10 +61,17 @@ namespace menu::global_scope_sequences
             });
         }
 
+    private:
+        static void ApplyDefaults(CommonMenuDef& menu)
+        {
+            menu.m_fore_color = CommonColor(1.0, 1.0, 1.0, 1.0);
+        }
+
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             auto newMenu = std::make_unique<CommonMenuDef>();
+            ApplyDefaults(*newMenu);
             state->m_current_menu = newMenu.get();
             state->m_menus.emplace_back(std::move(newMenu));
         }

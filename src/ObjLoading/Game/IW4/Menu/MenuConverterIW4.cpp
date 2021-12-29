@@ -26,24 +26,6 @@ namespace IW4
         MenuConversionZoneState* m_conversion_zone_state;
         MenuAssetZoneState* m_parsing_zone_state;
 
-        static void ApplyMenuDefaults(menuDef_t* menu)
-        {
-            memset(menu, 0, sizeof(menuDef_t));
-            menu->window.foreColor[0] = 1.0f;
-            menu->window.foreColor[1] = 1.0f;
-            menu->window.foreColor[2] = 1.0f;
-            menu->window.foreColor[3] = 1.0f;
-        }
-
-        static void ApplyItemDefaults(itemDef_s* item)
-        {
-            memset(item, 0, sizeof(itemDef_s));
-            item->window.foreColor[0] = 1.0f;
-            item->window.foreColor[1] = 1.0f;
-            item->window.foreColor[2] = 1.0f;
-            item->window.foreColor[3] = 1.0f;
-        }
-
         _NODISCARD static rectDef_s ConvertRectDef(const CommonRect& rect)
         {
             return rectDef_s{
@@ -652,7 +634,7 @@ namespace IW4
         _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory->Create<itemDef_s>();
-            ApplyItemDefaults(item);
+            memset(item, 0, sizeof(itemDef_s));
 
             item->window.name = ConvertString(commonItem.m_name);
             item->text = ConvertString(commonItem.m_text);
@@ -742,7 +724,7 @@ namespace IW4
         _NODISCARD menuDef_t* ConvertMenu(const CommonMenuDef& commonMenu) const
         {
             auto* menu = m_memory->Create<menuDef_t>();
-            ApplyMenuDefaults(menu);
+            memset(menu, 0, sizeof(menuDef_t));
 
             menu->window.name = m_memory->Dup(commonMenu.m_name.c_str());
             menu->fullScreen = commonMenu.m_full_screen;
