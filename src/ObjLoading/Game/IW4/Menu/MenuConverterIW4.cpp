@@ -207,7 +207,7 @@ namespace IW4
             }
 
             expressionEntry functionEntry{};
-            functionEntry.type = EET_OPERATOR;
+            functionEntry.type = EET_OPERAND;
             functionEntry.data.operand.dataType = VAL_FUNCTION;
             functionEntry.data.operand.internals.function = functionStatement;
             entries.emplace_back(functionEntry);
