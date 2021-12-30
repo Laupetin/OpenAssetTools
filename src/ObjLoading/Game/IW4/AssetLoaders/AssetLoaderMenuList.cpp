@@ -34,7 +34,7 @@ namespace IW4
                 zoneState->AddFunction(std::move(function));
 
             // Prepare a list of all menus of this file
-            std::vector<menuDef_t*> allMenusOfFile;
+            std::vector<XAssetInfo<menuDef_t>*> allMenusOfFile;
             allMenusOfFile.reserve(parsingResult->m_menus.size());
 
             // Convert all menus and add them as assets
@@ -49,11 +49,13 @@ namespace IW4
                 }
 
                 menus.push_back(menuAsset);
-                allMenusOfFile.push_back(menuAsset);
                 auto* menuAssetInfo = manager->AddAsset(ASSET_TYPE_MENU, menu->m_name, menuAsset, std::move(converter.GetDependencies()), std::vector<scr_string_t>());
 
                 if (menuAssetInfo)
+                {
+                    allMenusOfFile.push_back(reinterpret_cast<XAssetInfo<menuDef_t>*>(menuAssetInfo));
                     menuListDependencies.push_back(menuAssetInfo);
+                }
 
                 zoneState->AddMenu(std::move(menu));
             }
@@ -142,7 +144,10 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
         {
             std::cout << "Already loaded \"" << menuFileToLoad << "\", skipping\n";
             for (auto* menu : alreadyLoadedMenuFile->second)
-                menus.push_back(menu);
+            {
+                menus.push_back(menu->Asset());
+                menuListDependencies.push_back(menu);
+            }
             continue;
         }
 
@@ -160,7 +165,7 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
     auto* menuListAsset = MenuLoader::CreateMenuListAsset(assetName, memory, menus);
 
     if (menuListAsset)
-        manager->AddAsset(ASSET_TYPE_MENULIST, assetName, menuListAsset);
+        manager->AddAsset(ASSET_TYPE_MENULIST, assetName, menuListAsset, menuListDependencies, std::vector<scr_string_t>());
 
     return true;
 }

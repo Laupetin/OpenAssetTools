@@ -20,7 +20,7 @@ namespace IW4
         std::map<std::string, const char*> m_strings_by_value;
 
     public:
-        std::map<std::string, std::vector<menuDef_t*>> m_menus_by_filename;
+        std::map<std::string, std::vector<XAssetInfo<menuDef_t>*>> m_menus_by_filename;
         ExpressionSupportingData* m_supporting_data;
 
         MenuConversionZoneState();
@@ -32,7 +32,7 @@ namespace IW4
         size_t AddStaticDvar(const std::string& dvarName);
         const char* AddString(const std::string& str);
 
-        void AddLoadedFile(std::string loadedFileName, std::vector<menuDef_t*> menusOfFile);
+        void AddLoadedFile(std::string loadedFileName, std::vector<XAssetInfo<menuDef_t>*> menusOfFile);
 
         void FinalizeSupportingData() const;
     };
