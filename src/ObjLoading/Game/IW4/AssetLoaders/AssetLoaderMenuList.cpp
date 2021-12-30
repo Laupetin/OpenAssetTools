@@ -48,15 +48,6 @@ void AssetLoaderMenuList::AddMenuFilesToLoadToQueue(std::deque<std::string>& que
     }
 }
 
-void AssetLoaderMenuList::AddResultsToZoneState(menu::ParsingResult* parsingResult, menu::MenuAssetZoneState* zoneState)
-{
-    for (auto& function : parsingResult->m_functions)
-        zoneState->AddFunction(std::move(function));
-
-    for (auto& menu : parsingResult->m_menus)
-        zoneState->AddMenu(std::move(menu));
-}
-
 bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,
                                                menu::MenuAssetZoneState* zoneState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
 {
@@ -69,7 +60,10 @@ bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISe
 
     std::cout << "Successfully read menu file \"" << assetName << "\" (" << menuLoadCount << " loads, " << menuCount << " menus, " << functionCount << " functions, " << totalItemCount << " items)\n";
 
-    for (const auto& menu : parsingResult->m_menus)
+    for (auto& function : parsingResult->m_functions)
+        zoneState->AddFunction(std::move(function));
+
+    for (auto& menu : parsingResult->m_menus)
     {
         MenuConverter converter(ObjLoading::Configuration.MenuNoOptimization, searchPath, memory, manager);
         auto* menuAsset = converter.ConvertMenu(*menu);
@@ -84,9 +78,9 @@ bool AssetLoaderMenuList::ProcessParsedResults(const std::string& assetName, ISe
 
         if (menuAssetInfo)
             menuListDependencies.push_back(menuAssetInfo);
-    }
 
-    AddResultsToZoneState(parsingResult, zoneState);
+        zoneState->AddMenu(std::move(menu));
+    }
 
     return true;
 }

@@ -15,7 +15,6 @@ namespace IW4
     {
         static bool ShouldLoadMenuFile(const std::string& menuFilePath, menu::MenuAssetZoneState* zoneState);
         static void AddMenuFilesToLoadToQueue(std::deque<std::string>& queue, const menu::ParsingResult* parsingResult, menu::MenuAssetZoneState* zoneState);
-        static void AddResultsToZoneState(menu::ParsingResult* parsingResult, menu::MenuAssetZoneState* zoneState);
         static bool ProcessParsedResults(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult, menu::MenuAssetZoneState* zoneState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies);
         static MenuList* CreateMenuListAsset(const std::string& assetName, MemoryManager* memory, const std::vector<menuDef_t*>& menus);
 
