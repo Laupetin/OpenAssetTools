@@ -2,11 +2,6 @@
 
 using namespace menu;
 
-void MenuAssetZoneState::AddLoadedFile(std::string loadedFileName)
-{
-    m_loaded_files.emplace(std::move(loadedFileName));
-}
-
 void MenuAssetZoneState::AddFunction(std::unique_ptr<CommonFunctionDef> function)
 {
     m_functions_by_name.emplace(std::make_pair(function->m_name, function.get()));

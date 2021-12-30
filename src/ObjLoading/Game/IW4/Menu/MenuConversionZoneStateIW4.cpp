@@ -73,6 +73,11 @@ const char* MenuConversionZoneState::AddString(const std::string& str)
     return strDuped;
 }
 
+void MenuConversionZoneState::AddLoadedFile(std::string loadedFileName, std::vector<menuDef_t*> menusOfFile)
+{
+    m_menus_by_filename.emplace(std::make_pair(std::move(loadedFileName), std::move(menusOfFile)));
+}
+
 void MenuConversionZoneState::FinalizeSupportingData() const
 {
     auto* memory = m_zone->GetMemory();

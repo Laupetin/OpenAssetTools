@@ -1,6 +1,5 @@
 #pragma once
 
-#include <set>
 #include <string>
 
 #include "AssetLoading/IZoneAssetLoaderState.h"
@@ -12,15 +11,13 @@ namespace menu
     class MenuAssetZoneState final : public IZoneAssetLoaderState
     {
     public:
-        std::set<std::string> m_loaded_files;
         std::vector<std::unique_ptr<CommonFunctionDef>> m_functions;
         std::vector<std::unique_ptr<CommonMenuDef>> m_menus;
 
         std::map<std::string, CommonFunctionDef*> m_functions_by_name;
 
         MenuAssetZoneState() = default;
-
-        void AddLoadedFile(std::string loadedFileName);
+        
         void AddFunction(std::unique_ptr<CommonFunctionDef> function);
         void AddMenu(std::unique_ptr<CommonMenuDef> menu);
     };
