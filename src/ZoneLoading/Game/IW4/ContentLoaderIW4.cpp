@@ -50,8 +50,6 @@ ContentLoader::ContentLoader()
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
-    assert(m_zone->m_script_strings.Empty());
-
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     if (atStreamStart)
