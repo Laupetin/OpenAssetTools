@@ -17,7 +17,7 @@ scr_string_t AssetWriter::UseScriptString(const scr_string_t scrString) const
     if (m_asset->m_zone == m_zone)
         return scrString;
 
-    const auto strValue = m_asset->m_zone->m_script_strings[scrString];
+    const auto strValue = m_asset->m_zone->m_script_strings.CValue(scrString);
     return m_zone->m_script_strings.GetScriptString(strValue);
 }
 

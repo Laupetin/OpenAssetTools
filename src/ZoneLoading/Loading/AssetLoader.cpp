@@ -8,10 +8,6 @@ AssetLoader::AssetLoader(const asset_type_t assetType, Zone* zone, IZoneInputStr
       m_asset_type(assetType),
       varScriptString(nullptr)
 {
-    m_asset_type = assetType;
-    m_zone = zone;
-    m_stream = stream;
-    varScriptString = nullptr;
 }
 
 void AssetLoader::AddDependency(XAssetInfoGeneric* assetInfo)

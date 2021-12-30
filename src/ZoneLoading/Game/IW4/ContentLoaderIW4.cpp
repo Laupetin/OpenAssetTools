@@ -43,9 +43,9 @@
 using namespace IW4;
 
 ContentLoader::ContentLoader()
+    : varXAsset(nullptr),
+      varScriptStringList(nullptr)
 {
-    varXAsset = nullptr;
-    varScriptStringList = nullptr;
 }
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
@@ -65,17 +65,8 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
-        for (int i = 0; i < varScriptStringList->count; i++)
-        {
-            if (varScriptStringList->strings[i])
-            {
-                m_zone->m_script_strings.AddScriptString(varScriptStringList->strings[i]);
-            }
-            else
-            {
-                m_zone->m_script_strings.AddScriptString("");
-            }
-        }
+        if (varScriptStringList->strings && varScriptStringList->count > 0)
+            m_zone->m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
     }
 
     m_stream->PopBlock();
@@ -83,7 +74,7 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
     assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
 
-void ContentLoader::LoadXAsset(const bool atStreamStart)
+void ContentLoader::LoadXAsset(const bool atStreamStart) const
 {
 #define LOAD_ASSET(type_index, typeName, headerEntry) \
     case type_index: \

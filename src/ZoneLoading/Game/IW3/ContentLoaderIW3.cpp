@@ -33,9 +33,9 @@
 using namespace IW3;
 
 ContentLoader::ContentLoader()
+    : varXAsset(nullptr),
+      varScriptStringList(nullptr)
 {
-    varXAsset = nullptr;
-    varScriptStringList = nullptr;
 }
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
@@ -55,17 +55,8 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
-        for (int i = 0; i < varScriptStringList->count; i++)
-        {
-            if (varScriptStringList->strings[i])
-            {
-                m_zone->m_script_strings.AddScriptString(varScriptStringList->strings[i]);
-            }
-            else
-            {
-                m_zone->m_script_strings.AddScriptString("");
-            }
-        }
+        if (varScriptStringList->strings && varScriptStringList->count > 0)
+            m_zone->m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
     }
 
     m_stream->PopBlock();
@@ -73,7 +64,7 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
     assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
 
-void ContentLoader::LoadXAsset(const bool atStreamStart)
+void ContentLoader::LoadXAsset(const bool atStreamStart) const
 {
 #define LOAD_ASSET(type_index, typeName, headerEntry) \
     case type_index: \
@@ -93,33 +84,33 @@ void ContentLoader::LoadXAsset(const bool atStreamStart)
 
     switch (varXAsset->type)
     {
-        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-            LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-            LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-            LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-            LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-            LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-            LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-            LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
-            LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
-            LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
-            LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
-            LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-            LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
-            LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
-            LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-            LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-            LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-            LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
-            LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
-            LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-            LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-            LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponDef, weapon)
-            SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
-            LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-            LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-            LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-            LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
+    LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
+    LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
+    LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
+    LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
+    LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
+    LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
+    LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
+    LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
+    LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
+    LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
+    LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
+    LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
+    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
+    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
+    LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
+    LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
+    LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
+    LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
+    LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
+    LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
+    LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
+    LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponDef, weapon)
+    SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
+    LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
+    LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
+    LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
+    LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
 
     default:
         {

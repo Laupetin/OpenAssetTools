@@ -12,7 +12,7 @@ namespace IW3
 
         void LoadScriptStringList(bool atStreamStart);
 
-        void LoadXAsset(bool atStreamStart);
+        void LoadXAsset(bool atStreamStart) const;
         void LoadXAssetArray(bool atStreamStart, size_t count);
 
     public:
