@@ -3,46 +3,22 @@
 #include <filesystem>
 #include <string>
 
+#include "AssetDumperMenuList.h"
 #include "ObjWriting.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "Game/IW4/Menu/MenuDumperIW4.h"
 #include "Menu/AbstractMenuDumper.h"
 
-namespace fs = std::filesystem;
-
 using namespace IW4;
 
-const MenuList* AssetDumperMenuDef::GetParentMenuList(XAssetInfo<menuDef_t>* asset)
+std::string AssetDumperMenuDef::GetPathForMenu(menu::MenuDumpingZoneState* zoneState, XAssetInfo<menuDef_t>* asset)
 {
-    const auto* menu = asset->Asset();
-    const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW4*>(asset->m_zone->m_pools.get());
-    for (const auto* menuList : *gameAssetPool->m_menu_list)
-    {
-        const auto* menuListAsset = menuList->Asset();
+    const auto menuDumpingState = zoneState->m_menu_dumping_state_map.find(asset->Asset());
 
-        for (auto menuIndex = 0; menuIndex < menuListAsset->menuCount; menuIndex++)
-        {
-            if (menuListAsset->menus[menuIndex] == menu)
-                return menuListAsset;
-        }
-    }
-
-    return nullptr;
-}
-
-std::string AssetDumperMenuDef::GetPathForMenu(XAssetInfo<menuDef_t>* asset)
-{
-    const auto* list = GetParentMenuList(asset);
-
-    if (!list)
+    if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
         return "ui_mp/" + std::string(asset->Asset()->window.name) + ".menu";
 
-    const fs::path p(list->name);
-    std::string parentPath;
-    if (p.has_parent_path())
-        parentPath = p.parent_path().string() + "/";
-
-    return parentPath + std::string(asset->Asset()->window.name) + ".menu";
+    return menuDumpingState->second.m_path;
 }
 
 bool AssetDumperMenuDef::ShouldDump(XAssetInfo<menuDef_t>* asset)
@@ -53,16 +29,17 @@ bool AssetDumperMenuDef::ShouldDump(XAssetInfo<menuDef_t>* asset)
 void AssetDumperMenuDef::DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset)
 {
     const auto* menu = asset->Asset();
-    const auto menuFilePath = GetPathForMenu(asset);
+    auto* zoneState = context.GetZoneAssetDumperState<menu::MenuDumpingZoneState>();
 
-    if(ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
+    if(!ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
     {
-        // Don't dump menu file separately if the name matches the menu list
-        const auto* menuListParent = GetParentMenuList(asset);
-        if (menuListParent && menuFilePath == menuListParent->name)
-            return;
+        // Make sure menu paths based on menu lists are created
+        const auto* gameAssetPool = dynamic_cast<GameAssetPoolIW4*>(asset->m_zone->m_pools.get());
+        for (auto* menuListAsset : *gameAssetPool->m_menu_list)
+            AssetDumperMenuList::CreateDumpingStateForMenuList(zoneState, menuListAsset->Asset());
     }
 
+    const auto menuFilePath = GetPathForMenu(zoneState, asset);
     const auto assetFile = context.OpenAssetFile(menuFilePath);
 
     if (!assetFile)
