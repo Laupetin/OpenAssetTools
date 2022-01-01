@@ -16,9 +16,12 @@ namespace menu
 
         std::map<std::string, CommonFunctionDef*> m_functions_by_name;
 
+        std::map<std::string, std::vector<std::string>> m_menus_to_load_by_menu;
+
         MenuAssetZoneState() = default;
         
         void AddFunction(std::unique_ptr<CommonFunctionDef> function);
         void AddMenu(std::unique_ptr<CommonMenuDef> menu);
+        void AddMenusToLoad(std::string menuName, std::vector<std::string> menusToLoad);
     };
 }

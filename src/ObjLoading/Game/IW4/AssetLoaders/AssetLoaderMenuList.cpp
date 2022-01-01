@@ -18,7 +18,8 @@ namespace IW4
     {
     public:
         static bool ProcessParsedResults(const std::string& fileName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::ParsingResult* parsingResult,
-            menu::MenuAssetZoneState* zoneState, MenuConversionZoneState* conversionState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
+                                         menu::MenuAssetZoneState* zoneState, MenuConversionZoneState* conversionState, std::vector<menuDef_t*>& menus,
+                                         std::vector<XAssetInfoGeneric*>& menuListDependencies)
         {
             const auto menuCount = parsingResult->m_menus.size();
             const auto functionCount = parsingResult->m_functions.size();
@@ -27,7 +28,8 @@ namespace IW4
             for (const auto& menu : parsingResult->m_menus)
                 totalItemCount += menu->m_items.size();
 
-            std::cout << "Successfully read menu file \"" << fileName << "\" (" << menuLoadCount << " loads, " << menuCount << " menus, " << functionCount << " functions, " << totalItemCount << " items)\n";
+            std::cout << "Successfully read menu file \"" << fileName << "\" (" << menuLoadCount << " loads, " << menuCount << " menus, " << functionCount << " functions, " << totalItemCount <<
+                " items)\n";
 
             // Add all functions to the zone state to make them available for all menus to be converted
             for (auto& function : parsingResult->m_functions)
@@ -123,6 +125,58 @@ bool AssetLoaderMenuList::CanLoadFromRaw() const
     return true;
 }
 
+std::deque<std::string> BuildMenuFileQueue(const std::string& menuListAssetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::MenuAssetZoneState* zoneState,
+                                           MenuConversionZoneState* conversionState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
+{
+    std::deque<std::string> menuLoadQueue;
+
+    const auto alreadyLoadedMenuListFileMenus = conversionState->m_menus_by_filename.find(menuListAssetName);
+
+    if (alreadyLoadedMenuListFileMenus == conversionState->m_menus_by_filename.end())
+    {
+        const auto menuListResult = MenuLoader::ParseMenuFile(menuListAssetName, searchPath, zoneState);
+        if (menuListResult)
+        {
+            MenuLoader::ProcessParsedResults(menuListAssetName, searchPath, memory, manager, menuListResult.get(), zoneState, conversionState, menus, menuListDependencies);
+
+            for (const auto& menuToLoad : menuListResult->m_menus_to_load)
+                menuLoadQueue.push_back(menuToLoad);
+
+            zoneState->AddMenusToLoad(menuListAssetName, std::move(menuListResult->m_menus_to_load));
+        }
+        else
+            std::cerr << "Could not read menu list file \"" << menuListAssetName << "\"\n";
+    }
+
+    return menuLoadQueue;
+}
+
+void LoadMenuFileFromQueue(const std::string& menuFilePath, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::MenuAssetZoneState* zoneState,
+    MenuConversionZoneState* conversionState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
+{
+    const auto alreadyLoadedMenuFile = conversionState->m_menus_by_filename.find(menuFilePath);
+    if (alreadyLoadedMenuFile != conversionState->m_menus_by_filename.end())
+    {
+        std::cout << "Already loaded \"" << menuFilePath << "\", skipping\n";
+        for (auto* menu : alreadyLoadedMenuFile->second)
+        {
+            menus.push_back(menu->Asset());
+            menuListDependencies.push_back(menu);
+        }
+        return;
+    }
+
+    const auto menuFileResult = MenuLoader::ParseMenuFile(menuFilePath, searchPath, zoneState);
+    if (menuFileResult)
+    {
+        MenuLoader::ProcessParsedResults(menuFilePath, searchPath, memory, manager, menuFileResult.get(), zoneState, conversionState, menus, menuListDependencies);
+        if (!menuFileResult->m_menus_to_load.empty())
+            std::cout << "WARNING: Menu file has menus to load even though it is not a menu list, ignoring: \"" << menuFilePath << "\"\n";
+    }
+    else
+        std::cerr << "Could not read menu file \"" << menuFilePath << "\"\n";
+}
+
 bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     std::vector<menuDef_t*> menus;
@@ -131,35 +185,15 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
     auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<menu::MenuAssetZoneState>();
     auto* conversionState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<MenuConversionZoneState>();
 
-    const auto menuListResult = MenuLoader::ParseMenuFile(assetName, searchPath, zoneState);
-    if (menuListResult)
-        MenuLoader::ProcessParsedResults(assetName, searchPath, memory, manager, menuListResult.get(), zoneState, conversionState, menus, menuListDependencies);
-    else
-        std::cerr << "Could not read menu list file \"" << assetName << "\"\n";
+    auto menuLoadQueue = BuildMenuFileQueue(assetName, searchPath, memory, manager, zoneState, conversionState, menus, menuListDependencies);
 
-    for(const auto& menuFileToLoad : menuListResult->m_menus_to_load)
+    while(!menuLoadQueue.empty())
     {
-        const auto alreadyLoadedMenuFile = conversionState->m_menus_by_filename.find(menuFileToLoad);
-        if(alreadyLoadedMenuFile != conversionState->m_menus_by_filename.end())
-        {
-            std::cout << "Already loaded \"" << menuFileToLoad << "\", skipping\n";
-            for (auto* menu : alreadyLoadedMenuFile->second)
-            {
-                menus.push_back(menu->Asset());
-                menuListDependencies.push_back(menu);
-            }
-            continue;
-        }
+        const auto& menuFileToLoad = menuLoadQueue.front();
 
-        const auto menuFileResult = MenuLoader::ParseMenuFile(menuFileToLoad, searchPath, zoneState);
-        if (menuFileResult)
-        {
-            MenuLoader::ProcessParsedResults(menuFileToLoad, searchPath, memory, manager, menuFileResult.get(), zoneState, conversionState, menus, menuListDependencies);
-            if (!menuFileResult->m_menus_to_load.empty())
-                std::cout << "WARNING: Menu file has menus to load even though it is not a menu list, ignoring: \"" << menuFileToLoad << "\"\n";
-        }
-        else
-            std::cerr << "Could not read menu file \"" << menuFileToLoad << "\"\n";
+        LoadMenuFileFromQueue(menuFileToLoad, searchPath, memory, manager, zoneState, conversionState, menus, menuListDependencies);
+
+        menuLoadQueue.pop_front();
     }
 
     auto* menuListAsset = MenuLoader::CreateMenuListAsset(assetName, memory, menus);

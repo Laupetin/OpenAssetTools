@@ -12,3 +12,8 @@ void MenuAssetZoneState::AddMenu(std::unique_ptr<CommonMenuDef> menu)
 {
     m_menus.emplace_back(std::move(menu));
 }
+
+void MenuAssetZoneState::AddMenusToLoad(std::string menuName, std::vector<std::string> menusToLoad)
+{
+    m_menus_to_load_by_menu.emplace(std::make_pair(std::move(menuName), std::move(menusToLoad)));
+}
