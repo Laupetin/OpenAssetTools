@@ -11,7 +11,7 @@ namespace menu
     class GenericMenuEventHandlerSetPropertySequence final : public MenuFileParser::sequence_t
     {
     public:
-        using callback_t = std::function<void(MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<CommonEventHandlerSet> value)>;
+        using callback_t = std::function<std::unique_ptr<CommonEventHandlerSet>& (MenuFileParserState* state, const TokenPos& pos)>;
 
     private:
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;

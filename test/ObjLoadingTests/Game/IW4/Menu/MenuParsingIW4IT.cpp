@@ -271,7 +271,7 @@ namespace test::game::iw4::menu::parsing::it
 
 		ItemKeyHandler* qKeyHandler;
 		ItemKeyHandler* leetKeyHandler;
-		if(keyHandler1->key == 'q')
+		if (keyHandler1->key == 'q')
 		{
 			qKeyHandler = keyHandler1;
 			leetKeyHandler = keyHandler2;
@@ -298,5 +298,84 @@ namespace test::game::iw4::menu::parsing::it
 
 		REQUIRE(menu->itemCount == 0);
 		REQUIRE(menu->items == nullptr);
+	}
+
+	TEST_CASE("MenuParsingIW4IT: Can specify event handler multiple times", "[parsing][converting][menu][it]")
+	{
+		MenuParsingItHelper helper;
+
+		helper.AddFile(R"testmenu(
+{
+	menuDef
+	{
+		name  "Blab"
+		onOpen
+		{
+			focusFirst;
+		}
+		onOpen
+		{
+			play "fart_sound";
+		}
+		onOpen
+		{
+			exec "wait 1; set r_fullbright 1";
+		}
+
+        itemDef
+        {
+            action
+            {
+                play "lmfao";
+            }
+            action
+            {
+                play "lol";
+            }
+        }
+	}
+}
+			)testmenu");
+
+		const auto result = helper.RunIntegrationTest();
+		REQUIRE(result);
+
+		const auto* menuList = helper.GetMenuListAsset();
+		const auto* menu = helper.GetMenuAsset("Blab");
+
+		REQUIRE(menuList->menuCount == 1);
+		REQUIRE(menuList->menus);
+
+		REQUIRE(menuList->menus[0] == menu);
+
+		REQUIRE(menu->window.name == "Blab"s);
+		
+		REQUIRE(menu->onOpen != nullptr);
+		REQUIRE(menu->onOpen->eventHandlerCount == 3);
+		REQUIRE(menu->onOpen->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onOpen->eventHandlers[0]->eventData.unconditionalScript == R"("focusFirst" ; )"s);
+		REQUIRE(menu->onOpen->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onOpen->eventHandlers[1]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onOpen->eventHandlers[1]->eventData.unconditionalScript == R"("play" "fart_sound" ; )"s);
+		REQUIRE(menu->onOpen->eventHandlers[2]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(menu->onOpen->eventHandlers[2]->eventData.unconditionalScript != nullptr);
+		REQUIRE(menu->onOpen->eventHandlers[2]->eventData.unconditionalScript == R"("exec" "wait 1; set r_fullbright 1" ; )"s);
+		
+
+		REQUIRE(menu->itemCount == 1);
+		REQUIRE(menu->items != nullptr);
+
+		const auto* item = menu->items[0];
+		REQUIRE(item != nullptr);
+
+		REQUIRE(item->action != nullptr);
+		REQUIRE(item->action->eventHandlerCount == 2);
+		REQUIRE(item->action->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(item->action->eventHandlers[0]->eventData.unconditionalScript != nullptr);
+		REQUIRE(item->action->eventHandlers[0]->eventData.unconditionalScript == R"("play" "lmfao" ; )"s);
+		REQUIRE(item->action->eventHandlers[1]->eventType == EventType::EVENT_UNCONDITIONAL);
+		REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript != nullptr);
+		REQUIRE(item->action->eventHandlers[1]->eventData.unconditionalScript == R"("play" "lol" ; )"s);
 	}
 }

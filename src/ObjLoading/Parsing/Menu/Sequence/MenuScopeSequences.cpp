@@ -258,21 +258,21 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_menu->m_visible_expression = std::move(value);
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_menu->m_on_open = std::move(value);
+        return state->m_current_menu->m_on_open;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_menu->m_on_close = std::move(value);
+        return state->m_current_menu->m_on_close;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_menu->m_on_request_close = std::move(value);
+        return state->m_current_menu->m_on_request_close;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_menu->m_on_esc = std::move(value);
+        return state->m_current_menu->m_on_esc;
     }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("border", [](const MenuFileParserState* state, const TokenPos&, const int value)
     {

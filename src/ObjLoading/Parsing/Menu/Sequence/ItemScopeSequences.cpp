@@ -681,37 +681,37 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_item->m_background = value;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onFocus", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_focus = std::move(value);
+        return state->m_current_item->m_on_focus;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("leaveFocus", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("leaveFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_leave_focus = std::move(value);
+        return state->m_current_item->m_on_leave_focus;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnter", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnter", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_mouse_enter = std::move(value);
+        return state->m_current_item->m_on_mouse_enter;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExit", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExit", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_mouse_exit = std::move(value);
+        return state->m_current_item->m_on_mouse_exit;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnterText", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnterText", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_mouse_enter_text = std::move(value);
+        return state->m_current_item->m_on_mouse_enter_text;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExitText", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExitText", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_mouse_exit_text = std::move(value);
+        return state->m_current_item->m_on_mouse_exit_text;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("action", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("action", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_action = std::move(value);
+        return state->m_current_item->m_on_action;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("accept", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("accept", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
     {
-        state->m_current_item->m_on_accept = std::move(value);
+        return state->m_current_item->m_on_accept;
     }));
     // special
     AddSequence(std::make_unique<GenericStringPropertySequence>("dvar", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)
@@ -891,10 +891,10 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
         state->m_current_item->m_list_box_features->m_element_style = value;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("doubleclick", [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<CommonEventHandlerSet> value)
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("doubleclick", [](const MenuFileParserState* state, const TokenPos& pos) -> std::unique_ptr<CommonEventHandlerSet>&
     {
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
-        state->m_current_item->m_list_box_features->m_on_double_click = std::move(value);
+        return state->m_current_item->m_list_box_features->m_on_double_click;
     }));
     AddSequence(std::make_unique<GenericColorPropertySequence>("selectBorder", [](const MenuFileParserState* state, const TokenPos& pos, const CommonColor value)
     {
