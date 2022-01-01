@@ -1010,6 +1010,11 @@ namespace IW4
 
             case CommonItemFeatureType::NONE:
             default:
+                if(item->type == ITEM_TYPE_TEXT_SCROLL)
+                {
+                    item->typeData.scroll = static_cast<textScrollDef_s*>(m_memory->Alloc(sizeof(textScrollDef_s)));
+                    memset(item->typeData.scroll, 0, sizeof(textScrollDef_s));
+                }
                 break;
             }
 
