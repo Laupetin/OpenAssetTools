@@ -192,12 +192,8 @@ namespace test::game::iw4::menu::parsing::it
 		REQUIRE(menu->window.rect.vertAlign == 2);
 		REQUIRE(menu->window.style == 5);
 
-		REQUIRE(menu->visibleExp != nullptr);
-		REQUIRE(menu->visibleExp->entries != nullptr);
-		REQUIRE(menu->visibleExp->numEntries == 1);
-		REQUIRE(menu->visibleExp->entries[0].type == expressionEntryType::EET_OPERAND);
-		REQUIRE(menu->visibleExp->entries[0].data.operand.dataType == expDataType::VAL_INT);
-		REQUIRE(menu->visibleExp->entries[0].data.operand.internals.intVal > 0);
+		REQUIRE(menu->visibleExp == nullptr);
+		REQUIRE(menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE);
 
 		REQUIRE(menu->onOpen != nullptr);
 		REQUIRE(menu->onOpen->eventHandlerCount == 1);

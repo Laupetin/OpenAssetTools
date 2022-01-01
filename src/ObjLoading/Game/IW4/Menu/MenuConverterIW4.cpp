@@ -493,10 +493,23 @@ namespace IW4
             if (expression == nullptr)
                 return nullptr;
 
-            if (expression->IsStatic())
+            bool isStatic;
+            bool isTruthy;
+            if(m_disable_optimizations)
             {
-                const auto staticValue = expression->Evaluate();
-                if (staticValue.IsTruthy())
+                const auto* staticValue = dynamic_cast<const SimpleExpressionValue*>(expression);
+                isStatic = staticValue != nullptr;
+                isTruthy = isStatic && staticValue->IsTruthy();
+            }
+            else
+            {
+                isStatic = expression->IsStatic();
+                isTruthy = isStatic && expression->Evaluate().IsTruthy();
+            }
+
+            if (isStatic)
+            {
+                if (isTruthy)
                     window->dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
                 return nullptr;
             }
