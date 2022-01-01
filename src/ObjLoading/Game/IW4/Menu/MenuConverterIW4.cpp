@@ -495,7 +495,7 @@ namespace IW4
 
             bool isStatic;
             bool isTruthy;
-            if(m_disable_optimizations)
+            if (m_disable_optimizations)
             {
                 const auto* staticValue = dynamic_cast<const SimpleExpressionValue*>(expression);
                 isStatic = staticValue != nullptr;
@@ -688,32 +688,34 @@ namespace IW4
                 bool m_expression_is_static;
                 ItemFloatExpressionTarget m_target;
                 float* m_static_value;
+                unsigned m_static_value_array_size;
+                unsigned m_dynamic_flags_to_set;
             };
             FloatExpressionLocation locations[]
             {
-                {commonItem->m_rect_x_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_X, &item->window.rectClient.x},
-                {commonItem->m_rect_y_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_Y, &item->window.rectClient.y},
-                {commonItem->m_rect_w_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_W, &item->window.rectClient.w},
-                {commonItem->m_rect_h_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_H, &item->window.rectClient.h},
-                {commonItem->m_forecolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_R, &item->window.foreColor[0]},
-                {commonItem->m_forecolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_G, &item->window.foreColor[1]},
-                {commonItem->m_forecolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_B, &item->window.foreColor[2]},
-                {commonItem->m_forecolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_A, &item->window.foreColor[3]},
-                {commonItem->m_forecolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_RGB, nullptr},
-                {commonItem->m_glowcolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_R, &item->glowColor[0]},
-                {commonItem->m_glowcolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_G, &item->glowColor[1]},
-                {commonItem->m_glowcolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_B, &item->glowColor[2]},
-                {commonItem->m_glowcolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_A, &item->glowColor[3]},
-                {commonItem->m_glowcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, nullptr},
-                {commonItem->m_backcolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_R, &item->window.backColor[0]},
-                {commonItem->m_backcolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_G, &item->window.backColor[1]},
-                {commonItem->m_backcolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_B, &item->window.backColor[2]},
-                {commonItem->m_backcolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_A, &item->window.backColor[3]},
-                {commonItem->m_backcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, nullptr},
+                {commonItem->m_rect_x_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_X, &item->window.rectClient.x, 1, 0},
+                {commonItem->m_rect_y_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_Y, &item->window.rectClient.y, 1, 0},
+                {commonItem->m_rect_w_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_W, &item->window.rectClient.w, 1, 0},
+                {commonItem->m_rect_h_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_H, &item->window.rectClient.h, 1, 0},
+                {commonItem->m_forecolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_R, &item->window.foreColor[0], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_G, &item->window.foreColor[1], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_B, &item->window.foreColor[2], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_A, &item->window.foreColor[3], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_RGB, &item->window.foreColor[0], 3, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_glowcolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_R, &item->glowColor[0], 1, 0},
+                {commonItem->m_glowcolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_G, &item->glowColor[1], 1, 0},
+                {commonItem->m_glowcolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_B, &item->glowColor[2], 1, 0},
+                {commonItem->m_glowcolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_A, &item->glowColor[3], 1, 0},
+                {commonItem->m_glowcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, &item->glowColor[0], 3, 0},
+                {commonItem->m_backcolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_R, &item->window.backColor[0], 1, 0},
+                {commonItem->m_backcolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_G, &item->window.backColor[1], 1, 0},
+                {commonItem->m_backcolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_B, &item->window.backColor[2], 1, 0},
+                {commonItem->m_backcolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_A, &item->window.backColor[3], 1, 0},
+                {commonItem->m_backcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, &item->window.backColor[0], 3, 0},
             };
 
             floatExpressionCount = 0;
-            for (auto& [expression, expressionIsStatic, target, staticValue] : locations)
+            for (auto& [expression, expressionIsStatic, target, staticValue, staticValueArraySize, dynamicFlagsToSet] : locations)
             {
                 expressionIsStatic = !m_disable_optimizations && staticValue != nullptr && expression && expression->IsStatic();
 
@@ -723,12 +725,25 @@ namespace IW4
 
                     if (evaluatedValue.m_type == SimpleExpressionValue::Type::INT)
                     {
-                        *staticValue = static_cast<float>(evaluatedValue.m_int_value);
+                        item->window.dynamicFlags[0] |= dynamicFlagsToSet;
+
+                        auto* staticValuePtr = staticValue;
+                        for(auto i = 0u; i < staticValueArraySize; i++)
+                        {
+                            *staticValuePtr = static_cast<float>(evaluatedValue.m_int_value);
+                            staticValuePtr++;
+                        }
                         continue;
                     }
                     if (evaluatedValue.m_type == SimpleExpressionValue::Type::DOUBLE)
                     {
-                        *staticValue = static_cast<float>(evaluatedValue.m_double_value);
+                        item->window.dynamicFlags[0] |= dynamicFlagsToSet;
+                        auto* staticValuePtr = staticValue;
+                        for (auto i = 0u; i < staticValueArraySize; i++)
+                        {
+                            *staticValue = static_cast<float>(evaluatedValue.m_double_value);
+                            staticValuePtr++;
+                        }
                         continue;
                     }
 
@@ -745,7 +760,7 @@ namespace IW4
 
             auto* floatExpressions = static_cast<ItemFloatExpression*>(m_memory->Alloc(sizeof(ItemFloatExpression) * floatExpressionCount));
             auto floatExpressionIndex = 0;
-            for (const auto& [expression, expressionIsStatic, target, staticValue] : locations)
+            for (const auto& [expression, expressionIsStatic, target, staticValue, staticValueArraySize, dynamicFlagsToSet] : locations)
             {
                 if (!expression || expressionIsStatic)
                     continue;
@@ -753,6 +768,7 @@ namespace IW4
                 assert(floatExpressionIndex < floatExpressionCount && floatExpressionIndex >= 0);
                 floatExpressions[floatExpressionIndex].target = target;
                 floatExpressions[floatExpressionIndex].expression = ConvertExpression(expression, parentMenu, commonItem);
+                item->window.dynamicFlags[0] |= dynamicFlagsToSet;
                 floatExpressionIndex++;
             }
 
