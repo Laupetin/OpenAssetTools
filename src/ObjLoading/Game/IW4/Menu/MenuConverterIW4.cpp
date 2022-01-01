@@ -223,8 +223,11 @@ namespace IW4
             OP_SUBTRACT
         };
 
-        static bool IsOperation(const ISimpleExpression* expression)
+        bool IsOperation(const ISimpleExpression* expression) const
         {
+            if (!m_disable_optimizations && expression->IsStatic())
+                return false;
+
             return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression);
         }
 
@@ -537,11 +540,11 @@ namespace IW4
             }
         }
 
-        MenuEventHandler* ConvertEventHandlerSetLocalVar(const CommonEventHandlerSetLocalVar* setLocalVar, const CommonMenuDef* menu, const CommonItemDef* item) const
+        void ConvertEventHandlerSetLocalVar(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerSetLocalVar* setLocalVar, const CommonMenuDef* menu, const CommonItemDef* item) const
         {
             assert(setLocalVar);
             if (!setLocalVar)
-                return nullptr;
+                return;
 
             auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(SetLocalVarData)));
             auto* outputSetLocalVar = reinterpret_cast<SetLocalVarData*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
@@ -552,53 +555,63 @@ namespace IW4
             outputSetLocalVar->localVarName = m_memory->Dup(setLocalVar->m_var_name.c_str());
             outputSetLocalVar->expression = ConvertExpression(setLocalVar->m_value.get(), menu, item);
 
-            return outputHandler;
+            elements.push_back(outputHandler);
         }
 
-        MenuEventHandler* ConvertEventHandlerScript(const CommonEventHandlerScript* script) const
+        void ConvertEventHandlerScript(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerScript* script) const
         {
             assert(script);
             if (!script)
-                return nullptr;
+                return;
 
             auto* outputHandler = m_memory->Create<MenuEventHandler>();
             outputHandler->eventType = EVENT_UNCONDITIONAL;
             outputHandler->eventData.unconditionalScript = m_memory->Dup(script->m_script.c_str());
 
-            return outputHandler;
+            elements.push_back(outputHandler);
         }
 
-        void ConvertEventHandlerCondition(MenuEventHandler** eventHandlerArray, size_t& eventHandlerArrayIndex, const CommonEventHandlerCondition* condition, const CommonMenuDef* menu,
+        void ConvertEventHandlerCondition(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerCondition* condition, const CommonMenuDef* menu,
                                           const CommonItemDef* item) const
         {
             assert(condition);
-            if (!condition)
+            if (!condition || !condition->m_condition)
                 return;
 
-            auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(ConditionalScript)));
-            auto* outputCondition = reinterpret_cast<ConditionalScript*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
-
-            outputHandler->eventType = EVENT_IF;
-            outputHandler->eventData.conditionalScript = outputCondition;
-
-            outputCondition->eventExpression = ConvertExpression(condition->m_condition.get(), menu, item);
-            outputCondition->eventHandlerSet = ConvertEventHandlerSet(condition->m_condition_elements.get(), menu, item);
-
-            eventHandlerArray[eventHandlerArrayIndex] = outputHandler;
-
-            if (condition->m_else_elements)
+            if(!m_disable_optimizations && condition->m_condition->IsStatic())
             {
-                eventHandlerArrayIndex++;
+                const auto staticValueIsTruthy = condition->m_condition->Evaluate().IsTruthy();
 
-                auto* outputElseHandler = m_memory->Create<MenuEventHandler>();
-                outputElseHandler->eventType = EVENT_ELSE;
-                outputElseHandler->eventData.elseScript = ConvertEventHandlerSet(condition->m_else_elements.get(), menu, item);
+                if(staticValueIsTruthy)
+                    ConvertEventHandlerElements(elements, condition->m_condition_elements.get(), menu, item);
+                else if(condition->m_else_elements)
+                    ConvertEventHandlerElements(elements, condition->m_else_elements.get(), menu, item);
+            }
+            else
+            {
+                auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(ConditionalScript)));
+                auto* outputCondition = reinterpret_cast<ConditionalScript*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
 
-                eventHandlerArray[eventHandlerArrayIndex] = outputElseHandler;
+                outputHandler->eventType = EVENT_IF;
+                outputHandler->eventData.conditionalScript = outputCondition;
+
+                outputCondition->eventExpression = ConvertExpression(condition->m_condition.get(), menu, item);
+                outputCondition->eventHandlerSet = ConvertEventHandlerSet(condition->m_condition_elements.get(), menu, item);
+
+                elements.push_back(outputHandler);
+
+                if (condition->m_else_elements)
+                {
+                    auto* outputElseHandler = m_memory->Create<MenuEventHandler>();
+                    outputElseHandler->eventType = EVENT_ELSE;
+                    outputElseHandler->eventData.elseScript = ConvertEventHandlerSet(condition->m_else_elements.get(), menu, item);
+
+                    elements.push_back(outputElseHandler);
+                }
             }
         }
 
-        void ConvertEventHandler(MenuEventHandler** eventHandlerArray, size_t& eventHandlerArrayIndex, const ICommonEventHandlerElement* eventHandler, const CommonMenuDef* menu,
+        void ConvertEventHandler(std::vector<MenuEventHandler*>& elements, const ICommonEventHandlerElement* eventHandler, const CommonMenuDef* menu,
                                  const CommonItemDef* item) const
         {
             assert(eventHandler);
@@ -608,31 +621,23 @@ namespace IW4
             switch (eventHandler->GetType())
             {
             case CommonEventHandlerElementType::CONDITION:
-                ConvertEventHandlerCondition(eventHandlerArray, eventHandlerArrayIndex, dynamic_cast<const CommonEventHandlerCondition*>(eventHandler), menu, item);
+                ConvertEventHandlerCondition(elements, dynamic_cast<const CommonEventHandlerCondition*>(eventHandler), menu, item);
                 break;
 
             case CommonEventHandlerElementType::SCRIPT:
-                eventHandlerArray[eventHandlerArrayIndex] = ConvertEventHandlerScript(dynamic_cast<const CommonEventHandlerScript*>(eventHandler));
+                ConvertEventHandlerScript(elements, dynamic_cast<const CommonEventHandlerScript*>(eventHandler));
                 break;
 
             case CommonEventHandlerElementType::SET_LOCAL_VAR:
-                eventHandlerArray[eventHandlerArrayIndex] = ConvertEventHandlerSetLocalVar(dynamic_cast<const CommonEventHandlerSetLocalVar*>(eventHandler), menu, item);
+                ConvertEventHandlerSetLocalVar(elements, dynamic_cast<const CommonEventHandlerSetLocalVar*>(eventHandler), menu, item);
                 break;
             }
         }
 
-        _NODISCARD static size_t EventHandlerSetElementCount(const CommonEventHandlerSet* eventHandlerSet)
+        void ConvertEventHandlerElements(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item) const
         {
-            auto elementCount = 0u;
             for (const auto& element : eventHandlerSet->m_elements)
-            {
-                auto* condition = dynamic_cast<const CommonEventHandlerCondition*>(element.get());
-                if (condition && condition->m_else_elements)
-                    elementCount += 2;
-                else
-                    elementCount++;
-            }
-            return elementCount;
+                ConvertEventHandler(elements, element.get(), menu, item);
         }
 
         _NODISCARD MenuEventHandlerSet* ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
@@ -640,19 +645,15 @@ namespace IW4
             if (!eventHandlerSet)
                 return nullptr;
 
-            const auto elementCount = EventHandlerSetElementCount(eventHandlerSet);
-            auto* outputSet = static_cast<MenuEventHandlerSet*>(m_memory->Alloc(sizeof(MenuEventHandlerSet) + sizeof(void*) * elementCount));
+            std::vector<MenuEventHandler*> elements;
+            ConvertEventHandlerElements(elements, eventHandlerSet, menu, item);
+
+            auto* outputSet = static_cast<MenuEventHandlerSet*>(m_memory->Alloc(sizeof(MenuEventHandlerSet) + sizeof(void*) * elements.size()));
             auto* outputElements = reinterpret_cast<MenuEventHandler**>(reinterpret_cast<int8_t*>(outputSet) + sizeof(MenuEventHandlerSet));
+            memcpy(outputElements, &elements[0], sizeof(void*) * elements.size());
 
-            outputSet->eventHandlerCount = static_cast<int>(elementCount);
+            outputSet->eventHandlerCount = static_cast<int>(elements.size());
             outputSet->eventHandlers = outputElements;
-
-            auto eventHandlerIndex = 0u;
-            for (const auto& element : eventHandlerSet->m_elements)
-            {
-                ConvertEventHandler(outputElements, eventHandlerIndex, element.get(), menu, item);
-                eventHandlerIndex++;
-            }
 
             return outputSet;
         }
