@@ -488,7 +488,7 @@ namespace IW4
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertVisibleExpression(itemDef_s* item, const ISimpleExpression* expression, const CommonMenuDef* commonMenu, const CommonItemDef* commonItem = nullptr) const
+        _NODISCARD Statement_s* ConvertVisibleExpression(windowDef_t* window, const ISimpleExpression* expression, const CommonMenuDef* commonMenu, const CommonItemDef* commonItem = nullptr) const
         {
             if (expression == nullptr)
                 return nullptr;
@@ -497,11 +497,11 @@ namespace IW4
             {
                 const auto staticValue = expression->Evaluate();
                 if (staticValue.IsTruthy())
-                    item->window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
+                    window->dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
                 return nullptr;
             }
 
-            item->window.dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
+            window->dynamicFlags[0] |= WINDOW_FLAG_VISIBLE;
             return ConvertExpression(expression, commonMenu, commonItem);
         }
 
@@ -912,7 +912,7 @@ namespace IW4
             item->type = ConvertItemType(commonItem.m_type);
             item->window.border = commonItem.m_border;
             item->window.borderSize = static_cast<float>(commonItem.m_border_size);
-            item->visibleExp = ConvertVisibleExpression(item, commonItem.m_visible_expression.get(), &parentMenu, &commonItem);
+            item->visibleExp = ConvertVisibleExpression(&item->window, commonItem.m_visible_expression.get(), &parentMenu, &commonItem);
             item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
             item->window.ownerDraw = commonItem.m_owner_draw;
             item->window.ownerDrawFlags = commonItem.m_owner_draw_flags;
@@ -1050,7 +1050,7 @@ namespace IW4
             ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
             menu->allowedBinding = ConvertString(commonMenu.m_allowed_binding);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_text_only_focus, WINDOW_FLAG_TEXT_ONLY_FOCUS);
-            menu->visibleExp = ConvertExpression(commonMenu.m_visible_expression.get(), &commonMenu);
+            menu->visibleExp = ConvertVisibleExpression(&menu->window, commonMenu.m_visible_expression.get(), &commonMenu);
             menu->rectXExp = ConvertOrApplyStatement(menu->window.rect.x, commonMenu.m_rect_x_exp.get(), &commonMenu);
             menu->rectYExp = ConvertOrApplyStatement(menu->window.rect.y, commonMenu.m_rect_y_exp.get(), &commonMenu);
             menu->rectWExp = ConvertOrApplyStatement(menu->window.rect.w, commonMenu.m_rect_w_exp.get(), &commonMenu);

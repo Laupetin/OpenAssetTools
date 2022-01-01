@@ -787,7 +787,12 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteKeywordProperty("hiddenDuringUI", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_UI);
     WriteStringProperty("allowedBinding", menu->allowedBinding);
     WriteKeywordProperty("textOnlyFocus", menu->window.staticFlags & WINDOW_FLAG_TEXT_ONLY_FOCUS);
-    WriteStatementProperty("visible", menu->visibleExp, true);
+
+    if (menu->visibleExp)
+        WriteStatementProperty("visible", menu->visibleExp, true);
+    else if (menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
+        WriteIntProperty("visible", 1, 0);
+    
     WriteStatementProperty("exp rect X", menu->rectXExp, false);
     WriteStatementProperty("exp rect Y", menu->rectYExp, false);
     WriteStatementProperty("exp rect W", menu->rectWExp, false);

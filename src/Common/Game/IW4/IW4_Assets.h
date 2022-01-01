@@ -1499,7 +1499,7 @@ namespace IW4
         int ownerDrawFlags;
         float borderSize;
         int staticFlags;
-        int dynamicFlags[1];
+        unsigned int dynamicFlags[1];
         int nextTime;
         float foreColor[4];
         float backColor[4];
