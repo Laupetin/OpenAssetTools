@@ -198,6 +198,8 @@ namespace IW4
     class Common
     {
     public:
+        static int StringTable_HashString(const char* str);
+
         static PackedTexCoords Vec2PackTexCoords(const vec2_t* in);
         static PackedUnitVec Vec3PackUnitVec(const vec3_t* in);
         static GfxColor Vec4PackGfxColor(const vec4_t* in);

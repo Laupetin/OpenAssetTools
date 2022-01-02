@@ -41,10 +41,11 @@ bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPa
         if (currentLine.size() > maxCols)
             maxCols = currentLine.size();
         csvLines.emplace_back(std::move(currentLine));
+        currentLine = std::vector<std::string>();
     }
 
-    stringTable->columnCount = maxCols;
-    stringTable->rowCount = csvLines.size();
+    stringTable->columnCount = static_cast<int>(maxCols);
+    stringTable->rowCount = static_cast<int>(csvLines.size());
     const auto cellCount = static_cast<unsigned>(stringTable->rowCount) * static_cast<unsigned>(stringTable->columnCount);
 
     if (cellCount)
@@ -69,7 +70,6 @@ bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPa
                 cell.hash = Common::Com_HashString(cell.string);
             }
         }
-
 
         std::sort(&stringTable->cellIndex[0], &stringTable->cellIndex[cellCount - 1], [stringTable, maxCols](const int16_t a, const int16_t b)
         {
