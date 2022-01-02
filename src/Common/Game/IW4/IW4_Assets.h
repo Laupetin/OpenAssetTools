@@ -181,6 +181,21 @@ namespace IW4
         bool perSurfaceSndAlias;
     };
 
+    struct PhysPresetInfo
+    {
+        float mass;
+        float bounce;
+        float friction;
+        int isFrictionInfinity;
+        float bulletForceScale;
+        float explosiveForceScale;
+        const char* sndAliasPrefix;
+        float piecesSpreadFraction;
+        float piecesUpwardVelocity;
+        int tempDefaultToCylinder;
+        int perSurfaceSndAlias;
+    };
+
     struct Bounds
     {
         float midPoint[3];
