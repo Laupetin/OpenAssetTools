@@ -2428,6 +2428,43 @@ namespace T5
         GfxHeroLightTree* heroLightTree;
     };
 
+    enum SamplerStateBits_e
+    {
+        SAMPLER_FILTER_SHIFT = 0x0,
+        SAMPLER_FILTER_NEAREST = 0x1,
+        SAMPLER_FILTER_LINEAR = 0x2,
+        SAMPLER_FILTER_ANISO2X = 0x3,
+        SAMPLER_FILTER_ANISO4X = 0x4,
+        SAMPLER_FILTER_MASK = 0x7,
+        SAMPLER_MIPMAP_SHIFT = 0x3,
+        SAMPLER_MIPMAP_DISABLED = 0x0,
+        SAMPLER_MIPMAP_NEAREST = 0x8,
+        SAMPLER_MIPMAP_LINEAR = 0x10,
+        SAMPLER_MIPMAP_COUNT = 0x3,
+        SAMPLER_MIPMAP_MASK = 0x18,
+        SAMPLER_CLAMP_U_SHIFT = 0x5,
+        SAMPLER_CLAMP_V_SHIFT = 0x6,
+        SAMPLER_CLAMP_W_SHIFT = 0x7,
+        SAMPLER_CLAMP_U = 0x20,
+        SAMPLER_CLAMP_V = 0x40,
+        SAMPLER_CLAMP_W = 0x80,
+        SAMPLER_CLAMP_MASK = 0xE0,
+        SAMPLER_ANISO_SHIFT = 0x8,
+        SAMPLER_ANISO_1X = 0x0,
+        SAMPLER_ANISO_2X = 0x100,
+        SAMPLER_ANISO_4X = 0x200,
+        SAMPLER_ANISO_6X = 0x300,
+        SAMPLER_ANISO_8X = 0x400,
+        SAMPLER_ANISO_10X = 0x500,
+        SAMPLER_ANISO_12X = 0x600,
+        SAMPLER_ANISO_16X = 0x700,
+        SAMPLER_ANISO_MASK = 0x700,
+        SAMPLER_CONVOLUTION = 0x20000,
+        SAMPLER_GAMMA = 0x40000,
+        SAMPLER_UNNORMALIZED_UV = 0x80000,
+        SAMPLER_DIRECT_FILTER_UNNORMALIZED = 0x80000,
+    };
+
     struct GfxLightImage
     {
         GfxImage* image;

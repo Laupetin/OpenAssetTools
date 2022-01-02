@@ -648,6 +648,9 @@ namespace IW4
             std::vector<MenuEventHandler*> elements;
             ConvertEventHandlerElements(elements, eventHandlerSet, menu, item);
 
+            if (elements.empty())
+                return nullptr;
+
             auto* outputSet = static_cast<MenuEventHandlerSet*>(m_memory->Alloc(sizeof(MenuEventHandlerSet) + sizeof(void*) * elements.size()));
             auto* outputElements = reinterpret_cast<MenuEventHandler**>(reinterpret_cast<int8_t*>(outputSet) + sizeof(MenuEventHandlerSet));
             memcpy(outputElements, &elements[0], sizeof(void*) * elements.size());
