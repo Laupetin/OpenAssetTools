@@ -4,11 +4,42 @@
 #include "Game/IW4/GameAssetPoolIW4.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "AssetLoaders/AssetLoaderAddonMapEnts.h"
+#include "AssetLoaders/AssetLoaderClipMap.h"
+#include "AssetLoaders/AssetLoaderComWorld.h"
+#include "AssetLoaders/AssetLoaderFont.h"
+#include "AssetLoaders/AssetLoaderFx.h"
+#include "AssetLoaders/AssetLoaderFxImpactTable.h"
+#include "AssetLoaders/AssetLoaderFxWorld.h"
+#include "AssetLoaders/AssetLoaderGameWorldMp.h"
+#include "AssetLoaders/AssetLoaderGameWorldSp.h"
 #include "AssetLoaders/AssetLoaderGfxImage.h"
+#include "AssetLoaders/AssetLoaderGfxLightDef.h"
+#include "AssetLoaders/AssetLoaderGfxWorld.h"
+#include "AssetLoaders/AssetLoaderLeaderboard.h"
+#include "AssetLoaders/AssetLoaderLoadedSound.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderMapEnts.h"
 #include "AssetLoaders/AssetLoaderMaterial.h"
+#include "AssetLoaders/AssetLoaderMenuDef.h"
 #include "AssetLoaders/AssetLoaderMenuList.h"
+#include "AssetLoaders/AssetLoaderPhysCollmap.h"
+#include "AssetLoaders/AssetLoaderPhysPreset.h"
+#include "AssetLoaders/AssetLoaderPixelShader.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
+#include "AssetLoaders/AssetLoaderSndCurve.h"
+#include "AssetLoaders/AssetLoaderSoundAliasList.h"
+#include "AssetLoaders/AssetLoaderStringTable.h"
+#include "AssetLoaders/AssetLoaderStructuredDataDefSet.h"
+#include "AssetLoaders/AssetLoaderTechniqueSet.h"
+#include "AssetLoaders/AssetLoaderTracer.h"
+#include "AssetLoaders/AssetLoaderVehicle.h"
+#include "AssetLoaders/AssetLoaderVertexDecl.h"
+#include "AssetLoaders/AssetLoaderVertexShader.h"
+#include "AssetLoaders/AssetLoaderWeapon.h"
+#include "AssetLoaders/AssetLoaderXAnim.h"
+#include "AssetLoaders/AssetLoaderXModel.h"
+#include "AssetLoaders/AssetLoaderXModelSurfs.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Dx9TextureLoader.h"
 #include "Image/Texture.h"
@@ -20,47 +51,45 @@ using namespace IW4;
 ObjLoader::ObjLoader()
 {
 #define REGISTER_ASSET_LOADER(t) {auto l = std::make_unique<t>(); m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);}
-#define BASIC_LOADER(assetType, assetClass) BasicAssetLoader<assetType, assetClass>
 
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PHYSPRESET, PhysPreset))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PHYSCOLLMAP, PhysCollmap))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XANIMPARTS, XAnimParts))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL_SURFS, XModelSurfs))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL, XModel))
+    REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
+    REGISTER_ASSET_LOADER(AssetLoaderPhysCollmap)
+    REGISTER_ASSET_LOADER(AssetLoaderXAnim)
+    REGISTER_ASSET_LOADER(AssetLoaderXModelSurfs)
+    REGISTER_ASSET_LOADER(AssetLoaderXModel)
     REGISTER_ASSET_LOADER(AssetLoaderMaterial)
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PIXELSHADER, MaterialPixelShader))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet))
+    REGISTER_ASSET_LOADER(AssetLoaderPixelShader)
+    REGISTER_ASSET_LOADER(AssetLoaderVertexShader)
+    REGISTER_ASSET_LOADER(AssetLoaderVertexDecl)
+    REGISTER_ASSET_LOADER(AssetLoaderTechniqueSet)
     REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND, snd_alias_list_t))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND_CURVE, SndCurve))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LOADED_SOUND, LoadedSound))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_CLIPMAP_SP, clipMap_t))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_CLIPMAP_MP, clipMap_t))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_COMWORLD, ComWorld))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MAP_ENTS, MapEnts))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FXWORLD, FxWorld))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GFXWORLD, GfxWorld))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LIGHT_DEF, GfxLightDef))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONT, Font_s))
+    REGISTER_ASSET_LOADER(AssetLoaderSoundAliasList)
+    REGISTER_ASSET_LOADER(AssetLoaderSndCurve)
+    REGISTER_ASSET_LOADER(AssetLoaderLoadedSound)
+    REGISTER_ASSET_LOADER(AssetLoaderClipMapSp)
+    REGISTER_ASSET_LOADER(AssetLoaderClipMapMp)
+    REGISTER_ASSET_LOADER(AssetLoaderComWorld)
+    REGISTER_ASSET_LOADER(AssetLoaderGameWorldSp)
+    REGISTER_ASSET_LOADER(AssetLoaderGameWorldMp)
+    REGISTER_ASSET_LOADER(AssetLoaderMapEnts)
+    REGISTER_ASSET_LOADER(AssetLoaderFxWorld)
+    REGISTER_ASSET_LOADER(AssetLoaderGfxWorld)
+    REGISTER_ASSET_LOADER(AssetLoaderGfxLightDef)
+    REGISTER_ASSET_LOADER(AssetLoaderFont)
     REGISTER_ASSET_LOADER(AssetLoaderMenuList)
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
+    REGISTER_ASSET_LOADER(AssetLoaderMenuDef)
     REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON, WeaponCompleteDef))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMPACT_FX, FxImpactTable))
+    REGISTER_ASSET_LOADER(AssetLoaderWeapon)
+    REGISTER_ASSET_LOADER(AssetLoaderFx)
+    REGISTER_ASSET_LOADER(AssetLoaderFxImpactTable)
     REGISTER_ASSET_LOADER(AssetLoaderRawFile)
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_STRINGTABLE, StringTable))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LEADERBOARD, LeaderboardDef))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TRACER, TracerDef))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VEHICLE, VehicleDef))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts))
-
-#undef BASIC_LOADER
+    REGISTER_ASSET_LOADER(AssetLoaderStringTable)
+    REGISTER_ASSET_LOADER(AssetLoaderLeaderboard)
+    REGISTER_ASSET_LOADER(AssetLoaderStructuredDataDefSet)
+    REGISTER_ASSET_LOADER(AssetLoaderTracer)
+    REGISTER_ASSET_LOADER(AssetLoaderVehicle)
+    REGISTER_ASSET_LOADER(AssetLoaderAddonMapEnts)
+        
 #undef REGISTER_ASSET_LOADER
 }
 
