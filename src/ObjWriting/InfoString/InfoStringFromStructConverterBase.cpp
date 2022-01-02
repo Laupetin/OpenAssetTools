@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <sstream>
 
 InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure)
     : m_structure(structure),
@@ -78,13 +79,23 @@ void InfoStringFromStructConverterBase::FillFromQBoolean(const std::string& key,
 void InfoStringFromStructConverterBase::FillFromFloat(const std::string& key, const size_t offset)
 {
     const auto* num = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(m_structure) + offset);
-    m_info_string.SetValueForKey(key, std::to_string(*num));
+
+    std::ostringstream ss;
+    ss << *num;
+
+    m_info_string.SetValueForKey(key, ss.str());
 }
 
 void InfoStringFromStructConverterBase::FillFromMilliseconds(const std::string& key, const size_t offset)
 {
     const auto* millis = reinterpret_cast<unsigned int*>(reinterpret_cast<uintptr_t>(m_structure) + offset);
-    m_info_string.SetValueForKey(key, std::to_string(static_cast<float>(*millis) / 1000.0f));
+
+    const auto value = static_cast<float>(*millis) / 1000.0f;
+
+    std::ostringstream ss;
+    ss << value;
+
+    m_info_string.SetValueForKey(key, ss.str());
 }
 
 void InfoStringFromStructConverterBase::FillFromScriptString(const std::string& key, const size_t offset)
