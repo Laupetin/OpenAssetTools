@@ -11,6 +11,7 @@
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperMenuDef.h"
 #include "AssetDumpers/AssetDumperMenuList.h"
+#include "AssetDumpers/AssetDumperPhysCollmap.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperSndCurve.h"
@@ -38,7 +39,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(context.m_zone->m_pools.get());
 
     DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset, ASSET_TYPE_PHYSPRESET)
-    // DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
+    DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
