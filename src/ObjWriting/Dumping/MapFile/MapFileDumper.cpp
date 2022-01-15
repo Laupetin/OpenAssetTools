@@ -32,30 +32,11 @@ MapFileDumper::PhysicsCylinder::PhysicsCylinder(const Vec3 middlePoint, const fl
 }
 
 MapFileDumper::MapFileDumper(std::ostream& stream)
-    : m_stream(stream),
+    : AbstractTextDumper(stream),
       m_flags{},
-      m_indent(0u),
       m_entity_index(0u),
       m_brush_index(0u)
 {
-}
-
-void MapFileDumper::Indent() const
-{
-    for (auto i = 0u; i < m_indent; i++)
-        m_stream << "  ";
-}
-
-void MapFileDumper::IncIndent()
-{
-    ++m_indent;
-}
-
-void MapFileDumper::DecIndent()
-{
-    assert(m_indent > 0);
-    if (m_indent > 0)
-        m_indent--;
 }
 
 void MapFileDumper::Init() const

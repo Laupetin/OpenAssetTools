@@ -1,13 +1,11 @@
 #pragma once
 
-#include <ostream>
-
+#include "Dumping/AbstractTextDumper.h"
 #include "Zone/Zone.h"
 
-class StringFileDumper
+class StringFileDumper : AbstractTextDumper
 {
     Zone* m_zone;
-    std::ostream& m_stream;
 
     std::string m_config_file;
     std::string m_notes;

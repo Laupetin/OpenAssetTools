@@ -1,11 +1,13 @@
 #pragma once
+
 #include <ostream>
 
-class SndCurveDumper
+#include "Dumping/AbstractTextDumper.h"
+
+class SndCurveDumper : AbstractTextDumper
 {
     static constexpr auto DEFAULT_PRECISION = 4;
 
-    std::ostream& m_stream;
     size_t m_precision;
     size_t m_current_knot;
     size_t m_total_knots;

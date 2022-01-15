@@ -2,8 +2,8 @@
 #include <regex>
 
 StringFileDumper::StringFileDumper(Zone* zone, std::ostream& stream)
-    : m_zone(zone),
-      m_stream(stream),
+    : AbstractTextDumper(stream),
+      m_zone(zone),
       m_language_caps("ENGLISH"),
       m_wrote_header(false)
 {
@@ -42,7 +42,7 @@ void StringFileDumper::WriteLocalizeEntry(const std::string& reference, const st
         WriteHeader();
 
     m_stream << "\n";
-    m_stream << "REFERENCE           " << reference <<"\n";
+    m_stream << "REFERENCE           " << reference << "\n";
 
     auto escapedValue = std::regex_replace(value, std::regex("\n"), "\\n");
     escapedValue = std::regex_replace(escapedValue, std::regex("\r"), "\\r");

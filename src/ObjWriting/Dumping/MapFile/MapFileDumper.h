@@ -2,7 +2,9 @@
 
 #include <ostream>
 
-class MapFileDumper
+#include "Dumping/AbstractTextDumper.h"
+
+class MapFileDumper : AbstractTextDumper
 {
 public:
     union Vec3
@@ -13,6 +15,7 @@ public:
             float m_y;
             float m_z;
         };
+
         float v[3];
 
         Vec3(float x, float y, float z);
@@ -39,20 +42,14 @@ public:
     };
 
 private:
-    std::ostream& m_stream;
-
     struct
     {
         bool m_in_entity : 1;
         bool m_in_brush : 1;
     } m_flags;
-    size_t m_indent;
+
     size_t m_entity_index;
     size_t m_brush_index;
-
-    void Indent() const;
-    void IncIndent();
-    void DecIndent();
 
 public:
     explicit MapFileDumper(std::ostream& stream);

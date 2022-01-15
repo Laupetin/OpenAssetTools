@@ -9,7 +9,7 @@ SndCurveDumper::SndCurveDumper(std::ostream& stream)
 }
 
 SndCurveDumper::SndCurveDumper(std::ostream& stream, const size_t precision)
-    : m_stream(stream),
+    : AbstractTextDumper(stream),
       m_precision(precision),
       m_current_knot(0u),
       m_total_knots(0u)
