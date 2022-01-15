@@ -83,7 +83,7 @@ void StructuredDataDefDumper::EndEnum()
             m_stream << ",\n";
 
         Indent();
-        m_stream << entry;
+        m_stream << "\"" << entry << "\"";
     }
 
     if (!firstEntry)
@@ -94,6 +94,7 @@ void StructuredDataDefDumper::EndEnum()
     m_stream << "};\n";
     m_block = Block::BLOCK_NONE;
     m_flags.m_empty_line_before_block = true;
+    m_enum_entries.clear();
 }
 
 void StructuredDataDefDumper::WriteEnumEntry(const std::string& entryName, const size_t entryValue)
@@ -140,4 +141,51 @@ void StructuredDataDefDumper::EndStruct()
     m_stream << "};\n";
     m_block = Block::BLOCK_NONE;
     m_flags.m_empty_line_before_block = true;
+}
+
+void StructuredDataDefDumper::BeginProperty(const std::string& propertyName)
+{
+    assert(m_flags.m_in_version);
+    assert(m_block == Block::BLOCK_STRUCT);
+
+    if (m_block != Block::BLOCK_STRUCT)
+        return;
+
+    m_property_name = propertyName;
+
+    m_block = Block::BLOCK_PROPERTY;
+}
+
+void StructuredDataDefDumper::AddPropertyArraySpecifier(const std::string& specifierName)
+{
+    m_property_array_specifiers.emplace_back(specifierName);
+}
+
+void StructuredDataDefDumper::SetPropertyTypeName(const std::string& typeName)
+{
+    m_property_type_name = typeName;
+}
+
+void StructuredDataDefDumper::EndProperty()
+{
+    assert(m_block == Block::BLOCK_PROPERTY);
+
+    if (m_block != Block::BLOCK_PROPERTY)
+        return;
+
+    Indent();
+
+    m_stream << m_property_type_name << " " << m_property_name;
+
+    for(const auto& arraySpecifierName : m_property_array_specifiers)
+    {
+        m_stream << "[" << arraySpecifierName << "]";
+    }
+
+    m_stream << ";\n";
+
+    m_block = Block::BLOCK_STRUCT;
+    m_property_array_specifiers.clear();
+    m_property_name = std::string();
+    m_property_type_name = std::string();
 }

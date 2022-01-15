@@ -9,6 +9,8 @@ namespace IW4
     class AssetDumperStructuredDataDefSet final : public AbstractAssetDumper<StructuredDataDefSet>
     {
         static void DumpEnum(StructuredDataDefDumper& dumper, int enumIndex, const StructuredDataEnum* _enum);
+        static void DumpProperty(StructuredDataDefDumper& dumper, const StructuredDataStructProperty& property, const StructuredDataDef* def, int rootStructIndex);
+        static void DumpStruct(StructuredDataDefDumper& dumper, int structIndex, const StructuredDataStruct* _struct, const StructuredDataDef* def, bool isRoot);
 
     protected:
         bool ShouldDump(XAssetInfo<StructuredDataDefSet>* asset) override;

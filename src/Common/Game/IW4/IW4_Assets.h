@@ -2031,7 +2031,8 @@ namespace IW4
         DATA_ENUM_ARRAY = 0x7,
         DATA_FLOAT = 0x8,
         DATA_SHORT = 0x9,
-        DATA_COUNT = 0xA,
+
+        DATA_COUNT
     };
 
     struct StructuredDataEnumEntry

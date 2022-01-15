@@ -10,7 +10,8 @@ class StructuredDataDefDumper : AbstractTextDumper
     {
         BLOCK_NONE = 0,
         BLOCK_ENUM = 1,
-        BLOCK_STRUCT = 2
+        BLOCK_STRUCT = 2,
+        BLOCK_PROPERTY = 3
     } m_block;
 
     struct
@@ -22,6 +23,10 @@ class StructuredDataDefDumper : AbstractTextDumper
 
     std::vector<std::string> m_enum_entries;
     size_t m_enum_size;
+
+    std::string m_property_name;
+    std::string m_property_type_name;
+    std::vector<std::string> m_property_array_specifiers;
 
 public:
     explicit StructuredDataDefDumper(std::ostream& stream);
@@ -35,4 +40,8 @@ public:
 
     void BeginStruct(const std::string& structName);
     void EndStruct();
+    void BeginProperty(const std::string& propertyName);
+    void AddPropertyArraySpecifier(const std::string& specifierName);
+    void SetPropertyTypeName(const std::string& typeName);
+    void EndProperty();
 };
