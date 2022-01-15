@@ -58,6 +58,7 @@ public:
     explicit MapFileDumper(std::ostream& stream);
 
     void Init() const;
+    void WriteComment(const std::string& key) const;
 
     void BeginEntity();
     void EndEntity();

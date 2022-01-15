@@ -47,6 +47,8 @@ void AssetDumperPhysCollmap::DumpAsset(AssetDumpingContext& context, XAssetInfo<
         switch (geom.type)
         {
         case PHYS_GEOM_NONE:
+            // TODO: Dump BrushWrapper (probably GJK related)
+            mapFileDumper.WriteComment("TODO: Brush data");
             break;
         case PHYS_GEOM_BOX:
             mapFileDumper.WritePhysicsBox({
@@ -73,6 +75,7 @@ void AssetDumperPhysCollmap::DumpAsset(AssetDumpingContext& context, XAssetInfo<
         case PHYS_GEOM_CAPSULE:
         case PHYS_GEOM_GLASS:
         default:
+            // These do not seem to appear inside any collmap assets
             assert(false);
             break;
         }

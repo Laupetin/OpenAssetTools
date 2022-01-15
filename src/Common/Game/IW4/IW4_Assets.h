@@ -159,7 +159,7 @@ namespace IW4
     typedef tdef_align(16) float raw_float16;
     typedef unsigned int raw_uint;
     typedef tdef_align(128) unsigned int raw_uint128;
-    typedef char cbrushedge_t;
+    typedef unsigned char cbrushedge_t;
     typedef unsigned short r_index_t;
     typedef float vec2_t[2];
     typedef float vec3_t[3];
@@ -225,8 +225,8 @@ namespace IW4
         cbrushside_t* sides;
         cbrushedge_t* baseAdjacentSide;
         int16_t axialMaterialNum[2][3];
-        char firstAdjacentSideOffsets[2][3];
-        char edgeCount[2][3];
+        unsigned char firstAdjacentSideOffsets[2][3];
+        unsigned char edgeCount[2][3];
     };
 
     struct BrushWrapper
