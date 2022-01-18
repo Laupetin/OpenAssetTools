@@ -225,7 +225,7 @@ MenuScopeSequences::MenuScopeSequences(std::vector<std::unique_ptr<MenuFileParse
 {
 }
 
-void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive)
+void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<SequenceItemDef>());

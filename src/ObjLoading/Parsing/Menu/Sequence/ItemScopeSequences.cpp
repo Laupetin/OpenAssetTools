@@ -555,7 +555,7 @@ ItemScopeSequences::ItemScopeSequences(std::vector<std::unique_ptr<MenuFileParse
 {
 }
 
-void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive)
+void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
 {
     AddSequence(std::make_unique<SequenceCloseBlock>());
     AddSequence(std::make_unique<GenericStringPropertySequence>("name", [](const MenuFileParserState* state, const TokenPos&, const std::string& value)

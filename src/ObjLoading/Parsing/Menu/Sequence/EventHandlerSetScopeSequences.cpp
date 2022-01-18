@@ -752,7 +752,7 @@ EventHandlerSetScopeSequences::EventHandlerSetScopeSequences(std::vector<std::un
 {
 }
 
-void EventHandlerSetScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive)
+void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel, const bool permissive) const
 {
     AddSequence(std::make_unique<SequenceSkipEmptyStatements>());
     // If else and stuff

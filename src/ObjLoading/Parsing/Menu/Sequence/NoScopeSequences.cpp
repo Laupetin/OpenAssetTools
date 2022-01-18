@@ -34,7 +34,7 @@ NoScopeSequences::NoScopeSequences(std::vector<std::unique_ptr<MenuFileParser::s
 {
 }
 
-void NoScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive)
+void NoScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive) const
 {
     AddSequence(std::make_unique<SequenceOpenGlobalScope>());
 }
