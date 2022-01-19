@@ -8,9 +8,9 @@ enum class CommonStructuredDataDefTypeCategory
     INT,
     BYTE,
     BOOL,
-    STRING,
     FLOAT,
     SHORT,
+    STRING,
     ENUM,
     STRUCT,
     INDEXED_ARRAY,
@@ -31,6 +31,11 @@ struct CommonStructuredDataDefType
     CommonStructuredDataDefType();
     explicit CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory category);
     CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory category, size_t extraInfo);
+
+    friend bool operator<(const CommonStructuredDataDefType& lhs, const CommonStructuredDataDefType& rhs);
+    friend bool operator<=(const CommonStructuredDataDefType& lhs, const CommonStructuredDataDefType& rhs);
+    friend bool operator>(const CommonStructuredDataDefType& lhs, const CommonStructuredDataDefType& rhs);
+    friend bool operator>=(const CommonStructuredDataDefType& lhs, const CommonStructuredDataDefType& rhs);
 };
 
 struct CommonStructuredDataDefIndexedArray
@@ -40,6 +45,11 @@ struct CommonStructuredDataDefIndexedArray
 
     CommonStructuredDataDefIndexedArray();
     CommonStructuredDataDefIndexedArray(CommonStructuredDataDefType type, size_t arraySize);
+
+    friend bool operator<(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs);
+    friend bool operator<=(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs);
+    friend bool operator>(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs);
+    friend bool operator>=(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs);
 };
 
 struct CommonStructuredDataDefEnumedArray
@@ -49,4 +59,9 @@ struct CommonStructuredDataDefEnumedArray
 
     CommonStructuredDataDefEnumedArray();
     CommonStructuredDataDefEnumedArray(CommonStructuredDataDefType type, size_t enumIndex);
+
+    friend bool operator<(const CommonStructuredDataDefEnumedArray& lhs, const CommonStructuredDataDefEnumedArray& rhs);
+    friend bool operator<=(const CommonStructuredDataDefEnumedArray& lhs, const CommonStructuredDataDefEnumedArray& rhs);
+    friend bool operator>(const CommonStructuredDataDefEnumedArray& lhs, const CommonStructuredDataDefEnumedArray& rhs);
+    friend bool operator>=(const CommonStructuredDataDefEnumedArray& lhs, const CommonStructuredDataDefEnumedArray& rhs);
 };

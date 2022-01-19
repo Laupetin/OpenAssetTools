@@ -27,6 +27,7 @@ namespace sdd::def_scope_sequences
 
             auto newEnum = std::make_unique<CommonStructuredDataDefEnum>(result.NextCapture(CAPTURE_NAME).IdentifierValue());
             state->m_current_enum = newEnum.get();
+            state->m_def_types_by_name.emplace(newEnum->m_name, CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::ENUM, state->m_current_def->m_enums.size()));
             state->m_current_def->m_enums.emplace_back(std::move(newEnum));
         }
     };
@@ -53,8 +54,15 @@ namespace sdd::def_scope_sequences
             assert(state->m_current_def);
 
             auto newStruct = std::make_unique<CommonStructuredDataDefStruct>(result.NextCapture(CAPTURE_NAME).IdentifierValue());
-            state->m_current_struct = newStruct.get();
+            auto* newStructPtr = newStruct.get();
+            const auto newStructIndex = state->m_current_def->m_structs.size();
+
+            state->m_current_struct = newStructPtr;
+            state->m_def_types_by_name.emplace(newStruct->m_name, CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::STRUCT, newStructIndex));
             state->m_current_def->m_structs.emplace_back(std::move(newStruct));
+
+            if(newStructPtr->m_name == "root")
+                state->m_current_def->m_root_type = CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::STRUCT, newStructIndex);
         }
     };
 
@@ -79,6 +87,9 @@ namespace sdd::def_scope_sequences
             assert(state->m_current_struct == nullptr);
 
             state->m_current_def = nullptr;
+            state->m_def_types_by_name.clear();
+            state->m_def_indexed_arrays.clear();
+            state->m_def_enumed_arrays.clear();
         }
     };
 }
@@ -94,6 +105,7 @@ StructuredDataDefDefScopeSequences::StructuredDataDefDefScopeSequences(std::vect
 
 void StructuredDataDefDefScopeSequences::AddSequences() const
 {
+    AddSequence(std::make_unique<SequenceCloseScope>());
     AddSequence(std::make_unique<SequenceEnum>());
     AddSequence(std::make_unique<SequenceStruct>());
 }
