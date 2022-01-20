@@ -12,9 +12,18 @@ CommonStructuredDataDefEnumEntry::CommonStructuredDataDefEnumEntry(std::string n
 }
 
 CommonStructuredDataDefEnum::CommonStructuredDataDefEnum()
-= default;
+    : m_reserved_entry_count(-1)
+{
+}
 
 CommonStructuredDataDefEnum::CommonStructuredDataDefEnum(std::string name)
-    : m_name(std::move(name))
+    : m_name(std::move(name)),
+      m_reserved_entry_count(-1)
+{
+}
+
+CommonStructuredDataDefEnum::CommonStructuredDataDefEnum(std::string name, const int reservedEntryCount)
+    : m_name(std::move(name)),
+      m_reserved_entry_count(reservedEntryCount)
 {
 }

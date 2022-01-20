@@ -29,7 +29,11 @@ namespace sdd::enum_scope_sequences
         {
             assert(state->m_current_enum);
 
-            state->m_current_enum->m_entries.emplace_back(result.NextCapture(CAPTURE_ENTRY_VALUE).StringValue(), state->m_current_enum->m_entries.size());
+            const auto& entryValueToken = result.NextCapture(CAPTURE_ENTRY_VALUE);
+            if (state->m_current_enum->m_reserved_entry_count > 0 && static_cast<size_t>(state->m_current_enum->m_reserved_entry_count) <= state->m_current_enum->m_entries.size())
+                throw ParsingException(entryValueToken.GetPos(), "Enum entry count exceeds reserved count");
+
+            state->m_current_enum->m_entries.emplace_back(entryValueToken.StringValue(), state->m_current_enum->m_entries.size());
         }
     };
 

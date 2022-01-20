@@ -7,6 +7,7 @@ namespace sdd::def_scope_sequences
     class SequenceEnum final : public StructuredDataDefParser::sequence_t
     {
         static constexpr auto CAPTURE_NAME = 1;
+        static constexpr auto CAPTURE_RESERVED_COUNT = 2;
 
     public:
         SequenceEnum()
@@ -15,6 +16,11 @@ namespace sdd::def_scope_sequences
 
             AddMatchers({
                 create.Keyword("enum"),
+                create.Optional(create.And({
+                    create.Char('('),
+                    create.Integer().Capture(CAPTURE_RESERVED_COUNT),
+                    create.Char(')')
+                })),
                 create.Identifier().Capture(CAPTURE_NAME),
                 create.Char('{')
             });
@@ -26,6 +32,15 @@ namespace sdd::def_scope_sequences
             assert(state->m_current_def);
 
             auto newEnum = std::make_unique<CommonStructuredDataDefEnum>(result.NextCapture(CAPTURE_NAME).IdentifierValue());
+            if (result.HasNextCapture(CAPTURE_RESERVED_COUNT))
+            {
+                const auto& reservedCountToken = result.NextCapture(CAPTURE_RESERVED_COUNT);
+                newEnum->m_reserved_entry_count = reservedCountToken.IntegerValue();
+
+                if (newEnum->m_reserved_entry_count <= 0)
+                    throw ParsingException(reservedCountToken.GetPos(), "Reserved enum entry count must be greater than zero");
+            }
+
             state->m_current_enum = newEnum.get();
             state->m_def_types_by_name.emplace(newEnum->m_name, CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::ENUM, state->m_current_def->m_enums.size()));
             state->m_current_def->m_enums.emplace_back(std::move(newEnum));

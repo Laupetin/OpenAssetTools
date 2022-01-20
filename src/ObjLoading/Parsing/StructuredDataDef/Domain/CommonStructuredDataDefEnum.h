@@ -14,8 +14,10 @@ struct CommonStructuredDataDefEnumEntry
 struct CommonStructuredDataDefEnum
 {
     std::string m_name;
+    int m_reserved_entry_count;
     std::vector<CommonStructuredDataDefEnumEntry> m_entries;
 
     CommonStructuredDataDefEnum();
     explicit CommonStructuredDataDefEnum(std::string name);
+    CommonStructuredDataDefEnum(std::string name, int reservedEntryCount);
 };
