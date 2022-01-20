@@ -1,12 +1,22 @@
 #include "StructuredDataDefDumper.h"
 
+#include <algorithm>
 #include <cassert>
+#include <sstream>
+
+StructuredDataDefDumper::StructEntry::StructEntry(std::string stringValue, const size_t offset)
+    : m_string_value(std::move(stringValue)),
+      m_offset(offset)
+{
+}
 
 StructuredDataDefDumper::StructuredDataDefDumper(std::ostream& stream)
     : AbstractTextDumper(stream),
       m_block(Block::BLOCK_NONE),
       m_flags{},
-      m_enum_size(0u)
+      m_enum_entry_count(0u),
+      m_struct_property_count(0u),
+      m_current_property_offset(0u)
 {
 }
 
@@ -64,7 +74,7 @@ void StructuredDataDefDumper::BeginEnum(const std::string& enumName, const size_
     m_block = Block::BLOCK_ENUM;
 
     m_enum_entries.resize(enumEntryCount);
-    m_enum_size = enumEntryCount;
+    m_enum_entry_count = enumEntryCount;
 }
 
 void StructuredDataDefDumper::EndEnum()
@@ -75,7 +85,7 @@ void StructuredDataDefDumper::EndEnum()
         return;
 
     bool firstEntry = true;
-    for(const auto& entry : m_enum_entries)
+    for (const auto& entry : m_enum_entries)
     {
         if (firstEntry)
             firstEntry = false;
@@ -100,21 +110,24 @@ void StructuredDataDefDumper::EndEnum()
 void StructuredDataDefDumper::WriteEnumEntry(const std::string& entryName, const size_t entryValue)
 {
     assert(m_block == Block::BLOCK_ENUM);
-    assert(entryValue < m_enum_size);
+    assert(entryValue < m_enum_entry_count);
 
-    if (m_block != Block::BLOCK_ENUM || entryValue >= m_enum_size)
+    if (m_block != Block::BLOCK_ENUM || entryValue >= m_enum_entry_count)
         return;
 
     m_enum_entries[entryValue] = entryName;
 }
 
-void StructuredDataDefDumper::BeginStruct(const std::string& structName)
+void StructuredDataDefDumper::BeginStruct(const std::string& structName, const size_t structPropertyCount)
 {
     assert(m_flags.m_in_version);
     assert(m_block == Block::BLOCK_NONE);
 
     if (m_block != Block::BLOCK_NONE)
         return;
+
+    m_struct_property_count = structPropertyCount;
+    m_struct_properties.reserve(structPropertyCount);
 
     if (m_flags.m_empty_line_before_block)
         m_stream << "\n";
@@ -136,14 +149,27 @@ void StructuredDataDefDumper::EndStruct()
     if (m_block != Block::BLOCK_STRUCT)
         return;
 
+    std::sort(m_struct_properties.begin(), m_struct_properties.end(), [](const StructEntry& e1, const StructEntry& e2)
+    {
+        return e1.m_offset < e2.m_offset;
+    });
+
+    for (auto& structProperty : m_struct_properties)
+    {
+        Indent();
+        m_stream << structProperty.m_string_value << ";\n";
+    }
+
     DecIndent();
     Indent();
     m_stream << "};\n";
     m_block = Block::BLOCK_NONE;
     m_flags.m_empty_line_before_block = true;
+    m_struct_properties.clear();
+    m_struct_property_count = 0u;
 }
 
-void StructuredDataDefDumper::BeginProperty(const std::string& propertyName)
+void StructuredDataDefDumper::BeginProperty(const std::string& propertyName, const size_t propertyOffset)
 {
     assert(m_flags.m_in_version);
     assert(m_block == Block::BLOCK_STRUCT);
@@ -151,19 +177,20 @@ void StructuredDataDefDumper::BeginProperty(const std::string& propertyName)
     if (m_block != Block::BLOCK_STRUCT)
         return;
 
-    m_property_name = propertyName;
+    m_current_property_name = propertyName;
+    m_current_property_offset = propertyOffset;
 
     m_block = Block::BLOCK_PROPERTY;
 }
 
 void StructuredDataDefDumper::AddPropertyArraySpecifier(const std::string& specifierName)
 {
-    m_property_array_specifiers.emplace_back(specifierName);
+    m_current_property_array_specifiers.emplace_back(specifierName);
 }
 
 void StructuredDataDefDumper::SetPropertyTypeName(const std::string& typeName)
 {
-    m_property_type_name = typeName;
+    m_current_property_type_name = typeName;
 }
 
 void StructuredDataDefDumper::EndProperty()
@@ -173,19 +200,19 @@ void StructuredDataDefDumper::EndProperty()
     if (m_block != Block::BLOCK_PROPERTY)
         return;
 
-    Indent();
+    std::ostringstream ss;
+    ss << m_current_property_type_name << " " << m_current_property_name;
 
-    m_stream << m_property_type_name << " " << m_property_name;
-
-    for(const auto& arraySpecifierName : m_property_array_specifiers)
+    for (const auto& arraySpecifierName : m_current_property_array_specifiers)
     {
-        m_stream << "[" << arraySpecifierName << "]";
+        ss << "[" << arraySpecifierName << "]";
     }
 
-    m_stream << ";\n";
+    m_struct_properties.emplace_back(ss.str(), m_current_property_offset);
 
     m_block = Block::BLOCK_STRUCT;
-    m_property_array_specifiers.clear();
-    m_property_name = std::string();
-    m_property_type_name = std::string();
+    m_current_property_array_specifiers.clear();
+    m_current_property_name = std::string();
+    m_current_property_offset = 0u;
+    m_current_property_type_name = std::string();
 }
