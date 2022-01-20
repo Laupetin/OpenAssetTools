@@ -42,6 +42,7 @@ struct CommonStructuredDataDefIndexedArray
 {
     CommonStructuredDataDefType m_array_type;
     size_t m_array_size;
+    size_t m_element_size;
 
     CommonStructuredDataDefIndexedArray();
     CommonStructuredDataDefIndexedArray(CommonStructuredDataDefType type, size_t arraySize);
@@ -56,6 +57,7 @@ struct CommonStructuredDataDefEnumedArray
 {
     CommonStructuredDataDefType m_array_type;
     size_t m_enum_index;
+    size_t m_element_size;
 
     CommonStructuredDataDefEnumedArray();
     CommonStructuredDataDefEnumedArray(CommonStructuredDataDefType type, size_t enumIndex);

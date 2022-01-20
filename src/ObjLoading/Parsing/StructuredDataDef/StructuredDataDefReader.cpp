@@ -42,7 +42,7 @@ void StructuredDataDefReader::SetupStreamProxies()
     m_stream = m_open_streams.back().get();
 }
 
-std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::ReadStructureDataDefs()
+std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::ReadStructureDataDefs(bool& success)
 {
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = false;
@@ -52,7 +52,8 @@ std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::R
 
     const auto parser = std::make_unique<StructuredDataDefParser>(lexer.get());
 
-    if (parser->Parse())
+    success = parser->Parse();
+    if (success)
         return parser->GetDefs();
 
     std::cout << "Parsing structured data def file \"" << m_file_name << "\" failed!" << std::endl;

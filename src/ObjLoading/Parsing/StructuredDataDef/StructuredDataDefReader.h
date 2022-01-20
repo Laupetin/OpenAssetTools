@@ -24,5 +24,5 @@ public:
     StructuredDataDefReader(std::istream& stream, std::string fileName);
     StructuredDataDefReader(std::istream& stream, std::string fileName, include_callback_t includeCallback);
 
-    std::vector<std::unique_ptr<CommonStructuredDataDef>> ReadStructureDataDefs();
+    std::vector<std::unique_ptr<CommonStructuredDataDef>> ReadStructureDataDefs(bool& success);
 };

@@ -19,7 +19,8 @@ struct CommonStructuredDataDefStructEntry
 struct CommonStructuredDataDefStruct
 {
     std::string m_name;
-    std::vector<CommonStructuredDataDefStructEntry> m_entries;
+    std::vector<CommonStructuredDataDefStructEntry> m_properties;
+    size_t m_bit_offset;
     size_t m_size;
 
     CommonStructuredDataDefStruct();

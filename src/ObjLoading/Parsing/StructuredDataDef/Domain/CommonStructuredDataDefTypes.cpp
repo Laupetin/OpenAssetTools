@@ -43,13 +43,15 @@ bool operator>=(const CommonStructuredDataDefType& lhs, const CommonStructuredDa
 }
 
 CommonStructuredDataDefIndexedArray::CommonStructuredDataDefIndexedArray()
-    : m_array_size(0u)
+    : m_array_size(0u),
+      m_element_size(0u)
 {
 }
 
 CommonStructuredDataDefIndexedArray::CommonStructuredDataDefIndexedArray(const CommonStructuredDataDefType type, const size_t arraySize)
     : m_array_type(type),
-      m_array_size(arraySize)
+      m_array_size(arraySize),
+      m_element_size(0u)
 {
 }
 
@@ -78,13 +80,15 @@ bool operator>=(const CommonStructuredDataDefIndexedArray& lhs, const CommonStru
 }
 
 CommonStructuredDataDefEnumedArray::CommonStructuredDataDefEnumedArray()
-    : m_enum_index(0u)
+    : m_enum_index(0u),
+      m_element_size(0u)
 {
 }
 
 CommonStructuredDataDefEnumedArray::CommonStructuredDataDefEnumedArray(const CommonStructuredDataDefType type, const size_t enumIndex)
     : m_array_type(type),
-      m_enum_index(enumIndex)
+      m_enum_index(enumIndex),
+      m_element_size(0u)
 {
 }
 

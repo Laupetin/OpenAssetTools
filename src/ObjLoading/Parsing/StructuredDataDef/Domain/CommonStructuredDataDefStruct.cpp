@@ -19,12 +19,14 @@ CommonStructuredDataDefStructEntry::CommonStructuredDataDefStructEntry(std::stri
 }
 
 CommonStructuredDataDefStruct::CommonStructuredDataDefStruct()
-    : m_size(0u)
+    : m_bit_offset(0u),
+      m_size(0u)
 {
 }
 
 CommonStructuredDataDefStruct::CommonStructuredDataDefStruct(std::string name)
     : m_name(std::move(name)),
+      m_bit_offset(0u),
       m_size(0u)
 {
 }

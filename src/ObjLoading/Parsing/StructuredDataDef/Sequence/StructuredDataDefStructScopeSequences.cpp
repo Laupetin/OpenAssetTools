@@ -1,5 +1,7 @@
 #include "StructuredDataDefStructScopeSequences.h"
 
+#include <algorithm>
+
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 namespace sdd::struct_scope_sequences
@@ -169,7 +171,7 @@ namespace sdd::struct_scope_sequences
                 currentType = ProcessArray(state, result, currentType);
 
             // TODO: Calculate offset
-            state->m_current_struct->m_entries.emplace_back(result.NextCapture(CAPTURE_ENTRY_NAME).IdentifierValue(), currentType, 0);
+            state->m_current_struct->m_properties.emplace_back(result.NextCapture(CAPTURE_ENTRY_NAME).IdentifierValue(), currentType, 0);
         }
     };
 
@@ -191,6 +193,11 @@ namespace sdd::struct_scope_sequences
         {
             assert(state->m_current_struct != nullptr);
 
+            std::sort(state->m_current_struct->m_properties.begin(), state->m_current_struct->m_properties.end(),
+                      [](const CommonStructuredDataDefStructEntry& e1, const CommonStructuredDataDefStructEntry& e2)
+                      {
+                          return e1.m_name < e2.m_name;
+                      });
             state->m_current_struct = nullptr;
         }
     };
