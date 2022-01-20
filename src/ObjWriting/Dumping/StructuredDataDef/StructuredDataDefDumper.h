@@ -45,7 +45,7 @@ public:
     void BeginVersion(int version);
     void EndVersion();
 
-    void BeginEnum(const std::string& enumName, size_t enumEntryCount);
+    void BeginEnum(const std::string& enumName, size_t enumEntryCount, size_t enumReservedEntryCount);
     void EndEnum();
     void WriteEnumEntry(const std::string& entryName, size_t entryValue);
 

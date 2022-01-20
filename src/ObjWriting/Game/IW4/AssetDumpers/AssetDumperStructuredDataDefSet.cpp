@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <algorithm>
 
 #include "Dumping/StructuredDataDef/StructuredDataDefDumper.h"
 
@@ -115,7 +116,7 @@ void AssetDumperStructuredDataDefSet::DumpEnum(StructuredDataDefDumper& dumper, 
     std::ostringstream ss;
     ss << "ENUM_" << enumIndex;
 
-    dumper.BeginEnum(ss.str(), static_cast<size_t>(_enum->entryCount));
+    dumper.BeginEnum(ss.str(), static_cast<size_t>(_enum->entryCount), static_cast<size_t>(_enum->reservedEntryCount));
 
     for (auto i = 0; i < _enum->entryCount; i++)
     {

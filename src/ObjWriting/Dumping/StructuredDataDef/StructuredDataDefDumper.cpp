@@ -53,7 +53,7 @@ void StructuredDataDefDumper::EndVersion()
     m_flags.m_empty_line_before_block = false;
 }
 
-void StructuredDataDefDumper::BeginEnum(const std::string& enumName, const size_t enumEntryCount)
+void StructuredDataDefDumper::BeginEnum(const std::string& enumName, const size_t enumEntryCount, size_t enumReservedEntryCount)
 {
     assert(m_flags.m_in_version);
     assert(m_block == Block::BLOCK_NONE);
@@ -65,7 +65,13 @@ void StructuredDataDefDumper::BeginEnum(const std::string& enumName, const size_
         m_stream << "\n";
 
     Indent();
-    m_stream << "enum " << enumName << "\n";
+    if (enumReservedEntryCount != enumEntryCount)
+        m_stream << "enum(" << enumReservedEntryCount << ") ";
+    else
+        m_stream << "enum ";
+     m_stream << enumName;
+
+    m_stream << "\n";
 
     Indent();
     m_stream << "{\n";
