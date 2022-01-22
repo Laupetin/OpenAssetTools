@@ -17,7 +17,7 @@ public:
     int m_version;
     size_t m_checksum;
     CommonStructuredDataDefType m_root_type;
-    size_t m_size;
+    size_t m_size_in_byte;
 
     CommonStructuredDataDef();
     explicit CommonStructuredDataDef(int version);

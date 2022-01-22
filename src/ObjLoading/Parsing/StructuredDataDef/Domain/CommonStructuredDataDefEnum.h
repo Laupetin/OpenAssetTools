@@ -1,6 +1,9 @@
 #pragma once
+
 #include <string>
 #include <vector>
+
+#include "Utils/ClassUtils.h"
 
 struct CommonStructuredDataDefEnumEntry
 {
@@ -20,4 +23,6 @@ struct CommonStructuredDataDefEnum
     CommonStructuredDataDefEnum();
     explicit CommonStructuredDataDefEnum(std::string name);
     CommonStructuredDataDefEnum(std::string name, int reservedEntryCount);
+
+    _NODISCARD size_t ElementCount() const;
 };

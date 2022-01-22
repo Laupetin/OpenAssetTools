@@ -27,3 +27,8 @@ CommonStructuredDataDefEnum::CommonStructuredDataDefEnum(std::string name, const
       m_reserved_entry_count(reservedEntryCount)
 {
 }
+
+size_t CommonStructuredDataDefEnum::ElementCount() const
+{
+    return m_reserved_entry_count > 0 ? static_cast<size_t>(m_reserved_entry_count) : m_entries.size();
+}

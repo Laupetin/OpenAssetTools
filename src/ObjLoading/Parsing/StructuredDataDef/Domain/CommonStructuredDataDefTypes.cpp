@@ -43,15 +43,19 @@ bool operator>=(const CommonStructuredDataDefType& lhs, const CommonStructuredDa
 }
 
 CommonStructuredDataDefIndexedArray::CommonStructuredDataDefIndexedArray()
-    : m_array_size(0u),
-      m_element_size(0u)
+    : CommonStructuredDataDefIndexedArray({}, 0u)
 {
 }
 
-CommonStructuredDataDefIndexedArray::CommonStructuredDataDefIndexedArray(const CommonStructuredDataDefType type, const size_t arraySize)
+CommonStructuredDataDefIndexedArray::CommonStructuredDataDefIndexedArray(const CommonStructuredDataDefType type, const size_t elementCount)
+    : CommonStructuredDataDefIndexedArray(type, elementCount, 0u)
+{
+}
+
+CommonStructuredDataDefIndexedArray::CommonStructuredDataDefIndexedArray(const CommonStructuredDataDefType type, const size_t elementCount, const size_t elementSize)
     : m_array_type(type),
-      m_array_size(arraySize),
-      m_element_size(0u)
+      m_element_count(elementCount),
+      m_element_size_in_bits(elementSize)
 {
 }
 
@@ -61,7 +65,7 @@ bool operator<(const CommonStructuredDataDefIndexedArray& lhs, const CommonStruc
         return true;
     if (rhs.m_array_type < lhs.m_array_type)
         return false;
-    return lhs.m_array_size < rhs.m_array_size;
+    return lhs.m_element_count < rhs.m_element_count;
 }
 
 bool operator<=(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs)
@@ -80,15 +84,20 @@ bool operator>=(const CommonStructuredDataDefIndexedArray& lhs, const CommonStru
 }
 
 CommonStructuredDataDefEnumedArray::CommonStructuredDataDefEnumedArray()
-    : m_enum_index(0u),
-      m_element_size(0u)
+    : CommonStructuredDataDefEnumedArray({}, 0u)
 {
 }
 
 CommonStructuredDataDefEnumedArray::CommonStructuredDataDefEnumedArray(const CommonStructuredDataDefType type, const size_t enumIndex)
+    : CommonStructuredDataDefEnumedArray(type, enumIndex, 0u, 0u)
+{
+}
+
+CommonStructuredDataDefEnumedArray::CommonStructuredDataDefEnumedArray(const CommonStructuredDataDefType type, const size_t enumIndex, const size_t elementCount, const size_t elementSizeInBits)
     : m_array_type(type),
       m_enum_index(enumIndex),
-      m_element_size(0u)
+      m_element_count(elementCount),
+      m_element_size_in_bits(elementSizeInBits)
 {
 }
 

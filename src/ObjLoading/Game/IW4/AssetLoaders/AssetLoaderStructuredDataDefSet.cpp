@@ -80,7 +80,7 @@ void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum
 
 void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* outputStruct, const CommonStructuredDataDefStruct* inputStruct, MemoryManager* memory)
 {
-    outputStruct->size = static_cast<int>(inputStruct->m_size);
+    outputStruct->size = static_cast<int>(inputStruct->m_size_in_byte);
     outputStruct->bitOffset = inputStruct->m_bit_offset;
 
     outputStruct->propertyCount = static_cast<int>(inputStruct->m_properties.size());
@@ -93,8 +93,15 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
             const auto& inputProperty = inputStruct->m_properties[propertyIndex];
 
             outputProperty.name = memory->Dup(inputProperty.m_name.c_str());
-            outputProperty.offset = inputProperty.m_offset;
             outputProperty.type = ConvertType(inputProperty.m_type);
+
+            if(outputProperty.type.type != DATA_BOOL)
+            {
+                assert(inputProperty.m_offset_in_bits % 8 == 0);
+                outputProperty.offset = inputProperty.m_offset_in_bits / 8;
+            }
+            else
+                outputProperty.offset = inputProperty.m_offset_in_bits;
         }
     }
     else
@@ -103,16 +110,16 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
 
 void AssetLoaderStructuredDataDefSet::ConvertIndexedArray(StructuredDataIndexedArray* outputIndexedArray, const CommonStructuredDataDefIndexedArray* inputIndexedArray, MemoryManager* memory)
 {
-    outputIndexedArray->arraySize = static_cast<int>(inputIndexedArray->m_array_size);
+    outputIndexedArray->arraySize = static_cast<int>(inputIndexedArray->m_element_count);
     outputIndexedArray->elementType = ConvertType(inputIndexedArray->m_array_type);
-    outputIndexedArray->elementSize = inputIndexedArray->m_element_size;
+    outputIndexedArray->elementSize = inputIndexedArray->m_element_size_in_bits;
 }
 
 void AssetLoaderStructuredDataDefSet::ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray, const CommonStructuredDataDefEnumedArray* inputEnumedArray, MemoryManager* memory)
 {
     outputEnumedArray->enumIndex = static_cast<int>(inputEnumedArray->m_enum_index);
     outputEnumedArray->elementType = ConvertType(inputEnumedArray->m_array_type);
-    outputEnumedArray->elementSize = inputEnumedArray->m_element_size;
+    outputEnumedArray->elementSize = inputEnumedArray->m_element_size_in_bits;
 }
 
 void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, const CommonStructuredDataDef* inputDef, MemoryManager* memory)
@@ -161,7 +168,7 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
         outputDef->enumedArrays = nullptr;
 
     outputDef->rootType = ConvertType(inputDef->m_root_type);
-    outputDef->size = inputDef->m_size;
+    outputDef->size = inputDef->m_size_in_byte;
 }
 
 StructuredDataDefSet* AssetLoaderStructuredDataDefSet::ConvertSet(const std::string& assetName, const std::vector<std::unique_ptr<CommonStructuredDataDef>>& defs, MemoryManager* memory)

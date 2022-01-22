@@ -75,9 +75,15 @@ namespace sdd::def_scope_sequences
             state->m_current_struct = newStructPtr;
             state->m_def_types_by_name.emplace(newStruct->m_name, CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::STRUCT, newStructIndex));
             state->m_current_def->m_structs.emplace_back(std::move(newStruct));
+            state->m_current_struct_offset_in_bits = 0;
 
             if(newStructPtr->m_name == "root")
+            {
+                state->m_current_struct_offset_in_bits = 64u;
                 state->m_current_def->m_root_type = CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::STRUCT, newStructIndex);
+            }
+            else
+                state->m_current_struct_offset_in_bits = 0;
         }
     };
 
@@ -100,6 +106,13 @@ namespace sdd::def_scope_sequences
         {
             assert(state->m_current_enum == nullptr);
             assert(state->m_current_struct == nullptr);
+
+            if(state->m_current_def->m_root_type.m_category == CommonStructuredDataDefTypeCategory::STRUCT
+                && state->m_current_def->m_root_type.m_info.type_index < state->m_current_def->m_structs.size())
+            {
+                const auto* _struct = state->m_current_def->m_structs[state->m_current_def->m_root_type.m_info.type_index].get();
+                state->m_current_def->m_size_in_byte = _struct->m_size_in_byte;
+            }
 
             state->m_current_def = nullptr;
             state->m_def_types_by_name.clear();

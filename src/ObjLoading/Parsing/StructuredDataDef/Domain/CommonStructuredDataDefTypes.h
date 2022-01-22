@@ -41,11 +41,12 @@ struct CommonStructuredDataDefType
 struct CommonStructuredDataDefIndexedArray
 {
     CommonStructuredDataDefType m_array_type;
-    size_t m_array_size;
-    size_t m_element_size;
+    size_t m_element_count;
+    size_t m_element_size_in_bits;
 
     CommonStructuredDataDefIndexedArray();
-    CommonStructuredDataDefIndexedArray(CommonStructuredDataDefType type, size_t arraySize);
+    CommonStructuredDataDefIndexedArray(CommonStructuredDataDefType type, size_t elementCount);
+    CommonStructuredDataDefIndexedArray(CommonStructuredDataDefType type, size_t elementCount, size_t elementSize);
 
     friend bool operator<(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs);
     friend bool operator<=(const CommonStructuredDataDefIndexedArray& lhs, const CommonStructuredDataDefIndexedArray& rhs);
@@ -57,10 +58,12 @@ struct CommonStructuredDataDefEnumedArray
 {
     CommonStructuredDataDefType m_array_type;
     size_t m_enum_index;
-    size_t m_element_size;
+    size_t m_element_count;
+    size_t m_element_size_in_bits;
 
     CommonStructuredDataDefEnumedArray();
     CommonStructuredDataDefEnumedArray(CommonStructuredDataDefType type, size_t enumIndex);
+    CommonStructuredDataDefEnumedArray(CommonStructuredDataDefType type, size_t enumIndex, size_t elementCount, size_t elementSizeInBits);
 
     friend bool operator<(const CommonStructuredDataDefEnumedArray& lhs, const CommonStructuredDataDefEnumedArray& rhs);
     friend bool operator<=(const CommonStructuredDataDefEnumedArray& lhs, const CommonStructuredDataDefEnumedArray& rhs);
