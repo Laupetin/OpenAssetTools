@@ -53,6 +53,12 @@ void StructuredDataDefDumper::EndVersion()
     m_flags.m_empty_line_before_block = false;
 }
 
+void StructuredDataDefDumper::WriteLineComment(const std::string& comment) const
+{
+    Indent();
+    m_stream << "// " << comment << "\n";
+}
+
 void StructuredDataDefDumper::BeginEnum(const std::string& enumName, const size_t enumEntryCount, size_t enumReservedEntryCount)
 {
     assert(m_flags.m_in_version);
@@ -214,6 +220,12 @@ void StructuredDataDefDumper::EndProperty()
         ss << "[" << arraySpecifierName << "]";
     }
 
+    ss << " /* Offset: " << m_current_property_offset / 8;
+    
+    if (m_current_property_offset % 8 > 0)
+        ss << " + " << m_current_property_offset % 8 << "bit";
+    
+    ss << " */ ";
     m_struct_properties.emplace_back(ss.str(), m_current_property_offset);
 
     m_block = Block::BLOCK_STRUCT;

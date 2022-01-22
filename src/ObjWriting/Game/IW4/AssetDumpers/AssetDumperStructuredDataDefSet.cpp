@@ -7,6 +7,7 @@
 #include "Dumping/StructuredDataDef/StructuredDataDefDumper.h"
 
 using namespace IW4;
+using namespace std::string_literals;
 
 bool AssetDumperStructuredDataDefSet::GetNextHeadValue(const StructuredDataDef* def, const bool isFirstStruct, const std::vector<bool>& structsIncludedInOrder, size_t& nextHeadValue)
 {
@@ -134,7 +135,7 @@ void AssetDumperStructuredDataDefSet::DumpEnum(StructuredDataDefDumper& dumper, 
 
 void AssetDumperStructuredDataDefSet::DumpProperty(StructuredDataDefDumper& dumper, const StructuredDataStructProperty& property, const StructuredDataDef* def, const int rootStructIndex)
 {
-    dumper.BeginProperty(property.name, property.offset);
+    dumper.BeginProperty(property.name, property.type.type == DATA_BOOL ? property.offset : property.offset * 8);
 
     auto currentType = property.type;
     auto stopTypeIteration = false;
@@ -258,6 +259,8 @@ void AssetDumperStructuredDataDefSet::DumpStruct(StructuredDataDefDumper& dumper
         structName = ss.str();
     }
 
+    dumper.WriteLineComment("BitOffset: "s + std::to_string(_struct->bitOffset));
+    dumper.WriteLineComment("Size: "s + std::to_string(_struct->size));
     dumper.BeginStruct(structName, static_cast<size_t>(_struct->propertyCount));
     
     for (auto i = 0; i < _struct->propertyCount; i++)
@@ -284,6 +287,8 @@ void AssetDumperStructuredDataDefSet::DumpAsset(AssetDumpingContext& context, XA
     {
         const auto& def = set->defs[defIndex];
 
+        dumper.WriteLineComment("Size: "s + std::to_string(def.size));
+        dumper.WriteLineComment("Checksum: "s + std::to_string(def.formatChecksum));
         dumper.BeginVersion(def.version);
 
         for (auto enumIndex = 0; enumIndex < def.enumCount; enumIndex++)
