@@ -1,4 +1,4 @@
-#include "StructuredDataDefStructScopeSequences.h"
+#include "StructuredDataStructScopeSequences.h"
 
 #include <algorithm>
 
@@ -65,7 +65,7 @@ namespace sdd::struct_scope_sequences
         }
 
     private:
-        static CommonStructuredDataDefType ProcessType(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result, size_t& currentSize, size_t& currentBitAlign)
+        static CommonStructuredDataType ProcessType(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result, size_t& currentSize, size_t& currentBitAlign)
         {
             const auto typeTag = result.NextTag();
 
@@ -74,23 +74,23 @@ namespace sdd::struct_scope_sequences
             case TAG_TYPE_INT:
                 currentSize = 32;
                 currentBitAlign = 8;
-                return CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::INT);
+                return CommonStructuredDataType(CommonStructuredDataTypeCategory::INT);
             case TAG_TYPE_BYTE:
                 currentSize = 8;
                 currentBitAlign = 8;
-                return CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::BYTE);
+                return CommonStructuredDataType(CommonStructuredDataTypeCategory::BYTE);
             case TAG_TYPE_BOOL:
                 currentSize = 1;
                 currentBitAlign = 0;
-                return CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::BOOL);
+                return CommonStructuredDataType(CommonStructuredDataTypeCategory::BOOL);
             case TAG_TYPE_FLOAT:
                 currentSize = 32;
                 currentBitAlign = 8;
-                return CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::FLOAT);
+                return CommonStructuredDataType(CommonStructuredDataTypeCategory::FLOAT);
             case TAG_TYPE_SHORT:
                 currentSize = 16;
                 currentBitAlign = 8;
-                return CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::SHORT);
+                return CommonStructuredDataType(CommonStructuredDataTypeCategory::SHORT);
             case TAG_TYPE_STRING:
                 {
                     currentBitAlign = 8;
@@ -101,7 +101,7 @@ namespace sdd::struct_scope_sequences
                         throw ParsingException(stringLengthToken.GetPos(), "String length must be greater than zero");
 
                     currentSize = stringLength * 8;
-                    return {CommonStructuredDataDefTypeCategory::STRING, static_cast<size_t>(stringLength)};
+                    return {CommonStructuredDataTypeCategory::STRING, static_cast<size_t>(stringLength)};
                 }
             case TAG_TYPE_NAMED:
                 {
@@ -113,13 +113,13 @@ namespace sdd::struct_scope_sequences
                     if (existingType == state->m_def_types_by_name.end())
                         throw ParsingException(typeNameToken.GetPos(), "No type defined under this name");
 
-                    if (existingType->second.m_category == CommonStructuredDataDefTypeCategory::STRUCT)
+                    if (existingType->second.m_category == CommonStructuredDataTypeCategory::STRUCT)
                     {
                         assert(existingType->second.m_info.type_index < state->m_current_def->m_structs.size());
                         const auto* _struct = state->m_current_def->m_structs[existingType->second.m_info.type_index].get();
                         currentSize = _struct->m_size_in_byte * 8;
                     }
-                    else if (existingType->second.m_category == CommonStructuredDataDefTypeCategory::ENUM)
+                    else if (existingType->second.m_category == CommonStructuredDataTypeCategory::ENUM)
                     {
                         assert(existingType->second.m_info.type_index < state->m_current_def->m_enums.size());
                         currentSize = 16;
@@ -137,8 +137,8 @@ namespace sdd::struct_scope_sequences
             }
         }
 
-        static CommonStructuredDataDefType ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataDefType currentType,
-                                                        size_t& currentSize, size_t& currentBitAlign)
+        static CommonStructuredDataType ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataType currentType,
+                                                     size_t& currentSize, size_t& currentBitAlign)
         {
             currentBitAlign = 8;
 
@@ -151,15 +151,15 @@ namespace sdd::struct_scope_sequences
 
                 currentSize *= arrayElementCount;
 
-                const CommonStructuredDataDefIndexedArray indexedArray(currentType, arrayElementCount);
+                const CommonStructuredDataIndexedArray indexedArray(currentType, arrayElementCount);
 
                 const auto existingIndexedArray = state->m_def_indexed_arrays.find(indexedArray);
                 if (existingIndexedArray != state->m_def_indexed_arrays.end())
-                    return {CommonStructuredDataDefTypeCategory::INDEXED_ARRAY, existingIndexedArray->second};
+                    return {CommonStructuredDataTypeCategory::INDEXED_ARRAY, existingIndexedArray->second};
 
                 const auto newIndexedArrayIndex = state->m_current_def->m_indexed_arrays.size();
                 state->m_current_def->m_indexed_arrays.push_back(indexedArray);
-                return {CommonStructuredDataDefTypeCategory::INDEXED_ARRAY, newIndexedArrayIndex};
+                return {CommonStructuredDataTypeCategory::INDEXED_ARRAY, newIndexedArrayIndex};
             }
 
             if (arrayToken.m_type == SimpleParserValueType::IDENTIFIER)
@@ -169,7 +169,7 @@ namespace sdd::struct_scope_sequences
                 const auto existingType = state->m_def_types_by_name.find(enumName);
                 if (existingType == state->m_def_types_by_name.end())
                     throw ParsingException(arrayToken.GetPos(), "No type defined under this name");
-                if (existingType->second.m_category != CommonStructuredDataDefTypeCategory::ENUM)
+                if (existingType->second.m_category != CommonStructuredDataTypeCategory::ENUM)
                     throw ParsingException(arrayToken.GetPos(), "Type for enumed array must be an enum");
 
                 assert(existingType->second.m_info.type_index < state->m_current_def->m_enums.size());
@@ -179,15 +179,15 @@ namespace sdd::struct_scope_sequences
                 assert(enumElementCount > 0);
                 currentSize *= enumElementCount;
 
-                const CommonStructuredDataDefEnumedArray enumedArray(currentType, existingType->second.m_info.type_index);
+                const CommonStructuredDataEnumedArray enumedArray(currentType, existingType->second.m_info.type_index);
 
                 const auto existingEnumedArray = state->m_def_enumed_arrays.find(enumedArray);
                 if (existingEnumedArray != state->m_def_enumed_arrays.end())
-                    return {CommonStructuredDataDefTypeCategory::ENUM_ARRAY, existingEnumedArray->second};
+                    return {CommonStructuredDataTypeCategory::ENUM_ARRAY, existingEnumedArray->second};
 
                 const auto newEnumedArrayIndex = state->m_current_def->m_enumed_arrays.size();
                 state->m_current_def->m_enumed_arrays.push_back(enumedArray);
-                return {CommonStructuredDataDefTypeCategory::ENUM_ARRAY, newEnumedArrayIndex};
+                return {CommonStructuredDataTypeCategory::ENUM_ARRAY, newEnumedArrayIndex};
             }
 
             throw ParsingException(arrayToken.GetPos(), "Invalid Token for Array @ ProcessArray!!!");
@@ -207,7 +207,7 @@ namespace sdd::struct_scope_sequences
             while (result.HasNextCapture(CAPTURE_ARRAY_SIZE))
                 arrayTokens.emplace_back(result.NextCapture(CAPTURE_ARRAY_SIZE));
 
-            for(auto i = arrayTokens.rbegin(); i != arrayTokens.rend(); ++i)
+            for (auto i = arrayTokens.rbegin(); i != arrayTokens.rend(); ++i)
                 currentType = ProcessArray(state, i->get(), currentType, currentSize, currentAlign);
 
             if (currentAlign > 0)
@@ -246,7 +246,7 @@ namespace sdd::struct_scope_sequences
 
             // Sort the entries of the struct alphabetically
             std::sort(state->m_current_struct->m_properties.begin(), state->m_current_struct->m_properties.end(),
-                      [](const CommonStructuredDataDefStructEntry& e1, const CommonStructuredDataDefStructEntry& e2)
+                      [](const CommonStructuredDataStructEntry& e1, const CommonStructuredDataStructEntry& e2)
                       {
                           return e1.m_name < e2.m_name;
                       });
@@ -258,13 +258,13 @@ namespace sdd::struct_scope_sequences
 using namespace sdd;
 using namespace struct_scope_sequences;
 
-StructuredDataDefStructScopeSequences::StructuredDataDefStructScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
+StructuredDataStructScopeSequences::StructuredDataStructScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
                                                                              std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }
 
-void StructuredDataDefStructScopeSequences::AddSequences() const
+void StructuredDataStructScopeSequences::AddSequences() const
 {
     AddSequence(std::make_unique<SequenceCloseStruct>());
     AddSequence(std::make_unique<SequenceStructEntry>());

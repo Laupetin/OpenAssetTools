@@ -1,9 +1,9 @@
 #include "StructuredDataDefParser.h"
 
-#include "Sequence/StructuredDataDefDefScopeSequences.h"
-#include "Sequence/StructuredDataDefEnumScopeSequences.h"
-#include "Sequence/StructuredDataDefNoScopeSequences.h"
-#include "Sequence/StructuredDataDefStructScopeSequences.h"
+#include "Sequence/StructuredDataDefScopeSequences.h"
+#include "Sequence/StructuredDataEnumScopeSequences.h"
+#include "Sequence/StructuredDataNoScopeSequences.h"
+#include "Sequence/StructuredDataStructScopeSequences.h"
 
 using namespace sdd;
 
@@ -21,16 +21,16 @@ void StructuredDataDefParser::CreateSequenceCollections()
     m_enum_tests.clear();
     m_struct_tests.clear();
 
-    const StructuredDataDefNoScopeSequences noScopeSequences(m_all_tests, m_no_scope_tests);
+    const StructuredDataNoScopeSequences noScopeSequences(m_all_tests, m_no_scope_tests);
     noScopeSequences.AddSequences();
 
-    const StructuredDataDefDefScopeSequences defScopeSequences(m_all_tests, m_def_tests);
+    const StructuredDataDefScopeSequences defScopeSequences(m_all_tests, m_def_tests);
     defScopeSequences.AddSequences();
 
-    const StructuredDataDefEnumScopeSequences enumScopeSequences(m_all_tests, m_enum_tests);
+    const StructuredDataEnumScopeSequences enumScopeSequences(m_all_tests, m_enum_tests);
     enumScopeSequences.AddSequences();
 
-    const StructuredDataDefStructScopeSequences structScopeSequences(m_all_tests, m_struct_tests);
+    const StructuredDataStructScopeSequences structScopeSequences(m_all_tests, m_struct_tests);
     structScopeSequences.AddSequences();
 }
 

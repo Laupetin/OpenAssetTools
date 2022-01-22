@@ -22,38 +22,38 @@ bool AssetLoaderStructuredDataDefSet::CanLoadFromRaw() const
     return true;
 }
 
-StructuredDataType AssetLoaderStructuredDataDefSet::ConvertType(CommonStructuredDataDefType inputType)
+StructuredDataType AssetLoaderStructuredDataDefSet::ConvertType(CommonStructuredDataType inputType)
 {
     switch (inputType.m_category)
     {
-    case CommonStructuredDataDefTypeCategory::INT:
+    case CommonStructuredDataTypeCategory::INT:
         return {DATA_INT, {0}};
-    case CommonStructuredDataDefTypeCategory::BYTE:
+    case CommonStructuredDataTypeCategory::BYTE:
         return {DATA_BYTE, {0}};
-    case CommonStructuredDataDefTypeCategory::BOOL:
+    case CommonStructuredDataTypeCategory::BOOL:
         return {DATA_BOOL, {0}};
-    case CommonStructuredDataDefTypeCategory::FLOAT:
+    case CommonStructuredDataTypeCategory::FLOAT:
         return {DATA_FLOAT, {0}};
-    case CommonStructuredDataDefTypeCategory::SHORT:
+    case CommonStructuredDataTypeCategory::SHORT:
         return {DATA_SHORT, {0}};
-    case CommonStructuredDataDefTypeCategory::STRING:
+    case CommonStructuredDataTypeCategory::STRING:
         return {DATA_STRING, {inputType.m_info.string_length}};
-    case CommonStructuredDataDefTypeCategory::ENUM:
+    case CommonStructuredDataTypeCategory::ENUM:
         return {DATA_ENUM, {inputType.m_info.type_index}};
-    case CommonStructuredDataDefTypeCategory::STRUCT:
+    case CommonStructuredDataTypeCategory::STRUCT:
         return {DATA_STRUCT, {inputType.m_info.type_index}};
-    case CommonStructuredDataDefTypeCategory::INDEXED_ARRAY:
+    case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
         return {DATA_INDEXED_ARRAY, {inputType.m_info.type_index}};
-    case CommonStructuredDataDefTypeCategory::ENUM_ARRAY:
+    case CommonStructuredDataTypeCategory::ENUM_ARRAY:
         return {DATA_ENUM_ARRAY, {inputType.m_info.type_index}};
-    case CommonStructuredDataDefTypeCategory::UNKNOWN:
+    case CommonStructuredDataTypeCategory::UNKNOWN:
     default:
         assert(false);
         return {DATA_INT, {0}};
     }
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum, const CommonStructuredDataDefEnum* inputEnum, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum, const CommonStructuredDataEnum* inputEnum, MemoryManager* memory)
 {
     outputEnum->entryCount = static_cast<int>(inputEnum->m_entries.size());
     if (inputEnum->m_reserved_entry_count <= 0)
@@ -78,7 +78,7 @@ void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum
         outputEnum->entries = nullptr;
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* outputStruct, const CommonStructuredDataDefStruct* inputStruct, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* outputStruct, const CommonStructuredDataStruct* inputStruct, MemoryManager* memory)
 {
     outputStruct->size = static_cast<int>(inputStruct->m_size_in_byte);
     outputStruct->bitOffset = inputStruct->m_bit_offset;
@@ -108,14 +108,14 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
         outputStruct->properties = nullptr;
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertIndexedArray(StructuredDataIndexedArray* outputIndexedArray, const CommonStructuredDataDefIndexedArray* inputIndexedArray, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertIndexedArray(StructuredDataIndexedArray* outputIndexedArray, const CommonStructuredDataIndexedArray* inputIndexedArray, MemoryManager* memory)
 {
     outputIndexedArray->arraySize = static_cast<int>(inputIndexedArray->m_element_count);
     outputIndexedArray->elementType = ConvertType(inputIndexedArray->m_array_type);
     outputIndexedArray->elementSize = inputIndexedArray->m_element_size_in_bits;
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray, const CommonStructuredDataDefEnumedArray* inputEnumedArray, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray, const CommonStructuredDataEnumedArray* inputEnumedArray, MemoryManager* memory)
 {
     outputEnumedArray->enumIndex = static_cast<int>(inputEnumedArray->m_enum_index);
     outputEnumedArray->elementType = ConvertType(inputEnumedArray->m_array_type);

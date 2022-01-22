@@ -15,13 +15,13 @@ namespace sdd
         std::vector<std::unique_ptr<CommonStructuredDataDef>> m_defs;
 
         CommonStructuredDataDef* m_current_def;
-        CommonStructuredDataDefEnum* m_current_enum;
-        CommonStructuredDataDefStruct* m_current_struct;
+        CommonStructuredDataEnum* m_current_enum;
+        CommonStructuredDataStruct* m_current_struct;
         size_t m_current_struct_offset_in_bits;
 
-        std::map<std::string, CommonStructuredDataDefType> m_def_types_by_name;
-        std::map<CommonStructuredDataDefIndexedArray, size_t> m_def_indexed_arrays;
-        std::map<CommonStructuredDataDefEnumedArray, size_t> m_def_enumed_arrays;
+        std::map<std::string, CommonStructuredDataType> m_def_types_by_name;
+        std::map<CommonStructuredDataIndexedArray, size_t> m_def_indexed_arrays;
+        std::map<CommonStructuredDataEnumedArray, size_t> m_def_enumed_arrays;
 
         StructuredDataDefParserState();
     };

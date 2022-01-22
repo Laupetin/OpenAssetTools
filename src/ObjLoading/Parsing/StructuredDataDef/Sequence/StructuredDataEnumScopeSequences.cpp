@@ -1,4 +1,4 @@
-#include "StructuredDataDefEnumScopeSequences.h"
+#include "StructuredDataEnumScopeSequences.h"
 
 #include <algorithm>
 
@@ -55,7 +55,7 @@ namespace sdd::enum_scope_sequences
         {
             assert(state->m_current_enum != nullptr);
 
-            std::sort(state->m_current_enum->m_entries.begin(), state->m_current_enum->m_entries.end(), [](const CommonStructuredDataDefEnumEntry& e1, const CommonStructuredDataDefEnumEntry& e2)
+            std::sort(state->m_current_enum->m_entries.begin(), state->m_current_enum->m_entries.end(), [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
             {
                 return e1.m_name < e2.m_name;
             });
@@ -68,13 +68,13 @@ namespace sdd::enum_scope_sequences
 using namespace sdd;
 using namespace enum_scope_sequences;
 
-StructuredDataDefEnumScopeSequences::StructuredDataDefEnumScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
+StructuredDataEnumScopeSequences::StructuredDataEnumScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
                                                                          std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }
 
-void StructuredDataDefEnumScopeSequences::AddSequences() const
+void StructuredDataEnumScopeSequences::AddSequences() const
 {
     AddSequence(std::make_unique<SequenceCloseEnum>());
     AddSequence(std::make_unique<SequenceEnumEntry>());

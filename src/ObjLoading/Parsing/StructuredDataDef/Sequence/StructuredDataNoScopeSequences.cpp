@@ -1,4 +1,4 @@
-#include "StructuredDataDefNoScopeSequences.h"
+#include "StructuredDataNoScopeSequences.h"
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
@@ -33,13 +33,13 @@ namespace sdd::no_scope_sequences
 using namespace sdd;
 using namespace no_scope_sequences;
 
-StructuredDataDefNoScopeSequences::StructuredDataDefNoScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
+StructuredDataNoScopeSequences::StructuredDataNoScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
                                                                      std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }
 
-void StructuredDataDefNoScopeSequences::AddSequences() const
+void StructuredDataNoScopeSequences::AddSequences() const
 {
     AddSequence(std::make_unique<SequenceVersion>());
 }
