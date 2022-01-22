@@ -27,7 +27,7 @@ void SndCurveDumper::Init(const size_t totalKnots)
 
 void SndCurveDumper::WriteKnot(const float x, const float y)
 {
-    assert(m_current_knot >= m_total_knots);
+    assert(m_current_knot < m_total_knots);
 
     m_stream << "\n" << std::fixed << std::setprecision(m_precision) << x << " " << y;
 
@@ -36,7 +36,7 @@ void SndCurveDumper::WriteKnot(const float x, const float y)
 
 void SndCurveDumper::WriteKnot(const double x, const double y)
 {
-    assert(m_current_knot >= m_total_knots);
+    assert(m_current_knot < m_total_knots);
 
     m_stream << x << " " << y << "\n";
 
