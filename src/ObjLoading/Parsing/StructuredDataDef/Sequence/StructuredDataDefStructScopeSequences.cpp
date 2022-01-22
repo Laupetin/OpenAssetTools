@@ -236,9 +236,15 @@ namespace sdd::struct_scope_sequences
         {
             assert(state->m_current_struct != nullptr);
 
-            state->m_current_struct->m_size_in_byte = (state->m_current_struct_offset_in_bits + 7) / 8;
+            // Set the size of the finalized struct
+            if (!state->m_current_struct->m_properties.empty())
+                state->m_current_struct->m_size_in_byte = (state->m_current_struct_offset_in_bits + 7) / 8;
+            else
+                state->m_current_struct->m_size_in_byte = 0u;
+
             state->m_current_struct_offset_in_bits = 0u;
 
+            // Sort the entries of the struct alphabetically
             std::sort(state->m_current_struct->m_properties.begin(), state->m_current_struct->m_properties.end(),
                       [](const CommonStructuredDataDefStructEntry& e1, const CommonStructuredDataDefStructEntry& e2)
                       {
