@@ -111,23 +111,23 @@ bool AssetDumperStructuredDataDefSet::ShouldDump(XAssetInfo<StructuredDataDefSet
 
 void AssetDumperStructuredDataDefSet::DumpEnum(StructuredDataDefDumper& dumper, const int enumIndex, const StructuredDataEnum* _enum)
 {
-    if (!_enum->entries || _enum->entryCount <= 0)
-        return;
-
     std::ostringstream ss;
     ss << "ENUM_" << enumIndex;
 
     dumper.BeginEnum(ss.str(), static_cast<size_t>(_enum->entryCount), static_cast<size_t>(_enum->reservedEntryCount));
 
-    for (auto i = 0; i < _enum->entryCount; i++)
+    if(_enum->entries && _enum->entryCount > 0)
     {
-        const auto& entry = _enum->entries[i];
+        for (auto i = 0; i < _enum->entryCount; i++)
+        {
+            const auto& entry = _enum->entries[i];
 
-        assert(entry.string);
-        if (!entry.string)
-            continue;
+            assert(entry.string);
+            if (!entry.string)
+                continue;
 
-        dumper.WriteEnumEntry(entry.string, entry.index);
+            dumper.WriteEnumEntry(entry.string, entry.index);
+        }
     }
 
     dumper.EndEnum();
@@ -244,9 +244,6 @@ void AssetDumperStructuredDataDefSet::DumpProperty(StructuredDataDefDumper& dump
 
 void AssetDumperStructuredDataDefSet::DumpStruct(StructuredDataDefDumper& dumper, const size_t structIndex, const StructuredDataStruct* _struct, const StructuredDataDef* def, const int rootStructIndex)
 {
-    if (!_struct->properties || _struct->propertyCount <= 0)
-        return;
-
     std::string structName;
     if (static_cast<int>(structIndex) == rootStructIndex)
     {
@@ -262,12 +259,15 @@ void AssetDumperStructuredDataDefSet::DumpStruct(StructuredDataDefDumper& dumper
     dumper.WriteLineComment("BitOffset: "s + std::to_string(_struct->bitOffset));
     dumper.WriteLineComment("Size: "s + std::to_string(_struct->size));
     dumper.BeginStruct(structName, static_cast<size_t>(_struct->propertyCount));
-    
-    for (auto i = 0; i < _struct->propertyCount; i++)
-    {
-        const auto& property = _struct->properties[i];
 
-        DumpProperty(dumper, property, def, rootStructIndex);
+    if(_struct->properties && _struct->propertyCount > 0)
+    {
+        for (auto i = 0; i < _struct->propertyCount; i++)
+        {
+            const auto& property = _struct->properties[i];
+
+            DumpProperty(dumper, property, def, rootStructIndex);
+        }
     }
 
     dumper.EndStruct();
