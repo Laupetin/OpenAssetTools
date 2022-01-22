@@ -95,7 +95,7 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
             outputProperty.name = memory->Dup(inputProperty.m_name.c_str());
             outputProperty.type = ConvertType(inputProperty.m_type);
 
-            if(outputProperty.type.type != DATA_BOOL)
+            if (outputProperty.type.type != DATA_BOOL)
             {
                 assert(inputProperty.m_offset_in_bits % 8 == 0);
                 outputProperty.offset = inputProperty.m_offset_in_bits / 8;

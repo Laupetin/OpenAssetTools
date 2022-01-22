@@ -101,18 +101,34 @@ namespace sdd::def_scope_sequences
             });
         }
 
+    private:
+        static void CreateDefaultStructWhenNoStructsSpecified(const StructuredDataDefParserState* state)
+        {
+            if (state->m_current_def->m_structs.empty())
+            {
+                state->m_current_def->m_structs.emplace_back(std::make_unique<CommonStructuredDataDefStruct>());
+                state->m_current_def->m_root_type = CommonStructuredDataDefType(CommonStructuredDataDefTypeCategory::STRUCT, 0u);
+            }
+        }
+
+        static void SetDefSizeFromRootStruct(const StructuredDataDefParserState* state)
+        {
+            if (state->m_current_def->m_root_type.m_category == CommonStructuredDataDefTypeCategory::STRUCT
+                && state->m_current_def->m_root_type.m_info.type_index < state->m_current_def->m_structs.size())
+            {
+                const auto* _struct = state->m_current_def->m_structs[state->m_current_def->m_root_type.m_info.type_index].get();
+                state->m_current_def->m_size_in_byte = _struct->m_size_in_byte;
+            }
+        }
+
     protected:
         void ProcessMatch(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_current_enum == nullptr);
             assert(state->m_current_struct == nullptr);
 
-            if(state->m_current_def->m_root_type.m_category == CommonStructuredDataDefTypeCategory::STRUCT
-                && state->m_current_def->m_root_type.m_info.type_index < state->m_current_def->m_structs.size())
-            {
-                const auto* _struct = state->m_current_def->m_structs[state->m_current_def->m_root_type.m_info.type_index].get();
-                state->m_current_def->m_size_in_byte = _struct->m_size_in_byte;
-            }
+            CreateDefaultStructWhenNoStructsSpecified(state);
+            SetDefSizeFromRootStruct(state);
 
             state->m_current_def = nullptr;
             state->m_def_types_by_name.clear();
