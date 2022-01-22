@@ -15,15 +15,11 @@ namespace sdd::struct_scope_sequences
         static constexpr auto TAG_TYPE_SHORT = 5;
         static constexpr auto TAG_TYPE_STRING = 6;
         static constexpr auto TAG_TYPE_NAMED = 7;
-        static constexpr auto TAG_ARRAY = 8;
-        static constexpr auto TAG_ARRAY_INDEX = 9;
-        static constexpr auto TAG_ARRAY_ENUM = 10;
 
         static constexpr auto CAPTURE_STRING_LENGTH = 1;
         static constexpr auto CAPTURE_TYPE_NAME = 2;
         static constexpr auto CAPTURE_ENTRY_NAME = 3;
         static constexpr auto CAPTURE_ARRAY_SIZE = 4;
-        static constexpr auto CAPTURE_ARRAY_ENUM = 5;
 
         static std::unique_ptr<matcher_t> TypeMatchers(const SimpleMatcherFactory& create)
         {
@@ -48,11 +44,11 @@ namespace sdd::struct_scope_sequences
             return create.And({
                 create.Char('['),
                 create.Or({
-                    create.Integer().Tag(TAG_ARRAY_INDEX).Capture(CAPTURE_ARRAY_SIZE),
-                    create.Identifier().Tag(TAG_ARRAY_ENUM).Capture(CAPTURE_ARRAY_ENUM)
+                    create.Integer().Capture(CAPTURE_ARRAY_SIZE),
+                    create.Identifier().Capture(CAPTURE_ARRAY_SIZE)
                 }),
                 create.Char(']')
-            }).Tag(TAG_ARRAY);
+            });
         }
 
     public:
@@ -141,19 +137,17 @@ namespace sdd::struct_scope_sequences
             }
         }
 
-        static CommonStructuredDataDefType ProcessArray(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result, const CommonStructuredDataDefType currentType,
+        static CommonStructuredDataDefType ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataDefType currentType,
                                                         size_t& currentSize, size_t& currentBitAlign)
         {
             currentBitAlign = 8;
-            const auto arrayTag = result.NextTag();
 
-            if (arrayTag == TAG_ARRAY_INDEX)
+            if (arrayToken.m_type == SimpleParserValueType::INTEGER)
             {
-                const auto& arraySizeToken = result.NextCapture(CAPTURE_ARRAY_SIZE);
-                const auto arrayElementCount = arraySizeToken.IntegerValue();
+                const auto arrayElementCount = arrayToken.IntegerValue();
 
                 if (arrayElementCount <= 0)
-                    throw ParsingException(arraySizeToken.GetPos(), "Array size must be greater than zero");
+                    throw ParsingException(arrayToken.GetPos(), "Array size must be greater than zero");
 
                 currentSize *= arrayElementCount;
 
@@ -168,16 +162,15 @@ namespace sdd::struct_scope_sequences
                 return {CommonStructuredDataDefTypeCategory::INDEXED_ARRAY, newIndexedArrayIndex};
             }
 
-            if (arrayTag == TAG_ARRAY_ENUM)
+            if (arrayToken.m_type == SimpleParserValueType::IDENTIFIER)
             {
-                const auto& enumNameToken = result.NextCapture(CAPTURE_ARRAY_ENUM);
-                const auto enumName = enumNameToken.IdentifierValue();
+                const auto enumName = arrayToken.IdentifierValue();
 
                 const auto existingType = state->m_def_types_by_name.find(enumName);
                 if (existingType == state->m_def_types_by_name.end())
-                    throw ParsingException(enumNameToken.GetPos(), "No type defined under this name");
+                    throw ParsingException(arrayToken.GetPos(), "No type defined under this name");
                 if (existingType->second.m_category != CommonStructuredDataDefTypeCategory::ENUM)
-                    throw ParsingException(enumNameToken.GetPos(), "Type for enumed array must be an enum");
+                    throw ParsingException(arrayToken.GetPos(), "Type for enumed array must be an enum");
 
                 assert(existingType->second.m_info.type_index < state->m_current_def->m_enums.size());
                 const auto* _enum = state->m_current_def->m_enums[existingType->second.m_info.type_index].get();
@@ -197,7 +190,7 @@ namespace sdd::struct_scope_sequences
                 return {CommonStructuredDataDefTypeCategory::ENUM_ARRAY, newEnumedArrayIndex};
             }
 
-            throw ParsingException(TokenPos(), "Invalid Tag for Array @ ProcessArray!!!");
+            throw ParsingException(arrayToken.GetPos(), "Invalid Token for Array @ ProcessArray!!!");
         }
 
     protected:
@@ -210,8 +203,12 @@ namespace sdd::struct_scope_sequences
             size_t currentAlign = 0;
             auto currentType = ProcessType(state, result, currentSize, currentAlign);
 
-            while (result.PeekAndRemoveIfTag(TAG_ARRAY) == TAG_ARRAY)
-                currentType = ProcessArray(state, result, currentType, currentSize, currentAlign);
+            std::vector<std::reference_wrapper<const SimpleParserValue>> arrayTokens;
+            while (result.HasNextCapture(CAPTURE_ARRAY_SIZE))
+                arrayTokens.emplace_back(result.NextCapture(CAPTURE_ARRAY_SIZE));
+
+            for(auto i = arrayTokens.rbegin(); i != arrayTokens.rend(); ++i)
+                currentType = ProcessArray(state, i->get(), currentType, currentSize, currentAlign);
 
             if (currentAlign > 0)
                 state->m_current_struct_offset_in_bits = (state->m_current_struct_offset_in_bits + currentAlign - 1) / currentAlign * currentAlign;
