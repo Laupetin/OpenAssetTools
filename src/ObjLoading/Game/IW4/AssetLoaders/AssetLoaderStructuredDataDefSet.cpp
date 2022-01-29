@@ -60,7 +60,6 @@ void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum
         outputEnum->reservedEntryCount = outputEnum->entryCount;
     else
         outputEnum->reservedEntryCount = inputEnum->m_reserved_entry_count;
-    outputEnum->reservedEntryCount = static_cast<int>(inputEnum->m_entries.size());
 
     if (!inputEnum->m_entries.empty())
     {
