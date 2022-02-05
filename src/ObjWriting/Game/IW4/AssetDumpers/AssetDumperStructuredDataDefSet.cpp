@@ -11,9 +11,9 @@ using namespace std::string_literals;
 
 bool AssetDumperStructuredDataDefSet::GetNextHeadValue(const StructuredDataDef* def, const bool isFirstStruct, const std::vector<bool>& structsIncludedInOrder, size_t& nextHeadValue)
 {
-    if(isFirstStruct
-        && def->rootType.type == DATA_STRUCT 
-        && def->rootType.u.structIndex >= 0 
+    if (isFirstStruct
+        && def->rootType.type == DATA_STRUCT
+        && def->rootType.u.structIndex >= 0
         && def->rootType.u.structIndex < def->structCount)
     {
         nextHeadValue = def->rootType.u.structIndex;
@@ -32,7 +32,7 @@ bool AssetDumperStructuredDataDefSet::GetNextHeadValue(const StructuredDataDef* 
 
 StructuredDataType AssetDumperStructuredDataDefSet::GetBaseType(const StructuredDataDef* def, StructuredDataType type)
 {
-    while(true)
+    while (true)
     {
         if (type.type == DATA_INDEXED_ARRAY)
         {
@@ -69,7 +69,7 @@ std::vector<size_t> AssetDumperStructuredDataDefSet::CalculateStructDumpingOrder
     result.reserve(def->structCount);
     std::vector<bool> structIncludedInOrder(def->structCount);
 
-    while(resultStructTail < structCount)
+    while (resultStructTail < structCount)
     {
         size_t nextHeadValue;
         if (!GetNextHeadValue(def, resultStructHead == 0, structIncludedInOrder, nextHeadValue))
@@ -78,18 +78,18 @@ std::vector<size_t> AssetDumperStructuredDataDefSet::CalculateStructDumpingOrder
         structIncludedInOrder[nextHeadValue] = true;
         ++resultStructHead;
 
-        while(resultStructHead > resultStructTail)
+        while (resultStructHead > resultStructTail)
         {
             const auto& currentStruct = def->structs[result[resultStructTail++]];
 
-            if(currentStruct.properties == nullptr)
+            if (currentStruct.properties == nullptr)
                 continue;
 
-            for(auto i = 0; i < currentStruct.propertyCount; i++)
+            for (auto i = 0; i < currentStruct.propertyCount; i++)
             {
                 const auto baseType = GetBaseType(def, currentStruct.properties[i].type);
-                if(baseType.type == DATA_STRUCT 
-                    && baseType.u.structIndex >= 0 
+                if (baseType.type == DATA_STRUCT
+                    && baseType.u.structIndex >= 0
                     && static_cast<size_t>(baseType.u.structIndex) < structCount
                     && structIncludedInOrder[static_cast<size_t>(baseType.u.structIndex)] == false)
                 {
@@ -116,7 +116,7 @@ void AssetDumperStructuredDataDefSet::DumpEnum(StructuredDataDefDumper& dumper, 
 
     dumper.BeginEnum(ss.str(), static_cast<size_t>(_enum->entryCount), static_cast<size_t>(_enum->reservedEntryCount));
 
-    if(_enum->entries && _enum->entryCount > 0)
+    if (_enum->entries && _enum->entryCount > 0)
     {
         for (auto i = 0; i < _enum->entryCount; i++)
         {
@@ -133,9 +133,72 @@ void AssetDumperStructuredDataDefSet::DumpEnum(StructuredDataDefDumper& dumper, 
     dumper.EndEnum();
 }
 
+size_t AssetDumperStructuredDataDefSet::GetPropertySizeInBits(const StructuredDataStructProperty& property, const StructuredDataDef* def)
+{
+    switch (property.type.type)
+    {
+    case DATA_FLOAT:
+    case DATA_INT:
+        return 32;
+    case DATA_BYTE:
+        return 8;
+    case DATA_BOOL:
+        return 1;
+    case DATA_SHORT:
+    case DATA_ENUM:
+        return 16;
+    case DATA_STRING:
+        return property.type.u.stringDataLength * 8;
+    case DATA_STRUCT:
+        if (property.type.u.structIndex < 0 || property.type.u.structIndex >= def->structCount || def->structs == nullptr)
+        {
+            assert(false);
+            return 0;
+        }
+        return static_cast<size_t>(def->structs[property.type.u.structIndex].size) * 8;
+    case DATA_INDEXED_ARRAY:
+        {
+            if (property.type.u.indexedArrayIndex < 0 || property.type.u.indexedArrayIndex >= def->indexedArrayCount || def->indexedArrays == nullptr)
+            {
+                assert(false);
+                return 0;
+            }
+            const auto& indexedArray = def->indexedArrays[property.type.u.indexedArrayIndex];
+            const auto elementSize = indexedArray.elementType.type == DATA_BOOL ? 1 : indexedArray.elementSize * 8;
+            return elementSize * static_cast<size_t>(def->indexedArrays[property.type.u.indexedArrayIndex].arraySize);
+        }
+    case DATA_ENUM_ARRAY:
+        {
+            if (property.type.u.enumedArrayIndex < 0 || property.type.u.enumedArrayIndex >= def->enumedArrayCount || def->enumedArrays == nullptr)
+            {
+                assert(false);
+                return 0;
+            }
+
+            const auto& enumedArray = def->enumedArrays[property.type.u.enumedArrayIndex];
+            if (enumedArray.enumIndex < 0 || enumedArray.enumIndex >= def->enumCount || def->enums == nullptr)
+            {
+                assert(false);
+                return 0;
+            }
+
+            const auto elementSize = enumedArray.elementType.type == DATA_BOOL ? 1 : enumedArray.elementSize * 8;
+            return elementSize * static_cast<size_t>(def->enums[enumedArray.enumIndex].reservedEntryCount);
+        }
+    default:
+        assert(false);
+        return 0;
+    }
+}
+
+size_t AssetDumperStructuredDataDefSet::GetPropertyAlign(const StructuredDataStructProperty& property)
+{
+    return property.type.type == DATA_BOOL ? 0 : 8;
+}
+
 void AssetDumperStructuredDataDefSet::DumpProperty(StructuredDataDefDumper& dumper, const StructuredDataStructProperty& property, const StructuredDataDef* def, const int rootStructIndex)
 {
-    dumper.BeginProperty(property.name, property.type.type == DATA_BOOL ? property.offset : property.offset * 8);
+    dumper.BeginProperty(property.name, property.type.type == DATA_BOOL ? property.offset : property.offset * 8, GetPropertySizeInBits(property, def), GetPropertyAlign(property));
 
     auto currentType = property.type;
     auto stopTypeIteration = false;
@@ -242,25 +305,32 @@ void AssetDumperStructuredDataDefSet::DumpProperty(StructuredDataDefDumper& dump
     dumper.EndProperty();
 }
 
-void AssetDumperStructuredDataDefSet::DumpStruct(StructuredDataDefDumper& dumper, const size_t structIndex, const StructuredDataStruct* _struct, const StructuredDataDef* def, const int rootStructIndex)
+void AssetDumperStructuredDataDefSet::DumpStruct(StructuredDataDefDumper& dumper, const size_t structIndex, const StructuredDataStruct* _struct, const StructuredDataDef* def,
+                                                 const int rootStructIndex)
 {
     std::string structName;
+    size_t actualStructSize;
+    size_t initialOffset;
     if (static_cast<int>(structIndex) == rootStructIndex)
     {
         structName = "root";
+        actualStructSize = def->size;
+        initialOffset = 64;
     }
     else
     {
         std::ostringstream ss;
         ss << "STRUCT_" << structIndex;
         structName = ss.str();
+        actualStructSize = static_cast<size_t>(_struct->size);
+        initialOffset = 0;
     }
 
     dumper.WriteLineComment("BitOffset: "s + std::to_string(_struct->bitOffset));
     dumper.WriteLineComment("Size: "s + std::to_string(_struct->size));
-    dumper.BeginStruct(structName, static_cast<size_t>(_struct->propertyCount));
+    dumper.BeginStruct(structName, static_cast<size_t>(_struct->propertyCount), actualStructSize * 8, initialOffset);
 
-    if(_struct->properties && _struct->propertyCount > 0)
+    if (_struct->properties && _struct->propertyCount > 0)
     {
         for (auto i = 0; i < _struct->propertyCount; i++)
         {

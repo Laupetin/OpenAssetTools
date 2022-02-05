@@ -4,9 +4,11 @@
 #include <cassert>
 #include <sstream>
 
-StructuredDataDefDumper::StructEntry::StructEntry(std::string stringValue, const size_t offset)
+StructuredDataDefDumper::StructEntry::StructEntry(std::string stringValue, const size_t offset, const size_t sizeInBits, const size_t alignment)
     : m_string_value(std::move(stringValue)),
-      m_offset(offset)
+      m_offset(offset),
+      m_size_in_bits(sizeInBits),
+      m_alignment(alignment)
 {
 }
 
@@ -16,7 +18,9 @@ StructuredDataDefDumper::StructuredDataDefDumper(std::ostream& stream)
       m_flags{},
       m_enum_entry_count(0u),
       m_struct_property_count(0u),
-      m_current_property_offset(0u)
+      m_current_property_offset(0u),
+      m_current_property_size_in_bits(0u),
+      m_current_property_alignment(0u)
 {
 }
 
@@ -75,7 +79,7 @@ void StructuredDataDefDumper::BeginEnum(const std::string& enumName, const size_
         m_stream << "enum(" << enumReservedEntryCount << ") ";
     else
         m_stream << "enum ";
-     m_stream << enumName;
+    m_stream << enumName;
 
     m_stream << "\n";
 
@@ -130,7 +134,7 @@ void StructuredDataDefDumper::WriteEnumEntry(const std::string& entryName, const
     m_enum_entries[entryValue] = entryName;
 }
 
-void StructuredDataDefDumper::BeginStruct(const std::string& structName, const size_t structPropertyCount)
+void StructuredDataDefDumper::BeginStruct(const std::string& structName, const size_t structPropertyCount, const size_t structSizeInBits, const size_t structInitialOffset)
 {
     assert(m_flags.m_in_version);
     assert(m_block == Block::BLOCK_NONE);
@@ -139,6 +143,8 @@ void StructuredDataDefDumper::BeginStruct(const std::string& structName, const s
         return;
 
     m_struct_property_count = structPropertyCount;
+    m_struct_size_in_bits = structSizeInBits;
+    m_struct_initial_offset = structInitialOffset;
     m_struct_properties.reserve(structPropertyCount);
 
     if (m_flags.m_empty_line_before_block)
@@ -166,10 +172,34 @@ void StructuredDataDefDumper::EndStruct()
         return e1.m_offset < e2.m_offset;
     });
 
+    auto expectedOffset = m_struct_initial_offset;
     for (auto& structProperty : m_struct_properties)
     {
+        if (structProperty.m_alignment > 0)
+            expectedOffset = (expectedOffset + structProperty.m_alignment - 1) / structProperty.m_alignment * structProperty.m_alignment;
+
+        if(expectedOffset != structProperty.m_offset)
+        {
+            assert(structProperty.m_offset > expectedOffset);
+            assert((structProperty.m_offset - expectedOffset) % 8 == 0);
+            Indent();
+            m_stream << "pad(" << (structProperty.m_offset - expectedOffset) << ");\n";
+            expectedOffset = structProperty.m_offset;
+        }
+
         Indent();
         m_stream << structProperty.m_string_value << ";\n";
+
+        expectedOffset += structProperty.m_size_in_bits;
+    }
+
+    expectedOffset = (expectedOffset + 7) / 8 * 8;
+    if (m_struct_size_in_bits > 0 && expectedOffset != m_struct_size_in_bits)
+    {
+        assert(m_struct_size_in_bits > expectedOffset);
+        assert((m_struct_size_in_bits - expectedOffset) % 8 == 0);
+        Indent();
+        m_stream << "pad(" << (m_struct_size_in_bits - expectedOffset) / 8 << ");\n";
     }
 
     DecIndent();
@@ -179,9 +209,11 @@ void StructuredDataDefDumper::EndStruct()
     m_flags.m_empty_line_before_block = true;
     m_struct_properties.clear();
     m_struct_property_count = 0u;
+    m_struct_initial_offset = 0u;
+    m_struct_size_in_bits = 0u;
 }
 
-void StructuredDataDefDumper::BeginProperty(const std::string& propertyName, const size_t propertyOffset)
+void StructuredDataDefDumper::BeginProperty(const std::string& propertyName, const size_t propertyOffset, const size_t propertySizeInBits, const size_t alignment)
 {
     assert(m_flags.m_in_version);
     assert(m_block == Block::BLOCK_STRUCT);
@@ -191,6 +223,8 @@ void StructuredDataDefDumper::BeginProperty(const std::string& propertyName, con
 
     m_current_property_name = propertyName;
     m_current_property_offset = propertyOffset;
+    m_current_property_size_in_bits = propertySizeInBits;
+    m_current_property_alignment = alignment;
 
     m_block = Block::BLOCK_PROPERTY;
 }
@@ -221,12 +255,12 @@ void StructuredDataDefDumper::EndProperty()
     }
 
     ss << " /* Offset: " << m_current_property_offset / 8;
-    
+
     if (m_current_property_offset % 8 > 0)
         ss << " + " << m_current_property_offset % 8 << "bit";
-    
+
     ss << " */ ";
-    m_struct_properties.emplace_back(ss.str(), m_current_property_offset);
+    m_struct_properties.emplace_back(ss.str(), m_current_property_offset, m_current_property_size_in_bits, m_current_property_alignment);
 
     m_block = Block::BLOCK_STRUCT;
     m_current_property_array_specifiers.clear();

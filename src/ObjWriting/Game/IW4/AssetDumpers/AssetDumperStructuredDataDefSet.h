@@ -15,6 +15,8 @@ namespace IW4
         static StructuredDataType GetBaseType(const StructuredDataDef* def, StructuredDataType type);
         static std::vector<size_t> CalculateStructDumpingOrder(const StructuredDataDef* def);
         static void DumpEnum(StructuredDataDefDumper& dumper, int enumIndex, const StructuredDataEnum* _enum);
+        static size_t GetPropertySizeInBits(const StructuredDataStructProperty& property, const StructuredDataDef* def);
+        static size_t GetPropertyAlign(const StructuredDataStructProperty& property);
         static void DumpProperty(StructuredDataDefDumper& dumper, const StructuredDataStructProperty& property, const StructuredDataDef* def, int rootStructIndex);
         static void DumpStruct(StructuredDataDefDumper& dumper, size_t structIndex, const StructuredDataStruct* _struct, const StructuredDataDef* def, int rootStructIndex);
 

@@ -10,8 +10,10 @@ class StructuredDataDefDumper : AbstractTextDumper
     {
         std::string m_string_value;
         size_t m_offset;
+        size_t m_size_in_bits;
+        size_t m_alignment;
 
-        StructEntry(std::string stringValue, size_t offset);
+        StructEntry(std::string stringValue, size_t offset, size_t sizeInBits, size_t alignment);
     };
 
     enum class Block
@@ -34,8 +36,12 @@ class StructuredDataDefDumper : AbstractTextDumper
 
     std::vector<StructEntry> m_struct_properties;
     size_t m_struct_property_count;
+    size_t m_struct_initial_offset;
+    size_t m_struct_size_in_bits;
     std::string m_current_property_name;
     size_t m_current_property_offset;
+    size_t m_current_property_size_in_bits;
+    size_t m_current_property_alignment;
     std::string m_current_property_type_name;
     std::vector<std::string> m_current_property_array_specifiers;
 
@@ -51,9 +57,9 @@ public:
     void EndEnum();
     void WriteEnumEntry(const std::string& entryName, size_t entryValue);
 
-    void BeginStruct(const std::string& structName, size_t structPropertyCount);
+    void BeginStruct(const std::string& structName, size_t structPropertyCount, size_t structSizeInBits, size_t structInitialOffset);
     void EndStruct();
-    void BeginProperty(const std::string& propertyName, size_t propertyOffset);
+    void BeginProperty(const std::string& propertyName, size_t propertyOffset, size_t propertySizeInBits, size_t alignment);
     void AddPropertyArraySpecifier(const std::string& specifierName);
     void SetPropertyTypeName(const std::string& typeName);
     void EndProperty();
