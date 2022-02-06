@@ -218,6 +218,41 @@ namespace sdd::struct_scope_sequences
         }
     };
 
+    class SequencePadding final : public StructuredDataDefParser::sequence_t
+    {
+        static constexpr auto CAPTURE_PADDING_VALUE = 1;
+
+    public:
+        SequencePadding()
+        {
+            const SimpleMatcherFactory create(this);
+
+            AddMatchers({
+                create.Keyword("pad"),
+                create.Char('('),
+                create.Integer().Capture(CAPTURE_PADDING_VALUE),
+                create.Char(')'),
+                create.Char(';')
+            });
+        }
+
+    protected:
+        void ProcessMatch(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            const auto& paddingValueToken = result.NextCapture(CAPTURE_PADDING_VALUE);
+            const auto paddingValue = paddingValueToken.IntegerValue();
+
+            if (paddingValue <= 0)
+                throw ParsingException(paddingValueToken.GetPos(), "Padding value must be greater than 0");
+
+            // Align to next byte
+            state->m_current_struct_offset_in_bits = (state->m_current_struct_offset_in_bits + 7) / 8 * 8;
+
+            // Add padding value to current size
+            state->m_current_struct_offset_in_bits += static_cast<size_t>(paddingValue);
+        }
+    };
+
     class SequenceCloseStruct final : public StructuredDataDefParser::sequence_t
     {
     public:
@@ -259,7 +294,7 @@ using namespace sdd;
 using namespace struct_scope_sequences;
 
 StructuredDataStructScopeSequences::StructuredDataStructScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
-                                                                             std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
+                                                                       std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }
@@ -267,5 +302,6 @@ StructuredDataStructScopeSequences::StructuredDataStructScopeSequences(std::vect
 void StructuredDataStructScopeSequences::AddSequences() const
 {
     AddSequence(std::make_unique<SequenceCloseStruct>());
+    AddSequence(std::make_unique<SequencePadding>());
     AddSequence(std::make_unique<SequenceStructEntry>());
 }
