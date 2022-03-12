@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Domain/CommonStructuredDataDef.h"
+#include "StructuredDataDef/CommonStructuredDataDef.h"
 #include "Parsing/IParserLineStream.h"
 
 class StructuredDataDefReader

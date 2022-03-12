@@ -2,7 +2,7 @@
 
 #include "Utils/ClassUtils.h"
 #include "StructuredDataDefParserState.h"
-#include "Domain/CommonStructuredDataDef.h"
+#include "StructuredDataDef/CommonStructuredDataDef.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
 #include "Parsing/Impl/AbstractParser.h"

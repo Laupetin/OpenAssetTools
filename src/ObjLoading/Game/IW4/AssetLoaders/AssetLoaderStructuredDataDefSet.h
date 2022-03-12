@@ -2,7 +2,7 @@
 
 #include "Game/IW4/IW4.h"
 #include "AssetLoading/BasicAssetLoader.h"
-#include "Parsing/StructuredDataDef/Domain/CommonStructuredDataDef.h"
+#include "StructuredDataDef/CommonStructuredDataDef.h"
 #include "SearchPath/ISearchPath.h"
 
 namespace IW4

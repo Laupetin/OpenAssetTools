@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstddef>
 
-#include "Domain/CommonStructuredDataDef.h"
+#include "StructuredDataDef/CommonStructuredDataDef.h"
 
 namespace sdd
 {
