@@ -25,4 +25,6 @@ struct CommonStructuredDataEnum
     CommonStructuredDataEnum(std::string name, int reservedEntryCount);
 
     _NODISCARD size_t ElementCount() const;
+
+    void SortEntries();
 };

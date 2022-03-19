@@ -130,6 +130,8 @@ namespace sdd::def_scope_sequences
             CreateDefaultStructWhenNoStructsSpecified(state);
             SetDefSizeFromRootStruct(state);
 
+            // TODO: Calculate checksum here
+
             state->m_current_def = nullptr;
             state->m_def_types_by_name.clear();
             state->m_def_indexed_arrays.clear();

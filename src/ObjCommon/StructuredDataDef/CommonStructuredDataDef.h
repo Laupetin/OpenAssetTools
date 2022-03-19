@@ -21,4 +21,6 @@ public:
 
     CommonStructuredDataDef();
     explicit CommonStructuredDataDef(int version);
+
+    size_t CalculateChecksum() const;
 };

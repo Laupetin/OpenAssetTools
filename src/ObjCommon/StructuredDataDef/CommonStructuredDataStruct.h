@@ -25,4 +25,6 @@ struct CommonStructuredDataStruct
 
     CommonStructuredDataStruct();
     explicit CommonStructuredDataStruct(std::string name);
+
+    void SortProperties();
 };

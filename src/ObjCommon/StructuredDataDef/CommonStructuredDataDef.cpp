@@ -11,3 +11,9 @@ CommonStructuredDataDef::CommonStructuredDataDef(const int version)
       m_size_in_byte(0u)
 {
 }
+
+size_t CommonStructuredDataDef::CalculateChecksum() const
+{
+    // TODO: Implement
+    return 0u;
+}
