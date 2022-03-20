@@ -49,7 +49,7 @@ void StructuredDataDefDumperNew::DumpType(const CommonStructuredDataDef& def, Co
     typeName = "unknown";
 }
 
-void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructEntry& property, unsigned& currentOffsetInBit)
+void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit)
 {
     std::string typeName;
     std::vector<std::string> arraySpecifiersInReverseOrder;

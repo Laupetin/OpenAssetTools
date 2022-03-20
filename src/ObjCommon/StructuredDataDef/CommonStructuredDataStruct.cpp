@@ -6,18 +6,18 @@
 #include "CommonStructuredDataDef.h"
 #include "Utils/Endianness.h"
 
-CommonStructuredDataStructEntry::CommonStructuredDataStructEntry()
+CommonStructuredDataStructProperty::CommonStructuredDataStructProperty()
     : m_offset_in_bits(0u)
 {
 }
 
-CommonStructuredDataStructEntry::CommonStructuredDataStructEntry(std::string name)
+CommonStructuredDataStructProperty::CommonStructuredDataStructProperty(std::string name)
     : m_name(std::move(name)),
       m_offset_in_bits(0u)
 {
 }
 
-CommonStructuredDataStructEntry::CommonStructuredDataStructEntry(std::string name, const CommonStructuredDataType type, const size_t offsetInBits)
+CommonStructuredDataStructProperty::CommonStructuredDataStructProperty(std::string name, const CommonStructuredDataType type, const size_t offsetInBits)
     : m_name(std::move(name)),
       m_type(type),
       m_offset_in_bits(offsetInBits)
@@ -118,7 +118,7 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
 
 void CommonStructuredDataStruct::SortProperties()
 {
-    std::sort(m_properties.begin(), m_properties.end(), [](const CommonStructuredDataStructEntry& e1, const CommonStructuredDataStructEntry& e2)
+    std::sort(m_properties.begin(), m_properties.end(), [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
     {
         return e1.m_offset_in_bits < e2.m_offset_in_bits;
     });

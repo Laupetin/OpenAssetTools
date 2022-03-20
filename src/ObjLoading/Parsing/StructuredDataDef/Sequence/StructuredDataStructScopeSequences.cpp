@@ -281,7 +281,7 @@ namespace sdd::struct_scope_sequences
 
             // Sort the entries of the struct alphabetically
             std::sort(state->m_current_struct->m_properties.begin(), state->m_current_struct->m_properties.end(),
-                      [](const CommonStructuredDataStructEntry& e1, const CommonStructuredDataStructEntry& e2)
+                      [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
                       {
                           return e1.m_name < e2.m_name;
                       });

@@ -17,7 +17,7 @@ class StructuredDataDefDumperNew : AbstractTextDumper
 
     void DumpEnum(const CommonStructuredDataEnum& _enum);
     void DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiersInReverseOrder);
-    void DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructEntry& property, unsigned& currentOffsetInBit);
+    void DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit);
     void DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, size_t structIndex);
 
 public:
