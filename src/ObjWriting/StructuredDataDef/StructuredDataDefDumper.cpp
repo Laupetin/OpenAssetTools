@@ -5,19 +5,19 @@
 
 #include "Utils/Alignment.h"
 
-StructuredDataDefDumperNew::StructuredDataDefDumperNew(std::ostream& stream)
+StructuredDataDefDumper::StructuredDataDefDumper(std::ostream& stream)
     : AbstractTextDumper(stream),
       m_flags{}
 {
 }
 
-void StructuredDataDefDumperNew::WriteLineComment(const std::string& comment) const
+void StructuredDataDefDumper::WriteLineComment(const std::string& comment) const
 {
     Indent();
     m_stream << "// " << comment << "\n";
 }
 
-void StructuredDataDefDumperNew::DumpEnum(const CommonStructuredDataEnum& _enum)
+void StructuredDataDefDumper::DumpEnum(const CommonStructuredDataEnum& _enum)
 {
     Indent();
 
@@ -49,7 +49,7 @@ void StructuredDataDefDumperNew::DumpEnum(const CommonStructuredDataEnum& _enum)
     m_stream << "};\n"; // end enum
 }
 
-void StructuredDataDefDumperNew::DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiers) const
+void StructuredDataDefDumper::DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiers) const
 {
     while (type.m_category != CommonStructuredDataTypeCategory::UNKNOWN)
     {
@@ -131,7 +131,7 @@ void StructuredDataDefDumperNew::DumpType(const CommonStructuredDataDef& def, Co
     }
 }
 
-void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit) const
+void StructuredDataDefDumper::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit) const
 {
     std::string typeName;
     std::vector<std::string> arraySpecifiers;
@@ -178,7 +178,7 @@ void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def
     currentOffsetInBit += property.m_type.GetSizeInBits(def);
 }
 
-void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, const size_t structIndex)
+void StructuredDataDefDumper::DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, const size_t structIndex)
 {
 #ifdef STRUCTUREDDATADEF_DEBUG
     Indent();
@@ -212,7 +212,7 @@ void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataDef& def, 
     m_stream << "};\n"; // end struct
 }
 
-void StructuredDataDefDumperNew::DumpDef(const CommonStructuredDataDef& def)
+void StructuredDataDefDumper::DumpDef(const CommonStructuredDataDef& def)
 {
     if (m_flags.m_empty_line_before_definition)
         m_stream << "\n\n";

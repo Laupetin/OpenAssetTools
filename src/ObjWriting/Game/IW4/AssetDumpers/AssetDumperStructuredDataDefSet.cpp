@@ -189,10 +189,10 @@ void AssetDumperStructuredDataDefSet::DumpAsset(AssetDumpingContext& context, XA
     if (!assetFile || set->defs == nullptr)
         return;
 
-    StructuredDataDefDumperNew newDumper(*assetFile);
+    StructuredDataDefDumper dumper(*assetFile);
     for (auto i = 0u; i < set->defCount; i++)
     {
         const auto def = ConvertDef(&set->defs[i]);
-        newDumper.DumpDef(*def);
+        dumper.DumpDef(*def);
     }
 }

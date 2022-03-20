@@ -6,7 +6,7 @@
 #include "Dumping/AbstractTextDumper.h"
 #include "StructuredDataDef/CommonStructuredDataDef.h"
 
-class StructuredDataDefDumperNew : AbstractTextDumper
+class StructuredDataDefDumper : AbstractTextDumper
 {
     struct
     {
@@ -21,7 +21,7 @@ class StructuredDataDefDumperNew : AbstractTextDumper
     void DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, size_t structIndex);
 
 public:
-    explicit StructuredDataDefDumperNew(std::ostream& stream);
+    explicit StructuredDataDefDumper(std::ostream& stream);
 
     void DumpDef(const CommonStructuredDataDef& def);
 };
