@@ -1,5 +1,8 @@
 #include "StructuredDataDefDumper.h"
 
+#include <cassert>
+#include <sstream>
+
 StructuredDataDefDumperNew::StructuredDataDefDumperNew(std::ostream& stream)
     : AbstractTextDumper(stream),
       m_flags{}
@@ -44,32 +47,123 @@ void StructuredDataDefDumperNew::DumpEnum(const CommonStructuredDataEnum& _enum)
     m_stream << "};\n"; // end enum
 }
 
-void StructuredDataDefDumperNew::DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiersInReverseOrder)
+void StructuredDataDefDumperNew::DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiers) const
 {
-    typeName = "unknown";
+    while (type.m_category != CommonStructuredDataTypeCategory::UNKNOWN)
+    {
+        switch (type.m_category)
+        {
+        case CommonStructuredDataTypeCategory::INT:
+            typeName = "int";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::BYTE:
+            typeName = "byte";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::BOOL:
+            typeName = "bool";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::FLOAT:
+            typeName = "float";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::SHORT:
+            typeName = "short";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::STRING:
+            {
+                std::ostringstream ss;
+                ss << "string(" << type.m_info.string_length << ')';
+                typeName = ss.str();
+                type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            }
+            break;
+        case CommonStructuredDataTypeCategory::ENUM:
+            assert(type.m_info.type_index < def.m_enums.size());
+            if (type.m_info.type_index < def.m_enums.size())
+                typeName = def.m_enums[type.m_info.type_index]->m_name;
+            else
+                typeName = "unknown";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::STRUCT:
+            assert(type.m_info.type_index < def.m_structs.size());
+            if (type.m_info.type_index < def.m_structs.size())
+                typeName = def.m_structs[type.m_info.type_index]->m_name;
+            else
+                typeName = "unknown";
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
+            assert(type.m_info.type_index < def.m_indexed_arrays.size());
+            if (type.m_info.type_index < def.m_indexed_arrays.size())
+            {
+                const auto& indexArray = def.m_indexed_arrays[type.m_info.type_index];
+                arraySpecifiers.push_back(std::to_string(indexArray.m_element_count));
+                type = indexArray.m_array_type;
+            }
+            else
+                type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        case CommonStructuredDataTypeCategory::ENUM_ARRAY:
+            assert(type.m_info.type_index < def.m_enumed_arrays.size());
+            if (type.m_info.type_index < def.m_enumed_arrays.size())
+            {
+                const auto& enumedArray = def.m_enumed_arrays[type.m_info.type_index];
+
+                assert(enumedArray.m_enum_index < def.m_enums.size());
+                if (enumedArray.m_enum_index < def.m_enums.size())
+                    arraySpecifiers.push_back(def.m_enums[enumedArray.m_enum_index]->m_name);
+                type = enumedArray.m_array_type;
+            }
+            else
+                type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        default:
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            break;
+        }
+    }
 }
 
-void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit)
+void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit) const
 {
     std::string typeName;
-    std::vector<std::string> arraySpecifiersInReverseOrder;
+    std::vector<std::string> arraySpecifiers;
 
-    DumpType(def, property.m_type, typeName, arraySpecifiersInReverseOrder);
+    DumpType(def, property.m_type, typeName, arraySpecifiers);
 
     Indent();
     m_stream << typeName << ' ' << property.m_name;
 
-    for (auto ri = arraySpecifiersInReverseOrder.rbegin(); ri != arraySpecifiersInReverseOrder.rend(); ++ri)
+    for (auto ri = arraySpecifiers.begin(); ri != arraySpecifiers.end(); ++ri)
         m_stream << '[' << *ri << ']';
 
+
 #ifdef STRUCTUREDDATADEF_DEBUG
-    m_stream << " /* Offset: " << (property.m_offset_in_bits / 8) << " byte";
+    m_stream << "; // Offset: " << (property.m_offset_in_bits / 8) << " byte";
     if (property.m_offset_in_bits % 8 > 0)
         m_stream << " + " << (property.m_offset_in_bits % 8) << " bit";
-    m_stream << " */";
-#endif
 
+    const auto sizeInBits = property.m_type.GetSizeInBits(def);
+    m_stream << " | Size: ";
+
+    if (sizeInBits % 8 == 0)
+        m_stream << (sizeInBits / 8) << " byte";
+    else if (sizeInBits > 8)
+        m_stream << (sizeInBits / 8) << " byte + " << (sizeInBits % 8) << " bit";
+    else
+        m_stream << sizeInBits << " bit";
+
+    m_stream << " | Alignment: " << property.m_type.GetAlignmentInBits() << " bit";
+    m_stream << '\n';
+#else
     m_stream << ";\n";
+
+#endif
 }
 
 void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, const size_t structIndex)

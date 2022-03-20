@@ -420,14 +420,19 @@ void AssetDumperStructuredDataDefSet::ConvertEnum(CommonStructuredDataEnum* out,
     out->SortEntries();
 }
 
-void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDef* def, CommonStructuredDataStruct* out, const StructuredDataStruct* in, const size_t structIndex, const size_t rootIndex)
+void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDef* def, const StructuredDataDef* gameDef, CommonStructuredDataStruct* out, const StructuredDataStruct* in, const size_t structIndex)
 {
-    if (structIndex == rootIndex)
+    if (gameDef->rootType.type == DATA_STRUCT && structIndex == static_cast<size_t>(gameDef->rootType.u.structIndex))
+    {
         out->m_name = "root";
+        out->m_size_in_byte = gameDef->size;
+    }
     else
+    {
         out->m_name = "STRUCT_" + std::to_string(structIndex);
+        out->m_size_in_byte = static_cast<size_t>(std::max(in->size, 0));
+    }
 
-    out->m_size_in_byte = static_cast<size_t>(std::max(in->size, 0));
     out->m_bit_offset = in->bitOffset;
 
     out->m_properties.resize(static_cast<size_t>(std::max(in->propertyCount, 0)));
@@ -463,7 +468,10 @@ void AssetDumperStructuredDataDefSet::ConvertEnumedArray(const CommonStructuredD
     out->m_enum_index = std::max(std::min(static_cast<size_t>(in->enumIndex), def->m_enums.size() - 1u), 0u);
 
     if (def->m_enums.empty())
+    {
+        assert(false);
         return;
+    }
 
     out->m_element_count = def->m_enums[out->m_enum_index]->ElementCount();
 }
@@ -490,7 +498,7 @@ std::unique_ptr<CommonStructuredDataDef> AssetDumperStructuredDataDefSet::Conver
     for (auto i = 0u; i < out->m_structs.size(); i++)
     {
         auto _struct = std::make_unique<CommonStructuredDataStruct>();
-        ConvertStruct(out.get(), _struct.get(), &in->structs[i], i, static_cast<size_t>(in->rootType.u.structIndex));
+        ConvertStruct(out.get(), in, _struct.get(), &in->structs[i], i);
         out->m_structs[i] = std::move(_struct);
     }
     for (auto i = 0u; i < out->m_indexed_arrays.size(); i++)

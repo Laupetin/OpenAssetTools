@@ -23,7 +23,7 @@ namespace IW4
 
         static CommonStructuredDataType ConvertType(const CommonStructuredDataDef* def, const StructuredDataType in);
         static void ConvertEnum(CommonStructuredDataEnum* out, const StructuredDataEnum* in, size_t enumIndex);
-        static void ConvertStruct(const CommonStructuredDataDef* def, CommonStructuredDataStruct* out, const StructuredDataStruct* in, const size_t structIndex, const size_t rootIndex);
+        static void ConvertStruct(const CommonStructuredDataDef* def, const StructuredDataDef* gameDef, CommonStructuredDataStruct* out, const StructuredDataStruct* in, const size_t structIndex);
         static void ConvertIndexedArray(const CommonStructuredDataDef* def, CommonStructuredDataIndexedArray* out, const StructuredDataIndexedArray* in);
         static void ConvertEnumedArray(const CommonStructuredDataDef* def, CommonStructuredDataEnumedArray* out, const StructuredDataEnumedArray* in);
         static std::unique_ptr<CommonStructuredDataDef> ConvertDef(const StructuredDataDef* in);

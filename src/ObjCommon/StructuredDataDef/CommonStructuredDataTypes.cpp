@@ -1,5 +1,9 @@
 #include "CommonStructuredDataTypes.h"
 
+#include <cassert>
+
+#include "CommonStructuredDataDef.h"
+
 CommonStructuredDataType::CommonStructuredDataType()
     : m_category(CommonStructuredDataTypeCategory::UNKNOWN),
       m_info({0})
@@ -16,6 +20,62 @@ CommonStructuredDataType::CommonStructuredDataType(const CommonStructuredDataTyp
     : m_category(category),
       m_info({extraInfo})
 {
+}
+
+size_t CommonStructuredDataType::GetAlignmentInBits() const
+{
+    return m_category == CommonStructuredDataTypeCategory::BOOL ? 0u : 8u;
+}
+
+size_t CommonStructuredDataType::GetSizeInBits(const CommonStructuredDataDef& def) const
+{
+    switch (m_category)
+    {
+    case CommonStructuredDataTypeCategory::INT:
+    case CommonStructuredDataTypeCategory::FLOAT:
+        return 32u;
+    case CommonStructuredDataTypeCategory::BYTE:
+        return 8u;
+    case CommonStructuredDataTypeCategory::BOOL:
+        return 1u;
+    case CommonStructuredDataTypeCategory::ENUM:
+    case CommonStructuredDataTypeCategory::SHORT:
+        return 16u;
+    case CommonStructuredDataTypeCategory::STRING:
+        return m_info.string_length * 8;
+    case CommonStructuredDataTypeCategory::STRUCT:
+        if (m_info.type_index >= def.m_structs.size())
+        {
+            assert(false);
+            return 0u;
+        }
+        return def.m_structs[m_info.type_index]->m_size_in_byte * 8u;
+    case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
+        {
+            if (m_info.type_index >= def.m_indexed_arrays.size())
+            {
+                assert(false);
+                return 0u;
+            }
+            const auto& indexedArray = def.m_indexed_arrays[m_info.type_index];
+            return indexedArray.m_element_size_in_bits * indexedArray.m_element_count;
+        }
+    case CommonStructuredDataTypeCategory::ENUM_ARRAY:
+    {
+        if (m_info.type_index >= def.m_enumed_arrays.size())
+        {
+            assert(false);
+            return 0u;
+        }
+        const auto& enumedArray = def.m_enumed_arrays[m_info.type_index];
+        return enumedArray.m_element_size_in_bits * enumedArray.m_element_count;
+    }
+
+    case CommonStructuredDataTypeCategory::UNKNOWN:
+    default:
+        assert(false);
+        return 0u;
+    }
 }
 
 bool operator<(const CommonStructuredDataType& lhs, const CommonStructuredDataType& rhs)

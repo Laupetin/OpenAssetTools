@@ -2,6 +2,8 @@
 
 #include <cstddef>
 
+#include "Utils/ClassUtils.h"
+
 enum class CommonStructuredDataTypeCategory
 {
     UNKNOWN,
@@ -23,6 +25,7 @@ union CommonStructuredDataTypeExtraInfo
     size_t type_index;
 };
 
+class CommonStructuredDataDef;
 struct CommonStructuredDataType
 {
     CommonStructuredDataTypeCategory m_category;
@@ -31,6 +34,9 @@ struct CommonStructuredDataType
     CommonStructuredDataType();
     explicit CommonStructuredDataType(CommonStructuredDataTypeCategory category);
     CommonStructuredDataType(CommonStructuredDataTypeCategory category, size_t extraInfo);
+
+    _NODISCARD size_t GetAlignmentInBits() const;
+    _NODISCARD size_t GetSizeInBits(const CommonStructuredDataDef& def) const;
 
     friend bool operator<(const CommonStructuredDataType& lhs, const CommonStructuredDataType& rhs);
     friend bool operator<=(const CommonStructuredDataType& lhs, const CommonStructuredDataType& rhs);
