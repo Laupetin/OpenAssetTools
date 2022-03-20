@@ -3,6 +3,8 @@
 #include <cassert>
 #include <sstream>
 
+#include "Utils/Alignment.h"
+
 StructuredDataDefDumperNew::StructuredDataDefDumperNew(std::ostream& stream)
     : AbstractTextDumper(stream),
       m_flags{}
@@ -134,6 +136,16 @@ void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def
     std::string typeName;
     std::vector<std::string> arraySpecifiers;
 
+    currentOffsetInBit = utils::Align(currentOffsetInBit, property.m_type.GetAlignmentInBits());
+    assert(currentOffsetInBit <= property.m_offset_in_bits);
+    if (currentOffsetInBit < property.m_offset_in_bits)
+    {
+        assert((property.m_offset_in_bits - currentOffsetInBit) % 8 == 0);
+        Indent();
+        m_stream << "pad(" << ((property.m_offset_in_bits - currentOffsetInBit) / 8) << ");\n";
+        currentOffsetInBit = property.m_offset_in_bits;
+    }
+
     DumpType(def, property.m_type, typeName, arraySpecifiers);
 
     Indent();
@@ -141,7 +153,6 @@ void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def
 
     for (auto ri = arraySpecifiers.begin(); ri != arraySpecifiers.end(); ++ri)
         m_stream << '[' << *ri << ']';
-
 
 #ifdef STRUCTUREDDATADEF_DEBUG
     m_stream << "; // Offset: " << (property.m_offset_in_bits / 8) << " byte";
@@ -162,8 +173,9 @@ void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def
     m_stream << '\n';
 #else
     m_stream << ";\n";
-
 #endif
+
+    currentOffsetInBit += property.m_type.GetSizeInBits(def);
 }
 
 void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, const size_t structIndex)
@@ -187,6 +199,13 @@ void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataDef& def, 
     auto currentOffsetInBit = def.m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT && def.m_root_type.m_info.type_index == structIndex ? 64u : 0u;
     for (const auto& property : _struct.m_properties)
         DumpProperty(def, property, currentOffsetInBit);
+
+    currentOffsetInBit = utils::Align(currentOffsetInBit, 8u);
+    if ((currentOffsetInBit / 8) < _struct.m_size_in_byte)
+    {
+        Indent();
+        m_stream << "pad(" << (_struct.m_size_in_byte - (currentOffsetInBit / 8)) << ");\n";
+    }
 
     DecIndent();
     Indent();
