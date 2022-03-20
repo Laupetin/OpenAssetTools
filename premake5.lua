@@ -57,6 +57,10 @@ workspace "OpenAssetTools"
         "__STDC_WANT_LIB_EXT1__=1",
         "_CRT_SECURE_NO_WARNINGS"
     }
+    
+    filter "options:debug-structureddatadef"
+        defines { "STRUCTUREDDATADEF_DEBUG" }
+    filter {}
 
 -- ========================
 -- ThirdParty

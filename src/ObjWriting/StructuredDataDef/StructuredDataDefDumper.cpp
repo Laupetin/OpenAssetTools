@@ -46,6 +46,13 @@ void StructuredDataDefDumperNew::DumpEnum(const CommonStructuredDataEnum& _enum)
 
 void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataStruct& _struct)
 {
+#ifdef STRUCTUREDDATADEF_DEBUG
+    Indent();
+    m_stream << "// BitOffset: " << _struct.m_bit_offset << "\n";
+    Indent();
+    m_stream << "// Size (Byte): " << _struct.m_size_in_byte << "\n";
+#endif
+
     Indent();
 
     m_stream << "struct " << _struct.m_name << "\n";
@@ -77,6 +84,11 @@ void StructuredDataDefDumperNew::DumpDef(const CommonStructuredDataDef& def)
         m_stream << "// Calculated checksum did not match checksum in file\n// Overriding checksum to match original value\n";
 
     m_stream << "// ====================\n";
+
+#ifdef STRUCTUREDDATADEF_DEBUG
+    m_stream << "// Size (Byte): " << def.m_size_in_byte << "\n";
+    m_stream << "// Checksum: " << def.m_checksum << "\n";
+#endif
 
     m_stream << "version " << def.m_version << "\n{\n";
     IncIndent();
