@@ -1,5 +1,7 @@
 #pragma once
 #include <ostream>
+#include <string>
+#include <vector>
 
 #include "Dumping/AbstractTextDumper.h"
 #include "StructuredDataDef/CommonStructuredDataDef.h"
@@ -14,7 +16,9 @@ class StructuredDataDefDumperNew : AbstractTextDumper
     void WriteLineComment(const std::string& comment) const;
 
     void DumpEnum(const CommonStructuredDataEnum& _enum);
-    void DumpStruct(const CommonStructuredDataStruct& _struct);
+    void DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiersInReverseOrder);
+    void DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructEntry& property, unsigned& currentOffsetInBit);
+    void DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, size_t structIndex);
 
 public:
     explicit StructuredDataDefDumperNew(std::ostream& stream);

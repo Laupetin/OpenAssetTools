@@ -29,7 +29,7 @@ void StructuredDataDefDumperNew::DumpEnum(const CommonStructuredDataEnum& _enum)
     IncIndent();
 
     const auto entryCount = _enum.m_entries.size();
-    for(auto i = 0u; i < entryCount; i++)
+    for (auto i = 0u; i < entryCount; i++)
     {
         Indent();
         m_stream << "\"" << _enum.m_entries[i].m_name << "\"";
@@ -44,7 +44,35 @@ void StructuredDataDefDumperNew::DumpEnum(const CommonStructuredDataEnum& _enum)
     m_stream << "};\n"; // end enum
 }
 
-void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataStruct& _struct)
+void StructuredDataDefDumperNew::DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiersInReverseOrder)
+{
+    typeName = "unknown";
+}
+
+void StructuredDataDefDumperNew::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructEntry& property, unsigned& currentOffsetInBit)
+{
+    std::string typeName;
+    std::vector<std::string> arraySpecifiersInReverseOrder;
+
+    DumpType(def, property.m_type, typeName, arraySpecifiersInReverseOrder);
+
+    Indent();
+    m_stream << typeName << ' ' << property.m_name;
+
+    for (auto ri = arraySpecifiersInReverseOrder.rbegin(); ri != arraySpecifiersInReverseOrder.rend(); ++ri)
+        m_stream << '[' << *ri << ']';
+
+#ifdef STRUCTUREDDATADEF_DEBUG
+    m_stream << " /* Offset: " << (property.m_offset_in_bits / 8) << " byte";
+    if (property.m_offset_in_bits % 8 > 0)
+        m_stream << " + " << (property.m_offset_in_bits % 8) << " bit";
+    m_stream << " */";
+#endif
+
+    m_stream << ";\n";
+}
+
+void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataDef& def, const CommonStructuredDataStruct& _struct, const size_t structIndex)
 {
 #ifdef STRUCTUREDDATADEF_DEBUG
     Indent();
@@ -62,6 +90,9 @@ void StructuredDataDefDumperNew::DumpStruct(const CommonStructuredDataStruct& _s
 
     IncIndent();
 
+    auto currentOffsetInBit = def.m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT && def.m_root_type.m_info.type_index == structIndex ? 64u : 0u;
+    for (const auto& property : _struct.m_properties)
+        DumpProperty(def, property, currentOffsetInBit);
 
     DecIndent();
     Indent();
@@ -102,7 +133,7 @@ void StructuredDataDefDumperNew::DumpDef(const CommonStructuredDataDef& def)
         insertEmptyLine = true;
     }
 
-    for(const auto& _enum : def.m_enums)
+    for (const auto& _enum : def.m_enums)
     {
         if (insertEmptyLine)
             m_stream << "\n";
@@ -112,14 +143,15 @@ void StructuredDataDefDumperNew::DumpDef(const CommonStructuredDataDef& def)
         DumpEnum(*_enum);
     }
 
-    for(const auto& _struct : def.m_structs)
+    auto structIndex = 0u;
+    for (const auto& _struct : def.m_structs)
     {
         if (insertEmptyLine)
             m_stream << "\n";
         else
             insertEmptyLine = true;
 
-        DumpStruct(*_struct);
+        DumpStruct(def, *_struct, structIndex++);
     }
 
     DecIndent();
