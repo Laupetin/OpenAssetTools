@@ -401,7 +401,11 @@ CommonStructuredDataType AssetDumperStructuredDataDefSet::ConvertType(const Comm
 void AssetDumperStructuredDataDefSet::ConvertEnum(CommonStructuredDataEnum* out, const StructuredDataEnum* in, const size_t enumIndex)
 {
     out->m_name = "ENUM_" + std::to_string(enumIndex);
-    out->m_reserved_entry_count = std::max(in->reservedEntryCount, 0);
+
+    if (in->reservedEntryCount > 0 && in->reservedEntryCount != in->entryCount)
+        out->m_reserved_entry_count = std::max(in->reservedEntryCount, 0);
+    else
+        out->m_reserved_entry_count = -1;
 
     out->m_entries.resize(static_cast<size_t>(std::max(in->entryCount, 0)));
     for(auto i = 0u; i < out->m_entries.size(); i++)

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "Utils/ClassUtils.h"
 #include "CommonStructuredDataTypes.h"
 
 struct CommonStructuredDataStructEntry
@@ -16,6 +17,7 @@ struct CommonStructuredDataStructEntry
     CommonStructuredDataStructEntry(std::string name, CommonStructuredDataType type, size_t offsetInBits);
 };
 
+class CommonStructuredDataDef;
 struct CommonStructuredDataStruct
 {
     std::string m_name;
@@ -25,6 +27,8 @@ struct CommonStructuredDataStruct
 
     CommonStructuredDataStruct();
     explicit CommonStructuredDataStruct(std::string name);
+
+    _NODISCARD uint32_t CalculateChecksum(const CommonStructuredDataDef& def, uint32_t initialValue) const;
 
     void SortProperties();
 };

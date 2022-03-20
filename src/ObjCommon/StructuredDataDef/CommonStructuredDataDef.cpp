@@ -12,8 +12,13 @@ CommonStructuredDataDef::CommonStructuredDataDef(const int version)
 {
 }
 
-size_t CommonStructuredDataDef::CalculateChecksum() const
+uint32_t CommonStructuredDataDef::CalculateChecksum() const
 {
-    // TODO: Implement
-    return 0u;
+    auto checksum = 0u;
+    for (const auto& _enum : m_enums)
+        checksum = _enum->CalculateChecksum(checksum);
+    for (const auto& _struct : m_structs)
+        checksum = _struct->CalculateChecksum(*this, checksum);
+
+    return checksum;
 }

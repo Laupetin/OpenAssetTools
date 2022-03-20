@@ -1,6 +1,9 @@
 #include "CommonStructuredDataEnum.h"
 
 #include <algorithm>
+#include <zlib.h>
+
+#include "Utils/Endianness.h"
 
 CommonStructuredDataEnumEntry::CommonStructuredDataEnumEntry()
     : m_value(0u)
@@ -33,6 +36,26 @@ CommonStructuredDataEnum::CommonStructuredDataEnum(std::string name, const int r
 size_t CommonStructuredDataEnum::ElementCount() const
 {
     return m_reserved_entry_count > 0 ? static_cast<size_t>(m_reserved_entry_count) : m_entries.size();
+}
+
+uint32_t CommonStructuredDataEnum::CalculateChecksum(const uint32_t initialValue) const
+{
+    auto checksum = initialValue;
+
+    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(m_name.c_str()), m_name.size() + 1);
+
+    const auto littleEndianElementCount = endianness::ToLittleEndian(ElementCount());
+    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianElementCount), sizeof(littleEndianElementCount));
+
+    for(const auto& entry : m_entries)
+    {
+        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(entry.m_name.c_str()), entry.m_name.size() + 1);
+
+        const auto littleEndianValue = endianness::ToLittleEndian(entry.m_value);
+        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianValue), sizeof(littleEndianValue));
+    }
+
+    return checksum;
 }
 
 void CommonStructuredDataEnum::SortEntries()
