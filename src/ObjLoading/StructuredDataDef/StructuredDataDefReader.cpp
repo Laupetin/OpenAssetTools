@@ -1,6 +1,6 @@
 #include "StructuredDataDefReader.h"
 
-#include "StructuredDataDefParser.h"
+#include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"

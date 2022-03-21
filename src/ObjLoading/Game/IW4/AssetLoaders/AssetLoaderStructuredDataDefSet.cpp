@@ -4,7 +4,7 @@
 
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
-#include "Parsing/StructuredDataDef/StructuredDataDefReader.h"
+#include "StructuredDataDef/StructuredDataDefReader.h"
 #include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;

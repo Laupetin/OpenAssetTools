@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Parsing/Sequence/AbstractScopeSequenceHolder.h"
-#include "Parsing/StructuredDataDef/StructuredDataDefParser.h"
+#include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
 
 namespace sdd
 {
