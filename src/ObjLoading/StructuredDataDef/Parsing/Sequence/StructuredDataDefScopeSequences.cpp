@@ -87,6 +87,32 @@ namespace sdd::def_scope_sequences
         }
     };
 
+    class SequenceChecksumOverride final : public StructuredDataDefParser::sequence_t
+    {
+        static constexpr auto CAPTURE_VALUE = 1;
+
+    public:
+        SequenceChecksumOverride()
+        {
+            const SimpleMatcherFactory create(this);
+
+            AddMatchers({
+                create.Keyword("checksumoverride"),
+                create.Integer().Capture(CAPTURE_VALUE),
+                create.Char(';')
+            });
+        }
+
+    protected:
+        void ProcessMatch(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result) const override
+        {
+            assert(state->m_current_def);
+
+            state->m_checksum_overriden = true;
+            state->m_checksum_override_value = result.NextCapture(CAPTURE_VALUE).IntegerValue();
+        }
+    };
+
     class SequenceCloseScope final : public StructuredDataDefParser::sequence_t
     {
         static constexpr auto CAPTURE_NAME = 1;
@@ -130,12 +156,17 @@ namespace sdd::def_scope_sequences
             CreateDefaultStructWhenNoStructsSpecified(state);
             SetDefSizeFromRootStruct(state);
 
-            // TODO: Calculate checksum here
+            if(!state->m_checksum_overriden)
+                state->m_current_def->m_checksum = state->m_current_def->CalculateChecksum();
+            else
+                state->m_current_def->m_checksum = state->m_checksum_override_value;
 
             state->m_current_def = nullptr;
             state->m_def_types_by_name.clear();
             state->m_def_indexed_arrays.clear();
             state->m_def_enumed_arrays.clear();
+            state->m_checksum_overriden = false;
+            state->m_checksum_override_value = 0u;
         }
     };
 }
@@ -154,4 +185,5 @@ void StructuredDataDefScopeSequences::AddSequences() const
     AddSequence(std::make_unique<SequenceCloseScope>());
     AddSequence(std::make_unique<SequenceEnum>());
     AddSequence(std::make_unique<SequenceStruct>());
+    AddSequence(std::make_unique<SequenceChecksumOverride>());
 }

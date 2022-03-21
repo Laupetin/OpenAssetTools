@@ -19,6 +19,9 @@ namespace sdd
         CommonStructuredDataStruct* m_current_struct;
         size_t m_current_struct_offset_in_bits;
 
+        size_t m_checksum_override_value;
+        bool m_checksum_overriden;
+
         std::map<std::string, CommonStructuredDataType> m_def_types_by_name;
         std::map<CommonStructuredDataIndexedArray, size_t> m_def_indexed_arrays;
         std::map<CommonStructuredDataEnumedArray, size_t> m_def_enumed_arrays;
