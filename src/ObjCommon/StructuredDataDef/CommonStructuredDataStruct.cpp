@@ -96,7 +96,7 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
                 {
                     const auto& enumedArray = def.m_enumed_arrays[currentType.m_info.type_index];
 
-                    if(enumedArray.m_enum_index < def.m_enums.size())
+                    if (enumedArray.m_enum_index < def.m_enums.size())
                     {
                         const auto& _enum = *def.m_enums[enumedArray.m_enum_index];
                         checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_enum.m_name.c_str()), _enum.m_name.size() + 1);
@@ -116,10 +116,18 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
     return checksum;
 }
 
-void CommonStructuredDataStruct::SortProperties()
+void CommonStructuredDataStruct::SortPropertiesByOffset()
 {
     std::sort(m_properties.begin(), m_properties.end(), [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
     {
         return e1.m_offset_in_bits < e2.m_offset_in_bits;
+    });
+}
+
+void CommonStructuredDataStruct::SortPropertiesByName()
+{
+    std::sort(m_properties.begin(), m_properties.end(), [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
+    {
+        return e1.m_name < e2.m_name;
     });
 }

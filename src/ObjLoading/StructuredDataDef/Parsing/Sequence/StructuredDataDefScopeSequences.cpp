@@ -31,7 +31,9 @@ namespace sdd::def_scope_sequences
         {
             assert(state->m_current_def);
 
-            auto newEnum = std::make_unique<CommonStructuredDataEnum>(result.NextCapture(CAPTURE_NAME).IdentifierValue());
+            const auto& nameToken = result.NextCapture(CAPTURE_NAME);
+            auto newEnum = std::make_unique<CommonStructuredDataEnum>(nameToken.IdentifierValue());
+            const auto newEnumIndex = state->m_current_def->m_enums.size();
             if (result.HasNextCapture(CAPTURE_RESERVED_COUNT))
             {
                 const auto& reservedCountToken = result.NextCapture(CAPTURE_RESERVED_COUNT);
@@ -41,8 +43,18 @@ namespace sdd::def_scope_sequences
                     throw ParsingException(reservedCountToken.GetPos(), "Reserved enum entry count must be greater than zero");
             }
 
+            const auto existingType = state->m_def_types_by_name.find(newEnum->m_name);
+            if (existingType != state->m_def_types_by_name.end())
+            {
+                if (existingType->second.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                    existingType->second = CommonStructuredDataType(CommonStructuredDataTypeCategory::ENUM, newEnumIndex);
+                else
+                    throw ParsingException(nameToken.GetPos(), "Type with this name has already been defined");
+            }
+            else
+                state->m_def_types_by_name.emplace(newEnum->m_name, CommonStructuredDataType(CommonStructuredDataTypeCategory::ENUM, newEnumIndex));
+
             state->m_current_enum = newEnum.get();
-            state->m_def_types_by_name.emplace(newEnum->m_name, CommonStructuredDataType(CommonStructuredDataTypeCategory::ENUM, state->m_current_def->m_enums.size()));
             state->m_current_def->m_enums.emplace_back(std::move(newEnum));
         }
     };
@@ -68,22 +80,33 @@ namespace sdd::def_scope_sequences
         {
             assert(state->m_current_def);
 
-            auto newStruct = std::make_unique<CommonStructuredDataStruct>(result.NextCapture(CAPTURE_NAME).IdentifierValue());
+            const auto& nameToken = result.NextCapture(CAPTURE_NAME);
+            auto newStruct = std::make_unique<CommonStructuredDataStruct>(nameToken.IdentifierValue());
             auto* newStructPtr = newStruct.get();
             const auto newStructIndex = state->m_current_def->m_structs.size();
 
+            const auto existingType = state->m_def_types_by_name.find(newStruct->m_name);
+            if (existingType != state->m_def_types_by_name.end())
+            {
+                if (existingType->second.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                    existingType->second = CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex);
+                else
+                    throw ParsingException(nameToken.GetPos(), "Type with this name has already been defined");
+            }
+            else
+                state->m_def_types_by_name.emplace(newStruct->m_name, CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex));
+
             state->m_current_struct = newStructPtr;
-            state->m_def_types_by_name.emplace(newStruct->m_name, CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex));
             state->m_current_def->m_structs.emplace_back(std::move(newStruct));
-            state->m_current_struct_offset_in_bits = 0;
+            state->m_current_struct_padding_offset = 0;
 
             if (newStructPtr->m_name == "root")
             {
-                state->m_current_struct_offset_in_bits = 64u;
+                state->m_current_struct_padding_offset = 64u;
                 state->m_current_def->m_root_type = CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex);
             }
             else
-                state->m_current_struct_offset_in_bits = 0;
+                state->m_current_struct_padding_offset = 0;
         }
     };
 
@@ -154,9 +177,11 @@ namespace sdd::def_scope_sequences
             assert(state->m_current_struct == nullptr);
 
             CreateDefaultStructWhenNoStructsSpecified(state);
+            // TODO: Replace all unknown type references
+            // TODO: Calculate struct sizes and property offsets
             SetDefSizeFromRootStruct(state);
 
-            if(!state->m_checksum_overriden)
+            if (!state->m_checksum_overriden)
                 state->m_current_def->m_checksum = state->m_current_def->CalculateChecksum();
             else
                 state->m_current_def->m_checksum = state->m_checksum_override_value;
@@ -175,7 +200,7 @@ using namespace sdd;
 using namespace def_scope_sequences;
 
 StructuredDataDefScopeSequences::StructuredDataDefScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
-                                                                       std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
+                                                                 std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }

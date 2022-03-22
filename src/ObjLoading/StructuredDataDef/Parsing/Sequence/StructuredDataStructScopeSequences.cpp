@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "Utils/Alignment.h"
 
 namespace sdd::struct_scope_sequences
 {
@@ -65,69 +66,45 @@ namespace sdd::struct_scope_sequences
         }
 
     private:
-        static CommonStructuredDataType ProcessType(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result, size_t& currentSize, size_t& currentBitAlign)
+        static CommonStructuredDataType ProcessType(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result)
         {
             const auto typeTag = result.NextTag();
 
             switch (typeTag)
             {
             case TAG_TYPE_INT:
-                currentSize = 32;
-                currentBitAlign = 8;
                 return CommonStructuredDataType(CommonStructuredDataTypeCategory::INT);
             case TAG_TYPE_BYTE:
-                currentSize = 8;
-                currentBitAlign = 8;
                 return CommonStructuredDataType(CommonStructuredDataTypeCategory::BYTE);
             case TAG_TYPE_BOOL:
-                currentSize = 1;
-                currentBitAlign = 0;
                 return CommonStructuredDataType(CommonStructuredDataTypeCategory::BOOL);
             case TAG_TYPE_FLOAT:
-                currentSize = 32;
-                currentBitAlign = 8;
                 return CommonStructuredDataType(CommonStructuredDataTypeCategory::FLOAT);
             case TAG_TYPE_SHORT:
-                currentSize = 16;
-                currentBitAlign = 8;
                 return CommonStructuredDataType(CommonStructuredDataTypeCategory::SHORT);
             case TAG_TYPE_STRING:
                 {
-                    currentBitAlign = 8;
                     const auto& stringLengthToken = result.NextCapture(CAPTURE_STRING_LENGTH);
                     const auto stringLength = stringLengthToken.IntegerValue();
 
                     if (stringLength <= 0)
                         throw ParsingException(stringLengthToken.GetPos(), "String length must be greater than zero");
 
-                    currentSize = stringLength * 8;
                     return {CommonStructuredDataTypeCategory::STRING, static_cast<size_t>(stringLength)};
                 }
             case TAG_TYPE_NAMED:
                 {
-                    currentBitAlign = 8;
                     const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE_NAME);
                     const auto typeName = typeNameToken.IdentifierValue();
 
                     const auto existingType = state->m_def_types_by_name.find(typeName);
                     if (existingType == state->m_def_types_by_name.end())
-                        throw ParsingException(typeNameToken.GetPos(), "No type defined under this name");
-
-                    if (existingType->second.m_category == CommonStructuredDataTypeCategory::STRUCT)
                     {
-                        assert(existingType->second.m_info.type_index < state->m_current_def->m_structs.size());
-                        const auto* _struct = state->m_current_def->m_structs[existingType->second.m_info.type_index].get();
-                        currentSize = _struct->m_size_in_byte * 8;
-                    }
-                    else if (existingType->second.m_category == CommonStructuredDataTypeCategory::ENUM)
-                    {
-                        assert(existingType->second.m_info.type_index < state->m_current_def->m_enums.size());
-                        currentSize = 16;
-                    }
-                    else
-                    {
-                        assert(false);
-                        currentSize = 0;
+                        const auto undefinedTypeIndex = state->m_undefined_types.size();
+                        const CommonStructuredDataType undefinedType(CommonStructuredDataTypeCategory::UNKNOWN, undefinedTypeIndex);
+                        state->m_undefined_types.emplace_back(typeName, typeNameToken.GetPos());
+                        state->m_def_types_by_name.emplace(std::make_pair(typeName, undefinedType));
+                        return undefinedType;
                     }
 
                     return existingType->second;
@@ -137,19 +114,14 @@ namespace sdd::struct_scope_sequences
             }
         }
 
-        static CommonStructuredDataType ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataType currentType,
-                                                     size_t& currentSize, size_t& currentBitAlign)
+        static CommonStructuredDataType ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataType currentType)
         {
-            currentBitAlign = 8;
-
             if (arrayToken.m_type == SimpleParserValueType::INTEGER)
             {
                 const auto arrayElementCount = arrayToken.IntegerValue();
 
                 if (arrayElementCount <= 0)
                     throw ParsingException(arrayToken.GetPos(), "Array size must be greater than zero");
-
-                currentSize *= arrayElementCount;
 
                 const CommonStructuredDataIndexedArray indexedArray(currentType, arrayElementCount);
 
@@ -177,7 +149,6 @@ namespace sdd::struct_scope_sequences
 
                 const auto enumElementCount = _enum->ElementCount();
                 assert(enumElementCount > 0);
-                currentSize *= enumElementCount;
 
                 const CommonStructuredDataEnumedArray enumedArray(currentType, existingType->second.m_info.type_index);
 
@@ -199,22 +170,16 @@ namespace sdd::struct_scope_sequences
             assert(state->m_current_def != nullptr);
             assert(state->m_current_struct != nullptr);
 
-            size_t currentSize = 0;
-            size_t currentAlign = 0;
-            auto currentType = ProcessType(state, result, currentSize, currentAlign);
+            auto currentType = ProcessType(state, result);
 
             std::vector<std::reference_wrapper<const SimpleParserValue>> arrayTokens;
             while (result.HasNextCapture(CAPTURE_ARRAY_SIZE))
                 arrayTokens.emplace_back(result.NextCapture(CAPTURE_ARRAY_SIZE));
 
             for (auto i = arrayTokens.rbegin(); i != arrayTokens.rend(); ++i)
-                currentType = ProcessArray(state, i->get(), currentType, currentSize, currentAlign);
+                currentType = ProcessArray(state, i->get(), currentType);
 
-            if (currentAlign > 0)
-                state->m_current_struct_offset_in_bits = (state->m_current_struct_offset_in_bits + currentAlign - 1) / currentAlign * currentAlign;
-
-            state->m_current_struct->m_properties.emplace_back(result.NextCapture(CAPTURE_ENTRY_NAME).IdentifierValue(), currentType, state->m_current_struct_offset_in_bits);
-            state->m_current_struct_offset_in_bits += currentSize;
+            state->m_current_struct->m_properties.emplace_back(result.NextCapture(CAPTURE_ENTRY_NAME).IdentifierValue(), currentType, state->m_current_struct_padding_offset);
         }
     };
 
@@ -245,11 +210,7 @@ namespace sdd::struct_scope_sequences
             if (paddingValue <= 0)
                 throw ParsingException(paddingValueToken.GetPos(), "Padding value must be greater than 0");
 
-            // Align to next byte
-            state->m_current_struct_offset_in_bits = (state->m_current_struct_offset_in_bits + 7) / 8 * 8;
-
-            // Add padding value to current size
-            state->m_current_struct_offset_in_bits += static_cast<size_t>(paddingValue);
+            state->m_current_struct_padding_offset += paddingValue * 8;
         }
     };
 
@@ -271,20 +232,11 @@ namespace sdd::struct_scope_sequences
         {
             assert(state->m_current_struct != nullptr);
 
-            // Set the size of the finalized struct
-            if (!state->m_current_struct->m_properties.empty())
-                state->m_current_struct->m_size_in_byte = (state->m_current_struct_offset_in_bits + 7) / 8;
-            else
-                state->m_current_struct->m_size_in_byte = 0u;
-
-            state->m_current_struct_offset_in_bits = 0u;
+            state->m_current_struct->m_size_in_byte = utils::Align(state->m_current_struct_padding_offset, 8u) / 8;
+            state->m_current_struct_padding_offset = 0u;
 
             // Sort the entries of the struct alphabetically
-            std::sort(state->m_current_struct->m_properties.begin(), state->m_current_struct->m_properties.end(),
-                      [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
-                      {
-                          return e1.m_name < e2.m_name;
-                      });
+            state->m_current_struct->SortPropertiesByName();
             state->m_current_struct = nullptr;
         }
     };

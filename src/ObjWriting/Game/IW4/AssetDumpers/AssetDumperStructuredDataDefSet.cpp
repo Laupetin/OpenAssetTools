@@ -115,7 +115,7 @@ void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDe
             outProperty.m_offset_in_bits = inProperty.offset * 8;
     }
 
-    out->SortProperties();
+    out->SortPropertiesByOffset();
 }
 
 void AssetDumperStructuredDataDefSet::ConvertIndexedArray(const CommonStructuredDataDef* def, CommonStructuredDataIndexedArray* out, const StructuredDataIndexedArray* in)

@@ -30,5 +30,6 @@ struct CommonStructuredDataStruct
 
     _NODISCARD uint32_t CalculateChecksum(const CommonStructuredDataDef& def, uint32_t initialValue) const;
 
-    void SortProperties();
+    void SortPropertiesByOffset();
+    void SortPropertiesByName();
 };
