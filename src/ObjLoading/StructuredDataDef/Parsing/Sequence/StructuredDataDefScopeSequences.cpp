@@ -47,7 +47,12 @@ namespace sdd::def_scope_sequences
             if (existingType != state->m_def_types_by_name.end())
             {
                 if (existingType->second.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
-                    existingType->second = CommonStructuredDataType(CommonStructuredDataTypeCategory::ENUM, newEnumIndex);
+                {
+                    assert(existingType->second.m_info.type_index < state->m_undefined_types.size());
+                    auto& undefinedType = state->m_undefined_types[existingType->second.m_info.type_index];
+                    undefinedType.m_mapped_type = CommonStructuredDataType(CommonStructuredDataTypeCategory::ENUM, newEnumIndex);
+                    existingType->second = undefinedType.m_mapped_type;
+                }
                 else
                     throw ParsingException(nameToken.GetPos(), "Type with this name has already been defined");
             }
@@ -89,7 +94,12 @@ namespace sdd::def_scope_sequences
             if (existingType != state->m_def_types_by_name.end())
             {
                 if (existingType->second.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
-                    existingType->second = CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex);
+                {
+                    assert(existingType->second.m_info.type_index < state->m_undefined_types.size());
+                    auto& undefinedType = state->m_undefined_types[existingType->second.m_info.type_index];
+                    undefinedType.m_mapped_type = CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex);
+                    existingType->second = undefinedType.m_mapped_type;
+                }
                 else
                     throw ParsingException(nameToken.GetPos(), "Type with this name has already been defined");
             }
