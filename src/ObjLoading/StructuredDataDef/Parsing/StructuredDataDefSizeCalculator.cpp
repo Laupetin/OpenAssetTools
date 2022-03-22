@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 
+#include "Utils/Alignment.h"
 #include "Utils/ClassUtils.h"
 
 using namespace sdd;
@@ -73,20 +74,34 @@ class StructuredDataDefSizeCalculatorInternal
 
         m_type_stack.emplace_back(CommonStructuredDataTypeCategory::STRUCT, index);
 
-        // TODO: Actually calculate stuff
+        auto currentOffset = 0u;
+        for(auto& property : _struct.m_properties)
+        {
+            CalculateForType(property.m_type);
+            currentOffset = utils::Align(currentOffset, property.m_type.GetAlignmentInBits());
+
+            // Currently set offset is the padding since the start of the struct
+            property.m_offset_in_bits += currentOffset;
+
+            currentOffset += property.m_type.GetSizeInBits(m_def);
+        }
+        currentOffset = utils::Align(currentOffset, 8u);
+        _struct.m_size_in_byte += currentOffset / 8;
 
         m_struct_calculated[index] = true;
         m_type_stack.pop_back();
     }
 
-    void CalculateForIndexedArray(size_t index, CommonStructuredDataIndexedArray& indexedArray)
+    void CalculateForIndexedArray(CommonStructuredDataIndexedArray& indexedArray)
     {
-        // TODO: Actually calculate stuff
+        CalculateForType(indexedArray.m_array_type);
+        indexedArray.m_element_size_in_bits = indexedArray.m_array_type.GetSizeInBits(m_def);
     }
 
-    void CalculateForEnumedArray(size_t index, CommonStructuredDataEnumedArray& enumedArray)
+    void CalculateForEnumedArray(CommonStructuredDataEnumedArray& enumedArray)
     {
-        // TODO: Actually calculate stuff
+        CalculateForType(enumedArray.m_array_type);
+        enumedArray.m_element_size_in_bits = enumedArray.m_array_type.GetSizeInBits(m_def);
     }
 
     void CalculateForType(const CommonStructuredDataType type)
@@ -99,11 +114,11 @@ class StructuredDataDefSizeCalculatorInternal
             break;
         case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
             assert(type.m_info.type_index < m_def.m_indexed_arrays.size());
-            CalculateForIndexedArray(type.m_info.type_index, m_def.m_indexed_arrays[type.m_info.type_index]);
+            CalculateForIndexedArray(m_def.m_indexed_arrays[type.m_info.type_index]);
             break;
         case CommonStructuredDataTypeCategory::ENUM_ARRAY:
             assert(type.m_info.type_index < m_def.m_enumed_arrays.size());
-            CalculateForEnumedArray(type.m_info.type_index, m_def.m_enumed_arrays[type.m_info.type_index]);
+            CalculateForEnumedArray(m_def.m_enumed_arrays[type.m_info.type_index]);
             break;
         default:
             break;
@@ -125,14 +140,10 @@ public:
         auto index = 0u;
         for (auto& _struct : m_def.m_structs)
             CalculateForStruct(index++, *_struct);
-
-        index = 0u;
         for (auto& indexedArray : m_def.m_indexed_arrays)
-            CalculateForIndexedArray(index++, indexedArray);
-
-        index = 0u;
+            CalculateForIndexedArray(indexedArray);
         for (auto& enumedArray : m_def.m_enumed_arrays)
-            CalculateForEnumedArray(index++, enumedArray);
+            CalculateForEnumedArray(enumedArray);
     }
 };
 
