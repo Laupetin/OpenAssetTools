@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "StructuredDataDef/Parsing/StructuredDataDefSizeCalculator.h"
 
 namespace sdd::def_scope_sequences
 {
@@ -223,6 +224,18 @@ namespace sdd::def_scope_sequences
             }
         }
 
+        static void CalculateSizesAndOffsetsForDef(const StructuredDataDefParserState* state)
+        {
+            try
+            {
+                StructuredDataDefSizeCalculator::CalculateSizesAndOffsetsForDef(*state->m_current_def);
+            }
+            catch(SizeCalculationException& e)
+            {
+                throw ParsingException(TokenPos(), e.Message());
+            }
+        }
+
         static void SetDefSizeFromRootStruct(const StructuredDataDefParserState* state)
         {
             if (state->m_current_def->m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT
@@ -242,7 +255,7 @@ namespace sdd::def_scope_sequences
             CreateDefaultStructWhenNoStructsSpecified(state);
             EnsureAllUsedTypesHaveBeenDefined(state);
             ReplaceUndefinedTypeReference(state);
-            // TODO: Calculate struct sizes and property offsets
+            CalculateSizesAndOffsetsForDef(state);
             SetDefSizeFromRootStruct(state);
 
             if (!state->m_checksum_overriden)

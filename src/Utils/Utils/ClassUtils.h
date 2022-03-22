@@ -16,10 +16,16 @@
 #undef _NODISCARD
 #endif
 
+#ifdef _NORETURN
+#undef _NORETURN
+#endif
+
 #if _CPP_VERSION >= 201703L
 #define _NODISCARD [[nodiscard]]
+#define _NORETURN [[noreturn]]
 #else
 #define _NODISCARD
+#define _NORETURN
 #endif
 
 template <class T>
