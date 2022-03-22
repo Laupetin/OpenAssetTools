@@ -27,5 +27,6 @@ struct CommonStructuredDataEnum
     _NODISCARD size_t ElementCount() const;
     _NODISCARD uint32_t CalculateChecksum(uint32_t initialValue) const;
 
-    void SortEntries();
+    void SortEntriesByOffset();
+    void SortEntriesByName();
 };

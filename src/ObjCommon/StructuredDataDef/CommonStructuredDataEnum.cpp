@@ -47,7 +47,7 @@ uint32_t CommonStructuredDataEnum::CalculateChecksum(const uint32_t initialValue
     const auto littleEndianElementCount = endianness::ToLittleEndian(ElementCount());
     checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianElementCount), sizeof(littleEndianElementCount));
 
-    for(const auto& entry : m_entries)
+    for (const auto& entry : m_entries)
     {
         checksum = crc32(checksum, reinterpret_cast<const Bytef*>(entry.m_name.c_str()), entry.m_name.size() + 1);
 
@@ -58,10 +58,18 @@ uint32_t CommonStructuredDataEnum::CalculateChecksum(const uint32_t initialValue
     return checksum;
 }
 
-void CommonStructuredDataEnum::SortEntries()
+void CommonStructuredDataEnum::SortEntriesByOffset()
 {
     std::sort(m_entries.begin(), m_entries.end(), [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
     {
         return e1.m_value < e2.m_value;
+    });
+}
+
+void CommonStructuredDataEnum::SortEntriesByName()
+{
+    std::sort(m_entries.begin(), m_entries.end(), [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
+    {
+        return e1.m_name < e2.m_name;
     });
 }

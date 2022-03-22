@@ -13,8 +13,8 @@ namespace IW4
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
         _NODISCARD bool CanLoadFromRaw() const override;
         static StructuredDataType ConvertType(CommonStructuredDataType inputType);
-        static void ConvertEnum(StructuredDataEnum* outputEnum, const CommonStructuredDataEnum* inputEnum, MemoryManager* memory);
-        static void ConvertStruct(StructuredDataStruct* outputStruct, const CommonStructuredDataStruct* inputStruct, MemoryManager* memory);
+        static void ConvertEnum(StructuredDataEnum* outputEnum, CommonStructuredDataEnum* inputEnum, MemoryManager* memory);
+        static void ConvertStruct(StructuredDataStruct* outputStruct, CommonStructuredDataStruct* inputStruct, MemoryManager* memory);
         static void ConvertIndexedArray(StructuredDataIndexedArray* outputIndexedArray, const CommonStructuredDataIndexedArray* inputIndexedArray, MemoryManager* memory);
         static void ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray, const CommonStructuredDataEnumedArray* inputEnumedArray, MemoryManager* memory);
         static void ConvertDef(StructuredDataDef* outputDef, const CommonStructuredDataDef* inputDef, MemoryManager* memory);

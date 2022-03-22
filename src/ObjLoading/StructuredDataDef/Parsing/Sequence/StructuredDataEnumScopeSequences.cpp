@@ -54,12 +54,6 @@ namespace sdd::enum_scope_sequences
         void ProcessMatch(StructuredDataDefParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_current_enum != nullptr);
-
-            std::sort(state->m_current_enum->m_entries.begin(), state->m_current_enum->m_entries.end(), [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
-            {
-                return e1.m_name < e2.m_name;
-            });
-
             state->m_current_enum = nullptr;
         }
     };

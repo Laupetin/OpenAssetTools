@@ -53,7 +53,7 @@ StructuredDataType AssetLoaderStructuredDataDefSet::ConvertType(CommonStructured
     }
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum, const CommonStructuredDataEnum* inputEnum, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum, CommonStructuredDataEnum* inputEnum, MemoryManager* memory)
 {
     outputEnum->entryCount = static_cast<int>(inputEnum->m_entries.size());
     if (inputEnum->m_reserved_entry_count <= 0)
@@ -61,6 +61,7 @@ void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum
     else
         outputEnum->reservedEntryCount = inputEnum->m_reserved_entry_count;
 
+    inputEnum->SortEntriesByName();
     if (!inputEnum->m_entries.empty())
     {
         outputEnum->entries = static_cast<StructuredDataEnumEntry*>(memory->Alloc(sizeof(StructuredDataEnumEntry) * inputEnum->m_entries.size()));
@@ -77,12 +78,13 @@ void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum
         outputEnum->entries = nullptr;
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* outputStruct, const CommonStructuredDataStruct* inputStruct, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* outputStruct, CommonStructuredDataStruct* inputStruct, MemoryManager* memory)
 {
     outputStruct->size = static_cast<int>(inputStruct->m_size_in_byte);
     outputStruct->bitOffset = inputStruct->m_bit_offset;
 
     outputStruct->propertyCount = static_cast<int>(inputStruct->m_properties.size());
+    inputStruct->SortPropertiesByName();
     if (!inputStruct->m_properties.empty())
     {
         outputStruct->properties = static_cast<StructuredDataStructProperty*>(memory->Alloc(sizeof(StructuredDataStructProperty) * inputStruct->m_properties.size()));

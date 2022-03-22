@@ -234,9 +234,6 @@ namespace sdd::struct_scope_sequences
 
             state->m_current_struct->m_size_in_byte = utils::Align(state->m_current_struct_padding_offset, 8u) / 8;
             state->m_current_struct_padding_offset = 0u;
-
-            // Sort the entries of the struct alphabetically
-            state->m_current_struct->SortPropertiesByName();
             state->m_current_struct = nullptr;
         }
     };

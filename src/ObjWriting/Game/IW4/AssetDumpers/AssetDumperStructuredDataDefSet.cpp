@@ -82,7 +82,7 @@ void AssetDumperStructuredDataDefSet::ConvertEnum(CommonStructuredDataEnum* out,
         outEntry.m_value = inEntry.index;
     }
 
-    out->SortEntries();
+    out->SortEntriesByOffset();
 }
 
 void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDef* def, const StructuredDataDef* gameDef, CommonStructuredDataStruct* out, const StructuredDataStruct* in, const size_t structIndex)
