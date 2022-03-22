@@ -6,6 +6,7 @@
 #include "Game/IW4/IW4.h"
 #include "StructuredDataDef/StructuredDataDefReader.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/Alignment.h"
 
 using namespace IW4;
 
@@ -113,14 +114,14 @@ void AssetLoaderStructuredDataDefSet::ConvertIndexedArray(StructuredDataIndexedA
 {
     outputIndexedArray->arraySize = static_cast<int>(inputIndexedArray->m_element_count);
     outputIndexedArray->elementType = ConvertType(inputIndexedArray->m_array_type);
-    outputIndexedArray->elementSize = inputIndexedArray->m_element_size_in_bits;
+    outputIndexedArray->elementSize = utils::Align(inputIndexedArray->m_element_size_in_bits, 8u) / 8u;
 }
 
 void AssetLoaderStructuredDataDefSet::ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray, const CommonStructuredDataEnumedArray* inputEnumedArray, MemoryManager* memory)
 {
     outputEnumedArray->enumIndex = static_cast<int>(inputEnumedArray->m_enum_index);
     outputEnumedArray->elementType = ConvertType(inputEnumedArray->m_array_type);
-    outputEnumedArray->elementSize = inputEnumedArray->m_element_size_in_bits;
+    outputEnumedArray->elementSize = utils::Align(inputEnumedArray->m_element_size_in_bits, 8u) / 8u;
 }
 
 void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, const CommonStructuredDataDef* inputDef, MemoryManager* memory)
