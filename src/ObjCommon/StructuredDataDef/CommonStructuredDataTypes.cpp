@@ -144,12 +144,12 @@ bool operator>=(const CommonStructuredDataIndexedArray& lhs, const CommonStructu
 }
 
 CommonStructuredDataEnumedArray::CommonStructuredDataEnumedArray()
-    : CommonStructuredDataEnumedArray({}, 0u)
+    : CommonStructuredDataEnumedArray({}, 0u, 0u)
 {
 }
 
-CommonStructuredDataEnumedArray::CommonStructuredDataEnumedArray(const CommonStructuredDataType type, const size_t enumIndex)
-    : CommonStructuredDataEnumedArray(type, enumIndex, 0u, 0u)
+CommonStructuredDataEnumedArray::CommonStructuredDataEnumedArray(const CommonStructuredDataType type, const size_t enumIndex, const size_t elementCount)
+    : CommonStructuredDataEnumedArray(type, enumIndex, elementCount, 0u)
 {
 }
 

@@ -68,7 +68,7 @@ struct CommonStructuredDataEnumedArray
     size_t m_element_size_in_bits;
 
     CommonStructuredDataEnumedArray();
-    CommonStructuredDataEnumedArray(CommonStructuredDataType type, size_t enumIndex);
+    CommonStructuredDataEnumedArray(CommonStructuredDataType type, size_t enumIndex, size_t elementCount);
     CommonStructuredDataEnumedArray(CommonStructuredDataType type, size_t enumIndex, size_t elementCount, size_t elementSizeInBits);
 
     friend bool operator<(const CommonStructuredDataEnumedArray& lhs, const CommonStructuredDataEnumedArray& rhs);

@@ -150,7 +150,7 @@ namespace sdd::struct_scope_sequences
                 const auto enumElementCount = _enum->ElementCount();
                 assert(enumElementCount > 0);
 
-                const CommonStructuredDataEnumedArray enumedArray(currentType, existingType->second.m_info.type_index);
+                const CommonStructuredDataEnumedArray enumedArray(currentType, existingType->second.m_info.type_index, _enum->ElementCount());
 
                 const auto existingEnumedArray = state->m_def_enumed_arrays.find(enumedArray);
                 if (existingEnumedArray != state->m_def_enumed_arrays.end())
