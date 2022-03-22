@@ -16,7 +16,7 @@ namespace sdd
         explicit SizeCalculationException(std::string message);
 
         _NODISCARD const std::string& Message() const;
-        _NODISCARD char const* what() const override;
+        _NODISCARD char const* what() const noexcept override;
     };
 
     class StructuredDataDefSizeCalculator
