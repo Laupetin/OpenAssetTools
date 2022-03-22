@@ -1,5 +1,7 @@
 #include "StructuredDataDefScopeSequences.h"
 
+#include <sstream>
+
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 namespace sdd::def_scope_sequences
@@ -170,6 +172,57 @@ namespace sdd::def_scope_sequences
             }
         }
 
+        static void EnsureAllUsedTypesHaveBeenDefined(const StructuredDataDefParserState* state)
+        {
+            for(const auto& undefinedType : state->m_undefined_types)
+            {
+                if (undefinedType.m_mapped_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                {
+                    std::ostringstream ss;
+                    ss << "Type \"" << undefinedType.m_name << "\" has not been defined";
+                    throw ParsingException(undefinedType.m_first_usage_pos, ss.str());
+                }
+            }
+        }
+
+        static void ReplaceUndefinedTypeReference(const StructuredDataDefParserState* state)
+        {
+            auto& def = *state->m_current_def;
+
+            for(const auto& _struct : def.m_structs)
+            {
+                for(auto& property : _struct->m_properties)
+                {
+                    if(property.m_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                    {
+                        assert(property.m_type.m_info.type_index < state->m_undefined_types.size());
+                        const auto& undefinedType = state->m_undefined_types[property.m_type.m_info.type_index];
+                        property.m_type = undefinedType.m_mapped_type;
+                    }
+                }
+            }
+
+            for(auto& indexedArray : def.m_indexed_arrays)
+            {
+                if(indexedArray.m_array_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                {
+                    assert(indexedArray.m_array_type.m_info.type_index < state->m_undefined_types.size());
+                    const auto& undefinedType = state->m_undefined_types[indexedArray.m_array_type.m_info.type_index];
+                    indexedArray.m_array_type = undefinedType.m_mapped_type;
+                }
+            }
+
+            for(auto& enumedArray : def.m_enumed_arrays)
+            {
+                if(enumedArray.m_array_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                {
+                    assert(enumedArray.m_array_type.m_info.type_index < state->m_undefined_types.size());
+                    const auto& undefinedType = state->m_undefined_types[enumedArray.m_array_type.m_info.type_index];
+                    enumedArray.m_array_type = undefinedType.m_mapped_type;
+                }
+            }
+        }
+
         static void SetDefSizeFromRootStruct(const StructuredDataDefParserState* state)
         {
             if (state->m_current_def->m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT
@@ -187,7 +240,8 @@ namespace sdd::def_scope_sequences
             assert(state->m_current_struct == nullptr);
 
             CreateDefaultStructWhenNoStructsSpecified(state);
-            // TODO: Replace all unknown type references
+            EnsureAllUsedTypesHaveBeenDefined(state);
+            ReplaceUndefinedTypeReference(state);
             // TODO: Calculate struct sizes and property offsets
             SetDefSizeFromRootStruct(state);
 
