@@ -18,7 +18,7 @@ const std::string& SizeCalculationException::Message() const
     return m_message;
 }
 
-char const* SizeCalculationException::what() const
+char const* SizeCalculationException::what() const noexcept
 {
     return m_message.c_str();
 }
