@@ -116,10 +116,14 @@ namespace sdd::def_scope_sequences
             if (newStructPtr->m_name == "root")
             {
                 state->m_current_struct_padding_offset = 64u;
+                state->m_current_struct_is_root = true;
                 state->m_current_def->m_root_type = CommonStructuredDataType(CommonStructuredDataTypeCategory::STRUCT, newStructIndex);
             }
             else
+            {
+                state->m_current_struct_is_root = false;
                 state->m_current_struct_padding_offset = 0;
+            }
         }
     };
 

@@ -41,11 +41,11 @@ class StructuredDataDefSizeCalculatorInternal
         ss << "Circular dependencies detected: ";
 
         auto foundDependencyChainStart = false;
-        for(const auto& type : m_type_stack)
+        for (const auto& type : m_type_stack)
         {
-            if(foundDependencyChainStart)
+            if (foundDependencyChainStart)
             {
-                if(type.m_category == CommonStructuredDataTypeCategory::STRUCT)
+                if (type.m_category == CommonStructuredDataTypeCategory::STRUCT)
                 {
                     assert(type.m_info.type_index < m_def.m_structs.size());
                     ss << " -> " << m_def.m_structs[type.m_info.type_index]->m_name;
@@ -75,7 +75,7 @@ class StructuredDataDefSizeCalculatorInternal
         m_type_stack.emplace_back(CommonStructuredDataTypeCategory::STRUCT, index);
 
         auto currentOffset = 0u;
-        for(auto& property : _struct.m_properties)
+        for (auto& property : _struct.m_properties)
         {
             CalculateForType(property.m_type);
             currentOffset = utils::Align(currentOffset, property.m_type.GetAlignmentInBits());

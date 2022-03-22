@@ -31,6 +31,7 @@ namespace sdd
         CommonStructuredDataEnum* m_current_enum;
         CommonStructuredDataStruct* m_current_struct;
 
+        bool m_current_struct_is_root;
         size_t m_current_struct_padding_offset;
 
         size_t m_checksum_override_value;
