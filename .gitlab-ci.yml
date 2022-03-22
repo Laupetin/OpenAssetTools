@@ -5,6 +5,7 @@ stages:
 build-gcc:
     image: laupetin/gcc-9-multilib:latest
     stage: build
+    interruptible: true
     cache:
       paths:
         - build/
@@ -19,6 +20,7 @@ build-gcc:
 test-gcc:
     image: laupetin/gcc-9-multilib:latest
     stage: test
+    interruptible: true
     cache:
       paths:
         - build/
