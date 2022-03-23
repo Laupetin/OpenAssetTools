@@ -75,9 +75,71 @@ namespace IW4
             m_stream << "}\n";
         }
 
+        const char* GetStreamDestinationString(const MaterialStreamDestination_e dst)
+        {
+            static const char* destinationNames[]
+            {
+                "position",
+                "normal",
+                "color[0]",
+                "color[1]",
+                "depth",
+                "texcoord[0]",
+                "texcoord[1]",
+                "texcoord[2]",
+                "texcoord[3]",
+                "texcoord[4]",
+                "texcoord[5]",
+                "texcoord[6]",
+                "texcoord[7]",
+            };
+            static_assert(std::extent_v<decltype(destinationNames)> == STREAM_DST_COUNT);
+
+            const auto dstIndex = static_cast<size_t>(dst);
+            assert(dstIndex < std::extent_v<decltype(destinationNames)>);
+            if (dstIndex < std::extent_v<decltype(destinationNames)>)
+                return destinationNames[dstIndex];
+            return "";
+        }
+
+        const char* GetStreamSourceString(const MaterialStreamStreamSource_e src)
+        {
+            static const char* sourceNames[]
+            {
+                "position",
+                "color",
+                "texcoord[0]",
+                "normal",
+                "tangent",
+                "texcoord[1]",
+                "texcoord[2]",
+                "normalTransform[0]",
+                "normalTransform[1]"
+            };
+            static_assert(std::extent_v<decltype(sourceNames)> == STREAM_SRC_COUNT);
+
+            const auto srcIndex = static_cast<size_t>(src);
+            assert(srcIndex < std::extent_v<decltype(sourceNames)>);
+            if (srcIndex < std::extent_v<decltype(sourceNames)>)
+                return sourceNames[srcIndex];
+            return "";
+        }
+
         void DumpVertexDecl(const MaterialPass& pass)
         {
-            // TODO
+            if (pass.vertexDecl == nullptr || pass.vertexDecl->streamCount <= 0)
+                return;
+
+            m_stream << "\n";
+
+            const auto streamCount = std::min(static_cast<size_t>(pass.vertexDecl->streamCount), std::extent_v<decltype(MaterialVertexStreamRouting::data)>);
+            for (auto streamIndex = 0u; streamIndex < streamCount; streamIndex++)
+            {
+                const auto& stream = pass.vertexDecl->routing.data[streamIndex];
+                Indent();
+                m_stream << "vertex." << GetStreamDestinationString(static_cast<MaterialStreamDestination_e>(stream.dest))
+                    << " = code." << GetStreamSourceString(static_cast<MaterialStreamStreamSource_e>(stream.source)) << ";\n";
+            }
         }
 
         void DumpPass(const MaterialPass& pass)
@@ -122,7 +184,7 @@ namespace IW4
         {
             assert(techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>);
 
-            if(m_last_write_was_value)
+            if (m_last_write_was_value)
             {
                 m_stream << "\n";
                 m_last_write_was_value = false;
@@ -144,18 +206,18 @@ namespace IW4
         {
             std::vector<bool> dumpedTechniques(std::extent_v<decltype(MaterialTechniqueSet::techniques)>);
 
-            for(auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
+            for (auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
             {
                 const auto* technique = techset->techniques[techniqueIndex];
-                if(technique == nullptr || dumpedTechniques[techniqueIndex])
+                if (technique == nullptr || dumpedTechniques[techniqueIndex])
                     continue;
 
                 dumpedTechniques[techniqueIndex] = true;
                 WriteTechniqueType(techniqueIndex);
 
-                for(auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; nextTechniqueIndex++)
+                for (auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; nextTechniqueIndex++)
                 {
-                    if(techset->techniques[nextTechniqueIndex] != technique)
+                    if (techset->techniques[nextTechniqueIndex] != technique)
                         continue;
 
                     dumpedTechniques[nextTechniqueIndex] = true;

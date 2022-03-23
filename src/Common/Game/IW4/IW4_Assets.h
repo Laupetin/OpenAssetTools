@@ -875,8 +875,8 @@ namespace IW4
 
     struct MaterialStreamRouting
     {
-        char source;
-        char dest;
+        unsigned char source;
+        unsigned char dest;
     };
 
     struct MaterialVertexStreamRouting
@@ -888,7 +888,7 @@ namespace IW4
     struct MaterialVertexDeclaration
     {
         const char* name;
-        char streamCount;
+        unsigned char streamCount;
         bool hasOptionalSource;
         MaterialVertexStreamRouting routing;
     };
