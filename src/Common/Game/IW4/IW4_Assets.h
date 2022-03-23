@@ -920,8 +920,8 @@ namespace IW4
     struct MaterialArgumentCodeConst
     {
         uint16_t index;
-        char firstRow;
-        char rowCount;
+        unsigned char firstRow;
+        unsigned char rowCount;
     };
 
     union MaterialArgumentDef
@@ -937,14 +937,19 @@ namespace IW4
         MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
         MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
         MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2,
+
         MTL_ARG_CODE_PRIM_BEGIN = 0x3,
+
         MTL_ARG_CODE_VERTEX_CONST = 0x3,
         MTL_ARG_CODE_PIXEL_SAMPLER = 0x4,
         MTL_ARG_CODE_PIXEL_CONST = 0x5,
+
         MTL_ARG_CODE_PRIM_END = 0x6,
+
         MTL_ARG_MATERIAL_PIXEL_CONST = 0x6,
         MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
-        MTL_ARG_COUNT = 0x8,
+
+        MTL_ARG_COUNT
     };
 
     struct MaterialShaderArgument
@@ -959,10 +964,10 @@ namespace IW4
         MaterialVertexDeclaration* vertexDecl;
         MaterialVertexShader* vertexShader;
         MaterialPixelShader* pixelShader;
-        char perPrimArgCount;
-        char perObjArgCount;
-        char stableArgCount;
-        char customSamplerFlags;
+        unsigned char perPrimArgCount;
+        unsigned char perObjArgCount;
+        unsigned char stableArgCount;
+        unsigned char customSamplerFlags;
         MaterialShaderArgument* args;
     };
 

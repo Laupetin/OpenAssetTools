@@ -35,6 +35,12 @@ namespace IW4
             m_stream << "stateMap \"\"; // TODO\n";
         }
 
+        void DumpShaderArg(const MaterialShaderArgument& arg)
+        {
+            Indent();
+            m_stream << "// Some arg dest:" << arg.dest << " type: " << arg.type << "\n";
+        }
+
         void DumpVertexShader(const MaterialPass& pass)
         {
             if (pass.vertexShader == nullptr)
@@ -48,7 +54,22 @@ namespace IW4
             m_stream << "{\n";
             IncIndent();
 
-            // TODO: Dump vertex shader args
+            if (pass.args)
+            {
+                const auto totalArgCount = static_cast<size_t>(pass.perPrimArgCount)
+                    + static_cast<size_t>(pass.perObjArgCount)
+                    + static_cast<size_t>(pass.stableArgCount);
+                for (auto i = 0u; i < totalArgCount; i++)
+                {
+                    const auto& arg = pass.args[i];
+                    if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST
+                        || arg.type == MTL_ARG_LITERAL_VERTEX_CONST
+                        || arg.type == MTL_ARG_CODE_VERTEX_CONST)
+                    {
+                        DumpShaderArg(arg);
+                    }
+                }
+            }
 
             DecIndent();
             Indent();
@@ -68,7 +89,24 @@ namespace IW4
             m_stream << "{\n";
             IncIndent();
 
-            // TODO: Dump pixel shader args
+            if (pass.args)
+            {
+                const auto totalArgCount = static_cast<size_t>(pass.perPrimArgCount)
+                    + static_cast<size_t>(pass.perObjArgCount)
+                    + static_cast<size_t>(pass.stableArgCount);
+                for (auto i = 0u; i < totalArgCount; i++)
+                {
+                    const auto& arg = pass.args[i];
+                    if (arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER
+                        || arg.type == MTL_ARG_CODE_PIXEL_SAMPLER
+                        || arg.type == MTL_ARG_CODE_PIXEL_CONST
+                        || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
+                        || arg.type == MTL_ARG_LITERAL_PIXEL_CONST)
+                    {
+                        DumpShaderArg(arg);
+                    }
+                }
+            }
 
             DecIndent();
             Indent();
