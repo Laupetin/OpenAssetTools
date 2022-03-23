@@ -1,8 +1,11 @@
 #include "AssetDumperTechniqueSet.h"
 
+#include <cassert>
 #include <sstream>
+#include <type_traits>
 
 #include "Dumping/AbstractTextDumper.h"
+#include "Game/IW4/TechsetConstantsIW4.h"
 
 using namespace IW4;
 
@@ -39,15 +42,61 @@ namespace IW4
 
     class TechsetFileWriter : public AbstractTextDumper
     {
+        bool m_last_write_was_value;
+
     public:
         explicit TechsetFileWriter(std::ostream& stream)
-            : AbstractTextDumper(stream)
+            : AbstractTextDumper(stream),
+              m_last_write_was_value(false)
         {
+        }
+
+        void WriteTechniqueType(const size_t techniqueIndex)
+        {
+            assert(techniqueIndex < std::extent_v<decltype(techniqueTypeNames)>);
+
+            if(m_last_write_was_value)
+            {
+                m_stream << "\n";
+                m_last_write_was_value = false;
+            }
+            m_stream << '"' << techniqueTypeNames[techniqueIndex] << "\":\n";
+        }
+
+        void WriteTechniqueValue(const char* value)
+        {
+            m_last_write_was_value = true;
+
+            IncIndent();
+            Indent();
+            m_stream << value << ";\n";
+            DecIndent();
         }
 
         void DumpTechset(const MaterialTechniqueSet* techset)
         {
-            m_stream << "techset lol";
+            std::vector<bool> dumpedTechniques(std::extent_v<decltype(MaterialTechniqueSet::techniques)>);
+
+            for(auto techniqueIndex = 0u; techniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; techniqueIndex++)
+            {
+                const auto* technique = techset->techniques[techniqueIndex];
+                if(technique == nullptr || dumpedTechniques[techniqueIndex])
+                    continue;
+
+                dumpedTechniques[techniqueIndex] = true;
+                WriteTechniqueType(techniqueIndex);
+
+                for(auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; nextTechniqueIndex++)
+                {
+                    if(techset->techniques[nextTechniqueIndex] != technique)
+                        continue;
+
+                    dumpedTechniques[nextTechniqueIndex] = true;
+                    WriteTechniqueType(nextTechniqueIndex);
+                }
+
+                WriteTechniqueValue(technique->name);
+            }
         }
     };
 }
