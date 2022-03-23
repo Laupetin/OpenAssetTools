@@ -28,6 +28,72 @@ namespace IW4
 
     class TechniqueFileWriter : public AbstractTextDumper
     {
+        void DumpStateMap() const
+        {
+            Indent();
+            // TODO: Actual statemap: Maybe find all materials using this techset and try to make out rules for the flags based on the statebitstable
+            m_stream << "stateMap \"\"; // TODO\n";
+        }
+
+        void DumpVertexShader(const MaterialPass& pass)
+        {
+            if (pass.vertexShader == nullptr)
+                return;
+
+            m_stream << "\n";
+            Indent();
+            // TODO: Actually find out which version this shader uses
+            m_stream << "vertexShader 1.0 \"" << pass.vertexShader->name << "\"\n";
+            Indent();
+            m_stream << "{\n";
+            IncIndent();
+
+            // TODO: Dump vertex shader args
+
+            DecIndent();
+            Indent();
+            m_stream << "}\n";
+        }
+
+        void DumpPixelShader(const MaterialPass& pass)
+        {
+            if (pass.pixelShader == nullptr)
+                return;
+
+            m_stream << "\n";
+            Indent();
+            // TODO: Actually find out which version this shader uses
+            m_stream << "pixelShader 1.0 \"" << pass.pixelShader->name << "\"\n";
+            Indent();
+            m_stream << "{\n";
+            IncIndent();
+
+            // TODO: Dump pixel shader args
+
+            DecIndent();
+            Indent();
+            m_stream << "}\n";
+        }
+
+        void DumpVertexDecl(const MaterialPass& pass)
+        {
+            // TODO
+        }
+
+        void DumpPass(const MaterialPass& pass)
+        {
+            m_stream << "{\n";
+            IncIndent();
+
+            DumpStateMap();
+            DumpVertexShader(pass);
+            DumpPixelShader(pass);
+            DumpVertexDecl(pass);
+
+            DecIndent();
+            m_stream << "}\n";
+        }
+
     public:
         explicit TechniqueFileWriter(std::ostream& stream)
             : AbstractTextDumper(stream)
@@ -36,7 +102,8 @@ namespace IW4
 
         void DumpTechnique(const MaterialTechnique* technique)
         {
-            m_stream << "technique lol";
+            for (auto i = 0u; i < technique->passCount; i++)
+                DumpPass(technique->passArray[i]);
         }
     };
 

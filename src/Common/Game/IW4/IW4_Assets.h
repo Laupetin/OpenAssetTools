@@ -837,6 +837,42 @@ namespace IW4
         uint16_t loadForRenderer;
     };
 
+    enum MaterialStreamStreamSource_e
+    {
+        STREAM_SRC_POSITION = 0x0,
+        STREAM_SRC_COLOR = 0x1,
+        STREAM_SRC_TEXCOORD_0 = 0x2,
+        STREAM_SRC_NORMAL = 0x3,
+        STREAM_SRC_TANGENT = 0x4,
+        STREAM_SRC_OPTIONAL_BEGIN = 0x5,
+        STREAM_SRC_PRE_OPTIONAL_BEGIN = 0x4,
+        STREAM_SRC_TEXCOORD_1 = 0x5,
+        STREAM_SRC_TEXCOORD_2 = 0x6,
+        STREAM_SRC_NORMAL_TRANSFORM_0 = 0x7,
+        STREAM_SRC_NORMAL_TRANSFORM_1 = 0x8,
+
+        STREAM_SRC_COUNT
+    };
+    
+    enum MaterialStreamDestination_e
+    {
+        STREAM_DST_POSITION = 0x0,
+        STREAM_DST_NORMAL = 0x1,
+        STREAM_DST_COLOR_0 = 0x2,
+        STREAM_DST_COLOR_1 = 0x3,
+        STREAM_DST_DEPTH = 0x4,
+        STREAM_DST_TEXCOORD_0 = 0x5,
+        STREAM_DST_TEXCOORD_1 = 0x6,
+        STREAM_DST_TEXCOORD_2 = 0x7,
+        STREAM_DST_TEXCOORD_3 = 0x8,
+        STREAM_DST_TEXCOORD_4 = 0x9,
+        STREAM_DST_TEXCOORD_5 = 0xA,
+        STREAM_DST_TEXCOORD_6 = 0xB,
+        STREAM_DST_TEXCOORD_7 = 0xC,
+
+        STREAM_DST_COUNT
+    };
+
     struct MaterialStreamRouting
     {
         char source;
