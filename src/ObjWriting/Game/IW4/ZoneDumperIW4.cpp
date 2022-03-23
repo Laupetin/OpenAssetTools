@@ -13,12 +13,16 @@
 #include "AssetDumpers/AssetDumperMenuList.h"
 #include "AssetDumpers/AssetDumperPhysCollmap.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
+#include "AssetDumpers/AssetDumperPixelShader.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperSndCurve.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperStructuredDataDefSet.h"
+#include "AssetDumpers/AssetDumperTechniqueSet.h"
 #include "AssetDumpers/AssetDumperTracer.h"
 #include "AssetDumpers/AssetDumperVehicle.h"
+#include "AssetDumpers/AssetDumperVertexDecl.h"
+#include "AssetDumpers/AssetDumperVertexShader.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 
@@ -45,10 +49,10 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
     // DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
-    // DUMP_ASSET_POOL(AssetDumperMaterialPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
-    // DUMP_ASSET_POOL(AssetDumperMaterialVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
-    // DUMP_ASSET_POOL(AssetDumperMaterialVertexDeclaration, m_material_vertex_decl, ASSET_TYPE_VERTEXDECL)
-    // DUMP_ASSET_POOL(AssetDumperMaterialTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
+    DUMP_ASSET_POOL(AssetDumperPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
+    DUMP_ASSET_POOL(AssetDumperVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
+    DUMP_ASSET_POOL(AssetDumperVertexDecl, m_material_vertex_decl, ASSET_TYPE_VERTEXDECL)
+    DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(AssetDumperGfxImage, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
     DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
