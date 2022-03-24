@@ -37,7 +37,46 @@ namespace IW4
             m_stream << "stateMap \"\"; // TODO\n";
         }
 
-        void DumpShaderArg(const MaterialShaderArgument& arg, const d3d9::ShaderInfo& shaderInfo)
+        static bool FindCodeConstantSourceAccessor(const MaterialConstantSource sourceIndexToFind, const CodeConstantSource* codeConstantTable, std::string& codeSourceAccessor)
+        {
+            const auto* currentCodeConst = codeConstantTable;
+            while(currentCodeConst->name != nullptr)
+            {
+                if(currentCodeConst->subtable != nullptr)
+                {
+                    std::string accessorInSubTable;
+                    if(FindCodeConstantSourceAccessor(sourceIndexToFind, currentCodeConst->subtable, accessorInSubTable))
+                    {
+                        std::ostringstream ss;
+                        ss << currentCodeConst->name << '.' << accessorInSubTable;
+                        codeSourceAccessor = ss.str();
+                        return true;
+                    }
+                }
+                else if(currentCodeConst->arrayCount > 0)
+                {
+                    if(currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind) 
+                        && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
+                    {
+                        std::ostringstream ss;
+                        ss << currentCodeConst->name << '[' << (static_cast<unsigned>(sourceIndexToFind) - static_cast<unsigned>(currentCodeConst->source)) << ']';
+                        codeSourceAccessor = ss.str();
+                        return true;
+                    }
+                }
+                else if(currentCodeConst->source == sourceIndexToFind)
+                {
+                    codeSourceAccessor = currentCodeConst->name;
+                    return true;
+                }
+
+                currentCodeConst++;
+            }
+
+            return false;
+        }
+
+        void DumpShaderArg(const MaterialShaderArgument& arg, const d3d9::ShaderInfo& shaderInfo) const
         {
             const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [arg](const d3d9::ShaderConstant& constant)
             {
@@ -52,7 +91,35 @@ namespace IW4
             }
 
             Indent();
-            m_stream << targetShaderArg->m_name << " = something;\n";
+
+            if (targetShaderArg->m_type_elements > 1)
+                m_stream << targetShaderArg->m_name << '[' << (arg.dest - targetShaderArg->m_register_index) << ']';
+            else
+                m_stream << targetShaderArg->m_name;
+
+            m_stream << " = ";
+
+            if(arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.type == MTL_ARG_CODE_PIXEL_CONST)
+            {
+                const auto sourceIndex = static_cast<MaterialConstantSource>(arg.u.codeConst.index);
+                std::string codeSourceAccessor;
+                if(FindCodeConstantSourceAccessor(sourceIndex, s_codeConsts, codeSourceAccessor)
+                    || FindCodeConstantSourceAccessor(sourceIndex, s_defaultCodeConsts, codeSourceAccessor))
+                {
+                    m_stream << "code." << codeSourceAccessor;
+                }
+                else
+                {
+                    assert(false);
+                    m_stream << "UNKNOWN";
+                }
+            }
+            else
+            {
+                m_stream << "something";
+            }
+
+            m_stream << ";\n";
         }
 
         void DumpVertexShader(const MaterialPass& pass)
@@ -67,7 +134,7 @@ namespace IW4
 
             m_stream << "\n";
             Indent();
-            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << pass.pixelShader->name << "\"\n";
+            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << pass.vertexShader->name << "\"\n";
             Indent();
             m_stream << "{\n";
             IncIndent();
