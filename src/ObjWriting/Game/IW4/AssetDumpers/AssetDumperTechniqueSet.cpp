@@ -76,6 +76,45 @@ namespace IW4
             return false;
         }
 
+        static bool FindCodeSamplerSourceAccessor(const MaterialTextureSource sourceIndexToFind, const CodeSamplerSource* codeSamplerTable, std::string& codeSourceAccessor)
+        {
+            const auto* currentCodeConst = codeSamplerTable;
+            while(currentCodeConst->name != nullptr)
+            {
+                if(currentCodeConst->subtable != nullptr)
+                {
+                    std::string accessorInSubTable;
+                    if(FindCodeSamplerSourceAccessor(sourceIndexToFind, currentCodeConst->subtable, accessorInSubTable))
+                    {
+                        std::ostringstream ss;
+                        ss << currentCodeConst->name << '.' << accessorInSubTable;
+                        codeSourceAccessor = ss.str();
+                        return true;
+                    }
+                }
+                else if(currentCodeConst->arrayCount > 0)
+                {
+                    if(currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind) 
+                        && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
+                    {
+                        std::ostringstream ss;
+                        ss << currentCodeConst->name << '[' << (static_cast<unsigned>(sourceIndexToFind) - static_cast<unsigned>(currentCodeConst->source)) << ']';
+                        codeSourceAccessor = ss.str();
+                        return true;
+                    }
+                }
+                else if(currentCodeConst->source == sourceIndexToFind)
+                {
+                    codeSourceAccessor = currentCodeConst->name;
+                    return true;
+                }
+
+                currentCodeConst++;
+            }
+
+            return false;
+        }
+
         void DumpShaderArg(const MaterialShaderArgument& arg, const d3d9::ShaderInfo& shaderInfo) const
         {
             const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [arg](const d3d9::ShaderConstant& constant)
@@ -108,6 +147,33 @@ namespace IW4
                     || FindCodeConstantSourceAccessor(sourceIndex, s_defaultCodeConsts, codeSourceAccessor))
                 {
                     if(codeDestAccessor != codeSourceAccessor)
+                    {
+                        Indent();
+                        m_stream << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+                    }
+                    else
+                    {
+#ifdef TECHSET_DEBUG
+                        Indent();
+                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+#endif
+                    }
+                }
+                else
+                {
+                    assert(false);
+                    Indent();
+                    m_stream << codeDestAccessor << " = UNKNOWN;\n";
+                }
+            }
+            else if(arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
+            {
+                const auto sourceIndex = static_cast<MaterialTextureSource>(arg.u.codeSampler);
+                std::string codeSourceAccessor;
+                if (FindCodeSamplerSourceAccessor(sourceIndex, s_codeSamplers, codeSourceAccessor)
+                    || FindCodeSamplerSourceAccessor(sourceIndex, s_defaultCodeSamplers, codeSourceAccessor))
+                {
+                    if (codeDestAccessor != codeSourceAccessor)
                     {
                         Indent();
                         m_stream << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
