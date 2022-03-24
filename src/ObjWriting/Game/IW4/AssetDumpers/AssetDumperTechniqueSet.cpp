@@ -94,7 +94,7 @@ namespace IW4
                 }
                 else if (currentCodeConst->arrayCount > 0)
                 {
-                    if (currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind)
+                    if (currentCodeConst->source <= sourceIndexToFind
                         && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
                     {
                         std::ostringstream ss;
@@ -205,10 +205,14 @@ namespace IW4
                         << " );\n";
                 }
             }
-            else
+            else if (arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
             {
                 Indent();
-                m_stream << codeDestAccessor << " = something;\n";
+                m_stream << codeDestAccessor << " = material.#" << std::hex << arg.u.nameHash << ";\n";
+            }
+            else
+            {
+                assert(false);
             }
         }
 
