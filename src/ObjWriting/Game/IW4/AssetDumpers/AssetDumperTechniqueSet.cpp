@@ -90,14 +90,15 @@ namespace IW4
                 return;
             }
 
-            Indent();
-
+            std::string codeDestAccessor;
             if (targetShaderArg->m_type_elements > 1)
-                m_stream << targetShaderArg->m_name << '[' << (arg.dest - targetShaderArg->m_register_index) << ']';
+            {
+                std::ostringstream ss;
+                ss << targetShaderArg->m_name << '[' << (arg.dest - targetShaderArg->m_register_index) << ']';
+                codeDestAccessor = ss.str();
+            }
             else
-                m_stream << targetShaderArg->m_name;
-
-            m_stream << " = ";
+                codeDestAccessor = targetShaderArg->m_name;
 
             if(arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.type == MTL_ARG_CODE_PIXEL_CONST)
             {
@@ -106,20 +107,31 @@ namespace IW4
                 if(FindCodeConstantSourceAccessor(sourceIndex, s_codeConsts, codeSourceAccessor)
                     || FindCodeConstantSourceAccessor(sourceIndex, s_defaultCodeConsts, codeSourceAccessor))
                 {
-                    m_stream << "code." << codeSourceAccessor;
+                    if(codeDestAccessor != codeSourceAccessor)
+                    {
+                        Indent();
+                        m_stream << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+                    }
+                    else
+                    {
+#ifdef TECHSET_DEBUG
+                        Indent();
+                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+#endif
+                    }
                 }
                 else
                 {
                     assert(false);
-                    m_stream << "UNKNOWN";
+                    Indent();
+                    m_stream << codeDestAccessor << " = UNKNOWN;\n";
                 }
             }
             else
             {
-                m_stream << "something";
+                Indent();
+                m_stream << codeDestAccessor << " = something;\n";
             }
-
-            m_stream << ";\n";
         }
 
         void DumpVertexShader(const MaterialPass& pass)

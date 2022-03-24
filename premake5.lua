@@ -61,6 +61,9 @@ workspace "OpenAssetTools"
     filter "options:debug-structureddatadef"
         defines { "STRUCTUREDDATADEF_DEBUG" }
     filter {}
+    filter "options:debug-techset"
+        defines { "TECHSET_DEBUG" }
+    filter {}
 
 -- ========================
 -- ThirdParty
