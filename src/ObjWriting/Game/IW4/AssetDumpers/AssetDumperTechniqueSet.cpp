@@ -6,6 +6,7 @@
 
 #include "Dumping/AbstractTextDumper.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+#include "Shader/D3D9ShaderAnalyser.h"
 
 using namespace IW4;
 
@@ -35,10 +36,22 @@ namespace IW4
             m_stream << "stateMap \"\"; // TODO\n";
         }
 
-        void DumpShaderArg(const MaterialShaderArgument& arg)
+        void DumpShaderArg(const MaterialShaderArgument& arg, const d3d9::ShaderInfo& shaderInfo)
         {
+            const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [arg](const d3d9::ShaderConstant& constant)
+            {
+                return constant.m_register_index <= arg.dest && constant.m_register_index + constant.m_register_count > arg.dest;
+            });
+
+            assert(targetShaderArg != shaderInfo.m_constants.end());
+            if (targetShaderArg == shaderInfo.m_constants.end())
+            {
+                m_stream << "// Unrecognized arg dest:" << arg.dest << " type: " << arg.type << "\n";
+                return;
+            }
+
             Indent();
-            m_stream << "// Some arg dest:" << arg.dest << " type: " << arg.type << "\n";
+            m_stream << targetShaderArg->m_name << " = something;\n";
         }
 
         void DumpVertexShader(const MaterialPass& pass)
@@ -46,10 +59,14 @@ namespace IW4
             if (pass.vertexShader == nullptr)
                 return;
 
+            const auto vertexShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pass.vertexShader->prog.loadDef.program, pass.vertexShader->prog.loadDef.programSize * sizeof(uint32_t));
+            assert(vertexShaderInfo);
+            if (!vertexShaderInfo)
+                return;
+
             m_stream << "\n";
             Indent();
-            // TODO: Actually find out which version this shader uses
-            m_stream << "vertexShader 1.0 \"" << pass.vertexShader->name << "\"\n";
+            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << pass.pixelShader->name << "\"\n";
             Indent();
             m_stream << "{\n";
             IncIndent();
@@ -66,7 +83,7 @@ namespace IW4
                         || arg.type == MTL_ARG_LITERAL_VERTEX_CONST
                         || arg.type == MTL_ARG_CODE_VERTEX_CONST)
                     {
-                        DumpShaderArg(arg);
+                        DumpShaderArg(arg, *vertexShaderInfo);
                     }
                 }
             }
@@ -81,10 +98,14 @@ namespace IW4
             if (pass.pixelShader == nullptr)
                 return;
 
+            const auto pixelShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pass.pixelShader->prog.loadDef.program, pass.pixelShader->prog.loadDef.programSize * sizeof(uint32_t));
+            assert(pixelShaderInfo);
+            if (!pixelShaderInfo)
+                return;
+
             m_stream << "\n";
             Indent();
-            // TODO: Actually find out which version this shader uses
-            m_stream << "pixelShader 1.0 \"" << pass.pixelShader->name << "\"\n";
+            m_stream << "pixelShader " << pixelShaderInfo->m_version_major << "." << pixelShaderInfo->m_version_minor << " \"" << pass.pixelShader->name << "\"\n";
             Indent();
             m_stream << "{\n";
             IncIndent();
@@ -103,7 +124,7 @@ namespace IW4
                         || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
                         || arg.type == MTL_ARG_LITERAL_PIXEL_CONST)
                     {
-                        DumpShaderArg(arg);
+                        DumpShaderArg(arg, *pixelShaderInfo);
                     }
                 }
             }
