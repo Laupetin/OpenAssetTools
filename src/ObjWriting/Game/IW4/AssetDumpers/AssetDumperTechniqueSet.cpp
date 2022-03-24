@@ -1,5 +1,6 @@
 #include "AssetDumperTechniqueSet.h"
 
+#include <algorithm>
 #include <cassert>
 #include <sstream>
 #include <type_traits>

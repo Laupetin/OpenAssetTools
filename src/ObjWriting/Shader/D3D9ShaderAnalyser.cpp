@@ -1,6 +1,7 @@
 #include "D3D9ShaderAnalyser.h"
 
 #include <cassert>
+#include <cstring>
 
 #include "Utils/FileUtils.h"
 
