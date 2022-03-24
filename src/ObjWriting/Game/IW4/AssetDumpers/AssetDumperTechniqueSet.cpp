@@ -40,12 +40,12 @@ namespace IW4
         static bool FindCodeConstantSourceAccessor(const MaterialConstantSource sourceIndexToFind, const CodeConstantSource* codeConstantTable, std::string& codeSourceAccessor)
         {
             const auto* currentCodeConst = codeConstantTable;
-            while(currentCodeConst->name != nullptr)
+            while (currentCodeConst->name != nullptr)
             {
-                if(currentCodeConst->subtable != nullptr)
+                if (currentCodeConst->subtable != nullptr)
                 {
                     std::string accessorInSubTable;
-                    if(FindCodeConstantSourceAccessor(sourceIndexToFind, currentCodeConst->subtable, accessorInSubTable))
+                    if (FindCodeConstantSourceAccessor(sourceIndexToFind, currentCodeConst->subtable, accessorInSubTable))
                     {
                         std::ostringstream ss;
                         ss << currentCodeConst->name << '.' << accessorInSubTable;
@@ -53,9 +53,9 @@ namespace IW4
                         return true;
                     }
                 }
-                else if(currentCodeConst->arrayCount > 0)
+                else if (currentCodeConst->arrayCount > 0)
                 {
-                    if(currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind) 
+                    if (currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind)
                         && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
                     {
                         std::ostringstream ss;
@@ -64,7 +64,7 @@ namespace IW4
                         return true;
                     }
                 }
-                else if(currentCodeConst->source == sourceIndexToFind)
+                else if (currentCodeConst->source == sourceIndexToFind)
                 {
                     codeSourceAccessor = currentCodeConst->name;
                     return true;
@@ -79,12 +79,12 @@ namespace IW4
         static bool FindCodeSamplerSourceAccessor(const MaterialTextureSource sourceIndexToFind, const CodeSamplerSource* codeSamplerTable, std::string& codeSourceAccessor)
         {
             const auto* currentCodeConst = codeSamplerTable;
-            while(currentCodeConst->name != nullptr)
+            while (currentCodeConst->name != nullptr)
             {
-                if(currentCodeConst->subtable != nullptr)
+                if (currentCodeConst->subtable != nullptr)
                 {
                     std::string accessorInSubTable;
-                    if(FindCodeSamplerSourceAccessor(sourceIndexToFind, currentCodeConst->subtable, accessorInSubTable))
+                    if (FindCodeSamplerSourceAccessor(sourceIndexToFind, currentCodeConst->subtable, accessorInSubTable))
                     {
                         std::ostringstream ss;
                         ss << currentCodeConst->name << '.' << accessorInSubTable;
@@ -92,9 +92,9 @@ namespace IW4
                         return true;
                     }
                 }
-                else if(currentCodeConst->arrayCount > 0)
+                else if (currentCodeConst->arrayCount > 0)
                 {
-                    if(currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind) 
+                    if (currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind)
                         && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
                     {
                         std::ostringstream ss;
@@ -103,7 +103,7 @@ namespace IW4
                         return true;
                     }
                 }
-                else if(currentCodeConst->source == sourceIndexToFind)
+                else if (currentCodeConst->source == sourceIndexToFind)
                 {
                     codeSourceAccessor = currentCodeConst->name;
                     return true;
@@ -139,14 +139,14 @@ namespace IW4
             else
                 codeDestAccessor = targetShaderArg->m_name;
 
-            if(arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.type == MTL_ARG_CODE_PIXEL_CONST)
+            if (arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.type == MTL_ARG_CODE_PIXEL_CONST)
             {
                 const auto sourceIndex = static_cast<MaterialConstantSource>(arg.u.codeConst.index);
                 std::string codeSourceAccessor;
-                if(FindCodeConstantSourceAccessor(sourceIndex, s_codeConsts, codeSourceAccessor)
+                if (FindCodeConstantSourceAccessor(sourceIndex, s_codeConsts, codeSourceAccessor)
                     || FindCodeConstantSourceAccessor(sourceIndex, s_defaultCodeConsts, codeSourceAccessor))
                 {
-                    if(codeDestAccessor != codeSourceAccessor)
+                    if (codeDestAccessor != codeSourceAccessor)
                     {
                         Indent();
                         m_stream << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
@@ -166,7 +166,7 @@ namespace IW4
                     m_stream << codeDestAccessor << " = UNKNOWN;\n";
                 }
             }
-            else if(arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
+            else if (arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
             {
                 const auto sourceIndex = static_cast<MaterialTextureSource>(arg.u.codeSampler);
                 std::string codeSourceAccessor;
@@ -191,6 +191,18 @@ namespace IW4
                     assert(false);
                     Indent();
                     m_stream << codeDestAccessor << " = UNKNOWN;\n";
+                }
+            }
+            else if (arg.type == MTL_ARG_LITERAL_VERTEX_CONST || arg.type == MTL_ARG_LITERAL_PIXEL_CONST)
+            {
+                if (arg.u.literalConst)
+                {
+                    Indent();
+                    m_stream << codeDestAccessor << " = float4( " << (*arg.u.literalConst)[0]
+                        << ", " << (*arg.u.literalConst)[1]
+                        << ", " << (*arg.u.literalConst)[2]
+                        << ", " << (*arg.u.literalConst)[3]
+                        << " );\n";
                 }
             }
             else
