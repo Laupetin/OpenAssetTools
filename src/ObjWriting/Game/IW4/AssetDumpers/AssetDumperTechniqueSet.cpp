@@ -218,8 +218,17 @@ namespace IW4
 
         void DumpVertexShader(const MaterialPass& pass)
         {
-            if (pass.vertexShader == nullptr)
+            if (pass.vertexShader == nullptr || pass.vertexShader->name == nullptr)
                 return;
+
+            if (pass.vertexShader->name[0] == ',')
+            {
+                // Cannot dump when shader is referenced due to unknown constant names and unknown version
+                Indent();
+                std::cerr << "Cannot dump vertex shader " << &pass.vertexShader->name[1] << " due to being a referenced asset\n";
+                m_stream << "// Cannot dump vertex shader " << &pass.vertexShader->name[1] << " due to being a referenced asset\n";
+                return;
+            }
 
             const auto vertexShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pass.vertexShader->prog.loadDef.program, pass.vertexShader->prog.loadDef.programSize * sizeof(uint32_t));
             assert(vertexShaderInfo);
@@ -257,8 +266,17 @@ namespace IW4
 
         void DumpPixelShader(const MaterialPass& pass)
         {
-            if (pass.pixelShader == nullptr)
+            if (pass.pixelShader == nullptr || pass.pixelShader->name == nullptr)
                 return;
+
+            if(pass.pixelShader->name[0] == ',')
+            {
+                // Cannot dump when shader is referenced due to unknown constant names and unknown version
+                Indent();
+                std::cerr << "Cannot dump pixel shader " << &pass.pixelShader->name[1] << " due to being a referenced asset\n";
+                m_stream << "// Cannot dump pixel shader " << &pass.pixelShader->name[1] << " due to being a referenced asset\n";
+                return;
+            }
 
             const auto pixelShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pass.pixelShader->prog.loadDef.program, pass.pixelShader->prog.loadDef.programSize * sizeof(uint32_t));
             assert(pixelShaderInfo);
@@ -296,7 +314,7 @@ namespace IW4
             m_stream << "}\n";
         }
 
-        const char* GetStreamDestinationString(const MaterialStreamDestination_e dst)
+        static const char* GetStreamDestinationString(const MaterialStreamDestination_e dst)
         {
             static const char* destinationNames[]
             {
@@ -323,7 +341,7 @@ namespace IW4
             return "";
         }
 
-        const char* GetStreamSourceString(const MaterialStreamStreamSource_e src)
+        static const char* GetStreamSourceString(const MaterialStreamStreamSource_e src)
         {
             static const char* sourceNames[]
             {
