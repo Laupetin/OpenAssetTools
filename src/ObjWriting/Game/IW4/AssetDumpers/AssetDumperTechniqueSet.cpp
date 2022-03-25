@@ -383,15 +383,36 @@ namespace IW4
 
         void DumpVertexDecl(const MaterialPass& pass)
         {
-            if (pass.vertexDecl == nullptr || pass.vertexDecl->streamCount <= 0)
+            const auto* vertexDecl = pass.vertexDecl;
+            if (vertexDecl == nullptr)
                 return;
+
+            if(vertexDecl->name && vertexDecl->name[0] == ',')
+            {
+                const auto loadedVertexDeclFromOtherZone = GlobalAssetPool<MaterialVertexDeclaration>::GetAssetByName(&vertexDecl->name[1]);
+
+                if (loadedVertexDeclFromOtherZone == nullptr)
+                {
+                    // Cannot dump when shader is referenced due to unknown constant names and unknown version
+                    Indent();
+                    std::cerr << "Cannot dump vertex decl " << &vertexDecl->name[1] << " due to being a referenced asset\n";
+                    m_stream << "// Cannot dump vertex decl " << &vertexDecl->name[1] << " due to being a referenced asset\n";
+                    return;
+                }
+                vertexDecl = loadedVertexDeclFromOtherZone->Asset();
+            }
 
             m_stream << "\n";
 
-            const auto streamCount = std::min(static_cast<size_t>(pass.vertexDecl->streamCount), std::extent_v<decltype(MaterialVertexStreamRouting::data)>);
+#ifdef TECHSET_DEBUG
+            Indent();
+            m_stream << "// Decl: " << vertexDecl->name << "\n";
+#endif
+
+            const auto streamCount = std::min(static_cast<size_t>(vertexDecl->streamCount), std::extent_v<decltype(MaterialVertexStreamRouting::data)>);
             for (auto streamIndex = 0u; streamIndex < streamCount; streamIndex++)
             {
-                const auto& stream = pass.vertexDecl->routing.data[streamIndex];
+                const auto& stream = vertexDecl->routing.data[streamIndex];
                 Indent();
                 m_stream << "vertex." << GetStreamDestinationString(static_cast<MaterialStreamDestination_e>(stream.dest))
                     << " = code." << GetStreamSourceString(static_cast<MaterialStreamStreamSource_e>(stream.source)) << ";\n";
