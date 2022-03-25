@@ -7,6 +7,7 @@
 
 #include "Dumping/AbstractTextDumper.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+#include "Pool/GlobalAssetPool.h"
 #include "Shader/D3D9ShaderAnalyser.h"
 
 using namespace IW4;
@@ -218,26 +219,34 @@ namespace IW4
 
         void DumpVertexShader(const MaterialPass& pass)
         {
-            if (pass.vertexShader == nullptr || pass.vertexShader->name == nullptr)
+            auto vertexShader = pass.vertexShader;
+
+            if (vertexShader == nullptr || vertexShader->name == nullptr)
                 return;
 
-            if (pass.vertexShader->name[0] == ',')
+            if (vertexShader->name[0] == ',')
             {
-                // Cannot dump when shader is referenced due to unknown constant names and unknown version
-                Indent();
-                std::cerr << "Cannot dump vertex shader " << &pass.vertexShader->name[1] << " due to being a referenced asset\n";
-                m_stream << "// Cannot dump vertex shader " << &pass.vertexShader->name[1] << " due to being a referenced asset\n";
-                return;
+                const auto loadedVertexShaderFromOtherZone = GlobalAssetPool<MaterialVertexShader>::GetAssetByName(&vertexShader->name[1]);
+
+                if(loadedVertexShaderFromOtherZone == nullptr)
+                {
+                    // Cannot dump when shader is referenced due to unknown constant names and unknown version
+                    Indent();
+                    std::cerr << "Cannot dump vertex shader " << &vertexShader->name[1] << " due to being a referenced asset\n";
+                    m_stream << "// Cannot dump vertex shader " << &vertexShader->name[1] << " due to being a referenced asset\n";
+                    return;
+                }
+                vertexShader = loadedVertexShaderFromOtherZone->Asset();
             }
 
-            const auto vertexShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pass.vertexShader->prog.loadDef.program, pass.vertexShader->prog.loadDef.programSize * sizeof(uint32_t));
+            const auto vertexShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(vertexShader->prog.loadDef.program, vertexShader->prog.loadDef.programSize * sizeof(uint32_t));
             assert(vertexShaderInfo);
             if (!vertexShaderInfo)
                 return;
 
             m_stream << "\n";
             Indent();
-            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << pass.vertexShader->name << "\"\n";
+            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << vertexShader->name << "\"\n";
             Indent();
             m_stream << "{\n";
             IncIndent();
@@ -266,26 +275,34 @@ namespace IW4
 
         void DumpPixelShader(const MaterialPass& pass)
         {
-            if (pass.pixelShader == nullptr || pass.pixelShader->name == nullptr)
+            auto pixelShader = pass.pixelShader;
+
+            if (pixelShader == nullptr || pixelShader->name == nullptr)
                 return;
 
-            if(pass.pixelShader->name[0] == ',')
+            if (pixelShader->name[0] == ',')
             {
-                // Cannot dump when shader is referenced due to unknown constant names and unknown version
-                Indent();
-                std::cerr << "Cannot dump pixel shader " << &pass.pixelShader->name[1] << " due to being a referenced asset\n";
-                m_stream << "// Cannot dump pixel shader " << &pass.pixelShader->name[1] << " due to being a referenced asset\n";
-                return;
+                const auto loadedPixelShaderFromOtherZone = GlobalAssetPool<MaterialPixelShader>::GetAssetByName(&pixelShader->name[1]);
+
+                if (loadedPixelShaderFromOtherZone == nullptr)
+                {
+                    // Cannot dump when shader is referenced due to unknown constant names and unknown version
+                    Indent();
+                    std::cerr << "Cannot dump pixel shader " << &pixelShader->name[1] << " due to being a referenced asset\n";
+                    m_stream << "// Cannot dump pixel shader " << &pixelShader->name[1] << " due to being a referenced asset\n";
+                    return;
+                }
+                pixelShader = loadedPixelShaderFromOtherZone->Asset();
             }
 
-            const auto pixelShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pass.pixelShader->prog.loadDef.program, pass.pixelShader->prog.loadDef.programSize * sizeof(uint32_t));
+            const auto pixelShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pixelShader->prog.loadDef.program, pixelShader->prog.loadDef.programSize * sizeof(uint32_t));
             assert(pixelShaderInfo);
             if (!pixelShaderInfo)
                 return;
 
             m_stream << "\n";
             Indent();
-            m_stream << "pixelShader " << pixelShaderInfo->m_version_major << "." << pixelShaderInfo->m_version_minor << " \"" << pass.pixelShader->name << "\"\n";
+            m_stream << "pixelShader " << pixelShaderInfo->m_version_major << "." << pixelShaderInfo->m_version_minor << " \"" << pixelShader->name << "\"\n";
             Indent();
             m_stream << "{\n";
             IncIndent();
