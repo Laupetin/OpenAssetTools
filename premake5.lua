@@ -29,6 +29,10 @@ workspace "OpenAssetTools"
     }
     defaultplatform "x86"
 
+    disablewarnings {
+        "26812" -- Prefer enum class over unscoped
+    }
+
     filter "platforms:x86"
         architecture "x86"
         defines "ARCH_x86"
