@@ -1252,9 +1252,9 @@ namespace IW4
     struct MaterialTechniqueSet
     {
         const char* name;
-        char worldVertFormat;
+        unsigned char worldVertFormat;
         bool hasBeenUploaded;
-        char unused[1];
+        unsigned char unused[1];
         MaterialTechniqueSet* remappedTechniqueSet;
         MaterialTechnique* techniques[48];
     };
