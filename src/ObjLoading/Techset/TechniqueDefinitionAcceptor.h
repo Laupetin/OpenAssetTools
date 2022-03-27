@@ -71,6 +71,8 @@ namespace techset
         ITechniqueDefinitionAcceptor& operator=(const ITechniqueDefinitionAcceptor& other) = default;
         ITechniqueDefinitionAcceptor& operator=(ITechniqueDefinitionAcceptor&& other) noexcept = default;
 
+        virtual void AcceptNextPass() = 0;
+
         virtual void AcceptStateMap(const std::string& stateMapName) = 0;
 
         virtual bool AcceptVertexShader(size_t shaderVersionMajor, size_t shaderVersionMinor, const std::string& vertexShaderName, std::string& errorMessage) = 0;

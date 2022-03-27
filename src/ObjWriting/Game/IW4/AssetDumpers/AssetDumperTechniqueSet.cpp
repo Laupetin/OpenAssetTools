@@ -209,7 +209,7 @@ namespace IW4
             else if (arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
             {
                 Indent();
-                m_stream << codeDestAccessor << " = material.#" << std::hex << arg.u.nameHash << ";\n";
+                m_stream << codeDestAccessor << " = material.#0x" << std::hex << arg.u.nameHash << ";\n";
             }
             else
             {
