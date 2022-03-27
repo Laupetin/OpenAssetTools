@@ -15,7 +15,7 @@ using namespace IW4;
 
 namespace IW4
 {
-    class TechniqueZoneLoadingState final : IZoneAssetLoaderState
+    class TechniqueZoneLoadingState final : public IZoneAssetLoaderState
     {
         std::map<std::string, MaterialTechnique*> m_loaded_techniques;
 
@@ -108,7 +108,7 @@ bool AssetLoaderTechniqueSet::LoadFromRaw(const std::string& assetName, ISearchP
     if (!file.IsOpen())
         return false;
 
-    const TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
+    const techset::TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
     const auto techsetDefinition = reader.ReadTechsetDefinition();
 
     if (techsetDefinition)

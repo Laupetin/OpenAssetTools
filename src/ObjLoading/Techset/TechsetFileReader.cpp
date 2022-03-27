@@ -6,6 +6,8 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 
+using namespace techset;
+
 TechsetFileReader::TechsetFileReader(std::istream& stream, std::string fileName, const char** validTechniqueTypeNames, const size_t validTechniqueTypeNameCount)
     : m_file_name(std::move(fileName)),
       m_valid_technique_type_names(validTechniqueTypeNames),
@@ -23,7 +25,7 @@ std::unique_ptr<techset::TechsetDefinition> TechsetFileReader::ReadTechsetDefini
     lexerConfig.m_read_numbers = false;
     const auto lexer = std::make_unique<SimpleLexer>(m_comment_proxy.get(), std::move(lexerConfig));
 
-    const auto parser = std::make_unique<techset::Parser>(lexer.get(), m_valid_technique_type_names, m_valid_technique_type_name_count);
+    const auto parser = std::make_unique<techset::TechsetParser>(lexer.get(), m_valid_technique_type_names, m_valid_technique_type_name_count);
 
     const auto success = parser->Parse();
     if (success)
