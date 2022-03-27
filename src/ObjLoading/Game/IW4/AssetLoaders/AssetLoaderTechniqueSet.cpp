@@ -4,6 +4,7 @@
 #include <sstream>
 #include <type_traits>
 
+#include "Utils/ClassUtils.h"
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
@@ -11,6 +12,29 @@
 #include "Techset/TechsetFileReader.h"
 
 using namespace IW4;
+
+namespace IW4
+{
+    class TechniqueZoneLoadingState final : IZoneAssetLoaderState
+    {
+        std::map<std::string, MaterialTechnique*> m_loaded_techniques;
+
+    public:
+        _NODISCARD MaterialTechnique* FindLoadedTechnique(const std::string& techniqueName) const
+        {
+            const auto loadedTechnique = m_loaded_techniques.find(techniqueName);
+            if (loadedTechnique != m_loaded_techniques.end())
+                return loadedTechnique->second;
+
+            return nullptr;
+        }
+
+        void AddLoadedTechnique(std::string techniqueName, MaterialTechnique* technique)
+        {
+            m_loaded_techniques.emplace(std::make_pair(std::move(techniqueName), technique));
+        }
+    };
+}
 
 void* AssetLoaderTechniqueSet::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -34,8 +58,9 @@ std::string AssetLoaderTechniqueSet::GetTechsetFileName(const std::string& techs
     return ss.str();
 }
 
-MaterialTechnique* AssetLoaderTechniqueSet::LoadTechniqueWithName(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
+MaterialTechnique* AssetLoaderTechniqueSet::LoadTechniqueFromRaw(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
 {
+    const auto techniqueFileName = GetTechniqueFileName(techniqueName);
     // TODO: Load technique or use previously loaded one
     return nullptr;
 }
@@ -47,14 +72,21 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& ass
     memset(techset, 0, sizeof(MaterialTechniqueSet));
     techset->name = memory->Dup(assetName.c_str());
 
-    for(auto i = 0u; i < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; i++)
+    auto* techniqueZoneLoadingState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<TechniqueZoneLoadingState>();
+    for (auto i = 0u; i < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; i++)
     {
         std::string techniqueName;
-        if(definition.GetTechniqueByIndex(i, techniqueName))
+        if (definition.GetTechniqueByIndex(i, techniqueName))
         {
-            auto* technique = LoadTechniqueWithName(techniqueName, searchPath, memory, manager);
-            if (technique == nullptr)
-                return false;
+            auto* technique = techniqueZoneLoadingState->FindLoadedTechnique(techniqueName);
+            if (!technique)
+            {
+                technique = LoadTechniqueFromRaw(techniqueName, searchPath, memory, manager);
+                if (technique == nullptr)
+                    return false;
+                techniqueZoneLoadingState->AddLoadedTechnique(techniqueName, technique);
+            }
+
             techset->techniques[i] = technique;
         }
     }
@@ -79,7 +111,7 @@ bool AssetLoaderTechniqueSet::LoadFromRaw(const std::string& assetName, ISearchP
     const TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
     const auto techsetDefinition = reader.ReadTechsetDefinition();
 
-    if(techsetDefinition)
+    if (techsetDefinition)
         return CreateTechsetFromDefinition(assetName, *techsetDefinition, searchPath, memory, manager);
 
     return false;

@@ -11,7 +11,7 @@ namespace IW4
     {
         static std::string GetTechniqueFileName(const std::string& techniqueName);
         static std::string GetTechsetFileName(const std::string& techsetAssetName);
-        static MaterialTechnique* LoadTechniqueWithName(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
+        static MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
         static bool CreateTechsetFromDefinition(const std::string& assetName, const techset::TechsetDefinition& definition, ISearchPath* searchPath, MemoryManager* memory,
                                                 IAssetLoadingManager* manager);
 
