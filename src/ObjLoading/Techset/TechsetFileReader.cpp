@@ -1,7 +1,8 @@
 #include "TechsetFileReader.h"
 
+#include <iostream>
+
 #include "Parsing/TechsetFileParser.h"
-#include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 
