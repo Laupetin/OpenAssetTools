@@ -48,40 +48,43 @@ ShaderArgumentLiteralSource::ShaderArgumentLiteralSource(float value[4])
 {
 }
 
-bool techset::operator<(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
+namespace techset
 {
-    if (lhs.m_value[0] < rhs.m_value[0])
-        return true;
-    if (lhs.m_value[0] > rhs.m_value[0])
+    bool operator<(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
+    {
+        if (lhs.m_value[0] < rhs.m_value[0])
+            return true;
+        if (lhs.m_value[0] > rhs.m_value[0])
+            return false;
+        if (lhs.m_value[1] < rhs.m_value[1])
+            return true;
+        if (lhs.m_value[1] > rhs.m_value[1])
+            return false;
+        if (lhs.m_value[2] < rhs.m_value[2])
+            return true;
+        if (lhs.m_value[2] > rhs.m_value[2])
+            return false;
+        if (lhs.m_value[3] < rhs.m_value[3])
+            return true;
+        if (lhs.m_value[3] > rhs.m_value[3])
+            return false;
         return false;
-    if (lhs.m_value[1] < rhs.m_value[1])
-        return true;
-    if (lhs.m_value[1] > rhs.m_value[1])
-        return false;
-    if (lhs.m_value[2] < rhs.m_value[2])
-        return true;
-    if (lhs.m_value[2] > rhs.m_value[2])
-        return false;
-    if (lhs.m_value[3] < rhs.m_value[3])
-        return true;
-    if (lhs.m_value[3] > rhs.m_value[3])
-        return false;
-    return false;
-}
+    }
 
-bool techset::operator<=(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
-{
-    return !(rhs < lhs);
-}
+    bool operator<=(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
+    {
+        return !(rhs < lhs);
+    }
 
-bool techset::operator>(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
-{
-    return rhs < lhs;
-}
+    bool operator>(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
+    {
+        return rhs < lhs;
+    }
 
-bool techset::operator>=(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
-{
-    return !(lhs < rhs);
+    bool operator>=(const ShaderArgumentLiteralSource& lhs, const ShaderArgumentLiteralSource& rhs)
+    {
+        return !(lhs < rhs);
+    }
 }
 
 ShaderArgumentMaterialSource::ShaderArgumentMaterialSource()
