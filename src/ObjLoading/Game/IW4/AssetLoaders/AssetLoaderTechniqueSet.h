@@ -9,9 +9,7 @@ namespace IW4
 {
     class AssetLoaderTechniqueSet final : public BasicAssetLoader<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>
     {
-        static std::string GetTechniqueFileName(const std::string& techniqueName);
         static std::string GetTechsetFileName(const std::string& techsetAssetName);
-        static MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager);
         static bool CreateTechsetFromDefinition(const std::string& assetName, const techset::TechsetDefinition& definition, ISearchPath* searchPath, MemoryManager* memory,
                                                 IAssetLoadingManager* manager);
 
