@@ -289,6 +289,28 @@ protected:
         }
     }
 
+    void ReadNumber(bool& hasSignPrefix, int& integerValue)
+    {
+        const auto& currentLine = CurrentLine();
+        assert(m_current_line_offset >= 1);
+        assert(isdigit(currentLine.m_line[m_current_line_offset - 1])
+            || currentLine.m_line[m_current_line_offset - 1] == '+'
+            || currentLine.m_line[m_current_line_offset - 1] == '-');
+        hasSignPrefix = currentLine.m_line[m_current_line_offset - 1] == '+' || currentLine.m_line[m_current_line_offset - 1] == '-';
+
+        const auto lineLength = currentLine.m_line.size();
+        if (lineLength - m_current_line_offset >= 1
+            && currentLine.m_line[m_current_line_offset - 1] == '0'
+            && currentLine.m_line[m_current_line_offset] == 'x')
+        {
+            ReadHexNumber(integerValue);
+        }
+        else
+        {
+            integerValue = ReadInteger();
+        }
+    }
+
 public:
     const TokenType& GetToken(unsigned index) override
     {

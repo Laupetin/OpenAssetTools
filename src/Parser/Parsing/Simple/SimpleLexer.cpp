@@ -125,12 +125,13 @@ SimpleParserValue SimpleLexer::GetNextToken()
 
     if (m_config.m_read_integer_numbers && (isdigit(c) || (c == '+' || c == '-' || (m_config.m_read_floating_point_numbers && c == '.')) && isdigit(PeekChar())))
     {
+        bool hasSignPrefix;
+        int integerValue;
+
         if(m_config.m_read_floating_point_numbers)
         {
             bool isFloatingPointValue;
-            bool hasSignPrefix;
             double floatingPointValue;
-            int integerValue;
 
             ReadNumber(isFloatingPointValue, hasSignPrefix, floatingPointValue, integerValue);
 
@@ -140,7 +141,8 @@ SimpleParserValue SimpleLexer::GetNextToken()
             return SimpleParserValue::Integer(pos, integerValue, hasSignPrefix);
         }
 
-        return SimpleParserValue::Integer(pos, ReadInteger(), c == '+' || c == '-');
+        ReadNumber(hasSignPrefix, integerValue);
+        return SimpleParserValue::Integer(pos, integerValue, hasSignPrefix);
     }
 
     if (isalpha(c) || c == '_')
