@@ -99,6 +99,7 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
+                create.Identifier().Capture(CAPTURE_FIRST_TOKEN).NoConsume(),
                 create.Identifier().Capture(CAPTURE_SHADER_ARGUMENT),
                 create.Optional(create.And({
                     create.Char('['),
@@ -170,7 +171,6 @@ namespace techset
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_in_shader == true);
-            state->m_in_shader = false;
 
             const auto& shaderArgumentNameToken = result.NextCapture(CAPTURE_SHADER_ARGUMENT);
 
@@ -200,7 +200,8 @@ namespace techset
 const std::vector<TechniqueParser::sequence_t*>& TechniqueShaderScopeSequences::GetSequences()
 {
     static std::vector<TechniqueParser::sequence_t*> tests({
-        new SequenceEndShader()
+        new SequenceEndShader(),
+        new SequenceShaderArgument()
     });
 
     return tests;

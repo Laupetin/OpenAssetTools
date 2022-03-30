@@ -44,6 +44,7 @@ namespace IW4
         explicit TechniqueCreator(IAssetLoadingManager* manager)
             : m_manager(manager)
         {
+            m_passes.emplace_back();
         }
 
         void AcceptNextPass() override
@@ -88,22 +89,22 @@ namespace IW4
 
         bool AcceptShaderCodeArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentCodeSource source, std::string& errorMessage) override
         {
-            return false;
+            return true;
         }
 
         bool AcceptShaderLiteralArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentLiteralSource source, std::string& errorMessage) override
         {
-            return false;
+            return true;
         }
 
         bool AcceptShaderMaterialArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentMaterialSource source, std::string& errorMessage) override
         {
-            return false;
+            return true;
         }
 
         bool AcceptVertexStreamRouting(const std::string& destination, const std::string& source, std::string& errorMessage) override
         {
-            return false;
+            return true;
         }
     };
 
