@@ -29,7 +29,7 @@ bool AssetLoaderVertexShader::LoadFromRaw(const std::string& assetName, ISearchP
     std::ostringstream ss;
     ss << "shader_bin/vs_" << assetName << ".cso";
 
-    const auto file = searchPath->Open(assetName);
+    const auto file = searchPath->Open(ss.str());
     if (!file.IsOpen())
         return false;
 

@@ -29,7 +29,7 @@ bool AssetLoaderPixelShader::LoadFromRaw(const std::string& assetName, ISearchPa
     std::ostringstream ss;
     ss << "shader_bin/ps_" << assetName << ".cso";
 
-    const auto file = searchPath->Open(assetName);
+    const auto file = searchPath->Open(ss.str());
     if (!file.IsOpen())
         return false;
 
