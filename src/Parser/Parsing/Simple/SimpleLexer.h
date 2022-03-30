@@ -24,7 +24,8 @@ public:
 
         bool m_emit_new_line_tokens;
         bool m_read_strings;
-        bool m_read_numbers;
+        bool m_read_integer_numbers;
+        bool m_read_floating_point_numbers;
         std::vector<MultiCharacterToken> m_multi_character_tokens;
     };
 

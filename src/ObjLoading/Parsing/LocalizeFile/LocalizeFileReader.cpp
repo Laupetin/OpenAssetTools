@@ -32,7 +32,8 @@ std::vector<LocalizeFileEntry> LocalizeFileReader::ReadLocalizeFile()
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = true;
     lexerConfig.m_read_strings = true;
-    lexerConfig.m_read_numbers = false;
+    lexerConfig.m_read_integer_numbers = false;
+    lexerConfig.m_read_floating_point_numbers = false;
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
 
     const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language);

@@ -285,7 +285,8 @@ std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseIfExpression(const s
 
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = false;
-    lexerConfig.m_read_numbers = true;
+    lexerConfig.m_read_integer_numbers = true;
+    lexerConfig.m_read_floating_point_numbers = true;
     lexerConfig.m_read_strings = false;
     SimpleExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
 

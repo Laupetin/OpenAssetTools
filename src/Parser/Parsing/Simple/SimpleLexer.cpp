@@ -14,7 +14,7 @@ SimpleLexer::MultiCharacterTokenLookupEntry::MultiCharacterTokenLookupEntry(cons
 
 SimpleLexer::SimpleLexer(IParserLineStream* stream)
     : AbstractLexer(stream),
-      m_config{false, true, true, {}},
+      m_config{false, true, true, true, {}},
       m_check_for_multi_character_tokens(false),
       m_last_line(1)
 {
@@ -29,6 +29,9 @@ SimpleLexer::SimpleLexer(IParserLineStream* stream, Config config)
     for (auto tokenConfig : m_config.m_multi_character_tokens)
         AddMultiCharacterTokenConfigToLookup(std::move(tokenConfig));
     m_config.m_multi_character_tokens.clear();
+
+    // If reading floating point numbers then must be reading integers
+    assert(config.m_read_floating_point_numbers == false || config.m_read_floating_point_numbers == config.m_read_integer_numbers);
 }
 
 void SimpleLexer::AddMultiCharacterTokenConfigToLookup(Config::MultiCharacterToken tokenConfig)
@@ -105,12 +108,12 @@ SimpleParserValue SimpleLexer::GetNextToken()
     if (c == EOF)
         return SimpleParserValue::EndOfFile(TokenPos());
 
-    if(m_check_for_multi_character_tokens)
+    if (m_check_for_multi_character_tokens)
     {
         const auto* multiTokenLookup = m_multi_character_token_lookup[static_cast<uint8_t>(c)].get();
-        while(multiTokenLookup)
+        while (multiTokenLookup)
         {
-            if(ReadMultiCharacterToken(multiTokenLookup))
+            if (ReadMultiCharacterToken(multiTokenLookup))
                 return SimpleParserValue::MultiCharacter(pos, multiTokenLookup->m_id);
 
             multiTokenLookup = multiTokenLookup->m_next.get();
@@ -120,19 +123,24 @@ SimpleParserValue SimpleLexer::GetNextToken()
     if (m_config.m_read_strings && c == '\"')
         return SimpleParserValue::String(pos, new std::string(ReadString()));
 
-    if (m_config.m_read_numbers && (isdigit(c) || (c == '+' || c == '-' || c == '.') && isdigit(PeekChar())))
+    if (m_config.m_read_integer_numbers && (isdigit(c) || (c == '+' || c == '-' || (m_config.m_read_floating_point_numbers && c == '.')) && isdigit(PeekChar())))
     {
-        bool isFloatingPointValue;
-        bool hasSignPrefix;
-        double doubleValue;
-        int integerValue;
+        if(m_config.m_read_floating_point_numbers)
+        {
+            bool isFloatingPointValue;
+            bool hasSignPrefix;
+            double floatingPointValue;
+            int integerValue;
 
-        ReadNumber(isFloatingPointValue, hasSignPrefix, doubleValue, integerValue);
+            ReadNumber(isFloatingPointValue, hasSignPrefix, floatingPointValue, integerValue);
 
-        if (isFloatingPointValue)
-            return SimpleParserValue::FloatingPoint(pos, doubleValue, hasSignPrefix);
+            if (isFloatingPointValue)
+                return SimpleParserValue::FloatingPoint(pos, floatingPointValue, hasSignPrefix);
 
-        return SimpleParserValue::Integer(pos, integerValue, hasSignPrefix);
+            return SimpleParserValue::Integer(pos, integerValue, hasSignPrefix);
+        }
+
+        return SimpleParserValue::Integer(pos, ReadInteger(), c == '+' || c == '-');
     }
 
     if (isalpha(c) || c == '_')
