@@ -57,7 +57,7 @@ namespace IW4
             // TODO: State maps currently are not used
         }
 
-        bool AcceptVertexShader(size_t shaderVersionMajor, size_t shaderVersionMinor, const std::string& vertexShaderName, std::string& errorMessage) override
+        bool AcceptVertexShader(const std::string& vertexShaderName, std::string& errorMessage) override
         {
             auto* vertexShaderDependency = m_manager->LoadDependency(ASSET_TYPE_VERTEXSHADER, vertexShaderName);
             if (vertexShaderDependency == nullptr)
@@ -72,7 +72,7 @@ namespace IW4
             return true;
         }
 
-        bool AcceptPixelShader(size_t shaderVersionMajor, size_t shaderVersionMinor, const std::string& pixelShaderName, std::string& errorMessage) override
+        bool AcceptPixelShader(const std::string& pixelShaderName, std::string& errorMessage) override
         {
             auto* pixelShaderDependency = m_manager->LoadDependency(ASSET_TYPE_PIXELSHADER, pixelShaderName);
             if (pixelShaderDependency == nullptr)

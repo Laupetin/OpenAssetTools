@@ -58,9 +58,10 @@ namespace techset
         static constexpr auto TAG_PIXEL_SHADER = 2;
 
         static constexpr auto CAPTURE_START = 1;
-        static constexpr auto CAPTURE_VERSION_MAJOR = 2;
-        static constexpr auto CAPTURE_VERSION_MINOR = 3;
-        static constexpr auto CAPTURE_SHADER_NAME = 4;
+        static constexpr auto CAPTURE_VERSION = 2;
+        static constexpr auto CAPTURE_VERSION_MAJOR = 3;
+        static constexpr auto CAPTURE_VERSION_MINOR = 4;
+        static constexpr auto CAPTURE_SHADER_NAME = 5;
 
     public:
         SequenceShader()
@@ -72,9 +73,15 @@ namespace techset
                     create.Keyword("vertexShader").Tag(TAG_VERTEX_SHADER),
                     create.Keyword("pixelShader").Tag(TAG_PIXEL_SHADER),
                 }).Capture(CAPTURE_START),
-                create.Integer().Capture(CAPTURE_VERSION_MAJOR),
-                create.Char('.'),
-                create.Integer().Capture(CAPTURE_VERSION_MINOR),
+                create.Or({
+                    create.And({
+                        create.Integer().Capture(CAPTURE_VERSION_MAJOR),
+                        create.Char('.'),
+                        create.Integer().Capture(CAPTURE_VERSION_MINOR),
+                    }),
+                    create.FloatingPoint().Capture(CAPTURE_VERSION), // This is dumb but cod devs made the format so cannot change it
+                    create.String().Capture(CAPTURE_VERSION)
+                }),
                 create.String().Capture(CAPTURE_SHADER_NAME),
                 create.Char('{')
             });
@@ -85,15 +92,7 @@ namespace techset
         {
             const auto& firstToken = result.NextCapture(CAPTURE_START);
 
-            const auto& versionMajorToken = result.NextCapture(CAPTURE_VERSION_MAJOR);
-            if (versionMajorToken.IntegerValue() < 0)
-                throw ParsingException(versionMajorToken.GetPos(), "Major version must be positive");
-            const auto versionMajor = static_cast<size_t>(versionMajorToken.IntegerValue());
-
-            const auto& versionMinorToken = result.NextCapture(CAPTURE_VERSION_MINOR);
-            if (versionMinorToken.IntegerValue() < 0)
-                throw ParsingException(versionMinorToken.GetPos(), "Minor version must be positive");
-            const auto versionMinor = static_cast<size_t>(versionMajorToken.IntegerValue());
+            // Don't care about shader version since it's stated in the shader bin anyway
 
             const auto& shaderNameToken = result.NextCapture(CAPTURE_SHADER_NAME);
 
@@ -103,12 +102,12 @@ namespace techset
             assert(shaderTag == TAG_VERTEX_SHADER || shaderTag == TAG_PIXEL_SHADER);
             if (shaderTag == TAG_VERTEX_SHADER)
             {
-                acceptorResult = state->m_acceptor->AcceptVertexShader(versionMajor, versionMinor, shaderNameToken.StringValue(), errorMessage);
+                acceptorResult = state->m_acceptor->AcceptVertexShader(shaderNameToken.StringValue(), errorMessage);
                 state->m_current_shader = ShaderSelector::VERTEX_SHADER;
             }
             else
             {
-                acceptorResult = state->m_acceptor->AcceptPixelShader(versionMajor, versionMinor, shaderNameToken.StringValue(), errorMessage);
+                acceptorResult = state->m_acceptor->AcceptPixelShader(shaderNameToken.StringValue(), errorMessage);
                 state->m_current_shader = ShaderSelector::PIXEL_SHADER;
             }
 

@@ -75,8 +75,8 @@ namespace techset
 
         virtual void AcceptStateMap(const std::string& stateMapName) = 0;
 
-        virtual bool AcceptVertexShader(size_t shaderVersionMajor, size_t shaderVersionMinor, const std::string& vertexShaderName, std::string& errorMessage) = 0;
-        virtual bool AcceptPixelShader(size_t shaderVersionMajor, size_t shaderVersionMinor, const std::string& pixelShaderName, std::string& errorMessage) = 0;
+        virtual bool AcceptVertexShader(const std::string& vertexShaderName, std::string& errorMessage) = 0;
+        virtual bool AcceptPixelShader(const std::string& pixelShaderName, std::string& errorMessage) = 0;
 
         virtual bool AcceptShaderCodeArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentCodeSource source, std::string& errorMessage) = 0;
         virtual bool AcceptShaderLiteralArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentLiteralSource source, std::string& errorMessage) = 0;
