@@ -61,18 +61,26 @@ namespace techset
             }).Tag(TAG_CODE);
         }
 
+        static std::unique_ptr<matcher_t> LiteralValueMatchers(const SimpleMatcherFactory& create)
+        {
+            return create.Or({
+                create.FloatingPoint(),
+                create.Integer()
+            }).Capture(CAPTURE_LITERAL_VALUE);
+        }
+
         static std::unique_ptr<matcher_t> LiteralMatchers(const SimpleMatcherFactory& create)
         {
             return create.And({
                 create.Keyword("float4"),
                 create.Char('('),
-                create.FloatingPoint().Capture(CAPTURE_LITERAL_VALUE),
+                LiteralValueMatchers(create),
                 create.Char(','),
-                create.FloatingPoint().Capture(CAPTURE_LITERAL_VALUE),
+                LiteralValueMatchers(create),
                 create.Char(','),
-                create.FloatingPoint().Capture(CAPTURE_LITERAL_VALUE),
+                LiteralValueMatchers(create),
                 create.Char(','),
-                create.FloatingPoint().Capture(CAPTURE_LITERAL_VALUE),
+                LiteralValueMatchers(create),
                 create.Char(')'),
             }).Tag(TAG_LITERAL);
         }
@@ -142,7 +150,14 @@ namespace techset
         {
             float value[4];
             for (float& i : value)
-                i = static_cast<float>(result.NextCapture(CAPTURE_LITERAL_VALUE).FloatingPointValue());
+            {
+                const auto& literalValueToken = result.NextCapture(CAPTURE_LITERAL_VALUE);
+
+                if (literalValueToken.m_type == SimpleParserValueType::FLOATING_POINT)
+                    i = static_cast<float>(literalValueToken.FloatingPointValue());
+                else
+                    i = static_cast<float>(literalValueToken.IntegerValue());
+            }
 
             const ShaderArgumentLiteralSource source(value);
             std::string errorMessage;
@@ -174,16 +189,17 @@ namespace techset
 
             const auto& shaderArgumentNameToken = result.NextCapture(CAPTURE_SHADER_ARGUMENT);
 
-            size_t index = 0u;
+            ShaderArgument arg;
             if (result.HasNextCapture(CAPTURE_SHADER_INDEX))
             {
                 const auto& shaderArgumentIndexToken = result.NextCapture(CAPTURE_SHADER_INDEX);
                 if (shaderArgumentIndexToken.IntegerValue() < 0)
                     throw ParsingException(shaderArgumentIndexToken.GetPos(), "Index cannot be negative");
-                index = static_cast<size_t>(shaderArgumentIndexToken.IntegerValue());
+                const auto index = static_cast<size_t>(shaderArgumentIndexToken.IntegerValue());
+                arg = ShaderArgument(shaderArgumentNameToken.IdentifierValue(), index);
             }
-
-            ShaderArgument arg(shaderArgumentNameToken.IdentifierValue(), index);
+            else
+                arg = ShaderArgument(shaderArgumentNameToken.IdentifierValue());
 
             const auto typeTag = result.NextTag();
             assert(typeTag == TAG_CODE || typeTag == TAG_LITERAL || typeTag == TAG_MATERIAL);

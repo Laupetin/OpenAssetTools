@@ -15,9 +15,11 @@ namespace techset
     {
     public:
         std::string m_argument_name;
+        bool m_argument_index_specified;
         size_t m_argument_index;
 
         ShaderArgument();
+        explicit ShaderArgument(std::string argumentName);
         ShaderArgument(std::string argumentName, size_t argumentIndex);
     };
 

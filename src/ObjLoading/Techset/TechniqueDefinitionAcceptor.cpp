@@ -3,12 +3,21 @@
 using namespace techset;
 
 ShaderArgument::ShaderArgument()
-    : m_argument_index(0u)
+    : m_argument_index_specified(false),
+      m_argument_index(0u)
+{
+}
+
+ShaderArgument::ShaderArgument(std::string argumentName)
+    : m_argument_name(std::move(argumentName)),
+      m_argument_index_specified(false),
+      m_argument_index(0u)
 {
 }
 
 ShaderArgument::ShaderArgument(std::string argumentName, const size_t argumentIndex)
     : m_argument_name(std::move(argumentName)),
+      m_argument_index_specified(true),
       m_argument_index(argumentIndex)
 {
 }

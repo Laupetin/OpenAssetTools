@@ -1125,7 +1125,7 @@ namespace IW4
     struct CodeConstantSource
     {
         const char* name;
-        unsigned char source;
+        MaterialConstantSource source;
         CodeConstantSource* subtable;
         int arrayCount;
         int arrayStride;

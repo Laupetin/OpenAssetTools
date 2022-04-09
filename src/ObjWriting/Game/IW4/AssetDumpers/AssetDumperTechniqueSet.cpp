@@ -56,7 +56,7 @@ namespace IW4
                 }
                 else if (currentCodeConst->arrayCount > 0)
                 {
-                    if (currentCodeConst->source <= static_cast<unsigned>(sourceIndexToFind)
+                    if (currentCodeConst->source <= sourceIndexToFind
                         && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
                     {
                         std::ostringstream ss;
@@ -150,13 +150,13 @@ namespace IW4
                     if (codeDestAccessor != codeSourceAccessor)
                     {
                         Indent();
-                        m_stream << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+                        m_stream << codeDestAccessor << " = constant." << codeSourceAccessor << ";\n";
                     }
                     else
                     {
 #ifdef TECHSET_DEBUG
                         Indent();
-                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = constant." << codeSourceAccessor << ";\n";
 #endif
                     }
                 }
@@ -177,13 +177,13 @@ namespace IW4
                     if (codeDestAccessor != codeSourceAccessor)
                     {
                         Indent();
-                        m_stream << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+                        m_stream << codeDestAccessor << " = sampler." << codeSourceAccessor << ";\n";
                     }
                     else
                     {
 #ifdef TECHSET_DEBUG
                         Indent();
-                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = code." << codeSourceAccessor << ";\n";
+                        m_stream << "// Omitted due to matching accessors: " << codeDestAccessor << " = sampler." << codeSourceAccessor << ";\n";
 #endif
                     }
                 }
@@ -209,7 +209,23 @@ namespace IW4
             else if (arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
             {
                 Indent();
-                m_stream << codeDestAccessor << " = material.#0x" << std::hex << arg.u.nameHash << ";\n";
+                m_stream << codeDestAccessor << " = material.";
+
+                const auto knownMaterialSource = knownMaterialSourceNames.find(arg.u.nameHash);
+                if (knownMaterialSource != knownMaterialSourceNames.end())
+                {
+                    m_stream << knownMaterialSource->second;
+                }
+                else
+                {
+                    const auto shaderArgNameHash = Common::R_HashString(targetShaderArg->m_name.c_str(), 0u);
+                    if (shaderArgNameHash == arg.u.nameHash)
+                        m_stream << targetShaderArg->m_name;
+                    else
+                        m_stream << "#0x" << std::hex << arg.u.nameHash;
+                }
+
+                m_stream << ";\n";
             }
             else
             {
@@ -228,7 +244,7 @@ namespace IW4
             {
                 const auto loadedVertexShaderFromOtherZone = GlobalAssetPool<MaterialVertexShader>::GetAssetByName(&vertexShader->name[1]);
 
-                if(loadedVertexShaderFromOtherZone == nullptr)
+                if (loadedVertexShaderFromOtherZone == nullptr)
                 {
                     // Cannot dump when shader is referenced due to unknown constant names and unknown version
                     Indent();
@@ -387,7 +403,7 @@ namespace IW4
             if (vertexDecl == nullptr)
                 return;
 
-            if(vertexDecl->name && vertexDecl->name[0] == ',')
+            if (vertexDecl->name && vertexDecl->name[0] == ',')
             {
                 const auto loadedVertexDeclFromOtherZone = GlobalAssetPool<MaterialVertexDeclaration>::GetAssetByName(&vertexDecl->name[1]);
 

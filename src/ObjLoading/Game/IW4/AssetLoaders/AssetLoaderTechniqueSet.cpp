@@ -13,20 +13,82 @@
 #include "Pool/GlobalAssetPool.h"
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechsetFileReader.h"
+#include "Shader/D3D9ShaderAnalyser.h"
 
 using namespace IW4;
 
 namespace IW4
 {
+    class LoadedTechnique
+    {
+    public:
+        MaterialTechnique* m_technique;
+        std::vector<XAssetInfoGeneric*> m_dependencies;
+
+        LoadedTechnique(MaterialTechnique* technique, std::vector<XAssetInfoGeneric*> dependencies)
+            : m_technique(technique),
+              m_dependencies(std::move(dependencies))
+        {
+        }
+    };
+
+    class TechniqueZoneLoadingState final : public IZoneAssetLoaderState
+    {
+    public:
+        typedef const float (*literal_t)[4];
+
+    private:
+        std::unordered_map<std::string, std::unique_ptr<LoadedTechnique>> m_loaded_techniques;
+        std::map<techset::ShaderArgumentLiteralSource, literal_t> m_allocated_literals;
+
+    public:
+        _NODISCARD const LoadedTechnique* FindLoadedTechnique(const std::string& techniqueName) const
+        {
+            const auto loadedTechnique = m_loaded_techniques.find(techniqueName);
+            if (loadedTechnique != m_loaded_techniques.end())
+                return loadedTechnique->second.get();
+
+            return nullptr;
+        }
+
+        const LoadedTechnique* AddLoadedTechnique(std::string techniqueName, MaterialTechnique* technique, std::vector<XAssetInfoGeneric*> dependencies)
+        {
+            return m_loaded_techniques.emplace(std::make_pair(std::move(techniqueName), std::make_unique<LoadedTechnique>(technique, std::move(dependencies)))).first->second.get();
+        }
+
+        literal_t GetAllocatedLiteral(MemoryManager* memory, techset::ShaderArgumentLiteralSource source)
+        {
+            const auto& existingEntry = m_allocated_literals.find(source);
+
+            if (existingEntry != m_allocated_literals.end())
+                return existingEntry->second;
+
+            auto* newLiteral = static_cast<float(*)[4]>(memory->Alloc(sizeof(float) * 4u));
+            (*newLiteral)[0] = source.m_value[0];
+            (*newLiteral)[1] = source.m_value[1];
+            (*newLiteral)[2] = source.m_value[2];
+            (*newLiteral)[3] = source.m_value[3];
+            m_allocated_literals.emplace(std::make_pair(source, newLiteral));
+
+            return newLiteral;
+        }
+    };
+
     class TechniqueCreator final : public techset::ITechniqueDefinitionAcceptor
     {
+        MemoryManager* const m_memory;
         IAssetLoadingManager* const m_manager;
+        TechniqueZoneLoadingState* const m_zone_state;
 
     public:
         struct Pass
         {
             XAssetInfo<MaterialVertexShader>* m_vertex_shader;
+            std::unique_ptr<d3d9::ShaderInfo> m_vertex_shader_info;
+
             XAssetInfo<MaterialPixelShader>* m_pixel_shader;
+            std::unique_ptr<d3d9::ShaderInfo> m_pixel_shader_info;
+
             MaterialVertexDeclaration m_vertex_decl;
             std::vector<MaterialShaderArgument> m_arguments;
 
@@ -41,8 +103,10 @@ namespace IW4
         std::vector<Pass> m_passes;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
-        explicit TechniqueCreator(IAssetLoadingManager* manager)
-            : m_manager(manager)
+        TechniqueCreator(MemoryManager* memory, IAssetLoadingManager* manager, TechniqueZoneLoadingState* zoneState)
+            : m_memory(memory),
+              m_manager(manager),
+              m_zone_state(zoneState)
         {
             m_passes.emplace_back();
         }
@@ -66,8 +130,12 @@ namespace IW4
                 return false;
             }
 
+            assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
             pass.m_vertex_shader = reinterpret_cast<XAssetInfo<MaterialVertexShader>*>(vertexShaderDependency);
+
+            const auto& shaderLoadDef = pass.m_vertex_shader->Asset()->prog.loadDef;
+            pass.m_vertex_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
 
             return true;
         }
@@ -81,19 +149,295 @@ namespace IW4
                 return false;
             }
 
+            assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
             pass.m_pixel_shader = reinterpret_cast<XAssetInfo<MaterialPixelShader>*>(pixelShaderDependency);
 
+            const auto& shaderLoadDef = pass.m_pixel_shader->Asset()->prog.loadDef;
+            pass.m_pixel_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
+
             return true;
         }
 
-        bool AcceptShaderCodeArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentCodeSource source, std::string& errorMessage) override
+        static bool IsSamplerConstant(const d3d9::ShaderConstant& constant)
         {
+            return constant.m_type == d3d9::ParameterType::SAMPLER
+                || constant.m_type == d3d9::ParameterType::SAMPLER_1D
+                || constant.m_type == d3d9::ParameterType::SAMPLER_2D
+                || constant.m_type == d3d9::ParameterType::SAMPLER_3D
+                || constant.m_type == d3d9::ParameterType::SAMPLER_CUBE;
+        }
+
+        static const CodeConstantSource* FindCodeConstantSource(const std::vector<std::string>& accessors, const CodeConstantSource* sourceTable)
+        {
+            const CodeConstantSource* foundSource = nullptr;
+            const CodeConstantSource* currentTable = sourceTable;
+            for (const auto& accessor : accessors)
+            {
+                if (currentTable == nullptr)
+                    return nullptr;
+
+                while (true)
+                {
+                    if (currentTable->name == nullptr)
+                        return nullptr;
+
+                    if (accessor == currentTable->name)
+                        break;
+
+                    currentTable++;
+                }
+
+                foundSource = currentTable;
+                currentTable = currentTable->subtable;
+            }
+
+            return foundSource;
+        }
+
+        static const CodeSamplerSource* FindCodeSamplerSource(const std::vector<std::string>& accessors, const CodeSamplerSource* sourceTable)
+        {
+            const CodeSamplerSource* foundSource = nullptr;
+            const CodeSamplerSource* currentTable = sourceTable;
+            for (const auto& accessor : accessors)
+            {
+                if (currentTable == nullptr)
+                    return nullptr;
+
+                while (true)
+                {
+                    if (currentTable->name == nullptr)
+                        return nullptr;
+
+                    if (accessor == currentTable->name)
+                        break;
+
+                    currentTable++;
+                }
+
+                foundSource = currentTable;
+                currentTable = currentTable->subtable;
+            }
+
+            return foundSource;
+        }
+
+        bool AcceptVertexShaderCodeArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
+        {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            if (!pass.m_vertex_shader_info)
+            {
+                errorMessage = "Shader not specified";
+                return false;
+            }
+
+            const auto& shaderInfo = *pass.m_vertex_shader_info;
+            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
+            {
+                return constant.m_name == shaderArgument.m_argument_name;
+            });
+
+            if (matchingShaderConstant == shaderInfo.m_constants.end())
+            {
+                errorMessage = "Could not find argument in shader";
+                return false;
+            }
+
+            const auto constantIsSampler = IsSamplerConstant(*matchingShaderConstant);
+            if (constantIsSampler)
+            {
+                errorMessage = "Vertex sampler are unsupported";
+                return false;
+            }
+
+            MaterialShaderArgument argument{};
+            argument.type = MTL_ARG_CODE_VERTEX_CONST;
+            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
+
+            const CodeConstantSource* constantSource = FindCodeConstantSource(source.m_accessors, s_codeConsts);
+            if (!constantSource)
+                constantSource = FindCodeConstantSource(source.m_accessors, s_defaultCodeConsts);
+
+            if (!constantSource)
+            {
+                errorMessage = "Unknown code constant";
+                return false;
+            }
+
+            if (constantSource->arrayCount > 0)
+            {
+                if (!source.m_index_accessor_specified)
+                {
+                    errorMessage = "Code constant must have array index specified";
+                    return false;
+                }
+
+                if (source.m_index_accessor >= static_cast<size_t>(constantSource->arrayCount))
+                {
+                    errorMessage = "Code constant array index out of bounds";
+                    return false;
+                }
+
+                argument.u.codeConst.index = static_cast<uint16_t>(constantSource->source + source.m_index_accessor);
+            }
+            else if (source.m_index_accessor_specified)
+            {
+                errorMessage = "Code constant cannot have array index specified";
+                return false;
+            }
+            else
+            {
+                argument.u.codeConst.index = static_cast<uint16_t>(constantSource->source);
+            }
+            argument.u.codeConst.firstRow = 0u;
+            argument.u.codeConst.rowCount = static_cast<unsigned char>(matchingShaderConstant->m_type_rows);
+
+            pass.m_arguments.push_back(argument);
+
             return true;
         }
 
-        bool AcceptShaderLiteralArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentLiteralSource source, std::string& errorMessage) override
+        bool AcceptPixelShaderCodeArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
         {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            if (!pass.m_pixel_shader_info)
+            {
+                errorMessage = "Shader not specified";
+                return false;
+            }
+
+            const auto& shaderInfo = *pass.m_pixel_shader_info;
+
+            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
+            {
+                return constant.m_name == shaderArgument.m_argument_name;
+            });
+
+            if (matchingShaderConstant == shaderInfo.m_constants.end())
+            {
+                errorMessage = "Could not find argument in shader";
+                return false;
+            }
+
+            const auto constantIsSampler = IsSamplerConstant(*matchingShaderConstant);
+            MaterialShaderArgument argument{};
+            argument.type = constantIsSampler ? MTL_ARG_CODE_PIXEL_SAMPLER : MTL_ARG_CODE_PIXEL_CONST;
+            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
+
+            unsigned sourceIndex, arrayCount;
+            if (constantIsSampler)
+            {
+                const CodeSamplerSource* samplerSource = FindCodeSamplerSource(source.m_accessors, s_codeSamplers);
+                if (!samplerSource)
+                    samplerSource = FindCodeSamplerSource(source.m_accessors, s_defaultCodeSamplers);
+
+                if (!samplerSource)
+                {
+                    errorMessage = "Unknown code sampler";
+                    return false;
+                }
+
+                sourceIndex = static_cast<unsigned>(samplerSource->source);
+                arrayCount = static_cast<unsigned>(samplerSource->arrayCount);
+            }
+            else
+            {
+                const CodeConstantSource* constantSource = FindCodeConstantSource(source.m_accessors, s_codeConsts);
+                if (!constantSource)
+                    constantSource = FindCodeConstantSource(source.m_accessors, s_defaultCodeConsts);
+
+                if (!constantSource)
+                {
+                    errorMessage = "Unknown code constant";
+                    return false;
+                }
+
+                sourceIndex = static_cast<unsigned>(constantSource->source);
+                arrayCount = static_cast<unsigned>(constantSource->arrayCount);
+            }
+
+            if (arrayCount > 0u)
+            {
+                if (!source.m_index_accessor_specified)
+                {
+                    errorMessage = "Code constant must have array index specified";
+                    return false;
+                }
+
+                if (source.m_index_accessor >= arrayCount)
+                {
+                    errorMessage = "Code constant array index out of bounds";
+                    return false;
+                }
+
+                argument.u.codeConst.index = static_cast<uint16_t>(sourceIndex + source.m_index_accessor);
+            }
+            else if (source.m_index_accessor_specified)
+            {
+                errorMessage = "Code constant cannot have array index specified";
+                return false;
+            }
+            else
+            {
+                argument.u.codeConst.index = static_cast<uint16_t>(sourceIndex);
+            }
+            argument.u.codeConst.firstRow = 0u;
+            argument.u.codeConst.rowCount = static_cast<unsigned char>(matchingShaderConstant->m_type_rows);
+
+            pass.m_arguments.push_back(argument);
+
+            return true;
+        }
+
+        bool AcceptShaderCodeArgument(const techset::ShaderSelector shader, const techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource source,
+                                      std::string& errorMessage) override
+        {
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+                return AcceptVertexShaderCodeArgument(shaderArgument, source, errorMessage);
+
+            assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+            return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage);
+        }
+
+        bool AcceptShaderLiteralArgument(const techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentLiteralSource source, std::string& errorMessage) override
+        {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            MaterialShaderArgument argument{};
+            const d3d9::ShaderInfo* shaderInfo;
+
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            {
+                argument.type = MTL_ARG_LITERAL_VERTEX_CONST;
+                shaderInfo = pass.m_vertex_shader_info.get();
+            }
+            else
+            {
+                assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+                argument.type = MTL_ARG_LITERAL_PIXEL_CONST;
+                shaderInfo = pass.m_pixel_shader_info.get();
+            }
+
+            if (!shaderInfo)
+            {
+                errorMessage = "Shader not specified";
+                return false;
+            }
+
+            const auto matchingShaderConstant = std::find_if(shaderInfo->m_constants.begin(), shaderInfo->m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
+            {
+                return constant.m_name == shaderArgument.m_argument_name;
+            });
+
+            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
+            argument.u.literalConst = m_zone_state->GetAllocatedLiteral(m_memory, source);
+            pass.m_arguments.push_back(argument);
+
             return true;
         }
 
@@ -105,39 +449,6 @@ namespace IW4
         bool AcceptVertexStreamRouting(const std::string& destination, const std::string& source, std::string& errorMessage) override
         {
             return true;
-        }
-    };
-
-    class LoadedTechnique
-    {
-    public:
-        MaterialTechnique* m_technique;
-        std::vector<XAssetInfoGeneric*> m_dependencies;
-
-        LoadedTechnique(MaterialTechnique* technique, std::vector<XAssetInfoGeneric*> dependencies)
-            : m_technique(technique),
-              m_dependencies(std::move(dependencies))
-        {
-        }
-    };
-
-    class TechniqueZoneLoadingState final : public IZoneAssetLoaderState
-    {
-        std::unordered_map<std::string, std::unique_ptr<LoadedTechnique>> m_loaded_techniques;
-
-    public:
-        _NODISCARD const LoadedTechnique* FindLoadedTechnique(const std::string& techniqueName) const
-        {
-            const auto loadedTechnique = m_loaded_techniques.find(techniqueName);
-            if (loadedTechnique != m_loaded_techniques.end())
-                return loadedTechnique->second.get();
-
-            return nullptr;
-        }
-
-        const LoadedTechnique* AddLoadedTechnique(std::string techniqueName, MaterialTechnique* technique, std::vector<XAssetInfoGeneric*> dependencies)
-        {
-            return m_loaded_techniques.emplace(std::make_pair(std::move(techniqueName), std::make_unique<LoadedTechnique>(technique, std::move(dependencies)))).first->second.get();
         }
     };
 
@@ -155,6 +466,28 @@ namespace IW4
             return ss.str();
         }
 
+        void ConvertPass(MaterialPass& out, const TechniqueCreator::Pass& in)
+        {
+            out.vertexShader = in.m_vertex_shader->Asset();
+            out.pixelShader = in.m_pixel_shader->Asset();
+        }
+
+        MaterialTechnique* ConvertTechnique(const std::string& techniqueName, const std::vector<TechniqueCreator::Pass>& passes)
+        {
+            assert(!passes.empty());
+            // TODO: Load technique or use previously loaded one
+            const auto techniqueSize = sizeof(MaterialTechnique) + (passes.size() - 1u) * sizeof(MaterialPass);
+            auto* technique = static_cast<MaterialTechnique*>(m_memory->Alloc(techniqueSize));
+            memset(technique, 0, techniqueSize);
+            technique->name = m_memory->Dup(techniqueName.c_str());
+            technique->passCount = static_cast<uint16_t>(passes.size());
+
+            for (auto i = 0u; i < passes.size(); i++)
+                ConvertPass(technique->passArray[i], passes.at(i));
+
+            return technique;
+        }
+
         MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, std::vector<XAssetInfoGeneric*>& dependencies)
         {
             const auto techniqueFileName = GetTechniqueFileName(techniqueName);
@@ -162,12 +495,12 @@ namespace IW4
             if (!file.IsOpen())
                 return nullptr;
 
-            TechniqueCreator creator(m_manager);
-            techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &creator);
+            TechniqueCreator creator(m_memory, m_manager, m_zone_state);
+            const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &creator);
             if (!reader.ReadTechniqueDefinition())
                 return nullptr;
-            // TODO: Load technique or use previously loaded one
-            return nullptr;
+
+            return ConvertTechnique(techniqueName, creator.m_passes);
         }
 
     public:
@@ -187,7 +520,7 @@ namespace IW4
 
             std::vector<XAssetInfoGeneric*> dependencies;
             auto* techniqueFromRaw = LoadTechniqueFromRaw(techniqueName, dependencies);
-            if (technique == nullptr)
+            if (techniqueFromRaw == nullptr)
                 return nullptr;
 
             return m_zone_state->AddLoadedTechnique(techniqueName, techniqueFromRaw, dependencies);

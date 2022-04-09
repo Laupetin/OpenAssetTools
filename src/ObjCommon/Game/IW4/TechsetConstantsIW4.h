@@ -1,7 +1,9 @@
 #pragma once
 
+#include <unordered_map>
 #include <type_traits>
 
+#include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
 
 namespace IW4
@@ -273,5 +275,59 @@ namespace IW4
         {"sunShadowmapPixelAdjust", CONST_SRC_CODE_SUN_SHADOWMAP_PIXEL_ADJUST, nullptr, 0, 0},
         {"spotShadowmapPixelAdjust", CONST_SRC_CODE_SPOT_SHADOWMAP_PIXEL_ADJUST, nullptr, 0, 0},
         {}
+    };
+
+    static constexpr std::pair<uint32_t, const char*> KnownMaterialSource(const char* name)
+    {
+        return std::make_pair(Common::R_HashString(name, 0u), name);
+    }
+
+    inline std::unordered_map knownMaterialSourceNames
+    {
+        KnownMaterialSource("colorMap"),
+        KnownMaterialSource("colorMap0"),
+        KnownMaterialSource("colorMap1"),
+        KnownMaterialSource("colorMap2"),
+        KnownMaterialSource("colorMap3"),
+        KnownMaterialSource("colorMap4"),
+        KnownMaterialSource("colorMap5"),
+        KnownMaterialSource("colorMap6"),
+        KnownMaterialSource("colorMap7"),
+        KnownMaterialSource("normalMap"),
+        KnownMaterialSource("normalMap0"),
+        KnownMaterialSource("normalMap1"),
+        KnownMaterialSource("normalMap2"),
+        KnownMaterialSource("normalMap3"),
+        KnownMaterialSource("normalMap4"),
+        KnownMaterialSource("normalMap5"),
+        KnownMaterialSource("normalMap6"),
+        KnownMaterialSource("normalMap7"),
+        KnownMaterialSource("specularMap"),
+        KnownMaterialSource("specularMap0"),
+        KnownMaterialSource("specularMap1"),
+        KnownMaterialSource("specularMap2"),
+        KnownMaterialSource("specularMap3"),
+        KnownMaterialSource("specularMap4"),
+        KnownMaterialSource("specularMap5"),
+        KnownMaterialSource("specularMap6"),
+        KnownMaterialSource("specularMap7"),
+        KnownMaterialSource("detailMap"),
+        KnownMaterialSource("detailMap0"),
+        KnownMaterialSource("detailMap1"),
+        KnownMaterialSource("detailMap2"),
+        KnownMaterialSource("detailMap3"),
+        KnownMaterialSource("detailMap4"),
+        KnownMaterialSource("detailMap5"),
+        KnownMaterialSource("detailMap6"),
+        KnownMaterialSource("detailMap7"),
+        KnownMaterialSource("attenuationMap"),
+        KnownMaterialSource("attenuationMap0"),
+        KnownMaterialSource("attenuationMap1"),
+        KnownMaterialSource("attenuationMap2"),
+        KnownMaterialSource("attenuationMap3"),
+        KnownMaterialSource("attenuationMap4"),
+        KnownMaterialSource("attenuationMap5"),
+        KnownMaterialSource("attenuationMap6"),
+        KnownMaterialSource("attenuationMap7"),
     };
 }
