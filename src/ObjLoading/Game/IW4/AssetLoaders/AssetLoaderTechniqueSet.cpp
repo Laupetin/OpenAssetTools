@@ -460,9 +460,9 @@ namespace IW4
             });
 
             const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
-            if(argumentIsSampler)
+            if (argumentIsSampler)
             {
-                if(shader == techset::ShaderSelector::VERTEX_SHADER)
+                if (shader == techset::ShaderSelector::VERTEX_SHADER)
                     errorMessage = "Vertex shader argument expects sampler but got constant";
                 else
                     errorMessage = "Pixel shader argument expects sampler but got constant";
@@ -477,8 +477,60 @@ namespace IW4
             return true;
         }
 
-        bool AcceptShaderMaterialArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentMaterialSource source, std::string& errorMessage) override
+        bool AcceptShaderMaterialArgument(const techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, const techset::ShaderArgumentMaterialSource source,
+                                          std::string& errorMessage) override
         {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            MaterialShaderArgument argument{};
+            const d3d9::ShaderInfo* shaderInfo;
+
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            {
+                shaderInfo = pass.m_vertex_shader_info.get();
+            }
+            else
+            {
+                assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+                shaderInfo = pass.m_pixel_shader_info.get();
+            }
+
+            if (!shaderInfo)
+            {
+                errorMessage = "Shader not specified";
+                return false;
+            }
+
+            const auto matchingShaderConstant = std::find_if(shaderInfo->m_constants.begin(), shaderInfo->m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
+            {
+                return constant.m_name == shaderArgument.m_argument_name;
+            });
+
+            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            {
+                if (argumentIsSampler)
+                {
+                    errorMessage = "Vertex sampler are unsupported";
+                    return false;
+                }
+                argument.type = MTL_ARG_MATERIAL_VERTEX_CONST;
+            }
+            else
+            {
+                assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+                argument.type = !argumentIsSampler ? MTL_ARG_MATERIAL_PIXEL_CONST : MTL_ARG_MATERIAL_PIXEL_SAMPLER;
+            }
+
+            if (source.m_is_hash)
+                argument.u.nameHash = static_cast<unsigned>(source.m_hash);
+            else
+                argument.u.nameHash = Common::R_HashString(source.m_name.c_str(), 0u);
+
+            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
+            pass.m_arguments.push_back(argument);
+
             return true;
         }
 
