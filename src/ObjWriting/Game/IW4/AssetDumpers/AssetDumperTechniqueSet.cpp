@@ -350,51 +350,19 @@ namespace IW4
 
         static const char* GetStreamDestinationString(const MaterialStreamDestination_e dst)
         {
-            static const char* destinationNames[]
-            {
-                "position",
-                "normal",
-                "color[0]",
-                "color[1]",
-                "depth",
-                "texcoord[0]",
-                "texcoord[1]",
-                "texcoord[2]",
-                "texcoord[3]",
-                "texcoord[4]",
-                "texcoord[5]",
-                "texcoord[6]",
-                "texcoord[7]",
-            };
-            static_assert(std::extent_v<decltype(destinationNames)> == STREAM_DST_COUNT);
-
             const auto dstIndex = static_cast<size_t>(dst);
-            assert(dstIndex < std::extent_v<decltype(destinationNames)>);
-            if (dstIndex < std::extent_v<decltype(destinationNames)>)
-                return destinationNames[dstIndex];
+            assert(dstIndex < std::extent_v<decltype(materialStreamDestinationNames)>);
+            if (dstIndex < std::extent_v<decltype(materialStreamDestinationNames)>)
+                return materialStreamDestinationNames[dstIndex];
             return "";
         }
 
         static const char* GetStreamSourceString(const MaterialStreamStreamSource_e src)
         {
-            static const char* sourceNames[]
-            {
-                "position",
-                "color",
-                "texcoord[0]",
-                "normal",
-                "tangent",
-                "texcoord[1]",
-                "texcoord[2]",
-                "normalTransform[0]",
-                "normalTransform[1]"
-            };
-            static_assert(std::extent_v<decltype(sourceNames)> == STREAM_SRC_COUNT);
-
             const auto srcIndex = static_cast<size_t>(src);
-            assert(srcIndex < std::extent_v<decltype(sourceNames)>);
-            if (srcIndex < std::extent_v<decltype(sourceNames)>)
-                return sourceNames[srcIndex];
+            assert(srcIndex < std::extent_v<decltype(materialStreamSourceNames)>);
+            if (srcIndex < std::extent_v<decltype(materialStreamSourceNames)>)
+                return materialStreamSourceNames[srcIndex];
             return "";
         }
 

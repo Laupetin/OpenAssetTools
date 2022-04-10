@@ -59,8 +59,39 @@ namespace IW4
         "debug bumpmap",
         "debug bumpmap instanced",
     };
-
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
+
+    static const char* materialStreamDestinationNames[]
+    {
+        "position",
+        "normal",
+        "color[0]",
+        "color[1]",
+        "depth",
+        "texcoord[0]",
+        "texcoord[1]",
+        "texcoord[2]",
+        "texcoord[3]",
+        "texcoord[4]",
+        "texcoord[5]",
+        "texcoord[6]",
+        "texcoord[7]",
+    };
+    static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
+
+    static const char* materialStreamSourceNames[]
+    {
+        "position",
+        "color",
+        "texcoord[0]",
+        "normal",
+        "tangent",
+        "texcoord[1]",
+        "texcoord[2]",
+        "normalTransform[0]",
+        "normalTransform[1]"
+    };
+    static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
 
     inline CodeSamplerSource s_lightmapSamplers[]
     {

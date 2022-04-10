@@ -536,6 +536,39 @@ namespace IW4
 
         bool AcceptVertexStreamRouting(const std::string& destination, const std::string& source, std::string& errorMessage) override
         {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            const auto streamIndex = static_cast<size_t>(pass.m_vertex_decl.streamCount);
+            if(pass.m_vertex_decl.streamCount >= std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
+            {
+                errorMessage = "Too many stream routings";
+                return false;
+            }
+
+            const auto foundDestination = std::find(std::begin(materialStreamDestinationNames), std::end(materialStreamDestinationNames), destination);
+            if(foundDestination == std::end(materialStreamDestinationNames))
+            {
+                errorMessage = "Unknown stream destination";
+                return false;
+            }
+
+            const auto foundSource = std::find(std::begin(materialStreamSourceNames), std::end(materialStreamSourceNames), source);
+            if (foundSource == std::end(materialStreamSourceNames))
+            {
+                errorMessage = "Unknown stream source";
+                return false;
+            }
+            
+            const auto destinationIndex = static_cast<MaterialStreamDestination_e>(foundDestination - std::begin(materialStreamDestinationNames));
+            const auto sourceIndex = static_cast<MaterialStreamStreamSource_e>(foundSource - std::begin(materialStreamSourceNames));
+
+            pass.m_vertex_decl.routing.data[streamIndex].dest = destinationIndex;
+            pass.m_vertex_decl.routing.data[streamIndex].source = sourceIndex;
+
+            pass.m_vertex_decl.hasOptionalSource = pass.m_vertex_decl.hasOptionalSource || sourceIndex >= STREAM_SRC_OPTIONAL_BEGIN;
+
+            pass.m_vertex_decl.streamCount++;
             return true;
         }
     };
