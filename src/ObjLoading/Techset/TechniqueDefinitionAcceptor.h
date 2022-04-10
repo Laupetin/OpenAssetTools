@@ -80,7 +80,8 @@ namespace techset
         virtual bool AcceptVertexShader(const std::string& vertexShaderName, std::string& errorMessage) = 0;
         virtual bool AcceptPixelShader(const std::string& pixelShaderName, std::string& errorMessage) = 0;
 
-        virtual bool AcceptShaderCodeArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentCodeSource source, std::string& errorMessage) = 0;
+        virtual bool AcceptShaderConstantArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentCodeSource source, std::string& errorMessage) = 0;
+        virtual bool AcceptShaderSamplerArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentCodeSource source, std::string& errorMessage) = 0;
         virtual bool AcceptShaderLiteralArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentLiteralSource source, std::string& errorMessage) = 0;
         virtual bool AcceptShaderMaterialArgument(ShaderSelector shader, ShaderArgument shaderArgument, ShaderArgumentMaterialSource source, std::string& errorMessage) = 0;
 

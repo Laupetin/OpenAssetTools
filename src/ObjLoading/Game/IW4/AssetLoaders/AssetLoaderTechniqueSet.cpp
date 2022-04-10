@@ -1,6 +1,7 @@
 #include "AssetLoaderTechniqueSet.h"
 
 #include <cstring>
+#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include <sstream>
@@ -159,7 +160,7 @@ namespace IW4
             return true;
         }
 
-        static bool IsSamplerConstant(const d3d9::ShaderConstant& constant)
+        static bool IsSamplerArgument(const d3d9::ShaderConstant& constant)
         {
             return constant.m_type == d3d9::ParameterType::SAMPLER
                 || constant.m_type == d3d9::ParameterType::SAMPLER_1D
@@ -222,7 +223,7 @@ namespace IW4
             return foundSource;
         }
 
-        bool AcceptVertexShaderCodeArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
+        bool AcceptVertexShaderConstantArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -245,10 +246,10 @@ namespace IW4
                 return false;
             }
 
-            const auto constantIsSampler = IsSamplerConstant(*matchingShaderConstant);
-            if (constantIsSampler)
+            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
+            if (argumentIsSampler)
             {
-                errorMessage = "Vertex sampler are unsupported";
+                errorMessage = "Vertex shader argument expected sampler but got constant";
                 return false;
             }
 
@@ -299,7 +300,7 @@ namespace IW4
             return true;
         }
 
-        bool AcceptPixelShaderCodeArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
+        bool AcceptPixelShaderCodeArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage, const bool isSampler)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -323,13 +324,24 @@ namespace IW4
                 return false;
             }
 
-            const auto constantIsSampler = IsSamplerConstant(*matchingShaderConstant);
+            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
+            if (argumentIsSampler && !isSampler)
+            {
+                errorMessage = "Pixel shader argument expects sampler but got constant";
+                return false;
+            }
+            else if (!argumentIsSampler && isSampler)
+            {
+                errorMessage = "Pixel shader argument expects constant but got sampler";
+                return false;
+            }
+
             MaterialShaderArgument argument{};
-            argument.type = constantIsSampler ? MTL_ARG_CODE_PIXEL_SAMPLER : MTL_ARG_CODE_PIXEL_CONST;
+            argument.type = isSampler ? MTL_ARG_CODE_PIXEL_SAMPLER : MTL_ARG_CODE_PIXEL_CONST;
             argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
 
             unsigned sourceIndex, arrayCount;
-            if (constantIsSampler)
+            if (isSampler)
             {
                 const CodeSamplerSource* samplerSource = FindCodeSamplerSource(source.m_accessors, s_codeSamplers);
                 if (!samplerSource)
@@ -393,14 +405,27 @@ namespace IW4
             return true;
         }
 
-        bool AcceptShaderCodeArgument(const techset::ShaderSelector shader, const techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource source,
-                                      std::string& errorMessage) override
+        bool AcceptShaderConstantArgument(const techset::ShaderSelector shader, const techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource source,
+                                          std::string& errorMessage) override
         {
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
-                return AcceptVertexShaderCodeArgument(shaderArgument, source, errorMessage);
+                return AcceptVertexShaderConstantArgument(shaderArgument, source, errorMessage);
 
             assert(shader == techset::ShaderSelector::PIXEL_SHADER);
-            return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage);
+            return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage, false);
+        }
+
+        bool AcceptShaderSamplerArgument(const techset::ShaderSelector shader, const techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource source,
+                                         std::string& errorMessage) override
+        {
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+            {
+                errorMessage = "Vertex sampler are unsupported";
+                return false;
+            }
+
+            assert(shader == techset::ShaderSelector::PIXEL_SHADER);
+            return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage, true);
         }
 
         bool AcceptShaderLiteralArgument(const techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentLiteralSource source, std::string& errorMessage) override
@@ -433,6 +458,17 @@ namespace IW4
             {
                 return constant.m_name == shaderArgument.m_argument_name;
             });
+
+            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
+            if(argumentIsSampler)
+            {
+                if(shader == techset::ShaderSelector::VERTEX_SHADER)
+                    errorMessage = "Vertex shader argument expects sampler but got constant";
+                else
+                    errorMessage = "Pixel shader argument expects sampler but got constant";
+
+                return false;
+            }
 
             argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
             argument.u.literalConst = m_zone_state->GetAllocatedLiteral(m_memory, source);

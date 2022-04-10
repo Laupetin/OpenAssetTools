@@ -30,9 +30,10 @@ namespace techset
 
     class SequenceShaderArgument final : public TechniqueParser::sequence_t
     {
-        static constexpr auto TAG_CODE = 1;
-        static constexpr auto TAG_LITERAL = 2;
-        static constexpr auto TAG_MATERIAL = 3;
+        static constexpr auto TAG_CONSTANT = 1;
+        static constexpr auto TAG_SAMPLER = 2;
+        static constexpr auto TAG_LITERAL = 3;
+        static constexpr auto TAG_MATERIAL = 4;
 
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_SHADER_ARGUMENT = 2;
@@ -46,7 +47,10 @@ namespace techset
         static std::unique_ptr<matcher_t> CodeMatchers(const SimpleMatcherFactory& create)
         {
             return create.And({
-                create.Keyword("code"),
+                create.Or({
+                    create.Keyword("constant").Tag(TAG_CONSTANT),
+                    create.Keyword("sampler").Tag(TAG_SAMPLER)
+                }),
                 create.Char('.'),
                 create.Identifier().Capture(CAPTURE_CODE_ACCESSOR),
                 create.OptionalLoop(create.And({
@@ -58,7 +62,7 @@ namespace techset
                     create.Integer().Capture(CAPTURE_CODE_INDEX),
                     create.Char(']')
                 }))
-            }).Tag(TAG_CODE);
+            });
         }
 
         static std::unique_ptr<matcher_t> LiteralValueMatchers(const SimpleMatcherFactory& create)
@@ -124,7 +128,7 @@ namespace techset
             });
         }
 
-        static void ProcessCodeArgument(const TechniqueParserState* state, SequenceResult<SimpleParserValue>& result, ShaderArgument arg)
+        static void ProcessCodeArgument(const TechniqueParserState* state, SequenceResult<SimpleParserValue>& result, ShaderArgument arg, const bool isSampler)
         {
             std::vector<std::string> accessors;
             while (result.HasNextCapture(CAPTURE_CODE_ACCESSOR))
@@ -142,8 +146,16 @@ namespace techset
                 source = ShaderArgumentCodeSource(std::move(accessors));
 
             std::string errorMessage;
-            if (!state->m_acceptor->AcceptShaderCodeArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
-                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+            if(!isSampler)
+            {
+                if (!state->m_acceptor->AcceptShaderConstantArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+            }
+            else
+            {
+                if (!state->m_acceptor->AcceptShaderSamplerArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
+                    throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
+            }
         }
 
         static void ProcessLiteralArgument(const TechniqueParserState* state, SequenceResult<SimpleParserValue>& result, ShaderArgument arg)
@@ -202,9 +214,9 @@ namespace techset
                 arg = ShaderArgument(shaderArgumentNameToken.IdentifierValue());
 
             const auto typeTag = result.NextTag();
-            assert(typeTag == TAG_CODE || typeTag == TAG_LITERAL || typeTag == TAG_MATERIAL);
-            if (typeTag == TAG_CODE)
-                ProcessCodeArgument(state, result, std::move(arg));
+            assert(typeTag == TAG_CONSTANT || typeTag == TAG_SAMPLER || typeTag == TAG_LITERAL || typeTag == TAG_MATERIAL);
+            if (typeTag == TAG_CONSTANT || typeTag == TAG_SAMPLER)
+                ProcessCodeArgument(state, result, std::move(arg), typeTag == TAG_SAMPLER);
             else if (typeTag == TAG_LITERAL)
                 ProcessLiteralArgument(state, result, std::move(arg));
             else
