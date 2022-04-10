@@ -74,6 +74,7 @@ namespace techset
         ITechniqueDefinitionAcceptor& operator=(ITechniqueDefinitionAcceptor&& other) noexcept = default;
 
         virtual void AcceptNextPass() = 0;
+        virtual bool AcceptEndPass(std::string& errorMessage) = 0;
 
         virtual void AcceptStateMap(const std::string& stateMapName) = 0;
 

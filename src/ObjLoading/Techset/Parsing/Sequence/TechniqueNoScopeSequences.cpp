@@ -26,10 +26,7 @@ namespace techset
             assert(state->m_in_pass == false);
             state->m_in_pass = true;
 
-            if (state->m_before_first_pass)
-                state->m_before_first_pass = false;
-            else
-                state->m_acceptor->AcceptNextPass();
+            state->m_acceptor->AcceptNextPass();
         }
     };
 }

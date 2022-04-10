@@ -91,12 +91,14 @@ namespace IW4
             std::unique_ptr<d3d9::ShaderInfo> m_pixel_shader_info;
 
             MaterialVertexDeclaration m_vertex_decl;
+            XAssetInfo<MaterialVertexDeclaration>* m_vertex_decl_asset;
             std::vector<MaterialShaderArgument> m_arguments;
 
             Pass()
                 : m_vertex_shader(nullptr),
                   m_pixel_shader(nullptr),
-                  m_vertex_decl{}
+                  m_vertex_decl{},
+                  m_vertex_decl_asset(nullptr)
             {
             }
         };
@@ -109,12 +111,55 @@ namespace IW4
               m_manager(manager),
               m_zone_state(zoneState)
         {
-            m_passes.emplace_back();
         }
 
         void AcceptNextPass() override
         {
             m_passes.emplace_back();
+        }
+
+        bool AutoCreateVertexShaderArguments(std::string& string)
+        {
+            return true;
+        }
+
+        bool AutoCreatePixelShaderArguments(std::string& string)
+        {
+            return true;
+        }
+
+        void AllocateVertexDecl()
+        {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            std::sort(std::begin(pass.m_vertex_decl.routing.data), std::begin(pass.m_vertex_decl.routing.data) + pass.m_vertex_decl.streamCount,
+                      [](const MaterialStreamRouting& r1, const MaterialStreamRouting& r2)
+                      {
+                          return r1.source < r2.source;
+                      });
+
+            std::ostringstream ss;
+            for(auto i = 0u; i < pass.m_vertex_decl.streamCount; i++)
+            {
+                const auto& stream = pass.m_vertex_decl.routing.data[i];
+                assert(stream.source < std::extent_v<decltype(materialStreamSourceAbbreviation)>);
+                assert(stream.dest < std::extent_v<decltype(materialStreamDestinationAbbreviation)>);
+
+                ss << materialStreamSourceAbbreviation[stream.source] << materialStreamDestinationAbbreviation[stream.dest];
+            }
+
+            pass.m_vertex_decl_asset = reinterpret_cast<XAssetInfo<MaterialVertexDeclaration>*>(m_manager->LoadDependency(ASSET_TYPE_VERTEXDECL, ss.str()));
+        }
+
+        bool AcceptEndPass(std::string& errorMessage) override
+        {
+            if (!AutoCreateVertexShaderArguments(errorMessage) || !AutoCreatePixelShaderArguments(errorMessage))
+                return false;
+
+            AllocateVertexDecl();
+
+            return true;
         }
 
         void AcceptStateMap(const std::string& stateMapName) override
@@ -540,14 +585,14 @@ namespace IW4
             auto& pass = m_passes.at(m_passes.size() - 1);
 
             const auto streamIndex = static_cast<size_t>(pass.m_vertex_decl.streamCount);
-            if(pass.m_vertex_decl.streamCount >= std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
+            if (pass.m_vertex_decl.streamCount >= std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
             {
                 errorMessage = "Too many stream routings";
                 return false;
             }
 
             const auto foundDestination = std::find(std::begin(materialStreamDestinationNames), std::end(materialStreamDestinationNames), destination);
-            if(foundDestination == std::end(materialStreamDestinationNames))
+            if (foundDestination == std::end(materialStreamDestinationNames))
             {
                 errorMessage = "Unknown stream destination";
                 return false;
@@ -559,7 +604,7 @@ namespace IW4
                 errorMessage = "Unknown stream source";
                 return false;
             }
-            
+
             const auto destinationIndex = static_cast<MaterialStreamDestination_e>(foundDestination - std::begin(materialStreamDestinationNames));
             const auto sourceIndex = static_cast<MaterialStreamStreamSource_e>(foundSource - std::begin(materialStreamSourceNames));
 

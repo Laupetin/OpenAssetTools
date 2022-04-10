@@ -78,6 +78,23 @@ namespace IW4
         "texcoord[7]",
     };
     static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
+    static const char* materialStreamDestinationAbbreviation[]
+    {
+        "p",
+        "n",
+        "c0",
+        "c1",
+        "d",
+        "t0",
+        "t1",
+        "t2",
+        "t3",
+        "t4",
+        "t5",
+        "t6",
+        "t7",
+    };
+    static_assert(std::extent_v<decltype(materialStreamDestinationAbbreviation)> == STREAM_DST_COUNT);
 
     static const char* materialStreamSourceNames[]
     {
@@ -92,6 +109,19 @@ namespace IW4
         "normalTransform[1]"
     };
     static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
+    static const char* materialStreamSourceAbbreviation[]
+    {
+        "p",
+        "c",
+        "t0",
+        "n",
+        "t",
+        "t1",
+        "t2",
+        "n0",
+        "n1"
+    };
+    static_assert(std::extent_v<decltype(materialStreamSourceAbbreviation)> == STREAM_SRC_COUNT);
 
     inline CodeSamplerSource s_lightmapSamplers[]
     {

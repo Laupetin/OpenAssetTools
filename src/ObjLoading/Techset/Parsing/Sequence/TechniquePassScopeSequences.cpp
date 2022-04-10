@@ -11,13 +11,15 @@ namespace techset
 {
     class SequenceEndPass final : public TechniqueParser::sequence_t
     {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+
     public:
         SequenceEndPass()
         {
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Char('}')
+                create.Char('}').Capture(CAPTURE_FIRST_TOKEN)
             });
         }
 
@@ -25,6 +27,11 @@ namespace techset
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
             assert(state->m_in_pass == true);
+
+            std::string errorMessage;
+            if(!state->m_acceptor->AcceptEndPass(errorMessage))
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), errorMessage);
+
             state->m_in_pass = false;
         }
     };
