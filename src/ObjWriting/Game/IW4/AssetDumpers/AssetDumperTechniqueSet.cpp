@@ -118,9 +118,10 @@ namespace IW4
 
         void DumpShaderArg(const MaterialShaderArgument& arg, const d3d9::ShaderInfo& shaderInfo) const
         {
-            const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [arg](const d3d9::ShaderConstant& constant)
+            const auto expectedRegisterSet = arg.type == MTL_ARG_CODE_PIXEL_SAMPLER || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER ? d3d9::RegisterSet::SAMPLER : d3d9::RegisterSet::FLOAT_4;
+            const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [arg, expectedRegisterSet](const d3d9::ShaderConstant& constant)
             {
-                return constant.m_register_index <= arg.dest && constant.m_register_index + constant.m_register_count > arg.dest;
+                return constant.m_register_set == expectedRegisterSet && constant.m_register_index <= arg.dest && constant.m_register_index + constant.m_register_count > arg.dest;
             });
 
             assert(targetShaderArg != shaderInfo.m_constants.end());
