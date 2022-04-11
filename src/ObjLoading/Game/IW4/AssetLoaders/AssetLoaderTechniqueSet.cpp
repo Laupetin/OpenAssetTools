@@ -86,9 +86,11 @@ namespace IW4
         {
             XAssetInfo<MaterialVertexShader>* m_vertex_shader;
             std::unique_ptr<d3d9::ShaderInfo> m_vertex_shader_info;
+            std::vector<bool> m_handled_vertex_shader_arguments;
 
             XAssetInfo<MaterialPixelShader>* m_pixel_shader;
             std::unique_ptr<d3d9::ShaderInfo> m_pixel_shader_info;
+            std::vector<bool> m_handled_pixel_shader_arguments;
 
             MaterialVertexDeclaration m_vertex_decl;
             XAssetInfo<MaterialVertexDeclaration>* m_vertex_decl_asset;
@@ -120,11 +122,33 @@ namespace IW4
 
         bool AutoCreateVertexShaderArguments(std::string& string)
         {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            for (auto i = 0u; i < pass.m_handled_vertex_shader_arguments.size(); i++)
+            {
+                if (!pass.m_handled_vertex_shader_arguments[i])
+                {
+                    std::cout << "Unhandled vertex shader \"" << pass.m_vertex_shader->m_name << "\" arg: " << pass.m_vertex_shader_info->m_constants[i].m_name << "\n";
+                }
+            }
+
             return true;
         }
 
         bool AutoCreatePixelShaderArguments(std::string& string)
         {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            for (auto i = 0u; i < pass.m_handled_pixel_shader_arguments.size(); i++)
+            {
+                if (!pass.m_handled_pixel_shader_arguments[i])
+                {
+                    std::cout << "Unhandled pixel shader \"" << pass.m_pixel_shader->m_name << "\" arg: " << pass.m_pixel_shader_info->m_constants[i].m_name << "\n";
+                }
+            }
+
             return true;
         }
 
@@ -140,7 +164,7 @@ namespace IW4
                       });
 
             std::ostringstream ss;
-            for(auto i = 0u; i < pass.m_vertex_decl.streamCount; i++)
+            for (auto i = 0u; i < pass.m_vertex_decl.streamCount; i++)
             {
                 const auto& stream = pass.m_vertex_decl.routing.data[i];
                 assert(stream.source < std::extent_v<decltype(materialStreamSourceAbbreviation)>);
@@ -183,6 +207,13 @@ namespace IW4
             const auto& shaderLoadDef = pass.m_vertex_shader->Asset()->prog.loadDef;
             pass.m_vertex_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
 
+            if (!pass.m_vertex_shader_info)
+            {
+                errorMessage = "No shader info for shader";
+                return false;
+            }
+
+            pass.m_handled_vertex_shader_arguments.resize(pass.m_vertex_shader_info->m_constants.size());
             return true;
         }
 
@@ -202,6 +233,13 @@ namespace IW4
             const auto& shaderLoadDef = pass.m_pixel_shader->Asset()->prog.loadDef;
             pass.m_pixel_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
 
+            if (!pass.m_pixel_shader_info)
+            {
+                errorMessage = "No shader info for shader";
+                return false;
+            }
+
+            pass.m_handled_pixel_shader_arguments.resize(pass.m_pixel_shader_info->m_constants.size());
             return true;
         }
 
@@ -291,6 +329,7 @@ namespace IW4
                 return false;
             }
 
+            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo.m_constants.begin());
             const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
             if (argumentIsSampler)
             {
@@ -341,6 +380,7 @@ namespace IW4
             argument.u.codeConst.rowCount = static_cast<unsigned char>(matchingShaderConstant->m_type_rows);
 
             pass.m_arguments.push_back(argument);
+            pass.m_handled_vertex_shader_arguments[shaderConstantIndex] = true;
 
             return true;
         }
@@ -369,6 +409,7 @@ namespace IW4
                 return false;
             }
 
+            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo.m_constants.begin());
             const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
             if (argumentIsSampler && !isSampler)
             {
@@ -446,6 +487,7 @@ namespace IW4
             argument.u.codeConst.rowCount = static_cast<unsigned char>(matchingShaderConstant->m_type_rows);
 
             pass.m_arguments.push_back(argument);
+            pass.m_handled_pixel_shader_arguments[shaderConstantIndex] = true;
 
             return true;
         }
@@ -504,6 +546,13 @@ namespace IW4
                 return constant.m_name == shaderArgument.m_argument_name;
             });
 
+            if (matchingShaderConstant == shaderInfo->m_constants.end())
+            {
+                errorMessage = "Could not find argument in shader";
+                return false;
+            }
+
+            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo->m_constants.begin());
             const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
             if (argumentIsSampler)
             {
@@ -518,6 +567,11 @@ namespace IW4
             argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
             argument.u.literalConst = m_zone_state->GetAllocatedLiteral(m_memory, source);
             pass.m_arguments.push_back(argument);
+
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+                pass.m_handled_vertex_shader_arguments[shaderConstantIndex] = true;
+            else
+                pass.m_handled_pixel_shader_arguments[shaderConstantIndex] = true;
 
             return true;
         }
@@ -552,6 +606,13 @@ namespace IW4
                 return constant.m_name == shaderArgument.m_argument_name;
             });
 
+            if (matchingShaderConstant == shaderInfo->m_constants.end())
+            {
+                errorMessage = "Could not find argument in shader";
+                return false;
+            }
+
+            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo->m_constants.begin());
             const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
             {
@@ -575,6 +636,11 @@ namespace IW4
 
             argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
             pass.m_arguments.push_back(argument);
+
+            if (shader == techset::ShaderSelector::VERTEX_SHADER)
+                pass.m_handled_vertex_shader_arguments[shaderConstantIndex] = true;
+            else
+                pass.m_handled_pixel_shader_arguments[shaderConstantIndex] = true;
 
             return true;
         }
