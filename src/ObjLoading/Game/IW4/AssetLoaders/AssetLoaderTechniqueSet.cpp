@@ -151,7 +151,7 @@ namespace IW4
             argument.dest = static_cast<uint16_t>(shaderArgument.m_register_index + registerOffset);
 
             unsigned arrayCount;
-            const std::vector accessors({ shaderArgument.m_name });
+            const std::vector accessors({shaderArgument.m_name});
             if (isSamplerArgument)
             {
                 const CodeSamplerSource* samplerSource = FindCodeSamplerSource(accessors, s_codeSamplers);
@@ -505,7 +505,7 @@ namespace IW4
         }
 
         static bool SetArgumentCodeSampler(MaterialShaderArgument& argument, const techset::ShaderArgumentCodeSource& source, const d3d9::ShaderConstant& shaderConstant, const unsigned sourceIndex,
-                                         const unsigned arrayCount, std::string& errorMessage)
+                                           const unsigned arrayCount, std::string& errorMessage)
         {
             if (arrayCount > 0u)
             {
@@ -859,16 +859,53 @@ namespace IW4
             return ss.str();
         }
 
-        void ConvertPass(MaterialPass& out, const TechniqueCreator::Pass& in)
+        void ConvertPass(MaterialPass& out, const TechniqueCreator::Pass& in, std::vector<XAssetInfoGeneric*>& dependencies) const
         {
+            out.customSamplerFlags = 0u;
             out.vertexShader = in.m_vertex_shader->Asset();
             out.pixelShader = in.m_pixel_shader->Asset();
+            out.vertexDecl = in.m_vertex_decl_asset->Asset();
+
+            size_t perObjArgCount = 0u;
+            size_t perPrimArgCount = 0u;
+            size_t stableArgCount = 0u;
+            for(const auto& arg : in.m_arguments)
+            {
+                if(arg.type == MTL_ARG_MATERIAL_VERTEX_CONST
+                    || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
+                    || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
+                {
+                    perObjArgCount++;
+                }
+                else if(arg.type >= MTL_ARG_CODE_PRIM_BEGIN && arg.type < MTL_ARG_CODE_PRIM_END)
+                {
+                    perPrimArgCount++;
+                }
+                else
+                {
+                    stableArgCount++;
+                }
+            }
+
+            out.perObjArgCount = static_cast<unsigned char>(perObjArgCount);
+            out.perPrimArgCount = static_cast<unsigned char>(perPrimArgCount);
+            out.stableArgCount = static_cast<unsigned char>(stableArgCount);
+
+            const auto dataSize = sizeof(MaterialShaderArgument) * in.m_arguments.size();
+            out.args = static_cast<MaterialShaderArgument*>(m_memory->Alloc(dataSize));
+            memcpy(out.args, in.m_arguments.data(), dataSize);
+
+            if(in.m_vertex_shader)
+                dependencies.push_back(in.m_vertex_shader);
+            if(in.m_pixel_shader)
+                dependencies.push_back(in.m_pixel_shader);
+            if(in.m_vertex_decl_asset)
+                dependencies.push_back(in.m_vertex_decl_asset);
         }
 
-        MaterialTechnique* ConvertTechnique(const std::string& techniqueName, const std::vector<TechniqueCreator::Pass>& passes)
+        MaterialTechnique* ConvertTechnique(const std::string& techniqueName, const std::vector<TechniqueCreator::Pass>& passes, std::vector<XAssetInfoGeneric*>& dependencies) const
         {
             assert(!passes.empty());
-            // TODO: Load technique or use previously loaded one
             const auto techniqueSize = sizeof(MaterialTechnique) + (passes.size() - 1u) * sizeof(MaterialPass);
             auto* technique = static_cast<MaterialTechnique*>(m_memory->Alloc(techniqueSize));
             memset(technique, 0, techniqueSize);
@@ -876,12 +913,12 @@ namespace IW4
             technique->passCount = static_cast<uint16_t>(passes.size());
 
             for (auto i = 0u; i < passes.size(); i++)
-                ConvertPass(technique->passArray[i], passes.at(i));
+                ConvertPass(technique->passArray[i], passes.at(i), dependencies);
 
             return technique;
         }
 
-        MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, std::vector<XAssetInfoGeneric*>& dependencies)
+        MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, std::vector<XAssetInfoGeneric*>& dependencies) const
         {
             const auto techniqueFileName = GetTechniqueFileName(techniqueName);
             const auto file = m_search_path->Open(techniqueFileName);
@@ -893,7 +930,7 @@ namespace IW4
             if (!reader.ReadTechniqueDefinition())
                 return nullptr;
 
-            return ConvertTechnique(techniqueName, creator.m_passes);
+            return ConvertTechnique(techniqueName, creator.m_passes, dependencies);
         }
 
     public:
@@ -905,7 +942,7 @@ namespace IW4
         {
         }
 
-        const LoadedTechnique* LoadMaterialTechnique(const std::string& techniqueName)
+        _NODISCARD const LoadedTechnique* LoadMaterialTechnique(const std::string& techniqueName) const
         {
             auto* technique = m_zone_state->FindLoadedTechnique(techniqueName);
             if (technique)
@@ -943,7 +980,7 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& ass
     memset(techset, 0, sizeof(MaterialTechniqueSet));
     techset->name = memory->Dup(assetName.c_str());
 
-    TechniqueLoader techniqueLoader(searchPath, memory, manager);
+    const TechniqueLoader techniqueLoader(searchPath, memory, manager);
     std::set<XAssetInfoGeneric*> dependencies;
     for (auto i = 0u; i < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; i++)
     {
