@@ -15,6 +15,7 @@
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechsetFileReader.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "Utils/Alignment.h"
 
 using namespace IW4;
 
@@ -86,10 +87,12 @@ namespace IW4
         {
             XAssetInfo<MaterialVertexShader>* m_vertex_shader;
             std::unique_ptr<d3d9::ShaderInfo> m_vertex_shader_info;
+            std::vector<size_t> m_vertex_shader_argument_handled_offset;
             std::vector<bool> m_handled_vertex_shader_arguments;
 
             XAssetInfo<MaterialPixelShader>* m_pixel_shader;
             std::unique_ptr<d3d9::ShaderInfo> m_pixel_shader_info;
+            std::vector<size_t> m_pixel_shader_argument_handled_offset;
             std::vector<bool> m_handled_pixel_shader_arguments;
 
             MaterialVertexDeclaration m_vertex_decl;
@@ -120,32 +123,139 @@ namespace IW4
             m_passes.emplace_back();
         }
 
-        bool AutoCreateVertexShaderArguments(std::string& string)
+        static size_t RegisterCountPerElement(const d3d9::ShaderConstant& constant)
+        {
+            const auto valuesPerRegister = constant.m_register_set == d3d9::RegisterSet::BOOL || constant.m_register_set == d3d9::RegisterSet::SAMPLER ? 1u : 4u;
+            return utils::Align(constant.m_type_columns * constant.m_type_rows, valuesPerRegister) / valuesPerRegister;
+        }
+
+        static bool IsSamplerArgument(const d3d9::ShaderConstant& constant)
+        {
+            return constant.m_type == d3d9::ParameterType::SAMPLER
+                || constant.m_type == d3d9::ParameterType::SAMPLER_1D
+                || constant.m_type == d3d9::ParameterType::SAMPLER_2D
+                || constant.m_type == d3d9::ParameterType::SAMPLER_3D
+                || constant.m_type == d3d9::ParameterType::SAMPLER_CUBE;
+        }
+
+        bool AutoCreateShaderArgument(const techset::ShaderSelector shaderType, const d3d9::ShaderConstant& shaderArgument, const size_t elementOffset, const size_t registerOffset)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
 
-            for (auto i = 0u; i < pass.m_handled_vertex_shader_arguments.size(); i++)
+            const auto isSamplerArgument = IsSamplerArgument(shaderArgument);
+            if (shaderType == techset::ShaderSelector::VERTEX_SHADER && isSamplerArgument)
+                return false;
+
+            MaterialShaderArgument argument{};
+            argument.dest = static_cast<uint16_t>(shaderArgument.m_register_index + registerOffset);
+
+            unsigned arrayCount;
+            const std::vector accessors({ shaderArgument.m_name });
+            if (isSamplerArgument)
             {
-                if (!pass.m_handled_vertex_shader_arguments[i])
+                const CodeSamplerSource* samplerSource = FindCodeSamplerSource(accessors, s_codeSamplers);
+                if (!samplerSource)
+                    samplerSource = FindCodeSamplerSource(accessors, s_defaultCodeSamplers);
+
+                if (!samplerSource)
+                    return false;
+
+                argument.type = MTL_ARG_CODE_PIXEL_SAMPLER;
+                argument.u.codeSampler = samplerSource->source + elementOffset;
+
+                arrayCount = static_cast<unsigned>(samplerSource->arrayCount);
+            }
+            else
+            {
+                const CodeConstantSource* constantSource = FindCodeConstantSource(accessors, s_codeConsts);
+                if (!constantSource)
+                    constantSource = FindCodeConstantSource(accessors, s_defaultCodeConsts);
+
+                if (!constantSource)
+                    return false;
+
+                argument.type = shaderType == techset::ShaderSelector::VERTEX_SHADER ? MTL_ARG_CODE_VERTEX_CONST : MTL_ARG_CODE_PIXEL_CONST;
+                argument.u.codeConst.index = static_cast<uint16_t>(constantSource->source + elementOffset);
+                argument.u.codeConst.firstRow = 0u;
+                argument.u.codeConst.rowCount = static_cast<unsigned char>(shaderArgument.m_type_rows);
+
+                arrayCount = static_cast<unsigned>(constantSource->arrayCount);
+            }
+
+            if (elementOffset >= std::max(arrayCount, 1u))
+                return false;
+
+            pass.m_arguments.push_back(argument);
+            return true;
+        }
+
+        bool AutoCreateVertexShaderArguments(std::string& errorMessage)
+        {
+            assert(!m_passes.empty());
+            const auto& pass = m_passes.at(m_passes.size() - 1);
+
+            for (auto i = 0u; i < pass.m_vertex_shader_argument_handled_offset.size(); i++)
+            {
+                const auto& argument = pass.m_vertex_shader_info->m_constants[i];
+                const auto argumentHandledIndex = pass.m_vertex_shader_argument_handled_offset[i];
+                const auto argumentRegistersPerElement = argument.m_type_elements > 1u ? RegisterCountPerElement(argument) : argument.m_register_count;
+
+                auto elementIndex = 0u;
+                for (auto registerIndex = 0u; registerIndex < argument.m_register_count; registerIndex += argumentRegistersPerElement)
                 {
-                    std::cout << "Unhandled vertex shader \"" << pass.m_vertex_shader->m_name << "\" arg: " << pass.m_vertex_shader_info->m_constants[i].m_name << "\n";
+                    if (!pass.m_handled_vertex_shader_arguments[argumentHandledIndex + elementIndex])
+                    {
+                        if (!AutoCreateShaderArgument(techset::ShaderSelector::VERTEX_SHADER, argument, elementIndex, registerIndex))
+                        {
+                            std::ostringstream ss;
+                            ss << "Unassigned vertex shader \"" << pass.m_vertex_shader->m_name << "\" arg: " << argument.m_name;
+
+                            if (argument.m_type_elements > 1)
+                                ss << '[' << elementIndex << ']';
+
+                            errorMessage = ss.str();
+                            return false;
+                        }
+                    }
+
+                    elementIndex++;
                 }
             }
 
             return true;
         }
 
-        bool AutoCreatePixelShaderArguments(std::string& string)
+        bool AutoCreatePixelShaderArguments(std::string& errorMessage)
         {
             assert(!m_passes.empty());
-            auto& pass = m_passes.at(m_passes.size() - 1);
+            const auto& pass = m_passes.at(m_passes.size() - 1);
 
-            for (auto i = 0u; i < pass.m_handled_pixel_shader_arguments.size(); i++)
+            for (auto i = 0u; i < pass.m_pixel_shader_argument_handled_offset.size(); i++)
             {
-                if (!pass.m_handled_pixel_shader_arguments[i])
+                const auto& argument = pass.m_pixel_shader_info->m_constants[i];
+                const auto argumentHandledIndex = pass.m_pixel_shader_argument_handled_offset[i];
+                const auto argumentRegistersPerElement = argument.m_type_elements > 1u ? RegisterCountPerElement(argument) : argument.m_register_count;
+
+                auto elementIndex = 0u;
+                for (auto registerIndex = 0u; registerIndex < argument.m_register_count; registerIndex += argumentRegistersPerElement)
                 {
-                    std::cout << "Unhandled pixel shader \"" << pass.m_pixel_shader->m_name << "\" arg: " << pass.m_pixel_shader_info->m_constants[i].m_name << "\n";
+                    if (!pass.m_handled_pixel_shader_arguments[argumentHandledIndex + elementIndex])
+                    {
+                        if (!AutoCreateShaderArgument(techset::ShaderSelector::PIXEL_SHADER, argument, elementIndex, registerIndex))
+                        {
+                            std::ostringstream ss;
+                            ss << "Unassigned pixel shader \"" << pass.m_pixel_shader->m_name << "\" arg: " << argument.m_name;
+
+                            if (argument.m_type_elements > 1)
+                                ss << '[' << elementIndex << ']';
+
+                            errorMessage = ss.str();
+                            return false;
+                        }
+                    }
+
+                    elementIndex++;
                 }
             }
 
@@ -191,6 +301,23 @@ namespace IW4
             // TODO: State maps currently are not used
         }
 
+        static void InitializeArgumentState(const d3d9::ShaderInfo& shaderInfo, std::vector<size_t>& argumentHandledOffsetVector, std::vector<bool>& argumentHandledVector)
+        {
+            auto vertexShaderArgumentSlotCount = 0u;
+            auto argIndex = 0u;
+            argumentHandledOffsetVector.resize(shaderInfo.m_constants.size());
+            for (const auto& arg : shaderInfo.m_constants)
+            {
+                argumentHandledOffsetVector[argIndex++] = vertexShaderArgumentSlotCount;
+
+                if (arg.m_type_elements > 1)
+                    vertexShaderArgumentSlotCount += arg.m_register_count / RegisterCountPerElement(arg);
+                else
+                    vertexShaderArgumentSlotCount++;
+            }
+            argumentHandledVector.resize(vertexShaderArgumentSlotCount);
+        }
+
         bool AcceptVertexShader(const std::string& vertexShaderName, std::string& errorMessage) override
         {
             auto* vertexShaderDependency = m_manager->LoadDependency(ASSET_TYPE_VERTEXSHADER, vertexShaderName);
@@ -213,7 +340,8 @@ namespace IW4
                 return false;
             }
 
-            pass.m_handled_vertex_shader_arguments.resize(pass.m_vertex_shader_info->m_constants.size());
+            InitializeArgumentState(*pass.m_vertex_shader_info, pass.m_vertex_shader_argument_handled_offset, pass.m_handled_vertex_shader_arguments);
+
             return true;
         }
 
@@ -239,17 +367,9 @@ namespace IW4
                 return false;
             }
 
-            pass.m_handled_pixel_shader_arguments.resize(pass.m_pixel_shader_info->m_constants.size());
-            return true;
-        }
+            InitializeArgumentState(*pass.m_pixel_shader_info, pass.m_pixel_shader_argument_handled_offset, pass.m_handled_pixel_shader_arguments);
 
-        static bool IsSamplerArgument(const d3d9::ShaderConstant& constant)
-        {
-            return constant.m_type == d3d9::ParameterType::SAMPLER
-                || constant.m_type == d3d9::ParameterType::SAMPLER_1D
-                || constant.m_type == d3d9::ParameterType::SAMPLER_2D
-                || constant.m_type == d3d9::ParameterType::SAMPLER_3D
-                || constant.m_type == d3d9::ParameterType::SAMPLER_CUBE;
+            return true;
         }
 
         static const CodeConstantSource* FindCodeConstantSource(const std::vector<std::string>& accessors, const CodeConstantSource* sourceTable)
@@ -306,21 +426,11 @@ namespace IW4
             return foundSource;
         }
 
-        bool AcceptVertexShaderConstantArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
+        bool FindShaderArgument(const d3d9::ShaderInfo& shaderInfo, const techset::ShaderArgument& argument, size_t& constantIndex, size_t& registerOffset, std::string& errorMessage) const
         {
-            assert(!m_passes.empty());
-            auto& pass = m_passes.at(m_passes.size() - 1);
-
-            if (!pass.m_vertex_shader_info)
+            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [argument](const d3d9::ShaderConstant& constant)
             {
-                errorMessage = "Shader not specified";
-                return false;
-            }
-
-            const auto& shaderInfo = *pass.m_vertex_shader_info;
-            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
-            {
-                return constant.m_name == shaderArgument.m_argument_name;
+                return constant.m_name == argument.m_argument_name;
             });
 
             if (matchingShaderConstant == shaderInfo.m_constants.end())
@@ -329,135 +439,40 @@ namespace IW4
                 return false;
             }
 
-            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo.m_constants.begin());
-            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
-            if (argumentIsSampler)
+            if (argument.m_argument_index_specified)
             {
-                errorMessage = "Vertex shader argument expected sampler but got constant";
-                return false;
-            }
-
-            MaterialShaderArgument argument{};
-            argument.type = MTL_ARG_CODE_VERTEX_CONST;
-            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
-
-            const CodeConstantSource* constantSource = FindCodeConstantSource(source.m_accessors, s_codeConsts);
-            if (!constantSource)
-                constantSource = FindCodeConstantSource(source.m_accessors, s_defaultCodeConsts);
-
-            if (!constantSource)
-            {
-                errorMessage = "Unknown code constant";
-                return false;
-            }
-
-            if (constantSource->arrayCount > 0)
-            {
-                if (!source.m_index_accessor_specified)
+                if (matchingShaderConstant->m_type_elements <= 1)
                 {
-                    errorMessage = "Code constant must have array index specified";
+                    errorMessage = "Argument does not have more than one element";
                     return false;
                 }
 
-                if (source.m_index_accessor >= static_cast<size_t>(constantSource->arrayCount))
+                const auto registersPerElement = RegisterCountPerElement(*matchingShaderConstant);
+                if (argument.m_argument_index >= matchingShaderConstant->m_register_count / registersPerElement)
                 {
-                    errorMessage = "Code constant array index out of bounds";
+                    errorMessage = "Argument index out of bounds";
                     return false;
                 }
 
-                argument.u.codeConst.index = static_cast<uint16_t>(constantSource->source + source.m_index_accessor);
+                registerOffset = argument.m_argument_index * registersPerElement;
             }
-            else if (source.m_index_accessor_specified)
+            else if (matchingShaderConstant->m_type_elements > 1)
             {
-                errorMessage = "Code constant cannot have array index specified";
+                errorMessage = "Argument has more than one element and needs to be accessed with an index";
                 return false;
             }
             else
             {
-                argument.u.codeConst.index = static_cast<uint16_t>(constantSource->source);
+                registerOffset = 0u;
             }
-            argument.u.codeConst.firstRow = 0u;
-            argument.u.codeConst.rowCount = static_cast<unsigned char>(matchingShaderConstant->m_type_rows);
 
-            pass.m_arguments.push_back(argument);
-            pass.m_handled_vertex_shader_arguments[shaderConstantIndex] = true;
-
+            constantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo.m_constants.begin());
             return true;
         }
 
-        bool AcceptPixelShaderCodeArgument(techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage, const bool isSampler)
+        static bool SetArgumentCodeConst(MaterialShaderArgument& argument, const techset::ShaderArgumentCodeSource& source, const d3d9::ShaderConstant& shaderConstant, const unsigned sourceIndex,
+                                         const unsigned arrayCount, std::string& errorMessage)
         {
-            assert(!m_passes.empty());
-            auto& pass = m_passes.at(m_passes.size() - 1);
-
-            if (!pass.m_pixel_shader_info)
-            {
-                errorMessage = "Shader not specified";
-                return false;
-            }
-
-            const auto& shaderInfo = *pass.m_pixel_shader_info;
-
-            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
-            {
-                return constant.m_name == shaderArgument.m_argument_name;
-            });
-
-            if (matchingShaderConstant == shaderInfo.m_constants.end())
-            {
-                errorMessage = "Could not find argument in shader";
-                return false;
-            }
-
-            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo.m_constants.begin());
-            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
-            if (argumentIsSampler && !isSampler)
-            {
-                errorMessage = "Pixel shader argument expects sampler but got constant";
-                return false;
-            }
-            else if (!argumentIsSampler && isSampler)
-            {
-                errorMessage = "Pixel shader argument expects constant but got sampler";
-                return false;
-            }
-
-            MaterialShaderArgument argument{};
-            argument.type = isSampler ? MTL_ARG_CODE_PIXEL_SAMPLER : MTL_ARG_CODE_PIXEL_CONST;
-            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
-
-            unsigned sourceIndex, arrayCount;
-            if (isSampler)
-            {
-                const CodeSamplerSource* samplerSource = FindCodeSamplerSource(source.m_accessors, s_codeSamplers);
-                if (!samplerSource)
-                    samplerSource = FindCodeSamplerSource(source.m_accessors, s_defaultCodeSamplers);
-
-                if (!samplerSource)
-                {
-                    errorMessage = "Unknown code sampler";
-                    return false;
-                }
-
-                sourceIndex = static_cast<unsigned>(samplerSource->source);
-                arrayCount = static_cast<unsigned>(samplerSource->arrayCount);
-            }
-            else
-            {
-                const CodeConstantSource* constantSource = FindCodeConstantSource(source.m_accessors, s_codeConsts);
-                if (!constantSource)
-                    constantSource = FindCodeConstantSource(source.m_accessors, s_defaultCodeConsts);
-
-                if (!constantSource)
-                {
-                    errorMessage = "Unknown code constant";
-                    return false;
-                }
-
-                sourceIndex = static_cast<unsigned>(constantSource->source);
-                arrayCount = static_cast<unsigned>(constantSource->arrayCount);
-            }
-
             if (arrayCount > 0u)
             {
                 if (!source.m_index_accessor_specified)
@@ -484,10 +499,166 @@ namespace IW4
                 argument.u.codeConst.index = static_cast<uint16_t>(sourceIndex);
             }
             argument.u.codeConst.firstRow = 0u;
-            argument.u.codeConst.rowCount = static_cast<unsigned char>(matchingShaderConstant->m_type_rows);
+            argument.u.codeConst.rowCount = static_cast<unsigned char>(shaderConstant.m_type_rows);
+
+            return true;
+        }
+
+        static bool SetArgumentCodeSampler(MaterialShaderArgument& argument, const techset::ShaderArgumentCodeSource& source, const d3d9::ShaderConstant& shaderConstant, const unsigned sourceIndex,
+                                         const unsigned arrayCount, std::string& errorMessage)
+        {
+            if (arrayCount > 0u)
+            {
+                if (!source.m_index_accessor_specified)
+                {
+                    errorMessage = "Code constant must have array index specified";
+                    return false;
+                }
+
+                if (source.m_index_accessor >= arrayCount)
+                {
+                    errorMessage = "Code constant array index out of bounds";
+                    return false;
+                }
+
+                argument.u.codeSampler = sourceIndex + source.m_index_accessor;
+            }
+            else if (source.m_index_accessor_specified)
+            {
+                errorMessage = "Code constant cannot have array index specified";
+                return false;
+            }
+            else
+            {
+                argument.u.codeSampler = sourceIndex;
+            }
+
+            return true;
+        }
+
+        bool AcceptVertexShaderConstantArgument(const techset::ShaderArgument& shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
+        {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            if (!pass.m_vertex_shader_info)
+            {
+                errorMessage = "Shader not specified";
+                return false;
+            }
+
+            size_t shaderConstantIndex = 0u;
+            size_t registerOffset = 0u;
+            if (!FindShaderArgument(*pass.m_vertex_shader_info, shaderArgument, shaderConstantIndex, registerOffset, errorMessage))
+                return false;
+
+            const auto elementOffset = shaderArgument.m_argument_index_specified ? shaderArgument.m_argument_index : 0u;
+            const auto& shaderConstant = pass.m_vertex_shader_info->m_constants[shaderConstantIndex];
+            const auto argumentIsSampler = IsSamplerArgument(shaderConstant);
+            if (argumentIsSampler)
+            {
+                errorMessage = "Vertex shader argument expected sampler but got constant";
+                return false;
+            }
+
+            MaterialShaderArgument argument{};
+            argument.type = MTL_ARG_CODE_VERTEX_CONST;
+            argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
+
+            const CodeConstantSource* constantSource = FindCodeConstantSource(source.m_accessors, s_codeConsts);
+            if (!constantSource)
+                constantSource = FindCodeConstantSource(source.m_accessors, s_defaultCodeConsts);
+
+            if (!constantSource)
+            {
+                errorMessage = "Unknown code constant";
+                return false;
+            }
+
+            if (!SetArgumentCodeConst(argument, source, shaderConstant, constantSource->source, constantSource->arrayCount, errorMessage))
+                return false;
 
             pass.m_arguments.push_back(argument);
-            pass.m_handled_pixel_shader_arguments[shaderConstantIndex] = true;
+            pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
+
+            return true;
+        }
+
+        bool AcceptPixelShaderCodeArgument(const techset::ShaderArgument& shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage, const bool isSampler)
+        {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
+            if (!pass.m_pixel_shader_info)
+            {
+                errorMessage = "Shader not specified";
+                return false;
+            }
+
+            size_t shaderConstantIndex = 0u;
+            size_t registerOffset = 0u;
+            if (!FindShaderArgument(*pass.m_pixel_shader_info, shaderArgument, shaderConstantIndex, registerOffset, errorMessage))
+                return false;
+
+            const auto elementOffset = shaderArgument.m_argument_index_specified ? shaderArgument.m_argument_index : 0u;
+            const auto& shaderConstant = pass.m_pixel_shader_info->m_constants[shaderConstantIndex];
+            const auto argumentIsSampler = IsSamplerArgument(shaderConstant);
+            if (argumentIsSampler && !isSampler)
+            {
+                errorMessage = "Pixel shader argument expects sampler but got constant";
+                return false;
+            }
+            else if (!argumentIsSampler && isSampler)
+            {
+                errorMessage = "Pixel shader argument expects constant but got sampler";
+                return false;
+            }
+
+            MaterialShaderArgument argument{};
+            argument.type = isSampler ? MTL_ARG_CODE_PIXEL_SAMPLER : MTL_ARG_CODE_PIXEL_CONST;
+            argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
+
+            unsigned sourceIndex, arrayCount;
+            if (isSampler)
+            {
+                const CodeSamplerSource* samplerSource = FindCodeSamplerSource(source.m_accessors, s_codeSamplers);
+                if (!samplerSource)
+                    samplerSource = FindCodeSamplerSource(source.m_accessors, s_defaultCodeSamplers);
+
+                if (!samplerSource)
+                {
+                    errorMessage = "Unknown code sampler";
+                    return false;
+                }
+
+                sourceIndex = static_cast<unsigned>(samplerSource->source);
+                arrayCount = static_cast<unsigned>(samplerSource->arrayCount);
+
+                if (!SetArgumentCodeSampler(argument, source, shaderConstant, sourceIndex, arrayCount, errorMessage))
+                    return false;
+            }
+            else
+            {
+                const CodeConstantSource* constantSource = FindCodeConstantSource(source.m_accessors, s_codeConsts);
+                if (!constantSource)
+                    constantSource = FindCodeConstantSource(source.m_accessors, s_defaultCodeConsts);
+
+                if (!constantSource)
+                {
+                    errorMessage = "Unknown code constant";
+                    return false;
+                }
+
+                sourceIndex = static_cast<unsigned>(constantSource->source);
+                arrayCount = static_cast<unsigned>(constantSource->arrayCount);
+
+                if (!SetArgumentCodeConst(argument, source, shaderConstant, sourceIndex, arrayCount, errorMessage))
+                    return false;
+            }
+
+
+            pass.m_arguments.push_back(argument);
+            pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
 
             return true;
         }
@@ -541,19 +712,14 @@ namespace IW4
                 return false;
             }
 
-            const auto matchingShaderConstant = std::find_if(shaderInfo->m_constants.begin(), shaderInfo->m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
-            {
-                return constant.m_name == shaderArgument.m_argument_name;
-            });
-
-            if (matchingShaderConstant == shaderInfo->m_constants.end())
-            {
-                errorMessage = "Could not find argument in shader";
+            size_t shaderConstantIndex = 0u;
+            size_t registerOffset = 0u;
+            if (!FindShaderArgument(*shaderInfo, shaderArgument, shaderConstantIndex, registerOffset, errorMessage))
                 return false;
-            }
 
-            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo->m_constants.begin());
-            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
+            const auto elementOffset = shaderArgument.m_argument_index_specified ? shaderArgument.m_argument_index : 0u;
+            const auto& shaderConstant = shaderInfo->m_constants[shaderConstantIndex];
+            const auto argumentIsSampler = IsSamplerArgument(shaderConstant);
             if (argumentIsSampler)
             {
                 if (shader == techset::ShaderSelector::VERTEX_SHADER)
@@ -564,14 +730,14 @@ namespace IW4
                 return false;
             }
 
-            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
+            argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
             argument.u.literalConst = m_zone_state->GetAllocatedLiteral(m_memory, source);
             pass.m_arguments.push_back(argument);
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
-                pass.m_handled_vertex_shader_arguments[shaderConstantIndex] = true;
+                pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
             else
-                pass.m_handled_pixel_shader_arguments[shaderConstantIndex] = true;
+                pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
 
             return true;
         }
@@ -601,19 +767,14 @@ namespace IW4
                 return false;
             }
 
-            const auto matchingShaderConstant = std::find_if(shaderInfo->m_constants.begin(), shaderInfo->m_constants.end(), [&shaderArgument](const d3d9::ShaderConstant& constant)
-            {
-                return constant.m_name == shaderArgument.m_argument_name;
-            });
-
-            if (matchingShaderConstant == shaderInfo->m_constants.end())
-            {
-                errorMessage = "Could not find argument in shader";
+            size_t shaderConstantIndex = 0u;
+            size_t registerOffset = 0u;
+            if (!FindShaderArgument(*shaderInfo, shaderArgument, shaderConstantIndex, registerOffset, errorMessage))
                 return false;
-            }
 
-            const auto shaderConstantIndex = static_cast<size_t>(matchingShaderConstant - shaderInfo->m_constants.begin());
-            const auto argumentIsSampler = IsSamplerArgument(*matchingShaderConstant);
+            const auto elementOffset = shaderArgument.m_argument_index_specified ? shaderArgument.m_argument_index : 0u;
+            const auto& shaderConstant = shaderInfo->m_constants[shaderConstantIndex];
+            const auto argumentIsSampler = IsSamplerArgument(shaderConstant);
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
             {
                 if (argumentIsSampler)
@@ -634,13 +795,13 @@ namespace IW4
             else
                 argument.u.nameHash = Common::R_HashString(source.m_name.c_str(), 0u);
 
-            argument.dest = static_cast<uint16_t>(matchingShaderConstant->m_register_index);
+            argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
             pass.m_arguments.push_back(argument);
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
-                pass.m_handled_vertex_shader_arguments[shaderConstantIndex] = true;
+                pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
             else
-                pass.m_handled_pixel_shader_arguments[shaderConstantIndex] = true;
+                pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
 
             return true;
         }
