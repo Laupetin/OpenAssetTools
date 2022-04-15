@@ -992,7 +992,25 @@ namespace IW4
             return ss.str();
         }
 
-        void ConvertPass(MaterialPass& out, const TechniqueCreator::Pass& in, std::vector<XAssetInfoGeneric*>& dependencies) const
+        static void UpdateTechniqueFlagsForArgument(uint16_t& techniqueFlags, const TechniqueCreator::PassShaderArgument& arg)
+        {
+            if(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
+            {
+                switch(arg.m_arg.u.codeSampler)
+                {
+                case TEXTURE_SRC_CODE_RESOLVED_POST_SUN:
+                    techniqueFlags |= 1u;
+                    break;
+                case TEXTURE_SRC_CODE_RESOLVED_SCENE:
+                    techniqueFlags |= 2u;
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+
+        void ConvertPass(MaterialTechnique& technique, MaterialPass& out, const TechniqueCreator::Pass& in, std::vector<XAssetInfoGeneric*>& dependencies) const
         {
             out.customSamplerFlags = 0u;
             out.vertexShader = in.m_vertex_shader->Asset();
@@ -1008,6 +1026,7 @@ namespace IW4
             size_t argIndex = 0u;
             for (const auto& arg : in.m_arguments)
             {
+                UpdateTechniqueFlagsForArgument(technique.flags, arg);
                 switch (arg.m_update_frequency)
                 {
                 case MTL_UPDATE_PER_PRIM:
@@ -1064,7 +1083,7 @@ namespace IW4
             technique->passCount = static_cast<uint16_t>(passes.size());
 
             for (auto i = 0u; i < passes.size(); i++)
-                ConvertPass(technique->passArray[i], passes.at(i), dependencies);
+                ConvertPass(*technique, technique->passArray[i], passes.at(i), dependencies);
 
             return technique;
         }
