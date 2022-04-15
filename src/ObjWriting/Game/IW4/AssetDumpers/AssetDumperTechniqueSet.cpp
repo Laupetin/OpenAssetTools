@@ -426,6 +426,8 @@ namespace IW4
 
         void DumpTechnique(const MaterialTechnique* technique)
         {
+            Indent();
+            m_stream << "// TECHNIQUE FLAGS: 0x" << std::hex << technique->flags << "\n";
             for (auto i = 0u; i < technique->passCount; i++)
                 DumpPass(technique->passArray[i]);
         }
