@@ -90,10 +90,7 @@ namespace IW4
         {
             const auto file = searchPath->Open(menuFileName);
             if (!file.IsOpen())
-            {
-                std::cerr << "Failed to open menu file \"" << menuFileName << "\"\n";
                 return nullptr;
-            }
 
             menu::MenuFileReader reader(*file.m_stream, menuFileName, menu::FeatureLevel::IW4, [searchPath](const std::string& filename, const std::string& sourceFile) -> std::unique_ptr<std::istream>
             {
@@ -125,11 +122,9 @@ bool AssetLoaderMenuList::CanLoadFromRaw() const
     return true;
 }
 
-std::deque<std::string> BuildMenuFileQueue(const std::string& menuListAssetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::MenuAssetZoneState* zoneState,
+bool BuildMenuFileQueue(std::deque<std::string>& menuLoadQueue, const std::string& menuListAssetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::MenuAssetZoneState* zoneState,
                                            MenuConversionZoneState* conversionState, std::vector<menuDef_t*>& menus, std::vector<XAssetInfoGeneric*>& menuListDependencies)
 {
-    std::deque<std::string> menuLoadQueue;
-
     const auto alreadyLoadedMenuListFileMenus = conversionState->m_menus_by_filename.find(menuListAssetName);
 
     if (alreadyLoadedMenuListFileMenus == conversionState->m_menus_by_filename.end())
@@ -145,10 +140,10 @@ std::deque<std::string> BuildMenuFileQueue(const std::string& menuListAssetName,
             zoneState->AddMenusToLoad(menuListAssetName, std::move(menuListResult->m_menus_to_load));
         }
         else
-            std::cerr << "Could not read menu list file \"" << menuListAssetName << "\"\n";
+            return false;
     }
 
-    return menuLoadQueue;
+    return true;
 }
 
 void LoadMenuFileFromQueue(const std::string& menuFilePath, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, menu::MenuAssetZoneState* zoneState,
@@ -185,7 +180,9 @@ bool AssetLoaderMenuList::LoadFromRaw(const std::string& assetName, ISearchPath*
     auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<menu::MenuAssetZoneState>();
     auto* conversionState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<MenuConversionZoneState>();
 
-    auto menuLoadQueue = BuildMenuFileQueue(assetName, searchPath, memory, manager, zoneState, conversionState, menus, menuListDependencies);
+    std::deque<std::string> menuLoadQueue;
+    if (!BuildMenuFileQueue(menuLoadQueue, assetName, searchPath, memory, manager, zoneState, conversionState, menus, menuListDependencies))
+        return false;
 
     while(!menuLoadQueue.empty())
     {
