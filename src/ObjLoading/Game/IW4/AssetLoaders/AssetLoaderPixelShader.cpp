@@ -24,12 +24,17 @@ bool AssetLoaderPixelShader::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderPixelShader::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+std::string AssetLoaderPixelShader::GetFileNameForAsset(const std::string& assetName)
 {
     std::ostringstream ss;
     ss << "shader_bin/ps_" << assetName << ".cso";
+    return ss.str();
+}
 
-    const auto file = searchPath->Open(ss.str());
+bool AssetLoaderPixelShader::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+{
+    const auto fileName = GetFileNameForAsset(assetName);
+    const auto file = searchPath->Open(fileName);
     if (!file.IsOpen())
         return false;
 

@@ -7,6 +7,8 @@
 #include <sstream>
 #include <type_traits>
 
+#include "AssetLoaderPixelShader.h"
+#include "AssetLoaderVertexShader.h"
 #include "Utils/ClassUtils.h"
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
@@ -76,22 +78,62 @@ namespace IW4
         }
     };
 
+    class ShaderInfoFromFileSystemCacheState final : public IZoneAssetLoaderState
+    {
+        std::unordered_map<std::string, std::unique_ptr<d3d9::ShaderInfo>> m_cached_shader_info;
+
+    public:
+        _NODISCARD const d3d9::ShaderInfo* LoadShaderInfoFromDisk(ISearchPath* searchPath, const std::string& fileName)
+        {
+            const auto cachedShaderInfo = m_cached_shader_info.find(fileName);
+            if (cachedShaderInfo != m_cached_shader_info.end())
+                return cachedShaderInfo->second.get();
+
+            const auto file = searchPath->Open(fileName);
+            if (!file.IsOpen())
+                return nullptr;
+
+            const auto shaderSize = static_cast<size_t>(file.m_length);
+
+            if (shaderSize % sizeof(uint32_t) != 0)
+            {
+                std::cerr << "Invalid shader \"" << fileName << "\": Size must be dividable by " << sizeof(uint32_t) << "\n";
+                return nullptr;
+            }
+
+            const auto shaderData = std::make_unique<char[]>(shaderSize);
+            file.m_stream->read(shaderData.get(), shaderSize);
+
+            auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(reinterpret_cast<const uint32_t*>(shaderData.get()), shaderSize);
+            if (!shaderInfo)
+                return nullptr;
+
+            const auto* result = shaderInfo.get();
+            m_cached_shader_info.emplace(std::make_pair(fileName, std::move(shaderInfo)));
+            return result;
+        }
+    };
+
     class TechniqueCreator final : public techset::ITechniqueDefinitionAcceptor
     {
+        ISearchPath* const m_search_path;
         MemoryManager* const m_memory;
         IAssetLoadingManager* const m_manager;
         TechniqueZoneLoadingState* const m_zone_state;
+        ShaderInfoFromFileSystemCacheState* const m_shader_info_cache;
 
     public:
         struct Pass
         {
             XAssetInfo<MaterialVertexShader>* m_vertex_shader;
-            std::unique_ptr<d3d9::ShaderInfo> m_vertex_shader_info;
+            const d3d9::ShaderInfo* m_vertex_shader_info;
+            std::unique_ptr<d3d9::ShaderInfo> m_vertex_shader_info_unq;
             std::vector<size_t> m_vertex_shader_argument_handled_offset;
             std::vector<bool> m_handled_vertex_shader_arguments;
 
             XAssetInfo<MaterialPixelShader>* m_pixel_shader;
-            std::unique_ptr<d3d9::ShaderInfo> m_pixel_shader_info;
+            const d3d9::ShaderInfo* m_pixel_shader_info;
+            std::unique_ptr<d3d9::ShaderInfo> m_pixel_shader_info_unq;
             std::vector<size_t> m_pixel_shader_argument_handled_offset;
             std::vector<bool> m_handled_pixel_shader_arguments;
 
@@ -111,10 +153,12 @@ namespace IW4
         std::vector<Pass> m_passes;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
-        TechniqueCreator(MemoryManager* memory, IAssetLoadingManager* manager, TechniqueZoneLoadingState* zoneState)
-            : m_memory(memory),
+        TechniqueCreator(ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, TechniqueZoneLoadingState* zoneState, ShaderInfoFromFileSystemCacheState* shaderInfoCache)
+            : m_search_path(searchPath),
+              m_memory(memory),
               m_manager(manager),
-              m_zone_state(zoneState)
+              m_zone_state(zoneState),
+              m_shader_info_cache(shaderInfoCache)
         {
         }
 
@@ -323,7 +367,9 @@ namespace IW4
             auto* vertexShaderDependency = m_manager->LoadDependency(ASSET_TYPE_VERTEXSHADER, vertexShaderName);
             if (vertexShaderDependency == nullptr)
             {
-                errorMessage = "Failed to load specified shader";
+                std::ostringstream ss;
+                ss << "Failed to load specified shader \"" << vertexShaderName << "\"";
+                errorMessage = ss.str();
                 return false;
             }
 
@@ -331,12 +377,22 @@ namespace IW4
             auto& pass = m_passes.at(m_passes.size() - 1);
             pass.m_vertex_shader = reinterpret_cast<XAssetInfo<MaterialVertexShader>*>(vertexShaderDependency);
 
-            const auto& shaderLoadDef = pass.m_vertex_shader->Asset()->prog.loadDef;
-            pass.m_vertex_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
+            if (pass.m_vertex_shader->Asset()->name && pass.m_vertex_shader->Asset()->name[0] == ',')
+            {
+                pass.m_vertex_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderVertexShader::GetFileNameForAsset(vertexShaderName));
+            }
+            else
+            {
+                const auto& shaderLoadDef = pass.m_vertex_shader->Asset()->prog.loadDef;
+                pass.m_vertex_shader_info_unq = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
+                pass.m_vertex_shader_info = pass.m_vertex_shader_info_unq.get();
+            }
 
             if (!pass.m_vertex_shader_info)
             {
-                errorMessage = "No shader info for shader";
+                std::ostringstream ss;
+                ss << "No shader info for shader \"" << vertexShaderName << "\"";
+                errorMessage = ss.str();
                 return false;
             }
 
@@ -350,7 +406,9 @@ namespace IW4
             auto* pixelShaderDependency = m_manager->LoadDependency(ASSET_TYPE_PIXELSHADER, pixelShaderName);
             if (pixelShaderDependency == nullptr)
             {
-                errorMessage = "Failed to load specified shader";
+                std::ostringstream ss;
+                ss << "Failed to load specified shader \"" << pixelShaderName << "\"";
+                errorMessage = ss.str();
                 return false;
             }
 
@@ -358,12 +416,22 @@ namespace IW4
             auto& pass = m_passes.at(m_passes.size() - 1);
             pass.m_pixel_shader = reinterpret_cast<XAssetInfo<MaterialPixelShader>*>(pixelShaderDependency);
 
-            const auto& shaderLoadDef = pass.m_pixel_shader->Asset()->prog.loadDef;
-            pass.m_pixel_shader_info = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
+            if (pass.m_pixel_shader->Asset()->name && pass.m_pixel_shader->Asset()->name[0] == ',')
+            {
+                pass.m_pixel_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderPixelShader::GetFileNameForAsset(pixelShaderName));
+            }
+            else
+            {
+                const auto& shaderLoadDef = pass.m_pixel_shader->Asset()->prog.loadDef;
+                pass.m_pixel_shader_info_unq = d3d9::ShaderAnalyser::GetShaderInfo(shaderLoadDef.program, shaderLoadDef.programSize * sizeof(uint32_t));
+                pass.m_pixel_shader_info = pass.m_pixel_shader_info_unq.get();
+            }
 
             if (!pass.m_pixel_shader_info)
             {
-                errorMessage = "No shader info for shader";
+                std::ostringstream ss;
+                ss << "No shader info for shader \"" << pixelShaderName << "\"";
+                errorMessage = ss.str();
                 return false;
             }
 
@@ -697,13 +765,13 @@ namespace IW4
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
             {
                 argument.type = MTL_ARG_LITERAL_VERTEX_CONST;
-                shaderInfo = pass.m_vertex_shader_info.get();
+                shaderInfo = pass.m_vertex_shader_info;
             }
             else
             {
                 assert(shader == techset::ShaderSelector::PIXEL_SHADER);
                 argument.type = MTL_ARG_LITERAL_PIXEL_CONST;
-                shaderInfo = pass.m_pixel_shader_info.get();
+                shaderInfo = pass.m_pixel_shader_info;
             }
 
             if (!shaderInfo)
@@ -753,12 +821,12 @@ namespace IW4
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
             {
-                shaderInfo = pass.m_vertex_shader_info.get();
+                shaderInfo = pass.m_vertex_shader_info;
             }
             else
             {
                 assert(shader == techset::ShaderSelector::PIXEL_SHADER);
-                shaderInfo = pass.m_pixel_shader_info.get();
+                shaderInfo = pass.m_pixel_shader_info;
             }
 
             if (!shaderInfo)
@@ -851,6 +919,7 @@ namespace IW4
         MemoryManager* m_memory;
         IAssetLoadingManager* m_manager;
         TechniqueZoneLoadingState* m_zone_state;
+        ShaderInfoFromFileSystemCacheState* m_shader_info_cache;
 
         static std::string GetTechniqueFileName(const std::string& techniqueName)
         {
@@ -869,15 +938,15 @@ namespace IW4
             size_t perObjArgCount = 0u;
             size_t perPrimArgCount = 0u;
             size_t stableArgCount = 0u;
-            for(const auto& arg : in.m_arguments)
+            for (const auto& arg : in.m_arguments)
             {
-                if(arg.type == MTL_ARG_MATERIAL_VERTEX_CONST
+                if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST
                     || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
                     || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
                 {
                     perObjArgCount++;
                 }
-                else if(arg.type >= MTL_ARG_CODE_PRIM_BEGIN && arg.type < MTL_ARG_CODE_PRIM_END)
+                else if (arg.type >= MTL_ARG_CODE_PRIM_BEGIN && arg.type < MTL_ARG_CODE_PRIM_END)
                 {
                     perPrimArgCount++;
                 }
@@ -895,11 +964,11 @@ namespace IW4
             out.args = static_cast<MaterialShaderArgument*>(m_memory->Alloc(dataSize));
             memcpy(out.args, in.m_arguments.data(), dataSize);
 
-            if(in.m_vertex_shader)
+            if (in.m_vertex_shader)
                 dependencies.push_back(in.m_vertex_shader);
-            if(in.m_pixel_shader)
+            if (in.m_pixel_shader)
                 dependencies.push_back(in.m_pixel_shader);
-            if(in.m_vertex_decl_asset)
+            if (in.m_vertex_decl_asset)
                 dependencies.push_back(in.m_vertex_decl_asset);
         }
 
@@ -925,7 +994,7 @@ namespace IW4
             if (!file.IsOpen())
                 return nullptr;
 
-            TechniqueCreator creator(m_memory, m_manager, m_zone_state);
+            TechniqueCreator creator(m_search_path, m_memory, m_manager, m_zone_state, m_shader_info_cache);
             const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &creator);
             if (!reader.ReadTechniqueDefinition())
                 return nullptr;
@@ -938,7 +1007,8 @@ namespace IW4
             : m_search_path(searchPath),
               m_memory(memory),
               m_manager(manager),
-              m_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<TechniqueZoneLoadingState>())
+              m_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<TechniqueZoneLoadingState>()),
+              m_shader_info_cache(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<ShaderInfoFromFileSystemCacheState>())
         {
         }
 
