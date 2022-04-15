@@ -387,7 +387,16 @@ namespace IW4
             // Sort args by their update frequency
             std::sort(pass.m_arguments.begin(), pass.m_arguments.end(), [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
             {
-                return arg1.m_update_frequency < arg2.m_update_frequency;
+                if(arg1.m_update_frequency != arg2.m_update_frequency)
+                    return arg1.m_update_frequency < arg2.m_update_frequency;
+
+                if (arg1.m_arg.type != arg2.m_arg.type)
+                    return arg1.m_arg.type < arg2.m_arg.type;
+
+                if (arg1.m_arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
+                    return arg1.m_arg.u.codeSampler < arg2.m_arg.u.codeSampler;
+
+                return arg1.m_arg.dest < arg2.m_arg.dest;
             });
 
             AllocateVertexDecl();
