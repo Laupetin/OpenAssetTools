@@ -507,6 +507,14 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(s_codeSamplerUpdateFreq)> == TEXTURE_SRC_CODE_COUNT);
 
+    inline MaterialTextureSource g_customSamplerSrc[]
+    {
+        TEXTURE_SRC_CODE_REFLECTION_PROBE, // CUSTOM_SAMPLER_REFLECTION_PROBE
+        TEXTURE_SRC_CODE_LIGHTMAP_PRIMARY, // CUSTOM_SAMPLER_LIGHTMAP_PRIMARY
+        TEXTURE_SRC_CODE_LIGHTMAP_SECONDARY // CUSTOM_SAMPLER_LIGHTMAP_SECONDARY
+    };
+    static_assert(std::extent_v<decltype(g_customSamplerSrc)> == CUSTOM_SAMPLER_COUNT);
+
     static constexpr std::pair<uint32_t, const char*> KnownMaterialSource(const char* name)
     {
         return std::make_pair(Common::R_HashString(name, 0u), name);

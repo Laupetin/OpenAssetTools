@@ -131,7 +131,7 @@ namespace IW4
 
             static MaterialUpdateFrequency GetUpdateFrequencyForArg(MaterialShaderArgument arg)
             {
-                switch(arg.type)
+                switch (arg.type)
                 {
                 case MTL_ARG_CODE_VERTEX_CONST:
                 case MTL_ARG_CODE_PIXEL_CONST:
@@ -143,7 +143,7 @@ namespace IW4
                     return s_codeConstUpdateFreq[arg.u.codeConst.index];
 
                 case MTL_ARG_CODE_PIXEL_SAMPLER:
-                    if(arg.u.codeSampler >= std::extent_v<decltype(s_codeSamplerUpdateFreq)>)
+                    if (arg.u.codeSampler >= std::extent_v<decltype(s_codeSamplerUpdateFreq)>)
                     {
                         assert(false);
                         return MTL_UPDATE_RARELY;
@@ -1011,9 +1011,23 @@ namespace IW4
                     stableArgCount++;
                     break;
                 case MTL_UPDATE_CUSTOM:
+                    {
+                        assert(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER);
+                        if (arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
+                        {
+                            const auto customSampler = std::find(std::begin(g_customSamplerSrc), std::end(g_customSamplerSrc), arg.m_arg.u.codeSampler);
+                            assert(customSampler != std::end(g_customSamplerSrc));
+                            if (customSampler != std::end(g_customSamplerSrc))
+                            {
+                                const auto customSamplerIndex = customSampler - std::begin(g_customSamplerSrc);
+                                out.customSamplerFlags |= 1 << customSamplerIndex;
+                            }
+                        }
+                    }
+                    continue;
                 default:
                     assert(false);
-                    break;
+                    continue;
                 }
 
                 out.args[argIndex++] = arg.m_arg;

@@ -950,6 +950,15 @@ namespace IW4
         TEXTURE_SRC_CODE_COUNT
     };
 
+    enum CustomSamplers
+    {
+        CUSTOM_SAMPLER_REFLECTION_PROBE = 0x0,
+        CUSTOM_SAMPLER_LIGHTMAP_PRIMARY = 0x1,
+        CUSTOM_SAMPLER_LIGHTMAP_SECONDARY = 0x2,
+
+        CUSTOM_SAMPLER_COUNT
+    };
+
     struct CodeSamplerSource
     {
         const char* name;
