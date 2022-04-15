@@ -1148,22 +1148,30 @@ namespace IW4
 
     enum MaterialShaderArgumentType
     {
-        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,
-        MTL_ARG_LITERAL_VERTEX_CONST = 0x1,
-        MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2,
+        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0, // stable
+        MTL_ARG_LITERAL_VERTEX_CONST = 0x1, // stable
+        MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2, // stable
 
         MTL_ARG_CODE_PRIM_BEGIN = 0x3,
 
-        MTL_ARG_CODE_VERTEX_CONST = 0x3,
-        MTL_ARG_CODE_PIXEL_SAMPLER = 0x4,
-        MTL_ARG_CODE_PIXEL_CONST = 0x5,
+        MTL_ARG_CODE_VERTEX_CONST = 0x3, // stable object prim
+        MTL_ARG_CODE_PIXEL_SAMPLER = 0x4, // stable object
+        MTL_ARG_CODE_PIXEL_CONST = 0x5, // stable
 
         MTL_ARG_CODE_PRIM_END = 0x6,
 
-        MTL_ARG_MATERIAL_PIXEL_CONST = 0x6,
-        MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
+        MTL_ARG_MATERIAL_PIXEL_CONST = 0x6, // stable
+        MTL_ARG_LITERAL_PIXEL_CONST = 0x7, // stable
 
         MTL_ARG_COUNT
+    };
+
+    enum MaterialUpdateFrequency
+    {
+        MTL_UPDATE_PER_PRIM = 0x0,
+        MTL_UPDATE_PER_OBJECT = 0x1,
+        MTL_UPDATE_RARELY = 0x2,
+        MTL_UPDATE_CUSTOM = 0x3,
     };
 
     struct MaterialShaderArgument

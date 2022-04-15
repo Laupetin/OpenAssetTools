@@ -123,6 +123,50 @@ namespace IW4
         ShaderInfoFromFileSystemCacheState* const m_shader_info_cache;
 
     public:
+        class PassShaderArgument
+        {
+        public:
+            MaterialShaderArgument m_arg;
+            MaterialUpdateFrequency m_update_frequency;
+
+            static MaterialUpdateFrequency GetUpdateFrequencyForArg(MaterialShaderArgument arg)
+            {
+                switch(arg.type)
+                {
+                case MTL_ARG_CODE_VERTEX_CONST:
+                case MTL_ARG_CODE_PIXEL_CONST:
+                    if (arg.u.codeConst.index >= std::extent_v<decltype(s_codeConstUpdateFreq)>)
+                    {
+                        assert(false);
+                        return MTL_UPDATE_RARELY;
+                    }
+                    return s_codeConstUpdateFreq[arg.u.codeConst.index];
+
+                case MTL_ARG_CODE_PIXEL_SAMPLER:
+                    if(arg.u.codeSampler >= std::extent_v<decltype(s_codeSamplerUpdateFreq)>)
+                    {
+                        assert(false);
+                        return MTL_UPDATE_RARELY;
+                    }
+                    return s_codeSamplerUpdateFreq[arg.u.codeSampler];
+
+                case MTL_ARG_MATERIAL_VERTEX_CONST:
+                case MTL_ARG_MATERIAL_PIXEL_SAMPLER:
+                case MTL_ARG_MATERIAL_PIXEL_CONST:
+                case MTL_ARG_LITERAL_VERTEX_CONST:
+                case MTL_ARG_LITERAL_PIXEL_CONST:
+                default:
+                    return MTL_UPDATE_RARELY;
+                }
+            }
+
+            explicit PassShaderArgument(const MaterialShaderArgument arg)
+                : m_arg(arg),
+                  m_update_frequency(GetUpdateFrequencyForArg(arg))
+            {
+            }
+        };
+
         struct Pass
         {
             XAssetInfo<MaterialVertexShader>* m_vertex_shader;
@@ -139,11 +183,13 @@ namespace IW4
 
             MaterialVertexDeclaration m_vertex_decl;
             XAssetInfo<MaterialVertexDeclaration>* m_vertex_decl_asset;
-            std::vector<MaterialShaderArgument> m_arguments;
+            std::vector<PassShaderArgument> m_arguments;
 
             Pass()
                 : m_vertex_shader(nullptr),
+                  m_vertex_shader_info(nullptr),
                   m_pixel_shader(nullptr),
+                  m_pixel_shader_info(nullptr),
                   m_vertex_decl{},
                   m_vertex_decl_asset(nullptr)
             {
@@ -230,7 +276,7 @@ namespace IW4
             if (elementOffset >= std::max(arrayCount, 1u))
                 return false;
 
-            pass.m_arguments.push_back(argument);
+            pass.m_arguments.emplace_back(argument);
             return true;
         }
 
@@ -332,8 +378,17 @@ namespace IW4
 
         bool AcceptEndPass(std::string& errorMessage) override
         {
+            assert(!m_passes.empty());
+            auto& pass = m_passes.at(m_passes.size() - 1);
+
             if (!AutoCreateVertexShaderArguments(errorMessage) || !AutoCreatePixelShaderArguments(errorMessage))
                 return false;
+
+            // Sort args by their update frequency
+            std::sort(pass.m_arguments.begin(), pass.m_arguments.end(), [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
+            {
+                return arg1.m_update_frequency < arg2.m_update_frequency;
+            });
 
             AllocateVertexDecl();
 
@@ -646,7 +701,7 @@ namespace IW4
             if (!SetArgumentCodeConst(argument, source, shaderConstant, constantSource->source, constantSource->arrayCount, errorMessage))
                 return false;
 
-            pass.m_arguments.push_back(argument);
+            pass.m_arguments.emplace_back(argument);
             pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
 
             return true;
@@ -725,7 +780,7 @@ namespace IW4
             }
 
 
-            pass.m_arguments.push_back(argument);
+            pass.m_arguments.emplace_back(argument);
             pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
 
             return true;
@@ -800,7 +855,7 @@ namespace IW4
 
             argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
             argument.u.literalConst = m_zone_state->GetAllocatedLiteral(m_memory, source);
-            pass.m_arguments.push_back(argument);
+            pass.m_arguments.emplace_back(argument);
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
                 pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
@@ -864,7 +919,7 @@ namespace IW4
                 argument.u.nameHash = Common::R_HashString(source.m_name.c_str(), 0u);
 
             argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
-            pass.m_arguments.push_back(argument);
+            pass.m_arguments.emplace_back(argument);
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
                 pass.m_handled_vertex_shader_arguments[pass.m_vertex_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
@@ -935,34 +990,38 @@ namespace IW4
             out.pixelShader = in.m_pixel_shader->Asset();
             out.vertexDecl = in.m_vertex_decl_asset->Asset();
 
+            const auto argDataSize = sizeof(MaterialShaderArgument) * in.m_arguments.size();
+            out.args = static_cast<MaterialShaderArgument*>(m_memory->Alloc(argDataSize));
+
             size_t perObjArgCount = 0u;
             size_t perPrimArgCount = 0u;
             size_t stableArgCount = 0u;
+            size_t argIndex = 0u;
             for (const auto& arg : in.m_arguments)
             {
-                if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST
-                    || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
-                    || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
+                switch (arg.m_update_frequency)
                 {
-                    perObjArgCount++;
-                }
-                else if (arg.type >= MTL_ARG_CODE_PRIM_BEGIN && arg.type < MTL_ARG_CODE_PRIM_END)
-                {
+                case MTL_UPDATE_PER_PRIM:
                     perPrimArgCount++;
-                }
-                else
-                {
+                    break;
+                case MTL_UPDATE_PER_OBJECT:
+                    perObjArgCount++;
+                    break;
+                case MTL_UPDATE_RARELY:
                     stableArgCount++;
+                    break;
+                case MTL_UPDATE_CUSTOM:
+                default:
+                    assert(false);
+                    break;
                 }
+
+                out.args[argIndex++] = arg.m_arg;
             }
 
             out.perObjArgCount = static_cast<unsigned char>(perObjArgCount);
             out.perPrimArgCount = static_cast<unsigned char>(perPrimArgCount);
             out.stableArgCount = static_cast<unsigned char>(stableArgCount);
-
-            const auto dataSize = sizeof(MaterialShaderArgument) * in.m_arguments.size();
-            out.args = static_cast<MaterialShaderArgument*>(m_memory->Alloc(dataSize));
-            memcpy(out.args, in.m_arguments.data(), dataSize);
 
             if (in.m_vertex_shader)
                 dependencies.push_back(in.m_vertex_shader);
