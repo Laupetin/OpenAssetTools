@@ -50,6 +50,7 @@ class Linker::Impl
     SearchPaths m_asset_search_paths;
     SearchPaths m_gdt_search_paths;
     SearchPaths m_source_search_paths;
+    std::vector<std::unique_ptr<Zone>> m_loaded_zones;
 
     /**
      * \brief Loads a search path.
@@ -453,7 +454,7 @@ class Linker::Impl
         if (!stream.is_open())
             return false;
 
-        if(!ZoneWriting::WriteZone(stream, zone))
+        if (!ZoneWriting::WriteZone(stream, zone))
         {
             std::cout << "Writing zone failed." << std::endl;
             stream.close();
@@ -488,23 +489,8 @@ class Linker::Impl
         return result;
     }
 
-public:
-    Impl()
-    = default;
-
-    /**
-     * \copydoc Linker::Start
-     */
-    bool Start(const int argc, const char** argv)
+    bool LoadZones()
     {
-        if (!m_args.ParseArgs(argc, argv))
-            return false;
-
-        if (!BuildZoneIndependentSearchPaths())
-            return false;
-
-        std::vector<std::unique_ptr<Zone>> zones;
-
         for (const auto& zonePath : m_args.m_zones_to_load)
         {
             if (!fs::is_regular_file(zonePath))
@@ -527,8 +513,44 @@ public:
                 printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
             }
 
-            zones.emplace_back(std::move(zone));
+            m_loaded_zones.emplace_back(std::move(zone));
         }
+
+        return true;
+    }
+
+    void UnloadZones()
+    {
+        for (auto i = m_loaded_zones.rbegin(); i != m_loaded_zones.rend(); ++i)
+        {
+            auto& loadedZone = *i;
+            std::string zoneName = loadedZone->m_name;
+
+            loadedZone.reset();
+
+            if (m_args.m_verbose)
+                std::cout << "Unloaded zone \"" << zoneName << "\"\n";
+        }
+        m_loaded_zones.clear();
+    }
+
+public:
+    Impl()
+    = default;
+
+    /**
+     * \copydoc Linker::Start
+     */
+    bool Start(const int argc, const char** argv)
+    {
+        if (!m_args.ParseArgs(argc, argv))
+            return false;
+
+        if (!BuildZoneIndependentSearchPaths())
+            return false;
+
+        if (!LoadZones())
+            return false;
 
         auto result = true;
         for (const auto& zone : m_args.m_zones_to_build)
@@ -540,7 +562,7 @@ public:
             }
         }
 
-        zones.clear();
+        UnloadZones();
 
         return result;
     }
