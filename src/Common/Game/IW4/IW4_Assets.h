@@ -1225,7 +1225,7 @@ namespace IW4
         TECHNIQUE_FLAG_20 = 0x20, // techniques with _i_ in its name (all use texcoord[1] in decl -> other optional stream sources are not used at all so might be any optional)
         TECHNIQUE_FLAG_40 = 0x40, // uses code constant light.spotDir or light.spotFactors
         TECHNIQUE_FLAG_80 = 0x80, // uses floatZ sampler and does not have 0x100 flag
-        TECHNIQUE_FLAG_100 = 0x100, // distortion_scale_zfeather_dtex + distortion_scale_ua_zfeather
+        TECHNIQUE_FLAG_100 = 0x100, // distortion_scale_zfeather_dtex + distortion_scale_ua_zfeather + distortion_scale_zfeather
         TECHNIQUE_FLAG_200 = 0x200, // ?
     };
 

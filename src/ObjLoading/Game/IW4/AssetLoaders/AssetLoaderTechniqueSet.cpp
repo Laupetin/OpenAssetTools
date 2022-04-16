@@ -388,7 +388,7 @@ namespace IW4
             // Sort args by their update frequency
             std::sort(pass.m_arguments.begin(), pass.m_arguments.end(), [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
             {
-                if(arg1.m_update_frequency != arg2.m_update_frequency)
+                if (arg1.m_update_frequency != arg2.m_update_frequency)
                     return arg1.m_update_frequency < arg2.m_update_frequency;
 
                 if (arg1.m_arg.type != arg2.m_arg.type)
@@ -995,22 +995,101 @@ namespace IW4
 
         static void UpdateTechniqueFlags(MaterialTechnique& technique)
         {
-            // This is stupid but that's what the game does
-            if("zprepass"s == technique.name)
-                technique.flags |= 4u;
+            // This is stupid but that's what the game does for zprepass for sure
+            // The other ones might be handled by the game in the same fashion because there is not recognizable pattern that connects the shaders with the same flags
+            static std::unordered_map<std::string, size_t> flagsByTechniqueName({
+                {"zprepass", TECHNIQUE_FLAG_4 | TECHNIQUE_FLAG_200},
+                {"build_floatz", TECHNIQUE_FLAG_8},
+                {"build_shadowmap_depth", TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
+                {"build_shadowmap_model", TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
+                {"distortion_scale_ua_zfeather", TECHNIQUE_FLAG_100},
+                {"distortion_scale_zfeather", TECHNIQUE_FLAG_100},
+                {"distortion_scale_zfeather_dtex", TECHNIQUE_FLAG_100},
+                {"alternate_scene_overlay", TECHNIQUE_FLAG_200},
+                {"blur_apply", TECHNIQUE_FLAG_200},
+                {"build_floatz", TECHNIQUE_FLAG_200},
+                {"build_floatz_clear", TECHNIQUE_FLAG_200},
+                {"build_floatz_dtex", TECHNIQUE_FLAG_200},
+                {"build_floatz_ua", TECHNIQUE_FLAG_200},
+                {"build_floatz_ua_dtex", TECHNIQUE_FLAG_200},
+                {"build_shadowmap_depth_nc", TECHNIQUE_FLAG_200},
+                {"build_shadowmap_depth_ua", TECHNIQUE_FLAG_200},
+                {"build_shadowmap_model_dtex", TECHNIQUE_FLAG_200},
+                {"build_shadowmap_model_nc_dtex", TECHNIQUE_FLAG_200},
+                {"build_shadowmap_model_ua", TECHNIQUE_FLAG_200},
+                {"cinematic", TECHNIQUE_FLAG_200},
+                {"cinematic_3d", TECHNIQUE_FLAG_200},
+                {"cinematic_dtex_3d", TECHNIQUE_FLAG_200},
+                {"dof_near_coc", TECHNIQUE_FLAG_200},
+                {"floatz", TECHNIQUE_FLAG_200},
+                {"floatzdisplay", TECHNIQUE_FLAG_200},
+                {"particle_blend", TECHNIQUE_FLAG_200},
+                {"particle_zdownsample", TECHNIQUE_FLAG_200},
+                {"passthru_alpha", TECHNIQUE_FLAG_200},
+                {"postfx", TECHNIQUE_FLAG_200},
+                {"postfx_mblur", TECHNIQUE_FLAG_200},
+                {"processed_floatz", TECHNIQUE_FLAG_200},
+                {"ps3_aadownsample", TECHNIQUE_FLAG_200},
+                {"shell_shock", TECHNIQUE_FLAG_200},
+                {"shell_shock_flashed", TECHNIQUE_FLAG_200},
+                {"small_blur", TECHNIQUE_FLAG_200},
+                {"stencildisplay", TECHNIQUE_FLAG_200},
+                {"stencilshadow", TECHNIQUE_FLAG_200},
+                {"wireframe_solid", TECHNIQUE_FLAG_200},
+                {"wireframe_solid_atest_dtex", TECHNIQUE_FLAG_200},
+                {"wireframe_solid_dtex", TECHNIQUE_FLAG_200},
+                {"wireframe_solid_nc", TECHNIQUE_FLAG_200},
+                {"wireframe_solid_nc_dtex", TECHNIQUE_FLAG_200},
+                {"wireframe_solid_ua", TECHNIQUE_FLAG_200},
+                {"wireframe_solid_ua_dtex", TECHNIQUE_FLAG_200}
+            });
+
+            const auto flagsForName = flagsByTechniqueName.find(technique.name);
+            if (flagsForName != flagsByTechniqueName.end())
+            {
+                technique.flags |= flagsForName->second;
+            }
+
+            for (auto i = 0u; i < technique.passCount; i++)
+            {
+                const auto& pass = technique.passArray[i];
+                if (pass.vertexDecl && pass.vertexDecl->hasOptionalSource)
+                {
+                    technique.flags |= TECHNIQUE_FLAG_20;
+                    break;
+                }
+            }
         }
 
         static void UpdateTechniqueFlagsForArgument(uint16_t& techniqueFlags, const TechniqueCreator::PassShaderArgument& arg)
         {
-            if(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
+            if (arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
             {
-                switch(arg.m_arg.u.codeSampler)
+                switch (arg.m_arg.u.codeSampler)
                 {
                 case TEXTURE_SRC_CODE_RESOLVED_POST_SUN:
                     techniqueFlags |= TECHNIQUE_FLAG_1;
                     break;
                 case TEXTURE_SRC_CODE_RESOLVED_SCENE:
                     techniqueFlags |= TECHNIQUE_FLAG_2;
+                    break;
+                case TEXTURE_SRC_CODE_FLOATZ:
+                case TEXTURE_SRC_CODE_PROCESSED_FLOATZ:
+                case TEXTURE_SRC_CODE_RAW_FLOATZ:
+                    if ((techniqueFlags & TECHNIQUE_FLAG_100) == 0)
+                        techniqueFlags |= TECHNIQUE_FLAG_80;
+                    break;
+                default:
+                    break;
+                }
+            }
+            else if(arg.m_arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.m_arg.type == MTL_ARG_CODE_PIXEL_CONST)
+            {
+                switch(arg.m_arg.u.codeConst.index)
+                {
+                case CONST_SRC_CODE_LIGHT_SPOTDIR:
+                case CONST_SRC_CODE_LIGHT_SPOTFACTORS:
+                    techniqueFlags |= TECHNIQUE_FLAG_40;
                     break;
                 default:
                     break;
@@ -1073,8 +1152,6 @@ namespace IW4
             out.perPrimArgCount = static_cast<unsigned char>(perPrimArgCount);
             out.stableArgCount = static_cast<unsigned char>(stableArgCount);
 
-            UpdateTechniqueFlags(technique);
-
             if (in.m_vertex_shader)
                 dependencies.push_back(in.m_vertex_shader);
             if (in.m_pixel_shader)
@@ -1091,6 +1168,8 @@ namespace IW4
             memset(technique, 0, techniqueSize);
             technique->name = m_memory->Dup(techniqueName.c_str());
             technique->passCount = static_cast<uint16_t>(passes.size());
+
+            UpdateTechniqueFlags(*technique);
 
             for (auto i = 0u; i < passes.size(); i++)
                 ConvertPass(*technique, technique->passArray[i], passes.at(i), dependencies);
