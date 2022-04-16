@@ -968,6 +968,18 @@ namespace IW4
         int arrayStride;
     };
 
+    enum
+    {
+        MTL_TYPE_DEFAULT = 0x0,
+        MTL_TYPE_MODEL = 0x1, // m_
+        MTL_TYPE_MODEL_VERTCOL = 0x2, // mc_
+        MTL_TYPE_MODEL_VERTCOL_GREY = 0x3, // ?
+        MTL_TYPE_WORLD = 0x4, // w_
+        MTL_TYPE_WORLD_VERTCOL = 0x5, // wc_
+
+        MTL_TYPE_COUNT,
+    };
+
     enum MaterialConstantSource
     {
         CONST_SRC_CODE_MAYBE_DIRTY_PS_BEGIN = 0x0,
@@ -1200,6 +1212,21 @@ namespace IW4
         unsigned char stableArgCount;
         unsigned char customSamplerFlags;
         MaterialShaderArgument* args;
+    };
+
+    enum TechniqueFlags
+    {
+        // Guesses purely based on data analysis:
+        TECHNIQUE_FLAG_1 = 0x1, // uses resolvedPostSun code sampler
+        TECHNIQUE_FLAG_2 = 0x2, // uses resolvedScene code sampler
+        TECHNIQUE_FLAG_4 = 0x4, // zprepass only
+        TECHNIQUE_FLAG_8 = 0x8, // build_floatz only
+        TECHNIQUE_FLAG_10 = 0x10, // build_shadowmap_depth + build_shadowmap_model only
+        TECHNIQUE_FLAG_20 = 0x20, // techniques with _i_ in its name (all use texcoord[1] in decl -> other optional stream sources are not used at all so might be any optional)
+        TECHNIQUE_FLAG_40 = 0x40, // uses code constant light.spotDir or light.spotFactors
+        TECHNIQUE_FLAG_80 = 0x80, // uses floatZ sampler and does not have 0x100 flag
+        TECHNIQUE_FLAG_100 = 0x100, // distortion_scale_zfeather_dtex + distortion_scale_ua_zfeather
+        TECHNIQUE_FLAG_200 = 0x200, // ?
     };
 
     struct MaterialTechnique

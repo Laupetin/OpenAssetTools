@@ -20,6 +20,7 @@
 #include "Utils/Alignment.h"
 
 using namespace IW4;
+using namespace std::string_literals;
 
 namespace IW4
 {
@@ -992,6 +993,13 @@ namespace IW4
             return ss.str();
         }
 
+        static void UpdateTechniqueFlags(MaterialTechnique& technique)
+        {
+            // This is stupid but that's what the game does
+            if("zprepass"s == technique.name)
+                technique.flags |= 4u;
+        }
+
         static void UpdateTechniqueFlagsForArgument(uint16_t& techniqueFlags, const TechniqueCreator::PassShaderArgument& arg)
         {
             if(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
@@ -999,10 +1007,10 @@ namespace IW4
                 switch(arg.m_arg.u.codeSampler)
                 {
                 case TEXTURE_SRC_CODE_RESOLVED_POST_SUN:
-                    techniqueFlags |= 1u;
+                    techniqueFlags |= TECHNIQUE_FLAG_1;
                     break;
                 case TEXTURE_SRC_CODE_RESOLVED_SCENE:
-                    techniqueFlags |= 2u;
+                    techniqueFlags |= TECHNIQUE_FLAG_2;
                     break;
                 default:
                     break;
@@ -1064,6 +1072,8 @@ namespace IW4
             out.perObjArgCount = static_cast<unsigned char>(perObjArgCount);
             out.perPrimArgCount = static_cast<unsigned char>(perPrimArgCount);
             out.stableArgCount = static_cast<unsigned char>(stableArgCount);
+
+            UpdateTechniqueFlags(technique);
 
             if (in.m_vertex_shader)
                 dependencies.push_back(in.m_vertex_shader);
@@ -1169,6 +1179,9 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& ass
             techset->techniques[i] = technique->m_technique;
         }
     }
+
+    const auto* disAsset = GlobalAssetPool<MaterialTechniqueSet>::GetAssetByName("distortion_scale");
+    const auto* dis = disAsset ? disAsset->Asset() : nullptr;
 
     manager->AddAsset(ASSET_TYPE_TECHNIQUE_SET, assetName, techset, std::vector(dependencies.begin(), dependencies.end()), std::vector<scr_string_t>());
 
