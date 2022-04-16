@@ -968,7 +968,7 @@ namespace IW4
         int arrayStride;
     };
 
-    enum
+    enum MaterialType
     {
         MTL_TYPE_DEFAULT = 0x0,
         MTL_TYPE_MODEL = 0x1, // m_
