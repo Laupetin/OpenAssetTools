@@ -3,6 +3,7 @@
 #include <set>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Zone/Zone.h"
@@ -25,6 +26,7 @@ private:
     bool SetImageDumpingMode();
     bool SetModelDumpingMode();
 
+    void AddSpecifiedAssetType(std::string value);
     void ParseCommaSeparatedAssetTypeString(const std::string& input);
 
 public:
@@ -48,7 +50,8 @@ public:
     std::string m_output_folder;
     bool m_minimal_zone_def;
 
-    std::set<std::string> m_specified_asset_types;
+    std::vector<std::string> m_specified_asset_types;
+    std::unordered_map<std::string, size_t> m_specified_asset_type_map;
     AssetTypeHandling m_asset_type_handling;
 
     bool m_use_gdt;

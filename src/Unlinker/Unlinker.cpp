@@ -216,14 +216,48 @@ class Unlinker::Impl
 
         ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector<bool>(assetTypeCount);
 
+        std::vector<bool> handledSpecifiedAssets(m_args.m_specified_asset_types.size());
         for (auto i = 0; i < assetTypeCount; i++)
         {
             const auto assetTypeName = std::string(context.m_zone->m_pools->GetAssetTypeName(i));
 
-            if (m_args.m_specified_asset_types.find(assetTypeName) != m_args.m_specified_asset_types.end())
+            const auto foundSpecifiedEntry = m_args.m_specified_asset_type_map.find(assetTypeName);
+            if (foundSpecifiedEntry != m_args.m_specified_asset_type_map.end())
+            {
                 ObjWriting::Configuration.AssetTypesToHandleBitfield[i] = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::INCLUDE;
+                assert(foundSpecifiedEntry->second < handledSpecifiedAssets.size());
+                handledSpecifiedAssets[foundSpecifiedEntry->second] = true;
+            }
             else
                 ObjWriting::Configuration.AssetTypesToHandleBitfield[i] = m_args.m_asset_type_handling == UnlinkerArgs::AssetTypeHandling::EXCLUDE;
+        }
+
+        auto anySpecifiedValueInvalid = false;
+        for (auto i = 0u; i < handledSpecifiedAssets.size(); i++)
+        {
+            if (!handledSpecifiedAssets[i])
+            {
+                std::cerr << "Unknown asset type \"" << m_args.m_specified_asset_types[i] << "\"\n";
+                anySpecifiedValueInvalid = true;
+            }
+        }
+
+        if (anySpecifiedValueInvalid)
+        {
+            std::cerr << "Valid asset types are:\n";
+
+            auto first = true;
+            for (auto i = 0; i < assetTypeCount; i++)
+            {
+                const auto assetTypeName = std::string(context.m_zone->m_pools->GetAssetTypeName(i));
+
+                if (first)
+                    first = false;
+                else
+                    std::cerr << ", ";
+                std::cerr << assetTypeName;
+            }
+            std::cerr << "\n";
         }
     }
 

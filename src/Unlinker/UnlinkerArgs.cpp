@@ -197,6 +197,16 @@ bool UnlinkerArgs::SetModelDumpingMode()
     return false;
 }
 
+void UnlinkerArgs::AddSpecifiedAssetType(std::string value)
+{
+    const auto alreadySpecifiedAssetType = m_specified_asset_type_map.find(value);
+    if (alreadySpecifiedAssetType == m_specified_asset_type_map.end())
+    {
+        m_specified_asset_type_map.emplace(std::make_pair(value, m_specified_asset_types.size()));
+        m_specified_asset_types.emplace_back(std::move(value));
+    }
+}
+
 void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
 {
     auto currentPos = 0u;
@@ -208,12 +218,12 @@ void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
 
     while (currentPos < lowerInput.size() && (endPos = lowerInput.find_first_of(',', currentPos)) != std::string::npos)
     {
-        m_specified_asset_types.emplace(lowerInput, currentPos, endPos - currentPos);
+        AddSpecifiedAssetType(std::string(lowerInput, currentPos, endPos - currentPos));
         currentPos = endPos + 1;
     }
 
     if (currentPos < lowerInput.size())
-        m_specified_asset_types.emplace(lowerInput, currentPos, lowerInput.size() - currentPos);
+        AddSpecifiedAssetType(std::string(lowerInput, currentPos, lowerInput.size() - currentPos));
 }
 
 bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
