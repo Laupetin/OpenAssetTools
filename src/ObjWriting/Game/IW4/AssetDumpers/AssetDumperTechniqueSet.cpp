@@ -409,6 +409,18 @@ namespace IW4
             m_stream << "{\n";
             IncIndent();
 
+#ifdef TECHSET_DEBUG
+            for (auto i = 0u; i < 8; i++)
+            {
+                const auto mask = 1u << i;
+                if (pass.customSamplerFlags & mask)
+                {
+                    Indent();
+                    m_stream << "// CUSTOM SAMPLER FLAGS: 0x" << std::hex << mask << "\n";
+                }
+            }
+#endif
+
             DumpStateMap();
             DumpVertexShader(pass);
             DumpPixelShader(pass);
@@ -426,8 +438,20 @@ namespace IW4
 
         void DumpTechnique(const MaterialTechnique* technique)
         {
-            Indent();
-            m_stream << "// TECHNIQUE FLAGS: 0x" << std::hex << technique->flags << "\n";
+#ifdef TECHSET_DEBUG
+            if(technique->flags)
+            {
+                for(auto i = 0u; i < 16; i++)
+                {
+                    const auto mask = 1u << i;
+                    if(technique->flags & mask)
+                    {
+                        Indent();
+                        m_stream << "// TECHNIQUE FLAGS: 0x" << std::hex << mask << "\n";
+                    }
+                }
+            }
+#endif
             for (auto i = 0u; i < technique->passCount; i++)
                 DumpPass(technique->passArray[i]);
         }
