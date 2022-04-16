@@ -216,7 +216,7 @@ class Unlinker::Impl
 
         ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector<bool>(assetTypeCount);
 
-        for(auto i = 0; i < assetTypeCount; i++)
+        for (auto i = 0; i < assetTypeCount; i++)
         {
             const auto assetTypeName = std::string(context.m_zone->m_pools->GetAssetTypeName(i));
 
@@ -321,12 +321,20 @@ class Unlinker::Impl
 
     void UnloadZones()
     {
-        if (ShouldLoadObj())
+        for (auto i = m_loaded_zones.rbegin(); i != m_loaded_zones.rend(); ++i)
         {
-            for (auto& loadedZone : m_loaded_zones)
+            auto& loadedZone = *i;
+            std::string zoneName = loadedZone->m_name;
+
+            if (ShouldLoadObj())
             {
                 ObjLoading::UnloadContainersOfZone(loadedZone.get());
             }
+
+            loadedZone.reset();
+
+            if (m_args.m_verbose)
+                std::cout << "Unloaded zone \"" << zoneName << "\"\n";
         }
         m_loaded_zones.clear();
     }
@@ -346,6 +354,7 @@ class Unlinker::Impl
             auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
             searchPathsForZone.IncludeSearchPath(&m_search_paths);
 
+            std::string zoneName;
             auto zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
             {
@@ -353,10 +362,9 @@ class Unlinker::Impl
                 return false;
             }
 
+            zoneName = zone->m_name;
             if (m_args.m_verbose)
-            {
-                printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
-            }
+                std::cout << "Loaded zone \"" << zoneName << "\"\n";
 
             if (ShouldLoadObj())
             {
@@ -369,6 +377,10 @@ class Unlinker::Impl
 
             if (ShouldLoadObj())
                 ObjLoading::UnloadContainersOfZone(zone.get());
+
+            zone.reset();
+            if (m_args.m_verbose)
+                std::cout << "Unloaded zone \"" << zoneName << "\"\n";
         }
 
         return true;
