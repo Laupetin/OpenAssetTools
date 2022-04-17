@@ -11,6 +11,24 @@
 
 using namespace IW5;
 
+namespace IW5
+{
+    class SurfsDumpingZoneState final : public IZoneAssetDumperState
+    {
+        std::set<const XModelSurfs*> m_dumped_surfs;
+
+    public:
+        bool ShouldDumpTechnique(const XModelSurfs* surfs)
+        {
+            if (m_dumped_surfs.find(surfs) != m_dumped_surfs.end())
+                return false;
+
+            m_dumped_surfs.emplace(surfs);
+            return true;
+        }
+    };
+}
+
 bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
 {
     return !asset->m_name.empty() && asset->m_name[0] != ',';
@@ -234,10 +252,14 @@ void AssetDumperXModel::DumpObjLod(const AssetDumpingContext& context, XAssetInf
 void AssetDumperXModel::DumpObj(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
     const auto* model = asset->Asset();
+    auto* surfZoneState = context.GetZoneAssetDumperState<SurfsDumpingZoneState>();
 
     DumpObjMat(context, asset);
     for (auto currentLod = 0u; currentLod < model->numLods; currentLod++)
     {
+        if (!model->lodInfo[currentLod].modelSurfs || !surfZoneState->ShouldDumpTechnique(model->lodInfo[currentLod].modelSurfs))
+            continue;
+
         DumpObjLod(context, asset, currentLod);
     }
 }
@@ -592,11 +614,14 @@ void AssetDumperXModel::DumpXModelExportLod(const AssetDumpingContext& context, 
     writer->Write(*assetFile);
 }
 
-void AssetDumperXModel::DumpXModelExport(const AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+void AssetDumperXModel::DumpXModelExport(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
+    auto* surfZoneState = context.GetZoneAssetDumperState<SurfsDumpingZoneState>();
     const auto* model = asset->Asset();
     for (auto currentLod = 0u; currentLod < model->numLods; currentLod++)
     {
+        if (!model->lodInfo[currentLod].modelSurfs || !surfZoneState->ShouldDumpTechnique(model->lodInfo[currentLod].modelSurfs))
+            continue;
         DumpXModelExportLod(context, asset, currentLod);
     }
 }
