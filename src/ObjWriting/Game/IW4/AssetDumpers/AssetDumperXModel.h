@@ -30,7 +30,7 @@ namespace IW4
         static void AddXModelVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection);
         static void AddXModelFaces(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, int baseSurfaceIndex);
         static void DumpXModelExportLod(const AssetDumpingContext& context, XAssetInfo<XModel>* asset, unsigned lod);
-        static void DumpXModelExport(const AssetDumpingContext& context, XAssetInfo<XModel>* asset);
+        static void DumpXModelExport(AssetDumpingContext& context, XAssetInfo<XModel>* asset);
 
     protected:
         bool ShouldDump(XAssetInfo<XModel>* asset) override;
