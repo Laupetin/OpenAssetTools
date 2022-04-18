@@ -75,6 +75,7 @@ workspace "OpenAssetTools"
 include "thirdparty/catch2.lua"
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
+include "thirdparty/json.lua"
 include "thirdparty/minilzo.lua"
 include "thirdparty/minizip.lua"
 include "thirdparty/salsa20.lua"
@@ -85,6 +86,7 @@ group "ThirdParty"
     catch2:project()
     libtommath:project()
     libtomcrypt:project()
+    json:project()
     minilzo:project()
     minizip:project()
     salsa20:project()
