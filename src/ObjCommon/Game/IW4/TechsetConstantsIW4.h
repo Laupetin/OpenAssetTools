@@ -567,5 +567,9 @@ namespace IW4
         KnownMaterialSource("attenuationMap5"),
         KnownMaterialSource("attenuationMap6"),
         KnownMaterialSource("attenuationMap7"),
+        KnownMaterialSource("distortionScale"),
+        KnownMaterialSource("eyeOffsetParms"),
+        KnownMaterialSource("falloffBeginColor"),
+        KnownMaterialSource("falloffEndColor"),
     };
 }

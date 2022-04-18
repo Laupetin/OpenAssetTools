@@ -632,8 +632,8 @@ namespace IW4
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        char samplerState;
-        char semantic;
+        unsigned char samplerState;
+        unsigned char semantic; // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -735,10 +735,10 @@ namespace IW4
     struct MaterialInfo
     {
         const char* name;
-        char gameFlags;
-        char sortKey;
-        char textureAtlasRowCount;
-        char textureAtlasColumnCount;
+        unsigned char gameFlags;
+        unsigned char sortKey;
+        unsigned char textureAtlasRowCount;
+        unsigned char textureAtlasColumnCount;
         GfxDrawSurf drawSurf;
         unsigned int surfaceTypeBits;
         uint16_t hashIndex;
@@ -747,12 +747,12 @@ namespace IW4
     struct Material
     {
         MaterialInfo info;
-        char stateBitsEntry[48];
+        unsigned char stateBitsEntry[48];
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
-        char stateFlags;
-        char cameraRegion;
+        unsigned char stateFlags;
+        unsigned char cameraRegion;
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
