@@ -627,6 +627,31 @@ namespace IW4
         water_t* water;
     };
 
+    enum SamplerStateBits_e
+    {
+        SAMPLER_FILTER_SHIFT = 0x0,
+        SAMPLER_FILTER_NEAREST = 0x1,
+        SAMPLER_FILTER_LINEAR = 0x2,
+        SAMPLER_FILTER_ANISO2X = 0x3,
+        SAMPLER_FILTER_ANISO4X = 0x4,
+        SAMPLER_FILTER_MASK = 0x7,
+
+        SAMPLER_MIPMAP_SHIFT = 0x3,
+        SAMPLER_MIPMAP_DISABLED = 0x0,
+        SAMPLER_MIPMAP_NEAREST = 0x8,
+        SAMPLER_MIPMAP_LINEAR = 0x10,
+        SAMPLER_MIPMAP_COUNT = 0x3,
+        SAMPLER_MIPMAP_MASK = 0x18,
+
+        SAMPLER_CLAMP_U_SHIFT = 0x5,
+        SAMPLER_CLAMP_V_SHIFT = 0x6,
+        SAMPLER_CLAMP_W_SHIFT = 0x7,
+        SAMPLER_CLAMP_U = 0x20,
+        SAMPLER_CLAMP_V = 0x40,
+        SAMPLER_CLAMP_W = 0x80,
+        SAMPLER_CLAMP_MASK = 0xE0,
+    };
+
     struct MaterialTextureDef
     {
         unsigned int nameHash;
@@ -2245,29 +2270,6 @@ namespace IW4
         int elemDefCountOneShot;
         int elemDefCountEmission;
         FxElemDef* elemDefs;
-    };
-
-    enum SamplerStateBits_e
-    {
-        SAMPLER_FILTER_SHIFT = 0x0,
-        SAMPLER_FILTER_NEAREST = 0x1,
-        SAMPLER_FILTER_LINEAR = 0x2,
-        SAMPLER_FILTER_ANISO2X = 0x3,
-        SAMPLER_FILTER_ANISO4X = 0x4,
-        SAMPLER_FILTER_MASK = 0x7,
-        SAMPLER_MIPMAP_SHIFT = 0x3,
-        SAMPLER_MIPMAP_DISABLED = 0x0,
-        SAMPLER_MIPMAP_NEAREST = 0x8,
-        SAMPLER_MIPMAP_LINEAR = 0x10,
-        SAMPLER_MIPMAP_COUNT = 0x3,
-        SAMPLER_MIPMAP_MASK = 0x18,
-        SAMPLER_CLAMP_U_SHIFT = 0x5,
-        SAMPLER_CLAMP_V_SHIFT = 0x6,
-        SAMPLER_CLAMP_W_SHIFT = 0x7,
-        SAMPLER_CLAMP_U = 0x20,
-        SAMPLER_CLAMP_V = 0x40,
-        SAMPLER_CLAMP_W = 0x80,
-        SAMPLER_CLAMP_MASK = 0xE0,
     };
 
     struct GfxLightImage

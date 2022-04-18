@@ -18,6 +18,16 @@ namespace IW4
         return name;
     }
 
+    template <size_t S>
+    json ArrayEntry(const char* (&a)[S], const size_t index)
+    {
+        assert(index < S);
+        if (index < S)
+            return a[index];
+
+        return json{};
+    }
+
     json BuildComplexTableJson(complex_s* complexTable, const size_t count)
     {
         auto jArray = json::array();
@@ -58,8 +68,50 @@ namespace IW4
         };
     }
 
+    json BuildSamplerStateJson(unsigned char samplerState)
+    {
+        static const char* samplerFilterNames[]
+        {
+            "none",
+            "nearest",
+            "linear",
+            "aniso2x",
+            "aniso4x"
+        };
+        static const char* samplerMipmapNames[]
+        {
+            "disabled",
+            "nearest",
+            "linear"
+        };
+
+        return json{
+            {"filter", ArrayEntry(samplerFilterNames, (samplerState & SAMPLER_FILTER_MASK) >> SAMPLER_FILTER_SHIFT)},
+            {"mipmap", ArrayEntry(samplerMipmapNames, (samplerState & SAMPLER_MIPMAP_MASK) >> SAMPLER_MIPMAP_SHIFT)},
+            {"clampU", (samplerState & SAMPLER_CLAMP_U) ? true : false},
+            {"clampV", (samplerState & SAMPLER_CLAMP_V) ? true : false},
+            {"clampW", (samplerState & SAMPLER_CLAMP_W) ? true : false},
+        };
+    }
+
     json BuildTextureTableJson(MaterialTextureDef* textureTable, const size_t count)
     {
+        static const char* semanticNames[]
+        {
+            "2d",
+            "function",
+            "colorMap",
+            "detailMap",
+            "unused2",
+            "normalMap",
+            "unused3",
+            "unused4",
+            "specularMap",
+            "unused5",
+            "unused6",
+            "waterMap"
+        };
+        
         auto jArray = json::array();
 
         if (textureTable)
@@ -67,9 +119,11 @@ namespace IW4
             for (auto index = 0u; index < count; index++)
             {
                 const auto& entry = textureTable[index];
+                assert(entry.semantic < std::extent_v<decltype(semanticNames)>);
+
                 json jEntry = {
-                    {"samplerState", entry.samplerState},
-                    {"semantic", entry.semantic}
+                    {"samplerState", BuildSamplerStateJson(entry.samplerState)},
+                    {"semantic", ArrayEntry(semanticNames, entry.semantic)}
                 };
 
                 const auto knownMaterialSourceName = knownMaterialSourceNames.find(entry.nameHash);
