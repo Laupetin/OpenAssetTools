@@ -55,7 +55,7 @@ namespace IW4
         return json{
             {"floatTime", water->writable.floatTime},
             {"H0", BuildComplexTableJson(water->H0, water->M * water->N)},
-            {"wTerm", water->wTerm ? std::vector(water->wTerm, water->wTerm + (water->M * water->N)) : json::array()},
+            {"wTerm", water->wTerm ? json{std::vector(water->wTerm, water->wTerm + (water->M * water->N))} : json::array()},
             {"M", water->M},
             {"N", water->N},
             {"Lx", water->Lx},
