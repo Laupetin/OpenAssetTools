@@ -111,7 +111,7 @@ namespace IW4
             "unused6",
             "waterMap"
         };
-        
+
         auto jArray = json::array();
 
         if (textureTable)
@@ -119,7 +119,6 @@ namespace IW4
             for (auto index = 0u; index < count; index++)
             {
                 const auto& entry = textureTable[index];
-                assert(entry.semantic < std::extent_v<decltype(semanticNames)>);
 
                 json jEntry = {
                     {"samplerState", BuildSamplerStateJson(entry.samplerState)},
@@ -209,17 +208,118 @@ namespace IW4
 
     json BuildStateBitsTableJson(GfxStateBits* stateBitsTable, const size_t count)
     {
+        static const char* blendNames[]
+        {
+            "disabled",
+            "zero",
+            "one",
+            "srcColor",
+            "invSrcColor",
+            "srcAlpha",
+            "invSrcAlpha",
+            "destAlpha",
+            "invDestAlpha",
+            "destColor",
+            "invDestColor",
+        };
+        static const char* blendOpNames[]
+        {
+            "disabled",
+            "add",
+            "subtract",
+            "revSubtract",
+            "min",
+            "max"
+        };
+        static const char* depthTestNames[]
+        {
+            "always",
+            "less",
+            "equal",
+            "lessEqual",
+        };
+        static const char* polygonOffsetNames[]
+        {
+            "0",
+            "1",
+            "2",
+            "shadowMap",
+        };
+        static const char* stencilOpNames[]
+        {
+            "keep",
+            "zero",
+            "replace",
+            "incrSat",
+            "decrSat",
+            "invert",
+            "incr",
+            "decr"
+        };
+
         auto jArray = json::array();
 
         if (stateBitsTable)
         {
             for (auto index = 0u; index < count; index++)
             {
-                const auto& entry = stateBitsTable[count];
-                jArray.emplace_back(json::array({
-                    entry.loadBits[0],
-                    entry.loadBits[1]
-                }));
+                const auto& entry = stateBitsTable[index];
+
+                const auto srcBlendRgb = (entry.loadBits[0] & GFXS0_SRCBLEND_RGB_MASK) >> GFXS0_SRCBLEND_RGB_SHIFT;
+                const auto dstBlendRgb = (entry.loadBits[0] & GFXS0_DSTBLEND_RGB_MASK) >> GFXS0_DSTBLEND_RGB_SHIFT;
+                const auto blendOpRgb = (entry.loadBits[0] & GFXS0_BLENDOP_RGB_MASK) >> GFXS0_BLENDOP_RGB_SHIFT;
+                const auto srcBlendAlpha = (entry.loadBits[0] & GFXS0_SRCBLEND_ALPHA_MASK) >> GFXS0_SRCBLEND_ALPHA_SHIFT;
+                const auto dstBlendAlpha = (entry.loadBits[0] & GFXS0_DSTBLEND_ALPHA_MASK) >> GFXS0_DSTBLEND_ALPHA_SHIFT;
+                const auto blendOpAlpha = (entry.loadBits[0] & GFXS0_BLENDOP_ALPHA_MASK) >> GFXS0_BLENDOP_ALPHA_SHIFT;
+                const auto depthTest = (entry.loadBits[1] & GFXS1_DEPTHTEST_MASK) >> GFXS1_DEPTHTEST_SHIFT;
+                const auto polygonOffset = (entry.loadBits[1] & GFXS1_POLYGON_OFFSET_MASK) >> GFXS1_POLYGON_OFFSET_SHIFT;
+
+                const auto* alphaTest = "disable";
+                if (entry.loadBits[0] & GFXS0_ATEST_GT_0)
+                    alphaTest = "gt0";
+                else if (entry.loadBits[0] & GFXS0_ATEST_LT_128)
+                    alphaTest = "lt128";
+                else if (entry.loadBits[0] & GFXS0_ATEST_GE_128)
+                    alphaTest = "ge128";
+                else
+                    assert(entry.loadBits[0] & GFXS0_ATEST_DISABLE);
+
+                const auto* cullFace = "none";
+                if ((entry.loadBits[0] & GFXS0_CULL_MASK) == GFXS0_CULL_BACK)
+                    cullFace = "back";
+                else if ((entry.loadBits[0] & GFXS0_CULL_MASK) == GFXS0_CULL_FRONT)
+                    cullFace = "front";
+                else
+                    assert((entry.loadBits[0] & GFXS0_CULL_MASK) == GFXS0_CULL_NONE);
+
+                jArray.emplace_back(json{
+                    {"srcBlendRgb", ArrayEntry(blendNames, srcBlendRgb)},
+                    {"dstBlendRgb", ArrayEntry(blendNames, dstBlendRgb)},
+                    {"blendOpRgb", ArrayEntry(blendOpNames, blendOpRgb)},
+                    {"alphaTest", alphaTest},
+                    {"cullFace", cullFace},
+                    {"srcBlendAlpha", ArrayEntry(blendNames, srcBlendAlpha)},
+                    {"dstBlendAlpha", ArrayEntry(blendNames, dstBlendAlpha)},
+                    {"blendOpAlpha", ArrayEntry(blendOpNames, blendOpAlpha)},
+                    {"colorWriteRgb", (entry.loadBits[0] & GFXS0_COLORWRITE_RGB) ? true : false},
+                    {"colorWriteAlpha", (entry.loadBits[0] & GFXS0_COLORWRITE_ALPHA) ? true : false},
+                    {"gammaWrite", (entry.loadBits[0] & GFXS0_GAMMAWRITE) ? true : false},
+                    {"polymodeLine", (entry.loadBits[0] & GFXS0_POLYMODE_LINE) ? true : false},
+
+                    {"depthWrite", (entry.loadBits[1] & GFXS1_DEPTHWRITE) ? true : false},
+                    {"depthTest", (entry.loadBits[1] & GFXS1_DEPTHTEST_DISABLE) ? json("disable") : ArrayEntry(depthTestNames, depthTest)},
+                    {"polygonOffset", ArrayEntry(polygonOffsetNames, polygonOffset)},
+                    {"stencilFrontEnabled", (entry.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE) ? true : false},
+                    {"stencilBackEnabled", (entry.loadBits[1] & GFXS1_STENCIL_BACK_ENABLE) ? true : false},
+                    {"stencilFrontPass", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_FRONT_PASS_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilFrontFail", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_FRONT_FAIL_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilFrontZFail", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_FRONT_ZFAIL_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilFrontFunc", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_FRONT_FUNC_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilBackPass", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_BACK_PASS_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilBackFail", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_BACK_FAIL_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilBackZFail", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_BACK_ZFAIL_SHIFT) & GFXS_STENCILOP_MASK)},
+                    {"stencilBackFunc", ArrayEntry(stencilOpNames, (entry.loadBits[1] >> GFXS1_STENCIL_BACK_FUNC_SHIFT) & GFXS_STENCILOP_MASK)},
+                });
             }
         }
 
@@ -244,6 +344,15 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         return;
 
     auto& stream = *assetFile;
+
+    static const char* cameraRegionNames[]
+    {
+        "litOpaque",
+        "litTrans",
+        "emissive",
+        "depthHack",
+        "none"
+    };
 
     const json j = {
         {
@@ -272,7 +381,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         },
         {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
         {"stateFlags", material->stateFlags},
-        {"cameraRegion", material->cameraRegion},
+        {"cameraRegion", ArrayEntry(cameraRegionNames, material->cameraRegion)},
         {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
         {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},
         {"constantTable", BuildConstantTableJson(material->constantTable, material->constantCount)},

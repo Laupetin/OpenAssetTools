@@ -657,7 +657,7 @@ namespace IW4
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        unsigned char samplerState;
+        unsigned char samplerState; // SamplerStateBits_e
         unsigned char semantic; // TextureSemantic
         MaterialTextureDefInfo u;
     };
@@ -669,25 +669,72 @@ namespace IW4
         float literal[4];
     };
 
+    enum GfxBlend
+    {
+        GFXS_BLEND_DISABLED = 0x0,
+        GFXS_BLEND_ZERO = 0x1,
+        GFXS_BLEND_ONE = 0x2,
+        GFXS_BLEND_SRCCOLOR = 0x3,
+        GFXS_BLEND_INVSRCCOLOR = 0x4,
+        GFXS_BLEND_SRCALPHA = 0x5,
+        GFXS_BLEND_INVSRCALPHA = 0x6,
+        GFXS_BLEND_DESTALPHA = 0x7,
+        GFXS_BLEND_INVDESTALPHA = 0x8,
+        GFXS_BLEND_DESTCOLOR = 0x9,
+        GFXS_BLEND_INVDESTCOLOR = 0xA,
+        GFXS_BLEND_MASK = 0xF,
+    };
+
+    enum GfxBlendOp
+    {
+        GFXS_BLENDOP_DISABLED = 0x0,
+        GFXS_BLENDOP_ADD = 0x1,
+        GFXS_BLENDOP_SUBTRACT = 0x2,
+        GFXS_BLENDOP_REVSUBTRACT = 0x3,
+        GFXS_BLENDOP_MIN = 0x4,
+        GFXS_BLENDOP_MAX = 0x5,
+        GFXS_BLENDOP_MASK = 0x7,
+    };
+
+    enum GfxStencilOp
+    {
+        GFXS_STENCILOP_KEEP = 0x0,
+        GFXS_STENCILOP_ZERO = 0x1,
+        GFXS_STENCILOP_REPLACE = 0x2,
+        GFXS_STENCILOP_INCRSAT = 0x3,
+        GFXS_STENCILOP_DECRSAT = 0x4,
+        GFXS_STENCILOP_INVERT = 0x5,
+        GFXS_STENCILOP_INCR = 0x6,
+        GFXS_STENCILOP_DECR = 0x7,
+
+        GFXS_STENCILOP_COUNT,
+        GFXS_STENCILOP_MASK = 0x7
+    };
+
     enum GfxStateBitsEnum : unsigned int
     {
         GFXS0_SRCBLEND_RGB_SHIFT = 0x0,
         GFXS0_SRCBLEND_RGB_MASK = 0xF,
+
         GFXS0_DSTBLEND_RGB_SHIFT = 0x4,
         GFXS0_DSTBLEND_RGB_MASK = 0xF0,
+
         GFXS0_BLENDOP_RGB_SHIFT = 0x8,
         GFXS0_BLENDOP_RGB_MASK = 0x700,
         GFXS0_BLEND_RGB_MASK = 0x7FF,
+
         GFXS0_ATEST_DISABLE = 0x800,
         GFXS0_ATEST_GT_0 = 0x1000,
         GFXS0_ATEST_LT_128 = 0x2000,
         GFXS0_ATEST_GE_128 = 0x3000,
         GFXS0_ATEST_MASK = 0x3000,
+
         GFXS0_CULL_SHIFT = 0xE,
         GFXS0_CULL_NONE = 0x4000,
         GFXS0_CULL_BACK = 0x8000,
         GFXS0_CULL_FRONT = 0xC000,
         GFXS0_CULL_MASK = 0xC000,
+
         GFXS0_SRCBLEND_ALPHA_SHIFT = 0x10,
         GFXS0_SRCBLEND_ALPHA_MASK = 0xF0000,
         GFXS0_DSTBLEND_ALPHA_SHIFT = 0x14,
@@ -695,11 +742,14 @@ namespace IW4
         GFXS0_BLENDOP_ALPHA_SHIFT = 0x18,
         GFXS0_BLENDOP_ALPHA_MASK = 0x7000000,
         GFXS0_BLEND_ALPHA_MASK = 0x7FF0000,
+
         GFXS0_COLORWRITE_RGB = 0x8000000,
         GFXS0_COLORWRITE_ALPHA = 0x10000000,
         GFXS0_COLORWRITE_MASK = 0x18000000,
+
         GFXS0_GAMMAWRITE = 0x40000000,
         GFXS0_POLYMODE_LINE = 0x80000000,
+
         GFXS1_DEPTHWRITE = 0x1,
         GFXS1_DEPTHTEST_DISABLE = 0x2,
         GFXS1_DEPTHTEST_SHIFT = 0x2,
@@ -708,25 +758,30 @@ namespace IW4
         GFXS1_DEPTHTEST_EQUAL = 0x8,
         GFXS1_DEPTHTEST_LESSEQUAL = 0xC,
         GFXS1_DEPTHTEST_MASK = 0xC,
+
         GFXS1_POLYGON_OFFSET_SHIFT = 0x4,
         GFXS1_POLYGON_OFFSET_0 = 0x0,
         GFXS1_POLYGON_OFFSET_1 = 0x10,
         GFXS1_POLYGON_OFFSET_2 = 0x20,
         GFXS1_POLYGON_OFFSET_SHADOWMAP = 0x30,
         GFXS1_POLYGON_OFFSET_MASK = 0x30,
+
         GFXS1_STENCIL_FRONT_ENABLE = 0x40,
         GFXS1_STENCIL_BACK_ENABLE = 0x80,
         GFXS1_STENCIL_MASK = 0xC0,
+
         GFXS1_STENCIL_FRONT_PASS_SHIFT = 0x8,
         GFXS1_STENCIL_FRONT_FAIL_SHIFT = 0xB,
         GFXS1_STENCIL_FRONT_ZFAIL_SHIFT = 0xE,
         GFXS1_STENCIL_FRONT_FUNC_SHIFT = 0x11,
         GFXS1_STENCIL_FRONT_MASK = 0xFFF00,
+
         GFXS1_STENCIL_BACK_PASS_SHIFT = 0x14,
         GFXS1_STENCIL_BACK_FAIL_SHIFT = 0x17,
         GFXS1_STENCIL_BACK_ZFAIL_SHIFT = 0x1A,
         GFXS1_STENCIL_BACK_FUNC_SHIFT = 0x1D,
         GFXS1_STENCIL_BACK_MASK = 0xFFF00000,
+
         GFXS1_STENCILFUNC_FRONTBACK_MASK = 0xE00E0000,
         GFXS1_STENCILOP_FRONTBACK_MASK = 0x1FF1FF00,
     };
@@ -757,16 +812,35 @@ namespace IW4
         gcc_align(8) uint64_t packed;
     };
 
+    // The sort key is translated to a numeric value inside the material templates
+    // when converting the material.
+    // TODO: Try to find out which value is which sort key by investigating on materials
+    enum SortKey_e
+    {
+        SORTKEY_UNKNOWN = 0
+    };
+
     struct MaterialInfo
     {
         const char* name;
         unsigned char gameFlags;
-        unsigned char sortKey;
+        unsigned char sortKey; // SortKey_e
         unsigned char textureAtlasRowCount;
         unsigned char textureAtlasColumnCount;
-        GfxDrawSurf drawSurf;
+        GfxDrawSurf drawSurf; // seems to be zeroed when loading
         unsigned int surfaceTypeBits;
         uint16_t hashIndex;
+    };
+
+    enum GfxCameraRegionType
+    {
+        CAMERA_REGION_LIT_OPAQUE = 0x0,
+        CAMERA_REGION_LIT_TRANS = 0x1,
+        CAMERA_REGION_EMISSIVE = 0x2,
+        CAMERA_REGION_DEPTH_HACK = 0x3,
+
+        CAMERA_REGION_COUNT,
+        CAMERA_REGION_NONE = CAMERA_REGION_COUNT,
     };
 
     struct Material
@@ -777,7 +851,7 @@ namespace IW4
         unsigned char constantCount;
         unsigned char stateBitsCount;
         unsigned char stateFlags;
-        unsigned char cameraRegion;
+        unsigned char cameraRegion; // GfxCameraRegionType
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
