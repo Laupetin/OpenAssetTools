@@ -791,6 +791,15 @@ namespace IW4
         unsigned int loadBits[2];
     };
 
+    struct infoParm_t
+    {
+        const char* name;
+        unsigned int clearSolid;
+        unsigned int surfaceFlags;
+        unsigned int contents;
+        unsigned int toolFlags;
+    };
+
     struct gcc_align(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;

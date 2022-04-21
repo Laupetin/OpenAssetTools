@@ -4,6 +4,7 @@
 #include <sstream>
 #include <nlohmann/json.hpp>
 
+#include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 
 using namespace IW4;
@@ -28,7 +29,7 @@ namespace IW4
         return json{};
     }
 
-    json BuildComplexTableJson(complex_s* complexTable, const size_t count)
+    json BuildComplexTableJson(const complex_s* complexTable, const size_t count)
     {
         auto jArray = json::array();
 
@@ -325,6 +326,34 @@ namespace IW4
 
         return jArray;
     }
+
+    json BuildSurfaceTypeBitsJson(const unsigned surfaceTypeBits)
+    {
+        if (!surfaceTypeBits)
+            return json(surfaceTypeNames[SURF_TYPE_DEFAULT]);
+
+        static constexpr auto NON_SURFACE_TYPE_BITS = ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
+        assert((surfaceTypeBits & NON_SURFACE_TYPE_BITS) == 0);
+
+        std::ostringstream ss;
+        auto firstSurfaceType = true;
+        for (auto surfaceTypeIndex = static_cast<unsigned>(SURF_TYPE_BARK); surfaceTypeIndex < SURF_TYPE_NUM; surfaceTypeIndex++)
+        {
+            if ((surfaceTypeBits & (1 << (surfaceTypeIndex - 1))) == 0)
+                continue;
+
+            if (firstSurfaceType)
+                firstSurfaceType = false;
+            else
+                ss << ",";
+            ss << surfaceTypeNames[surfaceTypeIndex];
+        }
+
+        if (firstSurfaceType)
+            return json(surfaceTypeNames[SURF_TYPE_DEFAULT]);
+
+        return json(ss.str());
+    }
 }
 
 bool AssetDumperMaterial::ShouldDump(XAssetInfo<Material>* asset)
@@ -357,7 +386,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     const json j = {
         {
             "info", {
-                {"gameFlags", material->info.gameFlags},
+                {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
                 {"sortKey", material->info.sortKey},
                 {"textureAtlasRowCount", material->info.textureAtlasRowCount},
                 {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
@@ -375,7 +404,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
                         {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}
                     }
                 },
-                {"surfaceTypeBits", material->info.surfaceTypeBits},
+                {"surfaceTypeBits", BuildSurfaceTypeBitsJson(material->info.surfaceTypeBits)},
                 {"hashIndex", material->info.hashIndex}
             }
         },
