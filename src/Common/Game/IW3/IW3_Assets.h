@@ -509,6 +509,109 @@ namespace IW3
         PhysGeomList* physGeoms;
     };
 
+    enum GfxBlend
+    {
+        GFXS_BLEND_DISABLED = 0x0,
+        GFXS_BLEND_ZERO = 0x1,
+        GFXS_BLEND_ONE = 0x2,
+        GFXS_BLEND_SRCCOLOR = 0x3,
+        GFXS_BLEND_INVSRCCOLOR = 0x4,
+        GFXS_BLEND_SRCALPHA = 0x5,
+        GFXS_BLEND_INVSRCALPHA = 0x6,
+        GFXS_BLEND_DESTALPHA = 0x7,
+        GFXS_BLEND_INVDESTALPHA = 0x8,
+        GFXS_BLEND_DESTCOLOR = 0x9,
+        GFXS_BLEND_INVDESTCOLOR = 0xA,
+        GFXS_BLEND_MASK = 0xF,
+    };
+
+    enum GfxBlendOp
+    {
+        GFXS_BLENDOP_DISABLED = 0x0,
+        GFXS_BLENDOP_ADD = 0x1,
+        GFXS_BLENDOP_SUBTRACT = 0x2,
+        GFXS_BLENDOP_REVSUBTRACT = 0x3,
+        GFXS_BLENDOP_MIN = 0x4,
+        GFXS_BLENDOP_MAX = 0x5,
+        GFXS_BLENDOP_MASK = 0x7,
+    };
+
+    enum GfxStencilOp
+    {
+        GFXS_STENCILOP_KEEP = 0x0,
+        GFXS_STENCILOP_ZERO = 0x1,
+        GFXS_STENCILOP_REPLACE = 0x2,
+        GFXS_STENCILOP_INCRSAT = 0x3,
+        GFXS_STENCILOP_DECRSAT = 0x4,
+        GFXS_STENCILOP_INVERT = 0x5,
+        GFXS_STENCILOP_INCR = 0x6,
+        GFXS_STENCILOP_DECR = 0x7,
+
+        GFXS_STENCILOP_COUNT,
+        GFXS_STENCILOP_MASK = 0x7
+    };
+
+    enum GfxStateBitsEnum : unsigned int
+    {
+        GFXS0_SRCBLEND_RGB_SHIFT = 0x0,
+        GFXS0_SRCBLEND_RGB_MASK = 0xF,
+        GFXS0_DSTBLEND_RGB_SHIFT = 0x4,
+        GFXS0_DSTBLEND_RGB_MASK = 0xF0,
+        GFXS0_BLENDOP_RGB_SHIFT = 0x8,
+        GFXS0_BLENDOP_RGB_MASK = 0x700,
+        GFXS0_BLEND_RGB_MASK = 0x7FF,
+        GFXS0_ATEST_DISABLE = 0x800,
+        GFXS0_ATEST_GT_0 = 0x1000,
+        GFXS0_ATEST_LT_128 = 0x2000,
+        GFXS0_ATEST_GE_128 = 0x3000,
+        GFXS0_ATEST_MASK = 0x3000,
+        GFXS0_CULL_SHIFT = 0xE,
+        GFXS0_CULL_NONE = 0x4000,
+        GFXS0_CULL_BACK = 0x8000,
+        GFXS0_CULL_FRONT = 0xC000,
+        GFXS0_CULL_MASK = 0xC000,
+        GFXS0_SRCBLEND_ALPHA_SHIFT = 0x10,
+        GFXS0_SRCBLEND_ALPHA_MASK = 0xF0000,
+        GFXS0_DSTBLEND_ALPHA_SHIFT = 0x14,
+        GFXS0_DSTBLEND_ALPHA_MASK = 0xF00000,
+        GFXS0_BLENDOP_ALPHA_SHIFT = 0x18,
+        GFXS0_BLENDOP_ALPHA_MASK = 0x7000000,
+        GFXS0_BLEND_ALPHA_MASK = 0x7FF0000,
+        GFXS0_COLORWRITE_RGB = 0x8000000,
+        GFXS0_COLORWRITE_ALPHA = 0x10000000,
+        GFXS0_COLORWRITE_MASK = 0x18000000,
+        GFXS0_POLYMODE_LINE = 0x80000000,
+        GFXS1_DEPTHWRITE = 0x1,
+        GFXS1_DEPTHTEST_DISABLE = 0x2,
+        GFXS1_DEPTHTEST_SHIFT = 0x2,
+        GFXS1_DEPTHTEST_ALWAYS = 0x0,
+        GFXS1_DEPTHTEST_LESS = 0x4,
+        GFXS1_DEPTHTEST_EQUAL = 0x8,
+        GFXS1_DEPTHTEST_LESSEQUAL = 0xC,
+        GFXS1_DEPTHTEST_MASK = 0xC,
+        GFXS1_POLYGON_OFFSET_SHIFT = 0x4,
+        GFXS1_POLYGON_OFFSET_0 = 0x0,
+        GFXS1_POLYGON_OFFSET_1 = 0x10,
+        GFXS1_POLYGON_OFFSET_2 = 0x20,
+        GFXS1_POLYGON_OFFSET_SHADOWMAP = 0x30,
+        GFXS1_POLYGON_OFFSET_MASK = 0x30,
+        GFXS1_STENCIL_FRONT_ENABLE = 0x40,
+        GFXS1_STENCIL_BACK_ENABLE = 0x80,
+        GFXS1_STENCIL_MASK = 0xC0,
+        GFXS1_STENCIL_FRONT_PASS_SHIFT = 0x8,
+        GFXS1_STENCIL_FRONT_FAIL_SHIFT = 0xB,
+        GFXS1_STENCIL_FRONT_ZFAIL_SHIFT = 0xE,
+        GFXS1_STENCIL_FRONT_FUNC_SHIFT = 0x11,
+        GFXS1_STENCIL_FRONT_MASK = 0xFFF00,
+        GFXS1_STENCIL_BACK_PASS_SHIFT = 0x14,
+        GFXS1_STENCIL_BACK_FAIL_SHIFT = 0x17,
+        GFXS1_STENCIL_BACK_ZFAIL_SHIFT = 0x1A,
+        GFXS1_STENCIL_BACK_FUNC_SHIFT = 0x1D,
+        GFXS1_STENCIL_BACK_MASK = 0xFFF00000,
+        GFXS1_STENCILFUNC_FRONTBACK_MASK = 0xE00E0000,
+        GFXS1_STENCILOP_FRONTBACK_MASK = 0x1FF1FF00,
+    };
+
     struct GfxStateBits
     {
         unsigned int loadBits[2];
@@ -555,13 +658,38 @@ namespace IW3
         water_t* water;
     };
 
+    enum SamplerStateBits_e
+    {
+        SAMPLER_FILTER_SHIFT = 0x0,
+        SAMPLER_FILTER_NEAREST = 0x1,
+        SAMPLER_FILTER_LINEAR = 0x2,
+        SAMPLER_FILTER_ANISO2X = 0x3,
+        SAMPLER_FILTER_ANISO4X = 0x4,
+        SAMPLER_FILTER_MASK = 0x7,
+
+        SAMPLER_MIPMAP_SHIFT = 0x3,
+        SAMPLER_MIPMAP_DISABLED = 0x0,
+        SAMPLER_MIPMAP_NEAREST = 0x8,
+        SAMPLER_MIPMAP_LINEAR = 0x10,
+        SAMPLER_MIPMAP_COUNT = 0x3,
+        SAMPLER_MIPMAP_MASK = 0x18,
+
+        SAMPLER_CLAMP_U_SHIFT = 0x5,
+        SAMPLER_CLAMP_V_SHIFT = 0x6,
+        SAMPLER_CLAMP_W_SHIFT = 0x7,
+        SAMPLER_CLAMP_U = 0x20,
+        SAMPLER_CLAMP_V = 0x40,
+        SAMPLER_CLAMP_W = 0x80,
+        SAMPLER_CLAMP_MASK = 0xE0,
+    };
+
     struct MaterialTextureDef
     {
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        char samplerState;
-        char semantic;
+        unsigned char samplerState; // SamplerStateBits_e
+        unsigned char semantic; // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -584,13 +712,48 @@ namespace IW3
         gcc_align(8) uint64_t packed;
     };
 
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+
+        SURF_TYPE_NUM
+    };
+
     struct MaterialInfo
     {
         const char* name;
-        char gameFlags;
-        char sortKey;
-        char textureAtlasRowCount;
-        char textureAtlasColumnCount;
+        unsigned char gameFlags;
+        unsigned char sortKey;
+        unsigned char textureAtlasRowCount;
+        unsigned char textureAtlasColumnCount;
         GfxDrawSurf drawSurf;
         unsigned int surfaceTypeBits;
         uint16_t hashIndex;
@@ -604,7 +767,7 @@ namespace IW3
         unsigned char constantCount;
         unsigned char stateBitsCount;
         unsigned char stateFlags;
-        char cameraRegion;
+        unsigned char cameraRegion;
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
@@ -649,10 +812,46 @@ namespace IW3
         MaterialArgumentDef u;
     };
 
+    enum MaterialStreamStreamSource_e
+    {
+        STREAM_SRC_POSITION = 0x0,
+        STREAM_SRC_COLOR = 0x1,
+        STREAM_SRC_TEXCOORD_0 = 0x2,
+        STREAM_SRC_NORMAL = 0x3,
+        STREAM_SRC_TANGENT = 0x4,
+
+        STREAM_SRC_OPTIONAL_BEGIN = 0x5,
+        STREAM_SRC_PRE_OPTIONAL_BEGIN = 0x4,
+
+        STREAM_SRC_TEXCOORD_1 = 0x5,
+        STREAM_SRC_TEXCOORD_2 = 0x6,
+        STREAM_SRC_NORMAL_TRANSFORM_0 = 0x7,
+        STREAM_SRC_NORMAL_TRANSFORM_1 = 0x8,
+
+        STREAM_SRC_COUNT
+    };
+
+    enum MaterialStreamDestination_e
+    {
+        STREAM_DST_POSITION = 0x0,
+        STREAM_DST_NORMAL = 0x1,
+        STREAM_DST_COLOR_0 = 0x2,
+        STREAM_DST_COLOR_1 = 0x3,
+        STREAM_DST_TEXCOORD_0 = 0x4,
+        STREAM_DST_TEXCOORD_1 = 0x5,
+        STREAM_DST_TEXCOORD_2 = 0x6,
+        STREAM_DST_TEXCOORD_3 = 0x7,
+        STREAM_DST_TEXCOORD_4 = 0x8,
+        STREAM_DST_TEXCOORD_5 = 0x9,
+        STREAM_DST_TEXCOORD_6 = 0xA,
+        STREAM_DST_TEXCOORD_7 = 0xB,
+        STREAM_DST_COUNT
+    };
+
     struct MaterialStreamRouting
     {
-        char source;
-        char dest;
+        unsigned char source;
+        unsigned char dest;
     };
 
     struct MaterialVertexStreamRouting
@@ -725,6 +924,53 @@ namespace IW3
         uint16_t flags;
         uint16_t passCount;
         MaterialPass passArray[1];
+    };
+
+    enum MaterialTechniqueType
+    {
+        TECHNIQUE_DEPTH_PREPASS = 0x0,
+        TECHNIQUE_BUILD_FLOAT_Z = 0x1,
+        TECHNIQUE_BUILD_SHADOWMAP_DEPTH = 0x2,
+        TECHNIQUE_BUILD_SHADOWMAP_COLOR = 0x3,
+        TECHNIQUE_UNLIT = 0x4,
+        TECHNIQUE_EMISSIVE = 0x5,
+        TECHNIQUE_EMISSIVE_SHADOW = 0x6,
+
+        TECHNIQUE_LIT_BEGIN = 0x7,
+
+        TECHNIQUE_LIT = 0x7,
+        TECHNIQUE_LIT_SUN = 0x8,
+        TECHNIQUE_LIT_SUN_SHADOW = 0x9,
+        TECHNIQUE_LIT_SPOT = 0xA,
+        TECHNIQUE_LIT_SPOT_SHADOW = 0xB,
+        TECHNIQUE_LIT_OMNI = 0xC,
+        TECHNIQUE_LIT_OMNI_SHADOW = 0xD,
+        TECHNIQUE_LIT_INSTANCED = 0xE,
+        TECHNIQUE_LIT_INSTANCED_SUN = 0xF,
+        TECHNIQUE_LIT_INSTANCED_SUN_SHADOW = 0x10,
+        TECHNIQUE_LIT_INSTANCED_SPOT = 0x11,
+        TECHNIQUE_LIT_INSTANCED_SPOT_SHADOW = 0x12,
+        TECHNIQUE_LIT_INSTANCED_OMNI = 0x13,
+        TECHNIQUE_LIT_INSTANCED_OMNI_SHADOW = 0x14,
+
+        TECHNIQUE_LIT_END = 0x15,
+
+        TECHNIQUE_LIGHT_SPOT = 0x15,
+        TECHNIQUE_LIGHT_OMNI = 0x16,
+        TECHNIQUE_LIGHT_SPOT_SHADOW = 0x17,
+        TECHNIQUE_FAKELIGHT_NORMAL = 0x18,
+        TECHNIQUE_FAKELIGHT_VIEW = 0x19,
+        TECHNIQUE_SUNLIGHT_PREVIEW = 0x1A,
+        TECHNIQUE_CASE_TEXTURE = 0x1B,
+        TECHNIQUE_WIREFRAME_SOLID = 0x1C,
+        TECHNIQUE_WIREFRAME_SHADED = 0x1D,
+        TECHNIQUE_SHADOWCOOKIE_CASTER = 0x1E,
+        TECHNIQUE_SHADOWCOOKIE_RECEIVER = 0x1F,
+        TECHNIQUE_DEBUG_BUMPMAP = 0x20,
+        TECHNIQUE_DEBUG_BUMPMAP_INSTANCED = 0x21,
+        TECHNIQUE_COUNT = 0x22,
+        TECHNIQUE_TOTAL_COUNT = 0x23,
+        TECHNIQUE_NONE = 0x24,
     };
 
     struct MaterialTechniqueSet
