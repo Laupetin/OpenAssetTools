@@ -45,7 +45,7 @@ class Unlinker::Impl
 
     _NODISCARD bool ShouldLoadObj() const
     {
-        return m_args.m_task != UnlinkerArgs::ProcessingTask::LIST;
+        return m_args.m_task != UnlinkerArgs::ProcessingTask::LIST && !m_args.m_skip_obj;
     }
 
     /**
@@ -403,7 +403,7 @@ class Unlinker::Impl
             if (ShouldLoadObj())
             {
                 ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
-                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
+                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get()); 
             }
 
             if (!HandleZone(zone.get()))

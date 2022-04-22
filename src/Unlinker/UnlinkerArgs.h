@@ -54,6 +54,7 @@ public:
     std::unordered_map<std::string, size_t> m_specified_asset_type_map;
     AssetTypeHandling m_asset_type_handling;
 
+    bool m_skip_obj;
     bool m_use_gdt;
 
     bool m_verbose;

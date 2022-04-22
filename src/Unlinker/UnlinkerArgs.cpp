@@ -73,6 +73,12 @@ const CommandLineOption* const OPTION_MODEL_FORMAT =
     .WithParameter("modelFormatValue")
     .Build();
 
+const CommandLineOption* const OPTION_SKIP_OBJ =
+    CommandLineOption::Builder::Create()
+    .WithLongName("skip-obj")
+    .WithDescription("Skips loading raw obj data.")
+    .Build();
+
 const CommandLineOption* const OPTION_GDT =
     CommandLineOption::Builder::Create()
     .WithLongName("gdt")
@@ -112,6 +118,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_SEARCH_PATH,
     OPTION_IMAGE_FORMAT,
     OPTION_MODEL_FORMAT,
+    OPTION_SKIP_OBJ,
     OPTION_GDT,
     OPTION_EXCLUDE_ASSETS,
     OPTION_INCLUDE_ASSETS,
@@ -124,6 +131,7 @@ UnlinkerArgs::UnlinkerArgs()
       m_task(ProcessingTask::DUMP),
       m_minimal_zone_def(false),
       m_asset_type_handling(AssetTypeHandling::EXCLUDE),
+      m_skip_obj(false),
       m_use_gdt(false),
       m_verbose(false)
 {
@@ -297,6 +305,9 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
             return false;
         }
     }
+
+    // --skip-obj
+    m_skip_obj = m_argument_parser.IsOptionSpecified(OPTION_SKIP_OBJ);
 
     // --gdt
     m_use_gdt = m_argument_parser.IsOptionSpecified(OPTION_GDT);
