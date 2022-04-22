@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <sstream>
+#include <type_traits>
 #include <nlohmann/json.hpp>
 
 #include "Game/IW4/MaterialConstantsIW4.h"
@@ -12,6 +13,8 @@ using json = nlohmann::json;
 
 namespace IW4
 {
+    static constexpr auto DUMP_AS_GDT = true;
+
     const char* AssetName(const char* name)
     {
         if (name && name[0] == ',')
@@ -327,10 +330,27 @@ namespace IW4
         return jArray;
     }
 
-    json BuildSurfaceTypeBitsJson(const unsigned surfaceTypeBits)
+    json BuildCharFlagsJson(const std::string& prefix, const unsigned char gameFlags)
+    {
+        std::vector<std::string> values;
+
+        for (auto i = 0u; i < (sizeof(gameFlags) * 8u); i++)
+        {
+            if (gameFlags & (1 << i))
+            {
+                std::ostringstream ss;
+                ss << prefix << " 0x" << std::hex << (1 << i);
+                values.emplace_back(ss.str());
+            }
+        }
+
+        return json(values);
+    }
+
+    std::string CreateSurfaceTypeString(const unsigned surfaceTypeBits)
     {
         if (!surfaceTypeBits)
-            return json(surfaceTypeNames[SURF_TYPE_DEFAULT]);
+            return surfaceTypeNames[SURF_TYPE_DEFAULT];
 
         static constexpr auto NON_SURFACE_TYPE_BITS = ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
         assert((surfaceTypeBits & NON_SURFACE_TYPE_BITS) == 0);
@@ -350,10 +370,102 @@ namespace IW4
         }
 
         if (firstSurfaceType)
-            return json(surfaceTypeNames[SURF_TYPE_DEFAULT]);
+            return surfaceTypeNames[SURF_TYPE_DEFAULT];
 
-        return json(ss.str());
+        return ss.str();
     }
+
+    void DumpMaterialAsJson(Material* material, std::ostream& stream)
+    {
+        static const char* cameraRegionNames[]
+        {
+            "litOpaque",
+            "litTrans",
+            "emissive",
+            "depthHack",
+            "none"
+        };
+
+        const json j = {
+            {
+                "info", {
+                    {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
+                    {"sortKey", material->info.sortKey},
+                    {"textureAtlasRowCount", material->info.textureAtlasRowCount},
+                    {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
+                    {
+                        "drawSurf", {
+                            {"objectId", static_cast<unsigned>(material->info.drawSurf.fields.objectId)},
+                            {"reflectionProbeIndex", static_cast<unsigned>(material->info.drawSurf.fields.reflectionProbeIndex)},
+                            {"hasGfxEntIndex", static_cast<unsigned>(material->info.drawSurf.fields.hasGfxEntIndex)},
+                            {"customIndex", static_cast<unsigned>(material->info.drawSurf.fields.customIndex)},
+                            {"materialSortedIndex", static_cast<unsigned>(material->info.drawSurf.fields.materialSortedIndex)},
+                            {"prepass", static_cast<unsigned>(material->info.drawSurf.fields.prepass)},
+                            {"useHeroLighting", static_cast<unsigned>(material->info.drawSurf.fields.useHeroLighting)},
+                            {"sceneLightIndex", static_cast<unsigned>(material->info.drawSurf.fields.sceneLightIndex)},
+                            {"surfType", static_cast<unsigned>(material->info.drawSurf.fields.surfType)},
+                            {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}
+                        }
+                    },
+                    {"surfaceTypeBits", CreateSurfaceTypeString(material->info.surfaceTypeBits)},
+                    {"hashIndex", material->info.hashIndex}
+                }
+            },
+            {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
+            {"stateFlags", BuildCharFlagsJson("stateFlag", material->stateFlags)},
+            {"cameraRegion", ArrayEntry(cameraRegionNames, material->cameraRegion)},
+            {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
+            {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},
+            {"constantTable", BuildConstantTableJson(material->constantTable, material->constantCount)},
+            {"stateBitsTable", BuildStateBitsTableJson(material->stateBitsTable, material->stateBitsCount)}
+        };
+
+        stream << std::setw(4) << j;
+    }
+
+    class MaterialGdtDumper
+    {
+        std::ostream& m_stream;
+        GdtEntry m_entry;
+
+        void SetValue(const std::string& key, std::string value)
+        {
+            m_entry.m_properties.emplace(std::make_pair(key, std::move(value)));
+        }
+
+        template <typename T,
+                  typename = typename std::enable_if_t<std::is_arithmetic_v<T>, T>>
+        void SetValue(const std::string& key, T value)
+        {
+            m_entry.m_properties.emplace(std::make_pair(key, std::to_string(value)));
+        }
+
+        void SetCommonValues(const Material* material)
+        {
+            SetValue("textureAtlasRowCount", material->info.textureAtlasRowCount);
+            SetValue("textureAtlasColumnCount", material->info.textureAtlasColumnCount);
+            SetValue("surfaceType", CreateSurfaceTypeString(material->info.surfaceTypeBits));
+        }
+
+    public:
+        explicit MaterialGdtDumper(std::ostream& stream)
+            : m_stream(stream)
+        {
+            m_entry.m_gdf_name = "material.gdf";
+        }
+
+        void Dump(const Material* material)
+        {
+            m_entry.m_name = material->info.name;
+            SetCommonValues(material);
+
+            Gdt gdt(GdtVersion("IW4", 1));
+            gdt.m_entries.emplace_back(std::make_unique<GdtEntry>(std::move(m_entry)));
+
+
+            GdtOutputStream::WriteGdt(gdt, m_stream);
+        }
+    };
 }
 
 bool AssetDumperMaterial::ShouldDump(XAssetInfo<Material>* asset)
@@ -366,7 +478,11 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     auto* material = asset->Asset();
 
     std::ostringstream ss;
-    ss << "materials/" << asset->m_name << ".json";
+    if (DUMP_AS_GDT)
+        ss << "materials/" << asset->m_name << ".gdt";
+    else
+        ss << "materials/" << asset->m_name << ".json";
+
     const auto assetFile = context.OpenAssetFile(ss.str());
 
     if (!assetFile)
@@ -374,48 +490,11 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
 
     auto& stream = *assetFile;
 
-    static const char* cameraRegionNames[]
+    if (DUMP_AS_GDT)
     {
-        "litOpaque",
-        "litTrans",
-        "emissive",
-        "depthHack",
-        "none"
-    };
-
-    const json j = {
-        {
-            "info", {
-                {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
-                {"sortKey", material->info.sortKey},
-                {"textureAtlasRowCount", material->info.textureAtlasRowCount},
-                {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
-                {
-                    "drawSurf", {
-                        {"objectId", static_cast<unsigned>(material->info.drawSurf.fields.objectId)},
-                        {"reflectionProbeIndex", static_cast<unsigned>(material->info.drawSurf.fields.reflectionProbeIndex)},
-                        {"hasGfxEntIndex", static_cast<unsigned>(material->info.drawSurf.fields.hasGfxEntIndex)},
-                        {"customIndex", static_cast<unsigned>(material->info.drawSurf.fields.customIndex)},
-                        {"materialSortedIndex", static_cast<unsigned>(material->info.drawSurf.fields.materialSortedIndex)},
-                        {"prepass", static_cast<unsigned>(material->info.drawSurf.fields.prepass)},
-                        {"useHeroLighting", static_cast<unsigned>(material->info.drawSurf.fields.useHeroLighting)},
-                        {"sceneLightIndex", static_cast<unsigned>(material->info.drawSurf.fields.sceneLightIndex)},
-                        {"surfType", static_cast<unsigned>(material->info.drawSurf.fields.surfType)},
-                        {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}
-                    }
-                },
-                {"surfaceTypeBits", BuildSurfaceTypeBitsJson(material->info.surfaceTypeBits)},
-                {"hashIndex", material->info.hashIndex}
-            }
-        },
-        {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
-        {"stateFlags", material->stateFlags},
-        {"cameraRegion", ArrayEntry(cameraRegionNames, material->cameraRegion)},
-        {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
-        {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},
-        {"constantTable", BuildConstantTableJson(material->constantTable, material->constantCount)},
-        {"stateBitsTable", BuildStateBitsTableJson(material->stateBitsTable, material->stateBitsCount)}
-    };
-
-    stream << std::setw(4) << j;
+        MaterialGdtDumper dumper(stream);
+        dumper.Dump(material);
+    }
+    else
+        DumpMaterialAsJson(material, stream);
 }

@@ -353,6 +353,23 @@ namespace IW3
 
         return json(ss.str());
     }
+
+    json BuildGameFlagsJson(const unsigned char gameFlags)
+    {
+        std::vector<std::string> values;
+
+        for (auto i = 0u; i < (sizeof(gameFlags) * 8u); i++)
+        {
+            if (gameFlags & (1 << i))
+            {
+                std::ostringstream ss;
+                ss << "0x" << std::hex << (1 << i);
+                values.emplace_back(ss.str());
+            }
+        }
+
+        return json(values);
+    }
 }
 
 bool AssetDumperMaterial::ShouldDump(XAssetInfo<Material>* asset)
@@ -427,7 +444,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     const json j = {
         {
             "info", {
-                {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
+                {"gameFlags", BuildGameFlagsJson(material->info.gameFlags)}, // TODO: Find out what gameflags mean
                 {"sortKey", foundSortKeyName != sortKeyNames.end() ? foundSortKeyName->second : std::to_string(material->info.sortKey)},
                 {"textureAtlasRowCount", material->info.textureAtlasRowCount},
                 {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
