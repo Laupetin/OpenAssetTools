@@ -7,6 +7,8 @@
 #include "Game/IW3/MaterialConstantsIW3.h"
 #include "Game/IW3/TechsetConstantsIW3.h"
 
+#define FLAGS_DEBUG 1
+
 using namespace IW3;
 using json = nlohmann::json;
 
@@ -354,7 +356,7 @@ namespace IW3
         return json(ss.str());
     }
 
-    json BuildGameFlagsJson(const unsigned char gameFlags)
+    json BuildCharFlagsJson(const std::string& prefix, const unsigned char gameFlags)
     {
         std::vector<std::string> values;
 
@@ -363,7 +365,7 @@ namespace IW3
             if (gameFlags & (1 << i))
             {
                 std::ostringstream ss;
-                ss << "0x" << std::hex << (1 << i);
+                ss << prefix << " 0x" << std::hex << (1 << i);
                 values.emplace_back(ss.str());
             }
         }
@@ -444,7 +446,11 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     const json j = {
         {
             "info", {
-                {"gameFlags", BuildGameFlagsJson(material->info.gameFlags)}, // TODO: Find out what gameflags mean
+#if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
+                {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
+#else
+                {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
+#endif
                 {"sortKey", foundSortKeyName != sortKeyNames.end() ? foundSortKeyName->second : std::to_string(material->info.sortKey)},
                 {"textureAtlasRowCount", material->info.textureAtlasRowCount},
                 {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
@@ -465,7 +471,11 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
             }
         },
         {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
+#if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
+        {"stateFlags", BuildCharFlagsJson("stateFlag", material->stateFlags)},
+#else
         {"stateFlags", material->stateFlags},
+#endif
         {"cameraRegion", ArrayEntry(cameraRegionNames, material->cameraRegion)},
         {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
         {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},

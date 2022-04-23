@@ -5,16 +5,18 @@
 #include <type_traits>
 #include <nlohmann/json.hpp>
 
+#include "Utils/ClassUtils.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+
+#define DUMP_AS_GDT 1
+#define FLAGS_DEBUG 1
 
 using namespace IW4;
 using json = nlohmann::json;
 
 namespace IW4
 {
-    static constexpr auto DUMP_AS_GDT = true;
-
     const char* AssetName(const char* name)
     {
         if (name && name[0] == ',')
@@ -159,7 +161,7 @@ namespace IW4
         return jArray;
     }
 
-    json BuildConstantTableJson(MaterialConstantDef* constantTable, const size_t count)
+    json BuildConstantTableJson(const MaterialConstantDef* constantTable, const size_t count)
     {
         auto jArray = json::array();
 
@@ -210,7 +212,7 @@ namespace IW4
         return jArray;
     }
 
-    json BuildStateBitsTableJson(GfxStateBits* stateBitsTable, const size_t count)
+    json BuildStateBitsTableJson(const GfxStateBits* stateBitsTable, const size_t count)
     {
         static const char* blendNames[]
         {
@@ -350,7 +352,7 @@ namespace IW4
     std::string CreateSurfaceTypeString(const unsigned surfaceTypeBits)
     {
         if (!surfaceTypeBits)
-            return surfaceTypeNames[SURF_TYPE_DEFAULT];
+            return "<none>";
 
         static constexpr auto NON_SURFACE_TYPE_BITS = ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
         assert((surfaceTypeBits & NON_SURFACE_TYPE_BITS) == 0);
@@ -370,7 +372,7 @@ namespace IW4
         }
 
         if (firstSurfaceType)
-            return surfaceTypeNames[SURF_TYPE_DEFAULT];
+            return "<none>";
 
         return ss.str();
     }
@@ -389,7 +391,11 @@ namespace IW4
         const json j = {
             {
                 "info", {
+#if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
                     {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
+#else
+                    {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
+#endif
                     {"sortKey", material->info.sortKey},
                     {"textureAtlasRowCount", material->info.textureAtlasRowCount},
                     {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
@@ -412,7 +418,11 @@ namespace IW4
                 }
             },
             {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
+#if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
             {"stateFlags", BuildCharFlagsJson("stateFlag", material->stateFlags)},
+#else
+            {"stateFlags", material->stateFlags},
+#endif
             {"cameraRegion", ArrayEntry(cameraRegionNames, material->cameraRegion)},
             {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
             {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},
@@ -426,11 +436,19 @@ namespace IW4
     class MaterialGdtDumper
     {
         std::ostream& m_stream;
+        const Material* m_material;
         GdtEntry m_entry;
 
         void SetValue(const std::string& key, std::string value)
         {
             m_entry.m_properties.emplace(std::make_pair(key, std::move(value)));
+        }
+
+        void SetValue(const std::string& key, const float (&value)[4])
+        {
+            std::ostringstream ss;
+            ss << value[0] << " " << value[1] << " " << value[2] << " " << value[3];
+            m_entry.m_properties.emplace(std::make_pair(key, ss.str()));
         }
 
         template <typename T,
@@ -440,28 +458,54 @@ namespace IW4
             m_entry.m_properties.emplace(std::make_pair(key, std::to_string(value)));
         }
 
-        void SetCommonValues(const Material* material)
+        _NODISCARD int FindConstant(const std::string& constantName) const
         {
-            SetValue("textureAtlasRowCount", material->info.textureAtlasRowCount);
-            SetValue("textureAtlasColumnCount", material->info.textureAtlasColumnCount);
-            SetValue("surfaceType", CreateSurfaceTypeString(material->info.surfaceTypeBits));
+            const auto constantHash = Common::R_HashString(constantName.c_str(), 0u);
+
+            if (m_material->constantTable)
+            {
+                for (auto i = 0; i < m_material->constantCount; i++)
+                {
+                    if (m_material->constantTable[i].nameHash == constantHash)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        void SetConstantValues(const Material* material)
+        {
+            const auto colorTintIndex = FindConstant("colorTint");
+            if (colorTintIndex >= 0)
+                SetValue("colorTint", material->constantTable[colorTintIndex].literal);
+        }
+
+        void SetCommonValues()
+        {
+            SetValue("textureAtlasRowCount", m_material->info.textureAtlasRowCount);
+            SetValue("textureAtlasColumnCount", m_material->info.textureAtlasColumnCount);
+            SetValue("surfaceType", CreateSurfaceTypeString(m_material->info.surfaceTypeBits));
         }
 
     public:
-        explicit MaterialGdtDumper(std::ostream& stream)
-            : m_stream(stream)
+        explicit MaterialGdtDumper(std::ostream& stream, const Material* material)
+            : m_stream(stream),
+              m_material(material)
         {
             m_entry.m_gdf_name = "material.gdf";
+            m_entry.m_name = m_material->info.name;
         }
 
-        void Dump(const Material* material)
+        void CreateGdtEntry()
         {
-            m_entry.m_name = material->info.name;
-            SetCommonValues(material);
+            SetCommonValues();
+        }
 
+        void Dump()
+        {
             Gdt gdt(GdtVersion("IW4", 1));
             gdt.m_entries.emplace_back(std::make_unique<GdtEntry>(std::move(m_entry)));
-
 
             GdtOutputStream::WriteGdt(gdt, m_stream);
         }
@@ -477,24 +521,27 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
 {
     auto* material = asset->Asset();
 
-    std::ostringstream ss;
-    if (DUMP_AS_GDT)
-        ss << "materials/" << asset->m_name << ".gdt";
-    else
-        ss << "materials/" << asset->m_name << ".json";
-
-    const auto assetFile = context.OpenAssetFile(ss.str());
-
-    if (!assetFile)
-        return;
-
-    auto& stream = *assetFile;
-
-    if (DUMP_AS_GDT)
     {
-        MaterialGdtDumper dumper(stream);
-        dumper.Dump(material);
-    }
-    else
+        std::ostringstream ss;
+        ss << "materials/" << asset->m_name << ".json";
+        const auto assetFile = context.OpenAssetFile(ss.str());
+        if (!assetFile)
+            return;
+        auto& stream = *assetFile;
         DumpMaterialAsJson(material, stream);
+    }
+
+#if defined(DUMP_AS_GDT) && DUMP_AS_GDT == 1
+    {
+        std::ostringstream ss;
+        ss << "materials/" << asset->m_name << ".gdt";
+        const auto assetFile = context.OpenAssetFile(ss.str());
+        if (!assetFile)
+            return;
+        auto& stream = *assetFile;
+        MaterialGdtDumper dumper(stream, material);
+        dumper.CreateGdtEntry();
+        dumper.Dump();
+    }
+#endif
 }
