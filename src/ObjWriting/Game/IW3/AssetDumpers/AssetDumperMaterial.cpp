@@ -7,7 +7,7 @@
 #include "Game/IW3/MaterialConstantsIW3.h"
 #include "Game/IW3/TechsetConstantsIW3.h"
 
-#define FLAGS_DEBUG 1
+//#define FLAGS_DEBUG 1
 
 using namespace IW3;
 using json = nlohmann::json;

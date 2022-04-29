@@ -515,6 +515,17 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(g_customSamplerSrc)> == CUSTOM_SAMPLER_COUNT);
 
+    inline MaterialTypeInfo g_materialTypeInfo[]
+    {
+        {"", ""},
+        {"m/", "m_"},
+        {"mc/", "mc_"},
+        {"mg/", "mg_"},
+        {"w/", "w_"},
+        {"wc/", "wc_"}
+    };
+    static_assert(std::extent_v<decltype(g_materialTypeInfo)> == MTL_TYPE_COUNT);
+
     static constexpr std::pair<uint32_t, const char*> KnownMaterialSource(const char* name)
     {
         return std::make_pair(Common::R_HashString(name, 0u), name);

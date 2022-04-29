@@ -9,8 +9,9 @@
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 
+#define DUMP_AS_JSON 1
 #define DUMP_AS_GDT 1
-#define FLAGS_DEBUG 1
+//#define FLAGS_DEBUG 1
 
 using namespace IW4;
 using json = nlohmann::json;
@@ -433,6 +434,87 @@ namespace IW4
         stream << std::setw(4) << j;
     }
 
+    enum class GdtMaterialType
+    {
+        MATERIAL_TYPE_UNKNOWN,
+        MATERIAL_TYPE_2D,
+        MATERIAL_TYPE_CUSTOM,
+        MATERIAL_TYPE_DISTORTION,
+        MATERIAL_TYPE_EFFECT,
+        MATERIAL_TYPE_IMPACT_MARK,
+        MATERIAL_TYPE_MODEL_AMBIENT,
+        MATERIAL_TYPE_MODEL_PHONG,
+        MATERIAL_TYPE_MODEL_UNLIT,
+        MATERIAL_TYPE_OBJECTIVE,
+        MATERIAL_TYPE_PARTICLE_CLOUD,
+        MATERIAL_TYPE_SKY,
+        MATERIAL_TYPE_TOOLS,
+        MATERIAL_TYPE_UNLIT,
+        MATERIAL_TYPE_WATER,
+        MATERIAL_TYPE_WORLD_PHONG,
+        MATERIAL_TYPE_WORLD_UNLIT,
+
+        MATERIAL_TYPE_COUNT
+    };
+
+    enum class GdtCustomMaterialTypes
+    {
+        CUSTOM_MATERIAL_TYPE_NONE,
+        CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY,
+        CUSTOM_MATERIAL_TYPE_EFFECT_ADD_EYE_OFFSET,
+        CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT,
+        CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR,
+        CUSTOM_MATERIAL_TYPE_SHADOW_COOKIE_BLUR,
+        CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY,
+
+        CUSTOM_MATERIAL_TYPE_COUNT
+    };
+
+    const char* GdtMaterialTypeNames[]
+    {
+        "<unknown>",
+        "2d",
+        "custom",
+        "distortion",
+        "effect",
+        "impact mark",
+        "model ambient",
+        "model phong",
+        "model unlit",
+        "objective",
+        "particle cloud",
+        "sky",
+        "tools",
+        "unlit",
+        "water",
+        "world phong",
+        "world unlit"
+    };
+    static_assert(std::extent_v<decltype(GdtMaterialTypeNames)> == static_cast<size_t>(GdtMaterialType::MATERIAL_TYPE_COUNT));
+
+    const char* GdtCustomMaterialTypeNames[]
+    {
+        "",
+        "mtl_grain_overlay",
+        "effect_add_eyeoffset",
+        "reflexsight",
+        "shadowclear",
+        "shadowcookieblur",
+        "shadowoverlay"
+    };
+    static_assert(std::extent_v<decltype(GdtCustomMaterialTypeNames)> == static_cast<size_t>(GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_COUNT));
+
+    class TechsetInfo
+    {
+    public:
+        std::string m_techset_name;
+        std::string m_techset_base_name;
+        std::string m_techset_prefix;
+        GdtMaterialType m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNKNOWN;
+        GdtCustomMaterialTypes m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_NONE;
+        MaterialType m_engine_material_type = MTL_TYPE_DEFAULT;
+    };
+
     class MaterialGdtDumper
     {
         std::ostream& m_stream;
@@ -479,6 +561,13 @@ namespace IW4
             const auto colorTintIndex = FindConstant("colorTint");
             if (colorTintIndex >= 0)
                 SetValue("colorTint", material->constantTable[colorTintIndex].literal);
+
+            const auto envMapParmsIndex = FindConstant("envMapParms");
+            if (envMapParmsIndex >= 0)
+            {
+                const auto& constant = material->constantTable[colorTintIndex];
+                SetValue("envMapMin", constant.literal[0]);
+            }
         }
 
         void SetCommonValues()
@@ -486,6 +575,113 @@ namespace IW4
             SetValue("textureAtlasRowCount", m_material->info.textureAtlasRowCount);
             SetValue("textureAtlasColumnCount", m_material->info.textureAtlasColumnCount);
             SetValue("surfaceType", CreateSurfaceTypeString(m_material->info.surfaceTypeBits));
+        }
+
+        _NODISCARD TechsetInfo GetTechsetInfo() const
+        {
+            TechsetInfo result;
+            if (!m_material->techniqueSet || !m_material->techniqueSet->name)
+                return result;
+
+            result.m_techset_name = AssetName(m_material->techniqueSet->name);
+            result.m_techset_base_name = result.m_techset_name;
+
+            for (auto materialType = MTL_TYPE_DEFAULT + 1; materialType < MTL_TYPE_COUNT; materialType++)
+            {
+                const std::string_view techsetPrefix(g_materialTypeInfo[materialType].techniqueSetPrefix);
+                if (result.m_techset_name.rfind(techsetPrefix, 0) == 0)
+                {
+                    result.m_techset_base_name = result.m_techset_name.substr(techsetPrefix.size());
+                    result.m_techset_prefix = std::string(techsetPrefix);
+                    break;
+                }
+            }
+
+            if (result.m_techset_base_name == "2d")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_2D;
+            }
+            else if (result.m_techset_base_name == "tools")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_TOOLS;
+            }
+            else if (result.m_techset_base_name == "objective")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_OBJECTIVE;
+            }
+            else if (result.m_techset_base_name == "sky")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_SKY;
+            }
+            else if (result.m_techset_base_name == "water")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WATER;
+            }
+            else if (result.m_techset_base_name.rfind("ambient_", 0) == 0)
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_AMBIENT;
+            }
+            else if (result.m_techset_base_name.rfind("distortion_", 0) == 0)
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_DISTORTION;
+            }
+            else if (result.m_techset_base_name.rfind("particle_cloud", 0) == 0)
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_PARTICLE_CLOUD;
+            }
+            else if(result.m_techset_base_name == "grain_overlay")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                result.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
+            }
+            else if(result.m_techset_base_name == "effect_add_eyeoffset")
+            {
+                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                result.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
+            }
+
+            return result;
+        }
+
+        void SetMaterialTypeValues()
+        {
+            const auto techsetInfo = GetTechsetInfo();
+            SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(techsetInfo.m_gdt_material_type)]);
+            SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(techsetInfo.m_gdt_custom_material_type)]);
+        }
+
+        void SetTextureTableValues()
+        {
+            if (m_material->textureTable == nullptr || m_material->textureCount <= 0)
+                return;
+
+            for (auto i = 0u; i < m_material->textureCount; i++)
+            {
+                const auto& entry = m_material->textureTable[i];
+                const auto knownMaterialSourceName = knownMaterialSourceNames.find(entry.nameHash);
+                if (knownMaterialSourceName == knownMaterialSourceNames.end())
+                {
+                    assert(false);
+                    std::cout << "Unknown material texture source name hash: 0x" << std::hex << entry.nameHash << " (" << entry.nameStart << "..." << entry.nameEnd << ")\n";
+                    continue;
+                }
+
+                const char* imageName;
+                if (entry.semantic != TS_WATER_MAP)
+                {
+                    if (!entry.u.image || !entry.u.image->name)
+                        continue;
+                    imageName = AssetName(entry.u.image->name);
+                }
+                else
+                {
+                    if (!entry.u.water || !entry.u.water->image || !entry.u.water->image->name)
+                        continue;
+                    imageName = AssetName(entry.u.water->image->name);
+                }
+
+                SetValue(knownMaterialSourceName->second, imageName);
+            }
         }
 
     public:
@@ -500,6 +696,8 @@ namespace IW4
         void CreateGdtEntry()
         {
             SetCommonValues();
+            SetMaterialTypeValues();
+            SetTextureTableValues();
         }
 
         void Dump()
@@ -521,6 +719,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
 {
     auto* material = asset->Asset();
 
+#if defined(DUMP_AS_JSON) && DUMP_AS_JSON == 1
     {
         std::ostringstream ss;
         ss << "materials/" << asset->m_name << ".json";
@@ -530,6 +729,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         auto& stream = *assetFile;
         DumpMaterialAsJson(material, stream);
     }
+#endif
 
 #if defined(DUMP_AS_GDT) && DUMP_AS_GDT == 1
     {

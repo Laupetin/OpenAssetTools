@@ -1081,11 +1081,17 @@ namespace IW4
         MTL_TYPE_DEFAULT = 0x0,
         MTL_TYPE_MODEL = 0x1, // m_
         MTL_TYPE_MODEL_VERTCOL = 0x2, // mc_
-        MTL_TYPE_MODEL_VERTCOL_GREY = 0x3, // ?
+        MTL_TYPE_MODEL_VERTCOL_GREY = 0x3, // mg_
         MTL_TYPE_WORLD = 0x4, // w_
         MTL_TYPE_WORLD_VERTCOL = 0x5, // wc_
 
         MTL_TYPE_COUNT,
+    };
+
+    struct MaterialTypeInfo
+    {
+        const char* materialPrefix;
+        const char* techniqueSetPrefix;
     };
 
     enum MaterialConstantSource
