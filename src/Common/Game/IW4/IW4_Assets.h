@@ -852,6 +852,18 @@ namespace IW4
         CAMERA_REGION_NONE = CAMERA_REGION_COUNT,
     };
 
+    enum MaterialStateFlags
+    {
+        MTL_STATEFLAG_CULL_BACK = 0x1,  // Only when has technique for >= TECHNIQUE_LIT_BEGIN (checks all statebits)
+        MTL_STATEFLAG_CULL_FRONT = 0x2, // ^
+        MTL_STATEFLAG_IS_DECAL = 0x4,
+        MTL_STATEFLAG_WRITES_DEPTH = 0x8,
+        MTL_STATEFLAG_USES_DEPTH_BUFFER = 0x10,
+        MTL_STATEFLAG_USES_STENCIL_BUFFER = 0x20,
+        MTL_STATEFLAG_CULL_SHADOW_BACK = 0x40, // Only when has technique for TECHNIQUE_BUILD_SHADOWMAP_DEPTH (checks its statebits)
+        MTL_STATEFLAG_CULL_SHADOW_FRONT = 0x80 // ^
+    };
+
     struct Material
     {
         MaterialInfo info;
@@ -1331,8 +1343,8 @@ namespace IW4
     enum TechniqueFlags
     {
         // Guesses purely based on data analysis:
-        TECHNIQUE_FLAG_1 = 0x1, // uses resolvedPostSun code sampler
-        TECHNIQUE_FLAG_2 = 0x2, // uses resolvedScene code sampler
+        TECHNIQUE_FLAG_1 = 0x1, // uses resolvedPostSun code sampler // MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN
+        TECHNIQUE_FLAG_2 = 0x2, // uses resolvedScene code sampler MTL_TECHFLAG_NEEDS_RESOLVED_SCENE
         TECHNIQUE_FLAG_4 = 0x4, // zprepass only
         TECHNIQUE_FLAG_8 = 0x8, // build_floatz only
         TECHNIQUE_FLAG_10 = 0x10, // build_shadowmap_depth + build_shadowmap_model only

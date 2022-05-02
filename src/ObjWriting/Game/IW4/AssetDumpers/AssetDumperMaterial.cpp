@@ -2,7 +2,9 @@
 
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include <type_traits>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 #include "Utils/ClassUtils.h"
@@ -460,12 +462,17 @@ namespace IW4
     enum class GdtCustomMaterialTypes
     {
         CUSTOM_MATERIAL_TYPE_NONE,
+        // Uses custom techset with generic options
+        CUSTOM_MATERIAL_TYPE_CUSTOM,
+        CUSTOM_MATERIAL_TYPE_PHONG_FLAG,
         CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY,
-        CUSTOM_MATERIAL_TYPE_EFFECT_ADD_EYE_OFFSET,
+        CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET,
         CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT,
         CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR,
-        CUSTOM_MATERIAL_TYPE_SHADOW_COOKIE_BLUR,
         CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY,
+
+        // Not part of IW3
+        CUSTOM_MATERIAL_TYPE_SPLATTER,
 
         CUSTOM_MATERIAL_TYPE_COUNT
     };
@@ -495,12 +502,14 @@ namespace IW4
     const char* GdtCustomMaterialTypeNames[]
     {
         "",
+        "mtl_custom",
+        "mtl_phong_flag",
         "mtl_grain_overlay",
-        "effect_add_eyeoffset",
-        "reflexsight",
-        "shadowclear",
-        "shadowcookieblur",
-        "shadowoverlay"
+        "mtl_effect_eyeoffset",
+        "mtl_reflexsight",
+        "mtl_shadowclear",
+        "mtl_shadowoverlay",
+        "mtl_splatter"
     };
     static_assert(std::extent_v<decltype(GdtCustomMaterialTypeNames)> == static_cast<size_t>(GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_COUNT));
 
@@ -512,12 +521,127 @@ namespace IW4
         std::string m_techset_prefix;
         GdtMaterialType m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNKNOWN;
         GdtCustomMaterialTypes m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_NONE;
+        std::string m_gdt_custom_string;
         MaterialType m_engine_material_type = MTL_TYPE_DEFAULT;
+        bool m_no_cast_shadow = false;
+        bool m_no_receive_dynamic_shadow = false;
+        bool m_no_fog = false;
+        bool m_tex_scroll = false;
+        bool m_uv_anim = false;
+        bool m_has_color_map = false;
+        bool m_has_detail_map = false;
+        bool m_has_normal_map = false;
+        bool m_has_detail_normal_map = false;
+        bool m_has_specular_map = false;
+
+        // TODO: Find out what p0 in techset name actually means, seems like it only does stuff for techsets using a specular texture though
+        // TODO: Find out what o0 in techset name actually means, seems like it gives the colormap a blue/whiteish tint and is almost exclusively used on snow-related materials
+        bool m_specular_p_flag = false;
+        bool m_color_o_flag = false;
+    };
+
+    enum class BlendFunc_e
+    {
+        UNKNOWN,
+        CUSTOM,
+        REPLACE,
+        BLEND,
+        ADD,
+        MULTIPLY,
+        SCREEN_ADD
+    };
+
+    enum class BlendOp_e
+    {
+        UNKNOWN,
+        ADD,
+        SUBTRACT,
+        REV_SUBTRACT,
+        MIN,
+        MAX,
+        DISABLE
+    };
+
+    enum class CustomBlendFunc_e
+    {
+        UNKNOWN,
+        ONE,
+        ZERO,
+        SRC_COLOR,
+        INV_SRC_COLOR,
+        SRC_ALPHA,
+        INV_SRC_ALPHA,
+        DST_ALPHA,
+        INV_DST_ALPHA,
+        DEST_COLOR,
+        INV_DST_COLOR
+    };
+
+    enum class AlphaTest_e
+    {
+        UNKNOWN,
+        ALWAYS,
+        GE128
+    };
+
+    enum class DepthTest_e
+    {
+        UNKNOWN,
+        LESS_EQUAL,
+        LESS,
+        EQUAL,
+        ALWAYS,
+        DISABLE
+    };
+
+    enum class StateBitsEnabledStatus_e
+    {
+        UNKNOWN,
+        ENABLED,
+        DISABLED
+    };
+
+    enum class CullFace_e
+    {
+        UNKNOWN,
+        FRONT,
+        BACK,
+        NONE
+    };
+
+    enum class PolygonOffset
+    {
+        UNKNOWN,
+        STATIC_DECAL,
+        WEAPON_IMPACT
+    };
+
+    class StateBitsInfo
+    {
+    public:
+        BlendFunc_e m_blend_func = BlendFunc_e::UNKNOWN;
+        BlendOp_e m_custom_blend_op_rgb = BlendOp_e::UNKNOWN;
+        BlendOp_e m_custom_blend_op_alpha = BlendOp_e::UNKNOWN;
+        CustomBlendFunc_e m_custom_src_blend_func = CustomBlendFunc_e::UNKNOWN;
+        CustomBlendFunc_e m_custom_dst_blend_func = CustomBlendFunc_e::UNKNOWN;
+        CustomBlendFunc_e m_custom_src_blend_func_alpha = CustomBlendFunc_e::UNKNOWN;
+        CustomBlendFunc_e m_custom_dst_blend_func_alpha = CustomBlendFunc_e::UNKNOWN;
+        AlphaTest_e m_alpha_test = AlphaTest_e::UNKNOWN;
+        DepthTest_e m_depth_test = DepthTest_e::UNKNOWN;
+        StateBitsEnabledStatus_e m_depth_write = StateBitsEnabledStatus_e::UNKNOWN;
+        CullFace_e m_cull_face = CullFace_e::UNKNOWN;
+        PolygonOffset m_polygon_offset = PolygonOffset::UNKNOWN;
+        StateBitsEnabledStatus_e m_color_write_rgb = StateBitsEnabledStatus_e::UNKNOWN;
+        StateBitsEnabledStatus_e m_color_write_alpha = StateBitsEnabledStatus_e::UNKNOWN;
     };
 
     class MaterialGdtDumper
     {
         std::ostream& m_stream;
+
+        TechsetInfo m_techset_info;
+        StateBitsInfo m_state_bits_info;
+
         const Material* m_material;
         GdtEntry m_entry;
 
@@ -577,77 +701,270 @@ namespace IW4
             SetValue("surfaceType", CreateSurfaceTypeString(m_material->info.surfaceTypeBits));
         }
 
-        _NODISCARD TechsetInfo GetTechsetInfo() const
+        _NODISCARD bool MaterialCouldPossiblyUseCustomTemplate() const
         {
-            TechsetInfo result;
-            if (!m_material->techniqueSet || !m_material->techniqueSet->name)
-                return result;
+            if (m_material->constantCount > 0)
+                return false;
 
-            result.m_techset_name = AssetName(m_material->techniqueSet->name);
-            result.m_techset_base_name = result.m_techset_name;
-
-            for (auto materialType = MTL_TYPE_DEFAULT + 1; materialType < MTL_TYPE_COUNT; materialType++)
+            if (m_material->textureTable)
             {
-                const std::string_view techsetPrefix(g_materialTypeInfo[materialType].techniqueSetPrefix);
-                if (result.m_techset_name.rfind(techsetPrefix, 0) == 0)
+                static constexpr auto COLOR_MAP_HASH = Common::R_HashString("colorMap", 0u);
+                static constexpr auto DETAIL_MAP_HASH = Common::R_HashString("detailMap", 0u);
+
+                for (auto i = 0u; i < m_material->textureCount; i++)
                 {
-                    result.m_techset_base_name = result.m_techset_name.substr(techsetPrefix.size());
-                    result.m_techset_prefix = std::string(techsetPrefix);
-                    break;
+                    const auto nameHash = m_material->textureTable[i].nameHash;
+                    if (nameHash != COLOR_MAP_HASH && nameHash != DETAIL_MAP_HASH)
+                        return false;
                 }
             }
 
-            if (result.m_techset_base_name == "2d")
+            return true;
+        }
+
+        static std::vector<std::string> GetTechsetNameParts(const std::string& basename)
+        {
+            std::vector<std::string> result;
+
+            auto partStartPosition = 0u;
+            auto currentPosition = 0u;
+            for (const auto& c : basename)
             {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_2D;
+                if (c == '_')
+                {
+                    result.emplace_back(basename, partStartPosition, currentPosition - partStartPosition);
+                    partStartPosition = currentPosition + 1;
+                }
+                currentPosition++;
             }
-            else if (result.m_techset_base_name == "tools")
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_TOOLS;
-            }
-            else if (result.m_techset_base_name == "objective")
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_OBJECTIVE;
-            }
-            else if (result.m_techset_base_name == "sky")
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_SKY;
-            }
-            else if (result.m_techset_base_name == "water")
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WATER;
-            }
-            else if (result.m_techset_base_name.rfind("ambient_", 0) == 0)
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_AMBIENT;
-            }
-            else if (result.m_techset_base_name.rfind("distortion_", 0) == 0)
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_DISTORTION;
-            }
-            else if (result.m_techset_base_name.rfind("particle_cloud", 0) == 0)
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_PARTICLE_CLOUD;
-            }
-            else if(result.m_techset_base_name == "grain_overlay")
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                result.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
-            }
-            else if(result.m_techset_base_name == "effect_add_eyeoffset")
-            {
-                result.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                result.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
-            }
+
+            if (partStartPosition < basename.size())
+                result.emplace_back(basename, partStartPosition);
 
             return result;
         }
 
+        void ExamineEffectTechsetInfo()
+        {
+        }
+
+        void ExamineLitTechsetInfo()
+        {
+            const auto nameParts = GetTechsetNameParts(m_techset_info.m_techset_base_name);
+            bool inCustomName = false;
+            bool customNameStart = true;
+            std::ostringstream customNameStream;
+
+            m_techset_info.m_no_receive_dynamic_shadow = true;
+            for (const auto& namePart : nameParts)
+            {
+                if (namePart == "l")
+                    continue;
+
+                if (inCustomName)
+                {
+                    if (customNameStart)
+                        customNameStart = false;
+                    else
+                        customNameStream << "_";
+                    customNameStream << namePart;
+                    continue;
+                }
+
+                // Anything after a custom part is part of its custom name
+                if (namePart == "custom")
+                {
+                    inCustomName = true;
+                    continue;
+                }
+
+                if (namePart == "scroll")
+                    m_techset_info.m_tex_scroll = true;
+                else if (namePart == "ua")
+                    m_techset_info.m_uv_anim = true;
+                else if (namePart == "nocast")
+                    m_techset_info.m_no_cast_shadow = true;
+                else if (namePart == "nofog")
+                    m_techset_info.m_no_fog = true;
+                else if (namePart == "sm" || namePart == "hsm")
+                    m_techset_info.m_no_receive_dynamic_shadow = false;
+                else if (namePart == "flag")
+                {
+                    m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                    m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_PHONG_FLAG;
+                }
+                else if (namePart.size() >= 2 && namePart[1] == '0')
+                {
+                    for (auto i = 0u; i < namePart.size(); i += 2)
+                    {
+                        switch (namePart[i])
+                        {
+                        case 'r':
+                            m_state_bits_info.m_blend_func = BlendFunc_e::REPLACE;
+                            m_state_bits_info.m_alpha_test = AlphaTest_e::ALWAYS;
+                            break;
+                        case 'a':
+                            m_state_bits_info.m_blend_func = BlendFunc_e::ADD;
+                            break;
+                        case 'b':
+                            m_state_bits_info.m_blend_func = BlendFunc_e::BLEND;
+                            break;
+                        case 't':
+                            m_state_bits_info.m_blend_func = BlendFunc_e::REPLACE;
+                            m_state_bits_info.m_alpha_test = AlphaTest_e::GE128;
+                            break;
+                        case 'c':
+                            m_techset_info.m_has_color_map = true;
+                            break;
+                        case 'd':
+                            m_techset_info.m_has_detail_map = true;
+                            break;
+                        case 'n':
+                            m_techset_info.m_has_normal_map = true;
+                            break;
+                        case 'q':
+                            m_techset_info.m_has_detail_normal_map = true;
+                            break;
+                        case 's':
+                            m_techset_info.m_has_specular_map = true;
+                            break;
+                        case 'p':
+                            m_techset_info.m_specular_p_flag = true;
+                            break;
+                        case 'o':
+                            m_techset_info.m_color_o_flag = true;
+                            break;
+                        default:
+                            assert(false);
+                            break;
+                        }
+                    }
+                }
+                else
+                    assert(false);
+            }
+
+            if (inCustomName)
+            {
+                m_techset_info.m_gdt_custom_string = customNameStream.str();
+            }
+        }
+
+        void ExamineUnlitTechsetInfo()
+        {
+        }
+
+        void ExamineTechsetInfo()
+        {
+            if (!m_material->techniqueSet || !m_material->techniqueSet->name)
+                return;
+
+            m_techset_info.m_techset_name = AssetName(m_material->techniqueSet->name);
+            m_techset_info.m_techset_base_name = m_techset_info.m_techset_name;
+
+            for (auto materialType = MTL_TYPE_DEFAULT + 1; materialType < MTL_TYPE_COUNT; materialType++)
+            {
+                const std::string_view techsetPrefix(g_materialTypeInfo[materialType].techniqueSetPrefix);
+                if (m_techset_info.m_techset_name.rfind(techsetPrefix, 0) == 0)
+                {
+                    m_techset_info.m_techset_base_name = m_techset_info.m_techset_name.substr(techsetPrefix.size());
+                    m_techset_info.m_techset_prefix = std::string(techsetPrefix);
+                    break;
+                }
+            }
+
+            if (m_techset_info.m_techset_base_name == "2d")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_2D;
+            }
+            else if (m_techset_info.m_techset_base_name == "tools")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_TOOLS;
+            }
+            else if (m_techset_info.m_techset_base_name == "objective")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_OBJECTIVE;
+            }
+            else if (m_techset_info.m_techset_base_name == "sky")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_SKY;
+            }
+            else if (m_techset_info.m_techset_base_name == "water")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WATER;
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("ambient_", 0) == 0)
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_AMBIENT;
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("distortion_", 0) == 0)
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_DISTORTION;
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("particle_cloud", 0) == 0)
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_PARTICLE_CLOUD;
+            }
+            else if (m_techset_info.m_techset_base_name == "grain_overlay")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
+            }
+            else if (m_techset_info.m_techset_base_name == "effect_add_eyeoffset")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET;
+            }
+            else if (m_techset_info.m_techset_base_name == "reflexsight")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT;
+            }
+            else if (m_techset_info.m_techset_base_name == "shadowclear")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR;
+            }
+            else if (m_techset_info.m_techset_base_name == "shadowoverlay")
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY;
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("splatter", 0) == 0)
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_SPLATTER;
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("effect", 0) == 0)
+            {
+                ExamineEffectTechsetInfo();
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("l_", 0) == 0)
+            {
+                ExamineLitTechsetInfo();
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("unlit", 0) == 0)
+            {
+                ExamineUnlitTechsetInfo();
+            }
+            else if (MaterialCouldPossiblyUseCustomTemplate())
+            {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_string = m_techset_info.m_techset_base_name;
+            }
+            else
+            {
+                std::cout << "Could not determine material type for material \"" << m_material->info.name << "\"\n";
+            }
+        }
+
         void SetMaterialTypeValues()
         {
-            const auto techsetInfo = GetTechsetInfo();
-            SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(techsetInfo.m_gdt_material_type)]);
-            SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(techsetInfo.m_gdt_custom_material_type)]);
+            ExamineTechsetInfo();
+            SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_material_type)]);
+            SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_custom_material_type)]);
+            SetValue("customString", m_techset_info.m_gdt_custom_string);
         }
 
         void SetTextureTableValues()
