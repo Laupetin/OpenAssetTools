@@ -108,4 +108,199 @@ namespace IW4
         "slush"
     };
     static_assert(std::extent_v<decltype(surfaceTypeNames)> == SURF_TYPE_NUM);
+
+
+    enum class BlendFunc_e
+    {
+        UNKNOWN,
+        CUSTOM,
+        REPLACE,
+        BLEND,
+        ADD,
+        MULTIPLY,
+        SCREEN_ADD,
+
+        COUNT
+    };
+
+    inline const char* GdtBlendFuncNames[]
+    {
+        "",
+        "Custom",
+        "Replace*",
+        "Blend",
+        "Add",
+        "Multiply",
+        "Screen Add"
+    };
+    static_assert(std::extent_v<decltype(GdtBlendFuncNames)> == static_cast<size_t>(BlendFunc_e::COUNT));
+
+    enum class BlendOp_e
+    {
+        UNKNOWN,
+        DISABLE,
+        ADD,
+        SUBTRACT,
+        REV_SUBTRACT,
+        MIN,
+        MAX,
+
+        COUNT
+    };
+
+    inline const char* GdtBlendOpNames[]
+    {
+        "",
+        "Disable",
+        "Add*",
+        "Subtract",
+        "RevSubtract",
+        "Min",
+        "Max"
+    };
+    static_assert(std::extent_v<decltype(GdtBlendOpNames)> == static_cast<size_t>(BlendOp_e::COUNT));
+
+    enum class CustomBlendFunc_e
+    {
+        UNKNOWN,
+        DISABLED,
+        ZERO,
+        ONE,
+        SRC_COLOR,
+        INV_SRC_COLOR,
+        SRC_ALPHA,
+        INV_SRC_ALPHA,
+        DST_ALPHA,
+        INV_DST_ALPHA,
+        DEST_COLOR,
+        INV_DST_COLOR,
+
+        COUNT
+    };
+
+    inline const char* GdtCustomBlendFuncNames[]
+    {
+        "",
+        "Disable",
+        "Zero",
+        "One*",
+        "SrcColor",
+        "InvSrcColor",
+        "SrcAlpha",
+        "InvSrcAlpha",
+        "DestAlpha",
+        "InvDestAlpha",
+        "DestColor",
+        "InvDestColor"
+    };
+    static_assert(std::extent_v<decltype(GdtCustomBlendFuncNames)> == static_cast<size_t>(CustomBlendFunc_e::COUNT));
+
+    enum class AlphaTest_e
+    {
+        UNKNOWN,
+        ALWAYS,
+        GT0,
+        LT128,
+        GE128,
+
+        COUNT
+    };
+
+    inline const char* GdtAlphaTestNames[]
+    {
+        "",
+        "Always*",
+        "GT0",
+        "LT128",
+        "GE128"
+    };
+    static_assert(std::extent_v<decltype(GdtAlphaTestNames)> == static_cast<size_t>(AlphaTest_e::COUNT));
+
+    enum class DepthTest_e
+    {
+        UNKNOWN,
+        LESS_EQUAL,
+        LESS,
+        EQUAL,
+        ALWAYS,
+        DISABLE,
+
+        COUNT
+    };
+
+    inline const char* GdtDepthTestNames[]
+    {
+        "",
+        "LessEqual*",
+        "Less",
+        "Equal",
+        "Always",
+        "Disable"
+    };
+    static_assert(std::extent_v<decltype(GdtDepthTestNames)> == static_cast<size_t>(DepthTest_e::COUNT));
+
+    enum class StateBitsEnabledStatus_e
+    {
+        UNKNOWN,
+        ENABLED,
+        DISABLED,
+
+        COUNT
+    };
+
+    inline const char* GdtStateBitsEnabledStatusNames[]
+    {
+        "",
+        "Enable",
+        "Disable"
+    };
+    static_assert(std::extent_v<decltype(GdtStateBitsEnabledStatusNames)> == static_cast<size_t>(StateBitsEnabledStatus_e::COUNT));
+
+    inline const char* GdtStateBitsOnOffStatusNames[]
+    {
+        "",
+        "On",
+        "Off"
+    };
+    static_assert(std::extent_v<decltype(GdtStateBitsOnOffStatusNames)> == static_cast<size_t>(StateBitsEnabledStatus_e::COUNT));
+
+    enum class CullFace_e
+    {
+        UNKNOWN,
+        NONE,
+        BACK,
+        FRONT,
+
+        COUNT
+    };
+
+    inline const char* GdtCullFaceNames[]
+    {
+        "",
+        "None",
+        "Back*",
+        "Front"
+    };
+    static_assert(std::extent_v<decltype(GdtCullFaceNames)> == static_cast<size_t>(CullFace_e::COUNT));
+
+    enum class PolygonOffset_e
+    {
+        UNKNOWN,
+        OFFSET_0,
+        OFFSET_1,
+        OFFSET_2,
+        OFFSET_SHADOW_MAP,
+
+        COUNT
+    };
+
+    inline const char* GdtPolygonOffsetNames[]
+    {
+        "",
+        "0",
+        "1",
+        "2",
+        "shadowMap"
+    };
+    static_assert(std::extent_v<decltype(GdtPolygonOffsetNames)> == static_cast<size_t>(PolygonOffset_e::COUNT));
 }

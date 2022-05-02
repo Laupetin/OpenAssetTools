@@ -540,82 +540,6 @@ namespace IW4
         bool m_color_o_flag = false;
     };
 
-    enum class BlendFunc_e
-    {
-        UNKNOWN,
-        CUSTOM,
-        REPLACE,
-        BLEND,
-        ADD,
-        MULTIPLY,
-        SCREEN_ADD
-    };
-
-    enum class BlendOp_e
-    {
-        UNKNOWN,
-        ADD,
-        SUBTRACT,
-        REV_SUBTRACT,
-        MIN,
-        MAX,
-        DISABLE
-    };
-
-    enum class CustomBlendFunc_e
-    {
-        UNKNOWN,
-        ONE,
-        ZERO,
-        SRC_COLOR,
-        INV_SRC_COLOR,
-        SRC_ALPHA,
-        INV_SRC_ALPHA,
-        DST_ALPHA,
-        INV_DST_ALPHA,
-        DEST_COLOR,
-        INV_DST_COLOR
-    };
-
-    enum class AlphaTest_e
-    {
-        UNKNOWN,
-        ALWAYS,
-        GE128
-    };
-
-    enum class DepthTest_e
-    {
-        UNKNOWN,
-        LESS_EQUAL,
-        LESS,
-        EQUAL,
-        ALWAYS,
-        DISABLE
-    };
-
-    enum class StateBitsEnabledStatus_e
-    {
-        UNKNOWN,
-        ENABLED,
-        DISABLED
-    };
-
-    enum class CullFace_e
-    {
-        UNKNOWN,
-        FRONT,
-        BACK,
-        NONE
-    };
-
-    enum class PolygonOffset
-    {
-        UNKNOWN,
-        STATIC_DECAL,
-        WEAPON_IMPACT
-    };
-
     class StateBitsInfo
     {
     public:
@@ -630,7 +554,7 @@ namespace IW4
         DepthTest_e m_depth_test = DepthTest_e::UNKNOWN;
         StateBitsEnabledStatus_e m_depth_write = StateBitsEnabledStatus_e::UNKNOWN;
         CullFace_e m_cull_face = CullFace_e::UNKNOWN;
-        PolygonOffset m_polygon_offset = PolygonOffset::UNKNOWN;
+        PolygonOffset_e m_polygon_offset = PolygonOffset_e::UNKNOWN;
         StateBitsEnabledStatus_e m_color_write_rgb = StateBitsEnabledStatus_e::UNKNOWN;
         StateBitsEnabledStatus_e m_color_write_alpha = StateBitsEnabledStatus_e::UNKNOWN;
     };
@@ -645,6 +569,11 @@ namespace IW4
         const Material* m_material;
         GdtEntry m_entry;
 
+        void SetValue(const std::string& key, const char* value)
+        {
+            m_entry.m_properties.emplace(std::make_pair(key, value));
+        }
+
         void SetValue(const std::string& key, std::string value)
         {
             m_entry.m_properties.emplace(std::make_pair(key, std::move(value)));
@@ -655,6 +584,11 @@ namespace IW4
             std::ostringstream ss;
             ss << value[0] << " " << value[1] << " " << value[2] << " " << value[3];
             m_entry.m_properties.emplace(std::make_pair(key, ss.str()));
+        }
+
+        void SetValue(const std::string& key, const bool value)
+        {
+            m_entry.m_properties.emplace(std::make_pair(key, value ? "1" : "0"));
         }
 
         template <typename T,
@@ -959,12 +893,140 @@ namespace IW4
             }
         }
 
+        template <typename T>
+        T StateBitsToEnum(const unsigned input, const size_t mask, const size_t shift)
+        {
+            const unsigned value = (input & mask) >> shift;
+            return value >= (static_cast<unsigned>(T::COUNT) - 1) ? T::UNKNOWN : static_cast<T>(value + 1);
+        }
+
+        void ExamineStateBitsInfo()
+        {
+            if (!m_material->stateBitsTable || m_material->stateBitsCount == 0)
+                return;
+
+            // This assumes the statemap of these techniques is passthrough which it is most likely not
+            // This should still not produce any wrong values
+            GfxStateBits stateBits{};
+            if (m_material->stateBitsEntry[TECHNIQUE_LIT] < m_material->stateBitsCount)
+                stateBits = m_material->stateBitsTable[m_material->stateBitsEntry[TECHNIQUE_LIT]];
+            else if (m_material->stateBitsEntry[TECHNIQUE_EMISSIVE] < m_material->stateBitsCount)
+                stateBits = m_material->stateBitsTable[m_material->stateBitsEntry[TECHNIQUE_EMISSIVE]];
+            else if (m_material->stateBitsEntry[TECHNIQUE_UNLIT] < m_material->stateBitsCount)
+                stateBits = m_material->stateBitsTable[m_material->stateBitsEntry[TECHNIQUE_UNLIT]];
+            else if (m_material->stateBitsEntry[TECHNIQUE_DEPTH_PREPASS] < m_material->stateBitsCount)
+                stateBits = m_material->stateBitsTable[m_material->stateBitsEntry[TECHNIQUE_DEPTH_PREPASS]];
+            else
+            {
+                assert(false);
+                return;
+            }
+
+            if (m_state_bits_info.m_custom_blend_op_rgb == BlendOp_e::UNKNOWN)
+                m_state_bits_info.m_custom_blend_op_rgb = StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_RGB_MASK, GFXS0_BLENDOP_RGB_SHIFT);
+
+            if (m_state_bits_info.m_custom_blend_op_alpha == BlendOp_e::UNKNOWN)
+                m_state_bits_info.m_custom_blend_op_alpha = StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_ALPHA_MASK, GFXS0_BLENDOP_ALPHA_SHIFT);
+
+            if (m_state_bits_info.m_custom_src_blend_func == CustomBlendFunc_e::UNKNOWN)
+                m_state_bits_info.m_custom_src_blend_func = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_RGB_MASK, GFXS0_SRCBLEND_RGB_SHIFT);
+
+            if (m_state_bits_info.m_custom_dst_blend_func == CustomBlendFunc_e::UNKNOWN)
+                m_state_bits_info.m_custom_dst_blend_func = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_RGB_MASK, GFXS0_DSTBLEND_RGB_SHIFT);
+
+            if (m_state_bits_info.m_custom_src_blend_func_alpha == CustomBlendFunc_e::UNKNOWN)
+                m_state_bits_info.m_custom_src_blend_func_alpha = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_ALPHA_MASK, GFXS0_SRCBLEND_ALPHA_SHIFT);
+
+            if (m_state_bits_info.m_custom_dst_blend_func_alpha == CustomBlendFunc_e::UNKNOWN)
+                m_state_bits_info.m_custom_dst_blend_func_alpha = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_ALPHA_MASK, GFXS0_DSTBLEND_ALPHA_SHIFT);
+
+            if (m_state_bits_info.m_alpha_test == AlphaTest_e::UNKNOWN)
+            {
+                if (stateBits.loadBits[0] & GFXS0_ATEST_DISABLE)
+                    m_state_bits_info.m_alpha_test = AlphaTest_e::ALWAYS;
+                else if (stateBits.loadBits[0] & GFXS0_ATEST_GE_128)
+                    m_state_bits_info.m_alpha_test = AlphaTest_e::GE128;
+                else if (stateBits.loadBits[0] & GFXS0_ATEST_GT_0)
+                    m_state_bits_info.m_alpha_test = AlphaTest_e::GT0;
+                else if (stateBits.loadBits[0] & GFXS0_ATEST_LT_128)
+                    m_state_bits_info.m_alpha_test = AlphaTest_e::LT128;
+                else
+                    assert(false);
+            }
+
+            if (m_state_bits_info.m_depth_test == DepthTest_e::UNKNOWN)
+            {
+                if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_DISABLE)
+                    m_state_bits_info.m_depth_test = DepthTest_e::DISABLE;
+                else if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_LESSEQUAL)
+                    m_state_bits_info.m_depth_test = DepthTest_e::LESS_EQUAL;
+                else if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_LESS)
+                    m_state_bits_info.m_depth_test = DepthTest_e::LESS;
+                else if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_EQUAL)
+                    m_state_bits_info.m_depth_test = DepthTest_e::EQUAL;
+                else
+                    m_state_bits_info.m_depth_test = DepthTest_e::ALWAYS;
+            }
+
+            if (m_state_bits_info.m_depth_write == StateBitsEnabledStatus_e::UNKNOWN)
+                m_state_bits_info.m_depth_write = (stateBits.loadBits[1] & GFXS1_DEPTHWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+
+            if (m_state_bits_info.m_cull_face == CullFace_e::UNKNOWN)
+            {
+                if (stateBits.loadBits[0] & GFXS0_CULL_NONE)
+                    m_state_bits_info.m_cull_face = CullFace_e::NONE;
+                else if (stateBits.loadBits[0] & GFXS0_CULL_BACK)
+                    m_state_bits_info.m_cull_face = CullFace_e::BACK;
+                else if (stateBits.loadBits[0] & GFXS0_CULL_FRONT)
+                    m_state_bits_info.m_cull_face = CullFace_e::FRONT;
+                else
+                    assert(false);
+            }
+
+            if (m_state_bits_info.m_polygon_offset == PolygonOffset_e::UNKNOWN)
+                m_state_bits_info.m_polygon_offset = StateBitsToEnum<PolygonOffset_e>(stateBits.loadBits[1], GFXS1_POLYGON_OFFSET_MASK, GFXS1_POLYGON_OFFSET_SHIFT);
+
+            if (m_state_bits_info.m_color_write_rgb == StateBitsEnabledStatus_e::UNKNOWN)
+                m_state_bits_info.m_color_write_rgb = (stateBits.loadBits[0] & GFXS0_COLORWRITE_RGB) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+
+            if (m_state_bits_info.m_color_write_alpha == StateBitsEnabledStatus_e::UNKNOWN)
+                m_state_bits_info.m_color_write_alpha = (stateBits.loadBits[0] & GFXS0_COLORWRITE_ALPHA) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+        }
+
         void SetMaterialTypeValues()
         {
             ExamineTechsetInfo();
+            ExamineStateBitsInfo();
+
             SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_material_type)]);
             SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_custom_material_type)]);
             SetValue("customString", m_techset_info.m_gdt_custom_string);
+            SetValue("noCastShadow", m_techset_info.m_no_cast_shadow);
+            SetValue("noReceiveDynamicShadow", m_techset_info.m_no_receive_dynamic_shadow);
+            SetValue("noFog", m_techset_info.m_no_fog);
+            SetValue("texScroll", m_techset_info.m_tex_scroll);
+            SetValue("uvAnim", m_techset_info.m_uv_anim);
+
+            // TODO: These are not good names, change when known what they do
+            SetValue("specularP", m_techset_info.m_specular_p_flag);
+            SetValue("colorO", m_techset_info.m_color_o_flag);
+
+            SetValue("blendFunc", GdtBlendFuncNames[static_cast<size_t>(m_state_bits_info.m_blend_func)]);
+            SetValue("customBlendOpRgb", GdtBlendOpNames[static_cast<size_t>(m_state_bits_info.m_custom_blend_op_rgb)]);
+            SetValue("customBlendOpAlpha", GdtBlendOpNames[static_cast<size_t>(m_state_bits_info.m_custom_blend_op_alpha)]);
+            SetValue("srcCustomBlendFunc", GdtCustomBlendFuncNames[static_cast<size_t>(m_state_bits_info.m_custom_src_blend_func)]);
+            SetValue("destCustomBlendFunc", GdtCustomBlendFuncNames[static_cast<size_t>(m_state_bits_info.m_custom_dst_blend_func)]);
+            SetValue("srcCustomBlendFuncAlpha", GdtCustomBlendFuncNames[static_cast<size_t>(m_state_bits_info.m_custom_src_blend_func_alpha)]);
+            SetValue("destCustomBlendFuncAlpha", GdtCustomBlendFuncNames[static_cast<size_t>(m_state_bits_info.m_custom_dst_blend_func_alpha)]);
+            SetValue("alphaTest", GdtAlphaTestNames[static_cast<size_t>(m_state_bits_info.m_alpha_test)]);
+            SetValue("depthTest", GdtDepthTestNames[static_cast<size_t>(m_state_bits_info.m_depth_test)]);
+            SetValue("depthWrite", GdtStateBitsOnOffStatusNames[static_cast<size_t>(m_state_bits_info.m_depth_write)]);
+            SetValue("cullFace", GdtCullFaceNames[static_cast<size_t>(m_state_bits_info.m_cull_face)]);
+            SetValue("polygonOffset", GdtPolygonOffsetNames[static_cast<size_t>(m_state_bits_info.m_polygon_offset)]);
+            SetValue("colorWriteRed", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_rgb)]);
+            SetValue("colorWriteGreen", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_rgb)]);
+            SetValue("colorWriteBlue", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_rgb)]);
+            SetValue("colorWriteAlpha", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_alpha)]);
         }
 
         void SetTextureTableValues()
