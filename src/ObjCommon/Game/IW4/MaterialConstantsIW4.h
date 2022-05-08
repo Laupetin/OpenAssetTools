@@ -303,4 +303,62 @@ namespace IW4
         "shadowMap"
     };
     static_assert(std::extent_v<decltype(GdtPolygonOffsetNames)> == static_cast<size_t>(PolygonOffset_e::COUNT));
+
+    enum class StencilFunc_e
+    {
+        UNKNOWN,
+        NEVER,
+        LESS,
+        EQUAL,
+        LESS_EQUAL,
+        GREATER,
+        NOT_EQUAL,
+        GREATER_EQUAL,
+        ALWAYS,
+
+        COUNT
+    };
+
+    inline const char* GdtStencilFuncNames[]
+    {
+        "",
+        "Never",
+        "Less",
+        "Equal",
+        "LessEqual",
+        "Greater",
+        "NotEqual",
+        "GreaterEqual",
+        "Always"
+    };
+    static_assert(std::extent_v<decltype(GdtStencilFuncNames)> == static_cast<size_t>(StencilFunc_e::COUNT));
+
+    enum class StencilOp_e
+    {
+        UNKNOWN,
+        KEEP,
+        ZERO,
+        REPLACE,
+        INCR_SAT,
+        DECR_SAT,
+        INVERT,
+        INCR,
+        DECR,
+
+        COUNT
+    };
+
+    inline const char* GdtStencilOpNames[]
+    {
+        "",
+        "Keep",
+        "Zero",
+        "Replace",
+        "IncrSat",
+        "DecrSat",
+        "Invert",
+        "Incr",
+        "Decr"
+    };
+    static_assert(std::extent_v<decltype(GdtStencilOpNames)> == static_cast<size_t>(StencilOp_e::COUNT));
 }

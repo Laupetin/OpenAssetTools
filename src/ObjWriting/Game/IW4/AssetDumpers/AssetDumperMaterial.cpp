@@ -557,6 +557,15 @@ namespace IW4
         PolygonOffset_e m_polygon_offset = PolygonOffset_e::UNKNOWN;
         StateBitsEnabledStatus_e m_color_write_rgb = StateBitsEnabledStatus_e::UNKNOWN;
         StateBitsEnabledStatus_e m_color_write_alpha = StateBitsEnabledStatus_e::UNKNOWN;
+        StateBitsEnabledStatus_e m_gamma_write = StateBitsEnabledStatus_e::UNKNOWN;
+        StencilFunc_e m_stencil_front_func = StencilFunc_e::UNKNOWN;
+        StencilOp_e m_stencil_front_fail = StencilOp_e::UNKNOWN;
+        StencilOp_e m_stencil_front_zfail = StencilOp_e::UNKNOWN;
+        StencilOp_e m_stencil_front_pass = StencilOp_e::UNKNOWN;
+        StencilFunc_e m_stencil_back_func = StencilFunc_e::UNKNOWN;
+        StencilOp_e m_stencil_back_fail = StencilOp_e::UNKNOWN;
+        StencilOp_e m_stencil_back_zfail = StencilOp_e::UNKNOWN;
+        StencilOp_e m_stencil_back_pass = StencilOp_e::UNKNOWN;
     };
 
     class MaterialGdtDumper
@@ -893,6 +902,77 @@ namespace IW4
             }
         }
 
+        class BlendFuncParameters
+        {
+        public:
+            const BlendFunc_e m_blend_func;
+            const BlendOp_e m_blend_op_rgb;
+            const CustomBlendFunc_e m_src_blend_func;
+            const CustomBlendFunc_e m_dst_blend_func;
+            const BlendOp_e m_blend_op_alpha;
+            const CustomBlendFunc_e m_src_blend_func_alpha;
+            const CustomBlendFunc_e m_dst_blend_func_alpha;
+
+            BlendFuncParameters(const BlendFunc_e blendFunc, const BlendOp_e blend_Op_Rgb, const CustomBlendFunc_e src_Blend_Func, const CustomBlendFunc_e dst_Blend_Func,
+                                const BlendOp_e blend_Op_Alpha, const CustomBlendFunc_e src_Blend_Func_Alpha, const CustomBlendFunc_e dst_Blend_Func_Alpha)
+                : m_blend_func(blendFunc),
+                  m_blend_op_rgb(blend_Op_Rgb),
+                  m_src_blend_func(src_Blend_Func),
+                  m_dst_blend_func(dst_Blend_Func),
+                  m_blend_op_alpha(blend_Op_Alpha),
+                  m_src_blend_func_alpha(src_Blend_Func_Alpha),
+                  m_dst_blend_func_alpha(dst_Blend_Func_Alpha)
+            {
+            }
+        };
+
+        BlendFuncParameters knownBlendFuncs[5]
+        {
+            BlendFuncParameters(BlendFunc_e::ADD, BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN),
+            BlendFuncParameters(BlendFunc_e::BLEND, BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
+                                CustomBlendFunc_e::UNKNOWN),
+            BlendFuncParameters(BlendFunc_e::MULTIPLY, BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
+                                CustomBlendFunc_e::UNKNOWN),
+            BlendFuncParameters(BlendFunc_e::REPLACE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
+                                CustomBlendFunc_e::UNKNOWN),
+            BlendFuncParameters(BlendFunc_e::SCREEN_ADD, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
+                                CustomBlendFunc_e::UNKNOWN),
+        };
+
+        template <typename T>
+        bool KnownBlendFuncParameterMatches(const T materialValue, const T blendFuncValue)
+        {
+            if (blendFuncValue == T::UNKNOWN)
+                return true;
+            if (materialValue == T::UNKNOWN)
+                return false;
+
+            return static_cast<unsigned>(materialValue) == static_cast<unsigned>(blendFuncValue);
+        }
+
+        void ExamineBlendFunc()
+        {
+            if (m_state_bits_info.m_blend_func != BlendFunc_e::UNKNOWN)
+                return;
+
+            for (const auto& knownBlendFunc : knownBlendFuncs)
+            {
+                if (KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_blend_op_rgb, knownBlendFunc.m_blend_op_rgb)
+                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_src_blend_func, knownBlendFunc.m_src_blend_func)
+                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_dst_blend_func, knownBlendFunc.m_dst_blend_func)
+                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_blend_op_alpha, knownBlendFunc.m_blend_op_alpha)
+                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_src_blend_func_alpha, knownBlendFunc.m_src_blend_func_alpha)
+                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_dst_blend_func_alpha, knownBlendFunc.m_dst_blend_func_alpha)
+                )
+                {
+                    m_state_bits_info.m_blend_func = knownBlendFunc.m_blend_func;
+                    return;
+                }
+            }
+
+            m_state_bits_info.m_blend_func = BlendFunc_e::CUSTOM;
+        }
+
         template <typename T>
         T StateBitsToEnum(const unsigned input, const size_t mask, const size_t shift)
         {
@@ -991,6 +1071,35 @@ namespace IW4
 
             if (m_state_bits_info.m_color_write_alpha == StateBitsEnabledStatus_e::UNKNOWN)
                 m_state_bits_info.m_color_write_alpha = (stateBits.loadBits[0] & GFXS0_COLORWRITE_ALPHA) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+
+            if (m_state_bits_info.m_gamma_write == StateBitsEnabledStatus_e::UNKNOWN)
+                m_state_bits_info.m_gamma_write = (stateBits.loadBits[0] & GFXS0_GAMMAWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+
+            if (m_state_bits_info.m_stencil_front_func == StencilFunc_e::UNKNOWN)
+                m_state_bits_info.m_stencil_front_func = StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FUNC_MASK, GFXS1_STENCIL_FRONT_FUNC_SHIFT);
+
+            if (m_state_bits_info.m_stencil_front_pass == StencilOp_e::UNKNOWN)
+                m_state_bits_info.m_stencil_front_pass = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_PASS_MASK, GFXS1_STENCIL_FRONT_PASS_SHIFT);
+
+            if (m_state_bits_info.m_stencil_front_fail == StencilOp_e::UNKNOWN)
+                m_state_bits_info.m_stencil_front_fail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FAIL_MASK, GFXS1_STENCIL_FRONT_FAIL_SHIFT);
+
+            if (m_state_bits_info.m_stencil_front_zfail == StencilOp_e::UNKNOWN)
+                m_state_bits_info.m_stencil_front_zfail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_ZFAIL_MASK, GFXS1_STENCIL_FRONT_ZFAIL_SHIFT);
+
+            if (m_state_bits_info.m_stencil_back_func == StencilFunc_e::UNKNOWN)
+                m_state_bits_info.m_stencil_back_func = StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FUNC_MASK, GFXS1_STENCIL_BACK_FUNC_SHIFT);
+
+            if (m_state_bits_info.m_stencil_back_pass == StencilOp_e::UNKNOWN)
+                m_state_bits_info.m_stencil_back_pass = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_PASS_MASK, GFXS1_STENCIL_BACK_PASS_SHIFT);
+
+            if (m_state_bits_info.m_stencil_back_fail == StencilOp_e::UNKNOWN)
+                m_state_bits_info.m_stencil_back_fail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FAIL_MASK, GFXS1_STENCIL_BACK_FAIL_SHIFT);
+
+            if (m_state_bits_info.m_stencil_back_zfail == StencilOp_e::UNKNOWN)
+                m_state_bits_info.m_stencil_back_zfail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_ZFAIL_MASK, GFXS1_STENCIL_BACK_ZFAIL_SHIFT);
+
+            ExamineBlendFunc();
         }
 
         void SetMaterialTypeValues()
@@ -1027,6 +1136,15 @@ namespace IW4
             SetValue("colorWriteGreen", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_rgb)]);
             SetValue("colorWriteBlue", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_rgb)]);
             SetValue("colorWriteAlpha", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_alpha)]);
+            SetValue("gammaWrite", GdtStateBitsOnOffStatusNames[static_cast<size_t>(m_state_bits_info.m_gamma_write)]);
+            SetValue("stencilFunc1", GdtStencilFuncNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_func)]);
+            SetValue("stencilOpPass1", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_pass)]);
+            SetValue("stencilOpFail1", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_fail)]);
+            SetValue("stencilOpZFail1", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_zfail)]);
+            SetValue("stencilFunc2", GdtStencilFuncNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_func)]);
+            SetValue("stencilOpPass2", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_pass)]);
+            SetValue("stencilOpFail2", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_fail)]);
+            SetValue("stencilOpZFail2", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_zfail)]);
         }
 
         void SetTextureTableValues()
