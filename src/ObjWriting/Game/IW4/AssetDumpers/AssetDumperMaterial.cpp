@@ -533,11 +533,20 @@ namespace IW4
         bool m_has_normal_map = false;
         bool m_has_detail_normal_map = false;
         bool m_has_specular_map = false;
+        bool m_zfeather = false;
+        float m_zfeather_depth = 0.0f;
+        bool m_use_spot_light = false;
+        bool m_falloff = false;
+        bool m_dist_falloff = false;
+        bool m_outdoor_only = false;
+        float m_eye_offset_depth = 0.0f;
 
         // TODO: Find out what p0 in techset name actually means, seems like it only does stuff for techsets using a specular texture though
         // TODO: Find out what o0 in techset name actually means, seems like it gives the colormap a blue/whiteish tint and is almost exclusively used on snow-related materials
+        // TODO: Find out what _lin in techset name actually means
         bool m_specular_p_flag = false;
         bool m_color_o_flag = false;
+        bool m_effect_lin_flag = false;
     };
 
     class StateBitsInfo
@@ -687,8 +696,64 @@ namespace IW4
             return result;
         }
 
-        void ExamineEffectTechsetInfo()
+        void ExamineCommonUnlitTechsetInfo()
         {
+            const auto nameParts = GetTechsetNameParts(m_techset_info.m_techset_base_name);
+            bool inCustomName = false;
+            bool customNameStart = true;
+            std::ostringstream customNameStream;
+
+            for (const auto& namePart : nameParts)
+            {
+                if (inCustomName)
+                {
+                    if (customNameStart)
+                        customNameStart = false;
+                    else
+                        customNameStream << "_";
+                    customNameStream << namePart;
+                    continue;
+                }
+
+                // Anything after a custom part is part of its custom name
+                if (namePart == "custom")
+                {
+                    inCustomName = true;
+                    continue;
+                }
+
+                if (namePart == "falloff")
+                    m_techset_info.m_falloff = true;
+                else if (namePart == "distfalloff")
+                    m_techset_info.m_dist_falloff = true;
+                else if (namePart == "zfeather")
+                    m_techset_info.m_zfeather = true;
+                else if (namePart == "nofog")
+                    m_techset_info.m_no_fog = true;
+                else if (namePart == "nocast")
+                    m_techset_info.m_no_cast_shadow = true;
+                else if (namePart == "spot")
+                    m_techset_info.m_use_spot_light = true;
+                else if (namePart == "lin")
+                    m_techset_info.m_effect_lin_flag = true;
+                else if (namePart == "outdoor")
+                    m_techset_info.m_outdoor_only = true;
+                else if (namePart == "ua")
+                    m_techset_info.m_uv_anim = true;
+                else
+                {
+                    if (namePart != "add" && namePart != "replace" && namePart != "blend" && namePart != "eyeoffset" && namePart != "screen" && namePart != "effect" && namePart != "unlit"
+                        && namePart != "multiply")
+                    {
+                        std::cout << "Namepart: " << namePart << "\n";
+                    }
+                }
+            }
+
+            if (inCustomName)
+            {
+                m_techset_info.m_gdt_custom_string = customNameStream.str();
+            }
         }
 
         void ExamineLitTechsetInfo()
@@ -795,6 +860,17 @@ namespace IW4
 
         void ExamineUnlitTechsetInfo()
         {
+            if (!m_techset_info.m_techset_prefix.empty())
+            {
+                if (m_techset_info.m_techset_prefix[0] == 'm')
+                    m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_UNLIT;
+                else
+                    m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WORLD_UNLIT;
+            }
+            else
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNLIT;
+
+            ExamineCommonUnlitTechsetInfo();
         }
 
         void ExamineTechsetInfo()
@@ -880,7 +956,8 @@ namespace IW4
             }
             else if (m_techset_info.m_techset_base_name.rfind("effect", 0) == 0)
             {
-                ExamineEffectTechsetInfo();
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_EFFECT;
+                ExamineCommonUnlitTechsetInfo();
             }
             else if (m_techset_info.m_techset_base_name.rfind("l_", 0) == 0)
             {
@@ -888,6 +965,7 @@ namespace IW4
             }
             else if (m_techset_info.m_techset_base_name.rfind("unlit", 0) == 0)
             {
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNLIT;
                 ExamineUnlitTechsetInfo();
             }
             else if (MaterialCouldPossiblyUseCustomTemplate())
@@ -902,41 +980,32 @@ namespace IW4
             }
         }
 
-        class BlendFuncParameters
+        struct BlendFuncParameters
         {
-        public:
-            const BlendFunc_e m_blend_func;
-            const BlendOp_e m_blend_op_rgb;
-            const CustomBlendFunc_e m_src_blend_func;
-            const CustomBlendFunc_e m_dst_blend_func;
-            const BlendOp_e m_blend_op_alpha;
-            const CustomBlendFunc_e m_src_blend_func_alpha;
-            const CustomBlendFunc_e m_dst_blend_func_alpha;
-
-            BlendFuncParameters(const BlendFunc_e blendFunc, const BlendOp_e blend_Op_Rgb, const CustomBlendFunc_e src_Blend_Func, const CustomBlendFunc_e dst_Blend_Func,
-                                const BlendOp_e blend_Op_Alpha, const CustomBlendFunc_e src_Blend_Func_Alpha, const CustomBlendFunc_e dst_Blend_Func_Alpha)
-                : m_blend_func(blendFunc),
-                  m_blend_op_rgb(blend_Op_Rgb),
-                  m_src_blend_func(src_Blend_Func),
-                  m_dst_blend_func(dst_Blend_Func),
-                  m_blend_op_alpha(blend_Op_Alpha),
-                  m_src_blend_func_alpha(src_Blend_Func_Alpha),
-                  m_dst_blend_func_alpha(dst_Blend_Func_Alpha)
-            {
-            }
+            BlendFunc_e m_blend_func;
+            BlendOp_e m_blend_op_rgb;
+            CustomBlendFunc_e m_src_blend_func;
+            CustomBlendFunc_e m_dst_blend_func;
+            BlendOp_e m_blend_op_alpha;
+            CustomBlendFunc_e m_src_blend_func_alpha;
+            CustomBlendFunc_e m_dst_blend_func_alpha;
         };
 
-        BlendFuncParameters knownBlendFuncs[5]
+        static inline BlendFuncParameters knownBlendFuncs[]
         {
-            BlendFuncParameters(BlendFunc_e::ADD, BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN),
-            BlendFuncParameters(BlendFunc_e::BLEND, BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
-                                CustomBlendFunc_e::UNKNOWN),
-            BlendFuncParameters(BlendFunc_e::MULTIPLY, BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
-                                CustomBlendFunc_e::UNKNOWN),
-            BlendFuncParameters(BlendFunc_e::REPLACE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
-                                CustomBlendFunc_e::UNKNOWN),
-            BlendFuncParameters(BlendFunc_e::SCREEN_ADD, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN,
-                                CustomBlendFunc_e::UNKNOWN),
+            // Only considering passthrough statemap
+            {BlendFunc_e::ADD, BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::BLEND, BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::MULTIPLY, BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::REPLACE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::SCREEN_ADD, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
+
+            // Considering default statemap
+            {BlendFunc_e::ADD, BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
+            {BlendFunc_e::BLEND, BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
+            {BlendFunc_e::MULTIPLY, BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
+            // REPLACE matches passthrough statemap
+            {BlendFunc_e::SCREEN_ADD, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
         };
 
         template <typename T>
@@ -1115,10 +1184,19 @@ namespace IW4
             SetValue("noFog", m_techset_info.m_no_fog);
             SetValue("texScroll", m_techset_info.m_tex_scroll);
             SetValue("uvAnim", m_techset_info.m_uv_anim);
+            SetValue("zFeather", m_techset_info.m_zfeather);
+            SetValue("zFeatherDepth", m_techset_info.m_zfeather_depth);
+            SetValue("useSpotLight", m_techset_info.m_use_spot_light);
+            SetValue("falloff", m_techset_info.m_falloff);
+            SetValue("distFalloff", m_techset_info.m_dist_falloff);
+            SetValue("outdoorOnly", m_techset_info.m_outdoor_only);
+            SetValue("eyeOffsetDepth", m_techset_info.m_eye_offset_depth);
+
 
             // TODO: These are not good names, change when known what they do
             SetValue("specularP", m_techset_info.m_specular_p_flag);
             SetValue("colorO", m_techset_info.m_color_o_flag);
+            SetValue("effectLinFlag", m_techset_info.m_effect_lin_flag);
 
             SetValue("blendFunc", GdtBlendFuncNames[static_cast<size_t>(m_state_bits_info.m_blend_func)]);
             SetValue("customBlendOpRgb", GdtBlendOpNames[static_cast<size_t>(m_state_bits_info.m_custom_blend_op_rgb)]);
