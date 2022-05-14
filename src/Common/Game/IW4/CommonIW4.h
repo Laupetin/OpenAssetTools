@@ -21,6 +21,11 @@ namespace IW4
             return result;
         }
 
+        static constexpr uint32_t R_HashString(const char* string)
+        {
+            return R_HashString(string, 0u);
+        }
+
         static int StringTable_HashString(const char* str);
 
         static PackedTexCoords Vec2PackTexCoords(const vec2_t* in);

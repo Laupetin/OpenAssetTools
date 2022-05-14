@@ -10,6 +10,7 @@
 #include "Utils/ClassUtils.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+#include "Math/Vector.h"
 
 #define DUMP_AS_JSON 1
 #define DUMP_AS_GDT 1
@@ -534,12 +535,10 @@ namespace IW4
         bool m_has_detail_normal_map = false;
         bool m_has_specular_map = false;
         bool m_zfeather = false;
-        float m_zfeather_depth = 0.0f;
         bool m_use_spot_light = false;
         bool m_falloff = false;
         bool m_dist_falloff = false;
         bool m_outdoor_only = false;
-        float m_eye_offset_depth = 0.0f;
 
         // TODO: Find out what p0 in techset name actually means, seems like it only does stuff for techsets using a specular texture though
         // TODO: Find out what o0 in techset name actually means, seems like it gives the colormap a blue/whiteish tint and is almost exclusively used on snow-related materials
@@ -577,12 +576,43 @@ namespace IW4
         StencilOp_e m_stencil_back_pass = StencilOp_e::UNKNOWN;
     };
 
+    class ConstantsInfo
+    {
+    public:
+        Vector4f m_color_tint = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        float m_env_map_min = 0.2f;
+        float m_env_map_max = 1.0f;
+        float m_env_map_exponent = 2.5f;
+        float m_zfeather_depth = 40.0f;
+        float m_eye_offset_depth = 0.0f;
+        float m_falloff_begin_angle = 35.0f;
+        float m_falloff_end_angle = 65.0f;
+        float m_dist_falloff_begin_distance = 200.0f;
+        float m_dist_falloff_end_distance = 10.0f;
+        Vector4f m_falloff_begin_color = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        Vector4f m_falloff_end_color = Vector4f(0.5f, 0.5f, 0.5f, 0.5f);
+        Vector2f m_detail_scale = Vector2f(8.0f, 8.0f);
+        Vector2f m_distortion_scale = Vector2f(0.5f, 0.5f);
+        Vector4f m_color_obj_min = Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
+        Vector4f m_color_obj_max = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+        // Speed in which the wave animation is played
+        float m_flag_speed = 1.0f;
+        // Offset of the wave animation
+        float m_flag_phase = 0.0f;
+
+        float m_uv_scroll_x = 0.0f;
+        float m_uv_scroll_y = 0.0f;
+        float m_uv_rotate = 0.0f;
+    };
+
     class MaterialGdtDumper
     {
         std::ostream& m_stream;
 
         TechsetInfo m_techset_info;
         StateBitsInfo m_state_bits_info;
+        ConstantsInfo m_constants_info;
 
         const Material* m_material;
         GdtEntry m_entry;
@@ -597,10 +627,10 @@ namespace IW4
             m_entry.m_properties.emplace(std::make_pair(key, std::move(value)));
         }
 
-        void SetValue(const std::string& key, const float (&value)[4])
+        void SetValue(const std::string& key, const Vector4f& v)
         {
             std::ostringstream ss;
-            ss << value[0] << " " << value[1] << " " << value[2] << " " << value[3];
+            ss << v.x() << " " << v.y() << " " << v.z() << " " << v.w();
             m_entry.m_properties.emplace(std::make_pair(key, ss.str()));
         }
 
@@ -614,36 +644,6 @@ namespace IW4
         void SetValue(const std::string& key, T value)
         {
             m_entry.m_properties.emplace(std::make_pair(key, std::to_string(value)));
-        }
-
-        _NODISCARD int FindConstant(const std::string& constantName) const
-        {
-            const auto constantHash = Common::R_HashString(constantName.c_str(), 0u);
-
-            if (m_material->constantTable)
-            {
-                for (auto i = 0; i < m_material->constantCount; i++)
-                {
-                    if (m_material->constantTable[i].nameHash == constantHash)
-                        return i;
-                }
-            }
-
-            return -1;
-        }
-
-        void SetConstantValues(const Material* material)
-        {
-            const auto colorTintIndex = FindConstant("colorTint");
-            if (colorTintIndex >= 0)
-                SetValue("colorTint", material->constantTable[colorTintIndex].literal);
-
-            const auto envMapParmsIndex = FindConstant("envMapParms");
-            if (envMapParmsIndex >= 0)
-            {
-                const auto& constant = material->constantTable[colorTintIndex];
-                SetValue("envMapMin", constant.literal[0]);
-            }
         }
 
         void SetCommonValues()
@@ -743,9 +743,9 @@ namespace IW4
                 else
                 {
                     if (namePart != "add" && namePart != "replace" && namePart != "blend" && namePart != "eyeoffset" && namePart != "screen" && namePart != "effect" && namePart != "unlit"
-                        && namePart != "multiply")
+                        && namePart != "multiply" && namePart != "sm")
                     {
-                        std::cout << "Namepart: " << namePart << "\n";
+                        assert(false);
                     }
                 }
             }
@@ -758,6 +758,11 @@ namespace IW4
 
         void ExamineLitTechsetInfo()
         {
+            if (!m_techset_info.m_techset_prefix.empty() && m_techset_info.m_techset_prefix[0] == 'm')
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_PHONG;
+            else
+                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WORLD_PHONG;
+
             const auto nameParts = GetTechsetNameParts(m_techset_info.m_techset_base_name);
             bool inCustomName = false;
             bool customNameStart = true;
@@ -1171,10 +1176,141 @@ namespace IW4
             ExamineBlendFunc();
         }
 
+        _NODISCARD int FindConstant(const std::string& constantName) const
+        {
+            const auto constantHash = Common::R_HashString(constantName.c_str(), 0u);
+
+            if (m_material->constantTable)
+            {
+                for (auto i = 0; i < m_material->constantCount; i++)
+                {
+                    if (m_material->constantTable[i].nameHash == constantHash)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        _NODISCARD int FindTexture(const std::string& textureTypeName) const
+        {
+            const auto textureTypeHash = Common::R_HashString(textureTypeName.c_str(), 0u);
+
+            if (m_material->textureTable)
+            {
+                for (auto i = 0; i < m_material->textureCount; i++)
+                {
+                    if (m_material->textureTable[i].nameHash == textureTypeHash)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        void ExamineConstants()
+        {
+            if (!m_material->constantTable)
+                return;
+
+            for (auto i = 0u; i < m_material->constantCount; i++)
+            {
+                const auto& constant = m_material->constantTable[i];
+
+                if (constant.nameHash == Common::R_HashString("colorTint"))
+                {
+                    m_constants_info.m_color_tint = Vector4f(constant.literal);
+                }
+                else if (constant.nameHash == Common::R_HashString("envMapParms"))
+                {
+                    // TODO: Wrong, fix
+                    m_constants_info.m_env_map_min = constant.literal[0];
+                }
+                else if (constant.nameHash == Common::R_HashString("featherParms"))
+                {
+                    m_constants_info.m_zfeather_depth = constant.literal[1];
+                }
+                else if (constant.nameHash == Common::R_HashString("falloffBeginColor"))
+                {
+                    m_constants_info.m_falloff_begin_color = Vector4f(constant.literal);
+                }
+                else if (constant.nameHash == Common::R_HashString("falloffEndColor"))
+                {
+                    m_constants_info.m_falloff_end_color = Vector4f(constant.literal);
+                }
+                else if (constant.nameHash == Common::R_HashString("eyeOffsetParms"))
+                {
+                    m_constants_info.m_eye_offset_depth = constant.literal[0];
+                }
+                else if (constant.nameHash == Common::R_HashString("detailScale"))
+                {
+                    const auto materialType = m_techset_info.m_gdt_material_type;
+                    const auto colorMapIndex = FindTexture("colorMap");
+                    const auto detailMapIndex = FindTexture("detailMap");
+                    const auto hasColorMap = colorMapIndex >= 0 && m_material->textureTable[colorMapIndex].semantic != TS_WATER_MAP && m_material->textureTable[colorMapIndex].u.image;
+                    const auto hasDetailMap = detailMapIndex >= 0 && m_material->textureTable[detailMapIndex].semantic != TS_WATER_MAP && m_material->textureTable[detailMapIndex].u.image;
+
+                    if ((materialType == GdtMaterialType::MATERIAL_TYPE_MODEL_PHONG || materialType == GdtMaterialType::MATERIAL_TYPE_WORLD_PHONG)
+                        && hasColorMap && hasDetailMap)
+                    {
+                        const auto colorMapTexture = m_material->textureTable[colorMapIndex].u.image;
+                        const auto detailMapTexture = m_material->textureTable[detailMapIndex].u.image;
+
+                        if(colorMapTexture->width != 0 && colorMapTexture->height != 0
+                            && detailMapTexture->width != 0 && detailMapTexture->height != 0)
+                        {
+                            const auto detailScaleFactorX = static_cast<float>(colorMapTexture->width) / static_cast<float>(detailMapTexture->width);
+                            const auto detailScaleFactorY = static_cast<float>(colorMapTexture->height) / static_cast<float>(detailMapTexture->height);
+                            m_constants_info.m_detail_scale = Vector2f(constant.literal[0] / detailScaleFactorX, constant.literal[1] / detailScaleFactorY);
+                        }
+                        else
+                            m_constants_info.m_detail_scale = Vector2f(constant.literal[0], constant.literal[1]);
+                    }
+                    else
+                    {
+                        m_constants_info.m_detail_scale = Vector2f(constant.literal[0], constant.literal[1]);
+                    }
+                }
+                else if (constant.nameHash == Common::R_HashString("flagParms"))
+                {
+                    m_constants_info.m_flag_speed = constant.literal[0];
+                    m_constants_info.m_flag_phase = constant.literal[1];
+                }
+                else if (constant.nameHash == Common::R_HashString("falloffParms"))
+                {
+                    __asm nop;
+                }
+                else if (constant.nameHash == Common::R_HashString("distortionScale"))
+                {
+                    m_constants_info.m_distortion_scale = Vector2f(constant.literal[0], constant.literal[1]);
+                }
+                else if (constant.nameHash == Common::R_HashString("uvAnimParms"))
+                {
+                    m_constants_info.m_uv_scroll_x = constant.literal[0];
+                    m_constants_info.m_uv_scroll_y = constant.literal[1];
+                    m_constants_info.m_uv_rotate = constant.literal[2];
+                }
+                else if (constant.nameHash == Common::R_HashString("colorObjMin"))
+                {
+                    m_constants_info.m_color_obj_min = Vector4f(constant.literal);
+                }
+                else if (constant.nameHash == Common::R_HashString("colorObjMax"))
+                {
+                    m_constants_info.m_color_obj_max = Vector4f(constant.literal);
+                }
+                else
+                {
+                    std::string constantNamePart(constant.name, strnlen(constant.name, std::extent_v<decltype(constant.name)>));
+                    std::cout << "Unknown constant: " << constantNamePart << "\n";
+                }
+            }
+        }
+
         void SetMaterialTypeValues()
         {
             ExamineTechsetInfo();
             ExamineStateBitsInfo();
+            ExamineConstants();
 
             SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_material_type)]);
             SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_custom_material_type)]);
@@ -1185,12 +1321,12 @@ namespace IW4
             SetValue("texScroll", m_techset_info.m_tex_scroll);
             SetValue("uvAnim", m_techset_info.m_uv_anim);
             SetValue("zFeather", m_techset_info.m_zfeather);
-            SetValue("zFeatherDepth", m_techset_info.m_zfeather_depth);
+            SetValue("zFeatherDepth", m_constants_info.m_zfeather_depth);
             SetValue("useSpotLight", m_techset_info.m_use_spot_light);
             SetValue("falloff", m_techset_info.m_falloff);
             SetValue("distFalloff", m_techset_info.m_dist_falloff);
             SetValue("outdoorOnly", m_techset_info.m_outdoor_only);
-            SetValue("eyeOffsetDepth", m_techset_info.m_eye_offset_depth);
+            SetValue("eyeOffsetDepth", m_constants_info.m_eye_offset_depth);
 
 
             // TODO: These are not good names, change when known what they do
@@ -1223,6 +1359,23 @@ namespace IW4
             SetValue("stencilOpPass2", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_pass)]);
             SetValue("stencilOpFail2", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_fail)]);
             SetValue("stencilOpZFail2", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_back_zfail)]);
+
+            SetValue("colorTint", m_constants_info.m_color_tint);
+            SetValue("envMapMin", m_constants_info.m_env_map_min);
+            SetValue("envMapMax", m_constants_info.m_env_map_max);
+            SetValue("envMapExponent", m_constants_info.m_env_map_exponent);
+            SetValue("zFeatherDepth", m_constants_info.m_zfeather_depth);
+            SetValue("eyeOffsetDepth", m_constants_info.m_eye_offset_depth);
+            SetValue("falloffBeginColor", m_constants_info.m_falloff_begin_color);
+            SetValue("falloffEndColor", m_constants_info.m_falloff_end_color);
+            SetValue("detailScaleX", m_constants_info.m_detail_scale.x());
+            SetValue("detailScaleY", m_constants_info.m_detail_scale.y());
+            SetValue("distortionScaleX", m_constants_info.m_distortion_scale.x());
+            SetValue("distortionScaleY", m_constants_info.m_distortion_scale.y());
+            SetValue("colorObjMin", m_constants_info.m_color_obj_min);
+            SetValue("colorObjMax", m_constants_info.m_color_obj_max);
+            SetValue("flagSpeed", m_constants_info.m_flag_speed);
+            SetValue("flagPhase", m_constants_info.m_flag_phase);
         }
 
         void SetTextureTableValues()
