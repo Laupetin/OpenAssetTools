@@ -1223,8 +1223,10 @@ namespace IW4
                 }
                 else if (constant.nameHash == Common::R_HashString("envMapParms"))
                 {
-                    // TODO: Wrong, fix
-                    m_constants_info.m_env_map_min = constant.literal[0];
+                    // TODO: Calculate actual values
+                    m_constants_info.m_env_map_min = 0;
+                    m_constants_info.m_env_map_max = 0;
+                    m_constants_info.m_env_map_exponent = 0;
                 }
                 else if (constant.nameHash == Common::R_HashString("featherParms"))
                 {
@@ -1278,7 +1280,11 @@ namespace IW4
                 }
                 else if (constant.nameHash == Common::R_HashString("falloffParms"))
                 {
-                    __asm nop;
+                    // TODO: Calculate actual values
+                    m_constants_info.m_falloff_begin_angle = 0.0f;
+                    m_constants_info.m_falloff_end_angle = 0.0f;
+                    m_constants_info.m_dist_falloff_begin_distance = 0.0f;
+                    m_constants_info.m_dist_falloff_end_distance = 0.0f;
                 }
                 else if (constant.nameHash == Common::R_HashString("distortionScale"))
                 {
