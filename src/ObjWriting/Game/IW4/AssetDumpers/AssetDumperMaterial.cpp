@@ -595,6 +595,7 @@ namespace IW4
         Vector2f m_distortion_scale = Vector2f(0.5f, 0.5f);
         Vector4f m_color_obj_min = Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
         Vector4f m_color_obj_max = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        Vector4f m_water_color = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         // Speed in which the wave animation is played
         float m_flag_speed = 1.0f;
@@ -1304,6 +1305,10 @@ namespace IW4
                 {
                     m_constants_info.m_color_obj_max = Vector4f(constant.literal);
                 }
+                else if (constant.nameHash == Common::R_HashString("waterColor"))
+                {
+                    m_constants_info.m_water_color = Vector4f(constant.literal);
+                }
                 else
                 {
                     std::string constantNamePart(constant.name, strnlen(constant.name, std::extent_v<decltype(constant.name)>));
@@ -1380,6 +1385,7 @@ namespace IW4
             SetValue("distortionScaleY", m_constants_info.m_distortion_scale.y());
             SetValue("colorObjMin", m_constants_info.m_color_obj_min);
             SetValue("colorObjMax", m_constants_info.m_color_obj_max);
+            SetValue("waterColor", m_constants_info.m_water_color);
             SetValue("flagSpeed", m_constants_info.m_flag_speed);
             SetValue("flagPhase", m_constants_info.m_flag_phase);
         }
