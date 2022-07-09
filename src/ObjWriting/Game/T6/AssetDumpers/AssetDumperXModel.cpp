@@ -349,6 +349,9 @@ void AssetDumperXModel::AddXModelVertices(AbstractXModelWriter& writer, const XM
     const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
     const auto surfCount = model->lodInfo[lod].numsurfs;
 
+    if (!surfs)
+        return;
+
     for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
     {
         const auto& surface = surfs[surfIndex];
@@ -388,6 +391,9 @@ void AssetDumperXModel::AllocateXModelBoneWeights(const XModel* model, const uns
     const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
     const auto surfCount = model->lodInfo[lod].numsurfs;
 
+    if (!surfs)
+        return;
+
     weightCollection.totalWeightCount = 0u;
     for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
     {
@@ -414,6 +420,9 @@ void AssetDumperXModel::AddXModelVertexBoneWeights(AbstractXModelWriter& writer,
 {
     const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
     const auto surfCount = model->lodInfo[lod].numsurfs;
+
+    if (!surfs)
+        return;
 
     size_t weightOffset = 0u;
 
@@ -580,6 +589,9 @@ void AssetDumperXModel::AddXModelFaces(AbstractXModelWriter& writer, const Disti
     const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
     const auto surfCount = model->lodInfo[lod].numsurfs;
     const auto baseSurfIndex = model->lodInfo[lod].surfIndex;
+
+    if (!surfs)
+        return;
 
     for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
     {
