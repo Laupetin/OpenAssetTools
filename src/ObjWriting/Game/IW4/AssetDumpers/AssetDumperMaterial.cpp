@@ -12,8 +12,8 @@
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Math/Vector.h"
 
-#define DUMP_AS_JSON 1
-#define DUMP_AS_GDT 1
+//#define DUMP_AS_JSON 1
+//#define DUMP_AS_GDT 1
 //#define FLAGS_DEBUG 1
 
 using namespace IW4;
@@ -609,8 +609,6 @@ namespace IW4
 
     class MaterialGdtDumper
     {
-        std::ostream& m_stream;
-
         TechsetInfo m_techset_info;
         StateBitsInfo m_state_bits_info;
         ConstantsInfo m_constants_info;
@@ -1259,7 +1257,7 @@ namespace IW4
                         const auto colorMapTexture = m_material->textureTable[colorMapIndex].u.image;
                         const auto detailMapTexture = m_material->textureTable[detailMapIndex].u.image;
 
-                        if(colorMapTexture->width != 0 && colorMapTexture->height != 0
+                        if (colorMapTexture->width != 0 && colorMapTexture->height != 0
                             && detailMapTexture->width != 0 && detailMapTexture->height != 0)
                         {
                             const auto detailScaleFactorX = static_cast<float>(colorMapTexture->width) / static_cast<float>(detailMapTexture->width);
@@ -1425,27 +1423,22 @@ namespace IW4
         }
 
     public:
-        explicit MaterialGdtDumper(std::ostream& stream, const Material* material)
-            : m_stream(stream),
-              m_material(material)
+        explicit MaterialGdtDumper(const Material* material)
+            : m_material(material)
         {
-            m_entry.m_gdf_name = "material.gdf";
-            m_entry.m_name = m_material->info.name;
         }
 
-        void CreateGdtEntry()
+        GdtEntry& CreateGdtEntry()
         {
+            m_entry = GdtEntry();
+            m_entry.m_gdf_name = "material.gdf";
+            m_entry.m_name = m_material->info.name;
+
             SetCommonValues();
             SetMaterialTypeValues();
             SetTextureTableValues();
-        }
 
-        void Dump()
-        {
-            Gdt gdt(GdtVersion("IW4", 1));
-            gdt.m_entries.emplace_back(std::make_unique<GdtEntry>(std::move(m_entry)));
-
-            GdtOutputStream::WriteGdt(gdt, m_stream);
+            return m_entry;
         }
     };
 }
@@ -1479,9 +1472,18 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         if (!assetFile)
             return;
         auto& stream = *assetFile;
-        MaterialGdtDumper dumper(stream, material);
-        dumper.CreateGdtEntry();
-        dumper.Dump();
+        MaterialGdtDumper dumper(material);
+        Gdt gdt(GdtVersion("IW4", 1));
+        gdt.m_entries.emplace_back(std::make_unique<GdtEntry>(std::move(dumper.CreateGdtEntry())));
+        GdtOutputStream::WriteGdt(gdt, stream);
+    }
+#endif
+
+#if !defined(DUMP_AS_JSON) && !defined(DUMP_AS_GDT)
+    if (context.m_gdt)
+    {
+        MaterialGdtDumper dumper(material);
+        context.m_gdt->WriteEntry(dumper.CreateGdtEntry());
     }
 #endif
 }
