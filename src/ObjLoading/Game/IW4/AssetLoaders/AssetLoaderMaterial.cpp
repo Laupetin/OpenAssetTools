@@ -287,12 +287,22 @@ namespace IW4
             m_dependencies.push_back(image);
             textureDef.u.image = image->Asset();
 
-            m_texture.push_back(textureDef);
+            m_textures.push_back(textureDef);
         }
 
-        void FinalizeMaterial()
+        void FinalizeMaterial() const
         {
-            // TODO Realloc all arrays and assign to material
+            if (!m_textures.empty())
+            {
+                m_material->textureTable = static_cast<MaterialTextureDef*>(m_memory->Alloc(sizeof(MaterialTextureDef) * m_textures.size()));
+                m_material->textureCount = m_textures.size();
+                memcpy(m_material->textureTable, m_textures.data(), sizeof(MaterialTextureDef) * m_textures.size());
+            }
+            else
+            {
+                m_material->textureTable = nullptr;
+                m_material->textureCount = 0u;
+            }
         }
 
         MemoryManager* m_memory;
@@ -300,7 +310,7 @@ namespace IW4
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
         Material* m_material;
-        std::vector<MaterialTextureDef> m_texture;
+        std::vector<MaterialTextureDef> m_textures;
     };
 }
 
