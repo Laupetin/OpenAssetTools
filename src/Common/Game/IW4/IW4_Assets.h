@@ -960,9 +960,9 @@ namespace IW4
     struct GfxImage
     {
         GfxTexture texture;
-        char mapType;
-        char semantic;
-        char category;
+        unsigned char mapType;
+        unsigned char semantic;
+        unsigned char category;
         bool useSrgbReads;
         Picmip picmip;
         bool noPicmip;

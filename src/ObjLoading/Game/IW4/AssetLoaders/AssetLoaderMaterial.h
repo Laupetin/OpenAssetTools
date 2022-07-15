@@ -10,5 +10,7 @@ namespace IW4
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
+        _NODISCARD bool CanLoadFromGdt() const override;
+        bool LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
     };
 }

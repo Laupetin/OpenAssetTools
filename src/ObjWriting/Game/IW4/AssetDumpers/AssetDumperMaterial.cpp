@@ -9,6 +9,7 @@
 
 #include "Utils/ClassUtils.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
+#include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Math/Vector.h"
 
@@ -1431,7 +1432,7 @@ namespace IW4
         GdtEntry& CreateGdtEntry()
         {
             m_entry = GdtEntry();
-            m_entry.m_gdf_name = "material.gdf";
+            m_entry.m_gdf_name = ObjConstants::GDF_FILENAME_MATERIAL;
             m_entry.m_name = m_material->info.name;
 
             SetCommonValues();
