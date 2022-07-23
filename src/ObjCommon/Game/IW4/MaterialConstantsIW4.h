@@ -361,4 +361,63 @@ namespace IW4
         "Decr"
     };
     static_assert(std::extent_v<decltype(GdtStencilOpNames)> == static_cast<size_t>(StencilOp_e::COUNT));
+
+    inline const char* SortKeyNames[]
+    {
+        "opaque ambient", // 0
+        "opaque", // 1
+        "sky", // 2
+        "skybox", // 3
+        "?", // 4
+        "?", // 5
+        "decal - bottom 1", // 6
+        "decal - bottom 2", // 7
+        "decal - bottom 3", // 8
+        "decal - static decal", // 9
+        "decal - middle 1", // 10
+        "decal - middle 2", // 11
+        "decal - middle 3", // 12
+        "decal - weapon impact", // 13
+        "?", // 14
+        "?", // 15
+        "?", // 16
+        "?", // 17
+        "?", // 18
+        "?", // 19
+        "?", // 20
+        "?", // 21
+        "-", // 22
+        "-", // 23
+        "window inside", // 24
+        "window outside", // 25
+        "?", // 26
+        "?", // 27
+        "?", // 28
+        "?", // 29
+        "?", // 30
+        "?", // 31
+        "?", // 32
+        "?", // 33
+        "?", // 34
+        "?", // 35
+        "?", // 36
+        "?", // 37
+        "?", // 38
+        "?", // 39
+        "?", // 40
+        "?", // 41
+        "?", // 42
+        "distortion", // 43
+        "?", // 44
+        "?", // 45
+        "-", // 46
+        "blend / additive", // 47
+        "effect - auto sort", // 48
+        "after effects - bottom", // 49
+        "after effects - middle", // 50
+        "after effects - top", // 51
+        "-", // 52
+        "viewmodel effect", // 53
+    };
+    static_assert(std::extent_v<decltype(SortKeyNames)> == static_cast<size_t>(SORTKEY_MAX));
 }

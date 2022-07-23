@@ -8,6 +8,7 @@
 #include "AssetLoading/AbstractGdtEntryReader.h"
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Pool/GlobalAssetPool.h"
 
@@ -280,82 +281,39 @@ namespace IW4
             if (sort.empty() || sort == "<default>")
             {
                 if (materialType == "distortion")
-                    sortKey = "distortion";
+                    sortKey = SortKeyNames[SORTKEY_DISTORTION];
                 else if (polygonOffset == "Static Decal")
-                    sortKey = "decal - static decal";
+                    sortKey = SortKeyNames[SORTKEY_DECAL_STATIC_DECAL];
                 else if (polygonOffset == "Weapon Impact")
-                    sortKey = "decal - weapon impact";
+                    sortKey = SortKeyNames[SORTKEY_DECAL_WEAPON_IMPACT];
                 else if (materialType == "effect")
-                    sortKey = "effect - auto sort";
+                    sortKey = SortKeyNames[SORTKEY_EFFECT_AUTO_SORT];
                 else if (materialType == "objective" || blendFunc == "Blend" || blendFunc == "Add" || blendFunc == "Screen Add")
-                    sortKey = "blend / additive";
-                else if (blendFunc == "Multiply")
-                    sortKey = "multiplicative";
+                    sortKey = SortKeyNames[SORTKEY_BLEND_ADDITIVE];
+                // else if (blendFunc == "Multiply")
+                //     sortKey = SortKeyNames[SORTKEY_MULTIPLICATIVE];
                 else if (materialType == "sky")
-                    sortKey = "sky";
+                    sortKey = SortKeyNames[SORTKEY_SKY];
                 else if (materialType == "model ambient")
-                    sortKey = "opaque ambient";
+                    sortKey = SortKeyNames[SORTKEY_OPAQUE_AMBIENT];
                 else
-                    sortKey = "opaque";
+                    sortKey = SortKeyNames[SORTKEY_OPAQUE];
             }
             else
                 sortKey = sort;
 
-            // if (sortKey == "opaque water")
-            //     SetSort(?);
-            // else if (sortKey == "boat hull")
-            //     SetSort(?);
-            if (sortKey == "opaque ambient")
-                SetSort(SORTKEY_OPAQUE_AMBIENT);
-            else if (sortKey == "opaque")
-                SetSort(SORTKEY_OPAQUE);
-            else if (sortKey == "sky")
-                SetSort(SORTKEY_SKY);
-            else if (sortKey == "skybox")
-                SetSort(SORTKEY_SKYBOX);
-            else if (sortKey == "decal - bottom 1")
-                SetSort(SORTKEY_DECAL_BOTTOM_1);
-            else if (sortKey == "decal - bottom 2")
-                SetSort(SORTKEY_DECAL_BOTTOM_2);
-            else if (sortKey == "decal - bottom 3")
-                SetSort(SORTKEY_DECAL_BOTTOM_3);
-            else if (sortKey == "decal - static decal")
-                SetSort(SORTKEY_DECAL_STATIC_DECAL);
-            else if (sortKey == "decal - middle 1")
-                SetSort(SORTKEY_DECAL_MIDDLE_1);
-            else if (sortKey == "decal - middle 2")
-                SetSort(SORTKEY_DECAL_MIDDLE_2);
-            else if (sortKey == "decal - middle 3")
-                SetSort(SORTKEY_DECAL_MIDDLE_3);
-            else if (sortKey == "decal - weapon impact")
-                SetSort(SORTKEY_DECAL_WEAPON_IMPACT);
-                // else if (sortKey == "decal - top 1")
-                //     SetSort(SORTKEY_DECAL_TOP_1);
-                // else if (sortKey == "decal - top 2")
-                //     SetSort(SORTKEY_DECAL_TOP_2);
-                // else if (sortKey == "decal - top 3")
-                //     SetSort(SORTKEY_DECAL_TOP_3);
-                // else if (sortKey == "multiplicative")
-                //     SetSort(SORTKEY_MULTIPLICATIVE);
-            else if (sortKey == "window inside")
-                SetSort(SORTKEY_WINDOW_INSIDE);
-            else if (sortKey == "window outside")
-                SetSort(SORTKEY_WINDOW_OUTSIDE);
-            else if (sortKey == "distortion")
-                SetSort(SORTKEY_DISTORTION);
-            else if (sortKey == "blend / additive")
-                SetSort(SORTKEY_BLEND_ADDITIVE);
-            else if (sortKey == "effect - auto sort")
-                SetSort(SORTKEY_EFFECT_AUTO_SORT);
-            else if (sortKey == "after effects - bottom")
-                SetSort(SORTKEY_AFTER_EFFECTS_BOTTOM);
-            else if (sortKey == "after effects - middle")
-                SetSort(SORTKEY_AFTER_EFFECTS_MIDDLE);
-            else if (sortKey == "after effects - top")
-                SetSort(SORTKEY_AFTER_EFFECTS_TOP);
-            else if (sortKey == "viewmodel effect")
-                SetSort(SORTKEY_VIEWMODEL_EFFECT);
-            else
+            bool foundSortKey = false;
+            for (auto sortKeyIndex = 0u; sortKeyIndex < SORTKEY_MAX; sortKeyIndex++)
+            {
+                if (sortKey == SortKeyNames[sortKeyIndex])
+                {
+                    SetSort(static_cast<unsigned char>(sortKeyIndex));
+                    foundSortKey = true;
+                    break;
+                }
+            }
+
+            if (!foundSortKey)
             {
                 char* endPtr;
                 const auto sortKeyNum = strtoul(sortKey.c_str(), &endPtr, 10);
@@ -422,7 +380,7 @@ namespace IW4
             m_textures.push_back(textureDef);
         }
 
-        void SetSort(const unsigned char sort)
+        void SetSort(const unsigned char sort) const
         {
             m_material->info.sortKey = sort;
         }

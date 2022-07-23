@@ -880,6 +880,8 @@ namespace IW4
         // water related = 19, // maybe underwater
         // water related = 20, // maybe transparent water
         // ? = 21,
+        // - = 22,
+        // - = 23,
         SORTKEY_WINDOW_INSIDE = 24, // prob window inside
         SORTKEY_WINDOW_OUTSIDE = 25, // prob window outside
         // ? = 26, // includes motiontracker3d, impact fx, atmos
@@ -888,18 +890,30 @@ namespace IW4
         // ? = 29,
         // ? = 30,
         // ? = 31,
+        // - = 32,
         // ? = 33,
         // some ui/2d/fullscreen sort = 34,
+        // - = 35,
+        // - = 36,
+        // - = 37,
+        // - = 38,
+        // - = 39,
+        // - = 40,
         // framecolordebug = 41, // multiplicative?
+        // - = 42,
         SORTKEY_DISTORTION = 43,
         // ? = 44,
         // ? = 45,
+        // - = 46,
         SORTKEY_BLEND_ADDITIVE = 47, // most likely blend / additive
         SORTKEY_EFFECT_AUTO_SORT = 48, // most likely effect - auto sort
         SORTKEY_AFTER_EFFECTS_BOTTOM = 49,
         SORTKEY_AFTER_EFFECTS_MIDDLE = 50, // prob after effects - middle
         SORTKEY_AFTER_EFFECTS_TOP = 51, // prob after effects - top
+        // - = 52,
         SORTKEY_VIEWMODEL_EFFECT = 53, // maybe viewmodel effect
+
+        SORTKEY_MAX
     };
 
     struct MaterialInfo
