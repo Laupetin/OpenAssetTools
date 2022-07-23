@@ -249,6 +249,138 @@ namespace IW4
 
         void commonsetup_template()
         {
+            refblend_template();
+            sort_template();
+            clamp_template();
+
+            // tessSize
+
+            textureAtlas_template();
+
+            // hasEditorMaterial
+
+            // allocLightmap
+
+            statebits_template();
+        }
+
+        void refblend_template()
+        {
+            const auto blendFunc = ReadStringProperty("blendFunc");
+        }
+
+        void sort_template()
+        {
+            const auto sort = ReadStringProperty("sort");
+            const auto materialType = ReadStringProperty("materialType");
+            const auto polygonOffset = ReadStringProperty("polygonOffset");
+            const auto blendFunc = ReadStringProperty("blendFunc");
+
+            std::string sortKey;
+            if (sort.empty() || sort == "<default>")
+            {
+                if (materialType == "distortion")
+                    sortKey = "distortion";
+                else if (polygonOffset == "Static Decal")
+                    sortKey = "decal - static decal";
+                else if (polygonOffset == "Weapon Impact")
+                    sortKey = "decal - weapon impact";
+                else if (materialType == "effect")
+                    sortKey = "effect - auto sort";
+                else if (materialType == "objective" || blendFunc == "Blend" || blendFunc == "Add" || blendFunc == "Screen Add")
+                    sortKey = "blend / additive";
+                else if (blendFunc == "Multiply")
+                    sortKey = "multiplicative";
+                else if (materialType == "sky")
+                    sortKey = "sky";
+                else if (materialType == "model ambient")
+                    sortKey = "opaque ambient";
+                else
+                    sortKey = "opaque";
+            }
+            else
+                sortKey = sort;
+
+            // if (sortKey == "opaque water")
+            //     SetSort(?);
+            // else if (sortKey == "boat hull")
+            //     SetSort(?);
+            if (sortKey == "opaque ambient")
+                SetSort(SORTKEY_OPAQUE_AMBIENT);
+            else if (sortKey == "opaque")
+                SetSort(SORTKEY_OPAQUE);
+            else if (sortKey == "sky")
+                SetSort(SORTKEY_SKY);
+            else if (sortKey == "skybox")
+                SetSort(SORTKEY_SKYBOX);
+            else if (sortKey == "decal - bottom 1")
+                SetSort(SORTKEY_DECAL_BOTTOM_1);
+            else if (sortKey == "decal - bottom 2")
+                SetSort(SORTKEY_DECAL_BOTTOM_2);
+            else if (sortKey == "decal - bottom 3")
+                SetSort(SORTKEY_DECAL_BOTTOM_3);
+            else if (sortKey == "decal - static decal")
+                SetSort(SORTKEY_DECAL_STATIC_DECAL);
+            else if (sortKey == "decal - middle 1")
+                SetSort(SORTKEY_DECAL_MIDDLE_1);
+            else if (sortKey == "decal - middle 2")
+                SetSort(SORTKEY_DECAL_MIDDLE_2);
+            else if (sortKey == "decal - middle 3")
+                SetSort(SORTKEY_DECAL_MIDDLE_3);
+            else if (sortKey == "decal - weapon impact")
+                SetSort(SORTKEY_DECAL_WEAPON_IMPACT);
+                // else if (sortKey == "decal - top 1")
+                //     SetSort(SORTKEY_DECAL_TOP_1);
+                // else if (sortKey == "decal - top 2")
+                //     SetSort(SORTKEY_DECAL_TOP_2);
+                // else if (sortKey == "decal - top 3")
+                //     SetSort(SORTKEY_DECAL_TOP_3);
+                // else if (sortKey == "multiplicative")
+                //     SetSort(SORTKEY_MULTIPLICATIVE);
+            else if (sortKey == "window inside")
+                SetSort(SORTKEY_WINDOW_INSIDE);
+            else if (sortKey == "window outside")
+                SetSort(SORTKEY_WINDOW_OUTSIDE);
+            else if (sortKey == "distortion")
+                SetSort(SORTKEY_DISTORTION);
+            else if (sortKey == "blend / additive")
+                SetSort(SORTKEY_BLEND_ADDITIVE);
+            else if (sortKey == "effect - auto sort")
+                SetSort(SORTKEY_EFFECT_AUTO_SORT);
+            else if (sortKey == "after effects - bottom")
+                SetSort(SORTKEY_AFTER_EFFECTS_BOTTOM);
+            else if (sortKey == "after effects - middle")
+                SetSort(SORTKEY_AFTER_EFFECTS_MIDDLE);
+            else if (sortKey == "after effects - top")
+                SetSort(SORTKEY_AFTER_EFFECTS_TOP);
+            else if (sortKey == "viewmodel effect")
+                SetSort(SORTKEY_VIEWMODEL_EFFECT);
+            else
+            {
+                char* endPtr;
+                const auto sortKeyNum = strtoul(sortKey.c_str(), &endPtr, 10);
+
+                if (endPtr != &sortKey[sortKey.size()])
+                {
+                    std::ostringstream ss;
+                    ss << "Invalid sortkey value: \"" << sortKey << "\"";
+                    throw GdtReadingException(ss.str());
+                }
+
+                SetSort(static_cast<unsigned char>(sortKeyNum));
+            }
+        }
+
+        void clamp_template()
+        {
+        }
+
+        void textureAtlas_template()
+        {
+        }
+
+        void statebits_template()
+        {
         }
 
         void SetTechniqueSet(const std::string& techsetName)
@@ -290,12 +422,17 @@ namespace IW4
             m_textures.push_back(textureDef);
         }
 
+        void SetSort(const unsigned char sort)
+        {
+            m_material->info.sortKey = sort;
+        }
+
         void FinalizeMaterial() const
         {
             if (!m_textures.empty())
             {
                 m_material->textureTable = static_cast<MaterialTextureDef*>(m_memory->Alloc(sizeof(MaterialTextureDef) * m_textures.size()));
-                m_material->textureCount = m_textures.size();
+                m_material->textureCount = static_cast<unsigned char>(m_textures.size());
                 memcpy(m_material->textureTable, m_textures.data(), sizeof(MaterialTextureDef) * m_textures.size());
             }
             else

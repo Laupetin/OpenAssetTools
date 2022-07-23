@@ -858,7 +858,48 @@ namespace IW4
     // TODO: Try to find out which value is which sort key by investigating on materials
     enum SortKey_e
     {
-        SORTKEY_UNKNOWN = 0
+        SORTKEY_OPAQUE_AMBIENT = 0,
+        SORTKEY_OPAQUE = 1,
+        SORTKEY_SKY = 2,
+        SORTKEY_SKYBOX = 3,
+        // ? = 4, // some kind of dynamic decal?
+        // ? = 5, // another kind of dynamic decal?
+        SORTKEY_DECAL_BOTTOM_1 = 6, // prob decal - bottom 1
+        SORTKEY_DECAL_BOTTOM_2 = 7, // prob decal - bottom 2
+        SORTKEY_DECAL_BOTTOM_3 = 8, // prob decal - bottom 3
+        SORTKEY_DECAL_STATIC_DECAL = 9, // prob decal - static decal
+        SORTKEY_DECAL_MIDDLE_1 = 10, // prob decal - middle 1
+        SORTKEY_DECAL_MIDDLE_2 = 11, // prob decal - middle 2
+        SORTKEY_DECAL_MIDDLE_3 = 12, // prob decal - middle 3
+        SORTKEY_DECAL_WEAPON_IMPACT = 13, // prob decal - weapon impact
+        // ? = 14, // prob decal - top 1
+        // some decal = 15, // prob decal - top 2 or decal - top 3
+        // some decal = 16,
+        // prob decal = 17,
+        // ? = 18,
+        // water related = 19, // maybe underwater
+        // water related = 20, // maybe transparent water
+        // ? = 21,
+        SORTKEY_WINDOW_INSIDE = 24, // prob window inside
+        SORTKEY_WINDOW_OUTSIDE = 25, // prob window outside
+        // ? = 26, // includes motiontracker3d, impact fx, atmos
+        // ? = 27,
+        // ? = 28,
+        // ? = 29,
+        // ? = 30,
+        // ? = 31,
+        // ? = 33,
+        // some ui/2d/fullscreen sort = 34,
+        // framecolordebug = 41, // multiplicative?
+        SORTKEY_DISTORTION = 43,
+        // ? = 44,
+        // ? = 45,
+        SORTKEY_BLEND_ADDITIVE = 47, // most likely blend / additive
+        SORTKEY_EFFECT_AUTO_SORT = 48, // most likely effect - auto sort
+        SORTKEY_AFTER_EFFECTS_BOTTOM = 49,
+        SORTKEY_AFTER_EFFECTS_MIDDLE = 50, // prob after effects - middle
+        SORTKEY_AFTER_EFFECTS_TOP = 51, // prob after effects - top
+        SORTKEY_VIEWMODEL_EFFECT = 53, // maybe viewmodel effect
     };
 
     struct MaterialInfo
