@@ -123,15 +123,23 @@ namespace IW4
         COUNT
     };
 
+    constexpr auto GDT_BLEND_FUNC_UNKNOWN = "";
+    constexpr auto GDT_BLEND_FUNC_CUSTOM = "Custom";
+    constexpr auto GDT_BLEND_FUNC_REPLACE = "Replace*";
+    constexpr auto GDT_BLEND_FUNC_BLEND = "Blend";
+    constexpr auto GDT_BLEND_FUNC_ADD = "Add";
+    constexpr auto GDT_BLEND_FUNC_MULTIPLY = "Multiply";
+    constexpr auto GDT_BLEND_FUNC_SCREEN_ADD = "Screen Add";
+
     inline const char* GdtBlendFuncNames[]
     {
-        "",
-        "Custom",
-        "Replace*",
-        "Blend",
-        "Add",
-        "Multiply",
-        "Screen Add"
+        GDT_BLEND_FUNC_UNKNOWN,
+        GDT_BLEND_FUNC_CUSTOM,
+        GDT_BLEND_FUNC_REPLACE,
+        GDT_BLEND_FUNC_BLEND,
+        GDT_BLEND_FUNC_ADD,
+        GDT_BLEND_FUNC_MULTIPLY,
+        GDT_BLEND_FUNC_SCREEN_ADD
     };
     static_assert(std::extent_v<decltype(GdtBlendFuncNames)> == static_cast<size_t>(BlendFunc_e::COUNT));
 
@@ -148,15 +156,23 @@ namespace IW4
         COUNT
     };
 
+    constexpr auto GDT_BLEND_OP_UNKNOWN = "";
+    constexpr auto GDT_BLEND_OP_DISABLE = "Disable";
+    constexpr auto GDT_BLEND_OP_ADD = "Add*";
+    constexpr auto GDT_BLEND_OP_SUBTRACT = "Subtract";
+    constexpr auto GDT_BLEND_OP_REV_SUBTRACT = "RevSubtract";
+    constexpr auto GDT_BLEND_OP_MIN = "Min";
+    constexpr auto GDT_BLEND_OP_MAX = "Max";
+
     inline const char* GdtBlendOpNames[]
     {
-        "",
-        "Disable",
-        "Add*",
-        "Subtract",
-        "RevSubtract",
-        "Min",
-        "Max"
+        GDT_BLEND_OP_UNKNOWN,
+        GDT_BLEND_OP_DISABLE,
+        GDT_BLEND_OP_ADD,
+        GDT_BLEND_OP_SUBTRACT,
+        GDT_BLEND_OP_REV_SUBTRACT,
+        GDT_BLEND_OP_MIN,
+        GDT_BLEND_OP_MAX
     };
     static_assert(std::extent_v<decltype(GdtBlendOpNames)> == static_cast<size_t>(BlendOp_e::COUNT));
 
@@ -206,13 +222,19 @@ namespace IW4
         COUNT
     };
 
+    constexpr auto GDT_ALPHA_TEST_UNKNOWN = "";
+    constexpr auto GDT_ALPHA_TEST_ALWAYS = "Always*";
+    constexpr auto GDT_ALPHA_TEST_GT0 = "GT0";
+    constexpr auto GDT_ALPHA_TEST_LT128 = "LT128";
+    constexpr auto GDT_ALPHA_TEST_GE128 = "GE128";
+
     inline const char* GdtAlphaTestNames[]
     {
-        "",
-        "Always*",
-        "GT0",
-        "LT128",
-        "GE128"
+        GDT_ALPHA_TEST_UNKNOWN,
+        GDT_ALPHA_TEST_ALWAYS,
+        GDT_ALPHA_TEST_GT0,
+        GDT_ALPHA_TEST_LT128,
+        GDT_ALPHA_TEST_GE128
     };
     static_assert(std::extent_v<decltype(GdtAlphaTestNames)> == static_cast<size_t>(AlphaTest_e::COUNT));
 

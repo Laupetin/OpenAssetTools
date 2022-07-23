@@ -23,7 +23,8 @@ namespace IW4
             : AbstractGdtEntryReader(entry),
               m_memory(memory),
               m_manager(manager),
-              m_material(nullptr)
+              m_material(nullptr),
+              m_base_statebits{}
         {
         }
 
@@ -325,7 +326,7 @@ namespace IW4
                 if (endPtr != &sortKey[sortKey.size()])
                 {
                     std::ostringstream ss;
-                    ss << "Invalid sortkey value: \"" << sortKey << "\"";
+                    ss << "Invalid sort value: \"" << sortKey << "\"";
                     throw GdtReadingException(ss.str());
                 }
 
@@ -339,9 +340,118 @@ namespace IW4
 
         void textureAtlas_template()
         {
+            const auto rowCount = ReadIntegerProperty("textureAtlasRowCount", 1);
+            const auto columnCount = ReadIntegerProperty("textureAtlasColumnCount", 1);
+
+            SetTextureAtlas(static_cast<unsigned char>(rowCount), static_cast<unsigned char>(columnCount));
         }
 
         void statebits_template()
+        {
+            alphatest_template();
+            blendfunc_template();
+            colorwrite_template();
+            cullface_template();
+            depthtest_template();
+            depthwrite_template();
+            polygonoffset_template();
+            stencil_template();
+        }
+
+        void alphatest_template()
+        {
+            const auto alphaTest = ReadStringProperty("alphaTest");
+
+            if (alphaTest == GDT_ALPHA_TEST_ALWAYS)
+                SetAlphaTest(AlphaTest_e::ALWAYS);
+            else if (alphaTest == GDT_ALPHA_TEST_GE128)
+                SetAlphaTest(AlphaTest_e::GE128);
+            else
+            {
+                std::ostringstream ss;
+                ss << "Invalid alphatest value: \"" << alphaTest << "\"";
+                throw GdtReadingException(ss.str());
+            }
+        }
+
+        void blendfunc_template()
+        {
+            const auto blendFunc = ReadStringProperty("blendFunc");
+
+            if (blendFunc == GDT_BLEND_FUNC_ADD)
+            {
+                SetBlendFunc(BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE);
+                SetSeparateAlphaBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
+            }
+            else if (blendFunc == GDT_BLEND_FUNC_BLEND)
+            {
+                SetBlendFunc(BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA);
+                SetSeparateAlphaBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
+            }
+            else if (blendFunc == GDT_BLEND_FUNC_MULTIPLY)
+            {
+                SetBlendFunc(BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR);
+                SetSeparateAlphaBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
+            }
+            else if (blendFunc == GDT_BLEND_FUNC_REPLACE)
+            {
+                SetBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
+                SetSeparateAlphaBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
+            }
+            else if (blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
+            {
+                SetBlendFunc(BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE);
+                SetSeparateAlphaBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
+            }
+            else if (blendFunc == GDT_BLEND_FUNC_CUSTOM)
+            {
+                const auto customBlendOpRgb = ReadEnumProperty("customBlendOpRgb", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
+                const auto srcCustomBlendFunc = ReadEnumProperty("srcCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto destCustomBlendFunc = ReadEnumProperty("destCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto customBlendOpAlpha = ReadEnumProperty("customBlendOpAlpha", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
+                const auto srcCustomBlendFuncAlpha = ReadEnumProperty("srcCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto destCustomBlendFuncAlpha = ReadEnumProperty("destCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+
+                SetBlendFunc(static_cast<BlendOp_e>(customBlendOpRgb), static_cast<CustomBlendFunc_e>(srcCustomBlendFunc), static_cast<CustomBlendFunc_e>(destCustomBlendFunc));
+                SetSeparateAlphaBlendFunc(static_cast<BlendOp_e>(customBlendOpAlpha), static_cast<CustomBlendFunc_e>(srcCustomBlendFuncAlpha),
+                                          static_cast<CustomBlendFunc_e>(destCustomBlendFuncAlpha));
+            }
+            else
+            {
+                std::ostringstream ss;
+                ss << "Invalid blendfunc value: \"" << blendFunc << "\"";
+                throw GdtReadingException(ss.str());
+            }
+        }
+
+        void colorwrite_template()
+        {
+            const auto colorWriteRed = ReadEnumProperty("colorWriteRed", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteGreen = ReadEnumProperty("colorWriteGreen", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteBlue = ReadEnumProperty("colorWriteBlue", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteAlpha = ReadEnumProperty("colorWriteAlpha", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+
+            SetColorWrite(static_cast<StateBitsEnabledStatus_e>(colorWriteRed), static_cast<StateBitsEnabledStatus_e>(colorWriteGreen), static_cast<StateBitsEnabledStatus_e>(colorWriteBlue),
+                          static_cast<StateBitsEnabledStatus_e>(colorWriteAlpha));
+        }
+
+        void cullface_template()
+        {
+        }
+
+        void depthtest_template()
+        {
+        }
+
+        void depthwrite_template()
+        {
+        }
+
+        void polygonoffset_template()
+        {
+        }
+
+        void stencil_template()
         {
         }
 
@@ -389,6 +499,103 @@ namespace IW4
             m_material->info.sortKey = sort;
         }
 
+        void SetTextureAtlas(const unsigned char rowCount, const unsigned char columnCount) const
+        {
+            m_material->info.textureAtlasRowCount = rowCount;
+            m_material->info.textureAtlasColumnCount = columnCount;
+        }
+
+        void SetAlphaTest(const AlphaTest_e alphaTest)
+        {
+            switch (alphaTest)
+            {
+            case AlphaTest_e::ALWAYS:
+                m_base_statebits.loadBits[0] |= GFXS0_ATEST_DISABLE;
+                break;
+
+            case AlphaTest_e::GT0:
+                m_base_statebits.loadBits[0] |= GFXS0_ATEST_GT_0;
+                break;
+
+            case AlphaTest_e::LT128:
+                m_base_statebits.loadBits[0] |= GFXS0_ATEST_LT_128;
+                break;
+
+            case AlphaTest_e::GE128:
+                m_base_statebits.loadBits[0] |= GFXS0_ATEST_GE_128;
+                break;
+
+            case AlphaTest_e::UNKNOWN:
+            default:
+                std::ostringstream ss;
+                ss << "Unknown alphatest value: \"" << static_cast<int>(alphaTest) << "\"";
+                throw GdtReadingException(ss.str());
+            }
+        }
+
+        void SetBlendFunc(BlendOp_e blendOp, CustomBlendFunc_e srcFunc, CustomBlendFunc_e destFunc)
+        {
+            if (blendOp == BlendOp_e::UNKNOWN || srcFunc == CustomBlendFunc_e::UNKNOWN || destFunc == CustomBlendFunc_e::UNKNOWN)
+            {
+                std::ostringstream ss;
+                ss << "Unknown SeparateAlphaBlendFunc values: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_BLENDOP_RGB_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) >> GFXS0_BLENDOP_RGB_SHIFT) & GFXS0_BLENDOP_RGB_MASK;
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_SRCBLEND_RGB_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) >> GFXS0_SRCBLEND_RGB_SHIFT) & GFXS0_SRCBLEND_RGB_MASK;
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_DSTBLEND_RGB_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) >> GFXS0_DSTBLEND_RGB_SHIFT) & GFXS0_DSTBLEND_RGB_MASK;
+        }
+
+        void SetSeparateAlphaBlendFunc(BlendOp_e blendOp, CustomBlendFunc_e srcFunc, CustomBlendFunc_e destFunc)
+        {
+            if (blendOp == BlendOp_e::UNKNOWN || srcFunc == CustomBlendFunc_e::UNKNOWN || destFunc == CustomBlendFunc_e::UNKNOWN)
+            {
+                std::ostringstream ss;
+                ss << "Unknown SeparateAlphaBlendFunc values: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_BLENDOP_ALPHA_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) >> GFXS0_BLENDOP_ALPHA_SHIFT) & GFXS0_BLENDOP_ALPHA_MASK;
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_SRCBLEND_ALPHA_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) >> GFXS0_SRCBLEND_ALPHA_SHIFT) & GFXS0_SRCBLEND_ALPHA_MASK;
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_DSTBLEND_ALPHA_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) >> GFXS0_DSTBLEND_ALPHA_SHIFT) & GFXS0_DSTBLEND_ALPHA_MASK;
+        }
+
+        void SetColorWrite(const StateBitsEnabledStatus_e colorWriteRed, const StateBitsEnabledStatus_e colorWriteGreen, const StateBitsEnabledStatus_e colorWriteBlue,
+                           const StateBitsEnabledStatus_e colorWriteAlpha)
+        {
+            if (colorWriteRed == StateBitsEnabledStatus_e::UNKNOWN || colorWriteGreen == StateBitsEnabledStatus_e::UNKNOWN
+                || colorWriteBlue == StateBitsEnabledStatus_e::UNKNOWN || colorWriteAlpha == StateBitsEnabledStatus_e::UNKNOWN)
+            {
+                std::ostringstream ss;
+                ss << "Unknown ColorWrite values: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            if (colorWriteRed != colorWriteGreen || colorWriteRed != colorWriteBlue)
+            {
+                std::ostringstream ss;
+                ss << "Invalid ColorWrite values: values for rgb must match";
+                throw GdtReadingException(ss.str());
+            }
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_COLORWRITE_MASK;
+            if (colorWriteRed == StateBitsEnabledStatus_e::ENABLED)
+                m_base_statebits.loadBits[0] |= GFXS0_COLORWRITE_RGB;
+            if (colorWriteAlpha == StateBitsEnabledStatus_e::ENABLED)
+                m_base_statebits.loadBits[0] |= GFXS0_COLORWRITE_ALPHA;
+        }
+
         void FinalizeMaterial() const
         {
             if (!m_textures.empty())
@@ -404,11 +611,30 @@ namespace IW4
             }
         }
 
+        static size_t GetIndexForString(const std::string& propertyName, const std::string& value, const char** validValuesArray, const size_t validValuesArraySize)
+        {
+            for (auto i = 0u; i < validValuesArraySize; i++)
+            {
+                if (validValuesArray[i] == value)
+                    return i;
+            }
+
+            std::ostringstream ss;
+            ss << "Unknown " << propertyName << " value: \"" << value << "\"";
+            throw GdtReadingException(ss.str());
+        }
+
+        size_t ReadEnumProperty(const std::string& propertyName, const char** validValuesArray, const size_t validValuesArraySize) const
+        {
+            return GetIndexForString(propertyName, ReadStringProperty(propertyName), validValuesArray, validValuesArraySize);
+        }
+
         MemoryManager* m_memory;
         IAssetLoadingManager* m_manager;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
         Material* m_material;
+        GfxStateBits m_base_statebits;
         std::vector<MaterialTextureDef> m_textures;
     };
 }
