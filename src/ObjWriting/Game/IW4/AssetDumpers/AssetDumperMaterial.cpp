@@ -682,9 +682,9 @@ namespace IW4
         void ExamineLitTechsetInfo()
         {
             if (!m_techset_info.m_techset_prefix.empty() && m_techset_info.m_techset_prefix[0] == 'm')
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_PHONG;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_MODEL_PHONG;
             else
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WORLD_PHONG;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_WORLD_PHONG;
 
             const auto nameParts = GetTechsetNameParts(m_techset_info.m_techset_base_name);
             bool inCustomName = false;
@@ -726,8 +726,8 @@ namespace IW4
                     m_techset_info.m_no_receive_dynamic_shadow = false;
                 else if (namePart == "flag")
                 {
-                    m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                    m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_PHONG_FLAG;
+                    m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                    m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_PHONG_FLAG;
                 }
                 else if (namePart.size() >= 2 && namePart[1] == '0')
                 {
@@ -791,12 +791,12 @@ namespace IW4
             if (!m_techset_info.m_techset_prefix.empty())
             {
                 if (m_techset_info.m_techset_prefix[0] == 'm')
-                    m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_UNLIT;
+                    m_techset_info.m_gdt_material_type = MATERIAL_TYPE_MODEL_UNLIT;
                 else
-                    m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WORLD_UNLIT;
+                    m_techset_info.m_gdt_material_type = MATERIAL_TYPE_WORLD_UNLIT;
             }
             else
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNLIT;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_UNLIT;
 
             ExamineCommonUnlitTechsetInfo();
         }
@@ -822,69 +822,69 @@ namespace IW4
 
             if (m_techset_info.m_techset_base_name == "2d")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_2D;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_2D;
             }
             else if (m_techset_info.m_techset_base_name == "tools")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_TOOLS;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_TOOLS;
             }
             else if (m_techset_info.m_techset_base_name == "objective")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_OBJECTIVE;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_OBJECTIVE;
             }
             else if (m_techset_info.m_techset_base_name == "sky")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_SKY;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_SKY;
             }
             else if (m_techset_info.m_techset_base_name == "water")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_WATER;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_WATER;
             }
             else if (m_techset_info.m_techset_base_name.rfind("ambient_", 0) == 0)
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_MODEL_AMBIENT;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_MODEL_AMBIENT;
             }
             else if (m_techset_info.m_techset_base_name.rfind("distortion_", 0) == 0)
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_DISTORTION;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_DISTORTION;
             }
             else if (m_techset_info.m_techset_base_name.rfind("particle_cloud", 0) == 0)
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_PARTICLE_CLOUD;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_PARTICLE_CLOUD;
             }
             else if (m_techset_info.m_techset_base_name == "grain_overlay")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY;
             }
             else if (m_techset_info.m_techset_base_name == "effect_add_eyeoffset")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET;
             }
             else if (m_techset_info.m_techset_base_name == "reflexsight")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT;
             }
             else if (m_techset_info.m_techset_base_name == "shadowclear")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR;
             }
             else if (m_techset_info.m_techset_base_name == "shadowoverlay")
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY;
             }
             else if (m_techset_info.m_techset_base_name.rfind("splatter", 0) == 0)
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_SPLATTER;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_SPLATTER;
             }
             else if (m_techset_info.m_techset_base_name.rfind("effect", 0) == 0)
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_EFFECT;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_EFFECT;
                 ExamineCommonUnlitTechsetInfo();
             }
             else if (m_techset_info.m_techset_base_name.rfind("l_", 0) == 0)
@@ -893,13 +893,13 @@ namespace IW4
             }
             else if (m_techset_info.m_techset_base_name.rfind("unlit", 0) == 0)
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNLIT;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_UNLIT;
                 ExamineUnlitTechsetInfo();
             }
             else if (MaterialCouldPossiblyUseCustomTemplate())
             {
-                m_techset_info.m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_CUSTOM;
-                m_techset_info.m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_CUSTOM;
+                m_techset_info.m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_CUSTOM;
                 m_techset_info.m_gdt_custom_string = m_techset_info.m_techset_base_name;
             }
             else
@@ -1175,7 +1175,7 @@ namespace IW4
                     const auto hasColorMap = colorMapIndex >= 0 && m_material->textureTable[colorMapIndex].semantic != TS_WATER_MAP && m_material->textureTable[colorMapIndex].u.image;
                     const auto hasDetailMap = detailMapIndex >= 0 && m_material->textureTable[detailMapIndex].semantic != TS_WATER_MAP && m_material->textureTable[detailMapIndex].u.image;
 
-                    if ((materialType == GdtMaterialType::MATERIAL_TYPE_MODEL_PHONG || materialType == GdtMaterialType::MATERIAL_TYPE_WORLD_PHONG)
+                    if ((materialType == MATERIAL_TYPE_MODEL_PHONG || materialType == MATERIAL_TYPE_WORLD_PHONG)
                         && hasColorMap && hasDetailMap)
                     {
                         const auto colorMapTexture = m_material->textureTable[colorMapIndex].u.image;

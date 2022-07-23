@@ -281,7 +281,7 @@ namespace IW4
             const auto blendFunc = ReadStringProperty("blendFunc");
 
             std::string sortKey;
-            if (sort.empty() || sort == "<default>")
+            if (sort.empty() || sort == GDT_SORTKEY_DEFAULT)
             {
                 if (materialType == GDT_MATERIAL_TYPE_DISTORTION)
                     sortKey = GDT_SORTKEY_DISTORTION;

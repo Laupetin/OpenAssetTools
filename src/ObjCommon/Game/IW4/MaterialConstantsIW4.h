@@ -425,6 +425,7 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(GdtMaterialTypeNames)> == static_cast<size_t>(MATERIAL_TYPE_COUNT));
 
+    constexpr auto GDT_SORTKEY_DEFAULT = "<default>";
     constexpr auto GDT_SORTKEY_OPAQUE_AMBIENT = "opaque ambient";
     constexpr auto GDT_SORTKEY_OPAQUE = "opaque";
     constexpr auto GDT_SORTKEY_SKY = "sky";
