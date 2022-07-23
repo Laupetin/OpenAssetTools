@@ -405,16 +405,15 @@ namespace IW4
             }
             else if (blendFunc == GDT_BLEND_FUNC_CUSTOM)
             {
-                const auto customBlendOpRgb = ReadEnumProperty("customBlendOpRgb", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
-                const auto srcCustomBlendFunc = ReadEnumProperty("srcCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
-                const auto destCustomBlendFunc = ReadEnumProperty("destCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
-                const auto customBlendOpAlpha = ReadEnumProperty("customBlendOpAlpha", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
-                const auto srcCustomBlendFuncAlpha = ReadEnumProperty("srcCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
-                const auto destCustomBlendFuncAlpha = ReadEnumProperty("destCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto customBlendOpRgb = ReadEnumProperty<BlendOp_e>("customBlendOpRgb", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
+                const auto srcCustomBlendFunc = ReadEnumProperty<CustomBlendFunc_e>("srcCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto destCustomBlendFunc = ReadEnumProperty<CustomBlendFunc_e>("destCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto customBlendOpAlpha = ReadEnumProperty<BlendOp_e>("customBlendOpAlpha", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
+                const auto srcCustomBlendFuncAlpha = ReadEnumProperty<CustomBlendFunc_e>("srcCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto destCustomBlendFuncAlpha = ReadEnumProperty<CustomBlendFunc_e>("destCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
 
-                SetBlendFunc(static_cast<BlendOp_e>(customBlendOpRgb), static_cast<CustomBlendFunc_e>(srcCustomBlendFunc), static_cast<CustomBlendFunc_e>(destCustomBlendFunc));
-                SetSeparateAlphaBlendFunc(static_cast<BlendOp_e>(customBlendOpAlpha), static_cast<CustomBlendFunc_e>(srcCustomBlendFuncAlpha),
-                                          static_cast<CustomBlendFunc_e>(destCustomBlendFuncAlpha));
+                SetBlendFunc(customBlendOpRgb, srcCustomBlendFunc, destCustomBlendFunc);
+                SetSeparateAlphaBlendFunc(customBlendOpAlpha, srcCustomBlendFuncAlpha, destCustomBlendFuncAlpha);
             }
             else
             {
@@ -426,17 +425,19 @@ namespace IW4
 
         void colorwrite_template()
         {
-            const auto colorWriteRed = ReadEnumProperty("colorWriteRed", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
-            const auto colorWriteGreen = ReadEnumProperty("colorWriteGreen", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
-            const auto colorWriteBlue = ReadEnumProperty("colorWriteBlue", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
-            const auto colorWriteAlpha = ReadEnumProperty("colorWriteAlpha", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteRed = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteRed", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteGreen = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteGreen", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteBlue = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteBlue", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteAlpha = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteAlpha", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
 
-            SetColorWrite(static_cast<StateBitsEnabledStatus_e>(colorWriteRed), static_cast<StateBitsEnabledStatus_e>(colorWriteGreen), static_cast<StateBitsEnabledStatus_e>(colorWriteBlue),
-                          static_cast<StateBitsEnabledStatus_e>(colorWriteAlpha));
+            SetColorWrite(colorWriteRed, colorWriteGreen, colorWriteBlue, colorWriteAlpha);
         }
 
         void cullface_template()
         {
+            const auto cullFace = ReadEnumProperty<CullFace_e>("cullFace", GdtCullFaceNames, std::extent_v<decltype(GdtCullFaceNames)>);
+
+            SetCullFace(cullFace);
         }
 
         void depthtest_template()
@@ -596,6 +597,32 @@ namespace IW4
                 m_base_statebits.loadBits[0] |= GFXS0_COLORWRITE_ALPHA;
         }
 
+        void SetCullFace(const CullFace_e cullFace)
+        {
+            if (cullFace == CullFace_e::UNKNOWN)
+            {
+                std::ostringstream ss;
+                ss << "Unknown cullFace values: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            m_base_statebits.loadBits[0] &= ~GFXS0_CULL_MASK;
+
+            if (cullFace == CullFace_e::FRONT)
+            {
+                m_base_statebits.loadBits[0] |= GFXS0_CULL_FRONT;
+            }
+            else if (cullFace == CullFace_e::BACK)
+            {
+                m_base_statebits.loadBits[0] |= GFXS0_CULL_BACK;
+            }
+            else
+            {
+                assert(cullFace == CullFace_e::NONE);
+                m_base_statebits.loadBits[0] |= GFXS0_CULL_NONE;
+            }
+        }
+
         void FinalizeMaterial() const
         {
             if (!m_textures.empty())
@@ -624,9 +651,10 @@ namespace IW4
             throw GdtReadingException(ss.str());
         }
 
-        size_t ReadEnumProperty(const std::string& propertyName, const char** validValuesArray, const size_t validValuesArraySize) const
+        template <typename T>
+        T ReadEnumProperty(const std::string& propertyName, const char** validValuesArray, const size_t validValuesArraySize) const
         {
-            return GetIndexForString(propertyName, ReadStringProperty(propertyName), validValuesArray, validValuesArraySize);
+            return static_cast<T>(GetIndexForString(propertyName, ReadStringProperty(propertyName), validValuesArray, validValuesArraySize));
         }
 
         MemoryManager* m_memory;
