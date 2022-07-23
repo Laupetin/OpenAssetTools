@@ -438,91 +438,14 @@ namespace IW4
         stream << std::setw(4) << j;
     }
 
-    enum class GdtMaterialType
-    {
-        MATERIAL_TYPE_UNKNOWN,
-        MATERIAL_TYPE_2D,
-        MATERIAL_TYPE_CUSTOM,
-        MATERIAL_TYPE_DISTORTION,
-        MATERIAL_TYPE_EFFECT,
-        MATERIAL_TYPE_IMPACT_MARK,
-        MATERIAL_TYPE_MODEL_AMBIENT,
-        MATERIAL_TYPE_MODEL_PHONG,
-        MATERIAL_TYPE_MODEL_UNLIT,
-        MATERIAL_TYPE_OBJECTIVE,
-        MATERIAL_TYPE_PARTICLE_CLOUD,
-        MATERIAL_TYPE_SKY,
-        MATERIAL_TYPE_TOOLS,
-        MATERIAL_TYPE_UNLIT,
-        MATERIAL_TYPE_WATER,
-        MATERIAL_TYPE_WORLD_PHONG,
-        MATERIAL_TYPE_WORLD_UNLIT,
-
-        MATERIAL_TYPE_COUNT
-    };
-
-    enum class GdtCustomMaterialTypes
-    {
-        CUSTOM_MATERIAL_TYPE_NONE,
-        // Uses custom techset with generic options
-        CUSTOM_MATERIAL_TYPE_CUSTOM,
-        CUSTOM_MATERIAL_TYPE_PHONG_FLAG,
-        CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY,
-        CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET,
-        CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT,
-        CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR,
-        CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY,
-
-        // Not part of IW3
-        CUSTOM_MATERIAL_TYPE_SPLATTER,
-
-        CUSTOM_MATERIAL_TYPE_COUNT
-    };
-
-    const char* GdtMaterialTypeNames[]
-    {
-        "<unknown>",
-        "2d",
-        "custom",
-        "distortion",
-        "effect",
-        "impact mark",
-        "model ambient",
-        "model phong",
-        "model unlit",
-        "objective",
-        "particle cloud",
-        "sky",
-        "tools",
-        "unlit",
-        "water",
-        "world phong",
-        "world unlit"
-    };
-    static_assert(std::extent_v<decltype(GdtMaterialTypeNames)> == static_cast<size_t>(GdtMaterialType::MATERIAL_TYPE_COUNT));
-
-    const char* GdtCustomMaterialTypeNames[]
-    {
-        "",
-        "mtl_custom",
-        "mtl_phong_flag",
-        "mtl_grain_overlay",
-        "mtl_effect_eyeoffset",
-        "mtl_reflexsight",
-        "mtl_shadowclear",
-        "mtl_shadowoverlay",
-        "mtl_splatter"
-    };
-    static_assert(std::extent_v<decltype(GdtCustomMaterialTypeNames)> == static_cast<size_t>(GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_COUNT));
-
     class TechsetInfo
     {
     public:
         std::string m_techset_name;
         std::string m_techset_base_name;
         std::string m_techset_prefix;
-        GdtMaterialType m_gdt_material_type = GdtMaterialType::MATERIAL_TYPE_UNKNOWN;
-        GdtCustomMaterialTypes m_gdt_custom_material_type = GdtCustomMaterialTypes::CUSTOM_MATERIAL_TYPE_NONE;
+        GdtMaterialType m_gdt_material_type = MATERIAL_TYPE_UNKNOWN;
+        GdtCustomMaterialTypes m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_NONE;
         std::string m_gdt_custom_string;
         MaterialType m_engine_material_type = MTL_TYPE_DEFAULT;
         bool m_no_cast_shadow = false;

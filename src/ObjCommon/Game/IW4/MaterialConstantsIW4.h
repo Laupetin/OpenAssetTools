@@ -362,22 +362,107 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(GdtStencilOpNames)> == static_cast<size_t>(StencilOp_e::COUNT));
 
+    enum GdtMaterialType
+    {
+        MATERIAL_TYPE_UNKNOWN,
+        MATERIAL_TYPE_2D,
+        MATERIAL_TYPE_CUSTOM,
+        MATERIAL_TYPE_DISTORTION,
+        MATERIAL_TYPE_EFFECT,
+        MATERIAL_TYPE_IMPACT_MARK,
+        MATERIAL_TYPE_MODEL_AMBIENT,
+        MATERIAL_TYPE_MODEL_PHONG,
+        MATERIAL_TYPE_MODEL_UNLIT,
+        MATERIAL_TYPE_OBJECTIVE,
+        MATERIAL_TYPE_PARTICLE_CLOUD,
+        MATERIAL_TYPE_SKY,
+        MATERIAL_TYPE_TOOLS,
+        MATERIAL_TYPE_UNLIT,
+        MATERIAL_TYPE_WATER,
+        MATERIAL_TYPE_WORLD_PHONG,
+        MATERIAL_TYPE_WORLD_UNLIT,
+
+        MATERIAL_TYPE_COUNT
+    };
+
+    constexpr auto GDT_MATERIAL_TYPE_UNKNOWN = "<unknown>";
+    constexpr auto GDT_MATERIAL_TYPE_2D = "2d";
+    constexpr auto GDT_MATERIAL_TYPE_CUSTOM = "custom";
+    constexpr auto GDT_MATERIAL_TYPE_DISTORTION = "distortion";
+    constexpr auto GDT_MATERIAL_TYPE_EFFECT = "effect";
+    constexpr auto GDT_MATERIAL_TYPE_IMPACT_MARK = "impact mark";
+    constexpr auto GDT_MATERIAL_TYPE_MODEL_AMBIENT = "model ambient";
+    constexpr auto GDT_MATERIAL_TYPE_MODEL_PHONG = "model phong";
+    constexpr auto GDT_MATERIAL_TYPE_MODEL_UNLIT = "model unlit";
+    constexpr auto GDT_MATERIAL_TYPE_OBJECTIVE = "objective";
+    constexpr auto GDT_MATERIAL_TYPE_PARTICLE_CLOUD = "particle cloud";
+    constexpr auto GDT_MATERIAL_TYPE_SKY = "sky";
+    constexpr auto GDT_MATERIAL_TYPE_TOOLS = "tools";
+    constexpr auto GDT_MATERIAL_TYPE_UNLIT = "unlit";
+    constexpr auto GDT_MATERIAL_TYPE_WATER = "water";
+    constexpr auto GDT_MATERIAL_TYPE_WORLD_PHONG = "world phong";
+    constexpr auto GDT_MATERIAL_TYPE_WORLD_UNLIT = "world unlit";
+
+    inline const char* GdtMaterialTypeNames[]
+    {
+        GDT_MATERIAL_TYPE_UNKNOWN,
+        GDT_MATERIAL_TYPE_2D,
+        GDT_MATERIAL_TYPE_CUSTOM,
+        GDT_MATERIAL_TYPE_DISTORTION,
+        GDT_MATERIAL_TYPE_EFFECT,
+        GDT_MATERIAL_TYPE_IMPACT_MARK,
+        GDT_MATERIAL_TYPE_MODEL_AMBIENT,
+        GDT_MATERIAL_TYPE_MODEL_PHONG,
+        GDT_MATERIAL_TYPE_MODEL_UNLIT,
+        GDT_MATERIAL_TYPE_OBJECTIVE,
+        GDT_MATERIAL_TYPE_PARTICLE_CLOUD,
+        GDT_MATERIAL_TYPE_SKY,
+        GDT_MATERIAL_TYPE_TOOLS,
+        GDT_MATERIAL_TYPE_UNLIT,
+        GDT_MATERIAL_TYPE_WATER,
+        GDT_MATERIAL_TYPE_WORLD_PHONG,
+        GDT_MATERIAL_TYPE_WORLD_UNLIT
+    };
+    static_assert(std::extent_v<decltype(GdtMaterialTypeNames)> == static_cast<size_t>(MATERIAL_TYPE_COUNT));
+
+    constexpr auto GDT_SORTKEY_OPAQUE_AMBIENT = "opaque ambient";
+    constexpr auto GDT_SORTKEY_OPAQUE = "opaque";
+    constexpr auto GDT_SORTKEY_SKY = "sky";
+    constexpr auto GDT_SORTKEY_SKYBOX = "skybox";
+    constexpr auto GDT_SORTKEY_DECAL_BOTTOM_1 = "decal - bottom 1";
+    constexpr auto GDT_SORTKEY_DECAL_BOTTOM_2 = "decal - bottom 2";
+    constexpr auto GDT_SORTKEY_DECAL_BOTTOM_3 = "decal - bottom 3";
+    constexpr auto GDT_SORTKEY_DECAL_STATIC = "decal - static decal";
+    constexpr auto GDT_SORTKEY_DECAL_MIDDLE_1 = "decal - middle 1";
+    constexpr auto GDT_SORTKEY_DECAL_MIDDLE_2 = "decal - middle 2";
+    constexpr auto GDT_SORTKEY_DECAL_MIDDLE_3 = "decal - middle 3";
+    constexpr auto GDT_SORTKEY_DECAL_WEAPON_IMPACT = "decal - weapon impact";
+    constexpr auto GDT_SORTKEY_WINDOW_INSIDE = "window inside";
+    constexpr auto GDT_SORTKEY_WINDOW_OUTSIDE = "window outside";
+    constexpr auto GDT_SORTKEY_DISTORTION = "distortion";
+    constexpr auto GDT_SORTKEY_BLEND_ADDITIVE = "blend / additive";
+    constexpr auto GDT_SORTKEY_EFFECT_AUTO_SORT = "effect - auto sort";
+    constexpr auto GDT_SORTKEY_AFTER_EFFECT_BOTTOM = "after effects - bottom";
+    constexpr auto GDT_SORTKEY_AFTER_EFFECT_MIDDLE = "after effects - middle";
+    constexpr auto GDT_SORTKEY_AFTER_EFFECT_TOP = "after effects - top";
+    constexpr auto GDT_SORTKEY_VIEWMODEL_EFFECT = "viewmodel effect";
+
     inline const char* SortKeyNames[]
     {
-        "opaque ambient", // 0
-        "opaque", // 1
-        "sky", // 2
-        "skybox", // 3
+        GDT_SORTKEY_OPAQUE_AMBIENT, // 0
+        GDT_SORTKEY_OPAQUE, // 1
+        GDT_SORTKEY_SKY, // 2
+        GDT_SORTKEY_SKYBOX, // 3
         "?", // 4
         "?", // 5
-        "decal - bottom 1", // 6
-        "decal - bottom 2", // 7
-        "decal - bottom 3", // 8
-        "decal - static decal", // 9
-        "decal - middle 1", // 10
-        "decal - middle 2", // 11
-        "decal - middle 3", // 12
-        "decal - weapon impact", // 13
+        GDT_SORTKEY_DECAL_BOTTOM_1, // 6
+        GDT_SORTKEY_DECAL_BOTTOM_2, // 7
+        GDT_SORTKEY_DECAL_BOTTOM_3, // 8
+        GDT_SORTKEY_DECAL_STATIC, // 9
+        GDT_SORTKEY_DECAL_MIDDLE_1, // 10
+        GDT_SORTKEY_DECAL_MIDDLE_2, // 11
+        GDT_SORTKEY_DECAL_MIDDLE_3, // 12
+        GDT_SORTKEY_DECAL_WEAPON_IMPACT, // 13
         "?", // 14
         "?", // 15
         "?", // 16
@@ -388,8 +473,8 @@ namespace IW4
         "?", // 21
         "-", // 22
         "-", // 23
-        "window inside", // 24
-        "window outside", // 25
+        GDT_SORTKEY_WINDOW_INSIDE, // 24
+        GDT_SORTKEY_WINDOW_OUTSIDE, // 25
         "?", // 26
         "?", // 27
         "?", // 28
@@ -407,17 +492,59 @@ namespace IW4
         "?", // 40
         "?", // 41
         "?", // 42
-        "distortion", // 43
+        GDT_SORTKEY_DISTORTION, // 43
         "?", // 44
         "?", // 45
         "-", // 46
-        "blend / additive", // 47
-        "effect - auto sort", // 48
-        "after effects - bottom", // 49
-        "after effects - middle", // 50
-        "after effects - top", // 51
+        GDT_SORTKEY_BLEND_ADDITIVE, // 47
+        GDT_SORTKEY_EFFECT_AUTO_SORT, // 48
+        GDT_SORTKEY_AFTER_EFFECT_BOTTOM, // 49
+        GDT_SORTKEY_AFTER_EFFECT_MIDDLE, // 50
+        GDT_SORTKEY_AFTER_EFFECT_TOP, // 51
         "-", // 52
-        "viewmodel effect", // 53
+        GDT_SORTKEY_VIEWMODEL_EFFECT, // 53
     };
     static_assert(std::extent_v<decltype(SortKeyNames)> == static_cast<size_t>(SORTKEY_MAX));
+
+    enum GdtCustomMaterialTypes
+    {
+        CUSTOM_MATERIAL_TYPE_NONE,
+        // Uses custom techset with generic options
+        CUSTOM_MATERIAL_TYPE_CUSTOM,
+        CUSTOM_MATERIAL_TYPE_PHONG_FLAG,
+        CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY,
+        CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET,
+        CUSTOM_MATERIAL_TYPE_REFLEX_SIGHT,
+        CUSTOM_MATERIAL_TYPE_SHADOW_CLEAR,
+        CUSTOM_MATERIAL_TYPE_SHADOW_OVERLAY,
+
+        // Not part of IW3
+        CUSTOM_MATERIAL_TYPE_SPLATTER,
+
+        CUSTOM_MATERIAL_TYPE_COUNT
+    };
+
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_NONE = "";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_CUSTOM = "mtl_custom";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_PHONG_FLAG = "mtl_phong_flag";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY = "mtl_grain_overlay";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET = "mtl_effect_eyeoffset";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_REFLEXSIGHT = "mtl_reflexsight";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_SHADOWCLEAR = "mtl_shadowclear";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_SHADOWOVERLAY = "mtl_shadowoverlay";
+    constexpr auto GDT_CUSTOM_MATERIAL_TYPE_SPLATTER = "mtl_splatter";
+
+    inline const char* GdtCustomMaterialTypeNames[]
+    {
+        GDT_CUSTOM_MATERIAL_TYPE_NONE,
+        GDT_CUSTOM_MATERIAL_TYPE_CUSTOM,
+        GDT_CUSTOM_MATERIAL_TYPE_PHONG_FLAG,
+        GDT_CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY,
+        GDT_CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET,
+        GDT_CUSTOM_MATERIAL_TYPE_REFLEXSIGHT,
+        GDT_CUSTOM_MATERIAL_TYPE_SHADOWCLEAR,
+        GDT_CUSTOM_MATERIAL_TYPE_SHADOWOVERLAY,
+        GDT_CUSTOM_MATERIAL_TYPE_SPLATTER
+    };
+    static_assert(std::extent_v<decltype(GdtCustomMaterialTypeNames)> == static_cast<size_t>(CUSTOM_MATERIAL_TYPE_COUNT));
 }

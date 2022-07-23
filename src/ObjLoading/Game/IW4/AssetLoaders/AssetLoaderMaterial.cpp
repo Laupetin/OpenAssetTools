@@ -54,55 +54,58 @@ namespace IW4
         {
             const auto materialType = ReadStringProperty("materialType");
 
-            if (materialType == "model phong" || materialType == "world phong" || materialType == "impact mark")
+            if (materialType == GDT_MATERIAL_TYPE_MODEL_PHONG
+                || materialType == GDT_MATERIAL_TYPE_WORLD_PHONG
+                || materialType == GDT_MATERIAL_TYPE_IMPACT_MARK)
             {
                 mtl_phong_template();
             }
-            else if (materialType == "model ambient")
+            else if (materialType == GDT_MATERIAL_TYPE_MODEL_AMBIENT)
             {
                 mtl_ambient_template();
             }
-            else if (materialType == "2d")
+            else if (materialType == GDT_MATERIAL_TYPE_2D)
             {
                 mtl_2d_template();
             }
-            else if (materialType == "model unlit" || materialType == "world unlit")
+            else if (materialType == GDT_MATERIAL_TYPE_MODEL_UNLIT
+                || materialType == GDT_MATERIAL_TYPE_WORLD_UNLIT)
             {
                 mtl_unlit_template();
             }
-            else if (materialType == "unlit")
+            else if (materialType == GDT_MATERIAL_TYPE_UNLIT)
             {
                 mtl_unlit_deprecated_template();
             }
-            else if (materialType == "effect")
+            else if (materialType == GDT_MATERIAL_TYPE_EFFECT)
             {
                 mtl_effect_template();
             }
-            else if (materialType == "distortion")
+            else if (materialType == GDT_MATERIAL_TYPE_DISTORTION)
             {
                 mtl_distortion_template();
             }
-            else if (materialType == "particle cloud")
+            else if (materialType == GDT_MATERIAL_TYPE_PARTICLE_CLOUD)
             {
                 mtl_particlecloud_template();
             }
-            else if (materialType == "tools")
+            else if (materialType == GDT_MATERIAL_TYPE_TOOLS)
             {
                 mtl_tools_template();
             }
-            else if (materialType == "sky")
+            else if (materialType == GDT_MATERIAL_TYPE_SKY)
             {
                 mtl_sky_template();
             }
-            else if (materialType == "water")
+            else if (materialType == GDT_MATERIAL_TYPE_WATER)
             {
                 mtl_water_template();
             }
-            else if (materialType == "objective")
+            else if (materialType == GDT_MATERIAL_TYPE_OBJECTIVE)
             {
                 mtl_objective_template();
             }
-            else if (materialType == "custom")
+            else if (materialType == GDT_MATERIAL_TYPE_CUSTOM)
             {
                 custom_template();
             }
@@ -176,35 +179,35 @@ namespace IW4
         {
             const auto customTemplate = ReadStringProperty("customTemplate");
 
-            if (customTemplate == "mtl_custom")
+            if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_CUSTOM)
             {
                 mtl_custom_template();
             }
-            else if (customTemplate == "mtl_phong_flag")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_PHONG_FLAG)
             {
                 mtl_phong_flag_template();
             }
-            else if (customTemplate == "mtl_grain_overlay")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_GRAIN_OVERLAY)
             {
                 mtl_grain_overlay_template();
             }
-            else if (customTemplate == "mtl_effect_eyeoffset")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_EFFECT_EYE_OFFSET)
             {
                 mtl_effect_eyeoffset_template();
             }
-            else if (customTemplate == "mtl_reflexsight")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_REFLEXSIGHT)
             {
                 mtl_reflexsight_template();
             }
-            else if (customTemplate == "mtl_shadowclear")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_SHADOWCLEAR)
             {
                 mtl_shadowclear_template();
             }
-            else if (customTemplate == "mtl_shadowoverlay")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_SHADOWOVERLAY)
             {
                 mtl_shadowoverlay_template();
             }
-            else if (customTemplate == "mtl_splatter")
+            else if (customTemplate == GDT_CUSTOM_MATERIAL_TYPE_SPLATTER)
             {
                 mtl_splatter_template();
             }
@@ -280,24 +283,25 @@ namespace IW4
             std::string sortKey;
             if (sort.empty() || sort == "<default>")
             {
-                if (materialType == "distortion")
-                    sortKey = SortKeyNames[SORTKEY_DISTORTION];
+                if (materialType == GDT_MATERIAL_TYPE_DISTORTION)
+                    sortKey = GDT_SORTKEY_DISTORTION;
                 else if (polygonOffset == "Static Decal")
-                    sortKey = SortKeyNames[SORTKEY_DECAL_STATIC_DECAL];
+                    sortKey = GDT_SORTKEY_DECAL_STATIC;
                 else if (polygonOffset == "Weapon Impact")
-                    sortKey = SortKeyNames[SORTKEY_DECAL_WEAPON_IMPACT];
-                else if (materialType == "effect")
-                    sortKey = SortKeyNames[SORTKEY_EFFECT_AUTO_SORT];
-                else if (materialType == "objective" || blendFunc == "Blend" || blendFunc == "Add" || blendFunc == "Screen Add")
-                    sortKey = SortKeyNames[SORTKEY_BLEND_ADDITIVE];
-                // else if (blendFunc == "Multiply")
-                //     sortKey = SortKeyNames[SORTKEY_MULTIPLICATIVE];
-                else if (materialType == "sky")
-                    sortKey = SortKeyNames[SORTKEY_SKY];
-                else if (materialType == "model ambient")
-                    sortKey = SortKeyNames[SORTKEY_OPAQUE_AMBIENT];
+                    sortKey = GDT_SORTKEY_DECAL_WEAPON_IMPACT;
+                else if (materialType == GDT_MATERIAL_TYPE_EFFECT)
+                    sortKey = GDT_SORTKEY_EFFECT_AUTO_SORT;
+                else if (materialType == GDT_MATERIAL_TYPE_OBJECTIVE
+                    || blendFunc == "Blend" || blendFunc == "Add" || blendFunc == "Screen Add")
+                    sortKey = GDT_SORTKEY_BLEND_ADDITIVE;
+                    // else if (blendFunc == "Multiply") // TODO
+                    //     sortKey = GDT_SORTKEY_MULTIPLICATIVE;
+                else if (materialType == GDT_MATERIAL_TYPE_SKY)
+                    sortKey = GDT_SORTKEY_SKY;
+                else if (materialType == GDT_MATERIAL_TYPE_MODEL_AMBIENT)
+                    sortKey = GDT_SORTKEY_OPAQUE_AMBIENT;
                 else
-                    sortKey = SortKeyNames[SORTKEY_OPAQUE];
+                    sortKey = GDT_SORTKEY_OPAQUE;
             }
             else
                 sortKey = sort;
