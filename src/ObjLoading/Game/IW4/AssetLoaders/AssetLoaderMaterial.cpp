@@ -442,14 +442,45 @@ namespace IW4
 
         void depthtest_template()
         {
+            const auto depthTest = ReadEnumProperty<DepthTest_e>("depthTest", GdtDepthTestNames, std::extent_v<decltype(GdtDepthTestNames)>);
+
+            SetDepthTest(depthTest);
         }
 
         void depthwrite_template()
         {
+            const auto depthWrite = ReadEnumProperty<StateBitsEnabledStatus_e>("depthWrite", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto blendFunc = ReadStringProperty("blendFunc");
+
+            if (depthWrite == StateBitsEnabledStatus_e::ENABLED)
+                SetDepthWrite(true);
+            else if (depthWrite == StateBitsEnabledStatus_e::DISABLED)
+                SetDepthWrite(false);
+            else if (blendFunc == GDT_BLEND_FUNC_ADD)
+                SetDepthWrite(false);
+            else if (blendFunc == GDT_BLEND_FUNC_BLEND)
+                SetDepthWrite(false);
+            else if (blendFunc == GDT_BLEND_FUNC_MULTIPLY)
+                SetDepthWrite(false);
+            else if (blendFunc == GDT_BLEND_FUNC_REPLACE)
+                SetDepthWrite(true);
+            else if (blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
+                SetDepthWrite(false);
+            else if (blendFunc == GDT_BLEND_FUNC_CUSTOM)
+                SetDepthWrite(false);
+            else
+            {
+                std::ostringstream ss;
+                ss << "Invalid depthWrite blendFunc value: \"" << blendFunc << "\"";
+                throw GdtReadingException(ss.str());
+            }
         }
 
         void polygonoffset_template()
         {
+            const auto polygonOffset = ReadEnumProperty<PolygonOffset_e>("polygonOffset", GdtPolygonOffsetNames, std::extent_v<decltype(GdtPolygonOffsetNames)>);
+
+            SetPolygonOffset(polygonOffset);
         }
 
         void stencil_template()
@@ -621,6 +652,61 @@ namespace IW4
                 assert(cullFace == CullFace_e::NONE);
                 m_base_statebits.loadBits[0] |= GFXS0_CULL_NONE;
             }
+        }
+
+        void SetDepthTest(const DepthTest_e depthTest)
+        {
+            m_base_statebits.loadBits[1] &= GFXS1_DEPTHTEST_MASK;
+
+            switch (depthTest)
+            {
+            case DepthTest_e::LESS_EQUAL:
+                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_LESSEQUAL;
+                break;
+
+            case DepthTest_e::LESS:
+                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_LESS;
+                break;
+
+            case DepthTest_e::EQUAL:
+                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_EQUAL;
+                break;
+
+            case DepthTest_e::ALWAYS:
+                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_ALWAYS;
+                break;
+
+            case DepthTest_e::DISABLE:
+                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_DISABLE;
+                break;
+
+            case DepthTest_e::UNKNOWN:
+            default:
+                std::ostringstream ss;
+                ss << "Unknown depthTest values: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+        }
+
+        void SetDepthWrite(const bool depthWrite)
+        {
+            m_base_statebits.loadBits[1] &= ~GFXS1_DEPTHWRITE;
+
+            if (depthWrite)
+                m_base_statebits.loadBits[1] |= GFXS1_DEPTHWRITE;
+        }
+
+        void SetPolygonOffset(const PolygonOffset_e polygonOffset)
+        {
+            if (polygonOffset == PolygonOffset_e::UNKNOWN)
+            {
+                std::ostringstream ss;
+                ss << "Unknown polygonOffset values: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            m_base_statebits.loadBits[1] &= ~GFXS1_POLYGON_OFFSET_MASK;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) >> GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
         }
 
         void FinalizeMaterial() const
