@@ -13,7 +13,7 @@
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Math/Vector.h"
 
-//#define DUMP_AS_JSON 1
+#define DUMP_AS_JSON 1
 //#define DUMP_AS_GDT 1
 //#define FLAGS_DEBUG 1
 
@@ -429,7 +429,7 @@ namespace IW4
             {"stateFlags", material->stateFlags},
 #endif
             {"cameraRegion", ArrayEntry(cameraRegionNames, material->cameraRegion)},
-            {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
+            {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : json{}},
             {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},
             {"constantTable", BuildConstantTableJson(material->constantTable, material->constantCount)},
             {"stateBitsTable", BuildStateBitsTableJson(material->stateBitsTable, material->stateBitsCount)}
@@ -448,6 +448,7 @@ namespace IW4
         GdtCustomMaterialTypes m_gdt_custom_material_type = CUSTOM_MATERIAL_TYPE_NONE;
         std::string m_gdt_custom_string;
         MaterialType m_engine_material_type = MTL_TYPE_DEFAULT;
+        std::string m_sort_key_name;
         bool m_no_cast_shadow = false;
         bool m_no_receive_dynamic_shadow = false;
         bool m_no_fog = false;
@@ -490,6 +491,7 @@ namespace IW4
         StateBitsEnabledStatus_e m_color_write_rgb = StateBitsEnabledStatus_e::UNKNOWN;
         StateBitsEnabledStatus_e m_color_write_alpha = StateBitsEnabledStatus_e::UNKNOWN;
         StateBitsEnabledStatus_e m_gamma_write = StateBitsEnabledStatus_e::UNKNOWN;
+        StencilMode_e m_stencil_mode = StencilMode_e::UNKNOWN;
         StencilFunc_e m_stencil_front_func = StencilFunc_e::UNKNOWN;
         StencilOp_e m_stencil_front_fail = StencilOp_e::UNKNOWN;
         StencilOp_e m_stencil_front_zfail = StencilOp_e::UNKNOWN;
@@ -820,6 +822,15 @@ namespace IW4
                 }
             }
 
+            if (m_material->info.sortKey < SORTKEY_MAX && SortKeyNames[m_material->info.sortKey])
+            {
+                m_techset_info.m_sort_key_name = SortKeyNames[m_material->info.sortKey];
+            }
+            else
+            {
+                m_techset_info.m_sort_key_name = std::to_string(m_material->info.sortKey);
+            }
+
             if (m_techset_info.m_techset_base_name == "2d")
             {
                 m_techset_info.m_gdt_material_type = MATERIAL_TYPE_2D;
@@ -1072,6 +1083,24 @@ namespace IW4
             if (m_state_bits_info.m_gamma_write == StateBitsEnabledStatus_e::UNKNOWN)
                 m_state_bits_info.m_gamma_write = (stateBits.loadBits[0] & GFXS0_GAMMAWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
 
+            if (m_state_bits_info.m_stencil_mode == StencilMode_e::UNKNOWN)
+            {
+                if ((stateBits.loadBits[1] & GFXS1_STENCIL_BACK_ENABLE) == 0 && (stateBits.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE) == 0)
+                {
+                    m_state_bits_info.m_stencil_mode = StencilMode_e::DISABLED;
+                }
+                else if (stateBits.loadBits[1] & GFXS1_STENCIL_BACK_ENABLE)
+                {
+                    assert(stateBits.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE);
+                    m_state_bits_info.m_stencil_mode = StencilMode_e::TWO_SIDED;
+                }
+                else
+                {
+                    assert(stateBits.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE);
+                    m_state_bits_info.m_stencil_mode = StencilMode_e::ONE_SIDED;
+                }
+            }
+
             if (m_state_bits_info.m_stencil_front_func == StencilFunc_e::UNKNOWN)
                 m_state_bits_info.m_stencil_front_func = StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FUNC_MASK, GFXS1_STENCIL_FRONT_FUNC_SHIFT);
 
@@ -1248,6 +1277,7 @@ namespace IW4
             SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_material_type)]);
             SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_custom_material_type)]);
             SetValue("customString", m_techset_info.m_gdt_custom_string);
+            SetValue("sortKey", m_techset_info.m_sort_key_name);
             SetValue("noCastShadow", m_techset_info.m_no_cast_shadow);
             SetValue("noReceiveDynamicShadow", m_techset_info.m_no_receive_dynamic_shadow);
             SetValue("noFog", m_techset_info.m_no_fog);
@@ -1284,6 +1314,7 @@ namespace IW4
             SetValue("colorWriteBlue", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_rgb)]);
             SetValue("colorWriteAlpha", GdtStateBitsEnabledStatusNames[static_cast<size_t>(m_state_bits_info.m_color_write_alpha)]);
             SetValue("gammaWrite", GdtStateBitsOnOffStatusNames[static_cast<size_t>(m_state_bits_info.m_gamma_write)]);
+            SetValue("stencil", GdtStencilModeNames[static_cast<size_t>(m_state_bits_info.m_stencil_mode)]);
             SetValue("stencilFunc1", GdtStencilFuncNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_func)]);
             SetValue("stencilOpPass1", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_pass)]);
             SetValue("stencilOpFail1", GdtStencilOpNames[static_cast<size_t>(m_state_bits_info.m_stencil_front_fail)]);
@@ -1403,11 +1434,9 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     }
 #endif
 
-#if !defined(DUMP_AS_JSON) && !defined(DUMP_AS_GDT)
     if (context.m_gdt)
     {
         MaterialGdtDumper dumper(material);
         context.m_gdt->WriteEntry(dumper.CreateGdtEntry());
     }
-#endif
 }

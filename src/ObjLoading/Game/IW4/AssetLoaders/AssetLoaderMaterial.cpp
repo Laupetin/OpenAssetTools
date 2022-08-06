@@ -310,7 +310,7 @@ namespace IW4
             bool foundSortKey = false;
             for (auto sortKeyIndex = 0u; sortKeyIndex < SORTKEY_MAX; sortKeyIndex++)
             {
-                if (sortKey == SortKeyNames[sortKeyIndex])
+                if (SortKeyNames[sortKeyIndex] && sortKey == SortKeyNames[sortKeyIndex])
                 {
                     SetSort(static_cast<unsigned char>(sortKeyIndex));
                     foundSortKey = true;
@@ -354,6 +354,7 @@ namespace IW4
             cullface_template();
             depthtest_template();
             depthwrite_template();
+            gammawrite_template();
             polygonoffset_template();
             stencil_template();
         }
@@ -449,7 +450,7 @@ namespace IW4
 
         void depthwrite_template()
         {
-            const auto depthWrite = ReadEnumProperty<StateBitsEnabledStatus_e>("depthWrite", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto depthWrite = ReadEnumProperty<StateBitsEnabledStatus_e>("depthWrite", GdtStateBitsOnOffStatusNames, std::extent_v<decltype(GdtStateBitsOnOffStatusNames)>);
             const auto blendFunc = ReadStringProperty("blendFunc");
 
             if (depthWrite == StateBitsEnabledStatus_e::ENABLED)
@@ -476,6 +477,20 @@ namespace IW4
             }
         }
 
+        void gammawrite_template()
+        {
+            const auto gammaWrite = ReadEnumProperty<StateBitsEnabledStatus_e>("gammaWrite", GdtStateBitsOnOffStatusNames, std::extent_v<decltype(GdtStateBitsOnOffStatusNames)>);
+
+            if (gammaWrite == StateBitsEnabledStatus_e::UNKNOWN)
+            {
+                std::ostringstream ss;
+                ss << "Invalid gammaWrite blendFunc value: \"\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            SetGammaWrite(gammaWrite == StateBitsEnabledStatus_e::ENABLED);
+        }
+
         void polygonoffset_template()
         {
             const auto polygonOffset = ReadEnumProperty<PolygonOffset_e>("polygonOffset", GdtPolygonOffsetNames, std::extent_v<decltype(GdtPolygonOffsetNames)>);
@@ -485,6 +500,32 @@ namespace IW4
 
         void stencil_template()
         {
+            const auto stencilMode = ReadEnumProperty<StencilMode_e>("stencil", GdtStencilModeNames, std::extent_v<decltype(GdtStencilModeNames)>);
+
+            if (stencilMode == StencilMode_e::DISABLED)
+            {
+                DisableStencil(StencilIndex::FRONT);
+                DisableStencil(StencilIndex::BACK);
+            }
+            else
+            {
+                if (stencilMode == StencilMode_e::TWO_SIDED)
+                {
+                    const auto stencilBackFunc = ReadEnumProperty<StencilFunc_e>("stencilFunc2", GdtStencilFuncNames, std::extent_v<decltype(GdtStencilFuncNames)>);
+                    const auto stencilBackOpFail = ReadEnumProperty<StencilOp_e>("stencilOpFail2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                    const auto stencilBackOpZFail = ReadEnumProperty<StencilOp_e>("stencilOpZFail2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                    const auto stencilBackOpPass = ReadEnumProperty<StencilOp_e>("stencilOpPass2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+
+                    EnableStencil(StencilIndex::BACK, stencilBackFunc, stencilBackOpFail, stencilBackOpZFail, stencilBackOpPass);
+                }
+
+                const auto stencilFrontFunc = ReadEnumProperty<StencilFunc_e>("stencilFunc1", GdtStencilFuncNames, std::extent_v<decltype(GdtStencilFuncNames)>);
+                const auto stencilFrontOpFail = ReadEnumProperty<StencilOp_e>("stencilOpFail1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                const auto stencilFrontOpZFail = ReadEnumProperty<StencilOp_e>("stencilOpZFail1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                const auto stencilFrontOpPass = ReadEnumProperty<StencilOp_e>("stencilOpPass1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+
+                EnableStencil(StencilIndex::FRONT, stencilFrontFunc, stencilFrontOpFail, stencilFrontOpZFail, stencilFrontOpPass);
+            }
         }
 
         void SetTechniqueSet(const std::string& techsetName)
@@ -500,6 +541,39 @@ namespace IW4
 
             m_dependencies.push_back(techset);
             m_material->techniqueSet = techset->Asset();
+
+            for (auto i = 0; i < TECHNIQUE_COUNT; i++)
+            {
+                if (m_material->techniqueSet->techniques[i])
+                {
+                    const auto stateBitsForTechnique = GetStateBitsForTechnique(static_cast<MaterialTechniqueType>(i));
+                    const auto foundStateBits = std::find_if(m_state_bits.begin(), m_state_bits.end(),
+                                                             [stateBitsForTechnique](const GfxStateBits& s1)
+                                                             {
+                                                                 return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
+                                                             });
+
+                    if (foundStateBits != m_state_bits.end())
+                    {
+                        m_material->stateBitsEntry[i] = static_cast<unsigned char>(foundStateBits - m_state_bits.begin());
+                    }
+                    else
+                    {
+                        m_material->stateBitsEntry[i] = static_cast<unsigned char>(m_state_bits.size());
+                        m_state_bits.push_back(stateBitsForTechnique);
+                    }
+                }
+                else
+                {
+                    m_material->stateBitsEntry[i] = std::numeric_limits<unsigned char>::max();
+                }
+            }
+        }
+
+        GfxStateBits GetStateBitsForTechnique(MaterialTechniqueType techniqueType)
+        {
+            // TODO: Use technique statemap to evaluate actual statebits
+            return m_base_statebits;
         }
 
         void AddMapTexture(const std::string& typeName, const TextureSemantic semantic, const std::string& textureName)
@@ -696,6 +770,14 @@ namespace IW4
                 m_base_statebits.loadBits[1] |= GFXS1_DEPTHWRITE;
         }
 
+        void SetGammaWrite(const bool gammaWrite)
+        {
+            m_base_statebits.loadBits[0] &= ~GFXS0_GAMMAWRITE;
+
+            if (gammaWrite)
+                m_base_statebits.loadBits[0] |= GFXS0_GAMMAWRITE;
+        }
+
         void SetPolygonOffset(const PolygonOffset_e polygonOffset)
         {
             if (polygonOffset == PolygonOffset_e::UNKNOWN)
@@ -707,6 +789,65 @@ namespace IW4
 
             m_base_statebits.loadBits[1] &= ~GFXS1_POLYGON_OFFSET_MASK;
             m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) >> GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
+        }
+
+        static void GetStencilMasksForIndex(const StencilIndex stencil, unsigned& enabledMask, unsigned& funcShift, unsigned& funcMask, unsigned& opFailShift, unsigned& opFailMask,
+                                            unsigned& opZFailShift, unsigned& opZFailMask, unsigned& opPassShift, unsigned& opPassMask)
+        {
+            if (stencil == StencilIndex::FRONT)
+            {
+                enabledMask = GFXS1_STENCIL_FRONT_ENABLE;
+                funcShift = GFXS1_STENCIL_FRONT_FUNC_SHIFT;
+                funcMask = GFXS1_STENCIL_FRONT_FUNC_MASK;
+                opFailShift = GFXS1_STENCIL_FRONT_FAIL_SHIFT;
+                opFailMask = GFXS1_STENCIL_FRONT_FAIL_MASK;
+                opZFailShift = GFXS1_STENCIL_FRONT_ZFAIL_SHIFT;
+                opZFailMask = GFXS1_STENCIL_FRONT_ZFAIL_MASK;
+                opPassShift = GFXS1_STENCIL_FRONT_PASS_SHIFT;
+                opPassMask = GFXS1_STENCIL_FRONT_PASS_MASK;
+            }
+            else
+            {
+                assert(stencil == StencilIndex::BACK);
+
+                enabledMask = GFXS1_STENCIL_BACK_ENABLE;
+                funcShift = GFXS1_STENCIL_BACK_FUNC_SHIFT;
+                funcMask = GFXS1_STENCIL_BACK_FUNC_MASK;
+                opFailShift = GFXS1_STENCIL_BACK_FAIL_SHIFT;
+                opFailMask = GFXS1_STENCIL_BACK_FAIL_MASK;
+                opZFailShift = GFXS1_STENCIL_BACK_ZFAIL_SHIFT;
+                opZFailMask = GFXS1_STENCIL_BACK_ZFAIL_MASK;
+                opPassShift = GFXS1_STENCIL_BACK_PASS_SHIFT;
+                opPassMask = GFXS1_STENCIL_BACK_PASS_MASK;
+            }
+        }
+
+        void DisableStencil(const StencilIndex stencil)
+        {
+            unsigned enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask;
+            GetStencilMasksForIndex(stencil, enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask);
+
+            m_base_statebits.loadBits[1] &= ~(enabledMask | funcMask | opFailMask | opZFailMask | opPassMask);
+        }
+
+        void EnableStencil(const StencilIndex stencil, StencilFunc_e stencilFunc, StencilOp_e stencilOpFail, StencilOp_e stencilOpZFail, StencilOp_e stencilOpPass)
+        {
+            unsigned enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask;
+            GetStencilMasksForIndex(stencil, enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask);
+
+            m_base_statebits.loadBits[1] |= enabledMask;
+
+            m_base_statebits.loadBits[1] &= ~funcMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilFunc) - 1) >> funcShift) & funcMask;
+
+            m_base_statebits.loadBits[1] &= ~opFailMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpFail) - 1) >> opFailShift) & opFailMask;
+
+            m_base_statebits.loadBits[1] &= ~opZFailMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpZFail) - 1) >> opZFailShift) & opZFailMask;
+
+            m_base_statebits.loadBits[1] &= ~opPassMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpPass) - 1) >> opPassShift) & opPassMask;
         }
 
         void FinalizeMaterial() const
@@ -749,6 +890,7 @@ namespace IW4
 
         Material* m_material;
         GfxStateBits m_base_statebits;
+        std::vector<GfxStateBits> m_state_bits;
         std::vector<MaterialTextureDef> m_textures;
     };
 }

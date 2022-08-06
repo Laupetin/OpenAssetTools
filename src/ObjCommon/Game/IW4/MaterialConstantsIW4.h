@@ -326,6 +326,31 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(GdtPolygonOffsetNames)> == static_cast<size_t>(PolygonOffset_e::COUNT));
 
+    enum class StencilIndex
+    {
+        FRONT,
+        BACK
+    };
+
+    enum class StencilMode_e
+    {
+        UNKNOWN,
+        DISABLED,
+        ONE_SIDED,
+        TWO_SIDED,
+
+        COUNT
+    };
+
+    inline const char* GdtStencilModeNames[]
+    {
+        "",
+        "Disable",
+        "One-sided",
+        "Two-sided"
+    };
+    static_assert(std::extent_v<decltype(GdtStencilModeNames)> == static_cast<size_t>(StencilMode_e::COUNT));
+
     enum class StencilFunc_e
     {
         UNKNOWN,
@@ -476,8 +501,8 @@ namespace IW4
         GDT_SORTKEY_OPAQUE, // 1
         GDT_SORTKEY_SKY, // 2
         GDT_SORTKEY_SKYBOX, // 3
-        "?", // 4
-        "?", // 5
+        nullptr, // ? 4
+        nullptr, // ? 5
         GDT_SORTKEY_DECAL_BOTTOM_1, // 6
         GDT_SORTKEY_DECAL_BOTTOM_2, // 7
         GDT_SORTKEY_DECAL_BOTTOM_3, // 8
@@ -486,45 +511,45 @@ namespace IW4
         GDT_SORTKEY_DECAL_MIDDLE_2, // 11
         GDT_SORTKEY_DECAL_MIDDLE_3, // 12
         GDT_SORTKEY_DECAL_WEAPON_IMPACT, // 13
-        "?", // 14
-        "?", // 15
-        "?", // 16
-        "?", // 17
-        "?", // 18
-        "?", // 19
-        "?", // 20
-        "?", // 21
-        "-", // 22
-        "-", // 23
+        nullptr, // ? 14
+        nullptr, // ? 15
+        nullptr, // ? 16
+        nullptr, // ? 17
+        nullptr, // ? 18
+        nullptr, // ? 19
+        nullptr, // ? 20
+        nullptr, // ? 21
+        nullptr, // - 22
+        nullptr, // - 23
         GDT_SORTKEY_WINDOW_INSIDE, // 24
         GDT_SORTKEY_WINDOW_OUTSIDE, // 25
-        "?", // 26
-        "?", // 27
-        "?", // 28
-        "?", // 29
-        "?", // 30
-        "?", // 31
-        "?", // 32
-        "?", // 33
-        "?", // 34
-        "?", // 35
-        "?", // 36
-        "?", // 37
-        "?", // 38
-        "?", // 39
-        "?", // 40
-        "?", // 41
-        "?", // 42
+        nullptr, // ? 26
+        nullptr, // ? 27
+        nullptr, // ? 28
+        nullptr, // ? 29
+        nullptr, // ? 30
+        nullptr, // ? 31
+        nullptr, // ? 32
+        nullptr, // ? 33
+        nullptr, // ? 34
+        nullptr, // ? 35
+        nullptr, // ? 36
+        nullptr, // ? 37
+        nullptr, // ? 38
+        nullptr, // ? 39
+        nullptr, // ? 40
+        nullptr, // ? 41
+        nullptr, // ? 42
         GDT_SORTKEY_DISTORTION, // 43
-        "?", // 44
-        "?", // 45
-        "-", // 46
+        nullptr, // ? 44
+        nullptr, // ? 45
+        nullptr, // - 46
         GDT_SORTKEY_BLEND_ADDITIVE, // 47
         GDT_SORTKEY_EFFECT_AUTO_SORT, // 48
         GDT_SORTKEY_AFTER_EFFECT_BOTTOM, // 49
         GDT_SORTKEY_AFTER_EFFECT_MIDDLE, // 50
         GDT_SORTKEY_AFTER_EFFECT_TOP, // 51
-        "-", // 52
+        nullptr, // - 52
         GDT_SORTKEY_VIEWMODEL_EFFECT, // 53
     };
     static_assert(std::extent_v<decltype(SortKeyNames)> == static_cast<size_t>(SORTKEY_MAX));
