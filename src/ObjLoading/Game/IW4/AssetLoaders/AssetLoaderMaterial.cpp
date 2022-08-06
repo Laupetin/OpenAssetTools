@@ -779,13 +779,13 @@ namespace IW4
             }
 
             m_base_statebits.loadBits[0] &= ~GFXS0_BLENDOP_RGB_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) >> GFXS0_BLENDOP_RGB_SHIFT) & GFXS0_BLENDOP_RGB_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) << GFXS0_BLENDOP_RGB_SHIFT) & GFXS0_BLENDOP_RGB_MASK;
 
             m_base_statebits.loadBits[0] &= ~GFXS0_SRCBLEND_RGB_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) >> GFXS0_SRCBLEND_RGB_SHIFT) & GFXS0_SRCBLEND_RGB_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) << GFXS0_SRCBLEND_RGB_SHIFT) & GFXS0_SRCBLEND_RGB_MASK;
 
             m_base_statebits.loadBits[0] &= ~GFXS0_DSTBLEND_RGB_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) >> GFXS0_DSTBLEND_RGB_SHIFT) & GFXS0_DSTBLEND_RGB_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_RGB_SHIFT) & GFXS0_DSTBLEND_RGB_MASK;
         }
 
         void SetSeparateAlphaBlendFunc(BlendOp_e blendOp, CustomBlendFunc_e srcFunc, CustomBlendFunc_e destFunc)
@@ -798,13 +798,13 @@ namespace IW4
             }
 
             m_base_statebits.loadBits[0] &= ~GFXS0_BLENDOP_ALPHA_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) >> GFXS0_BLENDOP_ALPHA_SHIFT) & GFXS0_BLENDOP_ALPHA_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) << GFXS0_BLENDOP_ALPHA_SHIFT) & GFXS0_BLENDOP_ALPHA_MASK;
 
             m_base_statebits.loadBits[0] &= ~GFXS0_SRCBLEND_ALPHA_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) >> GFXS0_SRCBLEND_ALPHA_SHIFT) & GFXS0_SRCBLEND_ALPHA_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) << GFXS0_SRCBLEND_ALPHA_SHIFT) & GFXS0_SRCBLEND_ALPHA_MASK;
 
             m_base_statebits.loadBits[0] &= ~GFXS0_DSTBLEND_ALPHA_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) >> GFXS0_DSTBLEND_ALPHA_SHIFT) & GFXS0_DSTBLEND_ALPHA_MASK;
+            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_ALPHA_SHIFT) & GFXS0_DSTBLEND_ALPHA_MASK;
         }
 
         void SetColorWrite(const StateBitsEnabledStatus_e colorWriteRed, const StateBitsEnabledStatus_e colorWriteGreen, const StateBitsEnabledStatus_e colorWriteBlue,
@@ -918,7 +918,7 @@ namespace IW4
             }
 
             m_base_statebits.loadBits[1] &= ~GFXS1_POLYGON_OFFSET_MASK;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) >> GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) << GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
         }
 
         static void GetStencilMasksForIndex(const StencilIndex stencil, unsigned& enabledMask, unsigned& funcShift, unsigned& funcMask, unsigned& opFailShift, unsigned& opFailMask,
@@ -968,16 +968,16 @@ namespace IW4
             m_base_statebits.loadBits[1] |= enabledMask;
 
             m_base_statebits.loadBits[1] &= ~funcMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilFunc) - 1) >> funcShift) & funcMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilFunc) - 1) << funcShift) & funcMask;
 
             m_base_statebits.loadBits[1] &= ~opFailMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpFail) - 1) >> opFailShift) & opFailMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpFail) - 1) << opFailShift) & opFailMask;
 
             m_base_statebits.loadBits[1] &= ~opZFailMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpZFail) - 1) >> opZFailShift) & opZFailMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpZFail) - 1) << opZFailShift) & opZFailMask;
 
             m_base_statebits.loadBits[1] &= ~opPassMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpPass) - 1) >> opPassShift) & opPassMask;
+            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpPass) - 1) << opPassShift) & opPassMask;
         }
 
         void FinalizeMaterial() const
