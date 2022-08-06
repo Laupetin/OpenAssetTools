@@ -29,7 +29,7 @@ namespace IW4
               m_memory(memory),
               m_manager(manager),
               m_material(nullptr),
-              m_base_statebits{}
+              m_base_state_bits{}
         {
         }
 
@@ -659,7 +659,7 @@ namespace IW4
         GfxStateBits GetStateBitsForTechnique(const std::string& techniqueName)
         {
             // TODO: Use technique statemap to evaluate actual statebits
-            return m_base_statebits;
+            return m_base_state_bits;
         }
 
         void AddMapTexture(const std::string& typeName, const TileMode_e tileMode, GdtFilter_e filterMode, const TextureSemantic semantic, const std::string& textureName)
@@ -746,19 +746,19 @@ namespace IW4
             switch (alphaTest)
             {
             case AlphaTest_e::ALWAYS:
-                m_base_statebits.loadBits[0] |= GFXS0_ATEST_DISABLE;
+                m_base_state_bits.loadBits[0] |= GFXS0_ATEST_DISABLE;
                 break;
 
             case AlphaTest_e::GT0:
-                m_base_statebits.loadBits[0] |= GFXS0_ATEST_GT_0;
+                m_base_state_bits.loadBits[0] |= GFXS0_ATEST_GT_0;
                 break;
 
             case AlphaTest_e::LT128:
-                m_base_statebits.loadBits[0] |= GFXS0_ATEST_LT_128;
+                m_base_state_bits.loadBits[0] |= GFXS0_ATEST_LT_128;
                 break;
 
             case AlphaTest_e::GE128:
-                m_base_statebits.loadBits[0] |= GFXS0_ATEST_GE_128;
+                m_base_state_bits.loadBits[0] |= GFXS0_ATEST_GE_128;
                 break;
 
             case AlphaTest_e::UNKNOWN:
@@ -778,14 +778,14 @@ namespace IW4
                 throw GdtReadingException(ss.str());
             }
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_BLENDOP_RGB_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) << GFXS0_BLENDOP_RGB_SHIFT) & GFXS0_BLENDOP_RGB_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_BLENDOP_RGB_MASK;
+            m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) << GFXS0_BLENDOP_RGB_SHIFT) & GFXS0_BLENDOP_RGB_MASK;
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_SRCBLEND_RGB_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) << GFXS0_SRCBLEND_RGB_SHIFT) & GFXS0_SRCBLEND_RGB_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_SRCBLEND_RGB_MASK;
+            m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) << GFXS0_SRCBLEND_RGB_SHIFT) & GFXS0_SRCBLEND_RGB_MASK;
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_DSTBLEND_RGB_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_RGB_SHIFT) & GFXS0_DSTBLEND_RGB_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_DSTBLEND_RGB_MASK;
+            m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_RGB_SHIFT) & GFXS0_DSTBLEND_RGB_MASK;
         }
 
         void SetSeparateAlphaBlendFunc(BlendOp_e blendOp, CustomBlendFunc_e srcFunc, CustomBlendFunc_e destFunc)
@@ -797,14 +797,14 @@ namespace IW4
                 throw GdtReadingException(ss.str());
             }
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_BLENDOP_ALPHA_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) << GFXS0_BLENDOP_ALPHA_SHIFT) & GFXS0_BLENDOP_ALPHA_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_BLENDOP_ALPHA_MASK;
+            m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(blendOp) - 1) << GFXS0_BLENDOP_ALPHA_SHIFT) & GFXS0_BLENDOP_ALPHA_MASK;
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_SRCBLEND_ALPHA_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) << GFXS0_SRCBLEND_ALPHA_SHIFT) & GFXS0_SRCBLEND_ALPHA_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_SRCBLEND_ALPHA_MASK;
+            m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(srcFunc) - 1) << GFXS0_SRCBLEND_ALPHA_SHIFT) & GFXS0_SRCBLEND_ALPHA_MASK;
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_DSTBLEND_ALPHA_MASK;
-            m_base_statebits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_ALPHA_SHIFT) & GFXS0_DSTBLEND_ALPHA_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_DSTBLEND_ALPHA_MASK;
+            m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_ALPHA_SHIFT) & GFXS0_DSTBLEND_ALPHA_MASK;
         }
 
         void SetColorWrite(const StateBitsEnabledStatus_e colorWriteRed, const StateBitsEnabledStatus_e colorWriteGreen, const StateBitsEnabledStatus_e colorWriteBlue,
@@ -825,11 +825,11 @@ namespace IW4
                 throw GdtReadingException(ss.str());
             }
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_COLORWRITE_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_COLORWRITE_MASK;
             if (colorWriteRed == StateBitsEnabledStatus_e::ENABLED)
-                m_base_statebits.loadBits[0] |= GFXS0_COLORWRITE_RGB;
+                m_base_state_bits.loadBits[0] |= GFXS0_COLORWRITE_RGB;
             if (colorWriteAlpha == StateBitsEnabledStatus_e::ENABLED)
-                m_base_statebits.loadBits[0] |= GFXS0_COLORWRITE_ALPHA;
+                m_base_state_bits.loadBits[0] |= GFXS0_COLORWRITE_ALPHA;
         }
 
         void SetCullFace(const CullFace_e cullFace)
@@ -841,47 +841,47 @@ namespace IW4
                 throw GdtReadingException(ss.str());
             }
 
-            m_base_statebits.loadBits[0] &= ~GFXS0_CULL_MASK;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_CULL_MASK;
 
             if (cullFace == CullFace_e::FRONT)
             {
-                m_base_statebits.loadBits[0] |= GFXS0_CULL_FRONT;
+                m_base_state_bits.loadBits[0] |= GFXS0_CULL_FRONT;
             }
             else if (cullFace == CullFace_e::BACK)
             {
-                m_base_statebits.loadBits[0] |= GFXS0_CULL_BACK;
+                m_base_state_bits.loadBits[0] |= GFXS0_CULL_BACK;
             }
             else
             {
                 assert(cullFace == CullFace_e::NONE);
-                m_base_statebits.loadBits[0] |= GFXS0_CULL_NONE;
+                m_base_state_bits.loadBits[0] |= GFXS0_CULL_NONE;
             }
         }
 
         void SetDepthTest(const DepthTest_e depthTest)
         {
-            m_base_statebits.loadBits[1] &= GFXS1_DEPTHTEST_MASK;
+            m_base_state_bits.loadBits[1] &= GFXS1_DEPTHTEST_MASK;
 
             switch (depthTest)
             {
             case DepthTest_e::LESS_EQUAL:
-                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_LESSEQUAL;
+                m_base_state_bits.loadBits[1] |= GFXS1_DEPTHTEST_LESSEQUAL;
                 break;
 
             case DepthTest_e::LESS:
-                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_LESS;
+                m_base_state_bits.loadBits[1] |= GFXS1_DEPTHTEST_LESS;
                 break;
 
             case DepthTest_e::EQUAL:
-                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_EQUAL;
+                m_base_state_bits.loadBits[1] |= GFXS1_DEPTHTEST_EQUAL;
                 break;
 
             case DepthTest_e::ALWAYS:
-                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_ALWAYS;
+                m_base_state_bits.loadBits[1] |= GFXS1_DEPTHTEST_ALWAYS;
                 break;
 
             case DepthTest_e::DISABLE:
-                m_base_statebits.loadBits[1] |= GFXS1_DEPTHTEST_DISABLE;
+                m_base_state_bits.loadBits[1] |= GFXS1_DEPTHTEST_DISABLE;
                 break;
 
             case DepthTest_e::UNKNOWN:
@@ -894,18 +894,18 @@ namespace IW4
 
         void SetDepthWrite(const bool depthWrite)
         {
-            m_base_statebits.loadBits[1] &= ~GFXS1_DEPTHWRITE;
+            m_base_state_bits.loadBits[1] &= ~GFXS1_DEPTHWRITE;
 
             if (depthWrite)
-                m_base_statebits.loadBits[1] |= GFXS1_DEPTHWRITE;
+                m_base_state_bits.loadBits[1] |= GFXS1_DEPTHWRITE;
         }
 
         void SetGammaWrite(const bool gammaWrite)
         {
-            m_base_statebits.loadBits[0] &= ~GFXS0_GAMMAWRITE;
+            m_base_state_bits.loadBits[0] &= ~GFXS0_GAMMAWRITE;
 
             if (gammaWrite)
-                m_base_statebits.loadBits[0] |= GFXS0_GAMMAWRITE;
+                m_base_state_bits.loadBits[0] |= GFXS0_GAMMAWRITE;
         }
 
         void SetPolygonOffset(const PolygonOffset_e polygonOffset)
@@ -917,8 +917,8 @@ namespace IW4
                 throw GdtReadingException(ss.str());
             }
 
-            m_base_statebits.loadBits[1] &= ~GFXS1_POLYGON_OFFSET_MASK;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) << GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
+            m_base_state_bits.loadBits[1] &= ~GFXS1_POLYGON_OFFSET_MASK;
+            m_base_state_bits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) << GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
         }
 
         static void GetStencilMasksForIndex(const StencilIndex stencil, unsigned& enabledMask, unsigned& funcShift, unsigned& funcMask, unsigned& opFailShift, unsigned& opFailMask,
@@ -957,7 +957,7 @@ namespace IW4
             unsigned enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask;
             GetStencilMasksForIndex(stencil, enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask);
 
-            m_base_statebits.loadBits[1] &= ~(enabledMask | funcMask | opFailMask | opZFailMask | opPassMask);
+            m_base_state_bits.loadBits[1] &= ~(enabledMask | funcMask | opFailMask | opZFailMask | opPassMask);
         }
 
         void EnableStencil(const StencilIndex stencil, StencilFunc_e stencilFunc, StencilOp_e stencilOpFail, StencilOp_e stencilOpZFail, StencilOp_e stencilOpPass)
@@ -965,19 +965,19 @@ namespace IW4
             unsigned enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask;
             GetStencilMasksForIndex(stencil, enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask);
 
-            m_base_statebits.loadBits[1] |= enabledMask;
+            m_base_state_bits.loadBits[1] |= enabledMask;
 
-            m_base_statebits.loadBits[1] &= ~funcMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilFunc) - 1) << funcShift) & funcMask;
+            m_base_state_bits.loadBits[1] &= ~funcMask;
+            m_base_state_bits.loadBits[1] |= ((static_cast<unsigned>(stencilFunc) - 1) << funcShift) & funcMask;
 
-            m_base_statebits.loadBits[1] &= ~opFailMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpFail) - 1) << opFailShift) & opFailMask;
+            m_base_state_bits.loadBits[1] &= ~opFailMask;
+            m_base_state_bits.loadBits[1] |= ((static_cast<unsigned>(stencilOpFail) - 1) << opFailShift) & opFailMask;
 
-            m_base_statebits.loadBits[1] &= ~opZFailMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpZFail) - 1) << opZFailShift) & opZFailMask;
+            m_base_state_bits.loadBits[1] &= ~opZFailMask;
+            m_base_state_bits.loadBits[1] |= ((static_cast<unsigned>(stencilOpZFail) - 1) << opZFailShift) & opZFailMask;
 
-            m_base_statebits.loadBits[1] &= ~opPassMask;
-            m_base_statebits.loadBits[1] |= ((static_cast<unsigned>(stencilOpPass) - 1) << opPassShift) & opPassMask;
+            m_base_state_bits.loadBits[1] &= ~opPassMask;
+            m_base_state_bits.loadBits[1] |= ((static_cast<unsigned>(stencilOpPass) - 1) << opPassShift) & opPassMask;
         }
 
         void FinalizeMaterial() const
@@ -1031,7 +1031,7 @@ namespace IW4
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
         Material* m_material;
-        GfxStateBits m_base_statebits;
+        GfxStateBits m_base_state_bits;
         std::vector<GfxStateBits> m_state_bits;
         std::vector<MaterialTextureDef> m_textures;
     };
