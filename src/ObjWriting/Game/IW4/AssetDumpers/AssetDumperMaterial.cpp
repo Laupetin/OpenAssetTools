@@ -286,11 +286,11 @@ namespace IW4
                 const auto polygonOffset = (entry.loadBits[1] & GFXS1_POLYGON_OFFSET_MASK) >> GFXS1_POLYGON_OFFSET_SHIFT;
 
                 const auto* alphaTest = "disable";
-                if (entry.loadBits[0] & GFXS0_ATEST_GT_0)
+                if ((entry.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_GT_0)
                     alphaTest = "gt0";
-                else if (entry.loadBits[0] & GFXS0_ATEST_LT_128)
+                else if ((entry.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_LT_128)
                     alphaTest = "lt128";
-                else if (entry.loadBits[0] & GFXS0_ATEST_GE_128)
+                else if ((entry.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_GE_128)
                     alphaTest = "ge128";
                 else
                     assert(entry.loadBits[0] & GFXS0_ATEST_DISABLE);
