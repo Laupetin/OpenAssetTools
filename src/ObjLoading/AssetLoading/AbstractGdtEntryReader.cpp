@@ -3,12 +3,11 @@
 #include <sstream>
 
 GdtReadingException::GdtReadingException(std::string message)
-    : exception(message.c_str()),
-      m_message(std::move(message))
+    : m_message(std::move(message))
 {
 }
 
-const char* GdtReadingException::what() const
+const char* GdtReadingException::what() const noexcept
 {
     return m_message.c_str();
 }

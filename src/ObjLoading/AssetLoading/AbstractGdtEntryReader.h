@@ -9,7 +9,7 @@ class GdtReadingException : public std::exception
 {
 public:
     explicit GdtReadingException(std::string message);
-    _NODISCARD const char* what() const override;
+    _NODISCARD const char* what() const noexcept override;
 
 private:
     std::string m_message;
