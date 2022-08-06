@@ -1033,11 +1033,11 @@ namespace IW4
             {
                 if (stateBits.loadBits[0] & GFXS0_ATEST_DISABLE)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::ALWAYS;
-                else if (stateBits.loadBits[0] & GFXS0_ATEST_GE_128)
+                else if ((stateBits.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_GE_128)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::GE128;
-                else if (stateBits.loadBits[0] & GFXS0_ATEST_GT_0)
+                else if ((stateBits.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_GT_0)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::GT0;
-                else if (stateBits.loadBits[0] & GFXS0_ATEST_LT_128)
+                else if ((stateBits.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_LT_128)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::LT128;
                 else
                     assert(false);

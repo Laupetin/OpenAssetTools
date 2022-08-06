@@ -412,6 +412,8 @@ namespace IW4
                 SetAlphaTest(AlphaTest_e::ALWAYS);
             else if (alphaTest == GDT_ALPHA_TEST_GE128)
                 SetAlphaTest(AlphaTest_e::GE128);
+            else if (alphaTest == GDT_ALPHA_TEST_GT0) // TODO: This is not available for IW3
+                SetAlphaTest(AlphaTest_e::GT0);
             else
             {
                 std::ostringstream ss;
