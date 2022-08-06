@@ -20,6 +20,6 @@ namespace techset
     public:
         TechsetFileReader(std::istream& stream, std::string fileName, const char** validTechniqueTypeNames, size_t validTechniqueTypeNameCount);
 
-        _NODISCARD std::unique_ptr<techset::TechsetDefinition> ReadTechsetDefinition() const;
+        _NODISCARD std::unique_ptr<TechsetDefinition> ReadTechsetDefinition() const;
     };
 }

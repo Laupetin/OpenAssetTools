@@ -17,6 +17,7 @@
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechsetFileReader.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "Techset/TechsetDefinitionCache.h"
 #include "Utils/Alignment.h"
 
 using namespace IW4;
@@ -1083,9 +1084,9 @@ namespace IW4
                     break;
                 }
             }
-            else if(arg.m_arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.m_arg.type == MTL_ARG_CODE_PIXEL_CONST)
+            else if (arg.m_arg.type == MTL_ARG_CODE_VERTEX_CONST || arg.m_arg.type == MTL_ARG_CODE_PIXEL_CONST)
             {
-                switch(arg.m_arg.u.codeConst.index)
+                switch (arg.m_arg.u.codeConst.index)
                 {
                 case CONST_SRC_CODE_LIGHT_SPOTDIR:
                 case CONST_SRC_CODE_LIGHT_SPOTFACTORS:
@@ -1259,12 +1260,29 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& ass
         }
     }
 
-    const auto* disAsset = GlobalAssetPool<MaterialTechniqueSet>::GetAssetByName("distortion_scale");
-    const auto* dis = disAsset ? disAsset->Asset() : nullptr;
-
     manager->AddAsset(ASSET_TYPE_TECHNIQUE_SET, assetName, techset, std::vector(dependencies.begin(), dependencies.end()), std::vector<scr_string_t>());
 
     return true;
+}
+
+techset::TechsetDefinition* AssetLoaderTechniqueSet::LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache)
+{
+    auto* cachedTechsetDefinition = definitionCache->GetCachedTechsetDefinition(assetName);
+    if (cachedTechsetDefinition)
+        return cachedTechsetDefinition;
+
+    const auto techsetFileName = GetTechsetFileName(assetName);
+    const auto file = searchPath->Open(techsetFileName);
+    if (!file.IsOpen())
+        return nullptr;
+
+    const techset::TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
+    auto techsetDefinition = reader.ReadTechsetDefinition();
+    auto* techsetDefinitionPtr = techsetDefinition.get();
+
+    definitionCache->AddTechsetDefinitionToCache(assetName, std::move(techsetDefinition));
+
+    return techsetDefinitionPtr;
 }
 
 bool AssetLoaderTechniqueSet::CanLoadFromRaw() const
@@ -1274,14 +1292,8 @@ bool AssetLoaderTechniqueSet::CanLoadFromRaw() const
 
 bool AssetLoaderTechniqueSet::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    const auto techsetFileName = GetTechsetFileName(assetName);
-    const auto file = searchPath->Open(techsetFileName);
-    if (!file.IsOpen())
-        return false;
-
-    const techset::TechsetFileReader reader(*file.m_stream, techsetFileName, techniqueTypeNames, std::extent_v<decltype(techniqueTypeNames)>);
-    const auto techsetDefinition = reader.ReadTechsetDefinition();
-
+    auto* definitionCache = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
+    const auto* techsetDefinition = LoadTechsetDefinition(assetName, searchPath, definitionCache);
     if (techsetDefinition)
         return CreateTechsetFromDefinition(assetName, *techsetDefinition, searchPath, memory, manager);
 

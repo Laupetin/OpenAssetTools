@@ -4,6 +4,7 @@
 #include "AssetLoading/BasicAssetLoader.h"
 #include "SearchPath/ISearchPath.h"
 #include "Techset/TechsetDefinition.h"
+#include "Techset/TechsetDefinitionCache.h"
 
 namespace IW4
 {
@@ -14,6 +15,8 @@ namespace IW4
                                                 IAssetLoadingManager* manager);
 
     public:
+        static techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache);
+
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
         _NODISCARD bool CanLoadFromRaw() const override;
         bool LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
