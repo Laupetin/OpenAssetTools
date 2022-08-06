@@ -142,9 +142,11 @@ namespace IW4
             SetTechniqueSet("2d");
 
             const auto colorMapName = ReadStringProperty("colorMap");
+            const auto tileColor = ReadEnumProperty<TileMode_e>("tileColor", GdtTileModeNames, std::extent_v<decltype(GdtTileModeNames)>);
+            const auto filterColor = ReadEnumProperty<GdtFilter_e>("filterColor", GdtSamplerFilterNames, std::extent_v<decltype(GdtSamplerFilterNames)>);
 
             if (!colorMapName.empty())
-                AddMapTexture("colorMap", TS_2D, colorMapName);
+                AddMapTexture("colorMap", tileColor, filterColor, TS_2D, colorMapName);
             else
                 throw GdtReadingException("ColorMap may not be blank in 2d materials");
         }
@@ -658,14 +660,58 @@ namespace IW4
             return m_base_statebits;
         }
 
-        void AddMapTexture(const std::string& typeName, const TextureSemantic semantic, const std::string& textureName)
+        void AddMapTexture(const std::string& typeName, const TileMode_e tileMode, GdtFilter_e filterMode, const TextureSemantic semantic, const std::string& textureName)
         {
             MaterialTextureDef textureDef{};
             textureDef.nameHash = Common::R_HashString(typeName.c_str());
             textureDef.nameStart = typeName[0];
             textureDef.nameEnd = typeName[typeName.size() - 1];
-            textureDef.samplerState = 0; // TODO
+            textureDef.samplerState = 0;
             textureDef.semantic = static_cast<unsigned char>(semantic);
+
+            switch (tileMode)
+            {
+            case TileMode_e::TILE_BOTH:
+                textureDef.samplerState |= SAMPLER_CLAMP_U | SAMPLER_CLAMP_V | SAMPLER_CLAMP_W;
+                break;
+            case TileMode_e::TILE_HORIZONTAL:
+                textureDef.samplerState |= SAMPLER_CLAMP_V;
+                break;
+            case TileMode_e::TILE_VERTICAL:
+                textureDef.samplerState |= SAMPLER_CLAMP_U;
+                break;
+            case TileMode_e::UNKNOWN:
+            case TileMode_e::NO_TILE:
+                break;
+            default:
+                assert(false);
+                break;
+            }
+
+            switch (filterMode)
+            {
+            case GdtFilter_e::MIP_2X_BILINEAR:
+                textureDef.samplerState |= SAMPLER_FILTER_ANISO2X | SAMPLER_MIPMAP_NEAREST;
+                break;
+            case GdtFilter_e::MIP_2X_TRILINEAR:
+                textureDef.samplerState |= SAMPLER_FILTER_ANISO2X | SAMPLER_MIPMAP_LINEAR;
+                break;
+            case GdtFilter_e::MIP_4X_BILINEAR:
+                textureDef.samplerState |= SAMPLER_FILTER_ANISO4X | SAMPLER_MIPMAP_NEAREST;
+                break;
+            case GdtFilter_e::MIP_4X_TRILINEAR:
+                textureDef.samplerState |= SAMPLER_FILTER_ANISO4X | SAMPLER_MIPMAP_LINEAR;
+                break;
+            case GdtFilter_e::NOMIP_NEAREST:
+                textureDef.samplerState |= SAMPLER_FILTER_NEAREST | SAMPLER_MIPMAP_DISABLED;
+                break;
+            case GdtFilter_e::NOMIP_BILINEAR:
+                textureDef.samplerState |= SAMPLER_FILTER_LINEAR | SAMPLER_MIPMAP_DISABLED;
+                break;
+            default:
+                assert(false);
+                break;
+            }
 
             auto* image = reinterpret_cast<XAssetInfo<GfxImage>*>(m_manager->LoadDependency(ASSET_TYPE_IMAGE, textureName));
 
@@ -1015,7 +1061,7 @@ bool AssetLoaderMaterial::LoadFromGdt(const std::string& assetName, IGdtQueryabl
         if (loader.Load())
             manager->AddAsset(ASSET_TYPE_MATERIAL, assetName, loader.GetMaterial(), loader.GetDependencies(), std::vector<scr_string_t>());
     }
-    catch(const SkipMaterialException&)
+    catch (const SkipMaterialException&)
     {
         return false;
     }

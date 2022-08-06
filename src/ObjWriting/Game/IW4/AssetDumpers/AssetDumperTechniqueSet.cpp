@@ -212,18 +212,27 @@ namespace IW4
                 Indent();
                 m_stream << codeDestAccessor << " = material.";
 
-                const auto knownMaterialSource = knownMaterialSourceNames.find(arg.u.nameHash);
-                if (knownMaterialSource != knownMaterialSourceNames.end())
+                const auto knownConstantName = knownConstantNames.find(arg.u.nameHash);
+                if (knownConstantName != knownConstantNames.end())
                 {
-                    m_stream << knownMaterialSource->second;
+                    m_stream << knownConstantName->second;
                 }
                 else
                 {
-                    const auto shaderArgNameHash = Common::R_HashString(targetShaderArg->m_name.c_str(), 0u);
-                    if (shaderArgNameHash == arg.u.nameHash)
-                        m_stream << targetShaderArg->m_name;
+                    const auto knownMaterialTextureName = knownTextureMaps.find(arg.u.nameHash);
+
+                    if(knownMaterialTextureName != knownTextureMaps.end())
+                    {
+                        m_stream << knownConstantName->second;
+                    }
                     else
-                        m_stream << "#0x" << std::hex << arg.u.nameHash;
+                    {
+                        const auto shaderArgNameHash = Common::R_HashString(targetShaderArg->m_name.c_str(), 0u);
+                        if (shaderArgNameHash == arg.u.nameHash)
+                            m_stream << targetShaderArg->m_name;
+                        else
+                            m_stream << "#0x" << std::hex << arg.u.nameHash;
+                    }
                 }
 
                 m_stream << ";\n";

@@ -409,6 +409,52 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(GdtStencilOpNames)> == static_cast<size_t>(StencilOp_e::COUNT));
 
+    enum class TileMode_e
+    {
+        UNKNOWN,
+        TILE_BOTH,
+        TILE_HORIZONTAL,
+        TILE_VERTICAL,
+        NO_TILE,
+
+        COUNT
+    };
+
+    inline const char* GdtTileModeNames[]
+    {
+        "",
+        "tile both*",
+        "tile horizontal",
+        "tile vertical",
+        "no tile"
+    };
+    static_assert(std::extent_v<decltype(GdtTileModeNames)> == static_cast<size_t>(TileMode_e::COUNT));
+
+    enum class GdtFilter_e
+    {
+        UNKNOWN,
+        MIP_2X_BILINEAR,
+        MIP_4X_BILINEAR,
+        MIP_2X_TRILINEAR,
+        MIP_4X_TRILINEAR,
+        NOMIP_NEAREST,
+        NOMIP_BILINEAR,
+
+        COUNT
+    };
+
+    static const char* GdtSamplerFilterNames[]
+    {
+        "",
+        "mip standard (2x bilinear)*",
+        "mip expensive (4x bilinear)",
+        "mip more expensive (2x trilinear)",
+        "mip most expensive (4x trilinear)",
+        "nomip nearest",
+        "nomip bilinear"
+    };
+    static_assert(std::extent_v<decltype(GdtSamplerFilterNames)> == static_cast<size_t>(GdtFilter_e::COUNT));
+
     enum GdtMaterialType
     {
         MATERIAL_TYPE_UNKNOWN,

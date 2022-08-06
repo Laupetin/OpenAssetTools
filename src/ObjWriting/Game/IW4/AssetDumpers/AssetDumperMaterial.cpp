@@ -19,6 +19,7 @@
 
 using namespace IW4;
 using json = nlohmann::json;
+using namespace std::string_literals;
 
 namespace IW4
 {
@@ -136,10 +137,10 @@ namespace IW4
                     {"semantic", ArrayEntry(semanticNames, entry.semantic)}
                 };
 
-                const auto knownMaterialSourceName = knownMaterialSourceNames.find(entry.nameHash);
-                if (knownMaterialSourceName != knownMaterialSourceNames.end())
+                const auto knownMaterialSourceName = knownTextureMaps.find(entry.nameHash);
+                if (knownMaterialSourceName != knownTextureMaps.end())
                 {
-                    jEntry["name"] = knownMaterialSourceName->second;
+                    jEntry["name"] = knownMaterialSourceName->second.m_name;
                 }
                 else
                 {
@@ -191,8 +192,8 @@ namespace IW4
                     }
                     else
                     {
-                        const auto knownMaterialSourceName = knownMaterialSourceNames.find(entry.nameHash);
-                        if (knownMaterialSourceName != knownMaterialSourceNames.end())
+                        const auto knownMaterialSourceName = knownConstantNames.find(entry.nameHash);
+                        if (knownMaterialSourceName != knownConstantNames.end())
                         {
                             jEntry["name"] = knownMaterialSourceName->second;
                         }
@@ -1351,8 +1352,8 @@ namespace IW4
             for (auto i = 0u; i < m_material->textureCount; i++)
             {
                 const auto& entry = m_material->textureTable[i];
-                const auto knownMaterialSourceName = knownMaterialSourceNames.find(entry.nameHash);
-                if (knownMaterialSourceName == knownMaterialSourceNames.end())
+                const auto knownMaterialSourceName = knownTextureMaps.find(entry.nameHash);
+                if (knownMaterialSourceName == knownTextureMaps.end())
                 {
                     assert(false);
                     std::cout << "Unknown material texture source name hash: 0x" << std::hex << entry.nameHash << " (" << entry.nameStart << "..." << entry.nameEnd << ")\n";
@@ -1373,7 +1374,52 @@ namespace IW4
                     imageName = AssetName(entry.u.water->image->name);
                 }
 
-                SetValue(knownMaterialSourceName->second, imageName);
+                TileMode_e tileMode;
+                if (entry.samplerState & SAMPLER_CLAMP_U && entry.samplerState & SAMPLER_CLAMP_V && entry.samplerState & SAMPLER_CLAMP_W)
+                    tileMode = TileMode_e::TILE_BOTH;
+                else if (entry.samplerState & SAMPLER_CLAMP_U)
+                    tileMode = TileMode_e::TILE_VERTICAL;
+                else if (entry.samplerState & SAMPLER_CLAMP_V)
+                    tileMode = TileMode_e::TILE_HORIZONTAL;
+                else
+                    tileMode = TileMode_e::NO_TILE;
+
+                auto filter = GdtFilter_e::UNKNOWN;
+                if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_ANISO2X)
+                {
+                    if (entry.samplerState & SAMPLER_MIPMAP_NEAREST)
+                        filter = GdtFilter_e::MIP_2X_BILINEAR;
+                    else if (entry.samplerState & SAMPLER_MIPMAP_LINEAR)
+                        filter = GdtFilter_e::MIP_2X_TRILINEAR;
+                }
+                else if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_ANISO4X)
+                {
+                    if (entry.samplerState & SAMPLER_MIPMAP_NEAREST)
+                        filter = GdtFilter_e::MIP_4X_BILINEAR;
+                    else if (entry.samplerState & SAMPLER_MIPMAP_LINEAR)
+                        filter = GdtFilter_e::MIP_4X_TRILINEAR;
+                }
+                else if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_NEAREST)
+                {
+                    assert((entry.samplerState & SAMPLER_MIPMAP_MASK) == SAMPLER_MIPMAP_DISABLED);
+                    filter = GdtFilter_e::NOMIP_NEAREST;
+                }
+                else if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_LINEAR)
+                {
+                    assert((entry.samplerState & SAMPLER_MIPMAP_MASK) == SAMPLER_MIPMAP_DISABLED);
+                    filter = GdtFilter_e::NOMIP_BILINEAR;
+                }
+
+                assert(filter != GdtFilter_e::UNKNOWN);
+                if (filter == GdtFilter_e::UNKNOWN)
+                {
+                    std::cout << "Unknown filter/mipmap combination: " << entry.samplerState << "\n";
+                    continue;
+                }
+
+                SetValue(knownMaterialSourceName->second.m_name, imageName);
+                SetValue("tile"s + knownMaterialSourceName->second.m_additional_property_suffix, GdtTileModeNames[static_cast<size_t>(tileMode)]);
+                SetValue("filter"s + knownMaterialSourceName->second.m_additional_property_suffix, GdtSamplerFilterNames[static_cast<size_t>(filter)]);
             }
         }
 

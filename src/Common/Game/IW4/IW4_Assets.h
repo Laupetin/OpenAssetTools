@@ -627,6 +627,17 @@ namespace IW4
         water_t* water;
     };
 
+    enum MaterialTextureFilter
+    {
+        TEXTURE_FILTER_DISABLED = 0x0,
+        TEXTURE_FILTER_NEAREST = 0x1,
+        TEXTURE_FILTER_LINEAR = 0x2,
+        TEXTURE_FILTER_ANISO2X = 0x3,
+        TEXTURE_FILTER_ANISO4X = 0x4,
+
+        TEXTURE_FILTER_COUNT
+    };
+
     enum SamplerStateBits_e
     {
         SAMPLER_FILTER_SHIFT = 0x0,

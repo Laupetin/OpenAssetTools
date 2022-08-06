@@ -526,61 +526,38 @@ namespace IW4
     };
     static_assert(std::extent_v<decltype(g_materialTypeInfo)> == MTL_TYPE_COUNT);
 
-    static constexpr std::pair<uint32_t, const char*> KnownMaterialSource(const char* name)
+    struct KnownMaterialTextureMap
+    {
+        const char* m_name;
+        const char* m_additional_property_suffix;
+    };
+
+    static constexpr std::pair<uint32_t, KnownMaterialTextureMap> MakeKnownTextureMap(const char* name, const char* additionalPropertySuffix)
+    {
+        return std::make_pair(Common::R_HashString(name, 0u), KnownMaterialTextureMap{name, additionalPropertySuffix});
+    }
+
+    inline std::unordered_map knownTextureMaps
+    {
+        MakeKnownTextureMap("colorMap", "Color"),
+        MakeKnownTextureMap("colorMap0", "Color00"),
+        MakeKnownTextureMap("colorMap1", "Color01"),
+        MakeKnownTextureMap("colorMap2", "Color02"),
+        MakeKnownTextureMap("normalMap", "Normal"),
+        MakeKnownTextureMap("specularMap", "Specular"),
+        MakeKnownTextureMap("detailMap", "Detail"),
+    };
+
+    static constexpr std::pair<uint32_t, const char*> MakeKnownConstantName(const char* name)
     {
         return std::make_pair(Common::R_HashString(name, 0u), name);
     }
 
-    inline std::unordered_map knownMaterialSourceNames
+    inline std::unordered_map knownConstantNames
     {
-        KnownMaterialSource("colorMap"),
-        KnownMaterialSource("colorMap0"),
-        KnownMaterialSource("colorMap1"),
-        KnownMaterialSource("colorMap2"),
-        KnownMaterialSource("colorMap3"),
-        KnownMaterialSource("colorMap4"),
-        KnownMaterialSource("colorMap5"),
-        KnownMaterialSource("colorMap6"),
-        KnownMaterialSource("colorMap7"),
-        KnownMaterialSource("normalMap"),
-        KnownMaterialSource("normalMap0"),
-        KnownMaterialSource("normalMap1"),
-        KnownMaterialSource("normalMap2"),
-        KnownMaterialSource("normalMap3"),
-        KnownMaterialSource("normalMap4"),
-        KnownMaterialSource("normalMap5"),
-        KnownMaterialSource("normalMap6"),
-        KnownMaterialSource("normalMap7"),
-        KnownMaterialSource("specularMap"),
-        KnownMaterialSource("specularMap0"),
-        KnownMaterialSource("specularMap1"),
-        KnownMaterialSource("specularMap2"),
-        KnownMaterialSource("specularMap3"),
-        KnownMaterialSource("specularMap4"),
-        KnownMaterialSource("specularMap5"),
-        KnownMaterialSource("specularMap6"),
-        KnownMaterialSource("specularMap7"),
-        KnownMaterialSource("detailMap"),
-        KnownMaterialSource("detailMap0"),
-        KnownMaterialSource("detailMap1"),
-        KnownMaterialSource("detailMap2"),
-        KnownMaterialSource("detailMap3"),
-        KnownMaterialSource("detailMap4"),
-        KnownMaterialSource("detailMap5"),
-        KnownMaterialSource("detailMap6"),
-        KnownMaterialSource("detailMap7"),
-        KnownMaterialSource("attenuationMap"),
-        KnownMaterialSource("attenuationMap0"),
-        KnownMaterialSource("attenuationMap1"),
-        KnownMaterialSource("attenuationMap2"),
-        KnownMaterialSource("attenuationMap3"),
-        KnownMaterialSource("attenuationMap4"),
-        KnownMaterialSource("attenuationMap5"),
-        KnownMaterialSource("attenuationMap6"),
-        KnownMaterialSource("attenuationMap7"),
-        KnownMaterialSource("distortionScale"),
-        KnownMaterialSource("eyeOffsetParms"),
-        KnownMaterialSource("falloffBeginColor"),
-        KnownMaterialSource("falloffEndColor"),
+        MakeKnownConstantName("distortionScale"),
+        MakeKnownConstantName("eyeOffsetParms"),
+        MakeKnownConstantName("falloffBeginColor"),
+        MakeKnownConstantName("falloffEndColor"),
     };
 }
