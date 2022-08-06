@@ -864,6 +864,9 @@ namespace IW4
         SORTKEY_SKYBOX = 3,
         // ? = 4, // some kind of dynamic decal?
         // ? = 5, // another kind of dynamic decal?
+
+        SORTKEY_TRANS_START = 6,
+
         SORTKEY_DECAL_BOTTOM_1 = 6, // prob decal - bottom 1
         SORTKEY_DECAL_BOTTOM_2 = 7, // prob decal - bottom 2
         SORTKEY_DECAL_BOTTOM_3 = 8, // prob decal - bottom 3
@@ -916,6 +919,20 @@ namespace IW4
         SORTKEY_MAX
     };
 
+    // Names unknown
+    // There's probably: MTL_GAMEFLAG_CASTS_SHADOW (part of iw3; 0x40 there)
+    enum MaterialGameFlags
+    {
+        MTL_GAMEFLAG_1 = 0x1,
+        MTL_GAMEFLAG_2 = 0x2,
+        MTL_GAMEFLAG_4 = 0x4,
+        MTL_GAMEFLAG_8 = 0x8,
+        MTL_GAMEFLAG_10 = 0x10,
+        MTL_GAMEFLAG_20 = 0x20,
+        MTL_GAMEFLAG_40 = 0x40,
+        MTL_GAMEFLAG_80 = 0x80,
+    };
+
     struct MaterialInfo
     {
         const char* name;
@@ -941,14 +958,13 @@ namespace IW4
 
     enum MaterialStateFlags
     {
-        MTL_STATEFLAG_CULL_BACK = 0x1,  // Only when has technique for >= TECHNIQUE_LIT_BEGIN (checks all statebits)
-        MTL_STATEFLAG_CULL_FRONT = 0x2, // ^
-        MTL_STATEFLAG_IS_DECAL = 0x4,
-        MTL_STATEFLAG_WRITES_DEPTH = 0x8,
-        MTL_STATEFLAG_USES_DEPTH_BUFFER = 0x10,
-        MTL_STATEFLAG_USES_STENCIL_BUFFER = 0x20,
-        MTL_STATEFLAG_CULL_SHADOW_BACK = 0x40, // Only when has technique for TECHNIQUE_BUILD_SHADOWMAP_DEPTH (checks its statebits)
-        MTL_STATEFLAG_CULL_SHADOW_FRONT = 0x80 // ^
+        STATE_FLAG_CULL_BACK = 0x1,
+        STATE_FLAG_AMBIENT = 0x2,
+        STATE_FLAG_DECAL = 0x4,
+        STATE_FLAG_WRITES_DEPTH = 0x8,
+        STATE_FLAG_USES_DEPTH_BUFFER = 0x10,
+        STATE_FLAG_USES_STENCIL_BUFFER = 0x20,
+        STATE_FLAG_CULL_BACK_SHADOW = 0x40,
     };
 
     struct Material

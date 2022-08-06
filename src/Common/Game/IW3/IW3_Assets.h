@@ -784,6 +784,18 @@ namespace IW3
         CAMERA_REGION_NONE = 0x3,
     };
 
+    enum MaterialStateFlags
+    {
+        STATE_FLAG_CULL_BACK = 0x1,
+        STATE_FLAG_CULL_FRONT = 0x2,
+        STATE_FLAG_DECAL = 0x4,
+        STATE_FLAG_WRITES_DEPTH = 0x8,
+        STATE_FLAG_USES_DEPTH_BUFFER = 0x10,
+        STATE_FLAG_USES_STENCIL_BUFFER = 0x20,
+        STATE_FLAG_CULL_BACK_SHADOW = 0x40,
+        STATE_FLAG_CULL_FRONT_SHADOW = 0x80,
+    };
+
     struct Material
     {
         MaterialInfo info;

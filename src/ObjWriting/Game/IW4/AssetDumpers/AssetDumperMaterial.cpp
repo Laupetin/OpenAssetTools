@@ -1277,7 +1277,7 @@ namespace IW4
             SetValue("materialType", GdtMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_material_type)]);
             SetValue("customTemplate", GdtCustomMaterialTypeNames[static_cast<size_t>(m_techset_info.m_gdt_custom_material_type)]);
             SetValue("customString", m_techset_info.m_gdt_custom_string);
-            SetValue("sortKey", m_techset_info.m_sort_key_name);
+            SetValue("sort", m_techset_info.m_sort_key_name);
             SetValue("noCastShadow", m_techset_info.m_no_cast_shadow);
             SetValue("noReceiveDynamicShadow", m_techset_info.m_no_receive_dynamic_shadow);
             SetValue("noFog", m_techset_info.m_no_fog);

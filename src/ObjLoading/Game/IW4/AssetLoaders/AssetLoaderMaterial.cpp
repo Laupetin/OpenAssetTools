@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "AssetLoaderTechniqueSet.h"
 #include "ObjLoading.h"
 #include "AssetLoading/AbstractGdtEntryReader.h"
 #include "Game/IW4/CommonIW4.h"
@@ -542,16 +543,35 @@ namespace IW4
             m_dependencies.push_back(techset);
             m_material->techniqueSet = techset->Asset();
 
+            auto* loadingContext = m_manager->GetAssetLoadingContext();
+            auto* searchPath = loadingContext->m_raw_search_path;
+            auto* definitionCache = loadingContext->GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
+
+            const auto* techsetDefinition = AssetLoaderTechniqueSet::LoadTechsetDefinition(techsetName, searchPath, definitionCache);
+            if (techsetDefinition == nullptr)
+            {
+                std::ostringstream ss;
+                ss << "Could not find techset definition for: \"" << techsetName << "\"";
+                throw GdtReadingException(ss.str());
+            }
+
+            SetTechniqueSetStateBits(techsetDefinition);
+            SetTechniqueSetCameraRegion(techsetDefinition);
+        }
+
+        void SetTechniqueSetStateBits(const techset::TechsetDefinition* techsetDefinition)
+        {
             for (auto i = 0; i < TECHNIQUE_COUNT; i++)
             {
-                if (m_material->techniqueSet->techniques[i])
+                std::string techniqueName;
+                if (techsetDefinition->GetTechniqueByIndex(i, techniqueName))
                 {
-                    const auto stateBitsForTechnique = GetStateBitsForTechnique(static_cast<MaterialTechniqueType>(i));
+                    const auto stateBitsForTechnique = GetStateBitsForTechnique(techniqueName);
                     const auto foundStateBits = std::find_if(m_state_bits.begin(), m_state_bits.end(),
-                                                             [stateBitsForTechnique](const GfxStateBits& s1)
-                                                             {
-                                                                 return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
-                                                             });
+                        [stateBitsForTechnique](const GfxStateBits& s1)
+                        {
+                            return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
+                        });
 
                     if (foundStateBits != m_state_bits.end())
                     {
@@ -570,7 +590,27 @@ namespace IW4
             }
         }
 
-        GfxStateBits GetStateBitsForTechnique(MaterialTechniqueType techniqueType)
+        void SetTechniqueSetCameraRegion(const techset::TechsetDefinition* techsetDefinition) const
+        {
+            std::string tempName;
+            if (techsetDefinition->GetTechniqueByIndex(TECHNIQUE_LIT, tempName))
+            {
+                if (m_material->info.sortKey >= SORTKEY_TRANS_START)
+                    m_material->cameraRegion = CAMERA_REGION_LIT_TRANS;
+                else
+                    m_material->cameraRegion = CAMERA_REGION_LIT_OPAQUE;
+            }
+            else if (techsetDefinition->GetTechniqueByIndex(TECHNIQUE_EMISSIVE, tempName))
+            {
+                m_material->cameraRegion = CAMERA_REGION_EMISSIVE;
+            }
+            else
+            {
+                m_material->cameraRegion = CAMERA_REGION_NONE;
+            }
+        }
+
+        GfxStateBits GetStateBitsForTechnique(const std::string& techniqueName)
         {
             // TODO: Use technique statemap to evaluate actual statebits
             return m_base_statebits;
@@ -862,6 +902,18 @@ namespace IW4
             {
                 m_material->textureTable = nullptr;
                 m_material->textureCount = 0u;
+            }
+
+            if (!m_state_bits.empty())
+            {
+                m_material->stateBitsTable = static_cast<GfxStateBits*>(m_memory->Alloc(sizeof(GfxStateBits) * m_state_bits.size()));
+                m_material->stateBitsCount = static_cast<unsigned char>(m_state_bits.size());
+                memcpy(m_material->stateBitsTable, m_state_bits.data(), sizeof(GfxStateBits) * m_state_bits.size());
+            }
+            else
+            {
+                m_material->stateBitsTable = nullptr;
+                m_material->stateBitsCount = 0u;
             }
         }
 
