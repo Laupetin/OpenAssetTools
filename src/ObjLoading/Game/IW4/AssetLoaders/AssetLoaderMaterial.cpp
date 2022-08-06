@@ -17,6 +17,10 @@ using namespace IW4;
 
 namespace IW4
 {
+    class SkipMaterialException final : public std::exception
+    {
+    };
+
     class MaterialGdtLoader : AbstractGdtEntryReader
     {
     public:
@@ -121,10 +125,14 @@ namespace IW4
 
         void mtl_phong_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_ambient_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_2d_template()
@@ -143,38 +151,56 @@ namespace IW4
 
         void mtl_unlit_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_unlit_deprecated_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_effect_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_distortion_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_particlecloud_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_tools_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_sky_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_water_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_objective_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void custom_template()
@@ -223,34 +249,50 @@ namespace IW4
 
         void mtl_custom_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_phong_flag_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_grain_overlay_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_effect_eyeoffset_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_reflexsight_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_shadowclear_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_shadowoverlay_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void mtl_splatter_template()
         {
+            // TODO
+            throw SkipMaterialException();
         }
 
         void commonsetup_template()
@@ -568,10 +610,10 @@ namespace IW4
                 {
                     const auto stateBitsForTechnique = GetStateBitsForTechnique(techniqueName);
                     const auto foundStateBits = std::find_if(m_state_bits.begin(), m_state_bits.end(),
-                        [stateBitsForTechnique](const GfxStateBits& s1)
-                        {
-                            return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
-                        });
+                                                             [stateBitsForTechnique](const GfxStateBits& s1)
+                                                             {
+                                                                 return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
+                                                             });
 
                     if (foundStateBits != m_state_bits.end())
                     {
@@ -972,6 +1014,10 @@ bool AssetLoaderMaterial::LoadFromGdt(const std::string& assetName, IGdtQueryabl
     {
         if (loader.Load())
             manager->AddAsset(ASSET_TYPE_MATERIAL, assetName, loader.GetMaterial(), loader.GetDependencies(), std::vector<scr_string_t>());
+    }
+    catch(const SkipMaterialException&)
+    {
+        return false;
     }
     catch (const GdtReadingException& e)
     {
