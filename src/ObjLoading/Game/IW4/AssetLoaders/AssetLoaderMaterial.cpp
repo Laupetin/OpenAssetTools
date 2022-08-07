@@ -172,14 +172,82 @@ namespace IW4
 
         void mtl_distortion_template()
         {
-            // TODO
-            throw SkipMaterialException();
+            commonsetup_template();
+
+            const auto uvAnim = ReadBoolProperty("uvAnim");
+            if (uvAnim)
+                SetTechniqueSet("distortion_scale_ua_zfeather");
+            else
+                SetTechniqueSet("distortion_scale_zfeather");
+
+            const auto colorMapName = ReadStringProperty("colorMap");
+            const auto tileColor = ReadEnumProperty<TileMode_e>("tileColor", GdtTileModeNames, std::extent_v<decltype(GdtTileModeNames)>);
+            const auto filterColor = ReadEnumProperty<GdtFilter_e>("filterColor", GdtSamplerFilterNames, std::extent_v<decltype(GdtSamplerFilterNames)>);
+
+            if (!colorMapName.empty())
+                AddMapTexture("colorMap", tileColor, filterColor, TS_COLOR_MAP, colorMapName);
+            else
+                throw GdtReadingException("ColorMap may not be blank in tools materials");
+
+            const auto distortionScaleX = ReadFloatProperty("distortionScaleX");
+            const auto distortionScaleY = ReadFloatProperty("distortionScaleY");
+            AddConstant("distortionScale", Vector4f(distortionScaleX, distortionScaleY, 0, 0));
+
+            if (uvAnim)
+            {
+                const auto uvScrollX = ReadFloatProperty("uvScrollX");
+                const auto uvScrollY = ReadFloatProperty("uvScrollY");
+                const auto uvScrollRotate = ReadFloatProperty("uvScrollRotate");
+                AddConstant("uvAnimParms", Vector4f(uvScrollX, uvScrollY, uvScrollRotate, 0));
+            }
         }
 
         void mtl_particlecloud_template()
         {
-            // TODO
-            throw SkipMaterialException();
+            refblend_template();
+            sort_template();
+            clamp_template();
+
+            SetTextureAtlas(1, 1);
+            // tessSize(0)
+
+            // hasEditorMaterial
+            // allocLightmap
+
+            statebits_template();
+
+            std::string outdoorSuffix;
+            const auto outdoorOnly = ReadBoolProperty("outdoorOnly");
+            if (outdoorOnly)
+                outdoorSuffix = "_outdoor";
+
+            std::string addSuffix;
+            const auto blendFunc = ReadStringProperty("blendFunc");
+            if (blendFunc == GDT_BLEND_FUNC_ADD || blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
+                addSuffix = "_add";
+
+            std::string spotSuffix;
+            const auto useSpotLight = ReadBoolProperty("useSpotLight");
+            if (useSpotLight)
+                spotSuffix = "_spot";
+
+            if(outdoorOnly && useSpotLight)
+                throw GdtReadingException("Outdoor and spot aren't supported on particle cloud materials");
+
+            std::ostringstream ss;
+            ss << "particle_cloud" << outdoorSuffix << addSuffix << spotSuffix;
+            SetTechniqueSet(ss.str());
+
+            const auto colorMapName = ReadStringProperty("colorMap");
+            const auto tileColor = ReadEnumProperty<TileMode_e>("tileColor", GdtTileModeNames, std::extent_v<decltype(GdtTileModeNames)>);
+            const auto filterColor = ReadEnumProperty<GdtFilter_e>("filterColor", GdtSamplerFilterNames, std::extent_v<decltype(GdtSamplerFilterNames)>);
+
+            if (!colorMapName.empty())
+                AddMapTexture("colorMap", tileColor, filterColor, TS_COLOR_MAP, colorMapName);
+            else
+                throw GdtReadingException("ColorMap may not be blank in particle cloud materials");
+
+            std::cout << "Using particlecloud for \"" << m_material->info.name << "\"\n";
         }
 
         void mtl_tools_template()

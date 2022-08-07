@@ -1343,6 +1343,9 @@ namespace IW4
             SetValue("waterColor", m_constants_info.m_water_color);
             SetValue("flagSpeed", m_constants_info.m_flag_speed);
             SetValue("flagPhase", m_constants_info.m_flag_phase);
+            SetValue("uvScrollX", m_constants_info.m_uv_scroll_x);
+            SetValue("uvScrollY", m_constants_info.m_uv_scroll_y);
+            SetValue("uvScrollRotate", m_constants_info.m_uv_rotate);
         }
 
         void SetTextureTableValues()
