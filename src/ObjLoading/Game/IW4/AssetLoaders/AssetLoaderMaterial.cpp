@@ -429,7 +429,7 @@ namespace IW4
 
             std::string eyeOffsetSuffix;
             const auto eyeOffsetDepth = ReadFloatProperty("eyeOffsetDepth");
-            if (fpclassify(eyeOffsetDepth) != FP_ZERO)
+            if (std::fpclassify(eyeOffsetDepth) != FP_ZERO)
                 eyeOffsetSuffix = "_eyeoffset";
 
             const auto materialType = ReadStringProperty("materialType");
@@ -496,12 +496,12 @@ namespace IW4
             if (zFeather)
             {
                 const auto zFeatherDepth = ReadFloatProperty("zFeatherDepth");
-                if (fpclassify(zFeatherDepth) == FP_ZERO)
+                if (std::fpclassify(zFeatherDepth) == FP_ZERO)
                     throw GdtReadingException("zFeatherDepth may not be zero");
                 AddConstant("featherParms", Vector4f(1.0f / zFeatherDepth, zFeatherDepth, 0, 0));
             }
 
-            if (fpclassify(eyeOffsetDepth) != FP_ZERO)
+            if (std::fpclassify(eyeOffsetDepth) != FP_ZERO)
                 AddConstant("eyeOffsetParms", Vector4f(eyeOffsetDepth, 0, 0, 0));
 
             const auto colorTint = ReadVec4Property("colorTint", {1.0f, 1.0f, 1.0f, 1.0f});
