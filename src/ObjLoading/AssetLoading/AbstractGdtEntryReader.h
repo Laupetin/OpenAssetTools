@@ -2,6 +2,7 @@
 
 #include <exception>
 
+#include "Math/Vector.h"
 #include "Utils/ClassUtils.h"
 #include "Obj/Gdt/GdtEntry.h"
 
@@ -24,6 +25,9 @@ protected:
     _NODISCARD bool ReadBoolProperty(const std::string& propertyName, bool defaultValue = false) const;
     _NODISCARD int ReadIntegerProperty(const std::string& propertyName, int defaultValue = 0) const;
     _NODISCARD float ReadFloatProperty(const std::string& propertyName, float defaultValue = 0.0f) const;
+    _NODISCARD Vector2f ReadVec2Property(const std::string& propertyName, Vector2f defaultValue = {}) const;
+    _NODISCARD Vector3f ReadVec3Property(const std::string& propertyName, Vector3f defaultValue = {}) const;
+    _NODISCARD Vector4f ReadVec4Property(const std::string& propertyName, Vector4f defaultValue = {}) const;
 
     const GdtEntry& m_entry;
 };

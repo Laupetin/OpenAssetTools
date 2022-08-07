@@ -79,3 +79,66 @@ float AbstractGdtEntryReader::ReadFloatProperty(const std::string& propertyName,
 
     return result;
 }
+
+Vector2f AbstractGdtEntryReader::ReadVec2Property(const std::string& propertyName, const Vector2f defaultValue) const
+{
+    const auto foundProperty = m_entry.m_properties.find(propertyName);
+    if (foundProperty == m_entry.m_properties.end())
+        return defaultValue;
+
+    std::istringstream iss(foundProperty->second);
+    Vector2f result;
+
+    iss >> result(0) >> result(1);
+
+    if (iss.fail())
+    {
+        std::ostringstream oss;
+        oss << "\"" << foundProperty->second << "\" is not a valid vec2 value";
+        throw GdtReadingException(oss.str());
+    }
+
+    return result;
+}
+
+Vector3f AbstractGdtEntryReader::ReadVec3Property(const std::string& propertyName, const Vector3f defaultValue) const
+{
+    const auto foundProperty = m_entry.m_properties.find(propertyName);
+    if (foundProperty == m_entry.m_properties.end())
+        return defaultValue;
+
+    std::istringstream iss(foundProperty->second);
+    Vector3f result;
+
+    iss >> result(0) >> result(1) >> result(2);
+
+    if (iss.fail())
+    {
+        std::ostringstream oss;
+        oss << "\"" << foundProperty->second << "\" is not a valid vec3 value";
+        throw GdtReadingException(oss.str());
+    }
+
+    return result;
+}
+
+Vector4f AbstractGdtEntryReader::ReadVec4Property(const std::string& propertyName, const Vector4f defaultValue) const
+{
+    const auto foundProperty = m_entry.m_properties.find(propertyName);
+    if (foundProperty == m_entry.m_properties.end())
+        return defaultValue;
+
+    std::istringstream iss(foundProperty->second);
+    Vector4f result;
+
+    iss >> result(0) >> result(1) >> result(2) >> result(3);
+
+    if (iss.fail())
+    {
+        std::ostringstream oss;
+        oss << "\"" << foundProperty->second << "\" is not a valid vec4 value";
+        throw GdtReadingException(oss.str());
+    }
+
+    return result;
+}

@@ -11,6 +11,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
+#include "Math/Vector.h"
 #include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
@@ -183,8 +184,23 @@ namespace IW4
 
         void mtl_tools_template()
         {
-            // TODO
-            throw SkipMaterialException();
+            commonsetup_template();
+
+            SetTechniqueSet("tools");
+
+            AddMapTexture("normalMap", TileMode_e::NO_TILE, GdtFilter_e::NOMIP_NEAREST, TS_NORMAL_MAP, "$identitynormalmap");
+
+            const auto colorMapName = ReadStringProperty("colorMap");
+            const auto tileColor = ReadEnumProperty<TileMode_e>("tileColor", GdtTileModeNames, std::extent_v<decltype(GdtTileModeNames)>);
+            const auto filterColor = ReadEnumProperty<GdtFilter_e>("filterColor", GdtSamplerFilterNames, std::extent_v<decltype(GdtSamplerFilterNames)>);
+
+            if (!colorMapName.empty())
+                AddMapTexture("colorMap", tileColor, filterColor, TS_COLOR_MAP, colorMapName);
+            else
+                throw GdtReadingException("ColorMap may not be blank in tools materials");
+
+            const auto colorTint = ReadVec4Property("colorTint", {1.0f, 1.0f, 1.0f, 1.0f});
+            AddConstant("colorTint", colorTint);
         }
 
         void mtl_sky_template()
@@ -730,6 +746,19 @@ namespace IW4
             m_textures.push_back(textureDef);
         }
 
+        void AddConstant(const std::string& constantName, Vector4f literalData)
+        {
+            MaterialConstantDef constantDef{};
+            constantDef.literal[0] = literalData(0);
+            constantDef.literal[1] = literalData(1);
+            constantDef.literal[2] = literalData(2);
+            constantDef.literal[3] = literalData(3);
+            strncpy(constantDef.name, constantName.c_str(), std::extent_v<decltype(MaterialConstantDef::name)>);
+            constantDef.nameHash = Common::R_HashString(constantName.c_str());
+
+            m_constants.push_back(constantDef);
+        }
+
         void SetSort(const unsigned char sort) const
         {
             m_material->info.sortKey = sort;
@@ -994,6 +1023,18 @@ namespace IW4
                 m_material->textureCount = 0u;
             }
 
+            if (!m_constants.empty())
+            {
+                m_material->constantTable = static_cast<MaterialConstantDef*>(m_memory->Alloc(sizeof(MaterialConstantDef) * m_constants.size()));
+                m_material->constantCount = static_cast<unsigned char>(m_constants.size());
+                memcpy(m_material->constantTable, m_constants.data(), sizeof(MaterialConstantDef) * m_constants.size());
+            }
+            else
+            {
+                m_material->constantTable = nullptr;
+                m_material->constantCount = 0u;
+            }
+
             if (!m_state_bits.empty())
             {
                 m_material->stateBitsTable = static_cast<GfxStateBits*>(m_memory->Alloc(sizeof(GfxStateBits) * m_state_bits.size()));
@@ -1034,6 +1075,7 @@ namespace IW4
         GfxStateBits m_base_state_bits;
         std::vector<GfxStateBits> m_state_bits;
         std::vector<MaterialTextureDef> m_textures;
+        std::vector<MaterialConstantDef> m_constants;
     };
 }
 
