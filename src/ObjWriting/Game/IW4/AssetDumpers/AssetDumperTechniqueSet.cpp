@@ -223,7 +223,7 @@ namespace IW4
 
                     if(knownMaterialTextureName != knownTextureMaps.end())
                     {
-                        m_stream << knownConstantName->second;
+                        m_stream << knownMaterialTextureName->second.m_name;
                     }
                     else
                     {
