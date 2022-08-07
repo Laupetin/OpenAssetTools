@@ -1,6 +1,7 @@
 #include "AssetLoaderMaterial.h"
 
 #include <cstring>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -166,8 +167,8 @@ namespace IW4
 
         void mtl_effect_template()
         {
-            // TODO
-            throw SkipMaterialException();
+            commonsetup_template();
+            unitlitcommon_template();
         }
 
         void mtl_distortion_template()
@@ -231,7 +232,7 @@ namespace IW4
             if (useSpotLight)
                 spotSuffix = "_spot";
 
-            if(outdoorOnly && useSpotLight)
+            if (outdoorOnly && useSpotLight)
                 throw GdtReadingException("Outdoor and spot aren't supported on particle cloud materials");
 
             std::ostringstream ss;
@@ -379,6 +380,132 @@ namespace IW4
         {
             // TODO
             throw SkipMaterialException();
+        }
+
+        void unitlitcommon_template()
+        {
+            const auto outdoorOnly = ReadBoolProperty("outdoorOnly");
+            const auto blendFunc = ReadStringProperty("blendFunc");
+
+            std::string distFalloffSuffix;
+            const auto distFalloff = ReadBoolProperty("distFalloff");
+            if (distFalloff)
+            {
+                const auto hdrPortal = ReadBoolProperty("hdrPortal");
+                if (!hdrPortal)
+                    throw GdtReadingException("Cannot have distance falloff active without hdrPortal.");
+
+                if (blendFunc == GDT_BLEND_FUNC_MULTIPLY)
+                    throw GdtReadingException("Distance falloff does not currently support Multiply.");
+
+                if (outdoorOnly)
+                    throw GdtReadingException("Distance falloff does not currently support outdoor-only types.");
+
+                distFalloffSuffix = "_falloff";
+            }
+
+            std::string godFalloffSuffix;
+            const auto falloff = ReadBoolProperty("falloff");
+            if (falloff)
+            {
+                if (blendFunc == GDT_BLEND_FUNC_MULTIPLY)
+                    throw GdtReadingException("Falloff does not currently support Multiply.");
+
+                if (outdoorOnly)
+                    throw GdtReadingException("Falloff does not currently support outdoor-only types.");
+
+                godFalloffSuffix = "_falloff";
+            }
+
+            std::string noFogSuffix;
+            const auto noFog = ReadBoolProperty("noFog");
+            if (noFog)
+                noFogSuffix = "_nofog";
+
+            std::string spotSuffix;
+            const auto useSpotLight = ReadBoolProperty("useSpotLight");
+            if (useSpotLight)
+                spotSuffix = "_spot";
+
+            std::string eyeOffsetSuffix;
+            const auto eyeOffsetDepth = ReadFloatProperty("eyeOffsetDepth");
+            if (fpclassify(eyeOffsetDepth) != FP_ZERO)
+                eyeOffsetSuffix = "_eyeoffset";
+
+            const auto materialType = ReadStringProperty("materialType");
+            const auto zFeather = ReadBoolProperty("zFeather");
+
+            if (materialType == GDT_MATERIAL_TYPE_EFFECT && zFeather)
+            {
+                if (blendFunc == GDT_BLEND_FUNC_MULTIPLY)
+                    throw GdtReadingException("zFeather does not support multiply.");
+
+                std::string addSuffix;
+                if (blendFunc == GDT_BLEND_FUNC_ADD || blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
+                    addSuffix = "_add";
+
+                if (outdoorOnly)
+                {
+                    std::ostringstream ss;
+                    ss << "effect_zfeather_outdoor" << addSuffix << noFogSuffix << spotSuffix << eyeOffsetSuffix;
+                    SetTechniqueSet(ss.str());
+                }
+                else
+                {
+                    std::ostringstream ss;
+                    ss << "effect_zfeather" << distFalloffSuffix << godFalloffSuffix << addSuffix << noFogSuffix << spotSuffix << eyeOffsetSuffix;
+                    SetTechniqueSet(ss.str());
+                }
+            }
+            else
+            {
+                std::string baseTechName = materialType == GDT_MATERIAL_TYPE_EFFECT ? "effect" : "unlit";
+
+                if (blendFunc == GDT_BLEND_FUNC_MULTIPLY)
+                {
+                    std::ostringstream ss;
+                    ss << baseTechName << "_multiply" << noFogSuffix << spotSuffix << eyeOffsetSuffix;
+                    SetTechniqueSet(ss.str());
+                }
+                else
+                {
+                    std::string addSuffix;
+                    if (blendFunc == GDT_BLEND_FUNC_ADD || blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
+                        addSuffix = "_add";
+
+                    std::ostringstream ss;
+                    ss << baseTechName << distFalloffSuffix << godFalloffSuffix << addSuffix << noFogSuffix << spotSuffix << eyeOffsetSuffix;
+                    SetTechniqueSet(ss.str());
+                }
+            }
+
+            const auto colorMapName = ReadStringProperty("colorMap");
+            const auto tileColor = ReadEnumProperty<TileMode_e>("tileColor", GdtTileModeNames, std::extent_v<decltype(GdtTileModeNames)>);
+            const auto filterColor = ReadEnumProperty<GdtFilter_e>("filterColor", GdtSamplerFilterNames, std::extent_v<decltype(GdtSamplerFilterNames)>);
+
+            if (!colorMapName.empty())
+                AddMapTexture("colorMap", tileColor, filterColor, TS_COLOR_MAP, colorMapName);
+            else
+                throw GdtReadingException("ColorMap may not be blank in effect/unlit materials");
+
+            if (falloff || distFalloff)
+            {
+                // TODO
+            }
+
+            if (zFeather)
+            {
+                const auto zFeatherDepth = ReadFloatProperty("zFeatherDepth");
+                if (fpclassify(zFeatherDepth) == FP_ZERO)
+                    throw GdtReadingException("zFeatherDepth may not be zero");
+                AddConstant("featherParms", Vector4f(1.0f / zFeatherDepth, zFeatherDepth, 0, 0));
+            }
+
+            if (fpclassify(eyeOffsetDepth) != FP_ZERO)
+                AddConstant("eyeOffsetParms", Vector4f(eyeOffsetDepth, 0, 0, 0));
+
+            const auto colorTint = ReadVec4Property("colorTint", {1.0f, 1.0f, 1.0f, 1.0f});
+            AddConstant("colorTint", colorTint);
         }
 
         void commonsetup_template()
