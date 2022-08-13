@@ -1,0 +1,68 @@
+alphaTest
+{
+	mtlAlphaTest == Always && mtlBlendOp == Add && mtlSrcBlend == SrcAlpha && mtlDestBlend == InvSrcAlpha:
+	mtlAlphaTest == Always && mtlBlendOp == Add && mtlSrcBlend == SrcAlpha && mtlDestBlend == One:
+		GT0;
+	default:
+		passthrough;
+}
+
+blendFunc
+{
+	default:
+		Add, InvDestAlpha, One;
+}
+
+separateAlphaBlendFunc
+{
+	default:
+		Disable, One, Zero;
+}
+
+cullFace
+{
+	default:
+		passthrough;
+}
+
+depthTest
+{
+	mtlDepthTest == LessEqual && mtlDestBlend == Zero:
+		Equal;
+	mtlDepthTest == LessEqual:
+		LessEqual;
+	default:
+		Equal;
+}
+
+depthWrite
+{
+	default:
+		Disable;
+}
+
+colorWrite
+{
+	default:
+		Enable, Enable;
+}
+
+polygonOffset
+{
+	default:
+		passthrough;
+}
+
+stencil
+{
+	default:
+		OneSided,
+		Equal, Keep, Keep, Keep,
+		Always, Keep, Keep, Keep;
+}
+
+wireframe
+{
+	default:
+		Disable;
+}

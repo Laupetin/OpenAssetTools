@@ -19,6 +19,11 @@ function TestFolder()
 	return path.getrelative(os.getcwd(), _TestFolder)
 end
 
+local _RawFolder = path.getabsolute("../../raw")
+function RawFolder()
+	return path.getrelative(os.getcwd(), _RawFolder)
+end
+
 -- Target Directories
 TargetDirectoryBin = "%{wks.location}/bin/%{cfg.buildcfg}_%{cfg.platform}"
 TargetDirectoryLib = "%{wks.location}/lib/%{cfg.buildcfg}_%{cfg.platform}"

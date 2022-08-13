@@ -112,6 +112,7 @@ include "src/ZoneCommon.lua"
 include "src/ObjCommon.lua"
 include "src/ObjLoading.lua"
 include "src/ObjWriting.lua"
+include "tools/scripts/raw.lua"
 
 -- Components group: All projects assist or are part of a tool
 group "Components"
@@ -134,6 +135,10 @@ group "Tools"
     Linker:project()
     Unlinker:project()
     ZoneCodeGenerator:project()
+group ""
+
+group "Raw"
+    Raw:project()
 group ""
 
 -- ========================
