@@ -40,6 +40,12 @@ colorWrite
 		passthrough;
 }
 
+gammaWrite
+{
+	default:
+		passthrough;
+}
+
 polygonOffset
 {
 	default:
