@@ -57,7 +57,8 @@ namespace state_map
 
     class SequenceCondition final : public StateMapParser::sequence_t
     {
-        StateMapExpressionMatchers m_expression_matchers;
+        static constexpr auto TAG_DEFAULT = 1;
+        static constexpr auto TAG_EXPRESSION = 2;
 
     public:
         SequenceCondition()
@@ -66,7 +67,10 @@ namespace state_map
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Label(StateMapExpressionMatchers::LABEL_EXPRESSION),
+                create.Or({
+                    create.Keyword("default").Tag(TAG_DEFAULT),
+                    create.Label(StateMapExpressionMatchers::LABEL_EXPRESSION).Tag(TAG_EXPRESSION)
+                }),
                 create.Char(':')
             });
         }
@@ -74,9 +78,8 @@ namespace state_map
     protected:
         void ProcessMatch(StateMapParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
+            assert(state->m_definition);
             assert(state->m_in_entry);
-
-            auto expression = m_expression_matchers.ProcessExpression(result);
 
             if (!state->m_current_rule)
             {
@@ -85,8 +88,23 @@ namespace state_map
                 state->m_definition->m_state_map_entries[state->m_current_entry_index].m_rules.emplace_back(std::move(newRule));
             }
 
-            state->m_current_rule->m_conditions.emplace_back(std::move(expression));
+            if (result.PeekAndRemoveIfTag(TAG_EXPRESSION) == TAG_EXPRESSION)
+            {
+                auto expression = m_expression_matchers.ProcessExpression(result);
+
+                state->m_current_rule->m_conditions.emplace_back(std::move(expression));
+            }
+            else
+            {
+                assert(result.PeekAndRemoveIfTag(TAG_DEFAULT) == TAG_DEFAULT);
+                auto& entry = state->m_definition->m_state_map_entries[state->m_current_entry_index];
+                entry.m_has_default = true;
+                entry.m_default_index = entry.m_rules.size() - 1;
+            }
         }
+
+    private:
+        StateMapExpressionMatchers m_expression_matchers;
     };
 
     class SequenceValue final : public StateMapParser::sequence_t
