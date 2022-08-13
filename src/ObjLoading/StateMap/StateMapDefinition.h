@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -26,8 +27,9 @@ namespace state_map
     class StateMapDefinition
     {
     public:
-        explicit StateMapDefinition(size_t entryCount);
+        StateMapDefinition(std::string name, size_t entryCount);
 
+        std::string m_name;
         std::vector<StateMapEntry> m_state_map_entries;
     };
 }

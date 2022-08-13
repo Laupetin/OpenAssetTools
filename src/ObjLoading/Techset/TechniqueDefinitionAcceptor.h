@@ -76,7 +76,7 @@ namespace techset
         virtual void AcceptNextPass() = 0;
         virtual bool AcceptEndPass(std::string& errorMessage) = 0;
 
-        virtual void AcceptStateMap(const std::string& stateMapName) = 0;
+        virtual bool AcceptStateMap(const std::string& stateMapName, std::string& errorMessage) = 0;
 
         virtual bool AcceptVertexShader(const std::string& vertexShaderName, std::string& errorMessage) = 0;
         virtual bool AcceptPixelShader(const std::string& pixelShaderName, std::string& errorMessage) = 0;

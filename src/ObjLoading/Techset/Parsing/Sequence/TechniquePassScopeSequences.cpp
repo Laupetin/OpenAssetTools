@@ -29,7 +29,7 @@ namespace techset
             assert(state->m_in_pass == true);
 
             std::string errorMessage;
-            if(!state->m_acceptor->AcceptEndPass(errorMessage))
+            if (!state->m_acceptor->AcceptEndPass(errorMessage))
                 throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), errorMessage);
 
             state->m_in_pass = false;
@@ -38,7 +38,8 @@ namespace techset
 
     class SequenceStateMap final : public TechniqueParser::sequence_t
     {
-        static constexpr auto CAPTURE_STATE_MAP_NAME = 1;
+        static constexpr auto CAPTURE_START = 1;
+        static constexpr auto CAPTURE_STATE_MAP_NAME = 2;
 
     public:
         SequenceStateMap()
@@ -46,7 +47,7 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Keyword("stateMap"),
+                create.Keyword("stateMap").Capture(CAPTURE_START),
                 create.String().Capture(CAPTURE_STATE_MAP_NAME),
                 create.Char(';')
             });
@@ -55,7 +56,13 @@ namespace techset
     protected:
         void ProcessMatch(TechniqueParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
-            state->m_acceptor->AcceptStateMap(result.NextCapture(CAPTURE_STATE_MAP_NAME).StringValue());
+            const auto& firstToken = result.NextCapture(CAPTURE_START);
+
+            std::string errorMessage;
+            const auto acceptorResult = state->m_acceptor->AcceptStateMap(result.NextCapture(CAPTURE_STATE_MAP_NAME).StringValue(), errorMessage);
+
+            if (!acceptorResult)
+                throw ParsingException(firstToken.GetPos(), std::move(errorMessage));
         }
     };
 

@@ -8,8 +8,9 @@
 
 using namespace state_map;
 
-StateMapReader::StateMapReader(std::istream& stream, std::string fileName, const StateMapLayout& layout)
-    : m_file_name(std::move(fileName)),
+StateMapReader::StateMapReader(std::istream& stream, std::string fileName, std::string stateMapName, const StateMapLayout& layout)
+    : m_state_map_name(std::move(stateMapName)),
+      m_file_name(std::move(fileName)),
       m_state_map_layout(layout)
 {
     m_base_stream = std::make_unique<ParserSingleInputStream>(stream, m_file_name);
@@ -42,7 +43,7 @@ std::unique_ptr<StateMapDefinition> StateMapReader::ReadStateMapDefinition() con
     lexerConfig.m_read_floating_point_numbers = false;
     const auto lexer = std::make_unique<SimpleLexer>(m_comment_proxy.get(), std::move(lexerConfig));
 
-    const auto parser = std::make_unique<StateMapParser>(lexer.get(), m_state_map_layout);
+    const auto parser = std::make_unique<StateMapParser>(lexer.get(), m_state_map_name, m_state_map_layout);
 
     const auto success = parser->Parse();
     if (!success)

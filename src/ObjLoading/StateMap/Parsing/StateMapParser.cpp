@@ -142,8 +142,8 @@ namespace state_map
     };
 }
 
-StateMapParser::StateMapParser(SimpleLexer* lexer, const StateMapLayout& layout)
-    : AbstractParser(lexer, std::make_unique<StateMapParserState>(layout))
+StateMapParser::StateMapParser(SimpleLexer* lexer, std::string stateMapName, const StateMapLayout& layout)
+    : AbstractParser(lexer, std::make_unique<StateMapParserState>(std::move(stateMapName), layout))
 {
 }
 

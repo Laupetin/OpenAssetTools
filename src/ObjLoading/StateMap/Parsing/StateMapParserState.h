@@ -20,6 +20,6 @@ namespace state_map
         size_t m_current_entry_index;
         StateMapRule* m_current_rule;
 
-        explicit StateMapParserState(const StateMapLayout& layout);
+        StateMapParserState(std::string stateMapName, const StateMapLayout& layout);
     };
 }

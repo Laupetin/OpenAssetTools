@@ -17,6 +17,8 @@
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechsetFileReader.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "StateMap/StateMapReader.h"
+#include "Techset/TechniqueStateMapCache.h"
 #include "Techset/TechsetDefinitionCache.h"
 #include "Utils/Alignment.h"
 
@@ -118,10 +120,12 @@ namespace IW4
 
     class TechniqueCreator final : public techset::ITechniqueDefinitionAcceptor
     {
+        const std::string& m_technique_name;
         ISearchPath* const m_search_path;
         MemoryManager* const m_memory;
         IAssetLoadingManager* const m_manager;
         TechniqueZoneLoadingState* const m_zone_state;
+        techset::TechniqueStateMapCache* const m_state_map_cache;
         ShaderInfoFromFileSystemCacheState* const m_shader_info_cache;
 
     public:
@@ -201,11 +205,15 @@ namespace IW4
         std::vector<Pass> m_passes;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
-        TechniqueCreator(ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, TechniqueZoneLoadingState* zoneState, ShaderInfoFromFileSystemCacheState* shaderInfoCache)
-            : m_search_path(searchPath),
+        TechniqueCreator(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, TechniqueZoneLoadingState* zoneState,
+                         ShaderInfoFromFileSystemCacheState* shaderInfoCache,
+                         techset::TechniqueStateMapCache* stateMapCache)
+            : m_technique_name(techniqueName),
+              m_search_path(searchPath),
               m_memory(memory),
               m_manager(manager),
               m_zone_state(zoneState),
+              m_state_map_cache(stateMapCache),
               m_shader_info_cache(shaderInfoCache)
         {
         }
@@ -406,9 +414,20 @@ namespace IW4
             return true;
         }
 
-        void AcceptStateMap(const std::string& stateMapName) override
+        bool AcceptStateMap(const std::string& stateMapName, std::string& errorMessage) override
         {
-            // TODO: State maps currently are not used
+            const auto* stateMap = AssetLoaderTechniqueSet::LoadStateMapDefinition(stateMapName, m_search_path, m_state_map_cache);
+
+            if (!stateMap)
+            {
+                std::ostringstream ss;
+                ss << "Failed to load specified state map \"" << stateMapName << "\"";
+                errorMessage = ss.str();
+                return false;
+            }
+
+            m_state_map_cache->SetTechniqueUsesStateMap(m_technique_name, stateMap);
+            return true;
         }
 
         static void InitializeArgumentState(const d3d9::ShaderInfo& shaderInfo, std::vector<size_t>& argumentHandledOffsetVector, std::vector<bool>& argumentHandledVector)
@@ -986,6 +1005,7 @@ namespace IW4
         IAssetLoadingManager* m_manager;
         TechniqueZoneLoadingState* m_zone_state;
         ShaderInfoFromFileSystemCacheState* m_shader_info_cache;
+        techset::TechniqueStateMapCache* m_state_map_cache;
 
         static std::string GetTechniqueFileName(const std::string& techniqueName)
         {
@@ -1185,7 +1205,7 @@ namespace IW4
             if (!file.IsOpen())
                 return nullptr;
 
-            TechniqueCreator creator(m_search_path, m_memory, m_manager, m_zone_state, m_shader_info_cache);
+            TechniqueCreator creator(techniqueName, m_search_path, m_memory, m_manager, m_zone_state, m_shader_info_cache, m_state_map_cache);
             const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &creator);
             if (!reader.ReadTechniqueDefinition())
                 return nullptr;
@@ -1199,7 +1219,8 @@ namespace IW4
               m_memory(memory),
               m_manager(manager),
               m_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<TechniqueZoneLoadingState>()),
-              m_shader_info_cache(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<ShaderInfoFromFileSystemCacheState>())
+              m_shader_info_cache(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<ShaderInfoFromFileSystemCacheState>()),
+              m_state_map_cache(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<techset::TechniqueStateMapCache>())
         {
         }
 
@@ -1231,6 +1252,13 @@ std::string AssetLoaderTechniqueSet::GetTechsetFileName(const std::string& techs
 {
     std::ostringstream ss;
     ss << "techsets/" << techsetAssetName << ".techset";
+    return ss.str();
+}
+
+std::string AssetLoaderTechniqueSet::GetStateMapFileName(const std::string& stateMapName)
+{
+    std::ostringstream ss;
+    ss << "statemaps/" << stateMapName << ".sm";
     return ss.str();
 }
 
@@ -1283,6 +1311,29 @@ techset::TechsetDefinition* AssetLoaderTechniqueSet::LoadTechsetDefinition(const
     definitionCache->AddTechsetDefinitionToCache(assetName, std::move(techsetDefinition));
 
     return techsetDefinitionPtr;
+}
+
+const state_map::StateMapDefinition* AssetLoaderTechniqueSet::LoadStateMapDefinition(const std::string& stateMapName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache)
+{
+    auto* cachedStateMap = stateMapCache->GetCachedStateMap(stateMapName);
+    if (cachedStateMap)
+        return cachedStateMap;
+
+    const auto stateMapFileName = GetStateMapFileName(stateMapName);
+    const auto file = searchPath->Open(stateMapFileName);
+    if (!file.IsOpen())
+        return nullptr;
+
+    const state_map::StateMapReader reader(*file.m_stream, stateMapFileName, stateMapName, stateMapLayout);
+    auto stateMapDefinition = reader.ReadStateMapDefinition();
+    if (!stateMapDefinition)
+        return nullptr;
+
+    const auto* stateMapDefinitionPtr = stateMapDefinition.get();
+
+    stateMapCache->AddStateMapToCache(std::move(stateMapDefinition));
+
+    return stateMapDefinitionPtr;
 }
 
 bool AssetLoaderTechniqueSet::CanLoadFromRaw() const

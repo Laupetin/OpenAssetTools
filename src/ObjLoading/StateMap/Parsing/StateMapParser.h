@@ -15,7 +15,7 @@ namespace state_map
         const std::vector<sequence_t*>& GetTestsForState() override;
 
     public:
-        StateMapParser(SimpleLexer* lexer, const StateMapLayout& layout);
+        StateMapParser(SimpleLexer* lexer, std::string stateMapName, const StateMapLayout& layout);
         _NODISCARD std::unique_ptr<StateMapDefinition> GetStateMapDefinition() const;
         _NODISCARD StateMapParserState* GetState() const;
     };
