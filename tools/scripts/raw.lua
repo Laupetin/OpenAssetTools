@@ -13,7 +13,7 @@ function Raw:link(links)
 end
 
 function Raw:use()
-	
+	dependson(self:name())
 end
 
 function Raw:name()

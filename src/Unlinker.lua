@@ -42,6 +42,8 @@ function Unlinker:project()
         ObjLoading:include(includes)
         ObjWriting:include(includes)
 
+		Raw:use()
+
 		links:linkto(Utils)
 		links:linkto(ZoneLoading)
 		links:linkto(ObjLoading)

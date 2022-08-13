@@ -43,6 +43,8 @@ function Linker:project()
         ObjWriting:include(includes)
         ZoneWriting:include(includes)
 
+		Raw:use()
+
 		links:linkto(Utils)
 		links:linkto(ZoneLoading)
 		links:linkto(ZoneWriting)
