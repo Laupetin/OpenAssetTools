@@ -5,6 +5,7 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
+#include "StateMap/StateMapLayout.h"
 
 namespace IW4
 {
@@ -560,4 +561,33 @@ namespace IW4
         MakeKnownConstantName("falloffBeginColor"),
         MakeKnownConstantName("falloffEndColor"),
     };
+
+    enum class StateMapLayout_e
+    {
+        ALPHA_TEST,
+        BLEND_FUNC,
+        SEPARATE_ALPHA_BLEND_FUNC,
+        CULL_FACE,
+        DEPTH_TEST,
+        DEPTH_WRITE,
+        COLOR_WRITE,
+        GAMMA_WRITE,
+        POLYGON_OFFSET,
+        STENCIL,
+        WIREFRAME
+    };
+
+    inline state_map::StateMapLayout stateMapLayout({
+        {"alphaTest", 1u},
+        {"blendFunc", 3u},
+        {"separateAlphaBlendFunc", 3u},
+        {"cullFace", 1u},
+        {"depthTest", 1u},
+        {"depthWrite", 1u},
+        {"colorWrite", 2u},
+        {"gammaWrite", 1u},
+        {"polygonOffset", 1u},
+        {"stencil", 9u},
+        {"wireframe", 1u},
+    });
 }
