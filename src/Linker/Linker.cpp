@@ -80,11 +80,11 @@ class Linker::Impl
         ObjLoading::UnloadIWDsInSearchPath(searchPath);
     }
 
-    SearchPaths GetAssetSearchPathsForZone(const std::string& zoneName)
+    SearchPaths GetAssetSearchPathsForZone(const std::string& gameName, const std::string& zoneName)
     {
         SearchPaths searchPathsForZone;
 
-        for (const auto& searchPathStr : m_args.GetAssetSearchPathsForZone(zoneName))
+        for (const auto& searchPathStr : m_args.GetAssetSearchPathsForZone(gameName, zoneName))
         {
             auto absolutePath = fs::absolute(searchPathStr);
 
@@ -114,11 +114,11 @@ class Linker::Impl
         return searchPathsForZone;
     }
 
-    SearchPaths GetGdtSearchPathsForZone(const std::string& zoneName)
+    SearchPaths GetGdtSearchPathsForZone(const std::string& gameName, const std::string& zoneName)
     {
         SearchPaths searchPathsForZone;
 
-        for (const auto& searchPathStr : m_args.GetGdtSearchPathsForZone(zoneName))
+        for (const auto& searchPathStr : m_args.GetGdtSearchPathsForZone(gameName, zoneName))
         {
             auto absolutePath = fs::absolute(searchPathStr);
 
@@ -467,13 +467,21 @@ class Linker::Impl
 
     bool BuildZone(const std::string& zoneName)
     {
-        auto assetSearchPaths = GetAssetSearchPathsForZone(zoneName);
-        auto gdtSearchPaths = GetGdtSearchPathsForZone(zoneName);
         auto sourceSearchPaths = GetSourceSearchPathsForZone(zoneName);
 
         const auto zoneDefinition = ReadZoneDefinition(zoneName, &sourceSearchPaths);
         if (!zoneDefinition)
             return false;
+
+        std::string gameName;
+        if (!GetGameNameFromZoneDefinition(gameName, zoneName, *zoneDefinition))
+            return false;
+
+        for (auto& c : gameName)
+            c = static_cast<char>(std::tolower(c));
+
+        auto assetSearchPaths = GetAssetSearchPathsForZone(gameName, zoneName);
+        auto gdtSearchPaths = GetGdtSearchPathsForZone(gameName, zoneName);
 
         const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;

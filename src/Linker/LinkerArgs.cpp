@@ -99,6 +99,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
 LinkerArgs::LinkerArgs()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent<decltype(COMMAND_LINE_OPTIONS)>::value),
       m_base_pattern(R"(\?base\?)"),
+      m_game_pattern(R"(\?game\?)"),
       m_zone_pattern(R"(\?zone\?)"),
       m_base_folder_depends_on_zone(false),
       m_out_folder_depends_on_zone(false),
@@ -151,14 +152,16 @@ std::set<std::string> LinkerArgs::GetZoneIndependentSearchPaths(const std::set<s
 {
     std::set<std::string> out;
 
-    for(const auto& path : set)
+    for (const auto& path : set)
     {
-        if(path.find(PATTERN_ZONE) != std::string::npos)
+        if (path.find(PATTERN_GAME) != std::string::npos)
+            continue;
+        if (path.find(PATTERN_ZONE) != std::string::npos)
             continue;
 
-        if(path.find(PATTERN_BASE) != std::string::npos)
+        if (path.find(PATTERN_BASE) != std::string::npos)
         {
-            if(m_base_folder_depends_on_zone)
+            if (m_base_folder_depends_on_zone)
                 continue;
 
             out.emplace(std::regex_replace(path, m_base_pattern, m_base_folder));
@@ -172,20 +175,21 @@ std::set<std::string> LinkerArgs::GetZoneIndependentSearchPaths(const std::set<s
     return out;
 }
 
-std::set<std::string> LinkerArgs::GetSearchPathsForZone(const std::set<std::string>& set, const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetSearchPathsForZone(const std::set<std::string>& set, const std::string& gameName, const std::string& zoneName) const
 {
     std::set<std::string> out;
     const auto basePath = GetBasePathForZone(zoneName);
 
     for (const auto& path : set)
     {
-        if (path.find(PATTERN_ZONE) == std::string::npos
+        if (path.find(PATTERN_GAME) == std::string::npos
+            && path.find(PATTERN_ZONE) == std::string::npos
             && (!m_base_folder_depends_on_zone || path.find(PATTERN_BASE) == std::string::npos))
         {
             continue;
         }
 
-        out.emplace(std::regex_replace(std::regex_replace(path, m_zone_pattern, zoneName), m_base_pattern, basePath));
+        out.emplace(std::regex_replace(std::regex_replace(std::regex_replace(path, m_zone_pattern, zoneName), m_game_pattern, gameName), m_base_pattern, basePath));
     }
 
     return out;
@@ -222,7 +226,7 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
         m_base_folder = m_argument_parser.GetValueForOption(OPTION_BASE_FOLDER);
     else
         SetDefaultBasePath();
-    m_base_folder_depends_on_zone = m_base_folder.find(PATTERN_ZONE) != std::string::npos;
+    m_base_folder_depends_on_zone = m_base_folder.find(PATTERN_GAME) != std::string::npos || m_base_folder.find(PATTERN_ZONE) != std::string::npos;
 
     // --output-folder
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))
@@ -302,17 +306,17 @@ std::set<std::string> LinkerArgs::GetZoneIndependentSourceSearchPaths() const
     return GetZoneIndependentSearchPaths(m_source_search_paths);
 }
 
-std::set<std::string> LinkerArgs::GetAssetSearchPathsForZone(const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetAssetSearchPathsForZone(const std::string& gameName, const std::string& zoneName) const
 {
-    return GetSearchPathsForZone(m_asset_search_paths, zoneName);
+    return GetSearchPathsForZone(m_asset_search_paths, gameName, zoneName);
 }
 
-std::set<std::string> LinkerArgs::GetGdtSearchPathsForZone(const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetGdtSearchPathsForZone(const std::string& gameName, const std::string& zoneName) const
 {
-    return GetSearchPathsForZone(m_gdt_search_paths, zoneName);
+    return GetSearchPathsForZone(m_gdt_search_paths, gameName, zoneName);
 }
 
 std::set<std::string> LinkerArgs::GetSourceSearchPathsForZone(const std::string& zoneName) const
 {
-    return GetSearchPathsForZone(m_source_search_paths, zoneName);
+    return GetSearchPathsForZone(m_source_search_paths, "", zoneName);
 }

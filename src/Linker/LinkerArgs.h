@@ -11,18 +11,20 @@ class LinkerArgs
 {
 public:
     static constexpr const char* PATTERN_BASE = "?base?";
+    static constexpr const char* PATTERN_GAME = "?game?";
     static constexpr const char* PATTERN_ZONE = "?zone?";
 
     static constexpr const char* DEFAULT_BASE_FOLDER = ".";
     static constexpr const char* DEFAULT_BASE_FOLDER_MOD_TOOLS = "..";
     static constexpr const char* DEFAULT_OUTPUT_FOLDER = "?base?/zone_out/?zone?";
-    static constexpr const char* DEFAULT_ASSET_SEARCH_PATH = "?base?/raw;?base?/zone_raw/?zone?";
+    static constexpr const char* DEFAULT_ASSET_SEARCH_PATH = "?base?/raw;?base?/raw/?game?;?base?/zone_raw/?zone?";
     static constexpr const char* DEFAULT_GDT_SEARCH_PATH = "?base?/source_data;?base?/zone_raw/?zone?/source_data";
     static constexpr const char* DEFAULT_SOURCE_SEARCH_PATH = "?base?/zone_source;?base?/zone_raw/?zone?/zone_source";
 
 private:
     ArgumentParser m_argument_parser;
     std::regex m_base_pattern;
+    std::regex m_game_pattern;
     std::regex m_zone_pattern;
 
     /**
@@ -35,7 +37,7 @@ private:
     _NODISCARD std::string GetBasePathForZone(const std::string& zoneName) const;
     void SetDefaultBasePath();
     _NODISCARD std::set<std::string> GetZoneIndependentSearchPaths(const std::set<std::string>& set) const;
-    _NODISCARD std::set<std::string> GetSearchPathsForZone(const std::set<std::string>& set, const std::string& zoneName) const;
+    _NODISCARD std::set<std::string> GetSearchPathsForZone(const std::set<std::string>& set, const std::string& gameName, const std::string& zoneName) const;
 
 public:
     std::vector<std::string> m_zones_to_load;
@@ -66,7 +68,7 @@ public:
     _NODISCARD std::set<std::string> GetZoneIndependentGdtSearchPaths() const;
     _NODISCARD std::set<std::string> GetZoneIndependentSourceSearchPaths() const;
     
-    _NODISCARD std::set<std::string> GetAssetSearchPathsForZone(const std::string& zoneName) const;
-    _NODISCARD std::set<std::string> GetGdtSearchPathsForZone(const std::string& zoneName) const;
+    _NODISCARD std::set<std::string> GetAssetSearchPathsForZone(const std::string& gameName, const std::string& zoneName) const;
+    _NODISCARD std::set<std::string> GetGdtSearchPathsForZone(const std::string& gameName, const std::string& zoneName) const;
     _NODISCARD std::set<std::string> GetSourceSearchPathsForZone(const std::string& zoneName) const;
 };
