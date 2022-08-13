@@ -110,7 +110,7 @@ namespace IW4
             if (!dvarNameExpression->IsStatic())
                 return false;
 
-            const auto staticDvarNameExpressionValue = dvarNameExpression->Evaluate();
+            const auto staticDvarNameExpressionValue = dvarNameExpression->EvaluateStatic();
             if (staticDvarNameExpressionValue.m_type != SimpleExpressionValue::Type::STRING)
                 return false;
 
@@ -353,7 +353,7 @@ namespace IW4
         {
             if (!m_disable_optimizations && expression->IsStatic())
             {
-                const auto expressionStaticValue = expression->Evaluate();
+                const auto expressionStaticValue = expression->EvaluateStatic();
                 ConvertExpressionEntryExpressionValue(entries, &expressionStaticValue);
             }
             else if (const auto* expressionValue = dynamic_cast<const SimpleExpressionValue*>(expression))
@@ -419,7 +419,7 @@ namespace IW4
 
             if (expression->IsStatic())
             {
-                const auto value = expression->Evaluate();
+                const auto value = expression->EvaluateStatic();
                 switch (value.m_type)
                 {
                 case SimpleExpressionValue::Type::DOUBLE:
@@ -447,7 +447,7 @@ namespace IW4
 
             if (expression->IsStatic())
             {
-                const auto value = expression->Evaluate();
+                const auto value = expression->EvaluateStatic();
                 switch (value.m_type)
                 {
                 case SimpleExpressionValue::Type::STRING:
@@ -474,7 +474,7 @@ namespace IW4
 
             if (expression->IsStatic())
             {
-                const auto value = expression->Evaluate();
+                const auto value = expression->EvaluateStatic();
                 switch (value.m_type)
                 {
                 case SimpleExpressionValue::Type::STRING:
@@ -507,7 +507,7 @@ namespace IW4
             else
             {
                 isStatic = expression->IsStatic();
-                isTruthy = isStatic && expression->Evaluate().IsTruthy();
+                isTruthy = isStatic && expression->EvaluateStatic().IsTruthy();
             }
 
             if (isStatic)
@@ -580,7 +580,7 @@ namespace IW4
 
             if(!m_disable_optimizations && condition->m_condition->IsStatic())
             {
-                const auto staticValueIsTruthy = condition->m_condition->Evaluate().IsTruthy();
+                const auto staticValueIsTruthy = condition->m_condition->EvaluateStatic().IsTruthy();
 
                 if(staticValueIsTruthy)
                     ConvertEventHandlerElements(elements, condition->m_condition_elements.get(), menu, item);
@@ -725,7 +725,7 @@ namespace IW4
 
                 if (expressionIsStatic)
                 {
-                    const auto evaluatedValue = expression->Evaluate();
+                    const auto evaluatedValue = expression->EvaluateStatic();
 
                     if (evaluatedValue.m_type == SimpleExpressionValue::Type::INT)
                     {

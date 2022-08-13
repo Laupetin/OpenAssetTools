@@ -46,7 +46,12 @@ bool SimpleExpressionValue::IsStatic() const
     return true;
 }
 
-SimpleExpressionValue SimpleExpressionValue::Evaluate() const
+SimpleExpressionValue SimpleExpressionValue::EvaluateStatic() const
+{
+    return *this;
+}
+
+SimpleExpressionValue SimpleExpressionValue::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
 {
     return *this;
 }

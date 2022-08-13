@@ -327,7 +327,7 @@ bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned
     if (!expression)
         throw ParsingException(CreatePos(line, currentPos), "Failed to parse if expression");
 
-    m_modes.push(expression->Evaluate().IsTruthy() ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK);
+    m_modes.push(expression->EvaluateStatic().IsTruthy() ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK);
 
     return true;
 }
@@ -369,7 +369,7 @@ bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsign
     if (!expression)
         throw ParsingException(CreatePos(line, currentPos), "Failed to parse elif expression");
 
-    m_modes.top() = expression->Evaluate().IsTruthy() ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK;
+    m_modes.top() = expression->EvaluateStatic().IsTruthy() ? BlockMode::IN_BLOCK : BlockMode::NOT_IN_BLOCK;
 
     return true;
 }

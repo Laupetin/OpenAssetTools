@@ -78,7 +78,12 @@ bool SimpleExpressionUnaryOperation::IsStatic() const
     return m_operand->IsStatic();
 }
 
-SimpleExpressionValue SimpleExpressionUnaryOperation::Evaluate() const
+SimpleExpressionValue SimpleExpressionUnaryOperation::EvaluateStatic() const
 {
-    return m_operation_type->m_evaluation_function(m_operand->Evaluate());
+    return m_operation_type->m_evaluation_function(m_operand->EvaluateStatic());
+}
+
+SimpleExpressionValue SimpleExpressionUnaryOperation::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+{
+    return m_operation_type->m_evaluation_function(m_operand->EvaluateNonStatic(scopeValues));
 }

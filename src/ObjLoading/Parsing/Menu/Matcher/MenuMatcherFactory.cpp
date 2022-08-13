@@ -120,7 +120,7 @@ int MenuMatcherFactory::TokenIntExpressionValue(MenuFileParserState* state, Sequ
         if (!expression || !expression->IsStatic())
             throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Not a valid static expression");
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
 
         if (value.m_type != SimpleExpressionValue::Type::INT)
             throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Expression MUST be int type");
@@ -150,7 +150,7 @@ double MenuMatcherFactory::TokenNumericExpressionValue(MenuFileParserState* stat
         if (!expression || !expression->IsStatic())
             throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Not a valid static expression");
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
 
         if (value.m_type == SimpleExpressionValue::Type::INT)
             return value.m_int_value;

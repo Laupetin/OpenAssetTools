@@ -156,7 +156,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
@@ -180,7 +180,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -204,7 +204,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -228,7 +228,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
@@ -252,7 +252,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -276,7 +276,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 0x2AAAAAA0);
     }
@@ -300,7 +300,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 7);
     }
@@ -324,7 +324,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -348,7 +348,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
@@ -372,7 +372,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
@@ -396,7 +396,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
@@ -420,7 +420,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
@@ -444,7 +444,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
@@ -468,7 +468,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1);
     }
@@ -492,7 +492,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 0);
     }
@@ -516,7 +516,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -540,7 +540,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
@@ -568,7 +568,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -596,7 +596,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -622,7 +622,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -648,7 +648,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
@@ -678,7 +678,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 421);
     }
@@ -708,7 +708,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1338);
     }
@@ -738,7 +738,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -768,7 +768,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 420);
     }
@@ -798,7 +798,7 @@ namespace test::parsing::simple::expression
         const auto& expression = helper.m_state->m_expression;
         REQUIRE(expression->IsStatic());
 
-        const auto value = expression->Evaluate();
+        const auto value = expression->EvaluateStatic();
         REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
         REQUIRE(value.m_int_value == 1337);
     }
@@ -817,7 +817,7 @@ namespace test::parsing::simple::expression
             const auto& expression = helper.m_state->m_expression;
             REQUIRE(expression->IsStatic());
 
-            const auto value = expression->Evaluate();
+            const auto value = expression->EvaluateStatic();
             REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
             REQUIRE(value.m_int_value == 1);
         }
@@ -834,7 +834,7 @@ namespace test::parsing::simple::expression
             const auto& expression = helper.m_state->m_expression;
             REQUIRE(expression->IsStatic());
 
-            const auto value = expression->Evaluate();
+            const auto value = expression->EvaluateStatic();
             REQUIRE(value.m_type == SimpleExpressionValue::Type::INT);
             REQUIRE(value.m_int_value == 11);
         }

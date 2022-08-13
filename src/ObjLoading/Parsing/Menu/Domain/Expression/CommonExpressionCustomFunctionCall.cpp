@@ -18,7 +18,12 @@ bool CommonExpressionCustomFunctionCall::IsStatic() const
     return false;
 }
 
-SimpleExpressionValue CommonExpressionCustomFunctionCall::Evaluate() const
+SimpleExpressionValue CommonExpressionCustomFunctionCall::EvaluateStatic() const
+{
+    return SimpleExpressionValue(0);
+}
+
+SimpleExpressionValue CommonExpressionCustomFunctionCall::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
 {
     return SimpleExpressionValue(0);
 }

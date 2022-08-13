@@ -573,7 +573,7 @@ namespace menu::event_handler_set_scope_sequences
         static void EmitStaticSetLocalVar(MenuFileParserState* state, const TokenPos& pos, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ISimpleExpression> expression)
         {
             state->m_current_script << "\"" << ScriptKeywordForType(type) << "\" \"" << varName << "\" \"";
-            const auto staticValue = expression->Evaluate();
+            const auto staticValue = expression->EvaluateStatic();
             CheckStaticValueType(pos, type, staticValue);
             EmitStaticValue(state, staticValue);
             state->m_current_script << "\" ; ";

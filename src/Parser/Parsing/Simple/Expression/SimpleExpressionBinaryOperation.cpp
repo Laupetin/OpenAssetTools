@@ -460,7 +460,12 @@ bool SimpleExpressionBinaryOperation::IsStatic() const
     return m_operand1->IsStatic() && m_operand2->IsStatic();
 }
 
-SimpleExpressionValue SimpleExpressionBinaryOperation::Evaluate() const
+SimpleExpressionValue SimpleExpressionBinaryOperation::EvaluateStatic() const
 {
-    return m_operation_type->m_evaluation_function(m_operand1->Evaluate(), m_operand2->Evaluate());
+    return m_operation_type->m_evaluation_function(m_operand1->EvaluateStatic(), m_operand2->EvaluateStatic());
+}
+
+SimpleExpressionValue SimpleExpressionBinaryOperation::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+{
+    return m_operation_type->m_evaluation_function(m_operand1->EvaluateNonStatic(scopeValues), m_operand2->EvaluateNonStatic(scopeValues));
 }

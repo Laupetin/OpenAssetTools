@@ -26,7 +26,14 @@ bool SimpleExpressionConditionalOperator::IsStatic() const
     return m_condition->IsStatic() && m_true_value->IsStatic() && m_false_value->IsStatic();
 }
 
-SimpleExpressionValue SimpleExpressionConditionalOperator::Evaluate() const
+SimpleExpressionValue SimpleExpressionConditionalOperator::EvaluateStatic() const
 {
-    return m_condition->Evaluate().IsTruthy() ? m_true_value->Evaluate() : m_false_value->Evaluate();
+    return m_condition->EvaluateStatic().IsTruthy() ? m_true_value->EvaluateStatic() : m_false_value->EvaluateStatic();
+}
+
+SimpleExpressionValue SimpleExpressionConditionalOperator::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+{
+    return m_condition->EvaluateNonStatic(scopeValues).IsTruthy()
+               ? m_true_value->EvaluateNonStatic(scopeValues)
+               : m_false_value->EvaluateNonStatic(scopeValues);
 }
