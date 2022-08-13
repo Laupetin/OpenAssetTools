@@ -43,7 +43,8 @@ function Raw:project()
 			buildmessage 'Copying rawfile %{file.relpath}'
 			buildcommands {
 				-- Relpath contains two .. so build/raw is getting reverted in the target path
-				"cp \"%{file.relpath}\" \"%{cfg.targetdir}/build/raw/%{file.relpath}\""
+				"{MKDIR} \"%{cfg.targetdir}/build/raw/%{file.reldirectory}\"",
+				"{COPYFILE} \"%{file.relpath}\" \"%{cfg.targetdir}/build/raw/%{file.relpath}\""
 			}
 			buildoutputs {
 				"%{cfg.targetdir}/build/raw/%{file.relpath}"
