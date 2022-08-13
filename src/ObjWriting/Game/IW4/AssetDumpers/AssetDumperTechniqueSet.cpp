@@ -35,7 +35,7 @@ namespace IW4
         {
             Indent();
             // TODO: Actual statemap: Maybe find all materials using this techset and try to make out rules for the flags based on the statebitstable
-            m_stream << "stateMap \"\"; // TODO\n";
+            m_stream << "stateMap \"passthrough\"; // TODO\n";
         }
 
         static bool FindCodeConstantSourceAccessor(const MaterialConstantSource sourceIndexToFind, const CodeConstantSource* codeConstantTable, std::string& codeSourceAccessor)
