@@ -16,9 +16,19 @@ blendFunc
 separateAlphaBlendFunc
 {
 	mtlBlendOp == Disable:
-		Disable, One, Zero;
+		Disable, One, Zero; // Confirmed
+	// somecondition:
+	//	Disable, Zero, Zero;
+	// somecondition:
+	//	Disable, Zero, DestAlpha;
+	// somecondition:
+	//	Disable, One, One;
+	// somecondition:
+	//	Disable, One, Zero;
+	//default:
+	//	Add, InvDestAlpha, One;
 	default:
-		Add, InvDestAlpha, One;
+		passthrough;
 }
 
 cullFace
