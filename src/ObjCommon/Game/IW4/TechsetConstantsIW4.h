@@ -577,17 +577,322 @@ namespace IW4
         WIREFRAME
     };
 
-    inline state_map::StateMapLayout stateMapLayout({
-        {"alphaTest", 1u},
-        {"blendFunc", 3u},
-        {"separateAlphaBlendFunc", 3u},
-        {"cullFace", 1u},
-        {"depthTest", 1u},
-        {"depthWrite", 1u},
-        {"colorWrite", 2u},
-        {"gammaWrite", 1u},
-        {"polygonOffset", 1u},
-        {"stencil", 9u},
-        {"wireframe", 1u},
+
+    inline state_map::StateMapLayoutEntries stateMapEntryLayout({
+        {
+            "alphaTest", 0, GFXS0_ATEST_MASK, {
+                "mtlAlphaTest"
+            }
+        },
+        {
+            "blendFunc", 0, GFXS0_BLEND_RGB_MASK, {
+                "mtlBlendOp",
+                "mtlSrcBlend",
+                "mtlDestBlend"
+            }
+        },
+        {
+            "separateAlphaBlendFunc", 0, GFXS0_BLEND_ALPHA_MASK, {
+                "mtlBlendOpAlpha",
+                "mtlSrcBlendAlpha",
+                "mtlDestBlendAlpha"
+            }
+        },
+        {
+            "cullFace", 0, GFXS0_CULL_MASK, {
+                "mtlCullFace"
+            }
+        },
+        {
+            "depthTest", 1, GFXS1_DEPTHTEST_MASK, {
+                "mtlDepthTest"
+            }
+        },
+        {
+            "depthWrite", 1, GFXS1_DEPTHWRITE, {
+                "mtlDepthWrite"
+            }
+        },
+        {
+            "colorWrite", 0, GFXS0_COLORWRITE_MASK, {
+                "mtlColorWriteRgb",
+                "mtlColorWriteAlpha"
+            }
+        },
+        {
+            "gammaWrite", 0, GFXS0_GAMMAWRITE, {
+                "mtlGammaWrite",
+            }
+        },
+        {
+            "polygonOffset", 1, GFXS1_POLYGON_OFFSET_MASK, {
+                "mtlPolygonOffset",
+            }
+        },
+        {
+            "stencil", 1, GFXS1_STENCILFUNC_FRONTBACK_MASK | GFXS1_STENCILOP_FRONTBACK_MASK, {
+                "mtlStencil",
+                "mtlStencilFuncFront",
+                "mtlStencilOpFrontPass",
+                "mtlStencilOpFrontFail",
+                "mtlStencilOpFrontZFail",
+                "mtlStencilFuncBack",
+                "mtlStencilOpBackPass",
+                "mtlStencilOpBackFail",
+                "mtlStencilOpBackZFail",
+            }
+        },
+        {
+            "wireframe", 1, GFXS0_POLYMODE_LINE, {
+                "mtlWireframe",
+            }
+        }
     });
+
+    inline state_map::StateMapLayoutVars stateMapVarLayout({
+        {
+            "mtlAlphaTest", 0, {
+                {"Always", GFXS0_ATEST_DISABLE},
+                {"GE128", GFXS0_ATEST_GE_128},
+                {"GT0", GFXS0_ATEST_GT_0},
+                {"LT128", GFXS0_ATEST_LT_128},
+            }
+        },
+        {
+            "mtlBlendOp", 0, {
+                {"Add", GFXS_BLENDOP_ADD << GFXS0_BLENDOP_RGB_SHIFT},
+                {"Subtract", GFXS_BLENDOP_SUBTRACT << GFXS0_BLENDOP_RGB_SHIFT},
+                {"RevSubtract", GFXS_BLENDOP_REVSUBTRACT << GFXS0_BLENDOP_RGB_SHIFT},
+                {"Min", GFXS_BLENDOP_MIN << GFXS0_BLENDOP_RGB_SHIFT},
+                {"Max", GFXS_BLENDOP_MAX << GFXS0_BLENDOP_RGB_SHIFT},
+                {"Disable", GFXS_BLENDOP_DISABLED << GFXS0_BLENDOP_RGB_SHIFT},
+            }
+        },
+        {
+            "mtlSrcBlend", 0, {
+                {"Zero", GFXS_BLEND_ZERO << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"One", GFXS_BLEND_ONE << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"InvSrcColor", GFXS_BLEND_INVSRCCOLOR << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"SrcAlpha", GFXS_BLEND_SRCALPHA << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"InvSrcAlpha", GFXS_BLEND_INVSRCALPHA << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"DestAlpha", GFXS_BLEND_DESTALPHA << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"InvDestAlpha", GFXS_BLEND_INVDESTALPHA << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"DestColor", GFXS_BLEND_DESTCOLOR << GFXS0_SRCBLEND_RGB_SHIFT},
+                {"InvDestColor", GFXS_BLEND_INVDESTCOLOR << GFXS0_SRCBLEND_RGB_SHIFT},
+            }
+        },
+        {
+            "mtlDestBlend", 0, {
+                {"Zero", GFXS_BLEND_ZERO << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"One", GFXS_BLEND_ONE << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"InvSrcColor", GFXS_BLEND_INVSRCCOLOR << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"SrcAlpha", GFXS_BLEND_SRCALPHA << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"InvSrcAlpha", GFXS_BLEND_INVSRCALPHA << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"DestAlpha", GFXS_BLEND_DESTALPHA << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"InvDestAlpha", GFXS_BLEND_INVDESTALPHA << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"DestColor", GFXS_BLEND_DESTCOLOR << GFXS0_DSTBLEND_RGB_SHIFT},
+                {"InvDestColor", GFXS_BLEND_INVDESTCOLOR << GFXS0_DSTBLEND_RGB_SHIFT},
+            }
+        },
+        {
+            "mtlBlendOpAlpha", 0, {
+                {"Add", GFXS_BLENDOP_ADD << GFXS0_BLENDOP_ALPHA_SHIFT},
+                {"Subtract", GFXS_BLENDOP_SUBTRACT << GFXS0_BLENDOP_ALPHA_SHIFT},
+                {"RevSubtract", GFXS_BLENDOP_REVSUBTRACT << GFXS0_BLENDOP_ALPHA_SHIFT},
+                {"Min", GFXS_BLENDOP_MIN << GFXS0_BLENDOP_ALPHA_SHIFT},
+                {"Max", GFXS_BLENDOP_MAX << GFXS0_BLENDOP_ALPHA_SHIFT},
+                {"Disable", GFXS_BLENDOP_DISABLED << GFXS0_BLENDOP_ALPHA_SHIFT},
+            }
+        },
+        {
+            "mtlSrcBlendAlpha", 0, {
+                {"Zero", GFXS_BLEND_ZERO << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"One", GFXS_BLEND_ONE << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"InvSrcColor", GFXS_BLEND_INVSRCCOLOR << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"SrcAlpha", GFXS_BLEND_SRCALPHA << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"InvSrcAlpha", GFXS_BLEND_INVSRCALPHA << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"DestAlpha", GFXS_BLEND_DESTALPHA << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"InvDestAlpha", GFXS_BLEND_INVDESTALPHA << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"DestColor", GFXS_BLEND_DESTCOLOR << GFXS0_SRCBLEND_ALPHA_SHIFT},
+                {"InvDestColor", GFXS_BLEND_INVDESTCOLOR << GFXS0_SRCBLEND_ALPHA_SHIFT},
+            }
+        },
+        {
+            "mtlDestBlendAlpha", 0, {
+                {"Zero", GFXS_BLEND_ZERO << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"One", GFXS_BLEND_ONE << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"InvSrcColor", GFXS_BLEND_INVSRCCOLOR << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"SrcAlpha", GFXS_BLEND_SRCALPHA << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"InvSrcAlpha", GFXS_BLEND_INVSRCALPHA << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"DestAlpha", GFXS_BLEND_DESTALPHA << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"InvDestAlpha", GFXS_BLEND_INVDESTALPHA << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"DestColor", GFXS_BLEND_DESTCOLOR << GFXS0_DSTBLEND_ALPHA_SHIFT},
+                {"InvDestColor", GFXS_BLEND_INVDESTCOLOR << GFXS0_DSTBLEND_ALPHA_SHIFT},
+            }
+        },
+        {
+            "mtlCullFace", 0, {
+                {"None", GFXS0_CULL_NONE},
+                {"Back", GFXS0_CULL_BACK},
+                {"Front", GFXS0_CULL_FRONT},
+            }
+        },
+        {
+            "mtlColorWriteRgb", 0, {
+                {"Enable", GFXS0_COLORWRITE_RGB},
+                {"Disable", 0},
+            }
+        },
+        {
+            "mtlColorWriteAlpha", 0, {
+                {"Enable", GFXS0_COLORWRITE_ALPHA},
+                {"Disable", 0},
+            }
+        },
+        {
+            "mtlGammaWrite", 0, {
+                {"Enable", GFXS0_GAMMAWRITE},
+                {"Disable", 0},
+            }
+        },
+        {
+            "mtlWireframe", 0, {
+                {"Enable", GFXS0_POLYMODE_LINE},
+                {"Disable", 0},
+            }
+        },
+        {
+            "mtlDepthTest", 1, {
+                {"Disable", GFXS1_DEPTHTEST_DISABLE},
+                {"Less", GFXS1_DEPTHTEST_LESS},
+                {"LessEqual", GFXS1_DEPTHTEST_LESSEQUAL},
+                {"Equal", GFXS1_DEPTHTEST_EQUAL},
+                {"Always", GFXS1_DEPTHTEST_ALWAYS},
+            }
+        },
+        {
+            "mtlDepthWrite", 1, {
+                {"Enable", GFXS1_DEPTHWRITE},
+                {"Disable", 0},
+            }
+        },
+        {
+            "mtlPolygonOffset", 1, {
+                {"1", GFXS1_POLYGON_OFFSET_1},
+                {"2", GFXS1_POLYGON_OFFSET_2},
+                {"shadowmap", GFXS1_POLYGON_OFFSET_SHADOWMAP},
+                {"0", GFXS1_POLYGON_OFFSET_0},
+            }
+        },
+        {
+            "mtlStencil", 1, {
+                {"Disable", 0},
+                {"OneSided", GFXS1_STENCIL_FRONT_ENABLE},
+                {"TwoSided", GFXS1_STENCIL_FRONT_ENABLE | GFXS1_STENCIL_BACK_ENABLE},
+                {"0", GFXS1_POLYGON_OFFSET_0},
+            }
+        },
+        {
+            "mtlStencilFuncFront", 1, {
+                {"Less", GFXS_STENCILFUNC_LESS << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"Equal", GFXS_STENCILFUNC_EQUAL << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"LessEqual", GFXS_STENCILFUNC_LESSEQUAL << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"Greater", GFXS_STENCILFUNC_GREATER << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"NotEqual", GFXS_STENCILFUNC_NOTEQUAL << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"GreaterEqual", GFXS_STENCILFUNC_GREATEREQUAL << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"Always", GFXS_STENCILFUNC_ALWAYS << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+                {"Never", GFXS_STENCILFUNC_NEVER << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
+            }
+        },
+        {
+            "mtlStencilOpFrontPass", 1, {
+                {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"DecrSat", GFXS_STENCILOP_DECRSAT << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"Invert", GFXS_STENCILOP_INVERT << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"Incr", GFXS_STENCILOP_INCR << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"Decr", GFXS_STENCILOP_DECR << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+                {"Keep", GFXS_STENCILOP_KEEP << GFXS1_STENCIL_FRONT_PASS_SHIFT},
+            }
+        },
+        {
+            "mtlStencilOpFrontFail", 1, {
+                {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"DecrSat", GFXS_STENCILOP_DECRSAT << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"Invert", GFXS_STENCILOP_INVERT << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"Incr", GFXS_STENCILOP_INCR << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"Decr", GFXS_STENCILOP_DECR << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+                {"Keep", GFXS_STENCILOP_KEEP << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
+            }
+        },
+        {
+            "mtlStencilOpFrontZFail", 1, {
+                {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"DecrSat", GFXS_STENCILOP_DECRSAT << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"Invert", GFXS_STENCILOP_INVERT << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"Incr", GFXS_STENCILOP_INCR << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"Decr", GFXS_STENCILOP_DECR << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+                {"Keep", GFXS_STENCILOP_KEEP << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
+            }
+        },
+        {
+            "mtlStencilFuncBack", 1, {
+                {"Less", GFXS_STENCILFUNC_LESS << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"Equal", GFXS_STENCILFUNC_EQUAL << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"LessEqual", GFXS_STENCILFUNC_LESSEQUAL << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"Greater", GFXS_STENCILFUNC_GREATER << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"NotEqual", GFXS_STENCILFUNC_NOTEQUAL << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"GreaterEqual", GFXS_STENCILFUNC_GREATEREQUAL << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"Always", GFXS_STENCILFUNC_ALWAYS << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+                {"Never", GFXS_STENCILFUNC_NEVER << GFXS1_STENCIL_BACK_FUNC_SHIFT},
+            }
+        },
+        {
+            "mtlStencilOpBackPass", 1, {
+                {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"DecrSat", GFXS_STENCILOP_DECRSAT << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"Invert", GFXS_STENCILOP_INVERT << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"Incr", GFXS_STENCILOP_INCR << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"Decr", GFXS_STENCILOP_DECR << GFXS1_STENCIL_BACK_PASS_SHIFT},
+                {"Keep", GFXS_STENCILOP_KEEP << GFXS1_STENCIL_BACK_PASS_SHIFT},
+            }
+        },
+        {
+            "mtlStencilOpBackFail", 1, {
+                {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"DecrSat", GFXS_STENCILOP_DECRSAT << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"Invert", GFXS_STENCILOP_INVERT << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"Incr", GFXS_STENCILOP_INCR << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"Decr", GFXS_STENCILOP_DECR << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+                {"Keep", GFXS_STENCILOP_KEEP << GFXS1_STENCIL_BACK_FAIL_SHIFT},
+            }
+        },
+        {
+            "mtlStencilOpBackZFail", 1, {
+                {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"DecrSat", GFXS_STENCILOP_DECRSAT << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"Invert", GFXS_STENCILOP_INVERT << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"Incr", GFXS_STENCILOP_INCR << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"Decr", GFXS_STENCILOP_DECR << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+                {"Keep", GFXS_STENCILOP_KEEP << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
+            }
+        },
+    });
+
+    inline state_map::StateMapLayout stateMapLayout(std::extent_v<decltype(GfxStateBits::loadBits)>, stateMapEntryLayout, stateMapVarLayout);
 }

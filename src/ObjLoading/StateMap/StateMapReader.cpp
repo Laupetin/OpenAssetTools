@@ -31,11 +31,11 @@ bool StateMapReader::IsValidEndState(const StateMapParserState* state) const
         return false;
     }
 
-    for (auto i = 0u; i < state->m_layout.m_layout_entries.size(); i++)
+    for (auto i = 0u; i < state->m_layout.m_entry_layout.m_entries.size(); i++)
     {
         if (state->m_definition->m_state_map_entries[i].m_rules.empty())
         {
-            std::cerr << "In \"" << m_file_name << "\": State map must define a rule for \"" << state->m_layout.m_layout_entries[i].m_name << "\"!\n";
+            std::cerr << "In \"" << m_file_name << "\": State map must define a rule for \"" << state->m_layout.m_entry_layout.m_entries[i].m_name << "\"!\n";
             return false;
         }
     }

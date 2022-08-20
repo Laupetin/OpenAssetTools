@@ -680,7 +680,7 @@ namespace IW4
         float literal[4];
     };
 
-    enum GfxBlend
+    enum GfxBlend : unsigned int
     {
         GFXS_BLEND_DISABLED = 0x0,
         GFXS_BLEND_ZERO = 0x1,
@@ -696,7 +696,7 @@ namespace IW4
         GFXS_BLEND_MASK = 0xF,
     };
 
-    enum GfxBlendOp
+    enum GfxBlendOp : unsigned int
     {
         GFXS_BLENDOP_DISABLED = 0x0,
         GFXS_BLENDOP_ADD = 0x1,
@@ -707,7 +707,7 @@ namespace IW4
         GFXS_BLENDOP_MASK = 0x7,
     };
 
-    enum GfxStencilFunc
+    enum GfxStencilFunc : unsigned int
     {
         GFXS_STENCILFUNC_NEVER = 0x0,
         GFXS_STENCILFUNC_LESS = 0x1,
@@ -722,7 +722,7 @@ namespace IW4
         GFXS_STENCILFUNC_MASK = 0x7
     };
 
-    enum GfxStencilOp
+    enum GfxStencilOp : unsigned int
     {
         GFXS_STENCILOP_KEEP = 0x0,
         GFXS_STENCILOP_ZERO = 0x1,
