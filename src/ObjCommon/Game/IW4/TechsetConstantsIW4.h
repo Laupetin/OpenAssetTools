@@ -643,7 +643,7 @@ namespace IW4
             }
         },
         {
-            "wireframe", 1, GFXS0_POLYMODE_LINE, {
+            "wireframe", 0, GFXS0_POLYMODE_LINE, {
                 "mtlWireframe",
             }
         }
