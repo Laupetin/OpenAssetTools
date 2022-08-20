@@ -51,10 +51,12 @@ depthWrite
 
 colorWrite
 {
-	mtlPolygonOffset == 0:
-		Enable, Enable;
+	// mtlPolygonOffset == 0:
+	//	 Enable, Enable;
+	// default:
+	// 	 Enable, Enable;
 	default:
-		Enable, Enable;
+		passthrough;
 }
 
 gammaWrite
