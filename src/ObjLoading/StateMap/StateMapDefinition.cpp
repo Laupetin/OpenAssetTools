@@ -2,14 +2,14 @@
 
 using namespace state_map;
 
-bool StateMapRule::IsPassthrough() const
+StateMapRule::StateMapRule()
+    : m_value(0u),
+      m_passthrough(false)
 {
-    return m_values.empty();
 }
 
 StateMapEntry::StateMapEntry()
-    : m_has_default(false),
-      m_default_index(0u)
+    : m_default_index(0u)
 {
 }
 

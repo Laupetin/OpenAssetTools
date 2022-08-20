@@ -22,7 +22,7 @@ SimpleExpressionValue SimpleExpressionScopeValue::EvaluateStatic() const
     return SimpleExpressionValue(0);
 }
 
-SimpleExpressionValue SimpleExpressionScopeValue::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+SimpleExpressionValue SimpleExpressionScopeValue::EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const
 {
     return scopeValues->ValueByName(m_value_name);
 }

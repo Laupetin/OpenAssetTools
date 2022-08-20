@@ -12,8 +12,12 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
+#include "Game/IW4/TechsetConstantsIW4.h"
 #include "Math/Vector.h"
 #include "Pool/GlobalAssetPool.h"
+#include "StateMap/StateMapFromTechniqueExtractor.h"
+#include "StateMap/StateMapHandler.h"
+#include "Techset/TechniqueFileReader.h"
 
 using namespace IW4;
 
@@ -26,10 +30,12 @@ namespace IW4
     class MaterialGdtLoader : AbstractGdtEntryReader
     {
     public:
-        MaterialGdtLoader(const GdtEntry& entry, MemoryManager* memory, IAssetLoadingManager* manager)
+        MaterialGdtLoader(const GdtEntry& entry, MemoryManager* memory, ISearchPath* searchPath, IAssetLoadingManager* manager)
             : AbstractGdtEntryReader(entry),
               m_memory(memory),
+              m_search_path(searchPath),
               m_manager(manager),
+              m_state_map_cache(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<techset::TechniqueStateMapCache>()),
               m_material(nullptr),
               m_base_state_bits{}
         {
@@ -167,6 +173,9 @@ namespace IW4
 
         void mtl_effect_template()
         {
+            // TODO
+            throw SkipMaterialException();
+
             commonsetup_template();
             unitlitcommon_template();
         }
@@ -847,6 +856,58 @@ namespace IW4
             }
         }
 
+        GfxStateBits GetStateBitsForTechnique(const std::string& techniqueName)
+        {
+            const auto* stateMap = GetStateMapForTechnique(techniqueName);
+            if (!stateMap)
+                return m_base_state_bits;
+
+            const auto preCalculatedStateBits = m_state_bits_per_state_map.find(stateMap);
+            if (preCalculatedStateBits != m_state_bits_per_state_map.end())
+                return preCalculatedStateBits->second;
+
+            const auto stateBits = CalculateStateBitsWithStateMap(stateMap);
+            m_state_bits_per_state_map.emplace(stateMap, stateBits);
+
+            return stateBits;
+        }
+
+        _NODISCARD const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const
+        {
+            const auto* preloadedStateMap = m_state_map_cache->GetStateMapForTechnique(techniqueName);
+            if (preloadedStateMap)
+                return preloadedStateMap;
+
+            const auto techniqueFileName = AssetLoaderTechniqueSet::GetTechniqueFileName(techniqueName);
+            const auto file = m_search_path->Open(techniqueFileName);
+            if (!file.IsOpen())
+                return nullptr;
+
+            state_map::StateMapFromTechniqueExtractor extractor;
+            const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
+            if (!reader.ReadTechniqueDefinition())
+            {
+                m_state_map_cache->SetTechniqueUsesStateMap(techniqueName, nullptr);
+                return nullptr;
+            }
+
+            const auto stateMapName = extractor.RetrieveStateMap();
+            const auto* loadedStateMap = AssetLoaderTechniqueSet::LoadStateMapDefinition(stateMapName, m_search_path, m_state_map_cache);
+            m_state_map_cache->SetTechniqueUsesStateMap(techniqueName, loadedStateMap);
+
+            return loadedStateMap;
+        }
+
+        GfxStateBits CalculateStateBitsWithStateMap(const state_map::StateMapDefinition* stateMap) const
+        {
+            const state_map::StateMapHandler stateMapHandler(stateMapLayout, *stateMap);
+
+            GfxStateBits outBits{};
+            stateMapHandler.ApplyStateMap(m_base_state_bits.loadBits, outBits.loadBits);
+
+            return outBits;
+        }
+
         void SetTechniqueSetCameraRegion(const techset::TechsetDefinition* techsetDefinition) const
         {
             std::string tempName;
@@ -865,12 +926,6 @@ namespace IW4
             {
                 m_material->cameraRegion = CAMERA_REGION_NONE;
             }
-        }
-
-        GfxStateBits GetStateBitsForTechnique(const std::string& techniqueName)
-        {
-            // TODO: Use technique statemap to evaluate actual statebits
-            return m_base_state_bits;
         }
 
         void AddMapTexture(const std::string& typeName, const TileMode_e tileMode, GdtFilter_e filterMode, const TextureSemantic semantic, const std::string& textureName)
@@ -1263,7 +1318,10 @@ namespace IW4
         }
 
         MemoryManager* m_memory;
+        ISearchPath* m_search_path;
         IAssetLoadingManager* m_manager;
+        techset::TechniqueStateMapCache* m_state_map_cache;
+        std::unordered_map<const state_map::StateMapDefinition*, GfxStateBits> m_state_bits_per_state_map;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
         Material* m_material;
@@ -1293,7 +1351,7 @@ bool AssetLoaderMaterial::LoadFromGdt(const std::string& assetName, IGdtQueryabl
     if (!entry)
         return false;
 
-    MaterialGdtLoader loader(*entry, memory, manager);
+    MaterialGdtLoader loader(*entry, memory, manager->GetAssetLoadingContext()->m_raw_search_path, manager);
 
     try
     {

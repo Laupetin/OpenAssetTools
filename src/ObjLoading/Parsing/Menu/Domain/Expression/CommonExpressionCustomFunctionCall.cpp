@@ -23,7 +23,7 @@ SimpleExpressionValue CommonExpressionCustomFunctionCall::EvaluateStatic() const
     return SimpleExpressionValue(0);
 }
 
-SimpleExpressionValue CommonExpressionCustomFunctionCall::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+SimpleExpressionValue CommonExpressionCustomFunctionCall::EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const
 {
     return SimpleExpressionValue(0);
 }

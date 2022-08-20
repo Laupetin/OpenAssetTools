@@ -51,7 +51,7 @@ SimpleExpressionValue SimpleExpressionValue::EvaluateStatic() const
     return *this;
 }
 
-SimpleExpressionValue SimpleExpressionValue::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+SimpleExpressionValue SimpleExpressionValue::EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const
 {
     return *this;
 }

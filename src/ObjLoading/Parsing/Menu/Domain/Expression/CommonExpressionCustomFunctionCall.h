@@ -14,6 +14,6 @@ namespace menu
         _NODISCARD bool Equals(const ISimpleExpression* other) const override;
         _NODISCARD bool IsStatic() const override;
         _NODISCARD SimpleExpressionValue EvaluateStatic() const override;
-        _NODISCARD SimpleExpressionValue EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const override;
+        _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
     };
 }

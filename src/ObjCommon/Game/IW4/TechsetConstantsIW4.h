@@ -580,7 +580,7 @@ namespace IW4
 
     inline state_map::StateMapLayoutEntries stateMapEntryLayout({
         {
-            "alphaTest", 0, GFXS0_ATEST_MASK, {
+            "alphaTest", 0, GFXS0_ATEST_MASK | GFXS0_ATEST_DISABLE, {
                 "mtlAlphaTest"
             }
         },
@@ -604,7 +604,7 @@ namespace IW4
             }
         },
         {
-            "depthTest", 1, GFXS1_DEPTHTEST_MASK, {
+            "depthTest", 1, GFXS1_DEPTHTEST_MASK | GFXS1_DEPTHTEST_DISABLE, {
                 "mtlDepthTest"
             }
         },

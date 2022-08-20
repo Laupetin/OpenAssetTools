@@ -31,7 +31,7 @@ SimpleExpressionValue SimpleExpressionConditionalOperator::EvaluateStatic() cons
     return m_condition->EvaluateStatic().IsTruthy() ? m_true_value->EvaluateStatic() : m_false_value->EvaluateStatic();
 }
 
-SimpleExpressionValue SimpleExpressionConditionalOperator::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+SimpleExpressionValue SimpleExpressionConditionalOperator::EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const
 {
     return m_condition->EvaluateNonStatic(scopeValues).IsTruthy()
                ? m_true_value->EvaluateNonStatic(scopeValues)

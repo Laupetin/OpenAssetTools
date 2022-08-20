@@ -33,7 +33,7 @@ public:
     _NODISCARD virtual bool Equals(const ISimpleExpression* other) const = 0;
     _NODISCARD virtual bool IsStatic() const = 0;
     _NODISCARD virtual SimpleExpressionValue EvaluateStatic() const = 0;
-    _NODISCARD virtual SimpleExpressionValue EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const = 0;
+    _NODISCARD virtual SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const = 0;
 };
 
 // Include SimpleExpressionValue after definition to avoid "base class not defined"

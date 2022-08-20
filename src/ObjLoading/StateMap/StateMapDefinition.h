@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "Utils/ClassUtils.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace state_map
@@ -13,15 +12,15 @@ namespace state_map
     {
     public:
         std::vector<std::unique_ptr<ISimpleExpression>> m_conditions;
-        std::vector<std::string> m_values;
-        
-        _NODISCARD bool IsPassthrough() const;
+        size_t m_value;
+        bool m_passthrough;
+
+        StateMapRule();
     };
 
     class StateMapEntry
     {
     public:
-        bool m_has_default;
         size_t m_default_index;
         std::vector<std::unique_ptr<StateMapRule>> m_rules;
 

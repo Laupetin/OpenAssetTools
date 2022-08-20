@@ -12,12 +12,14 @@ namespace IW4
 {
     class AssetLoaderTechniqueSet final : public BasicAssetLoader<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>
     {
-        static std::string GetTechsetFileName(const std::string& techsetAssetName);
-        static std::string GetStateMapFileName(const std::string& stateMapName);
         static bool CreateTechsetFromDefinition(const std::string& assetName, const techset::TechsetDefinition& definition, ISearchPath* searchPath, MemoryManager* memory,
                                                 IAssetLoadingManager* manager);
 
     public:
+        static std::string GetTechsetFileName(const std::string& techsetAssetName);
+        static std::string GetTechniqueFileName(const std::string& techniqueName);
+        static std::string GetStateMapFileName(const std::string& stateMapName);
+
         static techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache);
         static const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache);
 

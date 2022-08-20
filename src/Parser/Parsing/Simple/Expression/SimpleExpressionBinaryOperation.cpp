@@ -465,7 +465,7 @@ SimpleExpressionValue SimpleExpressionBinaryOperation::EvaluateStatic() const
     return m_operation_type->m_evaluation_function(m_operand1->EvaluateStatic(), m_operand2->EvaluateStatic());
 }
 
-SimpleExpressionValue SimpleExpressionBinaryOperation::EvaluateNonStatic(ISimpleExpressionScopeValues* scopeValues) const
+SimpleExpressionValue SimpleExpressionBinaryOperation::EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const
 {
     return m_operation_type->m_evaluation_function(m_operand1->EvaluateNonStatic(scopeValues), m_operand2->EvaluateNonStatic(scopeValues));
 }

@@ -38,20 +38,26 @@ namespace state_map
 
     class SequenceStateMapEntryClose final : public StateMapParser::sequence_t
     {
+        static constexpr auto CAPTURE_FIRST_TOKEN = 1;
+
     public:
         SequenceStateMapEntryClose()
         {
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Char('}')
+                create.Char('}').Capture(CAPTURE_FIRST_TOKEN)
             });
         }
 
     protected:
         void ProcessMatch(StateMapParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
+            if (!state->m_entry_has_default)
+                throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Entry must have a default case");
+
             state->m_in_entry = false;
+            state->m_entry_has_default = false;
         }
     };
 
@@ -63,7 +69,7 @@ namespace state_map
     public:
         SequenceCondition()
         {
-            AddLabeledMatchers(m_expression_matchers.Expression(this), StateMapExpressionMatchers::LABEL_EXPRESSION);
+            AddLabeledMatchers(StateMapExpressionMatchers().Expression(this), StateMapExpressionMatchers::LABEL_EXPRESSION);
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
@@ -90,7 +96,7 @@ namespace state_map
 
             if (result.PeekAndRemoveIfTag(TAG_EXPRESSION) == TAG_EXPRESSION)
             {
-                auto expression = m_expression_matchers.ProcessExpression(result);
+                auto expression = StateMapExpressionMatchers(state).ProcessExpression(result);
 
                 state->m_current_rule->m_conditions.emplace_back(std::move(expression));
             }
@@ -98,13 +104,10 @@ namespace state_map
             {
                 assert(result.PeekAndRemoveIfTag(TAG_DEFAULT) == TAG_DEFAULT);
                 auto& entry = state->m_definition->m_state_map_entries[state->m_current_entry_index];
-                entry.m_has_default = true;
+                state->m_entry_has_default = true;
                 entry.m_default_index = entry.m_rules.size() - 1;
             }
         }
-
-    private:
-        StateMapExpressionMatchers m_expression_matchers;
     };
 
     class SequenceValue final : public StateMapParser::sequence_t
@@ -113,19 +116,26 @@ namespace state_map
         static constexpr auto TAG_VALUE_LIST = 2;
 
         static constexpr auto CAPTURE_VALUE = 1;
+        static constexpr auto CAPTURE_VALUE_END = 2;
 
         static constexpr auto LABEL_VALUE_LIST = 1;
+        static constexpr auto LABEL_VALUE = 2;
 
     public:
         SequenceValue()
         {
             const SimpleMatcherFactory create(this);
 
+            AddLabeledMatchers(create.Or({
+                                   create.Identifier(),
+                                   create.Integer()
+                               }), LABEL_VALUE);
+
             AddLabeledMatchers({
-                                   create.Identifier().Capture(CAPTURE_VALUE),
+                                   create.Label(LABEL_VALUE).Capture(CAPTURE_VALUE),
                                    create.OptionalLoop(create.And({
                                        create.Char(','),
-                                       create.Identifier().Capture(CAPTURE_VALUE)
+                                       create.Label(LABEL_VALUE).Capture(CAPTURE_VALUE)
                                    }))
                                }, LABEL_VALUE_LIST);
 
@@ -134,7 +144,7 @@ namespace state_map
                     create.Keyword("passthrough").Tag(TAG_PASSTHROUGH),
                     create.Label(LABEL_VALUE_LIST).Tag(TAG_VALUE_LIST)
                 }),
-                create.Char(';')
+                create.Char(';').Capture(CAPTURE_VALUE_END)
             });
         }
 
@@ -144,15 +154,51 @@ namespace state_map
             assert(state->m_in_entry);
             assert(state->m_current_rule);
 
+            const auto& layoutEntry = state->m_layout.m_entry_layout.m_entries[state->m_current_entry_index];
+
             if (result.PeekAndRemoveIfTag(TAG_VALUE_LIST) == TAG_VALUE_LIST)
             {
+                auto resultIndex = 0u;
+
                 while (result.HasNextCapture(CAPTURE_VALUE))
-                    state->m_current_rule->m_values.emplace_back(result.NextCapture(CAPTURE_VALUE).IdentifierValue());
+                {
+                    const auto& valueToken = result.NextCapture(CAPTURE_VALUE);
+
+                    if (resultIndex >= layoutEntry.m_result_vars.size())
+                        throw ParsingException(valueToken.GetPos(), "Too many results");
+
+                    const auto& resultVar = layoutEntry.m_result_vars[resultIndex];
+                    const auto varForResult = state->m_valid_vars.find(resultVar);
+
+                    if (varForResult != state->m_valid_vars.end())
+                    {
+                        const auto& var = state->m_layout.m_var_layout.m_vars[varForResult->second];
+                        const auto tokenValue = valueToken.m_type == SimpleParserValueType::IDENTIFIER ? valueToken.IdentifierValue() : std::to_string(valueToken.IntegerValue());
+
+                        const auto referencedValue = std::find_if(var.m_values.begin(), var.m_values.end(), [&tokenValue](const StateMapLayoutVarValue& value)
+                        {
+                            return value.m_name == tokenValue;
+                        });
+
+                        if (referencedValue == var.m_values.end())
+                            throw ParsingException(valueToken.GetPos(), "Not part of the valid values for this var");
+
+                        state->m_current_rule->m_value |= referencedValue->m_state_bits_mask;
+                    }
+                    else
+                        throw ParsingException(valueToken.GetPos(), "Unknown var for result?");
+
+                    resultIndex++;
+                }
+
+                if (resultIndex < layoutEntry.m_result_vars.size())
+                    throw ParsingException(result.NextCapture(CAPTURE_VALUE_END).GetPos(), "Not enough results");
             }
             else
             {
                 // A rule without values is considered passthrough therefore just don't add values
                 assert(result.PeekAndRemoveIfTag(TAG_PASSTHROUGH) == TAG_PASSTHROUGH);
+                state->m_current_rule->m_passthrough = true;
             }
 
             state->m_current_rule = nullptr;

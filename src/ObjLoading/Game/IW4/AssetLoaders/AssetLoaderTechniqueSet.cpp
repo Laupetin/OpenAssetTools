@@ -1007,13 +1007,6 @@ namespace IW4
         ShaderInfoFromFileSystemCacheState* m_shader_info_cache;
         techset::TechniqueStateMapCache* m_state_map_cache;
 
-        static std::string GetTechniqueFileName(const std::string& techniqueName)
-        {
-            std::ostringstream ss;
-            ss << "techniques/" << techniqueName << ".tech";
-            return ss.str();
-        }
-
         static void UpdateTechniqueFlags(MaterialTechnique& technique)
         {
             // This is stupid but that's what the game does for zprepass for sure
@@ -1200,7 +1193,7 @@ namespace IW4
 
         MaterialTechnique* LoadTechniqueFromRaw(const std::string& techniqueName, std::vector<XAssetInfoGeneric*>& dependencies) const
         {
-            const auto techniqueFileName = GetTechniqueFileName(techniqueName);
+            const auto techniqueFileName = AssetLoaderTechniqueSet::GetTechniqueFileName(techniqueName);
             const auto file = m_search_path->Open(techniqueFileName);
             if (!file.IsOpen())
                 return nullptr;
@@ -1252,6 +1245,13 @@ std::string AssetLoaderTechniqueSet::GetTechsetFileName(const std::string& techs
 {
     std::ostringstream ss;
     ss << "techsets/" << techsetAssetName << ".techset";
+    return ss.str();
+}
+
+std::string AssetLoaderTechniqueSet::GetTechniqueFileName(const std::string& techniqueName)
+{
+    std::ostringstream ss;
+    ss << "techniques/" << techniqueName << ".tech";
     return ss.str();
 }
 
