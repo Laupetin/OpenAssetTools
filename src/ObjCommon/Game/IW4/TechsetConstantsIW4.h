@@ -790,10 +790,9 @@ namespace IW4
         },
         {
             "mtlStencil", 1, {
-                {"Disable", 0},
                 {"OneSided", GFXS1_STENCIL_FRONT_ENABLE},
                 {"TwoSided", GFXS1_STENCIL_FRONT_ENABLE | GFXS1_STENCIL_BACK_ENABLE},
-                {"0", GFXS1_POLYGON_OFFSET_0},
+                {"Disable", 0},
             }
         },
         {
