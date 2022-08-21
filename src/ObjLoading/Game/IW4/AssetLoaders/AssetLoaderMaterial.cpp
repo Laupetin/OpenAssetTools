@@ -668,7 +668,7 @@ namespace IW4
             }
             else if (blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
             {
-                SetBlendFunc(BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE);
+                SetBlendFunc(BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE);
                 SetSeparateAlphaBlendFunc(BlendOp_e::DISABLE, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ZERO);
             }
             else if (blendFunc == GDT_BLEND_FUNC_CUSTOM)
