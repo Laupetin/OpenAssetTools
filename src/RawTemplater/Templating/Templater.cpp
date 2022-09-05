@@ -218,6 +218,8 @@ namespace templating
                     m_output_stream << cachedData;
             }
 
+            std::cout << "Templated file \"" << m_output_file << "\"\n";
+
             m_first_line = true;
             m_write_output_to_file = false;
             m_output_cache.clear();
@@ -325,7 +327,7 @@ Templater::Templater(std::istream& stream, std::string fileName)
 {
 }
 
-bool Templater::TemplateToDirectory(const std::string& outputDirectory)
+bool Templater::TemplateToDirectory(const std::string& outputDirectory) const
 {
     TemplaterControlImpl control(m_stream, m_file_name, outputDirectory);
 

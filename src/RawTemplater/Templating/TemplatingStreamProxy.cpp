@@ -42,8 +42,7 @@ bool TemplatingStreamProxy::MatchSwitchDirective(const ParserLine& line, const u
         throw ParsingException(CreatePos(line, currentPosition), "Invalid switch directive.");
 
     auto name = line.m_line.substr(nameStartPosition, currentPosition - nameStartPosition);
-
-    std::cout << "Switch: \"" << name << "\"\n";
+    
     m_templater_control->AddSwitch(std::move(name));
     return true;
 }
@@ -100,10 +99,6 @@ bool TemplatingStreamProxy::MatchOptionsDirective(const ParserLine& line, const 
         firstArg = false;
     }
 
-    std::cout << "Options: \"" << name << "\" with values:\n";
-    for (const auto& option : options)
-        std::cout << "   Value: " << option << "\n";
-
     m_templater_control->AddOptions(std::move(name), std::move(options));
     return true;
 }
@@ -145,8 +140,7 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
 
     if (value.m_type != SimpleExpressionValue::Type::STRING)
         throw ParsingException(CreatePos(line, currentPosition), "pragma filename expression must evaluate to string");
-
-    std::cout << "Filename: \"" << *value.m_string_value << "\"\n";
+    
     m_templater_control->SetFileName(*value.m_string_value);
     return true;
 }

@@ -10,7 +10,7 @@ namespace templating
     public:
         Templater(std::istream& stream, std::string fileName);
         
-        bool TemplateToDirectory(const std::string& outputDirectory);
+        bool TemplateToDirectory(const std::string& outputDirectory) const;
 
     private:
         std::istream& m_stream;
