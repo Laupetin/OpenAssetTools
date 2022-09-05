@@ -8,7 +8,7 @@ DefinesExpressionMatchers::DefinesExpressionMatchers()
 }
 
 DefinesExpressionMatchers::DefinesExpressionMatchers(const DefinesDirectiveParsingState* state)
-    : SimpleExpressionMatchers(false, false, true, true, false),
+    : SimpleExpressionMatchers(true, false, true, true, false),
       m_state(state)
 {
 }

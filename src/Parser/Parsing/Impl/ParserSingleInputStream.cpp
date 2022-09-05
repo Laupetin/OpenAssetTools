@@ -61,5 +61,5 @@ bool ParserSingleInputStream::IsOpen() const
 
 bool ParserSingleInputStream::Eof() const
 {
-    return !m_stream.eof();
+    return m_stream.eof();
 }

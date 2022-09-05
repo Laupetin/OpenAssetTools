@@ -77,13 +77,14 @@ private:
 
     static void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
     bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, Define*& value);
-    void ExpandDefines(ParserLine& line);
 
 public:
     explicit DefinesStreamProxy(IParserLineStream* stream);
 
     void AddDefine(Define define);
     void Undefine(const std::string& name);
+
+    void ExpandDefines(ParserLine& line);
 
     _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(const std::string& expressionString) const;
 

@@ -39,12 +39,22 @@ function Raw:project()
 			}
 		}
 
-		filter "files:**"
+		filter "files:not **/*.template"
 			buildmessage 'Copying rawfile %{file.relpath}'
 			buildcommands {
 				-- Relpath contains two .. so build/raw is getting reverted in the target path
 				"{MKDIR} \"%{cfg.targetdir}/build/raw/%{file.reldirectory}\"",
 				"{COPYFILE} \"%{file.relpath}\" \"%{cfg.targetdir}/build/raw/%{file.relpath}\""
+			}
+			buildoutputs {
+				"%{cfg.targetdir}/build/raw/%{file.relpath}"
+			}
+		filter {}
+
+		filter "files:**/*.template"
+			buildmessage 'Templating %{file.relpath}'
+			buildcommands {
+				"echo \"%{cfg.targetdir}/build/raw/%{file.reldirectory}\""
 			}
 			buildoutputs {
 				"%{cfg.targetdir}/build/raw/%{file.relpath}"

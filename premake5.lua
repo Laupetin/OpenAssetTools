@@ -100,6 +100,7 @@ include "src/Common.lua"
 include "src/Crypto.lua"
 include "src/Linker.lua"
 include "src/Parser.lua"
+include "src/RawTemplater.lua"
 include "src/Unlinker.lua"
 include "src/Utils.lua"
 include "src/ZoneCode.lua"
@@ -131,10 +132,15 @@ group "Components"
 group ""
 
 -- Tools group: All projects that compile into the final tools
+group "BuildTools"
+    RawTemplater:project()
+    ZoneCodeGenerator:project()
+group ""
+
+-- Tools group: All projects that compile into the final tools
 group "Tools"
     Linker:project()
     Unlinker:project()
-    ZoneCodeGenerator:project()
 group ""
 
 group "Raw"

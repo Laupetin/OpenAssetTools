@@ -281,13 +281,13 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsig
 std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(const std::string& expressionString) const
 {
     std::istringstream ss(expressionString);
-    ParserSingleInputStream inputStream(ss, "#if expression");
+    ParserSingleInputStream inputStream(ss, "defines directive expression");
 
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = false;
     lexerConfig.m_read_integer_numbers = true;
     lexerConfig.m_read_floating_point_numbers = true;
-    lexerConfig.m_read_strings = false;
+    lexerConfig.m_read_strings = true;
     SimpleExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
 
     SimpleLexer lexer(&inputStream, std::move(lexerConfig));
