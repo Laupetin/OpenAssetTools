@@ -6,11 +6,11 @@
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
-class DefinesIfDirectiveParsingState
+class DefinesDirectiveParsingState
 {
 public:
     const std::map<std::string, DefinesStreamProxy::Define>& m_defines;
     std::unique_ptr<ISimpleExpression> m_expression;
 
-    explicit DefinesIfDirectiveParsingState(const std::map<std::string, DefinesStreamProxy::Define>& defines);
+    explicit DefinesDirectiveParsingState(const std::map<std::string, DefinesStreamProxy::Define>& defines);
 };

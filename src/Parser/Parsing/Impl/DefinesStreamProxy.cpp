@@ -6,7 +6,7 @@
 #include "Utils/ClassUtils.h"
 #include "AbstractParser.h"
 #include "ParserSingleInputStream.h"
-#include "Defines/DefinesIfDirectiveParser.h"
+#include "Defines/DefinesDirectiveParser.h"
 #include "Parsing/ParsingException.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
@@ -278,7 +278,7 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsig
     return true;
 }
 
-std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseIfExpression(const std::string& expressionString) const
+std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(const std::string& expressionString) const
 {
     std::istringstream ss(expressionString);
     ParserSingleInputStream inputStream(ss, "#if expression");
@@ -291,7 +291,7 @@ std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseIfExpression(const s
     SimpleExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
 
     SimpleLexer lexer(&inputStream, std::move(lexerConfig));
-    DefinesIfDirectiveParser parser(&lexer, m_defines);
+    DefinesDirectiveParser parser(&lexer, m_defines);
 
     if (!parser.Parse())
         return nullptr;
@@ -323,7 +323,7 @@ bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPos), "Cannot if without an expression.");
 
-    const auto expression = ParseIfExpression(expressionString);
+    const auto expression = ParseExpression(expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPos), "Failed to parse if expression");
 
@@ -365,7 +365,7 @@ bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsign
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPos), "Cannot elif without an expression.");
 
-    const auto expression = ParseIfExpression(expressionString);
+    const auto expression = ParseExpression(expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPos), "Failed to parse elif expression");
 

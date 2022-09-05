@@ -66,7 +66,6 @@ private:
     static int GetLineEndEscapePos(const ParserLine& line);
     static std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
     void ContinueDefine(const ParserLine& line);
-    _NODISCARD std::unique_ptr<ISimpleExpression> ParseIfExpression(const std::string& expressionString) const;
     _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchIfDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
@@ -85,6 +84,8 @@ public:
 
     void AddDefine(Define define);
     void Undefine(const std::string& name);
+
+    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(const std::string& expressionString) const;
 
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;

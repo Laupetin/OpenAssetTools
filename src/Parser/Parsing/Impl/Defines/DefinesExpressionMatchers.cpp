@@ -1,19 +1,19 @@
-#include "DefinesIfExpressionMatchers.h"
+#include "DefinesExpressionMatchers.h"
 
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
-DefinesIfExpressionMatchers::DefinesIfExpressionMatchers()
-    : DefinesIfExpressionMatchers(nullptr)
+DefinesExpressionMatchers::DefinesExpressionMatchers()
+    : DefinesExpressionMatchers(nullptr)
 {
 }
 
-DefinesIfExpressionMatchers::DefinesIfExpressionMatchers(const DefinesIfDirectiveParsingState* state)
+DefinesExpressionMatchers::DefinesExpressionMatchers(const DefinesDirectiveParsingState* state)
     : SimpleExpressionMatchers(false, false, true, true, false),
       m_state(state)
 {
 }
 
-std::unique_ptr<SimpleExpressionMatchers::matcher_t> DefinesIfExpressionMatchers::ParseOperandExtension(const supplier_t* labelSupplier) const
+std::unique_ptr<SimpleExpressionMatchers::matcher_t> DefinesExpressionMatchers::ParseOperandExtension(const supplier_t* labelSupplier) const
 {
     const SimpleMatcherFactory create(labelSupplier);
 
@@ -25,7 +25,7 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> DefinesIfExpressionMatchers
     });
 }
 
-std::unique_ptr<ISimpleExpression> DefinesIfExpressionMatchers::ProcessOperandExtension(SequenceResult<SimpleParserValue>& result) const
+std::unique_ptr<ISimpleExpression> DefinesExpressionMatchers::ProcessOperandExtension(SequenceResult<SimpleParserValue>& result) const
 {
     const auto& defineCapture = result.NextCapture(CAPTURE_DEFINE_NAME);
 
