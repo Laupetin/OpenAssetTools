@@ -22,6 +22,12 @@ const CommandLineOption* const OPTION_OUTPUT_FOLDER = CommandLineOption::Builder
                                                       .WithParameter("outputPath")
                                                       .Build();
 
+const CommandLineOption* const OPTION_BUILD_LOG = CommandLineOption::Builder::Create()
+                                                      .WithLongName("build-log")
+                                                      .WithDescription("Specify a file to write a build log to.")
+                                                      .WithParameter("logFilePath")
+                                                      .Build();
+
 const CommandLineOption* const OPTION_DEFINE = CommandLineOption::Builder::Create()
                                                .WithShortName("d")
                                                .WithLongName("define")
@@ -35,6 +41,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_HELP,
     OPTION_VERBOSE,
     OPTION_OUTPUT_FOLDER,
+    OPTION_BUILD_LOG,
     OPTION_DEFINE
 };
 
@@ -86,6 +93,10 @@ bool RawTemplaterArguments::Parse(const int argc, const char** argv)
         m_output_directory = m_argument_parser.GetValueForOption(OPTION_OUTPUT_FOLDER);
     else
         m_output_directory = ".";
+
+    // --build-log
+    if (m_argument_parser.IsOptionSpecified(OPTION_BUILD_LOG))
+        m_build_log_file = m_argument_parser.GetValueForOption(OPTION_BUILD_LOG);
 
     // -d; --define
     if (m_argument_parser.IsOptionSpecified(OPTION_DEFINE))

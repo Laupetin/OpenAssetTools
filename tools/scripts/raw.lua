@@ -39,6 +39,8 @@ function Raw:project()
 			}
 		}
 
+        RawTemplater:use()
+
 		filter "files:not **/*.template"
 			buildmessage 'Copying rawfile %{file.relpath}'
 			buildcommands {
@@ -59,10 +61,11 @@ function Raw:project()
 			buildcommands {
 				'"' .. TargetDirectoryBin .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
 				.. " -o %{cfg.targetdir}/build/raw/%{file.reldirectory}"
+				.. " --build-log \"%{prj.location}/build/%{file.relpath}.log\""
 				.. " %{file.relpath}"
 			}
 			buildoutputs {
-				"%{cfg.targetdir}/build/raw/%{file.relpath}"
+				"%{prj.location}/build/%{file.relpath}.log"
 			}
 		filter {}
 end

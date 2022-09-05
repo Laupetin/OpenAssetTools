@@ -21,6 +21,8 @@ public:
     std::vector<std::string> m_input_files;
     std::string m_output_directory;
 
+    std::string m_build_log_file;
+
     std::vector<std::pair<std::string, std::string>> m_defines;
 
     RawTemplaterArguments();

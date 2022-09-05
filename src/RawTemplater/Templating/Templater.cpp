@@ -172,7 +172,7 @@ namespace templating
             m_default_output_file = (m_output_directory / filenamePath.replace_extension()).string();
         }
 
-        bool RunNextPass()
+        bool RunNextPass(std::ostream* buildLogFile)
         {
             m_stream.clear();
             m_stream.seekg(0, std::ios::beg);
@@ -209,7 +209,7 @@ namespace templating
 
             if (!m_write_output_to_file)
             {
-                m_output_stream = std::ofstream(m_output_file);
+                m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
                 if (!m_output_stream.is_open())
                 {
                     std::cerr << "Failed to open output file \"" << m_output_file << "\"\n";
@@ -222,6 +222,9 @@ namespace templating
             }
 
             std::cout << "Templated file \"" << m_output_file << "\"\n";
+
+            if(buildLogFile)
+                *buildLogFile << "Templated file \"" << m_output_file << "\"\n";
 
             m_first_line = true;
             m_write_output_to_file = false;
@@ -289,7 +292,7 @@ namespace templating
                 return false;
 
             m_output_file = (m_output_directory / fileName).string();
-            m_output_stream = std::ofstream(m_output_file);
+            m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
             if (!m_output_stream.is_open())
             {
                 std::cerr << "Failed to open output file \"" << m_output_file << "\"\n";
@@ -326,8 +329,14 @@ namespace templating
 
 Templater::Templater(std::istream& stream, std::string fileName)
     : m_stream(stream),
+      m_build_log(nullptr),
       m_file_name(std::move(fileName))
 {
+}
+
+void Templater::SetBuildLogFile(std::ostream* buildLogFile)
+{
+    m_build_log = buildLogFile;
 }
 
 bool Templater::TemplateToDirectory(const std::string& outputDirectory) const
@@ -336,13 +345,13 @@ bool Templater::TemplateToDirectory(const std::string& outputDirectory) const
 
     try
     {
-        if (!control.RunNextPass())
+        if (!control.RunNextPass(m_build_log))
             return false;
 
         control.AdvanceActiveVariations();
         while (control.HasActiveVariations())
         {
-            if (!control.RunNextPass())
+            if (!control.RunNextPass(m_build_log))
                 return false;
 
             control.AdvanceActiveVariations();

@@ -13,9 +13,12 @@ class RawTemplater::Impl
 {
     RawTemplaterArguments m_args;
 
-    _NODISCARD bool GenerateCode(const std::string& filename) const
+    bool m_write_build_log;
+    std::ofstream m_build_log_file;
+
+    _NODISCARD bool GenerateCode(const std::string& filename)
     {
-        std::ifstream file(filename);
+        std::ifstream file(filename, std::ios::in | std::ios::binary);
         if (!file.is_open())
         {
             std::cerr << "Failed to open file \"" << filename << "\"\n";
@@ -23,6 +26,8 @@ class RawTemplater::Impl
         }
 
         templating::Templater templater(file, filename);
+        if (m_write_build_log)
+            templater.SetBuildLogFile(&m_build_log_file);
         if (!m_args.m_output_directory.empty())
             return templater.TemplateToDirectory(m_args.m_output_directory);
 
@@ -34,14 +39,27 @@ class RawTemplater::Impl
 
 public:
     Impl()
-    = default;
+        : m_write_build_log(false)
+    {
+    }
 
     int Run(const int argc, const char** argv)
     {
         if (!m_args.Parse(argc, argv))
             return 1;
 
-        for(const auto& inputFile : m_args.m_input_files)
+        if (!m_args.m_build_log_file.empty())
+        {
+            m_build_log_file = std::ofstream(m_args.m_build_log_file, std::ios::out | std::ios::binary);
+            if (!m_build_log_file.is_open())
+            {
+                std::cerr << "Failed to open build log file \"" << m_args.m_build_log_file << "\"\n";
+                return false;
+            }
+            m_write_build_log = true;
+        }
+
+        for (const auto& inputFile : m_args.m_input_files)
         {
             if (!GenerateCode(inputFile))
                 return 1;
