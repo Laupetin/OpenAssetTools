@@ -12,6 +12,7 @@
 #include "Parsing/ParsingException.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
+#include "Parsing/Impl/SkipUntilFirstNonEmptyProxy.h"
 
 using namespace templating;
 namespace fs = std::filesystem;
@@ -33,15 +34,17 @@ namespace templating
             m_templating_proxy = std::make_unique<TemplatingStreamProxy>(m_base_stream.get(), templaterControl);
             m_defines_proxy = std::make_unique<DefinesStreamProxy>(m_templating_proxy.get());
             m_directive_escape_proxy = std::make_unique<DirectiveEscapeStreamProxy>(m_defines_proxy.get());
+            m_skip_until_first_non_empty_proxy = std::make_unique<SkipUntilFirstNonEmptyProxy>(m_directive_escape_proxy.get());
 
             m_templating_proxy->SetDefinesProxy(m_defines_proxy.get());
-            m_stream = m_directive_escape_proxy.get();
+            m_stream = m_skip_until_first_non_empty_proxy.get();
         }
 
         std::unique_ptr<IParserLineStream> m_base_stream;
         std::unique_ptr<TemplatingStreamProxy> m_templating_proxy;
         std::unique_ptr<DefinesStreamProxy> m_defines_proxy;
         std::unique_ptr<DirectiveEscapeStreamProxy> m_directive_escape_proxy;
+        std::unique_ptr<SkipUntilFirstNonEmptyProxy> m_skip_until_first_non_empty_proxy;
         IParserLineStream* m_stream;
     };
 
