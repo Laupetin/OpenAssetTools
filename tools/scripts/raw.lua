@@ -53,8 +53,13 @@ function Raw:project()
 
 		filter "files:**/*.template"
 			buildmessage 'Templating %{file.relpath}'
+            buildinputs {
+                TargetDirectoryBin .. "/" .. ExecutableByOs('RawTemplater')
+            }
 			buildcommands {
-				"echo \"%{cfg.targetdir}/build/raw/%{file.reldirectory}\""
+				'"' .. TargetDirectoryBin .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
+				.. " -o %{cfg.targetdir}/build/raw/%{file.reldirectory}"
+				.. " %{file.relpath}"
 			}
 			buildoutputs {
 				"%{cfg.targetdir}/build/raw/%{file.relpath}"

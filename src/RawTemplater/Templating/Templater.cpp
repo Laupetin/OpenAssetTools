@@ -288,7 +288,7 @@ namespace templating
             if (m_write_output_to_file)
                 return false;
 
-            m_output_file = fileName;
+            m_output_file = (m_output_directory / fileName).string();
             m_output_stream = std::ofstream(m_output_file);
             if (!m_output_stream.is_open())
             {
