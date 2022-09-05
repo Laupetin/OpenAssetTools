@@ -351,7 +351,7 @@ bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsign
     if (m_modes.top() == BlockMode::BLOCK_BLOCKED)
         return true;
 
-    if(m_modes.top() == BlockMode::IN_BLOCK)
+    if (m_modes.top() == BlockMode::IN_BLOCK)
     {
         m_modes.top() = BlockMode::BLOCK_BLOCKED;
         return true;
@@ -528,7 +528,7 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
                 valueHasStarted = false;
             }
         }
-        else if(c == '(')
+        else if (c == '(')
         {
             valueHasStarted = true;
             parenthesisDepth++;
@@ -536,7 +536,7 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
         }
         else if (c == ')')
         {
-            if(parenthesisDepth > 0)
+            if (parenthesisDepth > 0)
             {
                 valueHasStarted = true;
                 parenthesisDepth--;
@@ -663,21 +663,23 @@ ParserLine DefinesStreamProxy::NextLine()
 {
     auto line = m_stream->NextLine();
 
-    if (m_in_define)
+    while (true)
     {
-        ContinueDefine(line);
-        line.m_line.clear();
+        if (m_in_define)
+        {
+            ContinueDefine(line);
+            line = m_stream->NextLine();
+        }
+        else if (MatchDirectives(line) || !m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
+        {
+            line = m_stream->NextLine();
+        }
+        else
+        {
+            ExpandDefines(line);
+            return line;
+        }
     }
-    else if (MatchDirectives(line) || !m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
-    {
-        line.m_line.clear();
-    }
-    else
-    {
-        ExpandDefines(line);
-    }
-
-    return line;
 }
 
 bool DefinesStreamProxy::IncludeFile(const std::string& filename)

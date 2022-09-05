@@ -1,12 +1,10 @@
 #pragma options TEST(asdf, bla)
 #pragma switch TEST_SWITCH
-
 #ifdef TEST_SWITCH
 #define SVAL "1"
 #else
 #define SVAL "0"
 #endif
-
 #pragma filename "lemao_" + TEST + SVAL + ".txt"
 HAHA TEST
 #ifdef TEST_SWITCH
