@@ -140,7 +140,7 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
     return true;
 }
 
-bool TemplatingStreamProxy::MatchDirectives(const ParserLine& line)
+bool TemplatingStreamProxy::MatchDirectives(const ParserLine& line) const
 {
     unsigned directiveStartPos, directiveEndPos;
 

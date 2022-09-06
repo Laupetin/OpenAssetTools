@@ -45,7 +45,7 @@ namespace templating
         _NODISCARD bool MatchSwitchDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
         _NODISCARD bool MatchOptionsDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
         _NODISCARD bool MatchFilenameDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
-        bool MatchDirectives(const ParserLine& line);
+        _NODISCARD bool MatchDirectives(const ParserLine& line) const;
 
         IParserLineStream* const m_stream;
         ITemplaterControl* const m_templater_control;

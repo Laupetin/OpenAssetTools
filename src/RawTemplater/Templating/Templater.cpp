@@ -8,6 +8,7 @@
 
 #include "Utils/ClassUtils.h"
 #include "DirectiveEscapeStreamProxy.h"
+#include "SetDefineStreamProxy.h"
 #include "TemplatingStreamProxy.h"
 #include "Parsing/ParsingException.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
@@ -32,16 +33,19 @@ namespace templating
             m_base_stream = std::make_unique<ParserSingleInputStream>(stream, fileName);
 
             m_templating_proxy = std::make_unique<TemplatingStreamProxy>(m_base_stream.get(), templaterControl);
-            m_defines_proxy = std::make_unique<DefinesStreamProxy>(m_templating_proxy.get(), true);
+            m_set_define_proxy = std::make_unique<SetDefineStreamProxy>(m_templating_proxy.get());
+            m_defines_proxy = std::make_unique<DefinesStreamProxy>(m_set_define_proxy.get(), true);
             m_directive_escape_proxy = std::make_unique<DirectiveEscapeStreamProxy>(m_defines_proxy.get());
             m_skip_until_first_non_empty_proxy = std::make_unique<SkipUntilFirstNonEmptyProxy>(m_directive_escape_proxy.get());
 
             m_templating_proxy->SetDefinesProxy(m_defines_proxy.get());
+            m_set_define_proxy->SetDefinesProxy(m_defines_proxy.get());
             m_stream = m_skip_until_first_non_empty_proxy.get();
         }
 
         std::unique_ptr<IParserLineStream> m_base_stream;
         std::unique_ptr<TemplatingStreamProxy> m_templating_proxy;
+        std::unique_ptr<SetDefineStreamProxy> m_set_define_proxy;
         std::unique_ptr<DefinesStreamProxy> m_defines_proxy;
         std::unique_ptr<DirectiveEscapeStreamProxy> m_directive_escape_proxy;
         std::unique_ptr<SkipUntilFirstNonEmptyProxy> m_skip_until_first_non_empty_proxy;
