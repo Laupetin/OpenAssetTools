@@ -1,0 +1,18 @@
+{
+  stateMap "default2d";
+
+  vertexShader 3.0 "trivial_vertcol_simple.hlsl"
+  {
+    worldMatrix = constant.transposeWorldMatrix;
+    viewProjectionMatrix = constant.transposeViewProjectionMatrix;
+  }
+
+  pixelShader 3.0 "trivial_vertcol_simple.hlsl"
+  {
+    colorMapSampler = material.colorMap;
+  }
+
+  vertex.position = code.position;
+  vertex.color[0] = code.color;
+  vertex.texcoord[0] = code.texcoord[0];
+}
