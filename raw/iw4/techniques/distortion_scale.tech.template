@@ -1,0 +1,54 @@
+#pragma switch UV_ANIM
+#pragma switch ZFEATHER
+#pragma switch DTEX
+
+#ifdef UV_ANIM
+    #define UV_ANIM_SUFFIX "_ua"
+#else
+    #define UV_ANIM_SUFFIX ""
+#endif
+
+#ifdef ZFEATHER
+    #define ZFEATHER_SUFFIX "_zfeather"
+#else
+    #define ZFEATHER_SUFFIX ""
+#endif
+
+#ifdef DTEX
+    #define DTEX_SUFFIX "_dtex"
+#else
+    #define DTEX_SUFFIX ""
+#endif
+
+#pragma filename "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".tech"
+
+#set VERTEX_SHADER "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".hlsl"
+#set PIXEL_SHADER "distortion" + ZFEATHER_SUFFIX + ".hlsl"
+
+{
+  stateMap "default";
+
+  vertexShader 3.0 "VERTEX_SHADER"
+  {
+    worldViewProjectionMatrix = constant.transposeWorldViewProjectionMatrix;
+#ifdef UV_ANIM
+    uvAnimParms = material.uvAnimParms;
+#endif
+    distortionScale = material.distortionScale;
+  }
+
+  pixelShader 3.0 "PIXEL_SHADER"
+  {
+    normalMapSampler = material.colorMap;
+    colorMapSampler = sampler.resolvedPostSun;
+#ifdef ZFEATHER
+    floatZSampler = sampler.floatZ;
+#endif
+  }
+
+  vertex.position = code.position;
+  vertex.color[0] = code.color;
+  vertex.texcoord[0] = code.texcoord[0];
+  vertex.normal = code.normal;
+  vertex.texcoord[1] = code.tangent;
+}
