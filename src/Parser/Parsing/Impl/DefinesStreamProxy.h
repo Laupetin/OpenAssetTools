@@ -18,6 +18,7 @@ class DefinesStreamProxy final : public AbstractDirectiveStreamProxy
     static constexpr const char* IFNDEF_DIRECTIVE = "ifndef";
     static constexpr const char* ELSE_DIRECTIVE = "else";
     static constexpr const char* ENDIF_DIRECTIVE = "endif";
+    static constexpr const char* DEFINED_KEYWORD = "defined";
 
     static constexpr auto MAX_DEFINE_ITERATIONS = 128u;
 
@@ -42,7 +43,7 @@ public:
         Define();
         Define(std::string name, std::string value);
         void IdentifyParameters(const std::vector<std::string>& parameterNames);
-        std::string Render(const std::vector<std::string>& parameterValues);
+        _NODISCARD std::string Render(const std::vector<std::string>& parameterValues) const;
     };
 
 private:
@@ -77,17 +78,20 @@ private:
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
     static void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
-    bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, Define*& value);
+    bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, const Define*& value) const;
+
+    static bool MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName);
+    void ExpandDefinedExpressions(ParserLine& line) const;
 
 public:
-    DefinesStreamProxy(IParserLineStream* stream, bool skipDirectiveLines = false);
+    explicit DefinesStreamProxy(IParserLineStream* stream, bool skipDirectiveLines = false);
 
     void AddDefine(Define define);
     void Undefine(const std::string& name);
 
-    void ExpandDefines(ParserLine& line);
+    void ExpandDefines(ParserLine& line) const;
 
-    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(const std::string& expressionString) const;
+    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(std::string expressionString) const;
 
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;

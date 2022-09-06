@@ -91,10 +91,8 @@ bool TemplatingStreamProxy::MatchOptionsDirective(const ParserLine& line, const 
         const auto optionStartPosition = currentPosition;
         if (!ExtractIdentifier(line, currentPosition))
             throw ParsingException(CreatePos(line, currentPosition), "Invalid options directive.");
-
-        std::ostringstream optionValueBuilder;
-        optionValueBuilder << '"' << line.m_line.substr(optionStartPosition, currentPosition - optionStartPosition) << '"';
-        options.emplace_back(optionValueBuilder.str());
+        
+        options.emplace_back(line.m_line.substr(optionStartPosition, currentPosition - optionStartPosition));
 
         firstArg = false;
     }
@@ -126,10 +124,7 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPosition), "Cannot pragma filename without an expression.");
 
-    ParserLine expressionStringAsLine(line.m_filename, line.m_line_number, expressionString);
-    m_defines_proxy->ExpandDefines(expressionStringAsLine);
-
-    const auto expression = m_defines_proxy->ParseExpression(expressionStringAsLine.m_line);
+    const auto expression = m_defines_proxy->ParseExpression(expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPosition), "Failed to parse pragma filename expression");
 

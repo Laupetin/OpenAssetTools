@@ -1,13 +1,14 @@
 #include "DefinesStreamProxy.h"
 
+#include <regex>
 #include <sstream>
 #include <utility>
 
 #include "Utils/ClassUtils.h"
 #include "AbstractParser.h"
 #include "ParserSingleInputStream.h"
-#include "Defines/DefinesDirectiveParser.h"
 #include "Parsing/ParsingException.h"
+#include "Parsing/Simple/SimpleExpressionInterpreter.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
@@ -34,7 +35,7 @@ DefinesStreamProxy::Define::Define(std::string name, std::string value)
 {
 }
 
-std::string DefinesStreamProxy::Define::Render(const std::vector<std::string>& parameterValues)
+std::string DefinesStreamProxy::Define::Render(const std::vector<std::string>& parameterValues) const
 {
     if (parameterValues.empty() || m_parameter_positions.empty())
         return m_value;
@@ -279,25 +280,17 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsig
     return true;
 }
 
-std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(const std::string& expressionString) const
+std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(std::string expressionString) const
 {
-    std::istringstream ss(expressionString);
+    ParserLine pseudoLine(nullptr, 1, std::move(expressionString));
+    ExpandDefinedExpressions(pseudoLine);
+    ExpandDefines(pseudoLine);
+
+    std::istringstream ss(pseudoLine.m_line);
     ParserSingleInputStream inputStream(ss, "defines directive expression");
 
-    SimpleLexer::Config lexerConfig;
-    lexerConfig.m_emit_new_line_tokens = false;
-    lexerConfig.m_read_integer_numbers = true;
-    lexerConfig.m_read_floating_point_numbers = true;
-    lexerConfig.m_read_strings = true;
-    SimpleExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
-
-    SimpleLexer lexer(&inputStream, std::move(lexerConfig));
-    DefinesDirectiveParser parser(&lexer, m_defines);
-
-    if (!parser.Parse())
-        return nullptr;
-
-    return parser.GetParsedExpression();
+    const SimpleExpressionInterpreter expressionInterpreter(&inputStream);
+    return expressionInterpreter.Evaluate();
 }
 
 bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
@@ -485,7 +478,7 @@ bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
         || MatchEndifDirective(line, directiveStartPos, directiveEndPos);
 }
 
-bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigned wordStart, const unsigned wordEnd, Define*& value)
+bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigned wordStart, const unsigned wordEnd, const Define*& value) const
 {
     const std::string word(line.m_line, wordStart, wordEnd - wordStart);
     const auto foundEntry = m_defines.find(word);
@@ -560,7 +553,58 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
     }
 }
 
-void DefinesStreamProxy::ExpandDefines(ParserLine& line)
+bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName)
+{
+    unsigned currentPos = pos;
+    
+    if (!MatchNextCharacter(line, currentPos, '('))
+        return false;
+
+    const auto nameStartPos = currentPos;
+    if (!ExtractIdentifier(line, currentPos))
+        return false;
+
+    const auto nameEndPos = currentPos;
+    if (!MatchNextCharacter(line, currentPos, ')'))
+        return false;
+
+    pos = currentPos;
+    definitionName = line.m_line.substr(nameStartPos, nameEndPos - nameStartPos);
+    return true;
+}
+
+void DefinesStreamProxy::ExpandDefinedExpressions(ParserLine& line) const
+{
+    auto currentPos = 0u;
+
+    while (true)
+    {
+        const auto definedPos = line.m_line.find(DEFINED_KEYWORD, currentPos);
+        if (definedPos == std::string::npos)
+            break;
+
+        currentPos = definedPos;
+
+        if (definedPos > 0 && !isspace(line.m_line[definedPos - 1]))
+        {
+            currentPos += std::char_traits<char>::length(DEFINED_KEYWORD);
+            continue;
+        }
+
+        auto definitionEndPos = currentPos + std::char_traits<char>::length(DEFINED_KEYWORD);
+        std::string definitionName;
+        if (!MatchDefinedExpression(line, definitionEndPos, definitionName))
+        {
+            currentPos += std::char_traits<char>::length(DEFINED_KEYWORD);
+            continue;
+        }
+
+        const auto entry = m_defines.find(definitionName);
+        line.m_line.replace(currentPos, definitionEndPos - currentPos, entry != m_defines.end() ? "1" : "0");
+    }
+}
+
+void DefinesStreamProxy::ExpandDefines(ParserLine& line) const
 {
     bool usesDefines;
     auto defineIterations = 0u;
@@ -575,7 +619,7 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
         auto wordStart = 0u;
         auto lastWordEnd = 0u;
         auto inWord = false;
-        Define* value;
+        const Define* value;
         std::ostringstream str;
 
         for (auto i = 0u; i < line.m_line.size(); i++)
