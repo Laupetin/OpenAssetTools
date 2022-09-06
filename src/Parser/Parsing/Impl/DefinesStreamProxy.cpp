@@ -5,14 +5,11 @@
 #include <utility>
 
 #include "Utils/ClassUtils.h"
-#include "AbstractParser.h"
 #include "ParserSingleInputStream.h"
 #include "Parsing/ParsingException.h"
 #include "Parsing/Simple/SimpleExpressionInterpreter.h"
-#include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
     : m_parameter_index(0u),
