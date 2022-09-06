@@ -213,12 +213,8 @@ namespace templating
 
             if (!m_write_output_to_file)
             {
-                m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
-                if (!m_output_stream.is_open())
-                {
-                    std::cerr << "Failed to open output file \"" << m_output_file << "\"\n";
+                if (!OpenOutputStream())
                     return false;
-                }
 
                 const auto cachedData = m_output_cache.str();
                 if (!cachedData.empty())
@@ -296,12 +292,8 @@ namespace templating
                 return false;
 
             m_output_file = (m_output_directory / fileName).string();
-            m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
-            if (!m_output_stream.is_open())
-            {
-                std::cerr << "Failed to open output file \"" << m_output_file << "\"\n";
+            if (!OpenOutputStream())
                 return false;
-            }
 
             m_write_output_to_file = true;
             const auto cachedData = m_output_cache.str();
@@ -314,6 +306,22 @@ namespace templating
         }
 
     private:
+        bool OpenOutputStream()
+        {
+            const auto parentDir = fs::path(m_output_file).parent_path();
+            if (!parentDir.empty())
+                create_directories(parentDir);
+
+            m_output_stream = std::ofstream(m_output_file, std::ios::out | std::ios::binary);
+            if (!m_output_stream.is_open())
+            {
+                std::cerr << "Failed to open output file \"" << m_output_file << "\"\n";
+                return false;
+            }
+
+            return true;
+        }
+
         std::vector<std::unique_ptr<ITemplatingVariation>> m_active_variations;
         std::unordered_map<std::string, ITemplatingVariation*> m_active_variations_by_name;
         TemplatingPass m_current_pass;
