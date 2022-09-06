@@ -54,6 +54,7 @@ private:
     };
 
     IParserLineStream* const m_stream;
+    const bool m_skip_directive_lines;
     std::map<std::string, Define> m_defines;
     std::stack<BlockMode> m_modes;
     unsigned m_ignore_depth;
@@ -79,7 +80,7 @@ private:
     bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, Define*& value);
 
 public:
-    explicit DefinesStreamProxy(IParserLineStream* stream);
+    DefinesStreamProxy(IParserLineStream* stream, bool skipDirectiveLines = false);
 
     void AddDefine(Define define);
     void Undefine(const std::string& name);

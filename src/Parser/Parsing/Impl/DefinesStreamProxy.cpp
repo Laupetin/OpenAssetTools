@@ -122,8 +122,9 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
     }
 }
 
-DefinesStreamProxy::DefinesStreamProxy(IParserLineStream* stream)
+DefinesStreamProxy::DefinesStreamProxy(IParserLineStream* stream, const bool skipDirectiveLines)
     : m_stream(stream),
+      m_skip_directive_lines(skipDirectiveLines),
       m_ignore_depth(0),
       m_in_define(false)
 {
@@ -668,10 +669,22 @@ ParserLine DefinesStreamProxy::NextLine()
         if (m_in_define)
         {
             ContinueDefine(line);
+            if (!m_skip_directive_lines)
+            {
+                line.m_line = std::string();
+                return line;
+            }
+
             line = m_stream->NextLine();
         }
         else if (MatchDirectives(line) || !m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
         {
+            if (!m_skip_directive_lines)
+            {
+                line.m_line = std::string();
+                return line;
+            }
+
             line = m_stream->NextLine();
         }
         else

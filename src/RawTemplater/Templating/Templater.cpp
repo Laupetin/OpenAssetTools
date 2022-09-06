@@ -32,7 +32,7 @@ namespace templating
             m_base_stream = std::make_unique<ParserSingleInputStream>(stream, fileName);
 
             m_templating_proxy = std::make_unique<TemplatingStreamProxy>(m_base_stream.get(), templaterControl);
-            m_defines_proxy = std::make_unique<DefinesStreamProxy>(m_templating_proxy.get());
+            m_defines_proxy = std::make_unique<DefinesStreamProxy>(m_templating_proxy.get(), true);
             m_directive_escape_proxy = std::make_unique<DirectiveEscapeStreamProxy>(m_defines_proxy.get());
             m_skip_until_first_non_empty_proxy = std::make_unique<SkipUntilFirstNonEmptyProxy>(m_directive_escape_proxy.get());
 
