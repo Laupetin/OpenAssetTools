@@ -91,7 +91,7 @@ public:
 
     void ExpandDefines(ParserLine& line) const;
 
-    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(std::string expressionString) const;
+    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(std::shared_ptr<std::string> fileName, int lineNumber, std::string expressionString) const;
 
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;

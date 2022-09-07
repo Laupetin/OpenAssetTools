@@ -277,9 +277,9 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsig
     return true;
 }
 
-std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(std::string expressionString) const
+std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(std::shared_ptr<std::string> fileName, int lineNumber, std::string expressionString) const
 {
-    ParserLine pseudoLine(nullptr, 1, std::move(expressionString));
+    ParserLine pseudoLine(std::move(fileName), lineNumber, std::move(expressionString));
     ExpandDefinedExpressions(pseudoLine);
     ExpandDefines(pseudoLine);
 
@@ -314,7 +314,7 @@ bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPos), "Cannot if without an expression.");
 
-    const auto expression = ParseExpression(expressionString);
+    const auto expression = ParseExpression(line.m_filename, line.m_line_number, expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPos), "Failed to parse if expression");
 
@@ -356,7 +356,7 @@ bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsign
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPos), "Cannot elif without an expression.");
 
-    const auto expression = ParseExpression(expressionString);
+    const auto expression = ParseExpression(line.m_filename, line.m_line_number, expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPos), "Failed to parse elif expression");
 

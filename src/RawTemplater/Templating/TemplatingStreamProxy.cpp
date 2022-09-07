@@ -110,7 +110,7 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPosition), "Cannot pragma filename without an expression.");
 
-    const auto expression = m_defines_proxy->ParseExpression(expressionString);
+    const auto expression = m_defines_proxy->ParseExpression(line.m_filename, line.m_line_number, expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPosition), "Failed to parse pragma filename expression");
 

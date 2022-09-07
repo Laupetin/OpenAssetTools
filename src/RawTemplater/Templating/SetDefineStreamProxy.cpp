@@ -41,7 +41,7 @@ bool SetDefineStreamProxy::MatchSetDirective(const ParserLine& line, const unsig
     if (expressionString.empty())
         throw ParsingException(CreatePos(line, currentPosition), "Cannot set without an expression.");
 
-    const auto expression = m_defines_proxy->ParseExpression(expressionString);
+    const auto expression = m_defines_proxy->ParseExpression(line.m_filename, line.m_line_number, expressionString);
     if (!expression)
         throw ParsingException(CreatePos(line, currentPosition), "Failed to parse set expression");
 
