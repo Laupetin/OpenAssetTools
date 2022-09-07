@@ -21,6 +21,7 @@ namespace templating
         virtual bool AddSwitch(std::string switchName) = 0;
         virtual bool AddOptions(std::string optionsName, std::vector<std::string> optionValues) = 0;
         virtual bool SetFileName(const std::string& fileName) = 0;
+        virtual bool SkipPass() = 0;
     };
 
     class TemplatingStreamProxy final : public AbstractDirectiveStreamProxy
@@ -40,10 +41,12 @@ namespace templating
         static constexpr const char* SWITCH_DIRECTIVE = "switch";
         static constexpr const char* OPTIONS_DIRECTIVE = "options";
         static constexpr const char* FILENAME_DIRECTIVE = "filename";
+        static constexpr const char* SKIP_DIRECTIVE = "skip";
 
         _NODISCARD bool MatchSwitchDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
         _NODISCARD bool MatchOptionsDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
         _NODISCARD bool MatchFilenameDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
+        _NODISCARD bool MatchSkipDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
         _NODISCARD bool MatchDirectives(const ParserLine& line) const;
 
         IParserLineStream* const m_stream;

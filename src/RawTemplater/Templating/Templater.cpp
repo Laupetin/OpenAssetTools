@@ -170,6 +170,7 @@ namespace templating
               m_filename(std::move(filename)),
               m_output_directory(outputDirectory),
               m_first_line(true),
+              m_skip_pass(false),
               m_write_output_to_file(false)
         {
             fs::path filenamePath(m_filename);
@@ -187,7 +188,7 @@ namespace templating
             for (const auto& activeVariation : m_active_variations)
                 activeVariation->Apply(m_current_pass.m_defines_proxy.get());
 
-            while (!m_current_pass.m_stream->Eof())
+            while (!m_skip_pass && !m_current_pass.m_stream->Eof())
             {
                 auto nextLine = m_current_pass.m_stream->NextLine();
 
@@ -210,6 +211,9 @@ namespace templating
                     m_output_cache << nextLine.m_line;
                 }
             }
+
+            if (m_skip_pass)
+                return true;
 
             if (!m_write_output_to_file)
             {
@@ -305,6 +309,18 @@ namespace templating
             return true;
         }
 
+        bool SkipPass() override
+        {
+            if (m_write_output_to_file)
+            {
+                std::cerr << "Cannot skip when already writing to file\n";
+                return false;
+            }
+
+            m_skip_pass = true;
+            return true;
+        }
+
     private:
         bool OpenOutputStream()
         {
@@ -333,6 +349,7 @@ namespace templating
         const fs::path m_output_directory;
 
         bool m_first_line;
+        bool m_skip_pass;
         bool m_write_output_to_file;
         std::ofstream m_output_stream;
         std::ostringstream m_output_cache;

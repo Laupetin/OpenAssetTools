@@ -122,6 +122,22 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
     return true;
 }
 
+bool TemplatingStreamProxy::MatchSkipDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition) const
+{
+    auto currentPosition = directiveStartPosition;
+
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(SKIP_DIRECTIVE)
+        || !MatchString(line, currentPosition, SKIP_DIRECTIVE, std::char_traits<char>::length(SKIP_DIRECTIVE)))
+    {
+        return false;
+    }
+
+    if (!m_templater_control->SkipPass())
+        throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, 1), "skip directive failed");
+
+    return true;
+}
+
 bool TemplatingStreamProxy::MatchDirectives(const ParserLine& line) const
 {
     unsigned directiveStartPos, directiveEndPos;
@@ -133,7 +149,8 @@ bool TemplatingStreamProxy::MatchDirectives(const ParserLine& line) const
 
     return MatchSwitchDirective(line, directiveStartPos, directiveEndPos)
         || MatchOptionsDirective(line, directiveStartPos, directiveEndPos)
-        || MatchFilenameDirective(line, directiveStartPos, directiveEndPos);
+        || MatchFilenameDirective(line, directiveStartPos, directiveEndPos)
+        || MatchSkipDirective(line, directiveStartPos, directiveEndPos);
 }
 
 ParserLine TemplatingStreamProxy::NextLine()
