@@ -1,0 +1,72 @@
+#options MODE (default, spark, spark_fountain)
+#options BLEND_FUNC (default, add, screen_add)
+#switch OUTDOOR
+#switch SPOT
+
+
+#if MODE == "spark"
+	#define SPARK_SUFFIX "_spark"
+#elif MODE == "spark_fountain"
+	#define SPARK_SUFFIX "_sparkf"
+#else
+	#define SPARK_SUFFIX ""
+#endif
+
+#ifdef OUTDOOR
+	#define OUTDOOR_SUFFIX "_outdoor"
+#else
+	#define OUTDOOR_SUFFIX ""
+#endif
+
+#if BLEND_FUNC == "add"
+	#define BLEND_FUNC_SUFFIX_FILE "_add"
+	#define BLEND_FUNC_SUFFIX_TECH "_premul"
+#elif BLEND_FUNC == "screen_add"
+	#define BLEND_FUNC_SUFFIX_FILE "_screen"
+	#define BLEND_FUNC_SUFFIX_TECH "_premul"
+#else
+	#define BLEND_FUNC_SUFFIX_FILE ""
+	#define BLEND_FUNC_SUFFIX_TECH ""
+#endif
+
+#ifdef SPOT
+	#define SPOT_SUFFIX "_spot"
+#else
+	#define SPOT_SUFFIX ""
+#endif
+
+#ifdef SPOT
+	#options SHADOWMAP_MODE (DISABLE, SHADOWMAP, HARDWARE_SHADOWMAP)
+
+	#if SHADOWMAP_MODE == "SHADOWMAP"
+		#define SHADOWMAP_SUFFIX "_sm"
+	#elif SHADOWMAP_MODE == "HARDWARE_SHADOWMAP"
+		#define SHADOWMAP_SUFFIX "_hsm"
+	#else
+		#define SHADOWMAP_SUFFIX ""
+	#endif
+#else
+	#define SHADOWMAP_SUFFIX ""
+#endif
+
+#filename "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + BLEND_FUNC_SUFFIX_FILE + SPOT_SUFFIX + SHADOWMAP_SUFFIX + ".techset"
+
+#set TECH_NAME "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + BLEND_FUNC_SUFFIX_TECH + SPOT_SUFFIX
+#ifdef SPOT
+	#set TECH_NAME_SPOT TECH_NAME + "_shad"
+#endif
+
+"unlit":
+"emissive":
+"emissive dfog":
+#ifndef SPOT
+"emissive shadow":
+"emissive shadow dfog":
+#endif
+  TECH_NAME;
+  
+#ifdef SPOT
+"emissive shadow":
+"emissive shadow dfog":
+  TECH_NAME_SPOT;
+#endif
