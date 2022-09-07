@@ -173,8 +173,8 @@ namespace templating
               m_skip_pass(false),
               m_write_output_to_file(false)
         {
-            fs::path filenamePath(m_filename);
-            m_default_output_file = (m_output_directory / filenamePath.replace_extension()).string();
+            const fs::path filenamePath(m_filename);
+            m_default_output_file = (m_output_directory / filenamePath.filename().replace_extension()).string();
         }
 
         bool RunNextPass(std::ostream* buildLogFile)
@@ -217,6 +217,12 @@ namespace templating
 
             if (!m_write_output_to_file)
             {
+                if (!m_active_variations.empty())
+                {
+                    std::cerr << "Template with variations must specify a filename\n";
+                    return false;
+                }
+
                 if (!OpenOutputStream())
                     return false;
 
@@ -227,7 +233,7 @@ namespace templating
 
             std::cout << "Templated file \"" << m_output_file << "\"\n";
 
-            if(buildLogFile)
+            if (buildLogFile)
                 *buildLogFile << "Templated file \"" << m_output_file << "\"\n";
 
             m_first_line = true;
@@ -266,13 +272,22 @@ namespace templating
         {
             const auto existingVariation = m_active_variations_by_name.find(switchName);
             if (existingVariation != m_active_variations_by_name.end())
-                return existingVariation->second->GetVariationType() == TemplatingVariationType::SWITCH;
+            {
+                const auto isValidRedefinition = existingVariation->second->GetVariationType() == TemplatingVariationType::SWITCH;
+
+                if (!isValidRedefinition)
+                    std::cerr << "Redefinition of \"" << switchName << "\" as switch is invalid\n";
+
+                return isValidRedefinition;
+            }
 
             auto switchVariation = std::make_unique<SwitchVariation>(std::move(switchName));
             if (m_current_pass.m_defines_proxy)
                 switchVariation->Apply(m_current_pass.m_defines_proxy.get());
+
             m_active_variations_by_name.emplace(switchVariation->m_name, switchVariation.get());
             m_active_variations.emplace_back(std::move(switchVariation));
+
             return true;
         }
 
@@ -280,13 +295,22 @@ namespace templating
         {
             const auto existingVariation = m_active_variations_by_name.find(optionsName);
             if (existingVariation != m_active_variations_by_name.end())
-                return existingVariation->second->GetVariationType() == TemplatingVariationType::SWITCH;
+            {
+                const auto isValidRedefinition = existingVariation->second->GetVariationType() == TemplatingVariationType::OPTIONS;
+
+                if (!isValidRedefinition)
+                    std::cerr << "Redefinition of \"" << optionsName << "\" as options is invalid\n";
+
+                return isValidRedefinition;
+            }
 
             auto optionsVariation = std::make_unique<OptionsVariation>(std::move(optionsName), std::move(optionValues));
             if (m_current_pass.m_defines_proxy)
                 optionsVariation->Apply(m_current_pass.m_defines_proxy.get());
+
             m_active_variations_by_name.emplace(optionsVariation->m_name, optionsVariation.get());
             m_active_variations.emplace_back(std::move(optionsVariation));
+
             return true;
         }
 
