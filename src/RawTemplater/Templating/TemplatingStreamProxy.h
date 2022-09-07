@@ -37,10 +37,9 @@ namespace templating
         _NODISCARD bool Eof() const override;
 
     private:
-        static constexpr const char* PRAGMA_DIRECTIVE = "pragma";
-        static constexpr const char* SWITCH_PRAGMA_COMMAND = "switch";
-        static constexpr const char* OPTIONS_PRAGMA_COMMAND = "options";
-        static constexpr const char* FILENAME_PRAGMA_COMMAND = "filename";
+        static constexpr const char* SWITCH_DIRECTIVE = "switch";
+        static constexpr const char* OPTIONS_DIRECTIVE = "options";
+        static constexpr const char* FILENAME_DIRECTIVE = "filename";
 
         _NODISCARD bool MatchSwitchDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
         _NODISCARD bool MatchOptionsDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;

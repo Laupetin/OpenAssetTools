@@ -1,6 +1,6 @@
-#pragma switch UV_ANIM
-#pragma switch ZFEATHER
-#pragma switch DTEX
+#switch UV_ANIM
+#switch ZFEATHER
+#switch DTEX
 
 #ifdef UV_ANIM
     #define UV_ANIM_SUFFIX "_ua"
@@ -20,7 +20,7 @@
     #define DTEX_SUFFIX ""
 #endif
 
-#pragma filename "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".tech"
+#filename "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".tech"
 
 #set VERTEX_SHADER "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".hlsl"
 #set PIXEL_SHADER "distortion" + ZFEATHER_SUFFIX + ".hlsl"

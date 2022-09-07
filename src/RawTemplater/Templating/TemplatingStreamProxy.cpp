@@ -22,17 +22,11 @@ bool TemplatingStreamProxy::MatchSwitchDirective(const ParserLine& line, const u
 {
     auto currentPosition = directiveStartPosition;
 
-    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
-        || !MatchString(line, currentPosition, PRAGMA_DIRECTIVE, std::char_traits<char>::length(PRAGMA_DIRECTIVE)))
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(SWITCH_DIRECTIVE)
+        || !MatchString(line, currentPosition, SWITCH_DIRECTIVE, std::char_traits<char>::length(SWITCH_DIRECTIVE)))
     {
         return false;
     }
-
-    if (!SkipWhitespace(line, currentPosition))
-        return false;
-
-    if (!MatchString(line, currentPosition, SWITCH_PRAGMA_COMMAND, std::char_traits<char>::length(SWITCH_PRAGMA_COMMAND)))
-        return false;
 
     if (!SkipWhitespace(line, currentPosition))
         throw ParsingException(CreatePos(line, currentPosition), "Invalid switch directive.");
@@ -51,17 +45,11 @@ bool TemplatingStreamProxy::MatchOptionsDirective(const ParserLine& line, const 
 {
     auto currentPosition = directiveStartPosition;
 
-    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
-        || !MatchString(line, currentPosition, PRAGMA_DIRECTIVE, std::char_traits<char>::length(PRAGMA_DIRECTIVE)))
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(OPTIONS_DIRECTIVE)
+        || !MatchString(line, currentPosition, OPTIONS_DIRECTIVE, std::char_traits<char>::length(OPTIONS_DIRECTIVE)))
     {
         return false;
     }
-
-    if (!SkipWhitespace(line, currentPosition))
-        return false;
-
-    if (!MatchString(line, currentPosition, OPTIONS_PRAGMA_COMMAND, std::char_traits<char>::length(OPTIONS_PRAGMA_COMMAND)))
-        return false;
 
     if (!SkipWhitespace(line, currentPosition))
         throw ParsingException(CreatePos(line, currentPosition), "Invalid options directive.");
@@ -105,17 +93,11 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
 {
     auto currentPosition = directiveStartPosition;
 
-    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
-        || !MatchString(line, currentPosition, PRAGMA_DIRECTIVE, std::char_traits<char>::length(PRAGMA_DIRECTIVE)))
+    if (directiveEndPosition - directiveStartPosition != std::char_traits<char>::length(FILENAME_DIRECTIVE)
+        || !MatchString(line, currentPosition, FILENAME_DIRECTIVE, std::char_traits<char>::length(FILENAME_DIRECTIVE)))
     {
         return false;
     }
-
-    if (!SkipWhitespace(line, currentPosition))
-        return false;
-
-    if (!MatchString(line, currentPosition, FILENAME_PRAGMA_COMMAND, std::char_traits<char>::length(FILENAME_PRAGMA_COMMAND)))
-        return false;
 
     if (!SkipWhitespace(line, currentPosition))
         throw ParsingException(CreatePos(line, currentPosition), "Invalid options directive.");

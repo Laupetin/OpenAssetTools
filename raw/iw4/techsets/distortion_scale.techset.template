@@ -1,7 +1,7 @@
-#pragma switch UV_ANIM
-#pragma switch ZFEATHER
+#switch UV_ANIM
+#switch ZFEATHER
 
-#pragma options MATERIAL_TYPE (default, world, world_vertcol)
+#options MATERIAL_TYPE (default, world, world_vertcol)
 
 #if MATERIAL_TYPE == "world"
     #define MATERIAL_TYPE_PREFIX "w_"
@@ -26,7 +26,7 @@
     #define UV_ANIM_SUFFIX ""
 #endif
 
-#pragma filename MATERIAL_TYPE_PREFIX + "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + ".techset"
+#filename MATERIAL_TYPE_PREFIX + "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + ".techset"
 
 #set EMISSIVE_TECHNIQUE "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + MATERIAL_TYPE_SUFFIX
 #set WIREFRAME_TECHNIQUE "wireframe_solid" + MATERIAL_TYPE_SUFFIX
