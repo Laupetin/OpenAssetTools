@@ -1,0 +1,8 @@
+#options INDEX_SUFFIX (_1, _2, _3, _4, _5, _6, _7, _8)
+
+#set FILE_NAME "filter_symmetric" + INDEX_SUFFIX
+
+#filename FILE_NAME + ".techset"
+
+"unlit":
+  FILE_NAME;

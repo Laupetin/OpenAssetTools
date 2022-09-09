@@ -1,0 +1,23 @@
+#options INDEX_SUFFIX (_1, _2, _3, _4, _5, _6, _7, _8)
+
+#set FILE_NAME "filter_symmetric" + INDEX_SUFFIX
+#set SHADER_NAME FILE_NAME + ".hlsl"
+
+#filename FILE_NAME + ".tech"
+
+{
+  stateMap "default2d";
+
+  vertexShader 3.0 "SHADER_NAME"
+  {
+    worldViewProjectionMatrix = constant.transposeWorldViewProjectionMatrix;
+  }
+
+  pixelShader 3.0 "SHADER_NAME"
+  {
+    colorMapSampler = sampler.feedback;
+  }
+
+  vertex.position = code.position;
+  vertex.texcoord[0] = code.texcoord[0];
+}
