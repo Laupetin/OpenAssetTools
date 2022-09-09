@@ -1,0 +1,84 @@
+#options MODE (default, spark, spark_fountain)
+#switch PREMUL
+#switch OUTDOOR
+#switch SPOT
+
+#if MODE == "spark"
+	#define SPARK_SUFFIX "_spark"
+#elif MODE == "spark_fountain"
+	#define SPARK_SUFFIX "_sparkf"
+#else
+	#define SPARK_SUFFIX ""
+#endif
+
+#ifdef OUTDOOR
+	#define OUTDOOR_SUFFIX "_outdoor"
+#else
+	#define OUTDOOR_SUFFIX ""
+#endif
+
+#ifdef PREMUL
+	#define PREMUL_SUFFIX "_premul"
+#else
+	#define PREMUL_SUFFIX ""
+#endif
+
+#ifdef SPOT
+	#define SPOT_SUFFIX "_spot"
+
+	#switch SHADOW
+
+	#ifdef SHADOW
+		#define SHADOW_SUFFIX "_shad"
+	#else
+		#define SHADOW_SUFFIX ""
+	#endif
+#else
+	#define SPOT_SUFFIX ""
+	#define SHADOW_SUFFIX ""
+#endif
+
+#filename "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + PREMUL_SUFFIX + SPOT_SUFFIX + SHADOW_SUFFIX + ".tech"
+
+#set VERTEX_SHADER "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + ".hlsl"
+#set PIXEL_SHADER "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + SHADOW_SUFFIX + PREMUL_SUFFIX + ".hlsl"
+
+{
+  stateMap "default";
+
+  vertexShader 3.0 "VERTEX_SHADER"
+  {
+    worldViewMatrix = constant.transposeWorldViewMatrix;
+#if MODE == "spark"
+    worldViewMatrix1 = constant.transposeWorldViewMatrix1;
+    worldViewMatrix2 = constant.transposeWorldViewMatrix2;
+#endif
+#ifdef OUTDOOR
+    worldOutdoorLookupMatrix = constant.transposeWorldOutdoorLookupMatrix;
+#endif
+    projectionMatrix = constant.transposeProjectionMatrix;
+#ifdef SPOT
+    inverseViewMatrix = constant.inverseTransposeViewMatrix;
+#endif
+  }
+
+  pixelShader 3.0 "PIXEL_SHADER"
+  {
+    colorMapSampler = material.colorMap;
+#ifdef OUTDOOR
+    outdoorMapSampler = sampler.outdoor;
+#endif
+#ifdef SHADOW
+    shadowmapSamplerSpot = sampler.shadowmapSpot;
+#endif
+#ifdef SPOT
+    lightSpotDir = constant.light.spotDir;
+    lightSpotFactors = constant.light.spotFactors;
+    lightPosition = constant.light.position;
+    lightDiffuse = constant.light.diffuse;
+#endif
+  }
+
+  vertex.position = code.position;
+  vertex.texcoord[0] = code.texcoord[0];
+}
