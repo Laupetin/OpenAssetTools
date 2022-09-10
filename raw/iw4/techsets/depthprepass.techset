@@ -1,0 +1,11 @@
+"depth prepass":
+  zprepass;
+
+"build floatz":
+  build_floatz;
+
+"build shadowmap depth":
+  build_shadowmap_depth;
+
+"build shadowmap color":
+  build_shadowmap_color_sm3;

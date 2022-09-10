@@ -1,0 +1,34 @@
+"depth prepass":
+"unlit":
+"lit":
+"lit dfog":
+"lit sun":
+"lit sun dfog":
+"lit sun shadow":
+"lit sun shadow dfog":
+"lit spot":
+"lit spot dfog":
+"lit spot shadow":
+"lit spot shadow dfog":
+"lit omni":
+"lit omni dfog":
+"lit omni shadow":
+"lit omni shadow dfog":
+"lit instanced":
+"lit instanced dfog":
+"lit instanced sun":
+"lit instanced sun dfog":
+"lit instanced sun shadow":
+"lit instanced sun shadow dfog":
+"lit instanced spot":
+"lit instanced spot dfog":
+"lit instanced spot shadow":
+"lit instanced spot shadow dfog":
+"lit instanced omni":
+"lit instanced omni dfog":
+"lit instanced omni shadow":
+"lit instanced omni shadow dfog":
+  textured_3d;
+
+"solid wireframe":
+  wireframe_solid;
