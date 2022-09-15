@@ -881,7 +881,10 @@ namespace IW4
             const auto techniqueFileName = AssetLoaderTechniqueSet::GetTechniqueFileName(techniqueName);
             const auto file = m_search_path->Open(techniqueFileName);
             if (!file.IsOpen())
+            {
+                std::cerr << "Failed to find file for technique \"" << techniqueName << "\"\n";
                 return nullptr;
+            }
 
             state_map::StateMapFromTechniqueExtractor extractor;
             const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
