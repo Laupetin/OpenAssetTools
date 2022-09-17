@@ -503,7 +503,7 @@ namespace IW4
 
             if (pass.m_pixel_shader->Asset()->name && pass.m_pixel_shader->Asset()->name[0] == ',')
             {
-                pass.m_pixel_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderPixelShader::GetFileNameForAsset(pixelShaderName));
+                pass.m_pixel_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderPixelShader::GetFileNameForCompiledShader(pixelShaderName));
             }
             else
             {

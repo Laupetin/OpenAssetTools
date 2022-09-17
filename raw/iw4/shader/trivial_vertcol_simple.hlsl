@@ -7,7 +7,7 @@ struct VSInput
 
 struct VSOutput
 {
-	float4 position : POSITION;
+	float4 position : SV_POSITION;
 	half4 color : COLOR0;
     half2 texcoord : TEXCOORD0;
 };

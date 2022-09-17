@@ -4,11 +4,11 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
-#include <vector>
 
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Shader/ShaderIncludeHandler.h"
 
 #ifdef OS_TARGET_WINDOWS
 #include <d3dcompiler.h>
@@ -17,65 +17,6 @@
 #endif
 
 using namespace IW4;
-
-class ShaderIncluder : public ID3DInclude
-{
-    static constexpr auto MAX_SHADER_SIZE = 0x1900000u;
-
-public:
-    ShaderIncluder(ISearchPath* searchPath)
-        : m_search_path(searchPath)
-    {
-    }
-
-    virtual ~ShaderIncluder() = default;
-
-    HRESULT __stdcall Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) override
-    {
-        std::ostringstream ss;
-        ss << "shaders/" << pFileName;
-
-        auto file = m_search_path->Open(ss.str());
-        if (!file.IsOpen() || file.m_length <= 0)
-            return E_FAIL;
-
-        if (file.m_length > MAX_SHADER_SIZE)
-        {
-            std::cerr << "Invalid shader source \"" << pFileName << "\": File too big: " << file.m_length << "\n";
-            return false;
-        }
-
-        const auto shaderSize = static_cast<size_t>(file.m_length);
-        auto shaderData = std::make_unique<char[]>(shaderSize);
-        file.m_stream->read(shaderData.get(), shaderSize);
-        file.m_stream.reset();
-
-        *ppData = shaderData.get();
-        *pBytes = shaderSize;
-
-        m_file_buffers_in_use.push_back(std::move(shaderData));
-
-        return S_OK;
-    }
-
-    HRESULT __stdcall Close(LPCVOID pData) override
-    {
-        for (auto i = m_file_buffers_in_use.begin(); i != m_file_buffers_in_use.end(); ++i)
-        {
-            if (i->get() == pData)
-            {
-                m_file_buffers_in_use.erase(i);
-                return S_OK;
-            }
-        }
-
-        return E_FAIL;
-    }
-
-private:
-    ISearchPath* m_search_path;
-    std::vector<std::unique_ptr<char[]>> m_file_buffers_in_use;
-};
 
 void* AssetLoaderVertexShader::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -97,7 +38,7 @@ std::string AssetLoaderVertexShader::GetFileNameForSourceShader(const std::strin
     return ss.str();
 }
 
-bool AssetLoaderVertexShader::LoadFromSource(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderVertexShader::LoadFromSource(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
 {
 #ifdef OS_TARGET_WINDOWS
     const auto fileName = GetFileNameForSourceShader(assetName);
@@ -105,7 +46,7 @@ bool AssetLoaderVertexShader::LoadFromSource(const std::string& assetName, ISear
     if (!file.IsOpen() || file.m_length <= 0)
         return false;
 
-    if (file.m_length > MAX_SHADER_SIZE)
+    if (file.m_length > ShaderIncludeHandler::MAX_SHADER_SIZE)
     {
         std::cerr << "Invalid vertex shader source \"" << assetName << "\": File too big: " << file.m_length << "\n";
         return false;
@@ -122,7 +63,7 @@ bool AssetLoaderVertexShader::LoadFromSource(const std::string& assetName, ISear
 #endif
         ;
 
-    ShaderIncluder shaderIncluder(searchPath);
+    ShaderIncludeHandler shaderIncluder(searchPath);
 
     ID3DBlob* shaderBlob = nullptr;
     ID3DBlob* errorBlob = nullptr;
@@ -176,7 +117,7 @@ std::string AssetLoaderVertexShader::GetFileNameForCompiledShader(const std::str
     return ss.str();
 }
 
-bool AssetLoaderVertexShader::LoadCompiled(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderVertexShader::LoadCompiled(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
 {
     const auto fileName = GetFileNameForCompiledShader(assetName);
     const auto file = searchPath->Open(fileName);
@@ -208,5 +149,5 @@ bool AssetLoaderVertexShader::LoadCompiled(const std::string& assetName, ISearch
 
 bool AssetLoaderVertexShader::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    return LoadFromSource(assetName, searchPath, memory, manager, zone) || LoadCompiled(assetName, searchPath, memory, manager, zone);
+    return LoadFromSource(assetName, searchPath, memory, manager) || LoadCompiled(assetName, searchPath, memory, manager);
 }
