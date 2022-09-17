@@ -464,7 +464,7 @@ namespace IW4
 
             if (pass.m_vertex_shader->Asset()->name && pass.m_vertex_shader->Asset()->name[0] == ',')
             {
-                pass.m_vertex_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderVertexShader::GetFileNameForAsset(vertexShaderName));
+                pass.m_vertex_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderVertexShader::GetFileNameForCompiledShader(vertexShaderName));
             }
             else
             {
