@@ -15,7 +15,7 @@ ShaderIncludeHandler::~ShaderIncludeHandler() = default;
 HRESULT ShaderIncludeHandler::Open(D3D_INCLUDE_TYPE includeType, const LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes)
 {
     std::ostringstream ss;
-    ss << "shaders/" << pFileName;
+    ss << "shader/" << pFileName;
 
     auto file = m_search_path->Open(ss.str());
     if (!file.IsOpen() || file.m_length <= 0)

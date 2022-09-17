@@ -1,3 +1,5 @@
+#include "include/IW4.hlsl"
+
 struct VSInput
 {
 	float3 position : POSITION;
@@ -11,9 +13,6 @@ struct VSOutput
 	half4 color : COLOR0;
     half2 texcoord : TEXCOORD0;
 };
-
-extern float4x4 viewProjectionMatrix;
-extern float4x4 worldMatrix;
 
 VSOutput VSMain(VSInput vin)
 {
