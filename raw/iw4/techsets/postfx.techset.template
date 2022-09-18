@@ -1,0 +1,22 @@
+// HEAVY WIP
+
+#options MODE (none, dof, mblur)
+#options COLOR (none, color, color2)
+
+#if MODE == "none"
+    #define MODE_NAME ""
+#else
+    #set MODE_NAME "_" + MODE
+#endif
+
+#if COLOR == "none"
+    #define COLOR_NAME ""
+#else
+    #set COLOR_NAME "_" + COLOR
+#endif
+
+#set NAME "postfx" + MODE_NAME + COLOR_NAME
+#filename NAME + ".techset"
+
+"unlit":
+  NAME;

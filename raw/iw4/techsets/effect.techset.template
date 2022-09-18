@@ -1,0 +1,103 @@
+// HEAVY WIP
+
+#options MATERIAL_TYPE (default, model, model_vertcol, world, world_vertcol)
+#if MATERIAL_TYPE == "model"
+    #define MATERIAL_TYPE_PREFIX "m_"
+#elif MATERIAL_TYPE == "model_vertcol"
+    #define MATERIAL_TYPE_PREFIX "mc_"
+#elif MATERIAL_TYPE == "world"
+    #define MATERIAL_TYPE_PREFIX "w_"
+#elif MATERIAL_TYPE == "world_vertcol"
+    #define MATERIAL_TYPE_PREFIX "wc_"
+#else
+    #define MATERIAL_TYPE_PREFIX ""
+#endif
+
+#options BLEND_FUNC (add, blend, replace, screen_add)
+#if BLEND_FUNC == "add"
+	#define BLEND_FUNC_SUFFIX "_add"
+#elif BLEND_FUNC == "blend"
+	#define BLEND_FUNC_SUFFIX "_blend"
+#elif BLEND_FUNC == "replace"
+	#define BLEND_FUNC_SUFFIX "_replace"
+#elif BLEND_FUNC == "screen_add"
+	#define BLEND_FUNC_SUFFIX "_screen"
+#else
+	#error Invalid Blend Func
+#endif
+
+#switch ZFEATHER
+#ifdef ZFEATHER
+    #define ZFEATHER_SUFFIX "_zfeather"
+#else
+    #define ZFEATHER_SUFFIX ""
+#endif
+
+#switch OUTDOOR
+#ifdef OUTDOOR
+	#define OUTDOOR_SUFFIX "_outdoor"
+#else
+	#define OUTDOOR_SUFFIX ""
+#endif
+
+#ifndef OUTDOOR
+	#switch FALLOFF
+	#ifdef FALLOFF
+		#define FALLOFF_SUFFIX "_falloff"
+	#else
+		#define FALLOFF_SUFFIX ""
+	#endif
+#else
+	#define FALLOFF_SUFFIX ""
+#endif
+
+#switch LINEAR
+#ifdef LINEAR
+	#define LINEAR_SUFFIX "_lin"
+#else
+	#define LINEAR_SUFFIX ""
+#endif
+
+#switch NO_FOG
+#ifdef NO_FOG
+	#define NO_FOG_SUFFIX "_nofog"
+#else
+	#define NO_FOG_SUFFIX ""
+#endif
+
+#switch EYE_OFFSET
+#ifdef EYE_OFFSET
+	#define EYE_OFFSET_SUFFIX "_eyeoffset"
+#else
+	#define EYE_OFFSET_SUFFIX ""
+#endif
+
+#switch SPOT
+#ifdef SPOT
+	#define SPOT_SUFFIX "_spot"
+	#options SHADOWMAP_MODE (DISABLE, SHADOWMAP, HARDWARE_SHADOWMAP)
+
+	#if SHADOWMAP_MODE == "SHADOWMAP"
+		#define SHADOWMAP_SUFFIX "_sm"
+	#elif SHADOWMAP_MODE == "HARDWARE_SHADOWMAP"
+		#define SHADOWMAP_SUFFIX "_hsm"
+	#else
+		#define SHADOWMAP_SUFFIX ""
+	#endif
+#else
+	#define SPOT_SUFFIX ""
+	#define SHADOWMAP_SUFFIX ""
+#endif
+
+#filename MATERIAL_TYPE_PREFIX + "effect" + ZFEATHER_SUFFIX + OUTDOOR_SUFFIX + FALLOFF_SUFFIX + BLEND_FUNC_SUFFIX + LINEAR_SUFFIX + NO_FOG_SUFFIX + EYE_OFFSET_SUFFIX + SPOT_SUFFIX + SHADOWMAP_SUFFIX + ".techset"
+
+
+"unlit":
+"emissive":
+"emissive dfog":
+"emissive shadow":
+"emissive shadow dfog":
+  effect_add_fog_dtex;
+
+"solid wireframe":
+  wireframe_solid_dtex;
