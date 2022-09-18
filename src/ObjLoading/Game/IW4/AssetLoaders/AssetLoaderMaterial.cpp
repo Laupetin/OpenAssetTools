@@ -99,6 +99,14 @@ namespace IW4
             {
                 mtl_distortion_template();
             }
+            else if (materialType == GDT_MATERIAL_TYPE_SPARK_FOUNTAIN)
+            {
+                mtl_sparkfountain_template();
+            }
+            else if (materialType == GDT_MATERIAL_TYPE_SPARK_CLOUD)
+            {
+                mtl_sparkcloud_template();
+            }
             else if (materialType == GDT_MATERIAL_TYPE_PARTICLE_CLOUD)
             {
                 mtl_particlecloud_template();
@@ -212,7 +220,22 @@ namespace IW4
             }
         }
 
+        void mtl_sparkfountain_template()
+        {
+            particlecloud_common_template("_sparkf");
+        }
+
+        void mtl_sparkcloud_template()
+        {
+            particlecloud_common_template("_spark");
+        }
+
         void mtl_particlecloud_template()
+        {
+            particlecloud_common_template("");
+        }
+
+        void particlecloud_common_template(const std::string& particleCloudSuffix)
         {
             refblend_template();
             sort_template();
@@ -231,21 +254,23 @@ namespace IW4
             if (outdoorOnly)
                 outdoorSuffix = "_outdoor";
 
-            std::string addSuffix;
+            std::string blendFuncSuffix;
             const auto blendFunc = ReadStringProperty("blendFunc");
-            if (blendFunc == GDT_BLEND_FUNC_ADD || blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
-                addSuffix = "_add";
+            if (blendFunc == GDT_BLEND_FUNC_ADD)
+                blendFuncSuffix = "_add";
+            else if(blendFunc == GDT_BLEND_FUNC_SCREEN_ADD)
+                blendFuncSuffix = "_screen";
 
             std::string spotSuffix;
             const auto useSpotLight = ReadBoolProperty("useSpotLight");
             if (useSpotLight)
-                spotSuffix = "_spot";
+                spotSuffix = "_spot_sm";
 
             if (outdoorOnly && useSpotLight)
                 throw GdtReadingException("Outdoor and spot aren't supported on particle cloud materials");
 
             std::ostringstream ss;
-            ss << "particle_cloud" << outdoorSuffix << addSuffix << spotSuffix;
+            ss << "particle_cloud" << particleCloudSuffix << outdoorSuffix << blendFuncSuffix << spotSuffix;
             SetTechniqueSet(ss.str());
 
             const auto colorMapName = ReadStringProperty("colorMap");

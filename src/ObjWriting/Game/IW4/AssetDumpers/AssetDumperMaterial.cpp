@@ -815,6 +815,69 @@ namespace IW4
             ExamineCommonUnlitTechsetInfo();
         }
 
+        void ExamineParticleCloudTechsetInfo()
+        {
+            const auto nameParts = GetTechsetNameParts(m_techset_info.m_techset_base_name);
+            bool inCustomName = false;
+            bool customNameStart = true;
+            std::ostringstream customNameStream;
+
+            for (auto iNamePart = nameParts.begin() + 2; iNamePart != nameParts.end(); ++iNamePart)
+            {
+                const auto& namePart = *iNamePart;
+
+                if (inCustomName)
+                {
+                    if (customNameStart)
+                        customNameStart = false;
+                    else
+                        customNameStream << "_";
+                    customNameStream << namePart;
+                    continue;
+                }
+
+                // Anything after a custom part is part of its custom name
+                if (namePart == "custom")
+                {
+                    inCustomName = true;
+                    continue;
+                }
+
+                if (namePart == "falloff")
+                    m_techset_info.m_falloff = true;
+                else if (namePart == "distfalloff")
+                    m_techset_info.m_dist_falloff = true;
+                else if (namePart == "zfeather")
+                    m_techset_info.m_zfeather = true;
+                else if (namePart == "nofog")
+                    m_techset_info.m_no_fog = true;
+                else if (namePart == "nocast")
+                    m_techset_info.m_no_cast_shadow = true;
+                else if (namePart == "spot")
+                    m_techset_info.m_use_spot_light = true;
+                else if (namePart == "lin")
+                    m_techset_info.m_effect_lin_flag = true;
+                else if (namePart == "outdoor")
+                    m_techset_info.m_outdoor_only = true;
+                else if (namePart == "ua")
+                    m_techset_info.m_uv_anim = true;
+                else
+                {
+                    if (namePart != "add" && namePart != "replace" && namePart != "blend" && namePart != "eyeoffset" && namePart != "screen" && namePart != "effect" && namePart != "unlit"
+                        && namePart != "multiply" && namePart != "sm" && namePart != "spark" && namePart != "sparkf")
+                    {
+                        std::cout << "Unknown name part \"" << namePart << "\"\n";
+                        assert(false);
+                    }
+                }
+            }
+
+            if (inCustomName)
+            {
+                m_techset_info.m_gdt_custom_string = customNameStream.str();
+            }
+        }
+
         void ExamineTechsetInfo()
         {
             if (!m_material->techniqueSet || !m_material->techniqueSet->name)
@@ -871,9 +934,20 @@ namespace IW4
             {
                 m_techset_info.m_gdt_material_type = MATERIAL_TYPE_DISTORTION;
             }
+            else if (m_techset_info.m_techset_base_name.rfind("particle_cloud_sparkf", 0) == 0)
+            {
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_SPARK_FOUNTAIN;
+                ExamineParticleCloudTechsetInfo();
+            }
+            else if (m_techset_info.m_techset_base_name.rfind("particle_cloud_spark", 0) == 0)
+            {
+                m_techset_info.m_gdt_material_type = MATERIAL_TYPE_SPARK_CLOUD;
+                ExamineParticleCloudTechsetInfo();
+            }
             else if (m_techset_info.m_techset_base_name.rfind("particle_cloud", 0) == 0)
             {
                 m_techset_info.m_gdt_material_type = MATERIAL_TYPE_PARTICLE_CLOUD;
+                ExamineParticleCloudTechsetInfo();
             }
             else if (m_techset_info.m_techset_base_name == "grain_overlay")
             {

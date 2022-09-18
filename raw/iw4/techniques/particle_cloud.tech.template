@@ -44,7 +44,7 @@
 #set PIXEL_SHADER "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + SHADOW_SUFFIX + PREMUL_SUFFIX + ".hlsl"
 
 {
-  stateMap "default";
+  stateMap "wip_particle_cloud";
 
   vertexShader 3.0 "VERTEX_SHADER"
   {

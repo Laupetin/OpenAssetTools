@@ -468,6 +468,8 @@ namespace IW4
         MATERIAL_TYPE_MODEL_UNLIT,
         MATERIAL_TYPE_OBJECTIVE,
         MATERIAL_TYPE_PARTICLE_CLOUD,
+        MATERIAL_TYPE_SPARK_CLOUD,
+        MATERIAL_TYPE_SPARK_FOUNTAIN,
         MATERIAL_TYPE_SKY,
         MATERIAL_TYPE_TOOLS,
         MATERIAL_TYPE_UNLIT,
@@ -489,6 +491,8 @@ namespace IW4
     constexpr auto GDT_MATERIAL_TYPE_MODEL_UNLIT = "model unlit";
     constexpr auto GDT_MATERIAL_TYPE_OBJECTIVE = "objective";
     constexpr auto GDT_MATERIAL_TYPE_PARTICLE_CLOUD = "particle cloud";
+    constexpr auto GDT_MATERIAL_TYPE_SPARK_CLOUD = "spark cloud";
+    constexpr auto GDT_MATERIAL_TYPE_SPARK_FOUNTAIN = "spark fountain";
     constexpr auto GDT_MATERIAL_TYPE_SKY = "sky";
     constexpr auto GDT_MATERIAL_TYPE_TOOLS = "tools";
     constexpr auto GDT_MATERIAL_TYPE_UNLIT = "unlit";
@@ -509,6 +513,8 @@ namespace IW4
         GDT_MATERIAL_TYPE_MODEL_UNLIT,
         GDT_MATERIAL_TYPE_OBJECTIVE,
         GDT_MATERIAL_TYPE_PARTICLE_CLOUD,
+        GDT_MATERIAL_TYPE_SPARK_CLOUD,
+        GDT_MATERIAL_TYPE_SPARK_FOUNTAIN,
         GDT_MATERIAL_TYPE_SKY,
         GDT_MATERIAL_TYPE_TOOLS,
         GDT_MATERIAL_TYPE_UNLIT,
