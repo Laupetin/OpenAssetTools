@@ -22,7 +22,7 @@ separateAlphaBlendFunc
 	mtlBlendOp == Disable: // Unused
 		Disable, One, Zero;
 
-	mtlAlphaTest == Disable: // Used
+	mtlAlphaTest == Always: // Used
 		Add, Zero, One;
 
 	default:

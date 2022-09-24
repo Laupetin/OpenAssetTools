@@ -5,7 +5,6 @@
 #include "Parsing/StateMapParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
-#include "Parsing/Matcher/StateMapExpressionMatchers.h"
 
 using namespace state_map;
 
@@ -51,7 +50,8 @@ std::unique_ptr<StateMapDefinition> StateMapReader::ReadStateMapDefinition() con
     lexerConfig.m_read_strings = false;
     lexerConfig.m_read_integer_numbers = true;
     lexerConfig.m_read_floating_point_numbers = false;
-    StateMapExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
+    lexerConfig.m_multi_character_tokens.emplace_back(StateMapParser::MULTI_TOKEN_AND, "&&");
+    lexerConfig.m_multi_character_tokens.emplace_back(StateMapParser::MULTI_TOKEN_EQUALS, "==");
     const auto lexer = std::make_unique<SimpleLexer>(m_comment_proxy.get(), std::move(lexerConfig));
 
     const auto parser = std::make_unique<StateMapParser>(lexer.get(), m_state_map_name, m_state_map_layout);

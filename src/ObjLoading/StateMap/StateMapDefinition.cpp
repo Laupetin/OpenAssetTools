@@ -2,6 +2,12 @@
 
 using namespace state_map;
 
+StateMapCondition::StateMapCondition(const size_t entryCount)
+    : m_masks_per_index(entryCount),
+      m_values_per_index(entryCount)
+{
+}
+
 StateMapRule::StateMapRule()
     : m_value(0u),
       m_passthrough(false)

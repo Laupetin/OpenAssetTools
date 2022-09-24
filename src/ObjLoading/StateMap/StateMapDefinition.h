@@ -4,14 +4,21 @@
 #include <string>
 #include <vector>
 
-#include "Parsing/Simple/Expression/ISimpleExpression.h"
-
 namespace state_map
 {
+    class StateMapCondition
+    {
+    public:
+        std::vector<size_t> m_masks_per_index;
+        std::vector<size_t> m_values_per_index;
+
+        explicit StateMapCondition(size_t entryCount);
+    };
+
     class StateMapRule
     {
     public:
-        std::vector<std::unique_ptr<ISimpleExpression>> m_conditions;
+        std::vector<StateMapCondition> m_conditions;
         size_t m_value;
         bool m_passthrough;
 

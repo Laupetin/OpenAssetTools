@@ -11,6 +11,10 @@ namespace state_map
 {
     class StateMapParser final : public AbstractParser<SimpleParserValue, StateMapParserState>
     {
+    public:
+        static constexpr auto MULTI_TOKEN_AND = 600;
+        static constexpr auto MULTI_TOKEN_EQUALS = 601;
+
     protected:
         const std::vector<sequence_t*>& GetTestsForState() override;
 

@@ -23,6 +23,9 @@ namespace state_map
 
                 // Zero mask values must be last
                 assert(value.m_state_bits_mask != 0 || i == var.m_values.size() - 1);
+
+                // Must not have a value outside the var mask
+                assert((value.m_state_bits_mask & ~var.m_values_mask) == 0);
             }
         }
 
@@ -68,9 +71,10 @@ StateMapLayoutVarValue::StateMapLayoutVarValue(std::string name, const size_t st
 {
 }
 
-StateMapLayoutVar::StateMapLayoutVar(std::string name, const size_t stateBitsIndex, std::vector<StateMapLayoutVarValue> values)
+StateMapLayoutVar::StateMapLayoutVar(std::string name, const size_t stateBitsIndex, const size_t valuesMask, std::vector<StateMapLayoutVarValue> values)
     : m_name(std::move(name)),
       m_state_bits_index(stateBitsIndex),
+      m_values_mask(valuesMask),
       m_values(std::move(values))
 {
 }

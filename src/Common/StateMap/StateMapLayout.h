@@ -36,10 +36,11 @@ namespace state_map
     class StateMapLayoutVar
     {
     public:
-        StateMapLayoutVar(std::string name, size_t stateBitsIndex, std::vector<StateMapLayoutVarValue> values);
+        StateMapLayoutVar(std::string name, size_t stateBitsIndex, size_t valuesMask, std::vector<StateMapLayoutVarValue> values);
 
         std::string m_name;
         size_t m_state_bits_index;
+        size_t m_values_mask;
         std::vector<StateMapLayoutVarValue> m_values;
     };
 

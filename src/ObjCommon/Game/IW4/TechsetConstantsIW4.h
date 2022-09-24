@@ -651,7 +651,7 @@ namespace IW4
 
     inline state_map::StateMapLayoutVars stateMapVarLayout({
         {
-            "mtlAlphaTest", 0, {
+            "mtlAlphaTest", 0, GFXS0_ATEST_DISABLE | GFXS0_ATEST_MASK, {
                 {"Always", GFXS0_ATEST_DISABLE},
                 {"GE128", GFXS0_ATEST_GE_128},
                 {"GT0", GFXS0_ATEST_GT_0},
@@ -659,7 +659,7 @@ namespace IW4
             }
         },
         {
-            "mtlBlendOp", 0, {
+            "mtlBlendOp", 0, GFXS0_BLENDOP_RGB_MASK, {
                 {"Add", GFXS_BLENDOP_ADD << GFXS0_BLENDOP_RGB_SHIFT},
                 {"Subtract", GFXS_BLENDOP_SUBTRACT << GFXS0_BLENDOP_RGB_SHIFT},
                 {"RevSubtract", GFXS_BLENDOP_REVSUBTRACT << GFXS0_BLENDOP_RGB_SHIFT},
@@ -669,7 +669,7 @@ namespace IW4
             }
         },
         {
-            "mtlSrcBlend", 0, {
+            "mtlSrcBlend", 0, GFXS0_SRCBLEND_RGB_MASK, {
                 {"Zero", GFXS_BLEND_ZERO << GFXS0_SRCBLEND_RGB_SHIFT},
                 {"One", GFXS_BLEND_ONE << GFXS0_SRCBLEND_RGB_SHIFT},
                 {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_SRCBLEND_RGB_SHIFT},
@@ -683,7 +683,7 @@ namespace IW4
             }
         },
         {
-            "mtlDestBlend", 0, {
+            "mtlDestBlend", 0, GFXS0_DSTBLEND_RGB_MASK, {
                 {"Zero", GFXS_BLEND_ZERO << GFXS0_DSTBLEND_RGB_SHIFT},
                 {"One", GFXS_BLEND_ONE << GFXS0_DSTBLEND_RGB_SHIFT},
                 {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_DSTBLEND_RGB_SHIFT},
@@ -697,7 +697,7 @@ namespace IW4
             }
         },
         {
-            "mtlBlendOpAlpha", 0, {
+            "mtlBlendOpAlpha", 0, GFXS0_BLENDOP_ALPHA_MASK, {
                 {"Add", GFXS_BLENDOP_ADD << GFXS0_BLENDOP_ALPHA_SHIFT},
                 {"Subtract", GFXS_BLENDOP_SUBTRACT << GFXS0_BLENDOP_ALPHA_SHIFT},
                 {"RevSubtract", GFXS_BLENDOP_REVSUBTRACT << GFXS0_BLENDOP_ALPHA_SHIFT},
@@ -707,7 +707,7 @@ namespace IW4
             }
         },
         {
-            "mtlSrcBlendAlpha", 0, {
+            "mtlSrcBlendAlpha", 0, GFXS0_SRCBLEND_ALPHA_MASK, {
                 {"Zero", GFXS_BLEND_ZERO << GFXS0_SRCBLEND_ALPHA_SHIFT},
                 {"One", GFXS_BLEND_ONE << GFXS0_SRCBLEND_ALPHA_SHIFT},
                 {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_SRCBLEND_ALPHA_SHIFT},
@@ -721,7 +721,7 @@ namespace IW4
             }
         },
         {
-            "mtlDestBlendAlpha", 0, {
+            "mtlDestBlendAlpha", 0, GFXS0_DSTBLEND_ALPHA_MASK, {
                 {"Zero", GFXS_BLEND_ZERO << GFXS0_DSTBLEND_ALPHA_SHIFT},
                 {"One", GFXS_BLEND_ONE << GFXS0_DSTBLEND_ALPHA_SHIFT},
                 {"SrcColor", GFXS_BLEND_SRCCOLOR << GFXS0_DSTBLEND_ALPHA_SHIFT},
@@ -735,38 +735,38 @@ namespace IW4
             }
         },
         {
-            "mtlCullFace", 0, {
+            "mtlCullFace", 0, GFXS0_CULL_MASK, {
                 {"None", GFXS0_CULL_NONE},
                 {"Back", GFXS0_CULL_BACK},
                 {"Front", GFXS0_CULL_FRONT},
             }
         },
         {
-            "mtlColorWriteRgb", 0, {
+            "mtlColorWriteRgb", 0, GFXS0_COLORWRITE_RGB, {
                 {"Enable", GFXS0_COLORWRITE_RGB},
                 {"Disable", 0},
             }
         },
         {
-            "mtlColorWriteAlpha", 0, {
+            "mtlColorWriteAlpha", 0, GFXS0_COLORWRITE_ALPHA, {
                 {"Enable", GFXS0_COLORWRITE_ALPHA},
                 {"Disable", 0},
             }
         },
         {
-            "mtlGammaWrite", 0, {
+            "mtlGammaWrite", 0, GFXS0_GAMMAWRITE, {
                 {"Enable", GFXS0_GAMMAWRITE},
                 {"Disable", 0},
             }
         },
         {
-            "mtlWireframe", 0, {
+            "mtlWireframe", 0, GFXS0_POLYMODE_LINE, {
                 {"Enable", GFXS0_POLYMODE_LINE},
                 {"Disable", 0},
             }
         },
         {
-            "mtlDepthTest", 1, {
+            "mtlDepthTest", 1, GFXS1_DEPTHTEST_DISABLE | GFXS1_DEPTHTEST_MASK, {
                 {"Disable", GFXS1_DEPTHTEST_DISABLE},
                 {"Less", GFXS1_DEPTHTEST_LESS},
                 {"LessEqual", GFXS1_DEPTHTEST_LESSEQUAL},
@@ -775,13 +775,13 @@ namespace IW4
             }
         },
         {
-            "mtlDepthWrite", 1, {
+            "mtlDepthWrite", 1, GFXS1_DEPTHWRITE, {
                 {"Enable", GFXS1_DEPTHWRITE},
                 {"Disable", 0},
             }
         },
         {
-            "mtlPolygonOffset", 1, {
+            "mtlPolygonOffset", 1, GFXS1_POLYGON_OFFSET_MASK, {
                 {"1", GFXS1_POLYGON_OFFSET_1},
                 {"2", GFXS1_POLYGON_OFFSET_2},
                 {"shadowmap", GFXS1_POLYGON_OFFSET_SHADOWMAP},
@@ -789,14 +789,14 @@ namespace IW4
             }
         },
         {
-            "mtlStencil", 1, {
+            "mtlStencil", 1, GFXS1_STENCIL_FRONT_ENABLE | GFXS1_STENCIL_BACK_ENABLE, {
                 {"OneSided", GFXS1_STENCIL_FRONT_ENABLE},
                 {"TwoSided", GFXS1_STENCIL_FRONT_ENABLE | GFXS1_STENCIL_BACK_ENABLE},
                 {"Disable", 0},
             }
         },
         {
-            "mtlStencilFuncFront", 1, {
+            "mtlStencilFuncFront", 1, GFXS1_STENCIL_FRONT_FUNC_MASK, {
                 {"Less", GFXS_STENCILFUNC_LESS << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
                 {"Equal", GFXS_STENCILFUNC_EQUAL << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
                 {"LessEqual", GFXS_STENCILFUNC_LESSEQUAL << GFXS1_STENCIL_FRONT_FUNC_SHIFT},
@@ -808,7 +808,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilOpFrontPass", 1, {
+            "mtlStencilOpFrontPass", 1, GFXS1_STENCIL_FRONT_PASS_MASK, {
                 {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_FRONT_PASS_SHIFT},
                 {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_FRONT_PASS_SHIFT},
                 {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_FRONT_PASS_SHIFT},
@@ -820,7 +820,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilOpFrontFail", 1, {
+            "mtlStencilOpFrontFail", 1, GFXS1_STENCIL_FRONT_FAIL_MASK, {
                 {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
                 {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
                 {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_FRONT_FAIL_SHIFT},
@@ -832,7 +832,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilOpFrontZFail", 1, {
+            "mtlStencilOpFrontZFail", 1, GFXS1_STENCIL_FRONT_ZFAIL_MASK, {
                 {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
                 {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
                 {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_FRONT_ZFAIL_SHIFT},
@@ -844,7 +844,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilFuncBack", 1, {
+            "mtlStencilFuncBack", 1, GFXS1_STENCIL_BACK_FUNC_MASK, {
                 {"Less", GFXS_STENCILFUNC_LESS << GFXS1_STENCIL_BACK_FUNC_SHIFT},
                 {"Equal", GFXS_STENCILFUNC_EQUAL << GFXS1_STENCIL_BACK_FUNC_SHIFT},
                 {"LessEqual", GFXS_STENCILFUNC_LESSEQUAL << GFXS1_STENCIL_BACK_FUNC_SHIFT},
@@ -856,7 +856,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilOpBackPass", 1, {
+            "mtlStencilOpBackPass", 1, GFXS1_STENCIL_BACK_PASS_MASK, {
                 {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_BACK_PASS_SHIFT},
                 {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_BACK_PASS_SHIFT},
                 {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_BACK_PASS_SHIFT},
@@ -868,7 +868,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilOpBackFail", 1, {
+            "mtlStencilOpBackFail", 1, GFXS1_STENCIL_BACK_FAIL_MASK, {
                 {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_BACK_FAIL_SHIFT},
                 {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_BACK_FAIL_SHIFT},
                 {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_BACK_FAIL_SHIFT},
@@ -880,7 +880,7 @@ namespace IW4
             }
         },
         {
-            "mtlStencilOpBackZFail", 1, {
+            "mtlStencilOpBackZFail", 1, GFXS1_STENCIL_BACK_ZFAIL_MASK, {
                 {"Zero", GFXS_STENCILOP_ZERO << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
                 {"Replace", GFXS_STENCILOP_REPLACE << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},
                 {"IncrSat", GFXS_STENCILOP_INCRSAT << GFXS1_STENCIL_BACK_ZFAIL_SHIFT},

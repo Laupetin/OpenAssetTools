@@ -1,6 +1,8 @@
 #include "StateMapParser.h"
 
-#include "Matcher/StateMapExpressionMatchers.h"
+#include <array>
+#include <sstream>
+
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 using namespace state_map;
@@ -64,18 +66,45 @@ namespace state_map
     class SequenceCondition final : public StateMapParser::sequence_t
     {
         static constexpr auto TAG_DEFAULT = 1;
-        static constexpr auto TAG_EXPRESSION = 2;
+        static constexpr auto TAG_CONDITION = 2;
+        static constexpr auto TAG_EQUALS_OPERATION = 3;
+
+        static constexpr auto CAPTURE_OPERATOR = 1;
+
+        static constexpr auto LABEL_CONDITION = 1;
+        static constexpr auto LABEL_EQUALS_OPERATION = 2;
+        static constexpr auto LABEL_CONDITION_OPERATOR = 3;
 
     public:
         SequenceCondition()
         {
-            AddLabeledMatchers(StateMapExpressionMatchers().Expression(this), StateMapExpressionMatchers::LABEL_EXPRESSION);
             const SimpleMatcherFactory create(this);
+
+            AddLabeledMatchers(create.Or({
+                                   create.Identifier(),
+                                   create.Integer()
+                               }).Capture(CAPTURE_OPERATOR), LABEL_CONDITION_OPERATOR);
+
+            AddLabeledMatchers(create.And({
+                                   create.True().Tag(TAG_EQUALS_OPERATION),
+                                   create.Label(LABEL_CONDITION_OPERATOR),
+                                   create.MultiChar(StateMapParser::MULTI_TOKEN_EQUALS),
+                                   create.Label(LABEL_CONDITION_OPERATOR)
+                               }), LABEL_EQUALS_OPERATION);
+
+            AddLabeledMatchers(create.And({
+                                   create.True().Tag(TAG_CONDITION),
+                                   create.Label(LABEL_EQUALS_OPERATION),
+                                   create.OptionalLoop(create.And({
+                                       create.MultiChar(StateMapParser::MULTI_TOKEN_AND),
+                                       create.Label(LABEL_EQUALS_OPERATION)
+                                   }))
+                               }), LABEL_CONDITION);
 
             AddMatchers({
                 create.Or({
                     create.Keyword("default").Tag(TAG_DEFAULT),
-                    create.Label(StateMapExpressionMatchers::LABEL_EXPRESSION).Tag(TAG_EXPRESSION)
+                    create.Label(LABEL_CONDITION)
                 }),
                 create.Char(':')
             });
@@ -94,11 +123,10 @@ namespace state_map
                 state->m_definition->m_state_map_entries[state->m_current_entry_index].m_rules.emplace_back(std::move(newRule));
             }
 
-            if (result.PeekAndRemoveIfTag(TAG_EXPRESSION) == TAG_EXPRESSION)
+            if (result.PeekAndRemoveIfTag(TAG_CONDITION) == TAG_CONDITION)
             {
-                auto expression = StateMapExpressionMatchers(state).ProcessExpression(result);
-
-                state->m_current_rule->m_conditions.emplace_back(std::move(expression));
+                auto condition = ProcessCondition(state, result);
+                state->m_current_rule->m_conditions.emplace_back(std::move(condition));
             }
             else
             {
@@ -107,6 +135,73 @@ namespace state_map
                 state->m_entry_has_default = true;
                 entry.m_default_index = entry.m_rules.size() - 1;
             }
+        }
+
+        static StateMapCondition ProcessCondition(const StateMapParserState* state, SequenceResult<SimpleParserValue>& result)
+        {
+            StateMapCondition condition(state->m_layout.m_state_bits_count);
+
+            while (result.PeekAndRemoveIfTag(TAG_EQUALS_OPERATION) == TAG_EQUALS_OPERATION)
+            {
+                std::array<std::reference_wrapper<const SimpleParserValue>, 2> operatorToken
+                {
+                    result.NextCapture(CAPTURE_OPERATOR),
+                    result.NextCapture(CAPTURE_OPERATOR)
+                };
+
+                std::array<std::string, 2> operatorValue
+                {
+                    ProcessOperator(operatorToken[0]),
+                    ProcessOperator(operatorToken[1])
+                };
+
+                const auto variableIndex = IsVariable(operatorValue[1]) ? 1 : 0;
+                const auto valueIndex = variableIndex == 0 ? 1 : 0;
+
+                const auto& variable = GetVariable(state, operatorToken[variableIndex], operatorValue[variableIndex]);
+                const auto& value = GetValue(variable, operatorToken[valueIndex], operatorValue[valueIndex]);
+
+                condition.m_masks_per_index[variable.m_state_bits_index] |= variable.m_values_mask;
+                condition.m_values_per_index[variable.m_state_bits_index] |= value.m_state_bits_mask;
+            }
+
+            return condition;
+        }
+
+        static std::string ProcessOperator(const SimpleParserValue& token)
+        {
+            return token.m_type == SimpleParserValueType::IDENTIFIER ? token.IdentifierValue() : std::to_string(token.IntegerValue());
+        }
+
+        static bool IsVariable(const std::string& _operator)
+        {
+            return _operator.rfind("mtl", 0) == 0;
+        }
+
+        static const StateMapLayoutVar& GetVariable(const StateMapParserState* state, const SimpleParserValue& operatorToken, const std::string& operatorValue)
+        {
+            const auto& foundVariable = state->m_valid_vars.find(operatorValue);
+            if (foundVariable == state->m_valid_vars.end())
+                throw ParsingException(operatorToken.GetPos(), "Unknown variable");
+
+            return state->m_layout.m_var_layout.m_vars[foundVariable->second];
+        }
+
+        static const StateMapLayoutVarValue& GetValue(const StateMapLayoutVar& variable, const SimpleParserValue& operatorToken, const std::string& operatorValue)
+        {
+            const auto matchingValue = std::find_if(variable.m_values.begin(), variable.m_values.end(), [&operatorValue](const StateMapLayoutVarValue& value)
+            {
+                return value.m_name == operatorValue;
+            });
+
+            if (matchingValue == variable.m_values.end())
+            {
+                std::ostringstream ss;
+                ss << "Unknown value for variable \"" << variable.m_name << "\"";
+                throw ParsingException(operatorToken.GetPos(), ss.str());
+            }
+
+            return *matchingValue;
         }
     };
 
