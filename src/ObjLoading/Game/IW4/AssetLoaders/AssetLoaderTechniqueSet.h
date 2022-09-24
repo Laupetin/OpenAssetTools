@@ -20,6 +20,8 @@ namespace IW4
         static std::string GetTechniqueFileName(const std::string& techniqueName);
         static std::string GetStateMapFileName(const std::string& stateMapName);
 
+        static const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache);
+
         static techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache);
         static const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache);
 

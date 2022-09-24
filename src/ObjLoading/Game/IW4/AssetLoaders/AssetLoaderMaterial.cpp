@@ -883,7 +883,7 @@ namespace IW4
 
         GfxStateBits GetStateBitsForTechnique(const std::string& techniqueName)
         {
-            const auto* stateMap = GetStateMapForTechnique(techniqueName);
+            const auto* stateMap = AssetLoaderTechniqueSet::GetStateMapForTechnique(techniqueName, m_search_path, m_state_map_cache);
             if (!stateMap)
                 return m_base_state_bits;
 
@@ -895,35 +895,6 @@ namespace IW4
             m_state_bits_per_state_map.emplace(stateMap, stateBits);
 
             return stateBits;
-        }
-
-        _NODISCARD const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const
-        {
-            const auto* preloadedStateMap = m_state_map_cache->GetStateMapForTechnique(techniqueName);
-            if (preloadedStateMap)
-                return preloadedStateMap;
-
-            const auto techniqueFileName = AssetLoaderTechniqueSet::GetTechniqueFileName(techniqueName);
-            const auto file = m_search_path->Open(techniqueFileName);
-            if (!file.IsOpen())
-            {
-                std::cerr << "Failed to find file for technique \"" << techniqueName << "\"\n";
-                return nullptr;
-            }
-
-            state_map::StateMapFromTechniqueExtractor extractor;
-            const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
-            if (!reader.ReadTechniqueDefinition())
-            {
-                m_state_map_cache->SetTechniqueUsesStateMap(techniqueName, nullptr);
-                return nullptr;
-            }
-
-            const auto stateMapName = extractor.RetrieveStateMap();
-            const auto* loadedStateMap = AssetLoaderTechniqueSet::LoadStateMapDefinition(stateMapName, m_search_path, m_state_map_cache);
-            m_state_map_cache->SetTechniqueUsesStateMap(techniqueName, loadedStateMap);
-
-            return loadedStateMap;
         }
 
         GfxStateBits CalculateStateBitsWithStateMap(const state_map::StateMapDefinition* stateMap) const

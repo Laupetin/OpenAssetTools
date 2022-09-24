@@ -17,6 +17,7 @@
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechsetFileReader.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "StateMap/StateMapFromTechniqueExtractor.h"
 #include "StateMap/StateMapReader.h"
 #include "Techset/TechniqueStateMapCache.h"
 #include "Techset/TechsetDefinitionCache.h"
@@ -1291,6 +1292,35 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& ass
     manager->AddAsset(ASSET_TYPE_TECHNIQUE_SET, assetName, techset, std::vector(dependencies.begin(), dependencies.end()), std::vector<scr_string_t>());
 
     return true;
+}
+
+const state_map::StateMapDefinition* AssetLoaderTechniqueSet::GetStateMapForTechnique(const std::string& techniqueName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache)
+{
+    const auto* preloadedStateMap = stateMapCache->GetStateMapForTechnique(techniqueName);
+    if (preloadedStateMap)
+        return preloadedStateMap;
+
+    const auto techniqueFileName = GetTechniqueFileName(techniqueName);
+    const auto file = searchPath->Open(techniqueFileName);
+    if (!file.IsOpen())
+    {
+        std::cerr << "Failed to find file for technique \"" << techniqueName << "\"\n";
+        return nullptr;
+    }
+
+    state_map::StateMapFromTechniqueExtractor extractor;
+    const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
+    if (!reader.ReadTechniqueDefinition())
+    {
+        stateMapCache->SetTechniqueUsesStateMap(techniqueName, nullptr);
+        return nullptr;
+    }
+
+    const auto stateMapName = extractor.RetrieveStateMap();
+    const auto* loadedStateMap = LoadStateMapDefinition(stateMapName, searchPath, stateMapCache);
+    stateMapCache->SetTechniqueUsesStateMap(techniqueName, loadedStateMap);
+
+    return loadedStateMap;
 }
 
 techset::TechsetDefinition* AssetLoaderTechniqueSet::LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache)
