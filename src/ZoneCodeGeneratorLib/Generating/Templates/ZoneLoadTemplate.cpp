@@ -649,6 +649,11 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             LINE(MakeMemberAccess(info, member, modifier)<< " = m_stream->ConvertOffsetToPointer("<<MakeMemberAccess(info, member, modifier)<<");")
 
+            if (member->m_is_script_string && loadType == MemberLoadType::ARRAY_POINTER)
+            {
+                LINE("MarkScriptStringArrayAsUsed(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            }
+
             m_intendation--;
             LINE("}")
         }

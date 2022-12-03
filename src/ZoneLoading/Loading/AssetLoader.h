@@ -23,6 +23,7 @@ protected:
 
     scr_string_t UseScriptString(scr_string_t scrString);
     void LoadScriptStringArray(bool atStreamStart, size_t count);
+    void MarkScriptStringArrayAsUsed(const scr_string_t* scrStringArray, size_t count);
 
     XAssetInfoGeneric* LinkAsset(std::string name, void* asset);
 

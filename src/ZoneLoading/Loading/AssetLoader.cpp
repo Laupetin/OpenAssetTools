@@ -50,12 +50,24 @@ void AssetLoader::LoadScriptStringArray(const bool atStreamStart, const size_t c
     }
 }
 
+void AssetLoader::MarkScriptStringArrayAsUsed(const scr_string_t* scrStringArray, const size_t count)
+{
+    for (size_t index = 0; index < count; index++)
+    {
+        const auto scrString = scrStringArray[index];
+        if (scrString >= m_zone->m_script_strings.Count())
+            continue;
+
+        m_used_script_strings.emplace(scrString);
+    }
+}
+
 XAssetInfoGeneric* AssetLoader::LinkAsset(std::string name, void* asset)
 {
     std::vector<scr_string_t> usedScriptStrings;
-    if(!m_used_script_strings.empty())
+    if (!m_used_script_strings.empty())
     {
-        for(auto scrString : m_used_script_strings)
+        for (auto scrString : m_used_script_strings)
         {
             usedScriptStrings.push_back(scrString);
         }
