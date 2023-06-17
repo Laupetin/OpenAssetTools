@@ -1,4 +1,5 @@
 local/
 build/
 .vscode
+.idea
 user*.*
