@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <limits>
 #include <vector>
 
 #include "Utils/ClassUtils.h"

@@ -49,5 +49,6 @@ function ZoneCodeGeneratorLibTests:project()
 
 		links:linkto(ZoneCodeGeneratorLib)
 		links:linkto(ParserTestUtils)
+		links:linkto(catch2)
 		links:linkall()
 end

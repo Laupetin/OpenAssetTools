@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <limits>
 
 #include "ObjLoading.h"
 #include "Game/IW4/IW4.h"

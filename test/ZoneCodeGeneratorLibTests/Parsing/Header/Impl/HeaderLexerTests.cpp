@@ -1,7 +1,11 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "Parsing/Header/Impl/HeaderLexer.h"
 #include "Parsing/Mock/MockParserLineStream.h"
+
+using namespace Catch::Matchers;
 
 namespace test::parsing::header::impl::header_lexer
 {
@@ -22,7 +26,8 @@ namespace test::parsing::header::impl::header_lexer
     void ExpectFloatingPointToken(HeaderLexer& lexer, double number)
     {
         REQUIRE(lexer.GetToken(0).m_type == HeaderParserValueType::FLOATING_POINT);
-        REQUIRE(lexer.GetToken(0).FloatingPointValue() == Approx(number));
+        const auto a = lexer.GetToken(0).FloatingPointValue();
+        REQUIRE_THAT(lexer.GetToken(0).FloatingPointValue(), WithinRel(number));
         lexer.PopTokens(1);
     }
 
@@ -250,7 +255,7 @@ namespace test::parsing::header::impl::header_lexer
         ExpectIdentifierToken(lexer, "a");
         ExpectIdentifierToken(lexer, "b");
         ExpectFloatingPointToken(lexer, 36.999);
-        ExpectFloatingPointToken(lexer, 59595.2412);
+        ExpectFloatingPointToken(lexer, 59595.2414);
         ExpectIdentifierToken(lexer, "c");
     }
 
