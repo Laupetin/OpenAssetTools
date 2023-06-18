@@ -255,7 +255,7 @@ namespace test::parsing::header::impl::header_lexer
         ExpectIdentifierToken(lexer, "a");
         ExpectIdentifierToken(lexer, "b");
         ExpectFloatingPointToken(lexer, 36.999);
-        ExpectFloatingPointToken(lexer, 59595.2412);
+        ExpectFloatingPointToken(lexer, 59595.2414);
         ExpectIdentifierToken(lexer, "c");
     }
 
