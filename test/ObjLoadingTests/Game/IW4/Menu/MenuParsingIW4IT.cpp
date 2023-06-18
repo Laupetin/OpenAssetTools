@@ -1,4 +1,6 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <string>
 
@@ -12,6 +14,7 @@
 using namespace menu;
 using namespace IW4;
 using namespace std::literals;
+using namespace Catch::Matchers;
 
 namespace test::game::iw4::menu::parsing::it
 {
@@ -184,10 +187,10 @@ namespace test::game::iw4::menu::parsing::it
 		REQUIRE(menu->fullScreen > 0);
 		REQUIRE(menu->window.staticFlags & WINDOW_FLAG_SCREEN_SPACE);
 		REQUIRE(menu->window.staticFlags & WINDOW_FLAG_DECORATION);
-		REQUIRE(menu->window.rect.x == Approx(420));
-		REQUIRE(menu->window.rect.y == Approx(1337));
-		REQUIRE(menu->window.rect.w == Approx(12));
-		REQUIRE(menu->window.rect.h == Approx(64));
+		REQUIRE_THAT(menu->window.rect.x, WithinRel(420.0f));
+		REQUIRE_THAT(menu->window.rect.y, WithinRel(1337.0f));
+		REQUIRE_THAT(menu->window.rect.w, WithinRel(12.0f));
+		REQUIRE_THAT(menu->window.rect.h, WithinRel(64.0f));
 		REQUIRE(menu->window.rect.horzAlign == 1);
 		REQUIRE(menu->window.rect.vertAlign == 2);
 		REQUIRE(menu->window.style == 5);
@@ -250,16 +253,16 @@ namespace test::game::iw4::menu::parsing::it
 		REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript == R"("setColor" "1" "0.5" "0.1" "1" ; )"s);
 
 		REQUIRE(menu->window.border == 1);
-		REQUIRE(menu->window.borderSize == Approx(1.25));
-		REQUIRE(menu->window.borderSize == Approx(1.25));
-		REQUIRE(menu->window.backColor[0] == Approx(1));
-		REQUIRE(menu->window.backColor[1] == Approx(0.8));
-		REQUIRE(menu->window.backColor[2] == Approx(0.4));
-		REQUIRE(menu->window.backColor[3] == Approx(0.95));
-		REQUIRE(menu->window.foreColor[0] == Approx(0.7));
-		REQUIRE(menu->window.foreColor[1] == Approx(0));
-		REQUIRE(menu->window.foreColor[2] == Approx(0));
-		REQUIRE(menu->window.foreColor[3] == Approx(0));
+		REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25f));
+		REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25));
+		REQUIRE_THAT(menu->window.backColor[0], WithinRel(1.0f));
+		REQUIRE_THAT(menu->window.backColor[1], WithinRel(0.8f));
+		REQUIRE_THAT(menu->window.backColor[2], WithinRel(0.4f));
+		REQUIRE_THAT(menu->window.backColor[3], WithinRel(0.95f));
+		REQUIRE_THAT(menu->window.foreColor[0], WithinRel(0.7f));
+		REQUIRE_THAT(menu->window.foreColor[1], WithinRel(0.0f));
+		REQUIRE_THAT(menu->window.foreColor[2], WithinRel(0.0f));
+		REQUIRE_THAT(menu->window.foreColor[3], WithinRel(0.0f));
 		REQUIRE(menu->window.background == funnyDogMaterial);
 
 		REQUIRE(menu->onKey != nullptr);

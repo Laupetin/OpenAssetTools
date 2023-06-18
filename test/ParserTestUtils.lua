@@ -48,5 +48,6 @@ function ParserTestUtils:project()
 		catch2:include(includes)
 
 		links:linkto(Parser)
+		links:linkto(catch2)
 		links:linkall()
 end

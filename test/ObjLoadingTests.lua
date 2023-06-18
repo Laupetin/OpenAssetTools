@@ -49,5 +49,6 @@ function ObjLoadingTests:project()
 
 		links:linkto(ParserTestUtils)
 		links:linkto(ObjLoading)
+		links:linkto(catch2)
 		links:linkall()
 end

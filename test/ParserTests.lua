@@ -49,5 +49,6 @@ function ParserTests:project()
 
 		links:linkto(ParserTestUtils)
 		links:linkto(Parser)
+		links:linkto(catch2)
 		links:linkall()
 end

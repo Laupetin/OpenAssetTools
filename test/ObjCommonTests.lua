@@ -48,5 +48,6 @@ function ObjCommonTests:project()
 		catch2:include(includes)
 
 		links:linkto(ObjCommon)
+		links:linkto(catch2)
 		links:linkall()
 end

@@ -49,6 +49,7 @@ function ZoneCommonTests:project()
 		catch2:include(includes)
 
 		links:linkto(ZoneCommon)
+		links:linkto(catch2)
 		links:linkall()
 
 		ZoneCode:use()
