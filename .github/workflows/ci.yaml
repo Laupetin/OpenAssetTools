@@ -46,6 +46,12 @@ jobs:
           ./ParserTests
           ./ZoneCodeGeneratorLibTests
           ./ZoneCommonTests
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: oat-linux
+          path: |
+            ${{ github.workspace }}/build/bin/Release_x86
 
   build-test-windows:
     env:
@@ -81,3 +87,9 @@ jobs:
           ./ParserTests
           ./ZoneCodeGeneratorLibTests
           ./ZoneCommonTests
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: oat-windows
+          path: |
+            ${{ github.workspace }}/build/bin/Release_x86
