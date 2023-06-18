@@ -51,6 +51,7 @@ workspace "OpenAssetTools"
     filter "configurations:Release"
         defines "NDEBUG"
         optimize "Full"
+        symbols "Off"
         flags {
             "FatalWarnings"
         }
