@@ -2,7 +2,7 @@
 
 int main(const int argc, const char** argv)
 {
-    Unlinker unlinker;
+    const auto unlinker = Unlinker::Create();
 
-    return unlinker.Start(argc, argv) ? 0 : 1;
+    return unlinker->Start(argc, argv) ? 0 : 1;
 }

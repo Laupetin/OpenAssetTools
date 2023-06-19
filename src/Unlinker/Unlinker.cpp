@@ -34,7 +34,7 @@ const IZoneDefWriter* const ZONE_DEF_WRITERS[]
     new T6::ZoneDefWriter()
 };
 
-class Unlinker::Impl
+class UnlinkerImpl final : public Unlinker
 {
     UnlinkerArgs m_args;
     SearchPaths m_search_paths;
@@ -403,7 +403,7 @@ class Unlinker::Impl
             if (ShouldLoadObj())
             {
                 ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
-                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get()); 
+                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
             }
 
             if (!HandleZone(zone.get()))
@@ -421,15 +421,12 @@ class Unlinker::Impl
     }
 
 public:
-    Impl()
+    UnlinkerImpl()
     {
         m_last_zone_search_path = nullptr;
     }
 
-    /**
-     * \copydoc Unlinker::Start
-     */
-    bool Start(const int argc, const char** argv)
+    bool Start(const int argc, const char** argv) override
     {
         if (!m_args.ParseArgs(argc, argv))
             return false;
@@ -447,18 +444,7 @@ public:
     }
 };
 
-Unlinker::Unlinker()
+std::unique_ptr<Unlinker> Unlinker::Create()
 {
-    m_impl = new Impl();
-}
-
-Unlinker::~Unlinker()
-{
-    delete m_impl;
-    m_impl = nullptr;
-}
-
-bool Unlinker::Start(const int argc, const char** argv) const
-{
-    return m_impl->Start(argc, argv);
+    return std::make_unique<UnlinkerImpl>();
 }

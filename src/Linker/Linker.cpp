@@ -40,7 +40,7 @@ const IZoneCreator* const ZONE_CREATORS[]
     new T6::ZoneCreator()
 };
 
-class Linker::Impl
+class LinkerImpl final : public Linker
 {
     static constexpr const char* METADATA_GAME = "game";
     static constexpr const char* METADATA_GDT = "gdt";
@@ -543,13 +543,7 @@ class Linker::Impl
     }
 
 public:
-    Impl()
-    = default;
-
-    /**
-     * \copydoc Linker::Start
-     */
-    bool Start(const int argc, const char** argv)
+    bool Start(const int argc, const char** argv) override
     {
         if (!m_args.ParseArgs(argc, argv))
             return false;
@@ -576,18 +570,7 @@ public:
     }
 };
 
-Linker::Linker()
+std::unique_ptr<Linker> Linker::Create()
 {
-    m_impl = new Impl();
-}
-
-Linker::~Linker()
-{
-    delete m_impl;
-    m_impl = nullptr;
-}
-
-bool Linker::Start(const int argc, const char** argv) const
-{
-    return m_impl->Start(argc, argv);
+    return std::make_unique<LinkerImpl>();
 }
