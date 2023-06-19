@@ -27,7 +27,7 @@ function RawTemplater:project()
 	local links = Links:create()
 
 	project(self:name())
-		targetdir(TargetDirectoryBin)
+		targetdir(TargetDirectoryBuildTools)
 		location "%{wks.location}/src/%{prj.name}"
 		kind "ConsoleApp"
 		language "C++"

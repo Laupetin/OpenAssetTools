@@ -26,5 +26,6 @@ end
 
 -- Target Directories
 TargetDirectoryBin = "%{wks.location}/bin/%{cfg.buildcfg}_%{cfg.platform}"
+TargetDirectoryBuildTools = "%{wks.location}/buildtools/%{cfg.buildcfg}_%{cfg.platform}"
 TargetDirectoryLib = "%{wks.location}/lib/%{cfg.buildcfg}_%{cfg.platform}"
 TargetDirectoryTest = "%{wks.location}/lib/%{cfg.buildcfg}_%{cfg.platform}/tests"
