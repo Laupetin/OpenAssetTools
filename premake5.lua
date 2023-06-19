@@ -98,7 +98,9 @@ group ""
 -- Projects
 -- ========================
 include "src/Common.lua"
+include "src/Compiler.lua"
 include "src/Crypto.lua"
+include "src/Decompiler.lua"
 include "src/Linker.lua"
 include "src/Parser.lua"
 include "src/RawTemplater.lua"
@@ -140,6 +142,8 @@ group ""
 
 -- Tools group: All projects that compile into the final tools
 group "Tools"
+    Compiler:project()
+    Decompiler:project()
     Linker:project()
     Unlinker:project()
 group ""
