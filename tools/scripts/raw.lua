@@ -56,10 +56,10 @@ function Raw:project()
 		filter "files:**/*.template"
 			buildmessage 'Templating %{file.relpath}'
             buildinputs {
-                TargetDirectoryBin .. "/" .. ExecutableByOs('RawTemplater')
+                TargetDirectoryBuildTools .. "/" .. ExecutableByOs('RawTemplater')
             }
 			buildcommands {
-				'"' .. TargetDirectoryBin .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
+				'"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('RawTemplater') .. '"' 
 				.. " -o %{cfg.targetdir}/build/raw/%{file.reldirectory}"
 				.. " --build-log \"%{prj.location}/build/%{file.relpath}.log\""
 				.. " %{file.relpath}"

@@ -297,7 +297,7 @@ function ZoneCode:project()
         filter "files:**.gen"
             buildmessage "Generating ZoneCode for game %{file.basename}"
             buildcommands {
-                '"' .. TargetDirectoryBin .. '/' .. ExecutableByOs('ZoneCodeGenerator') .. '"' 
+                '"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('ZoneCodeGenerator') .. '"' 
                     .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
                     .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets"'
@@ -309,7 +309,7 @@ function ZoneCode:project()
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}.h"),
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt"),
                 path.join(ProjectFolder(), "Common/Game/%{file.basename}/%{file.basename}_Assets.h"),
-                TargetDirectoryBin .. "/" .. ExecutableByOs('ZoneCodeGenerator')
+                TargetDirectoryBuildTools .. "/" .. ExecutableByOs('ZoneCodeGenerator')
             }
         filter {}
         
