@@ -537,6 +537,38 @@ namespace IW4
         float tvec[4];
     };
 
+    // Documentation of SurfaceFlags
+    struct SurfaceFlags
+    {
+        unsigned int noDamage : 1;      // 0x1
+        unsigned int isSlick : 1;       // 0x2
+        unsigned int isSky : 1;         // 0x4
+        unsigned int isLadder : 1;      // 0x8
+        unsigned int noImpact : 1;      // 0x10
+        unsigned int noMarks : 1;       // 0x20
+        unsigned int unknown1 : 1;      // 0x40
+        unsigned int noDraw : 1;        // 0x80
+        unsigned int noPenetrate : 1;   // 0x100
+        unsigned int isStairs : 1;      // 0x200
+        unsigned int noLightMap : 1;    // 0x400
+        unsigned int unknown2 : 1;      // 0x800
+        unsigned int isSoft : 1;        // 0x1000
+        unsigned int noSteps : 1;       // 0x2000
+        unsigned int isNonSolid : 1;    // 0x4000
+        unsigned int unknown4 : 2;      // 0x8000 0x10000
+        unsigned int noDLight : 1;      // 0x20000
+        unsigned int noCastShadow : 1;  // 0x40000
+        unsigned int unknown5 : 1;      // 0x80000
+        unsigned int surfaceType : 5;
+        unsigned int mantleOn : 1;      // 0x2000000
+        unsigned int mantleOver : 1;    // 0x4000000
+        unsigned int unknown6 : 4;      // 0x8000000 0x10000000 0x20000000 0x40000000
+        unsigned int isPortal : 1;      // 0x80000000
+    };
+#ifndef __zonecodegenerator
+    static_assert(sizeof(SurfaceFlags) == 4u);
+#endif
+
     struct XModelCollSurf_s
     {
         XModelCollTri_s* collTris;
@@ -544,7 +576,7 @@ namespace IW4
         Bounds bounds;
         int boneIdx;
         int contents;
-        int surfFlags;
+        int surfFlags; // See SurfaceFlags
     };
 
     struct XBoneInfo
@@ -947,7 +979,7 @@ namespace IW4
     struct MaterialInfo
     {
         const char* name;
-        unsigned char gameFlags;
+        unsigned char gameFlags; // MaterialGameFlags
         unsigned char sortKey; // SortKey_e
         unsigned char textureAtlasRowCount;
         unsigned char textureAtlasColumnCount;
@@ -2762,7 +2794,7 @@ namespace IW4
     struct ClipMaterial
     {
         const char* name;
-        int surfaceFlags;
+        int surfaceFlags; // SurfaceFlags
         int contents;
     };
 
