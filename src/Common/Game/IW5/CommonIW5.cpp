@@ -4,6 +4,22 @@
 
 using namespace IW5;
 
+int Common::StringTable_HashString(const char* str)
+{
+    if (!str)
+        return 0;
+
+    auto result = 0;
+    auto offset = 0;
+    while (str[offset])
+    {
+        const auto c = tolower(str[offset++]);
+        result = c + 31 * result;
+    }
+
+    return result;
+}
+
 PackedTexCoords Common::Vec2PackTexCoords(const vec2_t* in)
 {
     return PackedTexCoords{ Pack32::Vec2PackTexCoords(reinterpret_cast<const float*>(in)) };
