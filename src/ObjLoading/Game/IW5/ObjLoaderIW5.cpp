@@ -6,6 +6,7 @@
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
+#include "AssetLoaders/AssetLoaderStringTable.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Image/Dx9TextureLoader.h"
 #include "Image/Texture.h"
@@ -53,7 +54,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SURFACE_FX, SurfaceFxTable))
     REGISTER_ASSET_LOADER(AssetLoaderRawFile)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SCRIPTFILE, ScriptFile))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_STRINGTABLE, StringTable))
+    REGISTER_ASSET_LOADER(AssetLoaderStringTable)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LEADERBOARD, LeaderboardDef))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TRACER, TracerDef))
