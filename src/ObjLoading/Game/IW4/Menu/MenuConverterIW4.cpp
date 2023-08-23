@@ -661,7 +661,7 @@ namespace IW4
             return outputSet;
         }
 
-        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::map<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (keyHandlers.empty())
                 return nullptr;

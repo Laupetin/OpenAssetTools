@@ -46,7 +46,7 @@ namespace menu
         std::unique_ptr<CommonEventHandlerSet> m_on_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_request_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_esc;
-        std::map<int, std::unique_ptr<CommonEventHandlerSet>> m_key_handlers;
+        std::multimap<int, std::unique_ptr<CommonEventHandlerSet>> m_key_handlers;
 
         bool m_full_screen = false;
         bool m_screen_space = false;
