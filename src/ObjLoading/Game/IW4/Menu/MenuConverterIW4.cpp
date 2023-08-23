@@ -34,8 +34,8 @@ namespace IW4
                 static_cast<float>(rect.y),
                 static_cast<float>(rect.w),
                 static_cast<float>(rect.h),
-                static_cast<char>(rect.horizontalAlign),
-                static_cast<char>(rect.verticalAlign)
+                static_cast<unsigned char>(rect.horizontalAlign),
+                static_cast<unsigned char>(rect.verticalAlign)
             };
         }
 
@@ -46,8 +46,8 @@ namespace IW4
                 static_cast<float>(rectRelativeTo.y + rect.y),
                 static_cast<float>(rect.w),
                 static_cast<float>(rect.h),
-                static_cast<char>(rect.horizontalAlign),
-                static_cast<char>(rect.verticalAlign)
+                static_cast<unsigned char>(rect.horizontalAlign),
+                static_cast<unsigned char>(rect.verticalAlign)
             };
         }
 

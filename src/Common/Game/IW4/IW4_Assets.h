@@ -2084,8 +2084,8 @@ namespace IW4
         float y;
         float w;
         float h;
-        char horzAlign;
-        char vertAlign;
+        unsigned char horzAlign;
+        unsigned char vertAlign;
     };
 
     enum WindowDefStaticFlag : unsigned int
