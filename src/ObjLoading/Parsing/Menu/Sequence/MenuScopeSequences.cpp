@@ -258,20 +258,16 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_menu->m_visible_expression = std::move(value);
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_menu->m_on_open;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_menu->m_on_close;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onRequestClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_menu->m_on_request_close;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onESC", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_menu->m_on_esc;
     }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("border", [](const MenuFileParserState* state, const TokenPos&, const int value)
@@ -396,5 +392,19 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_menu->m_text_only_focus = true;
     }));
+
+
+    if (featureLevel == FeatureLevel::IW5)
+    {
+        AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "soundLoop"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+        {
+            state->m_current_menu->m_sound_loop_exp = std::move(value);
+        }));
+        AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onFocusDueToClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
+            return state->m_current_menu->m_on_focus_due_to_close;
+        }));
+    }
+
+
     AddSequence(std::make_unique<SequenceConsumeSemicolons>());
 }

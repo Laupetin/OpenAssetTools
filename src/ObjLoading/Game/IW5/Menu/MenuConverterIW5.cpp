@@ -848,6 +848,7 @@ namespace IW5
             listBox->onDoubleClick = ConvertEventHandlerSet(commonListBox->m_on_double_click.get(), &parentMenu, &commonItem);
             ConvertColor(listBox->selectBorder, commonListBox->m_select_border);
             listBox->selectIcon = ConvertMaterial(commonListBox->m_select_icon, &parentMenu, &commonItem);
+            listBox->elementHeightExp = ConvertOrApplyStatement(listBox->elementHeight, commonListBox->m_element_height_expression.get(), &parentMenu, &commonItem);
 
             listBox->numColumns = static_cast<int>(std::min(std::extent_v<decltype(listBoxDef_s::columnInfo)>, commonListBox->m_columns.size()));
             for (auto i = 0; i < listBox->numColumns; i++)
@@ -971,6 +972,7 @@ namespace IW5
             ConvertColor(item->glowColor, commonItem.m_glow_color);
             item->window.background = ConvertMaterial(commonItem.m_background, &parentMenu, &commonItem);
             item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &parentMenu, &commonItem);
+            item->hasFocus = ConvertEventHandlerSet(commonItem.m_has_focus.get(), &parentMenu, &commonItem);
             item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &parentMenu, &commonItem);
             item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &parentMenu, &commonItem);
             item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &parentMenu, &commonItem);
@@ -983,6 +985,7 @@ namespace IW5
             item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
             item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &parentMenu, &commonItem);
             item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
+            item->textAlignYExp = ConvertOrApplyStatement(item->textaligny, commonItem.m_text_align_y_expression.get(), &parentMenu, &commonItem);
             item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
             item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
             item->floatExpressions = ConvertFloatExpressions(&commonItem, item, &parentMenu, item->floatExpressionCount);
@@ -1103,6 +1106,7 @@ namespace IW5
             menuData->onClose = ConvertEventHandlerSet(commonMenu.m_on_close.get(), &commonMenu);
             menuData->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
             menuData->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
+            menuData->onFocusDueToClose = ConvertEventHandlerSet(commonMenu.m_on_focus_due_to_close.get(), &commonMenu);
             menuData->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
             menu->items = ConvertMenuItems(commonMenu, menu->itemCount);
             menuData->expressionData = m_conversion_zone_state->m_supporting_data;

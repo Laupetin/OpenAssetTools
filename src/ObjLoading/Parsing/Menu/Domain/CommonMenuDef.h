@@ -29,6 +29,7 @@ namespace menu
         int m_owner_draw = 0;
         int m_owner_draw_flags = 0;
         std::string m_sound_loop;
+        std::unique_ptr<ISimpleExpression> m_sound_loop_exp;
         double m_fade_clamp = 0;
         int m_fade_cycle = 0;
         double m_fade_amount = 0;
@@ -46,6 +47,7 @@ namespace menu
         std::unique_ptr<CommonEventHandlerSet> m_on_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_request_close;
         std::unique_ptr<CommonEventHandlerSet> m_on_esc;
+        std::unique_ptr<CommonEventHandlerSet> m_on_focus_due_to_close;
         std::multimap<int, std::unique_ptr<CommonEventHandlerSet>> m_key_handlers;
 
         bool m_full_screen = false;

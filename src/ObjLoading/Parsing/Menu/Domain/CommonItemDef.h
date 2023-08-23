@@ -44,6 +44,7 @@ namespace menu
         std::string m_select_icon;
 
         std::unique_ptr<CommonEventHandlerSet> m_on_double_click;
+        std::unique_ptr<ISimpleExpression> m_element_height_expression;
         std::vector<Column> m_columns;
     };
 
@@ -136,6 +137,7 @@ namespace menu
         std::unique_ptr<ISimpleExpression> m_visible_expression;
         std::unique_ptr<ISimpleExpression> m_disabled_expression;
         std::unique_ptr<ISimpleExpression> m_text_expression;
+        std::unique_ptr<ISimpleExpression> m_text_align_y_expression;
         std::unique_ptr<ISimpleExpression> m_material_expression;
         std::unique_ptr<ISimpleExpression> m_rect_x_exp;
         std::unique_ptr<ISimpleExpression> m_rect_y_exp;
@@ -145,6 +147,7 @@ namespace menu
         ColorExpressions m_glowcolor_expressions;
         ColorExpressions m_backcolor_expressions;
         std::unique_ptr<CommonEventHandlerSet> m_on_focus;
+        std::unique_ptr<CommonEventHandlerSet> m_has_focus;
         std::unique_ptr<CommonEventHandlerSet> m_on_leave_focus;
         std::unique_ptr<CommonEventHandlerSet> m_on_mouse_enter;
         std::unique_ptr<CommonEventHandlerSet> m_on_mouse_exit;
