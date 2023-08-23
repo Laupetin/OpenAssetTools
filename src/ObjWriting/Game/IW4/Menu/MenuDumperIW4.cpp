@@ -770,6 +770,7 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteColorProperty("forecolor", menu->window.foreColor, COLOR_1111);
     WriteColorProperty("bordercolor", menu->window.borderColor, COLOR_0000);
     WriteColorProperty("focuscolor", menu->focusColor, COLOR_0000);
+    WriteColorProperty("outlinecolor", menu->window.outlineColor, COLOR_0000);
     WriteMaterialProperty("background", menu->window.background);
     WriteIntProperty("ownerdraw", menu->window.ownerDraw, 0);
     WriteFlagsProperty("ownerdrawFlag", menu->window.ownerDrawFlags);
