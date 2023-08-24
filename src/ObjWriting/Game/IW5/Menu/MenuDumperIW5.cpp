@@ -192,7 +192,7 @@ void MenuDumper::WriteStatementOperand(const Statement_s* statement, size_t& cur
         break;
 
     case VAL_STRING:
-        m_stream << "\"" << operand.internals.stringVal.string << "\"";
+        WriteEscapedString(operand.internals.stringVal.string);
         break;
 
     case VAL_FUNCTION:
