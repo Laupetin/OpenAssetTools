@@ -137,7 +137,7 @@ void MenuDumper::WriteStatementOperator(const Statement_s* statement, size_t& cu
     }
 }
 
-void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, size_t currentPos) const
+void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, const size_t currentPos) const
 {
     const auto& operand = statement->entries[currentPos].data.operand;
 
@@ -160,7 +160,7 @@ void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, siz
         }
 
         if (functionIndex >= 0)
-            m_stream << "FUNC_" << functionIndex;
+            m_stream << "FUNC_" << functionIndex << "()";
         else
             m_stream << "INVALID_FUNC";
         m_stream << "()";
