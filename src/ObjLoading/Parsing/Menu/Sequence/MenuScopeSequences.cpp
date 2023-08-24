@@ -10,6 +10,7 @@
 #include "Generic/GenericKeywordPropertySequence.h"
 #include "Generic/GenericMenuEventHandlerSetPropertySequence.h"
 #include "Generic/GenericStringPropertySequence.h"
+#include "Parsing/Menu/MenuFileCommonOperations.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 #include "Parsing/Menu/Domain/CommonMenuTypes.h"
 #include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
@@ -254,8 +255,9 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_menu->m_style = value;
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_menu->m_visible_expression = std::move(value);
     }));
     AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onOpen", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
@@ -318,28 +320,34 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_menu->m_sound_loop = value;
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_menu->m_rect_x_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_menu->m_rect_y_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_menu->m_rect_w_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_menu->m_rect_h_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "openSound"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "openSound"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsStringExpression(state, pos, *value);
         state->m_current_menu->m_open_sound_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "closeSound"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "closeSound"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsStringExpression(state, pos, *value);
         state->m_current_menu->m_close_sound_exp = std::move(value);
     }));
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("popup", [](const MenuFileParserState* state, const TokenPos&)
@@ -396,8 +404,9 @@ void MenuScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
 
     if (featureLevel == FeatureLevel::IW5)
     {
-        AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "soundLoop"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+        AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "soundLoop"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
         {
+            MenuFileCommonOperations::EnsureIsStringExpression(state, pos, *value);
             state->m_current_menu->m_sound_loop_exp = std::move(value);
         }));
         AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onFocusDueToClose", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {

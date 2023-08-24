@@ -751,7 +751,8 @@ namespace IW4
                         continue;
                     }
 
-                    assert(false);
+                    // Do not consider this a mistake since the games menus do this by mistake and it should be able to compile them anyway
+                    // But the game should also not know what to do with this i guess
                     expressionIsStatic = false;
                 }
 
