@@ -1067,6 +1067,7 @@ namespace IW5
             auto* menuData = m_memory->Create<menuData_t>();
             memset(menu, 0, sizeof(menuDef_t));
 
+            menu->data = menuData;
             menu->window.name = m_memory->Dup(commonMenu.m_name.c_str());
             menuData->fullScreen = commonMenu.m_full_screen;
             ApplyFlag(menu->window.staticFlags, commonMenu.m_screen_space, WINDOW_FLAG_SCREEN_SPACE);
