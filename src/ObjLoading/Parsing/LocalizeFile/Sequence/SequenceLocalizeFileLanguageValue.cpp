@@ -18,37 +18,7 @@ SequenceLocalizeFileLanguageValue::SequenceLocalizeFileLanguageValue()
 std::string SequenceLocalizeFileLanguageValue::UnescapeValue(const std::string& value)
 {
     std::ostringstream str;
-
-    auto isEscaped = false;
-    for(const auto c : value)
-    {
-        if(isEscaped)
-        {
-            switch(c)
-            {
-            case 'n':
-                str << '\n';
-                break;
-
-            case 'r':
-                str << '\r';
-                break;
-
-            default:
-                str << c;
-                break;
-            }
-            isEscaped = false;
-        }
-        else if(c == '\\')
-        {
-            isEscaped = true;
-        }
-        else
-        {
-            str << c;
-        }
-    }
+    utils::UnescapeStringFromQuotationMarks(str, value);
 
     return str.str();
 }

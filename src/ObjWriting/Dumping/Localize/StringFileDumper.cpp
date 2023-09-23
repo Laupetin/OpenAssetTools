@@ -1,6 +1,8 @@
 #include "StringFileDumper.h"
 #include <regex>
 
+#include "Utils/StringUtils.h"
+
 StringFileDumper::StringFileDumper(Zone* zone, std::ostream& stream)
     : AbstractTextDumper(stream),
       m_zone(zone),
@@ -44,11 +46,10 @@ void StringFileDumper::WriteLocalizeEntry(const std::string& reference, const st
     m_stream << "\n";
     m_stream << "REFERENCE           " << reference << "\n";
 
-    auto escapedValue = std::regex_replace(value, std::regex("\n"), "\\n");
-    escapedValue = std::regex_replace(escapedValue, std::regex("\r"), "\\r");
-
     const auto valueSpacing = std::string(15 - m_language_caps.length(), ' ');
-    m_stream << "LANG_" << m_language_caps << valueSpacing << "\"" << escapedValue << "\"\n";
+    m_stream << "LANG_" << m_language_caps << valueSpacing << "\"";
+    utils::EscapeStringForQuotationMarks(m_stream, value);
+    m_stream << "\"\n";
 }
 
 void StringFileDumper::Finalize()

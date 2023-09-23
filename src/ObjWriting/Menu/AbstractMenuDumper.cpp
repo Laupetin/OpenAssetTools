@@ -70,6 +70,7 @@ std::vector<std::string> AbstractMenuDumper::CreateScriptTokenList(const char* s
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = false;
     lexerConfig.m_read_strings = true;
+    lexerConfig.m_string_escape_sequences = true;
     lexerConfig.m_read_integer_numbers = false;
     lexerConfig.m_read_floating_point_numbers = false;
     SimpleLexer lexer(&inputStream, std::move(lexerConfig));

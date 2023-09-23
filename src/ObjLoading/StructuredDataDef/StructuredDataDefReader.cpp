@@ -47,6 +47,7 @@ std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::R
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = false;
     lexerConfig.m_read_strings = true;
+    lexerConfig.m_string_escape_sequences = true;
     lexerConfig.m_read_integer_numbers = true;
     lexerConfig.m_read_floating_point_numbers = true;
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));

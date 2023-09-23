@@ -22,11 +22,11 @@ public:
             MultiCharacterToken(int id, std::string value);
         };
 
-        bool m_emit_new_line_tokens;
-        bool m_read_strings;
-        bool m_string_escape_sequences;
-        bool m_read_integer_numbers;
-        bool m_read_floating_point_numbers;
+        bool m_emit_new_line_tokens = false;
+        bool m_read_strings = true;
+        bool m_string_escape_sequences = false;
+        bool m_read_integer_numbers = true;
+        bool m_read_floating_point_numbers = true;
         std::vector<MultiCharacterToken> m_multi_character_tokens;
     };
 

@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "Utils/Alignment.h"
+#include "Utils/StringUtils.h"
 
 StructuredDataDefDumper::StructuredDataDefDumper(std::ostream& stream)
     : AbstractTextDumper(stream),
@@ -37,7 +38,9 @@ void StructuredDataDefDumper::DumpEnum(const CommonStructuredDataEnum& _enum)
     for (auto i = 0u; i < entryCount; i++)
     {
         Indent();
-        m_stream << "\"" << _enum.m_entries[i].m_name << "\"";
+        m_stream << "\"";
+        utils::EscapeStringForQuotationMarks(m_stream, _enum.m_entries[i].m_name);
+        m_stream << "\"";
 
         if (i + 1 < entryCount)
             m_stream << ",";
