@@ -14,7 +14,7 @@ SimpleLexer::MultiCharacterTokenLookupEntry::MultiCharacterTokenLookupEntry(cons
 
 SimpleLexer::SimpleLexer(IParserLineStream* stream)
     : AbstractLexer(stream),
-      m_config{false, true, true, true, {}},
+      m_config{false, true, false, true, true, {}},
       m_check_for_multi_character_tokens(false),
       m_last_line(1)
 {
@@ -31,7 +31,7 @@ SimpleLexer::SimpleLexer(IParserLineStream* stream, Config config)
     m_config.m_multi_character_tokens.clear();
 
     // If reading floating point numbers then must be reading integers
-    assert(config.m_read_floating_point_numbers == false || config.m_read_floating_point_numbers == config.m_read_integer_numbers);
+    assert(m_config.m_read_floating_point_numbers == false || m_config.m_read_floating_point_numbers == m_config.m_read_integer_numbers);
 }
 
 void SimpleLexer::AddMultiCharacterTokenConfigToLookup(Config::MultiCharacterToken tokenConfig)
@@ -121,7 +121,7 @@ SimpleParserValue SimpleLexer::GetNextToken()
     }
 
     if (m_config.m_read_strings && c == '\"')
-        return SimpleParserValue::String(pos, new std::string(ReadString()));
+        return SimpleParserValue::String(pos, new std::string(m_config.m_string_escape_sequences ? ReadStringWithEscapeSequences() : ReadString()));
 
     if (m_config.m_read_integer_numbers && (isdigit(c) || (c == '+' || c == '-' || (m_config.m_read_floating_point_numbers && c == '.')) && isdigit(PeekChar())))
     {

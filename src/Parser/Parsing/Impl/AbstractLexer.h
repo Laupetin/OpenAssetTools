@@ -2,11 +2,13 @@
 
 #include <cassert>
 #include <deque>
+#include <sstream>
 
 #include "Utils/ClassUtils.h"
 #include "Parsing/ILexer.h"
 #include "Parsing/IParserLineStream.h"
 #include "Parsing/ParsingException.h"
+#include "Utils/StringUtils.h"
 
 template <typename TokenType>
 class AbstractLexer : public ILexer<TokenType>
@@ -138,6 +140,52 @@ protected:
         }
 
         return std::string(currentLine.m_line, startPos, m_current_line_offset - startPos);
+    }
+
+    /**
+     * \brief Reads an identifier from the current position
+     * \return The value of the read identifier
+     */
+    std::string ReadStringWithEscapeSequences()
+    {
+        const auto& currentLine = CurrentLine();
+        assert(m_current_line_offset >= 1);
+        assert(currentLine.m_line[m_current_line_offset - 1] == '"');
+
+        const auto startPos = m_current_line_offset;
+        const auto lineSize = currentLine.m_line.size();
+        auto isEscaped = false;
+        auto inEscape = false;
+        while (true)
+        {
+            if (m_current_line_offset >= lineSize)
+                throw ParsingException(TokenPos(*currentLine.m_filename, currentLine.m_line_number, m_current_line_offset), "Unclosed string");
+
+            const auto c = currentLine.m_line[m_current_line_offset];
+
+            if (c == '\"' && !inEscape)
+                break;
+
+            if (c == '\\' && !inEscape)
+            {
+                isEscaped = true;
+                inEscape = true;
+            }
+            else
+            {
+                inEscape = false;
+            }
+
+            m_current_line_offset++;
+        }
+
+        std::string str(currentLine.m_line, startPos, m_current_line_offset++ - startPos);
+        if (!isEscaped)
+            return str;
+
+        std::ostringstream ss;
+        utils::UnescapeStringFromQuotationMarks(ss, std::move(str));
+        return ss.str();
     }
 
     /**
