@@ -235,7 +235,8 @@ namespace menu::event_handler_set_scope_sequences
             AddMatchers({
                 create.Or({
                     create.Numeric(),
-                    create.Text(),
+                    create.String(),
+                    create.Identifier(),
                     create.Type(SimpleParserValueType::CHARACTER),
                 }).Capture(CAPTURE_SCRIPT_TOKEN)
             });
