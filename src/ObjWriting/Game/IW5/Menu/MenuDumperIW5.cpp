@@ -647,6 +647,7 @@ void MenuDumper::WriteMultiProperties(const itemDef_s* item) const
         return;
 
     WriteStringProperty("dvar", item->dvar);
+    WriteStringProperty("localvar", item->localVar);
     WriteMultiValueProperty(multiDef);
 }
 
@@ -655,6 +656,8 @@ void MenuDumper::WriteEnumDvarProperties(const itemDef_s* item) const
     if (item->type != ITEM_TYPE_DVARENUM)
         return;
 
+    WriteStringProperty("dvar", item->dvar);
+    WriteStringProperty("localvar", item->localVar);
     WriteStringProperty("dvarEnumList", item->typeData.enumDvarName);
 }
 
