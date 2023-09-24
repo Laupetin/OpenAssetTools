@@ -18,6 +18,7 @@ SequenceLocalizeFileReference::SequenceLocalizeFileReference()
 
 void SequenceLocalizeFileReference::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const
 {
-    state->m_current_reference = result.NextCapture(CAPTURE_REFERENCE_NAME).IdentifierValue();
+    const auto& nameToken = result.NextCapture(CAPTURE_REFERENCE_NAME);
+    state->m_current_reference = nameToken.m_type == SimpleParserValueType::IDENTIFIER ? nameToken.IdentifierValue() : nameToken.StringValue();
     state->m_current_reference_languages.clear();
 }
