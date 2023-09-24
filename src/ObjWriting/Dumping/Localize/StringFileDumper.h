@@ -14,6 +14,7 @@ class StringFileDumper : AbstractTextDumper
     bool m_wrote_header;
 
     void WriteHeader();
+    void WriteReference(const std::string& reference) const;
 
 public:
     StringFileDumper(Zone* zone, std::ostream& stream);

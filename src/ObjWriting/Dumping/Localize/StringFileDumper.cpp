@@ -38,13 +38,27 @@ void StringFileDumper::WriteHeader()
     m_wrote_header = true;
 }
 
+void StringFileDumper::WriteReference(const std::string& reference) const
+{
+    if (reference.find_first_not_of(utils::LETTERS_AL_NUM_UNDERSCORE) != std::string::npos)
+    {
+        m_stream << "REFERENCE           \"";
+
+        utils::EscapeStringForQuotationMarks(m_stream, reference);
+
+        m_stream << "\"\n";
+    }
+    else
+        m_stream << "REFERENCE           " << reference << "\n";
+}
+
 void StringFileDumper::WriteLocalizeEntry(const std::string& reference, const std::string& value)
 {
     if (!m_wrote_header)
         WriteHeader();
 
     m_stream << "\n";
-    m_stream << "REFERENCE           " << reference << "\n";
+    WriteReference(reference);
 
     const auto valueSpacing = std::string(15 - m_language_caps.length(), ' ');
     m_stream << "LANG_" << m_language_caps << valueSpacing << "\"";
