@@ -393,9 +393,9 @@ namespace IW5
                 return nullptr;
 
             auto* statement = m_memory->Create<Statement_s>();
-            for(auto& result : statement->persistentState.lastResult)
+            for (auto& result : statement->persistentState.lastResult)
                 result = Operand{};
-            for(auto& lastExecutionTime : statement->persistentState.lastExecuteTime)
+            for (auto& lastExecutionTime : statement->persistentState.lastExecuteTime)
                 lastExecutionTime = 0;
             statement->supportingData = nullptr; // Supporting data is set upon using it
 
@@ -504,7 +504,7 @@ namespace IW5
             {
                 const auto* staticValue = dynamic_cast<const SimpleExpressionValue*>(expression);
                 isStatic = staticValue != nullptr;
-                isTruthy = isStatic && staticValue->IsTruthy();
+                isTruthy = isStatic && (staticValue->m_type == SimpleExpressionValue::Type::INT || staticValue->m_type == SimpleExpressionValue::Type::DOUBLE) && staticValue->IsTruthy();
             }
             else
             {
@@ -580,13 +580,13 @@ namespace IW5
             if (!condition || !condition->m_condition)
                 return;
 
-            if(!m_disable_optimizations && condition->m_condition->IsStatic())
+            if (!m_disable_optimizations && condition->m_condition->IsStatic())
             {
                 const auto staticValueIsTruthy = condition->m_condition->EvaluateStatic().IsTruthy();
 
-                if(staticValueIsTruthy)
+                if (staticValueIsTruthy)
                     ConvertEventHandlerElements(elements, condition->m_condition_elements.get(), menu, item);
-                else if(condition->m_else_elements)
+                else if (condition->m_else_elements)
                     ConvertEventHandlerElements(elements, condition->m_else_elements.get(), menu, item);
             }
             else
@@ -663,7 +663,8 @@ namespace IW5
             return outputSet;
         }
 
-        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu,
+                                                     const CommonItemDef* item = nullptr) const
         {
             if (keyHandlers.empty())
                 return nullptr;
@@ -734,7 +735,7 @@ namespace IW5
                         item->window.dynamicFlags[0] |= dynamicFlagsToSet;
 
                         auto* staticValuePtr = staticValue;
-                        for(auto i = 0u; i < staticValueArraySize; i++)
+                        for (auto i = 0u; i < staticValueArraySize; i++)
                         {
                             *staticValuePtr = static_cast<float>(evaluatedValue.m_int_value);
                             staticValuePtr++;
@@ -1022,7 +1023,7 @@ namespace IW5
 
             case CommonItemFeatureType::NONE:
             default:
-                if(item->type == ITEM_TYPE_TEXT_SCROLL)
+                if (item->type == ITEM_TYPE_TEXT_SCROLL)
                 {
                     item->typeData.scroll = static_cast<textScrollDef_s*>(m_memory->Alloc(sizeof(textScrollDef_s)));
                     memset(item->typeData.scroll, 0, sizeof(textScrollDef_s));

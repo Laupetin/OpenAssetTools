@@ -502,7 +502,7 @@ namespace IW4
             {
                 const auto* staticValue = dynamic_cast<const SimpleExpressionValue*>(expression);
                 isStatic = staticValue != nullptr;
-                isTruthy = isStatic && staticValue->IsTruthy();
+                isTruthy = isStatic && (staticValue->m_type == SimpleExpressionValue::Type::INT || staticValue->m_type == SimpleExpressionValue::Type::DOUBLE) && staticValue->IsTruthy();
             }
             else
             {
