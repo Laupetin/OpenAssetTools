@@ -580,8 +580,13 @@ namespace menu::event_handler_set_scope_sequences
             state->m_current_script << "\" ; ";
         }
 
-        static void EmitDynamicSetLocalVar(const MenuFileParserState* state, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ISimpleExpression> expression)
+        static void EmitDynamicSetLocalVar(MenuFileParserState* state, const SetLocalVarType type, const std::string& varName, std::unique_ptr<ISimpleExpression> expression)
         {
+            auto remainingScript = state->m_current_script.str();
+            if (!remainingScript.empty())
+                state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerScript>(std::move(remainingScript)));
+            state->m_current_script.str(std::string());
+
             state->m_current_nested_event_handler_set->m_elements.emplace_back(std::make_unique<CommonEventHandlerSetLocalVar>(type, varName, std::move(expression)));
         }
 
