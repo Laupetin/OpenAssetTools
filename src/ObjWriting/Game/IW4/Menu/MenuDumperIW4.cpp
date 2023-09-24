@@ -137,7 +137,7 @@ void MenuDumper::WriteStatementOperator(const Statement_s* statement, size_t& cu
     }
 }
 
-void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, size_t currentPos) const
+void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, const size_t currentPos) const
 {
     const auto& operand = statement->entries[currentPos].data.operand;
 
@@ -160,7 +160,7 @@ void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, siz
         }
 
         if (functionIndex >= 0)
-            m_stream << "FUNC_" << functionIndex;
+            m_stream << "FUNC_" << functionIndex << "()";
         else
             m_stream << "INVALID_FUNC";
         m_stream << "()";
@@ -193,7 +193,7 @@ void MenuDumper::WriteStatementOperand(const Statement_s* statement, size_t& cur
         break;
 
     case VAL_STRING:
-        m_stream << "\"" << operand.internals.stringVal.string << "\"";
+        WriteEscapedString(operand.internals.stringVal.string);
         break;
 
     case VAL_FUNCTION:
@@ -645,6 +645,7 @@ void MenuDumper::WriteMultiProperties(const itemDef_s* item) const
         return;
 
     WriteStringProperty("dvar", item->dvar);
+    WriteStringProperty("localvar", item->localVar);
     WriteMultiValueProperty(multiDef);
 }
 
@@ -653,6 +654,8 @@ void MenuDumper::WriteEnumDvarProperties(const itemDef_s* item) const
     if (item->type != ITEM_TYPE_DVARENUM)
         return;
 
+    WriteStringProperty("dvar", item->dvar);
+    WriteStringProperty("localvar", item->localVar);
     WriteStringProperty("dvarEnumList", item->typeData.enumDvarName);
 }
 
@@ -770,6 +773,7 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteColorProperty("forecolor", menu->window.foreColor, COLOR_1111);
     WriteColorProperty("bordercolor", menu->window.borderColor, COLOR_0000);
     WriteColorProperty("focuscolor", menu->focusColor, COLOR_0000);
+    WriteColorProperty("outlinecolor", menu->window.outlineColor, COLOR_0000);
     WriteMaterialProperty("background", menu->window.background);
     WriteIntProperty("ownerdraw", menu->window.ownerDraw, 0);
     WriteFlagsProperty("ownerdrawFlag", menu->window.ownerDrawFlags);

@@ -10,6 +10,7 @@
 #include "Generic/GenericKeywordPropertySequence.h"
 #include "Generic/GenericMenuEventHandlerSetPropertySequence.h"
 #include "Generic/GenericStringPropertySequence.h"
+#include "Parsing/Menu/MenuFileCommonOperations.h"
 #include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
@@ -18,6 +19,34 @@ using namespace menu;
 class ItemScopeOperations
 {
     inline static const CommonItemFeatureType IW4_FEATURE_TYPE_BY_TYPE[0x18]
+    {
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_TEXT
+        CommonItemFeatureType::NONE, // ITEM_TYPE_BUTTON
+        CommonItemFeatureType::NONE, // ITEM_TYPE_RADIOBUTTON
+        CommonItemFeatureType::NONE, // ITEM_TYPE_CHECKBOX
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_EDITFIELD
+        CommonItemFeatureType::NONE, // ITEM_TYPE_COMBO
+        CommonItemFeatureType::LISTBOX, // ITEM_TYPE_LISTBOX
+        CommonItemFeatureType::NONE, // ITEM_TYPE_MODEL
+        CommonItemFeatureType::NONE, // ITEM_TYPE_OWNERDRAW
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_NUMERICFIELD
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_SLIDER
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_YESNO
+        CommonItemFeatureType::MULTI_VALUE, // ITEM_TYPE_MULTI
+        CommonItemFeatureType::ENUM_DVAR, // ITEM_TYPE_DVARENUM
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_BIND
+        CommonItemFeatureType::NONE, // ITEM_TYPE_MENUMODEL
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_VALIDFILEFIELD
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_DECIMALFIELD
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_UPREDITFIELD
+        CommonItemFeatureType::NONE, // ITEM_TYPE_GAME_MESSAGE_WINDOW
+        CommonItemFeatureType::NEWS_TICKER, // ITEM_TYPE_NEWS_TICKER
+        CommonItemFeatureType::NONE, // ITEM_TYPE_TEXT_SCROLL
+        CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_EMAILFIELD
+        CommonItemFeatureType::EDIT_FIELD // ITEM_TYPE_PASSWORDFIELD
+    };
+
+    inline static const CommonItemFeatureType IW5_FEATURE_TYPE_BY_TYPE[0x18]
     {
         CommonItemFeatureType::EDIT_FIELD, // ITEM_TYPE_TEXT
         CommonItemFeatureType::NONE, // ITEM_TYPE_BUTTON
@@ -66,8 +95,10 @@ public:
 
         case FeatureLevel::IW5:
         default:
-            assert(false);
-            throw ParsingException(pos, "Unimplemented item types for feature level");
+            if (static_cast<unsigned>(type) >= std::extent_v<decltype(IW5_FEATURE_TYPE_BY_TYPE)>)
+                throw ParsingException(pos, "Invalid item type");
+            item.m_feature_type = IW5_FEATURE_TYPE_BY_TYPE[static_cast<unsigned>(type)];
+            break;
         }
 
         switch (item.m_feature_type)
@@ -431,26 +462,46 @@ namespace menu::item_scope_sequences
     {
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_COLUMN_COUNT = 2;
-        static constexpr auto CAPTURE_POS = 3;
-        static constexpr auto CAPTURE_WIDTH = 4;
-        static constexpr auto CAPTURE_MAX_CHARS = 5;
-        static constexpr auto CAPTURE_ALIGNMENT = 6;
+        static constexpr auto CAPTURE_X_POS = 3;
+        static constexpr auto CAPTURE_Y_POS = 4;
+        static constexpr auto CAPTURE_WIDTH = 5;
+        static constexpr auto CAPTURE_HEIGHT = 6;
+        static constexpr auto CAPTURE_MAX_CHARS = 7;
+        static constexpr auto CAPTURE_ALIGNMENT = 8;
 
     public:
-        SequenceColumns()
+        explicit SequenceColumns(const FeatureLevel featureLevel)
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({
-                create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
-                create.Integer().Capture(CAPTURE_COLUMN_COUNT),
-                create.Loop(create.And({
-                    create.Integer().Capture(CAPTURE_POS),
-                    create.Integer().Capture(CAPTURE_WIDTH),
-                    create.Integer().Capture(CAPTURE_MAX_CHARS),
-                    create.Integer().Capture(CAPTURE_ALIGNMENT),
-                })),
-            });
+            if (featureLevel == FeatureLevel::IW5)
+            {
+                AddMatchers({
+                    create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
+                    create.Integer().Capture(CAPTURE_COLUMN_COUNT),
+                    create.Loop(create.And({
+                        create.Integer().Capture(CAPTURE_X_POS),
+                        create.Integer().Capture(CAPTURE_Y_POS),
+                        create.Integer().Capture(CAPTURE_WIDTH),
+                        create.Integer().Capture(CAPTURE_HEIGHT),
+                        create.Integer().Capture(CAPTURE_MAX_CHARS),
+                        create.Integer().Capture(CAPTURE_ALIGNMENT),
+                    })),
+                });
+            }
+            else
+            {
+                AddMatchers({
+                    create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
+                    create.Integer().Capture(CAPTURE_COLUMN_COUNT),
+                    create.Loop(create.And({
+                        create.Integer().Capture(CAPTURE_X_POS),
+                        create.Integer().Capture(CAPTURE_WIDTH),
+                        create.Integer().Capture(CAPTURE_MAX_CHARS),
+                        create.Integer().Capture(CAPTURE_ALIGNMENT),
+                    })),
+                });
+            }
         }
 
     protected:
@@ -461,14 +512,14 @@ namespace menu::item_scope_sequences
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
 
             const auto& listBoxFeatures = state->m_current_item->m_list_box_features;
-            while (result.HasNextCapture(CAPTURE_POS))
+            while (result.HasNextCapture(CAPTURE_X_POS))
             {
                 CommonItemFeaturesListBox::Column column
                 {
-                    result.NextCapture(CAPTURE_POS).IntegerValue(),
-                    0,
+                    result.NextCapture(CAPTURE_X_POS).IntegerValue(),
+                    state->m_feature_level == FeatureLevel::IW5 ? result.NextCapture(CAPTURE_Y_POS).IntegerValue() : 0,
                     result.NextCapture(CAPTURE_WIDTH).IntegerValue(),
-                    0,
+                    state->m_feature_level == FeatureLevel::IW5 ? result.NextCapture(CAPTURE_HEIGHT).IntegerValue() : 0,
                     result.NextCapture(CAPTURE_MAX_CHARS).IntegerValue(),
                     result.NextCapture(CAPTURE_ALIGNMENT).IntegerValue()
                 };
@@ -613,12 +664,14 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_item->m_border_size = value;
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("visible", [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_visible_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("disabled", [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywordAndBool("disabled", [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_disabled_expression = std::move(value);
     }));
     AddSequence(std::make_unique<GenericIntPropertySequence>("ownerdraw", [](const MenuFileParserState* state, const TokenPos&, const int value)
@@ -681,36 +734,28 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
     {
         state->m_current_item->m_background = value;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("onFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_focus;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("leaveFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("leaveFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_leave_focus;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnter", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnter", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_mouse_enter;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExit", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExit", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_mouse_exit;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnterText", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseEnterText", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_mouse_enter_text;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExitText", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("mouseExitText", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_mouse_exit_text;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("action", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("action", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_action;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("accept", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("accept", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
         return state->m_current_item->m_on_accept;
     }));
     // special
@@ -761,101 +806,131 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
         state->m_current_item->m_game_message_window_mode = value;
     }));
     AddSequence(std::make_unique<SequenceDecodeEffect>());
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "disabled"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "disabled"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_disabled_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "text"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "text"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsStringExpression(state, pos, *value);
         state->m_current_item->m_text_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsStringExpression(state, pos, *value);
         state->m_current_item->m_material_expression = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "material"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
-        state->m_current_item->m_material_expression = std::move(value);
-    }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "X"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
-    {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_rect_x_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "Y"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_rect_y_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "W"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_rect_w_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "rect", "H"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_rect_h_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "R"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_forecolor_expressions.m_r_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "G"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_forecolor_expressions.m_g_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "B"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_forecolor_expressions.m_b_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "A"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_forecolor_expressions.m_a_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "forecolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_forecolor_expressions.m_rgb_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "R"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_glowcolor_expressions.m_r_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "G"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_glowcolor_expressions.m_g_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "B"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_glowcolor_expressions.m_b_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "A"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_glowcolor_expressions.m_a_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "glowcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_glowcolor_expressions.m_rgb_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "R"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "R"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_backcolor_expressions.m_r_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "G"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "G"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_backcolor_expressions.m_g_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "B"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "B"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_backcolor_expressions.m_b_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "A"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "A"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_backcolor_expressions.m_a_exp = std::move(value);
     }));
-    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos&, std::unique_ptr<ISimpleExpression> value)
+    AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "backcolor", "RGB"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
     {
+        MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
         state->m_current_item->m_backcolor_expressions.m_rgb_exp = std::move(value);
     }));
 
+    if (featureLevel == FeatureLevel::IW5)
+    {
+        AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("hasFocus", [](const MenuFileParserState* state, const TokenPos&) -> std::unique_ptr<CommonEventHandlerSet>& {
+            return state->m_current_item->m_has_focus;
+        }));
+        AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "textaligny"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
+        {
+            MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
+            state->m_current_item->m_text_align_y_expression = std::move(value);
+        }));
+    }
+
     // ============== ListBox ==============
-    AddSequence(std::make_unique<SequenceColumns>());
+    AddSequence(std::make_unique<SequenceColumns>(featureLevel));
     AddSequence(std::make_unique<GenericKeywordPropertySequence>("notselectable", [](const MenuFileParserState* state, const TokenPos& pos)
     {
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
@@ -891,8 +966,7 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
         state->m_current_item->m_list_box_features->m_element_style = value;
     }));
-    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("doubleclick", [](const MenuFileParserState* state, const TokenPos& pos) -> std::unique_ptr<CommonEventHandlerSet>&
-    {
+    AddSequence(std::make_unique<GenericMenuEventHandlerSetPropertySequence>("doubleclick", [](const MenuFileParserState* state, const TokenPos& pos) -> std::unique_ptr<CommonEventHandlerSet>& {
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
         return state->m_current_item->m_list_box_features->m_on_double_click;
     }));
@@ -906,6 +980,16 @@ void ItemScopeSequences::AddSequences(FeatureLevel featureLevel, bool permissive
         ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
         state->m_current_item->m_list_box_features->m_select_icon = value;
     }));
+
+    if (featureLevel == FeatureLevel::IW5)
+    {
+        AddSequence(GenericExpressionPropertySequence::WithKeywords({"exp", "elementheight"}, [](const MenuFileParserState* state, const TokenPos& pos, std::unique_ptr<ISimpleExpression> value)
+        {
+            ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, pos);
+            MenuFileCommonOperations::EnsureIsNumericExpression(state, pos, *value);
+            state->m_current_item->m_list_box_features->m_element_height_expression = std::move(value);
+        }));
+    }
 
     // ============== Edit Field ==============
     AddSequence(std::make_unique<SequenceDvarFloat>());

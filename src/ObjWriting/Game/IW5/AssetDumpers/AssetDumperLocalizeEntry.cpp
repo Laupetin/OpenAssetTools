@@ -25,7 +25,7 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
         stringFileDumper.SetLanguageName(language);
 
         // Magic string. Original string files do have this config file. The purpose of the config file is unknown though.
-        stringFileDumper.SetConfigFile(R"(C:\trees\cod3\cod3\bin\StringEd.cfg)");
+        stringFileDumper.SetConfigFile(R"(C:/trees/cod3/cod3/bin/StringEd.cfg)");
 
         stringFileDumper.SetNotes("");
 

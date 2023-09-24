@@ -137,7 +137,7 @@ void MenuDumper::WriteStatementOperator(const Statement_s* statement, size_t& cu
     }
 }
 
-void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, size_t currentPos) const
+void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, const size_t currentPos) const
 {
     const auto& operand = statement->entries[currentPos].data.operand;
 
@@ -160,7 +160,7 @@ void MenuDumper::WriteStatementOperandFunction(const Statement_s* statement, siz
         }
 
         if (functionIndex >= 0)
-            m_stream << "FUNC_" << functionIndex;
+            m_stream << "FUNC_" << functionIndex << "()";
         else
             m_stream << "INVALID_FUNC";
     }
@@ -192,7 +192,7 @@ void MenuDumper::WriteStatementOperand(const Statement_s* statement, size_t& cur
         break;
 
     case VAL_STRING:
-        m_stream << "\"" << operand.internals.stringVal.string << "\"";
+        WriteEscapedString(operand.internals.stringVal.string);
         break;
 
     case VAL_FUNCTION:
@@ -492,6 +492,31 @@ void MenuDumper::WriteFloatExpressionsProperty(const ItemFloatExpression* floatE
     }
 }
 
+void MenuDumper::WriteMultiTokenStringProperty(const std::string& propertyKey, const char* value) const
+{
+    if (!value)
+        return;
+
+    Indent();
+    WriteKey(propertyKey);
+
+    const auto tokenList = CreateScriptTokenList(value);
+
+    auto firstToken = true;
+    m_stream << "{ ";
+    for (const auto& token : tokenList)
+    {
+        if (firstToken)
+            firstToken = false;
+        else
+            m_stream << ";";
+        m_stream << "\"" << token << "\"";
+    }
+    if (!firstToken)
+        m_stream << " ";
+    m_stream << "}\n";
+}
+
 void MenuDumper::WriteColumnProperty(const std::string& propertyKey, const listBoxDef_s* listBox) const
 {
     if (listBox->numColumns <= 0)
@@ -533,7 +558,7 @@ void MenuDumper::WriteListBoxProperties(const itemDef_s* item)
     WriteMenuEventHandlerSetProperty("doubleclick", listBox->onDoubleClick);
     WriteColorProperty("selectBorder", listBox->selectBorder, COLOR_0000);
     WriteMaterialProperty("selectIcon", listBox->selectIcon);
-    WriteStatementProperty("exp elementHeight", listBox->elementHeightExp, false);
+    WriteStatementProperty("exp elementheight", listBox->elementHeightExp, false);
 }
 
 void MenuDumper::WriteDvarFloatProperty(const std::string& propertyKey, const itemDef_s* item, const editFieldDef_s* editField) const
@@ -622,6 +647,7 @@ void MenuDumper::WriteMultiProperties(const itemDef_s* item) const
         return;
 
     WriteStringProperty("dvar", item->dvar);
+    WriteStringProperty("localvar", item->localVar);
     WriteMultiValueProperty(multiDef);
 }
 
@@ -630,6 +656,8 @@ void MenuDumper::WriteEnumDvarProperties(const itemDef_s* item) const
     if (item->type != ITEM_TYPE_DVARENUM)
         return;
 
+    WriteStringProperty("dvar", item->dvar);
+    WriteStringProperty("localvar", item->localVar);
     WriteStringProperty("dvarEnumList", item->typeData.enumDvarName);
 }
 
@@ -651,7 +679,7 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteKeywordProperty("textsavegame", item->itemFlags & ITEM_FLAG_SAVE_GAME_INFO);
     WriteKeywordProperty("textcinematicsubtitle", item->itemFlags & ITEM_FLAG_CINEMATIC_SUBTITLE);
     WriteStringProperty("group", item->window.group);
-    WriteRectProperty("rect", item->window.rect);
+    WriteRectProperty("rect", item->window.rectClient);
     WriteIntProperty("style", item->window.style, 0);
     WriteKeywordProperty("decoration", item->window.staticFlags & WINDOW_FLAG_DECORATION);
     WriteKeywordProperty("autowrapped", item->window.staticFlags & WINDOW_FLAG_AUTO_WRAPPED);
@@ -659,9 +687,15 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteIntProperty("type", item->type, ITEM_TYPE_TEXT);
     WriteIntProperty("border", item->window.border, 0);
     WriteFloatProperty("borderSize", item->window.borderSize, 0.0f);
-    WriteStatementProperty("visible", item->visibleExp, true);
+
+    if (item->visibleExp)
+        WriteStatementProperty("visible", item->visibleExp, true);
+    else if (item->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
+        WriteIntProperty("visible", 1, 0);
+
     WriteStatementProperty("disabled", item->disabledExp, true);
-    WriteIntProperty("ownerDraw", item->window.ownerDraw, 0);
+    WriteIntProperty("ownerdraw", item->window.ownerDraw, 0);
+    WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
     WriteIntProperty("align", item->alignment, 0);
     WriteIntProperty("textalign", item->textAlignMode, 0);
     WriteFloatProperty("textalignx", item->textalignx, 0.0f);
@@ -687,19 +721,18 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteMenuEventHandlerSetProperty("accept", item->accept);
     // WriteFloatProperty("special", item->special, 0.0f);
     WriteSoundAliasProperty("focusSound", item->focusSound);
-    WriteFlagsProperty("ownerdrawFlag", item->window.ownerDrawFlags);
     WriteStringProperty("dvarTest", item->dvarTest);
 
     if (item->dvarFlags & ITEM_DVAR_FLAG_ENABLE)
-        WriteStringProperty("enableDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("enableDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_DISABLE)
-        WriteStringProperty("disableDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("disableDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_SHOW)
-        WriteStringProperty("showDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("showDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_HIDE)
-        WriteStringProperty("hideDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("hideDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_FOCUS)
-        WriteStringProperty("focusDvar", item->enableDvar);
+        WriteMultiTokenStringProperty("focusDvar", item->enableDvar);
 
     WriteItemKeyHandlerProperty(item->onKey);
     WriteStatementProperty("exp text", item->textExp, false);
@@ -744,6 +777,7 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteColorProperty("forecolor", menu->window.foreColor, COLOR_1111);
     WriteColorProperty("bordercolor", menu->window.borderColor, COLOR_0000);
     WriteColorProperty("focuscolor", menu->data->focusColor, COLOR_0000);
+    WriteColorProperty("outlinecolor", menu->window.outlineColor, COLOR_0000);
     WriteMaterialProperty("background", menu->window.background);
     WriteIntProperty("ownerdraw", menu->window.ownerDraw, 0);
     WriteFlagsProperty("ownerdrawFlag", menu->window.ownerDrawFlags);
@@ -761,7 +795,12 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
     WriteKeywordProperty("hiddenDuringUI", menu->window.staticFlags & WINDOW_FLAG_HIDDEN_DURING_UI);
     WriteStringProperty("allowedBinding", menu->data->allowedBinding);
     WriteKeywordProperty("textOnlyFocus", menu->window.staticFlags & WINDOW_FLAG_TEXT_ONLY_FOCUS);
-    WriteStatementProperty("visible", menu->data->visibleExp, true);
+
+    if (menu->data->visibleExp)
+        WriteStatementProperty("visible", menu->data->visibleExp, true);
+    else if (menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
+        WriteIntProperty("visible", 1, 0);
+
     WriteStatementProperty("exp rect X", menu->data->rectXExp, false);
     WriteStatementProperty("exp rect Y", menu->data->rectYExp, false);
     WriteStatementProperty("exp rect W", menu->data->rectWExp, false);

@@ -1,10 +1,10 @@
-#include "MenuConverterIW4.h"
+#include "MenuConverterIW5.h"
 
 #include <cassert>
 #include <cstring>
 #include <sstream>
 
-#include "MenuConversionZoneStateIW4.h"
+#include "MenuConversionZoneStateIW5.h"
 #include "Utils/ClassUtils.h"
 #include "Menu/AbstractMenuConverter.h"
 #include "Parsing/Menu/MenuAssetZoneState.h"
@@ -17,10 +17,10 @@
 #include "Parsing/Simple/Expression/SimpleExpressionConditionalOperator.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
 
-using namespace IW4;
+using namespace IW5;
 using namespace menu;
 
-namespace IW4
+namespace IW5
 {
     class MenuConverterImpl : public AbstractMenuConverter
     {
@@ -393,8 +393,10 @@ namespace IW4
                 return nullptr;
 
             auto* statement = m_memory->Create<Statement_s>();
-            statement->lastResult = Operand{};
-            statement->lastExecuteTime = 0;
+            for (auto& result : statement->persistentState.lastResult)
+                result = Operand{};
+            for (auto& lastExecutionTime : statement->persistentState.lastExecuteTime)
+                lastExecutionTime = 0;
             statement->supportingData = nullptr; // Supporting data is set upon using it
 
             std::vector<expressionEntry> expressionEntries;
@@ -578,13 +580,13 @@ namespace IW4
             if (!condition || !condition->m_condition)
                 return;
 
-            if(!m_disable_optimizations && condition->m_condition->IsStatic())
+            if (!m_disable_optimizations && condition->m_condition->IsStatic())
             {
                 const auto staticValueIsTruthy = condition->m_condition->EvaluateStatic().IsTruthy();
 
-                if(staticValueIsTruthy)
+                if (staticValueIsTruthy)
                     ConvertEventHandlerElements(elements, condition->m_condition_elements.get(), menu, item);
-                else if(condition->m_else_elements)
+                else if (condition->m_else_elements)
                     ConvertEventHandlerElements(elements, condition->m_else_elements.get(), menu, item);
             }
             else
@@ -661,7 +663,8 @@ namespace IW4
             return outputSet;
         }
 
-        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu,
+                                                     const CommonItemDef* item = nullptr) const
         {
             if (keyHandlers.empty())
                 return nullptr;
@@ -732,7 +735,7 @@ namespace IW4
                         item->window.dynamicFlags[0] |= dynamicFlagsToSet;
 
                         auto* staticValuePtr = staticValue;
-                        for(auto i = 0u; i < staticValueArraySize; i++)
+                        for (auto i = 0u; i < staticValueArraySize; i++)
                         {
                             *staticValuePtr = static_cast<float>(evaluatedValue.m_int_value);
                             staticValuePtr++;
@@ -847,6 +850,7 @@ namespace IW4
             listBox->onDoubleClick = ConvertEventHandlerSet(commonListBox->m_on_double_click.get(), &parentMenu, &commonItem);
             ConvertColor(listBox->selectBorder, commonListBox->m_select_border);
             listBox->selectIcon = ConvertMaterial(commonListBox->m_select_icon, &parentMenu, &commonItem);
+            listBox->elementHeightExp = ConvertOrApplyStatement(listBox->elementHeight, commonListBox->m_element_height_expression.get(), &parentMenu, &commonItem);
 
             listBox->numColumns = static_cast<int>(std::min(std::extent_v<decltype(listBoxDef_s::columnInfo)>, commonListBox->m_columns.size()));
             for (auto i = 0; i < listBox->numColumns; i++)
@@ -854,7 +858,8 @@ namespace IW4
                 auto& col = listBox->columnInfo[i];
                 const auto& commonCol = commonListBox->m_columns[i];
 
-                col.pos = commonCol.m_x_pos;
+                col.xpos = commonCol.m_x_pos;
+                col.ypos = commonCol.m_y_pos;
                 col.width = commonCol.m_width;
                 col.maxChars = commonCol.m_max_chars;
                 col.alignment = commonCol.m_alignment;
@@ -871,7 +876,7 @@ namespace IW4
             auto* editField = static_cast<editFieldDef_s*>(m_memory->Alloc(sizeof(editFieldDef_s)));
             memset(editField, 0, sizeof(editFieldDef_s));
 
-            editField->defVal = static_cast<float>(commonEditField->m_def_val);
+            editField->stepVal = static_cast<float>(commonEditField->m_def_val);
             editField->minVal = static_cast<float>(commonEditField->m_min_val);
             editField->maxVal = static_cast<float>(commonEditField->m_max_val);
             item->localVar = ConvertString(commonEditField->m_local_var);
@@ -970,6 +975,7 @@ namespace IW4
             ConvertColor(item->glowColor, commonItem.m_glow_color);
             item->window.background = ConvertMaterial(commonItem.m_background, &parentMenu, &commonItem);
             item->onFocus = ConvertEventHandlerSet(commonItem.m_on_focus.get(), &parentMenu, &commonItem);
+            item->hasFocus = ConvertEventHandlerSet(commonItem.m_has_focus.get(), &parentMenu, &commonItem);
             item->leaveFocus = ConvertEventHandlerSet(commonItem.m_on_leave_focus.get(), &parentMenu, &commonItem);
             item->mouseEnter = ConvertEventHandlerSet(commonItem.m_on_mouse_enter.get(), &parentMenu, &commonItem);
             item->mouseExit = ConvertEventHandlerSet(commonItem.m_on_mouse_exit.get(), &parentMenu, &commonItem);
@@ -982,6 +988,7 @@ namespace IW4
             item->enableDvar = ConvertEnableDvar(commonItem, item->dvarFlags);
             item->onKey = ConvertKeyHandler(commonItem.m_key_handlers, &parentMenu, &commonItem);
             item->textExp = ConvertOrApplyStatement(item->text, commonItem.m_text_expression.get(), &parentMenu, &commonItem);
+            item->textAlignYExp = ConvertOrApplyStatement(item->textaligny, commonItem.m_text_align_y_expression.get(), &parentMenu, &commonItem);
             item->materialExp = ConvertOrApplyStatement(item->window.background, commonItem.m_material_expression.get(), &parentMenu, &commonItem);
             item->disabledExp = ConvertExpression(commonItem.m_disabled_expression.get(), &parentMenu, &commonItem);
             item->floatExpressions = ConvertFloatExpressions(&commonItem, item, &parentMenu, item->floatExpressionCount);
@@ -1016,7 +1023,7 @@ namespace IW4
 
             case CommonItemFeatureType::NONE:
             default:
-                if(item->type == ITEM_TYPE_TEXT_SCROLL)
+                if (item->type == ITEM_TYPE_TEXT_SCROLL)
                 {
                     item->typeData.scroll = static_cast<textScrollDef_s*>(m_memory->Alloc(sizeof(textScrollDef_s)));
                     memset(item->typeData.scroll, 0, sizeof(textScrollDef_s));
@@ -1059,10 +1066,12 @@ namespace IW4
         _NODISCARD menuDef_t* ConvertMenu(const CommonMenuDef& commonMenu) const
         {
             auto* menu = m_memory->Create<menuDef_t>();
+            auto* menuData = m_memory->Create<menuData_t>();
             memset(menu, 0, sizeof(menuDef_t));
 
+            menu->data = menuData;
             menu->window.name = m_memory->Dup(commonMenu.m_name.c_str());
-            menu->fullScreen = commonMenu.m_full_screen;
+            menuData->fullScreen = commonMenu.m_full_screen;
             ApplyFlag(menu->window.staticFlags, commonMenu.m_screen_space, WINDOW_FLAG_SCREEN_SPACE);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_decoration, WINDOW_FLAG_DECORATION);
             menu->window.rect = ConvertRectDef(commonMenu.m_rect);
@@ -1072,38 +1081,39 @@ namespace IW4
             ConvertColor(menu->window.backColor, commonMenu.m_back_color);
             ConvertColor(menu->window.foreColor, commonMenu.m_fore_color);
             ConvertColor(menu->window.borderColor, commonMenu.m_border_color);
-            ConvertColor(menu->focusColor, commonMenu.m_focus_color);
+            ConvertColor(menuData->focusColor, commonMenu.m_focus_color);
             menu->window.background = ConvertMaterial(commonMenu.m_background, &commonMenu);
             menu->window.ownerDraw = commonMenu.m_owner_draw;
             menu->window.ownerDrawFlags = commonMenu.m_owner_draw_flags;
             ApplyFlag(menu->window.staticFlags, commonMenu.m_out_of_bounds_click, WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
-            menu->soundName = ConvertString(commonMenu.m_sound_loop);
+            menuData->soundName = ConvertString(commonMenu.m_sound_loop);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_popup, WINDOW_FLAG_POPUP);
-            menu->fadeClamp = static_cast<float>(commonMenu.m_fade_clamp);
-            menu->fadeCycle = commonMenu.m_fade_cycle;
-            menu->fadeAmount = static_cast<float>(commonMenu.m_fade_amount);
-            menu->fadeInAmount = static_cast<float>(commonMenu.m_fade_in_amount);
-            menu->blurRadius = static_cast<float>(commonMenu.m_blur_radius);
+            menuData->fadeClamp = static_cast<float>(commonMenu.m_fade_clamp);
+            menuData->fadeCycle = commonMenu.m_fade_cycle;
+            menuData->fadeAmount = static_cast<float>(commonMenu.m_fade_amount);
+            menuData->fadeInAmount = static_cast<float>(commonMenu.m_fade_in_amount);
+            menuData->blurRadius = static_cast<float>(commonMenu.m_blur_radius);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_legacy_split_screen_scale, WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_scope, WINDOW_FLAG_HIDDEN_DURING_SCOPE);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_flashbang, WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
-            menu->allowedBinding = ConvertString(commonMenu.m_allowed_binding);
+            menuData->allowedBinding = ConvertString(commonMenu.m_allowed_binding);
             ApplyFlag(menu->window.staticFlags, commonMenu.m_text_only_focus, WINDOW_FLAG_TEXT_ONLY_FOCUS);
-            menu->visibleExp = ConvertVisibleExpression(&menu->window, commonMenu.m_visible_expression.get(), &commonMenu);
-            menu->rectXExp = ConvertOrApplyStatement(menu->window.rect.x, commonMenu.m_rect_x_exp.get(), &commonMenu);
-            menu->rectYExp = ConvertOrApplyStatement(menu->window.rect.y, commonMenu.m_rect_y_exp.get(), &commonMenu);
-            menu->rectWExp = ConvertOrApplyStatement(menu->window.rect.w, commonMenu.m_rect_w_exp.get(), &commonMenu);
-            menu->rectHExp = ConvertOrApplyStatement(menu->window.rect.h, commonMenu.m_rect_h_exp.get(), &commonMenu);
-            menu->openSoundExp = ConvertExpression(commonMenu.m_open_sound_exp.get(), &commonMenu);
-            menu->closeSoundExp = ConvertExpression(commonMenu.m_close_sound_exp.get(), &commonMenu);
-            menu->onOpen = ConvertEventHandlerSet(commonMenu.m_on_open.get(), &commonMenu);
-            menu->onClose = ConvertEventHandlerSet(commonMenu.m_on_close.get(), &commonMenu);
-            menu->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
-            menu->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
-            menu->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
+            menuData->visibleExp = ConvertVisibleExpression(&menu->window, commonMenu.m_visible_expression.get(), &commonMenu);
+            menuData->rectXExp = ConvertOrApplyStatement(menu->window.rect.x, commonMenu.m_rect_x_exp.get(), &commonMenu);
+            menuData->rectYExp = ConvertOrApplyStatement(menu->window.rect.y, commonMenu.m_rect_y_exp.get(), &commonMenu);
+            menuData->rectWExp = ConvertOrApplyStatement(menu->window.rect.w, commonMenu.m_rect_w_exp.get(), &commonMenu);
+            menuData->rectHExp = ConvertOrApplyStatement(menu->window.rect.h, commonMenu.m_rect_h_exp.get(), &commonMenu);
+            menuData->openSoundExp = ConvertExpression(commonMenu.m_open_sound_exp.get(), &commonMenu);
+            menuData->closeSoundExp = ConvertExpression(commonMenu.m_close_sound_exp.get(), &commonMenu);
+            menuData->onOpen = ConvertEventHandlerSet(commonMenu.m_on_open.get(), &commonMenu);
+            menuData->onClose = ConvertEventHandlerSet(commonMenu.m_on_close.get(), &commonMenu);
+            menuData->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
+            menuData->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
+            menuData->onFocusDueToClose = ConvertEventHandlerSet(commonMenu.m_on_focus_due_to_close.get(), &commonMenu);
+            menuData->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
             menu->items = ConvertMenuItems(commonMenu, menu->itemCount);
-            menu->expressionData = m_conversion_zone_state->m_supporting_data;
+            menuData->expressionData = m_conversion_zone_state->m_supporting_data;
 
             return menu;
         }

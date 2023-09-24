@@ -5,6 +5,8 @@
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderMenuDef.h"
+#include "AssetLoaders/AssetLoaderMenuList.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
 #include "AssetLoading/AssetLoadingManager.h"
@@ -44,8 +46,8 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_GFXWORLD, GfxWorld))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LIGHT_DEF, GfxLightDef))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONT, Font_s))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENULIST, MenuList))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
+    REGISTER_ASSET_LOADER(AssetLoaderMenuList)
+    REGISTER_ASSET_LOADER(AssetLoaderMenuDef)
     REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ATTACHMENT, WeaponAttachment))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON, WeaponCompleteDef))

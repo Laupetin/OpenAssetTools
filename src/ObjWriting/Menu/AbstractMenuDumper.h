@@ -30,6 +30,8 @@ protected:
     static std::vector<std::string> CreateScriptTokenList(const char* script);
     static bool DoesTokenNeedQuotationMarks(const std::string& token);
 
+    void WriteEscapedString(const std::string_view& str) const;
+
     static const std::string& BoolValue(bool value);
     void WriteKey(const std::string& keyName) const;
     void WriteStringProperty(const std::string& propertyKey, const std::string& propertyValue) const;

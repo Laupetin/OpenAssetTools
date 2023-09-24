@@ -1,6 +1,8 @@
 #include "StringFileDumper.h"
 #include <regex>
 
+#include "Utils/StringUtils.h"
+
 StringFileDumper::StringFileDumper(Zone* zone, std::ostream& stream)
     : AbstractTextDumper(stream),
       m_zone(zone),
@@ -36,19 +38,32 @@ void StringFileDumper::WriteHeader()
     m_wrote_header = true;
 }
 
+void StringFileDumper::WriteReference(const std::string& reference) const
+{
+    if (reference.find_first_not_of(utils::LETTERS_AL_NUM_UNDERSCORE) != std::string::npos)
+    {
+        m_stream << "REFERENCE           \"";
+
+        utils::EscapeStringForQuotationMarks(m_stream, reference);
+
+        m_stream << "\"\n";
+    }
+    else
+        m_stream << "REFERENCE           " << reference << "\n";
+}
+
 void StringFileDumper::WriteLocalizeEntry(const std::string& reference, const std::string& value)
 {
     if (!m_wrote_header)
         WriteHeader();
 
     m_stream << "\n";
-    m_stream << "REFERENCE           " << reference << "\n";
-
-    auto escapedValue = std::regex_replace(value, std::regex("\n"), "\\n");
-    escapedValue = std::regex_replace(escapedValue, std::regex("\r"), "\\r");
+    WriteReference(reference);
 
     const auto valueSpacing = std::string(15 - m_language_caps.length(), ' ');
-    m_stream << "LANG_" << m_language_caps << valueSpacing << "\"" << escapedValue << "\"\n";
+    m_stream << "LANG_" << m_language_caps << valueSpacing << "\"";
+    utils::EscapeStringForQuotationMarks(m_stream, value);
+    m_stream << "\"\n";
 }
 
 void StringFileDumper::Finalize()

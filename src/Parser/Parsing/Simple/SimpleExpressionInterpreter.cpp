@@ -67,6 +67,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionInterpreter::Evaluate() const
     lexerConfig.m_read_integer_numbers = true;
     lexerConfig.m_read_floating_point_numbers = true;
     lexerConfig.m_read_strings = true;
+    lexerConfig.m_string_escape_sequences = true;
     SimpleExpressionMatchers().ApplyTokensToLexerConfig(lexerConfig);
 
     SimpleLexer lexer(m_input, std::move(lexerConfig));

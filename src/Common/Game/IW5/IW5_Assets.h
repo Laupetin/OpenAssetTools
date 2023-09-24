@@ -2316,7 +2316,21 @@ namespace IW5
         EXP_FUNC_STATIC_DVAR_FLOAT,
         EXP_FUNC_STATIC_DVAR_STRING,
 
-        EXP_FUNC_DYN_START
+        EXP_FUNC_DYN_START,
+
+        EXP_FUNC_INT = EXP_FUNC_DYN_START,
+        EXP_FUNC_STRING,
+        EXP_FUNC_FLOAT,
+        EXP_FUNC_SIN,
+        EXP_FUNC_COS,
+        EXP_FUNC_MIN,
+        EXP_FUNC_MAX,
+        EXP_FUNC_MILLISECONDS,
+        EXP_FUNC_LOCAL_CLIENT_UI_MILLISECONDS,
+        EXP_FUNC_DVAR_INT,
+        EXP_FUNC_DVAR_BOOL,
+        EXP_FUNC_DVAR_FLOAT,
+        EXP_FUNC_DVAR_STRING
     };
 
     enum expressionEntryType : int
@@ -2554,10 +2568,23 @@ namespace IW5
         WINDOW_FLAG_AUTO_WRAPPED = 0x800000,
         WINDOW_FLAG_POPUP = 0x1000000,
         WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x4000000,
-        WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000,
-        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000,
-        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000,
+        WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000, // confirmed
+        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000, // confirmed
+        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000, // confirmed
         WINDOW_FLAG_TEXT_ONLY_FOCUS = 0x80000000,
+    };
+
+    // This is data from IW4, could be different for IW5, to be investigated
+    enum WindowDefDynamicFlag : unsigned int
+    {
+        WINDOW_FLAG_HOVERED = 0x1, // guessed
+        WINDOW_FLAG_FOCUSED = 0x2,
+        WINDOW_FLAG_VISIBLE = 0x4, // confirmed
+        WINDOW_FLAG_FADING_OUT = 0x10,
+        WINDOW_FLAG_FADING_IN = 0x20,
+        WINDOW_FLAG_80 = 0x80,
+        WINDOW_FLAG_NON_DEFAULT_BACKCOLOR = 0x8000,
+        WINDOW_FLAG_NON_DEFAULT_FORECOLOR = 0x10000
     };
 
     struct windowDef_t

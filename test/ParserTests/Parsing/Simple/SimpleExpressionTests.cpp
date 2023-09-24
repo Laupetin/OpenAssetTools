@@ -112,6 +112,7 @@ namespace test::parsing::simple::expression
 
             SimpleLexer::Config lexerConfig;
             lexerConfig.m_read_strings = true;
+            lexerConfig.m_string_escape_sequences = true;
             lexerConfig.m_read_integer_numbers = true;
             lexerConfig.m_read_floating_point_numbers = true;
             lexerConfig.m_emit_new_line_tokens = false;

@@ -15,44 +15,6 @@ SequenceLocalizeFileLanguageValue::SequenceLocalizeFileLanguageValue()
     });
 }
 
-std::string SequenceLocalizeFileLanguageValue::UnescapeValue(const std::string& value)
-{
-    std::ostringstream str;
-
-    auto isEscaped = false;
-    for(const auto c : value)
-    {
-        if(isEscaped)
-        {
-            switch(c)
-            {
-            case 'n':
-                str << '\n';
-                break;
-
-            case 'r':
-                str << '\r';
-                break;
-
-            default:
-                str << c;
-                break;
-            }
-            isEscaped = false;
-        }
-        else if(c == '\\')
-        {
-            isEscaped = true;
-        }
-        else
-        {
-            str << c;
-        }
-    }
-
-    return str.str();
-}
-
 void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const
 {
     const auto& langToken = result.NextCapture(CAPTURE_LANGUAGE_NAME);
@@ -69,5 +31,5 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
     state->m_current_reference_languages.emplace(langName);
 
     if(langName == state->m_language_name_caps)
-        state->m_entries.emplace_back(state->m_current_reference, UnescapeValue(valueToken.StringValue()));
+        state->m_entries.emplace_back(state->m_current_reference, valueToken.StringValue());
 }

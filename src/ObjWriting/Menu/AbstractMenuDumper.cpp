@@ -70,6 +70,7 @@ std::vector<std::string> AbstractMenuDumper::CreateScriptTokenList(const char* s
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = false;
     lexerConfig.m_read_strings = true;
+    lexerConfig.m_string_escape_sequences = true;
     lexerConfig.m_read_integer_numbers = false;
     lexerConfig.m_read_floating_point_numbers = false;
     SimpleLexer lexer(&inputStream, std::move(lexerConfig));
@@ -130,6 +131,38 @@ bool AbstractMenuDumper::DoesTokenNeedQuotationMarks(const std::string& token)
     return hasNonIdentifierCharacter;
 }
 
+void AbstractMenuDumper::WriteEscapedString(const std::string_view& str) const
+{
+    m_stream << "\"";
+
+    for (const auto& c : str)
+    {
+        switch (c)
+        {
+        case '\r':
+            m_stream << "\\r";
+            break;
+        case '\n':
+            m_stream << "\\n";
+            break;
+        case '\t':
+            m_stream << "\\t";
+            break;
+        case '\f':
+            m_stream << "\\f";
+            break;
+        case '"':
+            m_stream << "\\\"";
+            break;
+        default:
+            m_stream << c;
+            break;
+        }
+    }
+
+    m_stream << "\"";
+}
+
 const std::string& AbstractMenuDumper::BoolValue(const bool value)
 {
     return value ? BOOL_VALUE_TRUE : BOOL_VALUE_FALSE;
@@ -154,7 +187,9 @@ void AbstractMenuDumper::WriteStringProperty(const std::string& propertyKey, con
 
     Indent();
     WriteKey(propertyKey);
-    m_stream << "\"" << propertyValue << "\"\n";
+
+    WriteEscapedString(propertyValue);
+    m_stream << "\n";
 }
 
 void AbstractMenuDumper::WriteStringProperty(const std::string& propertyKey, const char* propertyValue) const
@@ -164,7 +199,9 @@ void AbstractMenuDumper::WriteStringProperty(const std::string& propertyKey, con
 
     Indent();
     WriteKey(propertyKey);
-    m_stream << "\"" << propertyValue << "\"\n";
+
+    WriteEscapedString(propertyValue);
+    m_stream << "\n";
 }
 
 void AbstractMenuDumper::WriteBoolProperty(const std::string& propertyKey, const bool propertyValue, const bool defaultValue) const

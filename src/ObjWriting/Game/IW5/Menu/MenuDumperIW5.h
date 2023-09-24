@@ -29,6 +29,7 @@ namespace IW5
         void WriteSoundAliasProperty(const std::string& propertyKey, const snd_alias_list_t* soundAliasValue) const;
         void WriteDecodeEffectProperty(const std::string& propertyKey, const itemDef_s* item) const;
         void WriteItemKeyHandlerProperty(const ItemKeyHandler* itemKeyHandlerValue);
+        void WriteMultiTokenStringProperty(const std::string& propertyKey, const char* value) const;
         void WriteFloatExpressionsProperty(const ItemFloatExpression* floatExpressions, int floatExpressionCount) const;
         void WriteColumnProperty(const std::string& propertyKey, const listBoxDef_s* listBox) const;
 
