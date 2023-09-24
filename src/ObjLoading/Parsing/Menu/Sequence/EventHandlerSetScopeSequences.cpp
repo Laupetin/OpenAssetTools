@@ -390,6 +390,7 @@ namespace menu::event_handler_set_scope_sequences
                     create.Or({
                         create.ScriptKeyword("localvarstring"),
                         create.ScriptKeyword("localvarint"),
+                        create.ScriptKeyword("localvarfloat"),
                         create.ScriptKeyword("localvarbool"),
                     }),
                     create.ScriptChar('('),
@@ -768,56 +769,74 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
 
     if (!permissive)
     {
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeIn"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeOut"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("show"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hide"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showMenu"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hideMenu"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setColor"), create.ScriptColor()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("open"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("close"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("escape"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForAllPlayers"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameOpen"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameClose"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackground"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setItemColor"), create.ScriptText(), create.ScriptText(), create.ScriptColor()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeIn"), create.ScriptText()})); // fadeIn <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeOut"), create.ScriptText()})); // fadeOut <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("show"), create.ScriptText()})); // show <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hide"), create.ScriptText()})); // hide <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showMenu"), create.ScriptText()})); // showMenu <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hideMenu"), create.ScriptText()})); // hideMenu <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("setColor"),
+            create.Or({create.ScriptKeyword("backColor"), create.ScriptKeyword("foreColor"), create.ScriptKeyword("borderColor")}),
+            create.ScriptColor()
+        })); // setColor ("backColor" | "foreColor" | "borderColor") <r> [<g>] [<b>] [<a>]
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("open"), create.ScriptText()})); // open <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("close"), create.ScriptText()})); // close ("self" | <menu name>)
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("escape"), create.ScriptText()})); // escape ("self" | <menu name>)
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForAllPlayers"), create.ScriptText()})); // closeForAllPlayers <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameOpen"), create.ScriptText()})); // ingameOpen <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameClose"), create.ScriptText()})); // ingameClose <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackground"), create.ScriptText()})); // setBackground <material name>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("setItemColor"),
+            create.ScriptText(),
+            create.Or({create.ScriptKeyword("backColor"), create.ScriptKeyword("foreColor"), create.ScriptKeyword("borderColor"), create.ScriptKeyword("disableColor")}),
+            create.ScriptColor()
+        })); // setItemColor <item group name> (backColor | foreColor | borderColor | disableColor) <r> [<g>] [<b>] [<a>]
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("focusFirst")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("play"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("scriptMenuResponse"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
+        // setFocus game specific
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()})); // setFocusByDvar <dvar name>
+        // setDvar game specific
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()})); // exec <command>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()})); // execNow <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()
+        })); // execOnDvarStringValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()
+        })); // execOnDvarIntValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()
+        })); // execOnDvarFloatValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execNowOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()
+        })); // execNowOnDvarStringValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execNowOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()
+        })); // execNowOnDvarIntValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execNowOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()
+        })); // execNowOnDvarFloatValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("play"), create.ScriptText()})); // play <sound name>
+        // scriptMenuResponse game specific
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("scriptMenuRespondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()
+        })); // scriptMenuRespondOnDvarStringValue <dvar name> <value> <response value>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("scriptMenuRespondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()
+        })); // scriptMenuRespondOnDvarIntValue <dvar name> <value> <response value>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("scriptMenuRespondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()
+        })); // scriptMenuRespondOnDvarFloatValue <dvar name> <value> <response value>
         AddSequence(std::make_unique<SequenceSetPlayerData>());
         AddSequence(std::make_unique<SequenceSetPlayerDataSplitscreen>());
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteMail")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("doMailLottery")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsConfirm")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsCancel")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setGameMode"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setGameMode"), create.ScriptText()})); // setGameMode <mode name>
+        // feederTop / feederBottom game specific
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showGamerCard")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openForGameType"), create.ScriptText()}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForGameType"), create.ScriptText()}));
-        // statClearPerkNew // TODO
-        // statSetUsingTable // TODO
-        // statClearBitMask // TODO
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("kickPlayer")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getKickPlayerQuestion")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("partyUpdateMissingMapPackDvar")}));
@@ -825,6 +844,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
         AddSequence(std::make_unique<SequenceLerp>());
 
+        // UiScripts
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StartServer")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadArenas")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadGameInfo")}));
@@ -854,6 +874,22 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
 
         if (featureLevel == FeatureLevel::IW4)
         {
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()})); // setFocus <item name>
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})
+            })); // setDvar <dvar name> <dvar value>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("scriptMenuResponse"), create.ScriptText()})); // scriptMenuResponse <response value>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteMail")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("doMailLottery")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom")}));
+            // statClearPerkNew // TODO
+            // statSetUsingTable // TODO
+            // statClearBitMask // TODO
+
+
             // IW4x UiScripts
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadMods")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RunMod")}));
@@ -885,6 +921,113 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deleteDemo")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ApplyMap")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ApplyInitialMap")}));
+        }
+
+        if (featureLevel == FeatureLevel::IW5)
+        {
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("forceClose"), create.ScriptText()})); // forceClose ("self" | <menu name>)
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setFocus"),
+                create.Or({
+                    create.And({
+                        create.ScriptKeyword("localVarString"),
+                        create.Char('('),
+                        create.ScriptText(),
+                        create.Char(')'),
+                    }),
+                    create.ScriptText()
+                }),
+            })); // setFocus ((localVarString '(' <var name> ')') | <item name>)
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setDvar"),
+                create.ScriptText(),
+                create.Or({
+                    create.And({
+                        create.ScriptKeyword("localVarString"),
+                        create.Char('('),
+                        create.ScriptText(),
+                        create.Char(')'),
+                    }),
+                    create.ScriptStrictNumeric(),
+                    create.ScriptText()
+                }),
+            })); // setDvar <dvar name> ((localVarString '(' <var name> ')') | <dvar value>)
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execFirstClient"), create.ScriptText()})); // execFirstClient <command>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execKeyPress"), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})})); // execKeyPress <key number>
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("scriptMenuResponse"),
+                create.Or({
+                    create.And({
+                        create.Or({
+                            create.ScriptKeyword("localVarInt"),
+                            create.ScriptKeyword("localVarFloat"),
+                            create.ScriptKeyword("localVarBool"),
+                            create.ScriptKeyword("localVarString"),
+                        }),
+                        create.Char('('),
+                        create.ScriptText(),
+                        create.Char(')'),
+                    }),
+                }),
+                create.ScriptText()
+            })); // scriptMenuResponse (((localVarInt | localVarFloat | localVarBool | localVarString) '(' <var name> ')') | <response value>)
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteEliteCacFile")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("integrateEliteCacFile")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setMatchRulesData")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDataFromPlayer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveMatchRulesDataToPlayer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDataFromHistory")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDataDefaults")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setUsingMatchRulesData")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveMatchRulesDedicatedServer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDedicatedServer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("onlineVaultEditMetadata")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("includeInMapRotation")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("useCustomMapRotation")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("useIntermissionTimer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("stopIntermissionTimer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop"), create.Optional(create.Text())})); // feederTop [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom"), create.Optional(create.Text())})); // feederBottom [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederPageUp"), create.Optional(create.Text())})); // feederPageUp [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederPageDown"), create.Optional(create.Text())})); // feederPageDown [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showCoopGamerCard")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showSplitscreenGamerCard")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerOffensive")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerExploiting")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerCheating")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerBoosting")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIcon")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitle")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconNew")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleNew")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconSplitScreen")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleSplitScreen")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconNewSplitScreen")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleNewSplitScreen")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("purchasePrestigeTitle")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setProfileItemNew")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setProfileItemNewSplitScreen")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("storePopupXuid")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getHostMigrateQuestion")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("makehost")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("savegamehide")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("savegameshow")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("savegamesetlocalbool")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveDelay")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("writeSave")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setSaveExecOnSuccess"), create.ScriptText()}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("nextLevel")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("disablePause")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("enablePause")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("runCompletionResolve")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearCompletionResolve")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execWithResolve"), create.ScriptText()}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("playMenuVideo")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackgroundVideo"), create.Char('('), create.ScriptText(), create.Char(')')}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearEntitlementNew"), create.ScriptText()})); // clearEntitlementNew <entitlement name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitleRank")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitlePrestige")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("anticheat_bancheck"), create.ScriptStrictNumeric()})); // anticheat_bancheck <num>
         }
     }
 
