@@ -679,7 +679,7 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteKeywordProperty("textsavegame", item->itemFlags & ITEM_FLAG_SAVE_GAME_INFO);
     WriteKeywordProperty("textcinematicsubtitle", item->itemFlags & ITEM_FLAG_CINEMATIC_SUBTITLE);
     WriteStringProperty("group", item->window.group);
-    WriteRectProperty("rect", item->window.rect);
+    WriteRectProperty("rect", item->window.rectClient);
     WriteIntProperty("style", item->window.style, 0);
     WriteKeywordProperty("decoration", item->window.staticFlags & WINDOW_FLAG_DECORATION);
     WriteKeywordProperty("autowrapped", item->window.staticFlags & WINDOW_FLAG_AUTO_WRAPPED);
