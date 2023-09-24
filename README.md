@@ -34,8 +34,11 @@ A full list of the subcomponents can be found [here](./docs/OatComponents.md).
 
 ## Getting started
 
-Building OAT requires git to be installed on your machine and to be in your PATH.
-This project uses premake to generate project files depending on your platform.
+You need to clone this repository using Git.
+Do not download as a zip from Github because it will not be a git repository which is required for installing the submodules.
+
+Building OAT requires Git to be installed on your machine and to be in your PATH.
+This project uses Premake to generate project files depending on your platform.
 
 Note: The first time setting up will clone any submodules with git so the first initialization might take a bit.
 
