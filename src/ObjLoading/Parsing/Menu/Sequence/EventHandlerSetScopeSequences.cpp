@@ -38,6 +38,17 @@ namespace menu
                 {
                     const auto& firstToken = tokens[0].get();
 
+                    if (firstToken.m_type == SimpleParserValueType::CHARACTER)
+                    {
+                        const auto& secondToken = tokens[1].get();
+                        if (secondToken.m_type == SimpleParserValueType::INTEGER)
+                            return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(-secondToken.IntegerValue())));
+
+                        std::ostringstream ss;
+                        ss << std::noshowpoint << -firstToken.FloatingPointValue();
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(ss.str()));
+                    }
+
                     if (firstToken.m_type == SimpleParserValueType::INTEGER)
                         return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
                     if (firstToken.m_type == SimpleParserValueType::FLOATING_POINT)
@@ -72,6 +83,9 @@ namespace menu
                 MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<MenuMatcherScriptInt>()).Transform([](const token_list_t& tokens)-> SimpleParserValue
                 {
                     const auto& firstToken = tokens[0].get();
+
+                    if (firstToken.m_type == SimpleParserValueType::CHARACTER)
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(-tokens[1].get().IntegerValue())));
 
                     if (firstToken.m_type == SimpleParserValueType::INTEGER)
                         return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
