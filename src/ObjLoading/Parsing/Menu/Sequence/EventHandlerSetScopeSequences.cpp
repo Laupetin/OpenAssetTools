@@ -895,6 +895,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeingame")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("update"), create.ScriptText()}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startSingleplayer")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startMultiplayer")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("getLanguage")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("verifyLanguage")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("updateLanguage")}));
@@ -1091,6 +1092,52 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitleRank")})); // unknown
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitlePrestige")})); // unknown
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("anticheat_bancheck"), create.ScriptStrictNumeric()})); // anticheat_bancheck <num>
+
+            // UiScripts
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadSaveGames")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SaveGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ForceSave")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("DelSaveGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SaveGameSort"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("playerStart")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("saveComplete")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("saveRevert")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("resetvscroll"), create.ScriptText()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshLeaderboards")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ViewGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboard"), create.ScriptText()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboardExt"), create.ScriptText(), create.ScriptText()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ClearLeaderboard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerFriendRequest")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerShowGroups")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookFriendRequest")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookPageRight")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookPageLeft")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanFriendRequest")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("coopPlayerShowGroups"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("simulateKeyPress"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("commerceShowStore")}));
         }
     }
 
