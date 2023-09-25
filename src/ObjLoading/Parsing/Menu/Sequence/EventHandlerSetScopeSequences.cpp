@@ -156,6 +156,32 @@ namespace menu
                 Optional(ScriptStrictNumeric())
             });
         }
+
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptLocalVarIntOrLiteral() const
+        {
+            return Or({
+                And({
+                    ScriptKeyword("localVarInt"),
+                    Char('('),
+                    ScriptText(),
+                    Char(')'),
+                }),
+                ScriptStrictInt(),
+            });
+        }
+
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptLocalVarBoolOrLiteral() const
+        {
+            return Or({
+                And({
+                    ScriptKeyword("localVarBool"),
+                    Char('('),
+                    ScriptText(),
+                    Char(')'),
+                }),
+                ScriptStrictInt(),
+            });
+        }
     };
 }
 
@@ -1010,34 +1036,57 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerExploiting")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerCheating")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerBoosting")}));
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIcon")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitle")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconNew")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleNew")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconSplitScreen")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleSplitScreen")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconNewSplitScreen")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleNewSplitScreen")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("purchasePrestigeTitle")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setProfileItemNew")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setProfileItemNewSplitScreen")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardIcon"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setCardIcon '(' ((localVarInt '(' <var name> ')') | <card icon index>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardTitle"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setCardTitle '(' ((localVarInt '(' <var name> ')') | <card title index>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardIconNew"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(','), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setCardIconNew '(' ((localVarInt '(' <var name> ')') | <card icon index>) ',' ((localVarInt '(' <var name> ')') | <is new>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardTitleNew"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(','), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setCardTitleNew '(' ((localVarInt '(' <var name> ')') | <card icon index>) ',' ((localVarInt '(' <var name> ')') | <is new>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconNewSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleNewSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("purchasePrestigeTitle"), create.Char('('), create.ScriptText(), create.Char(')')
+            })); // purchasePrestigeTitle '(' <title name> ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setProfileItemNew"), create.Char('('), create.ScriptText(), create.Char(','), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setProfileItemNew '(' <item name> ',' (0|1|(localVarInt '(' <var name> ')')) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setProfileItemNewSplitScreen")})); // unknown
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("storePopupXuid")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getHostMigrateQuestion")}));
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("makehost")}));
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("savegamehide")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("savegameshow")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("savegamesetlocalbool")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("makeHost")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameHide")})); // saveGameHide <item name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameShow")})); // saveGameShow <item name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameSetLocalBool")})); // saveGameSetLocalBool <var name>
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveDelay")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("writeSave")}));
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setSaveExecOnSuccess"), create.ScriptText()}));
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("nextLevel")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("disablePause")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("enablePause")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("runCompletionResolve")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearCompletionResolve")})); // TODO
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setSaveExecOnSuccess"), create.ScriptText()})); // setSaveExecOnSuccess <command>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("nextLevel")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("disablePause")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("enablePause")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("runCompletionResolve")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearCompletionResolve")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execWithResolve"), create.ScriptText()}));
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("playMenuVideo")})); // TODO
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackgroundVideo"), create.Char('('), create.ScriptText(), create.Char(')')}));
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("playMenuVideo"),
+                create.Char('('),
+                create.ScriptText(),
+                create.Char(','),
+                create.ScriptLocalVarIntOrLiteral(),
+                create.Char(','),
+                create.ScriptLocalVarBoolOrLiteral(),
+                create.Char(')'),
+            })); // playMenuVideo '(' <video name> ',' ((localVarInt '(' <var name> ')') | <offset>) ',' ((localVarBool '(' <var name> ')') | <maybe looping bool>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setBackgroundVideo"), create.Char('('), create.ScriptText(), create.Char(')')
+            })); // setBackgroundVideo '(' <video name or empty string> ')'
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearEntitlementNew"), create.ScriptText()})); // clearEntitlementNew <entitlement name>
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitleRank")})); // unknown
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitlePrestige")})); // unknown
