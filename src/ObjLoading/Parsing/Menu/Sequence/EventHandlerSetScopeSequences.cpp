@@ -794,17 +794,22 @@ namespace menu::event_handler_set_scope_sequences
     class SequenceOnlineVault final : public SequenceGenericScriptStatement
     {
         static constexpr auto LABEL_OPEN = 1;
-        static constexpr auto LABEL_PLATFORM = 2;
-        static constexpr auto LABEL_FILE_CATEGORY = 3;
-        static constexpr auto LABEL_BROWSE = 4;
-        static constexpr auto LABEL_LOAD = 5;
-        static constexpr auto LABEL_SAVE = 6;
-        static constexpr auto LABEL_COPY = 7;
+        static constexpr auto LABEL_PARADIGM = 2;
+        static constexpr auto LABEL_PLATFORM = 3;
+        static constexpr auto LABEL_FILE_CATEGORY = 4;
 
     public:
         explicit SequenceOnlineVault()
         {
             const ScriptMatcherFactory create(this);
+
+            AddLabeledMatchers(
+                create.Or({
+                    create.ScriptKeyword("Browse"),
+                    create.ScriptKeyword("Load"),
+                    create.ScriptKeyword("Save"),
+                    create.ScriptKeyword("Copy"),
+                }), LABEL_PARADIGM);
 
             AddLabeledMatchers(
                 create.Or({
@@ -826,40 +831,10 @@ namespace menu::event_handler_set_scope_sequences
 
             AddLabeledMatchers(
                 create.And({
-                    create.ScriptKeyword("Browse"),
-                    create.Label(LABEL_PLATFORM),
-                }), LABEL_BROWSE);
-
-            AddLabeledMatchers(
-                create.And({
-                    create.ScriptKeyword("Load"),
-                    create.Label(LABEL_PLATFORM),
-                    create.Label(LABEL_FILE_CATEGORY),
-                }), LABEL_LOAD);
-
-            AddLabeledMatchers(
-                create.And({
-                    create.ScriptKeyword("Save"),
-                    create.Label(LABEL_PLATFORM),
-                    create.Label(LABEL_FILE_CATEGORY),
-                }), LABEL_SAVE);
-
-            AddLabeledMatchers(
-                create.And({
-                    create.ScriptKeyword("Copy"),
-                    create.Label(LABEL_PLATFORM),
-                    create.Label(LABEL_FILE_CATEGORY),
-                }), LABEL_COPY);
-
-            AddLabeledMatchers(
-                create.And({
                     create.ScriptKeyword("open"),
-                    create.Or({
-                        create.Label(LABEL_BROWSE),
-                        create.Label(LABEL_LOAD),
-                        create.Label(LABEL_SAVE),
-                        create.Label(LABEL_COPY),
-                    }),
+                    create.Label(LABEL_PARADIGM),
+                    create.Optional(create.Label(LABEL_PLATFORM)),
+                    create.Optional(create.Label(LABEL_FILE_CATEGORY)),
                     create.ScriptText()
                 }), LABEL_OPEN);
 
@@ -1105,7 +1080,8 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
                         create.ScriptText(),
                         create.Char(')'),
                     }),
-                    create.ScriptText()
+                    create.ScriptStrictInt(),
+                    create.ScriptText(),
                 }),
             })); // scriptMenuResponse (((localVarInt | localVarFloat | localVarBool | localVarString) '(' <var name> ')') | <response value>)
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteEliteCacFile")}));
@@ -1140,10 +1116,29 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
                 create.ScriptKeyword("setCardTitle"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
             })); // setCardTitle '(' ((localVarInt '(' <var name> ')') | <card title index>) ')'
             AddSequence(SequenceGenericScriptStatement::Create({
-                create.ScriptKeyword("setCardIconNew"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(','), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+                create.ScriptKeyword("setCardIconNew"),
+                create.Char('('),
+                create.ScriptLocalVarIntOrLiteral(),
+                create.Char(','),
+                create.Or({
+                    create.ScriptLocalVarIntOrLiteral(),
+                    // This is wrong and the game does not even understand it. But because it's not a number it evaluates to 0...
+                    // The game's menus do it and i don't want to fix it everywhere
+                    create.ScriptKeyword("false"),
+                }),
+                create.Char(')')
             })); // setCardIconNew '(' ((localVarInt '(' <var name> ')') | <card icon index>) ',' ((localVarInt '(' <var name> ')') | <is new>) ')'
             AddSequence(SequenceGenericScriptStatement::Create({
-                create.ScriptKeyword("setCardTitleNew"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(','), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+                create.ScriptKeyword("setCardTitleNew"),
+                create.Char('('),
+                create.ScriptLocalVarIntOrLiteral(),
+                create.Char(','),
+                create.Or({
+                    create.ScriptLocalVarIntOrLiteral(),
+                    // This is a hack (see setCardIconNew for details)
+                    create.ScriptKeyword("false"),
+                }),
+                create.Char(')')
             })); // setCardTitleNew '(' ((localVarInt '(' <var name> ')') | <card icon index>) ',' ((localVarInt '(' <var name> ')') | <is new>) ')'
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconSplitScreen")})); // unknown
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleSplitScreen")})); // unknown
@@ -1161,7 +1156,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("makeHost")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameHide")})); // saveGameHide <item name>
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameShow")})); // saveGameShow <item name>
-            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameSetLocalBool")})); // saveGameSetLocalBool <var name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameSetLocalBool"), create.ScriptText()})); // saveGameSetLocalBool <var name>
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveDelay")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("writeSave")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setSaveExecOnSuccess"), create.ScriptText()})); // setSaveExecOnSuccess <command>
@@ -1203,7 +1198,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshLeaderboards")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ViewGamerCard")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboard"), create.ScriptText()}));
-            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboardExt"), create.ScriptText(), create.ScriptText()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboardExt"), create.ScriptText(), create.Optional(create.Text())}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ClearLeaderboard")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendStoreXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendClearXUID")}));
@@ -1253,6 +1248,8 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteTypeMap")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteMap")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshServers")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshFilter")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeJoin")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StopRefresh")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("TrimRecipeName")}));
@@ -1288,6 +1285,11 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitelaunch")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitestore")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LobbyShowGroups")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("addPlayerProfiles")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("createPlayerProfile")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deletePlayerProfile")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadPlayerProfile")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("selectActivePlayerProfile")}));
         }
     }
 
