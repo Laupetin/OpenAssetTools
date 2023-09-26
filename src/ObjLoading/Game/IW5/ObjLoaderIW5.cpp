@@ -5,6 +5,7 @@
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderMaterial.h"
 #include "AssetLoaders/AssetLoaderMenuDef.h"
 #include "AssetLoaders/AssetLoaderMenuList.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
@@ -27,7 +28,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XANIMPARTS, XAnimParts))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL_SURFS, XModelSurfs))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL, XModel))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MATERIAL, Material))
+    REGISTER_ASSET_LOADER(AssetLoaderMaterial)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_PIXELSHADER, MaterialPixelShader))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration))
