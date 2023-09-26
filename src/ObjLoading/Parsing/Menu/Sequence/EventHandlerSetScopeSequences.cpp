@@ -790,6 +790,102 @@ namespace menu::event_handler_set_scope_sequences
             state->m_current_nested_event_handler_set = currentCondition.m_condition->m_else_elements.get();
         }
     };
+
+    class SequenceOnlineVault final : public SequenceGenericScriptStatement
+    {
+        static constexpr auto LABEL_OPEN = 1;
+        static constexpr auto LABEL_PLATFORM = 2;
+        static constexpr auto LABEL_FILE_CATEGORY = 3;
+        static constexpr auto LABEL_BROWSE = 4;
+        static constexpr auto LABEL_LOAD = 5;
+        static constexpr auto LABEL_SAVE = 6;
+        static constexpr auto LABEL_COPY = 7;
+
+    public:
+        explicit SequenceOnlineVault()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddLabeledMatchers(
+                create.Or({
+                    create.ScriptKeyword("Fb"),
+                    create.ScriptKeyword("Elite"),
+                    create.ScriptKeyword("Live"),
+                }), LABEL_PLATFORM);
+
+            AddLabeledMatchers(
+                create.Or({
+                    create.ScriptKeyword("All"),
+                    create.ScriptKeyword("Film"),
+                    create.ScriptKeyword("Clip"),
+                    create.ScriptKeyword("Screenshot"),
+                    create.ScriptKeyword("Avi"),
+                    create.ScriptKeyword("Cgm"),
+                    create.ScriptKeyword("Rcu"),
+                }), LABEL_FILE_CATEGORY);
+
+            AddLabeledMatchers(
+                create.And({
+                    create.ScriptKeyword("Browse"),
+                    create.Label(LABEL_PLATFORM),
+                }), LABEL_BROWSE);
+
+            AddLabeledMatchers(
+                create.And({
+                    create.ScriptKeyword("Load"),
+                    create.Label(LABEL_PLATFORM),
+                    create.Label(LABEL_FILE_CATEGORY),
+                }), LABEL_LOAD);
+
+            AddLabeledMatchers(
+                create.And({
+                    create.ScriptKeyword("Save"),
+                    create.Label(LABEL_PLATFORM),
+                    create.Label(LABEL_FILE_CATEGORY),
+                }), LABEL_SAVE);
+
+            AddLabeledMatchers(
+                create.And({
+                    create.ScriptKeyword("Copy"),
+                    create.Label(LABEL_PLATFORM),
+                    create.Label(LABEL_FILE_CATEGORY),
+                }), LABEL_COPY);
+
+            AddLabeledMatchers(
+                create.And({
+                    create.ScriptKeyword("open"),
+                    create.Or({
+                        create.Label(LABEL_BROWSE),
+                        create.Label(LABEL_LOAD),
+                        create.Label(LABEL_SAVE),
+                        create.Label(LABEL_COPY),
+                    }),
+                    create.ScriptText()
+                }), LABEL_OPEN);
+
+            AddMatchers({
+                create.And({
+                    create.ScriptKeyword("uiScript"),
+                    create.ScriptKeyword("OnlineVault"),
+                    create.Or({
+                        create.Label(LABEL_OPEN),
+                        create.ScriptKeyword("Pop"),
+                        create.ScriptKeyword("CloseAll"),
+                        create.ScriptKeyword("Load"),
+                        create.ScriptKeyword("LoadAndRenderMovie"),
+                        create.ScriptKeyword("TrySave"),
+                        create.ScriptKeyword("Save"),
+                        create.ScriptKeyword("Rename"),
+                        create.ScriptKeyword("Delete"),
+                        create.ScriptKeyword("Abort"),
+                        create.ScriptKeyword("FacebookUploadPhoto"),
+                        create.ScriptKeyword("FacebookUploadVideo"),
+                    })
+                }).Capture(CAPTURE_SCRIPT_TOKEN),
+                create.Optional(create.Char(';'))
+            });
+        }
+    };
 }
 
 using namespace event_handler_set_scope_sequences;
@@ -1009,8 +1105,8 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
                         create.ScriptText(),
                         create.Char(')'),
                     }),
+                    create.ScriptText()
                 }),
-                create.ScriptText()
             })); // scriptMenuResponse (((localVarInt | localVarFloat | localVarBool | localVarString) '(' <var name> ')') | <response value>)
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteEliteCacFile")}));
             AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("integrateEliteCacFile")}));
@@ -1114,6 +1210,10 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendInvite")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendJoin")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportBooster")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerStoreXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerClearXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerGamerCard")}));
@@ -1121,6 +1221,10 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerShowGroups")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerJoin")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportBooster")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookStoreXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookClearXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookGamerCard")}));
@@ -1129,15 +1233,61 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookPageLeft")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookJoin")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportBooster")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanStoreXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanClearXUID")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanGamerCard")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanFriendRequest")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanJoin")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportBooster")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("coopPlayerShowGroups"), create.ScriptStrictInt()}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("simulateKeyPress"), create.ScriptStrictInt()}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("commerceShowStore")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteTypeMap")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteMap")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StopRefresh")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("TrimRecipeName")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ResetRecipeList")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SelectServer")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ShowCurrentServerTooltip")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteTempBan")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("addFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deleteFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("PlayDemo")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SwitchSegmentTransition"), create.ScriptStrictInt(), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("PreviewSegment")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("MoveSegment"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("DeleteSegment")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SetFocusOnSegmentButton")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("PopulateLocalDemoFileInformation")}));
+            AddSequence(std::make_unique<SequenceOnlineVault>());
+            AddSequence(SequenceUiScriptStatement::Create({
+                create.ScriptKeyword("Playlist"),
+                create.Or({
+                    create.And({
+                        create.ScriptKeyword("Open"),
+                        create.ScriptStrictInt(),
+                    }),
+                    create.ScriptKeyword("DoAction"),
+                    create.ScriptKeyword("Close"),
+                    create.ScriptKeyword("CloseAll"),
+                })
+            }));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("UpdateArenas")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SortChallengesTop")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitesearch")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitelaunch")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitestore")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LobbyShowGroups")}));
         }
     }
 
