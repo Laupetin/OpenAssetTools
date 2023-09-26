@@ -222,11 +222,12 @@ namespace test::parsing::menu::sequence::event_handler_set
         TestGenericScriptStatement(
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setColor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
-            }, R"("setColor" "1" "1" "1" "1" ; )");
+            }, R"("setColor" "backColor" "1" "1" "1" "1" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setColor with 3 colors", "[parsing][sequence][menu]")
@@ -234,10 +235,11 @@ namespace test::parsing::menu::sequence::event_handler_set
         TestGenericScriptStatement(
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setColor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
-            }, R"("setColor" "1" "1" "1" ; )");
+            }, R"("setColor" "backColor" "1" "1" "1" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setColor with 2 colors", "[parsing][sequence][menu]")
@@ -245,9 +247,10 @@ namespace test::parsing::menu::sequence::event_handler_set
         TestGenericScriptStatement(
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setColor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
-            }, R"("setColor" "1" "1" ; )");
+            }, R"("setColor" "backColor" "1" "1" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setColor with 1 color", "[parsing][sequence][menu]")
@@ -255,8 +258,9 @@ namespace test::parsing::menu::sequence::event_handler_set
         TestGenericScriptStatement(
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setColor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
-            }, R"("setColor" "1" ; )");
+            }, R"("setColor" "backColor" "1" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure cannot use setColor with no color", "[parsing][sequence][menu]")
@@ -265,6 +269,7 @@ namespace test::parsing::menu::sequence::event_handler_set
         const TokenPos pos;
         helper.Tokens({
             SimpleParserValue::Identifier(pos, new std::string("setColor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
             SimpleParserValue::Character(pos, ';'),
             SimpleParserValue::EndOfFile(pos)
         });
@@ -344,7 +349,7 @@ namespace test::parsing::menu::sequence::event_handler_set
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setItemColor")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_element")),
-                SimpleParserValue::String(TokenPos(), new std::string("forecolor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("forecolor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
@@ -358,12 +363,12 @@ namespace test::parsing::menu::sequence::event_handler_set
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setItemColor")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_element")),
-                SimpleParserValue::String(TokenPos(), new std::string("backcolor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
-            }, R"("setItemColor" "some_element" "backcolor" "1" "1" "1" "1" ; )");
+            }, R"("setItemColor" "some_element" "backColor" "1" "1" "1" "1" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setItemColor with bordercolor", "[parsing][sequence][menu]")
@@ -372,12 +377,26 @@ namespace test::parsing::menu::sequence::event_handler_set
             {
                 SimpleParserValue::Identifier(TokenPos(), new std::string("setItemColor")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_element")),
-                SimpleParserValue::String(TokenPos(), new std::string("bordercolor")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("bordercolor")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::Integer(TokenPos(), 1),
             }, R"("setItemColor" "some_element" "bordercolor" "1" "1" "1" "1" ; )");
+    }
+
+    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setItemColor with disablecolor", "[parsing][sequence][menu]")
+    {
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("setItemColor")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("disablecolor")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::Integer(TokenPos(), 1),
+            }, R"("setItemColor" "some_element" "disablecolor" "1" "1" "1" "1" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use focusFirst", "[parsing][sequence][menu]")
@@ -518,45 +537,37 @@ namespace test::parsing::menu::sequence::event_handler_set
             }, R"("scriptMenuResponse" "some_response" ; )");
     }
 
-    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use respondOnDvarStringValue", "[parsing][sequence][menu]")
+    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuRespondOnDvarStringValue", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
             {
-                SimpleParserValue::Identifier(TokenPos(), new std::string("respondOnDvarStringValue")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarStringValue")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_value")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_response"))
-            }, R"("respondOnDvarStringValue" "some_dvar" "some_value" "some_response" ; )");
+            }, R"("scriptMenuRespondOnDvarStringValue" "some_dvar" "some_value" "some_response" ; )");
     }
 
-    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use respondOnDvarIntValue", "[parsing][sequence][menu]")
+    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuRespondOnDvarIntValue", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
             {
-                SimpleParserValue::Identifier(TokenPos(), new std::string("respondOnDvarIntValue")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarIntValue")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::String(TokenPos(), new std::string("some_response"))
-            }, R"("respondOnDvarIntValue" "some_dvar" "1" "some_response" ; )");
+            }, R"("scriptMenuRespondOnDvarIntValue" "some_dvar" "1" "some_response" ; )");
     }
 
-    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use respondOnDvarFloatValue", "[parsing][sequence][menu]")
+    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuRespondOnDvarFloatValue", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
             {
-                SimpleParserValue::Identifier(TokenPos(), new std::string("respondOnDvarFloatValue")),
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarFloatValue")),
                 SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
                 SimpleParserValue::Integer(TokenPos(), 1),
                 SimpleParserValue::String(TokenPos(), new std::string("some_response"))
-            }, R"("respondOnDvarFloatValue" "some_dvar" "1" "some_response" ; )");
-    }
-
-    TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setPlayerDataSp", "[parsing][sequence][menu]")
-    {
-        TestGenericScriptStatement(
-            {
-                SimpleParserValue::Identifier(TokenPos(), new std::string("setPlayerDataSp"))
-            }, R"("setPlayerDataSp" ; )");
+            }, R"("scriptMenuRespondOnDvarFloatValue" "some_dvar" "1" "some_response" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use updateMail", "[parsing][sequence][menu]")

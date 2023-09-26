@@ -38,6 +38,17 @@ namespace menu
                 {
                     const auto& firstToken = tokens[0].get();
 
+                    if (firstToken.m_type == SimpleParserValueType::CHARACTER)
+                    {
+                        const auto& secondToken = tokens[1].get();
+                        if (secondToken.m_type == SimpleParserValueType::INTEGER)
+                            return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(-secondToken.IntegerValue())));
+
+                        std::ostringstream ss;
+                        ss << std::noshowpoint << -firstToken.FloatingPointValue();
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(ss.str()));
+                    }
+
                     if (firstToken.m_type == SimpleParserValueType::INTEGER)
                         return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
                     if (firstToken.m_type == SimpleParserValueType::FLOATING_POINT)
@@ -72,6 +83,9 @@ namespace menu
                 MatcherFactoryWrapper<SimpleParserValue>(std::make_unique<MenuMatcherScriptInt>()).Transform([](const token_list_t& tokens)-> SimpleParserValue
                 {
                     const auto& firstToken = tokens[0].get();
+
+                    if (firstToken.m_type == SimpleParserValueType::CHARACTER)
+                        return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(-tokens[1].get().IntegerValue())));
 
                     if (firstToken.m_type == SimpleParserValueType::INTEGER)
                         return SimpleParserValue::String(firstToken.GetPos(), new std::string(std::to_string(firstToken.IntegerValue())));
@@ -140,6 +154,32 @@ namespace menu
                 Optional(ScriptStrictNumeric()),
                 Optional(ScriptStrictNumeric()),
                 Optional(ScriptStrictNumeric())
+            });
+        }
+
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptLocalVarIntOrLiteral() const
+        {
+            return Or({
+                And({
+                    ScriptKeyword("localVarInt"),
+                    Char('('),
+                    ScriptText(),
+                    Char(')'),
+                }),
+                ScriptStrictInt(),
+            });
+        }
+
+        _NODISCARD MatcherFactoryWrapper<SimpleParserValue> ScriptLocalVarBoolOrLiteral() const
+        {
+            return Or({
+                And({
+                    ScriptKeyword("localVarBool"),
+                    Char('('),
+                    ScriptText(),
+                    Char(')'),
+                }),
+                ScriptStrictInt(),
             });
         }
     };
@@ -390,6 +430,7 @@ namespace menu::event_handler_set_scope_sequences
                     create.Or({
                         create.ScriptKeyword("localvarstring"),
                         create.ScriptKeyword("localvarint"),
+                        create.ScriptKeyword("localvarfloat"),
                         create.ScriptKeyword("localvarbool"),
                     }),
                     create.ScriptChar('('),
@@ -749,6 +790,77 @@ namespace menu::event_handler_set_scope_sequences
             state->m_current_nested_event_handler_set = currentCondition.m_condition->m_else_elements.get();
         }
     };
+
+    class SequenceOnlineVault final : public SequenceGenericScriptStatement
+    {
+        static constexpr auto LABEL_OPEN = 1;
+        static constexpr auto LABEL_PARADIGM = 2;
+        static constexpr auto LABEL_PLATFORM = 3;
+        static constexpr auto LABEL_FILE_CATEGORY = 4;
+
+    public:
+        explicit SequenceOnlineVault()
+        {
+            const ScriptMatcherFactory create(this);
+
+            AddLabeledMatchers(
+                create.Or({
+                    create.ScriptKeyword("Browse"),
+                    create.ScriptKeyword("Load"),
+                    create.ScriptKeyword("Save"),
+                    create.ScriptKeyword("Copy"),
+                }), LABEL_PARADIGM);
+
+            AddLabeledMatchers(
+                create.Or({
+                    create.ScriptKeyword("Fb"),
+                    create.ScriptKeyword("Elite"),
+                    create.ScriptKeyword("Live"),
+                }), LABEL_PLATFORM);
+
+            AddLabeledMatchers(
+                create.Or({
+                    create.ScriptKeyword("All"),
+                    create.ScriptKeyword("Film"),
+                    create.ScriptKeyword("Clip"),
+                    create.ScriptKeyword("Screenshot"),
+                    create.ScriptKeyword("Avi"),
+                    create.ScriptKeyword("Cgm"),
+                    create.ScriptKeyword("Rcu"),
+                }), LABEL_FILE_CATEGORY);
+
+            AddLabeledMatchers(
+                create.And({
+                    create.ScriptKeyword("open"),
+                    create.Label(LABEL_PARADIGM),
+                    create.Optional(create.Label(LABEL_PLATFORM)),
+                    create.Optional(create.Label(LABEL_FILE_CATEGORY)),
+                    create.ScriptText()
+                }), LABEL_OPEN);
+
+            AddMatchers({
+                create.And({
+                    create.ScriptKeyword("uiScript"),
+                    create.ScriptKeyword("OnlineVault"),
+                    create.Or({
+                        create.Label(LABEL_OPEN),
+                        create.ScriptKeyword("Pop"),
+                        create.ScriptKeyword("CloseAll"),
+                        create.ScriptKeyword("Load"),
+                        create.ScriptKeyword("LoadAndRenderMovie"),
+                        create.ScriptKeyword("TrySave"),
+                        create.ScriptKeyword("Save"),
+                        create.ScriptKeyword("Rename"),
+                        create.ScriptKeyword("Delete"),
+                        create.ScriptKeyword("Abort"),
+                        create.ScriptKeyword("FacebookUploadPhoto"),
+                        create.ScriptKeyword("FacebookUploadVideo"),
+                    })
+                }).Capture(CAPTURE_SCRIPT_TOKEN),
+                create.Optional(create.Char(';'))
+            });
+        }
+    };
 }
 
 using namespace event_handler_set_scope_sequences;
@@ -768,56 +880,74 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
 
     if (!permissive)
     {
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeIn"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeOut"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("show"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hide"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showMenu"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hideMenu"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setColor"), create.ScriptColor()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("open"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("close"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("escape"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForAllPlayers"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameOpen"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameClose"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackground"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setItemColor"), create.ScriptText(), create.ScriptText(), create.ScriptColor()}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeIn"), create.ScriptText()})); // fadeIn <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("fadeOut"), create.ScriptText()})); // fadeOut <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("show"), create.ScriptText()})); // show <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hide"), create.ScriptText()})); // hide <item group name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showMenu"), create.ScriptText()})); // showMenu <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("hideMenu"), create.ScriptText()})); // hideMenu <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("setColor"),
+            create.Or({create.ScriptKeyword("backColor"), create.ScriptKeyword("foreColor"), create.ScriptKeyword("borderColor")}),
+            create.ScriptColor()
+        })); // setColor ("backColor" | "foreColor" | "borderColor") <r> [<g>] [<b>] [<a>]
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("open"), create.ScriptText()})); // open <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("close"), create.ScriptText()})); // close ("self" | <menu name>)
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("escape"), create.ScriptText()})); // escape ("self" | <menu name>)
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForAllPlayers"), create.ScriptText()})); // closeForAllPlayers <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameOpen"), create.ScriptText()})); // ingameOpen <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("ingameClose"), create.ScriptText()})); // ingameClose <menu name>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setBackground"), create.ScriptText()})); // setBackground <material name>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("setItemColor"),
+            create.ScriptText(),
+            create.Or({create.ScriptKeyword("backColor"), create.ScriptKeyword("foreColor"), create.ScriptKeyword("borderColor"), create.ScriptKeyword("disableColor")}),
+            create.ScriptColor()
+        })); // setItemColor <item group name> (backColor | foreColor | borderColor | disableColor) <r> [<g>] [<b>] [<a>]
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("focusFirst")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNowOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("play"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("scriptMenuResponse"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("respondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()}));
+        // setFocus game specific
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocusByDvar"), create.ScriptText()})); // setFocusByDvar <dvar name>
+        // setDvar game specific
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("exec"), create.ScriptText()})); // exec <command>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execNow"), create.ScriptText()})); // execNow <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()
+        })); // execOnDvarStringValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()
+        })); // execOnDvarIntValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()
+        })); // execOnDvarFloatValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execNowOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()
+        })); // execNowOnDvarStringValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execNowOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()
+        })); // execNowOnDvarIntValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("execNowOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()
+        })); // execNowOnDvarFloatValue <dvar name> <value> <command>
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("play"), create.ScriptText()})); // play <sound name>
+        // scriptMenuResponse game specific
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("scriptMenuRespondOnDvarStringValue"), create.ScriptText(), create.ScriptText(), create.ScriptText()
+        })); // scriptMenuRespondOnDvarStringValue <dvar name> <value> <response value>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("scriptMenuRespondOnDvarIntValue"), create.ScriptText(), create.ScriptInt(), create.ScriptText()
+        })); // scriptMenuRespondOnDvarIntValue <dvar name> <value> <response value>
+        AddSequence(SequenceGenericScriptStatement::Create({
+            create.ScriptKeyword("scriptMenuRespondOnDvarFloatValue"), create.ScriptText(), create.ScriptNumeric(), create.ScriptText()
+        })); // scriptMenuRespondOnDvarFloatValue <dvar name> <value> <response value>
         AddSequence(std::make_unique<SequenceSetPlayerData>());
         AddSequence(std::make_unique<SequenceSetPlayerDataSplitscreen>());
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPlayerDataSp")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteMail")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("doMailLottery")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsConfirm")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resetStatsCancel")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setGameMode"), create.ScriptText()}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop")}));
-        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom")}));
+        AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setGameMode"), create.ScriptText()})); // setGameMode <mode name>
+        // feederTop / feederBottom game specific
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showGamerCard")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openForGameType"), create.ScriptText()}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("closeForGameType"), create.ScriptText()}));
-        // statClearPerkNew // TODO
-        // statSetUsingTable // TODO
-        // statClearBitMask // TODO
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("kickPlayer")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getKickPlayerQuestion")}));
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("partyUpdateMissingMapPackDvar")}));
@@ -825,6 +955,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
         AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("resolveError")}));
         AddSequence(std::make_unique<SequenceLerp>());
 
+        // UiScripts
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StartServer")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadArenas")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadGameInfo")}));
@@ -835,6 +966,7 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeingame")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("update"), create.ScriptText()}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startSingleplayer")}));
+        AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("startMultiplayer")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("getLanguage")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("verifyLanguage")}));
         AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("updateLanguage")}));
@@ -854,6 +986,22 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
 
         if (featureLevel == FeatureLevel::IW4)
         {
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setFocus"), create.ScriptText()})); // setFocus <item name>
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setDvar"), create.ScriptText(), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})
+            })); // setDvar <dvar name> <dvar value>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("scriptMenuResponse"), create.ScriptText()})); // scriptMenuResponse <response value>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("updateMail")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("openMail")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteMail")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("doMailLottery")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom")}));
+            // statClearPerkNew // TODO
+            // statSetUsingTable // TODO
+            // statClearBitMask // TODO
+
+
             // IW4x UiScripts
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadMods")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RunMod")}));
@@ -885,6 +1033,263 @@ void EventHandlerSetScopeSequences::AddSequences(const FeatureLevel featureLevel
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deleteDemo")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ApplyMap")}));
             AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ApplyInitialMap")}));
+        }
+
+        if (featureLevel == FeatureLevel::IW5)
+        {
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("forceClose"), create.ScriptText()})); // forceClose ("self" | <menu name>)
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setFocus"),
+                create.Or({
+                    create.And({
+                        create.ScriptKeyword("localVarString"),
+                        create.Char('('),
+                        create.ScriptText(),
+                        create.Char(')'),
+                    }),
+                    create.ScriptText()
+                }),
+            })); // setFocus ((localVarString '(' <var name> ')') | <item name>)
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setDvar"),
+                create.ScriptText(),
+                create.Or({
+                    create.And({
+                        create.ScriptKeyword("localVarString"),
+                        create.Char('('),
+                        create.ScriptText(),
+                        create.Char(')'),
+                    }),
+                    create.ScriptStrictNumeric(),
+                    create.ScriptText()
+                }),
+            })); // setDvar <dvar name> ((localVarString '(' <var name> ')') | <dvar value>)
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execFirstClient"), create.ScriptText()})); // execFirstClient <command>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execKeyPress"), create.Or({create.ScriptStrictNumeric(), create.ScriptText()})})); // execKeyPress <key number>
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("scriptMenuResponse"),
+                create.Or({
+                    create.And({
+                        create.Or({
+                            create.ScriptKeyword("localVarInt"),
+                            create.ScriptKeyword("localVarFloat"),
+                            create.ScriptKeyword("localVarBool"),
+                            create.ScriptKeyword("localVarString"),
+                        }),
+                        create.Char('('),
+                        create.ScriptText(),
+                        create.Char(')'),
+                    }),
+                    create.ScriptStrictInt(),
+                    create.ScriptText(),
+                }),
+            })); // scriptMenuResponse (((localVarInt | localVarFloat | localVarBool | localVarString) '(' <var name> ')') | <response value>)
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("deleteEliteCacFile")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("integrateEliteCacFile")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setMatchRulesData")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDataFromPlayer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveMatchRulesDataToPlayer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDataFromHistory")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDataDefaults")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setUsingMatchRulesData")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveMatchRulesDedicatedServer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("loadMatchRulesDedicatedServer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("onlineVaultEditMetadata")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("includeInMapRotation")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("useCustomMapRotation")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("useIntermissionTimer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("stopIntermissionTimer")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederTop"), create.Optional(create.Text())})); // feederTop [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederBottom"), create.Optional(create.Text())})); // feederBottom [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederPageUp"), create.Optional(create.Text())})); // feederPageUp [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("feederPageDown"), create.Optional(create.Text())})); // feederPageDown [<var name>]
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showCoopGamerCard")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("showSplitscreenGamerCard")})); // unknown parameters
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerOffensive")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerExploiting")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerCheating")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("reportPlayerBoosting")}));
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardIcon"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setCardIcon '(' ((localVarInt '(' <var name> ')') | <card icon index>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardTitle"), create.Char('('), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setCardTitle '(' ((localVarInt '(' <var name> ')') | <card title index>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardIconNew"),
+                create.Char('('),
+                create.ScriptLocalVarIntOrLiteral(),
+                create.Char(','),
+                create.Or({
+                    create.ScriptLocalVarIntOrLiteral(),
+                    // This is wrong and the game does not even understand it. But because it's not a number it evaluates to 0...
+                    // The game's menus do it and i don't want to fix it everywhere
+                    create.ScriptKeyword("false"),
+                }),
+                create.Char(')')
+            })); // setCardIconNew '(' ((localVarInt '(' <var name> ')') | <card icon index>) ',' ((localVarInt '(' <var name> ')') | <is new>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setCardTitleNew"),
+                create.Char('('),
+                create.ScriptLocalVarIntOrLiteral(),
+                create.Char(','),
+                create.Or({
+                    create.ScriptLocalVarIntOrLiteral(),
+                    // This is a hack (see setCardIconNew for details)
+                    create.ScriptKeyword("false"),
+                }),
+                create.Char(')')
+            })); // setCardTitleNew '(' ((localVarInt '(' <var name> ')') | <card icon index>) ',' ((localVarInt '(' <var name> ')') | <is new>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardIconNewSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setCardTitleNewSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("purchasePrestigeTitle"), create.Char('('), create.ScriptText(), create.Char(')')
+            })); // purchasePrestigeTitle '(' <title name> ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setProfileItemNew"), create.Char('('), create.ScriptText(), create.Char(','), create.ScriptLocalVarIntOrLiteral(), create.Char(')')
+            })); // setProfileItemNew '(' <item name> ',' (0|1|(localVarInt '(' <var name> ')')) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setProfileItemNewSplitScreen")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("storePopupXuid")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("getHostMigrateQuestion")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("makeHost")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameHide")})); // saveGameHide <item name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameShow")})); // saveGameShow <item name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveGameSetLocalBool"), create.ScriptText()})); // saveGameSetLocalBool <var name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("saveDelay")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("writeSave")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setSaveExecOnSuccess"), create.ScriptText()})); // setSaveExecOnSuccess <command>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("nextLevel")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("disablePause")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("enablePause")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("runCompletionResolve")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearCompletionResolve")}));
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("execWithResolve"), create.ScriptText()}));
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("playMenuVideo"),
+                create.Char('('),
+                create.ScriptText(),
+                create.Char(','),
+                create.ScriptLocalVarIntOrLiteral(),
+                create.Char(','),
+                create.ScriptLocalVarBoolOrLiteral(),
+                create.Char(')'),
+            })); // playMenuVideo '(' <video name> ',' ((localVarInt '(' <var name> ')') | <offset>) ',' ((localVarBool '(' <var name> ')') | <maybe looping bool>) ')'
+            AddSequence(SequenceGenericScriptStatement::Create({
+                create.ScriptKeyword("setBackgroundVideo"), create.Char('('), create.ScriptText(), create.Char(')')
+            })); // setBackgroundVideo '(' <video name or empty string> ')'
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("clearEntitlementNew"), create.ScriptText()})); // clearEntitlementNew <entitlement name>
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitleRank")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("setPastTitlePrestige")})); // unknown
+            AddSequence(SequenceGenericScriptStatement::Create({create.ScriptKeyword("anticheat_bancheck"), create.ScriptStrictNumeric()})); // anticheat_bancheck <num>
+
+            // UiScripts
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadSaveGames")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LoadGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SaveGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ForceSave")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("DelSaveGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SaveGameSort"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("playerStart")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("saveComplete")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("saveRevert")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("resetvscroll"), create.ScriptText()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshLeaderboards")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ViewGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboard"), create.ScriptText()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("OpenLeaderboardExt"), create.ScriptText(), create.Optional(create.Text())}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ClearLeaderboard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FriendReportBooster")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerFriendRequest")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerShowGroups")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RecentPlayerReportBooster")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookFriendRequest")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookPageRight")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookPageLeft")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("FacebookReportBooster")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanStoreXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanClearXUID")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanGamerCard")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanFriendRequest")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanInvite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportOffensive")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportExploiter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportCheater")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("EliteClanReportBooster")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("coopPlayerShowGroups"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("simulateKeyPress"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("commerceShowStore")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteTypeMap")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteMap")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteGame")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshServers")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("RefreshFilter")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("closeJoin")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("StopRefresh")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("TrimRecipeName")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ResetRecipeList")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SelectServer")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("ShowCurrentServerTooltip")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("voteTempBan")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("addFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deleteFavorite")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("PlayDemo")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SwitchSegmentTransition"), create.ScriptStrictInt(), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("PreviewSegment")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("MoveSegment"), create.ScriptStrictInt()}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("DeleteSegment")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SetFocusOnSegmentButton")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("PopulateLocalDemoFileInformation")}));
+            AddSequence(std::make_unique<SequenceOnlineVault>());
+            AddSequence(SequenceUiScriptStatement::Create({
+                create.ScriptKeyword("Playlist"),
+                create.Or({
+                    create.And({
+                        create.ScriptKeyword("Open"),
+                        create.ScriptStrictInt(),
+                    }),
+                    create.ScriptKeyword("DoAction"),
+                    create.ScriptKeyword("Close"),
+                    create.ScriptKeyword("CloseAll"),
+                })
+            }));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("UpdateArenas")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("SortChallengesTop")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitesearch")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitelaunch")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("xlaunchelitestore")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("LobbyShowGroups")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("addPlayerProfiles")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("createPlayerProfile")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("deletePlayerProfile")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("loadPlayerProfile")}));
+            AddSequence(SequenceUiScriptStatement::Create({create.ScriptKeyword("selectActivePlayerProfile")}));
         }
     }
 

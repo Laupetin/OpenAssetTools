@@ -151,7 +151,7 @@ namespace test::game::iw4::menu::parsing::it
 		}
 		onESC
 		{
-			setColor 1 0.5 0.1 1;
+			setColor backColor 1 0.5 0.1 1;
 		}
 		border 1
 		borderSize 1.25
@@ -250,7 +250,7 @@ namespace test::game::iw4::menu::parsing::it
 		REQUIRE(menu->onESC->eventHandlerCount == 1);
 		REQUIRE(menu->onESC->eventHandlers[0]->eventType == EventType::EVENT_UNCONDITIONAL);
 		REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript != nullptr);
-		REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript == R"("setColor" "1" "0.5" "0.1" "1" ; )"s);
+		REQUIRE(menu->onESC->eventHandlers[0]->eventData.unconditionalScript == R"("setColor" "backColor" "1" "0.5" "0.1" "1" ; )"s);
 
 		REQUIRE(menu->window.border == 1);
 		REQUIRE_THAT(menu->window.borderSize, WithinRel(1.25f));
