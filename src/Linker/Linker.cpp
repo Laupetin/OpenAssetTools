@@ -46,7 +46,7 @@ class Linker::Impl
     static constexpr const char* METADATA_GDT = "gdt";
 
     LinkerArgs m_args;
-    std::vector<std::unique_ptr<ISearchPath>> m_loaded_zone_search_paths;
+    std::vector<std::unique_ptr<ISearchPath>> m_loaded_project_search_paths;
     SearchPaths m_asset_search_paths;
     SearchPaths m_gdt_search_paths;
     SearchPaths m_source_search_paths;
@@ -80,11 +80,11 @@ class Linker::Impl
         ObjLoading::UnloadIWDsInSearchPath(searchPath);
     }
 
-    SearchPaths GetAssetSearchPathsForZone(const std::string& gameName, const std::string& zoneName)
+    SearchPaths GetAssetSearchPathsForProject(const std::string& gameName, const std::string& projectName)
     {
-        SearchPaths searchPathsForZone;
+        SearchPaths searchPathsForProject;
 
-        for (const auto& searchPathStr : m_args.GetAssetSearchPathsForZone(gameName, zoneName))
+        for (const auto& searchPathStr : m_args.GetAssetSearchPathsForProject(gameName, projectName))
         {
             auto absolutePath = fs::absolute(searchPathStr);
 
@@ -100,25 +100,25 @@ class Linker::Impl
 
             auto searchPath = std::make_unique<SearchPathFilesystem>(searchPathStr);
             LoadSearchPath(searchPath.get());
-            searchPathsForZone.IncludeSearchPath(searchPath.get());
-            m_loaded_zone_search_paths.emplace_back(std::move(searchPath));
+            searchPathsForProject.IncludeSearchPath(searchPath.get());
+            m_loaded_project_search_paths.emplace_back(std::move(searchPath));
         }
 
-        searchPathsForZone.IncludeSearchPath(&m_asset_search_paths);
+        searchPathsForProject.IncludeSearchPath(&m_asset_search_paths);
 
         for (auto* iwd : IWD::Repository)
         {
-            searchPathsForZone.IncludeSearchPath(iwd);
+            searchPathsForProject.IncludeSearchPath(iwd);
         }
 
-        return searchPathsForZone;
+        return searchPathsForProject;
     }
 
-    SearchPaths GetGdtSearchPathsForZone(const std::string& gameName, const std::string& zoneName)
+    SearchPaths GetGdtSearchPathsForProject(const std::string& gameName, const std::string& projectName)
     {
-        SearchPaths searchPathsForZone;
+        SearchPaths searchPathsForProject;
 
-        for (const auto& searchPathStr : m_args.GetGdtSearchPathsForZone(gameName, zoneName))
+        for (const auto& searchPathStr : m_args.GetGdtSearchPathsForProject(gameName, projectName))
         {
             auto absolutePath = fs::absolute(searchPathStr);
 
@@ -132,19 +132,19 @@ class Linker::Impl
             if (m_args.m_verbose)
                 std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
 
-            searchPathsForZone.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
+            searchPathsForProject.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
         }
 
-        searchPathsForZone.IncludeSearchPath(&m_gdt_search_paths);
+        searchPathsForProject.IncludeSearchPath(&m_gdt_search_paths);
 
-        return searchPathsForZone;
+        return searchPathsForProject;
     }
 
-    SearchPaths GetSourceSearchPathsForZone(const std::string& zoneName)
+    SearchPaths GetSourceSearchPathsForProject(const std::string& projectName)
     {
-        SearchPaths searchPathsForZone;
+        SearchPaths searchPathsForProject;
 
-        for (const auto& searchPathStr : m_args.GetSourceSearchPathsForZone(zoneName))
+        for (const auto& searchPathStr : m_args.GetSourceSearchPathsForProject(projectName))
         {
             auto absolutePath = fs::absolute(searchPathStr);
 
@@ -158,21 +158,21 @@ class Linker::Impl
             if (m_args.m_verbose)
                 std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
 
-            searchPathsForZone.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
+            searchPathsForProject.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
         }
 
-        searchPathsForZone.IncludeSearchPath(&m_source_search_paths);
+        searchPathsForProject.IncludeSearchPath(&m_source_search_paths);
 
-        return searchPathsForZone;
+        return searchPathsForProject;
     }
 
     /**
      * \brief Initializes the Linker object's search paths based on the user's input.
      * \return \c true if building the search paths was successful, otherwise \c false.
      */
-    bool BuildZoneIndependentSearchPaths()
+    bool BuildProjectIndependentSearchPaths()
     {
-        for (const auto& path : m_args.GetZoneIndependentAssetSearchPaths())
+        for (const auto& path : m_args.GetProjectIndependentAssetSearchPaths())
         {
             auto absolutePath = fs::absolute(path);
 
@@ -191,7 +191,7 @@ class Linker::Impl
             m_asset_search_paths.CommitSearchPath(std::move(searchPath));
         }
 
-        for (const auto& path : m_args.GetZoneIndependentGdtSearchPaths())
+        for (const auto& path : m_args.GetProjectIndependentGdtSearchPaths())
         {
             auto absolutePath = fs::absolute(path);
 
@@ -208,7 +208,7 @@ class Linker::Impl
             m_gdt_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
         }
 
-        for (const auto& path : m_args.GetZoneIndependentSourceSearchPaths())
+        for (const auto& path : m_args.GetProjectIndependentSourceSearchPaths())
         {
             auto absolutePath = fs::absolute(path);
 
@@ -251,7 +251,7 @@ class Linker::Impl
                     const auto definitionStream = sourceSearchPath->Open(definitionFileName);
                     if (!definitionStream.IsOpen())
                     {
-                        std::cout << "Could not find zone definition file for zone \"" << source << "\"." << std::endl;
+                        std::cout << "Could not find zone definition file for project \"" << source << "\"." << std::endl;
                         return false;
                     }
 
@@ -261,7 +261,7 @@ class Linker::Impl
 
                 if (!includeDefinition)
                 {
-                    std::cout << "Failed to read zone definition file for zone \"" << source << "\"." << std::endl;
+                    std::cout << "Failed to read zone definition file for project \"" << source << "\"." << std::endl;
                     return false;
                 }
 
@@ -277,15 +277,15 @@ class Linker::Impl
         return true;
     }
 
-    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(const std::string& zoneName, ISearchPath* sourceSearchPath) const
+    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(const std::string& projectName, ISearchPath* sourceSearchPath) const
     {
         std::unique_ptr<ZoneDefinition> zoneDefinition;
         {
-            const auto definitionFileName = zoneName + ".zone";
+            const auto definitionFileName = projectName + ".zone";
             const auto definitionStream = sourceSearchPath->Open(definitionFileName);
             if (!definitionStream.IsOpen())
             {
-                std::cout << "Could not find zone definition file for zone \"" << zoneName << "\"." << std::endl;
+                std::cout << "Could not find zone definition file for project \"" << projectName << "\"." << std::endl;
                 return nullptr;
             }
 
@@ -295,11 +295,11 @@ class Linker::Impl
 
         if (!zoneDefinition)
         {
-            std::cout << "Failed to read zone definition file for zone \"" << zoneName << "\"." << std::endl;
+            std::cout << "Failed to read zone definition file for project \"" << projectName << "\"." << std::endl;
             return nullptr;
         }
 
-        if (!IncludeAdditionalZoneDefinitions(zoneName, *zoneDefinition, sourceSearchPath))
+        if (!IncludeAdditionalZoneDefinitions(projectName, *zoneDefinition, sourceSearchPath))
             return nullptr;
 
         return zoneDefinition;
@@ -340,7 +340,7 @@ class Linker::Impl
         return false;
     }
 
-    bool ProcessZoneDefinitionIgnores(const std::string& zoneName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
+    bool ProcessZoneDefinitionIgnores(const std::string& projectName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
     {
         if (context.m_definition->m_ignores.empty())
             return true;
@@ -353,20 +353,20 @@ class Linker::Impl
 
         for (const auto& ignore : context.m_definition->m_ignores)
         {
-            if (ignore == zoneName)
+            if (ignore == projectName)
                 continue;
 
             std::vector<AssetListEntry> assetList;
             if (!ReadAssetList(ignore, context.m_ignored_assets, sourceSearchPath))
             {
-                std::cout << "Failed to read asset listing for ignoring assets of zone \"" << ignore << "\"." << std::endl;
+                std::cout << "Failed to read asset listing for ignoring assets of project \"" << ignore << "\"." << std::endl;
                 return false;
             }
         }
         return true;
     }
 
-    static bool GetGameNameFromZoneDefinition(std::string& gameName, const std::string& zoneName, const ZoneDefinition& zoneDefinition)
+    static bool GetGameNameFromZoneDefinition(std::string& gameName, const std::string& projectName, const ZoneDefinition& zoneDefinition)
     {
         auto firstGameEntry = true;
         const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_GAME);
@@ -381,7 +381,7 @@ class Linker::Impl
             {
                 if (gameName != i->second->m_value)
                 {
-                    std::cout << "Conflicting game names in zone \"" << zoneName << "\": " << gameName << " != " << i->second << std::endl;
+                    std::cout << "Conflicting game names in project \"" << projectName << "\": " << gameName << " != " << i->second << std::endl;
                     return false;
                 }
             }
@@ -389,14 +389,14 @@ class Linker::Impl
 
         if (firstGameEntry)
         {
-            std::cout << "No game name was specified for zone \"" << zoneName << "\"" << std::endl;
+            std::cout << "No game name was specified for project \"" << projectName << "\"" << std::endl;
             return false;
         }
 
         return true;
     }
 
-    static bool LoadGdtFilesFromZoneDefinition(std::vector<std::unique_ptr<Gdt>>& gdtList, const std::string& zoneName, const ZoneDefinition& zoneDefinition, ISearchPath* gdtSearchPath)
+    static bool LoadGdtFilesFromZoneDefinition(std::vector<std::unique_ptr<Gdt>>& gdtList, const ZoneDefinition& zoneDefinition, ISearchPath* gdtSearchPath)
     {
         const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_GDT);
         for (auto i = rangeBegin; i != rangeEnd; ++i)
@@ -422,15 +422,15 @@ class Linker::Impl
         return true;
     }
 
-    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& zoneName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
+    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& projectName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
                                                   ISearchPath* sourceSearchPath) const
     {
-        auto context = std::make_unique<ZoneCreationContext>(zoneName, assetSearchPath, &zoneDefinition);
-        if (!ProcessZoneDefinitionIgnores(zoneName, *context, sourceSearchPath))
+        auto context = std::make_unique<ZoneCreationContext>(projectName, assetSearchPath, &zoneDefinition);
+        if (!ProcessZoneDefinitionIgnores(projectName, *context, sourceSearchPath))
             return nullptr;
-        if (!GetGameNameFromZoneDefinition(context->m_game_name, zoneName, zoneDefinition))
+        if (!GetGameNameFromZoneDefinition(context->m_game_name, projectName, zoneDefinition))
             return nullptr;
-        if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneName, zoneDefinition, gdtSearchPath))
+        if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneDefinition, gdtSearchPath))
             return nullptr;
 
         for (const auto* assetLoader : ZONE_CREATORS)
@@ -442,9 +442,9 @@ class Linker::Impl
         return nullptr;
     }
 
-    bool WriteZoneToFile(Zone* zone)
+    bool WriteZoneToFile(const std::string& projectName, Zone* zone) const
     {
-        const fs::path zoneFolderPath(m_args.GetOutputFolderPathForZone(zone->m_name));
+        const fs::path zoneFolderPath(m_args.GetOutputFolderPathForProject(projectName));
         auto zoneFilePath(zoneFolderPath);
         zoneFilePath.append(zone->m_name + ".ff");
 
@@ -465,34 +465,34 @@ class Linker::Impl
         return true;
     }
 
-    bool BuildZone(const std::string& zoneName)
+    bool BuildProject(const std::string& projectName)
     {
-        auto sourceSearchPaths = GetSourceSearchPathsForZone(zoneName);
+        auto sourceSearchPaths = GetSourceSearchPathsForProject(projectName);
 
-        const auto zoneDefinition = ReadZoneDefinition(zoneName, &sourceSearchPaths);
+        const auto zoneDefinition = ReadZoneDefinition(projectName, &sourceSearchPaths);
         if (!zoneDefinition)
             return false;
 
         std::string gameName;
-        if (!GetGameNameFromZoneDefinition(gameName, zoneName, *zoneDefinition))
+        if (!GetGameNameFromZoneDefinition(gameName, projectName, *zoneDefinition))
             return false;
 
         for (auto& c : gameName)
             c = static_cast<char>(std::tolower(c));
 
-        auto assetSearchPaths = GetAssetSearchPathsForZone(gameName, zoneName);
-        auto gdtSearchPaths = GetGdtSearchPathsForZone(gameName, zoneName);
+        auto assetSearchPaths = GetAssetSearchPathsForProject(gameName, projectName);
+        auto gdtSearchPaths = GetGdtSearchPathsForProject(gameName, projectName);
 
-        const auto zone = CreateZoneForDefinition(zoneName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
+        const auto zone = CreateZoneForDefinition(projectName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;
         if (zone)
-            result = WriteZoneToFile(zone.get());
+            result = WriteZoneToFile(projectName, zone.get());
 
-        for (const auto& loadedSearchPath : m_loaded_zone_search_paths)
+        for (const auto& loadedSearchPath : m_loaded_project_search_paths)
         {
             UnloadSearchPath(loadedSearchPath.get());
         }
-        m_loaded_zone_search_paths.clear();
+        m_loaded_project_search_paths.clear();
 
         return result;
     }
@@ -554,16 +554,16 @@ public:
         if (!m_args.ParseArgs(argc, argv))
             return false;
 
-        if (!BuildZoneIndependentSearchPaths())
+        if (!BuildProjectIndependentSearchPaths())
             return false;
 
         if (!LoadZones())
             return false;
 
         auto result = true;
-        for (const auto& zone : m_args.m_zones_to_build)
+        for (const auto& projectName : m_args.m_projects_to_build)
         {
-            if (!BuildZone(zone))
+            if (!BuildProject(projectName))
             {
                 result = false;
                 break;
