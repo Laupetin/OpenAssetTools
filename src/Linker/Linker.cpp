@@ -42,6 +42,7 @@ const IZoneCreator* const ZONE_CREATORS[]
 
 class Linker::Impl
 {
+    static constexpr const char* METADATA_NAME = "name";
     static constexpr const char* METADATA_GAME = "game";
     static constexpr const char* METADATA_GDT = "gdt";
 
@@ -277,6 +278,33 @@ class Linker::Impl
         return true;
     }
 
+    static bool GetNameFromZoneDefinition(std::string& name, const std::string& projectName, const ZoneDefinition& zoneDefinition)
+    {
+        auto firstNameEntry = true;
+        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_NAME);
+        for (auto i = rangeBegin; i != rangeEnd; ++i)
+        {
+            if (firstNameEntry)
+            {
+                name = i->second->m_value;
+                firstNameEntry = false;
+            }
+            else
+            {
+                if (name != i->second->m_value)
+                {
+                    std::cout << "Conflicting names in project \"" << projectName << "\": " << name << " != " << i->second << std::endl;
+                    return false;
+                }
+            }
+        }
+
+        if (firstNameEntry)
+            name = projectName;
+
+        return true;
+    }
+
     std::unique_ptr<ZoneDefinition> ReadZoneDefinition(const std::string& projectName, ISearchPath* sourceSearchPath) const
     {
         std::unique_ptr<ZoneDefinition> zoneDefinition;
@@ -298,6 +326,9 @@ class Linker::Impl
             std::cout << "Failed to read zone definition file for project \"" << projectName << "\"." << std::endl;
             return nullptr;
         }
+
+        if (!GetNameFromZoneDefinition(zoneDefinition->m_name, projectName, *zoneDefinition))
+            return nullptr;
 
         if (!IncludeAdditionalZoneDefinitions(projectName, *zoneDefinition, sourceSearchPath))
             return nullptr;
@@ -425,7 +456,7 @@ class Linker::Impl
     std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& projectName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
                                                   ISearchPath* sourceSearchPath) const
     {
-        auto context = std::make_unique<ZoneCreationContext>(projectName, assetSearchPath, &zoneDefinition);
+        const auto context = std::make_unique<ZoneCreationContext>(assetSearchPath, &zoneDefinition);
         if (!ProcessZoneDefinitionIgnores(projectName, *context, sourceSearchPath))
             return nullptr;
         if (!GetGameNameFromZoneDefinition(context->m_game_name, projectName, zoneDefinition))
@@ -460,6 +491,8 @@ class Linker::Impl
             stream.close();
             return false;
         }
+
+        std::cout << "Created zone \"" << zoneFilePath.string() << "\"\n";
 
         stream.close();
         return true;

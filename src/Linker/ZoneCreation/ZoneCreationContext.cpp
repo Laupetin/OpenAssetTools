@@ -6,9 +6,8 @@ ZoneCreationContext::ZoneCreationContext()
 {
 }
 
-ZoneCreationContext::ZoneCreationContext(std::string zoneName, ISearchPath* assetSearchPath, ZoneDefinition* definition)
-    : m_zone_name(std::move(zoneName)),
-      m_asset_search_path(assetSearchPath),
+ZoneCreationContext::ZoneCreationContext(ISearchPath* assetSearchPath, ZoneDefinition* definition)
+    : m_asset_search_path(assetSearchPath),
       m_definition(definition)
 {
 }
