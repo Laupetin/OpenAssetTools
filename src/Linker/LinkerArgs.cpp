@@ -36,7 +36,7 @@ const CommandLineOption* const OPTION_BASE_FOLDER =
 const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
     .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to \"" + std::string(LinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\".")
+    .WithDescription("Specifies the output folder containing the build artifacts. Defaults to \"" + std::string(LinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\".")
     .WithParameter("outputFolderPath")
     .Build();
 
@@ -100,9 +100,9 @@ LinkerArgs::LinkerArgs()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent<decltype(COMMAND_LINE_OPTIONS)>::value),
       m_base_pattern(R"(\?base\?)"),
       m_game_pattern(R"(\?game\?)"),
-      m_zone_pattern(R"(\?zone\?)"),
-      m_base_folder_depends_on_zone(false),
-      m_out_folder_depends_on_zone(false),
+      m_project_pattern(R"(\?project\?)"),
+      m_base_folder_depends_on_project(false),
+      m_out_folder_depends_on_project(false),
       m_verbose(false)
 {
 }
@@ -116,7 +116,7 @@ void LinkerArgs::PrintUsage()
         usage.AddCommandLineOption(commandLineOption);
     }
 
-    usage.AddArgument("zoneName");
+    usage.AddArgument("projectName");
     usage.SetVariableArguments(true);
 
     usage.Print();
@@ -129,9 +129,9 @@ void LinkerArgs::SetVerbose(const bool isVerbose)
     ObjWriting::Configuration.Verbose = isVerbose;
 }
 
-std::string LinkerArgs::GetBasePathForZone(const std::string& zoneName) const
+std::string LinkerArgs::GetBasePathForProject(const std::string& projectName) const
 {
-    return std::regex_replace(m_base_folder, m_zone_pattern, zoneName);
+    return std::regex_replace(m_base_folder, m_project_pattern, projectName);
 }
 
 void LinkerArgs::SetDefaultBasePath()
@@ -148,7 +148,7 @@ void LinkerArgs::SetDefaultBasePath()
     }
 }
 
-std::set<std::string> LinkerArgs::GetZoneIndependentSearchPaths(const std::set<std::string>& set) const
+std::set<std::string> LinkerArgs::GetProjectIndependentSearchPaths(const std::set<std::string>& set) const
 {
     std::set<std::string> out;
 
@@ -156,12 +156,12 @@ std::set<std::string> LinkerArgs::GetZoneIndependentSearchPaths(const std::set<s
     {
         if (path.find(PATTERN_GAME) != std::string::npos)
             continue;
-        if (path.find(PATTERN_ZONE) != std::string::npos)
+        if (path.find(PATTERN_PROJECT) != std::string::npos)
             continue;
 
         if (path.find(PATTERN_BASE) != std::string::npos)
         {
-            if (m_base_folder_depends_on_zone)
+            if (m_base_folder_depends_on_project)
                 continue;
 
             out.emplace(std::regex_replace(path, m_base_pattern, m_base_folder));
@@ -175,21 +175,21 @@ std::set<std::string> LinkerArgs::GetZoneIndependentSearchPaths(const std::set<s
     return out;
 }
 
-std::set<std::string> LinkerArgs::GetSearchPathsForZone(const std::set<std::string>& set, const std::string& gameName, const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetSearchPathsForProject(const std::set<std::string>& set, const std::string& gameName, const std::string& projectName) const
 {
     std::set<std::string> out;
-    const auto basePath = GetBasePathForZone(zoneName);
+    const auto basePath = GetBasePathForProject(projectName);
 
     for (const auto& path : set)
     {
         if (path.find(PATTERN_GAME) == std::string::npos
-            && path.find(PATTERN_ZONE) == std::string::npos
-            && (!m_base_folder_depends_on_zone || path.find(PATTERN_BASE) == std::string::npos))
+            && path.find(PATTERN_PROJECT) == std::string::npos
+            && (!m_base_folder_depends_on_project || path.find(PATTERN_BASE) == std::string::npos))
         {
             continue;
         }
 
-        out.emplace(std::regex_replace(std::regex_replace(std::regex_replace(path, m_zone_pattern, zoneName), m_game_pattern, gameName), m_base_pattern, basePath));
+        out.emplace(std::regex_replace(std::regex_replace(std::regex_replace(path, m_project_pattern, projectName), m_game_pattern, gameName), m_base_pattern, basePath));
     }
 
     return out;
@@ -210,10 +210,10 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
         return false;
     }
 
-    m_zones_to_build = m_argument_parser.GetArguments();
-    if (m_zones_to_build.empty())
+    m_projects_to_build = m_argument_parser.GetArguments();
+    if (m_projects_to_build.empty())
     {
-        // No zones to build specified...
+        // No projects to build specified...
         PrintUsage();
         return false;
     }
@@ -226,14 +226,14 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
         m_base_folder = m_argument_parser.GetValueForOption(OPTION_BASE_FOLDER);
     else
         SetDefaultBasePath();
-    m_base_folder_depends_on_zone = m_base_folder.find(PATTERN_GAME) != std::string::npos || m_base_folder.find(PATTERN_ZONE) != std::string::npos;
+    m_base_folder_depends_on_project = m_base_folder.find(PATTERN_GAME) != std::string::npos || m_base_folder.find(PATTERN_PROJECT) != std::string::npos;
 
     // --output-folder
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))
         m_out_folder = m_argument_parser.GetValueForOption(OPTION_OUTPUT_FOLDER);
     else
         m_out_folder = DEFAULT_OUTPUT_FOLDER;
-    m_out_folder_depends_on_zone = m_out_folder.find(PATTERN_ZONE) != std::string::npos;
+    m_out_folder_depends_on_project = m_out_folder.find(PATTERN_PROJECT) != std::string::npos;
 
     // --asset-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_ASSET_SEARCH_PATH))
@@ -286,37 +286,37 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
     return true;
 }
 
-std::string LinkerArgs::GetOutputFolderPathForZone(const std::string& zoneName) const
+std::string LinkerArgs::GetOutputFolderPathForProject(const std::string& projectName) const
 {
-    return std::regex_replace(std::regex_replace(m_out_folder, m_zone_pattern, zoneName), m_base_pattern, GetBasePathForZone(zoneName));
+    return std::regex_replace(std::regex_replace(m_out_folder, m_project_pattern, projectName), m_base_pattern, GetBasePathForProject(projectName));
 }
 
-std::set<std::string> LinkerArgs::GetZoneIndependentAssetSearchPaths() const
+std::set<std::string> LinkerArgs::GetProjectIndependentAssetSearchPaths() const
 {
-    return GetZoneIndependentSearchPaths(m_asset_search_paths);
+    return GetProjectIndependentSearchPaths(m_asset_search_paths);
 }
 
-std::set<std::string> LinkerArgs::GetZoneIndependentGdtSearchPaths() const
+std::set<std::string> LinkerArgs::GetProjectIndependentGdtSearchPaths() const
 {
-    return GetZoneIndependentSearchPaths(m_gdt_search_paths);
+    return GetProjectIndependentSearchPaths(m_gdt_search_paths);
 }
 
-std::set<std::string> LinkerArgs::GetZoneIndependentSourceSearchPaths() const
+std::set<std::string> LinkerArgs::GetProjectIndependentSourceSearchPaths() const
 {
-    return GetZoneIndependentSearchPaths(m_source_search_paths);
+    return GetProjectIndependentSearchPaths(m_source_search_paths);
 }
 
-std::set<std::string> LinkerArgs::GetAssetSearchPathsForZone(const std::string& gameName, const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetAssetSearchPathsForProject(const std::string& gameName, const std::string& projectName) const
 {
-    return GetSearchPathsForZone(m_asset_search_paths, gameName, zoneName);
+    return GetSearchPathsForProject(m_asset_search_paths, gameName, projectName);
 }
 
-std::set<std::string> LinkerArgs::GetGdtSearchPathsForZone(const std::string& gameName, const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetGdtSearchPathsForProject(const std::string& gameName, const std::string& projectName) const
 {
-    return GetSearchPathsForZone(m_gdt_search_paths, gameName, zoneName);
+    return GetSearchPathsForProject(m_gdt_search_paths, gameName, projectName);
 }
 
-std::set<std::string> LinkerArgs::GetSourceSearchPathsForZone(const std::string& zoneName) const
+std::set<std::string> LinkerArgs::GetSourceSearchPathsForProject(const std::string& projectName) const
 {
-    return GetSearchPathsForZone(m_source_search_paths, "", zoneName);
+    return GetSearchPathsForProject(m_source_search_paths, "", projectName);
 }

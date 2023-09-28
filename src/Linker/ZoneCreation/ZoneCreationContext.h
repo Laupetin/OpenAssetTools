@@ -12,7 +12,6 @@
 class ZoneCreationContext
 {
 public:
-    std::string m_zone_name;
     std::string m_game_name;
     ISearchPath* m_asset_search_path;
     ZoneDefinition* m_definition;
@@ -20,5 +19,5 @@ public:
     std::vector<AssetListEntry> m_ignored_assets;
 
     ZoneCreationContext();
-    ZoneCreationContext(std::string zoneName, ISearchPath* assetSearchPath, ZoneDefinition* definition);
+    ZoneCreationContext(ISearchPath* assetSearchPath, ZoneDefinition* definition);
 };

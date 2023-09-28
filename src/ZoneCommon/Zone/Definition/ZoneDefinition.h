@@ -29,6 +29,7 @@ public:
 class ZoneDefinition
 {
 public:
+    std::string m_name;
     std::vector<std::unique_ptr<ZoneMetaDataEntry>> m_metadata;
     std::unordered_multimap<std::string, ZoneMetaDataEntry*> m_metadata_lookup;
     std::vector<std::string> m_includes;
