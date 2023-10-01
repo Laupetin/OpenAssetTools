@@ -50,6 +50,10 @@ public:
 
         if (!m_args.m_build_log_file.empty())
         {
+            fs::path p = fs::path(m_args.m_build_log_file).parent_path();
+            if (!p.empty())
+                fs::create_directories(p);
+
             m_build_log_file = std::ofstream(m_args.m_build_log_file, std::ios::out | std::ios::binary);
             if (!m_build_log_file.is_open())
             {

@@ -5,9 +5,9 @@
 AbstractSalsa20Processor::AbstractSalsa20Processor(const int streamCount, std::string& zoneName, const uint8_t* salsa20Key, size_t keySize)
     : m_stream_count(streamCount),
       m_stream_contexts(std::make_unique<StreamContext[]>(streamCount)),
-      m_block_hashes(std::make_unique<uint8_t[]>(BLOCK_HASHES_COUNT * streamCount * SHA1_HASH_SIZE)),
       m_stream_block_indices(std::make_unique<unsigned int[]>(streamCount))
 {
+    m_block_hashes = std::make_unique<uint8_t[]>(BLOCK_HASHES_COUNT * streamCount * SHA1_HASH_SIZE);
     InitStreams(zoneName, salsa20Key, keySize);
 }
 
