@@ -1,5 +1,6 @@
 #include "StateMapLayout.h"
 
+#include <algorithm>
 #include <cassert>
 
 using namespace state_map;
