@@ -15,4 +15,5 @@ jobs:
       - name: Test formatting for all files
         working-directory: ${{ github.workspace }}
         run: |
+          export CLANG_FORMAT_BIN='clang-format-15'
           ./scripts/check-format.sh
