@@ -1,0 +1,5 @@
+---
+Language:        Cpp
+BasedOnStyle:  LLVM
+AlignArrayOfStructures: Left
+ColumnLimit:     160
