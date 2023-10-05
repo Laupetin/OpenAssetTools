@@ -68,6 +68,10 @@ You now run `make` manually or use `./scripts/make_release.sh` or `./scripts/mak
 
 The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
 
+## Using the tools
+
+For information about how to use the tools see the ["Getting started" guide](docs/GettingStarted.md)
+
 ## Legal
 
 OAT source code is licensed under [GPLv3](./LICENSE).
