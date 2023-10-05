@@ -536,8 +536,8 @@ class Linker::Impl
         {
             if (!fs::is_regular_file(zonePath))
             {
-                printf("Could not find file \"%s\".\n", zonePath.c_str());
-                continue;
+                std::cout << "Could not find zone file to load \"" << zonePath << "\".\n";
+                return false;
             }
 
             auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
@@ -545,13 +545,13 @@ class Linker::Impl
             auto zone = std::unique_ptr<Zone>(ZoneLoading::LoadZone(zonePath));
             if (zone == nullptr)
             {
-                printf("Failed to load zone \"%s\".\n", zonePath.c_str());
+                std::cout << "Failed to load zone \"" << zonePath << "\".\n";
                 return false;
             }
 
             if (m_args.m_verbose)
             {
-                printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
+                std::cout << "Load zone \"" << zone->m_name << "\"\n";
             }
 
             m_loaded_zones.emplace_back(std::move(zone));
