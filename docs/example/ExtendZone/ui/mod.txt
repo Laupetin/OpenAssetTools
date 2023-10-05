@@ -1,0 +1,9 @@
+{
+    functionDef
+    {
+        name                        "FUNC_0"
+        value                       (player("teamname") == "TEAM_ALLIES");
+    }
+
+    loadMenu { "ui/menu_custom.menu" }
+}

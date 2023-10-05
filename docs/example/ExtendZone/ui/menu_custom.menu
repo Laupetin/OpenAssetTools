@@ -1,0 +1,126 @@
+{
+    menuDef
+    {
+        name                        "menu_custom"
+        fullscreen                  1
+        rect                        0 0 640 480 0 0
+        style                       1
+        focuscolor                  1 1 1 1
+        onOpen
+        {
+            focusFirst;
+        }
+        onESC
+        {
+            close menu_custom;
+        }
+        itemDef
+        {
+            text                        "abcdefghijklmnopqrstuvwxzy ABCDEFGHIJKLMNOPQRSTUVWXYZ !@#$%^&*(){}~`/=\-',;"
+            rect                        10 10 150 50 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.375
+            textfont                    5
+            forecolor                   1 1 1 0.5
+            bordercolor                 0 1 1 0.5
+            speed                       10
+        }
+        itemDef
+        {
+            text                        "a long and narrow ticker, at 40 units per second. !@&#(?"
+            rect                        200 10 250 25 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.375
+            textfont                    4
+            forecolor                   1 0 1 0.5
+            bordercolor                 0 1 1 0.5
+            speed                       40
+        }
+        itemDef
+        {
+            text                        "abcdefghijklmnopqrstuvwxzy ABCDEFGHIJKLMNOPQRSTUVWXYZ !@#$%^&*(){}~`/=\-',;"
+            rect                        10 70 150 50 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.4583
+            forecolor                   1 1 1 0.5
+            bordercolor                 0 1 1 0.5
+            speed                       20
+        }
+        itemDef
+        {
+            text                        "Big Texted News Ticker.  20 units per second."
+            rect                        200 70 150 50 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.5833
+            forecolor                   1 1 1 0.5
+            bordercolor                 0 1 1 0.5
+            speed                       20
+        }
+        itemDef
+        {
+            text                        "A short ticker with a bunch of text."
+            rect                        10 130 50 50 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.375
+            textfont                    6
+            forecolor                   1 1 1 0.5
+            bordercolor                 0 1 1 0.5
+            speed                       10
+        }
+        itemDef
+        {
+            text                        "<>@#$%^&*()\tA ticker with no borders.       And many spaces.           $%^13"
+            rect                        70 130 500 25 1 0
+            decoration                  
+            type                        20
+            visible                     1
+            textscale                   0.375
+            textfont                    3
+            forecolor                   1 1 1 0.5
+            spacing                     10
+            speed                       35
+        }
+        itemDef
+        {
+            text                        "Color Test: ^1Red ^2Green ^3Yellow ^4Blue ^5Cyan ^6Magenta ^7White"
+            rect                        10 220 500 25 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.375
+            forecolor                   1 1 1 0.5
+            bordercolor                 0 1 1 0.5
+            speed                       50
+        }
+        itemDef
+        {
+            rect                        10 190 500 25 1 0
+            decoration                  
+            type                        20
+            border                      1
+            visible                     1
+            textscale                   0.375
+            forecolor                   1 1 1 0.5
+            bordercolor                 0 1 1 0.5
+            spacing                     30
+            speed                       50
+            newsfeed                    1
+        }
+    }
+}

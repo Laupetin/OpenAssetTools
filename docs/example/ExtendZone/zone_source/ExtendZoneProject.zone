@@ -1,0 +1,14 @@
+// Set the game to "Call Of Duty: Modern Warfare 3"
+>game,IW5
+
+// Overwrite the name of the zone to be "ui"
+>name,ui
+
+// Add custom assets
+material,,clanlvl_box
+material,,xp
+material,,gxp
+menulist,ui/mod.txt
+
+// Include the assets of the original zone
+include,ui
