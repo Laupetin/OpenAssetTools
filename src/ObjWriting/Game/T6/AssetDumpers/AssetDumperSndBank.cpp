@@ -172,16 +172,52 @@ class AssetDumperSndBank::Internal
         // loadspec
         stream.WriteColumn("");
 
-        //     "# secondary",
+        // secondary
+        stream.WriteColumn(alias->secondaryname);
+
         //     "# group",
+        stream.WriteColumn("");
+
         //     "# vol_min",
+        stream.WriteColumn("");
+
         //     "# vol_max",
+        stream.WriteColumn("");
+
         //     "# team_vol_mod",
+        stream.WriteColumn("");
+
         //     "# dist_min",
+        stream.WriteColumn("");
+
         //     "# dist_max",
+        stream.WriteColumn("");
+
         //     "# dist_reverb_max",
+        stream.WriteColumn("");
+
         //     "# volume_falloff_curve",
+        stream.WriteColumn("");
+
         //     "# reverb_falloff_curve",
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        stream.WriteColumn("");
+        
+
+
+
+
+
+
+
+
+
         //     "# volume_min_falloff_curve",
         //     "# reverb_min_falloff_curve",
         //     "# limit_count",
