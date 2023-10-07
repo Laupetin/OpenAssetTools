@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 class AssetListEntry
 {
@@ -9,4 +10,10 @@ public:
 
     AssetListEntry();
     AssetListEntry(std::string type, std::string name);
+};
+
+class AssetList
+{
+public:
+    std::vector<AssetListEntry> m_entries;
 };

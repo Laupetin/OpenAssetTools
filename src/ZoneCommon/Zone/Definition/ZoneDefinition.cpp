@@ -29,7 +29,15 @@ void ZoneDefinition::AddMetaData(std::string key, std::string value)
     m_metadata_lookup.emplace(std::make_pair(metaDataPtr->m_key, metaDataPtr));
 }
 
-void ZoneDefinition::Include(ZoneDefinition& definitionToInclude)
+void ZoneDefinition::Include(const AssetList& assetListToInclude)
+{
+    for (const auto& entry : assetListToInclude.m_entries)
+    {
+        m_assets.emplace_back(entry.m_type, entry.m_name, false);
+    }
+}
+
+void ZoneDefinition::Include(const ZoneDefinition& definitionToInclude)
 {
     for (const auto& metaData : definitionToInclude.m_metadata)
     {

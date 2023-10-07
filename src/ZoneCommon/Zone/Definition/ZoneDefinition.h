@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Zone/AssetList/AssetList.h"
+
 class ZoneDefinitionEntry
 {
 public:
@@ -33,9 +35,11 @@ public:
     std::vector<std::unique_ptr<ZoneMetaDataEntry>> m_metadata;
     std::unordered_multimap<std::string, ZoneMetaDataEntry*> m_metadata_lookup;
     std::vector<std::string> m_includes;
+    std::vector<std::string> m_asset_lists;
     std::vector<std::string> m_ignores;
     std::vector<ZoneDefinitionEntry> m_assets;
 
     void AddMetaData(std::string key, std::string value);
-    void Include(ZoneDefinition& definitionToInclude);
+    void Include(const AssetList& assetListToInclude);
+    void Include(const ZoneDefinition& definitionToInclude);
 };

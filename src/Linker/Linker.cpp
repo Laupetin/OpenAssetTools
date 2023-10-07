@@ -12,7 +12,6 @@
 #include "ObjWriting.h"
 #include "ObjLoading.h"
 #include "SearchPath/SearchPaths.h"
-#include "SearchPath/SearchPathFilesystem.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "LinkerArgs.h"
 #include "LinkerSearchPaths.h"
@@ -115,6 +114,58 @@ class LinkerImpl final : public Linker
         return true;
     }
 
+    bool ReadAssetList(const std::string& zoneName, AssetList& assetList, ISearchPath* sourceSearchPath) const
+    {
+        {
+            const auto assetListFileName = "assetlist/" + zoneName + ".csv";
+            const auto assetListStream = sourceSearchPath->Open(assetListFileName);
+
+            if (assetListStream.IsOpen())
+            {
+                const AssetListInputStream stream(*assetListStream.m_stream);
+                AssetListEntry entry;
+
+                while (stream.NextEntry(entry))
+                {
+                    assetList.m_entries.emplace_back(std::move(entry));
+                }
+                return true;
+            }
+        }
+
+        {
+            const auto zoneDefinition = ReadZoneDefinition(zoneName, sourceSearchPath);
+
+            if (zoneDefinition)
+            {
+                for (const auto& entry : zoneDefinition->m_assets)
+                {
+                    assetList.m_entries.emplace_back(entry.m_asset_type, entry.m_asset_name);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool IncludeAssetLists(ZoneDefinition& zoneDefinition, ISearchPath* sourceSearchPath) const
+    {
+        for (const auto& assetListName : zoneDefinition.m_asset_lists)
+        {
+            AssetList assetList;
+            if (!ReadAssetList(assetListName, assetList, sourceSearchPath))
+            {
+                std::cerr << "Failed to read asset list \"" << assetListName << "\"\n";
+                return false;
+            }
+
+            zoneDefinition.Include(assetList);
+        }
+
+        return true;
+    }
+
     static bool GetNameFromZoneDefinition(std::string& name, const std::string& projectName, const ZoneDefinition& zoneDefinition)
     {
         auto firstNameEntry = true;
@@ -170,42 +221,10 @@ class LinkerImpl final : public Linker
         if (!IncludeAdditionalZoneDefinitions(projectName, *zoneDefinition, sourceSearchPath))
             return nullptr;
 
+        if (!IncludeAssetLists(*zoneDefinition, sourceSearchPath))
+            return nullptr;
+
         return zoneDefinition;
-    }
-
-    bool ReadAssetList(const std::string& zoneName, std::vector<AssetListEntry>& assetList, ISearchPath* sourceSearchPath) const
-    {
-        {
-            const auto assetListFileName = "assetlist/" + zoneName + ".csv";
-            const auto assetListStream = sourceSearchPath->Open(assetListFileName);
-
-            if (assetListStream.IsOpen())
-            {
-                const AssetListInputStream stream(*assetListStream.m_stream);
-                AssetListEntry entry;
-
-                while (stream.NextEntry(entry))
-                {
-                    assetList.emplace_back(std::move(entry));
-                }
-                return true;
-            }
-        }
-
-        {
-            const auto zoneDefinition = ReadZoneDefinition(zoneName, sourceSearchPath);
-
-            if (zoneDefinition)
-            {
-                for (const auto& entry : zoneDefinition->m_assets)
-                {
-                    assetList.emplace_back(entry.m_asset_type, entry.m_asset_name);
-                }
-                return true;
-            }
-        }
-
-        return false;
     }
 
     bool ProcessZoneDefinitionIgnores(const std::string& projectName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
