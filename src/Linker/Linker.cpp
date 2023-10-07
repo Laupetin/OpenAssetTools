@@ -23,6 +23,7 @@
 #include "Game/IW5/ZoneCreatorIW5.h"
 #include "Game/T5/ZoneCreatorT5.h"
 #include "Game/T6/ZoneCreatorT6.h"
+#include "ObjContainer/IPak/IPakWriter.h"
 
 #include "Utils/ObjFileStream.h"
 #include "Utils/StringUtils.h"
@@ -141,7 +142,7 @@ class LinkerImpl final : public Linker
             {
                 for (const auto& entry : zoneDefinition->m_assets)
                 {
-                    assetList.m_entries.emplace_back(entry.m_asset_type, entry.m_asset_name);
+                    assetList.m_entries.emplace_back(entry.m_asset_type, entry.m_asset_name, entry.m_is_reference);
                 }
                 return true;
             }
@@ -414,9 +415,39 @@ class LinkerImpl final : public Linker
         return result;
     }
 
-    bool BuildIPak(const std::string& projectName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& sourceSearchPaths)
+    bool BuildIPak(const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& sourceSearchPaths) const
     {
-        return false;
+        const fs::path ipakFolderPath(m_args.GetOutputFolderPathForProject(projectName));
+        auto ipakFilePath(ipakFolderPath);
+        ipakFilePath.append(zoneDefinition.m_name + ".ipak");
+
+        fs::create_directories(ipakFolderPath);
+
+        std::ofstream stream(ipakFilePath, std::fstream::out | std::fstream::binary);
+        if (!stream.is_open())
+            return false;
+
+        const auto ipakWriter = IPakWriter::Create(stream, &assetSearchPaths);
+        for (const auto& assetEntry : zoneDefinition.m_assets)
+        {
+            if (assetEntry.m_is_reference)
+                continue;
+
+            if (assetEntry.m_asset_type == "image")
+                ipakWriter->AddImage(assetEntry.m_asset_name);
+        }
+
+        if (!ipakWriter->Write())
+        {
+            std::cout << "Writing ipak failed." << std::endl;
+            stream.close();
+            return false;
+        }
+
+        std::cout << "Created ipak \"" << ipakFilePath.string() << "\"\n";
+
+        stream.close();
+        return true;
     }
 
     bool BuildProject(const std::string& projectName)

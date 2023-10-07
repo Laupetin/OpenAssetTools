@@ -9,7 +9,7 @@ bool AssetListInputStream::NextEntry(AssetListEntry& entry) const
 {
     std::vector<std::string> row;
 
-    while(true)
+    while (true)
     {
         if (!m_stream.NextRow(row))
             return false;
@@ -18,8 +18,17 @@ bool AssetListInputStream::NextEntry(AssetListEntry& entry) const
             continue;
 
         entry.m_type = row[0];
-        if (row.size() >= 2)
+        if (row.size() >= 3 && row[1].empty())
+        {
+            entry.m_name = row[2];
+            entry.m_is_reference = true;
+        }
+        else
+        {
             entry.m_name = row[1];
+            entry.m_is_reference = false;
+        }
+
         return true;
     }
 }

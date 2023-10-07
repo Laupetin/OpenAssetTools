@@ -18,9 +18,6 @@ ObjContainerRepository<IPak, Zone> IPak::Repository;
 
 class IPak::Impl : public ObjContainerReferenceable
 {
-    static const uint32_t MAGIC = FileUtils::MakeMagic32('K', 'A', 'P', 'I');
-    static const uint32_t VERSION = 0x50000;
-
     std::string m_path;
     std::unique_ptr<std::istream> m_stream;
 
@@ -82,11 +79,11 @@ class IPak::Impl : public ObjContainerReferenceable
 
         switch (section.type)
         {
-        case 1:
+        case ipak_consts::IPAK_INDEX_SECTION:
             m_index_section = std::make_unique<IPakSection>(section);
             break;
 
-        case 2:
+        case ipak_consts::IPAK_DATA_SECTION:
             m_data_section = std::make_unique<IPakSection>(section);
             break;
 
@@ -108,13 +105,13 @@ class IPak::Impl : public ObjContainerReferenceable
             return false;
         }
 
-        if (header.magic != MAGIC)
+        if (header.magic != ipak_consts::IPAK_MAGIC)
         {
             printf("Invalid ipak magic '0x%x'.\n", header.magic);
             return false;
         }
 
-        if (header.version != VERSION)
+        if (header.version != ipak_consts::IPAK_VERSION)
         {
             printf("Unsupported ipak version '%u'.\n", header.version);
             return false;

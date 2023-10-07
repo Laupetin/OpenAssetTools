@@ -126,7 +126,7 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
         if (!assetEntry.m_is_reference)
             continue;
 
-        context.m_ignored_assets.m_entries.emplace_back(assetEntry.m_asset_type, assetEntry.m_asset_name);
+        context.m_ignored_assets.m_entries.emplace_back(assetEntry.m_asset_type, assetEntry.m_asset_name, assetEntry.m_is_reference);
     }
 
     const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(zone.get(), context.m_asset_search_path, CreateGdtList(context));

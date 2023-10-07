@@ -58,6 +58,16 @@ int Common::Com_HashString(const char* str, const int len)
     return result;
 }
 
+uint32_t Common::R_HashString(const char* str, uint32_t hash)
+{
+    for (const auto* pos = str; *pos; pos++)
+    {
+        hash = 33 * hash ^ (*pos | 0x20);
+    }
+
+    return hash;
+}
+
 PackedTexCoords Common::Vec2PackTexCoords(const vec2_t* in)
 {
     return PackedTexCoords{ Pack32::Vec2PackTexCoords(in->v) };

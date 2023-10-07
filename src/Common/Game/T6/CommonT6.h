@@ -10,6 +10,7 @@ namespace T6
         static int Com_HashKey(const char* str, int maxLen);
         static int Com_HashString(const char* str);
         static int Com_HashString(const char* str, int len);
+        static uint32_t R_HashString(const char* str, uint32_t hash);
 
         static PackedTexCoords Vec2PackTexCoords(const vec2_t* in);
         static PackedUnitVec Vec3PackUnitVec(const vec3_t* in);
