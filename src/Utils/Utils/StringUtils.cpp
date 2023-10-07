@@ -88,4 +88,16 @@ namespace utils
                 inEscape = true;
         }
     }
+
+    void MakeStringLowerCase(std::string& str)
+    {
+        for (auto& c : str)
+            c = static_cast<char>(tolower(c));
+    }
+
+    void MakeStringUpperCase(std::string& str)
+    {
+        for (auto& c : str)
+            c = static_cast<char>(toupper(c));
+    }
 }

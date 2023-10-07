@@ -25,6 +25,7 @@
 #include "Game/T6/ZoneCreatorT6.h"
 
 #include "Utils/ObjFileStream.h"
+#include "Utils/StringUtils.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/AssetList/AssetListStream.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
@@ -403,26 +404,19 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    bool BuildFastFile(const std::string& projectName, ZoneDefinition& zoneDefinition, SearchPaths& sourceSearchPaths)
+    bool BuildFastFile(const std::string& projectName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& gdtSearchPaths, SearchPaths& sourceSearchPaths) const
     {
-        std::string gameName;
-        if (!GetGameNameFromZoneDefinition(gameName, projectName, zoneDefinition))
-            return false;
-
-        for (auto& c : gameName)
-            c = static_cast<char>(std::tolower(c));
-
-        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
-        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
-
         const auto zone = CreateZoneForDefinition(projectName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;
         if (zone)
             result = WriteZoneToFile(projectName, zone.get());
 
-        m_search_paths.UnloadProjectSpecificSearchPaths();
-
         return result;
+    }
+
+    bool BuildIPak(const std::string& projectName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& sourceSearchPaths)
+    {
+        return false;
     }
 
     bool BuildProject(const std::string& projectName)
@@ -437,18 +431,33 @@ class LinkerImpl final : public Linker
         if (!GetProjectTypeFromZoneDefinition(projectType, projectName, *zoneDefinition))
             return false;
 
+        std::string gameName;
+        if (!GetGameNameFromZoneDefinition(gameName, projectName, *zoneDefinition))
+            return false;
+        utils::MakeStringLowerCase(gameName);
+
+        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
+        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
+
+        auto result = false;
         switch (projectType)
         {
         case ProjectType::FASTFILE:
-            return BuildFastFile(projectName, *zoneDefinition, sourceSearchPaths);
+            result = BuildFastFile(projectName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
+            break;
 
         case ProjectType::IPAK:
+            result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths, sourceSearchPaths);
+            break;
+
         default:
             assert(false);
             break;
         }
 
-        return false;
+        m_search_paths.UnloadProjectSpecificSearchPaths();
+
+        return result;
     }
 
     bool LoadZones()
