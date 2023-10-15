@@ -146,7 +146,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
             if (blockHeader->commands[currentCommand].compressed == 0
                 || blockHeader->commands[currentCommand].compressed == 1)
             {
-                std::cerr << "IPak block offset is not the file head: " << blockHeader->countAndOffset.offset << " != " << m_file_head << " -> Invalid\n";
+                std::cerr << "IPak block offset (" << blockHeader->countAndOffset.offset << ") is not the file head (" << m_file_head << ") -> Invalid\n";
                 return false;
             }
         }
@@ -171,7 +171,7 @@ bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(const IPakDataBl
     {
         if (requiredChunkCount > IPAK_CHUNK_COUNT_PER_READ)
         {
-            std::cerr << "IPak block spans over more than " << IPAK_CHUNK_COUNT_PER_READ << " blocks (" << requiredChunkCount << "), which is not supported.\n";
+            std::cerr << "IPak block spans over more than " << IPAK_CHUNK_COUNT_PER_READ << " chunks (" << requiredChunkCount << "), which is not supported.\n";
             return false;
         }
 
