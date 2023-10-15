@@ -33,24 +33,68 @@ class IPakEntryReadStream final : public objbuf
     int64_t m_buffer_start_pos;
     int64_t m_buffer_end_pos;
 
-    template<typename T>
+    template <typename T>
     static T AlignForward(const T num, const T alignTo)
     {
         return (num + alignTo - 1) / alignTo * alignTo;
     }
 
-    template<typename T>
+    template <typename T>
     static T AlignBackwards(const T num, const T alignTo)
     {
         return num / alignTo * alignTo;
     }
 
+    /**
+     * \brief Reads the specified chunks from disk.
+     * \param buffer The location to write the loaded data to. Must be able to hold the specified amount of data.
+     * \param startPos The file offset at which the data to be loaded starts at.
+     * \param chunkCount The amount of chunks to be loaded.
+     * \return The amount of chunks that could be successfully loaded.
+     */
     size_t ReadChunks(uint8_t* buffer, int64_t startPos, size_t chunkCount) const;
+
+    /**
+     * \brief Make sure the loaded chunk buffer window corresponds to the specified parameters and loads additional data if necessary.
+     * \param startPos The offset in the file that should be the start of the chunk buffer.
+     * \param chunkCount The amount of chunks that the buffer should hold. Can not exceed IPAK_CHUNK_COUNT_PER_READ.
+     * \return \c true if the chunk buffer window could successfully be adjusted, \c false otherwise.
+     */
     bool SetChunkBufferWindow(int64_t startPos, size_t chunkCount);
-    bool ValidateBlockHeader(IPakDataBlockHeader* blockHeader) const;
-    bool AdjustChunkBufferWindowForBlockHeader(IPakDataBlockHeader* blockHeader, size_t blockOffsetInChunk);
+
+    /**
+     * \brief Makes sure the specified block can be safely loaded.
+     * \param blockHeader The block header to check.
+     * \return \c true if the block can be safely loaded, \c false otherwise.
+     */
+    bool ValidateBlockHeader(const IPakDataBlockHeader* blockHeader) const;
+
+    /**
+     * \brief Makes sure that the specified block fits inside the loaded chunk buffer window and adjusts the chunk buffer window if necessary.
+     * \param blockHeader The header of the block that needs to fit inside the loaded chunk buffer window.
+     * \param blockOffsetInChunk The offset of the block inside the current chunk.
+     * \return \c true if the chunk buffer window was either already valid or was successfully adjusted to have all block data loaded. \c false otherwise.
+     */
+    bool AdjustChunkBufferWindowForBlockHeader(const IPakDataBlockHeader* blockHeader, size_t blockOffsetInChunk);
+
+    /**
+     * \brief Ensures the next valid block is loaded.
+     * \return \c true if a new block was loaded or \c false if no further valid block could be loaded.
+     */
     bool NextBlock();
+
+    /**
+     * \brief Processes a command with the specified parameters at the current position.
+     * \param commandSize The size of the command data
+     * \param compressed The compression value of the command. Can be \c 0 for uncompressed or \c 1 for lzo compression. Any other value skips the specified size of data.
+     * \return \c true if the specified command could be correctly processed or \c otherwise.
+     */
     bool ProcessCommand(size_t commandSize, int compressed);
+
+    /**
+     * \brief Ensures that the next valid command is loaded.
+     * \return \c true if a new command was loaded or \c false if no further valid command could be loaded.
+     */
     bool AdvanceStream();
 
 public:
