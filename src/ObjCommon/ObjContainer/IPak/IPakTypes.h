@@ -15,6 +15,8 @@ namespace ipak_consts
 
     static constexpr size_t IPAK_CHUNK_SIZE = 0x8000;
     static constexpr size_t IPAK_CHUNK_COUNT_PER_READ = 0x8;
+
+    static constexpr uint32_t IPAK_COMMAND_SKIP = 0xCF;
 }
 
 typedef uint32_t IPakHash;
@@ -53,27 +55,26 @@ struct IPakIndexEntry
     uint32_t size;
 };
 
+struct IPakDataBlockCountAndOffset
+{
+    uint32_t offset : 24;
+    uint32_t count : 8;
+};
+
+static_assert(sizeof(IPakDataBlockCountAndOffset) == 4);
+
+struct IPakDataBlockCommand
+{
+    uint32_t size : 24;
+    uint32_t compressed : 8;
+};
+
+static_assert(sizeof(IPakDataBlockCommand) == 4);
+
 struct IPakDataBlockHeader
 {
-    union
-    {
-        uint32_t countAndOffset;
-
-        struct
-        {
-            uint32_t offset : 24;
-            uint32_t count : 8;
-        };
-    };
-
-    union
-    {
-        uint32_t commands[31];
-
-        struct
-        {
-            uint32_t size : 24;
-            uint32_t compressed : 8;
-        } _commands[31];
-    };
+    IPakDataBlockCountAndOffset countAndOffset;
+    IPakDataBlockCommand commands[31];
 };
+
+static_assert(sizeof(IPakDataBlockHeader) == 128);

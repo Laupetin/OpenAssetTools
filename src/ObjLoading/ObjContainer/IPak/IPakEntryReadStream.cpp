@@ -129,24 +129,24 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
 
 bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHeader) const
 {
-    if (blockHeader->count > 31)
+    if (blockHeader->countAndOffset.count > 31)
     {
-        std::cerr << "IPak block has more than 31 commands: " << blockHeader->count << " -> Invalid\n";
+        std::cerr << "IPak block has more than 31 commands: " << blockHeader->countAndOffset.count << " -> Invalid\n";
         return false;
     }
 
     // We expect the current file to be continued where we left off
-    if (blockHeader->offset != m_file_head)
+    if (blockHeader->countAndOffset.offset != m_file_head)
     {
         // A matching offset is only relevant if a command contains data
-        for (unsigned currentCommand = 0; currentCommand < blockHeader->count; currentCommand++)
+        for (unsigned currentCommand = 0; currentCommand < blockHeader->countAndOffset.count; currentCommand++)
         {
             // If compressed is not 0 or 1 it will not be read and therefore it is okay when the offset does not match
             // The game uses IPAK_COMMAND_SKIP as value for compressed when it intends to skip the specified amount of data
-            if (blockHeader->_commands[currentCommand].compressed == 0
-                || blockHeader->_commands[currentCommand].compressed == 1)
+            if (blockHeader->commands[currentCommand].compressed == 0
+                || blockHeader->commands[currentCommand].compressed == 1)
             {
-                std::cerr << "IPak block offset is not the file head: " << blockHeader->offset << " != " << m_file_head << " -> Invalid\n";
+                std::cerr << "IPak block offset is not the file head: " << blockHeader->countAndOffset.offset << " != " << m_file_head << " -> Invalid\n";
                 return false;
             }
         }
@@ -158,9 +158,9 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
 bool IPakEntryReadStream::AdjustChunkBufferWindowForBlockHeader(const IPakDataBlockHeader* blockHeader, const size_t blockOffsetInChunk)
 {
     size_t commandsSize = 0;
-    for (unsigned commandIndex = 0; commandIndex < blockHeader->count; commandIndex++)
+    for (unsigned commandIndex = 0; commandIndex < blockHeader->countAndOffset.count; commandIndex++)
     {
-        commandsSize += blockHeader->_commands[commandIndex].size;
+        commandsSize += blockHeader->commands[commandIndex].size;
     }
 
     const size_t requiredChunkCount = AlignForward<size_t>(blockOffsetInChunk + sizeof(IPakDataBlockHeader) + commandsSize, IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
@@ -255,14 +255,14 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
 
 bool IPakEntryReadStream::AdvanceStream()
 {
-    if (m_current_block == nullptr || m_next_command >= m_current_block->count)
+    if (m_current_block == nullptr || m_next_command >= m_current_block->countAndOffset.count)
     {
         if (!NextBlock())
             return false;
     }
 
-    ProcessCommand(m_current_block->_commands[m_next_command].size,
-                   m_current_block->_commands[m_next_command].compressed);
+    ProcessCommand(m_current_block->commands[m_next_command].size,
+                   m_current_block->commands[m_next_command].compressed);
     m_next_command++;
 
     return true;
