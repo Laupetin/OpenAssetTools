@@ -1,13 +1,11 @@
 #pragma once
+#include <memory>
 
 class Linker
 {
-    class Impl;
-    Impl* m_impl;
-
 public:
-    Linker();
-    ~Linker();
+    Linker() = default;
+    virtual ~Linker() = default;
 
     Linker(const Linker& other) = delete;
     Linker(Linker&& other) noexcept = delete;
@@ -20,5 +18,7 @@ public:
      * \param argv The command line arguments.
      * \return \c true if the application was successful or \c false if an error occurred.
      */
-    bool Start(int argc, const char** argv) const;
+    virtual bool Start(int argc, const char** argv) = 0;
+
+    static std::unique_ptr<Linker> Create();
 };

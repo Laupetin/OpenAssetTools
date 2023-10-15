@@ -1,5 +1,6 @@
 #include "ZoneDefinitionParser.h"
 
+#include "Sequence/SequenceZoneDefinitionAssetList.h"
 #include "Sequence/SequenceZoneDefinitionEntry.h"
 #include "Sequence/SequenceZoneDefinitionIgnore.h"
 #include "Sequence/SequenceZoneDefinitionInclude.h"
@@ -16,6 +17,7 @@ const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>::seq
         new SequenceZoneDefinitionMetaData(),
         new SequenceZoneDefinitionInclude(),
         new SequenceZoneDefinitionIgnore(),
+        new SequenceZoneDefinitionAssetList(),
         new SequenceZoneDefinitionEntry()
     });
 

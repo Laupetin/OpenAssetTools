@@ -23,7 +23,7 @@ void ZoneCreator::AddAssetTypeName(asset_type_t assetType, std::string name)
     m_asset_types_by_name.emplace(std::make_pair(std::move(name), assetType));
 }
 
-std::vector<Gdt*> ZoneCreator::CreateGdtList(ZoneCreationContext& context)
+std::vector<Gdt*> ZoneCreator::CreateGdtList(const ZoneCreationContext& context)
 {
     std::vector<Gdt*> gdtList;
     gdtList.reserve(context.m_gdt_files.size());
@@ -33,9 +33,9 @@ std::vector<Gdt*> ZoneCreator::CreateGdtList(ZoneCreationContext& context)
     return gdtList;
 }
 
-bool ZoneCreator::CreateIgnoredAssetMap(ZoneCreationContext& context, std::unordered_map<std::string, asset_type_t>& ignoredAssetMap) const
+bool ZoneCreator::CreateIgnoredAssetMap(const ZoneCreationContext& context, std::unordered_map<std::string, asset_type_t>& ignoredAssetMap) const
 {
-    for (const auto& ignoreEntry : context.m_ignored_assets)
+    for (const auto& ignoreEntry : context.m_ignored_assets.m_entries)
     {
         const auto foundAssetTypeEntry = m_asset_types_by_name.find(ignoreEntry.m_type);
         if (foundAssetTypeEntry == m_asset_types_by_name.end())
@@ -58,7 +58,7 @@ void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
         zone->m_pools->InitPoolDynamic(assetType);
 }
 
-void ZoneCreator::HandleMetadata(Zone* zone, ZoneCreationContext& context) const
+void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context) const
 {
     std::vector<KeyValuePair> kvpList;
 
@@ -126,7 +126,7 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
         if (!assetEntry.m_is_reference)
             continue;
 
-        context.m_ignored_assets.emplace_back(assetEntry.m_asset_type, assetEntry.m_asset_name);
+        context.m_ignored_assets.m_entries.emplace_back(assetEntry.m_asset_type, assetEntry.m_asset_name, assetEntry.m_is_reference);
     }
 
     const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(zone.get(), context.m_asset_search_path, CreateGdtList(context));

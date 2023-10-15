@@ -7,6 +7,7 @@
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderFontIcon.h"
+#include "AssetLoaders/AssetLoaderGfxImage.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderPhysConstraints.h"
 #include "AssetLoaders/AssetLoaderPhysPreset.h"
@@ -45,7 +46,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL, XModel))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MATERIAL, Material))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMAGE, GfxImage))
+        REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND, SndBank))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND_PATCH, SndPatch))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_CLIPMAP, clipMap_t))

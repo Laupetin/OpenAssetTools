@@ -12,9 +12,9 @@
 #include "ObjWriting.h"
 #include "ObjLoading.h"
 #include "SearchPath/SearchPaths.h"
-#include "SearchPath/SearchPathFilesystem.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "LinkerArgs.h"
+#include "LinkerSearchPaths.h"
 #include "ZoneWriting.h"
 #include "Game/IW3/ZoneCreatorIW3.h"
 #include "ZoneCreation/ZoneCreationContext.h"
@@ -23,8 +23,10 @@
 #include "Game/IW5/ZoneCreatorIW5.h"
 #include "Game/T5/ZoneCreatorT5.h"
 #include "Game/T6/ZoneCreatorT6.h"
+#include "ObjContainer/IPak/IPakWriter.h"
 
 #include "Utils/ObjFileStream.h"
+#include "Utils/StringUtils.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/AssetList/AssetListStream.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
@@ -40,194 +42,30 @@ const IZoneCreator* const ZONE_CREATORS[]
     new T6::ZoneCreator()
 };
 
-class Linker::Impl
+enum class ProjectType
 {
-    static constexpr const char* METADATA_NAME = "name";
+    FASTFILE,
+    IPAK,
+
+    MAX
+};
+
+constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]
+{
+    "fastfile",
+    "ipak"
+};
+
+class LinkerImpl final : public Linker
+{
     static constexpr const char* METADATA_GAME = "game";
     static constexpr const char* METADATA_GDT = "gdt";
+    static constexpr const char* METADATA_NAME = "name";
+    static constexpr const char* METADATA_TYPE = "type";
 
     LinkerArgs m_args;
-    std::vector<std::unique_ptr<ISearchPath>> m_loaded_project_search_paths;
-    SearchPaths m_asset_search_paths;
-    SearchPaths m_gdt_search_paths;
-    SearchPaths m_source_search_paths;
+    LinkerSearchPaths m_search_paths;
     std::vector<std::unique_ptr<Zone>> m_loaded_zones;
-
-    /**
-     * \brief Loads a search path.
-     * \param searchPath The search path to load.
-     */
-    void LoadSearchPath(ISearchPath* searchPath) const
-    {
-        if (m_args.m_verbose)
-        {
-            printf("Loading search path: \"%s\"\n", searchPath->GetPath().c_str());
-        }
-
-        ObjLoading::LoadIWDsInSearchPath(searchPath);
-    }
-
-    /**
-     * \brief Unloads a search path.
-     * \param searchPath The search path to unload.
-     */
-    void UnloadSearchPath(ISearchPath* searchPath) const
-    {
-        if (m_args.m_verbose)
-        {
-            printf("Unloading search path: \"%s\"\n", searchPath->GetPath().c_str());
-        }
-
-        ObjLoading::UnloadIWDsInSearchPath(searchPath);
-    }
-
-    SearchPaths GetAssetSearchPathsForProject(const std::string& gameName, const std::string& projectName)
-    {
-        SearchPaths searchPathsForProject;
-
-        for (const auto& searchPathStr : m_args.GetAssetSearchPathsForProject(gameName, projectName))
-        {
-            auto absolutePath = fs::absolute(searchPathStr);
-
-            if (!fs::is_directory(absolutePath))
-            {
-                if (m_args.m_verbose)
-                    std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
-                continue;
-            }
-
-            if (m_args.m_verbose)
-                std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
-
-            auto searchPath = std::make_unique<SearchPathFilesystem>(searchPathStr);
-            LoadSearchPath(searchPath.get());
-            searchPathsForProject.IncludeSearchPath(searchPath.get());
-            m_loaded_project_search_paths.emplace_back(std::move(searchPath));
-        }
-
-        searchPathsForProject.IncludeSearchPath(&m_asset_search_paths);
-
-        for (auto* iwd : IWD::Repository)
-        {
-            searchPathsForProject.IncludeSearchPath(iwd);
-        }
-
-        return searchPathsForProject;
-    }
-
-    SearchPaths GetGdtSearchPathsForProject(const std::string& gameName, const std::string& projectName)
-    {
-        SearchPaths searchPathsForProject;
-
-        for (const auto& searchPathStr : m_args.GetGdtSearchPathsForProject(gameName, projectName))
-        {
-            auto absolutePath = fs::absolute(searchPathStr);
-
-            if (!fs::is_directory(absolutePath))
-            {
-                if (m_args.m_verbose)
-                    std::cout << "Adding gdt search path (Not found): " << absolutePath.string() << std::endl;
-                continue;
-            }
-
-            if (m_args.m_verbose)
-                std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
-
-            searchPathsForProject.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
-        }
-
-        searchPathsForProject.IncludeSearchPath(&m_gdt_search_paths);
-
-        return searchPathsForProject;
-    }
-
-    SearchPaths GetSourceSearchPathsForProject(const std::string& projectName)
-    {
-        SearchPaths searchPathsForProject;
-
-        for (const auto& searchPathStr : m_args.GetSourceSearchPathsForProject(projectName))
-        {
-            auto absolutePath = fs::absolute(searchPathStr);
-
-            if (!fs::is_directory(absolutePath))
-            {
-                if (m_args.m_verbose)
-                    std::cout << "Adding source search path (Not found): " << absolutePath.string() << std::endl;
-                continue;
-            }
-
-            if (m_args.m_verbose)
-                std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
-
-            searchPathsForProject.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
-        }
-
-        searchPathsForProject.IncludeSearchPath(&m_source_search_paths);
-
-        return searchPathsForProject;
-    }
-
-    /**
-     * \brief Initializes the Linker object's search paths based on the user's input.
-     * \return \c true if building the search paths was successful, otherwise \c false.
-     */
-    bool BuildProjectIndependentSearchPaths()
-    {
-        for (const auto& path : m_args.GetProjectIndependentAssetSearchPaths())
-        {
-            auto absolutePath = fs::absolute(path);
-
-            if (!fs::is_directory(absolutePath))
-            {
-                if (m_args.m_verbose)
-                    std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
-                continue;
-            }
-
-            if (m_args.m_verbose)
-                std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
-
-            auto searchPath = std::make_unique<SearchPathFilesystem>(absolutePath.string());
-            LoadSearchPath(searchPath.get());
-            m_asset_search_paths.CommitSearchPath(std::move(searchPath));
-        }
-
-        for (const auto& path : m_args.GetProjectIndependentGdtSearchPaths())
-        {
-            auto absolutePath = fs::absolute(path);
-
-            if (!fs::is_directory(absolutePath))
-            {
-                if (m_args.m_verbose)
-                    std::cout << "Loading gdt search path (Not found): " << absolutePath.string() << std::endl;
-                continue;
-            }
-
-            if (m_args.m_verbose)
-                std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
-
-            m_gdt_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
-        }
-
-        for (const auto& path : m_args.GetProjectIndependentSourceSearchPaths())
-        {
-            auto absolutePath = fs::absolute(path);
-
-            if (!fs::is_directory(absolutePath))
-            {
-                if (m_args.m_verbose)
-                    std::cout << "Loading source search path (Not found): " << absolutePath.string() << std::endl;
-                continue;
-            }
-
-            if (m_args.m_verbose)
-                std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
-
-            m_source_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
-        }
-
-        return true;
-    }
 
     bool IncludeAdditionalZoneDefinitions(const std::string& initialFileName, ZoneDefinition& zoneDefinition, ISearchPath* sourceSearchPath) const
     {
@@ -273,6 +111,58 @@ class Linker::Impl
             }
 
             toIncludeQueue.pop_front();
+        }
+
+        return true;
+    }
+
+    bool ReadAssetList(const std::string& zoneName, AssetList& assetList, ISearchPath* sourceSearchPath) const
+    {
+        {
+            const auto assetListFileName = "assetlist/" + zoneName + ".csv";
+            const auto assetListStream = sourceSearchPath->Open(assetListFileName);
+
+            if (assetListStream.IsOpen())
+            {
+                const AssetListInputStream stream(*assetListStream.m_stream);
+                AssetListEntry entry;
+
+                while (stream.NextEntry(entry))
+                {
+                    assetList.m_entries.emplace_back(std::move(entry));
+                }
+                return true;
+            }
+        }
+
+        {
+            const auto zoneDefinition = ReadZoneDefinition(zoneName, sourceSearchPath);
+
+            if (zoneDefinition)
+            {
+                for (const auto& entry : zoneDefinition->m_assets)
+                {
+                    assetList.m_entries.emplace_back(entry.m_asset_type, entry.m_asset_name, entry.m_is_reference);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool IncludeAssetLists(ZoneDefinition& zoneDefinition, ISearchPath* sourceSearchPath) const
+    {
+        for (const auto& assetListName : zoneDefinition.m_asset_lists)
+        {
+            AssetList assetList;
+            if (!ReadAssetList(assetListName, assetList, sourceSearchPath))
+            {
+                std::cerr << "Failed to read asset list \"" << assetListName << "\"\n";
+                return false;
+            }
+
+            zoneDefinition.Include(assetList);
         }
 
         return true;
@@ -333,42 +223,10 @@ class Linker::Impl
         if (!IncludeAdditionalZoneDefinitions(projectName, *zoneDefinition, sourceSearchPath))
             return nullptr;
 
+        if (!IncludeAssetLists(*zoneDefinition, sourceSearchPath))
+            return nullptr;
+
         return zoneDefinition;
-    }
-
-    bool ReadAssetList(const std::string& zoneName, std::vector<AssetListEntry>& assetList, ISearchPath* sourceSearchPath) const
-    {
-        {
-            const auto assetListFileName = "assetlist/" + zoneName + ".csv";
-            const auto assetListStream = sourceSearchPath->Open(assetListFileName);
-
-            if (assetListStream.IsOpen())
-            {
-                const AssetListInputStream stream(*assetListStream.m_stream);
-                AssetListEntry entry;
-
-                while (stream.NextEntry(entry))
-                {
-                    assetList.emplace_back(std::move(entry));
-                }
-                return true;
-            }
-        }
-
-        {
-            const auto zoneDefinition = ReadZoneDefinition(zoneName, sourceSearchPath);
-
-            if (zoneDefinition)
-            {
-                for (const auto& entry : zoneDefinition->m_assets)
-                {
-                    assetList.emplace_back(entry.m_asset_type, entry.m_asset_name);
-                }
-                return true;
-            }
-        }
-
-        return false;
     }
 
     bool ProcessZoneDefinitionIgnores(const std::string& projectName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
@@ -394,6 +252,55 @@ class Linker::Impl
                 return false;
             }
         }
+        return true;
+    }
+
+    static bool ProjectTypeByName(ProjectType& projectType, const std::string& projectTypeName)
+    {
+        for (auto i = 0u; i < static_cast<unsigned>(ProjectType::MAX); i++)
+        {
+            if (projectTypeName == PROJECT_TYPE_NAMES[i])
+            {
+                projectType = static_cast<ProjectType>(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static bool GetProjectTypeFromZoneDefinition(ProjectType& projectType, const std::string& projectName, const ZoneDefinition& zoneDefinition)
+    {
+        auto firstGameEntry = true;
+        const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_TYPE);
+        for (auto i = rangeBegin; i != rangeEnd; ++i)
+        {
+            ProjectType parsedProjectType;
+            if (!ProjectTypeByName(parsedProjectType, i->second->m_value))
+            {
+                std::cerr << "Not a valid project type: \"" << i->second->m_value << "\"\n";
+                return false;
+            }
+
+            if (firstGameEntry)
+            {
+                projectType = parsedProjectType;
+                firstGameEntry = false;
+            }
+            else
+            {
+                if (projectType != parsedProjectType)
+                {
+                    std::cerr << "Conflicting types in project \"" << projectName << "\": " << PROJECT_TYPE_NAMES[static_cast<unsigned>(projectType)]
+                        << " != " << PROJECT_TYPE_NAMES[static_cast<unsigned>(parsedProjectType)] << std::endl;
+                    return false;
+                }
+            }
+        }
+
+        if (firstGameEntry)
+            projectType = ProjectType::FASTFILE;
+
         return true;
     }
 
@@ -498,34 +405,88 @@ class Linker::Impl
         return true;
     }
 
+    bool BuildFastFile(const std::string& projectName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& gdtSearchPaths, SearchPaths& sourceSearchPaths) const
+    {
+        const auto zone = CreateZoneForDefinition(projectName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
+        auto result = zone != nullptr;
+        if (zone)
+            result = WriteZoneToFile(projectName, zone.get());
+
+        return result;
+    }
+
+    bool BuildIPak(const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& sourceSearchPaths) const
+    {
+        const fs::path ipakFolderPath(m_args.GetOutputFolderPathForProject(projectName));
+        auto ipakFilePath(ipakFolderPath);
+        ipakFilePath.append(zoneDefinition.m_name + ".ipak");
+
+        fs::create_directories(ipakFolderPath);
+
+        std::ofstream stream(ipakFilePath, std::fstream::out | std::fstream::binary);
+        if (!stream.is_open())
+            return false;
+
+        const auto ipakWriter = IPakWriter::Create(stream, &assetSearchPaths);
+        for (const auto& assetEntry : zoneDefinition.m_assets)
+        {
+            if (assetEntry.m_is_reference)
+                continue;
+
+            if (assetEntry.m_asset_type == "image")
+                ipakWriter->AddImage(assetEntry.m_asset_name);
+        }
+
+        if (!ipakWriter->Write())
+        {
+            std::cout << "Writing ipak failed." << std::endl;
+            stream.close();
+            return false;
+        }
+
+        std::cout << "Created ipak \"" << ipakFilePath.string() << "\"\n";
+
+        stream.close();
+        return true;
+    }
+
     bool BuildProject(const std::string& projectName)
     {
-        auto sourceSearchPaths = GetSourceSearchPathsForProject(projectName);
+        auto sourceSearchPaths = m_search_paths.GetSourceSearchPathsForProject(projectName);
 
         const auto zoneDefinition = ReadZoneDefinition(projectName, &sourceSearchPaths);
         if (!zoneDefinition)
             return false;
 
+        ProjectType projectType;
+        if (!GetProjectTypeFromZoneDefinition(projectType, projectName, *zoneDefinition))
+            return false;
+
         std::string gameName;
         if (!GetGameNameFromZoneDefinition(gameName, projectName, *zoneDefinition))
             return false;
+        utils::MakeStringLowerCase(gameName);
 
-        for (auto& c : gameName)
-            c = static_cast<char>(std::tolower(c));
+        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
+        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
 
-        auto assetSearchPaths = GetAssetSearchPathsForProject(gameName, projectName);
-        auto gdtSearchPaths = GetGdtSearchPathsForProject(gameName, projectName);
-
-        const auto zone = CreateZoneForDefinition(projectName, *zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
-        auto result = zone != nullptr;
-        if (zone)
-            result = WriteZoneToFile(projectName, zone.get());
-
-        for (const auto& loadedSearchPath : m_loaded_project_search_paths)
+        auto result = false;
+        switch (projectType)
         {
-            UnloadSearchPath(loadedSearchPath.get());
+        case ProjectType::FASTFILE:
+            result = BuildFastFile(projectName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
+            break;
+
+        case ProjectType::IPAK:
+            result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths, sourceSearchPaths);
+            break;
+
+        default:
+            assert(false);
+            break;
         }
-        m_loaded_project_search_paths.clear();
+
+        m_search_paths.UnloadProjectSpecificSearchPaths();
 
         return result;
     }
@@ -576,18 +537,17 @@ class Linker::Impl
     }
 
 public:
-    Impl()
-    = default;
+    LinkerImpl()
+        : m_search_paths(m_args)
+    {
+    }
 
-    /**
-     * \copydoc Linker::Start
-     */
-    bool Start(const int argc, const char** argv)
+    bool Start(const int argc, const char** argv) override
     {
         if (!m_args.ParseArgs(argc, argv))
             return false;
 
-        if (!BuildProjectIndependentSearchPaths())
+        if (!m_search_paths.BuildProjectIndependentSearchPaths())
             return false;
 
         if (!LoadZones())
@@ -609,18 +569,7 @@ public:
     }
 };
 
-Linker::Linker()
+std::unique_ptr<Linker> Linker::Create()
 {
-    m_impl = new Impl();
-}
-
-Linker::~Linker()
-{
-    delete m_impl;
-    m_impl = nullptr;
-}
-
-bool Linker::Start(const int argc, const char** argv) const
-{
-    return m_impl->Start(argc, argv);
+    return std::make_unique<LinkerImpl>();
 }
