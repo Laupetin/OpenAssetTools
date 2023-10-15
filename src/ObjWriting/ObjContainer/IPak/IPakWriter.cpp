@@ -179,6 +179,9 @@ public:
         m_current_block_header_offset = m_current_offset;
         m_current_block = {};
         m_current_block.countAndOffset.offset = static_cast<uint32_t>(m_file_offset);
+
+        // Reserve space to later write actual block header data
+        GoTo(m_current_offset + sizeof(IPakDataBlockHeader));
     }
 
     void WriteChunkData(const void* data, const size_t dataSize)
@@ -227,16 +230,16 @@ public:
             }
 
             dataOffset += commandSize;
+            m_file_offset += commandSize;
         }
-
-        m_file_offset += dataSize;
     }
 
     void StartNewFile()
     {
         FlushBlock();
-        StartNewBlock();
+
         m_file_offset = 0u;
+        StartNewBlock();
         m_chunk_buffer_window_start = utils::AlignToPrevious(m_current_offset, static_cast<int64_t>(ipak_consts::IPAK_CHUNK_SIZE));
     }
 
@@ -250,13 +253,14 @@ public:
         const auto nameHash = T6::Common::R_HashString(imageName.c_str(), 0);
         const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(imageData.get()), imageSize));
 
+        StartNewFile();
+        const auto startOffset = m_current_block_header_offset;
+
         IPakIndexEntry indexEntry;
         indexEntry.key.nameHash = nameHash;
         indexEntry.key.dataHash = dataHash & 0x1FFFFFFF;
-        indexEntry.offset = static_cast<uint32_t>(m_current_offset - m_data_section_offset);
+        indexEntry.offset = static_cast<uint32_t>(startOffset - m_data_section_offset);
 
-        StartNewFile();
-        const auto startOffset = m_current_offset;
         WriteChunkData(imageData.get(), imageSize);
         const auto writtenImageSize = static_cast<size_t>(m_current_offset - startOffset);
 
