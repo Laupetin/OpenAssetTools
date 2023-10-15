@@ -16,7 +16,12 @@ namespace ipak_consts
     static constexpr size_t IPAK_CHUNK_SIZE = 0x8000;
     static constexpr size_t IPAK_CHUNK_COUNT_PER_READ = 0x8;
 
+    static constexpr uint32_t IPAK_COMMAND_DEFAULT_SIZE = 0x7F00;
+    static constexpr uint32_t IPAK_COMMAND_UNCOMPRESSED = 0;
+    static constexpr uint32_t IPAK_COMMAND_COMPRESSED = 1;
     static constexpr uint32_t IPAK_COMMAND_SKIP = 0xCF;
+
+    static_assert(IPAK_COMMAND_DEFAULT_SIZE <= IPAK_CHUNK_SIZE);
 }
 
 typedef uint32_t IPakHash;

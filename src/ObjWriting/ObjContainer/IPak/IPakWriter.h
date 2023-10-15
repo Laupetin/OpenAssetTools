@@ -7,6 +7,8 @@
 class IPakWriter
 {
 public:
+    static constexpr auto USE_COMPRESSION = true;
+
     IPakWriter() = default;
     virtual ~IPakWriter() = default;
 
