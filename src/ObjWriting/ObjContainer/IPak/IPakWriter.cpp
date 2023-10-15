@@ -221,7 +221,7 @@ public:
 
             if (writeUncompressed)
             {
-                Write(data, dataSize);
+                Write(&static_cast<const char*>(data)[dataOffset], commandSize);
 
                 const auto currentCommand = m_current_block.countAndOffset.count;
                 m_current_block.commands[currentCommand].size = commandSize;
