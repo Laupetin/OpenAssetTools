@@ -198,6 +198,14 @@ public:
             const auto remainingSize = dataSize - dataOffset;
             const auto remainingChunkBufferWindowSize = std::max((ipak_consts::IPAK_CHUNK_COUNT_PER_READ * ipak_consts::IPAK_CHUNK_SIZE)
                                                                  - static_cast<size_t>(m_current_offset - m_chunk_buffer_window_start), 0u);
+
+            if (remainingChunkBufferWindowSize == 0)
+            {
+                FlushChunk();
+                StartNewBlock();
+                continue;
+            }
+
             const auto commandSize = std::min(std::min(remainingSize, ipak_consts::IPAK_COMMAND_DEFAULT_SIZE), remainingChunkBufferWindowSize);
 
             auto writeUncompressed = true;
