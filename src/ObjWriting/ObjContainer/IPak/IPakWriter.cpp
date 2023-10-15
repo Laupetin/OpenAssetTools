@@ -176,6 +176,11 @@ public:
     void StartNewBlock()
     {
         AlignToBlockHeader();
+
+        // Skip to the next chunk when only the header could fit into the current chunk anyway
+        if (static_cast<size_t>(utils::Align(m_current_offset, static_cast<int64_t>(ipak_consts::IPAK_CHUNK_SIZE)) - m_current_offset) <= sizeof(IPakDataBlockHeader))
+            FlushChunk();
+
         m_current_block_header_offset = m_current_offset;
         m_current_block = {};
         m_current_block.countAndOffset.offset = static_cast<uint32_t>(m_file_offset);
