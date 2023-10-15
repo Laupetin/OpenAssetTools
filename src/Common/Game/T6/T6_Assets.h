@@ -765,10 +765,10 @@ namespace T6
         int platform[2];
     };
 
-
     struct GfxStreamedPartInfo
     {
-        unsigned int levelCountAndSize;
+        uint32_t levelCount : 4;
+        uint32_t levelSize : 28;
         unsigned int hash;
         uint16_t width;
         uint16_t height;
