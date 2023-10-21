@@ -41,7 +41,7 @@ private:
 
 public:
     std::vector<std::string> m_zones_to_load;
-    std::vector<std::string> m_projects_to_build;
+    std::vector<std::string> m_project_specifiers_to_build;
     
     std::string m_base_folder;
     std::string m_out_folder;

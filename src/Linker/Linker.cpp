@@ -44,6 +44,7 @@ const IZoneCreator* const ZONE_CREATORS[]
 
 enum class ProjectType
 {
+    NONE,
     FASTFILE,
     IPAK,
 
@@ -52,6 +53,7 @@ enum class ProjectType
 
 constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]
 {
+    "none",
     "fastfile",
     "ipak"
 };
@@ -168,7 +170,7 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    static bool GetNameFromZoneDefinition(std::string& name, const std::string& projectName, const ZoneDefinition& zoneDefinition)
+    static bool GetNameFromZoneDefinition(std::string& name, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
         auto firstNameEntry = true;
         const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_NAME);
@@ -183,27 +185,27 @@ class LinkerImpl final : public Linker
             {
                 if (name != i->second->m_value)
                 {
-                    std::cout << "Conflicting names in project \"" << projectName << "\": " << name << " != " << i->second << std::endl;
+                    std::cout << "Conflicting names in target \"" << targetName << "\": " << name << " != " << i->second << std::endl;
                     return false;
                 }
             }
         }
 
         if (firstNameEntry)
-            name = projectName;
+            name = targetName;
 
         return true;
     }
 
-    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(const std::string& projectName, ISearchPath* sourceSearchPath) const
+    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(const std::string& targetName, ISearchPath* sourceSearchPath) const
     {
         std::unique_ptr<ZoneDefinition> zoneDefinition;
         {
-            const auto definitionFileName = projectName + ".zone";
+            const auto definitionFileName = targetName + ".zone";
             const auto definitionStream = sourceSearchPath->Open(definitionFileName);
             if (!definitionStream.IsOpen())
             {
-                std::cout << "Could not find zone definition file for project \"" << projectName << "\"." << std::endl;
+                std::cout << "Could not find zone definition file for target \"" << targetName << "\"." << std::endl;
                 return nullptr;
             }
 
@@ -213,14 +215,14 @@ class LinkerImpl final : public Linker
 
         if (!zoneDefinition)
         {
-            std::cout << "Failed to read zone definition file for project \"" << projectName << "\"." << std::endl;
+            std::cout << "Failed to read zone definition file for target \"" << targetName << "\"." << std::endl;
             return nullptr;
         }
 
-        if (!GetNameFromZoneDefinition(zoneDefinition->m_name, projectName, *zoneDefinition))
+        if (!GetNameFromZoneDefinition(zoneDefinition->m_name, targetName, *zoneDefinition))
             return nullptr;
 
-        if (!IncludeAdditionalZoneDefinitions(projectName, *zoneDefinition, sourceSearchPath))
+        if (!IncludeAdditionalZoneDefinitions(targetName, *zoneDefinition, sourceSearchPath))
             return nullptr;
 
         if (!IncludeAssetLists(*zoneDefinition, sourceSearchPath))
@@ -229,7 +231,7 @@ class LinkerImpl final : public Linker
         return zoneDefinition;
     }
 
-    bool ProcessZoneDefinitionIgnores(const std::string& projectName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
+    bool ProcessZoneDefinitionIgnores(const std::string& targetName, ZoneCreationContext& context, ISearchPath* sourceSearchPath) const
     {
         if (context.m_definition->m_ignores.empty())
             return true;
@@ -242,7 +244,7 @@ class LinkerImpl final : public Linker
 
         for (const auto& ignore : context.m_definition->m_ignores)
         {
-            if (ignore == projectName)
+            if (ignore == targetName)
                 continue;
 
             std::vector<AssetListEntry> assetList;
@@ -269,9 +271,9 @@ class LinkerImpl final : public Linker
         return false;
     }
 
-    static bool GetProjectTypeFromZoneDefinition(ProjectType& projectType, const std::string& projectName, const ZoneDefinition& zoneDefinition)
+    static bool GetProjectTypeFromZoneDefinition(ProjectType& projectType, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
-        auto firstGameEntry = true;
+        auto firstTypeEntry = true;
         const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_TYPE);
         for (auto i = rangeBegin; i != rangeEnd; ++i)
         {
@@ -282,29 +284,34 @@ class LinkerImpl final : public Linker
                 return false;
             }
 
-            if (firstGameEntry)
+            if (firstTypeEntry)
             {
                 projectType = parsedProjectType;
-                firstGameEntry = false;
+                firstTypeEntry = false;
             }
             else
             {
                 if (projectType != parsedProjectType)
                 {
-                    std::cerr << "Conflicting types in project \"" << projectName << "\": " << PROJECT_TYPE_NAMES[static_cast<unsigned>(projectType)]
+                    std::cerr << "Conflicting types in target \"" << targetName << "\": " << PROJECT_TYPE_NAMES[static_cast<unsigned>(projectType)]
                         << " != " << PROJECT_TYPE_NAMES[static_cast<unsigned>(parsedProjectType)] << std::endl;
                     return false;
                 }
             }
         }
 
-        if (firstGameEntry)
-            projectType = ProjectType::FASTFILE;
+        if (firstTypeEntry)
+        {
+            if (zoneDefinition.m_assets.empty())
+                projectType = ProjectType::NONE;
+            else
+                projectType = ProjectType::FASTFILE;
+        }
 
         return true;
     }
 
-    static bool GetGameNameFromZoneDefinition(std::string& gameName, const std::string& projectName, const ZoneDefinition& zoneDefinition)
+    static bool GetGameNameFromZoneDefinition(std::string& gameName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
         auto firstGameEntry = true;
         const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_GAME);
@@ -319,7 +326,7 @@ class LinkerImpl final : public Linker
             {
                 if (gameName != i->second->m_value)
                 {
-                    std::cout << "Conflicting game names in project \"" << projectName << "\": " << gameName << " != " << i->second << std::endl;
+                    std::cout << "Conflicting game names in target \"" << targetName << "\": " << gameName << " != " << i->second << std::endl;
                     return false;
                 }
             }
@@ -327,7 +334,7 @@ class LinkerImpl final : public Linker
 
         if (firstGameEntry)
         {
-            std::cout << "No game name was specified for project \"" << projectName << "\"" << std::endl;
+            std::cout << "No game name was specified for target \"" << targetName << "\"" << std::endl;
             return false;
         }
 
@@ -360,13 +367,13 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& projectName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
+    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& targetName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
                                                   ISearchPath* sourceSearchPath) const
     {
         const auto context = std::make_unique<ZoneCreationContext>(assetSearchPath, &zoneDefinition);
-        if (!ProcessZoneDefinitionIgnores(projectName, *context, sourceSearchPath))
+        if (!ProcessZoneDefinitionIgnores(targetName, *context, sourceSearchPath))
             return nullptr;
-        if (!GetGameNameFromZoneDefinition(context->m_game_name, projectName, zoneDefinition))
+        if (!GetGameNameFromZoneDefinition(context->m_game_name, targetName, zoneDefinition))
             return nullptr;
         if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneDefinition, gdtSearchPath))
             return nullptr;
@@ -405,9 +412,10 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    bool BuildFastFile(const std::string& projectName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& gdtSearchPaths, SearchPaths& sourceSearchPaths) const
+    bool BuildFastFile(const std::string& projectName, const std::string& targetName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& gdtSearchPaths,
+                       SearchPaths& sourceSearchPaths) const
     {
-        const auto zone = CreateZoneForDefinition(projectName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
+        const auto zone = CreateZoneForDefinition(targetName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;
         if (zone)
             result = WriteZoneToFile(projectName, zone.get());
@@ -415,7 +423,7 @@ class LinkerImpl final : public Linker
         return result;
     }
 
-    bool BuildIPak(const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& sourceSearchPaths) const
+    bool BuildIPak(const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths) const
     {
         const fs::path ipakFolderPath(m_args.GetOutputFolderPathForProject(projectName));
         auto ipakFilePath(ipakFolderPath);
@@ -450,43 +458,64 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    bool BuildProject(const std::string& projectName)
+    bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
+    {
+        return std::all_of(zoneDefinition.m_targets_to_build.begin(), zoneDefinition.m_targets_to_build.end(), [this, &projectName, &targetName](const std::string& buildTargetName)
+        {
+            if (buildTargetName == targetName)
+            {
+                std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
+                return false;
+            }
+
+            std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
+            return BuildProject(projectName, buildTargetName);
+        });
+    }
+
+    bool BuildProject(const std::string& projectName, const std::string& targetName)
     {
         auto sourceSearchPaths = m_search_paths.GetSourceSearchPathsForProject(projectName);
 
-        const auto zoneDefinition = ReadZoneDefinition(projectName, &sourceSearchPaths);
+        const auto zoneDefinition = ReadZoneDefinition(targetName, &sourceSearchPaths);
         if (!zoneDefinition)
             return false;
 
         ProjectType projectType;
-        if (!GetProjectTypeFromZoneDefinition(projectType, projectName, *zoneDefinition))
+        if (!GetProjectTypeFromZoneDefinition(projectType, targetName, *zoneDefinition))
             return false;
 
-        std::string gameName;
-        if (!GetGameNameFromZoneDefinition(gameName, projectName, *zoneDefinition))
-            return false;
-        utils::MakeStringLowerCase(gameName);
-
-        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
-        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
-
-        auto result = false;
-        switch (projectType)
+        auto result = true;
+        if (projectType != ProjectType::NONE)
         {
-        case ProjectType::FASTFILE:
-            result = BuildFastFile(projectName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
-            break;
+            std::string gameName;
+            if (!GetGameNameFromZoneDefinition(gameName, targetName, *zoneDefinition))
+                return false;
+            utils::MakeStringLowerCase(gameName);
 
-        case ProjectType::IPAK:
-            result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths, sourceSearchPaths);
-            break;
+            auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
+            auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
 
-        default:
-            assert(false);
-            break;
+            switch (projectType)
+            {
+            case ProjectType::FASTFILE:
+                result = BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
+                break;
+
+            case ProjectType::IPAK:
+                result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths);
+                break;
+
+            default:
+                assert(false);
+                result = false;
+                break;
+            }
         }
 
         m_search_paths.UnloadProjectSpecificSearchPaths();
+
+        result = result && BuildReferencedTargets(projectName, targetName, *zoneDefinition);
 
         return result;
     }
@@ -536,6 +565,40 @@ class LinkerImpl final : public Linker
         m_loaded_zones.clear();
     }
 
+    static bool GetProjectAndTargetFromProjectSpecifier(const std::string& projectSpecifier, std::string& projectName, std::string& targetName)
+    {
+        const auto targetNameSeparatorIndex = projectSpecifier.find_first_of('/');
+        if (targetNameSeparatorIndex == std::string::npos)
+        {
+            projectName = projectSpecifier;
+            targetName = projectSpecifier;
+        }
+        else if (projectSpecifier.find_first_of('/', targetNameSeparatorIndex + 1) != std::string::npos)
+        {
+            std::cerr << "Project specifier cannot have more than one target name: \"" << projectSpecifier << "\"\n";
+            return false;
+        }
+        else
+        {
+            projectName = projectSpecifier.substr(0, targetNameSeparatorIndex);
+            targetName = projectSpecifier.substr(targetNameSeparatorIndex + 1);
+        }
+
+        if (projectName.empty())
+        {
+            std::cerr << "Project name cannot be empty: \"" << projectSpecifier << "\"\n";
+            return false;
+        }
+
+        if (targetName.empty())
+        {
+            std::cerr << "Target name cannot be empty: \"" << projectSpecifier << "\"\n";
+            return false;
+        }
+
+        return true;
+    }
+
 public:
     LinkerImpl()
         : m_search_paths(m_args)
@@ -554,9 +617,17 @@ public:
             return false;
 
         auto result = true;
-        for (const auto& projectName : m_args.m_projects_to_build)
+        for (const auto& projectSpecifier : m_args.m_project_specifiers_to_build)
         {
-            if (!BuildProject(projectName))
+            std::string projectName;
+            std::string targetName;
+            if (!GetProjectAndTargetFromProjectSpecifier(projectSpecifier, projectName, targetName))
+            {
+                result = false;
+                break;
+            }
+
+            if (!BuildProject(projectName, targetName))
             {
                 result = false;
                 break;

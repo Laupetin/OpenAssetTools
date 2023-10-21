@@ -37,6 +37,7 @@ public:
     std::vector<std::string> m_includes;
     std::vector<std::string> m_asset_lists;
     std::vector<std::string> m_ignores;
+    std::vector<std::string> m_targets_to_build;
     std::vector<ZoneDefinitionEntry> m_assets;
 
     void AddMetaData(std::string key, std::string value);
