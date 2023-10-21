@@ -1,0 +1,11 @@
+// Set the game to "Call Of Duty: Black Ops 2"
+>game,T6
+
+// Overwrite the name of the ipak to be "IPakZone"
+>name,IPakZone
+
+// Set type to ipak
+>type,ipak
+
+// Add custom assets
+image,sample_image

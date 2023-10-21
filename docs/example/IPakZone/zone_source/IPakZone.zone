@@ -1,0 +1,8 @@
+// Set the game to "Call Of Duty: Black Ops 2"
+>game,T6
+
+// Set type to none, only makes the other two projects build
+>type,none
+
+build,IPakZone_ff
+build,IPakZone_ipak
