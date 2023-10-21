@@ -44,6 +44,7 @@ const IZoneCreator* const ZONE_CREATORS[]
 
 enum class ProjectType
 {
+    NONE,
     FASTFILE,
     IPAK,
 
@@ -52,6 +53,7 @@ enum class ProjectType
 
 constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]
 {
+    "none",
     "fastfile",
     "ipak"
 };
@@ -271,7 +273,7 @@ class LinkerImpl final : public Linker
 
     static bool GetProjectTypeFromZoneDefinition(ProjectType& projectType, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
-        auto firstGameEntry = true;
+        auto firstTypeEntry = true;
         const auto [rangeBegin, rangeEnd] = zoneDefinition.m_metadata_lookup.equal_range(METADATA_TYPE);
         for (auto i = rangeBegin; i != rangeEnd; ++i)
         {
@@ -282,10 +284,10 @@ class LinkerImpl final : public Linker
                 return false;
             }
 
-            if (firstGameEntry)
+            if (firstTypeEntry)
             {
                 projectType = parsedProjectType;
-                firstGameEntry = false;
+                firstTypeEntry = false;
             }
             else
             {
@@ -298,8 +300,13 @@ class LinkerImpl final : public Linker
             }
         }
 
-        if (firstGameEntry)
-            projectType = ProjectType::FASTFILE;
+        if (firstTypeEntry)
+        {
+            if (zoneDefinition.m_assets.empty())
+                projectType = ProjectType::NONE;
+            else
+                projectType = ProjectType::FASTFILE;
+        }
 
         return true;
     }
@@ -451,6 +458,11 @@ class LinkerImpl final : public Linker
         return true;
     }
 
+    bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition) const
+    {
+        return true;
+    }
+
     bool BuildProject(const std::string& projectName, const std::string& targetName)
     {
         auto sourceSearchPaths = m_search_paths.GetSourceSearchPathsForProject(projectName);
@@ -463,29 +475,34 @@ class LinkerImpl final : public Linker
         if (!GetProjectTypeFromZoneDefinition(projectType, targetName, *zoneDefinition))
             return false;
 
-        std::string gameName;
-        if (!GetGameNameFromZoneDefinition(gameName, targetName, *zoneDefinition))
-            return false;
-        utils::MakeStringLowerCase(gameName);
-
-        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
-        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
-
         auto result = false;
-        switch (projectType)
+        if (projectType != ProjectType::NONE)
         {
-        case ProjectType::FASTFILE:
-            result = BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
-            break;
+            std::string gameName;
+            if (!GetGameNameFromZoneDefinition(gameName, targetName, *zoneDefinition))
+                return false;
+            utils::MakeStringLowerCase(gameName);
 
-        case ProjectType::IPAK:
-            result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths);
-            break;
+            auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
+            auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
 
-        default:
-            assert(false);
-            break;
+            switch (projectType)
+            {
+            case ProjectType::FASTFILE:
+                result = BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
+                break;
+
+            case ProjectType::IPAK:
+                result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths);
+                break;
+
+            default:
+                assert(false);
+                break;
+            }
         }
+
+        result = result && BuildReferencedTargets(projectName, targetName, *zoneDefinition);
 
         m_search_paths.UnloadProjectSpecificSearchPaths();
 
