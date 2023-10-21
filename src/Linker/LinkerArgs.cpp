@@ -210,8 +210,8 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
         return false;
     }
 
-    m_projects_to_build = m_argument_parser.GetArguments();
-    if (m_projects_to_build.empty())
+    m_project_specifiers_to_build = m_argument_parser.GetArguments();
+    if (m_project_specifiers_to_build.empty())
     {
         // No projects to build specified...
         PrintUsage();
