@@ -458,9 +458,19 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition) const
+    bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
-        return true;
+        return std::all_of(zoneDefinition.m_targets_to_build.begin(), zoneDefinition.m_targets_to_build.end(), [this, &projectName, &targetName](const std::string& buildTargetName)
+        {
+            if (buildTargetName == targetName)
+            {
+                std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
+                return false;
+            }
+
+            std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
+            return BuildProject(projectName, buildTargetName);
+        });
     }
 
     bool BuildProject(const std::string& projectName, const std::string& targetName)
@@ -475,7 +485,7 @@ class LinkerImpl final : public Linker
         if (!GetProjectTypeFromZoneDefinition(projectType, targetName, *zoneDefinition))
             return false;
 
-        auto result = false;
+        auto result = true;
         if (projectType != ProjectType::NONE)
         {
             std::string gameName;
@@ -498,13 +508,14 @@ class LinkerImpl final : public Linker
 
             default:
                 assert(false);
+                result = false;
                 break;
             }
         }
 
-        result = result && BuildReferencedTargets(projectName, targetName, *zoneDefinition);
-
         m_search_paths.UnloadProjectSpecificSearchPaths();
+
+        result = result && BuildReferencedTargets(projectName, targetName, *zoneDefinition);
 
         return result;
     }
