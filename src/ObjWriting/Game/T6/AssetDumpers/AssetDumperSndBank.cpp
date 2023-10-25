@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <filesystem>
-#include <unordered_map>
+#include <unordered_set>
 
 #include "Utils/ClassUtils.h"
 #include "Csv/CsvStream.h"
@@ -11,9 +11,9 @@
 using namespace T6;
 namespace fs = std::filesystem;
 
-class AssetDumperSndBank::Internal
+namespace
 {
-    inline static const std::string ALIAS_HEADERS[]
+    const std::string ALIAS_HEADERS[]
     {
         "# name",
         "# file",
@@ -80,66 +80,41 @@ class AssetDumperSndBank::Internal
         "# snapshot",
     };
 
+    const std::string PREFIXES_TO_DROP[]
+    {
+        "raw/",
+        "devraw/",
+    };
+}
+
+class AssetDumperSndBank::Internal
+{
     AssetDumpingContext& m_context;
 
-    static std::string GetExtensionForFormat(const snd_asset_format format)
-    {
-        switch (format)
-        {
-        case SND_ASSET_FORMAT_MP3:
-            return ".mp3";
-
-        case SND_ASSET_FORMAT_FLAC:
-            return ".flac";
-
-        case SND_ASSET_FORMAT_PCMS16:
-        case SND_ASSET_FORMAT_PCMS24:
-        case SND_ASSET_FORMAT_PCMS32:
-        case SND_ASSET_FORMAT_IEEE:
-        case SND_ASSET_FORMAT_XMA4:
-        case SND_ASSET_FORMAT_MSADPCM:
-        case SND_ASSET_FORMAT_WMA:
-        case SND_ASSET_FORMAT_WIIUADPCM:
-        case SND_ASSET_FORMAT_MPC:
-            std::cout << "Unsupported sound format " << format << std::endl;
-            return std::string();
-
-        default:
-            assert(false);
-            std::cout << "Unknown sound format " << format << std::endl;
-            return std::string();
-        }
-    }
-
-    _NODISCARD std::string GetAssetFilename(const std::string& outputFileName, const SoundAssetBankEntry& entry) const
+    _NODISCARD std::string GetAssetFilename(std::string outputFileName, const std::string& extension) const
     {
         fs::path assetPath(m_context.m_base_path);
 
-        fs::path assetName(outputFileName);
-        auto firstPart = true;
-        for (const auto& part : assetName)
+        std::replace(outputFileName.begin(), outputFileName.end(), '\\', '/');
+        for (const auto& droppedPrefix : PREFIXES_TO_DROP)
         {
-            if (firstPart)
+            if (outputFileName.rfind(droppedPrefix, 0) != std::string::npos)
             {
-                firstPart = false;
-                if (part.string() == "raw"
-                    || part.string() == "devraw")
-                    continue;
+                outputFileName.erase(0, droppedPrefix.size());
+                break;
             }
-
-            assetPath.append(part.string());
         }
 
-        const auto extension = GetExtensionForFormat(static_cast<snd_asset_format>(entry.format));
+        assetPath.append(outputFileName);
         if (!extension.empty())
             assetPath.concat(extension);
 
         return assetPath.string();
     }
 
-    _NODISCARD std::unique_ptr<std::ostream> OpenAssetOutputFile(const std::string& outputFileName, const SoundAssetBankEntry& entry) const
+    _NODISCARD std::unique_ptr<std::ostream> OpenAssetOutputFile(const std::string& outputFileName, const std::string& extension) const
     {
-        fs::path assetPath(GetAssetFilename(outputFileName, entry));
+        fs::path assetPath(GetAssetFilename(outputFileName, extension));
 
         auto assetDir(assetPath);
         assetDir.remove_filename();
@@ -156,7 +131,7 @@ class AssetDumperSndBank::Internal
         return nullptr;
     }
 
-    std::unique_ptr<std::ostream> OpenAliasOutputFile(const SndBank* sndBank) const
+    static std::unique_ptr<std::ostream> OpenAliasOutputFile(const SndBank* sndBank)
     {
         return nullptr;
     }
@@ -171,7 +146,7 @@ class AssetDumperSndBank::Internal
         stream.NextRow();
     }
 
-    void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias)
+    static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias)
     {
         // name
         stream.WriteColumn(alias->name);
@@ -185,7 +160,7 @@ class AssetDumperSndBank::Internal
 
         // loadspec
         stream.WriteColumn("");
-        
+
         //     "# secondary",
         //     "# group",
         //     "# vol_min",
@@ -247,7 +222,7 @@ class AssetDumperSndBank::Internal
         //     "# snapshot",
     }
 
-    void DumpSndBankAliases(const SndBank* sndBank, std::unordered_map<unsigned, std::string>& aliasFiles)
+    static void DumpSndBankAliases(const SndBank* sndBank)
     {
         const auto outputFile = OpenAliasOutputFile(sndBank);
 
@@ -267,57 +242,106 @@ class AssetDumperSndBank::Internal
             {
                 const auto& alias = aliasList.head[j];
                 WriteAliasToFile(csvStream, &alias);
-                if (alias.assetId && alias.assetFileName)
-                    aliasFiles[alias.assetId] = alias.assetFileName;
             }
         }
     }
 
-    void DumpSoundData(std::unordered_map<unsigned, std::string>& aliasFiles) const
+    static SoundBankEntryInputStream FindSoundDataInSoundBanks(const unsigned assetId)
     {
-        for (const auto& [id, filename] : aliasFiles)
+        for (const auto* soundBank : SoundBank::Repository)
         {
-            auto foundEntry = false;
+            auto soundFile = soundBank->GetEntryStream(assetId);
+            if (soundFile.IsOpen())
+                return soundFile;
+        }
 
-            for (const auto* soundBank : SoundBank::Repository)
+        return {};
+    }
+
+    void DumpSoundFilePassthrough(const char* assetFileName, const SoundBankEntryInputStream& soundFile, const std::string& extension) const
+    {
+        const auto outFile = OpenAssetOutputFile(assetFileName, extension);
+        if (!outFile)
+        {
+            std::cerr << "Failed to open sound output file: \"" << assetFileName << "\"\n";
+            return;
+        }
+
+        while (!soundFile.m_stream->eof())
+        {
+            char buffer[2048];
+            soundFile.m_stream->read(buffer, sizeof(buffer));
+            const auto readSize = soundFile.m_stream->gcount();
+            outFile->write(buffer, readSize);
+        }
+    }
+
+    void DumpSndAlias(const SndAlias& alias) const
+    {
+        const auto soundFile = FindSoundDataInSoundBanks(alias.assetId);
+        if (soundFile.IsOpen())
+        {
+            const auto format = static_cast<snd_asset_format>(soundFile.m_entry.format);
+            switch (format)
             {
-                auto soundFile = soundBank->GetEntryStream(id);
-                if (soundFile.IsOpen())
+            case SND_ASSET_FORMAT_MP3:
+                DumpSoundFilePassthrough(alias.assetFileName, soundFile, ".mp3");
+                break;
+
+            case SND_ASSET_FORMAT_FLAC:
+                DumpSoundFilePassthrough(alias.assetFileName, soundFile, ".flac");
+                break;
+
+            case SND_ASSET_FORMAT_PCMS16:
+            case SND_ASSET_FORMAT_PCMS24:
+            case SND_ASSET_FORMAT_PCMS32:
+            case SND_ASSET_FORMAT_IEEE:
+            case SND_ASSET_FORMAT_XMA4:
+            case SND_ASSET_FORMAT_MSADPCM:
+            case SND_ASSET_FORMAT_WMA:
+            case SND_ASSET_FORMAT_WIIUADPCM:
+            case SND_ASSET_FORMAT_MPC:
+                std::cerr << "Cannot dump sound (Unsupported sound format " << format << "): \"" << alias.assetFileName << "\"\n";
+                break;
+
+            default:
+                assert(false);
+                std::cerr << "Cannot dump sound (Unknown sound format " << format << "): \"" << alias.assetFileName << "\"\n";
+                break;
+            }
+        }
+        else
+        {
+            std::cerr << "Could not find data for sound \"" << alias.assetFileName << "\"\n";
+        }
+    }
+
+    void DumpSoundData(const SndBank* sndBank) const
+    {
+        std::unordered_set<unsigned> dumpedAssets;
+
+        for (auto i = 0u; i < sndBank->aliasCount; i++)
+        {
+            const auto& aliasList = sndBank->alias[i];
+
+            for (auto j = 0; j < aliasList.count; j++)
+            {
+                const auto& alias = aliasList.head[j];
+                if (alias.assetId && alias.assetFileName && dumpedAssets.find(alias.assetId) == dumpedAssets.end())
                 {
-                    auto outFile = OpenAssetOutputFile(filename, soundFile.m_entry);
-                    if (!outFile)
-                    {
-                        std::cout << "Failed to open sound outputfile: \"" << filename << "\"" << std::endl;
-                        break;
-                    }
-
-                    while (!soundFile.m_stream->eof())
-                    {
-                        char buffer[2048];
-                        soundFile.m_stream->read(buffer, sizeof(buffer));
-                        const auto readSize = soundFile.m_stream->gcount();
-                        outFile->write(buffer, readSize);
-                    }
-
-                    foundEntry = true;
-                    break;
+                    DumpSndAlias(alias);
+                    dumpedAssets.emplace(alias.assetId);
                 }
             }
-
-            if (!foundEntry)
-            {
-                std::cout << "Could not find data for sound \"" << filename << "\"" << std::endl;
-            }
         }
     }
 
-    void DumpSndBank(const XAssetInfo<SndBank>* sndBankInfo)
+    void DumpSndBank(const XAssetInfo<SndBank>* sndBankInfo) const
     {
         const auto* sndBank = sndBankInfo->Asset();
 
-        std::unordered_map<unsigned int, std::string> aliasMappings;
-        DumpSndBankAliases(sndBank, aliasMappings);
-        DumpSoundData(aliasMappings);
+        DumpSndBankAliases(sndBank);
+        DumpSoundData(sndBank);
     }
 
 public:
@@ -326,7 +350,7 @@ public:
     {
     }
 
-    void DumpPool(AssetPool<SndBank>* pool)
+    void DumpPool(AssetPool<SndBank>* pool) const
     {
         for (const auto* assetInfo : *pool)
         {
@@ -340,6 +364,6 @@ public:
 
 void AssetDumperSndBank::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
 {
-    Internal internal(context);
+    const Internal internal(context);
     internal.DumpPool(pool);
 }
