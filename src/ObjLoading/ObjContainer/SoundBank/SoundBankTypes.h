@@ -38,8 +38,8 @@ struct SoundAssetBankEntry
     unsigned int size;
     unsigned int offset;
     unsigned int frameCount;
-    char frameRateIndex;
-    char channelCount;
-    char looping;
-    char format;
+    unsigned char frameRateIndex;
+    unsigned char channelCount;
+    unsigned char looping;
+    unsigned char format;
 };
