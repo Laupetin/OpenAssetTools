@@ -7,6 +7,7 @@
 #include "Utils/ClassUtils.h"
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
+#include "Sound/WavWriter.h"
 
 using namespace T6;
 namespace fs = std::filesystem;
@@ -84,6 +85,19 @@ namespace
     {
         "raw/",
         "devraw/",
+    };
+
+    constexpr size_t FRAME_RATE_FOR_INDEX[]
+    {
+        8000,
+        12000,
+        16000,
+        24000,
+        32000,
+        44100,
+        48000,
+        96000,
+        192000
     };
 }
 
@@ -258,6 +272,37 @@ class AssetDumperSndBank::Internal
         return {};
     }
 
+    void DumpSoundFilePcm(const char* assetFileName, const SoundBankEntryInputStream& soundFile, const unsigned bitsPerSample) const
+    {
+        const auto outFile = OpenAssetOutputFile(assetFileName, ".wav");
+        if (!outFile)
+        {
+            std::cerr << "Failed to open sound output file: \"" << assetFileName << "\"\n";
+            return;
+        }
+
+        const WavWriter writer(*outFile);
+
+        if (soundFile.m_entry.frameRateIndex >= std::extent_v<decltype(FRAME_RATE_FOR_INDEX)>)
+            return;
+
+        const WavMetaData metaData{
+            soundFile.m_entry.channelCount,
+            FRAME_RATE_FOR_INDEX[soundFile.m_entry.frameRateIndex],
+            bitsPerSample
+        };
+
+        writer.WritePcmHeader(metaData, soundFile.m_entry.size);
+
+        while (!soundFile.m_stream->eof())
+        {
+            char buffer[2048];
+            soundFile.m_stream->read(buffer, sizeof(buffer));
+            const auto readSize = soundFile.m_stream->gcount();
+            outFile->write(buffer, readSize);
+        }
+    }
+
     void DumpSoundFilePassthrough(const char* assetFileName, const SoundBankEntryInputStream& soundFile, const std::string& extension) const
     {
         const auto outFile = OpenAssetOutputFile(assetFileName, extension);
@@ -284,15 +329,14 @@ class AssetDumperSndBank::Internal
             const auto format = static_cast<snd_asset_format>(soundFile.m_entry.format);
             switch (format)
             {
-            case SND_ASSET_FORMAT_MP3:
-                DumpSoundFilePassthrough(alias.assetFileName, soundFile, ".mp3");
+            case SND_ASSET_FORMAT_PCMS16:
+                DumpSoundFilePcm(alias.assetFileName, soundFile, 16u);
                 break;
 
             case SND_ASSET_FORMAT_FLAC:
                 DumpSoundFilePassthrough(alias.assetFileName, soundFile, ".flac");
                 break;
 
-            case SND_ASSET_FORMAT_PCMS16:
             case SND_ASSET_FORMAT_PCMS24:
             case SND_ASSET_FORMAT_PCMS32:
             case SND_ASSET_FORMAT_IEEE:
