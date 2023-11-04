@@ -104,6 +104,9 @@ jobs:
       - build-test-linux
       - build-test-windows
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
     steps:
       - uses: actions/download-artifact@v3
       - uses: ncipollo/release-action@v1
