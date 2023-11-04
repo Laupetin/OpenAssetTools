@@ -46,6 +46,7 @@ workspace "OpenAssetTools"
     filter "configurations:Debug"
         defines "_DEBUG"
         optimize "Debug"
+        symbols "On"
     filter {}
 
     filter "configurations:Release"
