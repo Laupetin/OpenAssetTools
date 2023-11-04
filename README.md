@@ -32,7 +32,16 @@ Only a subset of assets can be read from disk however, depending on the game.
 Additionally, there are a couple of libraries and tools.
 A full list of the subcomponents can be found [here](./docs/OatComponents.md). 
 
-## Getting started
+## Using the tools
+
+Either download [the latest release from Github](https://github.com/Laupetin/OpenAssetTools/releases/latest) or [build OAT yourself](#building-oat).
+You can put OAT anywhere, it does **not** need to be placed in your game folder.
+In fact i recommend against it to be able to better distinguish OAT files from game files.
+
+For more information, check out the ["Getting started" guide in the OAT documentation](https://openassettools.dev/guide/getting-started.html).
+You can find other useful guides and reference documentation there as well.
+
+## Building OAT
 
 You need to clone this repository using Git.
 Do not download as a zip from Github because it will not be a git repository which is required for installing the submodules.
@@ -67,10 +76,6 @@ When this is done you will have a `build` folder with a `Makefile`.
 You now run `make` manually or use `./scripts/make_release.sh` or `./scripts/make_debug.sh` to build.
 
 The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
-
-## Using the tools
-
-For information about how to use the tools see the ["Getting started" guide](docs/GettingStarted.md)
 
 ## Legal
 
