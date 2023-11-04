@@ -110,9 +110,9 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
       - name: Zip artifacts
-        run:
-          - 7z a oat-linux.tar.gz ./oat-linux/*
-          - 7z a oat-windows.zip ./oat-windows/*
+        run: |
+          7z a oat-linux.tar.gz ./oat-linux/*
+          7z a oat-windows.zip ./oat-windows/*
       - uses: ncipollo/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
