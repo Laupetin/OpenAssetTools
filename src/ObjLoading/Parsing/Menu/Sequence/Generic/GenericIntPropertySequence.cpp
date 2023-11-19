@@ -1,9 +1,9 @@
 #include "GenericIntPropertySequence.h"
 
-#include <utility>
-
 #include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+
+#include <utility>
 
 using namespace menu;
 

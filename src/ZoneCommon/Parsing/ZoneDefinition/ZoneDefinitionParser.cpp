@@ -20,7 +20,7 @@ const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>::seq
         new SequenceZoneDefinitionIgnore(),
         new SequenceZoneDefinitionAssetList(),
         new SequenceZoneDefinitionBuild(),
-        new SequenceZoneDefinitionEntry()
+        new SequenceZoneDefinitionEntry(),
     });
 
     return tests;

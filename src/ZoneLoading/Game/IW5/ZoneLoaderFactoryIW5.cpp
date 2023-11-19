@@ -1,31 +1,30 @@
 #include "ZoneLoaderFactoryIW5.h"
 
-#include <cassert>
-#include <cstring>
-#include <type_traits>
-
-#include "Game/IW5/IW5.h"
-
-#include "Utils/ClassUtils.h"
 #include "ContentLoaderIW5.h"
+#include "Game/GameLanguage.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/GameIW5.h"
-#include "Game/GameLanguage.h"
+#include "Game/IW5/IW5.h"
 #include "Game/IW5/ZoneConstantsIW5.h"
 #include "Loading/Processor/ProcessorAuthedBlocks.h"
 #include "Loading/Processor/ProcessorCaptureData.h"
 #include "Loading/Processor/ProcessorInflate.h"
-#include "Loading/Steps/StepVerifyMagic.h"
-#include "Loading/Steps/StepSkipBytes.h"
-#include "Loading/Steps/StepVerifyFileName.h"
-#include "Loading/Steps/StepLoadSignature.h"
-#include "Loading/Steps/StepVerifySignature.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
-#include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepLoadHash.h"
+#include "Loading/Steps/StepLoadSignature.h"
+#include "Loading/Steps/StepLoadZoneContent.h"
 #include "Loading/Steps/StepRemoveProcessor.h"
+#include "Loading/Steps/StepSkipBytes.h"
+#include "Loading/Steps/StepVerifyFileName.h"
 #include "Loading/Steps/StepVerifyHash.h"
+#include "Loading/Steps/StepVerifyMagic.h"
+#include "Loading/Steps/StepVerifySignature.h"
+#include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <cstring>
+#include <type_traits>
 
 using namespace IW5;
 
@@ -84,8 +83,7 @@ class ZoneLoaderFactory::Impl
     {
         if (isOfficial)
         {
-            auto rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256,
-                Crypto::RSAPaddingMode::RSA_PADDING_PSS);
+            auto rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256, Crypto::RSAPaddingMode::RSA_PADDING_PSS);
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
             {
@@ -104,8 +102,7 @@ class ZoneLoaderFactory::Impl
         }
     }
 
-    static void AddAuthHeaderSteps(const bool isSecure, const bool isOfficial, ZoneLoader* zoneLoader,
-        std::string& fileName)
+    static void AddAuthHeaderSteps(const bool isSecure, const bool isOfficial, ZoneLoader* zoneLoader, std::string& fileName)
     {
         // Unsigned zones do not have an auth header
         if (!isSecure)
@@ -138,15 +135,19 @@ class ZoneLoaderFactory::Impl
         auto* masterBlockHashesPtr = masterBlockHashes.get();
         zoneLoader->AddLoadingStep(std::move(masterBlockHashes));
 
-        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyHash>(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0, subHeaderHashPtr, subHeaderCapturePtr));
+        zoneLoader->AddLoadingStep(
+            std::make_unique<StepVerifyHash>(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0, subHeaderHashPtr, subHeaderCapturePtr));
         zoneLoader->AddLoadingStep(std::make_unique<StepRemoveProcessor>(subHeaderCapturePtr));
 
         // Skip the rest of the first chunk
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
 
-        zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorAuthedBlocks>(
-            ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP, ZoneConstants::AUTHED_CHUNK_SIZE, std::extent<decltype(DB_AuthSubHeader::masterBlockHashes)>::value,
-            std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), masterBlockHashesPtr)));
+        zoneLoader->AddLoadingStep(
+            std::make_unique<StepAddProcessor>(std::make_unique<ProcessorAuthedBlocks>(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
+                                                                                       ZoneConstants::AUTHED_CHUNK_SIZE,
+                                                                                       std::extent<decltype(DB_AuthSubHeader::masterBlockHashes)>::value,
+                                                                                       std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()),
+                                                                                       masterBlockHashesPtr)));
     }
 
 public:
@@ -187,7 +188,8 @@ public:
         zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
+            std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
         // Return the fully setup zoneloader
         return zoneLoader;

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <map>
-#include <memory>
-
 #include "CommonItemDef.h"
 #include "CommonMenuTypes.h"
 #include "EventHandler/CommonEventHandlerSet.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace menu
 {
@@ -63,4 +63,4 @@ namespace menu
 
         std::vector<std::unique_ptr<CommonItemDef>> m_items;
     };
-}
+} // namespace menu

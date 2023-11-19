@@ -260,8 +260,7 @@ Texture3D::Texture3D(const ImageFormat* format, const unsigned width, const unsi
 {
 }
 
-Texture3D::Texture3D(const ImageFormat* format, const unsigned width, const unsigned height, const unsigned depth,
-                     const bool mipMaps)
+Texture3D::Texture3D(const ImageFormat* format, const unsigned width, const unsigned height, const unsigned depth, const bool mipMaps)
     : Texture(format, mipMaps)
 {
     m_width = width;

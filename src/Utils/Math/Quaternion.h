@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Matrix.h"
+#include "Utils/ClassUtils.h"
 
-template <typename T>
-class Quaternion
+template<typename T> class Quaternion
 {
 public:
     T m_x;
@@ -50,12 +49,7 @@ public:
         const T m21 = 2 * yz + 2 * xw;
         const T m22 = 1 - 2 * xx - 2 * yy;
 
-        return Matrix<T>(
-            m00, m01, m02, 0,
-            m10, m11, m12, 0,
-            m20, m21, m22, 0,
-            0, 0, 0, T(1.0)
-        );
+        return Matrix<T>(m00, m01, m02, 0, m10, m11, m12, 0, m20, m21, m22, 0, 0, 0, 0, T(1.0));
     }
 };
 

@@ -52,7 +52,8 @@ void SimpleLexer::AddMultiCharacterTokenConfigToLookup(Config::MultiCharacterTok
     }
     else
     {
-        m_multi_character_token_lookup[firstCharacterValue] = std::make_unique<MultiCharacterTokenLookupEntry>(tokenConfig.m_id, std::move(tokenConfig.m_value));
+        m_multi_character_token_lookup[firstCharacterValue] =
+            std::make_unique<MultiCharacterTokenLookupEntry>(tokenConfig.m_id, std::move(tokenConfig.m_value));
     }
 }
 
@@ -123,12 +124,13 @@ SimpleParserValue SimpleLexer::GetNextToken()
     if (m_config.m_read_strings && c == '\"')
         return SimpleParserValue::String(pos, new std::string(m_config.m_string_escape_sequences ? ReadStringWithEscapeSequences() : ReadString()));
 
-    if (m_config.m_read_integer_numbers && (isdigit(c) || (c == '+' || c == '-' || (m_config.m_read_floating_point_numbers && c == '.')) && isdigit(PeekChar())))
+    if (m_config.m_read_integer_numbers
+        && (isdigit(c) || (c == '+' || c == '-' || (m_config.m_read_floating_point_numbers && c == '.')) && isdigit(PeekChar())))
     {
         bool hasSignPrefix;
         int integerValue;
 
-        if(m_config.m_read_floating_point_numbers)
+        if (m_config.m_read_floating_point_numbers)
         {
             bool isFloatingPointValue;
             double floatingPointValue;

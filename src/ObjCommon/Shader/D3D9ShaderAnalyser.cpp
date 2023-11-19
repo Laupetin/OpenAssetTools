@@ -1,9 +1,9 @@
 #include "D3D9ShaderAnalyser.h"
 
+#include "Utils/FileUtils.h"
+
 #include <cassert>
 #include <cstring>
-
-#include "Utils/FileUtils.h"
 
 using namespace d3d9;
 
@@ -72,10 +72,10 @@ namespace d3d9
 
         switch ((version & 0xFFFF0000) >> 16)
         {
-        case 0x4658: // FX
-        case 0x5458: // TX
-        case 0x7ffe: // ?
-        case 0x7fff: // ?
+        case 0x4658:                                 // FX
+        case 0x5458:                                 // TX
+        case 0x7ffe:                                 // ?
+        case 0x7fff:                                 // ?
             shaderInfo.m_type = ShaderType::UNKNOWN; // Valid according to wine
             return true;
         case 0xfffe:
@@ -131,7 +131,10 @@ namespace d3d9
         return str[strLen] == '\0';
     }
 
-    bool PopulateShaderConstantFromConstantInfo(ShaderConstant& shaderConstant, const char* commentStart, const size_t commentSize, const ConstantInfo& constantInfo)
+    bool PopulateShaderConstantFromConstantInfo(ShaderConstant& shaderConstant,
+                                                const char* commentStart,
+                                                const size_t commentSize,
+                                                const ConstantInfo& constantInfo)
     {
         if (constantInfo.Name)
         {
@@ -148,7 +151,7 @@ namespace d3d9
         shaderConstant.m_register_index = constantInfo.RegisterIndex;
         shaderConstant.m_register_count = constantInfo.RegisterCount;
 
-        if(constantInfo.TypeInfo)
+        if (constantInfo.TypeInfo)
         {
             assert(commentStart + constantInfo.TypeInfo + sizeof(TypeInfo) <= commentStart + commentSize);
             if (commentStart + constantInfo.TypeInfo + sizeof(TypeInfo) > commentStart + commentSize)
@@ -231,7 +234,7 @@ namespace d3d9
 
         return true;
     }
-}
+} // namespace d3d9
 
 std::unique_ptr<ShaderInfo> ShaderAnalyser::GetShaderInfo(const uint32_t* shaderByteCode, const size_t shaderByteCodeSize)
 {

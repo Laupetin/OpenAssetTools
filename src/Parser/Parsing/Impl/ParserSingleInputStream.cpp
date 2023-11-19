@@ -50,9 +50,7 @@ bool ParserSingleInputStream::IncludeFile(const std::string& filename)
     return false;
 }
 
-void ParserSingleInputStream::PopCurrentFile()
-{
-}
+void ParserSingleInputStream::PopCurrentFile() {}
 
 bool ParserSingleInputStream::IsOpen() const
 {

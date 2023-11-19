@@ -1,22 +1,21 @@
 #include "ZoneLoaderFactoryT5.h"
 
-#include <cassert>
-#include <cstring>
-#include <type_traits>
-
-#include "Game/T5/T5.h"
-
-#include "Utils/ClassUtils.h"
 #include "ContentLoaderT5.h"
+#include "Game/GameLanguage.h"
 #include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/GameT5.h"
-#include "Game/GameLanguage.h"
+#include "Game/T5/T5.h"
 #include "Game/T5/ZoneConstantsT5.h"
 #include "Loading/Processor/ProcessorInflate.h"
-#include "Loading/Steps/StepSkipBytes.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
+#include "Loading/Steps/StepSkipBytes.h"
+#include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <cstring>
+#include <type_traits>
 
 using namespace T5;
 
@@ -91,7 +90,8 @@ public:
         zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
+            std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
         // Return the fully setup zoneloader
         return zoneLoader;

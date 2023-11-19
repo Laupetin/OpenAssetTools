@@ -1,7 +1,6 @@
 #include "LocalizeFile.h"
 
-LocalizeFileEntry::LocalizeFileEntry()
-= default;
+LocalizeFileEntry::LocalizeFileEntry() = default;
 
 LocalizeFileEntry::LocalizeFileEntry(std::string key, std::string value)
     : m_key(std::move(key)),

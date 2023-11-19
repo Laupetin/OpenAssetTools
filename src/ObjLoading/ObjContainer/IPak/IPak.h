@@ -1,12 +1,12 @@
 #pragma once
 
-#include <istream>
-
-#include "Utils/ClassUtils.h"
 #include "ObjContainer/ObjContainerReferenceable.h"
 #include "ObjContainer/ObjContainerRepository.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/ObjStream.h"
 #include "Zone/Zone.h"
+
+#include <istream>
 
 class IPak final : public ObjContainerReferenceable
 {

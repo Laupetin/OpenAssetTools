@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Utils/Arguments/ArgumentParser.h"
+#include "Utils/ClassUtils.h"
 
 #include <vector>
 

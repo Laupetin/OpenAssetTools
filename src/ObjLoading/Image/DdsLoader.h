@@ -1,8 +1,9 @@
 #pragma once
 
-#include <istream>
-#include "Utils/MemoryManager.h"
 #include "Image/Texture.h"
+#include "Utils/MemoryManager.h"
+
+#include <istream>
 
 class DdsLoader
 {

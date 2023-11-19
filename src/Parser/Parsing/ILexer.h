@@ -3,8 +3,7 @@
 #include "IParserLineStream.h"
 #include "Parsing/IParserValue.h"
 
-template<typename TokenType>
-class ILexer
+template<typename TokenType> class ILexer
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);

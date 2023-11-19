@@ -3,8 +3,8 @@
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
 #include "Parsing/Header/Block/IHeaderBlockVariableHolder.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceVariable::SequenceVariable()
 {
@@ -23,10 +23,11 @@ SequenceVariable::SequenceVariable()
             create.OptionalLoop(create.Label(HeaderCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY)),
             create.Optional(create.And({
                 create.Char(':'),
-                create.Integer().Capture(CAPTURE_BIT_SIZE)
+                create.Integer().Capture(CAPTURE_BIT_SIZE),
             })),
-            create.Char(';')
-        }, LABEL_ARRAY_OF_POINTERS);
+            create.Char(';'),
+        },
+        LABEL_ARRAY_OF_POINTERS);
 
     AddLabeledMatchers(
         {
@@ -37,12 +38,13 @@ SequenceVariable::SequenceVariable()
             create.Identifier().Capture(CAPTURE_NAME),
             create.Char(')'),
             create.Loop(create.Label(HeaderCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY)),
-            create.Char(';')
-        }, LABEL_POINTER_TO_ARRAY);
+            create.Char(';'),
+        },
+        LABEL_POINTER_TO_ARRAY);
 
     AddMatchers(create.Or({
         create.Label(LABEL_ARRAY_OF_POINTERS).Tag(TAG_ARRAY_OF_POINTERS),
-        create.Label(LABEL_POINTER_TO_ARRAY).Tag(TAG_POINTER_TO_ARRAY)
+        create.Label(LABEL_POINTER_TO_ARRAY).Tag(TAG_POINTER_TO_ARRAY),
     }));
 }
 
@@ -105,7 +107,7 @@ void SequenceVariable::ProcessMatch(HeaderParserState* state, SequenceResult<Hea
         variable->m_has_alignment_override = true;
     }
 
-    if(result.HasNextCapture(CAPTURE_BIT_SIZE))
+    if (result.HasNextCapture(CAPTURE_BIT_SIZE))
     {
         const auto& bitSizeToken = result.NextCapture(CAPTURE_BIT_SIZE);
         variable->m_type_declaration->m_custom_bit_size = bitSizeToken.IntegerValue();

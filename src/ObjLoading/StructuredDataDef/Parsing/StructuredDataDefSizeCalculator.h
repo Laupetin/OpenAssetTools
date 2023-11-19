@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <exception>
-
-#include "Utils/ClassUtils.h"
 #include "StructuredDataDef/CommonStructuredDataDef.h"
+#include "Utils/ClassUtils.h"
+
+#include <exception>
+#include <string>
 
 namespace sdd
 {
@@ -24,4 +24,4 @@ namespace sdd
     public:
         static void CalculateSizesAndOffsetsForDef(CommonStructuredDataDef& def);
     };
-}
+} // namespace sdd

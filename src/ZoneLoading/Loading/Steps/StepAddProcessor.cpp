@@ -1,4 +1,5 @@
 #include "StepAddProcessor.h"
+
 #include <cassert>
 
 StepAddProcessor::StepAddProcessor(std::unique_ptr<StreamProcessor> streamProcessor)

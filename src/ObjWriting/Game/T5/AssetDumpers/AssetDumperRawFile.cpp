@@ -23,13 +23,13 @@ void AssetDumperRawFile::DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFil
 
     assert(inLen == static_cast<unsigned>(rawFile->len) - 8);
 
-    if(inLen > static_cast<unsigned>(rawFile->len - 8) + 1)
+    if (inLen > static_cast<unsigned>(rawFile->len - 8) + 1)
     {
         std::cout << "Invalid compression of gsc file \"" << rawFile->name << "\": " << inLen << std::endl;
         return;
     }
 
-    if(outLen > GSC_MAX_SIZE)
+    if (outLen > GSC_MAX_SIZE)
     {
         std::cout << "Invalid size of gsc file \"" << rawFile->name << "\": " << outLen << std::endl;
         return;
@@ -71,7 +71,7 @@ void AssetDumperRawFile::DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFil
 
         const auto inflateOutSize = sizeof buffer - zs.avail_out;
 
-        if(writtenSize + inflateOutSize >= outLen)
+        if (writtenSize + inflateOutSize >= outLen)
         {
             // Last byte is a \0 byte. Skip it.
             stream.write(reinterpret_cast<char*>(buffer), inflateOutSize - 1);

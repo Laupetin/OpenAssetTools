@@ -1,7 +1,7 @@
 #include "SequenceGame.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceGame::SequenceGame()
 {
@@ -10,7 +10,7 @@ SequenceGame::SequenceGame()
     AddMatchers({
         create.Keyword("game"),
         create.Identifier().Capture(CAPTURE_GAME),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

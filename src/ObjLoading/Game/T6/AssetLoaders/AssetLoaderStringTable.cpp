@@ -1,11 +1,11 @@
 #include "AssetLoaderStringTable.h"
 
-#include <cstring>
-
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
 
 using namespace T6;
 
@@ -22,7 +22,8 @@ bool AssetLoaderStringTable::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderStringTable::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())
@@ -71,13 +72,15 @@ bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPa
             }
         }
 
-        std::sort(&stringTable->cellIndex[0], &stringTable->cellIndex[cellCount - 1], [stringTable, maxCols](const int16_t a, const int16_t b)
-        {
-            auto compareResult = stringTable->values[a].hash - stringTable->values[b].hash;
-            if (compareResult == 0)
-                compareResult = a % maxCols - b % maxCols;
-            return compareResult < 0;
-        });
+        std::sort(&stringTable->cellIndex[0],
+                  &stringTable->cellIndex[cellCount - 1],
+                  [stringTable, maxCols](const int16_t a, const int16_t b)
+                  {
+                      auto compareResult = stringTable->values[a].hash - stringTable->values[b].hash;
+                      if (compareResult == 0)
+                          compareResult = a % maxCols - b % maxCols;
+                      return compareResult < 0;
+                  });
     }
 
     else

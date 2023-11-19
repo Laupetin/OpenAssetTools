@@ -14,5 +14,7 @@ public:
     _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
 
     SimpleExpressionConditionalOperator();
-    SimpleExpressionConditionalOperator(std::unique_ptr<ISimpleExpression> condition, std::unique_ptr<ISimpleExpression> trueExpression, std::unique_ptr<ISimpleExpression> falseExpression);
+    SimpleExpressionConditionalOperator(std::unique_ptr<ISimpleExpression> condition,
+                                        std::unique_ptr<ISimpleExpression> trueExpression,
+                                        std::unique_ptr<ISimpleExpression> falseExpression);
 };

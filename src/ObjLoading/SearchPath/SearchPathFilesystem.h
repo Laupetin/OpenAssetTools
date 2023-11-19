@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "ISearchPath.h"
+
+#include <string>
 
 class SearchPathFilesystem final : public ISearchPath
 {

@@ -1,13 +1,12 @@
 #include "SoundBank.h"
 
-#include <sstream>
-#include <vector>
-#include <memory>
-#include <cstring>
-
+#include "Utils/FileUtils.h"
 #include "zlib.h"
 
-#include "Utils/FileUtils.h"
+#include <cstring>
+#include <memory>
+#include <sstream>
+#include <vector>
 
 ObjContainerRepository<SoundBank, Zone> SoundBank::Repository;
 
@@ -149,7 +148,8 @@ bool SoundBank::ReadHeader()
 
     if (m_header.entrySize != sizeof(SoundAssetBankEntry))
     {
-        std::cout << "Invalid sndbank entry size 0x" << std::hex << m_header.entrySize << " (should be 0x" << std::hex << sizeof(SoundAssetBankEntry) << ")" << std::endl;
+        std::cout << "Invalid sndbank entry size 0x" << std::hex << m_header.entrySize << " (should be 0x" << std::hex << sizeof(SoundAssetBankEntry) << ")"
+                  << std::endl;
         return false;
     }
 
@@ -159,8 +159,7 @@ bool SoundBank::ReadHeader()
         return false;
     }
 
-    if (m_header.entryCount
-        && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > m_file_size))
+    if (m_header.entryCount && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > m_file_size))
     {
         std::cout << "Invalid sndbank entry offset " << m_header.entryOffset << " (filesize is " << m_file_size << ")" << std::endl;
         return false;
@@ -280,9 +279,7 @@ bool SoundBank::Initialize()
     if (m_initialized)
         return true;
 
-    if (!ReadHeader()
-        || !ReadEntries()
-        || !ReadChecksums())
+    if (!ReadHeader() || !ReadEntries() || !ReadChecksums())
         return false;
 
     m_initialized = true;

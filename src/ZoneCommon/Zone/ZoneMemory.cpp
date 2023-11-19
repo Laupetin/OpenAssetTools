@@ -1,7 +1,6 @@
 #include "ZoneMemory.h"
 
-ZoneMemory::ZoneMemory()
-= default;
+ZoneMemory::ZoneMemory() = default;
 
 void ZoneMemory::AddBlock(std::unique_ptr<XBlock> block)
 {

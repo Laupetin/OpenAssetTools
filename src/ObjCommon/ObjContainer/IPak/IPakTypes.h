@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstdint>
-
 #include "Utils/FileUtils.h"
+
+#include <cstdint>
 
 namespace ipak_consts
 {
@@ -22,7 +22,7 @@ namespace ipak_consts
     static constexpr uint32_t IPAK_COMMAND_SKIP = 0xCF;
 
     static_assert(IPAK_COMMAND_DEFAULT_SIZE <= IPAK_CHUNK_SIZE);
-}
+} // namespace ipak_consts
 
 typedef uint32_t IPakHash;
 

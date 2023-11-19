@@ -1,12 +1,12 @@
 #include "AssetLoaderRawFile.h"
 
+#include "Game/IW5/IW5.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <zlib.h>
-
-#include "Game/IW5/IW5.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace IW5;
 
@@ -23,7 +23,8 @@ bool AssetLoaderRawFile::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderRawFile::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderRawFile::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())

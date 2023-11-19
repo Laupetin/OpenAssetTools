@@ -1,12 +1,12 @@
 #include "ProcessorInflate.h"
 
-#include <stdexcept>
+#include "Loading/Exception/InvalidCompressionException.h"
+
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
 #include <zlib.h>
 #include <zutil.h>
-
-#include "Loading/Exception/InvalidCompressionException.h"
 
 class ProcessorInflate::Impl
 {
@@ -65,7 +65,7 @@ public:
 
             auto ret = inflate(&m_stream, Z_SYNC_FLUSH);
 
-            if(ret < 0)
+            if (ret < 0)
                 throw InvalidCompressionException();
         }
 

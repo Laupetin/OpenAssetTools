@@ -1,8 +1,9 @@
 #pragma once
 #include "CommandLineOption.h"
+
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 class ArgumentParser
 {
@@ -12,7 +13,7 @@ class ArgumentParser
 
 public:
     ArgumentParser(const CommandLineOption* const* options, size_t optionCount);
-    
+
     bool ParseArguments(std::vector<std::string>& args);
     bool ParseArguments(int argc, const char** argv);
 

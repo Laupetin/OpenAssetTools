@@ -1,7 +1,7 @@
 #include "SequenceAllocAlign.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceAllocAlign::SequenceAllocAlign()
 {
@@ -14,8 +14,8 @@ SequenceAllocAlign::SequenceAllocAlign()
         create.Keyword("allocalign"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
         create.Label(CommandsCommonMatchers::LABEL_EVALUATION),
-        create.Char(';')
-        });
+        create.Char(';'),
+    });
 }
 
 void SequenceAllocAlign::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
@@ -26,7 +26,7 @@ void SequenceAllocAlign::ProcessMatch(CommandsParserState* state, SequenceResult
     if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), type, memberChain))
         throw ParsingException(typeNameToken.GetPos(), "Unknown type");
 
-    if(memberChain.empty())
+    if (memberChain.empty())
         throw ParsingException(typeNameToken.GetPos(), "Need to specify a member");
 
     auto allocAlignEvaluation = CommandsCommonMatchers::ProcessEvaluation(state, result, type);

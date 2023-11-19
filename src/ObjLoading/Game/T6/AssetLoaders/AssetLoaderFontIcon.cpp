@@ -1,13 +1,13 @@
 #include "AssetLoaderFontIcon.h"
 
-#include <algorithm>
-#include <cstring>
-#include <sstream>
-
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <algorithm>
+#include <cstring>
+#include <sstream>
 
 using namespace T6;
 
@@ -48,10 +48,12 @@ void AssetLoaderFontIcon::PreprocessRow(std::vector<std::string>& row)
 
 bool AssetLoaderFontIcon::RowIsEmpty(const std::vector<std::string>& row)
 {
-    return std::all_of(row.begin(), row.end(), [](const std::string& cell)
-    {
-        return cell.empty();
-    });
+    return std::all_of(row.begin(),
+                       row.end(),
+                       [](const std::string& cell)
+                       {
+                           return cell.empty();
+                       });
 }
 
 bool AssetLoaderFontIcon::ParseInt(int& value, const std::string& str)
@@ -90,8 +92,13 @@ bool AssetLoaderFontIcon::ParseHashStr(int& value, const std::string& str)
     return true;
 }
 
-bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row, FontIconEntry& icon, const std::string& assetName, const unsigned rowIndex, MemoryManager* memory,
-                                      IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
+bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row,
+                                      FontIconEntry& icon,
+                                      const std::string& assetName,
+                                      const unsigned rowIndex,
+                                      MemoryManager* memory,
+                                      IAssetLoadingManager* manager,
+                                      std::vector<XAssetInfoGeneric*>& dependencies)
 {
     if (row.size() < COL_COUNT_ICON)
     {
@@ -105,8 +112,7 @@ bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row, FontI
         return false;
     }
 
-    if (!ParseFloat(icon.xScale, row[ROW_ICON_XSCALE])
-        || !ParseFloat(icon.yScale, row[ROW_ICON_YSCALE]))
+    if (!ParseFloat(icon.xScale, row[ROW_ICON_XSCALE]) || !ParseFloat(icon.yScale, row[ROW_ICON_YSCALE]))
     {
         std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse scale" << std::endl;
         return false;
@@ -126,7 +132,11 @@ bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row, FontI
     return true;
 }
 
-bool AssetLoaderFontIcon::ReadAliasRow(const std::vector<std::string>& row, FontIconAlias& alias, const std::string& assetName, const unsigned rowIndex, MemoryManager* memory,
+bool AssetLoaderFontIcon::ReadAliasRow(const std::vector<std::string>& row,
+                                       FontIconAlias& alias,
+                                       const std::string& assetName,
+                                       const unsigned rowIndex,
+                                       MemoryManager* memory,
                                        IAssetLoadingManager* manager)
 {
     if (row.size() < COL_COUNT_ALIAS)
@@ -150,7 +160,8 @@ bool AssetLoaderFontIcon::ReadAliasRow(const std::vector<std::string>& row, Font
     return true;
 }
 
-bool AssetLoaderFontIcon::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderFontIcon::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())
@@ -254,7 +265,7 @@ bool AssetLoaderFontIcon::LoadFromRaw(const std::string& assetName, ISearchPath*
     }
     else
         fontIcon->fontIconAlias = nullptr;
-    
+
     manager->AddAsset(ASSET_TYPE_FONTICON, assetName, fontIcon);
 
     return true;

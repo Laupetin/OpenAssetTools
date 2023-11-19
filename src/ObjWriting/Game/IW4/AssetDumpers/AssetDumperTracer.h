@@ -14,4 +14,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<TracerDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset) override;
     };
-}
+} // namespace IW4

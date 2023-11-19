@@ -1,7 +1,7 @@
 #pragma once
-#include <cstdint>
-
 #include "Utils/FileUtils.h"
+
+#include <cstdint>
 
 constexpr uint32_t WAV_WAVE_ID = FileUtils::MakeMagic32('W', 'A', 'V', 'E');
 constexpr uint32_t WAV_CHUNK_ID_RIFF = FileUtils::MakeMagic32('R', 'I', 'F', 'F');

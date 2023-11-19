@@ -1,9 +1,13 @@
 #pragma once
 
-//#include <d3d11.h>
+// clang-format off: Order of includes matters here
+
+// #include <d3d9.h>
 #include "Image/Texture.h"
 
 #include "IW3_Assets.h"
+
+// clang-format on
 
 namespace IW3
 {
@@ -79,4 +83,4 @@ namespace IW3
 
         WFT_NUM_FIELD_TYPES
     };
-}
+} // namespace IW3

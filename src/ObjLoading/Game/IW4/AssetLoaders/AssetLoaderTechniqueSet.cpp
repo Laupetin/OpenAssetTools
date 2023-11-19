@@ -1,26 +1,26 @@
 #include "AssetLoaderTechniqueSet.h"
 
+#include "AssetLoaderPixelShader.h"
+#include "AssetLoaderVertexShader.h"
+#include "Game/IW4/IW4.h"
+#include "Game/IW4/TechsetConstantsIW4.h"
+#include "ObjLoading.h"
+#include "Pool/GlobalAssetPool.h"
+#include "Shader/D3D9ShaderAnalyser.h"
+#include "StateMap/StateMapReader.h"
+#include "Techset/TechniqueFileReader.h"
+#include "Techset/TechniqueStateMapCache.h"
+#include "Techset/TechsetDefinitionCache.h"
+#include "Techset/TechsetFileReader.h"
+#include "Utils/Alignment.h"
+#include "Utils/ClassUtils.h"
+
 #include <cstring>
 #include <iostream>
 #include <memory>
-#include <unordered_map>
 #include <sstream>
 #include <type_traits>
-
-#include "AssetLoaderPixelShader.h"
-#include "AssetLoaderVertexShader.h"
-#include "Utils/ClassUtils.h"
-#include "ObjLoading.h"
-#include "Game/IW4/IW4.h"
-#include "Game/IW4/TechsetConstantsIW4.h"
-#include "Pool/GlobalAssetPool.h"
-#include "Techset/TechniqueFileReader.h"
-#include "Techset/TechsetFileReader.h"
-#include "Shader/D3D9ShaderAnalyser.h"
-#include "StateMap/StateMapReader.h"
-#include "Techset/TechniqueStateMapCache.h"
-#include "Techset/TechsetDefinitionCache.h"
-#include "Utils/Alignment.h"
+#include <unordered_map>
 
 using namespace IW4;
 using namespace std::string_literals;
@@ -61,7 +61,8 @@ namespace IW4
 
         const LoadedTechnique* AddLoadedTechnique(std::string techniqueName, MaterialTechnique* technique, std::vector<XAssetInfoGeneric*> dependencies)
         {
-            return m_loaded_techniques.emplace(std::make_pair(std::move(techniqueName), std::make_unique<LoadedTechnique>(technique, std::move(dependencies)))).first->second.get();
+            return m_loaded_techniques.emplace(std::make_pair(std::move(techniqueName), std::make_unique<LoadedTechnique>(technique, std::move(dependencies))))
+                .first->second.get();
         }
 
         literal_t GetAllocatedLiteral(MemoryManager* memory, techset::ShaderArgumentLiteralSource source)
@@ -205,7 +206,11 @@ namespace IW4
         std::vector<Pass> m_passes;
         std::vector<XAssetInfoGeneric*> m_dependencies;
 
-        TechniqueCreator(const std::string& techniqueName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, TechniqueZoneLoadingState* zoneState,
+        TechniqueCreator(const std::string& techniqueName,
+                         ISearchPath* searchPath,
+                         MemoryManager* memory,
+                         IAssetLoadingManager* manager,
+                         TechniqueZoneLoadingState* zoneState,
                          ShaderInfoFromFileSystemCacheState* shaderInfoCache,
                          techset::TechniqueStateMapCache* stateMapCache)
             : m_technique_name(techniqueName),
@@ -225,20 +230,22 @@ namespace IW4
 
         static size_t RegisterCountPerElement(const d3d9::ShaderConstant& constant)
         {
-            const auto valuesPerRegister = constant.m_register_set == d3d9::RegisterSet::BOOL || constant.m_register_set == d3d9::RegisterSet::SAMPLER ? 1u : 4u;
+            const auto valuesPerRegister =
+                constant.m_register_set == d3d9::RegisterSet::BOOL || constant.m_register_set == d3d9::RegisterSet::SAMPLER ? 1u : 4u;
             return utils::Align(constant.m_type_columns * constant.m_type_rows, valuesPerRegister) / valuesPerRegister;
         }
 
         static bool IsSamplerArgument(const d3d9::ShaderConstant& constant)
         {
-            return constant.m_type == d3d9::ParameterType::SAMPLER
-                || constant.m_type == d3d9::ParameterType::SAMPLER_1D
-                || constant.m_type == d3d9::ParameterType::SAMPLER_2D
-                || constant.m_type == d3d9::ParameterType::SAMPLER_3D
-                || constant.m_type == d3d9::ParameterType::SAMPLER_CUBE;
+            return constant.m_type == d3d9::ParameterType::SAMPLER || constant.m_type == d3d9::ParameterType::SAMPLER_1D
+                   || constant.m_type == d3d9::ParameterType::SAMPLER_2D || constant.m_type == d3d9::ParameterType::SAMPLER_3D
+                   || constant.m_type == d3d9::ParameterType::SAMPLER_CUBE;
         }
 
-        bool AutoCreateShaderArgument(const techset::ShaderSelector shaderType, const d3d9::ShaderConstant& shaderArgument, const size_t elementOffset, const size_t registerOffset)
+        bool AutoCreateShaderArgument(const techset::ShaderSelector shaderType,
+                                      const d3d9::ShaderConstant& shaderArgument,
+                                      const size_t elementOffset,
+                                      const size_t registerOffset)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -367,7 +374,8 @@ namespace IW4
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
 
-            std::sort(std::begin(pass.m_vertex_decl.routing.data), std::begin(pass.m_vertex_decl.routing.data) + pass.m_vertex_decl.streamCount,
+            std::sort(std::begin(pass.m_vertex_decl.routing.data),
+                      std::begin(pass.m_vertex_decl.routing.data) + pass.m_vertex_decl.streamCount,
                       [](const MaterialStreamRouting& r1, const MaterialStreamRouting& r2)
                       {
                           return r1.source < r2.source;
@@ -395,19 +403,22 @@ namespace IW4
                 return false;
 
             // Sort args by their update frequency
-            std::sort(pass.m_arguments.begin(), pass.m_arguments.end(), [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
-            {
-                if (arg1.m_update_frequency != arg2.m_update_frequency)
-                    return arg1.m_update_frequency < arg2.m_update_frequency;
+            std::sort(pass.m_arguments.begin(),
+                      pass.m_arguments.end(),
+                      [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
+                      {
+                          if (arg1.m_update_frequency != arg2.m_update_frequency)
+                              return arg1.m_update_frequency < arg2.m_update_frequency;
 
-                if (arg1.m_arg.type != arg2.m_arg.type)
-                    return arg1.m_arg.type < arg2.m_arg.type;
+                          if (arg1.m_arg.type != arg2.m_arg.type)
+                              return arg1.m_arg.type < arg2.m_arg.type;
 
-                if (arg1.m_arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
-                    return arg1.m_arg.u.codeSampler < arg2.m_arg.u.codeSampler;
+                          if (arg1.m_arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
+                              || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
+                              return arg1.m_arg.u.codeSampler < arg2.m_arg.u.codeSampler;
 
-                return arg1.m_arg.dest < arg2.m_arg.dest;
-            });
+                          return arg1.m_arg.dest < arg2.m_arg.dest;
+                      });
 
             AllocateVertexDecl();
 
@@ -430,7 +441,9 @@ namespace IW4
             return true;
         }
 
-        static void InitializeArgumentState(const d3d9::ShaderInfo& shaderInfo, std::vector<size_t>& argumentHandledOffsetVector, std::vector<bool>& argumentHandledVector)
+        static void InitializeArgumentState(const d3d9::ShaderInfo& shaderInfo,
+                                            std::vector<size_t>& argumentHandledOffsetVector,
+                                            std::vector<bool>& argumentHandledVector)
         {
             auto vertexShaderArgumentSlotCount = 0u;
             auto argIndex = 0u;
@@ -464,7 +477,8 @@ namespace IW4
 
             if (pass.m_vertex_shader->Asset()->name && pass.m_vertex_shader->Asset()->name[0] == ',')
             {
-                pass.m_vertex_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderVertexShader::GetFileNameForAsset(vertexShaderName));
+                pass.m_vertex_shader_info =
+                    m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderVertexShader::GetFileNameForAsset(vertexShaderName));
             }
             else
             {
@@ -503,7 +517,8 @@ namespace IW4
 
             if (pass.m_pixel_shader->Asset()->name && pass.m_pixel_shader->Asset()->name[0] == ',')
             {
-                pass.m_pixel_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderPixelShader::GetFileNameForAsset(pixelShaderName));
+                pass.m_pixel_shader_info =
+                    m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, AssetLoaderPixelShader::GetFileNameForAsset(pixelShaderName));
             }
             else
             {
@@ -579,12 +594,18 @@ namespace IW4
             return foundSource;
         }
 
-        bool FindShaderArgument(const d3d9::ShaderInfo& shaderInfo, const techset::ShaderArgument& argument, size_t& constantIndex, size_t& registerOffset, std::string& errorMessage) const
+        bool FindShaderArgument(const d3d9::ShaderInfo& shaderInfo,
+                                const techset::ShaderArgument& argument,
+                                size_t& constantIndex,
+                                size_t& registerOffset,
+                                std::string& errorMessage) const
         {
-            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [argument](const d3d9::ShaderConstant& constant)
-            {
-                return constant.m_name == argument.m_argument_name;
-            });
+            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(),
+                                                             shaderInfo.m_constants.end(),
+                                                             [argument](const d3d9::ShaderConstant& constant)
+                                                             {
+                                                                 return constant.m_name == argument.m_argument_name;
+                                                             });
 
             if (matchingShaderConstant == shaderInfo.m_constants.end())
             {
@@ -623,8 +644,12 @@ namespace IW4
             return true;
         }
 
-        static bool SetArgumentCodeConst(MaterialShaderArgument& argument, const techset::ShaderArgumentCodeSource& source, const d3d9::ShaderConstant& shaderConstant, const unsigned sourceIndex,
-                                         const unsigned arrayCount, std::string& errorMessage)
+        static bool SetArgumentCodeConst(MaterialShaderArgument& argument,
+                                         const techset::ShaderArgumentCodeSource& source,
+                                         const d3d9::ShaderConstant& shaderConstant,
+                                         const unsigned sourceIndex,
+                                         const unsigned arrayCount,
+                                         std::string& errorMessage)
         {
             if (arrayCount > 0u)
             {
@@ -657,8 +682,12 @@ namespace IW4
             return true;
         }
 
-        static bool SetArgumentCodeSampler(MaterialShaderArgument& argument, const techset::ShaderArgumentCodeSource& source, const d3d9::ShaderConstant& shaderConstant, const unsigned sourceIndex,
-                                           const unsigned arrayCount, std::string& errorMessage)
+        static bool SetArgumentCodeSampler(MaterialShaderArgument& argument,
+                                           const techset::ShaderArgumentCodeSource& source,
+                                           const d3d9::ShaderConstant& shaderConstant,
+                                           const unsigned sourceIndex,
+                                           const unsigned arrayCount,
+                                           std::string& errorMessage)
         {
             if (arrayCount > 0u)
             {
@@ -689,7 +718,9 @@ namespace IW4
             return true;
         }
 
-        bool AcceptVertexShaderConstantArgument(const techset::ShaderArgument& shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage)
+        bool AcceptVertexShaderConstantArgument(const techset::ShaderArgument& shaderArgument,
+                                                const techset::ShaderArgumentCodeSource& source,
+                                                std::string& errorMessage)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -737,7 +768,10 @@ namespace IW4
             return true;
         }
 
-        bool AcceptPixelShaderCodeArgument(const techset::ShaderArgument& shaderArgument, const techset::ShaderArgumentCodeSource& source, std::string& errorMessage, const bool isSampler)
+        bool AcceptPixelShaderCodeArgument(const techset::ShaderArgument& shaderArgument,
+                                           const techset::ShaderArgumentCodeSource& source,
+                                           std::string& errorMessage,
+                                           const bool isSampler)
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -809,14 +843,15 @@ namespace IW4
                     return false;
             }
 
-
             pass.m_arguments.emplace_back(argument);
             pass.m_handled_pixel_shader_arguments[pass.m_pixel_shader_argument_handled_offset[shaderConstantIndex] + elementOffset] = true;
 
             return true;
         }
 
-        bool AcceptShaderConstantArgument(const techset::ShaderSelector shader, const techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource source,
+        bool AcceptShaderConstantArgument(const techset::ShaderSelector shader,
+                                          const techset::ShaderArgument shaderArgument,
+                                          const techset::ShaderArgumentCodeSource source,
                                           std::string& errorMessage) override
         {
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
@@ -826,7 +861,9 @@ namespace IW4
             return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage, false);
         }
 
-        bool AcceptShaderSamplerArgument(const techset::ShaderSelector shader, const techset::ShaderArgument shaderArgument, const techset::ShaderArgumentCodeSource source,
+        bool AcceptShaderSamplerArgument(const techset::ShaderSelector shader,
+                                         const techset::ShaderArgument shaderArgument,
+                                         const techset::ShaderArgumentCodeSource source,
                                          std::string& errorMessage) override
         {
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
@@ -839,7 +876,10 @@ namespace IW4
             return AcceptPixelShaderCodeArgument(shaderArgument, source, errorMessage, true);
         }
 
-        bool AcceptShaderLiteralArgument(const techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentLiteralSource source, std::string& errorMessage) override
+        bool AcceptShaderLiteralArgument(const techset::ShaderSelector shader,
+                                         techset::ShaderArgument shaderArgument,
+                                         techset::ShaderArgumentLiteralSource source,
+                                         std::string& errorMessage) override
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
@@ -895,7 +935,9 @@ namespace IW4
             return true;
         }
 
-        bool AcceptShaderMaterialArgument(const techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, const techset::ShaderArgumentMaterialSource source,
+        bool AcceptShaderMaterialArgument(const techset::ShaderSelector shader,
+                                          techset::ShaderArgument shaderArgument,
+                                          const techset::ShaderArgumentMaterialSource source,
                                           std::string& errorMessage) override
         {
             assert(!m_passes.empty());
@@ -1010,52 +1052,53 @@ namespace IW4
         static void UpdateTechniqueFlags(MaterialTechnique& technique)
         {
             // This is stupid but that's what the game does for zprepass for sure
-            // The other ones might be handled by the game in the same fashion because there is not recognizable pattern that connects the shaders with the same flags
+            // The other ones might be handled by the game in the same fashion because there is not recognizable pattern that connects the shaders with the same
+            // flags
             static std::unordered_map<std::string, size_t> flagsByTechniqueName({
-                {"zprepass", TECHNIQUE_FLAG_4 | TECHNIQUE_FLAG_200},
-                {"build_floatz", TECHNIQUE_FLAG_8},
-                {"build_shadowmap_depth", TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
-                {"build_shadowmap_model", TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
-                {"distortion_scale_ua_zfeather", TECHNIQUE_FLAG_100},
-                {"distortion_scale_zfeather", TECHNIQUE_FLAG_100},
-                {"distortion_scale_zfeather_dtex", TECHNIQUE_FLAG_100},
-                {"alternate_scene_overlay", TECHNIQUE_FLAG_200},
-                {"blur_apply", TECHNIQUE_FLAG_200},
-                {"build_floatz", TECHNIQUE_FLAG_200},
-                {"build_floatz_clear", TECHNIQUE_FLAG_200},
-                {"build_floatz_dtex", TECHNIQUE_FLAG_200},
-                {"build_floatz_ua", TECHNIQUE_FLAG_200},
-                {"build_floatz_ua_dtex", TECHNIQUE_FLAG_200},
-                {"build_shadowmap_depth_nc", TECHNIQUE_FLAG_200},
-                {"build_shadowmap_depth_ua", TECHNIQUE_FLAG_200},
-                {"build_shadowmap_model_dtex", TECHNIQUE_FLAG_200},
-                {"build_shadowmap_model_nc_dtex", TECHNIQUE_FLAG_200},
-                {"build_shadowmap_model_ua", TECHNIQUE_FLAG_200},
-                {"cinematic", TECHNIQUE_FLAG_200},
-                {"cinematic_3d", TECHNIQUE_FLAG_200},
-                {"cinematic_dtex_3d", TECHNIQUE_FLAG_200},
-                {"dof_near_coc", TECHNIQUE_FLAG_200},
-                {"floatz", TECHNIQUE_FLAG_200},
-                {"floatzdisplay", TECHNIQUE_FLAG_200},
-                {"particle_blend", TECHNIQUE_FLAG_200},
-                {"particle_zdownsample", TECHNIQUE_FLAG_200},
-                {"passthru_alpha", TECHNIQUE_FLAG_200},
-                {"postfx", TECHNIQUE_FLAG_200},
-                {"postfx_mblur", TECHNIQUE_FLAG_200},
-                {"processed_floatz", TECHNIQUE_FLAG_200},
-                {"ps3_aadownsample", TECHNIQUE_FLAG_200},
-                {"shell_shock", TECHNIQUE_FLAG_200},
-                {"shell_shock_flashed", TECHNIQUE_FLAG_200},
-                {"small_blur", TECHNIQUE_FLAG_200},
-                {"stencildisplay", TECHNIQUE_FLAG_200},
-                {"stencilshadow", TECHNIQUE_FLAG_200},
-                {"wireframe_solid", TECHNIQUE_FLAG_200},
-                {"wireframe_solid_atest_dtex", TECHNIQUE_FLAG_200},
-                {"wireframe_solid_dtex", TECHNIQUE_FLAG_200},
-                {"wireframe_solid_nc", TECHNIQUE_FLAG_200},
-                {"wireframe_solid_nc_dtex", TECHNIQUE_FLAG_200},
-                {"wireframe_solid_ua", TECHNIQUE_FLAG_200},
-                {"wireframe_solid_ua_dtex", TECHNIQUE_FLAG_200}
+                {"zprepass",                       TECHNIQUE_FLAG_4 | TECHNIQUE_FLAG_200 },
+                {"build_floatz",                   TECHNIQUE_FLAG_8                      },
+                {"build_shadowmap_depth",          TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
+                {"build_shadowmap_model",          TECHNIQUE_FLAG_10 | TECHNIQUE_FLAG_200},
+                {"distortion_scale_ua_zfeather",   TECHNIQUE_FLAG_100                    },
+                {"distortion_scale_zfeather",      TECHNIQUE_FLAG_100                    },
+                {"distortion_scale_zfeather_dtex", TECHNIQUE_FLAG_100                    },
+                {"alternate_scene_overlay",        TECHNIQUE_FLAG_200                    },
+                {"blur_apply",                     TECHNIQUE_FLAG_200                    },
+                {"build_floatz",                   TECHNIQUE_FLAG_200                    },
+                {"build_floatz_clear",             TECHNIQUE_FLAG_200                    },
+                {"build_floatz_dtex",              TECHNIQUE_FLAG_200                    },
+                {"build_floatz_ua",                TECHNIQUE_FLAG_200                    },
+                {"build_floatz_ua_dtex",           TECHNIQUE_FLAG_200                    },
+                {"build_shadowmap_depth_nc",       TECHNIQUE_FLAG_200                    },
+                {"build_shadowmap_depth_ua",       TECHNIQUE_FLAG_200                    },
+                {"build_shadowmap_model_dtex",     TECHNIQUE_FLAG_200                    },
+                {"build_shadowmap_model_nc_dtex",  TECHNIQUE_FLAG_200                    },
+                {"build_shadowmap_model_ua",       TECHNIQUE_FLAG_200                    },
+                {"cinematic",                      TECHNIQUE_FLAG_200                    },
+                {"cinematic_3d",                   TECHNIQUE_FLAG_200                    },
+                {"cinematic_dtex_3d",              TECHNIQUE_FLAG_200                    },
+                {"dof_near_coc",                   TECHNIQUE_FLAG_200                    },
+                {"floatz",                         TECHNIQUE_FLAG_200                    },
+                {"floatzdisplay",                  TECHNIQUE_FLAG_200                    },
+                {"particle_blend",                 TECHNIQUE_FLAG_200                    },
+                {"particle_zdownsample",           TECHNIQUE_FLAG_200                    },
+                {"passthru_alpha",                 TECHNIQUE_FLAG_200                    },
+                {"postfx",                         TECHNIQUE_FLAG_200                    },
+                {"postfx_mblur",                   TECHNIQUE_FLAG_200                    },
+                {"processed_floatz",               TECHNIQUE_FLAG_200                    },
+                {"ps3_aadownsample",               TECHNIQUE_FLAG_200                    },
+                {"shell_shock",                    TECHNIQUE_FLAG_200                    },
+                {"shell_shock_flashed",            TECHNIQUE_FLAG_200                    },
+                {"small_blur",                     TECHNIQUE_FLAG_200                    },
+                {"stencildisplay",                 TECHNIQUE_FLAG_200                    },
+                {"stencilshadow",                  TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid",                TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid_atest_dtex",     TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid_dtex",           TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid_nc",             TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid_nc_dtex",        TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid_ua",             TECHNIQUE_FLAG_200                    },
+                {"wireframe_solid_ua_dtex",        TECHNIQUE_FLAG_200                    },
             });
 
             const auto flagsForName = flagsByTechniqueName.find(technique.name);
@@ -1140,19 +1183,19 @@ namespace IW4
                     stableArgCount++;
                     break;
                 case MTL_UPDATE_CUSTOM:
+                {
+                    assert(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER);
+                    if (arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
                     {
-                        assert(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER);
-                        if (arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
+                        const auto customSampler = std::find(std::begin(g_customSamplerSrc), std::end(g_customSamplerSrc), arg.m_arg.u.codeSampler);
+                        assert(customSampler != std::end(g_customSamplerSrc));
+                        if (customSampler != std::end(g_customSamplerSrc))
                         {
-                            const auto customSampler = std::find(std::begin(g_customSamplerSrc), std::end(g_customSamplerSrc), arg.m_arg.u.codeSampler);
-                            assert(customSampler != std::end(g_customSamplerSrc));
-                            if (customSampler != std::end(g_customSamplerSrc))
-                            {
-                                const auto customSamplerIndex = customSampler - std::begin(g_customSamplerSrc);
-                                out.customSamplerFlags |= 1 << customSamplerIndex;
-                            }
+                            const auto customSamplerIndex = customSampler - std::begin(g_customSamplerSrc);
+                            out.customSamplerFlags |= 1 << customSamplerIndex;
                         }
                     }
+                }
                     continue;
                 default:
                     assert(false);
@@ -1174,7 +1217,9 @@ namespace IW4
                 dependencies.push_back(in.m_vertex_decl_asset);
         }
 
-        MaterialTechnique* ConvertTechnique(const std::string& techniqueName, const std::vector<TechniqueCreator::Pass>& passes, std::vector<XAssetInfoGeneric*>& dependencies) const
+        MaterialTechnique* ConvertTechnique(const std::string& techniqueName,
+                                            const std::vector<TechniqueCreator::Pass>& passes,
+                                            std::vector<XAssetInfoGeneric*>& dependencies) const
         {
             assert(!passes.empty());
             const auto techniqueSize = sizeof(MaterialTechnique) + (passes.size() - 1u) * sizeof(MaterialPass);
@@ -1231,7 +1276,7 @@ namespace IW4
             return m_zone_state->AddLoadedTechnique(techniqueName, techniqueFromRaw, dependencies);
         }
     };
-}
+} // namespace IW4
 
 void* AssetLoaderTechniqueSet::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -1262,8 +1307,8 @@ std::string AssetLoaderTechniqueSet::GetStateMapFileName(const std::string& stat
     return ss.str();
 }
 
-bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& assetName, const techset::TechsetDefinition& definition, ISearchPath* searchPath, MemoryManager* memory,
-                                                          IAssetLoadingManager* manager)
+bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(
+    const std::string& assetName, const techset::TechsetDefinition& definition, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
 {
     auto* techset = memory->Create<MaterialTechniqueSet>();
     memset(techset, 0, sizeof(MaterialTechniqueSet));
@@ -1293,7 +1338,8 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(const std::string& ass
     return true;
 }
 
-techset::TechsetDefinition* AssetLoaderTechniqueSet::LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache)
+techset::TechsetDefinition*
+    AssetLoaderTechniqueSet::LoadTechsetDefinition(const std::string& assetName, ISearchPath* searchPath, techset::TechsetDefinitionCache* definitionCache)
 {
     auto* cachedTechsetDefinition = definitionCache->GetCachedTechsetDefinition(assetName);
     if (cachedTechsetDefinition)
@@ -1313,7 +1359,8 @@ techset::TechsetDefinition* AssetLoaderTechniqueSet::LoadTechsetDefinition(const
     return techsetDefinitionPtr;
 }
 
-const state_map::StateMapDefinition* AssetLoaderTechniqueSet::LoadStateMapDefinition(const std::string& stateMapName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache)
+const state_map::StateMapDefinition*
+    AssetLoaderTechniqueSet::LoadStateMapDefinition(const std::string& stateMapName, ISearchPath* searchPath, techset::TechniqueStateMapCache* stateMapCache)
 {
     auto* cachedStateMap = stateMapCache->GetCachedStateMap(stateMapName);
     if (cachedStateMap)
@@ -1341,7 +1388,8 @@ bool AssetLoaderTechniqueSet::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderTechniqueSet::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderTechniqueSet::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* definitionCache = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
     const auto* techsetDefinition = LoadTechsetDefinition(assetName, searchPath, definitionCache);

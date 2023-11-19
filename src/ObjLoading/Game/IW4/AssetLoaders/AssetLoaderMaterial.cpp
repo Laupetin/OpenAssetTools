@@ -1,12 +1,6 @@
 #include "AssetLoaderMaterial.h"
 
-#include <cstring>
-#include <cmath>
-#include <iostream>
-#include <sstream>
-
 #include "AssetLoaderTechniqueSet.h"
-#include "ObjLoading.h"
 #include "AssetLoading/AbstractGdtEntryReader.h"
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
@@ -14,10 +8,16 @@
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Math/Vector.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
 #include "StateMap/StateMapFromTechniqueExtractor.h"
 #include "StateMap/StateMapHandler.h"
 #include "Techset/TechniqueFileReader.h"
+
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include <sstream>
 
 using namespace IW4;
 
@@ -68,9 +68,7 @@ namespace IW4
         {
             const auto materialType = ReadStringProperty("materialType");
 
-            if (materialType == GDT_MATERIAL_TYPE_MODEL_PHONG
-                || materialType == GDT_MATERIAL_TYPE_WORLD_PHONG
-                || materialType == GDT_MATERIAL_TYPE_IMPACT_MARK)
+            if (materialType == GDT_MATERIAL_TYPE_MODEL_PHONG || materialType == GDT_MATERIAL_TYPE_WORLD_PHONG || materialType == GDT_MATERIAL_TYPE_IMPACT_MARK)
             {
                 mtl_phong_template();
             }
@@ -82,8 +80,7 @@ namespace IW4
             {
                 mtl_2d_template();
             }
-            else if (materialType == GDT_MATERIAL_TYPE_MODEL_UNLIT
-                || materialType == GDT_MATERIAL_TYPE_WORLD_UNLIT)
+            else if (materialType == GDT_MATERIAL_TYPE_MODEL_UNLIT || materialType == GDT_MATERIAL_TYPE_WORLD_UNLIT)
             {
                 mtl_unlit_template();
             }
@@ -557,11 +554,10 @@ namespace IW4
                     sortKey = GDT_SORTKEY_DECAL_WEAPON_IMPACT;
                 else if (materialType == GDT_MATERIAL_TYPE_EFFECT)
                     sortKey = GDT_SORTKEY_EFFECT_AUTO_SORT;
-                else if (materialType == GDT_MATERIAL_TYPE_OBJECTIVE
-                    || blendFunc == "Blend" || blendFunc == "Add" || blendFunc == "Screen Add")
+                else if (materialType == GDT_MATERIAL_TYPE_OBJECTIVE || blendFunc == "Blend" || blendFunc == "Add" || blendFunc == "Screen Add")
                     sortKey = GDT_SORTKEY_BLEND_ADDITIVE;
-                    // else if (blendFunc == "Multiply") // TODO
-                    //     sortKey = GDT_SORTKEY_MULTIPLICATIVE;
+                // else if (blendFunc == "Multiply") // TODO
+                //     sortKey = GDT_SORTKEY_MULTIPLICATIVE;
                 else if (materialType == GDT_MATERIAL_TYPE_SKY)
                     sortKey = GDT_SORTKEY_SKY;
                 else if (materialType == GDT_MATERIAL_TYPE_MODEL_AMBIENT)
@@ -599,9 +595,7 @@ namespace IW4
             }
         }
 
-        void clamp_template()
-        {
-        }
+        void clamp_template() {}
 
         void textureAtlas_template()
         {
@@ -674,11 +668,15 @@ namespace IW4
             else if (blendFunc == GDT_BLEND_FUNC_CUSTOM)
             {
                 const auto customBlendOpRgb = ReadEnumProperty<BlendOp_e>("customBlendOpRgb", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
-                const auto srcCustomBlendFunc = ReadEnumProperty<CustomBlendFunc_e>("srcCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
-                const auto destCustomBlendFunc = ReadEnumProperty<CustomBlendFunc_e>("destCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto srcCustomBlendFunc =
+                    ReadEnumProperty<CustomBlendFunc_e>("srcCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto destCustomBlendFunc =
+                    ReadEnumProperty<CustomBlendFunc_e>("destCustomBlendFunc", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
                 const auto customBlendOpAlpha = ReadEnumProperty<BlendOp_e>("customBlendOpAlpha", GdtBlendOpNames, std::extent_v<decltype(GdtBlendOpNames)>);
-                const auto srcCustomBlendFuncAlpha = ReadEnumProperty<CustomBlendFunc_e>("srcCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
-                const auto destCustomBlendFuncAlpha = ReadEnumProperty<CustomBlendFunc_e>("destCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto srcCustomBlendFuncAlpha =
+                    ReadEnumProperty<CustomBlendFunc_e>("srcCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
+                const auto destCustomBlendFuncAlpha =
+                    ReadEnumProperty<CustomBlendFunc_e>("destCustomBlendFuncAlpha", GdtCustomBlendFuncNames, std::extent_v<decltype(GdtCustomBlendFuncNames)>);
 
                 SetBlendFunc(customBlendOpRgb, srcCustomBlendFunc, destCustomBlendFunc);
                 SetSeparateAlphaBlendFunc(customBlendOpAlpha, srcCustomBlendFuncAlpha, destCustomBlendFuncAlpha);
@@ -693,10 +691,14 @@ namespace IW4
 
         void colorwrite_template()
         {
-            const auto colorWriteRed = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteRed", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
-            const auto colorWriteGreen = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteGreen", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
-            const auto colorWriteBlue = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteBlue", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
-            const auto colorWriteAlpha = ReadEnumProperty<StateBitsEnabledStatus_e>("colorWriteAlpha", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteRed = ReadEnumProperty<StateBitsEnabledStatus_e>(
+                "colorWriteRed", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteGreen = ReadEnumProperty<StateBitsEnabledStatus_e>(
+                "colorWriteGreen", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteBlue = ReadEnumProperty<StateBitsEnabledStatus_e>(
+                "colorWriteBlue", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
+            const auto colorWriteAlpha = ReadEnumProperty<StateBitsEnabledStatus_e>(
+                "colorWriteAlpha", GdtStateBitsEnabledStatusNames, std::extent_v<decltype(GdtStateBitsEnabledStatusNames)>);
 
             SetColorWrite(colorWriteRed, colorWriteGreen, colorWriteBlue, colorWriteAlpha);
         }
@@ -717,7 +719,8 @@ namespace IW4
 
         void depthwrite_template()
         {
-            const auto depthWrite = ReadEnumProperty<StateBitsEnabledStatus_e>("depthWrite", GdtStateBitsOnOffStatusNames, std::extent_v<decltype(GdtStateBitsOnOffStatusNames)>);
+            const auto depthWrite =
+                ReadEnumProperty<StateBitsEnabledStatus_e>("depthWrite", GdtStateBitsOnOffStatusNames, std::extent_v<decltype(GdtStateBitsOnOffStatusNames)>);
             const auto blendFunc = ReadStringProperty("blendFunc");
 
             if (depthWrite == StateBitsEnabledStatus_e::ENABLED)
@@ -746,7 +749,8 @@ namespace IW4
 
         void gammawrite_template()
         {
-            const auto gammaWrite = ReadEnumProperty<StateBitsEnabledStatus_e>("gammaWrite", GdtStateBitsOnOffStatusNames, std::extent_v<decltype(GdtStateBitsOnOffStatusNames)>);
+            const auto gammaWrite =
+                ReadEnumProperty<StateBitsEnabledStatus_e>("gammaWrite", GdtStateBitsOnOffStatusNames, std::extent_v<decltype(GdtStateBitsOnOffStatusNames)>);
 
             if (gammaWrite == StateBitsEnabledStatus_e::UNKNOWN)
             {
@@ -760,7 +764,8 @@ namespace IW4
 
         void polygonoffset_template()
         {
-            const auto polygonOffset = ReadEnumProperty<PolygonOffset_e>("polygonOffset", GdtPolygonOffsetNames, std::extent_v<decltype(GdtPolygonOffsetNames)>);
+            const auto polygonOffset =
+                ReadEnumProperty<PolygonOffset_e>("polygonOffset", GdtPolygonOffsetNames, std::extent_v<decltype(GdtPolygonOffsetNames)>);
 
             SetPolygonOffset(polygonOffset);
         }
@@ -778,17 +783,23 @@ namespace IW4
             {
                 if (stencilMode == StencilMode_e::TWO_SIDED)
                 {
-                    const auto stencilBackFunc = ReadEnumProperty<StencilFunc_e>("stencilFunc2", GdtStencilFuncNames, std::extent_v<decltype(GdtStencilFuncNames)>);
-                    const auto stencilBackOpFail = ReadEnumProperty<StencilOp_e>("stencilOpFail2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
-                    const auto stencilBackOpZFail = ReadEnumProperty<StencilOp_e>("stencilOpZFail2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
-                    const auto stencilBackOpPass = ReadEnumProperty<StencilOp_e>("stencilOpPass2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                    const auto stencilBackFunc =
+                        ReadEnumProperty<StencilFunc_e>("stencilFunc2", GdtStencilFuncNames, std::extent_v<decltype(GdtStencilFuncNames)>);
+                    const auto stencilBackOpFail =
+                        ReadEnumProperty<StencilOp_e>("stencilOpFail2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                    const auto stencilBackOpZFail =
+                        ReadEnumProperty<StencilOp_e>("stencilOpZFail2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                    const auto stencilBackOpPass =
+                        ReadEnumProperty<StencilOp_e>("stencilOpPass2", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
 
                     EnableStencil(StencilIndex::BACK, stencilBackFunc, stencilBackOpFail, stencilBackOpZFail, stencilBackOpPass);
                 }
 
-                const auto stencilFrontFunc = ReadEnumProperty<StencilFunc_e>("stencilFunc1", GdtStencilFuncNames, std::extent_v<decltype(GdtStencilFuncNames)>);
+                const auto stencilFrontFunc =
+                    ReadEnumProperty<StencilFunc_e>("stencilFunc1", GdtStencilFuncNames, std::extent_v<decltype(GdtStencilFuncNames)>);
                 const auto stencilFrontOpFail = ReadEnumProperty<StencilOp_e>("stencilOpFail1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
-                const auto stencilFrontOpZFail = ReadEnumProperty<StencilOp_e>("stencilOpZFail1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
+                const auto stencilFrontOpZFail =
+                    ReadEnumProperty<StencilOp_e>("stencilOpZFail1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
                 const auto stencilFrontOpPass = ReadEnumProperty<StencilOp_e>("stencilOpPass1", GdtStencilOpNames, std::extent_v<decltype(GdtStencilOpNames)>);
 
                 EnableStencil(StencilIndex::FRONT, stencilFrontFunc, stencilFrontOpFail, stencilFrontOpZFail, stencilFrontOpPass);
@@ -833,11 +844,13 @@ namespace IW4
                 if (techsetDefinition->GetTechniqueByIndex(i, techniqueName))
                 {
                     const auto stateBitsForTechnique = GetStateBitsForTechnique(techniqueName);
-                    const auto foundStateBits = std::find_if(m_state_bits.begin(), m_state_bits.end(),
-                                                             [stateBitsForTechnique](const GfxStateBits& s1)
-                                                             {
-                                                                 return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
-                                                             });
+                    const auto foundStateBits =
+                        std::find_if(m_state_bits.begin(),
+                                     m_state_bits.end(),
+                                     [stateBitsForTechnique](const GfxStateBits& s1)
+                                     {
+                                         return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
+                                     });
 
                     if (foundStateBits != m_state_bits.end())
                     {
@@ -928,7 +941,8 @@ namespace IW4
             }
         }
 
-        void AddMapTexture(const std::string& typeName, const TileMode_e tileMode, GdtFilter_e filterMode, const TextureSemantic semantic, const std::string& textureName)
+        void AddMapTexture(
+            const std::string& typeName, const TileMode_e tileMode, GdtFilter_e filterMode, const TextureSemantic semantic, const std::string& textureName)
         {
             MaterialTextureDef textureDef{};
             textureDef.nameHash = Common::R_HashString(typeName.c_str());
@@ -1086,7 +1100,9 @@ namespace IW4
             m_base_state_bits.loadBits[0] |= ((static_cast<unsigned>(destFunc) - 1) << GFXS0_DSTBLEND_ALPHA_SHIFT) & GFXS0_DSTBLEND_ALPHA_MASK;
         }
 
-        void SetColorWrite(const StateBitsEnabledStatus_e colorWriteRed, const StateBitsEnabledStatus_e colorWriteGreen, const StateBitsEnabledStatus_e colorWriteBlue,
+        void SetColorWrite(const StateBitsEnabledStatus_e colorWriteRed,
+                           const StateBitsEnabledStatus_e colorWriteGreen,
+                           const StateBitsEnabledStatus_e colorWriteBlue,
                            const StateBitsEnabledStatus_e colorWriteAlpha)
         {
             if (colorWriteRed == StateBitsEnabledStatus_e::UNKNOWN || colorWriteGreen == StateBitsEnabledStatus_e::UNKNOWN
@@ -1200,8 +1216,16 @@ namespace IW4
             m_base_state_bits.loadBits[1] |= ((static_cast<unsigned>(polygonOffset) - 1) << GFXS1_POLYGON_OFFSET_SHIFT) & GFXS1_POLYGON_OFFSET_MASK;
         }
 
-        static void GetStencilMasksForIndex(const StencilIndex stencil, unsigned& enabledMask, unsigned& funcShift, unsigned& funcMask, unsigned& opFailShift, unsigned& opFailMask,
-                                            unsigned& opZFailShift, unsigned& opZFailMask, unsigned& opPassShift, unsigned& opPassMask)
+        static void GetStencilMasksForIndex(const StencilIndex stencil,
+                                            unsigned& enabledMask,
+                                            unsigned& funcShift,
+                                            unsigned& funcMask,
+                                            unsigned& opFailShift,
+                                            unsigned& opFailMask,
+                                            unsigned& opZFailShift,
+                                            unsigned& opZFailMask,
+                                            unsigned& opPassShift,
+                                            unsigned& opPassMask)
         {
             if (stencil == StencilIndex::FRONT)
             {
@@ -1239,7 +1263,8 @@ namespace IW4
             m_base_state_bits.loadBits[1] &= ~(enabledMask | funcMask | opFailMask | opZFailMask | opPassMask);
         }
 
-        void EnableStencil(const StencilIndex stencil, StencilFunc_e stencilFunc, StencilOp_e stencilOpFail, StencilOp_e stencilOpZFail, StencilOp_e stencilOpPass)
+        void EnableStencil(
+            const StencilIndex stencil, StencilFunc_e stencilFunc, StencilOp_e stencilOpFail, StencilOp_e stencilOpZFail, StencilOp_e stencilOpPass)
         {
             unsigned enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask;
             GetStencilMasksForIndex(stencil, enabledMask, funcShift, funcMask, opFailShift, opFailMask, opZFailShift, opZFailMask, opPassShift, opPassMask);
@@ -1298,7 +1323,8 @@ namespace IW4
             }
         }
 
-        static size_t GetIndexForString(const std::string& propertyName, const std::string& value, const char** validValuesArray, const size_t validValuesArraySize)
+        static size_t
+            GetIndexForString(const std::string& propertyName, const std::string& value, const char** validValuesArray, const size_t validValuesArraySize)
         {
             for (auto i = 0u; i < validValuesArraySize; i++)
             {
@@ -1311,8 +1337,7 @@ namespace IW4
             throw GdtReadingException(ss.str());
         }
 
-        template <typename T>
-        T ReadEnumProperty(const std::string& propertyName, const char** validValuesArray, const size_t validValuesArraySize) const
+        template<typename T> T ReadEnumProperty(const std::string& propertyName, const char** validValuesArray, const size_t validValuesArraySize) const
         {
             return static_cast<T>(GetIndexForString(propertyName, ReadStringProperty(propertyName), validValuesArray, validValuesArraySize));
         }
@@ -1330,7 +1355,7 @@ namespace IW4
         std::vector<MaterialTextureDef> m_textures;
         std::vector<MaterialConstantDef> m_constants;
     };
-}
+} // namespace IW4
 
 void* AssetLoaderMaterial::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -1345,7 +1370,8 @@ bool AssetLoaderMaterial::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderMaterial::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderMaterial::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto* entry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_MATERIAL, assetName);
     if (!entry)

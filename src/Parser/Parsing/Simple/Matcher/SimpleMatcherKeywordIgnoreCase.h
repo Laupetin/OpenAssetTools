@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-
-#include "Parsing/Simple/SimpleParserValue.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
+#include "Parsing/Simple/SimpleParserValue.h"
+
+#include <string>
 
 class SimpleMatcherKeywordIgnoreCase final : public AbstractMatcher<SimpleParserValue>
 {

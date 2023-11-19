@@ -1,10 +1,9 @@
 #include "DataDefinition.h"
 
+#include "Utils/NamespaceBuilder.h"
 
 #include <cassert>
 #include <sstream>
-
-#include "Utils/NamespaceBuilder.h"
 
 DataDefinition::DataDefinition(std::string _namespace, std::string name)
     : m_namespace(std::move(_namespace)),

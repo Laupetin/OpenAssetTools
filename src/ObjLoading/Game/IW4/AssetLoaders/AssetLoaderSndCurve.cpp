@@ -1,13 +1,13 @@
 #include "AssetLoaderSndCurve.h"
 
+#include "AssetLoading/SndCurve/SndCurveReader.h"
+#include "Game/IW4/IW4.h"
+#include "ObjLoading.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstring>
 #include <iostream>
 #include <sstream>
-
-#include "ObjLoading.h"
-#include "AssetLoading/SndCurve/SndCurveReader.h"
-#include "Game/IW4/IW4.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
 
@@ -33,7 +33,8 @@ bool AssetLoaderSndCurve::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderSndCurve::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderSndCurve::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto filename = GetAssetFilename(assetName);
     const auto file = searchPath->Open(filename);
@@ -47,7 +48,7 @@ bool AssetLoaderSndCurve::LoadFromRaw(const std::string& assetName, ISearchPath*
     if (!sndCurveData)
         return false;
 
-    if(sndCurveData->m_knots.size() > std::extent_v<decltype(SndCurve::knots)>)
+    if (sndCurveData->m_knots.size() > std::extent_v<decltype(SndCurve::knots)>)
     {
         std::cerr << "Failed to load SndCurve \"" << assetName << "\": Too many knots (" << sndCurveData->m_knots.size() << ")\n";
         return false;
@@ -57,9 +58,9 @@ bool AssetLoaderSndCurve::LoadFromRaw(const std::string& assetName, ISearchPath*
     sndCurve->filename = memory->Dup(assetName.c_str());
     sndCurve->knotCount = static_cast<uint16_t>(sndCurveData->m_knots.size());
 
-    for(auto i = 0u; i < std::extent_v<decltype(SndCurve::knots)>; i++)
+    for (auto i = 0u; i < std::extent_v<decltype(SndCurve::knots)>; i++)
     {
-        if(i < sndCurveData->m_knots.size())
+        if (i < sndCurveData->m_knots.size())
         {
             const auto& [x, y] = sndCurveData->m_knots[i];
             sndCurve->knots[i][0] = static_cast<float>(x);

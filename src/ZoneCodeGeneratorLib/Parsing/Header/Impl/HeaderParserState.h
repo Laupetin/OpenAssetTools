@@ -1,18 +1,18 @@
 #pragma once
 
-#include <memory>
-#include <stack>
-#include <unordered_map>
-
-#include "Utils/ClassUtils.h"
 #include "Domain/Definition/BaseTypeDefinition.h"
 #include "Domain/Definition/DataDefinition.h"
 #include "Domain/Definition/EnumMember.h"
 #include "Domain/Definition/ForwardDeclaration.h"
-#include "Parsing/IPackValueSupplier.h"
-#include "Utils/NamespaceBuilder.h"
 #include "Parsing/Header/Block/IHeaderBlock.h"
+#include "Parsing/IPackValueSupplier.h"
 #include "Persistence/IDataRepository.h"
+#include "Utils/ClassUtils.h"
+#include "Utils/NamespaceBuilder.h"
+
+#include <memory>
+#include <stack>
+#include <unordered_map>
 
 class IHeaderBlock;
 

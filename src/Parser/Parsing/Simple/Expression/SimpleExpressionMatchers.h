@@ -1,16 +1,16 @@
 #pragma once
 
-#include <memory>
-
+#include "Parsing/Matcher/AbstractMatcher.h"
+#include "Parsing/Matcher/MatcherLabel.h"
+#include "Parsing/Sequence/SequenceResult.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
+#include "Parsing/Simple/SimpleParserValue.h"
 #include "SimpleExpressionBinaryOperation.h"
 #include "SimpleExpressionUnaryOperation.h"
 #include "Utils/ClassUtils.h"
-#include "Parsing/Matcher/AbstractMatcher.h"
-#include "Parsing/Matcher/MatcherLabel.h"
-#include "Parsing/Simple/Expression/ISimpleExpression.h"
-#include "Parsing/Sequence/SequenceResult.h"
-#include "Parsing/Simple/SimpleParserValue.h"
+
 #include <Parsing/Simple/SimpleLexer.h>
+#include <memory>
 
 class SimpleExpressionMatchers
 {
@@ -35,7 +35,8 @@ private:
 
 public:
     SimpleExpressionMatchers();
-    SimpleExpressionMatchers(bool enableStringOperands, bool enableIdentifierOperands, bool enableFloatingPointOperands, bool enableIntOperands, bool enableConditionalOperator);
+    SimpleExpressionMatchers(
+        bool enableStringOperands, bool enableIdentifierOperands, bool enableFloatingPointOperands, bool enableIntOperands, bool enableConditionalOperator);
     virtual ~SimpleExpressionMatchers();
     SimpleExpressionMatchers(const SimpleExpressionMatchers& other) = default;
     SimpleExpressionMatchers(SimpleExpressionMatchers&& other) noexcept = default;
@@ -56,7 +57,8 @@ private:
     std::unique_ptr<matcher_t> ParseConditionalOperator(const supplier_t* labelSupplier) const;
 
     std::unique_ptr<ISimpleExpression> ProcessExpressionInParenthesis(SequenceResult<SimpleParserValue>& result) const;
-    std::unique_ptr<ISimpleExpression> ProcessConditionalOperation(std::unique_ptr<ISimpleExpression> condition, SequenceResult<SimpleParserValue>& result) const;
+    std::unique_ptr<ISimpleExpression> ProcessConditionalOperation(std::unique_ptr<ISimpleExpression> condition,
+                                                                   SequenceResult<SimpleParserValue>& result) const;
     std::unique_ptr<ISimpleExpression> ProcessOperand(SequenceResult<SimpleParserValue>& result) const;
 
 public:

@@ -1,9 +1,9 @@
 #pragma once
+#include "Parsing/IParserLineStream.h"
+#include "ZoneDefinition.h"
+
 #include <iostream>
 #include <memory>
-
-#include "ZoneDefinition.h"
-#include "Parsing/IParserLineStream.h"
 
 class ZoneDefinitionInputStream
 {

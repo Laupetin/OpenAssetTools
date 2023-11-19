@@ -29,7 +29,7 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockStruct::GetTestsForBloc
         new SequenceEnum(),
         new SequenceStruct(),
         new SequenceUnion(),
-        new SequenceVariable()
+        new SequenceVariable(),
     });
 
     return tests;
@@ -66,7 +66,7 @@ void HeaderBlockStruct::OnClose(HeaderParserState* state)
     for (auto& member : m_members)
         structDefinition->m_members.emplace_back(std::move(member));
 
-    if(m_has_custom_align)
+    if (m_has_custom_align)
     {
         structDefinition->m_alignment_override = static_cast<unsigned>(m_custom_alignment);
         structDefinition->m_has_alignment_override = true;
@@ -83,7 +83,8 @@ void HeaderBlockStruct::OnChildBlockClose(HeaderParserState* state, IHeaderBlock
     auto* variableDefining = dynamic_cast<IHeaderBlockVariableDefining*>(block);
 
     if (variableDefining && variableDefining->IsDefiningVariable())
-        m_members.emplace_back(std::make_shared<Variable>(variableDefining->GetVariableName(), std::make_unique<TypeDeclaration>(variableDefining->GetVariableType())));
+        m_members.emplace_back(
+            std::make_shared<Variable>(variableDefining->GetVariableName(), std::make_unique<TypeDeclaration>(variableDefining->GetVariableType())));
 }
 
 void HeaderBlockStruct::AddVariable(std::shared_ptr<Variable> variable)

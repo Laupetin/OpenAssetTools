@@ -2,16 +2,14 @@
 
 namespace IW4
 {
-    inline const char* szWeapTypeNames[]
-    {
+    inline const char* szWeapTypeNames[]{
         "bullet",
         "grenade",
         "projectile",
         "riotshield",
     };
 
-    inline const char* szWeapClassNames[]
-    {
+    inline const char* szWeapClassNames[]{
         "rifle",
         "sniper",
         "mg",
@@ -26,14 +24,12 @@ namespace IW4
         "item",
     };
 
-    inline const char* szWeapOverlayReticleNames[]
-    {
+    inline const char* szWeapOverlayReticleNames[]{
         "none",
         "crosshair",
     };
 
-    inline const char* szWeapInventoryTypeNames[]
-    {
+    inline const char* szWeapInventoryTypeNames[]{
         "primary",
         "offhand",
         "item",
@@ -42,8 +38,7 @@ namespace IW4
         "scavenger",
     };
 
-    inline const char* szWeapFireTypeNames[]
-    {
+    inline const char* szWeapFireTypeNames[]{
         "Full Auto",
         "Single Shot",
         "2-Round Burst",
@@ -52,16 +47,14 @@ namespace IW4
         "Double Barrel",
     };
 
-    inline const char* penetrateTypeNames[]
-    {
+    inline const char* penetrateTypeNames[]{
         "none",
         "small",
         "medium",
         "large",
     };
 
-    inline const char* impactTypeNames[]
-    {
+    inline const char* impactTypeNames[]{
         "none",
         "bullet_small",
         "bullet_large",
@@ -75,15 +68,13 @@ namespace IW4
         "projectile_dud",
     };
 
-    inline const char* szWeapStanceNames[]
-    {
+    inline const char* szWeapStanceNames[]{
         "stand",
         "duck",
         "prone",
     };
 
-    inline const char* szProjectileExplosionNames[]
-    {
+    inline const char* szProjectileExplosionNames[]{
         "grenade",
         "rocket",
         "flashbang",
@@ -93,8 +84,7 @@ namespace IW4
         "heavy explosive",
     };
 
-    inline const char* offhandClassNames[]
-    {
+    inline const char* offhandClassNames[]{
         "None",
         "Frag Grenade",
         "Smoke Grenade",
@@ -103,8 +93,7 @@ namespace IW4
         "Other",
     };
 
-    inline const char* playerAnimTypeNames[]
-    {
+    inline const char* playerAnimTypeNames[]{
         "none",
         "other",
         "pistol",
@@ -125,23 +114,20 @@ namespace IW4
         "throwingknife",
     };
 
-    inline const char* activeReticleNames[]
-    {
+    inline const char* activeReticleNames[]{
         "None",
         "Pip-On-A-Stick",
         "Bouncing diamond",
     };
 
-    inline const char* guidedMissileNames[]
-    {
+    inline const char* guidedMissileNames[]{
         "None",
         "Sidewinder",
         "Hellfire",
         "Javelin",
     };
 
-    inline const char* stickinessNames[]
-    {
+    inline const char* stickinessNames[]{
         "Don't stick",
         "Stick to all",
         "Stick to all, orient to surface",
@@ -150,15 +136,13 @@ namespace IW4
         "Knife",
     };
 
-    inline const char* overlayInterfaceNames[]
-    {
+    inline const char* overlayInterfaceNames[]{
         "None",
         "Javelin",
         "Turret Scope",
     };
 
-    inline const char* ammoCounterClipNames[]
-    {
+    inline const char* ammoCounterClipNames[]{
         "None",
         "Magazine",
         "ShortMagazine",
@@ -168,15 +152,13 @@ namespace IW4
         "AltWeapon",
     };
 
-    inline const char* weapIconRatioNames[]
-    {
+    inline const char* weapIconRatioNames[]{
         "1:1",
         "2:1",
         "4:1",
     };
 
-    inline const char* s_vehicleClassNames[]
-    {
+    inline const char* s_vehicleClassNames[]{
         "4 wheel",
         "tank",
         "plane",
@@ -186,10 +168,9 @@ namespace IW4
         "snowmobile",
     };
 
-    inline const char* s_vehicleAxleTypeNames[]
-    {
+    inline const char* s_vehicleAxleTypeNames[]{
         "front",
         "rear",
         "all",
     };
-}
+} // namespace IW4

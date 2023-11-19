@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Loading/ILoadingStream.h"
 #include "Zone/Stream/IZoneInputStream.h"
 #include "Zone/XBlock.h"
-#include "Loading/ILoadingStream.h"
 
-#include <vector>
 #include <stack>
+#include <vector>
 
 class XBlockInputStream final : public IZoneInputStream
 {
@@ -39,5 +39,4 @@ public:
 
     void* ConvertOffsetToPointer(const void* offset) override;
     void* ConvertOffsetToAlias(const void* offset) override;
-    
 };

@@ -1,9 +1,9 @@
 #pragma once
-#include <unordered_set>
-#include <vector>
-
 #include "Game/GameLanguage.h"
 #include "Localize/LocalizeFile.h"
+
+#include <unordered_set>
+#include <vector>
 
 class LocalizeFileParserState
 {

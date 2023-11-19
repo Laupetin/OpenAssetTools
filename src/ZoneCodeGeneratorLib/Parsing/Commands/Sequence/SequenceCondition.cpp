@@ -1,8 +1,8 @@
 #include "SequenceCondition.h"
 
 #include "Domain/Evaluation/OperandStatic.h"
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceCondition::SequenceCondition()
 {
@@ -17,9 +17,9 @@ SequenceCondition::SequenceCondition()
         create.Or({
             create.Keyword("always").Tag(TAG_ALWAYS),
             create.Keyword("never").Tag(TAG_NEVER),
-            create.Label(CommandsCommonMatchers::LABEL_EVALUATION).Tag(TAG_EVALUATION).Capture(CAPTURE_EVALUATION)
+            create.Label(CommandsCommonMatchers::LABEL_EVALUATION).Tag(TAG_EVALUATION).Capture(CAPTURE_EVALUATION),
         }),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 
@@ -36,7 +36,7 @@ void SequenceCondition::ProcessMatch(CommandsParserState* state, SequenceResult<
         throw ParsingException(typeNameToken.GetPos(), "Conditions can only be set on members and not for types");
 
     std::unique_ptr<IEvaluation> conditionEvaluation;
-    switch(result.NextTag())
+    switch (result.NextTag())
     {
     case TAG_ALWAYS:
         conditionEvaluation = std::make_unique<OperandStatic>(1);

@@ -1,10 +1,10 @@
 #include "AssetLoaderMenuDef.h"
 
-#include <cstring>
-
-#include "ObjLoading.h"
 #include "Game/IW5/IW5.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
 
 using namespace IW5;
 

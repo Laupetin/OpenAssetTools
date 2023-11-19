@@ -1,14 +1,13 @@
 #pragma once
 
+#include "AssetPool.h"
+#include "GlobalAssetPool.h"
+#include "XAssetInfo.h"
+
 #include <cstring>
 #include <stdexcept>
 
-#include "GlobalAssetPool.h"
-#include "AssetPool.h"
-#include "XAssetInfo.h"
-
-template <typename T>
-class AssetPoolStatic final : public AssetPool<T>
+template<typename T> class AssetPoolStatic final : public AssetPool<T>
 {
     using AssetPool<T>::m_asset_lookup;
 
@@ -40,7 +39,7 @@ public:
             m_pool = new AssetPoolEntry[m_capacity];
             m_info_pool = new XAssetInfo<T>[m_capacity];
 
-            for(size_t i = 0; i < m_capacity - 1; i++)
+            for (size_t i = 0; i < m_capacity - 1; i++)
             {
                 m_pool[i].m_info = &m_info_pool[i];
                 m_pool[i].m_next = &m_pool[i + 1];
@@ -49,7 +48,7 @@ public:
             m_pool[m_capacity - 1].m_next = nullptr;
 
             m_free = m_pool;
-            
+
             GlobalAssetPool<T>::LinkAssetPool(this, priority);
         }
         else
@@ -62,12 +61,12 @@ public:
 
     AssetPoolStatic(AssetPoolStatic<T>&) = delete;
     AssetPoolStatic(AssetPoolStatic<T>&&) = delete;
-    AssetPoolStatic<T>& operator =(AssetPoolStatic<T>&) = delete;
-    AssetPoolStatic<T>& operator =(AssetPoolStatic<T>&&) = default;
+    AssetPoolStatic<T>& operator=(AssetPoolStatic<T>&) = delete;
+    AssetPoolStatic<T>& operator=(AssetPoolStatic<T>&&) = default;
 
     ~AssetPoolStatic() override
     {
-        if(m_capacity > 0)
+        if (m_capacity > 0)
         {
             GlobalAssetPool<T>::UnlinkAssetPool(this);
         }
@@ -82,9 +81,10 @@ public:
         m_capacity = 0;
     }
 
-    XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) override
+    XAssetInfo<T>*
+        AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) override
     {
-        if(m_free == nullptr)
+        if (m_free == nullptr)
         {
             throw std::runtime_error("Could not add asset to static asset pool: capacity exhausted.");
         }
@@ -104,7 +104,7 @@ public:
         m_asset_lookup[poolSlot->m_info->m_name] = poolSlot->m_info;
 
         GlobalAssetPool<T>::LinkAsset(this, poolSlot->m_info);
-        
+
         return poolSlot->m_info;
     }
 };

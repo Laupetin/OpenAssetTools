@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Parsing/IParserValue.h"
+#include "Utils/ClassUtils.h"
+
 #include <iterator>
 #include <limits>
 #include <vector>
 
-#include "Utils/ClassUtils.h"
-#include "Parsing/IParserValue.h"
-
-template <typename TokenType>
-class MatcherResult
+template<typename TokenType> class MatcherResult
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);

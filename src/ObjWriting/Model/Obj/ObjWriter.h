@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <ostream>
-
 #include "Model/Obj/ObjCommon.h"
 #include "Utils/DistinctMapper.h"
+
+#include <ostream>
+#include <vector>
 
 class ObjWriter
 {

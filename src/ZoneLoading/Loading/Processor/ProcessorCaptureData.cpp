@@ -10,8 +10,7 @@ ProcessorCaptureData::ProcessorCaptureData(const size_t captureSize)
 {
 }
 
-ProcessorCaptureData::~ProcessorCaptureData()
-= default;
+ProcessorCaptureData::~ProcessorCaptureData() = default;
 
 size_t ProcessorCaptureData::Load(void* buffer, const size_t length)
 {
@@ -29,7 +28,7 @@ size_t ProcessorCaptureData::Load(void* buffer, const size_t length)
 
     m_captured_data_size += loadedSize;
 
-    if(length > dataToCapture)
+    if (length > dataToCapture)
         loadedSize += m_base_stream->Load(&static_cast<uint8_t*>(buffer)[dataToCapture], length - dataToCapture);
 
     return loadedSize;

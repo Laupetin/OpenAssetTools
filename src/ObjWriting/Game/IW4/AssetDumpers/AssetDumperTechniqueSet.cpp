@@ -1,14 +1,14 @@
 #include "AssetDumperTechniqueSet.h"
 
-#include <algorithm>
-#include <cassert>
-#include <sstream>
-#include <type_traits>
-
 #include "Dumping/AbstractTextDumper.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Pool/GlobalAssetPool.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+
+#include <algorithm>
+#include <cassert>
+#include <sstream>
+#include <type_traits>
 
 using namespace IW4;
 
@@ -38,7 +38,9 @@ namespace IW4
             m_stream << "stateMap \"passthrough\"; // TODO\n";
         }
 
-        static bool FindCodeConstantSourceAccessor(const MaterialConstantSource sourceIndexToFind, const CodeConstantSource* codeConstantTable, std::string& codeSourceAccessor)
+        static bool FindCodeConstantSourceAccessor(const MaterialConstantSource sourceIndexToFind,
+                                                   const CodeConstantSource* codeConstantTable,
+                                                   std::string& codeSourceAccessor)
         {
             const auto* currentCodeConst = codeConstantTable;
             while (currentCodeConst->name != nullptr)
@@ -60,7 +62,8 @@ namespace IW4
                         && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
                     {
                         std::ostringstream ss;
-                        ss << currentCodeConst->name << '[' << (static_cast<unsigned>(sourceIndexToFind) - static_cast<unsigned>(currentCodeConst->source)) << ']';
+                        ss << currentCodeConst->name << '[' << (static_cast<unsigned>(sourceIndexToFind) - static_cast<unsigned>(currentCodeConst->source))
+                           << ']';
                         codeSourceAccessor = ss.str();
                         return true;
                     }
@@ -77,7 +80,9 @@ namespace IW4
             return false;
         }
 
-        static bool FindCodeSamplerSourceAccessor(const MaterialTextureSource sourceIndexToFind, const CodeSamplerSource* codeSamplerTable, std::string& codeSourceAccessor)
+        static bool FindCodeSamplerSourceAccessor(const MaterialTextureSource sourceIndexToFind,
+                                                  const CodeSamplerSource* codeSamplerTable,
+                                                  std::string& codeSourceAccessor)
         {
             const auto* currentCodeConst = codeSamplerTable;
             while (currentCodeConst->name != nullptr)
@@ -99,7 +104,8 @@ namespace IW4
                         && static_cast<unsigned>(currentCodeConst->source) + currentCodeConst->arrayCount > static_cast<unsigned>(sourceIndexToFind))
                     {
                         std::ostringstream ss;
-                        ss << currentCodeConst->name << '[' << (static_cast<unsigned>(sourceIndexToFind) - static_cast<unsigned>(currentCodeConst->source)) << ']';
+                        ss << currentCodeConst->name << '[' << (static_cast<unsigned>(sourceIndexToFind) - static_cast<unsigned>(currentCodeConst->source))
+                           << ']';
                         codeSourceAccessor = ss.str();
                         return true;
                     }
@@ -118,11 +124,15 @@ namespace IW4
 
         void DumpShaderArg(const MaterialShaderArgument& arg, const d3d9::ShaderInfo& shaderInfo) const
         {
-            const auto expectedRegisterSet = arg.type == MTL_ARG_CODE_PIXEL_SAMPLER || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER ? d3d9::RegisterSet::SAMPLER : d3d9::RegisterSet::FLOAT_4;
-            const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(), shaderInfo.m_constants.end(), [arg, expectedRegisterSet](const d3d9::ShaderConstant& constant)
-            {
-                return constant.m_register_set == expectedRegisterSet && constant.m_register_index <= arg.dest && constant.m_register_index + constant.m_register_count > arg.dest;
-            });
+            const auto expectedRegisterSet =
+                arg.type == MTL_ARG_CODE_PIXEL_SAMPLER || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER ? d3d9::RegisterSet::SAMPLER : d3d9::RegisterSet::FLOAT_4;
+            const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(),
+                                                      shaderInfo.m_constants.end(),
+                                                      [arg, expectedRegisterSet](const d3d9::ShaderConstant& constant)
+                                                      {
+                                                          return constant.m_register_set == expectedRegisterSet && constant.m_register_index <= arg.dest
+                                                                 && constant.m_register_index + constant.m_register_count > arg.dest;
+                                                      });
 
             assert(targetShaderArg != shaderInfo.m_constants.end());
             if (targetShaderArg == shaderInfo.m_constants.end())
@@ -200,11 +210,8 @@ namespace IW4
                 if (arg.u.literalConst)
                 {
                     Indent();
-                    m_stream << codeDestAccessor << " = float4( " << (*arg.u.literalConst)[0]
-                        << ", " << (*arg.u.literalConst)[1]
-                        << ", " << (*arg.u.literalConst)[2]
-                        << ", " << (*arg.u.literalConst)[3]
-                        << " );\n";
+                    m_stream << codeDestAccessor << " = float4( " << (*arg.u.literalConst)[0] << ", " << (*arg.u.literalConst)[1] << ", "
+                             << (*arg.u.literalConst)[2] << ", " << (*arg.u.literalConst)[3] << " );\n";
                 }
             }
             else if (arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
@@ -221,7 +228,7 @@ namespace IW4
                 {
                     const auto knownMaterialTextureName = knownTextureMaps.find(arg.u.nameHash);
 
-                    if(knownMaterialTextureName != knownTextureMaps.end())
+                    if (knownMaterialTextureName != knownTextureMaps.end())
                     {
                         m_stream << knownMaterialTextureName->second.m_name;
                     }
@@ -265,29 +272,28 @@ namespace IW4
                 vertexShader = loadedVertexShaderFromOtherZone->Asset();
             }
 
-            const auto vertexShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(vertexShader->prog.loadDef.program, vertexShader->prog.loadDef.programSize * sizeof(uint32_t));
+            const auto vertexShaderInfo =
+                d3d9::ShaderAnalyser::GetShaderInfo(vertexShader->prog.loadDef.program, vertexShader->prog.loadDef.programSize * sizeof(uint32_t));
             assert(vertexShaderInfo);
             if (!vertexShaderInfo)
                 return;
 
             m_stream << "\n";
             Indent();
-            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << vertexShader->name << "\"\n";
+            m_stream << "vertexShader " << vertexShaderInfo->m_version_major << "." << vertexShaderInfo->m_version_minor << " \"" << vertexShader->name
+                     << "\"\n";
             Indent();
             m_stream << "{\n";
             IncIndent();
 
             if (pass.args)
             {
-                const auto totalArgCount = static_cast<size_t>(pass.perPrimArgCount)
-                    + static_cast<size_t>(pass.perObjArgCount)
-                    + static_cast<size_t>(pass.stableArgCount);
+                const auto totalArgCount =
+                    static_cast<size_t>(pass.perPrimArgCount) + static_cast<size_t>(pass.perObjArgCount) + static_cast<size_t>(pass.stableArgCount);
                 for (auto i = 0u; i < totalArgCount; i++)
                 {
                     const auto& arg = pass.args[i];
-                    if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST
-                        || arg.type == MTL_ARG_LITERAL_VERTEX_CONST
-                        || arg.type == MTL_ARG_CODE_VERTEX_CONST)
+                    if (arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg.type == MTL_ARG_LITERAL_VERTEX_CONST || arg.type == MTL_ARG_CODE_VERTEX_CONST)
                     {
                         DumpShaderArg(arg, *vertexShaderInfo);
                     }
@@ -321,7 +327,8 @@ namespace IW4
                 pixelShader = loadedPixelShaderFromOtherZone->Asset();
             }
 
-            const auto pixelShaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(pixelShader->prog.loadDef.program, pixelShader->prog.loadDef.programSize * sizeof(uint32_t));
+            const auto pixelShaderInfo =
+                d3d9::ShaderAnalyser::GetShaderInfo(pixelShader->prog.loadDef.program, pixelShader->prog.loadDef.programSize * sizeof(uint32_t));
             assert(pixelShaderInfo);
             if (!pixelShaderInfo)
                 return;
@@ -335,17 +342,13 @@ namespace IW4
 
             if (pass.args)
             {
-                const auto totalArgCount = static_cast<size_t>(pass.perPrimArgCount)
-                    + static_cast<size_t>(pass.perObjArgCount)
-                    + static_cast<size_t>(pass.stableArgCount);
+                const auto totalArgCount =
+                    static_cast<size_t>(pass.perPrimArgCount) + static_cast<size_t>(pass.perObjArgCount) + static_cast<size_t>(pass.stableArgCount);
                 for (auto i = 0u; i < totalArgCount; i++)
                 {
                     const auto& arg = pass.args[i];
-                    if (arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER
-                        || arg.type == MTL_ARG_CODE_PIXEL_SAMPLER
-                        || arg.type == MTL_ARG_CODE_PIXEL_CONST
-                        || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
-                        || arg.type == MTL_ARG_LITERAL_PIXEL_CONST)
+                    if (arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER || arg.type == MTL_ARG_CODE_PIXEL_SAMPLER || arg.type == MTL_ARG_CODE_PIXEL_CONST
+                        || arg.type == MTL_ARG_MATERIAL_PIXEL_CONST || arg.type == MTL_ARG_LITERAL_PIXEL_CONST)
                     {
                         DumpShaderArg(arg, *pixelShaderInfo);
                     }
@@ -408,8 +411,8 @@ namespace IW4
             {
                 const auto& stream = vertexDecl->routing.data[streamIndex];
                 Indent();
-                m_stream << "vertex." << GetStreamDestinationString(static_cast<MaterialStreamDestination_e>(stream.dest))
-                    << " = code." << GetStreamSourceString(static_cast<MaterialStreamStreamSource_e>(stream.source)) << ";\n";
+                m_stream << "vertex." << GetStreamDestinationString(static_cast<MaterialStreamDestination_e>(stream.dest)) << " = code."
+                         << GetStreamSourceString(static_cast<MaterialStreamStreamSource_e>(stream.source)) << ";\n";
             }
         }
 
@@ -448,12 +451,12 @@ namespace IW4
         void DumpTechnique(const MaterialTechnique* technique)
         {
 #ifdef TECHSET_DEBUG
-            if(technique->flags)
+            if (technique->flags)
             {
-                for(auto i = 0u; i < 16; i++)
+                for (auto i = 0u; i < 16; i++)
                 {
                     const auto mask = 1u << i;
-                    if(technique->flags & mask)
+                    if (technique->flags & mask)
                     {
                         Indent();
                         m_stream << "// TECHNIQUE FLAGS: 0x" << std::hex << mask << "\n";
@@ -512,7 +515,8 @@ namespace IW4
                 dumpedTechniques[techniqueIndex] = true;
                 WriteTechniqueType(techniqueIndex);
 
-                for (auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>; nextTechniqueIndex++)
+                for (auto nextTechniqueIndex = techniqueIndex + 1; nextTechniqueIndex < std::extent_v<decltype(MaterialTechniqueSet::techniques)>;
+                     nextTechniqueIndex++)
                 {
                     if (techset->techniques[nextTechniqueIndex] != technique)
                         continue;
@@ -525,7 +529,7 @@ namespace IW4
             }
         }
     };
-}
+} // namespace IW4
 
 std::string AssetDumperTechniqueSet::GetTechniqueFileName(const MaterialTechnique* technique)
 {

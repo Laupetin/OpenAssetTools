@@ -12,4 +12,4 @@ namespace menu
 
         void AddSequences(FeatureLevel featureLevel, bool permissive) const;
     };
-}
+} // namespace menu

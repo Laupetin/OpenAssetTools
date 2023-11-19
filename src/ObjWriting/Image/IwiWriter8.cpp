@@ -4,11 +4,9 @@
 
 using namespace iwi8;
 
-IwiWriter::IwiWriter()
-= default;
+IwiWriter::IwiWriter() = default;
 
-IwiWriter::~IwiWriter()
-= default;
+IwiWriter::~IwiWriter() = default;
 
 IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
 {

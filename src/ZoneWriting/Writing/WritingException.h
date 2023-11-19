@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
-#include <exception>
-
 #include "Utils/ClassUtils.h"
+
+#include <exception>
+#include <string>
 
 class WritingException final : public std::exception
 {

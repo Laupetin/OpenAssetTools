@@ -1,14 +1,14 @@
 #pragma once
 
+#include "Domain/MenuFeatureLevel.h"
+#include "Domain/MenuParsingResult.h"
+#include "MenuAssetZoneState.h"
+#include "MenuFileParserState.h"
+#include "Parsing/IParserLineStream.h"
+
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "MenuFileParserState.h"
-#include "Domain/MenuFeatureLevel.h"
-#include "Domain/MenuParsingResult.h"
-#include "Parsing/IParserLineStream.h"
-#include "MenuAssetZoneState.h"
 
 namespace menu
 {
@@ -43,4 +43,4 @@ namespace menu
 
         std::unique_ptr<ParsingResult> ReadMenuFile();
     };
-}
+} // namespace menu

@@ -1,7 +1,7 @@
 #pragma once
-#include <istream>
-
 #include "ILoadingStream.h"
+
+#include <istream>
 
 class LoadingFileStream final : public ILoadingStream
 {

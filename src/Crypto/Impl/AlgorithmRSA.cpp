@@ -1,7 +1,8 @@
 #include "AlgorithmRSA.h"
-#include <cstring>
 
 #include "CryptoLibrary.h"
+
+#include <cstring>
 
 class AlgorithmRSA::AlgorithmRSAImpl
 {
@@ -11,7 +12,7 @@ class AlgorithmRSA::AlgorithmRSAImpl
 
     const ltc_hash_descriptor* GetHashDescriptor() const
     {
-        switch(m_hash)
+        switch (m_hash)
         {
         case HashingAlgorithm::RSA_HASH_SHA256:
             return &sha256_desc;
@@ -24,7 +25,7 @@ class AlgorithmRSA::AlgorithmRSAImpl
 
     int GetPaddingMode() const
     {
-        switch(m_padding)
+        switch (m_padding)
         {
         case Crypto::RSAPaddingMode::RSA_PADDING_PKS1:
             return LTC_PKCS_1_V1_5;
@@ -56,7 +57,7 @@ public:
     {
         return rsa_import(keyData, keySize, &m_key) == CRYPT_OK;
     }
-    
+
     bool Verify(const uint8_t* signedData, const size_t signedDataSize, const uint8_t* signature, const size_t signatureSize)
     {
         const ltc_hash_descriptor* hashDesc = GetHashDescriptor();

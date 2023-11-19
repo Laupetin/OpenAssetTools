@@ -1,16 +1,15 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-#include <string>
+#include "AssetPool.h"
+
 #include <algorithm>
 #include <cassert>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-#include "AssetPool.h"
-
-template <typename T>
-class GlobalAssetPool
+template<typename T> class GlobalAssetPool
 {
     struct LinkedAssetPool
     {
@@ -30,10 +29,12 @@ class GlobalAssetPool
 
     static void SortLinkedAssetPools()
     {
-        std::sort(m_linked_asset_pools.begin(), m_linked_asset_pools.end(), [](const std::unique_ptr<LinkedAssetPool>& a, const std::unique_ptr<LinkedAssetPool>& b) -> bool
-        {
-            return a->m_priority < b->m_priority;
-        });
+        std::sort(m_linked_asset_pools.begin(),
+                  m_linked_asset_pools.end(),
+                  [](const std::unique_ptr<LinkedAssetPool>& a, const std::unique_ptr<LinkedAssetPool>& b) -> bool
+                  {
+                      return a->m_priority < b->m_priority;
+                  });
     }
 
     static bool ReplaceAssetPoolEntry(GameAssetPoolEntry& assetEntry)
@@ -179,8 +180,10 @@ public:
     }
 };
 
-template <typename T>
-std::vector<std::unique_ptr<typename GlobalAssetPool<T>::LinkedAssetPool>> GlobalAssetPool<T>::m_linked_asset_pools = std::vector<std::unique_ptr<LinkedAssetPool>>();
+template<typename T>
+std::vector<std::unique_ptr<typename GlobalAssetPool<T>::LinkedAssetPool>> GlobalAssetPool<T>::m_linked_asset_pools =
+    std::vector<std::unique_ptr<LinkedAssetPool>>();
 
-template <typename T>
-std::unordered_map<std::string, typename GlobalAssetPool<T>::GameAssetPoolEntry> GlobalAssetPool<T>::m_assets = std::unordered_map<std::string, GameAssetPoolEntry>();
+template<typename T>
+std::unordered_map<std::string, typename GlobalAssetPool<T>::GameAssetPoolEntry> GlobalAssetPool<T>::m_assets =
+    std::unordered_map<std::string, GameAssetPoolEntry>();

@@ -1,13 +1,13 @@
 #include "AssetLoaderVertexShader.h"
 
+#include "Game/IW4/IW4.h"
+#include "ObjLoading.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <sstream>
-
-#include "ObjLoading.h"
-#include "Game/IW4/IW4.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
 
@@ -31,7 +31,8 @@ std::string AssetLoaderVertexShader::GetFileNameForAsset(const std::string& asse
     return ss.str();
 }
 
-bool AssetLoaderVertexShader::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderVertexShader::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = GetFileNameForAsset(assetName);
     const auto file = searchPath->Open(fileName);

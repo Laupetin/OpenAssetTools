@@ -1,16 +1,15 @@
 #include "IPak.h"
 
-#include <sstream>
-#include <vector>
-#include <memory>
-#include <filesystem>
-
+#include "Exception/IPakLoadException.h"
+#include "IPakStreamManager.h"
+#include "ObjContainer/IPak/IPakTypes.h"
+#include "Utils/FileUtils.h"
 #include "zlib.h"
 
-#include "Utils/FileUtils.h"
-#include "Exception/IPakLoadException.h"
-#include "ObjContainer/IPak/IPakTypes.h"
-#include "IPakStreamManager.h"
+#include <filesystem>
+#include <memory>
+#include <sstream>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -57,7 +56,8 @@ class IPak::Impl : public ObjContainerReferenceable
             m_index_entries.push_back(indexEntry);
         }
 
-        std::sort(m_index_entries.begin(), m_index_entries.end(),
+        std::sort(m_index_entries.begin(),
+                  m_index_entries.end(),
                   [](const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
                   {
                       return entry1.key.combinedKey < entry2.key.combinedKey;
@@ -152,8 +152,7 @@ public:
     {
     }
 
-    ~Impl() override
-    = default;
+    ~Impl() override = default;
 
     std::string GetName() override
     {

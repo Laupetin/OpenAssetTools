@@ -1,0 +1,24 @@
+name: check-formatting
+
+on:
+  pull_request:
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "17.0"
+
+      - name: Test formatting for all files
+        working-directory: ${{ github.workspace }}
+        run: |
+          export CLANG_FORMAT_BIN="${LLVM_PATH}/bin/clang-format"
+          ./scripts/check-format.sh

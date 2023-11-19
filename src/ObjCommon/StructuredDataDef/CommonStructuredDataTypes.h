@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstddef>
-
 #include "Utils/ClassUtils.h"
+
+#include <cstddef>
 
 enum class CommonStructuredDataTypeCategory
 {
@@ -26,6 +26,7 @@ union CommonStructuredDataTypeExtraInfo
 };
 
 class CommonStructuredDataDef;
+
 struct CommonStructuredDataType
 {
     CommonStructuredDataTypeCategory m_category;

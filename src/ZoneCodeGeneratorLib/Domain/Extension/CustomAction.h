@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Domain/Definition/DataDefinition.h"
+
 #include <string>
 #include <vector>
-
-#include "Domain/Definition/DataDefinition.h"
 
 class CustomAction
 {

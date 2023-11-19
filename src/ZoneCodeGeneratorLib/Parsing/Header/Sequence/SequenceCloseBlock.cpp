@@ -1,8 +1,8 @@
 #include "SequenceCloseBlock.h"
 
 #include "Parsing/Header/Block/IHeaderBlockNameHolder.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceCloseBlock::SequenceCloseBlock(const bool semicolonRequired)
     : m_semicolon_required(semicolonRequired)
@@ -13,8 +13,8 @@ SequenceCloseBlock::SequenceCloseBlock(const bool semicolonRequired)
         create.Char('}').Capture(CAPTURE_CLOSING_PARENTHESIS),
         create.Optional(create.And({
             create.Optional(create.Identifier().Capture(CAPTURE_NAME)),
-            create.Char(';').Tag(TAG_SEMICOLON)
-        }))
+            create.Char(';').Tag(TAG_SEMICOLON),
+        })),
     });
 }
 

@@ -15,7 +15,8 @@ InMemoryZoneOutputStream::ReusableEntry::ReusableEntry(void* startPtr, const siz
     : m_start_ptr(startPtr),
       m_end_ptr(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(startPtr) + entrySize * entryCount)),
       m_start_zone_ptr(startZonePtr),
-      m_entry_size(entrySize), m_entry_count(entryCount)
+      m_entry_size(entrySize),
+      m_entry_count(entryCount)
 {
 }
 
@@ -184,16 +185,16 @@ bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t ent
         return true;
     }
 
-    for(const auto& entry : foundEntriesForType->second)
+    for (const auto& entry : foundEntriesForType->second)
     {
-        if(*pPtr >= entry.m_start_ptr && *pPtr < entry.m_end_ptr)
+        if (*pPtr >= entry.m_start_ptr && *pPtr < entry.m_end_ptr)
         {
             assert((reinterpret_cast<uintptr_t>(*pPtr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)) % entrySize == 0);
             *pPtr = reinterpret_cast<void*>(entry.m_start_zone_ptr + (reinterpret_cast<uintptr_t>(*pPtr) - reinterpret_cast<uintptr_t>(entry.m_start_ptr)));
             return false;
         }
     }
-    
+
     return true;
 }
 

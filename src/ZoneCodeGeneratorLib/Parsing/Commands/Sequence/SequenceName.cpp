@@ -1,7 +1,7 @@
 #include "SequenceName.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceName::SequenceName()
 {
@@ -12,7 +12,7 @@ SequenceName::SequenceName()
         create.Keyword("set"),
         create.Keyword("name"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

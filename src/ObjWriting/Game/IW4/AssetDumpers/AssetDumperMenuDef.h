@@ -14,4 +14,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<menuDef_t>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<menuDef_t>* asset) override;
     };
-}
+} // namespace IW4

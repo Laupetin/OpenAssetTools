@@ -1,15 +1,15 @@
 #include "IPakWriter.h"
 
+#include "Game/T6/CommonT6.h"
+#include "Game/T6/GameT6.h"
+#include "ObjContainer/IPak/IPakTypes.h"
+#include "Utils/Alignment.h"
+
 #include <algorithm>
 #include <iostream>
 #include <minilzo.h>
 #include <sstream>
 #include <zlib.h>
-
-#include "Game/T6/CommonT6.h"
-#include "Game/T6/GameT6.h"
-#include "ObjContainer/IPak/IPakTypes.h"
-#include "Utils/Alignment.h"
 
 class IPakWriterImpl final : public IPakWriter
 {
@@ -80,32 +80,27 @@ public:
     {
         GoTo(0);
 
-        const IPakHeader header{
-            ipak_consts::IPAK_MAGIC,
-            ipak_consts::IPAK_VERSION,
-            static_cast<uint32_t>(m_total_size),
-            SECTION_COUNT
-        };
+        const IPakHeader header{ipak_consts::IPAK_MAGIC, ipak_consts::IPAK_VERSION, static_cast<uint32_t>(m_total_size), SECTION_COUNT};
 
         const IPakSection dataSection{
             ipak_consts::IPAK_DATA_SECTION,
             static_cast<uint32_t>(m_data_section_offset),
             static_cast<uint32_t>(m_data_section_size),
-            static_cast<uint32_t>(m_index_entries.size())
+            static_cast<uint32_t>(m_index_entries.size()),
         };
 
         const IPakSection indexSection{
             ipak_consts::IPAK_INDEX_SECTION,
             static_cast<uint32_t>(m_index_section_offset),
             static_cast<uint32_t>(sizeof(IPakIndexEntry) * m_index_entries.size()),
-            static_cast<uint32_t>(m_index_entries.size())
+            static_cast<uint32_t>(m_index_entries.size()),
         };
 
         const IPakSection brandingSection{
             ipak_consts::IPAK_BRANDING_SECTION,
             static_cast<uint32_t>(m_branding_section_offset),
             std::extent_v<decltype(BRANDING)>,
-            1
+            1,
         };
 
         Write(&header, sizeof(header));
@@ -178,7 +173,8 @@ public:
         AlignToBlockHeader();
 
         // Skip to the next chunk when only the header could fit into the current chunk anyway
-        if (static_cast<size_t>(utils::Align(m_current_offset, static_cast<int64_t>(ipak_consts::IPAK_CHUNK_SIZE)) - m_current_offset) <= sizeof(IPakDataBlockHeader))
+        if (static_cast<size_t>(utils::Align(m_current_offset, static_cast<int64_t>(ipak_consts::IPAK_CHUNK_SIZE)) - m_current_offset)
+            <= sizeof(IPakDataBlockHeader))
             FlushChunk();
 
         m_current_block_header_offset = m_current_offset;
@@ -202,7 +198,8 @@ public:
 
             const auto remainingSize = dataSize - dataOffset;
             const auto remainingChunkBufferWindowSize = std::max((ipak_consts::IPAK_CHUNK_COUNT_PER_READ * ipak_consts::IPAK_CHUNK_SIZE)
-                                                                 - static_cast<size_t>(m_current_offset - m_chunk_buffer_window_start), 0u);
+                                                                     - static_cast<size_t>(m_current_offset - m_chunk_buffer_window_start),
+                                                                 0u);
 
             if (remainingChunkBufferWindowSize == 0)
             {
@@ -217,7 +214,10 @@ public:
             if (USE_COMPRESSION)
             {
                 auto outLen = static_cast<lzo_uint>(ipak_consts::IPAK_CHUNK_SIZE);
-                const auto result = lzo1x_1_compress(&static_cast<const unsigned char*>(data)[dataOffset], commandSize, reinterpret_cast<unsigned char*>(m_decompressed_buffer.get()), &outLen,
+                const auto result = lzo1x_1_compress(&static_cast<const unsigned char*>(data)[dataOffset],
+                                                     commandSize,
+                                                     reinterpret_cast<unsigned char*>(m_decompressed_buffer.get()),
+                                                     &outLen,
                                                      m_lzo_work_buffer.get());
 
                 if (result == LZO_E_OK && outLen < commandSize)
@@ -291,10 +291,12 @@ public:
 
         m_index_entries.reserve(m_images.size());
 
-        const auto result = std::all_of(m_images.begin(), m_images.end(), [this](const std::string& imageName)
-        {
-            return WriteImageData(imageName);
-        });
+        const auto result = std::all_of(m_images.begin(),
+                                        m_images.end(),
+                                        [this](const std::string& imageName)
+                                        {
+                                            return WriteImageData(imageName);
+                                        });
 
         FlushBlock();
         m_data_section_size = static_cast<size_t>(m_current_offset - m_data_section_offset);

@@ -1,12 +1,12 @@
 #include "OutputProcessorDeflate.h"
 
-#include <stdexcept>
-#include <cstdint>
-#include <memory>
-#include <zlib.h>
-
 #include "Utils/ClassUtils.h"
 #include "Writing/WritingException.h"
+
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <zlib.h>
 
 class OutputProcessorDeflate::Impl
 {
@@ -62,7 +62,7 @@ public:
                 m_stream.next_out = m_buffer.get();
                 m_stream.avail_out = m_buffer_size;
             }
-            
+
             const auto ret = deflate(&m_stream, Z_NO_FLUSH);
             if (ret != Z_OK)
                 throw WritingException("Failed to deflate memory of zone.");
@@ -73,7 +73,7 @@ public:
     {
         m_stream.avail_in = 0;
         m_stream.next_in = Z_NULL;
-        while(true)
+        while (true)
         {
             if (m_stream.avail_out < m_buffer_size)
             {
@@ -83,7 +83,7 @@ public:
             }
 
             const auto ret = deflate(&m_stream, Z_FINISH);
-            if(ret == Z_OK)
+            if (ret == Z_OK)
                 continue;
 
             if (ret != Z_STREAM_END)

@@ -1,22 +1,16 @@
 #include "ZoneCodeGeneratorArguments.h"
 
-#include <iostream>
-#include <type_traits>
-
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
-const CommandLineOption* const OPTION_HELP = CommandLineOption::Builder::Create()
-                                             .WithShortName("?")
-                                             .WithLongName("help")
-                                             .WithDescription("Displays usage information.")
-                                             .Build();
+#include <iostream>
+#include <type_traits>
 
-const CommandLineOption* const OPTION_VERBOSE = CommandLineOption::Builder::Create()
-                                                .WithShortName("v")
-                                                .WithLongName("verbose")
-                                                .WithDescription("Outputs a lot more and more detailed messages.")
-                                                .Build();
+const CommandLineOption* const OPTION_HELP =
+    CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
+
+const CommandLineOption* const OPTION_VERBOSE =
+    CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
 
 // ------
 // INPUT
@@ -25,65 +19,58 @@ const CommandLineOption* const OPTION_VERBOSE = CommandLineOption::Builder::Crea
 constexpr const char* CATEGORY_INPUT = "Input";
 
 const CommandLineOption* const OPTION_HEADER = CommandLineOption::Builder::Create()
-                                               .WithShortName("h")
-                                               .WithLongName("header")
-                                               .WithDescription("Reads from the specified header file.")
-                                               .WithCategory(CATEGORY_INPUT)
-                                               .WithParameter("headerFile")
-                                               .Reusable()
-                                               .Build();
+                                                   .WithShortName("h")
+                                                   .WithLongName("header")
+                                                   .WithDescription("Reads from the specified header file.")
+                                                   .WithCategory(CATEGORY_INPUT)
+                                                   .WithParameter("headerFile")
+                                                   .Reusable()
+                                                   .Build();
 
 const CommandLineOption* const OPTION_COMMANDS_FILE = CommandLineOption::Builder::Create()
-                                                      .WithShortName("c")
-                                                      .WithLongName("commands-file")
-                                                      .WithDescription("Specifies the commands file. Defaults to stdin.")
-                                                      .WithCategory(CATEGORY_INPUT)
-                                                      .WithParameter("commandFile")
-                                                      .Reusable()
-                                                      .Build();
+                                                          .WithShortName("c")
+                                                          .WithLongName("commands-file")
+                                                          .WithDescription("Specifies the commands file. Defaults to stdin.")
+                                                          .WithCategory(CATEGORY_INPUT)
+                                                          .WithParameter("commandFile")
+                                                          .Reusable()
+                                                          .Build();
 
 // ------
 // OUTPUT
 // ------
 constexpr const char* CATEGORY_OUTPUT = "Output";
 
-const CommandLineOption* const OPTION_OUTPUT_FOLDER = CommandLineOption::Builder::Create()
-                                                      .WithShortName("o")
-                                                      .WithLongName("output")
-                                                      .WithDescription("Specify the folder to save the generate code files to. Defaults to the current directory.")
-                                                      .WithCategory(CATEGORY_OUTPUT)
-                                                      .WithParameter("outputPath")
-                                                      .Build();
+const CommandLineOption* const OPTION_OUTPUT_FOLDER =
+    CommandLineOption::Builder::Create()
+        .WithShortName("o")
+        .WithLongName("output")
+        .WithDescription("Specify the folder to save the generate code files to. Defaults to the current directory.")
+        .WithCategory(CATEGORY_OUTPUT)
+        .WithParameter("outputPath")
+        .Build();
 
 const CommandLineOption* const OPTION_PRINT = CommandLineOption::Builder::Create()
-                                              .WithShortName("p")
-                                              .WithLongName("print")
-                                              .WithDescription("Print the loaded data.")
-                                              .WithCategory(CATEGORY_OUTPUT)
-                                              .Build();
+                                                  .WithShortName("p")
+                                                  .WithLongName("print")
+                                                  .WithDescription("Print the loaded data.")
+                                                  .WithCategory(CATEGORY_OUTPUT)
+                                                  .Build();
 
-const CommandLineOption* const OPTION_GENERATE = CommandLineOption::Builder::Create()
-                                                 .WithShortName("g")
-                                                 .WithLongName("generate")
-                                                 .WithDescription(
-                                                     "Generates a specified asset/preset combination. Can be used multiple times. Available presets: "
-                                                     "ZoneLoad, ZoneWrite, AssetStructTests")
-                                                 .WithCategory(CATEGORY_OUTPUT)
-                                                 .WithParameter("assetName")
-                                                 .WithParameter("preset")
-                                                 .Reusable()
-                                                 .Build();
+const CommandLineOption* const OPTION_GENERATE =
+    CommandLineOption::Builder::Create()
+        .WithShortName("g")
+        .WithLongName("generate")
+        .WithDescription("Generates a specified asset/preset combination. Can be used multiple times. Available presets: "
+                         "ZoneLoad, ZoneWrite, AssetStructTests")
+        .WithCategory(CATEGORY_OUTPUT)
+        .WithParameter("assetName")
+        .WithParameter("preset")
+        .Reusable()
+        .Build();
 
-const CommandLineOption* const COMMAND_LINE_OPTIONS[]
-{
-    OPTION_HELP,
-    OPTION_VERBOSE,
-    OPTION_HEADER,
-    OPTION_COMMANDS_FILE,
-    OPTION_OUTPUT_FOLDER,
-    OPTION_PRINT,
-    OPTION_GENERATE
-};
+const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
+    OPTION_HELP, OPTION_VERBOSE, OPTION_HEADER, OPTION_COMMANDS_FILE, OPTION_OUTPUT_FOLDER, OPTION_PRINT, OPTION_GENERATE};
 
 ZoneCodeGeneratorArguments::GenerationTask::GenerationTask()
     : m_all_assets(false)

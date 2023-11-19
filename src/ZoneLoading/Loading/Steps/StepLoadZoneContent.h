@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-
-#include "Loading/ILoadingStep.h"
 #include "Loading/IContentLoadingEntryPoint.h"
+#include "Loading/ILoadingStep.h"
+
+#include <memory>
 
 class StepLoadZoneContent final : public ILoadingStep
 {

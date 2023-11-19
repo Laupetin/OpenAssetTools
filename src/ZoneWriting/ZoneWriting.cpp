@@ -7,13 +7,12 @@
 #include "Game/T6/ZoneWriterFactoryT6.h"
 #include "Writing/IZoneWriterFactory.h"
 
-IZoneWriterFactory* ZoneWriterFactories[]
-{
+IZoneWriterFactory* ZoneWriterFactories[]{
     new IW3::ZoneWriterFactory(),
     new IW4::ZoneWriterFactory(),
     new IW5::ZoneWriterFactory(),
     new T5::ZoneWriterFactory(),
-    new T6::ZoneWriterFactory()
+    new T6::ZoneWriterFactory(),
 };
 
 bool ZoneWriting::WriteZone(std::ostream& stream, Zone* zone)

@@ -1,6 +1,7 @@
 #include "AlgorithmSHA256.h"
 
 #include "CryptoLibrary.h"
+
 #include <cstdint>
 
 class AlgorithmSHA256::Impl

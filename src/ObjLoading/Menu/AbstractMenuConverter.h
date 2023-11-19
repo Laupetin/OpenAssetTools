@@ -1,10 +1,10 @@
 #pragma once
 
-#include "MenuConversionException.h"
 #include "AssetLoading/IAssetLoadingManager.h"
+#include "MenuConversionException.h"
 #include "SearchPath/ISearchPath.h"
-#include "Utils/MemoryManager.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/MemoryManager.h"
 
 namespace menu
 {
@@ -23,4 +23,4 @@ namespace menu
     public:
         static void PrintConversionExceptionDetails(const MenuConversionException& e);
     };
-}
+} // namespace menu

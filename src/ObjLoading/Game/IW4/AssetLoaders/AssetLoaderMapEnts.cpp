@@ -1,10 +1,10 @@
 #include "AssetLoaderMapEnts.h"
 
-#include <cstring>
-
-#include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
 
 using namespace IW4;
 

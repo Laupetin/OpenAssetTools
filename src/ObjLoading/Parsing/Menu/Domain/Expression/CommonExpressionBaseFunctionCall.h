@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
-
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <vector>
 
 namespace menu
 {
@@ -19,4 +19,4 @@ namespace menu
         _NODISCARD SimpleExpressionValue EvaluateStatic() const override;
         _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
     };
-}
+} // namespace menu

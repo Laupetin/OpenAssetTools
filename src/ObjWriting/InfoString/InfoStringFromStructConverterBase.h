@@ -1,8 +1,8 @@
 #pragma once
-#include <functional>
-
 #include "InfoString/InfoString.h"
 #include "Zone/ZoneTypes.h"
+
+#include <functional>
 
 class InfoStringFromStructConverterBase
 {

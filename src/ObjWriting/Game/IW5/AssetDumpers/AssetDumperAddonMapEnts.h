@@ -11,4 +11,4 @@ namespace IW5
         bool ShouldDump(XAssetInfo<AddonMapEnts>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<AddonMapEnts>* asset) override;
     };
-}
+} // namespace IW5

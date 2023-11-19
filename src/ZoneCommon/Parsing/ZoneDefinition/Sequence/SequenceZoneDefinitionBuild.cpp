@@ -9,7 +9,7 @@ SequenceZoneDefinitionBuild::SequenceZoneDefinitionBuild()
     AddMatchers({
         create.Keyword("build"),
         create.Char(','),
-        create.Field().Capture(CAPTURE_BUILD_TARGET_NAME)
+        create.Field().Capture(CAPTURE_BUILD_TARGET_NAME),
     });
 }
 

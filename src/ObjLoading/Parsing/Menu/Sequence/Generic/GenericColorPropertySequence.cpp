@@ -1,9 +1,9 @@
 #include "GenericColorPropertySequence.h"
 
-#include <utility>
-
 #include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+
+#include <utility>
 
 using namespace menu;
 
@@ -15,10 +15,10 @@ GenericColorPropertySequence::GenericColorPropertySequence(std::string keywordNa
     AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
     AddMatchers({
         create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.NumericExpression().Tag(TAG_COLOR), // r
+        create.NumericExpression().Tag(TAG_COLOR),                  // r
         create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // g
         create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // b
-        create.Optional(create.NumericExpression().Tag(TAG_COLOR)) // a
+        create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // a
     });
 }
 

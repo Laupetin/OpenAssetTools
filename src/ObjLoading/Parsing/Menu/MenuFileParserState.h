@@ -1,17 +1,17 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <vector>
-#include <sstream>
-#include <stack>
-
-#include "MenuAssetZoneState.h"
 #include "Domain/CommonFunctionDef.h"
 #include "Domain/CommonMenuDef.h"
-#include "Domain/MenuFeatureLevel.h"
-#include "Domain/EventHandler/CommonEventHandlerSet.h"
 #include "Domain/EventHandler/CommonEventHandlerCondition.h"
+#include "Domain/EventHandler/CommonEventHandlerSet.h"
+#include "Domain/MenuFeatureLevel.h"
+#include "MenuAssetZoneState.h"
+
+#include <map>
+#include <memory>
+#include <sstream>
+#include <stack>
+#include <vector>
 
 namespace menu
 {
@@ -44,7 +44,7 @@ namespace menu
         CommonMenuDef* m_current_menu;
         CommonItemDef* m_current_item;
         CommonEventHandlerSet* m_current_event_handler_set;
-        
+
         std::ostringstream m_current_script;
         bool m_current_script_statement_terminated;
         std::stack<EventHandlerConditionState> m_condition_stack;
@@ -53,4 +53,4 @@ namespace menu
         explicit MenuFileParserState(FeatureLevel featureLevel, bool permissiveMode);
         MenuFileParserState(FeatureLevel featureLevel, bool permissiveMode, const MenuAssetZoneState* zoneState);
     };
-}
+} // namespace menu

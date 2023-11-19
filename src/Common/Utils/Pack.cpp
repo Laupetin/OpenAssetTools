@@ -1,9 +1,9 @@
 #include "Pack.h"
 
+#include "HalfFloat.h"
+
 #include <algorithm>
 #include <cassert>
-
-#include "HalfFloat.h"
 
 union PackUtil32
 {
@@ -16,8 +16,7 @@ union PackUtil32
 
 uint32_t Pack32::Vec2PackTexCoords(const float* in)
 {
-    return static_cast<uint32_t>(HalfFloat::ToHalf(in[0])) << 16
-        | HalfFloat::ToHalf(in[1]);
+    return static_cast<uint32_t>(HalfFloat::ToHalf(in[0])) << 16 | HalfFloat::ToHalf(in[1]);
 }
 
 uint32_t Pack32::Vec3PackUnitVec(const float* in)
@@ -28,10 +27,8 @@ uint32_t Pack32::Vec3PackUnitVec(const float* in)
 
 uint32_t Pack32::Vec4PackGfxColor(const float* in)
 {
-    return static_cast<uint8_t>(std::clamp(in[0], 0.0f, 1.0f) * 255.0f)
-        | static_cast<uint8_t>(std::clamp(in[1], 0.0f, 1.0f) * 255.0f) << 8
-        | static_cast<uint8_t>(std::clamp(in[2], 0.0f, 1.0f) * 255.0f) << 16
-        | static_cast<uint8_t>(std::clamp(in[3], 0.0f, 1.0f) * 255.0f) << 24;
+    return static_cast<uint8_t>(std::clamp(in[0], 0.0f, 1.0f) * 255.0f) | static_cast<uint8_t>(std::clamp(in[1], 0.0f, 1.0f) * 255.0f) << 8
+           | static_cast<uint8_t>(std::clamp(in[2], 0.0f, 1.0f) * 255.0f) << 16 | static_cast<uint8_t>(std::clamp(in[3], 0.0f, 1.0f) * 255.0f) << 24;
 }
 
 void Pack32::Vec2UnpackTexCoordsUV(const uint32_t in, float* out)
@@ -65,9 +62,9 @@ void Pack32::Vec3UnpackUnitVecScaleBased(const uint32_t in, float* out)
 
 void Pack32::Vec3UnpackUnitVecThirdBased(const uint32_t in, float* out)
 {
-    PackUtil32 v0{ (in >> 0) & 0x3FF };
-    PackUtil32 v1{ (in >> 10) & 0x3FF };
-    PackUtil32 v2{ (in >> 20) & 0x3FF };
+    PackUtil32 v0{(in >> 0) & 0x3FF};
+    PackUtil32 v1{(in >> 10) & 0x3FF};
+    PackUtil32 v2{(in >> 20) & 0x3FF};
 
     v0.u = v0.u - 2 * (v0.u & 0x200) + 0x40400000;
     v1.u = v1.u - 2 * (v1.u & 0x200) + 0x40400000;

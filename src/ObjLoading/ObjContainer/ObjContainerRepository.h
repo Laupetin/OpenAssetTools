@@ -4,13 +4,12 @@
 #include "Utils/TransformIterator.h"
 
 #include <algorithm>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
-#include <memory>
 
-template <typename ContainerType, typename ReferencerType>
-class ObjContainerRepository
+template<typename ContainerType, typename ReferencerType> class ObjContainerRepository
 {
     class ObjContainerEntry
     {
@@ -49,10 +48,12 @@ public:
 
     bool AddContainerReference(ContainerType* container, ReferencerType* referencer)
     {
-        auto firstEntry = std::find_if(m_containers.begin(), m_containers.end(), [container](const ObjContainerEntry& entry)
-        {
-            return entry.m_container.get() == container;
-        });
+        auto firstEntry = std::find_if(m_containers.begin(),
+                                       m_containers.end(),
+                                       [container](const ObjContainerEntry& entry)
+                                       {
+                                           return entry.m_container.get() == container;
+                                       });
 
         if (firstEntry != m_containers.end())
         {
@@ -87,10 +88,12 @@ public:
 
     ContainerType* GetContainerByName(const std::string& name)
     {
-        auto foundEntry = std::find_if(m_containers.begin(), m_containers.end(), [name](ObjContainerEntry& entry)
-        {
-            return entry.m_container->GetName() == name;
-        });
+        auto foundEntry = std::find_if(m_containers.begin(),
+                                       m_containers.end(),
+                                       [name](ObjContainerEntry& entry)
+                                       {
+                                           return entry.m_container->GetName() == name;
+                                       });
 
         if (foundEntry != m_containers.end())
         {
@@ -102,13 +105,19 @@ public:
 
     TransformIterator<typename std::vector<ObjContainerEntry>::iterator, ObjContainerEntry&, ContainerType*> begin()
     {
-        return TransformIterator<typename std::vector<ObjContainerEntry>::iterator, ObjContainerEntry&, ContainerType*>(
-            m_containers.begin(), [](ObjContainerEntry& entry)  { return entry.m_container.get(); });
+        return TransformIterator<typename std::vector<ObjContainerEntry>::iterator, ObjContainerEntry&, ContainerType*>(m_containers.begin(),
+                                                                                                                        [](ObjContainerEntry& entry)
+                                                                                                                        {
+                                                                                                                            return entry.m_container.get();
+                                                                                                                        });
     }
 
     TransformIterator<typename std::vector<ObjContainerEntry>::iterator, ObjContainerEntry&, ContainerType*> end()
     {
-        return TransformIterator<typename std::vector<ObjContainerEntry>::iterator, ObjContainerEntry&, ContainerType*>(
-            m_containers.end(), [](ObjContainerEntry& entry){ return entry.m_container.get(); });
+        return TransformIterator<typename std::vector<ObjContainerEntry>::iterator, ObjContainerEntry&, ContainerType*>(m_containers.end(),
+                                                                                                                        [](ObjContainerEntry& entry)
+                                                                                                                        {
+                                                                                                                            return entry.m_container.get();
+                                                                                                                        });
     }
 };

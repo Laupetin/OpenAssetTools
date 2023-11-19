@@ -1,13 +1,14 @@
 #include "UnlinkerArgs.h"
 
+#include "ObjLoading.h"
+#include "ObjWriting.h"
+#include "Utils/Arguments/UsageInformation.h"
+#include "Utils/FileUtils.h"
+
 #include <regex>
 #include <type_traits>
 
-#include "Utils/Arguments/UsageInformation.h"
-#include "ObjLoading.h"
-#include "ObjWriting.h"
-#include "Utils/FileUtils.h"
-
+// clang-format off
 const CommandLineOption* const OPTION_HELP =
     CommandLineOption::Builder::Create()
     .WithShortName("?")
@@ -29,7 +30,7 @@ const CommandLineOption* const OPTION_MINIMAL_ZONE_FILE =
     .WithDescription("Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
     .Build();
 
-const CommandLineOption* const OPTION_LOAD =
+const CommandLineOption* const OPTION_LOAD = 
     CommandLineOption::Builder::Create()
     .WithShortName("l")
     .WithLongName("load")
@@ -48,25 +49,26 @@ const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
     .WithShortName("o")
     .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to \"" + std::string(UnlinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\"")
+    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to \""
+                     + std::string(UnlinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\"")
     .WithParameter("outputFolderPath")
     .Build();
 
-const CommandLineOption* const OPTION_SEARCH_PATH =
+const CommandLineOption* const OPTION_SEARCH_PATH = 
     CommandLineOption::Builder::Create()
     .WithLongName("search-path")
     .WithDescription("Specifies a semi-colon separated list of paths to search for additional game files.")
     .WithParameter("searchPathString")
     .Build();
 
-const CommandLineOption* const OPTION_IMAGE_FORMAT =
+const CommandLineOption* const OPTION_IMAGE_FORMAT = 
     CommandLineOption::Builder::Create()
     .WithLongName("image-format")
     .WithDescription("Specifies the format of dumped image files. Valid values are: DDS, IWI")
     .WithParameter("imageFormatValue")
     .Build();
 
-const CommandLineOption* const OPTION_MODEL_FORMAT =
+const CommandLineOption* const OPTION_MODEL_FORMAT = 
     CommandLineOption::Builder::Create()
     .WithLongName("model-format")
     .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ")
@@ -85,7 +87,7 @@ const CommandLineOption* const OPTION_GDT =
     .WithDescription("Dumps assets in a GDT whenever possible.")
     .Build();
 
-const CommandLineOption* const OPTION_EXCLUDE_ASSETS =
+const CommandLineOption* const OPTION_EXCLUDE_ASSETS = 
     CommandLineOption::Builder::Create()
     .WithLongName("exclude-assets")
     .WithDescription("Specify all asset types that should be excluded.")
@@ -93,7 +95,7 @@ const CommandLineOption* const OPTION_EXCLUDE_ASSETS =
     .Reusable()
     .Build();
 
-const CommandLineOption* const OPTION_INCLUDE_ASSETS =
+const CommandLineOption* const OPTION_INCLUDE_ASSETS = 
     CommandLineOption::Builder::Create()
     .WithLongName("include-assets")
     .WithDescription("Specify all asset types that should be included.")
@@ -107,8 +109,9 @@ const CommandLineOption* const OPTION_LEGACY_MENUS =
     .WithDescription("Dumps menus with a compatibility mode to work with applications not compatible with the newer dumping mode.")
     .Build();
 
-const CommandLineOption* const COMMAND_LINE_OPTIONS[]
-{
+// clang-format on
+
+const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERBOSE,
     OPTION_MINIMAL_ZONE_FILE,
@@ -122,7 +125,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_GDT,
     OPTION_EXCLUDE_ASSETS,
     OPTION_INCLUDE_ASSETS,
-    OPTION_LEGACY_MENUS
+    OPTION_LEGACY_MENUS,
 };
 
 UnlinkerArgs::UnlinkerArgs()
@@ -257,7 +260,6 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
         PrintUsage();
         return false;
     }
-
 
     // -v; --verbose
     SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));

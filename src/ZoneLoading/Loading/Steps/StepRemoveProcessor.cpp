@@ -1,4 +1,5 @@
 #include "StepRemoveProcessor.h"
+
 #include <cassert>
 
 StepRemoveProcessor::StepRemoveProcessor(StreamProcessor* streamProcessor)

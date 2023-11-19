@@ -1,15 +1,15 @@
 #include "AssetDumperWeapon.h"
 
+#include "Game/IW4/CommonIW4.h"
+#include "Game/IW4/InfoString/EnumStrings.h"
+#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
+#include "Game/IW4/InfoString/WeaponFields.h"
+#include "Game/IW4/ObjConstantsIW4.h"
+
 #include <cassert>
 #include <cstring>
 #include <sstream>
 #include <type_traits>
-
-#include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/InfoString/EnumStrings.h"
-#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/InfoString/WeaponFields.h"
 
 using namespace IW4;
 
@@ -67,28 +67,27 @@ namespace IW4
                 break;
 
             case WFT_BOUNCE_SOUND:
+            {
+                const auto* bounceSound = *reinterpret_cast<SndAliasCustom**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+
+                if (bounceSound && bounceSound->name)
                 {
-                    const auto* bounceSound = *reinterpret_cast<SndAliasCustom**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                    const std::string firstBounceSound(bounceSound->name->soundName);
+                    const auto endOfBouncePrefix = firstBounceSound.rfind("_default");
+                    assert(endOfBouncePrefix != std::string::npos);
 
-                    if (bounceSound && bounceSound->name)
+                    if (endOfBouncePrefix != std::string::npos)
                     {
-                        const std::string firstBounceSound(bounceSound->name->soundName);
-                        const auto endOfBouncePrefix = firstBounceSound.rfind("_default");
-                        assert(endOfBouncePrefix != std::string::npos);
-
-                        if (endOfBouncePrefix != std::string::npos)
-                        {
-                            m_info_string.SetValueForKey(std::string(field.szName),
-                                                         firstBounceSound.substr(0, endOfBouncePrefix));
-                        }
-                        else
-                            m_info_string.SetValueForKey(std::string(field.szName), "");
+                        m_info_string.SetValueForKey(std::string(field.szName), firstBounceSound.substr(0, endOfBouncePrefix));
                     }
                     else
                         m_info_string.SetValueForKey(std::string(field.szName), "");
-
-                    break;
                 }
+                else
+                    m_info_string.SetValueForKey(std::string(field.szName), "");
+
+                break;
+            }
 
             case WFT_STICKINESS:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, stickinessNames, std::extent<decltype(stickinessNames)>::value);
@@ -119,86 +118,86 @@ namespace IW4
                 break;
 
             case WFT_HIDETAGS:
+            {
+                const auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                std::stringstream ss;
+                bool first = true;
+
+                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::hideTags)>::value; i++)
                 {
-                    const auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    std::stringstream ss;
-                    bool first = true;
-
-                    for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::hideTags)>::value; i++)
+                    const auto& str = m_get_scr_string(hideTags[i]);
+                    if (!str.empty())
                     {
-                        const auto& str = m_get_scr_string(hideTags[i]);
-                        if (!str.empty())
-                        {
-                            if (!first)
-                                ss << "\n";
-                            else
-                                first = false;
+                        if (!first)
+                            ss << "\n";
+                        else
+                            first = false;
 
-                            ss << str;
-                        }
+                        ss << str;
                     }
-
-                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
-                    break;
                 }
+
+                m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                break;
+            }
 
             case WFT_NOTETRACKSOUNDMAP:
+            {
+                const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                const auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value];
+                std::stringstream ss;
+                bool first = true;
+
+                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value; i++)
                 {
-                    const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    const auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value];
-                    std::stringstream ss;
-                    bool first = true;
-
-                    for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value; i++)
+                    const auto& key = m_get_scr_string(keys[i]);
+                    const auto& value = m_get_scr_string(values[i]);
+                    if (!key.empty())
                     {
-                        const auto& key = m_get_scr_string(keys[i]);
-                        const auto& value = m_get_scr_string(values[i]);
-                        if (!key.empty())
-                        {
-                            if (!first)
-                                ss << "\n";
-                            else
-                                first = false;
+                        if (!first)
+                            ss << "\n";
+                        else
+                            first = false;
 
-                            ss << key;
+                        ss << key;
 
-                            if (!value.empty())
-                                ss << " " << value;
-                        }
+                        if (!value.empty())
+                            ss << " " << value;
                     }
-
-                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
-                    break;
                 }
+
+                m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                break;
+            }
 
             case WFT_NOTETRACKRUMBLEMAP:
+            {
+                const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                const auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value];
+                std::stringstream ss;
+                bool first = true;
+
+                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value; i++)
                 {
-                    const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    const auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value];
-                    std::stringstream ss;
-                    bool first = true;
-
-                    for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value; i++)
+                    const auto& key = m_get_scr_string(keys[i]);
+                    const auto& value = m_get_scr_string(values[i]);
+                    if (!key.empty())
                     {
-                        const auto& key = m_get_scr_string(keys[i]);
-                        const auto& value = m_get_scr_string(values[i]);
-                        if (!key.empty())
-                        {
-                            if (!first)
-                                ss << "\n";
-                            else
-                                first = false;
+                        if (!first)
+                            ss << "\n";
+                        else
+                            first = false;
 
-                            ss << key;
+                        ss << key;
 
-                            if (!value.empty())
-                                ss << " " << value;
-                        }
+                        if (!value.empty())
+                            ss << " " << value;
                     }
-
-                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
-                    break;
                 }
+
+                m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                break;
+            }
 
             case WFT_NUM_FIELD_TYPES:
             default:
@@ -208,12 +207,15 @@ namespace IW4
         }
 
     public:
-        InfoStringFromWeaponConverter(const WeaponFullDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromWeaponConverter(const WeaponFullDef* structure,
+                                      const cspField_t* fields,
+                                      const size_t fieldCount,
+                                      std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace IW4
 
 void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFullDef* fullDef)
 {
@@ -263,28 +265,36 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
     if (fullDef->weapDef.notetrackSoundMapKeys)
     {
         assert(sizeof(WeaponFullDef::notetrackSoundMapKeys) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
-        memcpy(fullDef->notetrackSoundMapKeys, fullDef->weapDef.notetrackSoundMapKeys, sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+        memcpy(fullDef->notetrackSoundMapKeys,
+               fullDef->weapDef.notetrackSoundMapKeys,
+               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
         fullDef->weapDef.notetrackSoundMapKeys = fullDef->notetrackSoundMapKeys;
     }
 
     if (fullDef->weapDef.notetrackSoundMapValues)
     {
         assert(sizeof(WeaponFullDef::notetrackSoundMapValues) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
-        memcpy(fullDef->notetrackSoundMapValues, fullDef->weapDef.notetrackSoundMapValues, sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+        memcpy(fullDef->notetrackSoundMapValues,
+               fullDef->weapDef.notetrackSoundMapValues,
+               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
         fullDef->weapDef.notetrackSoundMapValues = fullDef->notetrackSoundMapValues;
     }
 
     if (fullDef->weapDef.notetrackRumbleMapKeys)
     {
         assert(sizeof(WeaponFullDef::notetrackRumbleMapKeys) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
-        memcpy(fullDef->notetrackRumbleMapKeys, fullDef->weapDef.notetrackRumbleMapKeys, sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
+        memcpy(fullDef->notetrackRumbleMapKeys,
+               fullDef->weapDef.notetrackRumbleMapKeys,
+               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
         fullDef->weapDef.notetrackRumbleMapKeys = fullDef->notetrackRumbleMapKeys;
     }
 
     if (fullDef->weapDef.notetrackRumbleMapValues)
     {
         assert(sizeof(WeaponFullDef::notetrackRumbleMapValues) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
-        memcpy(fullDef->notetrackRumbleMapValues, fullDef->weapDef.notetrackRumbleMapValues, sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
+        memcpy(fullDef->notetrackRumbleMapValues,
+               fullDef->weapDef.notetrackRumbleMapValues,
+               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
         fullDef->weapDef.notetrackRumbleMapValues = fullDef->notetrackRumbleMapValues;
     }
 
@@ -305,14 +315,18 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
     if (fullDef->weapDef.perpendicularBounce)
     {
         assert(sizeof(WeaponFullDef::perpendicularBounce) >= sizeof(float) * std::extent<decltype(WeaponFullDef::perpendicularBounce)>::value);
-        memcpy(fullDef->perpendicularBounce, fullDef->weapDef.perpendicularBounce, sizeof(float) * std::extent<decltype(WeaponFullDef::perpendicularBounce)>::value);
+        memcpy(fullDef->perpendicularBounce,
+               fullDef->weapDef.perpendicularBounce,
+               sizeof(float) * std::extent<decltype(WeaponFullDef::perpendicularBounce)>::value);
         fullDef->weapDef.perpendicularBounce = fullDef->perpendicularBounce;
     }
 
     if (fullDef->weapDef.locationDamageMultipliers)
     {
         assert(sizeof(WeaponFullDef::locationDamageMultipliers) >= sizeof(float) * std::extent<decltype(WeaponFullDef::locationDamageMultipliers)>::value);
-        memcpy(fullDef->locationDamageMultipliers, fullDef->weapDef.locationDamageMultipliers, sizeof(float) * std::extent<decltype(WeaponFullDef::locationDamageMultipliers)>::value);
+        memcpy(fullDef->locationDamageMultipliers,
+               fullDef->weapDef.locationDamageMultipliers,
+               sizeof(float) * std::extent<decltype(WeaponFullDef::locationDamageMultipliers)>::value);
         fullDef->weapDef.locationDamageMultipliers = fullDef->locationDamageMultipliers;
     }
 }
@@ -323,14 +337,17 @@ InfoString AssetDumperWeapon::CreateInfoString(XAssetInfo<WeaponCompleteDef>* as
     memset(fullDef.get(), 0, sizeof(WeaponFullDef));
     CopyToFullDef(asset->Asset(), fullDef.get());
 
-    InfoStringFromWeaponConverter converter(fullDef.get(), weapon_fields, std::extent<decltype(weapon_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-        {
-            assert(scrStr < asset->m_zone->m_script_strings.Count());
-            if (scrStr >= asset->m_zone->m_script_strings.Count())
-                return "";
+    InfoStringFromWeaponConverter converter(fullDef.get(),
+                                            weapon_fields,
+                                            std::extent<decltype(weapon_fields)>::value,
+                                            [asset](const scr_string_t scrStr) -> std::string
+                                            {
+                                                assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                    return "";
 
-            return asset->m_zone->m_script_strings[scrStr];
-        });
+                                                return asset->m_zone->m_script_strings[scrStr];
+                                            });
 
     return converter.Convert();
 }

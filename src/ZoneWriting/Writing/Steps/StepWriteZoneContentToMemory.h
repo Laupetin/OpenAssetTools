@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-
 #include "Utils/ClassUtils.h"
 #include "Writing/IContentWritingEntryPoint.h"
-#include "Writing/InMemoryZoneData.h"
 #include "Writing/IWritingStep.h"
+#include "Writing/InMemoryZoneData.h"
+
+#include <memory>
 
 class StepWriteZoneContentToMemory final : public IWritingStep
 {

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ICommonEventHandlerElement.h"
+
 #include <memory>
 #include <vector>
-
-#include "ICommonEventHandlerElement.h"
 
 namespace menu
 {
@@ -15,4 +15,4 @@ namespace menu
         CommonEventHandlerSet();
         explicit CommonEventHandlerSet(std::vector<std::unique_ptr<ICommonEventHandlerElement>> elements);
     };
-}
+} // namespace menu

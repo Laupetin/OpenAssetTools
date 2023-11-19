@@ -1,15 +1,14 @@
 #pragma once
 
-#include <unordered_map>
-#include <type_traits>
-
 #include "Game/IW3/CommonIW3.h"
 #include "Game/IW3/IW3.h"
 
+#include <type_traits>
+#include <unordered_map>
+
 namespace IW3
 {
-    inline const char* techniqueTypeNames[]
-    {
+    inline const char* techniqueTypeNames[]{
         "depth prepass",
         "build floatz",
         "build shadowmap depth",
@@ -47,8 +46,7 @@ namespace IW3
     };
     static_assert(std::extent_v<decltype(techniqueTypeNames)> == TECHNIQUE_COUNT);
 
-    static const char* materialStreamDestinationNames[]
-    {
+    static const char* materialStreamDestinationNames[]{
         "position",
         "normal",
         "color[0]",
@@ -64,8 +62,7 @@ namespace IW3
     };
     static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
 
-    static const char* materialStreamSourceNames[]
-    {
+    static const char* materialStreamSourceNames[]{
         "position",
         "color",
         "texcoord[0]",
@@ -74,7 +71,7 @@ namespace IW3
         "texcoord[1]",
         "texcoord[2]",
         "normalTransform[0]",
-        "normalTransform[1]"
+        "normalTransform[1]",
     };
     static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
 
@@ -83,56 +80,23 @@ namespace IW3
         return std::make_pair(Common::R_HashString(name, 0u), name);
     }
 
-    inline std::unordered_map knownMaterialSourceNames
-    {
-        KnownMaterialSource("colorMap"),
-        KnownMaterialSource("colorMap0"),
-        KnownMaterialSource("colorMap1"),
-        KnownMaterialSource("colorMap2"),
-        KnownMaterialSource("colorMap3"),
-        KnownMaterialSource("colorMap4"),
-        KnownMaterialSource("colorMap5"),
-        KnownMaterialSource("colorMap6"),
-        KnownMaterialSource("colorMap7"),
-        KnownMaterialSource("normalMap"),
-        KnownMaterialSource("normalMap0"),
-        KnownMaterialSource("normalMap1"),
-        KnownMaterialSource("normalMap2"),
-        KnownMaterialSource("normalMap3"),
-        KnownMaterialSource("normalMap4"),
-        KnownMaterialSource("normalMap5"),
-        KnownMaterialSource("normalMap6"),
-        KnownMaterialSource("normalMap7"),
-        KnownMaterialSource("specularMap"),
-        KnownMaterialSource("specularMap0"),
-        KnownMaterialSource("specularMap1"),
-        KnownMaterialSource("specularMap2"),
-        KnownMaterialSource("specularMap3"),
-        KnownMaterialSource("specularMap4"),
-        KnownMaterialSource("specularMap5"),
-        KnownMaterialSource("specularMap6"),
-        KnownMaterialSource("specularMap7"),
-        KnownMaterialSource("detailMap"),
-        KnownMaterialSource("detailMap0"),
-        KnownMaterialSource("detailMap1"),
-        KnownMaterialSource("detailMap2"),
-        KnownMaterialSource("detailMap3"),
-        KnownMaterialSource("detailMap4"),
-        KnownMaterialSource("detailMap5"),
-        KnownMaterialSource("detailMap6"),
-        KnownMaterialSource("detailMap7"),
-        KnownMaterialSource("attenuationMap"),
-        KnownMaterialSource("attenuationMap0"),
-        KnownMaterialSource("attenuationMap1"),
-        KnownMaterialSource("attenuationMap2"),
-        KnownMaterialSource("attenuationMap3"),
-        KnownMaterialSource("attenuationMap4"),
-        KnownMaterialSource("attenuationMap5"),
-        KnownMaterialSource("attenuationMap6"),
-        KnownMaterialSource("attenuationMap7"),
-        KnownMaterialSource("distortionScale"),
-        KnownMaterialSource("eyeOffsetParms"),
-        KnownMaterialSource("falloffBeginColor"),
+    inline std::unordered_map knownMaterialSourceNames{
+        KnownMaterialSource("colorMap"),        KnownMaterialSource("colorMap0"),       KnownMaterialSource("colorMap1"),
+        KnownMaterialSource("colorMap2"),       KnownMaterialSource("colorMap3"),       KnownMaterialSource("colorMap4"),
+        KnownMaterialSource("colorMap5"),       KnownMaterialSource("colorMap6"),       KnownMaterialSource("colorMap7"),
+        KnownMaterialSource("normalMap"),       KnownMaterialSource("normalMap0"),      KnownMaterialSource("normalMap1"),
+        KnownMaterialSource("normalMap2"),      KnownMaterialSource("normalMap3"),      KnownMaterialSource("normalMap4"),
+        KnownMaterialSource("normalMap5"),      KnownMaterialSource("normalMap6"),      KnownMaterialSource("normalMap7"),
+        KnownMaterialSource("specularMap"),     KnownMaterialSource("specularMap0"),    KnownMaterialSource("specularMap1"),
+        KnownMaterialSource("specularMap2"),    KnownMaterialSource("specularMap3"),    KnownMaterialSource("specularMap4"),
+        KnownMaterialSource("specularMap5"),    KnownMaterialSource("specularMap6"),    KnownMaterialSource("specularMap7"),
+        KnownMaterialSource("detailMap"),       KnownMaterialSource("detailMap0"),      KnownMaterialSource("detailMap1"),
+        KnownMaterialSource("detailMap2"),      KnownMaterialSource("detailMap3"),      KnownMaterialSource("detailMap4"),
+        KnownMaterialSource("detailMap5"),      KnownMaterialSource("detailMap6"),      KnownMaterialSource("detailMap7"),
+        KnownMaterialSource("attenuationMap"),  KnownMaterialSource("attenuationMap0"), KnownMaterialSource("attenuationMap1"),
+        KnownMaterialSource("attenuationMap2"), KnownMaterialSource("attenuationMap3"), KnownMaterialSource("attenuationMap4"),
+        KnownMaterialSource("attenuationMap5"), KnownMaterialSource("attenuationMap6"), KnownMaterialSource("attenuationMap7"),
+        KnownMaterialSource("distortionScale"), KnownMaterialSource("eyeOffsetParms"),  KnownMaterialSource("falloffBeginColor"),
         KnownMaterialSource("falloffEndColor"),
     };
-}
+} // namespace IW3

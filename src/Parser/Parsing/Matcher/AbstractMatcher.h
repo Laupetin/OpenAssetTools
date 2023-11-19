@@ -1,13 +1,12 @@
 #pragma once
 
-#include <functional>
-
-#include "Parsing/IParserValue.h"
 #include "Parsing/ILexer.h"
+#include "Parsing/IParserValue.h"
 #include "Parsing/Matcher/MatcherResult.h"
 
-template <typename TokenType>
-class AbstractMatcher
+#include <functional>
+
+template<typename TokenType> class AbstractMatcher
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -83,7 +82,7 @@ public:
             result.m_matched_tokens.clear();
             result.m_matched_tokens.emplace_back(result.m_fabricated_tokens.size() - 1, true);
         }
-        else if(result.m_matched_tokens.empty())
+        else if (result.m_matched_tokens.empty())
         {
             for (auto i = 0u; i < result.m_consumed_token_count; i++)
                 result.m_matched_tokens.emplace_back(tokenOffset + i, false);

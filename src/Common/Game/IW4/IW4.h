@@ -1,9 +1,13 @@
 #pragma once
 
-//#include <d3d11.h>
+// clang-format off: Order of includes matters here
+
+// #include <d3d9.h>
 #include "Image/Texture.h"
 
 #include "IW4_Assets.h"
+
+// clang-format on
 
 namespace IW4
 {
@@ -26,11 +30,11 @@ namespace IW4
 
     struct DB_AuthHeader
     {
-        char magic[8];                                  // + 0
-        unsigned int reserved;                          // + 8
-        DB_AuthHash subheaderHash;                      // + 12
-        DB_AuthSignature signedSubheaderHash;           // + 44
-        DB_AuthSubHeader subheader;                     // + 300
+        char magic[8];                        // + 0
+        unsigned int reserved;                // + 8
+        DB_AuthHash subheaderHash;            // + 12
+        DB_AuthSignature signedSubheaderHash; // + 44
+        DB_AuthSubHeader subheader;           // + 300
     };
 
     struct ScriptStringList
@@ -122,4 +126,4 @@ namespace IW4
 
         VFT_NUM,
     };
-}
+} // namespace IW4

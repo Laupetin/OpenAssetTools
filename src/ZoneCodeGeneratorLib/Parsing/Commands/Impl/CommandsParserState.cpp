@@ -54,8 +54,7 @@ bool CommandsParserState::GetNextTypenameSeparatorPos(const std::string& typeNam
     const auto typeNameValueSize = typeNameValue.size();
     for (auto currentHead = startPos + 1; currentHead < typeNameValueSize; currentHead++)
     {
-        if (typeNameValue[currentHead] == ':'
-            && typeNameValue[currentHead - 1] == ':')
+        if (typeNameValue[currentHead] == ':' && typeNameValue[currentHead - 1] == ':')
         {
             separatorPos = currentHead - 1;
             return true;
@@ -65,7 +64,10 @@ bool CommandsParserState::GetNextTypenameSeparatorPos(const std::string& typeNam
     return false;
 }
 
-bool CommandsParserState::ExtractMembersFromTypenameInternal(const std::string& typeNameValue, unsigned typeNameOffset, StructureInformation* type, std::vector<MemberInformation*>& members)
+bool CommandsParserState::ExtractMembersFromTypenameInternal(const std::string& typeNameValue,
+                                                             unsigned typeNameOffset,
+                                                             StructureInformation* type,
+                                                             std::vector<MemberInformation*>& members)
 {
     auto startOffset = typeNameOffset;
     while (GetNextTypenameSeparatorPos(typeNameValue, typeNameOffset, typeNameOffset))
@@ -89,13 +91,17 @@ bool CommandsParserState::ExtractMembersFromTypenameInternal(const std::string& 
     return true;
 }
 
-bool CommandsParserState::GetMembersFromTypename(const std::string& typeNameValue, StructureInformation* baseType, std::vector<MemberInformation*>& members) const
+bool CommandsParserState::GetMembersFromTypename(const std::string& typeNameValue,
+                                                 StructureInformation* baseType,
+                                                 std::vector<MemberInformation*>& members) const
 {
     return m_in_use != nullptr && ExtractMembersFromTypenameInternal(typeNameValue, 0, m_in_use, members)
-        || ExtractMembersFromTypenameInternal(typeNameValue, 0, baseType, members);
+           || ExtractMembersFromTypenameInternal(typeNameValue, 0, baseType, members);
 }
 
-bool CommandsParserState::GetTypenameAndMembersFromTypename(const std::string& typeNameValue, StructureInformation*& structure, std::vector<MemberInformation*>& members) const
+bool CommandsParserState::GetTypenameAndMembersFromTypename(const std::string& typeNameValue,
+                                                            StructureInformation*& structure,
+                                                            std::vector<MemberInformation*>& members) const
 {
     if (m_in_use != nullptr)
     {

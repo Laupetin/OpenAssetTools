@@ -75,8 +75,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
 
     case CSPFT_MATERIAL:
     {
-        const auto* material = *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.
-            iOffset);
+        const auto* material = *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
         if (material)
             m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(material->info.name)));
@@ -87,8 +86,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
 
     case CSPFT_SOUND:
     {
-        const auto* sndAlias = reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.
-            iOffset);
+        const auto* sndAlias = reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
         if (sndAlias->name)
             m_info_string.SetValueForKey(std::string(field.szName), std::string(sndAlias->name->soundName));
@@ -99,8 +97,7 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
 
     case CSPFT_TRACER:
     {
-        const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.
-            iOffset);
+        const auto* tracer = *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
         if (tracer)
             m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(tracer->name)));
@@ -130,18 +127,19 @@ void InfoStringFromStructConverter::FillInfoString()
     }
 }
 
-InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure, const cspField_t* fields,
-    const size_t fieldCount)
+InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure, const cspField_t* fields, const size_t fieldCount)
     : InfoStringFromStructConverterBase(structure),
-    m_fields(fields),
-    m_field_count(fieldCount)
+      m_fields(fields),
+      m_field_count(fieldCount)
 {
 }
 
-InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure, const cspField_t* fields, const size_t fieldCount,
-    std::function<std::string(scr_string_t)> scriptStringValueCallback)
+InfoStringFromStructConverter::InfoStringFromStructConverter(const void* structure,
+                                                             const cspField_t* fields,
+                                                             const size_t fieldCount,
+                                                             std::function<std::string(scr_string_t)> scriptStringValueCallback)
     : InfoStringFromStructConverterBase(structure, std::move(scriptStringValueCallback)),
-    m_fields(fields),
-    m_field_count(fieldCount)
+      m_fields(fields),
+      m_field_count(fieldCount)
 {
 }

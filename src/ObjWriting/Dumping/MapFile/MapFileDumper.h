@@ -1,8 +1,8 @@
 #pragma once
 
-#include <ostream>
-
 #include "Dumping/AbstractTextDumper.h"
+
+#include <ostream>
 
 class MapFileDumper : AbstractTextDumper
 {

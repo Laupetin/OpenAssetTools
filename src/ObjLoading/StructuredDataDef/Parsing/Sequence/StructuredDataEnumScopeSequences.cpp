@@ -1,8 +1,8 @@
 #include "StructuredDataEnumScopeSequences.h"
 
-#include <algorithm>
-
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+
+#include <algorithm>
 
 namespace sdd::enum_scope_sequences
 {
@@ -19,8 +19,8 @@ namespace sdd::enum_scope_sequences
                 create.String().Capture(CAPTURE_ENTRY_VALUE),
                 create.Or({
                     create.Char(','),
-                    create.Char('}').NoConsume()
-                })
+                    create.Char('}').NoConsume(),
+                }),
             });
         }
 
@@ -30,7 +30,8 @@ namespace sdd::enum_scope_sequences
             assert(state->m_current_enum);
 
             const auto& entryValueToken = result.NextCapture(CAPTURE_ENTRY_VALUE);
-            if (state->m_current_enum->m_reserved_entry_count > 0 && static_cast<size_t>(state->m_current_enum->m_reserved_entry_count) <= state->m_current_enum->m_entries.size())
+            if (state->m_current_enum->m_reserved_entry_count > 0
+                && static_cast<size_t>(state->m_current_enum->m_reserved_entry_count) <= state->m_current_enum->m_entries.size())
                 throw ParsingException(entryValueToken.GetPos(), "Enum entry count exceeds reserved count");
 
             state->m_current_enum->m_entries.emplace_back(entryValueToken.StringValue(), state->m_current_enum->m_entries.size());
@@ -46,7 +47,7 @@ namespace sdd::enum_scope_sequences
 
             AddMatchers({
                 create.Char('}'),
-                create.Optional(create.Char(';'))
+                create.Optional(create.Char(';')),
             });
         }
 
@@ -57,13 +58,13 @@ namespace sdd::enum_scope_sequences
             state->m_current_enum = nullptr;
         }
     };
-}
+} // namespace sdd::enum_scope_sequences
 
 using namespace sdd;
 using namespace enum_scope_sequences;
 
 StructuredDataEnumScopeSequences::StructuredDataEnumScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
-                                                                         std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
+                                                                   std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }

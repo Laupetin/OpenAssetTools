@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "GdtEntry.h"
 #include "GdtVersion.h"
+
+#include <memory>
+#include <vector>
 
 class Gdt
 {

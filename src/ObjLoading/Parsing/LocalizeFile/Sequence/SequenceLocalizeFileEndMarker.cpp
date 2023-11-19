@@ -7,7 +7,7 @@ SequenceLocalizeFileEndMarker::SequenceLocalizeFileEndMarker()
     const SimpleMatcherFactory create(this);
 
     AddMatchers({
-        create.Keyword("ENDMARKER")
+        create.Keyword("ENDMARKER"),
     });
 }
 

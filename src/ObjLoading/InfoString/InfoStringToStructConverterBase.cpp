@@ -3,7 +3,10 @@
 #include <cstring>
 #include <iostream>
 
-InfoStringToStructConverterBase::InfoStringToStructConverterBase(const InfoString& infoString, void* structure, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory)
+InfoStringToStructConverterBase::InfoStringToStructConverterBase(const InfoString& infoString,
+                                                                 void* structure,
+                                                                 ZoneScriptStrings& zoneScriptStrings,
+                                                                 MemoryManager* memory)
     : m_info_string(infoString),
       m_zone_script_strings(zoneScriptStrings),
       m_memory(memory),
@@ -23,14 +26,14 @@ bool InfoStringToStructConverterBase::ParseAsArray(const std::string& value, std
             valueArray.emplace_back(value, startPos, ci - startPos);
             startPos = ++ci + 1;
         }
-        else if(c == '\n')
+        else if (c == '\n')
         {
             valueArray.emplace_back(value, startPos, ci - startPos);
             startPos = ci + 1;
         }
     }
 
-    if(startPos < value.size())
+    if (startPos < value.size())
     {
         valueArray.emplace_back(value, startPos, value.size() - startPos);
     }
@@ -117,7 +120,7 @@ bool InfoStringToStructConverterBase::ConvertInt(const std::string& value, const
     char* endPtr;
     *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = strtol(value.c_str(), &endPtr, 0);
 
-    if(endPtr != &value[value.size()])
+    if (endPtr != &value[value.size()])
     {
         std::cout << "Failed to parse value \"" << value << "\" as int" << std::endl;
         return false;
@@ -209,22 +212,22 @@ bool InfoStringToStructConverterBase::ConvertScriptString(const std::string& val
 
 bool InfoStringToStructConverterBase::ConvertEnumInt(const std::string& value, const size_t offset, const char** enumValues, const size_t enumSize)
 {
-    for(auto i = 0u; i < enumSize; i++)
+    for (auto i = 0u; i < enumSize; i++)
     {
-        if(value == enumValues[i])
+        if (value == enumValues[i])
         {
             *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = static_cast<int>(i);
             return true;
         }
     }
-    
+
     return false;
 }
 
 std::vector<scr_string_t> InfoStringToStructConverterBase::GetUsedScriptStrings() const
 {
     std::vector<scr_string_t> scrStringList;
-    for(auto scrStr : m_used_script_string_list)
+    for (auto scrStr : m_used_script_string_list)
     {
         scrStringList.push_back(scrStr);
     }

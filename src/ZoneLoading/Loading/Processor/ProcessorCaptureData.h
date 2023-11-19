@@ -1,8 +1,8 @@
 #pragma once
-#include <memory>
-
 #include "Loading/StreamProcessor.h"
 #include "Utils/ICapturedDataProvider.h"
+
+#include <memory>
 
 class ProcessorCaptureData final : public StreamProcessor, public ICapturedDataProvider
 {

@@ -11,13 +11,12 @@ class MemoryManager
         virtual ~IDestructible() = default;
     };
 
-    template <class T>
-    class Allocation final : public IDestructible
+    template<class T> class Allocation final : public IDestructible
     {
     public:
         T m_entry;
 
-        template <class... _Valty>
+        template<class... _Valty>
         explicit Allocation(_Valty&&... _Val)
             : m_entry(std::forward<_Valty>(_Val)...)
         {
@@ -50,8 +49,7 @@ public:
     void* Alloc(size_t size);
     char* Dup(const char* str);
 
-    template <class T, class... _Valty>
-    T* Create(_Valty&&... _Val)
+    template<class T, class... _Valty> T* Create(_Valty&&... _Val)
     {
         Allocation<T>* allocation = new Allocation<T>(std::forward<_Valty>(_Val)...);
         m_destructible.emplace_back(allocation, &allocation->m_entry);

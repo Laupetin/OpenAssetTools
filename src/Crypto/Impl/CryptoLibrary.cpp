@@ -1,4 +1,5 @@
 #include "CryptoLibrary.h"
+
 #include "tommath.h"
 
 void CryptoLibrary::Init()

@@ -1,9 +1,9 @@
 #include "IncludingStreamProxy.h"
 
-#include <sstream>
-#include <filesystem>
-
 #include "Parsing/ParsingException.h"
+
+#include <filesystem>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -12,7 +12,10 @@ IncludingStreamProxy::IncludingStreamProxy(IParserLineStream* stream)
 {
 }
 
-bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line, const unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition)
+bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line,
+                                                  const unsigned includeDirectivePosition,
+                                                  unsigned& filenameStartPosition,
+                                                  unsigned& filenameEndPosition)
 {
     auto currentPos = includeDirectivePosition;
     bool isDoubleQuotes;
@@ -66,7 +69,7 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const u
     {
         return false;
     }
-    
+
     unsigned filenameStart, filenameEnd;
 
     if (!ExtractIncludeFilename(line, currentPos, filenameStart, filenameEnd))
@@ -91,7 +94,7 @@ bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, cons
 {
     auto currentPos = directiveStartPos;
 
-    if(directiveEndPos - directiveStartPos != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
+    if (directiveEndPos - directiveStartPos != std::char_traits<char>::length(PRAGMA_DIRECTIVE)
         || !MatchString(line, currentPos, PRAGMA_DIRECTIVE, std::char_traits<char>::length(PRAGMA_DIRECTIVE)))
     {
         return false;
@@ -123,15 +126,14 @@ bool IncludingStreamProxy::MatchDirectives(const ParserLine& line)
         return false;
 
     directiveStartPos++;
-    return MatchIncludeDirective(line, directiveStartPos, directiveEndPos)
-        || MatchPragmaOnceDirective(line, directiveStartPos, directiveEndPos);
+    return MatchIncludeDirective(line, directiveStartPos, directiveEndPos) || MatchPragmaOnceDirective(line, directiveStartPos, directiveEndPos);
 }
 
 ParserLine IncludingStreamProxy::NextLine()
 {
     auto line = m_stream->NextLine();
 
-    while(MatchDirectives(line))
+    while (MatchDirectives(line))
         line = m_stream->NextLine();
 
     return line;

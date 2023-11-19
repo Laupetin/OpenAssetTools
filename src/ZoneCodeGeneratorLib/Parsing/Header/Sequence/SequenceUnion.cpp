@@ -1,8 +1,8 @@
 #include "SequenceUnion.h"
 
 #include "Parsing/Header/Block/HeaderBlockUnion.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceUnion::SequenceUnion()
 {
@@ -18,10 +18,10 @@ SequenceUnion::SequenceUnion()
         create.Optional(create.Identifier().Capture(CAPTURE_NAME)),
         create.Optional(create.And({
             create.Char(':'),
-            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_PARENT_TYPE)
+            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_PARENT_TYPE),
         })),
-        create.Char('{')
-        });
+        create.Char('{'),
+    });
 }
 
 void SequenceUnion::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const

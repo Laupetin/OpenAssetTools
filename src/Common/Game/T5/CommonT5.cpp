@@ -1,8 +1,8 @@
 #include "CommonT5.h"
 
-#include <cctype>
-
 #include "Utils/Pack.h"
+
+#include <cctype>
 
 using namespace T5;
 

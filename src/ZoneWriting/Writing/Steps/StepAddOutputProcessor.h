@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-
-#include "Writing/OutputStreamProcessor.h"
 #include "Writing/IWritingStep.h"
+#include "Writing/OutputStreamProcessor.h"
+
+#include <memory>
 
 class StepAddOutputProcessor final : public IWritingStep
 {

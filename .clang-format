@@ -1,0 +1,24 @@
+---
+Language:        Cpp
+BasedOnStyle:  LLVM
+AccessModifierOffset: -4
+AlignArrayOfStructures: Left
+AllowShortBlocksOnASingleLine: Empty
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Empty
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Allman
+ColumnLimit:     160
+IncludeBlocks:   Regroup
+IndentWidth:     4
+IndentWrappedFunctionNames: true
+InsertNewlineAtEOF: true
+NamespaceIndentation: All
+PackConstructorInitializers: Never
+PointerAlignment: Left
+SeparateDefinitionBlocks: Always
+SortUsingDeclarations: Lexicographic
+SpaceAfterTemplateKeyword: false

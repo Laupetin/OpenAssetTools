@@ -33,136 +33,136 @@ HeaderParserValue HeaderLexer::GetNextToken()
         switch (c)
         {
         case '\"':
-            {
-                return HeaderParserValue::String(GetPreviousCharacterPos(), new std::string(ReadString()));
-            }
+        {
+            return HeaderParserValue::String(GetPreviousCharacterPos(), new std::string(ReadString()));
+        }
 
         case '<':
+        {
+            if (!IsLineEnd())
             {
-                if (!IsLineEnd())
+                const auto pos = GetPreviousCharacterPos();
+                const auto nextChar = PeekChar();
+
+                if (nextChar == '=')
                 {
-                    const auto pos = GetPreviousCharacterPos();
-                    const auto nextChar = PeekChar();
-
-                    if (nextChar == '=')
-                    {
-                        NextChar();
-                        return HeaderParserValue::LessEqual(pos);
-                    }
-                    if (nextChar == '<')
-                    {
-                        NextChar();
-                        return HeaderParserValue::ShiftLeft(pos);
-                    }
+                    NextChar();
+                    return HeaderParserValue::LessEqual(pos);
                 }
-
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                if (nextChar == '<')
+                {
+                    NextChar();
+                    return HeaderParserValue::ShiftLeft(pos);
+                }
             }
+
+            return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+        }
 
         case '>':
+        {
+            if (!IsLineEnd())
             {
-                if (!IsLineEnd())
+                const auto pos = GetPreviousCharacterPos();
+                const auto nextChar = PeekChar();
+
+                if (nextChar == '=')
                 {
-                    const auto pos = GetPreviousCharacterPos();
-                    const auto nextChar = PeekChar();
-
-                    if (nextChar == '=')
-                    {
-                        NextChar();
-                        return HeaderParserValue::GreaterEqual(pos);
-                    }
-                    if (nextChar == '>')
-                    {
-                        NextChar();
-                        return HeaderParserValue::ShiftRight(pos);
-                    }
+                    NextChar();
+                    return HeaderParserValue::GreaterEqual(pos);
                 }
-
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                if (nextChar == '>')
+                {
+                    NextChar();
+                    return HeaderParserValue::ShiftRight(pos);
+                }
             }
+
+            return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+        }
 
         case '=':
+        {
+            if (NextCharInLineIs('='))
             {
-                if (NextCharInLineIs('='))
-                {
-                    const auto pos = GetPreviousCharacterPos();
-                    NextChar();
-                    return HeaderParserValue::Equals(pos);
-                }
-
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                const auto pos = GetPreviousCharacterPos();
+                NextChar();
+                return HeaderParserValue::Equals(pos);
             }
+
+            return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+        }
 
         case '&':
+        {
+            if (NextCharInLineIs('&'))
             {
-                if (NextCharInLineIs('&'))
-                {
-                    const auto pos = GetPreviousCharacterPos();
-                    NextChar();
-                    return HeaderParserValue::LogicalAnd(pos);
-                }
-
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                const auto pos = GetPreviousCharacterPos();
+                NextChar();
+                return HeaderParserValue::LogicalAnd(pos);
             }
+
+            return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+        }
 
         case '|':
+        {
+            if (NextCharInLineIs('|'))
             {
-                if (NextCharInLineIs('|'))
-                {
-                    const auto pos = GetPreviousCharacterPos();
-                    NextChar();
-                    return HeaderParserValue::LogicalOr(pos);
-                }
-
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                const auto pos = GetPreviousCharacterPos();
+                NextChar();
+                return HeaderParserValue::LogicalOr(pos);
             }
+
+            return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+        }
 
         case '!':
+        {
+            if (NextCharInLineIs('='))
             {
-                if (NextCharInLineIs('='))
-                {
-                    const auto pos = GetPreviousCharacterPos();
-                    NextChar();
-                    return HeaderParserValue::NotEqual(pos);
-                }
-
-                return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+                const auto pos = GetPreviousCharacterPos();
+                NextChar();
+                return HeaderParserValue::NotEqual(pos);
             }
+
+            return HeaderParserValue::Character(GetPreviousCharacterPos(), static_cast<char>(c));
+        }
 
         default:
+        {
+            if (isspace(c))
+                break;
+
+            const auto pos = GetPreviousCharacterPos();
+            if (isdigit(c))
             {
-                if (isspace(c))
-                    break;
+                bool isFloatingPointValue;
+                bool hasSignPrefix;
+                double doubleValue;
+                int integerValue;
 
-                const auto pos = GetPreviousCharacterPos();
-                if(isdigit(c))
-                {
-                    bool isFloatingPointValue;
-                    bool hasSignPrefix;
-                    double doubleValue;
-                    int integerValue;
+                ReadNumber(isFloatingPointValue, hasSignPrefix, doubleValue, integerValue);
 
-                    ReadNumber(isFloatingPointValue, hasSignPrefix, doubleValue, integerValue);
+                if (isFloatingPointValue)
+                    return HeaderParserValue::FloatingPoint(pos, doubleValue);
 
-                    if (isFloatingPointValue)
-                        return HeaderParserValue::FloatingPoint(pos, doubleValue);
-
-                    return HeaderParserValue::Integer(pos, integerValue);
-                }
-
-                if (isalpha(c) || c == '_')
-                {
-                    auto identifier = ReadIdentifier();
-
-                    const auto foundKeyword = m_keywords.find(identifier);
-                    if (foundKeyword != m_keywords.end())
-                        return HeaderParserValue::Keyword(pos, foundKeyword->second);
-
-                    return HeaderParserValue::Identifier(pos, new std::string(std::move(identifier)));
-                }
-
-                return HeaderParserValue::Character(pos, static_cast<char>(c));
+                return HeaderParserValue::Integer(pos, integerValue);
             }
+
+            if (isalpha(c) || c == '_')
+            {
+                auto identifier = ReadIdentifier();
+
+                const auto foundKeyword = m_keywords.find(identifier);
+                if (foundKeyword != m_keywords.end())
+                    return HeaderParserValue::Keyword(pos, foundKeyword->second);
+
+                return HeaderParserValue::Identifier(pos, new std::string(std::move(identifier)));
+            }
+
+            return HeaderParserValue::Character(pos, static_cast<char>(c));
+        }
         }
 
         c = NextChar();

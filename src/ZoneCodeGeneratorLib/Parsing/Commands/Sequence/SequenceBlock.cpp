@@ -1,7 +1,7 @@
 #include "SequenceBlock.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceBlock::SequenceBlock()
 {
@@ -19,7 +19,7 @@ SequenceBlock::SequenceBlock()
         create.Identifier().Capture(CAPTURE_BLOCK_TYPE),
         create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY),
         create.Optional(create.Keyword("default").Tag(TAG_DEFAULT)),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

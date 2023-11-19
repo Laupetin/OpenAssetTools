@@ -1,12 +1,12 @@
 #include "AssetLoaderGfxLightDef.h"
 
+#include "Game/IW4/IW4.h"
+#include "ObjLoading.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstring>
 #include <iostream>
 #include <sstream>
-
-#include "ObjLoading.h"
-#include "Game/IW4/IW4.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
 
@@ -32,7 +32,8 @@ bool AssetLoaderGfxLightDef::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderGfxLightDef::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderGfxLightDef::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto filename = GetAssetFilename(assetName);
     const auto file = searchPath->Open(filename);
@@ -53,7 +54,7 @@ bool AssetLoaderGfxLightDef::LoadFromRaw(const std::string& assetName, ISearchPa
 
     auto* imageDependency = reinterpret_cast<XAssetInfo<GfxImage>*>(manager->LoadDependency(ASSET_TYPE_IMAGE, imageName));
 
-    if(!imageDependency)
+    if (!imageDependency)
     {
         std::cerr << "Could not load GfxLightDef \"" << assetName << "\" due to missing image \"" << imageName << "\"\n";
         return false;

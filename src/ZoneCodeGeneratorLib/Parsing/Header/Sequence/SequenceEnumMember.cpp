@@ -1,8 +1,8 @@
 #include "SequenceEnumMember.h"
 
 #include "Parsing/Header/Block/HeaderBlockEnum.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceEnumMember::SequenceEnumMember()
 {
@@ -14,13 +14,13 @@ SequenceEnumMember::SequenceEnumMember()
             create.Char('='),
             create.Or({
                 create.Identifier().Capture(CAPTURE_VALUE),
-                create.Integer().Capture(CAPTURE_VALUE)
-            })
+                create.Integer().Capture(CAPTURE_VALUE),
+            }),
         })),
         create.Or({
             create.Char(','),
-            create.Char('}').NoConsume()
-        })
+            create.Char('}').NoConsume(),
+        }),
     });
 }
 

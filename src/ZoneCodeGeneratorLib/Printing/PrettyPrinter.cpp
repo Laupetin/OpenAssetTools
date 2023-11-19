@@ -1,12 +1,10 @@
 #include "PrettyPrinter.h"
 
+#include "Domain/Definition/ArrayDeclarationModifier.h"
+#include "Utils/NamespaceBuilder.h"
 
 #include <algorithm>
 #include <iostream>
-
-
-#include "Domain/Definition/ArrayDeclarationModifier.h"
-#include "Utils/NamespaceBuilder.h"
 
 PrettyPrinter::PrettyPrinter(std::ostream& stream, const IDataRepository* repository)
     : m_stream(stream),
@@ -17,8 +15,8 @@ PrettyPrinter::PrettyPrinter(std::ostream& stream, const IDataRepository* reposi
 void PrettyPrinter::PrintSeparator() const
 {
     m_stream << std::endl
-        << "==========================================================================================================" << std::endl
-        << std::endl;
+             << "==========================================================================================================" << std::endl
+             << std::endl;
 }
 
 void PrettyPrinter::PrintVariablePointerToArray(Variable* variable) const
@@ -64,7 +62,7 @@ void PrettyPrinter::PrintVariableArrayOfPointers(Variable* variable) const
     auto pointerDepth = 0;
     auto modifierOffset = 0u;
 
-    for(; modifierOffset < declarationModifiers.size(); modifierOffset++)
+    for (; modifierOffset < declarationModifiers.size(); modifierOffset++)
     {
         const auto& modifier = declarationModifiers[modifierOffset];
         if (modifier->GetType() != DeclarationModifierType::ARRAY)
@@ -73,7 +71,7 @@ void PrettyPrinter::PrintVariableArrayOfPointers(Variable* variable) const
         arraySize.push_back(dynamic_cast<ArrayDeclarationModifier*>(modifier.get())->m_size);
     }
 
-    for(; modifierOffset < declarationModifiers.size(); modifierOffset++)
+    for (; modifierOffset < declarationModifiers.size(); modifierOffset++)
     {
         const auto& modifier = declarationModifiers[modifierOffset];
         if (modifier->GetType() != DeclarationModifierType::POINTER)
@@ -101,10 +99,12 @@ void PrettyPrinter::PrintVariable(Variable* variable) const
     else
     {
         if (declarationModifiers[0]->GetType() == DeclarationModifierType::POINTER
-            && std::any_of(declarationModifiers.begin(), declarationModifiers.end(), [](const std::unique_ptr<DeclarationModifier>& modifier)
-            {
-                return modifier->GetType() == DeclarationModifierType::ARRAY;
-            }))
+            && std::any_of(declarationModifiers.begin(),
+                           declarationModifiers.end(),
+                           [](const std::unique_ptr<DeclarationModifier>& modifier)
+                           {
+                               return modifier->GetType() == DeclarationModifierType::ARRAY;
+                           }))
         {
             PrintVariablePointerToArray(variable);
         }
@@ -264,10 +264,12 @@ void PrettyPrinter::PrintTypedefs() const
         else
         {
             if (declarationModifiers[0]->GetType() == DeclarationModifierType::POINTER
-                && std::any_of(declarationModifiers.begin(), declarationModifiers.end(), [](const std::unique_ptr<DeclarationModifier>& modifier)
-                    {
-                        return modifier->GetType() == DeclarationModifierType::ARRAY;
-                    }))
+                && std::any_of(declarationModifiers.begin(),
+                               declarationModifiers.end(),
+                               [](const std::unique_ptr<DeclarationModifier>& modifier)
+                               {
+                                   return modifier->GetType() == DeclarationModifierType::ARRAY;
+                               }))
             {
                 PrintTypedefPointerToArray(typedefDefinition);
             }

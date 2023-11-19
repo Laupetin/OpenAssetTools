@@ -8,7 +8,6 @@ SimpleMatcherCharacter::SimpleMatcherCharacter(const char c)
 MatcherResult<SimpleParserValue> SimpleMatcherCharacter::CanMatch(ILexer<SimpleParserValue>* lexer, const unsigned tokenOffset)
 {
     const auto& token = lexer->GetToken(tokenOffset);
-    return token.m_type == SimpleParserValueType::CHARACTER && token.CharacterValue() == m_char
-        ? MatcherResult<SimpleParserValue>::Match(1)
-        : MatcherResult<SimpleParserValue>::NoMatch();
+    return token.m_type == SimpleParserValueType::CHARACTER && token.CharacterValue() == m_char ? MatcherResult<SimpleParserValue>::Match(1)
+                                                                                                : MatcherResult<SimpleParserValue>::NoMatch();
 }

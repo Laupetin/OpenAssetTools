@@ -1,9 +1,6 @@
 #include "ContentLoaderIW4.h"
+
 #include "Game/IW4/IW4.h"
-#include "Loading/Exception/UnsupportedAssetTypeException.h"
-
-#include <cassert>
-
 #include "Game/IW4/XAssets/addonmapents/addonmapents_load_db.h"
 #include "Game/IW4/XAssets/clipmap_t/clipmap_t_load_db.h"
 #include "Game/IW4/XAssets/comworld/comworld_load_db.h"
@@ -39,6 +36,9 @@
 #include "Game/IW4/XAssets/weaponcompletedef/weaponcompletedef_load_db.h"
 #include "Game/IW4/XAssets/xanimparts/xanimparts_load_db.h"
 #include "Game/IW4/XAssets/xmodel/xmodel_load_db.h"
+#include "Loading/Exception/UnsupportedAssetTypeException.h"
+
+#include <cassert>
 
 using namespace IW4;
 
@@ -74,15 +74,15 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
 void ContentLoader::LoadXAsset(const bool atStreamStart) const
 {
-#define LOAD_ASSET(type_index, typeName, headerEntry) \
-    case type_index: \
-        { \
-            Loader_##typeName loader(m_zone, m_stream); \
-            loader.Load(&varXAsset->header.headerEntry); \
-            break; \
-        }
-#define SKIP_ASSET(type_index, typeName, headerEntry) \
-    case type_index: \
+#define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
+    case type_index:                                                                                                                                           \
+    {                                                                                                                                                          \
+        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
+        break;                                                                                                                                                 \
+    }
+#define SKIP_ASSET(type_index, typeName, headerEntry)                                                                                                          \
+    case type_index:                                                                                                                                           \
         break;
 
     assert(varXAsset != nullptr);
@@ -92,48 +92,48 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 
     switch (varXAsset->type)
     {
-    LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-    LOAD_ASSET(ASSET_TYPE_PHYSCOLLMAP, PhysCollmap, physCollmap)
-    LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-    LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-    LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-    LOAD_ASSET(ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader)
-    LOAD_ASSET(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader, vertexShader)
-    LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl)
-    LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-    LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-    LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-    LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
-    LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
-    LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap)
-    LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap)
-    LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
-    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
-    LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-    LOAD_ASSET(ASSET_TYPE_FXWORLD, FxWorld, fxWorld)
-    LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-    LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-    LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
-    LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
-    LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-    LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-    LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon)
-    SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
-    LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-    LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-    LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-    LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
-    LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef)
-    LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet)
-    LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef)
-    LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef)
-    LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts)
+        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
+        LOAD_ASSET(ASSET_TYPE_PHYSCOLLMAP, PhysCollmap, physCollmap)
+        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
+        LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
+        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
+        LOAD_ASSET(ASSET_TYPE_PIXELSHADER, MaterialPixelShader, pixelShader)
+        LOAD_ASSET(ASSET_TYPE_VERTEXSHADER, MaterialVertexShader, vertexShader)
+        LOAD_ASSET(ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration, vertexDecl)
+        LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
+        LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
+        LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
+        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
+        LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
+        LOAD_ASSET(ASSET_TYPE_CLIPMAP_SP, clipMap_t, clipMap)
+        LOAD_ASSET(ASSET_TYPE_CLIPMAP_MP, clipMap_t, clipMap)
+        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
+        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
+        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
+        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
+        LOAD_ASSET(ASSET_TYPE_FXWORLD, FxWorld, fxWorld)
+        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
+        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
+        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
+        LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
+        LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
+        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
+        LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponCompleteDef, weapon)
+        SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
+        LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
+        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
+        LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
+        LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
+        LOAD_ASSET(ASSET_TYPE_LEADERBOARD, LeaderboardDef, leaderboardDef)
+        LOAD_ASSET(ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet, structuredDataDefSet)
+        LOAD_ASSET(ASSET_TYPE_TRACER, TracerDef, tracerDef)
+        LOAD_ASSET(ASSET_TYPE_VEHICLE, VehicleDef, vehDef)
+        LOAD_ASSET(ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts, addonMapEnts)
 
     default:
-        {
-            throw UnsupportedAssetTypeException(varXAsset->type);
-        }
+    {
+        throw UnsupportedAssetTypeException(varXAsset->type);
+    }
     }
 
 #undef LOAD_ASSET

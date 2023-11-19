@@ -14,4 +14,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<WeaponAttachment>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponAttachment>* asset) override;
     };
-}
+} // namespace T6

@@ -1,9 +1,9 @@
 #include "CommonStructuredDataEnum.h"
 
+#include "Utils/Endianness.h"
+
 #include <algorithm>
 #include <zlib.h>
-
-#include "Utils/Endianness.h"
 
 CommonStructuredDataEnumEntry::CommonStructuredDataEnumEntry()
     : m_value(0u)
@@ -60,16 +60,20 @@ uint32_t CommonStructuredDataEnum::CalculateChecksum(const uint32_t initialValue
 
 void CommonStructuredDataEnum::SortEntriesByOffset()
 {
-    std::sort(m_entries.begin(), m_entries.end(), [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
-    {
-        return e1.m_value < e2.m_value;
-    });
+    std::sort(m_entries.begin(),
+              m_entries.end(),
+              [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
+              {
+                  return e1.m_value < e2.m_value;
+              });
 }
 
 void CommonStructuredDataEnum::SortEntriesByName()
 {
-    std::sort(m_entries.begin(), m_entries.end(), [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
-    {
-        return e1.m_name < e2.m_name;
-    });
+    std::sort(m_entries.begin(),
+              m_entries.end(),
+              [](const CommonStructuredDataEnumEntry& e1, const CommonStructuredDataEnumEntry& e2)
+              {
+                  return e1.m_name < e2.m_name;
+              });
 }

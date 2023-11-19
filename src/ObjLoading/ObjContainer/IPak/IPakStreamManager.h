@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cstdint>
-#include <mutex>
-#include <istream>
-
 #include "Utils/ClassUtils.h"
 #include "Utils/ObjStream.h"
+
+#include <cstdint>
+#include <istream>
+#include <mutex>
 
 class IPakStreamManagerActions
 {

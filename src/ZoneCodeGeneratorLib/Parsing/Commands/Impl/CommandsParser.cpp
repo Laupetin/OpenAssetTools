@@ -43,7 +43,7 @@ const std::vector<CommandsParser::sequence_t*>& CommandsParser::GetTestsForState
         new SequenceScriptString(),
         new SequenceSetBlock(),
         new SequenceString(),
-        new SequenceUse()
+        new SequenceUse(),
     });
 
     return tests;

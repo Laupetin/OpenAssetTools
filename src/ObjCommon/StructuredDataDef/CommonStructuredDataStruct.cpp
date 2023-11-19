@@ -1,10 +1,10 @@
 #include "CommonStructuredDataStruct.h"
 
-#include <algorithm>
-#include <zlib.h>
-
 #include "CommonStructuredDataDef.h"
 #include "Utils/Endianness.h"
+
+#include <algorithm>
+#include <zlib.h>
 
 CommonStructuredDataStructProperty::CommonStructuredDataStructProperty()
     : m_offset_in_bits(0u)
@@ -58,12 +58,12 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
             switch (currentType.m_category)
             {
             case CommonStructuredDataTypeCategory::STRING:
-                {
-                    const auto littleEndianStringLength = endianness::ToLittleEndian(currentType.m_info.string_length);
-                    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianStringLength), sizeof(littleEndianStringLength));
-                    currentType = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
-                }
-                break;
+            {
+                const auto littleEndianStringLength = endianness::ToLittleEndian(currentType.m_info.string_length);
+                checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianStringLength), sizeof(littleEndianStringLength));
+                currentType = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+            }
+            break;
             case CommonStructuredDataTypeCategory::ENUM:
                 if (currentType.m_info.type_index < def.m_enums.size())
                 {
@@ -118,16 +118,20 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
 
 void CommonStructuredDataStruct::SortPropertiesByOffset()
 {
-    std::sort(m_properties.begin(), m_properties.end(), [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
-    {
-        return e1.m_offset_in_bits < e2.m_offset_in_bits;
-    });
+    std::sort(m_properties.begin(),
+              m_properties.end(),
+              [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
+              {
+                  return e1.m_offset_in_bits < e2.m_offset_in_bits;
+              });
 }
 
 void CommonStructuredDataStruct::SortPropertiesByName()
 {
-    std::sort(m_properties.begin(), m_properties.end(), [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
-    {
-        return e1.m_name < e2.m_name;
-    });
+    std::sort(m_properties.begin(),
+              m_properties.end(),
+              [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
+              {
+                  return e1.m_name < e2.m_name;
+              });
 }

@@ -13,4 +13,4 @@ namespace menu
         explicit MenuConversionException(std::string message, const CommonMenuDef* menu);
         MenuConversionException(std::string message, const CommonMenuDef* menu, const CommonItemDef* item);
     };
-}
+} // namespace menu

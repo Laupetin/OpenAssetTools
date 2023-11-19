@@ -1,9 +1,9 @@
 #pragma once
 
-#include <map>
-
 #include "AssetLoading/IZoneAssetLoaderState.h"
 #include "Game/IW4/IW4.h"
+
+#include <map>
 
 namespace IW4
 {
@@ -36,4 +36,4 @@ namespace IW4
 
         void FinalizeSupportingData() const;
     };
-}
+} // namespace IW4

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-
 #include "Parsing/Menu/MenuFileParserState.h"
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
+
+#include <memory>
 
 namespace menu
 {
@@ -21,4 +21,4 @@ namespace menu
         std::unique_ptr<matcher_t> ParseOperandExtension(const supplier_t* labelSupplier) const override;
         std::unique_ptr<ISimpleExpression> ProcessOperandExtension(SequenceResult<SimpleParserValue>& result) const override;
     };
-}
+} // namespace menu

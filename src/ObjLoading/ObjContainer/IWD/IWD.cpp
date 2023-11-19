@@ -3,12 +3,12 @@
 #include "ObjLoading.h"
 #include "Utils/FileToZlibWrapper.h"
 
-#include <unzip.h>
-#include <filesystem>
 #include <cassert>
-#include <map>
+#include <filesystem>
 #include <fstream>
+#include <map>
 #include <memory>
+#include <unzip.h>
 
 namespace fs = std::filesystem;
 

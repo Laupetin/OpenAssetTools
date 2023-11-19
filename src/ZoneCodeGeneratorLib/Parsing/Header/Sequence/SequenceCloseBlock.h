@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Parsing/Header/Impl/HeaderParser.h"
-#include "Parsing/Sequence/AbstractSequence.h"
 #include "Parsing/Header/Impl/HeaderParserState.h"
 #include "Parsing/Header/Impl/HeaderParserValue.h"
+#include "Parsing/Sequence/AbstractSequence.h"
 
 class SequenceCloseBlock final : public HeaderParser::sequence_t
 {

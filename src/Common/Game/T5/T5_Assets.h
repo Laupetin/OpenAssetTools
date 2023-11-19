@@ -114,43 +114,43 @@ namespace T5
 
     union XAssetHeader
     {
-        //XModelPieces *xmodelPieces;  // Not an asset
-        PhysPreset *physPreset;
-        PhysConstraints *physConstraints;
-        DestructibleDef *destructibleDef;
-        XAnimParts *parts;
-        XModel *model;
-        Material *material;
-        //MaterialPixelShader *pixelShader; // Not an asset
-        //MaterialVertexShader *vertexShader; // Not an asset
-        MaterialTechniqueSet *techniqueSet;
-        GfxImage *image;
-        SndBank *sound;
-        SndPatch *soundPatch;
-        clipMap_t *clipMap;
-        ComWorld *comWorld;
-        GameWorldSp *gameWorldSp;
-        GameWorldMp *gameWorldMp;
-        MapEnts *mapEnts;
-        GfxWorld *gfxWorld;
-        GfxLightDef *lightDef;
-        Font_s *font;
-        MenuList *menuList;
-        menuDef_t *menu;
-        LocalizeEntry *localize;
-        WeaponVariantDef *weapon;
-        SndDriverGlobals *sndDriverGlobals;
-        FxEffectDef *fx;
-        FxImpactTable *impactFx;
-        RawFile *rawfile;
-        StringTable *stringTable;
-        PackIndex *packIndex;
-        XGlobals *xGlobals;
-        ddlRoot_t *ddlRoot;
-        Glasses *glasses;
-        //TextureList *textureList; // Not an asset
-        EmblemSet *emblemSet;
-        void *data;
+        // XModelPieces *xmodelPieces;  // Not an asset
+        PhysPreset* physPreset;
+        PhysConstraints* physConstraints;
+        DestructibleDef* destructibleDef;
+        XAnimParts* parts;
+        XModel* model;
+        Material* material;
+        // MaterialPixelShader *pixelShader; // Not an asset
+        // MaterialVertexShader *vertexShader; // Not an asset
+        MaterialTechniqueSet* techniqueSet;
+        GfxImage* image;
+        SndBank* sound;
+        SndPatch* soundPatch;
+        clipMap_t* clipMap;
+        ComWorld* comWorld;
+        GameWorldSp* gameWorldSp;
+        GameWorldMp* gameWorldMp;
+        MapEnts* mapEnts;
+        GfxWorld* gfxWorld;
+        GfxLightDef* lightDef;
+        Font_s* font;
+        MenuList* menuList;
+        menuDef_t* menu;
+        LocalizeEntry* localize;
+        WeaponVariantDef* weapon;
+        SndDriverGlobals* sndDriverGlobals;
+        FxEffectDef* fx;
+        FxImpactTable* impactFx;
+        RawFile* rawfile;
+        StringTable* stringTable;
+        PackIndex* packIndex;
+        XGlobals* xGlobals;
+        ddlRoot_t* ddlRoot;
+        Glasses* glasses;
+        // TextureList *textureList; // Not an asset
+        EmblemSet* emblemSet;
+        void* data;
     };
 
     typedef tdef_align(16) char char16;
@@ -508,12 +508,12 @@ namespace T5
         uint16_t triCount;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        r_index16_t(*triIndices)[3];
+        r_index16_t (*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
-        void/*IDirect3DVertexBuffer9*/* vb0;
+        void /*IDirect3DVertexBuffer9*/* vb0;
         XRigidVertList* vertList;
-        void/*IDirect3DIndexBuffer9*/* indexBuffer;
+        void /*IDirect3DIndexBuffer9*/* indexBuffer;
         int partBits[5];
     };
 
@@ -628,8 +628,8 @@ namespace T5
         char lodRampType;
         uint16_t* boneNames;
         char* parentList;
-        int16_t(*quats)[4];
-        float(*trans)[4];
+        int16_t (*quats)[4];
+        float (*trans)[4];
         char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
@@ -837,7 +837,7 @@ namespace T5
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[16];
-        void/*IDirect3DVertexDeclaration9*/* decl[18];
+        void /*IDirect3DVertexDeclaration9*/* decl[18];
     };
 
     struct MaterialVertexDeclaration
@@ -856,7 +856,7 @@ namespace T5
 
     struct MaterialVertexShaderProgram
     {
-        void/*IDirect3DVertexShader9*/* vs;
+        void /*IDirect3DVertexShader9*/* vs;
         GfxVertexShaderLoadDef loadDef;
     };
 
@@ -874,7 +874,7 @@ namespace T5
 
     struct MaterialPixelShaderProgram
     {
-        void/*IDirect3DPixelShader9*/* ps;
+        void /*IDirect3DPixelShader9*/* ps;
         GfxPixelShaderLoadDef loadDef;
     };
 
@@ -893,7 +893,7 @@ namespace T5
 
     union MaterialArgumentDef
     {
-        const float(*literalConst)[4];
+        const float (*literalConst)[4];
         MaterialArgumentCodeConst codeConst;
         unsigned int codeSampler;
         unsigned int nameHash;
@@ -1963,7 +1963,7 @@ namespace T5
         bool isAncestor;
         char recursionDepth;
         char hullPointCount;
-        float(*hullPoints)[2];
+        float (*hullPoints)[2];
         GfxPortal* queuedParent;
     };
 
@@ -2040,17 +2040,17 @@ namespace T5
         PackedUnitVec normal;
         PackedUnitVec tangent;
     };
-    
+
     struct GfxWorldVertexData
     {
         GfxWorldVertex* vertices;
-        void/*IDirect3DVertexBuffer9*/* worldVb;
+        void /*IDirect3DVertexBuffer9*/* worldVb;
     };
 
     struct GfxWorldVertexLayerData
     {
         char* data;
-        void/*IDirect3DVertexBuffer9*/* layerVb;
+        void /*IDirect3DVertexBuffer9*/* layerVb;
     };
 
     struct GfxWorldDraw
@@ -3861,15 +3861,16 @@ namespace T5
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        //const char *accuracyGraphName[2];   // TODO: Order is accuracyGraphName[0] -> accuracyGraphKnots[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
-        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
-        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
+        // const char *accuracyGraphName[2];   // TODO: Order is accuracyGraphName[0] -> accuracyGraphKnots[0] -> originalAccuracyGraphKnots[0] ->
+        // accuracyGraphName[1] -> ...
+        //  Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
+        //  So might be something to fix but on the other hand it might be too much work for this little inconvenience.
         const char* accuracyGraphName0;
         const char* accuracyGraphName1;
-        //vec2_t *accuracyGraphKnots[2];
+        // vec2_t *accuracyGraphKnots[2];
         vec2_t* accuracyGraphKnots0;
         vec2_t* accuracyGraphKnots1;
-        //vec2_t *originalAccuracyGraphKnots[2];
+        // vec2_t *originalAccuracyGraphKnots[2];
         vec2_t* originalAccuracyGraphKnots0;
         vec2_t* originalAccuracyGraphKnots1;
         int accuracyGraphKnotCount[2];

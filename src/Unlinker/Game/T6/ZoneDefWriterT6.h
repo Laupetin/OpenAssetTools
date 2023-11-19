@@ -16,4 +16,4 @@ namespace T6
     public:
         bool CanHandleZone(Zone* zone) const override;
     };
-}
+} // namespace T6

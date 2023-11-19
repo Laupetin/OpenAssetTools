@@ -1,11 +1,11 @@
 #pragma once
 
-#include <unordered_map>
-
-#include "Utils/ClassUtils.h"
 #include "Image/DxgiFormat.h"
-#include "Utils/MemoryManager.h"
 #include "Image/Texture.h"
+#include "Utils/ClassUtils.h"
+#include "Utils/MemoryManager.h"
+
+#include <unordered_map>
 
 class Dx12TextureLoader
 {

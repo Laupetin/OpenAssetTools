@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-
 #include "Parsing/Commands/Impl/CommandsParserValue.h"
 #include "Parsing/Matcher/AbstractMatcherFactory.h"
+
+#include <string>
 
 class CommandsMatcherFactory final : public AbstractMatcherFactory<CommandsParserValue>
 {

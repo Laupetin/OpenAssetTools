@@ -17,7 +17,7 @@ namespace techset
 
             AddMatchers({
                 create.String().Capture(CAPTURE_TYPE_NAME),
-                create.Char(':')
+                create.Char(':'),
             });
         }
 
@@ -44,11 +44,13 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Or({
-                    create.Identifier(),
-                    create.String()
-                }).Capture(CAPTURE_NAME),
-                create.Char(';')
+                create
+                    .Or({
+                        create.Identifier(),
+                        create.String(),
+                    })
+                    .Capture(CAPTURE_NAME),
+                create.Char(';'),
             });
         }
 
@@ -58,16 +60,15 @@ namespace techset
             assert(!state->m_current_technique_types.empty());
 
             const auto& techniqueNameToken = result.NextCapture(CAPTURE_NAME);
-            const auto& techniqueName = techniqueNameToken.m_type == SimpleParserValueType::STRING
-                                            ? techniqueNameToken.StringValue()
-                                            : techniqueNameToken.IdentifierValue();
+            const auto& techniqueName =
+                techniqueNameToken.m_type == SimpleParserValueType::STRING ? techniqueNameToken.StringValue() : techniqueNameToken.IdentifierValue();
 
             for (const auto techniqueTypeIndex : state->m_current_technique_types)
                 state->m_definition->SetTechniqueByIndex(techniqueTypeIndex, techniqueName);
             state->m_current_technique_types.clear();
         }
     };
-}
+} // namespace techset
 
 TechsetParser::TechsetParser(SimpleLexer* lexer, const char** validTechniqueTypeNames, const size_t validTechniqueTypeNameCount)
     : AbstractParser(lexer, std::make_unique<TechsetParserState>(validTechniqueTypeNames, validTechniqueTypeNameCount))
@@ -78,10 +79,10 @@ const std::vector<TechsetParser::sequence_t*>& TechsetParser::GetTestsForState()
 {
     static std::vector<sequence_t*> allTests({
         new SequenceTechniqueTypeName(),
-        new SequenceTechniqueName()
+        new SequenceTechniqueName(),
     });
     static std::vector<sequence_t*> techniqueTypeNameOnlyTests({
-        new SequenceTechniqueTypeName()
+        new SequenceTechniqueTypeName(),
     });
 
     return m_state->m_current_technique_types.empty() ? techniqueTypeNameOnlyTests : allTests;

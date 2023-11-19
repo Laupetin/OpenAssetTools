@@ -317,18 +317,17 @@ namespace T6
         MAX_XFILE_COUNT,
     };
 
-
     union XAssetHeader
     {
-        //XModelPieces *xmodelPieces; // Not an asset
+        // XModelPieces *xmodelPieces; // Not an asset
         PhysPreset* physPreset;
         PhysConstraints* physConstraints;
         DestructibleDef* destructibleDef;
         XAnimParts* parts;
         XModel* model;
         Material* material;
-        //MaterialPixelShader *pixelShader; // Not an asset
-        //MaterialVertexShader *vertexShader; // Not an asset
+        // MaterialPixelShader *pixelShader; // Not an asset
+        // MaterialVertexShader *vertexShader; // Not an asset
         MaterialTechniqueSet* techniqueSet;
         GfxImage* image;
         SndBank* sound;
@@ -358,7 +357,7 @@ namespace T6
         XGlobals* xGlobals;
         ddlRoot_t* ddlRoot;
         Glasses* glasses;
-        //TextureList *textureList; // Does not exist in this game
+        // TextureList *textureList; // Does not exist in this game
         EmblemSet* emblemSet;
         ScriptParseTree* scriptParseTree;
         KeyValuePairs* keyValuePairs;
@@ -462,7 +461,6 @@ namespace T6
         vec3_t buoyancyBoxMax;
     };
 
-
     enum ConstraintType
     {
         CONSTRAINT_NONE = 0x0,
@@ -478,7 +476,6 @@ namespace T6
         NUM_CONSTRAINT_TYPES = 0xA,
     };
 
-
     enum AttachPointType
     {
         ATTACH_POINT_WORLD = 0x0,
@@ -486,7 +483,6 @@ namespace T6
         ATTACH_POINT_ENT = 0x2,
         ATTACH_POINT_BONE = 0x3,
     };
-
 
     struct PhysConstraint
     {
@@ -521,14 +517,12 @@ namespace T6
         int centity_num[4];
     };
 
-
     struct PhysConstraints
     {
         const char* name;
         unsigned int count;
         PhysConstraint data[16];
     };
-
 
     struct DestructibleDef
     {
@@ -540,14 +534,12 @@ namespace T6
         int clientOnly;
     };
 
-
     union XAnimIndices
     {
         char* _1;
         uint16_t* _2;
         void* data;
     };
-
 
     struct XAnimParts
     {
@@ -599,7 +591,6 @@ namespace T6
         int partBits[5];
     };
 
-
     struct XModel
     {
         const char* name;
@@ -637,7 +628,6 @@ namespace T6
         float lightingOriginRange;
     };
 
-
     struct gcc_align(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;
@@ -651,13 +641,11 @@ namespace T6
         uint64_t primarySortKey : 6;
     };
 
-
     union GfxDrawSurf
     {
         gcc_align(8) GfxDrawSurfFields fields;
         gcc_align(8) uint64_t packed;
     };
-
 
     struct type_align(8) MaterialInfo
     {
@@ -677,7 +665,6 @@ namespace T6
 
     typedef tdef_align(8) GfxStateBits GfxStateBitsTable;
 
-
     struct Material
     {
         MaterialInfo info;
@@ -695,20 +682,17 @@ namespace T6
         Material* thermalMaterial;
     };
 
-
     struct GfxPixelShaderLoadDef
     {
         char* program;
         unsigned int programSize;
     };
 
-
     struct MaterialPixelShaderProgram
     {
-        void/*ID3D11PixelShader*/* ps;
+        void /*ID3D11PixelShader*/* ps;
         GfxPixelShaderLoadDef loadDef;
     };
-
 
     struct MaterialPixelShader
     {
@@ -716,27 +700,23 @@ namespace T6
         MaterialPixelShaderProgram prog;
     };
 
-
     struct GfxVertexShaderLoadDef
     {
         char* program;
         unsigned int programSize;
     };
 
-
     struct MaterialVertexShaderProgram
     {
-        void/*ID3D11VertexShader*/* vs;
+        void /*ID3D11VertexShader*/* vs;
         GfxVertexShaderLoadDef loadDef;
     };
-
 
     struct MaterialVertexShader
     {
         const char* name;
         MaterialVertexShaderProgram prog;
     };
-
 
     struct MaterialTechniqueSet
     {
@@ -745,20 +725,17 @@ namespace T6
         MaterialTechnique* techniques[36];
     };
 
-
     union GfxTexture
     {
-        void/*ID3D11ShaderResourceView*/* basemap;
+        void /*ID3D11ShaderResourceView*/* basemap;
         Texture* texture;
         GfxImageLoadDef* loadDef;
     };
-
 
     struct Picmip
     {
         char platform[2];
     };
-
 
     struct CardMemory
     {
@@ -871,6 +848,7 @@ namespace T6
     };
 
 #pragma pack(push, 1)
+
     struct type_align(2) SndRuntimeAssetBank
     {
         const char* zone;
@@ -883,10 +861,10 @@ namespace T6
         bool indicesLoaded;
         bool indicesAllocated;
     };
+
 #pragma pack(pop)
 
     typedef tdef_align(2048) char SndChar2048;
-
 
     struct SndLoadedAssets
     {
@@ -898,7 +876,6 @@ namespace T6
         unsigned int dataSize;
         SndChar2048* data;
     };
-
 
     enum SndBankState
     {
@@ -912,7 +889,6 @@ namespace T6
         SND_BANK_STATE_READY_TO_USE = 0x7,
         SND_BANK_STATE_ERROR = 0x8,
     };
-
 
     struct SndBank
     {
@@ -936,7 +912,6 @@ namespace T6
         bool runtimeAssetLoad;
     };
 
-
     struct SndPatch
     {
         const char* name;
@@ -947,7 +922,6 @@ namespace T6
     typedef unsigned short LeafBrush;
     typedef tdef_align(128) cbrush_t cbrush_array_t;
     typedef tdef_align(128) Bounds BoundsArray;
-
 
     struct ClipInfo
     {
@@ -971,7 +945,6 @@ namespace T6
         int* brushContents;
     };
 
-
     struct type_align(4) cLeaf_s
     {
         uint16_t firstCollAabbIndex;
@@ -984,7 +957,6 @@ namespace T6
         int16_t cluster;
     };
 
-
     struct cmodel_t
     {
         vec3_t mins;
@@ -993,7 +965,6 @@ namespace T6
         ClipInfo* info;
         cLeaf_s leaf;
     };
-
 
     struct clipMap_t
     {
@@ -1039,7 +1010,6 @@ namespace T6
         unsigned int checksum;
     };
 
-
     struct ComWorld
     {
         const char* name;
@@ -1047,7 +1017,6 @@ namespace T6
         unsigned int primaryLightCount;
         ComPrimaryLight* primaryLights;
     };
-
 
     struct PathData
     {
@@ -1063,20 +1032,17 @@ namespace T6
         pathnode_tree_t* nodeTree;
     };
 
-
     struct GameWorldSp
     {
         const char* name;
         PathData path;
     };
 
-
     struct GameWorldMp
     {
         const char* name;
         PathData path;
     };
-
 
     struct MapTriggers
     {
@@ -1088,7 +1054,6 @@ namespace T6
         TriggerSlab* slabs;
     };
 
-
     struct MapEnts
     {
         const char* name;
@@ -1096,7 +1061,6 @@ namespace T6
         int numEntityChars;
         MapTriggers trigger;
     };
-
 
     struct GfxWorldStreamInfo
     {
@@ -1117,7 +1081,6 @@ namespace T6
         float exposure;
     };
 
-
     struct GfxWorldFog
     {
         float baseDist;
@@ -1134,7 +1097,6 @@ namespace T6
         float sunFogOpacity;
     };
 
-
     struct SunLightParseParams
     {
         char name[64];
@@ -1142,7 +1104,6 @@ namespace T6
         float fogTransitionTime;
         GfxWorldFog initWorldFog[1];
     };
-
 
     struct GfxSkyDynamicIntensity
     {
@@ -1152,7 +1113,6 @@ namespace T6
         float factor1;
     };
 
-
     struct GfxWorldDpvsPlanes
     {
         int cellCount;
@@ -1161,20 +1121,17 @@ namespace T6
         unsigned int* sceneEntCellBits;
     };
 
-
     struct GfxWorldVertexData0
     {
         byte128* data;
-        void/*ID3D11Buffer*/* vb;
+        void /*ID3D11Buffer*/* vb;
     };
-
 
     struct GfxWorldVertexData1
     {
         byte128* data;
-        void/*ID3D11Buffer*/* vb;
+        void /*ID3D11Buffer*/* vb;
     };
-
 
     struct GfxWorldDraw
     {
@@ -1192,7 +1149,7 @@ namespace T6
         GfxWorldVertexData1 vd1;
         int indexCount;
         uint16_t* indices;
-        void/*ID3D11Buffer*/* indexBuffer;
+        void /*ID3D11Buffer*/* indexBuffer;
     };
 
     typedef tdef_align(4) char aligned_byte_pointer;
@@ -1218,7 +1175,6 @@ namespace T6
         unsigned int skyGridVolumeCount;
         GfxSkyGridVolume* skyGridVolumes;
     };
-
 
     struct sunflare_t
     {
@@ -1247,7 +1203,6 @@ namespace T6
     };
 
     typedef tdef_align(4) GfxDrawSurf GfxDrawSurf_align4;
-
 
     struct GfxWorldDpvsStatic
     {
@@ -1278,7 +1233,6 @@ namespace T6
         volatile int usageCount;
     };
 
-
     struct GfxWorldDpvsDynamic
     {
         unsigned int dynEntClientWordCount[2];
@@ -1288,13 +1242,11 @@ namespace T6
         volatile int usageCount;
     };
 
-
     struct GfxWaterBuffer
     {
         unsigned int bufferSize;
         vec4_t* buffer;
     };
-
 
     struct GfxWorld
     {
@@ -1376,13 +1328,11 @@ namespace T6
         int lightingQuality;
     };
 
-
     struct type_align(4) GfxLightImage
     {
         GfxImage* image;
         char samplerState;
     };
-
 
     struct GfxLightDef
     {
@@ -1390,7 +1340,6 @@ namespace T6
         GfxLightImage attenuation;
         int lmapLookupStart;
     };
-
 
     struct Font_s
     {
@@ -1405,7 +1354,6 @@ namespace T6
         KerningPairs* kerningPairs;
     };
 
-
     struct FontIcon
     {
         const char* name;
@@ -1415,14 +1363,12 @@ namespace T6
         FontIconAlias* fontIconAlias;
     };
 
-
     struct MenuList
     {
         const char* name;
         int menuCount;
         menuDef_t** menus;
     };
-
 
     struct rectDef_s
     {
@@ -1433,7 +1379,6 @@ namespace T6
         int horzAlign;
         int vertAlign;
     };
-
 
     struct windowDef_t
     {
@@ -1461,7 +1406,6 @@ namespace T6
         Material* background;
     };
 
-
     struct ExpressionStatement
     {
         char* filename;
@@ -1469,7 +1413,6 @@ namespace T6
         int numRpn;
         expressionRpn* rpn;
     };
-
 
     struct type_align(8) menuDef_t
     {
@@ -1511,13 +1454,11 @@ namespace T6
         itemDef_s** items;
     };
 
-
     struct LocalizeEntry
     {
         const char* value;
         const char* name;
     };
-
 
     enum weaponIconRatioType_t
     {
@@ -1563,7 +1504,6 @@ namespace T6
         ATTACHMENT_INVALID = 0x1E,
     };
 
-
     enum eAttachmentPoint
     {
         ATTACHMENT_POINT_NONE = 0x0,
@@ -1577,7 +1517,6 @@ namespace T6
         ATTACHMENT_POINT_INVALID = 0x6,
     };
 
-
     enum PenetrateType
     {
         PENETRATE_TYPE_NONE = 0x0,
@@ -1586,7 +1525,6 @@ namespace T6
         PENETRATE_TYPE_LARGE = 0x3,
         PENETRATE_TYPE_COUNT = 0x4,
     };
-
 
     enum weapFireType_t
     {
@@ -1708,14 +1646,12 @@ namespace T6
         int customBool2;
     };
 
-
     enum weapOverlayReticle_t
     {
         WEAPOVERLAYRETICLE_NONE = 0x0,
         WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
         WEAPOVERLAYRETICLE_NUM = 0x2,
     };
-
 
     struct WeaponAttachmentUnique
     {
@@ -1819,7 +1755,6 @@ namespace T6
         unsigned int numCamoMaterials;
     };
 
-
     struct SndDriverGlobals
     {
         const char* name;
@@ -1841,13 +1776,11 @@ namespace T6
         SndFutz* futzes;
     };
 
-
     struct FxFloatRange
     {
         float base;
         float amplitude;
     };
-
 
     struct FxEffectDef
     {
@@ -1869,13 +1802,11 @@ namespace T6
         FxFloatRange occlusionQueryScaleRange;
     };
 
-
     struct FxImpactTable
     {
         const char* name;
         FxImpactEntry* table;
     };
-
 
     struct RawFile
     {
@@ -1883,7 +1814,6 @@ namespace T6
         int len;
         const char16* buffer;
     };
-
 
     struct StringTable
     {
@@ -1894,7 +1824,6 @@ namespace T6
         int16_t* cellIndex;
     };
 
-
     enum LbUpdateType
     {
         LBUPDATE_TYPE_NORMAL = 0x0,
@@ -1902,7 +1831,6 @@ namespace T6
         LBUPDATE_TYPE_COMBINE = 0x2,
         LBUPDATE_TYPE_COUNT = 0x3,
     };
-
 
     struct LeaderboardDef
     {
@@ -1917,20 +1845,17 @@ namespace T6
         int trackTypes;
     };
 
-
     struct gump_info_t
     {
         char* name;
         int size;
     };
 
-
     struct overlay_info_t
     {
         char* name;
         int size;
     };
-
 
     struct XGlobals
     {
@@ -1948,13 +1873,11 @@ namespace T6
         overlay_info_t overlays[32];
     };
 
-
     struct ddlRoot_t
     {
         const char* name;
         ddlDef_t* ddlDef;
     };
-
 
     struct Glasses
     {
@@ -1974,7 +1897,6 @@ namespace T6
         unsigned int numIndices;
     };
 
-
     struct EmblemLayer
     {
         int cost;
@@ -1982,13 +1904,11 @@ namespace T6
         int unlockPLevel;
     };
 
-
     struct EmblemCategory
     {
         const char* name;
         const char* description;
     };
-
 
     struct EmblemIconType
     {
@@ -1996,13 +1916,11 @@ namespace T6
         const char* description;
     };
 
-
     struct EmblemBGCategory
     {
         const char* name;
         const char* description;
     };
-
 
     struct EmblemIcon
     {
@@ -2018,7 +1936,6 @@ namespace T6
         uint16_t category;
     };
 
-
     struct EmblemBackground
     {
         Material* material;
@@ -2031,7 +1948,6 @@ namespace T6
         uint16_t bgCategory;
         int mtxIndex;
     };
-
 
     struct EmblemSet
     {
@@ -2052,7 +1968,6 @@ namespace T6
         int16_t* backgroundLookup;
     };
 
-
     struct ScriptParseTree
     {
         const char* name;
@@ -2060,14 +1975,12 @@ namespace T6
         byte32* buffer;
     };
 
-
     struct KeyValuePairs
     {
         const char* name;
         int numVariables;
         KeyValuePair* keyValuePairs;
     };
-
 
     struct view_limits_t
     {
@@ -2088,7 +2001,6 @@ namespace T6
         TRACTION_TYPE_ALL_WD = 0x2,
         NUM_TRACTION_TYPES = 0x3,
     };
-
 
     struct VehicleParameter
     {
@@ -2145,14 +2057,12 @@ namespace T6
         float m_angular_drag_scale;
     };
 
-
     struct VehicleDriveBySound
     {
         int apex;
         const char* name;
         unsigned int alias;
     };
-
 
     struct VehicleEngineSound
     {
@@ -2161,14 +2071,12 @@ namespace T6
         float params[5];
     };
 
-
     struct VehicleGearData
     {
         float minRPM;
         float maxRPM;
         float ratio;
     };
-
 
     struct VehicleEngine
     {
@@ -2187,7 +2095,6 @@ namespace T6
         int loopLastGear;
         VehicleGearData gears[10];
     };
-
 
     struct VehicleAntenna
     {
@@ -2524,7 +2431,6 @@ namespace T6
         cLeaf_s leaf;
     };
 
-
     struct AddonMapEnts
     {
         const char* name;
@@ -2537,14 +2443,12 @@ namespace T6
         GfxBrushModel* models;
     };
 
-
     enum tracerType_t
     {
         TRACERTYPE_LASER = 0x0,
         TRACERTYPE_SMOKE = 0x1,
         TRACERTYPE_NUM = 0x2,
     };
-
 
     struct TracerDef
     {
@@ -2563,13 +2467,11 @@ namespace T6
         vec4_t colors[5];
     };
 
-
     struct SkinnedVertsDef
     {
         const char* name;
         unsigned int maxSkinnedVerts;
     };
-
 
     struct Qdb
     {
@@ -2578,7 +2480,6 @@ namespace T6
         byte32* buffer;
     };
 
-
     struct Slug
     {
         const char* name;
@@ -2586,20 +2487,17 @@ namespace T6
         byte32* buffer;
     };
 
-
     struct FootstepTableDef
     {
         const char* name;
         unsigned int sndAliasTable[32][7];
     };
 
-
     struct FootstepFXTableDef
     {
         const char* name;
         FxEffectDef* footstepFX[32];
     };
-
 
     struct ZBarrierBoard
     {
@@ -2621,7 +2519,6 @@ namespace T6
         uint16_t zombieBoardTearSubStateName;
         unsigned int numRepsToPullProBoard;
     };
-
 
     struct ZBarrierDef
     {
@@ -2649,13 +2546,11 @@ namespace T6
         ZBarrierBoard boards[6];
     };
 
-
     struct XModelPiece
     {
         XModel* model;
         vec3_t offset;
     };
-
 
     struct DestructibleStage
     {
@@ -2670,7 +2565,6 @@ namespace T6
         XModel* spawnModel[3];
         PhysPreset* physPreset;
     };
-
 
     struct DestructiblePiece
     {
@@ -2691,13 +2585,11 @@ namespace T6
         int hideBones[5];
     };
 
-
     struct XAnimNotifyInfo
     {
         uint16_t name;
         float time;
     };
-
 
     struct XAnimDeltaPart
     {
@@ -2706,14 +2598,12 @@ namespace T6
         XAnimDeltaPartQuat* quat;
     };
 
-
     struct DObjAnimMat
     {
         vec4_t quat;
         vec3_t trans;
         float transWeight;
     };
-
 
     struct XSurfaceVertexInfo
     {
@@ -2724,7 +2614,6 @@ namespace T6
 
     typedef tdef_align(16) unsigned short r_index16_t;
 
-
     struct type_align(16) XSurface
     {
         char tileMode;
@@ -2733,15 +2622,14 @@ namespace T6
         uint16_t vertCount;
         uint16_t triCount;
         uint16_t baseVertIndex;
-        r_index16_t (*triIndices)[3];
+        r_index16_t(*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
-        void/*ID3D11Buffer*/* vb0;
+        void /*ID3D11Buffer*/* vb0;
         XRigidVertList* vertList;
-        void/*ID3D11Buffer*/* indexBuffer;
+        void /*ID3D11Buffer*/* indexBuffer;
         int partBits[5];
     };
-
 
     struct XModelCollSurf_s
     {
@@ -2754,7 +2642,6 @@ namespace T6
         int surfFlags;
     };
 
-
     struct type_align(4) XBoneInfo
     {
         vec3_t bounds[2];
@@ -2763,12 +2650,10 @@ namespace T6
         char collmap;
     };
 
-
     struct Collmap
     {
         PhysGeomList* geomList;
     };
-
 
     struct MaterialTextureDef
     {
@@ -2781,7 +2666,6 @@ namespace T6
         char pad[3];
         GfxImage* image;
     };
-
 
     struct type_align(16) MaterialConstantDef
     {
@@ -2855,9 +2739,9 @@ namespace T6
     struct GfxStateBits
     {
         unsigned int loadBits[2];
-        void/*ID3D11BlendState*/* blendState;
-        void/*ID3D11DepthStencilState*/* depthStencilState;
-        void/*ID3D11RasterizerState*/* rasterizerState;
+        void /*ID3D11BlendState*/* blendState;
+        void /*ID3D11DepthStencilState*/* depthStencilState;
+        void /*ID3D11RasterizerState*/* rasterizerState;
     };
 
     /* struct IUnknown
@@ -2877,7 +2761,6 @@ namespace T6
     {
     };*/
 
-
     struct MaterialPass
     {
         MaterialVertexDeclaration* vertexDecl;
@@ -2891,7 +2774,6 @@ namespace T6
         char materialType;
         MaterialShaderArgument* args;
     };
-
 
     struct MaterialTechnique
     {
@@ -2909,7 +2791,6 @@ namespace T6
     {
     };*/
 
-
     struct type_align(4) GfxImageLoadDef
     {
         char levelCount;
@@ -2918,7 +2799,6 @@ namespace T6
         int resourceSize;
         char data[1];
     };
-
 
     struct SndAliasList
     {
@@ -2929,13 +2809,11 @@ namespace T6
         int sequence;
     };
 
-
     struct type_align(4) SndIndexEntry
     {
         uint16_t value;
         uint16_t next;
     };
-
 
     struct SndRadverb
     {
@@ -2960,7 +2838,6 @@ namespace T6
     };
 
     typedef tdef_align(16) float SndFloatAlign16;
-
 
     struct SndDuck
     {
@@ -3007,13 +2884,11 @@ namespace T6
         char format;
     };
 
-
     struct SndDialogScriptIdLookup
     {
         unsigned int scriptId;
         unsigned int aliasId;
     };
-
 
     struct cplane_s
     {
@@ -3024,14 +2899,12 @@ namespace T6
         char pad[2];
     };
 
-
     struct ClipMaterial
     {
         const char* name;
         int surfaceFlags;
         int contentFlags;
     };
-
 
     struct cbrushside_t
     {
@@ -3040,12 +2913,10 @@ namespace T6
         int sflags;
     };
 
-
     struct cLeafBrushNodeLeaf_t
     {
         LeafBrush* brushes;
     };
-
 
     struct cLeafBrushNodeChildren_t
     {
@@ -3054,13 +2925,11 @@ namespace T6
         uint16_t childOffset[2];
     };
 
-
     union cLeafBrushNodeData_t
     {
         cLeafBrushNodeLeaf_t leaf;
         cLeafBrushNodeChildren_t children;
     };
-
 
     struct cLeafBrushNode_s
     {
@@ -3069,7 +2938,6 @@ namespace T6
         int contents;
         cLeafBrushNodeData_t data;
     };
-
 
     struct type_align(16) cbrush_t
     {
@@ -3084,19 +2952,16 @@ namespace T6
         vec3_t* verts;
     };
 
-
     struct Bounds
     {
         vec3_t midPoint;
         vec3_t halfSize;
     };
 
-
     struct cStaticModelWritable
     {
         uint16_t nextModelInWorldSector;
     };
-
 
     struct cStaticModel_s
     {
@@ -3109,13 +2974,11 @@ namespace T6
         vec3_t absmax;
     };
 
-
     struct cNode_t
     {
         cplane_s* plane;
         int16_t children[2];
     };
-
 
     struct CollisionPartition
     {
@@ -3125,13 +2988,11 @@ namespace T6
         int fuind;
     };
 
-
     union CollisionAabbTreeIndex
     {
         int firstChildIndex;
         int partitionIndex;
     };
-
 
     struct type_align(16) CollisionAabbTree
     {
@@ -3142,7 +3003,6 @@ namespace T6
         CollisionAabbTreeIndex u;
     };
 
-
     enum DynEntityType
     {
         DYNENT_TYPE_INVALID = 0x0,
@@ -3151,13 +3011,11 @@ namespace T6
         DYNENT_TYPE_COUNT = 0x3,
     };
 
-
     struct GfxPlacement
     {
         vec4_t quat;
         vec3_t origin;
     };
-
 
     struct DynEntityDef
     {
@@ -3179,13 +3037,11 @@ namespace T6
         uint16_t target;
     };
 
-
     struct DynEntityPose
     {
         GfxPlacement pose;
         float radius;
     };
-
 
     struct DynEntityClient
     {
@@ -3198,13 +3054,11 @@ namespace T6
         int physicsStartTime;
     };
 
-
     struct DynEntityServer
     {
         uint16_t flags;
         int health;
     };
-
 
     struct DynEntityColl
     {
@@ -3215,7 +3069,6 @@ namespace T6
         int contents;
     };
 
-
     struct par_t
     {
         vec3_t p;
@@ -3224,7 +3077,6 @@ namespace T6
         int flags;
     };
 
-
     enum rope_constraint_e
     {
         ROPE_PAIR_CONSTRAINT = 0x0,
@@ -3232,7 +3084,6 @@ namespace T6
         ROPE_DENTITY_CONSTRAINT = 0x2,
         ROPE_CENTITY_CONSTRAINT = 0x3,
     };
-
 
     struct type_align(4) constraint_t
     {
@@ -3244,20 +3095,17 @@ namespace T6
         char pi2;
     };
 
-
     struct rope_frame_verts_t
     {
         int num_verts;
         vec3_t v[50];
     };
 
-
     struct rope_client_verts_t
     {
         rope_frame_verts_t frame_verts[2];
         unsigned int frame_index;
     };
-
 
     struct type_align(4) rope_t
     {
@@ -3290,7 +3138,6 @@ namespace T6
         uint16_t m_lightingHandle;
     };
 
-
     struct ComPrimaryLight
     {
         char type;
@@ -3322,7 +3169,6 @@ namespace T6
         const char* defName;
     };
 
-
     enum nodeType
     {
         NODE_BADNODE = 0x0,
@@ -3350,7 +3196,6 @@ namespace T6
         NODE_DONTLINK = 0x15,
     };
 
-
     struct pathnode_constant_t
     {
         nodeType type;
@@ -3371,13 +3216,11 @@ namespace T6
         pathlink_s* Links;
     };
 
-
     struct SentientHandle
     {
         uint16_t number;
         uint16_t infoIndex;
     };
-
 
     struct type_align(4) pathnode_dynamic_t
     {
@@ -3392,7 +3235,6 @@ namespace T6
         int16_t userCount;
         bool hasBadPlaceLink;
     };
-
 
     struct pathnode_transient_t
     {
@@ -3410,7 +3252,6 @@ namespace T6
         };
     };
 
-
     struct pathnode_t
     {
         pathnode_constant_t constant;
@@ -3418,13 +3259,11 @@ namespace T6
         pathnode_transient_t transient;
     };
 
-
     struct type_align(16) pathbasenode_t
     {
         vec3_t vOrigin;
         unsigned int type;
     };
-
 
     struct pathnode_tree_nodes_t
     {
@@ -3432,13 +3271,11 @@ namespace T6
         uint16_t* nodes;
     };
 
-
     union pathnode_tree_info_t
     {
         pathnode_tree_t* child[2];
         pathnode_tree_nodes_t s;
     };
-
 
     struct pathnode_tree_t
     {
@@ -3447,14 +3284,12 @@ namespace T6
         pathnode_tree_info_t u;
     };
 
-
     struct TriggerModel
     {
         int contents;
         uint16_t hullCount;
         uint16_t firstHull;
     };
-
 
     struct TriggerHull
     {
@@ -3464,14 +3299,12 @@ namespace T6
         uint16_t firstSlab;
     };
 
-
     struct TriggerSlab
     {
         vec3_t dir;
         float midPoint;
         float halfSize;
     };
-
 
     struct type_align(16) GfxStreamingAabbTree
     {
@@ -3486,7 +3319,6 @@ namespace T6
         uint16_t surfaceCount;
     };
 
-
     struct type_align(16) float44
     {
         union
@@ -3495,7 +3327,6 @@ namespace T6
             float member[16];
         };
     };
-
 
     struct type_align(16) GfxLight
     {
@@ -3527,7 +3358,6 @@ namespace T6
         GfxLightDef* def;
     };
 
-
     struct GfxLightCorona
     {
         vec3_t origin;
@@ -3535,7 +3365,6 @@ namespace T6
         vec3_t color;
         float intensity;
     };
-
 
     struct GfxShadowMapVolume
     {
@@ -3545,12 +3374,10 @@ namespace T6
         unsigned int padding3;
     };
 
-
     struct GfxVolumePlane
     {
         vec4_t plane;
     };
-
 
     struct GfxExposureVolume
     {
@@ -3562,7 +3389,6 @@ namespace T6
         float featherAdjust;
     };
 
-
     struct GfxWorldFogVolume
     {
         vec3_t mins;
@@ -3572,7 +3398,6 @@ namespace T6
         unsigned int controlEx;
         GfxWorldFog volumeWorldFog[1];
     };
-
 
     struct GfxWorldFogModifierVolume
     {
@@ -3590,7 +3415,6 @@ namespace T6
         vec4_t colorAdjust;
     };
 
-
     struct GfxLutVolume
     {
         vec3_t mins;
@@ -3599,7 +3423,6 @@ namespace T6
         float lutTransitionTime;
         unsigned int lutIndex;
     };
-
 
     struct GfxCell
     {
@@ -3613,14 +3436,12 @@ namespace T6
         char* reflectionProbes;
     };
 
-
     struct GfxLightingSH
     {
         vec4_t V0;
         vec4_t V1;
         vec4_t V2;
     };
-
 
     struct GfxReflectionProbe
     {
@@ -3631,7 +3452,6 @@ namespace T6
         unsigned int probeVolumeCount;
         float mipLodBias;
     };
-
 
     struct GfxLightmapArray
     {
@@ -3647,7 +3467,6 @@ namespace T6
     {
     };*/
 
-
     struct type_align(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
@@ -3655,18 +3474,15 @@ namespace T6
         char visibility;
     };
 
-
     struct type_align(4) GfxCompressedLightGridColors
     {
         char rgb[56][3];
     };
 
-
     struct GfxCompressedLightGridCoeffs
     {
         uint16_t coeffs[9][3];
     };
-
 
     struct GfxSkyGridVolume
     {
@@ -3678,7 +3494,6 @@ namespace T6
         char visibility;
     };
 
-
     struct GfxBrushModelWritable
     {
         vec3_t mins;
@@ -3686,7 +3501,6 @@ namespace T6
         vec3_t maxs;
         float padding2;
     };
-
 
     struct type_align(16) GfxBrushModel
     {
@@ -3696,13 +3510,11 @@ namespace T6
         unsigned int startSurfIndex;
     };
 
-
     struct MaterialMemory
     {
         Material* material;
         int memory;
     };
-
 
     union XModelDrawInfo
     {
@@ -3716,7 +3528,6 @@ namespace T6
         unsigned int packed;
     };
 
-
     struct GfxSceneDynModel
     {
         XModelDrawInfo info;
@@ -3725,19 +3536,16 @@ namespace T6
         char reflectionProbeIndex;
     };
 
-
     struct BModelDrawInfo
     {
         uint16_t surfId;
     };
-
 
     struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;
     };
-
 
     union gcc_align(8) __m128
     {
@@ -3767,7 +3575,6 @@ namespace T6
         __m128 w;
     };
 
-
     struct type_align(16) SSkinInstance
     {
         union
@@ -3786,7 +3593,6 @@ namespace T6
         int pad3;
     };
 
-
     struct GfxShadowGeometry
     {
         uint16_t surfaceCount;
@@ -3795,13 +3601,11 @@ namespace T6
         uint16_t* smodelIndex;
     };
 
-
     struct GfxLightRegion
     {
         unsigned int hullCount;
         GfxLightRegionHull* hulls;
     };
-
 
     struct GfxStaticModelInst
     {
@@ -3809,7 +3613,6 @@ namespace T6
         vec3_t maxs;
         vec3_t lightingOrigin;
     };
-
 
     struct srfTriangles_t
     {
@@ -3824,7 +3627,6 @@ namespace T6
         int baseIndex;
     };
 
-
     struct type_align(16) GfxSurface
     {
         srfTriangles_t tris;
@@ -3836,14 +3638,12 @@ namespace T6
         vec3_t bounds[2];
     };
 
-
     struct GfxPackedPlacement
     {
         vec3_t origin;
         vec3_t axis[3];
         float scale;
     };
-
 
     struct GfxLightingSHQuantized
     {
@@ -3852,14 +3652,12 @@ namespace T6
         uint16_t V2[4];
     };
 
-
     struct type_align(4) GfxStaticModelLmapVertexInfo
     {
         unsigned int* lmapVertexColors;
-        void/*ID3D11Buffer*/* lmapVertexColorsVB;
+        void /*ID3D11Buffer*/* lmapVertexColorsVB;
         uint16_t numLmapVertexColors;
     };
-
 
     struct GfxStaticModelDrawInst
     {
@@ -3878,7 +3676,6 @@ namespace T6
         GfxStaticModelLmapVertexInfo lmapVertexInfo[4];
     };
 
-
     struct Occluder
     {
         unsigned int flags;
@@ -3886,12 +3683,10 @@ namespace T6
         vec3_t points[4];
     };
 
-
     struct GfxOutdoorBounds
     {
         vec3_t bounds[2];
     };
-
 
     struct GfxHeroLight
     {
@@ -3906,7 +3701,6 @@ namespace T6
         int exponent;
     };
 
-
     struct GfxHeroLightTree
     {
         vec3_t mins;
@@ -3914,7 +3708,6 @@ namespace T6
         int leftNode;
         int rightNode;
     };
-
 
     struct Glyph
     {
@@ -3930,7 +3723,6 @@ namespace T6
         float t1;
     };
 
-
     struct KerningPairs
     {
         uint16_t wFirst;
@@ -3938,13 +3730,11 @@ namespace T6
         int iKernAmount;
     };
 
-
     struct FontIconName
     {
         const char* string;
         int hash;
     };
-
 
     struct FontIconEntry
     {
@@ -3955,13 +3745,11 @@ namespace T6
         float yScale;
     };
 
-
     struct FontIconAlias
     {
         int aliasHash;
         int buttonHash;
     };
-
 
     struct GenericEventHandler
     {
@@ -3970,14 +3758,12 @@ namespace T6
         GenericEventHandler* next;
     };
 
-
     struct ItemKeyHandler
     {
         int key;
         GenericEventScript* keyScript;
         ItemKeyHandler* next;
     };
-
 
     enum expDataType
     {
@@ -3988,7 +3774,6 @@ namespace T6
         VAL_DVAR = 0x4,
     };
 
-
     union operandInternalDataUnion
     {
         int intVal;
@@ -3997,13 +3782,11 @@ namespace T6
         dvar_t* dvar;
     };
 
-
     struct Operand
     {
         expDataType dataType;
         operandInternalDataUnion internals;
     };
-
 
     union expressionRpnDataUnion
     {
@@ -4019,7 +3802,6 @@ namespace T6
         RPN_CMD = 0x2,
         RPN_END = 0x3,
     };
-
 
     struct expressionRpn
     {
@@ -4061,7 +3843,6 @@ namespace T6
         ITEM_TYPE_MENUMODEL = 0x27
     };
 
-
     union itemDefData_t
     {
         textDef_s* textDef;
@@ -4070,7 +3851,6 @@ namespace T6
         ownerDrawDef_s* ownerDrawDef;
         void* data;
     };
-
 
     struct type_align(8) itemDef_s
     {
@@ -4095,7 +3875,6 @@ namespace T6
         UIAnimInfo* animInfo;
     };
 
-
     enum weapType_t
     {
         WEAPTYPE_BULLET = 0x0,
@@ -4109,7 +3888,6 @@ namespace T6
         WEAPTYPE_RIOTSHIELD = 0x8,
         WEAPTYPE_NUM = 0x9,
     };
-
 
     enum weapClass_t
     {
@@ -4129,7 +3907,6 @@ namespace T6
         WEAPCLASS_PISTOL_SPREAD = 0xD,
         WEAPCLASS_NUM = 0xE,
     };
-
 
     enum ImpactType
     {
@@ -4152,7 +3929,6 @@ namespace T6
         IMPACT_TYPE_COUNT = 0x10,
     };
 
-
     enum weapInventoryType_t
     {
         WEAPINVENTORY_PRIMARY = 0x0,
@@ -4163,7 +3939,6 @@ namespace T6
         WEAPINVENTORY_DWLEFTHAND = 0x5,
         WEAPINVENTORYCOUNT = 0x6,
     };
-
 
     enum weapClipType_t
     {
@@ -4176,7 +3951,6 @@ namespace T6
         WEAPON_CLIPTYPECOUNT = 0x6,
     };
 
-
     enum barrelType_t
     {
         BARREL_TYPE_SINGLE = 0x0,
@@ -4187,7 +3961,6 @@ namespace T6
         BARREL_TYPE_QUAD_DOUBLE_ALTERNATE = 0x5,
         BARREL_TYPE_COUNT = 0x6,
     };
-
 
     enum OffhandClass
     {
@@ -4200,7 +3973,6 @@ namespace T6
         OFFHAND_CLASS_COUNT = 0x6,
     };
 
-
     enum OffhandSlot
     {
         OFFHAND_SLOT_NONE = 0x0,
@@ -4211,7 +3983,6 @@ namespace T6
         OFFHAND_SLOT_COUNT = 0x5,
     };
 
-
     enum weapStance_t
     {
         WEAPSTANCE_STAND = 0x0,
@@ -4219,7 +3990,6 @@ namespace T6
         WEAPSTANCE_PRONE = 0x2,
         WEAPSTANCE_NUM = 0x3,
     };
-
 
     enum activeReticleType_t
     {
@@ -4229,7 +3999,6 @@ namespace T6
         VEH_ACTIVE_RETICLE_MISSILE_LOCK = 0x3,
         VEH_ACTIVE_RETICLE_COUNT = 0x4,
     };
-
 
     enum ammoCounterClipType_t
     {
@@ -4243,7 +4012,6 @@ namespace T6
         AMMO_COUNTER_CLIP_COUNT = 0x7,
     };
 
-
     enum WeapOverlayInteface_t
     {
         WEAPOVERLAYINTERFACE_NONE = 0x0,
@@ -4251,7 +4019,6 @@ namespace T6
         WEAPOVERLAYINTERFACE_TURRETSCOPE = 0x2,
         WEAPOVERLAYINTERFACECOUNT = 0x3,
     };
-
 
     enum weapProjExposion_t
     {
@@ -4269,7 +4036,6 @@ namespace T6
         WEAPPROJEXP_NUM = 0xB,
     };
 
-
     enum WeapStickinessType
     {
         WEAPSTICKINESS_NONE = 0x0,
@@ -4281,7 +4047,6 @@ namespace T6
         WEAPSTICKINESS_COUNT = 0x6,
     };
 
-
     enum WeapRotateType
     {
         WEAPROTATE_GRENADE_ROTATE = 0x0,
@@ -4289,7 +4054,6 @@ namespace T6
         WEAPROTATE_CYLINDER_ROTATE = 0x2,
         WEAPROTATE_COUNT = 0x3,
     };
-
 
     enum guidedMissileType_t
     {
@@ -4334,13 +4098,13 @@ namespace T6
 
     struct WeaponDef
     {
-        const char* szOverlayName; // covered
-        XModel** gunXModel; // covered
-        XModel* handXModel; // covered
-        const char* szModeName; // covered
-        uint16_t* notetrackSoundMapKeys; // covered
+        const char* szOverlayName;         // covered
+        XModel** gunXModel;                // covered
+        XModel* handXModel;                // covered
+        const char* szModeName;            // covered
+        uint16_t* notetrackSoundMapKeys;   // covered
         uint16_t* notetrackSoundMapValues; // covered
-        int playerAnimType; // covered
+        int playerAnimType;                // covered
         weapType_t weapType;
         weapClass_t weapClass;
         PenetrateType penetrateTWeaponAttachmentype;
@@ -4838,15 +4602,16 @@ namespace T6
         float fAntiQuickScopeSwayFactor;
         float fightDist;
         float maxDist;
-        //const char *accuracyGraphName[2];   // TODO: Order is accuracyGraphName[0] -> accuracyGraphKnots[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
-        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
-        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
+        // const char *accuracyGraphName[2];   // TODO: Order is accuracyGraphName[0] -> accuracyGraphKnots[0] -> originalAccuracyGraphKnots[0] ->
+        // accuracyGraphName[1] -> ...
+        //  Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
+        //  So might be something to fix but on the other hand it might be too much work for this little inconvenience.
         const char* accuracyGraphName0;
         const char* accuracyGraphName1;
-        //vec2_t *accuracyGraphKnots[2];
+        // vec2_t *accuracyGraphKnots[2];
         vec2_t* accuracyGraphKnots0;
         vec2_t* accuracyGraphKnots1;
-        //vec2_t *originalAccuracyGraphKnots[2];
+        // vec2_t *originalAccuracyGraphKnots[2];
         vec2_t* originalAccuracyGraphKnots0;
         vec2_t* originalAccuracyGraphKnots1;
         int accuracyGraphKnotCount[2];
@@ -5151,7 +4916,6 @@ namespace T6
         char weaponCamo[64];
     };
 
-
     struct WeaponCamoSet
     {
         GfxImage* solidCamoImage;
@@ -5160,13 +4924,11 @@ namespace T6
         float patternScale;
     };
 
-
     struct WeaponCamoMaterialSet
     {
         unsigned int numMaterials;
         WeaponCamoMaterial* materials;
     };
-
 
     enum SndMenuCategory
     {
@@ -5177,7 +4939,6 @@ namespace T6
         SND_CATEGORY_CINEMATIC = 0x4,
         SND_CATEGORY_COUNT = 0x5,
     };
-
 
     struct SndVolumeGroup
     {
@@ -5190,14 +4951,12 @@ namespace T6
         uint16_t attenuationMp;
     };
 
-
     struct SndCurve
     {
         char name[32];
         unsigned int id;
         vec2_t points[8];
     };
-
 
     struct SndPan
     {
@@ -5211,20 +4970,17 @@ namespace T6
         float right;
     };
 
-
     struct SndDuckGroup
     {
         char name[32];
         unsigned int id;
     };
 
-
     struct SndContext
     {
         unsigned int type;
         unsigned int values[8];
     };
-
 
     struct SndMaster
     {
@@ -5283,7 +5039,6 @@ namespace T6
         int voiceCompE;
     };
 
-
     struct SndSidechainDuck
     {
         char name[32];
@@ -5295,7 +5050,6 @@ namespace T6
         float tr;
         float tf;
     };
-
 
     struct SndFutz
     {
@@ -5319,13 +5073,11 @@ namespace T6
         unsigned int loopAliasId;
     };
 
-
     struct FxSpawnDefLooping
     {
         int intervalMsec;
         int count;
     };
-
 
     struct FxIntRange
     {
@@ -5333,19 +5085,16 @@ namespace T6
         int amplitude;
     };
 
-
     struct FxSpawnDefOneShot
     {
         FxIntRange count;
     };
-
 
     union FxSpawnDef
     {
         FxSpawnDefLooping looping;
         FxSpawnDefOneShot oneShot;
     };
-
 
     struct FxElemAtlas
     {
@@ -5358,13 +5107,11 @@ namespace T6
         uint16_t entryCountAndIndexRange;
     };
 
-
     union FxEffectDefRef
     {
         FxEffectDef* handle;
         const char* name;
     };
-
 
     union FxElemVisuals
     {
@@ -5376,14 +5123,12 @@ namespace T6
         GfxLightDef* lightDef;
     };
 
-
     union FxElemDefVisuals
     {
         FxElemMarkVisuals* markArray;
         FxElemVisuals* array;
         FxElemVisuals instance;
     };
-
 
     union FxElemExtendedDefPtr
     {
@@ -5392,20 +5137,17 @@ namespace T6
         char* unknownDef;
     };
 
-
     struct FxBillboardTrim
     {
         float topWidth;
         float bottomWidth;
     };
 
-
     union FxElemDefUnion
     {
         FxBillboardTrim billboard;
         FxIntRange cloudDensityRange;
     };
-
 
     struct FxElemSpawnSound
     {
@@ -5431,7 +5173,6 @@ namespace T6
         FX_ELEM_TYPE_LAST_SPRITE = 0x5,
         FX_ELEM_TYPE_LAST_DRAWN = 0x9,
     };
-
 
     struct FxElemDef
     {
@@ -5482,20 +5223,17 @@ namespace T6
         vec2_t billboardPivot;
     };
 
-
     struct FxImpactEntry
     {
         FxEffectDef* nonflesh[32];
         FxEffectDef* flesh[4];
     };
 
-
     struct StringTableCell
     {
         const char* string;
         int hash;
     };
-
 
     enum LbColType
     {
@@ -5509,7 +5247,6 @@ namespace T6
         LBCOL_TYPE_COUNT = 0x7,
     };
 
-
     enum LbAggType
     {
         LBAGG_TYPE_MIN = 0x0,
@@ -5518,7 +5255,6 @@ namespace T6
         LBAGG_TYPE_REPLACE = 0x3,
         LBAGG_TYPE_COUNT = 0x4,
     };
-
 
     struct LbColumnDef
     {
@@ -5535,7 +5271,6 @@ namespace T6
         int uiCalColY;
     };
 
-
     struct ddlDef_t
     {
         int version;
@@ -5546,7 +5281,6 @@ namespace T6
         int enumCount;
         ddlDef_t* next;
     };
-
 
     struct Glass
     {
@@ -5569,14 +5303,12 @@ namespace T6
         float thickness;
     };
 
-
     struct KeyValuePair
     {
         int keyHash;
         int namespaceHash;
         const char* value;
     };
-
 
     enum DevEventType
     {
@@ -5588,7 +5320,6 @@ namespace T6
         EVENT_SAVE = 0x5,
     };
 
-
     enum LocalClientNum_t
     {
         INVALID_LOCAL_CLIENT = 0xFFFFFFFF,
@@ -5598,19 +5329,17 @@ namespace T6
         LOCAL_CLIENT_COUNT = 0x1,
     };
 
-
     struct type_align(4) DevGraph
     {
         vec2_t* knots;
         int* knotCount;
         int knotCountMax;
         int selectedKnot;
-        void* eventCallback; //void (__cdecl *eventCallback)(DevGraph *, DevEventType, LocalClientNum_t);
-        void* textCallback; //void (__cdecl *textCallback)(DevGraph *, const float, const float, char *, const int);
+        void* eventCallback; // void (__cdecl *eventCallback)(DevGraph *, DevEventType, LocalClientNum_t);
+        void* textCallback;  // void (__cdecl *textCallback)(DevGraph *, const float, const float, char *, const int);
         void* data;
         bool disableEditingEndPoints;
     };
-
 
     struct GraphFloat
     {
@@ -5626,17 +5355,15 @@ namespace T6
 
     union XAnimDynamicFrames
     {
-        ByteVec *_1;
-        UShortVec *_2;
+        ByteVec* _1;
+        UShortVec* _2;
     };
-
 
     union XAnimDynamicIndicesTrans
     {
         char _1[1];
         uint16_t _2[1];
     };
-
 
     struct type_align(4) XAnimPartTransFrames
     {
@@ -5646,13 +5373,11 @@ namespace T6
         XAnimDynamicIndicesTrans indices;
     };
 
-
     union XAnimPartTransData
     {
         XAnimPartTransFrames frames;
         vec3_t frame0;
     };
-
 
     struct XAnimPartTrans
     {
@@ -5671,17 +5396,15 @@ namespace T6
 
     struct type_align(4) XAnimDeltaPartQuatDataFrames2
     {
-        XQuat2 *frames;
+        XQuat2* frames;
         XAnimDynamicIndicesDeltaQuat2 indices;
     };
-
 
     union XAnimDeltaPartQuatData2
     {
         XAnimDeltaPartQuatDataFrames2 frames;
         XQuat2 frame0;
     };
-
 
     struct XAnimDeltaPartQuat2
     {
@@ -5695,14 +5418,13 @@ namespace T6
         uint16_t _2[1];
     };
 
-    typedef tdef_align(4)  int16_t XQuat[4];
+    typedef tdef_align(4) int16_t XQuat[4];
 
     struct type_align(4) XAnimDeltaPartQuatDataFrames
     {
-        XQuat *frames;
+        XQuat* frames;
         XAnimDynamicIndicesDeltaQuat indices;
     };
-
 
     union XAnimDeltaPartQuatData
     {
@@ -5710,13 +5432,11 @@ namespace T6
         XQuat frame0;
     };
 
-
     struct XAnimDeltaPartQuat
     {
         uint16_t size;
         XAnimDeltaPartQuatData u;
     };
-
 
     union GfxColor
     {
@@ -5724,18 +5444,15 @@ namespace T6
         char array[4];
     };
 
-
     union PackedTexCoords
     {
         unsigned int packed;
     };
 
-
     union PackedUnitVec
     {
         unsigned int packed;
     };
-
 
     struct type_align(16) GfxPackedVertex
     {
@@ -5747,7 +5464,6 @@ namespace T6
         PackedUnitVec tangent;
     };
 
-
     struct XRigidVertList
     {
         uint16_t boneOffset;
@@ -5757,7 +5473,6 @@ namespace T6
         XSurfaceCollisionTree* collisionTree;
     };
 
-
     struct XModelCollTri_s
     {
         vec4_t plane;
@@ -5766,7 +5481,6 @@ namespace T6
     };
 
     typedef tdef_align(16) PhysGeomInfo PhysGeomInfo16;
-
 
     struct PhysGeomList
     {
@@ -5794,20 +5508,17 @@ namespace T6
       unsigned int (__stdcall *Release)(IUnknown *this);
     };*/
 
-
     struct MaterialStreamRouting
     {
         char source;
         char dest;
     };
 
-
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[16];
-        void/*ID3D11InputLayout*/* decl[20];
+        void /*ID3D11InputLayout*/* decl[20];
     };
-
 
     struct MaterialVertexDeclaration
     {
@@ -5816,7 +5527,6 @@ namespace T6
         bool isLoaded;
         MaterialVertexStreamRouting routing;
     };
-
 
     union MaterialArgumentLocation
     {
@@ -5829,14 +5539,12 @@ namespace T6
         };
     };
 
-
     struct MaterialArgumentCodeConst
     {
         uint16_t index;
         char firstRow;
         char rowCount;
     };
-
 
     union MaterialArgumentDef
     {
@@ -5860,7 +5568,6 @@ namespace T6
         MTL_ARG_LITERAL_PIXEL_CONST = 0x7,
         MLT_ARG_COUNT = 0x8,
     };
-
 
     struct MaterialShaderArgument
     {
@@ -5888,7 +5595,7 @@ namespace T6
         const char* secondaryname;
         unsigned int assetId;
         const char* assetFileName;
-        unsigned int flags0;        // Bits 15/16 are SndAliasType
+        unsigned int flags0; // Bits 15/16 are SndAliasType
         unsigned int flags1;
         unsigned int duck;
         unsigned int contextType;
@@ -5924,7 +5631,6 @@ namespace T6
         char duckGroup;
     };
 
-
     struct type_align(4) pathlink_s
     {
         float fDist;
@@ -5934,7 +5640,6 @@ namespace T6
         char flags;
         char ubBadPlaceCount[5];
     };
-
 
     struct GfxAabbTree
     {
@@ -5948,7 +5653,6 @@ namespace T6
         int childrenOffset;
     };
 
-
     struct GfxPortalWritable
     {
         bool isQueued;
@@ -5959,14 +5663,12 @@ namespace T6
         GfxPortal* queuedParent;
     };
 
-
     struct DpvsPlane
     {
         vec4_t coeffs;
         char side[3];
         char pad;
     };
-
 
     struct GfxPortal
     {
@@ -5979,12 +5681,10 @@ namespace T6
         vec3_t bounds[2];
     };
 
-
     struct GfxReflectionProbeVolumeData
     {
         vec4_t volumePlanes[6];
     };
-
 
     struct SSkinShaders
     {
@@ -5995,7 +5695,6 @@ namespace T6
         int vertexShaderSize;
     };
 
-
     struct SSkinModel
     {
         int numVerts;
@@ -6003,7 +5702,6 @@ namespace T6
         SSkinVert* verts;
         uint16_t* tris;
     };
-
 
     struct SSkinAnim
     {
@@ -6013,12 +5711,10 @@ namespace T6
         float_align128* data;
     };
 
-
     struct half
     {
         uint16_t v;
     };
-
 
     union half4
     {
@@ -6033,7 +5729,6 @@ namespace T6
         // uint64_t v;
     };
 
-
     union half2
     {
         struct
@@ -6045,14 +5740,12 @@ namespace T6
         unsigned int v;
     };
 
-
     struct type_align(4) SSkinVert
     {
         half4 pos_bone;
         PackedUnitVec normal;
         half2 uv;
     };
-
 
     struct GfxLightRegionHull
     {
@@ -6061,7 +5754,6 @@ namespace T6
         unsigned int axisCount;
         GfxLightRegionAxis* axis;
     };
-
 
     struct GenericEventScript
     {
@@ -6074,7 +5766,6 @@ namespace T6
         int constructID;
         GenericEventScript* next;
     };
-
 
     enum dvarType_t
     {
@@ -6094,7 +5785,6 @@ namespace T6
         DVAR_TYPE_COUNT = 0xD,
     };
 
-
     union DvarValue
     {
         bool enabled;
@@ -6107,7 +5797,6 @@ namespace T6
         const char* string;
         char color[4];
     };
-
 
     union DvarLimits
     {
@@ -6142,7 +5831,6 @@ namespace T6
         } vector;
     };
 
-
     struct type_align(8) dvar_t
     {
         const char* name;
@@ -6158,14 +5846,12 @@ namespace T6
         dvar_t* hashNext;
     };
 
-
     union textDefData_t
     {
         focusItemDef_s* focusItemDef;
         gameMsgDef_s* gameMsgDef;
         void* data;
     };
-
 
     struct textDef_s
     {
@@ -6191,12 +5877,10 @@ namespace T6
         textDefData_t textTypeData;
     };
 
-
     struct imageDef_s
     {
         ExpressionStatement materialExp;
     };
-
 
     union focusDefData_t
     {
@@ -6208,7 +5892,6 @@ namespace T6
         void* data;
     };
 
-
     struct focusItemDef_s
     {
         const char* mouseEnterText;
@@ -6219,12 +5902,10 @@ namespace T6
         focusDefData_t focusTypeData;
     };
 
-
     struct ownerDrawDef_s
     {
         ExpressionStatement dataExp;
     };
-
 
     struct rectData_s
     {
@@ -6233,7 +5914,6 @@ namespace T6
         ExpressionStatement rectWExp;
         ExpressionStatement rectHExp;
     };
-
 
     struct animParamsDef_t
     {
@@ -6249,7 +5929,6 @@ namespace T6
         GenericEventHandler* onEvent;
     };
 
-
     struct UIAnimInfo
     {
         int animStateCount;
@@ -6260,7 +5939,6 @@ namespace T6
         int animStartTime;
         int animDuration;
     };
-
 
     struct flameTable
     {
@@ -6387,7 +6065,6 @@ namespace T6
         const char* flameCooldownSound;
     };
 
-
     struct WeaponCamoMaterial
     {
         uint16_t replaceFlags;
@@ -6397,13 +6074,11 @@ namespace T6
         float shaderConsts[8];
     };
 
-
     struct FxElemVec3Range
     {
         vec3_t base;
         vec3_t amplitude;
     };
-
 
     struct FxElemVelStateInFrame
     {
@@ -6411,13 +6086,11 @@ namespace T6
         FxElemVec3Range totalDelta;
     };
 
-
     struct FxElemVelStateSample
     {
         FxElemVelStateInFrame local;
         FxElemVelStateInFrame world;
     };
-
 
     struct FxElemVisualState
     {
@@ -6428,19 +6101,16 @@ namespace T6
         float scale;
     };
 
-
     struct FxElemVisStateSample
     {
         FxElemVisualState base;
         FxElemVisualState amplitude;
     };
 
-
     struct FxElemMarkVisuals
     {
         Material* materials[2];
     };
-
 
     struct FxTrailDef
     {
@@ -6453,14 +6123,12 @@ namespace T6
         uint16_t* inds;
     };
 
-
     struct FxSpotLightDef
     {
         float fovInnerFraction;
         float startRadius;
         float endRadius;
     };
-
 
     struct ddlStructDef_t
     {
@@ -6471,7 +6139,6 @@ namespace T6
         ddlHash_t* hashTable;
     };
 
-
     struct ddlEnumDef_t
     {
         const char* name;
@@ -6479,7 +6146,6 @@ namespace T6
         const char** members;
         ddlHash_t* hashTable;
     };
-
 
     struct GlassDef
     {
@@ -6500,7 +6166,6 @@ namespace T6
         FxEffectDef* shatterEffect;
     };
 
-
     struct XSurfaceCollisionTree
     {
         vec3_t trans;
@@ -6510,7 +6175,6 @@ namespace T6
         unsigned int leafCount;
         XSurfaceCollisionLeaf* leafs;
     };
-
 
     struct PhysGeomInfo
     {
@@ -6525,14 +6189,12 @@ namespace T6
     {
     };*/
 
-
     struct GfxLightRegionAxis
     {
         vec3_t dir;
         float midPoint;
         float halfSize;
     };
-
 
     struct ScriptCondition
     {
@@ -6542,12 +6204,10 @@ namespace T6
         ScriptCondition* next;
     };
 
-
     struct textExp_s
     {
         ExpressionStatement textExp;
     };
-
 
     struct gameMsgDef_s
     {
@@ -6555,14 +6215,12 @@ namespace T6
         int gameMsgWindowMode;
     };
 
-
     struct columnInfo_s
     {
         int elementStyle;
         int maxChars;
         rectDef_s rect;
     };
-
 
     struct listBoxDef_s
     {
@@ -6593,7 +6251,6 @@ namespace T6
         int rowCount;
     };
 
-
     struct multiDef_s
     {
         const char* dvarList[32];
@@ -6604,7 +6261,6 @@ namespace T6
         int strDef;
     };
 
-
     struct profileMultiDef_s
     {
         const char* profileVarList[32];
@@ -6614,7 +6270,6 @@ namespace T6
         int actionOnEnterPressOnly;
         int strDef;
     };
-
 
     struct editFieldDef_s
     {
@@ -6629,12 +6284,10 @@ namespace T6
         int paintOffset;
     };
 
-
     struct enumDvarDef_s
     {
         const char* enumDvarName;
     };
-
 
     struct FxTrailVertex
     {
@@ -6642,7 +6295,6 @@ namespace T6
         vec2_t normal;
         float texCoord;
     };
-
 
     struct ddlMemberDef_t
     {
@@ -6659,20 +6311,17 @@ namespace T6
         int permission;
     };
 
-
     struct ddlHash_t
     {
         int hash;
         int index;
     };
 
-
     struct XSurfaceCollisionAabb
     {
         uint16_t mins[3];
         uint16_t maxs[3];
     };
-
 
     struct type_align(16) XSurfaceCollisionNode
     {
@@ -6681,12 +6330,10 @@ namespace T6
         uint16_t childCount;
     };
 
-
     struct XSurfaceCollisionLeaf
     {
         uint16_t triangleBeginIndex;
     };
-
 
     struct type_align(16) BrushWrapper
     {
@@ -6702,7 +6349,6 @@ namespace T6
         cplane_s* planes;
     };
 
-
     struct MenuRow
     {
         MenuCell* cells;
@@ -6712,7 +6358,6 @@ namespace T6
         int status;
         int name;
     };
-
 
     struct MenuCell
     {

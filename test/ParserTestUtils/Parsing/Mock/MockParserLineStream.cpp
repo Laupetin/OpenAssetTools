@@ -61,8 +61,10 @@ bool MockParserLineStream::IsOpen() const
 
 bool MockParserLineStream::Eof() const
 {
-    return !std::any_of(m_include_positions.begin(), m_include_positions.end(), [](const IncludePos& pos)
-    {
-        return pos.m_pos < pos.m_lines.size();
-    });
+    return !std::any_of(m_include_positions.begin(),
+                        m_include_positions.end(),
+                        [](const IncludePos& pos)
+                        {
+                            return pos.m_pos < pos.m_lines.size();
+                        });
 }

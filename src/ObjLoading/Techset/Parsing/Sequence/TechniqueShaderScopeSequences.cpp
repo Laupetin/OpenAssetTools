@@ -1,8 +1,8 @@
 #include "TechniqueShaderScopeSequences.h"
 
-#include <cassert>
-
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+
+#include <cassert>
 
 using namespace techset;
 
@@ -16,7 +16,7 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Char('}')
+                create.Char('}'),
             });
         }
 
@@ -49,60 +49,66 @@ namespace techset
             return create.And({
                 create.Or({
                     create.Keyword("constant").Tag(TAG_CONSTANT),
-                    create.Keyword("sampler").Tag(TAG_SAMPLER)
+                    create.Keyword("sampler").Tag(TAG_SAMPLER),
                 }),
                 create.Char('.'),
                 create.Identifier().Capture(CAPTURE_CODE_ACCESSOR),
                 create.OptionalLoop(create.And({
                     create.Char('.'),
-                    create.Identifier().Capture(CAPTURE_CODE_ACCESSOR)
+                    create.Identifier().Capture(CAPTURE_CODE_ACCESSOR),
                 })),
                 create.Optional(create.And({
                     create.Char('['),
                     create.Integer().Capture(CAPTURE_CODE_INDEX),
-                    create.Char(']')
-                }))
+                    create.Char(']'),
+                })),
             });
         }
 
         static std::unique_ptr<matcher_t> LiteralValueMatchers(const SimpleMatcherFactory& create)
         {
-            return create.Or({
-                create.FloatingPoint(),
-                create.Integer()
-            }).Capture(CAPTURE_LITERAL_VALUE);
+            return create
+                .Or({
+                    create.FloatingPoint(),
+                    create.Integer(),
+                })
+                .Capture(CAPTURE_LITERAL_VALUE);
         }
 
         static std::unique_ptr<matcher_t> LiteralMatchers(const SimpleMatcherFactory& create)
         {
-            return create.And({
-                create.Keyword("float4"),
-                create.Char('('),
-                LiteralValueMatchers(create),
-                create.Char(','),
-                LiteralValueMatchers(create),
-                create.Char(','),
-                LiteralValueMatchers(create),
-                create.Char(','),
-                LiteralValueMatchers(create),
-                create.Char(')'),
-            }).Tag(TAG_LITERAL);
+            return create
+                .And({
+                    create.Keyword("float4"),
+                    create.Char('('),
+                    LiteralValueMatchers(create),
+                    create.Char(','),
+                    LiteralValueMatchers(create),
+                    create.Char(','),
+                    LiteralValueMatchers(create),
+                    create.Char(','),
+                    LiteralValueMatchers(create),
+                    create.Char(')'),
+                })
+                .Tag(TAG_LITERAL);
         }
 
         static std::unique_ptr<matcher_t> MaterialMatchers(const SimpleMatcherFactory& create)
         {
-            return create.And({
-                create.Keyword("material"),
-                create.Char('.'),
+            return create
+                .And({
+                    create.Keyword("material"),
+                    create.Char('.'),
 
-                create.Or({
-                    create.And({
-                        create.Char('#'),
-                        create.Integer().Capture(CAPTURE_MATERIAL_HASH)
+                    create.Or({
+                        create.And({
+                            create.Char('#'),
+                            create.Integer().Capture(CAPTURE_MATERIAL_HASH),
+                        }),
+                        create.Identifier().Capture(CAPTURE_MATERIAL_NAME),
                     }),
-                    create.Identifier().Capture(CAPTURE_MATERIAL_NAME)
                 })
-            }).Tag(TAG_MATERIAL);
+                .Tag(TAG_MATERIAL);
         }
 
     public:
@@ -116,15 +122,15 @@ namespace techset
                 create.Optional(create.And({
                     create.Char('['),
                     create.Integer().Capture(CAPTURE_SHADER_INDEX),
-                    create.Char(']')
+                    create.Char(']'),
                 })),
                 create.Char('='),
                 create.Or({
                     CodeMatchers(create),
                     LiteralMatchers(create),
-                    MaterialMatchers(create)
+                    MaterialMatchers(create),
                 }),
-                create.Char(';')
+                create.Char(';'),
             });
         }
 
@@ -146,7 +152,7 @@ namespace techset
                 source = ShaderArgumentCodeSource(std::move(accessors));
 
             std::string errorMessage;
-            if(!isSampler)
+            if (!isSampler)
             {
                 if (!state->m_acceptor->AcceptShaderConstantArgument(state->m_current_shader, std::move(arg), std::move(source), errorMessage))
                     throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), std::move(errorMessage));
@@ -223,13 +229,13 @@ namespace techset
                 ProcessMaterialArgument(state, result, std::move(arg));
         }
     };
-}
+} // namespace techset
 
 const std::vector<TechniqueParser::sequence_t*>& TechniqueShaderScopeSequences::GetSequences()
 {
     static std::vector<TechniqueParser::sequence_t*> tests({
         new SequenceEndShader(),
-        new SequenceShaderArgument()
+        new SequenceShaderArgument(),
     });
 
     return tests;

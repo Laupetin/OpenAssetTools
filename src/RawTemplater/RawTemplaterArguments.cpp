@@ -3,24 +3,18 @@
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
-const CommandLineOption* const OPTION_HELP = CommandLineOption::Builder::Create()
-                                             .WithShortName("?")
-                                             .WithLongName("help")
-                                             .WithDescription("Displays usage information.")
-                                             .Build();
+const CommandLineOption* const OPTION_HELP =
+    CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
 
-const CommandLineOption* const OPTION_VERBOSE = CommandLineOption::Builder::Create()
-                                                .WithShortName("v")
-                                                .WithLongName("verbose")
-                                                .WithDescription("Outputs a lot more and more detailed messages.")
-                                                .Build();
+const CommandLineOption* const OPTION_VERBOSE =
+    CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
 
 const CommandLineOption* const OPTION_OUTPUT_FOLDER = CommandLineOption::Builder::Create()
-                                                      .WithShortName("o")
-                                                      .WithLongName("output")
-                                                      .WithDescription("Specify the folder to save the generated files. Defaults to the current directory.")
-                                                      .WithParameter("outputPath")
-                                                      .Build();
+                                                          .WithShortName("o")
+                                                          .WithLongName("output")
+                                                          .WithDescription("Specify the folder to save the generated files. Defaults to the current directory.")
+                                                          .WithParameter("outputPath")
+                                                          .Build();
 
 const CommandLineOption* const OPTION_BUILD_LOG = CommandLineOption::Builder::Create()
                                                       .WithLongName("build-log")
@@ -29,21 +23,14 @@ const CommandLineOption* const OPTION_BUILD_LOG = CommandLineOption::Builder::Cr
                                                       .Build();
 
 const CommandLineOption* const OPTION_DEFINE = CommandLineOption::Builder::Create()
-                                               .WithShortName("d")
-                                               .WithLongName("define")
-                                               .WithDescription("Adds a define for the templating process. Can be of format define or define=value.")
-                                               .WithParameter("defineValue")
-                                               .Reusable()
-                                               .Build();
+                                                   .WithShortName("d")
+                                                   .WithLongName("define")
+                                                   .WithDescription("Adds a define for the templating process. Can be of format define or define=value.")
+                                                   .WithParameter("defineValue")
+                                                   .Reusable()
+                                                   .Build();
 
-const CommandLineOption* const COMMAND_LINE_OPTIONS[]
-{
-    OPTION_HELP,
-    OPTION_VERBOSE,
-    OPTION_OUTPUT_FOLDER,
-    OPTION_BUILD_LOG,
-    OPTION_DEFINE
-};
+const CommandLineOption* const COMMAND_LINE_OPTIONS[]{OPTION_HELP, OPTION_VERBOSE, OPTION_OUTPUT_FOLDER, OPTION_BUILD_LOG, OPTION_DEFINE};
 
 RawTemplaterArguments::RawTemplaterArguments()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),

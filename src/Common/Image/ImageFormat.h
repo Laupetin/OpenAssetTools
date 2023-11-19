@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cstdint>
-#include <cstddef>
 #include "D3DFormat.h"
 #include "DxgiFormat.h"
+
+#include <cstddef>
+#include <cstdint>
 
 enum class ImageFormatId
 {
@@ -60,7 +61,7 @@ public:
     static const ImageFormatUnsigned FORMAT_R8_G8_B8_A8;
     static const ImageFormatUnsigned FORMAT_B8_G8_R8_A8;
     static const ImageFormatUnsigned FORMAT_A8;
-    static const ImageFormatUnsigned FORMAT_R16_G16_B16_A16_FLOAT; //TODO: Float not unsigned
+    static const ImageFormatUnsigned FORMAT_R16_G16_B16_A16_FLOAT; // TODO: Float not unsigned
     static const ImageFormatUnsigned FORMAT_R8;
     static const ImageFormatUnsigned FORMAT_R8_A8;
     static const ImageFormatBlockCompressed FORMAT_BC1;
@@ -84,9 +85,18 @@ public:
     unsigned m_a_offset;
     unsigned m_a_size;
 
-    ImageFormatUnsigned(ImageFormatId id, D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat, unsigned bitsPerPixel, unsigned rOffset,
-                        unsigned rSize, unsigned gOffset, unsigned gSize, unsigned bOffset, unsigned bSize,
-                        unsigned aOffset, unsigned aSize);
+    ImageFormatUnsigned(ImageFormatId id,
+                        D3DFORMAT d3dFormat,
+                        DXGI_FORMAT dxgiFormat,
+                        unsigned bitsPerPixel,
+                        unsigned rOffset,
+                        unsigned rSize,
+                        unsigned gOffset,
+                        unsigned gSize,
+                        unsigned bOffset,
+                        unsigned bSize,
+                        unsigned aOffset,
+                        unsigned aSize);
 
     ImageFormatType GetType() const override;
     size_t GetPitch(unsigned mipLevel, unsigned width) const override;

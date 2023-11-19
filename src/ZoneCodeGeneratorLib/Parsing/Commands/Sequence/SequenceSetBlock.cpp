@@ -1,7 +1,7 @@
 #include "SequenceSetBlock.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceSetBlock::SequenceSetBlock()
 {
@@ -14,11 +14,11 @@ SequenceSetBlock::SequenceSetBlock()
         create.Or({
             create.And({
                 create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-                create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY)
+                create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY),
             }),
-            create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY)
+            create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY),
         }),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

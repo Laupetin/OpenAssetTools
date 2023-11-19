@@ -1,7 +1,6 @@
 #include "MenuMatcherScriptInt.h"
 
-MenuMatcherScriptInt::MenuMatcherScriptInt()
-= default;
+MenuMatcherScriptInt::MenuMatcherScriptInt() = default;
 
 MatcherResult<SimpleParserValue> MenuMatcherScriptInt::CanMatch(ILexer<SimpleParserValue>* lexer, const unsigned tokenOffset)
 {

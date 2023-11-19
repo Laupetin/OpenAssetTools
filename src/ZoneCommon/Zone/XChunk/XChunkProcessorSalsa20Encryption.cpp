@@ -2,12 +2,16 @@
 
 #include <cassert>
 
-XChunkProcessorSalsa20Encryption::XChunkProcessorSalsa20Encryption(const int streamCount, std::string& zoneName, const uint8_t* salsa20Key, const size_t keySize)
+XChunkProcessorSalsa20Encryption::XChunkProcessorSalsa20Encryption(const int streamCount,
+                                                                   std::string& zoneName,
+                                                                   const uint8_t* salsa20Key,
+                                                                   const size_t keySize)
     : AbstractSalsa20Processor(streamCount, zoneName, salsa20Key, keySize)
 {
 }
 
-size_t XChunkProcessorSalsa20Encryption::Process(const int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
+size_t XChunkProcessorSalsa20Encryption::Process(
+    const int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
 {
     assert(streamNumber >= 0 && streamNumber < m_stream_count);
     assert(input != nullptr);

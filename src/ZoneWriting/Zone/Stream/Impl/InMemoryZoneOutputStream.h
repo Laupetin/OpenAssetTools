@@ -1,11 +1,11 @@
 #pragma once
+#include "Writing/InMemoryZoneData.h"
+#include "Zone/Stream/IZoneOutputStream.h"
+#include "Zone/XBlock.h"
+
 #include <stack>
 #include <unordered_map>
 #include <vector>
-
-#include "Writing/InMemoryZoneData.h"
-#include "Zone/XBlock.h"
-#include "Zone/Stream/IZoneOutputStream.h"
 
 class InMemoryZoneOutputStream final : public IZoneOutputStream
 {

@@ -1,16 +1,16 @@
 #pragma once
 
+#include "AssetLoading/IAssetLoader.h"
+#include "Game/T6/T6.h"
+#include "IObjLoader.h"
+#include "ObjContainer/SoundBank/SoundBank.h"
+#include "SearchPath/ISearchPath.h"
+
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 #include <stack>
-
-#include "IObjLoader.h"
-#include "AssetLoading/IAssetLoader.h"
-#include "SearchPath/ISearchPath.h"
-#include "Game/T6/T6.h"
-#include "ObjContainer/SoundBank/SoundBank.h"
+#include <string>
 
 namespace T6
 {
@@ -23,8 +23,12 @@ namespace T6
 
         static bool VerifySoundBankChecksum(const SoundBank* soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank);
         static SoundBank* LoadSoundBankForZone(ISearchPath* searchPath, const std::string& soundBankFileName, Zone* zone);
-        static void LoadSoundBankFromLinkedInfo(ISearchPath* searchPath, const std::string& soundBankFileName, const SndRuntimeAssetBank* sndBankLinkedInfo, Zone* zone,
-                                                std::set<std::string>& loadedBanksForZone, std::stack<std::string>& dependenciesToLoad);
+        static void LoadSoundBankFromLinkedInfo(ISearchPath* searchPath,
+                                                const std::string& soundBankFileName,
+                                                const SndRuntimeAssetBank* sndBankLinkedInfo,
+                                                Zone* zone,
+                                                std::set<std::string>& loadedBanksForZone,
+                                                std::stack<std::string>& dependenciesToLoad);
         static void LoadSoundBanksFromAsset(ISearchPath* searchPath, const SndBank* sndBank, Zone* zone, std::set<std::string>& loadedBanksForZone);
 
         static void LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone);
@@ -50,4 +54,4 @@ namespace T6
         bool LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName) const override;
         void FinalizeAssetsForZone(AssetLoadingContext* context) const override;
     };
-}
+} // namespace T6

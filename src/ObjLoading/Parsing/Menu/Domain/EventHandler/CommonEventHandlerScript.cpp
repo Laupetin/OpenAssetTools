@@ -2,8 +2,7 @@
 
 using namespace menu;
 
-CommonEventHandlerScript::CommonEventHandlerScript()
-= default;
+CommonEventHandlerScript::CommonEventHandlerScript() = default;
 
 CommonEventHandlerScript::CommonEventHandlerScript(std::string script)
     : m_script(std::move(script))

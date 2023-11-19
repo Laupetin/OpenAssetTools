@@ -1,11 +1,11 @@
 #pragma once
+#include "Crypto.h"
+#include "Utils/ClassUtils.h"
+#include "Utils/ICapturedDataProvider.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
-
-#include "Utils/ClassUtils.h"
-#include "Crypto.h"
-#include "Utils/ICapturedDataProvider.h"
 
 class AbstractSalsa20Processor : public ICapturedDataProvider
 {

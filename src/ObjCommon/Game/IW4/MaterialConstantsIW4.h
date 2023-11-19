@@ -4,111 +4,80 @@
 
 namespace IW4
 {
-    inline infoParm_t infoParms[]
-    {
-        {"bark", 0x0, 0x100000, 0x0, 0x0},
-        {"brick", 0x0, 0x200000, 0x0, 0x0},
-        {"carpet", 0x0, 0x300000, 0x0, 0x0},
-        {"cloth", 0x0, 0x400000, 0x0, 0x0},
-        {"concrete", 0x0, 0x500000, 0x0, 0x0},
-        {"dirt", 0x0, 0x600000, 0x0, 0x0},
-        {"flesh", 0x0, 0x700000, 0x0, 0x0},
-        {"foliage", 0x1, 0x800000, 0x2, 0x0},
-        {"glass", 0x1, 0x900000, 0x10, 0x0},
-        {"grass", 0x0, 0xa00000, 0x0, 0x0},
-        {"gravel", 0x0, 0xb00000, 0x0, 0x0},
-        {"ice", 0x0, 0xc00000, 0x0, 0x0},
-        {"metal", 0x0, 0xd00000, 0x0, 0x0},
-        {"mud", 0x0, 0xe00000, 0x0, 0x0},
-        {"paper", 0x0, 0xf00000, 0x0, 0x0},
-        {"plaster", 0x0, 0x1000000, 0x0, 0x0},
-        {"rock", 0x0, 0x1100000, 0x0, 0x0},
-        {"sand", 0x0, 0x1200000, 0x0, 0x0},
-        {"snow", 0x0, 0x1300000, 0x0, 0x0},
-        {"water", 0x1, 0x1400000, 0x20, 0x0},
-        {"wood", 0x0, 0x1500000, 0x0, 0x0},
-        {"asphalt", 0x0, 0x1600000, 0x0, 0x0},
-        {"ceramic", 0x0, 0x1700000, 0x0, 0x0},
-        {"plastic", 0x0, 0x1800000, 0x0, 0x0},
-        {"rubber", 0x0, 0x1900000, 0x0, 0x0},
-        {"cushion", 0x0, 0x1a00000, 0x0, 0x0},
-        {"fruit", 0x0, 0x1b00000, 0x0, 0x0},
-        {"paintedmetal", 0x0, 0x1c00000, 0x0, 0x0},
-        {"riotshield", 0x0, 0x1d00000, 0x0, 0x0},
-        {"slush", 0x0, 0x1e00000, 0x0, 0x0},
-        {"opaqueglass", 0x0, 0x900000, 0x0, 0x0},
-        {"clipmissile", 0x1, 0x0, 0x80, 0x0},
-        {"ai_nosight", 0x1, 0x0, 0x1000, 0x0},
-        {"clipshot", 0x1, 0x0, 0x2000, 0x0},
-        {"playerclip", 0x1, 0x0, 0x10000, 0x0},
-        {"monsterclip", 0x1, 0x0, 0x20000, 0x0},
-        {"aiclipallowdeath", 0x1, 0x0, 0x4, 0x0},
-        {"vehicleclip", 0x1, 0x0, 0x200, 0x0},
-        {"itemclip", 0x1, 0x0, 0x400, 0x0},
-        {"nodrop", 0x1, 0x0, 0x80000000, 0x0},
-        {"nonsolid", 0x1, 0x4000, 0x0, 0x0},
-        {"detail", 0x0, 0x0, 0x8000000, 0x0},
-        {"structural", 0x0, 0x0, 0x10000000, 0x0},
-        {"portal", 0x1, 0x80000000, 0x0, 0x0},
-        {"canshootclip", 0x0, 0x0, 0x40, 0x0},
-        {"origin", 0x1, 0x0, 0x0, 0x4},
-        {"sky", 0x0, 0x4, 0x800, 0x0},
-        {"nocastshadow", 0x0, 0x40000, 0x0, 0x0},
-        {"physicsGeom", 0x0, 0x0, 0x0, 0x400},
-        {"lightPortal", 0x0, 0x0, 0x0, 0x2000},
-        {"outdoorBounds", 0x0, 0x0, 0x0, 0x8000},
-        {"slick", 0x0, 0x2, 0x0, 0x0},
-        {"noimpact", 0x0, 0x10, 0x0, 0x0},
-        {"nomarks", 0x0, 0x20, 0x0, 0x0},
-        {"nopenetrate", 0x0, 0x100, 0x0, 0x0},
-        {"ladder", 0x0, 0x8, 0x0, 0x0},
-        {"nodamage", 0x0, 0x1, 0x0, 0x0},
-        {"mantleOn", 0x0, 0x2000000, 0x1000000, 0x0},
-        {"mantleOver", 0x0, 0x4000000, 0x1000000, 0x0},
-        {"stairs", 0x0, 0x200, 0x0, 0x0},
-        {"soft", 0x0, 0x1000, 0x0, 0x0},
-        {"nosteps", 0x0, 0x2000, 0x0, 0x0},
-        {"nodraw", 0x0, 0x80, 0x0, 0x0},
-        {"nolightmap", 0x0, 0x400, 0x0, 0x0},
-        {"nodlight", 0x0, 0x20000, 0x0, 0x0}
+    inline infoParm_t infoParms[]{
+        {"bark",             0x0, 0x100000,   0x0,        0x0   },
+        {"brick",            0x0, 0x200000,   0x0,        0x0   },
+        {"carpet",           0x0, 0x300000,   0x0,        0x0   },
+        {"cloth",            0x0, 0x400000,   0x0,        0x0   },
+        {"concrete",         0x0, 0x500000,   0x0,        0x0   },
+        {"dirt",             0x0, 0x600000,   0x0,        0x0   },
+        {"flesh",            0x0, 0x700000,   0x0,        0x0   },
+        {"foliage",          0x1, 0x800000,   0x2,        0x0   },
+        {"glass",            0x1, 0x900000,   0x10,       0x0   },
+        {"grass",            0x0, 0xa00000,   0x0,        0x0   },
+        {"gravel",           0x0, 0xb00000,   0x0,        0x0   },
+        {"ice",              0x0, 0xc00000,   0x0,        0x0   },
+        {"metal",            0x0, 0xd00000,   0x0,        0x0   },
+        {"mud",              0x0, 0xe00000,   0x0,        0x0   },
+        {"paper",            0x0, 0xf00000,   0x0,        0x0   },
+        {"plaster",          0x0, 0x1000000,  0x0,        0x0   },
+        {"rock",             0x0, 0x1100000,  0x0,        0x0   },
+        {"sand",             0x0, 0x1200000,  0x0,        0x0   },
+        {"snow",             0x0, 0x1300000,  0x0,        0x0   },
+        {"water",            0x1, 0x1400000,  0x20,       0x0   },
+        {"wood",             0x0, 0x1500000,  0x0,        0x0   },
+        {"asphalt",          0x0, 0x1600000,  0x0,        0x0   },
+        {"ceramic",          0x0, 0x1700000,  0x0,        0x0   },
+        {"plastic",          0x0, 0x1800000,  0x0,        0x0   },
+        {"rubber",           0x0, 0x1900000,  0x0,        0x0   },
+        {"cushion",          0x0, 0x1a00000,  0x0,        0x0   },
+        {"fruit",            0x0, 0x1b00000,  0x0,        0x0   },
+        {"paintedmetal",     0x0, 0x1c00000,  0x0,        0x0   },
+        {"riotshield",       0x0, 0x1d00000,  0x0,        0x0   },
+        {"slush",            0x0, 0x1e00000,  0x0,        0x0   },
+        {"opaqueglass",      0x0, 0x900000,   0x0,        0x0   },
+        {"clipmissile",      0x1, 0x0,        0x80,       0x0   },
+        {"ai_nosight",       0x1, 0x0,        0x1000,     0x0   },
+        {"clipshot",         0x1, 0x0,        0x2000,     0x0   },
+        {"playerclip",       0x1, 0x0,        0x10000,    0x0   },
+        {"monsterclip",      0x1, 0x0,        0x20000,    0x0   },
+        {"aiclipallowdeath", 0x1, 0x0,        0x4,        0x0   },
+        {"vehicleclip",      0x1, 0x0,        0x200,      0x0   },
+        {"itemclip",         0x1, 0x0,        0x400,      0x0   },
+        {"nodrop",           0x1, 0x0,        0x80000000, 0x0   },
+        {"nonsolid",         0x1, 0x4000,     0x0,        0x0   },
+        {"detail",           0x0, 0x0,        0x8000000,  0x0   },
+        {"structural",       0x0, 0x0,        0x10000000, 0x0   },
+        {"portal",           0x1, 0x80000000, 0x0,        0x0   },
+        {"canshootclip",     0x0, 0x0,        0x40,       0x0   },
+        {"origin",           0x1, 0x0,        0x0,        0x4   },
+        {"sky",              0x0, 0x4,        0x800,      0x0   },
+        {"nocastshadow",     0x0, 0x40000,    0x0,        0x0   },
+        {"physicsGeom",      0x0, 0x0,        0x0,        0x400 },
+        {"lightPortal",      0x0, 0x0,        0x0,        0x2000},
+        {"outdoorBounds",    0x0, 0x0,        0x0,        0x8000},
+        {"slick",            0x0, 0x2,        0x0,        0x0   },
+        {"noimpact",         0x0, 0x10,       0x0,        0x0   },
+        {"nomarks",          0x0, 0x20,       0x0,        0x0   },
+        {"nopenetrate",      0x0, 0x100,      0x0,        0x0   },
+        {"ladder",           0x0, 0x8,        0x0,        0x0   },
+        {"nodamage",         0x0, 0x1,        0x0,        0x0   },
+        {"mantleOn",         0x0, 0x2000000,  0x1000000,  0x0   },
+        {"mantleOver",       0x0, 0x4000000,  0x1000000,  0x0   },
+        {"stairs",           0x0, 0x200,      0x0,        0x0   },
+        {"soft",             0x0, 0x1000,     0x0,        0x0   },
+        {"nosteps",          0x0, 0x2000,     0x0,        0x0   },
+        {"nodraw",           0x0, 0x80,       0x0,        0x0   },
+        {"nolightmap",       0x0, 0x400,      0x0,        0x0   },
+        {"nodlight",         0x0, 0x20000,    0x0,        0x0   },
     };
 
-    inline const char* surfaceTypeNames[]
-    {
-        "default",
-        "bark",
-        "brick",
-        "carpet",
-        "cloth",
-        "concrete",
-        "dirt",
-        "flesh",
-        "foliage",
-        "glass",
-        "grass",
-        "gravel",
-        "ice",
-        "metal",
-        "mud",
-        "paper",
-        "plaster",
-        "rock",
-        "sand",
-        "snow",
-        "water",
-        "wood",
-        "asphalt",
-        "ceramic",
-        "plastic",
-        "rubber",
-        "cushion",
-        "fruit",
-        "paintedmetal",
-        "riotshield",
-        "slush"
+    inline const char* surfaceTypeNames[]{
+        "default", "bark",    "brick",   "carpet", "cloth",   "concrete", "dirt",         "flesh",      "foliage", "glass", "grass",
+        "gravel",  "ice",     "metal",   "mud",    "paper",   "plaster",  "rock",         "sand",       "snow",    "water", "wood",
+        "asphalt", "ceramic", "plastic", "rubber", "cushion", "fruit",    "paintedmetal", "riotshield", "slush",
     };
     static_assert(std::extent_v<decltype(surfaceTypeNames)> == SURF_TYPE_NUM);
-
 
     enum class BlendFunc_e
     {
@@ -131,15 +100,14 @@ namespace IW4
     constexpr auto GDT_BLEND_FUNC_MULTIPLY = "Multiply";
     constexpr auto GDT_BLEND_FUNC_SCREEN_ADD = "Screen Add";
 
-    inline const char* GdtBlendFuncNames[]
-    {
+    inline const char* GdtBlendFuncNames[]{
         GDT_BLEND_FUNC_UNKNOWN,
         GDT_BLEND_FUNC_CUSTOM,
         GDT_BLEND_FUNC_REPLACE,
         GDT_BLEND_FUNC_BLEND,
         GDT_BLEND_FUNC_ADD,
         GDT_BLEND_FUNC_MULTIPLY,
-        GDT_BLEND_FUNC_SCREEN_ADD
+        GDT_BLEND_FUNC_SCREEN_ADD,
     };
     static_assert(std::extent_v<decltype(GdtBlendFuncNames)> == static_cast<size_t>(BlendFunc_e::COUNT));
 
@@ -164,15 +132,14 @@ namespace IW4
     constexpr auto GDT_BLEND_OP_MIN = "Min";
     constexpr auto GDT_BLEND_OP_MAX = "Max";
 
-    inline const char* GdtBlendOpNames[]
-    {
+    inline const char* GdtBlendOpNames[]{
         GDT_BLEND_OP_UNKNOWN,
         GDT_BLEND_OP_DISABLE,
         GDT_BLEND_OP_ADD,
         GDT_BLEND_OP_SUBTRACT,
         GDT_BLEND_OP_REV_SUBTRACT,
         GDT_BLEND_OP_MIN,
-        GDT_BLEND_OP_MAX
+        GDT_BLEND_OP_MAX,
     };
     static_assert(std::extent_v<decltype(GdtBlendOpNames)> == static_cast<size_t>(BlendOp_e::COUNT));
 
@@ -194,8 +161,7 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtCustomBlendFuncNames[]
-    {
+    inline const char* GdtCustomBlendFuncNames[]{
         "",
         "Disable",
         "Zero",
@@ -207,7 +173,7 @@ namespace IW4
         "DestAlpha",
         "InvDestAlpha",
         "DestColor",
-        "InvDestColor"
+        "InvDestColor",
     };
     static_assert(std::extent_v<decltype(GdtCustomBlendFuncNames)> == static_cast<size_t>(CustomBlendFunc_e::COUNT));
 
@@ -228,13 +194,12 @@ namespace IW4
     constexpr auto GDT_ALPHA_TEST_LT128 = "LT128";
     constexpr auto GDT_ALPHA_TEST_GE128 = "GE128";
 
-    inline const char* GdtAlphaTestNames[]
-    {
+    inline const char* GdtAlphaTestNames[]{
         GDT_ALPHA_TEST_UNKNOWN,
         GDT_ALPHA_TEST_ALWAYS,
         GDT_ALPHA_TEST_GT0,
         GDT_ALPHA_TEST_LT128,
-        GDT_ALPHA_TEST_GE128
+        GDT_ALPHA_TEST_GE128,
     };
     static_assert(std::extent_v<decltype(GdtAlphaTestNames)> == static_cast<size_t>(AlphaTest_e::COUNT));
 
@@ -250,14 +215,13 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtDepthTestNames[]
-    {
+    inline const char* GdtDepthTestNames[]{
         "",
         "LessEqual*",
         "Less",
         "Equal",
         "Always",
-        "Disable"
+        "Disable",
     };
     static_assert(std::extent_v<decltype(GdtDepthTestNames)> == static_cast<size_t>(DepthTest_e::COUNT));
 
@@ -270,19 +234,17 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtStateBitsEnabledStatusNames[]
-    {
+    inline const char* GdtStateBitsEnabledStatusNames[]{
         "",
         "Enable",
-        "Disable"
+        "Disable",
     };
     static_assert(std::extent_v<decltype(GdtStateBitsEnabledStatusNames)> == static_cast<size_t>(StateBitsEnabledStatus_e::COUNT));
 
-    inline const char* GdtStateBitsOnOffStatusNames[]
-    {
+    inline const char* GdtStateBitsOnOffStatusNames[]{
         "",
         "On",
-        "Off"
+        "Off",
     };
     static_assert(std::extent_v<decltype(GdtStateBitsOnOffStatusNames)> == static_cast<size_t>(StateBitsEnabledStatus_e::COUNT));
 
@@ -296,12 +258,11 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtCullFaceNames[]
-    {
+    inline const char* GdtCullFaceNames[]{
         "",
         "None",
         "Back*",
-        "Front"
+        "Front",
     };
     static_assert(std::extent_v<decltype(GdtCullFaceNames)> == static_cast<size_t>(CullFace_e::COUNT));
 
@@ -316,13 +277,12 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtPolygonOffsetNames[]
-    {
+    inline const char* GdtPolygonOffsetNames[]{
         "",
         "0",
         "1",
         "2",
-        "shadowMap"
+        "shadowMap",
     };
     static_assert(std::extent_v<decltype(GdtPolygonOffsetNames)> == static_cast<size_t>(PolygonOffset_e::COUNT));
 
@@ -342,12 +302,11 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtStencilModeNames[]
-    {
+    inline const char* GdtStencilModeNames[]{
         "",
         "Disable",
         "One-sided",
-        "Two-sided"
+        "Two-sided",
     };
     static_assert(std::extent_v<decltype(GdtStencilModeNames)> == static_cast<size_t>(StencilMode_e::COUNT));
 
@@ -366,8 +325,7 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtStencilFuncNames[]
-    {
+    inline const char* GdtStencilFuncNames[]{
         "",
         "Never",
         "Less",
@@ -376,7 +334,7 @@ namespace IW4
         "Greater",
         "NotEqual",
         "GreaterEqual",
-        "Always"
+        "Always",
     };
     static_assert(std::extent_v<decltype(GdtStencilFuncNames)> == static_cast<size_t>(StencilFunc_e::COUNT));
 
@@ -395,8 +353,7 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtStencilOpNames[]
-    {
+    inline const char* GdtStencilOpNames[]{
         "",
         "Keep",
         "Zero",
@@ -405,7 +362,7 @@ namespace IW4
         "DecrSat",
         "Invert",
         "Incr",
-        "Decr"
+        "Decr",
     };
     static_assert(std::extent_v<decltype(GdtStencilOpNames)> == static_cast<size_t>(StencilOp_e::COUNT));
 
@@ -420,13 +377,12 @@ namespace IW4
         COUNT
     };
 
-    inline const char* GdtTileModeNames[]
-    {
+    inline const char* GdtTileModeNames[]{
         "",
         "tile both*",
         "tile horizontal",
         "tile vertical",
-        "no tile"
+        "no tile",
     };
     static_assert(std::extent_v<decltype(GdtTileModeNames)> == static_cast<size_t>(TileMode_e::COUNT));
 
@@ -443,15 +399,14 @@ namespace IW4
         COUNT
     };
 
-    static const char* GdtSamplerFilterNames[]
-    {
+    static const char* GdtSamplerFilterNames[]{
         "",
         "mip standard (2x bilinear)*",
         "mip expensive (4x bilinear)",
         "mip more expensive (2x trilinear)",
         "mip most expensive (4x trilinear)",
         "nomip nearest",
-        "nomip bilinear"
+        "nomip bilinear",
     };
     static_assert(std::extent_v<decltype(GdtSamplerFilterNames)> == static_cast<size_t>(GdtFilter_e::COUNT));
 
@@ -496,8 +451,7 @@ namespace IW4
     constexpr auto GDT_MATERIAL_TYPE_WORLD_PHONG = "world phong";
     constexpr auto GDT_MATERIAL_TYPE_WORLD_UNLIT = "world unlit";
 
-    inline const char* GdtMaterialTypeNames[]
-    {
+    inline const char* GdtMaterialTypeNames[]{
         GDT_MATERIAL_TYPE_UNKNOWN,
         GDT_MATERIAL_TYPE_2D,
         GDT_MATERIAL_TYPE_CUSTOM,
@@ -514,7 +468,7 @@ namespace IW4
         GDT_MATERIAL_TYPE_UNLIT,
         GDT_MATERIAL_TYPE_WATER,
         GDT_MATERIAL_TYPE_WORLD_PHONG,
-        GDT_MATERIAL_TYPE_WORLD_UNLIT
+        GDT_MATERIAL_TYPE_WORLD_UNLIT,
     };
     static_assert(std::extent_v<decltype(GdtMaterialTypeNames)> == static_cast<size_t>(MATERIAL_TYPE_COUNT));
 
@@ -541,62 +495,61 @@ namespace IW4
     constexpr auto GDT_SORTKEY_AFTER_EFFECT_TOP = "after effects - top";
     constexpr auto GDT_SORTKEY_VIEWMODEL_EFFECT = "viewmodel effect";
 
-    inline const char* SortKeyNames[]
-    {
-        GDT_SORTKEY_OPAQUE_AMBIENT, // 0
-        GDT_SORTKEY_OPAQUE, // 1
-        GDT_SORTKEY_SKY, // 2
-        GDT_SORTKEY_SKYBOX, // 3
-        nullptr, // ? 4
-        nullptr, // ? 5
-        GDT_SORTKEY_DECAL_BOTTOM_1, // 6
-        GDT_SORTKEY_DECAL_BOTTOM_2, // 7
-        GDT_SORTKEY_DECAL_BOTTOM_3, // 8
-        GDT_SORTKEY_DECAL_STATIC, // 9
-        GDT_SORTKEY_DECAL_MIDDLE_1, // 10
-        GDT_SORTKEY_DECAL_MIDDLE_2, // 11
-        GDT_SORTKEY_DECAL_MIDDLE_3, // 12
+    inline const char* SortKeyNames[]{
+        GDT_SORTKEY_OPAQUE_AMBIENT,      // 0
+        GDT_SORTKEY_OPAQUE,              // 1
+        GDT_SORTKEY_SKY,                 // 2
+        GDT_SORTKEY_SKYBOX,              // 3
+        nullptr,                         // ? 4
+        nullptr,                         // ? 5
+        GDT_SORTKEY_DECAL_BOTTOM_1,      // 6
+        GDT_SORTKEY_DECAL_BOTTOM_2,      // 7
+        GDT_SORTKEY_DECAL_BOTTOM_3,      // 8
+        GDT_SORTKEY_DECAL_STATIC,        // 9
+        GDT_SORTKEY_DECAL_MIDDLE_1,      // 10
+        GDT_SORTKEY_DECAL_MIDDLE_2,      // 11
+        GDT_SORTKEY_DECAL_MIDDLE_3,      // 12
         GDT_SORTKEY_DECAL_WEAPON_IMPACT, // 13
-        nullptr, // ? 14
-        nullptr, // ? 15
-        nullptr, // ? 16
-        nullptr, // ? 17
-        nullptr, // ? 18
-        nullptr, // ? 19
-        nullptr, // ? 20
-        nullptr, // ? 21
-        nullptr, // - 22
-        nullptr, // - 23
-        GDT_SORTKEY_WINDOW_INSIDE, // 24
-        GDT_SORTKEY_WINDOW_OUTSIDE, // 25
-        nullptr, // ? 26
-        nullptr, // ? 27
-        nullptr, // ? 28
-        nullptr, // ? 29
-        nullptr, // ? 30
-        nullptr, // ? 31
-        nullptr, // ? 32
-        nullptr, // ? 33
-        nullptr, // ? 34
-        nullptr, // ? 35
-        nullptr, // ? 36
-        nullptr, // ? 37
-        nullptr, // ? 38
-        nullptr, // ? 39
-        nullptr, // ? 40
-        nullptr, // ? 41
-        nullptr, // ? 42
-        GDT_SORTKEY_DISTORTION, // 43
-        nullptr, // ? 44
-        nullptr, // ? 45
-        nullptr, // - 46
-        GDT_SORTKEY_BLEND_ADDITIVE, // 47
-        GDT_SORTKEY_EFFECT_AUTO_SORT, // 48
+        nullptr,                         // ? 14
+        nullptr,                         // ? 15
+        nullptr,                         // ? 16
+        nullptr,                         // ? 17
+        nullptr,                         // ? 18
+        nullptr,                         // ? 19
+        nullptr,                         // ? 20
+        nullptr,                         // ? 21
+        nullptr,                         // - 22
+        nullptr,                         // - 23
+        GDT_SORTKEY_WINDOW_INSIDE,       // 24
+        GDT_SORTKEY_WINDOW_OUTSIDE,      // 25
+        nullptr,                         // ? 26
+        nullptr,                         // ? 27
+        nullptr,                         // ? 28
+        nullptr,                         // ? 29
+        nullptr,                         // ? 30
+        nullptr,                         // ? 31
+        nullptr,                         // ? 32
+        nullptr,                         // ? 33
+        nullptr,                         // ? 34
+        nullptr,                         // ? 35
+        nullptr,                         // ? 36
+        nullptr,                         // ? 37
+        nullptr,                         // ? 38
+        nullptr,                         // ? 39
+        nullptr,                         // ? 40
+        nullptr,                         // ? 41
+        nullptr,                         // ? 42
+        GDT_SORTKEY_DISTORTION,          // 43
+        nullptr,                         // ? 44
+        nullptr,                         // ? 45
+        nullptr,                         // - 46
+        GDT_SORTKEY_BLEND_ADDITIVE,      // 47
+        GDT_SORTKEY_EFFECT_AUTO_SORT,    // 48
         GDT_SORTKEY_AFTER_EFFECT_BOTTOM, // 49
         GDT_SORTKEY_AFTER_EFFECT_MIDDLE, // 50
-        GDT_SORTKEY_AFTER_EFFECT_TOP, // 51
-        nullptr, // - 52
-        GDT_SORTKEY_VIEWMODEL_EFFECT, // 53
+        GDT_SORTKEY_AFTER_EFFECT_TOP,    // 51
+        nullptr,                         // - 52
+        GDT_SORTKEY_VIEWMODEL_EFFECT,    // 53
     };
     static_assert(std::extent_v<decltype(SortKeyNames)> == static_cast<size_t>(SORTKEY_MAX));
 
@@ -628,8 +581,7 @@ namespace IW4
     constexpr auto GDT_CUSTOM_MATERIAL_TYPE_SHADOWOVERLAY = "mtl_shadowoverlay";
     constexpr auto GDT_CUSTOM_MATERIAL_TYPE_SPLATTER = "mtl_splatter";
 
-    inline const char* GdtCustomMaterialTypeNames[]
-    {
+    inline const char* GdtCustomMaterialTypeNames[]{
         GDT_CUSTOM_MATERIAL_TYPE_NONE,
         GDT_CUSTOM_MATERIAL_TYPE_CUSTOM,
         GDT_CUSTOM_MATERIAL_TYPE_PHONG_FLAG,
@@ -638,7 +590,7 @@ namespace IW4
         GDT_CUSTOM_MATERIAL_TYPE_REFLEXSIGHT,
         GDT_CUSTOM_MATERIAL_TYPE_SHADOWCLEAR,
         GDT_CUSTOM_MATERIAL_TYPE_SHADOWOVERLAY,
-        GDT_CUSTOM_MATERIAL_TYPE_SPLATTER
+        GDT_CUSTOM_MATERIAL_TYPE_SPLATTER,
     };
     static_assert(std::extent_v<decltype(GdtCustomMaterialTypeNames)> == static_cast<size_t>(CUSTOM_MATERIAL_TYPE_COUNT));
-}
+} // namespace IW4

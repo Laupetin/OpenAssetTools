@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
+#include "Zone/ZoneTypes.h"
+
 #include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "Utils/ClassUtils.h"
-#include "Zone/ZoneTypes.h"
 
 class ZoneScriptStrings
 {

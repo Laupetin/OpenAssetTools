@@ -25,4 +25,4 @@ namespace menu
 
         _NODISCARD virtual CommonEventHandlerElementType GetType() const = 0;
     };
-}
+} // namespace menu

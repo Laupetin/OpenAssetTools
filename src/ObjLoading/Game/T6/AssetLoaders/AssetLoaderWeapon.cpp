@@ -1,18 +1,17 @@
 #include "AssetLoaderWeapon.h"
 
-#include <cstring>
-#include <iostream>
-#include <cassert>
-
-
 #include "AssetLoaderWeaponAttachmentUnique.h"
-#include "Utils/ClassUtils.h"
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/WeaponFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+#include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 using namespace T6;
 
@@ -88,7 +87,8 @@ namespace T6
 
             if (pairs.size() > std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
             {
-                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << " notetracksoundmap entries!" << std::endl;
+                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << " notetracksoundmap entries!"
+                          << std::endl;
                 return false;
             }
 
@@ -166,15 +166,15 @@ namespace T6
 
                 if (static_cast<unsigned>(attachmentAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                 {
-                    std::cout << "Invalid attachment type " << attachmentAsset->attachmentType << " for attachment asset \"" << attachmentName << "\"" << std::endl;
+                    std::cout << "Invalid attachment type " << attachmentAsset->attachmentType << " for attachment asset \"" << attachmentName << "\""
+                              << std::endl;
                     return false;
                 }
 
                 if (attachments[attachmentAsset->attachmentType] != nullptr)
                 {
-                    std::cout << "Already loaded attachment with same type " << attachmentAsset->attachmentType
-                        << ": \"" << attachments[attachmentAsset->attachmentType]->szInternalName << "\", \""
-                        << attachmentName << "\"" << std::endl;
+                    std::cout << "Already loaded attachment with same type " << attachmentAsset->attachmentType << ": \""
+                              << attachments[attachmentAsset->attachmentType]->szInternalName << "\", \"" << attachmentName << "\"" << std::endl;
                     return false;
                 }
 
@@ -219,8 +219,8 @@ namespace T6
                     if (attachmentCombinationIndex >= std::extent<decltype(WeaponFullDef::attachmentUniques)>::value)
                     {
                         std::cout << "Cannot have more than "
-                            << (std::extent<decltype(WeaponFullDef::attachmentUniques)>::value - std::extent<decltype(WeaponFullDef::attachments)>::value)
-                            << " combined attachment attachment unique entries!" << std::endl;
+                                  << (std::extent<decltype(WeaponFullDef::attachmentUniques)>::value - std::extent<decltype(WeaponFullDef::attachments)>::value)
+                                  << " combined attachment attachment unique entries!" << std::endl;
                         return false;
                     }
 
@@ -231,15 +231,16 @@ namespace T6
                 {
                     if (static_cast<unsigned>(attachmentUniqueAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                     {
-                        std::cout << "Invalid attachment type " << attachmentUniqueAsset->attachmentType << " for attachment unique asset \"" << attachmentUniqueName << "\"" << std::endl;
+                        std::cout << "Invalid attachment type " << attachmentUniqueAsset->attachmentType << " for attachment unique asset \""
+                                  << attachmentUniqueName << "\"" << std::endl;
                         return false;
                     }
 
                     if (attachmentUniques[attachmentUniqueAsset->attachmentType] != nullptr)
                     {
-                        std::cout << "Already loaded attachment unique with same type " << attachmentUniqueAsset->attachmentType
-                            << ": \"" << attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName << "\", \""
-                            << attachmentUniqueName << "\"" << std::endl;
+                        std::cout << "Already loaded attachment unique with same type " << attachmentUniqueAsset->attachmentType << ": \""
+                                  << attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName << "\", \"" << attachmentUniqueName << "\""
+                                  << std::endl;
                         return false;
                     }
 
@@ -352,13 +353,18 @@ namespace T6
         }
 
     public:
-        InfoStringToWeaponConverter(const InfoString& infoString, WeaponFullDef* weaponFullDef, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-                                    const cspField_t* fields, const size_t fieldCount)
+        InfoStringToWeaponConverter(const InfoString& infoString,
+                                    WeaponFullDef* weaponFullDef,
+                                    ZoneScriptStrings& zoneScriptStrings,
+                                    MemoryManager* memory,
+                                    IAssetLoadingManager* manager,
+                                    const cspField_t* fields,
+                                    const size_t fieldCount)
             : InfoStringToStructConverter(infoString, weaponFullDef, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace T6
 
 void AssetLoaderWeapon::LinkWeaponFullDefSubStructs(WeaponFullDef* weapon)
 {
@@ -423,13 +429,19 @@ bool AssetLoaderWeapon::IsFxOverride(FxEffectDef* effect1, FxEffectDef* effect2)
     return strcmp(effect1->name, effect2->name) != 0;
 }
 
-void AssetLoaderWeapon::HandleSoundOverride(WeaponAttachmentUnique* attachmentUnique, const char* snd1, const char* snd2, const eAttachmentOverrideSounds sndOverrideIndex)
+void AssetLoaderWeapon::HandleSoundOverride(WeaponAttachmentUnique* attachmentUnique,
+                                            const char* snd1,
+                                            const char* snd2,
+                                            const eAttachmentOverrideSounds sndOverrideIndex)
 {
     if (IsStringOverride(snd1, snd2))
         attachmentUnique->soundOverrides |= 1 << static_cast<unsigned>(sndOverrideIndex);
 }
 
-void AssetLoaderWeapon::HandleFxOverride(WeaponAttachmentUnique* attachmentUnique, FxEffectDef* effect1, FxEffectDef* effect2, const eAttachmentOverrideEffects fxOverrideIndex)
+void AssetLoaderWeapon::HandleFxOverride(WeaponAttachmentUnique* attachmentUnique,
+                                         FxEffectDef* effect1,
+                                         FxEffectDef* effect2,
+                                         const eAttachmentOverrideEffects fxOverrideIndex)
 {
     if (IsFxOverride(effect1, effect2))
         attachmentUnique->effectOverrides |= 1 << static_cast<unsigned>(fxOverrideIndex);
@@ -450,15 +462,20 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigne
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireSound, attachmentUnique->fireSound, ATTACHMENT_OVERRIDE_SOUND_FIRE);
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireSoundPlayer, attachmentUnique->fireSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_PLAYER);
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopSound, attachmentUnique->fireLoopSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP);
-    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopSoundPlayer, attachmentUnique->fireLoopSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_PLAYER);
+    HandleSoundOverride(
+        attachmentUnique, weapon->weapDef.fireLoopSoundPlayer, attachmentUnique->fireLoopSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_PLAYER);
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopEndSound, attachmentUnique->fireLoopEndSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_END);
-    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLoopEndSoundPlayer, attachmentUnique->fireLoopEndSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_END_PLAYER);
+    HandleSoundOverride(
+        attachmentUnique, weapon->weapDef.fireLoopEndSoundPlayer, attachmentUnique->fireLoopEndSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LOOP_END_PLAYER);
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStartSound, attachmentUnique->fireStartSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_START);
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStopSound, attachmentUnique->fireStopSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_STOP);
-    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStartSoundPlayer, attachmentUnique->fireStartSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_START_PLAYER);
-    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireStopSoundPlayer, attachmentUnique->fireStopSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_STOP_PLAYER);
+    HandleSoundOverride(
+        attachmentUnique, weapon->weapDef.fireStartSoundPlayer, attachmentUnique->fireStartSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_START_PLAYER);
+    HandleSoundOverride(
+        attachmentUnique, weapon->weapDef.fireStopSoundPlayer, attachmentUnique->fireStopSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_STOP_PLAYER);
     HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLastSound, attachmentUnique->fireLastSound, ATTACHMENT_OVERRIDE_SOUND_FIRE_LAST);
-    HandleSoundOverride(attachmentUnique, weapon->weapDef.fireLastSoundPlayer, attachmentUnique->fireLastSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LAST_PLAYER);
+    HandleSoundOverride(
+        attachmentUnique, weapon->weapDef.fireLastSoundPlayer, attachmentUnique->fireLastSoundPlayer, ATTACHMENT_OVERRIDE_SOUND_FIRE_LAST_PLAYER);
 
     attachmentUnique->effectOverrides = 0;
     HandleFxOverride(attachmentUnique, weapon->weapDef.viewFlashEffect, attachmentUnique->viewFlashEffect, ATTACHMENT_OVERRIDE_EFFECT_VIEW_FLASH);
@@ -468,7 +485,8 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigne
     if (attachmentUnique->combinedAttachmentTypeMask == 0)
     {
         WeaponAttachmentUnique* lastSibling = nullptr;
-        for (auto attachmentUniqueIndex = std::extent<decltype(WeaponFullDef::attachments)>::value; attachmentUniqueIndex < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value;
+        for (auto attachmentUniqueIndex = std::extent<decltype(WeaponFullDef::attachments)>::value;
+             attachmentUniqueIndex < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value;
              attachmentUniqueIndex++)
         {
             if (weapon->attachmentUniques[attachmentUniqueIndex] != nullptr
@@ -476,7 +494,8 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigne
                 && weapon->attachmentUniques[attachmentUniqueIndex]->attachmentType != attachmentUnique->attachmentType)
             {
                 std::vector<eAttachment> attachments;
-                if(AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(weapon->attachmentUniques[attachmentUniqueIndex]->szInternalName, attachments)
+                if (AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(weapon->attachmentUniques[attachmentUniqueIndex]->szInternalName,
+                                                                                       attachments)
                     && attachments.front() == attachmentUnique->attachmentType)
                 {
                     if (lastSibling == nullptr)
@@ -506,13 +525,15 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon)
     }
 }
 
-bool AssetLoaderWeapon::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderWeapon::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
     auto* weaponFullDef = memory->Create<WeaponFullDef>();
     memset(weaponFullDef, 0, sizeof(WeaponFullDef));
     LinkWeaponFullDefSubStructs(weaponFullDef);
 
-    InfoStringToWeaponConverter converter(infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent<decltype(weapon_fields)>::value);
+    InfoStringToWeaponConverter converter(
+        infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent<decltype(weapon_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse weapon: \"" << assetName << "\"" << std::endl;
@@ -545,14 +566,15 @@ bool AssetLoaderWeapon::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderWeapon::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderWeapon::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON, assetName);
     if (gdtEntry == nullptr)
         return false;
 
     InfoString infoString;
-    if(!infoString.FromGdtProperties(*gdtEntry))
+    if (!infoString.FromGdtProperties(*gdtEntry))
     {
         std::cout << "Failed to read weapon gdt entry: \"" << assetName << "\"" << std::endl;
         return true;
@@ -566,7 +588,8 @@ bool AssetLoaderWeapon::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderWeapon::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderWeapon::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "weapons/" + assetName;
     const auto file = searchPath->Open(fileName);

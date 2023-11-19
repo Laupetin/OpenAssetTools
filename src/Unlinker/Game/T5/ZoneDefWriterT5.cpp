@@ -1,9 +1,9 @@
 #include "ZoneDefWriterT5.h"
 
-#include <cassert>
-
-#include "Game/T5/GameT5.h"
 #include "Game/T5/GameAssetPoolT5.h"
+#include "Game/T5/GameT5.h"
+
+#include <cassert>
 
 using namespace T5;
 
@@ -12,9 +12,7 @@ bool ZoneDefWriter::CanHandleZone(Zone* zone) const
     return zone->m_game == &g_GameT5;
 }
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
-{
-}
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const {}
 
 void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
 {

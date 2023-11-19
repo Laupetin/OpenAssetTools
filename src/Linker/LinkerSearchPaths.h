@@ -1,10 +1,9 @@
 #pragma once
+#include "LinkerArgs.h"
 #include "SearchPath/SearchPaths.h"
 
 #include <memory>
 #include <vector>
-
-#include "LinkerArgs.h"
 
 class LinkerSearchPaths
 {

@@ -1,9 +1,9 @@
 #include "TechniquePassScopeSequences.h"
 
+#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+
 #include <cassert>
 #include <sstream>
-
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 using namespace techset;
 
@@ -19,7 +19,7 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Char('}').Capture(CAPTURE_FIRST_TOKEN)
+                create.Char('}').Capture(CAPTURE_FIRST_TOKEN),
             });
         }
 
@@ -49,7 +49,7 @@ namespace techset
             AddMatchers({
                 create.Keyword("stateMap").Capture(CAPTURE_START),
                 create.String().Capture(CAPTURE_STATE_MAP_NAME),
-                create.Char(';')
+                create.Char(';'),
             });
         }
 
@@ -83,10 +83,12 @@ namespace techset
             const SimpleMatcherFactory create(this);
 
             AddMatchers({
-                create.Or({
-                    create.Keyword("vertexShader").Tag(TAG_VERTEX_SHADER),
-                    create.Keyword("pixelShader").Tag(TAG_PIXEL_SHADER),
-                }).Capture(CAPTURE_START),
+                create
+                    .Or({
+                        create.Keyword("vertexShader").Tag(TAG_VERTEX_SHADER),
+                        create.Keyword("pixelShader").Tag(TAG_PIXEL_SHADER),
+                    })
+                    .Capture(CAPTURE_START),
                 create.Or({
                     create.And({
                         create.Integer().Capture(CAPTURE_VERSION_MAJOR),
@@ -94,10 +96,10 @@ namespace techset
                         create.Integer().Capture(CAPTURE_VERSION_MINOR),
                     }),
                     create.FloatingPoint().Capture(CAPTURE_VERSION), // This is dumb but cod devs made the format so cannot change it
-                    create.String().Capture(CAPTURE_VERSION)
+                    create.String().Capture(CAPTURE_VERSION),
                 }),
                 create.String().Capture(CAPTURE_SHADER_NAME),
-                create.Char('{')
+                create.Char('{'),
             });
         }
 
@@ -152,7 +154,7 @@ namespace techset
                 create.Optional(create.And({
                     create.Char('['),
                     create.Integer().Capture(CAPTURE_STREAM_DESTINATION_INDEX),
-                    create.Char(']')
+                    create.Char(']'),
                 })),
 
                 create.Char('='),
@@ -163,10 +165,10 @@ namespace techset
                 create.Optional(create.And({
                     create.Char('['),
                     create.Integer().Capture(CAPTURE_STREAM_SOURCE_INDEX),
-                    create.Char(']')
+                    create.Char(']'),
                 })),
 
-                create.Char(';')
+                create.Char(';'),
             });
         }
 
@@ -198,7 +200,7 @@ namespace techset
                 throw ParsingException(firstToken.GetPos(), std::move(errorMessage));
         }
     };
-}
+} // namespace techset
 
 const std::vector<TechniqueParser::sequence_t*>& TechniquePassScopeSequences::GetSequences()
 {
@@ -206,7 +208,7 @@ const std::vector<TechniqueParser::sequence_t*>& TechniquePassScopeSequences::Ge
         new SequenceEndPass(),
         new SequenceStateMap(),
         new SequenceShader(),
-        new SequenceVertexStreamRouting()
+        new SequenceVertexStreamRouting(),
     });
 
     return tests;

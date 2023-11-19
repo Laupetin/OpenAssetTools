@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-
-#include "Parsing/Simple/SimpleParserValue.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
+#include "Parsing/Simple/SimpleParserValue.h"
+
+#include <vector>
 
 class SimpleMatcherAnyCharacterBesides final : public AbstractMatcher<SimpleParserValue>
 {

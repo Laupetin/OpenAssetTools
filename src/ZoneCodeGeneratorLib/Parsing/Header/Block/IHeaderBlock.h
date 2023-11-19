@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-
-#include "Parsing/Sequence/AbstractSequence.h"
 #include "Parsing/Header/Impl/HeaderParserState.h"
+#include "Parsing/Sequence/AbstractSequence.h"
+
+#include <vector>
 
 enum class HeaderBlockType
 {
@@ -16,6 +16,7 @@ enum class HeaderBlockType
 
 class HeaderParserValue;
 class HeaderParserState;
+
 class IHeaderBlock
 {
 public:

@@ -571,8 +571,8 @@ namespace IW4
         unsigned int noScalePartBits[6];
         uint16_t* boneNames;
         unsigned char* parentList;
-        int16_t(*quats)[4];
-        float(*trans)[3];
+        int16_t (*quats)[4];
+        float (*trans)[3];
         unsigned char* partClassification;
         DObjAnimMat* baseMat;
         Material** materialHandles;
@@ -669,7 +669,7 @@ namespace IW4
         char nameStart;
         char nameEnd;
         unsigned char samplerState; // SamplerStateBits_e
-        unsigned char semantic; // TextureSemantic
+        unsigned char semantic;     // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -878,13 +878,13 @@ namespace IW4
 
         SORTKEY_TRANS_START = 6,
 
-        SORTKEY_DECAL_BOTTOM_1 = 6, // prob decal - bottom 1
-        SORTKEY_DECAL_BOTTOM_2 = 7, // prob decal - bottom 2
-        SORTKEY_DECAL_BOTTOM_3 = 8, // prob decal - bottom 3
-        SORTKEY_DECAL_STATIC_DECAL = 9, // prob decal - static decal
-        SORTKEY_DECAL_MIDDLE_1 = 10, // prob decal - middle 1
-        SORTKEY_DECAL_MIDDLE_2 = 11, // prob decal - middle 2
-        SORTKEY_DECAL_MIDDLE_3 = 12, // prob decal - middle 3
+        SORTKEY_DECAL_BOTTOM_1 = 6,       // prob decal - bottom 1
+        SORTKEY_DECAL_BOTTOM_2 = 7,       // prob decal - bottom 2
+        SORTKEY_DECAL_BOTTOM_3 = 8,       // prob decal - bottom 3
+        SORTKEY_DECAL_STATIC_DECAL = 9,   // prob decal - static decal
+        SORTKEY_DECAL_MIDDLE_1 = 10,      // prob decal - middle 1
+        SORTKEY_DECAL_MIDDLE_2 = 11,      // prob decal - middle 2
+        SORTKEY_DECAL_MIDDLE_3 = 12,      // prob decal - middle 3
         SORTKEY_DECAL_WEAPON_IMPACT = 13, // prob decal - weapon impact
         // ? = 14, // prob decal - top 1
         // some decal = 15, // prob decal - top 2 or decal - top 3
@@ -896,7 +896,7 @@ namespace IW4
         // ? = 21,
         // - = 22,
         // - = 23,
-        SORTKEY_WINDOW_INSIDE = 24, // prob window inside
+        SORTKEY_WINDOW_INSIDE = 24,  // prob window inside
         SORTKEY_WINDOW_OUTSIDE = 25, // prob window outside
         // ? = 26, // includes motiontracker3d, impact fx, atmos
         // ? = 27,
@@ -919,11 +919,11 @@ namespace IW4
         // ? = 44,
         // ? = 45,
         // - = 46,
-        SORTKEY_BLEND_ADDITIVE = 47, // most likely blend / additive
+        SORTKEY_BLEND_ADDITIVE = 47,   // most likely blend / additive
         SORTKEY_EFFECT_AUTO_SORT = 48, // most likely effect - auto sort
         SORTKEY_AFTER_EFFECTS_BOTTOM = 49,
         SORTKEY_AFTER_EFFECTS_MIDDLE = 50, // prob after effects - middle
-        SORTKEY_AFTER_EFFECTS_TOP = 51, // prob after effects - top
+        SORTKEY_AFTER_EFFECTS_TOP = 51,    // prob after effects - top
         // - = 52,
         SORTKEY_VIEWMODEL_EFFECT = 53, // maybe viewmodel effect
 
@@ -1087,7 +1087,7 @@ namespace IW4
 
         STREAM_SRC_COUNT
     };
-    
+
     enum MaterialStreamDestination_e
     {
         STREAM_DST_POSITION = 0x0,
@@ -1116,7 +1116,7 @@ namespace IW4
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[13];
-        void/*IDirect3DVertexDeclaration9*/* decl[16];
+        void /*IDirect3DVertexDeclaration9*/* decl[16];
     };
 
     struct MaterialVertexDeclaration
@@ -1129,7 +1129,7 @@ namespace IW4
 
     struct MaterialVertexShaderProgram
     {
-        void/*IDirect3DVertexShader9*/* vs;
+        void /*IDirect3DVertexShader9*/* vs;
         GfxVertexShaderLoadDef loadDef;
     };
 
@@ -1141,7 +1141,7 @@ namespace IW4
 
     struct MaterialPixelShaderProgram
     {
-        void/*IDirect3DPixelShader9*/* ps;
+        void /*IDirect3DPixelShader9*/* ps;
         GfxPixelShaderLoadDef loadDef;
     };
 
@@ -1205,11 +1205,11 @@ namespace IW4
     enum MaterialType
     {
         MTL_TYPE_DEFAULT = 0x0,
-        MTL_TYPE_MODEL = 0x1, // m_
-        MTL_TYPE_MODEL_VERTCOL = 0x2, // mc_
+        MTL_TYPE_MODEL = 0x1,              // m_
+        MTL_TYPE_MODEL_VERTCOL = 0x2,      // mc_
         MTL_TYPE_MODEL_VERTCOL_GREY = 0x3, // mg_
-        MTL_TYPE_WORLD = 0x4, // w_
-        MTL_TYPE_WORLD_VERTCOL = 0x5, // wc_
+        MTL_TYPE_WORLD = 0x4,              // w_
+        MTL_TYPE_WORLD_VERTCOL = 0x5,      // wc_
 
         MTL_TYPE_COUNT,
     };
@@ -1409,20 +1409,20 @@ namespace IW4
 
     enum MaterialShaderArgumentType
     {
-        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0, // stable
-        MTL_ARG_LITERAL_VERTEX_CONST = 0x1, // stable
+        MTL_ARG_MATERIAL_VERTEX_CONST = 0x0,  // stable
+        MTL_ARG_LITERAL_VERTEX_CONST = 0x1,   // stable
         MTL_ARG_MATERIAL_PIXEL_SAMPLER = 0x2, // stable
 
         MTL_ARG_CODE_PRIM_BEGIN = 0x3,
 
-        MTL_ARG_CODE_VERTEX_CONST = 0x3, // stable object prim
+        MTL_ARG_CODE_VERTEX_CONST = 0x3,  // stable object prim
         MTL_ARG_CODE_PIXEL_SAMPLER = 0x4, // stable object
-        MTL_ARG_CODE_PIXEL_CONST = 0x5, // stable
+        MTL_ARG_CODE_PIXEL_CONST = 0x5,   // stable
 
         MTL_ARG_CODE_PRIM_END = 0x6,
 
         MTL_ARG_MATERIAL_PIXEL_CONST = 0x6, // stable
-        MTL_ARG_LITERAL_PIXEL_CONST = 0x7, // stable
+        MTL_ARG_LITERAL_PIXEL_CONST = 0x7,  // stable
 
         MTL_ARG_COUNT
     };
@@ -1457,14 +1457,15 @@ namespace IW4
     enum TechniqueFlags
     {
         // Guesses purely based on data analysis:
-        TECHNIQUE_FLAG_1 = 0x1, // uses resolvedPostSun code sampler // MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN
-        TECHNIQUE_FLAG_2 = 0x2, // uses resolvedScene code sampler MTL_TECHFLAG_NEEDS_RESOLVED_SCENE
-        TECHNIQUE_FLAG_4 = 0x4, // zprepass only
-        TECHNIQUE_FLAG_8 = 0x8, // build_floatz only
+        TECHNIQUE_FLAG_1 = 0x1,   // uses resolvedPostSun code sampler // MTL_TECHFLAG_NEEDS_RESOLVED_POST_SUN
+        TECHNIQUE_FLAG_2 = 0x2,   // uses resolvedScene code sampler MTL_TECHFLAG_NEEDS_RESOLVED_SCENE
+        TECHNIQUE_FLAG_4 = 0x4,   // zprepass only
+        TECHNIQUE_FLAG_8 = 0x8,   // build_floatz only
         TECHNIQUE_FLAG_10 = 0x10, // build_shadowmap_depth + build_shadowmap_model only
-        TECHNIQUE_FLAG_20 = 0x20, // techniques with _i_ in its name (all use texcoord[1] in decl -> other optional stream sources are not used at all so might be any optional)
-        TECHNIQUE_FLAG_40 = 0x40, // uses code constant light.spotDir or light.spotFactors
-        TECHNIQUE_FLAG_80 = 0x80, // uses floatZ sampler and does not have 0x100 flag
+        TECHNIQUE_FLAG_20 =
+            0x20, // techniques with _i_ in its name (all use texcoord[1] in decl -> other optional stream sources are not used at all so might be any optional)
+        TECHNIQUE_FLAG_40 = 0x40,   // uses code constant light.spotDir or light.spotFactors
+        TECHNIQUE_FLAG_80 = 0x80,   // uses floatZ sampler and does not have 0x100 flag
         TECHNIQUE_FLAG_100 = 0x100, // distortion_scale_zfeather_dtex + distortion_scale_ua_zfeather + distortion_scale_zfeather
         TECHNIQUE_FLAG_200 = 0x200, // ?
     };
@@ -1758,7 +1759,7 @@ namespace IW4
         DvarValue latched;
         DvarValue reset;
         DvarLimits domain;
-        //bool (__cdecl* domainFunc)(dvar_t*, DvarValue);
+        // bool (__cdecl* domainFunc)(dvar_t*, DvarValue);
         void* domainFunc;
         dvar_t* hashNext;
     };
@@ -3065,11 +3066,13 @@ namespace IW4
         float fAngle;
         float forward[2];
         float fRadius;
+
         union
         {
             float minUseDistSq;
             PathNodeErrorCode error;
         };
+
         int16_t wOverlapNode[2];
         uint16_t totalLinkCount;
         pathlink_s* Links;
@@ -3097,6 +3100,7 @@ namespace IW4
         pathnode_t* pParent;
         float fCost;
         float fHeuristic;
+
         union
         {
             float nodeCost;
@@ -3259,6 +3263,7 @@ namespace IW4
             FxSpatialFrame frame;
             float radius;
         };
+
         unsigned int nextFree;
     };
 
@@ -3417,7 +3422,7 @@ namespace IW4
         bool isAncestor;
         char recursionDepth;
         char hullPointCount;
-        float(*hullPoints)[2];
+        float (*hullPoints)[2];
         GfxPortal* queuedParent;
     };
 
@@ -3470,13 +3475,13 @@ namespace IW4
     struct GfxWorldVertexData
     {
         GfxWorldVertex* vertices;
-        void/*IDirect3DVertexBuffer9*/* worldVb;
+        void /*IDirect3DVertexBuffer9*/* worldVb;
     };
 
     struct GfxWorldVertexLayerData
     {
         char* data;
-        void/*IDirect3DVertexBuffer9*/* layerVb;
+        void /*IDirect3DVertexBuffer9*/* layerVb;
     };
 
     struct GfxWorldDraw
@@ -3757,7 +3762,7 @@ namespace IW4
         unsigned int sortKeyEffectAuto;
         unsigned int sortKeyDistortion;
         GfxWorldDpvsPlanes dpvsPlanes;
-        int/*GfxCellTreeCount*/* aabbTreeCounts;
+        int /*GfxCellTreeCount*/* aabbTreeCounts;
         GfxCellTree128* aabbTrees;
         GfxCell* cells;
         GfxWorldDraw draw;
@@ -4638,7 +4643,6 @@ namespace IW4
         VEH_SNOWMOBILE = 0x6,
         VEH_TYPE_COUNT = 0x7,
     };
-
 
     struct VehicleDef
     {

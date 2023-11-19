@@ -1,5 +1,5 @@
 #include "UnexpectedEndOfFileException.h"
- 
+
 UnexpectedEndOfFileException::UnexpectedEndOfFileException() = default;
 
 std::string UnexpectedEndOfFileException::DetailedMessage()

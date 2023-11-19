@@ -1,4 +1,5 @@
 #include "ContentLoaderBase.h"
+
 #include <cassert>
 
 const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);

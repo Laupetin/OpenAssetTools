@@ -1,19 +1,19 @@
 #include "Templater.h"
 
-#include <unordered_map>
-#include <vector>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-
-#include "Utils/ClassUtils.h"
 #include "DirectiveEscapeStreamProxy.h"
-#include "SetDefineStreamProxy.h"
-#include "TemplatingStreamProxy.h"
-#include "Parsing/ParsingException.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Impl/SkipUntilFirstNonEmptyProxy.h"
+#include "Parsing/ParsingException.h"
+#include "SetDefineStreamProxy.h"
+#include "TemplatingStreamProxy.h"
+#include "Utils/ClassUtils.h"
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <unordered_map>
+#include <vector>
 
 using namespace templating;
 namespace fs = std::filesystem;
@@ -378,7 +378,7 @@ namespace templating
         std::ofstream m_output_stream;
         std::ostringstream m_output_cache;
     };
-}
+} // namespace templating
 
 Templater::Templater(std::istream& stream, std::string fileName)
     : m_stream(stream),

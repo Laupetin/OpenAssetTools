@@ -1,6 +1,5 @@
 #include "SequenceNamespace.h"
 
-
 #include "Parsing/Header/Block/HeaderBlockNamespace.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
@@ -11,7 +10,7 @@ SequenceNamespace::SequenceNamespace()
     AddMatchers({
         create.Type(HeaderParserValueType::NAMESPACE),
         create.Type(HeaderParserValueType::IDENTIFIER).Capture(CAPTURE_NAME),
-        create.Char('{')
+        create.Char('{'),
     });
 }
 

@@ -1,9 +1,9 @@
 #include "AssetDumperPhysCollmap.h"
 
+#include "Dumping/MapFile/MapFileDumper.h"
+
 #include <cassert>
 #include <sstream>
-
-#include "Dumping/MapFile/MapFileDumper.h"
 
 using namespace IW4;
 
@@ -54,9 +54,9 @@ void AssetDumperPhysCollmap::DumpAsset(AssetDumpingContext& context, XAssetInfo<
             mapFileDumper.WritePhysicsBox({
                 {geom.bounds.midPoint[0], geom.bounds.midPoint[1], geom.bounds.midPoint[2]},
                 {geom.bounds.halfSize[0], geom.bounds.halfSize[1], geom.bounds.halfSize[2]},
-                {geom.orientation[0][0], geom.orientation[0][1], geom.orientation[0][2]},
-                {geom.orientation[1][0], geom.orientation[1][1], geom.orientation[1][2]},
-                {geom.orientation[2][0], geom.orientation[2][1], geom.orientation[2][2]}
+                {geom.orientation[0][0],  geom.orientation[0][1],  geom.orientation[0][2] },
+                {geom.orientation[1][0],  geom.orientation[1][1],  geom.orientation[1][2] },
+                {geom.orientation[2][0],  geom.orientation[2][1],  geom.orientation[2][2] }
             });
             break;
 
@@ -65,7 +65,7 @@ void AssetDumperPhysCollmap::DumpAsset(AssetDumpingContext& context, XAssetInfo<
                 {geom.bounds.midPoint[0], geom.bounds.midPoint[1], geom.bounds.midPoint[2]},
                 geom.bounds.halfSize[0],
                 geom.bounds.halfSize[2] * 2,
-                {geom.orientation[0][0], geom.orientation[0][1], geom.orientation[0][2]}
+                {geom.orientation[0][0],  geom.orientation[0][1],  geom.orientation[0][2] }
             });
             break;
 

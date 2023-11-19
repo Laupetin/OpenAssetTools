@@ -1,7 +1,7 @@
 #include "SequenceReusable.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceReusable::SequenceReusable()
 {
@@ -12,7 +12,7 @@ SequenceReusable::SequenceReusable()
         create.Keyword("set"),
         create.Keyword("reusable"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

@@ -16,4 +16,4 @@ namespace menu
         _NODISCARD SimpleExpressionValue EvaluateStatic() const override;
         _NODISCARD SimpleExpressionValue EvaluateNonStatic(const ISimpleExpressionScopeValues* scopeValues) const override;
     };
-}
+} // namespace menu

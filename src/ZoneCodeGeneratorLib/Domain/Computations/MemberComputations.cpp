@@ -1,11 +1,11 @@
 #include "MemberComputations.h"
 
-#include <algorithm>
-#include <cassert>
-
-#include "StructureComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
+#include "StructureComputations.h"
+
+#include <algorithm>
+#include <cassert>
 
 MemberComputations::MemberComputations(const MemberInformation* member)
     : m_info(member)
@@ -21,10 +21,12 @@ bool MemberComputations::ShouldIgnore() const
 bool MemberComputations::ContainsNonEmbeddedReference() const
 {
     const auto& declarationModifiers = m_info->m_member->m_type_declaration->m_declaration_modifiers;
-    return std::any_of(declarationModifiers.begin(), declarationModifiers.end(), [](const std::unique_ptr<DeclarationModifier>& modifier)
-    {
-        return modifier->GetType() == DeclarationModifierType::POINTER;
-    });
+    return std::any_of(declarationModifiers.begin(),
+                       declarationModifiers.end(),
+                       [](const std::unique_ptr<DeclarationModifier>& modifier)
+                       {
+                           return modifier->GetType() == DeclarationModifierType::POINTER;
+                       });
 }
 
 bool MemberComputations::ContainsSinglePointerReference() const
@@ -81,9 +83,8 @@ const IEvaluation* MemberComputations::GetArrayPointerCountEvaluation() const
         return nullptr;
 
     const auto* lastModifier = declarationModifiers[declarationModifiers.size() - 1].get();
-    return lastModifier->GetType() == DeclarationModifierType::POINTER
-               ? dynamic_cast<const PointerDeclarationModifier*>(lastModifier)->GetCountEvaluation()
-               : nullptr;
+    return lastModifier->GetType() == DeclarationModifierType::POINTER ? dynamic_cast<const PointerDeclarationModifier*>(lastModifier)->GetCountEvaluation()
+                                                                       : nullptr;
 }
 
 bool MemberComputations::IsArray() const
@@ -135,10 +136,12 @@ bool MemberComputations::IsPointerToArray() const
     if (lastModifier->GetType() != DeclarationModifierType::ARRAY)
         return false;
 
-    return std::any_of(declarationModifiers.begin(), declarationModifiers.end(), [](const std::unique_ptr<DeclarationModifier>& modifier)
-    {
-        return modifier->GetType() == DeclarationModifierType::POINTER;
-    });
+    return std::any_of(declarationModifiers.begin(),
+                       declarationModifiers.end(),
+                       [](const std::unique_ptr<DeclarationModifier>& modifier)
+                       {
+                           return modifier->GetType() == DeclarationModifierType::POINTER;
+                       });
 }
 
 std::vector<int> MemberComputations::GetPointerToArraySizes() const
@@ -164,7 +167,7 @@ int MemberComputations::GetPointerDepth() const
 {
     auto depth = 0;
     const auto& declarationModifiers = m_info->m_member->m_type_declaration->m_declaration_modifiers;
-    for(const auto& declarationModifier : declarationModifiers)
+    for (const auto& declarationModifier : declarationModifiers)
     {
         if (declarationModifier->GetType() == DeclarationModifierType::POINTER)
             depth++;
@@ -204,11 +207,13 @@ bool MemberComputations::HasDynamicArraySize() const
 {
     const auto& declarationModifiers = m_info->m_member->m_type_declaration->m_declaration_modifiers;
 
-    return std::any_of(declarationModifiers.begin(), declarationModifiers.end(), [](const std::unique_ptr<DeclarationModifier>& declarationModifier)
-    {
-        return declarationModifier->GetType() == DeclarationModifierType::ARRAY
-            && dynamic_cast<ArrayDeclarationModifier*>(declarationModifier.get())->m_dynamic_size_evaluation;
-    });
+    return std::any_of(declarationModifiers.begin(),
+                       declarationModifiers.end(),
+                       [](const std::unique_ptr<DeclarationModifier>& declarationModifier)
+                       {
+                           return declarationModifier->GetType() == DeclarationModifierType::ARRAY
+                                  && dynamic_cast<ArrayDeclarationModifier*>(declarationModifier.get())->m_dynamic_size_evaluation;
+                       });
 }
 
 bool MemberComputations::IsDynamicMember() const

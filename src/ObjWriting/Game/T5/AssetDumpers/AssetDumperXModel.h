@@ -2,9 +2,9 @@
 
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T5/T5.h"
-#include "Utils/DistinctMapper.h"
-#include "Model/XModel/AbstractXModelWriter.h"
 #include "Model/Obj/ObjWriter.h"
+#include "Model/XModel/AbstractXModelWriter.h"
+#include "Utils/DistinctMapper.h"
 
 namespace T5
 {
@@ -27,7 +27,8 @@ namespace T5
         static void AddXModelObjects(AbstractXModelWriter& writer, const XModel* model, unsigned lod);
         static void AddXModelVertices(AbstractXModelWriter& writer, const XModel* model, unsigned lod);
         static void AllocateXModelBoneWeights(const XModel* model, unsigned lod, XModelVertexBoneWeightCollection& weightCollection);
-        static void AddXModelVertexBoneWeights(AbstractXModelWriter& writer, const XModel* model, unsigned lod, XModelVertexBoneWeightCollection& weightCollection);
+        static void
+            AddXModelVertexBoneWeights(AbstractXModelWriter& writer, const XModel* model, unsigned lod, XModelVertexBoneWeightCollection& weightCollection);
         static void AddXModelFaces(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModel* model, unsigned lod);
         static void DumpXModelExportLod(const AssetDumpingContext& context, XAssetInfo<XModel>* asset, unsigned lod);
         static void DumpXModelExport(const AssetDumpingContext& context, XAssetInfo<XModel>* asset);
@@ -36,4 +37,4 @@ namespace T5
         bool ShouldDump(XAssetInfo<XModel>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset) override;
     };
-}
+} // namespace T5

@@ -1,12 +1,11 @@
 #pragma once
 
+#include "IHashFunction.h"
+#include "IPublicKeyAlgorithm.h"
+#include "IStreamCipher.h"
+
 #include <cstddef>
 #include <memory>
-
-
-#include "IHashFunction.h"
-#include "IStreamCipher.h"
-#include "IPublicKeyAlgorithm.h"
 
 class Crypto
 {

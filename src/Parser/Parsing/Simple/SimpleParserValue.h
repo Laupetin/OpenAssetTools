@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include "Parsing/IParserValue.h"
-#include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
+#include "Utils/ClassUtils.h"
+
+#include <string>
 
 enum class SimpleParserValueType
 {
@@ -34,6 +34,7 @@ public:
     SimpleParserValueType m_type;
     size_t m_hash;
     bool m_has_sign_prefix;
+
     union ValueType
     {
         char char_value;

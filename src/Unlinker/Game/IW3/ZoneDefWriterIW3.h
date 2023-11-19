@@ -13,4 +13,4 @@ namespace IW3
     public:
         bool CanHandleZone(Zone* zone) const override;
     };
-}
+} // namespace IW3

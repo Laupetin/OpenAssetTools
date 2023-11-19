@@ -4,9 +4,8 @@
 
 AbstractTextDumper::AbstractTextDumper(std::ostream& stream)
     : m_stream(stream),
-    m_indent(0u)
+      m_indent(0u)
 {
-
 }
 
 void AbstractTextDumper::Indent() const

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Loading/IZoneLoaderFactory.h"
+
 #include <string>
 
 namespace T5
@@ -12,4 +13,4 @@ namespace T5
     public:
         ZoneLoader* CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) override;
     };
-}
+} // namespace T5

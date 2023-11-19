@@ -1,10 +1,10 @@
 #include "StructuredDataDefSizeCalculator.h"
 
-#include <cassert>
-#include <sstream>
-
 #include "Utils/Alignment.h"
 #include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <sstream>
 
 using namespace sdd;
 

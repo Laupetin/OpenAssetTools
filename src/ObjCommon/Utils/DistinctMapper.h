@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Utils/ClassUtils.h"
+
+#include <cstddef>
 #include <map>
 #include <vector>
 
-#include "Utils/ClassUtils.h"
-
-template <typename T>
-class DistinctMapper
+template<typename T> class DistinctMapper
 {
 public:
     DistinctMapper()

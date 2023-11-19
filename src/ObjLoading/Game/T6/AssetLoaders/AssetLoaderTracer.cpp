@@ -1,15 +1,15 @@
 #include "AssetLoaderTracer.h"
 
-#include <cstring>
-#include <iostream>
-#include <cassert>
-
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/TracerFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 using namespace T6;
 
@@ -33,20 +33,27 @@ namespace T6
         }
 
     public:
-        InfoStringToTracerConverter(const InfoString& infoString, TracerDef* tracer, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-            const cspField_t* fields, const size_t fieldCount)
+        InfoStringToTracerConverter(const InfoString& infoString,
+                                    TracerDef* tracer,
+                                    ZoneScriptStrings& zoneScriptStrings,
+                                    MemoryManager* memory,
+                                    IAssetLoadingManager* manager,
+                                    const cspField_t* fields,
+                                    const size_t fieldCount)
             : InfoStringToStructConverter(infoString, tracer, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace T6
 
-bool AssetLoaderTracer::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderTracer::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
     auto* tracer = memory->Create<TracerDef>();
     memset(tracer, 0, sizeof(TracerDef));
 
-    InfoStringToTracerConverter converter(infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent<decltype(tracer_fields)>::value);
+    InfoStringToTracerConverter converter(
+        infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent<decltype(tracer_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse tracer: \"" << assetName << "\"" << std::endl;
@@ -73,7 +80,8 @@ bool AssetLoaderTracer::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderTracer::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderTracer::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_TRACER, assetName);
     if (gdtEntry == nullptr)
@@ -94,7 +102,8 @@ bool AssetLoaderTracer::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderTracer::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderTracer::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "tracer/" + assetName;
     const auto file = searchPath->Open(fileName);

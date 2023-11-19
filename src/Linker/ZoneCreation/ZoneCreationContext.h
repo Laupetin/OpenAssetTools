@@ -1,12 +1,12 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <memory>
-
-#include "SearchPath/ISearchPath.h"
 #include "Obj/Gdt/Gdt.h"
+#include "SearchPath/ISearchPath.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/Definition/ZoneDefinition.h"
+
+#include <memory>
+#include <string>
+#include <vector>
 
 class ZoneCreationContext
 {

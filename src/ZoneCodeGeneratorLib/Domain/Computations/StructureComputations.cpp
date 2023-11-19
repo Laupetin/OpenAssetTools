@@ -1,8 +1,8 @@
 #include "StructureComputations.h"
 
-#include <cassert>
-
 #include "MemberComputations.h"
+
+#include <cassert>
 
 StructureComputations::StructureComputations(const StructureInformation* structure)
     : m_info(structure)

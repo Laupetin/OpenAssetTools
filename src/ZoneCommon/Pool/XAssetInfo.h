@@ -1,8 +1,9 @@
 #pragma once
-#include <vector>
-#include <string>
-
 #include "Zone/Zone.h"
+#include "Zone/ZoneTypes.h"
+
+#include <string>
+#include <vector>
 
 class Zone;
 
@@ -17,8 +18,7 @@ public:
     void* m_ptr;
 };
 
-template<typename T>
-class XAssetInfo : public XAssetInfoGeneric
+template<typename T> class XAssetInfo : public XAssetInfoGeneric
 {
 public:
     T* Asset()

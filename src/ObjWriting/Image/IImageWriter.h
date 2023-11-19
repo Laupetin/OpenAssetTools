@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Image/Texture.h"
+
 #include <ostream>
 #include <string>
-
-#include "Image/Texture.h"
 
 class IImageWriter
 {

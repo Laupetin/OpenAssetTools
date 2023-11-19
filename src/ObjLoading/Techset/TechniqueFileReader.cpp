@@ -1,11 +1,11 @@
 #include "TechniqueFileReader.h"
 
-#include <iostream>
-
-#include "Parsing/TechniqueFileParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
+#include "Parsing/TechniqueFileParser.h"
+
+#include <iostream>
 
 using namespace techset;
 

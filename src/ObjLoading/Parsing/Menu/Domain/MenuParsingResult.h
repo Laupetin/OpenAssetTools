@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "CommonFunctionDef.h"
 #include "CommonMenuDef.h"
+
+#include <memory>
+#include <vector>
 
 namespace menu
 {
@@ -15,4 +15,4 @@ namespace menu
         std::vector<std::unique_ptr<CommonFunctionDef>> m_functions;
         std::vector<std::string> m_menus_to_load;
     };
-}
+} // namespace menu

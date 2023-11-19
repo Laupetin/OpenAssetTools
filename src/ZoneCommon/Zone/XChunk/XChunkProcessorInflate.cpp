@@ -1,9 +1,9 @@
 #include "XChunkProcessorInflate.h"
 
+#include "XChunkException.h"
+
 #include <zlib.h>
 #include <zutil.h>
-
-#include "XChunkException.h"
 
 size_t XChunkProcessorInflate::Process(int streamNumber, const uint8_t* input, const size_t inputLength, uint8_t* output, const size_t outputBufferSize)
 {

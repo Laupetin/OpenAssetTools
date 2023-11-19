@@ -3,14 +3,14 @@
 #include <memory>
 #include <vector>
 
-template <typename ParserType>
-class AbstractScopeSequenceHolder
+template<typename ParserType> class AbstractScopeSequenceHolder
 {
     std::vector<std::unique_ptr<typename ParserType::sequence_t>>& m_all_sequences;
     std::vector<typename ParserType::sequence_t*>& m_scope_sequences;
 
 protected:
-    AbstractScopeSequenceHolder(std::vector<std::unique_ptr<typename ParserType::sequence_t>>& allSequences, std::vector<typename ParserType::sequence_t*>& scopeSequences)
+    AbstractScopeSequenceHolder(std::vector<std::unique_ptr<typename ParserType::sequence_t>>& allSequences,
+                                std::vector<typename ParserType::sequence_t*>& scopeSequences)
         : m_all_sequences(allSequences),
           m_scope_sequences(scopeSequences)
     {

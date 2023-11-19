@@ -4,12 +4,12 @@
 
 Dx12TextureLoader::Dx12TextureLoader(MemoryManager* memoryManager)
     : m_memory_manager(memoryManager),
-    m_format(DXGI_FORMAT_UNKNOWN),
-    m_type(TextureType::T_2D),
-    m_has_mip_maps(false),
-    m_width(1u),
-    m_height(1u),
-    m_depth(1u)
+      m_format(DXGI_FORMAT_UNKNOWN),
+      m_type(TextureType::T_2D),
+      m_has_mip_maps(false),
+      m_width(1u),
+      m_height(1u),
+      m_depth(1u)
 {
 }
 

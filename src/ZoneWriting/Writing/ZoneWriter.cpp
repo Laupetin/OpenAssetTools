@@ -1,10 +1,10 @@
 #include "ZoneWriter.h"
 
-#include <iostream>
-#include <stdexcept>
-
 #include "WritingException.h"
 #include "WritingFileStream.h"
+
+#include <iostream>
+#include <stdexcept>
 
 ZoneWriter::ZoneWriter()
     : m_processor_chain_dirty(false)

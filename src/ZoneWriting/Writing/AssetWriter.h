@@ -1,10 +1,10 @@
 #pragma once
 
+#include "ContentWriterBase.h"
+#include "Pool/XAssetInfo.h"
 #include "Utils/ClassUtils.h"
 #include "Zone/Zone.h"
 #include "Zone/ZoneTypes.h"
-#include "Pool/XAssetInfo.h"
-#include "ContentWriterBase.h"
 
 class AssetWriter : public ContentWriterBase
 {

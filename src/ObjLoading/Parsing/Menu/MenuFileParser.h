@@ -1,11 +1,11 @@
 #pragma once
 
 #include "MenuAssetZoneState.h"
-#include "Utils/ClassUtils.h"
 #include "MenuFileParserState.h"
+#include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Parsing/Impl/AbstractParser.h"
+#include "Utils/ClassUtils.h"
 
 namespace menu
 {
@@ -30,4 +30,4 @@ namespace menu
         MenuFileParser(SimpleLexer* lexer, FeatureLevel featureLevel, bool permissiveMode, const MenuAssetZoneState* zoneState);
         _NODISCARD MenuFileParserState* GetState() const;
     };
-}
+} // namespace menu

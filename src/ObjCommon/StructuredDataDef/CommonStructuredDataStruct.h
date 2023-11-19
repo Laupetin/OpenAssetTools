@@ -1,10 +1,10 @@
 #pragma once
+#include "CommonStructuredDataTypes.h"
+#include "Utils/ClassUtils.h"
+
 #include <cstdint>
 #include <string>
 #include <vector>
-
-#include "Utils/ClassUtils.h"
-#include "CommonStructuredDataTypes.h"
 
 struct CommonStructuredDataStructProperty
 {
@@ -18,6 +18,7 @@ struct CommonStructuredDataStructProperty
 };
 
 class CommonStructuredDataDef;
+
 struct CommonStructuredDataStruct
 {
     std::string m_name;

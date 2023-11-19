@@ -1,12 +1,12 @@
 #include "AssetLoaderVertexDecl.h"
 
-#include <cstring>
-#include <iostream>
-
-#include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
+#include <iostream>
 
 using namespace IW4;
 
@@ -42,7 +42,8 @@ bool AssetLoaderVertexDecl::NextAbbreviation(const std::string& assetName, std::
     return true;
 }
 
-bool AssetLoaderVertexDecl::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderVertexDecl::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     MaterialVertexDeclaration decl{};
 
@@ -50,7 +51,7 @@ bool AssetLoaderVertexDecl::LoadFromRaw(const std::string& assetName, ISearchPat
     std::string sourceAbbreviation;
     while (NextAbbreviation(assetName, sourceAbbreviation, currentOffset))
     {
-        if(decl.streamCount >= std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
+        if (decl.streamCount >= std::extent_v<decltype(MaterialVertexStreamRouting::data)>)
         {
             std::cout << "Failed to add vertex decl stream. Too many abbreviations: " << assetName << "\n";
             return false;
@@ -63,14 +64,16 @@ bool AssetLoaderVertexDecl::LoadFromRaw(const std::string& assetName, ISearchPat
             return false;
         }
 
-        const auto foundSourceAbbreviation = std::find(std::begin(materialStreamSourceAbbreviation), std::end(materialStreamSourceAbbreviation), sourceAbbreviation);
+        const auto foundSourceAbbreviation =
+            std::find(std::begin(materialStreamSourceAbbreviation), std::end(materialStreamSourceAbbreviation), sourceAbbreviation);
         if (foundSourceAbbreviation == std::end(materialStreamSourceAbbreviation))
         {
             std::cout << "Unknown vertex decl source abbreviation: " << sourceAbbreviation << "\n";
             return false;
         }
 
-        const auto foundDestinationAbbreviation = std::find(std::begin(materialStreamDestinationAbbreviation), std::end(materialStreamDestinationAbbreviation), destinationAbbreviation);
+        const auto foundDestinationAbbreviation =
+            std::find(std::begin(materialStreamDestinationAbbreviation), std::end(materialStreamDestinationAbbreviation), destinationAbbreviation);
         if (foundDestinationAbbreviation == std::end(materialStreamDestinationAbbreviation))
         {
             std::cout << "Unknown vertex decl destination abbreviation: " << destinationAbbreviation << "\n";
@@ -78,7 +81,8 @@ bool AssetLoaderVertexDecl::LoadFromRaw(const std::string& assetName, ISearchPat
         }
 
         const auto sourceIndex = static_cast<MaterialStreamStreamSource_e>(foundSourceAbbreviation - std::begin(materialStreamSourceAbbreviation));
-        const auto destinationIndex = static_cast<MaterialStreamDestination_e>(foundDestinationAbbreviation - std::begin(materialStreamDestinationAbbreviation));
+        const auto destinationIndex =
+            static_cast<MaterialStreamDestination_e>(foundDestinationAbbreviation - std::begin(materialStreamDestinationAbbreviation));
 
         decl.routing.data[decl.streamCount].source = sourceIndex;
         decl.routing.data[decl.streamCount].dest = destinationIndex;

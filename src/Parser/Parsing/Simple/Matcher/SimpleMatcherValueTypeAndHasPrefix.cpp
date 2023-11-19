@@ -9,7 +9,6 @@ SimpleMatcherValueTypeAndHasSignPrefix::SimpleMatcherValueTypeAndHasSignPrefix(c
 MatcherResult<SimpleParserValue> SimpleMatcherValueTypeAndHasSignPrefix::CanMatch(ILexer<SimpleParserValue>* lexer, const unsigned tokenOffset)
 {
     const auto& token = lexer->GetToken(tokenOffset);
-    return token.m_type == m_type && token.m_has_sign_prefix == m_has_sign_prefix
-               ? MatcherResult<SimpleParserValue>::Match(1)
-               : MatcherResult<SimpleParserValue>::NoMatch();
+    return token.m_type == m_type && token.m_has_sign_prefix == m_has_sign_prefix ? MatcherResult<SimpleParserValue>::Match(1)
+                                                                                  : MatcherResult<SimpleParserValue>::NoMatch();
 }

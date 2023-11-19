@@ -1,12 +1,12 @@
 #include "AssetLoaderStringTable.h"
 
-#include <cstring>
-
-#include "ObjLoading.h"
 #include "Csv/CsvStream.h"
 #include "Game/IW5/CommonIW5.h"
 #include "Game/IW5/IW5.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
 
 using namespace IW5;
 
@@ -23,7 +23,8 @@ bool AssetLoaderStringTable::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderStringTable::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderStringTable::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())

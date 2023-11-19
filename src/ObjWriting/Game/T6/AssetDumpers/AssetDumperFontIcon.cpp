@@ -23,28 +23,25 @@ class AssetDumperFontIconInternal
     };
 
     inline static const std::string TYPE_ICON = "icon";
-    inline static const std::string ICON_HEADERS[]
-    {
+    inline static const std::string ICON_HEADERS[]{
         "# index",
         "# type",
         "# name",
         "# material",
         "# size",
         "# xScale",
-        "# yScale"
+        "# yScale",
     };
 
     inline static const std::string TYPE_ALIAS = "alias";
-    inline static const std::string ALIAS_HEADERS[]
-    {
+    inline static const std::string ALIAS_HEADERS[]{
         "# index",
         "# type",
         "# alias",
-        "# button"
+        "# button",
     };
 
-    inline static const KnownAlias KNOWN_ALIASES[]
-    {
+    inline static const KnownAlias KNOWN_ALIASES[]{
         KnownAlias("BUTTON_ADS"),
         KnownAlias("BUTTON_CAC_NEXT"),
         KnownAlias("BUTTON_CAC_PREV"),
@@ -138,7 +135,7 @@ class AssetDumperFontIconInternal
         KnownAlias("KEY_UP_ARROW"),
         KnownAlias("MOUSE_WHEEL_DOWN"),
         KnownAlias("MOUSE_WHEEL_UP"),
-        KnownAlias("Remote_LStick")
+        KnownAlias("Remote_LStick"),
     };
 
     CsvOutputStream m_csv;

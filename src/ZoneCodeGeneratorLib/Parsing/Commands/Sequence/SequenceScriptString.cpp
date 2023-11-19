@@ -1,7 +1,7 @@
 #include "SequenceScriptString.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceScriptString::SequenceScriptString()
 {
@@ -12,7 +12,7 @@ SequenceScriptString::SequenceScriptString()
         create.Keyword("set"),
         create.Keyword("scriptstring"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

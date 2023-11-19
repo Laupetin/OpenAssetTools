@@ -1,14 +1,15 @@
 #pragma once
 
+#include "Domain/Definition/Variable.h"
+#include "Domain/Evaluation/IEvaluation.h"
+#include "Domain/FastFile/FastFileBlock.h"
+#include "StructureInformation.h"
+#include "Utils/ClassUtils.h"
+
 #include <memory>
 
-#include "Utils/ClassUtils.h"
-#include "StructureInformation.h"
-#include "Domain/Definition/Variable.h"
-#include "Domain/FastFile/FastFileBlock.h"
-#include "Domain/Evaluation/IEvaluation.h"
-
 class StructureInformation;
+
 class MemberInformation
 {
 public:

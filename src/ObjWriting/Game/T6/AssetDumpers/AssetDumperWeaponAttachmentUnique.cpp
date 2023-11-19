@@ -1,14 +1,14 @@
 #include "AssetDumperWeaponAttachmentUnique.h"
 
-#include <cassert>
-#include <sstream>
-#include <type_traits>
-#include <cstring>
-
-#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/WeaponAttachmentUniqueFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+
+#include <cassert>
+#include <cstring>
+#include <sstream>
+#include <type_traits>
 
 using namespace T6;
 
@@ -26,44 +26,43 @@ namespace T6
                 break;
 
             case AUFT_HIDETAGS:
+            {
+                const auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                std::stringstream ss;
+                auto first = true;
+
+                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::hideTags)>::value; i++)
                 {
-                    const auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    std::stringstream ss;
-                    auto first = true;
-
-                    for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::hideTags)>::value; i++)
+                    const auto& str = m_get_scr_string(hideTags[i]);
+                    if (!str.empty())
                     {
-                        const auto& str = m_get_scr_string(hideTags[i]);
-                        if (!str.empty())
-                        {
-                            if (!first)
-                                ss << "\n";
-                            else
-                                first = false;
+                        if (!first)
+                            ss << "\n";
+                        else
+                            first = false;
 
-                            ss << str;
-                        }
+                        ss << str;
                     }
-
-                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
-                    break;
                 }
+
+                m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                break;
+            }
 
             case AUFT_OVERLAYRETICLE:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent<decltype(szWeapOverlayReticleNames)>::value);
                 break;
 
             case AUFT_CAMO:
-                {
-                    const auto* camo = *reinterpret_cast<WeaponCamo**>(reinterpret_cast<uintptr_t>(m_structure) + field
-                        .iOffset);
+            {
+                const auto* camo = *reinterpret_cast<WeaponCamo**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
-                    if (camo)
-                        m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(camo->name)));
-                    else
-                        m_info_string.SetValueForKey(std::string(field.szName), "");
-                    break;
-                }
+                if (camo)
+                    m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(camo->name)));
+                else
+                    m_info_string.SetValueForKey(std::string(field.szName), "");
+                break;
+            }
 
             default:
                 assert(false);
@@ -72,13 +71,15 @@ namespace T6
         }
 
     public:
-        InfoStringFromWeaponAttachmentUniqueConverter(const WeaponAttachmentUniqueFull* structure, const cspField_t* fields, const size_t fieldCount,
+        InfoStringFromWeaponAttachmentUniqueConverter(const WeaponAttachmentUniqueFull* structure,
+                                                      const cspField_t* fields,
+                                                      const size_t fieldCount,
                                                       std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace T6
 
 void AssetDumperWeaponAttachmentUnique::CopyToFullDef(const WeaponAttachmentUnique* attachment, WeaponAttachmentUniqueFull* fullDef)
 {
@@ -112,16 +113,17 @@ InfoString AssetDumperWeaponAttachmentUnique::CreateInfoString(XAssetInfo<Weapon
     memset(fullDef.get(), 0, sizeof(WeaponAttachmentUniqueFull));
     CopyToFullDef(asset->Asset(), fullDef.get());
 
-    InfoStringFromWeaponAttachmentUniqueConverter converter(
-        fullDef.get(), attachment_unique_fields, std::extent<decltype(attachment_unique_fields)>::value,
-        [asset](const scr_string_t scrStr) -> std::string
-        {
-            assert(scrStr < asset->m_zone->m_script_strings.Count());
-            if (scrStr >= asset->m_zone->m_script_strings.Count())
-                return "";
+    InfoStringFromWeaponAttachmentUniqueConverter converter(fullDef.get(),
+                                                            attachment_unique_fields,
+                                                            std::extent<decltype(attachment_unique_fields)>::value,
+                                                            [asset](const scr_string_t scrStr) -> std::string
+                                                            {
+                                                                assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                                if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                                    return "";
 
-            return asset->m_zone->m_script_strings[scrStr];
-        });
+                                                                return asset->m_zone->m_script_strings[scrStr];
+                                                            });
 
     return converter.Convert();
 }

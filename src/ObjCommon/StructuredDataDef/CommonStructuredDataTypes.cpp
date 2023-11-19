@@ -1,9 +1,9 @@
 #include "CommonStructuredDataTypes.h"
 
-#include <cassert>
-
 #include "CommonStructuredDataDef.h"
 #include "Utils/Alignment.h"
+
+#include <cassert>
 
 CommonStructuredDataType::CommonStructuredDataType()
     : m_category(CommonStructuredDataTypeCategory::UNKNOWN),
@@ -52,15 +52,15 @@ size_t CommonStructuredDataType::GetSizeInBits(const CommonStructuredDataDef& de
         }
         return def.m_structs[m_info.type_index]->m_size_in_byte * 8u;
     case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
+    {
+        if (m_info.type_index >= def.m_indexed_arrays.size())
         {
-            if (m_info.type_index >= def.m_indexed_arrays.size())
-            {
-                assert(false);
-                return 0u;
-            }
-            const auto& indexedArray = def.m_indexed_arrays[m_info.type_index];
-            return utils::Align(indexedArray.m_element_size_in_bits * indexedArray.m_element_count, 8u);
+            assert(false);
+            return 0u;
         }
+        const auto& indexedArray = def.m_indexed_arrays[m_info.type_index];
+        return utils::Align(indexedArray.m_element_size_in_bits * indexedArray.m_element_count, 8u);
+    }
     case CommonStructuredDataTypeCategory::ENUM_ARRAY:
     {
         if (m_info.type_index >= def.m_enumed_arrays.size())
@@ -154,7 +154,10 @@ CommonStructuredDataEnumedArray::CommonStructuredDataEnumedArray(const CommonStr
 {
 }
 
-CommonStructuredDataEnumedArray::CommonStructuredDataEnumedArray(const CommonStructuredDataType type, const size_t enumIndex, const size_t elementCount, const size_t elementSizeInBits)
+CommonStructuredDataEnumedArray::CommonStructuredDataEnumedArray(const CommonStructuredDataType type,
+                                                                 const size_t enumIndex,
+                                                                 const size_t elementCount,
+                                                                 const size_t elementSizeInBits)
     : m_array_type(type),
       m_enum_index(enumIndex),
       m_element_count(elementCount),

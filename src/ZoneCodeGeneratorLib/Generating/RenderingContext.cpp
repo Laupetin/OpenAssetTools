@@ -47,15 +47,15 @@ RenderingUsedType* RenderingContext::AddUsedType(std::unique_ptr<RenderingUsedTy
 
 RenderingUsedType* RenderingContext::GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType)
 {
-    if(usedType->m_type->GetType() == DataDefinitionType::TYPEDEF)
+    if (usedType->m_type->GetType() == DataDefinitionType::TYPEDEF)
     {
         const auto* typedefDefinition = dynamic_cast<const TypedefDefinition*>(usedType->m_type);
 
-        while(typedefDefinition->m_type_declaration->m_type->GetType() == DataDefinitionType::TYPEDEF)
+        while (typedefDefinition->m_type_declaration->m_type->GetType() == DataDefinitionType::TYPEDEF)
             typedefDefinition = dynamic_cast<const TypedefDefinition*>(typedefDefinition->m_type_declaration->m_type);
 
         const auto foundUsedType = m_used_types_lookup.find(typedefDefinition->m_type_declaration->m_type);
-        if(foundUsedType == m_used_types_lookup.end())
+        if (foundUsedType == m_used_types_lookup.end())
         {
             const auto* memberDef = dynamic_cast<const DefinitionWithMembers*>(typedefDefinition->m_type_declaration->m_type);
             StructureInformation* info = nullptr;
@@ -75,23 +75,23 @@ RenderingUsedType* RenderingContext::GetBaseType(const IDataRepository* reposito
 
 void RenderingContext::AddMembersToContext(const IDataRepository* repository, StructureInformation* info)
 {
-    for(const auto& member : info->m_ordered_members)
+    for (const auto& member : info->m_ordered_members)
     {
         MemberComputations computations(member.get());
 
-        if(computations.ShouldIgnore())
+        if (computations.ShouldIgnore())
             continue;
 
         RenderingUsedType* usedType;
         const auto existingUsedType = m_used_types_lookup.find(member->m_member->m_type_declaration->m_type);
-        if(existingUsedType == m_used_types_lookup.end())
+        if (existingUsedType == m_used_types_lookup.end())
             usedType = AddUsedType(std::make_unique<RenderingUsedType>(member->m_member->m_type_declaration->m_type, member->m_type));
         else
             usedType = existingUsedType->second.get();
 
         auto* baseUsedType = GetBaseType(repository, &computations, usedType);
 
-        if(!computations.IsInRuntimeBlock())
+        if (!computations.IsInRuntimeBlock())
         {
             usedType->m_non_runtime_reference_exists = true;
 
@@ -105,7 +105,7 @@ void RenderingContext::AddMembersToContext(const IDataRepository* repository, St
         if (computations.ContainsArrayPointerReference() || computations.ContainsArrayReference())
             usedType->m_array_reference_exists = true;
 
-        if(computations.ContainsPointerArrayReference() && !member->m_is_string)
+        if (computations.ContainsPointerArrayReference() && !member->m_is_string)
         {
             usedType->m_pointer_array_reference_exists = true;
 
@@ -136,29 +136,27 @@ void RenderingContext::MakeAsset(const IDataRepository* repository, StructureInf
 
 void RenderingContext::CreateUsedTypeCollections()
 {
-    for(auto* usedType : m_used_types)
+    for (auto* usedType : m_used_types)
     {
         if (usedType->m_info != nullptr)
         {
             StructureComputations computations(usedType->m_info);
 
-            if(usedType->m_info->m_definition == usedType->m_type)
+            if (usedType->m_info->m_definition == usedType->m_type)
                 m_used_structures.push_back(usedType);
 
-            if(computations.IsAsset() && usedType->m_info != m_asset)
+            if (computations.IsAsset() && usedType->m_info != m_asset)
                 m_referenced_assets.push_back(usedType);
 
             if (!m_has_actions)
             {
-                if ((!computations.IsAsset() || usedType->m_is_context_asset)
-                    && usedType->m_non_runtime_reference_exists
+                if ((!computations.IsAsset() || usedType->m_is_context_asset) && usedType->m_non_runtime_reference_exists
                     && usedType->m_info->m_post_load_action)
                 {
                     m_has_actions = true;
                 }
             }
         }
-
     }
 }
 

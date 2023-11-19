@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <functional>
-
 #include "Parsing/Menu/MenuFileParser.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <functional>
+#include <string>
 
 namespace menu
 {
@@ -29,4 +29,4 @@ namespace menu
         static std::unique_ptr<GenericExpressionPropertySequence> WithKeywords(std::initializer_list<std::string> keywords, callback_t setCallback);
         static std::unique_ptr<GenericExpressionPropertySequence> WithKeywordAndBool(std::string keyword, callback_t setCallback);
     };
-}
+} // namespace menu

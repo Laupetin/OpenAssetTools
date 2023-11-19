@@ -1,10 +1,10 @@
 #include "AssetDumperGfxImage.h"
 
-#include <cassert>
-
-#include "ObjWriting.h"
-#include "Image/IwiWriter27.h"
 #include "Image/DdsWriter.h"
+#include "Image/IwiWriter27.h"
+#include "ObjWriting.h"
+
+#include <cassert>
 
 using namespace T5;
 

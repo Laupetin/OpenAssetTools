@@ -1,37 +1,36 @@
 #include "Unlinker.h"
 
-#include <set>
-#include <regex>
-#include <filesystem>
-#include <fstream>
-
-#include "Utils/ClassUtils.h"
-#include "Utils/Arguments/ArgumentParser.h"
-#include "ZoneLoading.h"
-#include "ObjWriting.h"
 #include "ContentLister/ContentPrinter.h"
-#include "ObjLoading.h"
-#include "SearchPath/SearchPaths.h"
-#include "SearchPath/SearchPathFilesystem.h"
 #include "ContentLister/ZoneDefWriter.h"
-#include "ObjContainer/IWD/IWD.h"
-#include "UnlinkerArgs.h"
 #include "Game/IW3/ZoneDefWriterIW3.h"
 #include "Game/IW4/ZoneDefWriterIW4.h"
 #include "Game/IW5/ZoneDefWriterIW5.h"
 #include "Game/T5/ZoneDefWriterT5.h"
 #include "Game/T6/ZoneDefWriterT6.h"
+#include "ObjContainer/IWD/IWD.h"
+#include "ObjLoading.h"
+#include "ObjWriting.h"
+#include "SearchPath/SearchPathFilesystem.h"
+#include "SearchPath/SearchPaths.h"
+#include "UnlinkerArgs.h"
+#include "Utils/Arguments/ArgumentParser.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/ObjFileStream.h"
+#include "ZoneLoading.h"
+
+#include <filesystem>
+#include <fstream>
+#include <regex>
+#include <set>
 
 namespace fs = std::filesystem;
 
-const IZoneDefWriter* const ZONE_DEF_WRITERS[]
-{
+const IZoneDefWriter* const ZONE_DEF_WRITERS[]{
     new IW3::ZoneDefWriter(),
     new IW4::ZoneDefWriter(),
     new IW5::ZoneDefWriter(),
     new T5::ZoneDefWriter(),
-    new T6::ZoneDefWriter()
+    new T6::ZoneDefWriter(),
 };
 
 class Unlinker::Impl
@@ -346,7 +345,6 @@ class Unlinker::Impl
                 ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
             }
 
-
             m_loaded_zones.emplace_back(std::move(zone));
         }
 
@@ -403,7 +401,7 @@ class Unlinker::Impl
             if (ShouldLoadObj())
             {
                 ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
-                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get()); 
+                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
             }
 
             if (!HandleZone(zone.get()))

@@ -2,8 +2,7 @@
 
 #include "IAssetDumper.h"
 
-template<class T>
-class AbstractAssetDumper : public IAssetDumper<T>
+template<class T> class AbstractAssetDumper : public IAssetDumper<T>
 {
 protected:
     virtual bool ShouldDump(XAssetInfo<T>* asset)

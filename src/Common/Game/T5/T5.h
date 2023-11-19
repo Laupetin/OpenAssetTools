@@ -1,9 +1,13 @@
 #pragma once
 
-//#include <d3d9.h>
+// clang-format off: Order of includes matters here
+
+// #include <d3d9.h>
 #include "Image/Texture.h"
 
 #include "T5_Assets.h"
+
+// clang-format on
 
 namespace T5
 {
@@ -110,4 +114,4 @@ namespace T5
 
         CFT_NUM_FIELD_TYPES
     };
-}
+} // namespace T5

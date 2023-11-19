@@ -1,14 +1,15 @@
 #include "ProcessorXChunks.h"
-#include "Zone/ZoneTypes.h"
-#include "Loading/Exception/InvalidChunkSizeException.h"
 
-#include <vector>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
+#include "Loading/Exception/InvalidChunkSizeException.h"
+#include "Zone/ZoneTypes.h"
+
 #include <cassert>
+#include <condition_variable>
 #include <cstring>
 #include <memory>
+#include <mutex>
+#include <thread>
+#include <vector>
 
 class DBLoadStream
 {
@@ -59,15 +60,15 @@ class DBLoadStream
     }
 
 public:
-    DBLoadStream(const int streamIndex, const size_t chunkSize,
-                 std::vector<std::unique_ptr<IXChunkProcessor>>& chunkProcessors) : m_processors(chunkProcessors)
+    DBLoadStream(const int streamIndex, const size_t chunkSize, std::vector<std::unique_ptr<IXChunkProcessor>>& chunkProcessors)
+        : m_processors(chunkProcessors)
     {
         m_index = streamIndex;
         m_chunk_size = chunkSize;
 
-        for(auto& buffer : m_buffers)
+        for (auto& buffer : m_buffers)
             buffer = std::make_unique<uint8_t[]>(chunkSize);
-        
+
         m_input_buffer = m_buffers[0].get();
         m_output_buffer = m_buffers[1].get();
 
@@ -246,8 +247,8 @@ public:
         m_eof_stream = 0;
     }
 
-    ProcessorXChunksImpl(ProcessorXChunks* base, const int numStreams, const size_t xChunkSize,
-                         const size_t vanillaBufferSize) : ProcessorXChunksImpl(base, numStreams, xChunkSize)
+    ProcessorXChunksImpl(ProcessorXChunks* base, const int numStreams, const size_t xChunkSize, const size_t vanillaBufferSize)
+        : ProcessorXChunksImpl(base, numStreams, xChunkSize)
     {
         m_vanilla_buffer_size = vanillaBufferSize;
     }

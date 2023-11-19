@@ -9,7 +9,7 @@ SequenceZoneDefinitionAssetList::SequenceZoneDefinitionAssetList()
     AddMatchers({
         create.Keyword("assetlist"),
         create.Char(','),
-        create.Field().Capture(CAPTURE_ASSET_LIST_NAME)
+        create.Field().Capture(CAPTURE_ASSET_LIST_NAME),
     });
 }
 

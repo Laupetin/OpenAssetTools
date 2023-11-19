@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
+#include "Zone/AssetList/AssetList.h"
+
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "Zone/AssetList/AssetList.h"
 
 class ZoneDefinitionEntry
 {

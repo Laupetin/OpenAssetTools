@@ -1,7 +1,7 @@
 #pragma once
+#include "Game/T6/T6.h"
 #include "Loading/ContentLoaderBase.h"
 #include "Loading/IContentLoadingEntryPoint.h"
-#include "Game/T6/T6.h"
 
 namespace T6
 {
@@ -20,4 +20,4 @@ namespace T6
 
         void Load(Zone* zone, IZoneInputStream* stream) override;
     };
-}
+} // namespace T6

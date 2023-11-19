@@ -1,29 +1,28 @@
 #include "ZoneLoaderFactoryT6.h"
 
+#include "ContentLoaderT6.h"
+#include "Game/GameLanguage.h"
+#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/GameT6.h"
+#include "Game/T6/T6.h"
+#include "Game/T6/ZoneConstantsT6.h"
+#include "Loading/Processor/ProcessorXChunks.h"
+#include "Loading/Steps/StepAddProcessor.h"
+#include "Loading/Steps/StepAllocXBlocks.h"
+#include "Loading/Steps/StepLoadSignature.h"
+#include "Loading/Steps/StepLoadZoneContent.h"
+#include "Loading/Steps/StepLoadZoneSizes.h"
+#include "Loading/Steps/StepSkipBytes.h"
+#include "Loading/Steps/StepVerifyFileName.h"
+#include "Loading/Steps/StepVerifyMagic.h"
+#include "Loading/Steps/StepVerifySignature.h"
+#include "Utils/ClassUtils.h"
+#include "Zone/XChunk/XChunkProcessorInflate.h"
+#include "Zone/XChunk/XChunkProcessorSalsa20Decryption.h"
+
 #include <cassert>
 #include <cstring>
 #include <memory>
-
-#include "Game/T6/T6.h"
-#include "Game/T6/ZoneConstantsT6.h"
-
-#include "Utils/ClassUtils.h"
-#include "ContentLoaderT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
-#include "Game/GameLanguage.h"
-#include "Game/T6/GameT6.h"
-#include "Loading/Processor/ProcessorXChunks.h"
-#include "Zone/XChunk/XChunkProcessorSalsa20Decryption.h"
-#include "Zone/XChunk/XChunkProcessorInflate.h"
-#include "Loading/Steps/StepVerifyMagic.h"
-#include "Loading/Steps/StepSkipBytes.h"
-#include "Loading/Steps/StepVerifyFileName.h"
-#include "Loading/Steps/StepLoadSignature.h"
-#include "Loading/Steps/StepVerifySignature.h"
-#include "Loading/Steps/StepAddProcessor.h"
-#include "Loading/Steps/StepAllocXBlocks.h"
-#include "Loading/Steps/StepLoadZoneContent.h"
-#include "Loading/Steps/StepLoadZoneSizes.h"
 
 using namespace T6;
 
@@ -153,8 +152,8 @@ class ZoneLoaderFactory::Impl
         if (isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
-            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Decryption>(ZoneConstants::STREAM_COUNT, fileName, ZoneConstants::SALSA20_KEY_TREYARCH,
-                                                                                 sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
+            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Decryption>(
+                ZoneConstants::STREAM_COUNT, fileName, ZoneConstants::SALSA20_KEY_TREYARCH, sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
             result = chunkProcessorSalsa20.get();
             xChunkProcessor->AddChunkProcessor(std::move(chunkProcessorSalsa20));
         }
@@ -203,7 +202,8 @@ public:
         zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
+            std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
         if (isSecure)
         {

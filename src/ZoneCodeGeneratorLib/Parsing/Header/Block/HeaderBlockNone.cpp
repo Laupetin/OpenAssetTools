@@ -20,20 +20,14 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockNone::GetTestsForBlock(
         new SequenceNamespace(),
         new SequenceStruct(),
         new SequenceTypedef(),
-        new SequenceUnion()
+        new SequenceUnion(),
     });
-    
+
     return tests;
 }
 
-void HeaderBlockNone::OnOpen(HeaderParserState* state)
-{
-}
+void HeaderBlockNone::OnOpen(HeaderParserState* state) {}
 
-void HeaderBlockNone::OnClose(HeaderParserState* state)
-{
-}
+void HeaderBlockNone::OnClose(HeaderParserState* state) {}
 
-void HeaderBlockNone::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
-{
-}
+void HeaderBlockNone::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) {}

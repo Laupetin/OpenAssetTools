@@ -2,7 +2,10 @@
 
 #include "Zone/Stream/Impl/InMemoryZoneOutputStream.h"
 
-StepWriteZoneContentToMemory::StepWriteZoneContentToMemory(std::unique_ptr<IContentWritingEntryPoint> entryPoint, Zone* zone, int offsetBlockBitCount, block_t insertBlock)
+StepWriteZoneContentToMemory::StepWriteZoneContentToMemory(std::unique_ptr<IContentWritingEntryPoint> entryPoint,
+                                                           Zone* zone,
+                                                           int offsetBlockBitCount,
+                                                           block_t insertBlock)
     : m_content_loader(std::move(entryPoint)),
       m_zone_data(std::make_unique<InMemoryZoneData>()),
       m_zone(zone),

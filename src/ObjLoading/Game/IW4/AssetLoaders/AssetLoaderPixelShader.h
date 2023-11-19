@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-
-#include "Game/IW4/IW4.h"
 #include "AssetLoading/BasicAssetLoader.h"
+#include "Game/IW4/IW4.h"
 #include "SearchPath/ISearchPath.h"
+
+#include <string>
 
 namespace IW4
 {
@@ -15,6 +15,7 @@ namespace IW4
 
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
         _NODISCARD bool CanLoadFromRaw() const override;
-        bool LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
+        bool
+            LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
     };
-}
+} // namespace IW4

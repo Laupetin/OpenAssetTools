@@ -1,8 +1,8 @@
 #pragma once
-#include <iostream>
-
 #include "AssetList.h"
 #include "Csv/CsvStream.h"
+
+#include <iostream>
 
 class AssetListInputStream
 {

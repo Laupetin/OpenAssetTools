@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Loading/AssetLoadingActions.h"
 #include "Game/T5/T5.h"
+#include "Loading/AssetLoadingActions.h"
 
 namespace T5
 {
@@ -13,4 +13,4 @@ namespace T5
         void OnImageLoaded(GfxImage* image) const;
         void LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) const;
     };
-}
+} // namespace T5

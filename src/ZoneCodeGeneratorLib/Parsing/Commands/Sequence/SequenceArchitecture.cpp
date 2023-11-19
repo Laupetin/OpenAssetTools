@@ -1,7 +1,7 @@
 #include "SequenceArchitecture.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceArchitecture::SequenceArchitecture()
 {
@@ -10,7 +10,7 @@ SequenceArchitecture::SequenceArchitecture()
     AddMatchers({
         create.Keyword("architecture"),
         create.Identifier().Capture(CAPTURE_ARCHITECTURE),
-        create.Char(';')
+        create.Char(';'),
     });
 
     m_architecture_mapping["x86"] = Architecture::X86;
@@ -23,7 +23,7 @@ void SequenceArchitecture::ProcessMatch(CommandsParserState* state, SequenceResu
 
     const auto foundArchitecture = m_architecture_mapping.find(architectureToken.IdentifierValue());
 
-    if(foundArchitecture == m_architecture_mapping.end())
+    if (foundArchitecture == m_architecture_mapping.end())
         throw ParsingException(architectureToken.GetPos(), "Unknown architecture");
 
     state->SetArchitecture(foundArchitecture->second);

@@ -1,10 +1,8 @@
 #include "ZoneWriterFactoryT5.h"
 
-#include <cstring>
-
 #include "ContentWriterT5.h"
-#include "Game/T5/T5.h"
 #include "Game/T5/GameT5.h"
+#include "Game/T5/T5.h"
 #include "Game/T5/ZoneConstantsT5.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
@@ -13,6 +11,8 @@
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
 #include "Writing/Steps/StepWriteZoneSizes.h"
+
+#include <cstring>
 
 using namespace T5;
 
@@ -24,7 +24,7 @@ class ZoneWriterFactory::Impl
 public:
     explicit Impl(Zone* zone)
         : m_zone(zone),
-        m_writer(std::make_unique<ZoneWriter>())
+          m_writer(std::make_unique<ZoneWriter>())
     {
     }
 
@@ -56,7 +56,8 @@ public:
     {
         SetupBlocks();
 
-        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
+            std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
         auto* contentInMemoryPtr = contentInMemory.get();
         m_writer->AddWritingStep(std::move(contentInMemory));
 

@@ -1,13 +1,13 @@
 #include "ProcessorAuthedBlocks.h"
 
-#include <cassert>
-#include <memory>
-#include <cstring>
-
 #include "Game/IW4/IW4.h"
 #include "Loading/Exception/InvalidHashException.h"
 #include "Loading/Exception/TooManyAuthedGroupsException.h"
 #include "Loading/Exception/UnexpectedEndOfFileException.h"
+
+#include <cassert>
+#include <cstring>
+#include <memory>
 
 class ProcessorAuthedBlocks::Impl
 {
@@ -30,7 +30,9 @@ class ProcessorAuthedBlocks::Impl
     size_t m_current_chunk_size;
 
 public:
-    Impl(ProcessorAuthedBlocks* base, const unsigned authedChunkCount, const size_t chunkSize,
+    Impl(ProcessorAuthedBlocks* base,
+         const unsigned authedChunkCount,
+         const size_t chunkSize,
          const unsigned maxMasterBlockCount,
          std::unique_ptr<IHashFunction> hashFunction,
          IHashProvider* masterBlockHashProvider)
@@ -76,8 +78,7 @@ public:
                 m_master_block_hash_provider->GetHash(m_current_group - 1, &masterBlockHash, &masterBlockHashSize);
 
                 if (masterBlockHashSize != m_hash_function->GetHashSize()
-                    || std::memcmp(m_current_chunk_hash_buffer.get(), masterBlockHash,
-                                   m_hash_function->GetHashSize()) != 0)
+                    || std::memcmp(m_current_chunk_hash_buffer.get(), masterBlockHash, m_hash_function->GetHashSize()) != 0)
                     throw InvalidHashException();
 
                 memcpy(m_chunk_hashes_buffer.get(), m_chunk_buffer.get(), m_authed_chunk_count * m_hash_function->GetHashSize());
@@ -88,7 +89,8 @@ public:
             {
                 if (std::memcmp(m_current_chunk_hash_buffer.get(),
                                 &m_chunk_hashes_buffer[(m_current_chunk_in_group - 1) * m_hash_function->GetHashSize()],
-                                m_hash_function->GetHashSize()) != 0)
+                                m_hash_function->GetHashSize())
+                    != 0)
                     throw InvalidHashException();
 
                 if (++m_current_chunk_in_group > m_authed_chunk_count)
@@ -136,12 +138,12 @@ public:
     }
 };
 
-ProcessorAuthedBlocks::ProcessorAuthedBlocks(const unsigned authedChunkCount, const size_t chunkSize,
+ProcessorAuthedBlocks::ProcessorAuthedBlocks(const unsigned authedChunkCount,
+                                             const size_t chunkSize,
                                              const unsigned maxMasterBlockCount,
                                              std::unique_ptr<IHashFunction> hashFunction,
                                              IHashProvider* masterBlockHashProvider)
-    : m_impl(new Impl(this, authedChunkCount, chunkSize, maxMasterBlockCount, std::move(hashFunction),
-                      masterBlockHashProvider))
+    : m_impl(new Impl(this, authedChunkCount, chunkSize, maxMasterBlockCount, std::move(hashFunction), masterBlockHashProvider))
 {
 }
 

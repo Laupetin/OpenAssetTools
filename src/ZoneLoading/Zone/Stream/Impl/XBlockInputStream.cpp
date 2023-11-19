@@ -1,15 +1,15 @@
 #include "XBlockInputStream.h"
 
-#include <cassert>
-#include <cstring>
-
 #include "Loading/Exception/BlockOverflowException.h"
 #include "Loading/Exception/InvalidOffsetBlockException.h"
 #include "Loading/Exception/InvalidOffsetBlockOffsetException.h"
 #include "Loading/Exception/OutOfBlockBoundsException.h"
 
-XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, const int blockBitCount,
-                                     const block_t insertBlock) : m_blocks(blocks)
+#include <cassert>
+#include <cstring>
+
+XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream* stream, const int blockBitCount, const block_t insertBlock)
+    : m_blocks(blocks)
 {
     m_stream = stream;
 
@@ -51,7 +51,7 @@ void XBlockInputStream::PushBlock(const block_t block)
 
     m_block_stack.push(newBlock);
 
-    if(newBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+    if (newBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
     {
         m_temp_offsets.push(m_block_offsets[newBlock->m_index]);
     }
@@ -140,7 +140,6 @@ void XBlockInputStream::LoadDataInBlock(void* dst, const size_t size)
         break;
     }
 
-
     IncBlockPos(size);
 }
 
@@ -183,8 +182,7 @@ void XBlockInputStream::LoadNullTerminated(void* dst)
 
         m_stream->Load(&byte, 1);
         block->m_buffer[offset++] = byte;
-    }
-    while (byte != 0);
+    } while (byte != 0);
 
     m_block_offsets[block->m_index] = offset;
 }

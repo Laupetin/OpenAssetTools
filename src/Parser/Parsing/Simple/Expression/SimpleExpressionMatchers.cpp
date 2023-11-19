@@ -1,12 +1,12 @@
 #include "SimpleExpressionMatchers.h"
 
-#include <algorithm>
-#include <list>
-
-#include "SimpleExpressionConditionalOperator.h"
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 #include "Parsing/Simple/Expression/SimpleExpressionBinaryOperation.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
+#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+#include "SimpleExpressionConditionalOperator.h"
+
+#include <algorithm>
+#include <list>
 
 static constexpr int TAG_EXPRESSION = SimpleExpressionMatchers::TAG_OFFSET_EXPRESSION + 1;
 static constexpr int TAG_OPERAND = SimpleExpressionMatchers::TAG_OFFSET_EXPRESSION + 2;
@@ -29,7 +29,10 @@ SimpleExpressionMatchers::SimpleExpressionMatchers()
 {
 }
 
-SimpleExpressionMatchers::SimpleExpressionMatchers(const bool enableStringOperands, const bool enableIdentifierOperands, const bool enableFloatingPointOperands, const bool enableIntOperands,
+SimpleExpressionMatchers::SimpleExpressionMatchers(const bool enableStringOperands,
+                                                   const bool enableIdentifierOperands,
+                                                   const bool enableFloatingPointOperands,
+                                                   const bool enableIntOperands,
                                                    const bool enableConditionalOperator)
     : m_enable_string_operands(enableStringOperands),
       m_enable_identifier_operands(enableIdentifierOperands),
@@ -39,8 +42,7 @@ SimpleExpressionMatchers::SimpleExpressionMatchers(const bool enableStringOperan
 {
 }
 
-SimpleExpressionMatchers::~SimpleExpressionMatchers()
-= default;
+SimpleExpressionMatchers::~SimpleExpressionMatchers() = default;
 
 void SimpleExpressionMatchers::ApplyTokensToLexerConfig(SimpleLexer::Config& lexerConfig)
 {
@@ -63,14 +65,16 @@ void SimpleExpressionMatchers::ApplyTokensToLexerConfig(SimpleLexer::Config& lex
 
 std::vector<const SimpleExpressionUnaryOperationType*> SimpleExpressionMatchers::EnabledUnaryOperations() const
 {
-    return std::vector(&SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES[0],
-                       &SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES[std::extent_v<decltype(SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES)>]);
+    return std::vector(
+        &SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES[0],
+        &SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES[std::extent_v<decltype(SimpleExpressionUnaryOperationType::ALL_OPERATION_TYPES)>]);
 }
 
 std::vector<const SimpleExpressionBinaryOperationType*> SimpleExpressionMatchers::EnabledBinaryOperations() const
 {
-    return std::vector(&SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[0],
-                       &SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[std::extent_v<decltype(SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES)>]);
+    return std::vector(
+        &SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[0],
+        &SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[std::extent_v<decltype(SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES)>]);
 }
 
 std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpressionInParenthesis(SequenceResult<SimpleParserValue>& result) const
@@ -83,7 +87,8 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpressionIn
     return processedEvaluation;
 }
 
-std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessConditionalOperation(std::unique_ptr<ISimpleExpression> condition, SequenceResult<SimpleParserValue>& result) const
+std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessConditionalOperation(std::unique_ptr<ISimpleExpression> condition,
+                                                                                         SequenceResult<SimpleParserValue>& result) const
 {
     auto trueExpression = ProcessExpression(result);
 
@@ -194,19 +199,21 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
             throw ParsingException(TokenPos(), "Expected EvaluationTag @ Evaluation");
     }
 
-    operators.sort([](const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p1, const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p2)
-    {
-        if (p1.second->m_precedence != p2.second->m_precedence)
-            return p1.second->m_precedence > p2.second->m_precedence;
+    operators.sort(
+        [](const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p1, const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p2)
+        {
+            if (p1.second->m_precedence != p2.second->m_precedence)
+                return p1.second->m_precedence > p2.second->m_precedence;
 
-        return p1.first > p2.first;
-    });
+            return p1.first > p2.first;
+        });
 
     while (!operators.empty())
     {
         const auto [operatorIndex, operatorType] = operators.back(); // This must not be a reference
 
-        auto operation = std::make_unique<SimpleExpressionBinaryOperation>(operatorType, std::move(operands[operatorIndex]), std::move(operands[operatorIndex + 1]));
+        auto operation =
+            std::make_unique<SimpleExpressionBinaryOperation>(operatorType, std::move(operands[operatorIndex]), std::move(operands[operatorIndex + 1]));
         operands.erase(operands.begin() + static_cast<int>(operatorIndex));
         operands[operatorIndex] = std::move(operation);
 
@@ -256,47 +263,54 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
     {
         if (enabledBinaryOperation->m_syntax.size() > 1)
         {
-            binaryOperationsMatchers.emplace_back(
-                create.MultiChar(MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(enabledBinaryOperation->m_id))
-                      .Transform([enabledBinaryOperation](const SimpleMatcherFactory::token_list_t& values)
-                      {
-                          return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(enabledBinaryOperation->m_id));
-                      }));
+            binaryOperationsMatchers.emplace_back(create.MultiChar(MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(enabledBinaryOperation->m_id))
+                                                      .Transform(
+                                                          [enabledBinaryOperation](const SimpleMatcherFactory::token_list_t& values)
+                                                          {
+                                                              return SimpleParserValue::Integer(values[0].get().GetPos(),
+                                                                                                static_cast<int>(enabledBinaryOperation->m_id));
+                                                          }));
         }
         else if (!enabledBinaryOperation->m_syntax.empty())
         {
-            binaryOperationsMatchers.emplace_back(
-                create.Char(enabledBinaryOperation->m_syntax[0])
-                      .Transform([enabledBinaryOperation](const SimpleMatcherFactory::token_list_t& values)
-                      {
-                          return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(enabledBinaryOperation->m_id));
-                      }));
+            binaryOperationsMatchers.emplace_back(create.Char(enabledBinaryOperation->m_syntax[0])
+                                                      .Transform(
+                                                          [enabledBinaryOperation](const SimpleMatcherFactory::token_list_t& values)
+                                                          {
+                                                              return SimpleParserValue::Integer(values[0].get().GetPos(),
+                                                                                                static_cast<int>(enabledBinaryOperation->m_id));
+                                                          }));
         }
     }
 
-    const auto hasAddOperation = std::any_of(enabledBinaryOperations.begin(), enabledBinaryOperations.end(), [](const SimpleExpressionBinaryOperationType* type)
-    {
-        return type == &SimpleExpressionBinaryOperationType::OPERATION_ADD;
-    });
-    const auto hasSubtractOperation = std::any_of(enabledBinaryOperations.begin(), enabledBinaryOperations.end(), [](const SimpleExpressionBinaryOperationType* type)
-    {
-        return type == &SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT;
-    });
+    const auto hasAddOperation = std::any_of(enabledBinaryOperations.begin(),
+                                             enabledBinaryOperations.end(),
+                                             [](const SimpleExpressionBinaryOperationType* type)
+                                             {
+                                                 return type == &SimpleExpressionBinaryOperationType::OPERATION_ADD;
+                                             });
+    const auto hasSubtractOperation = std::any_of(enabledBinaryOperations.begin(),
+                                                  enabledBinaryOperations.end(),
+                                                  [](const SimpleExpressionBinaryOperationType* type)
+                                                  {
+                                                      return type == &SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT;
+                                                  });
 
     if (hasAddOperation && hasSubtractOperation)
     {
-        binaryOperationsMatchers.emplace_back(
-            create.Or({
-                      create.IntegerWithSign(),
-                      create.FloatingPointWithSign()
-                  })
-                  .NoConsume()
-                  .Transform([](const SimpleMatcherFactory::token_list_t& values)
-                  {
-                      return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(SimpleBinaryOperationId::ADD));
-                  }));
+        binaryOperationsMatchers.emplace_back(create
+                                                  .Or({
+                                                      create.IntegerWithSign(),
+                                                      create.FloatingPointWithSign(),
+                                                  })
+                                                  .NoConsume()
+                                                  .Transform(
+                                                      [](const SimpleMatcherFactory::token_list_t& values)
+                                                      {
+                                                          return SimpleParserValue::Integer(values[0].get().GetPos(),
+                                                                                            static_cast<int>(SimpleBinaryOperationId::ADD));
+                                                      }));
     }
-
 
     return create.Or(std::move(binaryOperationsMatchers)).Capture(CAPTURE_BINARY_OPERATION_TYPE);
 }
@@ -320,21 +334,23 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
     {
         if (enabledUnaryOperation->m_syntax.size() > 1)
         {
-            unaryOperationsMatchers.emplace_back(
-                create.MultiChar(MULTI_TOKEN_OFFSET_UNARY + static_cast<int>(enabledUnaryOperation->m_id))
-                      .Transform([enabledUnaryOperation](const SimpleMatcherFactory::token_list_t& values)
-                      {
-                          return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(enabledUnaryOperation->m_id));
-                      }));
+            unaryOperationsMatchers.emplace_back(create.MultiChar(MULTI_TOKEN_OFFSET_UNARY + static_cast<int>(enabledUnaryOperation->m_id))
+                                                     .Transform(
+                                                         [enabledUnaryOperation](const SimpleMatcherFactory::token_list_t& values)
+                                                         {
+                                                             return SimpleParserValue::Integer(values[0].get().GetPos(),
+                                                                                               static_cast<int>(enabledUnaryOperation->m_id));
+                                                         }));
         }
         else if (!enabledUnaryOperation->m_syntax.empty())
         {
-            unaryOperationsMatchers.emplace_back(
-                create.Char(enabledUnaryOperation->m_syntax[0])
-                      .Transform([enabledUnaryOperation](const SimpleMatcherFactory::token_list_t& values)
-                      {
-                          return SimpleParserValue::Integer(values[0].get().GetPos(), static_cast<int>(enabledUnaryOperation->m_id));
-                      }));
+            unaryOperationsMatchers.emplace_back(create.Char(enabledUnaryOperation->m_syntax[0])
+                                                     .Transform(
+                                                         [enabledUnaryOperation](const SimpleMatcherFactory::token_list_t& values)
+                                                         {
+                                                             return SimpleParserValue::Integer(values[0].get().GetPos(),
+                                                                                               static_cast<int>(enabledUnaryOperation->m_id));
+                                                         }));
         }
     }
 
@@ -353,7 +369,7 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
         create.Label(LABEL_EXPRESSION),
         create.Char(':').Tag(TAG_CONDITIONAL_OPERATOR_SEPARATOR),
         create.Label(LABEL_EXPRESSION),
-        create.True().Tag(TAG_CONDITIONAL_OPERATOR_END)
+        create.True().Tag(TAG_CONDITIONAL_OPERATOR_END),
     });
 }
 
@@ -361,27 +377,33 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::E
 {
     const SimpleMatcherFactory create(labelSupplier);
 
-    return create.And({
-        create.OptionalLoop(ParseUnaryOperationType(labelSupplier)),
-        create.Or({
-            create.And({
-                create.Char('('),
-                create.Label(LABEL_EXPRESSION),
-                create.Char(')').Tag(TAG_PARENTHESIS_END)
-            }).Tag(TAG_PARENTHESIS),
-            create.And({
-                create.True().Tag(TAG_OPERAND_EXT),
-                ParseOperandExtension(labelSupplier),
-                create.True().Tag(TAG_OPERAND_EXT_END)
+    return create
+        .And({
+            create.OptionalLoop(ParseUnaryOperationType(labelSupplier)),
+            create.Or({
+                create
+                    .And({
+                        create.Char('('),
+                        create.Label(LABEL_EXPRESSION),
+                        create.Char(')').Tag(TAG_PARENTHESIS_END),
+                    })
+                    .Tag(TAG_PARENTHESIS),
+                create.And({
+                    create.True().Tag(TAG_OPERAND_EXT),
+                    ParseOperandExtension(labelSupplier),
+                    create.True().Tag(TAG_OPERAND_EXT_END),
+                }),
+                ParseOperand(labelSupplier),
             }),
-            ParseOperand(labelSupplier)
-        }),
-        create.Optional(create.Or({
-            ParseConditionalOperator(labelSupplier),
-            create.And({
-                ParseBinaryOperationType(labelSupplier),
-                create.Label(LABEL_EXPRESSION)
-            }).Tag(TAG_BINARY_OPERATION)
-        }))
-    }).Tag(TAG_EXPRESSION);
+            create.Optional(create.Or({
+                ParseConditionalOperator(labelSupplier),
+                create
+                    .And({
+                        ParseBinaryOperationType(labelSupplier),
+                        create.Label(LABEL_EXPRESSION),
+                    })
+                    .Tag(TAG_BINARY_OPERATION),
+            })),
+        })
+        .Tag(TAG_EXPRESSION);
 }

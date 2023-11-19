@@ -1,7 +1,7 @@
 #pragma once
+#include "Game/IW5/IW5.h"
 #include "Writing/ContentWriterBase.h"
 #include "Writing/IContentWritingEntryPoint.h"
-#include "Game/IW5/IW5.h"
 
 namespace IW5
 {
@@ -23,4 +23,4 @@ namespace IW5
 
         void WriteContent(Zone* zone, IZoneOutputStream* stream) override;
     };
-}
+} // namespace IW5

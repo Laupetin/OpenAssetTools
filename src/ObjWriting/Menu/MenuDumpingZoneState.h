@@ -1,7 +1,7 @@
 #pragma once
-#include <map>
-
 #include "Dumping/IZoneAssetDumperState.h"
+
+#include <map>
 
 namespace menu
 {
@@ -21,4 +21,4 @@ namespace menu
 
         void CreateMenuDumpingState(const void* menuDef, std::string path, const void* aliasMenuList);
     };
-}
+} // namespace menu

@@ -60,4 +60,4 @@ namespace state_map
         const StateMapLayoutEntries& m_entry_layout;
         const StateMapLayoutVars& m_var_layout;
     };
-}
+} // namespace state_map

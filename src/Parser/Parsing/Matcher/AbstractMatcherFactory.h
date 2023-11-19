@@ -1,20 +1,19 @@
 #pragma once
 
-#include <memory>
-
-#include "Utils/ClassUtils.h"
 #include "AbstractMatcher.h"
 #include "MatcherAnd.h"
+#include "MatcherFalse.h"
 #include "MatcherLabel.h"
 #include "MatcherLoop.h"
-#include "MatcherFalse.h"
-#include "MatcherTrue.h"
 #include "MatcherOptional.h"
 #include "MatcherOr.h"
+#include "MatcherTrue.h"
 #include "Parsing/IParserValue.h"
+#include "Utils/ClassUtils.h"
 
-template <typename TokenType>
-class MatcherFactoryWrapper
+#include <memory>
+
+template<typename TokenType> class MatcherFactoryWrapper
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -71,8 +70,7 @@ public:
     }
 };
 
-template <typename TokenType>
-class AbstractMatcherFactory
+template<typename TokenType> class AbstractMatcherFactory
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);

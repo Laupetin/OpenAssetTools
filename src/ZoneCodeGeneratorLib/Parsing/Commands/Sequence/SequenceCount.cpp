@@ -2,8 +2,8 @@
 
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceCount::SequenceCount()
 {
@@ -19,11 +19,14 @@ SequenceCount::SequenceCount()
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
         create.OptionalLoop(create.Label(CommandsCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY_INDEX)),
         create.Label(CommandsCommonMatchers::LABEL_EVALUATION),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 
-void SequenceCount::SetCountByArrayIndex(CommandsParserState* state, SequenceResult<CommandsParserValue>& result, MemberInformation* member, PointerDeclarationModifier* pointer,
+void SequenceCount::SetCountByArrayIndex(CommandsParserState* state,
+                                         SequenceResult<CommandsParserValue>& result,
+                                         MemberInformation* member,
+                                         PointerDeclarationModifier* pointer,
                                          std::unique_ptr<IEvaluation> evaluation)
 {
     std::vector<int> arraySizes;
@@ -33,12 +36,12 @@ void SequenceCount::SetCountByArrayIndex(CommandsParserState* state, SequenceRes
         if (modifier->GetType() == DeclarationModifierType::ARRAY)
             arraySizes.push_back(dynamic_cast<ArrayDeclarationModifier*>(modifier.get())->m_size);
     }
-    
+
     depthSize.resize(arraySizes.size());
     auto currentDepthSize = 1u;
     for (auto i = arraySizes.size(); i > 0; i--)
     {
-        if(i < arraySizes.size())
+        if (i < arraySizes.size())
             currentDepthSize *= arraySizes[i];
         depthSize[i - 1] = currentDepthSize;
     }

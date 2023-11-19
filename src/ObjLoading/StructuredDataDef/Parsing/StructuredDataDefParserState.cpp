@@ -2,8 +2,7 @@
 
 using namespace sdd;
 
-UndefinedType::UndefinedType()
-= default;
+UndefinedType::UndefinedType() = default;
 
 UndefinedType::UndefinedType(std::string name, const TokenPos firstUsagePos)
     : m_name(std::move(name)),

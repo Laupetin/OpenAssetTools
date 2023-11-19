@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include "AssetLoading/IZoneAssetLoaderState.h"
 #include "Domain/CommonFunctionDef.h"
 #include "Domain/CommonMenuDef.h"
+
+#include <string>
 
 namespace menu
 {
@@ -19,9 +19,9 @@ namespace menu
         std::map<std::string, std::vector<std::string>> m_menus_to_load_by_menu;
 
         MenuAssetZoneState() = default;
-        
+
         void AddFunction(std::unique_ptr<CommonFunctionDef> function);
         void AddMenu(std::unique_ptr<CommonMenuDef> menu);
         void AddMenusToLoad(std::string menuName, std::vector<std::string> menusToLoad);
     };
-}
+} // namespace menu

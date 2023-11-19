@@ -14,25 +14,25 @@ DefinitionWithMembers::DefinitionWithMembers(std::string _namespace, std::string
 {
 }
 
-//void DefinitionWithMembers::CalculateAlignment()
+// void DefinitionWithMembers::CalculateAlignment()
 //{
-//    if (m_has_alignment_override)
-//    {
-//        m_flags |= FLAG_ALIGNMENT_FORCED;
-//        m_alignment = m_alignment_override;
-//    }
-//    else
-//    {
-//        m_alignment = 0;
-//        for (const auto& member : m_members)
-//        {
-//            const auto memberAlignment = member->GetAlignment();
-//            if (memberAlignment > m_alignment)
-//                m_alignment = memberAlignment;
-//        }
-//    }
-//    m_flags |= FLAG_ALIGNMENT_CALCULATED;
-//}
+//     if (m_has_alignment_override)
+//     {
+//         m_flags |= FLAG_ALIGNMENT_FORCED;
+//         m_alignment = m_alignment_override;
+//     }
+//     else
+//     {
+//         m_alignment = 0;
+//         for (const auto& member : m_members)
+//         {
+//             const auto memberAlignment = member->GetAlignment();
+//             if (memberAlignment > m_alignment)
+//                 m_alignment = memberAlignment;
+//         }
+//     }
+//     m_flags |= FLAG_ALIGNMENT_CALCULATED;
+// }
 
 unsigned DefinitionWithMembers::GetAlignment() const
 {

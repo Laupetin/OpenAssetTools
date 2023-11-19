@@ -1,8 +1,8 @@
 #pragma once
 
-#include <ostream>
-
 #include "Persistence/IDataRepository.h"
+
+#include <ostream>
 
 class PrettyPrinter
 {

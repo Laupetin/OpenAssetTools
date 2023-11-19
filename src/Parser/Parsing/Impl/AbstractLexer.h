@@ -1,17 +1,16 @@
 #pragma once
 
+#include "Parsing/ILexer.h"
+#include "Parsing/IParserLineStream.h"
+#include "Parsing/ParsingException.h"
+#include "Utils/ClassUtils.h"
+#include "Utils/StringUtils.h"
+
 #include <cassert>
 #include <deque>
 #include <sstream>
 
-#include "Utils/ClassUtils.h"
-#include "Parsing/ILexer.h"
-#include "Parsing/IParserLineStream.h"
-#include "Parsing/ParsingException.h"
-#include "Utils/StringUtils.h"
-
-template <typename TokenType>
-class AbstractLexer : public ILexer<TokenType>
+template<typename TokenType> class AbstractLexer : public ILexer<TokenType>
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -311,16 +310,12 @@ protected:
     {
         const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
-        assert(isdigit(currentLine.m_line[m_current_line_offset - 1])
-            || currentLine.m_line[m_current_line_offset - 1] == '.'
-            || currentLine.m_line[m_current_line_offset - 1] == '+'
-            || currentLine.m_line[m_current_line_offset - 1] == '-');
+        assert(isdigit(currentLine.m_line[m_current_line_offset - 1]) || currentLine.m_line[m_current_line_offset - 1] == '.'
+               || currentLine.m_line[m_current_line_offset - 1] == '+' || currentLine.m_line[m_current_line_offset - 1] == '-');
         hasSignPrefix = currentLine.m_line[m_current_line_offset - 1] == '+' || currentLine.m_line[m_current_line_offset - 1] == '-';
 
         const auto lineLength = currentLine.m_line.size();
-        if (lineLength - m_current_line_offset >= 1
-            && currentLine.m_line[m_current_line_offset - 1] == '0'
-            && currentLine.m_line[m_current_line_offset] == 'x')
+        if (lineLength - m_current_line_offset >= 1 && currentLine.m_line[m_current_line_offset - 1] == '0' && currentLine.m_line[m_current_line_offset] == 'x')
         {
             isFloatingPoint = false;
             ReadHexNumber(integerValue);
@@ -341,15 +336,12 @@ protected:
     {
         const auto& currentLine = CurrentLine();
         assert(m_current_line_offset >= 1);
-        assert(isdigit(currentLine.m_line[m_current_line_offset - 1])
-            || currentLine.m_line[m_current_line_offset - 1] == '+'
-            || currentLine.m_line[m_current_line_offset - 1] == '-');
+        assert(isdigit(currentLine.m_line[m_current_line_offset - 1]) || currentLine.m_line[m_current_line_offset - 1] == '+'
+               || currentLine.m_line[m_current_line_offset - 1] == '-');
         hasSignPrefix = currentLine.m_line[m_current_line_offset - 1] == '+' || currentLine.m_line[m_current_line_offset - 1] == '-';
 
         const auto lineLength = currentLine.m_line.size();
-        if (lineLength - m_current_line_offset >= 1
-            && currentLine.m_line[m_current_line_offset - 1] == '0'
-            && currentLine.m_line[m_current_line_offset] == 'x')
+        if (lineLength - m_current_line_offset >= 1 && currentLine.m_line[m_current_line_offset - 1] == '0' && currentLine.m_line[m_current_line_offset] == 'x')
         {
             ReadHexNumber(integerValue);
         }
@@ -376,9 +368,9 @@ public:
         if (static_cast<int>(m_token_cache.size()) <= amount)
         {
             const auto& lastToken = m_token_cache.back();
-            while (!m_line_cache.empty()
-                && (m_line_cache.front().m_line_number != lastToken.GetPos().m_line
-                    || *m_line_cache.front().m_filename != lastToken.GetPos().m_filename.get()))
+            while (
+                !m_line_cache.empty()
+                && (m_line_cache.front().m_line_number != lastToken.GetPos().m_line || *m_line_cache.front().m_filename != lastToken.GetPos().m_filename.get()))
             {
                 m_line_cache.pop_front();
                 m_line_index--;
@@ -390,8 +382,8 @@ public:
             m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
             const auto& firstToken = m_token_cache.front();
             while (!m_line_cache.empty()
-                && (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
-                    || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get()))
+                   && (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
+                       || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get()))
             {
                 m_line_cache.pop_front();
                 m_line_index--;
@@ -413,9 +405,7 @@ public:
     {
         for (const auto& line : m_line_cache)
         {
-            if (line.m_filename
-                && *line.m_filename == pos.m_filename.get()
-                && line.m_line_number == pos.m_line)
+            if (line.m_filename && *line.m_filename == pos.m_filename.get() && line.m_line_number == pos.m_line)
             {
                 return line;
             }

@@ -1,9 +1,9 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Menu/Sequence/ItemScopeSequences.h"
 #include "Parsing/Mock/MockLexer.h"
+#include "Utils/ClassUtils.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 using namespace menu;
 
@@ -61,7 +61,7 @@ namespace test::parsing::menu::sequence::item
             return false;
         }
     };
-    
+
     TEST_CASE("ItemScopeSequences: Simple dvarStrList works", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
@@ -78,7 +78,7 @@ namespace test::parsing::menu::sequence::item
             SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_9")),
             SimpleParserValue::String(pos, new std::string("wide 16:9")),
             SimpleParserValue::Character(pos, '}'),
-            SimpleParserValue::EndOfFile(pos)
+            SimpleParserValue::EndOfFile(pos),
         });
 
         helper.m_item->m_feature_type = CommonItemFeatureType::MULTI_VALUE;
@@ -89,4 +89,4 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(result);
         REQUIRE(helper.m_consumed_token_count == 11);
     }
-}
+} // namespace test::parsing::menu::sequence::item

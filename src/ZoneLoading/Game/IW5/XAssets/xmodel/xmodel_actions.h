@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Loading/AssetLoadingActions.h"
 #include "Game/IW5/IW5.h"
+#include "Loading/AssetLoadingActions.h"
 
 namespace IW5
 {
@@ -12,4 +12,4 @@ namespace IW5
 
         void SetModelSurfs(XModelLodInfo* lodInfo, XModelSurfs* modelSurfs) const;
     };
-}
+} // namespace IW5

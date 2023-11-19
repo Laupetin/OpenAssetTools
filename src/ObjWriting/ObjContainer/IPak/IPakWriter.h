@@ -1,8 +1,8 @@
 #pragma once
+#include "SearchPath/ISearchPath.h"
+
 #include <memory>
 #include <ostream>
-
-#include "SearchPath/ISearchPath.h"
 
 class IPakWriter
 {

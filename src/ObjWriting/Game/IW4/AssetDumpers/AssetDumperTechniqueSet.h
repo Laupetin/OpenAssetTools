@@ -14,4 +14,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset) override;
     };
-}
+} // namespace IW4

@@ -1,16 +1,15 @@
 #include "IPakEntryReadStream.h"
 
+#include "ObjContainer/IPak/IPakTypes.h"
+
 #include <cassert>
 #include <cstring>
-
 #include <minilzo.h>
-
-#include "ObjContainer/IPak/IPakTypes.h"
 
 using namespace ipak_consts;
 
-IPakEntryReadStream::IPakEntryReadStream(std::istream& stream, IPakStreamManagerActions* streamManagerActions,
-                                         uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
+IPakEntryReadStream::IPakEntryReadStream(
+    std::istream& stream, IPakStreamManagerActions* streamManagerActions, uint8_t* chunkBuffer, const int64_t startOffset, const size_t entrySize)
     : m_chunk_buffer(chunkBuffer),
       m_stream(stream),
       m_stream_manager_actions(streamManagerActions),
@@ -85,8 +84,8 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
         // Check whether we need to load additional data that was not previously loaded
         if (endPos > m_buffer_end_pos)
         {
-            const auto readChunkCount = ReadChunks(&m_chunk_buffer[m_buffer_end_pos - startPos], m_buffer_end_pos,
-                                                   static_cast<size_t>(endPos - m_buffer_end_pos) / IPAK_CHUNK_SIZE);
+            const auto readChunkCount =
+                ReadChunks(&m_chunk_buffer[m_buffer_end_pos - startPos], m_buffer_end_pos, static_cast<size_t>(endPos - m_buffer_end_pos) / IPAK_CHUNK_SIZE);
 
             m_buffer_end_pos += static_cast<int64_t>(readChunkCount) * IPAK_CHUNK_SIZE;
 
@@ -100,20 +99,18 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
     // Check whether the end position is already part of the loaded data
     if (endPos > m_buffer_start_pos && endPos <= m_buffer_end_pos)
     {
-        assert(IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ - static_cast<size_t>(m_buffer_start_pos - startPos) >= static_cast<size_t>(endPos - m_buffer_start_pos));
+        assert(IPAK_CHUNK_SIZE * IPAK_CHUNK_COUNT_PER_READ - static_cast<size_t>(m_buffer_start_pos - startPos)
+               >= static_cast<size_t>(endPos - m_buffer_start_pos));
 
         // Move data to make sure the end is at the appropriate position to be able to load the missing data in the front
         memmove(&m_chunk_buffer[m_buffer_start_pos - startPos], m_chunk_buffer, static_cast<size_t>(endPos - m_buffer_start_pos));
 
         // We already established that the start of the buffer is not already loaded so we will need to load additional data nonetheless
-        const auto readChunkCount = ReadChunks(m_chunk_buffer,
-                                               startPos,
-                                               static_cast<size_t>(m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE);
+        const auto readChunkCount = ReadChunks(m_chunk_buffer, startPos, static_cast<size_t>(m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE);
 
         m_buffer_start_pos = startPos;
-        m_buffer_end_pos = readChunkCount == (m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE
-                               ? endPos
-                               : startPos + static_cast<int64_t>(readChunkCount) * IPAK_CHUNK_SIZE;
+        m_buffer_end_pos =
+            readChunkCount == (m_buffer_start_pos - startPos) / IPAK_CHUNK_SIZE ? endPos : startPos + static_cast<int64_t>(readChunkCount) * IPAK_CHUNK_SIZE;
 
         return m_buffer_end_pos == endPos;
     }
@@ -143,8 +140,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
         {
             // If compressed is not 0 or 1 it will not be read and therefore it is okay when the offset does not match
             // The game uses IPAK_COMMAND_SKIP as value for compressed when it intends to skip the specified amount of data
-            if (blockHeader->commands[currentCommand].compressed == 0
-                || blockHeader->commands[currentCommand].compressed == 1)
+            if (blockHeader->commands[currentCommand].compressed == 0 || blockHeader->commands[currentCommand].compressed == 1)
             {
                 std::cerr << "IPak block offset (" << blockHeader->countAndOffset.offset << ") is not the file head (" << m_file_head << ") -> Invalid\n";
                 return false;
@@ -192,8 +188,7 @@ bool IPakEntryReadStream::NextBlock()
     const auto chunkStartPos = AlignBackwards<int64_t>(m_pos, IPAK_CHUNK_SIZE);
     const auto blockOffsetInChunk = static_cast<size_t>(m_pos - chunkStartPos);
 
-    auto estimatedChunksToRead = AlignForward(m_entry_size - static_cast<size_t>(m_pos - m_base_pos), IPAK_CHUNK_SIZE)
-        / IPAK_CHUNK_SIZE;
+    auto estimatedChunksToRead = AlignForward(m_entry_size - static_cast<size_t>(m_pos - m_base_pos), IPAK_CHUNK_SIZE) / IPAK_CHUNK_SIZE;
 
     if (estimatedChunksToRead > IPAK_CHUNK_COUNT_PER_READ)
         estimatedChunksToRead = IPAK_CHUNK_COUNT_PER_READ;
@@ -222,8 +217,7 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
         if (compressed == 1)
         {
             lzo_uint outputSize = sizeof(m_decompress_buffer);
-            const auto result = lzo1x_decompress_safe(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize,
-                                                      m_decompress_buffer, &outputSize, nullptr);
+            const auto result = lzo1x_decompress_safe(&m_chunk_buffer[m_pos - m_buffer_start_pos], commandSize, m_decompress_buffer, &outputSize, nullptr);
 
             if (result != LZO_E_OK)
             {
@@ -261,8 +255,7 @@ bool IPakEntryReadStream::AdvanceStream()
             return false;
     }
 
-    ProcessCommand(m_current_block->commands[m_next_command].size,
-                   m_current_block->commands[m_next_command].compressed);
+    ProcessCommand(m_current_block->commands[m_next_command].size, m_current_block->commands[m_next_command].compressed);
     m_next_command++;
 
     return true;

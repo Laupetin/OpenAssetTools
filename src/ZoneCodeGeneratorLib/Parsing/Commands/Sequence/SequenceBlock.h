@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Commands/Impl/CommandsParser.h"
+#include "Utils/ClassUtils.h"
+
+#include <unordered_map>
 
 class SequenceBlock final : public CommandsParser::sequence_t
 {

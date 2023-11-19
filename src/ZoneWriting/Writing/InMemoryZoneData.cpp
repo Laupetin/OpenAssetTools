@@ -18,7 +18,7 @@ InMemoryZoneData::MemoryBuffer::MemoryBuffer(const size_t size)
 
 void* InMemoryZoneData::GetBufferOfSize(const size_t size)
 {
-    if(size > BUFFER_SIZE)
+    if (size > BUFFER_SIZE)
     {
         m_buffers.emplace_back(size);
     }

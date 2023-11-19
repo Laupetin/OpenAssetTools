@@ -1,8 +1,12 @@
 #include "StepVerifySignature.h"
+
 #include "Loading/Exception/InvalidSignatureException.h"
+
 #include <cassert>
 
-StepVerifySignature::StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm, ISignatureProvider* signatureProvider, ICapturedDataProvider* signatureDataProvider)
+StepVerifySignature::StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm,
+                                         ISignatureProvider* signatureProvider,
+                                         ICapturedDataProvider* signatureDataProvider)
     : m_algorithm(std::move(signatureAlgorithm)),
       m_signature_provider(signatureProvider),
       m_signature_data_provider(signatureDataProvider)

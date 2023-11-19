@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Techset/TechsetDefinition.h"
+
 #include <map>
 #include <memory>
 #include <string>
-
-#include "Techset/TechsetDefinition.h"
 
 namespace techset
 {
@@ -19,4 +19,4 @@ namespace techset
 
         bool FindTechniqueTypeIndex(const std::string& techniqueTypeName, size_t& techniqueTypeIndex) const;
     };
-}
+} // namespace techset

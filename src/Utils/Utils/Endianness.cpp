@@ -6,10 +6,7 @@ namespace endianness
 {
     constexpr uint16_t byteswap16u(const uint16_t in)
     {
-        return static_cast<uint16_t>(
-            (in >> 8) |
-            (in << 8)
-        );
+        return static_cast<uint16_t>((in >> 8) | (in << 8));
     }
 
     constexpr int16_t byteswap16s(const int16_t in)
@@ -19,12 +16,7 @@ namespace endianness
 
     constexpr uint32_t byteswap32u(const uint32_t in)
     {
-        return static_cast<uint32_t>(
-            (in >> 24) |
-            ((in >> 8) & 0x0000FF00ui32) |
-            ((in << 8) & 0x00FF0000ui32) |
-            (in << 24)
-        );
+        return static_cast<uint32_t>((in >> 24) | ((in >> 8) & 0x0000FF00ui32) | ((in << 8) & 0x00FF0000ui32) | (in << 24));
     }
 
     constexpr int32_t byteswap32s(const int32_t in)
@@ -34,23 +26,16 @@ namespace endianness
 
     constexpr uint64_t byteswap64u(const uint64_t in)
     {
-        return static_cast<uint32_t>(
-            (in >> 56) |
-            ((in >> 40) & 0x000000000000FF00ui64) |
-            ((in >> 24) & 0x0000000000FF0000ui64) |
-            ((in >> 8) & 0x00000000FF000000ui64) |
-            ((in << 8) & 0x000000FF00000000ui64) |
-            ((in << 24) & 0x0000FF0000000000ui64) |
-            ((in << 40) & 0x00FF000000000000ui64) |
-            (in << 56)
-        );
+        return static_cast<uint32_t>((in >> 56) | ((in >> 40) & 0x000000000000FF00ui64) | ((in >> 24) & 0x0000000000FF0000ui64)
+                                     | ((in >> 8) & 0x00000000FF000000ui64) | ((in << 8) & 0x000000FF00000000ui64) | ((in << 24) & 0x0000FF0000000000ui64)
+                                     | ((in << 40) & 0x00FF000000000000ui64) | (in << 56));
     }
 
     constexpr int64_t byteswap64s(const int64_t in)
     {
         return static_cast<int64_t>(byteswap64u(static_cast<uint64_t>(in)));
     }
-}
+} // namespace endianness
 
 #else
 
@@ -85,7 +70,7 @@ namespace endianness
     {
         return __builtin_bswap64(in);
     }
-}
+} // namespace endianness
 
 #endif
 
@@ -216,4 +201,4 @@ namespace endianness
     }
 
 #endif
-}
+} // namespace endianness

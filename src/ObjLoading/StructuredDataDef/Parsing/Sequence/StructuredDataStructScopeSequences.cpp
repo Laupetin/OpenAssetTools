@@ -1,9 +1,9 @@
 #include "StructuredDataStructScopeSequences.h"
 
-#include <algorithm>
-
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 #include "Utils/Alignment.h"
+
+#include <algorithm>
 
 namespace sdd::struct_scope_sequences
 {
@@ -30,13 +30,15 @@ namespace sdd::struct_scope_sequences
                 create.Keyword("bool").Tag(TAG_TYPE_BOOL),
                 create.Keyword("float").Tag(TAG_TYPE_FLOAT),
                 create.Keyword("short").Tag(TAG_TYPE_SHORT),
-                create.And({
-                    create.Keyword("string"),
-                    create.Char('('),
-                    create.Integer().Capture(CAPTURE_STRING_LENGTH),
-                    create.Char(')')
-                }).Tag(TAG_TYPE_STRING),
-                create.Identifier().Tag(TAG_TYPE_NAMED).Capture(CAPTURE_TYPE_NAME)
+                create
+                    .And({
+                        create.Keyword("string"),
+                        create.Char('('),
+                        create.Integer().Capture(CAPTURE_STRING_LENGTH),
+                        create.Char(')'),
+                    })
+                    .Tag(TAG_TYPE_STRING),
+                create.Identifier().Tag(TAG_TYPE_NAMED).Capture(CAPTURE_TYPE_NAME),
             });
         }
 
@@ -46,9 +48,9 @@ namespace sdd::struct_scope_sequences
                 create.Char('['),
                 create.Or({
                     create.Integer().Capture(CAPTURE_ARRAY_SIZE),
-                    create.Identifier().Capture(CAPTURE_ARRAY_SIZE)
+                    create.Identifier().Capture(CAPTURE_ARRAY_SIZE),
                 }),
-                create.Char(']')
+                create.Char(']'),
             });
         }
 
@@ -61,7 +63,7 @@ namespace sdd::struct_scope_sequences
                 TypeMatchers(create),
                 create.Identifier().Capture(CAPTURE_ENTRY_NAME),
                 create.OptionalLoop(ArrayMatchers(create)),
-                create.Char(';')
+                create.Char(';'),
             });
         }
 
@@ -83,38 +85,39 @@ namespace sdd::struct_scope_sequences
             case TAG_TYPE_SHORT:
                 return CommonStructuredDataType(CommonStructuredDataTypeCategory::SHORT);
             case TAG_TYPE_STRING:
-                {
-                    const auto& stringLengthToken = result.NextCapture(CAPTURE_STRING_LENGTH);
-                    const auto stringLength = stringLengthToken.IntegerValue();
+            {
+                const auto& stringLengthToken = result.NextCapture(CAPTURE_STRING_LENGTH);
+                const auto stringLength = stringLengthToken.IntegerValue();
 
-                    if (stringLength <= 0)
-                        throw ParsingException(stringLengthToken.GetPos(), "String length must be greater than zero");
+                if (stringLength <= 0)
+                    throw ParsingException(stringLengthToken.GetPos(), "String length must be greater than zero");
 
-                    return {CommonStructuredDataTypeCategory::STRING, static_cast<size_t>(stringLength)};
-                }
+                return {CommonStructuredDataTypeCategory::STRING, static_cast<size_t>(stringLength)};
+            }
             case TAG_TYPE_NAMED:
+            {
+                const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE_NAME);
+                const auto typeName = typeNameToken.IdentifierValue();
+
+                const auto existingType = state->m_def_types_by_name.find(typeName);
+                if (existingType == state->m_def_types_by_name.end())
                 {
-                    const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE_NAME);
-                    const auto typeName = typeNameToken.IdentifierValue();
-
-                    const auto existingType = state->m_def_types_by_name.find(typeName);
-                    if (existingType == state->m_def_types_by_name.end())
-                    {
-                        const auto undefinedTypeIndex = state->m_undefined_types.size();
-                        const CommonStructuredDataType undefinedType(CommonStructuredDataTypeCategory::UNKNOWN, undefinedTypeIndex);
-                        state->m_undefined_types.emplace_back(typeName, typeNameToken.GetPos());
-                        state->m_def_types_by_name.emplace(std::make_pair(typeName, undefinedType));
-                        return undefinedType;
-                    }
-
-                    return existingType->second;
+                    const auto undefinedTypeIndex = state->m_undefined_types.size();
+                    const CommonStructuredDataType undefinedType(CommonStructuredDataTypeCategory::UNKNOWN, undefinedTypeIndex);
+                    state->m_undefined_types.emplace_back(typeName, typeNameToken.GetPos());
+                    state->m_def_types_by_name.emplace(std::make_pair(typeName, undefinedType));
+                    return undefinedType;
                 }
+
+                return existingType->second;
+            }
             default:
                 throw ParsingException(TokenPos(), "Invalid Tag for Type @ ProcessType!!!");
             }
         }
 
-        static CommonStructuredDataType ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataType currentType)
+        static CommonStructuredDataType
+            ProcessArray(StructuredDataDefParserState* state, const SimpleParserValue& arrayToken, const CommonStructuredDataType currentType)
         {
             if (arrayToken.m_type == SimpleParserValueType::INTEGER)
             {
@@ -179,7 +182,8 @@ namespace sdd::struct_scope_sequences
             for (auto i = arrayTokens.rbegin(); i != arrayTokens.rend(); ++i)
                 currentType = ProcessArray(state, i->get(), currentType);
 
-            state->m_current_struct->m_properties.emplace_back(result.NextCapture(CAPTURE_ENTRY_NAME).IdentifierValue(), currentType, state->m_current_struct_padding_offset);
+            state->m_current_struct->m_properties.emplace_back(
+                result.NextCapture(CAPTURE_ENTRY_NAME).IdentifierValue(), currentType, state->m_current_struct_padding_offset);
         }
     };
 
@@ -197,7 +201,7 @@ namespace sdd::struct_scope_sequences
                 create.Char('('),
                 create.Integer().Capture(CAPTURE_PADDING_VALUE),
                 create.Char(')'),
-                create.Char(';')
+                create.Char(';'),
             });
         }
 
@@ -223,7 +227,7 @@ namespace sdd::struct_scope_sequences
 
             AddMatchers({
                 create.Char('}'),
-                create.Optional(create.Char(';'))
+                create.Optional(create.Char(';')),
             });
         }
 
@@ -242,7 +246,7 @@ namespace sdd::struct_scope_sequences
             state->m_current_struct = nullptr;
         }
     };
-}
+} // namespace sdd::struct_scope_sequences
 
 using namespace sdd;
 using namespace struct_scope_sequences;

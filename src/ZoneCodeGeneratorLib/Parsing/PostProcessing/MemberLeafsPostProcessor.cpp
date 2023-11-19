@@ -34,7 +34,7 @@ bool MemberLeafsPostProcessor::MemberIsLeaf(MemberInformation* member)
 
 void MemberLeafsPostProcessor::ProcessInfo(StructureInformation* info)
 {
-    for(const auto& member : info->m_ordered_members)
+    for (const auto& member : info->m_ordered_members)
     {
         member->m_is_leaf = MemberIsLeaf(member.get());
     }

@@ -14,4 +14,4 @@ namespace utils
 
     void MakeStringLowerCase(std::string& str);
     void MakeStringUpperCase(std::string& str);
-}
+} // namespace utils

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Parsing/Simple/SimpleParserValue.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
+#include "Parsing/Simple/SimpleParserValue.h"
 
 class MenuMatcherScriptInt final : public AbstractMatcher<SimpleParserValue>
 {

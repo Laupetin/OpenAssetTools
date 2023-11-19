@@ -1,9 +1,9 @@
 #include "SearchPathFilesystem.h"
 
+#include "Utils/ObjFileStream.h"
+
 #include <filesystem>
 #include <fstream>
-
-#include "Utils/ObjFileStream.h"
 
 namespace fs = std::filesystem;
 

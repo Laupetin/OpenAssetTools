@@ -99,12 +99,10 @@ enum D3DFORMAT
     // 2.8 biased fixed point
     D3DFMT_A2B10G10R10_XR_BIAS = 119,
 
-
     // Binary format indicating that the data has no inherent type
     D3DFMT_BINARYBUFFER = 199,
-    
-    /* -- D3D9Ex only */
 
+    /* -- D3D9Ex only */
 
     D3DFMT_FORCE_DWORD = 0x7fffffff
 };

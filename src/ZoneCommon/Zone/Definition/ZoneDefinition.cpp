@@ -12,8 +12,7 @@ ZoneDefinitionEntry::ZoneDefinitionEntry(std::string type, std::string name, con
 {
 }
 
-ZoneMetaDataEntry::ZoneMetaDataEntry()
-= default;
+ZoneMetaDataEntry::ZoneMetaDataEntry() = default;
 
 ZoneMetaDataEntry::ZoneMetaDataEntry(std::string key, std::string value)
     : m_key(std::move(key)),

@@ -1,10 +1,9 @@
 #include "SequenceString.h"
 
-#include <algorithm>
-
-
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
+
+#include <algorithm>
 
 SequenceString::SequenceString()
 {
@@ -15,7 +14,7 @@ SequenceString::SequenceString()
         create.Keyword("set"),
         create.Keyword("string"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 
@@ -40,10 +39,12 @@ void SequenceString::ProcessMatch(CommandsParserState* state, SequenceResult<Com
         if (!hasPointerRef)
         {
             const auto& modifiers = typeDecl->m_declaration_modifiers;
-            hasPointerRef = std::any_of(modifiers.begin(), modifiers.end(), [](const std::unique_ptr<DeclarationModifier>& modifier)
-            {
-                return modifier->GetType() == DeclarationModifierType::POINTER;
-            });
+            hasPointerRef = std::any_of(modifiers.begin(),
+                                        modifiers.end(),
+                                        [](const std::unique_ptr<DeclarationModifier>& modifier)
+                                        {
+                                            return modifier->GetType() == DeclarationModifierType::POINTER;
+                                        });
         }
 
         if (typeDecl->m_type->GetType() == DataDefinitionType::TYPEDEF)

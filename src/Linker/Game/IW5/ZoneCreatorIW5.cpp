@@ -1,10 +1,10 @@
 #include "ZoneCreatorIW5.h"
 
-#include <iostream>
-
-#include "ObjLoading.h"
-#include "Game/IW5/GameIW5.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
+#include "Game/IW5/GameIW5.h"
+#include "ObjLoading.h"
+
+#include <iostream>
 
 using namespace IW5;
 

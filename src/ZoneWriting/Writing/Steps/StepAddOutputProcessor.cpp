@@ -1,4 +1,5 @@
 #include "StepAddOutputProcessor.h"
+
 #include <cassert>
 
 StepAddOutputProcessor::StepAddOutputProcessor(std::unique_ptr<OutputStreamProcessor> streamProcessor)

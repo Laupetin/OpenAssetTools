@@ -14,4 +14,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<TracerDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<TracerDef>* asset) override;
     };
-}
+} // namespace T6

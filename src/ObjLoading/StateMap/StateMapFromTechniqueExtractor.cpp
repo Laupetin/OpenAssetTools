@@ -7,9 +7,7 @@ std::string StateMapFromTechniqueExtractor::RetrieveStateMap()
     return std::move(m_state_map);
 }
 
-void StateMapFromTechniqueExtractor::AcceptNextPass()
-{
-}
+void StateMapFromTechniqueExtractor::AcceptNextPass() {}
 
 bool StateMapFromTechniqueExtractor::AcceptEndPass(std::string& errorMessage)
 {
@@ -32,22 +30,34 @@ bool StateMapFromTechniqueExtractor::AcceptPixelShader(const std::string& pixelS
     return true;
 }
 
-bool StateMapFromTechniqueExtractor::AcceptShaderConstantArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentCodeSource source, std::string& errorMessage)
+bool StateMapFromTechniqueExtractor::AcceptShaderConstantArgument(techset::ShaderSelector shader,
+                                                                  techset::ShaderArgument shaderArgument,
+                                                                  techset::ShaderArgumentCodeSource source,
+                                                                  std::string& errorMessage)
 {
     return true;
 }
 
-bool StateMapFromTechniqueExtractor::AcceptShaderSamplerArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentCodeSource source, std::string& errorMessage)
+bool StateMapFromTechniqueExtractor::AcceptShaderSamplerArgument(techset::ShaderSelector shader,
+                                                                 techset::ShaderArgument shaderArgument,
+                                                                 techset::ShaderArgumentCodeSource source,
+                                                                 std::string& errorMessage)
 {
     return true;
 }
 
-bool StateMapFromTechniqueExtractor::AcceptShaderLiteralArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentLiteralSource source, std::string& errorMessage)
+bool StateMapFromTechniqueExtractor::AcceptShaderLiteralArgument(techset::ShaderSelector shader,
+                                                                 techset::ShaderArgument shaderArgument,
+                                                                 techset::ShaderArgumentLiteralSource source,
+                                                                 std::string& errorMessage)
 {
     return true;
 }
 
-bool StateMapFromTechniqueExtractor::AcceptShaderMaterialArgument(techset::ShaderSelector shader, techset::ShaderArgument shaderArgument, techset::ShaderArgumentMaterialSource source, std::string& errorMessage)
+bool StateMapFromTechniqueExtractor::AcceptShaderMaterialArgument(techset::ShaderSelector shader,
+                                                                  techset::ShaderArgument shaderArgument,
+                                                                  techset::ShaderArgumentMaterialSource source,
+                                                                  std::string& errorMessage)
 {
     return true;
 }

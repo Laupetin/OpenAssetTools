@@ -97,4 +97,4 @@ namespace d3d9
     public:
         static std::unique_ptr<ShaderInfo> GetShaderInfo(const uint32_t* shaderByteCode, size_t shaderByteCodeSize);
     };
-}
+} // namespace d3d9

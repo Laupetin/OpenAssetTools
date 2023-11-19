@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cstdint>
-#include <unordered_map>
-
-#include "Utils/ClassUtils.h"
 #include "StateMap/StateMapDefinition.h"
 #include "StateMap/StateMapLayout.h"
+#include "Utils/ClassUtils.h"
+
+#include <cstdint>
+#include <unordered_map>
 
 namespace state_map
 {
@@ -33,4 +33,4 @@ namespace state_map
         const StateMapLayout& m_state_map_layout;
         const StateMapDefinition& m_state_map;
     };
-}
+} // namespace state_map

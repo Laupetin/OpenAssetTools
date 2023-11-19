@@ -11,6 +11,6 @@ MatcherResult<SimpleParserValue> SimpleMatcherKeyword::CanMatch(ILexer<SimplePar
 {
     const auto& token = lexer->GetToken(tokenOffset);
     return token.m_type == SimpleParserValueType::IDENTIFIER && token.IdentifierHash() == m_hash && token.IdentifierValue() == m_value
-        ? MatcherResult<SimpleParserValue>::Match(1)
-        : MatcherResult<SimpleParserValue>::NoMatch();
+               ? MatcherResult<SimpleParserValue>::Match(1)
+               : MatcherResult<SimpleParserValue>::NoMatch();
 }

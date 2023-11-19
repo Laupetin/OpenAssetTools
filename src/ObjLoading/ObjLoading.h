@@ -1,9 +1,9 @@
 #pragma once
 
 #include "AssetLoading/AssetLoadingContext.h"
-#include "Zone/Zone.h"
 #include "SearchPath/ISearchPath.h"
 #include "SearchPath/SearchPaths.h"
+#include "Zone/Zone.h"
 
 class ObjLoading
 {
@@ -24,8 +24,8 @@ public:
     static void LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone);
 
     /**
-     * \brief Unloads all containers that were referenced by a specified zone. If referenced by more than one zone a container will only be unloaded once all referencing zones were unloaded the container.
-     * \param zone The zone to unload all referenced containers for.
+     * \brief Unloads all containers that were referenced by a specified zone. If referenced by more than one zone a container will only be unloaded once all
+     * referencing zones were unloaded the container. \param zone The zone to unload all referenced containers for.
      */
     static void UnloadContainersOfZone(Zone* zone);
 

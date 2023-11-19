@@ -15,10 +15,7 @@ void AssetDumperLoadedSound::DumpWavPcm(AssetDumpingContext& context, const Load
     const WavWriter writer(stream);
 
     const WavMetaData metaData{
-        static_cast<unsigned>(asset->sound.info.channels),
-        static_cast<unsigned>(asset->sound.info.rate),
-        static_cast<unsigned>(asset->sound.info.bits)
-    };
+        static_cast<unsigned>(asset->sound.info.channels), static_cast<unsigned>(asset->sound.info.rate), static_cast<unsigned>(asset->sound.info.bits)};
 
     writer.WritePcmHeader(metaData, asset->sound.info.data_len);
     writer.WritePcmData(asset->sound.data, asset->sound.info.data_len);

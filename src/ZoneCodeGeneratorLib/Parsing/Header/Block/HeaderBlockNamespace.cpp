@@ -27,7 +27,7 @@ const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockNamespace::GetTestsForB
         new SequenceNamespace(),
         new SequenceStruct(),
         new SequenceTypedef(),
-        new SequenceUnion()
+        new SequenceUnion(),
     });
 
     return tests;
@@ -43,6 +43,4 @@ void HeaderBlockNamespace::OnClose(HeaderParserState* state)
     state->m_namespace.Pop();
 }
 
-void HeaderBlockNamespace::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
-{
-}
+void HeaderBlockNamespace::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) {}

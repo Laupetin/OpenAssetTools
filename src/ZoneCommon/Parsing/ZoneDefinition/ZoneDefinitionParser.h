@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ZoneDefinitionLexer.h"
-#include "ZoneDefinitionParserValue.h"
 #include "Parsing/Impl/AbstractParser.h"
 #include "Zone/Definition/ZoneDefinition.h"
+#include "ZoneDefinitionLexer.h"
+#include "ZoneDefinitionParserValue.h"
 
 class ZoneDefinitionParser final : public AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>
 {

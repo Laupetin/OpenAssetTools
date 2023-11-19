@@ -1,11 +1,11 @@
 #include "UsagesPostProcessor.h"
 
+#include "Domain/Computations/MemberComputations.h"
+#include "Domain/Computations/StructureComputations.h"
+
 #include <algorithm>
 #include <queue>
 #include <set>
-
-#include "Domain/Computations/MemberComputations.h"
-#include "Domain/Computations/StructureComputations.h"
 
 bool UsagesPostProcessor::ProcessAsset(StructureInformation* info)
 {
@@ -14,23 +14,23 @@ bool UsagesPostProcessor::ProcessAsset(StructureInformation* info)
 
     processingQueue.push(info);
 
-    while(!processingQueue.empty())
+    while (!processingQueue.empty())
     {
         auto* currentStructure = processingQueue.front();
         processingQueue.pop();
 
-        if(processedInfos.find(currentStructure) != processedInfos.end())
+        if (processedInfos.find(currentStructure) != processedInfos.end())
             continue;
         processedInfos.emplace(currentStructure);
 
         for (const auto& member : currentStructure->m_ordered_members)
         {
-            if(member->m_type == nullptr)
+            if (member->m_type == nullptr)
                 continue;
 
             const MemberComputations computations(member.get());
 
-            if(computations.ShouldIgnore())
+            if (computations.ShouldIgnore())
                 continue;
 
             if (computations.ContainsNonEmbeddedReference())
@@ -63,9 +63,11 @@ bool UsagesPostProcessor::PostProcess(IDataRepository* repository)
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    return std::all_of(allInfos.begin(), allInfos.end(), [](StructureInformation* info)
-    {
-        const StructureComputations computations(info);
-        return !computations.IsAsset() || ProcessAsset(info);
-    });
+    return std::all_of(allInfos.begin(),
+                       allInfos.end(),
+                       [](StructureInformation* info)
+                       {
+                           const StructureComputations computations(info);
+                           return !computations.IsAsset() || ProcessAsset(info);
+                       });
 }

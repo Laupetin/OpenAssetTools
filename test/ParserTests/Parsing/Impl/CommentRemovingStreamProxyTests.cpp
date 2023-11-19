@@ -1,19 +1,14 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 namespace test::parsing::impl::comment_removing_stream_proxy
 {
     TEST_CASE("CommentRemovingStreamProxy: Ensure simple single line comment is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "// hello",
-            "prefix // test",
-            "t//est"
-        };
+        const std::vector<std::string> lines{"// hello", "prefix // test", "t//est"};
 
         MockParserLineStream mockStream(lines);
         CommentRemovingStreamProxy proxy(&mockStream);
@@ -41,12 +36,7 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
     TEST_CASE("CommentRemovingStreamProxy: Ensure single line comment expands to next line on backslash", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "// hello\\",
-            "this should still be a comment",
-            "this should not be a comment anymore"
-        };
+        const std::vector<std::string> lines{"// hello\\", "this should still be a comment", "this should not be a comment anymore"};
 
         MockParserLineStream mockStream(lines);
         CommentRemovingStreamProxy proxy(&mockStream);
@@ -74,13 +64,7 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
     TEST_CASE("CommentRemovingStreamProxy: Ensure single line comment expands to next line on backslash and is repeatable", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "// hello\\",
-            "this should still be a comment \\",
-            "this as well",
-            "this not anymore"
-        };
+        const std::vector<std::string> lines{"// hello\\", "this should still be a comment \\", "this as well", "this not anymore"};
 
         MockParserLineStream mockStream(lines);
         CommentRemovingStreamProxy proxy(&mockStream);
@@ -114,12 +98,7 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
     TEST_CASE("CommentRemovingStreamProxy: Ensure backslash must be last character to expand single line comment to next line", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "// hello\\",
-            "this should still be a comment \\ ",
-            "this not anymore"
-        };
+        const std::vector<std::string> lines{"// hello\\", "this should still be a comment \\ ", "this not anymore"};
 
         MockParserLineStream mockStream(lines);
         CommentRemovingStreamProxy proxy(&mockStream);
@@ -147,13 +126,7 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
     TEST_CASE("CommentRemovingStreamProxy: Ensure simple multiline comment works on one line", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "hello/* hell*/ world",
-            "/*this should be a comment*/",
-            "Hello /*asdf*/",
-            "/*asdf*/World"
-        };
+        const std::vector<std::string> lines{"hello/* hell*/ world", "/*this should be a comment*/", "Hello /*asdf*/", "/*asdf*/World"};
 
         MockParserLineStream mockStream(lines);
         CommentRemovingStreamProxy proxy(&mockStream);
@@ -187,13 +160,7 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
     TEST_CASE("CommentRemovingStreamProxy: Ensure simple multiline comment works over multiple lines", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "hello/* hell",
-            " hell*/ world/*nope",
-            "notatall",
-            "hehe*/xd"
-        };
+        const std::vector<std::string> lines{"hello/* hell", " hell*/ world/*nope", "notatall", "hehe*/xd"};
 
         MockParserLineStream mockStream(lines);
         CommentRemovingStreamProxy proxy(&mockStream);
@@ -227,8 +194,7 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
     TEST_CASE("CommentRemovingStreamProxy: Can have multiple comment blocks in one line", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "Hello/* lovely*/ world and/* beautiful*/ universe",
             "Hello/* lovely*/ world// and beautiful universe",
         };
@@ -250,4 +216,4 @@ namespace test::parsing::impl::comment_removing_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
-}
+} // namespace test::parsing::impl::comment_removing_stream_proxy

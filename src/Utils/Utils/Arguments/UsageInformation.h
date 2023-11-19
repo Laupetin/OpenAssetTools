@@ -1,8 +1,9 @@
 #pragma once
 #include "CommandLineOption.h"
+
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
 
 class UsageInformation
 {
@@ -21,7 +22,7 @@ class UsageInformation
     bool m_var_args;
 
     void PrintUsageOverview(std::stringstream& str);
-    
+
     static std::string GetOptionArgument(const CommandLineOption* option);
     static size_t GetOptionArgumentLength(const CommandLineOption* option);
 

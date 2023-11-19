@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "DeclarationModifier.h"
 #include "Domain/Evaluation/IEvaluation.h"
+
+#include <memory>
+#include <vector>
 
 class PointerDeclarationModifier final : public DeclarationModifier
 {

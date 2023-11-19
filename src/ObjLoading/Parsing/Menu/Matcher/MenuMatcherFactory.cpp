@@ -1,8 +1,8 @@
 #include "MenuMatcherFactory.h"
 
-#include <sstream>
-
 #include "MenuExpressionMatchers.h"
+
+#include <sstream>
 
 using namespace menu;
 
@@ -15,36 +15,47 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::StringChain() const
 {
     return Or({
         And({
-            String(),
-            Loop(String())
-        }).Transform([](const token_list_t& tokens) -> SimpleParserValue
-        {
-            std::ostringstream ss;
+                String(),
+                Loop(String()),
+            })
+            .Transform(
+                [](const token_list_t& tokens) -> SimpleParserValue
+                {
+                    std::ostringstream ss;
 
-            for (const auto& token : tokens)
-            {
-                ss << token.get().StringValue();
-            }
+                    for (const auto& token : tokens)
+                    {
+                        ss << token.get().StringValue();
+                    }
 
-            return SimpleParserValue::String(tokens[0].get().GetPos(), new std::string(ss.str()));
-        }),
-        String()
+                    return SimpleParserValue::String(tokens[0].get().GetPos(), new std::string(ss.str()));
+                }),
+        String(),
     });
 }
 
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Text() const
 {
-    return MatcherFactoryWrapper(Or({StringChain(), Identifier()}));
+    return MatcherFactoryWrapper(Or({
+        StringChain(),
+        Identifier(),
+    }));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextNoChain() const
 {
-    return MatcherFactoryWrapper(Or({String(), Identifier()}));
+    return MatcherFactoryWrapper(Or({
+        String(),
+        Identifier(),
+    }));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Numeric() const
 {
-    return MatcherFactoryWrapper(Or({FloatingPoint(), Integer()}));
+    return MatcherFactoryWrapper(Or({
+        FloatingPoint(),
+        Integer(),
+    }));
 }
 
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::IntExpression() const
@@ -52,10 +63,11 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::IntExpression() con
     return MatcherFactoryWrapper(Or({
         Integer().Tag(TAG_INT).Capture(CAPTURE_INT),
         And({
-            Char('(').Capture(CAPTURE_FIRST_TOKEN),
-            Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-            Char(')'),
-        }).Tag(TAG_EXPRESSION)
+                Char('(').Capture(CAPTURE_FIRST_TOKEN),
+                Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                Char(')'),
+            })
+            .Tag(TAG_EXPRESSION),
     }));
 }
 
@@ -64,10 +76,11 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::NumericExpression()
     return MatcherFactoryWrapper(Or({
         Numeric().Tag(TAG_NUMERIC).Capture(CAPTURE_NUMERIC),
         And({
-            Char('(').Capture(CAPTURE_FIRST_TOKEN),
-            Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-            Char(')'),
-        }).Tag(TAG_EXPRESSION)
+                Char('(').Capture(CAPTURE_FIRST_TOKEN),
+                Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                Char(')'),
+            })
+            .Tag(TAG_EXPRESSION),
     }));
 }
 

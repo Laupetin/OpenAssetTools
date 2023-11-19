@@ -1,11 +1,11 @@
 #include "ZoneCreatorIW3.h"
 
-#include <iostream>
-
-#include "ObjLoading.h"
 #include "AssetLoading/AssetLoadingContext.h"
-#include "Game/IW3/GameIW3.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW3/GameIW3.h"
+#include "ObjLoading.h"
+
+#include <iostream>
 
 using namespace IW3;
 

@@ -1,8 +1,8 @@
 #include "SequenceStruct.h"
 
 #include "Parsing/Header/Block/HeaderBlockStruct.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceStruct::SequenceStruct()
 {
@@ -18,9 +18,9 @@ SequenceStruct::SequenceStruct()
         create.Optional(create.Identifier().Capture(CAPTURE_NAME)),
         create.Optional(create.And({
             create.Char(':'),
-            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_PARENT_TYPE)
+            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_PARENT_TYPE),
         })),
-        create.Char('{')
+        create.Char('{'),
     });
 }
 
@@ -37,12 +37,12 @@ void SequenceStruct::ProcessMatch(HeaderParserState* state, SequenceResult<Heade
     if (result.HasNextCapture(CAPTURE_ALIGN))
         structBlock->SetCustomAlignment(result.NextCapture(CAPTURE_ALIGN).IntegerValue());
 
-    if(result.HasNextCapture(CAPTURE_PARENT_TYPE))
+    if (result.HasNextCapture(CAPTURE_PARENT_TYPE))
     {
         const auto& parentTypeToken = result.NextCapture(CAPTURE_PARENT_TYPE);
         const auto* parentDefinition = state->FindType(parentTypeToken.TypeNameValue());
 
-        if(parentDefinition == nullptr && !state->m_namespace.IsEmpty())
+        if (parentDefinition == nullptr && !state->m_namespace.IsEmpty())
         {
             const auto fullTypeName = NamespaceBuilder::Combine(state->m_namespace.ToString(), parentTypeToken.TypeNameValue());
             parentDefinition = state->FindType(fullTypeName);
@@ -51,7 +51,7 @@ void SequenceStruct::ProcessMatch(HeaderParserState* state, SequenceResult<Heade
         if (parentDefinition == nullptr)
             throw ParsingException(parentTypeToken.GetPos(), "Cannot find specified parent type");
 
-        if(parentDefinition->GetType() != DataDefinitionType::STRUCT)
+        if (parentDefinition->GetType() != DataDefinitionType::STRUCT)
             throw ParsingException(parentTypeToken.GetPos(), "Parent type must be a struct");
 
         structBlock->Inherit(dynamic_cast<const StructDefinition*>(parentDefinition));

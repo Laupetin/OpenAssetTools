@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-
 #include "Crypto.h"
+#include "Loading/IHashProvider.h"
 #include "Loading/ILoadingStep.h"
 #include "Utils/ICapturedDataProvider.h"
-#include "Loading/IHashProvider.h"
+
+#include <memory>
 
 class StepVerifyHash final : public ILoadingStep
 {

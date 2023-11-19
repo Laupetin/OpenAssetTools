@@ -3,8 +3,7 @@
 class AlignmentUtils
 {
 public:
-    template<typename T>
-    static T Align(T number, T alignmentValue)
+    template<typename T> static T Align(T number, T alignmentValue)
     {
         if (alignmentValue == 0)
             return number;

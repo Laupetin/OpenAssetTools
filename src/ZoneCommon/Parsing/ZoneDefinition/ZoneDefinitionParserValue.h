@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
-
 #include "Parsing/IParserValue.h"
-#include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
+#include "Utils/ClassUtils.h"
+
+#include <string>
 
 enum class ZoneDefinitionParserValueType
 {
     // Meta tokens
     INVALID,
     END_OF_FILE,
-    
+
     CHARACTER,
     STRING,
     FIELD,
@@ -26,6 +26,7 @@ public:
     TokenPos m_pos;
     ZoneDefinitionParserValueType m_type;
     size_t m_hash;
+
     union ValueType
     {
         char char_value;

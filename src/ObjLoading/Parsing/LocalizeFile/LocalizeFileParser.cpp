@@ -22,11 +22,11 @@ const std::vector<AbstractParser<SimpleParserValue, LocalizeFileParserState>::se
         new SequenceLocalizeFileVersion(),
         new SequenceLocalizeFileEndMarker(),
         new SequenceLocalizeFileLanguageValue(),
-        new SequenceLocalizeFileConsumeEmptyLines()
+        new SequenceLocalizeFileConsumeEmptyLines(),
     });
 
     static std::vector<sequence_t*> noTests({
-        new SequenceLocalizeFileConsumeEmptyLines()
+        new SequenceLocalizeFileConsumeEmptyLines(),
     });
 
     return !m_state->m_end ? tests : noTests;

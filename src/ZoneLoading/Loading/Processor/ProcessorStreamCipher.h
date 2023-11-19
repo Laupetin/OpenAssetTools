@@ -1,6 +1,6 @@
 #pragma once
-#include "Loading/StreamProcessor.h"
 #include "Crypto.h"
+#include "Loading/StreamProcessor.h"
 
 class ProcessorStreamCipher final : public StreamProcessor
 {

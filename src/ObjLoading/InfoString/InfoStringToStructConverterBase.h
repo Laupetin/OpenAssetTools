@@ -1,14 +1,14 @@
 #pragma once
 
+#include "InfoString/InfoString.h"
+#include "Pool/XAssetInfo.h"
+#include "Utils/ClassUtils.h"
+#include "Utils/MemoryManager.h"
+#include "Zone/ZoneScriptStrings.h"
+
 #include <string>
 #include <unordered_set>
 #include <utility>
-
-#include "Utils/ClassUtils.h"
-#include "InfoString/InfoString.h"
-#include "Pool/XAssetInfo.h"
-#include "Utils/MemoryManager.h"
-#include "Zone/ZoneScriptStrings.h"
 
 class InfoStringToStructConverterBase
 {
@@ -22,7 +22,7 @@ protected:
 
     static bool ParseAsArray(const std::string& value, std::vector<std::string>& valueArray);
     bool ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray) const;
-    
+
     bool ConvertString(const std::string& value, size_t offset);
     bool ConvertStringBuffer(const std::string& value, size_t offset, size_t bufferSize);
     bool ConvertInt(const std::string& value, size_t offset);

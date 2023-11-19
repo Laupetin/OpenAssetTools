@@ -1,12 +1,14 @@
 #include "StepVerifyHash.h"
 
-#include <memory>
-#include <cstring>
-
 #include "Loading/Exception/InvalidHashException.h"
 
-StepVerifyHash::StepVerifyHash(std::unique_ptr<IHashFunction> hashFunction, const unsigned hashIndex, IHashProvider* hashProvider,
-    ICapturedDataProvider* dataProvider)
+#include <cstring>
+#include <memory>
+
+StepVerifyHash::StepVerifyHash(std::unique_ptr<IHashFunction> hashFunction,
+                               const unsigned hashIndex,
+                               IHashProvider* hashProvider,
+                               ICapturedDataProvider* dataProvider)
     : m_hash_function(std::move(hashFunction)),
       m_hash_index(hashIndex),
       m_hash_provider(hashProvider),
@@ -14,8 +16,7 @@ StepVerifyHash::StepVerifyHash(std::unique_ptr<IHashFunction> hashFunction, cons
 {
 }
 
-StepVerifyHash::~StepVerifyHash()
-= default;
+StepVerifyHash::~StepVerifyHash() = default;
 
 void StepVerifyHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
@@ -35,6 +36,6 @@ void StepVerifyHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
     m_hash_function->Process(dataToHash, dataToHashSize);
     m_hash_function->Finish(hashMemory.get());
 
-    if(std::memcmp(hashData, hashMemory.get(), m_hash_function->GetHashSize()) != 0)
+    if (std::memcmp(hashData, hashMemory.get(), m_hash_function->GetHashSize()) != 0)
         throw InvalidHashException();
 }

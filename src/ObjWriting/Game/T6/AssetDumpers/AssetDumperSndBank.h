@@ -12,4 +12,4 @@ namespace T6
     public:
         void DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool) override;
     };
-}
+} // namespace T6

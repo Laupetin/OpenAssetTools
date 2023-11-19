@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-
 #include "Model/XModel/XModelCommon.h"
+
+#include <vector>
 
 class AbstractXModelWriter
 {

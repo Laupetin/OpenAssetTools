@@ -106,29 +106,27 @@ void ObjWriter::WriteObj(std::ostream& stream, const std::string& mtlName)
 
         for (const auto& f : objectData.m_faces)
         {
-            const size_t v[3]
-            {
-                objectData.m_vertices.GetDistinctPositionByInputPosition(f.vertexIndex[0] - inputOffsetsByObject[objectIndex].vertexOffset) + distinctOffsetsByObject[objectIndex].vertexOffset + 1,
-                objectData.m_vertices.GetDistinctPositionByInputPosition(f.vertexIndex[1] - inputOffsetsByObject[objectIndex].vertexOffset) + distinctOffsetsByObject[objectIndex].vertexOffset + 1,
-                objectData.m_vertices.GetDistinctPositionByInputPosition(f.vertexIndex[2] - inputOffsetsByObject[objectIndex].vertexOffset) + distinctOffsetsByObject[objectIndex].vertexOffset + 1
-            };
-            const size_t n[3]
-            {
-                objectData.m_normals.GetDistinctPositionByInputPosition(f.normalIndex[0] - inputOffsetsByObject[objectIndex].normalOffset) + distinctOffsetsByObject[objectIndex].normalOffset + 1,
-                objectData.m_normals.GetDistinctPositionByInputPosition(f.normalIndex[1] - inputOffsetsByObject[objectIndex].normalOffset) + distinctOffsetsByObject[objectIndex].normalOffset + 1,
-                objectData.m_normals.GetDistinctPositionByInputPosition(f.normalIndex[2] - inputOffsetsByObject[objectIndex].normalOffset) + distinctOffsetsByObject[objectIndex].normalOffset + 1
-            };
-            const size_t uv[3]
-            {
-                objectData.m_uvs.GetDistinctPositionByInputPosition(f.uvIndex[0] - inputOffsetsByObject[objectIndex].uvOffset) + distinctOffsetsByObject[objectIndex].uvOffset + 1,
-                objectData.m_uvs.GetDistinctPositionByInputPosition(f.uvIndex[1] - inputOffsetsByObject[objectIndex].uvOffset) + distinctOffsetsByObject[objectIndex].uvOffset + 1,
-                objectData.m_uvs.GetDistinctPositionByInputPosition(f.uvIndex[2] - inputOffsetsByObject[objectIndex].uvOffset) + distinctOffsetsByObject[objectIndex].uvOffset + 1
-            };
+            const size_t v[3]{objectData.m_vertices.GetDistinctPositionByInputPosition(f.vertexIndex[0] - inputOffsetsByObject[objectIndex].vertexOffset)
+                                  + distinctOffsetsByObject[objectIndex].vertexOffset + 1,
+                              objectData.m_vertices.GetDistinctPositionByInputPosition(f.vertexIndex[1] - inputOffsetsByObject[objectIndex].vertexOffset)
+                                  + distinctOffsetsByObject[objectIndex].vertexOffset + 1,
+                              objectData.m_vertices.GetDistinctPositionByInputPosition(f.vertexIndex[2] - inputOffsetsByObject[objectIndex].vertexOffset)
+                                  + distinctOffsetsByObject[objectIndex].vertexOffset + 1};
+            const size_t n[3]{objectData.m_normals.GetDistinctPositionByInputPosition(f.normalIndex[0] - inputOffsetsByObject[objectIndex].normalOffset)
+                                  + distinctOffsetsByObject[objectIndex].normalOffset + 1,
+                              objectData.m_normals.GetDistinctPositionByInputPosition(f.normalIndex[1] - inputOffsetsByObject[objectIndex].normalOffset)
+                                  + distinctOffsetsByObject[objectIndex].normalOffset + 1,
+                              objectData.m_normals.GetDistinctPositionByInputPosition(f.normalIndex[2] - inputOffsetsByObject[objectIndex].normalOffset)
+                                  + distinctOffsetsByObject[objectIndex].normalOffset + 1};
+            const size_t uv[3]{objectData.m_uvs.GetDistinctPositionByInputPosition(f.uvIndex[0] - inputOffsetsByObject[objectIndex].uvOffset)
+                                   + distinctOffsetsByObject[objectIndex].uvOffset + 1,
+                               objectData.m_uvs.GetDistinctPositionByInputPosition(f.uvIndex[1] - inputOffsetsByObject[objectIndex].uvOffset)
+                                   + distinctOffsetsByObject[objectIndex].uvOffset + 1,
+                               objectData.m_uvs.GetDistinctPositionByInputPosition(f.uvIndex[2] - inputOffsetsByObject[objectIndex].uvOffset)
+                                   + distinctOffsetsByObject[objectIndex].uvOffset + 1};
 
-            stream << "f " << v[0] << "/" << uv[0] << "/" << n[0]
-                << " " << v[1] << "/" << uv[1] << "/" << n[1]
-                << " " << v[2] << "/" << uv[2] << "/" << n[2]
-                << "\n";
+            stream << "f " << v[0] << "/" << uv[0] << "/" << n[0] << " " << v[1] << "/" << uv[1] << "/" << n[1] << " " << v[2] << "/" << uv[2] << "/" << n[2]
+                   << "\n";
         }
 
         objectIndex++;

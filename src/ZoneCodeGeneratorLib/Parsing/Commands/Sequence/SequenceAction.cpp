@@ -1,7 +1,7 @@
 #include "SequenceAction.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceAction::SequenceAction()
 {
@@ -15,11 +15,12 @@ SequenceAction::SequenceAction()
                 create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_ARG_TYPE),
                 create.OptionalLoop(create.And({
                     create.Char(','),
-                    create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_ARG_TYPE)
-                }))
+                    create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_ARG_TYPE),
+                })),
             })),
-            create.Char(')')
-        }, LABEL_ACTION_ARGS);
+            create.Char(')'),
+        },
+        LABEL_ACTION_ARGS);
 
     AddMatchers({
         create.Keyword("set"),
@@ -27,12 +28,12 @@ SequenceAction::SequenceAction()
         create.Or({
             create.And({
                 create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-                create.Identifier().Capture(CAPTURE_ACTION_NAME)
+                create.Identifier().Capture(CAPTURE_ACTION_NAME),
             }),
-            create.Identifier().Capture(CAPTURE_ACTION_NAME)
+            create.Identifier().Capture(CAPTURE_ACTION_NAME),
         }),
         create.Label(LABEL_ACTION_ARGS),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 
@@ -67,7 +68,7 @@ void SequenceAction::ProcessMatch(CommandsParserState* state, SequenceResult<Com
 
     // Extract all parameter types that were specified
     std::vector<DataDefinition*> parameterTypes;
-    while(result.HasNextCapture(CAPTURE_ARG_TYPE))
+    while (result.HasNextCapture(CAPTURE_ARG_TYPE))
     {
         const auto& argTypeToken = result.NextCapture(CAPTURE_ARG_TYPE);
         auto* dataDefinition = state->GetRepository()->GetDataDefinitionByName(argTypeToken.TypeNameValue());

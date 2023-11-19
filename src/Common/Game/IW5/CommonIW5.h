@@ -16,4 +16,4 @@ namespace IW5
         static void Vec3UnpackUnitVec(const PackedUnitVec& in, vec3_t* out);
         static void Vec4UnpackGfxColor(const GfxColor& in, vec4_t* out);
     };
-}
+} // namespace IW5

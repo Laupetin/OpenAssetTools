@@ -7,7 +7,6 @@ ZoneDefinitionMatcherValueType::ZoneDefinitionMatcherValueType(const ZoneDefinit
 
 MatcherResult<ZoneDefinitionParserValue> ZoneDefinitionMatcherValueType::CanMatch(ILexer<ZoneDefinitionParserValue>* lexer, const unsigned tokenOffset)
 {
-    return lexer->GetToken(tokenOffset).m_type == m_type
-        ? MatcherResult<ZoneDefinitionParserValue>::Match(1)
-        : MatcherResult<ZoneDefinitionParserValue>::NoMatch();
+    return lexer->GetToken(tokenOffset).m_type == m_type ? MatcherResult<ZoneDefinitionParserValue>::Match(1)
+                                                         : MatcherResult<ZoneDefinitionParserValue>::NoMatch();
 }

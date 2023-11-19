@@ -28,13 +28,12 @@
 #define _NORETURN
 #endif
 
-template <class T>
-struct Movable
+template<class T> struct Movable
 {
     mutable T m_val;
 
     // ReSharper disable once CppNonExplicitConversionOperator
-    operator T() const &&
+    operator T() const&&
     {
         return std::move(m_val);
     }

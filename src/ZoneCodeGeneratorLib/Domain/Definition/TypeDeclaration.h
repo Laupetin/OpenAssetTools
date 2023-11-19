@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
-#include "Utils/ClassUtils.h"
 #include "DataDefinition.h"
 #include "DeclarationModifier.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
+#include <vector>
 
 class TypeDeclaration
 {

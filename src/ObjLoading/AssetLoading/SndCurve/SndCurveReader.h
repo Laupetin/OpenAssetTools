@@ -1,10 +1,10 @@
 #pragma once
 
-#include <istream>
-#include <vector>
-#include <memory>
-
 #include "Utils/ClassUtils.h"
+
+#include <istream>
+#include <memory>
+#include <vector>
 
 class SndCurveReader
 {
@@ -17,7 +17,7 @@ public:
             double m_x;
             double m_y;
         };
-        
+
         std::vector<Knot> m_knots;
     };
 

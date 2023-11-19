@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-#include "TechsetFileParserState.h"
-#include "Techset/TechsetDefinition.h"
+#include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Parsing/Impl/AbstractParser.h"
+#include "Techset/TechsetDefinition.h"
+#include "TechsetFileParserState.h"
+#include "Utils/ClassUtils.h"
 
 namespace techset
 {
@@ -18,4 +18,4 @@ namespace techset
         TechsetParser(SimpleLexer* lexer, const char** validTechniqueTypeNames, size_t validTechniqueTypeNameCount);
         _NODISCARD std::unique_ptr<TechsetDefinition> GetTechsetDefinition() const;
     };
-}
+} // namespace techset

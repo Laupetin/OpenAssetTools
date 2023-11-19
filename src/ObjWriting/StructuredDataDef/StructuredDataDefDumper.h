@@ -1,10 +1,10 @@
 #pragma once
+#include "Dumping/AbstractTextDumper.h"
+#include "StructuredDataDef/CommonStructuredDataDef.h"
+
 #include <ostream>
 #include <string>
 #include <vector>
-
-#include "Dumping/AbstractTextDumper.h"
-#include "StructuredDataDef/CommonStructuredDataDef.h"
 
 class StructuredDataDefDumper : AbstractTextDumper
 {

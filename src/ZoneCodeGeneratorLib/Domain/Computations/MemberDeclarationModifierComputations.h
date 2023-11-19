@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-#include "Domain/Information/MemberInformation.h"
 #include "Domain/Evaluation/IEvaluation.h"
+#include "Domain/Information/MemberInformation.h"
+#include "Utils/ClassUtils.h"
 
 class DeclarationModifierComputations
 {

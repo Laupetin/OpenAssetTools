@@ -1,6 +1,7 @@
 #pragma once
-#include "IPublicKeyAlgorithm.h"
 #include "Crypto.h"
+#include "IPublicKeyAlgorithm.h"
+
 #include <cstdint>
 
 class AlgorithmRSA final : public IPublicKeyAlgorithm

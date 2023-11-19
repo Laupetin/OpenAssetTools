@@ -1,26 +1,25 @@
 #include "ObjLoading.h"
 
-#include <fstream>
-
-#include "IObjLoader.h"
 #include "Game/IW3/ObjLoaderIW3.h"
 #include "Game/IW4/ObjLoaderIW4.h"
 #include "Game/IW5/ObjLoaderIW5.h"
 #include "Game/T5/ObjLoaderT5.h"
 #include "Game/T6/ObjLoaderT6.h"
+#include "IObjLoader.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "SearchPath/SearchPaths.h"
 #include "Utils/ObjFileStream.h"
 
+#include <fstream>
+
 ObjLoading::Configuration_t ObjLoading::Configuration;
 
-const IObjLoader* const OBJ_LOADERS[]
-{
+const IObjLoader* const OBJ_LOADERS[]{
     new IW3::ObjLoader(),
     new IW4::ObjLoader(),
     new IW5::ObjLoader(),
     new T5::ObjLoader(),
-    new T6::ObjLoader()
+    new T6::ObjLoader(),
 };
 
 void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
@@ -61,20 +60,21 @@ void ObjLoading::UnloadContainersOfZone(Zone* zone)
 
 void ObjLoading::LoadIWDsInSearchPath(ISearchPath* searchPath)
 {
-    searchPath->Find(SearchPathSearchOptions().IncludeSubdirectories(false).FilterExtensions("iwd"), [searchPath](const std::string& path)
-    {
-        auto file = std::make_unique<std::ifstream>(path, std::fstream::in | std::fstream::binary);
+    searchPath->Find(SearchPathSearchOptions().IncludeSubdirectories(false).FilterExtensions("iwd"),
+                     [searchPath](const std::string& path)
+                     {
+                         auto file = std::make_unique<std::ifstream>(path, std::fstream::in | std::fstream::binary);
 
-        if (file->is_open())
-        {
-            auto iwd = std::make_unique<IWD>(path, std::move(file));
+                         if (file->is_open())
+                         {
+                             auto iwd = std::make_unique<IWD>(path, std::move(file));
 
-            if (iwd->Initialize())
-            {
-                IWD::Repository.AddContainer(std::move(iwd), searchPath);
-            }
-        }
-    });
+                             if (iwd->Initialize())
+                             {
+                                 IWD::Repository.AddContainer(std::move(iwd), searchPath);
+                             }
+                         }
+                     });
 }
 
 void ObjLoading::UnloadIWDsInSearchPath(ISearchPath* searchPath)

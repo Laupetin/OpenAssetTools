@@ -1,12 +1,12 @@
 #include "ZoneLoadTemplate.h"
 
-#include <cassert>
-#include <iostream>
-#include <sstream>
-
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
+
+#include <cassert>
+#include <iostream>
+#include <sstream>
 
 class ZoneLoadTemplate::Internal final : BaseTemplate
 {
@@ -43,52 +43,52 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void PrintHeaderPtrArrayLoadMethodDeclaration(const DataDefinition* def) const
     {
-        LINE("void LoadPtrArray_"<< MakeSafeTypeName(def)<<"(bool atStreamStart, size_t count);")
+        LINE("void LoadPtrArray_" << MakeSafeTypeName(def) << "(bool atStreamStart, size_t count);")
     }
 
     void PrintHeaderArrayLoadMethodDeclaration(const DataDefinition* def) const
     {
-        LINE("void LoadArray_"<< MakeSafeTypeName(def)<<"(bool atStreamStart, size_t count);")
+        LINE("void LoadArray_" << MakeSafeTypeName(def) << "(bool atStreamStart, size_t count);")
     }
 
     void PrintHeaderLoadMethodDeclaration(const StructureInformation* info) const
     {
-        LINE("void Load_"<< MakeSafeTypeName(info->m_definition)<<"(bool atStreamStart);")
+        LINE("void Load_" << MakeSafeTypeName(info->m_definition) << "(bool atStreamStart);")
     }
 
     void PrintHeaderTempPtrLoadMethodDeclaration(const StructureInformation* info) const
     {
-        LINE("void LoadPtr_"<< MakeSafeTypeName(info->m_definition)<<"(bool atStreamStart);")
+        LINE("void LoadPtr_" << MakeSafeTypeName(info->m_definition) << "(bool atStreamStart);")
     }
 
     void PrintHeaderAssetLoadMethodDeclaration(const StructureInformation* info) const
     {
-        LINE("void LoadAsset_"<< MakeSafeTypeName(info->m_definition)<<"("<<info->m_definition->GetFullName()<<"** pAsset);")
+        LINE("void LoadAsset_" << MakeSafeTypeName(info->m_definition) << "(" << info->m_definition->GetFullName() << "** pAsset);")
     }
 
     void PrintHeaderGetNameMethodDeclaration(const StructureInformation* info) const
     {
-        LINE("static std::string GetAssetName("<<info->m_definition->GetFullName()<<"* pAsset);")
+        LINE("static std::string GetAssetName(" << info->m_definition->GetFullName() << "* pAsset);")
     }
 
     void PrintHeaderMainLoadMethodDeclaration(const StructureInformation* info) const
     {
-        LINE("XAssetInfo<"<<info->m_definition->GetFullName()<<">* Load("<<info->m_definition->GetFullName()<<"** pAsset);")
+        LINE("XAssetInfo<" << info->m_definition->GetFullName() << ">* Load(" << info->m_definition->GetFullName() << "** pAsset);")
     }
 
     void PrintHeaderConstructor() const
     {
-        LINE(LoaderClassName(m_env.m_asset)<<"(Zone* zone, IZoneInputStream* stream);")
+        LINE(LoaderClassName(m_env.m_asset) << "(Zone* zone, IZoneInputStream* stream);")
     }
 
     void PrintVariableInitialization(const DataDefinition* def) const
     {
-        LINE("var"<<def->m_name<<" = nullptr;")
+        LINE("var" << def->m_name << " = nullptr;")
     }
 
     void PrintPointerVariableInitialization(const DataDefinition* def) const
     {
-        LINE("var"<<def->m_name<<"Ptr = nullptr;")
+        LINE("var" << def->m_name << "Ptr = nullptr;")
     }
 
     void PrintConstructorMethod()
@@ -96,7 +96,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE(LoaderClassName(m_env.m_asset) << "::" << LoaderClassName(m_env.m_asset) << "(Zone* zone, IZoneInputStream* stream)")
 
         m_intendation++;
-        LINE_START(": AssetLoader("<<m_env.m_asset->m_asset_enum_entry->m_name<<", zone, stream)")
+        LINE_START(": AssetLoader(" << m_env.m_asset->m_asset_enum_entry->m_name << ", zone, stream)")
         if (m_env.m_has_actions)
         {
             LINE_MIDDLE(", m_actions(zone)")
@@ -133,16 +133,16 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, StructureInformation* info) const
     {
-        LINE("*"<< MakeTypePtrVarName(def)<<" = m_stream->Alloc<"<<def->GetFullName()<<">("<< def->GetAlignment() <<");")
+        LINE("*" << MakeTypePtrVarName(def) << " = m_stream->Alloc<" << def->GetFullName() << ">(" << def->GetAlignment() << ");")
 
         if (info && !info->m_is_leaf)
         {
-            LINE(MakeTypeVarName(info->m_definition)<<" = *"<< MakeTypePtrVarName(def)<<";")
-            LINE("Load_"<< MakeSafeTypeName(def)<<"(true);")
+            LINE(MakeTypeVarName(info->m_definition) << " = *" << MakeTypePtrVarName(def) << ";")
+            LINE("Load_" << MakeSafeTypeName(def) << "(true);")
         }
         else
         {
-            LINE("m_stream->Load<"<<def->GetFullName()<<">(*"<< MakeTypePtrVarName(def)<<");")
+            LINE("m_stream->Load<" << def->GetFullName() << ">(*" << MakeTypePtrVarName(def) << ");")
         }
     }
 
@@ -154,8 +154,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
         if (info && StructureComputations(info).IsAsset())
         {
-            LINE(LoaderClassName(info)<<" loader(m_zone, m_stream);")
-            LINE("AddDependency(loader.Load("<< MakeTypePtrVarName(def)<<"));")
+            LINE(LoaderClassName(info) << " loader(m_zone, m_stream);")
+            LINE("AddDependency(loader.Load(" << MakeTypePtrVarName(def) << "));")
         }
         else
         {
@@ -173,7 +173,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
                 LINE("{")
                 m_intendation++;
 
-                LINE("*"<< MakeTypePtrVarName(def)<<" = m_stream->ConvertOffsetToPointer(*"<< MakeTypePtrVarName(def)<<");")
+                LINE("*" << MakeTypePtrVarName(def) << " = m_stream->ConvertOffsetToPointer(*" << MakeTypePtrVarName(def) << ");")
 
                 m_intendation--;
                 LINE("}")
@@ -190,7 +190,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void PrintLoadPtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
     {
-        LINE("void "<<LoaderClassName(m_env.m_asset)<<"::LoadPtrArray_"<< MakeSafeTypeName(def)<<"(const bool atStreamStart, const size_t count)")
+        LINE("void " << LoaderClassName(m_env.m_asset) << "::LoadPtrArray_" << MakeSafeTypeName(def) << "(const bool atStreamStart, const size_t count)")
         LINE("{")
         m_intendation++;
 
@@ -199,7 +199,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE("m_stream->Load<"<<def->GetFullName()<<"*>("<< MakeTypePtrVarName(def)<<", count);")
+        LINE("m_stream->Load<" << def->GetFullName() << "*>(" << MakeTypePtrVarName(def) << ", count);")
         m_intendation--;
 
         LINE("")
@@ -229,7 +229,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("")
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE("m_stream->Load<"<<def->GetFullName()<<">("<<MakeTypeVarName(def)<<", count);")
+        LINE("m_stream->Load<" << def->GetFullName() << ">(" << MakeTypeVarName(def) << ", count);")
         m_intendation--;
 
         LINE("")
@@ -239,7 +239,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE(MakeTypeVarName(info->m_definition) << " = var;")
-        LINE("Load_"<<info->m_definition->m_name<<"(false);")
+        LINE("Load_" << info->m_definition->m_name << "(false);")
         LINE("var++;")
 
         m_intendation--;
@@ -249,7 +249,10 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void LoadMember_ScriptString(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
+    void LoadMember_ScriptString(StructureInformation* info,
+                                 MemberInformation* member,
+                                 const DeclarationModifierComputations& modifier,
+                                 const MemberLoadType loadType) const
     {
         if (loadType == MemberLoadType::ARRAY_POINTER)
         {
@@ -272,12 +275,15 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
     }
 
-    void LoadMember_Asset(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
+    void LoadMember_Asset(StructureInformation* info,
+                          MemberInformation* member,
+                          const DeclarationModifierComputations& modifier,
+                          const MemberLoadType loadType) const
     {
         if (loadType == MemberLoadType::SINGLE_POINTER)
         {
-            LINE(LoaderClassName(member->m_type)<<" loader(m_zone, m_stream);")
-            LINE("AddDependency(loader.Load(&"<<MakeMemberAccess(info, member, modifier)<<"));")
+            LINE(LoaderClassName(member->m_type) << " loader(m_zone, m_stream);")
+            LINE("AddDependency(loader.Load(&" << MakeMemberAccess(info, member, modifier) << "));")
         }
         else if (loadType == MemberLoadType::POINTER_ARRAY)
         {
@@ -290,7 +296,10 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
     }
 
-    void LoadMember_String(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
+    void LoadMember_String(StructureInformation* info,
+                           MemberInformation* member,
+                           const DeclarationModifierComputations& modifier,
+                           const MemberLoadType loadType) const
     {
         if (loadType == MemberLoadType::SINGLE_POINTER)
         {
@@ -309,17 +318,17 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("varXString = " << MakeMemberAccess(info, member, modifier) << ";")
             if (modifier.IsArray())
             {
-                LINE("LoadXStringArray(false, "<<modifier.GetArraySize()<<");")
+                LINE("LoadXStringArray(false, " << modifier.GetArraySize() << ");")
             }
             else
             {
-                LINE("LoadXStringArray(true, "<<MakeEvaluation(modifier.GetPointerArrayCountEvaluation())<<");")
+                LINE("LoadXStringArray(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
             }
         }
         else
         {
             assert(false);
-            LINE("#error unsupported loadType "<<static_cast<int>(loadType)<<" for string")
+            LINE("#error unsupported loadType " << static_cast<int>(loadType) << " for string")
         }
     }
 
@@ -329,7 +338,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "
+                              << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
 
             if (member->m_type->m_post_load_action)
             {
@@ -339,8 +349,9 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                   << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                   << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
     }
 
@@ -349,11 +360,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE(MakeTypePtrVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
         if (modifier.IsArray())
         {
-            LINE("LoadPtrArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<modifier.GetArraySize()<<");")
+            LINE("LoadPtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false, " << modifier.GetArraySize() << ");")
         }
         else
         {
-            LINE("LoadPtrArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true, "<<MakeEvaluation(modifier.GetPointerArrayCountEvaluation())<<");")
+            LINE("LoadPtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "
+                                 << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
         }
     }
 
@@ -373,11 +385,11 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             if (computations.IsAfterPartialLoad())
             {
-                LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "<<arraySizeStr <<");")
+                LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << arraySizeStr << ");")
             }
             else
             {
-                LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(false, "<<arraySizeStr <<");")
+                LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(false, " << arraySizeStr << ");")
             }
 
             if (member->m_type->m_post_load_action)
@@ -388,8 +400,9 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else if (computations.IsAfterPartialLoad())
         {
-            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) <<", "<<arraySizeStr <<");")
+            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                   << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                   << ", " << arraySizeStr << ");")
         }
     }
 
@@ -398,12 +411,14 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (member->m_type && !member->m_type->m_is_leaf)
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("LoadArray_"<<MakeSafeTypeName(member->m_member->m_type_declaration->m_type)<<"(true, "<<MakeEvaluation(modifier.GetDynamicArraySizeEvaluation())<<");")
+            LINE("LoadArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "
+                              << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
         }
         else
         {
-            LINE("m_stream->Load<"<<MakeTypeDecl(member->m_member->m_type_declaration.get())<<MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                <<">("<<MakeMemberAccess(info, member, modifier)<<", "<<MakeEvaluation(modifier.GetDynamicArraySizeEvaluation())<<");")
+            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                   << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                   << ", " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
         }
     }
 
@@ -431,8 +446,9 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else if (computations.IsAfterPartialLoad())
         {
-            LINE("m_stream->Load<"<<MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(&" << MakeMemberAccess(info, member, modifier)<<");")
+            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                   << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(&" << MakeMemberAccess(info, member, modifier)
+                                   << ");")
         }
     }
 
@@ -452,12 +468,16 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ");")
+            LINE("m_stream->Load<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                   << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                   << ");")
         }
     }
 
-    void LoadMember_TypeCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
+    void LoadMember_TypeCheck(StructureInformation* info,
+                              MemberInformation* member,
+                              const DeclarationModifierComputations& modifier,
+                              const MemberLoadType loadType) const
     {
         if (member->m_is_string)
         {
@@ -506,11 +526,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
     }
 
-    static bool LoadMember_ShouldMakeAlloc(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
+    static bool LoadMember_ShouldMakeAlloc(StructureInformation* info,
+                                           MemberInformation* member,
+                                           const DeclarationModifierComputations& modifier,
+                                           const MemberLoadType loadType)
     {
-        if (loadType != MemberLoadType::ARRAY_POINTER
-            && loadType != MemberLoadType::POINTER_ARRAY
-            && loadType != MemberLoadType::SINGLE_POINTER)
+        if (loadType != MemberLoadType::ARRAY_POINTER && loadType != MemberLoadType::POINTER_ARRAY && loadType != MemberLoadType::SINGLE_POINTER)
         {
             return false;
         }
@@ -544,23 +565,25 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         const MemberComputations computations(member);
         if (computations.IsInTempBlock())
         {
-            LINE(member->m_member->m_type_declaration->m_type->GetFullName()<< "* ptr = "<<MakeMemberAccess(info, member, modifier)<<";")
+            LINE(member->m_member->m_type_declaration->m_type->GetFullName() << "* ptr = " << MakeMemberAccess(info, member, modifier) << ";")
         }
 
         const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
         const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
 
         // This used to use `alignof()` to calculate alignment but due to inconsistencies between compilers and bugs discovered in MSVC
-        // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a larger alignment than the specified value)
-        // this was changed to make ZoneCodeGenerator calculate what is supposed to be used as alignment when allocating.
+        // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a larger
+        // alignment than the specified value) this was changed to make ZoneCodeGenerator calculate what is supposed to be used as alignment when allocating.
         // This is more reliable when being used with different compilers and the value used can be seen in the source code directly
         if (member->m_alloc_alignment)
         {
-            LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">("<<MakeEvaluation(member->m_alloc_alignment.get())<<");")
+            LINE(MakeMemberAccess(info, member, modifier)
+                 << " = m_stream->Alloc<" << typeDecl << followingReferences << ">(" << MakeEvaluation(member->m_alloc_alignment.get()) << ");")
         }
         else
         {
-            LINE(MakeMemberAccess(info, member, modifier)<<" = m_stream->Alloc<"<<typeDecl<<followingReferences<<">("<<modifier.GetAlignment()<<");")
+            LINE(MakeMemberAccess(info, member, modifier)
+                 << " = m_stream->Alloc<" << typeDecl << followingReferences << ">(" << modifier.GetAlignment() << ");")
         }
 
         if (computations.IsInTempBlock())
@@ -569,7 +592,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE(member->m_member->m_type_declaration->m_type->GetFullName() << "** toInsert = nullptr;")
             LINE("if(ptr == PTR_INSERT)")
             m_intendation++;
-            LINE("toInsert = m_stream->InsertPointer<"<<member->m_member->m_type_declaration->m_type->GetFullName() << ">();")
+            LINE("toInsert = m_stream->InsertPointer<" << member->m_member->m_type_declaration->m_type->GetFullName() << ">();")
             m_intendation--;
             LINE("")
         }
@@ -581,22 +604,22 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("")
             LINE("if(toInsert != nullptr)")
             m_intendation++;
-            LINE("*toInsert = "<<MakeTypeVarName(info->m_definition)<<"->"<<member->m_member->m_name<<";")
+            LINE("*toInsert = " << MakeTypeVarName(info->m_definition) << "->" << member->m_member->m_name << ";")
             m_intendation--;
         }
     }
 
-    static bool LoadMember_ShouldMakeReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
+    static bool LoadMember_ShouldMakeReuse(StructureInformation* info,
+                                           MemberInformation* member,
+                                           const DeclarationModifierComputations& modifier,
+                                           const MemberLoadType loadType)
     {
-        if (loadType != MemberLoadType::ARRAY_POINTER
-            && loadType != MemberLoadType::SINGLE_POINTER
-            && loadType != MemberLoadType::POINTER_ARRAY)
+        if (loadType != MemberLoadType::ARRAY_POINTER && loadType != MemberLoadType::SINGLE_POINTER && loadType != MemberLoadType::POINTER_ARRAY)
         {
             return false;
         }
 
-        if (loadType == MemberLoadType::POINTER_ARRAY
-            && modifier.IsArray())
+        if (loadType == MemberLoadType::POINTER_ARRAY && modifier.IsArray())
         {
             return false;
         }
@@ -606,8 +629,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void LoadMember_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
     {
-        if (!LoadMember_ShouldMakeReuse(info, member, modifier, loadType)
-            || !member->m_is_reusable)
+        if (!LoadMember_ShouldMakeReuse(info, member, modifier, loadType) || !member->m_is_reusable)
         {
             LoadMember_Alloc(info, member, modifier, loadType);
             return;
@@ -616,7 +638,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         const MemberComputations computations(member);
         if (computations.IsInTempBlock())
         {
-            LINE("if("<<MakeMemberAccess(info, member, modifier)<<" == PTR_FOLLOWING || "<<MakeMemberAccess(info, member, modifier)<<" == PTR_INSERT)")
+            LINE("if(" << MakeMemberAccess(info, member, modifier) << " == PTR_FOLLOWING || " << MakeMemberAccess(info, member, modifier) << " == PTR_INSERT)")
             LINE("{")
             m_intendation++;
 
@@ -635,7 +657,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("if("<<MakeMemberAccess(info, member, modifier)<<" == PTR_FOLLOWING)")
+            LINE("if(" << MakeMemberAccess(info, member, modifier) << " == PTR_FOLLOWING)")
             LINE("{")
             m_intendation++;
 
@@ -647,11 +669,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("{")
             m_intendation++;
 
-            LINE(MakeMemberAccess(info, member, modifier)<< " = m_stream->ConvertOffsetToPointer("<<MakeMemberAccess(info, member, modifier)<<");")
+            LINE(MakeMemberAccess(info, member, modifier) << " = m_stream->ConvertOffsetToPointer(" << MakeMemberAccess(info, member, modifier) << ");")
 
             if (member->m_is_script_string && loadType == MemberLoadType::ARRAY_POINTER)
             {
-                LINE("MarkScriptStringArrayAsUsed(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+                LINE("MarkScriptStringArrayAsUsed(" << MakeMemberAccess(info, member, modifier) << ", "
+                                                    << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
             }
 
             m_intendation--;
@@ -659,11 +682,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
     }
 
-    static bool LoadMember_ShouldMakePointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, MemberLoadType loadType)
+    static bool LoadMember_ShouldMakePointerCheck(StructureInformation* info,
+                                                  MemberInformation* member,
+                                                  const DeclarationModifierComputations& modifier,
+                                                  MemberLoadType loadType)
     {
-        if (loadType != MemberLoadType::ARRAY_POINTER
-            && loadType != MemberLoadType::POINTER_ARRAY
-            && loadType != MemberLoadType::SINGLE_POINTER)
+        if (loadType != MemberLoadType::ARRAY_POINTER && loadType != MemberLoadType::POINTER_ARRAY && loadType != MemberLoadType::SINGLE_POINTER)
         {
             return false;
         }
@@ -681,7 +705,10 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         return true;
     }
 
-    void LoadMember_PointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
+    void LoadMember_PointerCheck(StructureInformation* info,
+                                 MemberInformation* member,
+                                 const DeclarationModifierComputations& modifier,
+                                 const MemberLoadType loadType)
     {
         if (LoadMember_ShouldMakePointerCheck(info, member, modifier, loadType))
         {
@@ -769,7 +796,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         else
         {
             assert(false);
-            LINE("#error LoadMemberReference failed @ "<<member->m_member->m_name)
+            LINE("#error LoadMemberReference failed @ " << member->m_member->m_name)
         }
     }
 
@@ -778,7 +805,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("")
         if (member->m_condition)
         {
-            LINE("if("<<MakeEvaluation(member->m_condition.get())<<")")
+            LINE("if(" << MakeEvaluation(member->m_condition.get()) << ")")
             LINE("{")
             m_intendation++;
 
@@ -802,7 +829,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("")
             if (member->m_condition)
             {
-                LINE("if("<<MakeEvaluation(member->m_condition.get())<<")")
+                LINE("if(" << MakeEvaluation(member->m_condition.get()) << ")")
                 LINE("{")
                 m_intendation++;
 
@@ -820,7 +847,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         {
             if (member->m_condition)
             {
-                LINE("else if("<<MakeEvaluation(member->m_condition.get())<<")")
+                LINE("else if(" << MakeEvaluation(member->m_condition.get()) << ")")
                 LINE("{")
                 m_intendation++;
 
@@ -845,7 +872,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         {
             if (member->m_condition)
             {
-                LINE("else if("<<MakeEvaluation(member->m_condition.get())<<")")
+                LINE("else if(" << MakeEvaluation(member->m_condition.get()) << ")")
                 LINE("{")
                 m_intendation++;
 
@@ -856,7 +883,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             }
             else
             {
-                LINE("#error Middle member of union must have condition ("<<member->m_member->m_name<<")")
+                LINE("#error Middle member of union must have condition (" << member->m_member->m_name << ")")
             }
         }
     }
@@ -867,10 +894,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (computations.ShouldIgnore())
             return;
 
-        if (member->m_is_string
-            || member->m_is_script_string
-            || computations.ContainsNonEmbeddedReference()
-            || member->m_type && !member->m_type->m_is_leaf
+        if (member->m_is_string || member->m_is_script_string || computations.ContainsNonEmbeddedReference() || member->m_type && !member->m_type->m_is_leaf
             || computations.IsAfterPartialLoad())
         {
             if (info->m_definition->GetType() == DataDefinitionType::UNION)
@@ -887,7 +911,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("{")
         m_intendation++;
 
-        LINE("assert(" <<MakeTypeVarName(info->m_definition) << " != nullptr);")
+        LINE("assert(" << MakeTypeVarName(info->m_definition) << " != nullptr);")
 
         auto* dynamicMember = computations.GetDynamicMember();
         if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
@@ -898,12 +922,13 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
             if (dynamicMember == nullptr)
             {
-                LINE("m_stream->Load<"<<info->m_definition->GetFullName()<<">("<<MakeTypeVarName(info->m_definition)<<"); // Size: "<<info->m_definition->GetSize())
+                LINE("m_stream->Load<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition)
+                                       << "); // Size: " << info->m_definition->GetSize())
             }
             else
             {
-                LINE("m_stream->LoadPartial<"<<info->m_definition->GetFullName()<<">("<<MakeTypeVarName(info->m_definition)<<", offsetof("<<info->m_definition->GetFullName()
-                    <<", "<<dynamicMember->m_member->m_name<<"));")
+                LINE("m_stream->LoadPartial<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << ", offsetof("
+                                              << info->m_definition->GetFullName() << ", " << dynamicMember->m_member->m_name << "));")
             }
 
             m_intendation--;
@@ -921,7 +946,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         else if (info->m_block)
         {
             LINE("")
-            LINE("m_stream->PushBlock("<<info->m_block->m_name<<");")
+            LINE("m_stream->PushBlock(" << info->m_block->m_name << ");")
         }
 
         for (const auto& member : info->m_ordered_members)
@@ -942,16 +967,16 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
     void PrintLoadPtrMethod(StructureInformation* info)
     {
         const bool inTemp = info->m_block && info->m_block->m_type == FastFileBlockType::TEMP;
-        LINE("void "<<LoaderClassName(m_env.m_asset)<<"::LoadPtr_"<<MakeSafeTypeName(info->m_definition)<<"(const bool atStreamStart)")
+        LINE("void " << LoaderClassName(m_env.m_asset) << "::LoadPtr_" << MakeSafeTypeName(info->m_definition) << "(const bool atStreamStart)")
         LINE("{")
         m_intendation++;
 
-        LINE("assert("<<MakeTypePtrVarName(info->m_definition)<<" != nullptr);")
+        LINE("assert(" << MakeTypePtrVarName(info->m_definition) << " != nullptr);")
         LINE("")
 
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE("m_stream->Load<"<<info->m_definition->GetFullName()<<"*>("<< MakeTypePtrVarName(info->m_definition)<<");")
+        LINE("m_stream->Load<" << info->m_definition->GetFullName() << "*>(" << MakeTypePtrVarName(info->m_definition) << ");")
         m_intendation--;
 
         LINE("")
@@ -961,7 +986,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             LINE("")
         }
 
-        LINE("if(*"<< MakeTypePtrVarName(info->m_definition)<<" != nullptr)")
+        LINE("if(*" << MakeTypePtrVarName(info->m_definition) << " != nullptr)")
         LINE("{")
         m_intendation++;
 
@@ -980,7 +1005,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         {
             LINE(info->m_definition->GetFullName() << "* ptr = *" << MakeTypePtrVarName(info->m_definition) << ";")
         }
-        LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->Alloc<" << info->m_definition->GetFullName() << ">("<< info->m_definition->GetAlignment() <<");")
+        LINE("*" << MakeTypePtrVarName(info->m_definition) << " = m_stream->Alloc<" << info->m_definition->GetFullName() << ">("
+                 << info->m_definition->GetAlignment() << ");")
 
         if (inTemp)
         {
@@ -1001,8 +1027,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
                 startLoadSection = false;
                 LINE("")
             }
-            LINE(MakeTypeVarName(info->m_definition)<<" = *"<< MakeTypePtrVarName(info->m_definition)<<";")
-            LINE("Load_"<<MakeSafeTypeName(info->m_definition)<<"(true);")
+            LINE(MakeTypeVarName(info->m_definition) << " = *" << MakeTypePtrVarName(info->m_definition) << ";")
+            LINE("Load_" << MakeSafeTypeName(info->m_definition) << "(true);")
         }
         else
         {
@@ -1018,7 +1044,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (StructureComputations(info).IsAsset())
         {
             LINE("")
-            LINE("LoadAsset_"<<MakeSafeTypeName(info->m_definition)<<"("<<MakeTypePtrVarName(info->m_definition)<<");")
+            LINE("LoadAsset_" << MakeSafeTypeName(info->m_definition) << "(" << MakeTypePtrVarName(info->m_definition) << ");")
         }
 
         if (inTemp)
@@ -1067,12 +1093,13 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void PrintLoadAssetMethod(StructureInformation* info)
     {
-        LINE("void " << LoaderClassName(m_env.m_asset) << "::LoadAsset_" << MakeSafeTypeName(info->m_definition) << "(" << info->m_definition->GetFullName() << "** pAsset)")
+        LINE("void " << LoaderClassName(m_env.m_asset) << "::LoadAsset_" << MakeSafeTypeName(info->m_definition) << "(" << info->m_definition->GetFullName()
+                     << "** pAsset)")
         LINE("{")
         m_intendation++;
 
         LINE("assert(pAsset != nullptr);")
-        LINE("m_asset_info = reinterpret_cast<XAssetInfo<"<<info->m_definition->GetFullName()<<">*>(LinkAsset(GetAssetName(*pAsset), *pAsset));")
+        LINE("m_asset_info = reinterpret_cast<XAssetInfo<" << info->m_definition->GetFullName() << ">*>(LinkAsset(GetAssetName(*pAsset), *pAsset));")
         LINE("*pAsset = m_asset_info->Asset();")
 
         m_intendation--;
@@ -1081,7 +1108,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
 
     void PrintMainLoadMethod()
     {
-        LINE("XAssetInfo<" << m_env.m_asset->m_definition->GetFullName() << ">* " << LoaderClassName(m_env.m_asset) << "::Load(" << m_env.m_asset->m_definition->GetFullName() << "** pAsset)")
+        LINE("XAssetInfo<" << m_env.m_asset->m_definition->GetFullName() << ">* " << LoaderClassName(m_env.m_asset) << "::Load("
+                           << m_env.m_asset->m_definition->GetFullName() << "** pAsset)")
         LINE("{")
         m_intendation++;
 
@@ -1094,7 +1122,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("")
         LINE("if(m_asset_info == nullptr && *pAsset != nullptr)")
         m_intendation++;
-        LINE("m_asset_info = reinterpret_cast<XAssetInfo<"<<m_env.m_asset->m_definition->GetFullName()<<">*>(GetAssetInfo(GetAssetName(*pAsset)));")
+        LINE("m_asset_info = reinterpret_cast<XAssetInfo<" << m_env.m_asset->m_definition->GetFullName() << ">*>(GetAssetInfo(GetAssetName(*pAsset)));")
         m_intendation--;
         LINE("")
         LINE("return m_asset_info;")
@@ -1119,7 +1147,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
                 if (first)
                 {
                     first = false;
-                    LINE_MIDDLE("->"<<member->m_member->m_name)
+                    LINE_MIDDLE("->" << member->m_member->m_name)
                 }
                 else
                 {
@@ -1130,7 +1158,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("return \""<<m_env.m_asset->m_definition->m_name<<"\";")
+            LINE("return \"" << m_env.m_asset->m_definition->m_name << "\";")
         }
 
         m_intendation--;
@@ -1157,7 +1185,8 @@ public:
         LINE("#include \"Game/" << m_env.m_game << "/" << m_env.m_game << ".h\"")
         if (m_env.m_has_actions)
         {
-            LINE("#include \"Game/" << m_env.m_game << "/XAssets/" << Lower(m_env.m_asset->m_definition->m_name) << "/" << Lower(m_env.m_asset->m_definition->m_name) << "_actions.h\"")
+            LINE("#include \"Game/" << m_env.m_game << "/XAssets/" << Lower(m_env.m_asset->m_definition->m_name) << "/"
+                                    << Lower(m_env.m_asset->m_definition->m_name) << "_actions.h\"")
         }
         LINE("#include <string>")
         LINE("")
@@ -1168,10 +1197,10 @@ public:
         LINE("{")
         m_intendation++;
 
-        LINE("XAssetInfo<"<<m_env.m_asset->m_definition->GetFullName()<<">* m_asset_info;")
+        LINE("XAssetInfo<" << m_env.m_asset->m_definition->GetFullName() << ">* m_asset_info;")
         if (m_env.m_has_actions)
         {
-            LINE("Actions_"<<m_env.m_asset->m_definition->m_name<<" m_actions;")
+            LINE("Actions_" << m_env.m_asset->m_definition->m_name << " m_actions;")
         }
         LINE(VariableDecl(m_env.m_asset->m_definition))
         LINE(PointerVariableDecl(m_env.m_asset->m_definition))
@@ -1242,7 +1271,7 @@ public:
         LINE("// Any changes will be discarded when regenerating.")
         LINE("// ====================================================================")
         LINE("")
-        LINE("#include \""<<Lower(m_env.m_asset->m_definition->m_name)<<"_load_db.h\"")
+        LINE("#include \"" << Lower(m_env.m_asset->m_definition->m_name) << "_load_db.h\"")
         LINE("#include <cassert>")
         LINE("")
 
@@ -1251,7 +1280,7 @@ public:
             LINE("// Referenced Assets:")
             for (auto* type : m_env.m_referenced_assets)
             {
-                LINE("#include \"../"<<Lower(type->m_type->m_name)<<"/"<<Lower(type->m_type->m_name)<<"_load_db.h\"")
+                LINE("#include \"../" << Lower(type->m_type->m_name) << "/" << Lower(type->m_type->m_name) << "_load_db.h\"")
             }
             LINE("")
         }

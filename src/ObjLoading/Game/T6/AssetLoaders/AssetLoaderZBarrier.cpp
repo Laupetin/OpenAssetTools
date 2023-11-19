@@ -1,14 +1,14 @@
 #include "AssetLoaderZBarrier.h"
 
-#include <cstring>
-#include <iostream>
-#include <cassert>
-
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/ZBarrierFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 using namespace T6;
 
@@ -24,13 +24,18 @@ namespace T6
         }
 
     public:
-        InfoStringToZBarrierConverter(const InfoString& infoString, ZBarrierDef* zbarrier, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-            const cspField_t* fields, const size_t fieldCount)
+        InfoStringToZBarrierConverter(const InfoString& infoString,
+                                      ZBarrierDef* zbarrier,
+                                      ZoneScriptStrings& zoneScriptStrings,
+                                      MemoryManager* memory,
+                                      IAssetLoadingManager* manager,
+                                      const cspField_t* fields,
+                                      const size_t fieldCount)
             : InfoStringToStructConverter(infoString, zbarrier, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace T6
 
 void AssetLoaderZBarrier::CalculateZBarrierFields(ZBarrierDef* zbarrier)
 {
@@ -52,12 +57,14 @@ void AssetLoaderZBarrier::CalculateZBarrierFields(ZBarrierDef* zbarrier)
     }
 }
 
-bool AssetLoaderZBarrier::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderZBarrier::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
     auto* zbarrier = memory->Create<ZBarrierDef>();
     memset(zbarrier, 0, sizeof(ZBarrierDef));
 
-    InfoStringToZBarrierConverter converter(infoString, zbarrier, zone->m_script_strings, memory, manager, zbarrier_fields, std::extent<decltype(zbarrier_fields)>::value);
+    InfoStringToZBarrierConverter converter(
+        infoString, zbarrier, zone->m_script_strings, memory, manager, zbarrier_fields, std::extent<decltype(zbarrier_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse zbarrier: \"" << assetName << "\"" << std::endl;
@@ -86,7 +93,8 @@ bool AssetLoaderZBarrier::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderZBarrier::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderZBarrier::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_ZBARRIER, assetName);
     if (gdtEntry == nullptr)
@@ -107,7 +115,8 @@ bool AssetLoaderZBarrier::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderZBarrier::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderZBarrier::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "zbarrier/" + assetName;
     const auto file = searchPath->Open(fileName);

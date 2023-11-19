@@ -1,9 +1,8 @@
 #include "SequenceArrayCount.h"
 
-
 #include "Domain/Definition/ArrayDeclarationModifier.h"
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceArrayCount::SequenceArrayCount()
 {
@@ -16,7 +15,7 @@ SequenceArrayCount::SequenceArrayCount()
         create.Keyword("arraycount"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
         create.Label(CommandsCommonMatchers::LABEL_EVALUATION),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 
@@ -29,7 +28,7 @@ void SequenceArrayCount::ProcessMatch(CommandsParserState* state, SequenceResult
     if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), structure, memberChain))
         throw ParsingException(typeNameToken.GetPos(), "Unknown type");
 
-    if(memberChain.empty())
+    if (memberChain.empty())
         throw ParsingException(typeNameToken.GetPos(), "Must specify type with member");
 
     const auto& memberDeclarationModifiers = memberChain.back()->m_member->m_type_declaration->m_declaration_modifiers;

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Parsing/Impl/AbstractDirectiveStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
+#include "Utils/ClassUtils.h"
 
 namespace templating
 {
@@ -28,4 +28,4 @@ namespace templating
         IParserLineStream* const m_stream;
         DefinesStreamProxy* m_defines_proxy;
     };
-}
+} // namespace templating

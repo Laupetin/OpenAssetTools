@@ -1,6 +1,7 @@
 #pragma once
-#include <cstdint>
 #include "LoadingException.h"
+
+#include <cstdint>
 
 class InvalidXBlockSizeException final : public LoadingException
 {

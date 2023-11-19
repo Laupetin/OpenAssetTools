@@ -11,7 +11,7 @@ void ContentPrinter::PrintContent() const
     printf("Zone '%s' (%s)\n", m_zone->m_name.c_str(), m_zone->m_game->GetShortName().c_str());
     puts("Content:");
 
-    for(const auto& asset : *pools)
+    for (const auto& asset : *pools)
     {
         printf("%s, %s\n", pools->GetAssetTypeName(asset->m_type), asset->m_name.c_str());
     }

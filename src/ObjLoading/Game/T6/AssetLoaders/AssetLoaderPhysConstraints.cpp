@@ -1,15 +1,15 @@
 #include "AssetLoaderPhysConstraints.h"
 
-#include <cstring>
-#include <iostream>
-#include <cassert>
-
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/PhysConstraintsFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 using namespace T6;
 
@@ -32,17 +32,22 @@ namespace T6
         }
 
     public:
-        InfoStringToPhysConstraintsConverter(const InfoString& infoString, PhysConstraints* physConstraints, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-            const cspField_t* fields, const size_t fieldCount)
+        InfoStringToPhysConstraintsConverter(const InfoString& infoString,
+                                             PhysConstraints* physConstraints,
+                                             ZoneScriptStrings& zoneScriptStrings,
+                                             MemoryManager* memory,
+                                             IAssetLoadingManager* manager,
+                                             const cspField_t* fields,
+                                             const size_t fieldCount)
             : InfoStringToStructConverter(infoString, physConstraints, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace T6
 
 void AssetLoaderPhysConstraints::CalculatePhysConstraintsFields(PhysConstraints* physConstraints, Zone* zone)
 {
-    for(auto& constraint : physConstraints->data)
+    for (auto& constraint : physConstraints->data)
     {
         constraint.targetname = zone->m_script_strings.AddOrGetScriptString("");
         constraint.target_ent1 = zone->m_script_strings.AddOrGetScriptString("");
@@ -71,12 +76,14 @@ void AssetLoaderPhysConstraints::CalculatePhysConstraintsFields(PhysConstraints*
     }
 }
 
-bool AssetLoaderPhysConstraints::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderPhysConstraints::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
     auto* physConstraints = memory->Create<PhysConstraints>();
     memset(physConstraints, 0, sizeof(PhysConstraints));
 
-    InfoStringToPhysConstraintsConverter converter(infoString, physConstraints, zone->m_script_strings, memory, manager, phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value);
+    InfoStringToPhysConstraintsConverter converter(
+        infoString, physConstraints, zone->m_script_strings, memory, manager, phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse phys constraints: \"" << assetName << "\"" << std::endl;
@@ -106,7 +113,8 @@ bool AssetLoaderPhysConstraints::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderPhysConstraints::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPhysConstraints::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_PHYS_CONSTRAINTS, assetName);
     if (gdtEntry == nullptr)
@@ -127,7 +135,8 @@ bool AssetLoaderPhysConstraints::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderPhysConstraints::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPhysConstraints::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "physconstraints/" + assetName;
     const auto file = searchPath->Open(fileName);

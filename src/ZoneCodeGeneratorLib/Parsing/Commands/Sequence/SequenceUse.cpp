@@ -1,7 +1,7 @@
 #include "SequenceUse.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceUse::SequenceUse()
 {
@@ -11,7 +11,7 @@ SequenceUse::SequenceUse()
     AddMatchers({
         create.Keyword("use"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Char(';')
+        create.Char(';'),
     });
 }
 

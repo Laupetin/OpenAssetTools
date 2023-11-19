@@ -9,7 +9,7 @@ SequenceZoneDefinitionInclude::SequenceZoneDefinitionInclude()
     AddMatchers({
         create.Keyword("include"),
         create.Char(','),
-        create.Field().Capture(CAPTURE_INCLUDE_NAME)
+        create.Field().Capture(CAPTURE_INCLUDE_NAME),
     });
 }
 

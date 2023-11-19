@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
-#include "Utils/ClassUtils.h"
 #include "IEvaluation.h"
 #include "OperationType.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
 
 class Operation final : public IEvaluation
 {

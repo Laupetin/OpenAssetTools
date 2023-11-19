@@ -1,14 +1,19 @@
 #include "InfoStringToStructConverter.h"
 
+#include "Game/T6/CommonT6.h"
+
 #include <cassert>
 #include <iostream>
 
-#include "Game/T6/CommonT6.h"
-
 using namespace T6;
 
-InfoStringToStructConverter::InfoStringToStructConverter(const InfoString& infoString, void* structure, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-                                                         const cspField_t* fields, const size_t fieldCount)
+InfoStringToStructConverter::InfoStringToStructConverter(const InfoString& infoString,
+                                                         void* structure,
+                                                         ZoneScriptStrings& zoneScriptStrings,
+                                                         MemoryManager* memory,
+                                                         IAssetLoadingManager* manager,
+                                                         const cspField_t* fields,
+                                                         const size_t fieldCount)
     : InfoStringToStructConverterBase(infoString, structure, zoneScriptStrings, memory),
       m_loading_manager(manager),
       m_fields(fields),
@@ -64,131 +69,131 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         return ConvertMilliseconds(value, field.iOffset);
 
     case CSPFT_FX:
+    {
+        if (value.empty())
         {
-            if (value.empty())
-            {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
-                return true;
-            }
-
-            auto* fx = m_loading_manager->LoadDependency(ASSET_TYPE_FX, value);
-
-            if (fx == nullptr)
-            {
-                std::cout << "Failed to load fx asset \"" << value << "\"" << std::endl;
-                return false;
-            }
-
-            m_dependencies.emplace(fx);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = fx->m_ptr;
-
+            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
+
+        auto* fx = m_loading_manager->LoadDependency(ASSET_TYPE_FX, value);
+
+        if (fx == nullptr)
+        {
+            std::cout << "Failed to load fx asset \"" << value << "\"" << std::endl;
+            return false;
+        }
+
+        m_dependencies.emplace(fx);
+        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = fx->m_ptr;
+
+        return true;
+    }
 
     case CSPFT_XMODEL:
+    {
+        if (value.empty())
         {
-            if (value.empty())
-            {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
-                return true;
-            }
-
-            auto* xmodel = m_loading_manager->LoadDependency(ASSET_TYPE_XMODEL, value);
-
-            if (xmodel == nullptr)
-            {
-                std::cout << "Failed to load xmodel asset \"" << value << "\"" << std::endl;
-                return false;
-            }
-
-            m_dependencies.emplace(xmodel);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = xmodel->m_ptr;
-
+            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
+
+        auto* xmodel = m_loading_manager->LoadDependency(ASSET_TYPE_XMODEL, value);
+
+        if (xmodel == nullptr)
+        {
+            std::cout << "Failed to load xmodel asset \"" << value << "\"" << std::endl;
+            return false;
+        }
+
+        m_dependencies.emplace(xmodel);
+        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = xmodel->m_ptr;
+
+        return true;
+    }
 
     case CSPFT_MATERIAL:
     case CSPFT_MATERIAL_STREAM:
+    {
+        if (value.empty())
         {
-            if (value.empty())
-            {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
-                return true;
-            }
-
-            auto* material = m_loading_manager->LoadDependency(ASSET_TYPE_MATERIAL, value);
-
-            if (material == nullptr)
-            {
-                std::cout << "Failed to load material asset \"" << value << "\"" << std::endl;
-                return false;
-            }
-
-            m_dependencies.emplace(material);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = material->m_ptr;
-
+            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
+
+        auto* material = m_loading_manager->LoadDependency(ASSET_TYPE_MATERIAL, value);
+
+        if (material == nullptr)
+        {
+            std::cout << "Failed to load material asset \"" << value << "\"" << std::endl;
+            return false;
+        }
+
+        m_dependencies.emplace(material);
+        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = material->m_ptr;
+
+        return true;
+    }
 
     case CSPFT_PHYS_PRESET:
+    {
+        if (value.empty())
         {
-            if (value.empty())
-            {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
-                return true;
-            }
-
-            auto* physPreset = m_loading_manager->LoadDependency(ASSET_TYPE_PHYSPRESET, value);
-
-            if (physPreset == nullptr)
-            {
-                std::cout << "Failed to load physpreset asset \"" << value << "\"" << std::endl;
-                return false;
-            }
-
-            m_dependencies.emplace(physPreset);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = physPreset->m_ptr;
-
+            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
+
+        auto* physPreset = m_loading_manager->LoadDependency(ASSET_TYPE_PHYSPRESET, value);
+
+        if (physPreset == nullptr)
+        {
+            std::cout << "Failed to load physpreset asset \"" << value << "\"" << std::endl;
+            return false;
+        }
+
+        m_dependencies.emplace(physPreset);
+        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = physPreset->m_ptr;
+
+        return true;
+    }
 
     case CSPFT_SCRIPT_STRING:
         return ConvertScriptString(value, field.iOffset);
 
     case CSPFT_TRACER:
+    {
+        if (value.empty())
         {
-            if (value.empty())
-            {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
-                return true;
-            }
-
-            auto* tracer = m_loading_manager->LoadDependency(ASSET_TYPE_TRACER, value);
-
-            if (tracer == nullptr)
-            {
-                std::cout << "Failed to load tracer asset \"" << value << "\"" << std::endl;
-                return false;
-            }
-
-            m_dependencies.emplace(tracer);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = tracer->m_ptr;
-
+            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
+
+        auto* tracer = m_loading_manager->LoadDependency(ASSET_TYPE_TRACER, value);
+
+        if (tracer == nullptr)
+        {
+            std::cout << "Failed to load tracer asset \"" << value << "\"" << std::endl;
+            return false;
+        }
+
+        m_dependencies.emplace(tracer);
+        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = tracer->m_ptr;
+
+        return true;
+    }
 
     case CSPFT_SOUND_ALIAS_ID:
+    {
+        unsigned int soundAliasHash;
+        if (!GetHashValue(value, soundAliasHash))
         {
-            unsigned int soundAliasHash;
-            if (!GetHashValue(value, soundAliasHash))
-            {
-                std::cout << "Failed to parse value \"" << value << "\" as hash" << std::endl;
-                return false;
-            }
-
-            *reinterpret_cast<unsigned int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = soundAliasHash;
-            return true;
+            std::cout << "Failed to parse value \"" << value << "\" as hash" << std::endl;
+            return false;
         }
+
+        *reinterpret_cast<unsigned int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = soundAliasHash;
+        return true;
+    }
 
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:

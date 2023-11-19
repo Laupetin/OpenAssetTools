@@ -1,5 +1,6 @@
 #pragma once
 #include "ImageFormat.h"
+
 #include <cstdint>
 
 enum class TextureType

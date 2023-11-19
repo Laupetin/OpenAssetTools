@@ -50,8 +50,8 @@ void XModelMaterial::ApplyDefaults()
 bool operator==(const VertexMergerPos& lhs, const VertexMergerPos& rhs)
 {
     const auto coordinatesMatch = std::fabs(lhs.x - rhs.x) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.y - rhs.y) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.z - rhs.z) < std::numeric_limits<float>::epsilon();
+                                  && std::fabs(lhs.y - rhs.y) < std::numeric_limits<float>::epsilon()
+                                  && std::fabs(lhs.z - rhs.z) < std::numeric_limits<float>::epsilon();
 
     if (!coordinatesMatch || lhs.weightCount != rhs.weightCount)
         return false;

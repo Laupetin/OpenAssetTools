@@ -1,21 +1,21 @@
 #include "AssetDumperMaterial.h"
 
-#include <iomanip>
-#include <sstream>
-#include <string>
-#include <type_traits>
-#include <vector>
-#include <nlohmann/json.hpp>
-
-#include "Utils/ClassUtils.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Math/Vector.h"
+#include "Utils/ClassUtils.h"
+
+#include <iomanip>
+#include <nlohmann/json.hpp>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 #define DUMP_AS_JSON 1
-//#define DUMP_AS_GDT 1
-//#define FLAGS_DEBUG 1
+// #define DUMP_AS_GDT 1
+// #define FLAGS_DEBUG 1
 
 using namespace IW4;
 using json = nlohmann::json;
@@ -30,8 +30,7 @@ namespace IW4
         return name;
     }
 
-    template <size_t S>
-    json ArrayEntry(const char* (&a)[S], const size_t index)
+    template<size_t S> json ArrayEntry(const char* (&a)[S], const size_t index)
     {
         assert(index < S);
         if (index < S)
@@ -82,20 +81,8 @@ namespace IW4
 
     json BuildSamplerStateJson(unsigned char samplerState)
     {
-        static const char* samplerFilterNames[]
-        {
-            "none",
-            "nearest",
-            "linear",
-            "aniso2x",
-            "aniso4x"
-        };
-        static const char* samplerMipmapNames[]
-        {
-            "disabled",
-            "nearest",
-            "linear"
-        };
+        static const char* samplerFilterNames[]{"none", "nearest", "linear", "aniso2x", "aniso4x"};
+        static const char* samplerMipmapNames[]{"disabled", "nearest", "linear"};
 
         return json{
             {"filter", ArrayEntry(samplerFilterNames, (samplerState & SAMPLER_FILTER_MASK) >> SAMPLER_FILTER_SHIFT)},
@@ -108,21 +95,8 @@ namespace IW4
 
     json BuildTextureTableJson(MaterialTextureDef* textureTable, const size_t count)
     {
-        static const char* semanticNames[]
-        {
-            "2d",
-            "function",
-            "colorMap",
-            "detailMap",
-            "unused2",
-            "normalMap",
-            "unused3",
-            "unused4",
-            "specularMap",
-            "unused5",
-            "unused6",
-            "waterMap"
-        };
+        static const char* semanticNames[]{
+            "2d", "function", "colorMap", "detailMap", "unused2", "normalMap", "unused3", "unused4", "specularMap", "unused5", "unused6", "waterMap"};
 
         auto jArray = json::array();
 
@@ -145,9 +119,9 @@ namespace IW4
                 else
                 {
                     jEntry.merge_patch({
-                        {"nameHash", entry.nameHash},
+                        {"nameHash",  entry.nameHash },
                         {"nameStart", entry.nameStart},
-                        {"nameEnd", entry.nameEnd},
+                        {"nameEnd",   entry.nameEnd  },
                     });
                 }
 
@@ -220,8 +194,7 @@ namespace IW4
 
     json BuildStateBitsTableJson(const GfxStateBits* stateBitsTable, const size_t count)
     {
-        static const char* blendNames[]
-        {
+        static const char* blendNames[]{
             "disabled",
             "zero",
             "one",
@@ -234,51 +207,21 @@ namespace IW4
             "destColor",
             "invDestColor",
         };
-        static const char* blendOpNames[]
-        {
-            "disabled",
-            "add",
-            "subtract",
-            "revSubtract",
-            "min",
-            "max"
-        };
-        static const char* depthTestNames[]
-        {
+        static const char* blendOpNames[]{"disabled", "add", "subtract", "revSubtract", "min", "max"};
+        static const char* depthTestNames[]{
             "always",
             "less",
             "equal",
             "lessEqual",
         };
-        static const char* polygonOffsetNames[]
-        {
+        static const char* polygonOffsetNames[]{
             "0",
             "1",
             "2",
             "shadowMap",
         };
-        static const char* stencilOpNames[]
-        {
-            "keep",
-            "zero",
-            "replace",
-            "incrSat",
-            "decrSat",
-            "invert",
-            "incr",
-            "decr"
-        };
-        static const char* stencilFuncNames[]
-        {
-            "never",
-            "less",
-            "equal",
-            "lessEqual",
-            "greater",
-            "notEqual",
-            "greaterEqual",
-            "always"
-        };
+        static const char* stencilOpNames[]{"keep", "zero", "replace", "incrSat", "decrSat", "invert", "incr", "decr"};
+        static const char* stencilFuncNames[]{"never", "less", "equal", "lessEqual", "greater", "notEqual", "greaterEqual", "always"};
 
         auto jArray = json::array();
 
@@ -371,7 +314,8 @@ namespace IW4
         if (!surfaceTypeBits)
             return "<none>";
 
-        static constexpr auto NON_SURFACE_TYPE_BITS = ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
+        static constexpr auto NON_SURFACE_TYPE_BITS =
+            ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
         assert((surfaceTypeBits & NON_SURFACE_TYPE_BITS) == 0);
 
         std::ostringstream ss;
@@ -396,44 +340,32 @@ namespace IW4
 
     void DumpMaterialAsJson(Material* material, std::ostream& stream)
     {
-        static const char* cameraRegionNames[]
-        {
-            "litOpaque",
-            "litTrans",
-            "emissive",
-            "depthHack",
-            "none"
-        };
+        static const char* cameraRegionNames[]{"litOpaque", "litTrans", "emissive", "depthHack", "none"};
 
         const json j = {
-            {
-                "info", {
+            {"info",
+             {
 #if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
-                    {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
+                 {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
 #else
-                    {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
+                 {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
 #endif
-                    {"sortKey", material->info.sortKey},
-                    {"textureAtlasRowCount", material->info.textureAtlasRowCount},
-                    {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
-                    {
-                        "drawSurf", {
-                            {"objectId", static_cast<unsigned>(material->info.drawSurf.fields.objectId)},
-                            {"reflectionProbeIndex", static_cast<unsigned>(material->info.drawSurf.fields.reflectionProbeIndex)},
-                            {"hasGfxEntIndex", static_cast<unsigned>(material->info.drawSurf.fields.hasGfxEntIndex)},
-                            {"customIndex", static_cast<unsigned>(material->info.drawSurf.fields.customIndex)},
-                            {"materialSortedIndex", static_cast<unsigned>(material->info.drawSurf.fields.materialSortedIndex)},
-                            {"prepass", static_cast<unsigned>(material->info.drawSurf.fields.prepass)},
-                            {"useHeroLighting", static_cast<unsigned>(material->info.drawSurf.fields.useHeroLighting)},
-                            {"sceneLightIndex", static_cast<unsigned>(material->info.drawSurf.fields.sceneLightIndex)},
-                            {"surfType", static_cast<unsigned>(material->info.drawSurf.fields.surfType)},
-                            {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}
-                        }
-                    },
-                    {"surfaceTypeBits", CreateSurfaceTypeString(material->info.surfaceTypeBits)},
-                    {"hashIndex", material->info.hashIndex}
-                }
-            },
+                 {"sortKey", material->info.sortKey},
+                 {"textureAtlasRowCount", material->info.textureAtlasRowCount},
+                 {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
+                 {"drawSurf",
+                  {{"objectId", static_cast<unsigned>(material->info.drawSurf.fields.objectId)},
+                   {"reflectionProbeIndex", static_cast<unsigned>(material->info.drawSurf.fields.reflectionProbeIndex)},
+                   {"hasGfxEntIndex", static_cast<unsigned>(material->info.drawSurf.fields.hasGfxEntIndex)},
+                   {"customIndex", static_cast<unsigned>(material->info.drawSurf.fields.customIndex)},
+                   {"materialSortedIndex", static_cast<unsigned>(material->info.drawSurf.fields.materialSortedIndex)},
+                   {"prepass", static_cast<unsigned>(material->info.drawSurf.fields.prepass)},
+                   {"useHeroLighting", static_cast<unsigned>(material->info.drawSurf.fields.useHeroLighting)},
+                   {"sceneLightIndex", static_cast<unsigned>(material->info.drawSurf.fields.sceneLightIndex)},
+                   {"surfType", static_cast<unsigned>(material->info.drawSurf.fields.surfType)},
+                   {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}}},
+                 {"surfaceTypeBits", CreateSurfaceTypeString(material->info.surfaceTypeBits)},
+                 {"hashIndex", material->info.hashIndex}}},
             {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
 #if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
             {"stateFlags", BuildCharFlagsJson("stateFlag", material->stateFlags)},
@@ -478,7 +410,8 @@ namespace IW4
         bool m_outdoor_only = false;
 
         // TODO: Find out what p0 in techset name actually means, seems like it only does stuff for techsets using a specular texture though
-        // TODO: Find out what o0 in techset name actually means, seems like it gives the colormap a blue/whiteish tint and is almost exclusively used on snow-related materials
+        // TODO: Find out what o0 in techset name actually means, seems like it gives the colormap a blue/whiteish tint and is almost exclusively used on
+        // snow-related materials
         // TODO: Find out what _lin in techset name actually means
         bool m_specular_p_flag = false;
         bool m_color_o_flag = false;
@@ -576,9 +509,7 @@ namespace IW4
             m_entry.m_properties.emplace(std::make_pair(key, value ? "1" : "0"));
         }
 
-        template <typename T,
-                  typename = typename std::enable_if_t<std::is_arithmetic_v<T>, T>>
-        void SetValue(const std::string& key, T value)
+        template<typename T, typename = typename std::enable_if_t<std::is_arithmetic_v<T>, T>> void SetValue(const std::string& key, T value)
         {
             m_entry.m_properties.emplace(std::make_pair(key, std::to_string(value)));
         }
@@ -679,8 +610,8 @@ namespace IW4
                     m_techset_info.m_uv_anim = true;
                 else
                 {
-                    if (namePart != "add" && namePart != "replace" && namePart != "blend" && namePart != "eyeoffset" && namePart != "screen" && namePart != "effect" && namePart != "unlit"
-                        && namePart != "multiply" && namePart != "sm")
+                    if (namePart != "add" && namePart != "replace" && namePart != "blend" && namePart != "eyeoffset" && namePart != "screen"
+                        && namePart != "effect" && namePart != "unlit" && namePart != "multiply" && namePart != "sm")
                     {
                         assert(false);
                     }
@@ -942,26 +873,78 @@ namespace IW4
             CustomBlendFunc_e m_dst_blend_func_alpha;
         };
 
-        static inline BlendFuncParameters knownBlendFuncs[]
-        {
-            // Only considering passthrough statemap
-            {BlendFunc_e::ADD, BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
-            {BlendFunc_e::BLEND, BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
-            {BlendFunc_e::MULTIPLY, BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
-            {BlendFunc_e::REPLACE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
-            {BlendFunc_e::SCREEN_ADD, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE, BlendOp_e::DISABLE, CustomBlendFunc_e::UNKNOWN, CustomBlendFunc_e::UNKNOWN},
+        static inline BlendFuncParameters knownBlendFuncs[]{
+  // Only considering passthrough statemap
+            {BlendFunc_e::ADD,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::ONE,
+             CustomBlendFunc_e::ONE,
+             BlendOp_e::DISABLE,
+             CustomBlendFunc_e::UNKNOWN,
+             CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::BLEND,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::SRC_ALPHA,
+             CustomBlendFunc_e::INV_SRC_ALPHA,
+             BlendOp_e::DISABLE,
+             CustomBlendFunc_e::UNKNOWN,
+             CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::MULTIPLY,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::ZERO,
+             CustomBlendFunc_e::SRC_COLOR,
+             BlendOp_e::DISABLE,
+             CustomBlendFunc_e::UNKNOWN,
+             CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::REPLACE,
+             BlendOp_e::DISABLE,
+             CustomBlendFunc_e::UNKNOWN,
+             CustomBlendFunc_e::UNKNOWN,
+             BlendOp_e::DISABLE,
+             CustomBlendFunc_e::UNKNOWN,
+             CustomBlendFunc_e::UNKNOWN},
+            {BlendFunc_e::SCREEN_ADD,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::INV_DST_COLOR,
+             CustomBlendFunc_e::ONE,
+             BlendOp_e::DISABLE,
+             CustomBlendFunc_e::UNKNOWN,
+             CustomBlendFunc_e::UNKNOWN},
 
-            // TODO: Enable when using statemaps
-            // Considering default statemap
-            {BlendFunc_e::ADD, BlendOp_e::ADD, CustomBlendFunc_e::ONE, CustomBlendFunc_e::ONE, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
-            {BlendFunc_e::BLEND, BlendOp_e::ADD, CustomBlendFunc_e::SRC_ALPHA, CustomBlendFunc_e::INV_SRC_ALPHA, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
-            {BlendFunc_e::MULTIPLY, BlendOp_e::ADD, CustomBlendFunc_e::ZERO, CustomBlendFunc_e::SRC_COLOR, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
-            // REPLACE matches passthrough statemap
-            {BlendFunc_e::SCREEN_ADD, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_COLOR, CustomBlendFunc_e::ONE, BlendOp_e::ADD, CustomBlendFunc_e::INV_DST_ALPHA, CustomBlendFunc_e::ONE},
+ // TODO: Enable when using statemaps
+  // Considering default statemap
+            {BlendFunc_e::ADD,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::ONE,
+             CustomBlendFunc_e::ONE,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::INV_DST_ALPHA,
+             CustomBlendFunc_e::ONE    },
+            {BlendFunc_e::BLEND,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::SRC_ALPHA,
+             CustomBlendFunc_e::INV_SRC_ALPHA,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::INV_DST_ALPHA,
+             CustomBlendFunc_e::ONE    },
+            {BlendFunc_e::MULTIPLY,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::ZERO,
+             CustomBlendFunc_e::SRC_COLOR,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::INV_DST_ALPHA,
+             CustomBlendFunc_e::ONE    },
+ // REPLACE matches passthrough statemap
+            {BlendFunc_e::SCREEN_ADD,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::INV_DST_COLOR,
+             CustomBlendFunc_e::ONE,
+             BlendOp_e::ADD,
+             CustomBlendFunc_e::INV_DST_ALPHA,
+             CustomBlendFunc_e::ONE    },
         };
 
-        template <typename T>
-        bool KnownBlendFuncParameterMatches(const T materialValue, const T blendFuncValue)
+        template<typename T> bool KnownBlendFuncParameterMatches(const T materialValue, const T blendFuncValue)
         {
             if (blendFuncValue == T::UNKNOWN)
                 return true;
@@ -983,8 +966,7 @@ namespace IW4
                     && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_dst_blend_func, knownBlendFunc.m_dst_blend_func)
                     && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_blend_op_alpha, knownBlendFunc.m_blend_op_alpha)
                     && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_src_blend_func_alpha, knownBlendFunc.m_src_blend_func_alpha)
-                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_dst_blend_func_alpha, knownBlendFunc.m_dst_blend_func_alpha)
-                )
+                    && KnownBlendFuncParameterMatches(m_state_bits_info.m_custom_dst_blend_func_alpha, knownBlendFunc.m_dst_blend_func_alpha))
                 {
                     m_state_bits_info.m_blend_func = knownBlendFunc.m_blend_func;
                     return;
@@ -994,8 +976,7 @@ namespace IW4
             m_state_bits_info.m_blend_func = BlendFunc_e::CUSTOM;
         }
 
-        template <typename T>
-        T StateBitsToEnum(const unsigned input, const size_t mask, const size_t shift)
+        template<typename T> T StateBitsToEnum(const unsigned input, const size_t mask, const size_t shift)
         {
             const unsigned value = (input & mask) >> shift;
             return value >= (static_cast<unsigned>(T::COUNT) - 1) ? T::UNKNOWN : static_cast<T>(value + 1);
@@ -1027,19 +1008,24 @@ namespace IW4
                 m_state_bits_info.m_custom_blend_op_rgb = StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_RGB_MASK, GFXS0_BLENDOP_RGB_SHIFT);
 
             if (m_state_bits_info.m_custom_blend_op_alpha == BlendOp_e::UNKNOWN)
-                m_state_bits_info.m_custom_blend_op_alpha = StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_ALPHA_MASK, GFXS0_BLENDOP_ALPHA_SHIFT);
+                m_state_bits_info.m_custom_blend_op_alpha =
+                    StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_ALPHA_MASK, GFXS0_BLENDOP_ALPHA_SHIFT);
 
             if (m_state_bits_info.m_custom_src_blend_func == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_src_blend_func = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_RGB_MASK, GFXS0_SRCBLEND_RGB_SHIFT);
+                m_state_bits_info.m_custom_src_blend_func =
+                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_RGB_MASK, GFXS0_SRCBLEND_RGB_SHIFT);
 
             if (m_state_bits_info.m_custom_dst_blend_func == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_dst_blend_func = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_RGB_MASK, GFXS0_DSTBLEND_RGB_SHIFT);
+                m_state_bits_info.m_custom_dst_blend_func =
+                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_RGB_MASK, GFXS0_DSTBLEND_RGB_SHIFT);
 
             if (m_state_bits_info.m_custom_src_blend_func_alpha == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_src_blend_func_alpha = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_ALPHA_MASK, GFXS0_SRCBLEND_ALPHA_SHIFT);
+                m_state_bits_info.m_custom_src_blend_func_alpha =
+                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_ALPHA_MASK, GFXS0_SRCBLEND_ALPHA_SHIFT);
 
             if (m_state_bits_info.m_custom_dst_blend_func_alpha == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_dst_blend_func_alpha = StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_ALPHA_MASK, GFXS0_DSTBLEND_ALPHA_SHIFT);
+                m_state_bits_info.m_custom_dst_blend_func_alpha =
+                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_ALPHA_MASK, GFXS0_DSTBLEND_ALPHA_SHIFT);
 
             if (m_state_bits_info.m_alpha_test == AlphaTest_e::UNKNOWN)
             {
@@ -1070,7 +1056,8 @@ namespace IW4
             }
 
             if (m_state_bits_info.m_depth_write == StateBitsEnabledStatus_e::UNKNOWN)
-                m_state_bits_info.m_depth_write = (stateBits.loadBits[1] & GFXS1_DEPTHWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                m_state_bits_info.m_depth_write =
+                    (stateBits.loadBits[1] & GFXS1_DEPTHWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
 
             if (m_state_bits_info.m_cull_face == CullFace_e::UNKNOWN)
             {
@@ -1085,16 +1072,20 @@ namespace IW4
             }
 
             if (m_state_bits_info.m_polygon_offset == PolygonOffset_e::UNKNOWN)
-                m_state_bits_info.m_polygon_offset = StateBitsToEnum<PolygonOffset_e>(stateBits.loadBits[1], GFXS1_POLYGON_OFFSET_MASK, GFXS1_POLYGON_OFFSET_SHIFT);
+                m_state_bits_info.m_polygon_offset =
+                    StateBitsToEnum<PolygonOffset_e>(stateBits.loadBits[1], GFXS1_POLYGON_OFFSET_MASK, GFXS1_POLYGON_OFFSET_SHIFT);
 
             if (m_state_bits_info.m_color_write_rgb == StateBitsEnabledStatus_e::UNKNOWN)
-                m_state_bits_info.m_color_write_rgb = (stateBits.loadBits[0] & GFXS0_COLORWRITE_RGB) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                m_state_bits_info.m_color_write_rgb =
+                    (stateBits.loadBits[0] & GFXS0_COLORWRITE_RGB) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
 
             if (m_state_bits_info.m_color_write_alpha == StateBitsEnabledStatus_e::UNKNOWN)
-                m_state_bits_info.m_color_write_alpha = (stateBits.loadBits[0] & GFXS0_COLORWRITE_ALPHA) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                m_state_bits_info.m_color_write_alpha =
+                    (stateBits.loadBits[0] & GFXS0_COLORWRITE_ALPHA) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
 
             if (m_state_bits_info.m_gamma_write == StateBitsEnabledStatus_e::UNKNOWN)
-                m_state_bits_info.m_gamma_write = (stateBits.loadBits[0] & GFXS0_GAMMAWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                m_state_bits_info.m_gamma_write =
+                    (stateBits.loadBits[0] & GFXS0_GAMMAWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
 
             if (m_state_bits_info.m_stencil_mode == StencilMode_e::UNKNOWN)
             {
@@ -1115,28 +1106,36 @@ namespace IW4
             }
 
             if (m_state_bits_info.m_stencil_front_func == StencilFunc_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_func = StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FUNC_MASK, GFXS1_STENCIL_FRONT_FUNC_SHIFT);
+                m_state_bits_info.m_stencil_front_func =
+                    StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FUNC_MASK, GFXS1_STENCIL_FRONT_FUNC_SHIFT);
 
             if (m_state_bits_info.m_stencil_front_pass == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_pass = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_PASS_MASK, GFXS1_STENCIL_FRONT_PASS_SHIFT);
+                m_state_bits_info.m_stencil_front_pass =
+                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_PASS_MASK, GFXS1_STENCIL_FRONT_PASS_SHIFT);
 
             if (m_state_bits_info.m_stencil_front_fail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_fail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FAIL_MASK, GFXS1_STENCIL_FRONT_FAIL_SHIFT);
+                m_state_bits_info.m_stencil_front_fail =
+                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FAIL_MASK, GFXS1_STENCIL_FRONT_FAIL_SHIFT);
 
             if (m_state_bits_info.m_stencil_front_zfail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_zfail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_ZFAIL_MASK, GFXS1_STENCIL_FRONT_ZFAIL_SHIFT);
+                m_state_bits_info.m_stencil_front_zfail =
+                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_ZFAIL_MASK, GFXS1_STENCIL_FRONT_ZFAIL_SHIFT);
 
             if (m_state_bits_info.m_stencil_back_func == StencilFunc_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_func = StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FUNC_MASK, GFXS1_STENCIL_BACK_FUNC_SHIFT);
+                m_state_bits_info.m_stencil_back_func =
+                    StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FUNC_MASK, GFXS1_STENCIL_BACK_FUNC_SHIFT);
 
             if (m_state_bits_info.m_stencil_back_pass == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_pass = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_PASS_MASK, GFXS1_STENCIL_BACK_PASS_SHIFT);
+                m_state_bits_info.m_stencil_back_pass =
+                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_PASS_MASK, GFXS1_STENCIL_BACK_PASS_SHIFT);
 
             if (m_state_bits_info.m_stencil_back_fail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_fail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FAIL_MASK, GFXS1_STENCIL_BACK_FAIL_SHIFT);
+                m_state_bits_info.m_stencil_back_fail =
+                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FAIL_MASK, GFXS1_STENCIL_BACK_FAIL_SHIFT);
 
             if (m_state_bits_info.m_stencil_back_zfail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_zfail = StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_ZFAIL_MASK, GFXS1_STENCIL_BACK_ZFAIL_SHIFT);
+                m_state_bits_info.m_stencil_back_zfail =
+                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_ZFAIL_MASK, GFXS1_STENCIL_BACK_ZFAIL_SHIFT);
 
             ExamineBlendFunc();
         }
@@ -1214,17 +1213,17 @@ namespace IW4
                     const auto materialType = m_techset_info.m_gdt_material_type;
                     const auto colorMapIndex = FindTexture("colorMap");
                     const auto detailMapIndex = FindTexture("detailMap");
-                    const auto hasColorMap = colorMapIndex >= 0 && m_material->textureTable[colorMapIndex].semantic != TS_WATER_MAP && m_material->textureTable[colorMapIndex].u.image;
-                    const auto hasDetailMap = detailMapIndex >= 0 && m_material->textureTable[detailMapIndex].semantic != TS_WATER_MAP && m_material->textureTable[detailMapIndex].u.image;
+                    const auto hasColorMap = colorMapIndex >= 0 && m_material->textureTable[colorMapIndex].semantic != TS_WATER_MAP
+                                             && m_material->textureTable[colorMapIndex].u.image;
+                    const auto hasDetailMap = detailMapIndex >= 0 && m_material->textureTable[detailMapIndex].semantic != TS_WATER_MAP
+                                              && m_material->textureTable[detailMapIndex].u.image;
 
-                    if ((materialType == MATERIAL_TYPE_MODEL_PHONG || materialType == MATERIAL_TYPE_WORLD_PHONG)
-                        && hasColorMap && hasDetailMap)
+                    if ((materialType == MATERIAL_TYPE_MODEL_PHONG || materialType == MATERIAL_TYPE_WORLD_PHONG) && hasColorMap && hasDetailMap)
                     {
                         const auto colorMapTexture = m_material->textureTable[colorMapIndex].u.image;
                         const auto detailMapTexture = m_material->textureTable[detailMapIndex].u.image;
 
-                        if (colorMapTexture->width != 0 && colorMapTexture->height != 0
-                            && detailMapTexture->width != 0 && detailMapTexture->height != 0)
+                        if (colorMapTexture->width != 0 && colorMapTexture->height != 0 && detailMapTexture->width != 0 && detailMapTexture->height != 0)
                         {
                             const auto detailScaleFactorX = static_cast<float>(colorMapTexture->width) / static_cast<float>(detailMapTexture->width);
                             const auto detailScaleFactorY = static_cast<float>(colorMapTexture->height) / static_cast<float>(detailMapTexture->height);
@@ -1304,7 +1303,6 @@ namespace IW4
             SetValue("outdoorOnly", m_techset_info.m_outdoor_only);
             SetValue("eyeOffsetDepth", m_constants_info.m_eye_offset_depth);
 
-
             // TODO: These are not good names, change when known what they do
             SetValue("specularP", m_techset_info.m_specular_p_flag);
             SetValue("colorO", m_techset_info.m_color_o_flag);
@@ -1371,7 +1369,8 @@ namespace IW4
                 if (knownMaterialSourceName == knownTextureMaps.end())
                 {
                     assert(false);
-                    std::cout << "Unknown material texture source name hash: 0x" << std::hex << entry.nameHash << " (" << entry.nameStart << "..." << entry.nameEnd << ")\n";
+                    std::cout << "Unknown material texture source name hash: 0x" << std::hex << entry.nameHash << " (" << entry.nameStart << "..."
+                              << entry.nameEnd << ")\n";
                     continue;
                 }
 
@@ -1457,7 +1456,7 @@ namespace IW4
             return m_entry;
         }
     };
-}
+} // namespace IW4
 
 bool AssetDumperMaterial::ShouldDump(XAssetInfo<Material>* asset)
 {

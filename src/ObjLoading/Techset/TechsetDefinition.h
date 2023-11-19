@@ -15,4 +15,4 @@ namespace techset
         bool GetTechniqueByIndex(size_t index, std::string& techniqueName) const;
         void SetTechniqueByIndex(size_t index, std::string techniqueName);
     };
-}
+} // namespace techset

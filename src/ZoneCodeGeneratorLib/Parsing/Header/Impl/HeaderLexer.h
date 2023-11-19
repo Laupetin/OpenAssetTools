@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "HeaderParserValue.h"
 #include "Parsing/Impl/AbstractLexer.h"
+
+#include <unordered_map>
 
 class HeaderLexer final : public AbstractLexer<HeaderParserValue>
 {

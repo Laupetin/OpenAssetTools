@@ -1,9 +1,9 @@
 #include "SimpleExpressionInterpreter.h"
 
-#include "Utils/ClassUtils.h"
 #include "Expression/SimpleExpressionMatchers.h"
 #include "Matcher/SimpleMatcherFactory.h"
 #include "Parsing/Impl/AbstractParser.h"
+#include "Utils/ClassUtils.h"
 
 class SimpleExpressionInterpreterParserState
 {
@@ -47,9 +47,8 @@ public:
 protected:
     const std::vector<sequence_t*>& GetTestsForState() override
     {
-        static std::vector<sequence_t*> sequences
-        {
-            new SimpleExpressionInterpreterExpressionSequence()
+        static std::vector<sequence_t*> sequences{
+            new SimpleExpressionInterpreterExpressionSequence(),
         };
         return sequences;
     }

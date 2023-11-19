@@ -11,7 +11,7 @@ Actions_XModel::Actions_XModel(Zone* zone)
 
 void Actions_XModel::SetModelSurfs(XModelLodInfo* lodInfo, XModelSurfs* modelSurfs) const
 {
-    if(modelSurfs)
+    if (modelSurfs)
     {
         lodInfo->modelSurfs = m_zone->GetMemory()->Create<XModelSurfs>();
         memcpy(lodInfo->modelSurfs, modelSurfs, sizeof(XModelSurfs));

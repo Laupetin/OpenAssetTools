@@ -1,7 +1,7 @@
 #include "MenuFileReader.h"
 
-#include "MenuFileParser.h"
 #include "Matcher/MenuExpressionMatchers.h"
+#include "MenuFileParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
@@ -142,7 +142,7 @@ std::unique_ptr<ParsingResult> MenuFileReader::ReadMenuFile()
         std::cerr << "Parsing menu file failed!" << std::endl;
 
         const auto* parserEndState = parser->GetState();
-        if(parserEndState->m_current_event_handler_set && !parserEndState->m_permissive_mode)
+        if (parserEndState->m_current_event_handler_set && !parserEndState->m_permissive_mode)
             std::cerr << "You can use the --menu-permissive option to try to compile the event handler script anyway." << std::endl;
         return nullptr;
     }

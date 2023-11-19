@@ -1,10 +1,10 @@
 #include "AssetDumperStructuredDataDefSet.h"
 
+#include "StructuredDataDef/StructuredDataDefDumper.h"
+
+#include <algorithm>
 #include <cassert>
 #include <sstream>
-#include <algorithm>
-
-#include "StructuredDataDef/StructuredDataDefDumper.h"
 
 using namespace IW4;
 using namespace std::string_literals;
@@ -73,7 +73,7 @@ void AssetDumperStructuredDataDefSet::ConvertEnum(CommonStructuredDataEnum* out,
         out->m_reserved_entry_count = -1;
 
     out->m_entries.resize(static_cast<size_t>(std::max(in->entryCount, 0)));
-    for(auto i = 0u; i < out->m_entries.size(); i++)
+    for (auto i = 0u; i < out->m_entries.size(); i++)
     {
         auto& outEntry = out->m_entries[i];
         const auto& inEntry = in->entries[i];
@@ -85,7 +85,11 @@ void AssetDumperStructuredDataDefSet::ConvertEnum(CommonStructuredDataEnum* out,
     out->SortEntriesByOffset();
 }
 
-void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDef* def, const StructuredDataDef* gameDef, CommonStructuredDataStruct* out, const StructuredDataStruct* in, const size_t structIndex)
+void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDef* def,
+                                                    const StructuredDataDef* gameDef,
+                                                    CommonStructuredDataStruct* out,
+                                                    const StructuredDataStruct* in,
+                                                    const size_t structIndex)
 {
     if (gameDef->rootType.type == DATA_STRUCT && structIndex == static_cast<size_t>(gameDef->rootType.u.structIndex))
     {
@@ -118,14 +122,18 @@ void AssetDumperStructuredDataDefSet::ConvertStruct(const CommonStructuredDataDe
     out->SortPropertiesByOffset();
 }
 
-void AssetDumperStructuredDataDefSet::ConvertIndexedArray(const CommonStructuredDataDef* def, CommonStructuredDataIndexedArray* out, const StructuredDataIndexedArray* in)
+void AssetDumperStructuredDataDefSet::ConvertIndexedArray(const CommonStructuredDataDef* def,
+                                                          CommonStructuredDataIndexedArray* out,
+                                                          const StructuredDataIndexedArray* in)
 {
     out->m_element_count = static_cast<size_t>(std::max(in->arraySize, 0));
     out->m_element_size_in_bits = in->elementType.type == DATA_BOOL ? 1 : in->elementSize * 8;
     out->m_array_type = ConvertType(def, in->elementType);
 }
 
-void AssetDumperStructuredDataDefSet::ConvertEnumedArray(const CommonStructuredDataDef* def, CommonStructuredDataEnumedArray* out, const StructuredDataEnumedArray* in)
+void AssetDumperStructuredDataDefSet::ConvertEnumedArray(const CommonStructuredDataDef* def,
+                                                         CommonStructuredDataEnumedArray* out,
+                                                         const StructuredDataEnumedArray* in)
 {
     assert(!def->m_enums.empty());
     out->m_element_size_in_bits = in->elementType.type == DATA_BOOL ? 1 : in->elementSize * 8;

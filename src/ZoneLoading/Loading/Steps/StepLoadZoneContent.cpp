@@ -1,8 +1,13 @@
 #include "StepLoadZoneContent.h"
+
 #include "Zone/Stream/Impl/XBlockInputStream.h"
+
 #include <cassert>
 
-StepLoadZoneContent::StepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoint> entryPoint, Zone* zone, const int offsetBlockBitCount, const block_t insertBlock)
+StepLoadZoneContent::StepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoint> entryPoint,
+                                         Zone* zone,
+                                         const int offsetBlockBitCount,
+                                         const block_t insertBlock)
     : m_content_loader(std::move(entryPoint)),
       m_zone(zone),
       m_offset_block_bit_count(offsetBlockBitCount),

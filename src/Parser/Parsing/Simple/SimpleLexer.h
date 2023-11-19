@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Parsing/Impl/AbstractLexer.h"
+#include "SimpleParserValue.h"
+
 #include <cstdint>
 #include <limits>
 #include <memory>
-
-#include "SimpleParserValue.h"
-#include "Parsing/Impl/AbstractLexer.h"
 
 class SimpleLexer : public AbstractLexer<SimpleParserValue>
 {

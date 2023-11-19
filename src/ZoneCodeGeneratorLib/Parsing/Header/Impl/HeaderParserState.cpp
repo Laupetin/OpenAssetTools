@@ -1,10 +1,9 @@
 #include "HeaderParserState.h"
 
-#include <iostream>
-
-
 #include "Domain/Definition/EnumDefinition.h"
 #include "Parsing/Header/Block/HeaderBlockNone.h"
+
+#include <iostream>
 
 HeaderParserState::HeaderParserState(const IPackValueSupplier* packValueSupplier)
     : m_pack_value_supplier(packValueSupplier)
@@ -198,7 +197,5 @@ bool HeaderParserState::MoveDefinitionsToRepository(IDataRepository* repository)
 
 bool HeaderParserState::SaveToRepository(IDataRepository* repository)
 {
-    return ResolveForwardDeclarations()
-        && ReplaceForwardDeclarationsInDefinitions()
-        && MoveDefinitionsToRepository(repository);
+    return ResolveForwardDeclarations() && ReplaceForwardDeclarationsInDefinitions() && MoveDefinitionsToRepository(repository);
 }

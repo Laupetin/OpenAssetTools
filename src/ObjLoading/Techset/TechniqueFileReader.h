@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Parsing/IParserLineStream.h"
+#include "TechniqueDefinitionAcceptor.h"
+#include "Utils/ClassUtils.h"
+
 #include <memory>
 #include <string>
-
-#include "Utils/ClassUtils.h"
-#include "TechniqueDefinitionAcceptor.h"
-#include "Parsing/IParserLineStream.h"
 
 namespace techset
 {
@@ -21,4 +21,4 @@ namespace techset
 
         _NODISCARD bool ReadTechniqueDefinition() const;
     };
-}
+} // namespace techset

@@ -38,9 +38,9 @@ ZoneDefinitionParserValue ZoneDefinitionParserValue::Field(const TokenPos pos, s
 
 ZoneDefinitionParserValue::ZoneDefinitionParserValue(const TokenPos pos, const ZoneDefinitionParserValueType type)
     : m_pos(pos),
-    m_type(type),
-    m_hash(0),
-    m_value{}
+      m_type(type),
+      m_hash(0),
+      m_value{}
 {
 }
 
@@ -62,9 +62,9 @@ ZoneDefinitionParserValue::~ZoneDefinitionParserValue()
 
 ZoneDefinitionParserValue::ZoneDefinitionParserValue(ZoneDefinitionParserValue&& other) noexcept
     : m_pos(other.m_pos),
-    m_type(other.m_type),
-    m_hash(other.m_hash),
-    m_value(other.m_value)
+      m_type(other.m_type),
+      m_hash(other.m_hash),
+      m_value(other.m_value)
 {
     other.m_value = ValueType();
 }

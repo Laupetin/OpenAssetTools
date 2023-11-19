@@ -15,7 +15,7 @@ namespace menu::no_scope_sequences
             const MenuMatcherFactory create(this);
 
             AddMatchers({
-                create.Char('{')
+                create.Char('{'),
             });
         }
 
@@ -25,11 +25,12 @@ namespace menu::no_scope_sequences
             state->m_in_global_scope = true;
         }
     };
-}
+} // namespace menu::no_scope_sequences
 
 using namespace no_scope_sequences;
 
-NoScopeSequences::NoScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
+NoScopeSequences::NoScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
+                                   std::vector<MenuFileParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }

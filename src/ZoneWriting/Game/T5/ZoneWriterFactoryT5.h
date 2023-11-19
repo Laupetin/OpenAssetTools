@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-
 #include "Writing/IZoneWriterFactory.h"
+
+#include <memory>
 
 namespace T5
 {
@@ -14,4 +14,4 @@ namespace T5
         _NODISCARD bool SupportsZone(Zone* zone) const override;
         _NODISCARD std::unique_ptr<ZoneWriter> CreateWriter(Zone* zone) const override;
     };
-}
+} // namespace T5

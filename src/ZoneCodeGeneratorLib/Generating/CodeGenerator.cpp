@@ -1,13 +1,13 @@
 #include "CodeGenerator.h"
 
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-
 #include "Domain/Computations/StructureComputations.h"
 #include "Templates/AssetStructTestsTemplate.h"
 #include "Templates/ZoneLoadTemplate.h"
 #include "Templates/ZoneWriteTemplate.h"
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -68,7 +68,7 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
         return false;
     }
 
-    if(!StructureComputations(info).IsAsset())
+    if (!StructureComputations(info).IsAsset())
     {
         std::cout << "Type is not an asset '" << name << "'" << std::endl;
         return false;
@@ -109,11 +109,13 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
                 auto context = RenderingContext::BuildContext(repository, asset);
                 if (!GenerateCodeForTemplate(context.get(), foundTemplate->second.get()))
                 {
-                    std::cout << "Failed to generate code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first << "'\n";
+                    std::cout << "Failed to generate code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first
+                              << "'\n";
                     return false;
                 }
-                
-                std::cout << "Successfully generated code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first << "'\n";
+
+                std::cout << "Successfully generated code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first
+                          << "'\n";
             }
         }
         else

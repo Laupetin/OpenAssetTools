@@ -24,4 +24,4 @@ namespace IW4
         static void CreateDumpingStateForMenuList(menu::MenuDumpingZoneState* zoneState, const MenuList* menuList);
         void DumpPool(AssetDumpingContext& context, AssetPool<MenuList>* pool) override;
     };
-}
+} // namespace IW4
