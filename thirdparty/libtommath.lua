@@ -29,6 +29,11 @@ function libtommath:project()
 		location "%{wks.location}/thirdparty/%{prj.name}"
 		kind "StaticLib"
 		language "C"
+
+		filter "configurations:Debug"
+			-- libtommath requires dead code elimination to work
+			optimize "On"
+		filter {}
 		
 		files { 
 			path.join(folder, "libtommath/*.h"), 
