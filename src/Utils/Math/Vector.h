@@ -2,6 +2,7 @@
 #include "Utils/ClassUtils.h"
 
 #include <cassert>
+#include <cstddef>
 
 template<typename T> class Vector2
 {

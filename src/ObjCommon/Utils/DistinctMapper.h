@@ -2,6 +2,7 @@
 
 #include "Utils/ClassUtils.h"
 
+#include <cstddef>
 #include <map>
 #include <vector>
 
