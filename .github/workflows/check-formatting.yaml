@@ -1,10 +1,10 @@
-name: ensure-formatting
+name: check-formatting
 
 on:
   pull_request:
 
 jobs:
-  ensure-formatting:
+  check-formatting:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
