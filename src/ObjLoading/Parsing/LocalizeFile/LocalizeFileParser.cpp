@@ -15,15 +15,19 @@ LocalizeFileParser::LocalizeFileParser(SimpleLexer* lexer, GameLanguage language
 
 const std::vector<AbstractParser<SimpleParserValue, LocalizeFileParserState>::sequence_t*>& LocalizeFileParser::GetTestsForState()
 {
-    static std::vector<sequence_t*> tests({new SequenceLocalizeFileReference(),
-                                           new SequenceLocalizeFileConfig(),
-                                           new SequenceLocalizeFileNotes(),
-                                           new SequenceLocalizeFileVersion(),
-                                           new SequenceLocalizeFileEndMarker(),
-                                           new SequenceLocalizeFileLanguageValue(),
-                                           new SequenceLocalizeFileConsumeEmptyLines(),});
+    static std::vector<sequence_t*> tests({
+        new SequenceLocalizeFileReference(),
+        new SequenceLocalizeFileConfig(),
+        new SequenceLocalizeFileNotes(),
+        new SequenceLocalizeFileVersion(),
+        new SequenceLocalizeFileEndMarker(),
+        new SequenceLocalizeFileLanguageValue(),
+        new SequenceLocalizeFileConsumeEmptyLines(),
+    });
 
-    static std::vector<sequence_t*> noTests({new SequenceLocalizeFileConsumeEmptyLines(),});
+    static std::vector<sequence_t*> noTests({
+        new SequenceLocalizeFileConsumeEmptyLines(),
+    });
 
     return !m_state->m_end ? tests : noTests;
 }

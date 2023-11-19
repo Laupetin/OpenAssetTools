@@ -8,7 +8,12 @@ SequenceLocalizeFileReference::SequenceLocalizeFileReference()
 
     AddMatchers({
         create.Keyword("REFERENCE"),
-        create.Or({create.Identifier(), create.String(),}).Capture(CAPTURE_REFERENCE_NAME),
+        create
+            .Or({
+                create.Identifier(),
+                create.String(),
+            })
+            .Capture(CAPTURE_REFERENCE_NAME),
         create.Type(SimpleParserValueType::NEW_LINE),
     });
 }
