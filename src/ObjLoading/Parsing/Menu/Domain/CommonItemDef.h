@@ -4,6 +4,7 @@
 #include "EventHandler/CommonEventHandlerSet.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
