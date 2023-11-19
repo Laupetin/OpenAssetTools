@@ -12,8 +12,13 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "17.0"
+
       - name: Test formatting for all files
         working-directory: ${{ github.workspace }}
         run: |
-          export CLANG_FORMAT_BIN='clang-format-15'
+          export CLANG_FORMAT_BIN="${LLVM_PATH}/bin/clang-format"
           ./scripts/check-format.sh
