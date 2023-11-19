@@ -1,13 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <string>
-
-#include "Utils/ClassUtils.h"
-#include "StateMapDefinition.h"
-#include "StateMap/StateMapLayout.h"
 #include "Parsing/IParserLineStream.h"
 #include "Parsing/StateMapParserState.h"
+#include "StateMap/StateMapLayout.h"
+#include "StateMapDefinition.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
+#include <string>
 
 namespace state_map
 {
@@ -25,4 +25,4 @@ namespace state_map
         _NODISCARD bool IsValidEndState(const StateMapParserState* state) const;
         _NODISCARD std::unique_ptr<StateMapDefinition> ReadStateMapDefinition() const;
     };
-}
+} // namespace state_map

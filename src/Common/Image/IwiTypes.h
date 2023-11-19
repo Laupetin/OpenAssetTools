@@ -54,7 +54,7 @@ namespace iwi6
         IMG_FLAG_RENDER_TARGET = 1 << 17,
         IMG_FLAG_SYSTEMMEM = 1 << 18
     };
-}
+} // namespace iwi6
 
 // IW4
 namespace iwi8
@@ -122,7 +122,7 @@ namespace iwi8
         IMG_FLAG_RENDER_TARGET = 1 << 25,
         IMG_FLAG_SYSTEMMEM = 1 << 26
     };
-}
+} // namespace iwi8
 
 // T5
 namespace iwi13
@@ -177,7 +177,7 @@ namespace iwi13
         IMG_FLAG_SYSTEMMEM = 1 << 18,
     };
 
-}
+} // namespace iwi13
 
 // T6
 namespace iwi27
@@ -232,4 +232,4 @@ namespace iwi27
         IMG_FLAG_MULTISAMPLE = 1 << 18,
     };
 
-}
+} // namespace iwi27

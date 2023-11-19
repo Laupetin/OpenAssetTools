@@ -17,4 +17,4 @@ namespace templating
     private:
         IParserLineStream* const m_stream;
     };
-}
+} // namespace templating

@@ -8,7 +8,7 @@ void AbstractZoneDefWriter::WriteZoneDef(std::ostream& stream, const UnlinkerArg
     out.WriteMetaData(META_DATA_KEY_GAME, zone->m_game->GetShortName());
     out.EmptyLine();
 
-    if(args->m_use_gdt)
+    if (args->m_use_gdt)
     {
         out.WriteComment("Load asset gdt files");
         out.WriteMetaData(META_DATA_KEY_GDT, zone->m_name);

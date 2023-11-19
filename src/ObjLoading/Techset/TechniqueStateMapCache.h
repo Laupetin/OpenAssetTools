@@ -1,12 +1,12 @@
 #pragma once
 
+#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "StateMap/StateMapDefinition.h"
+#include "Utils/ClassUtils.h"
+
 #include <memory>
 #include <string>
 #include <unordered_map>
-
-#include "AssetLoading/IZoneAssetLoaderState.h"
-#include "Utils/ClassUtils.h"
-#include "StateMap/StateMapDefinition.h"
 
 namespace techset
 {
@@ -23,4 +23,4 @@ namespace techset
         std::unordered_map<std::string, const state_map::StateMapDefinition*> m_state_map_per_technique;
         std::unordered_map<std::string, std::unique_ptr<state_map::StateMapDefinition>> m_state_map_cache;
     };
-}
+} // namespace techset

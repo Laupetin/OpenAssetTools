@@ -14,4 +14,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
     };
-}
+} // namespace IW4

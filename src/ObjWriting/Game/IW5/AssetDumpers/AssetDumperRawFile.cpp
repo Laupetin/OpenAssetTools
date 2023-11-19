@@ -1,7 +1,7 @@
 #include "AssetDumperRawFile.h"
 
-#include <zlib.h>
 #include <stdexcept>
+#include <zlib.h>
 
 using namespace IW5;
 

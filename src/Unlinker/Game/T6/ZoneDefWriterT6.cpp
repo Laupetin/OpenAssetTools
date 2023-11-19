@@ -1,11 +1,12 @@
 #include "ZoneDefWriterT6.h"
-#include "Game/T6/GameT6.h"
+
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/GameT6.h"
 
-#include <sstream>
-#include <iomanip>
 #include <cassert>
+#include <iomanip>
+#include <sstream>
 
 using namespace T6;
 
@@ -24,14 +25,13 @@ namespace T6
         }
     };
 
-    const KeyValuePairKnownKey KEY_VALUE_PAIR_KNOWN_KEYS[]
-    {
+    const KeyValuePairKnownKey KEY_VALUE_PAIR_KNOWN_KEYS[]{
         KeyValuePairKnownKey("ipak_read"),
         KeyValuePairKnownKey("ipak_write"),
         KeyValuePairKnownKey("initial_xmodels"),
         KeyValuePairKnownKey("initial_materials"),
     };
-}
+} // namespace T6
 
 bool ZoneDefWriter::CanHandleZone(Zone* zone) const
 {

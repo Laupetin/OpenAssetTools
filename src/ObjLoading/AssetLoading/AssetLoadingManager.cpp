@@ -1,10 +1,11 @@
 #include "AssetLoadingManager.h"
+
 #include <iostream>
 
-AssetLoadingManager::AssetLoadingManager(const std::map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType, AssetLoadingContext& context):
-    m_asset_loaders_by_type(assetLoadersByType),
-    m_context(context),
-    m_last_dependency_loaded(nullptr)
+AssetLoadingManager::AssetLoadingManager(const std::map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType, AssetLoadingContext& context)
+    : m_asset_loaders_by_type(assetLoadersByType),
+      m_context(context),
+      m_last_dependency_loaded(nullptr)
 {
 }
 
@@ -18,20 +19,30 @@ AssetLoadingContext* AssetLoadingManager::GetAssetLoadingContext() const
     return &m_context;
 }
 
-XAssetInfoGeneric* AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings,
-                                   Zone* zone)
+XAssetInfoGeneric* AssetLoadingManager::AddAsset(const asset_type_t assetType,
+                                                 const std::string& assetName,
+                                                 void* asset,
+                                                 std::vector<XAssetInfoGeneric*> dependencies,
+                                                 std::vector<scr_string_t> usedScriptStrings,
+                                                 Zone* zone)
 {
     m_last_dependency_loaded = m_context.m_zone->m_pools->AddAsset(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), zone);
     if (m_last_dependency_loaded == nullptr)
-        std::cout << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << assetName << "\""
+                  << std::endl;
     return m_last_dependency_loaded;
 }
 
-XAssetInfoGeneric* AssetLoadingManager::AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings)
+XAssetInfoGeneric* AssetLoadingManager::AddAsset(const asset_type_t assetType,
+                                                 const std::string& assetName,
+                                                 void* asset,
+                                                 std::vector<XAssetInfoGeneric*> dependencies,
+                                                 std::vector<scr_string_t> usedScriptStrings)
 {
     m_last_dependency_loaded = m_context.m_zone->m_pools->AddAsset(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings));
     if (m_last_dependency_loaded == nullptr)
-        std::cout << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << assetName << "\""
+                  << std::endl;
     return m_last_dependency_loaded;
 }
 
@@ -54,19 +65,26 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
     if (existingAsset)
     {
         std::vector<XAssetInfoGeneric*> dependencies;
-        AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>(), existingAsset->m_zone);
+        AddAsset(existingAsset->m_type,
+                 existingAsset->m_name,
+                 existingAsset->m_ptr,
+                 std::vector<XAssetInfoGeneric*>(),
+                 std::vector<scr_string_t>(),
+                 existingAsset->m_zone);
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;
     }
 
-    std::cout << "Failed to create empty asset \"" << assetName << "\" for type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\"" << std::endl;
+    std::cout << "Failed to create empty asset \"" << assetName << "\" for type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\""
+              << std::endl;
     return nullptr;
 }
 
 XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t assetType, const std::string& assetName, IAssetLoader* loader)
 {
-    if (loader->CanLoadFromGdt() && !m_context.m_gdt_files.empty() && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone->GetMemory(), this, m_context.m_zone))
+    if (loader->CanLoadFromGdt() && !m_context.m_gdt_files.empty()
+        && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone->GetMemory(), this, m_context.m_zone))
     {
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
@@ -98,10 +116,15 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
 
         // Make sure any used script string is available in the created zone
         // The replacement of the scr_string_t values will be done upon writing
-        for(const auto scrString : existingAsset->m_used_script_strings)
+        for (const auto scrString : existingAsset->m_used_script_strings)
             m_context.m_zone->m_script_strings.AddOrGetScriptString(existingAsset->m_zone->m_script_strings.CValue(scrString));
 
-        AddAsset(existingAsset->m_type, existingAsset->m_name, existingAsset->m_ptr, std::move(dependencies), existingAsset->m_used_script_strings, existingAsset->m_zone);
+        AddAsset(existingAsset->m_type,
+                 existingAsset->m_name,
+                 existingAsset->m_ptr,
+                 std::move(dependencies),
+                 existingAsset->m_used_script_strings,
+                 existingAsset->m_zone);
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;

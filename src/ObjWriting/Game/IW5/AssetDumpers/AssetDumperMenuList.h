@@ -17,4 +17,4 @@ namespace IW5
         bool ShouldDump(XAssetInfo<MenuList>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<MenuList>* asset) override;
     };
-}
+} // namespace IW5

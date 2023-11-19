@@ -1,9 +1,5 @@
 #include "ObjLoaderIW4.h"
 
-#include "Game/IW4/GameIW4.h"
-#include "Game/IW4/GameAssetPoolIW4.h"
-#include "ObjContainer/IPak/IPak.h"
-#include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderAddonMapEnts.h"
 #include "AssetLoaders/AssetLoaderClipMap.h"
 #include "AssetLoaders/AssetLoaderComWorld.h"
@@ -41,16 +37,24 @@
 #include "AssetLoaders/AssetLoaderXModel.h"
 #include "AssetLoaders/AssetLoaderXModelSurfs.h"
 #include "AssetLoading/AssetLoadingManager.h"
+#include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW4/GameIW4.h"
 #include "Image/Dx9TextureLoader.h"
-#include "Image/Texture.h"
 #include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
+#include "Image/Texture.h"
+#include "ObjContainer/IPak/IPak.h"
+#include "ObjLoading.h"
 
 using namespace IW4;
 
 ObjLoader::ObjLoader()
 {
-#define REGISTER_ASSET_LOADER(t) {auto l = std::make_unique<t>(); m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);}
+#define REGISTER_ASSET_LOADER(t)                                                                                                                               \
+    {                                                                                                                                                          \
+        auto l = std::make_unique<t>();                                                                                                                        \
+        m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);                                                                                     \
+    }
 
     REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
     REGISTER_ASSET_LOADER(AssetLoaderPhysCollmap)
@@ -89,7 +93,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(AssetLoaderTracer)
     REGISTER_ASSET_LOADER(AssetLoaderVehicle)
     REGISTER_ASSET_LOADER(AssetLoaderAddonMapEnts)
-        
+
 #undef REGISTER_ASSET_LOADER
 }
 
@@ -100,23 +104,17 @@ bool ObjLoader::SupportsZone(Zone* zone) const
 
 bool ObjLoader::IsMpZone(Zone* zone)
 {
-    return zone->m_name.compare(0, 3, "mp_") == 0
-        || zone->m_name.compare(zone->m_name.length() - 3, 3, "_mp") == 0;
+    return zone->m_name.compare(0, 3, "mp_") == 0 || zone->m_name.compare(zone->m_name.length() - 3, 3, "_mp") == 0;
 }
 
 bool ObjLoader::IsZmZone(Zone* zone)
 {
-    return zone->m_name.compare(0, 3, "zm_") == 0
-        || zone->m_name.compare(zone->m_name.length() - 3, 3, "_zm") == 0;
+    return zone->m_name.compare(0, 3, "zm_") == 0 || zone->m_name.compare(zone->m_name.length() - 3, 3, "_zm") == 0;
 }
 
-void ObjLoader::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
-{
-}
+void ObjLoader::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const {}
 
-void ObjLoader::UnloadContainersOfZone(Zone* zone) const
-{
-}
+void ObjLoader::UnloadContainersOfZone(Zone* zone) const {}
 
 void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
 {

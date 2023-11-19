@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Information/StructureInformation.h"
 #include "Persistence/IDataRepository.h"
+
+#include <string>
+#include <unordered_map>
 
 class RenderingUsedType
 {

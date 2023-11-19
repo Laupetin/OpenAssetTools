@@ -1,16 +1,17 @@
 #include "LinkerArgs.h"
 
+#include "ObjLoading.h"
+#include "ObjWriting.h"
+#include "Utils/Arguments/UsageInformation.h"
+#include "Utils/FileUtils.h"
+
 #include <filesystem>
 #include <regex>
 #include <type_traits>
 
-#include "Utils/Arguments/UsageInformation.h"
-#include "ObjLoading.h"
-#include "ObjWriting.h"
-#include "Utils/FileUtils.h"
-
 namespace fs = std::filesystem;
 
+// clang-format off
 const CommandLineOption* const OPTION_HELP =
     CommandLineOption::Builder::Create()
     .WithShortName("?")
@@ -79,11 +80,13 @@ const CommandLineOption* const OPTION_MENU_PERMISSIVE =
 const CommandLineOption* const OPTION_MENU_NO_OPTIMIZATION =
     CommandLineOption::Builder::Create()
     .WithLongName("menu-no-optimization")
-    .WithDescription("Refrain from applying optimizations to parsed menus. (Optimizations increase menu performance and size. May result in less source information when dumped though.)")
+    .WithDescription("Refrain from applying optimizations to parsed menus. (Optimizations increase menu performance and size. May result in less source "
+                        "information when dumped though.)")
     .Build();
 
-const CommandLineOption* const COMMAND_LINE_OPTIONS[]
-{
+// clang-format on
+
+const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERBOSE,
     OPTION_BASE_FOLDER,
@@ -93,7 +96,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]
     OPTION_SOURCE_SEARCH_PATH,
     OPTION_LOAD,
     OPTION_MENU_PERMISSIVE,
-    OPTION_MENU_NO_OPTIMIZATION
+    OPTION_MENU_NO_OPTIMIZATION,
 };
 
 LinkerArgs::LinkerArgs()
@@ -182,14 +185,14 @@ std::set<std::string> LinkerArgs::GetSearchPathsForProject(const std::set<std::s
 
     for (const auto& path : set)
     {
-        if (path.find(PATTERN_GAME) == std::string::npos
-            && path.find(PATTERN_PROJECT) == std::string::npos
+        if (path.find(PATTERN_GAME) == std::string::npos && path.find(PATTERN_PROJECT) == std::string::npos
             && (!m_base_folder_depends_on_project || path.find(PATTERN_BASE) == std::string::npos))
         {
             continue;
         }
 
-        out.emplace(std::regex_replace(std::regex_replace(std::regex_replace(path, m_project_pattern, projectName), m_game_pattern, gameName), m_base_pattern, basePath));
+        out.emplace(std::regex_replace(
+            std::regex_replace(std::regex_replace(path, m_project_pattern, projectName), m_game_pattern, gameName), m_base_pattern, basePath));
     }
 
     return out;

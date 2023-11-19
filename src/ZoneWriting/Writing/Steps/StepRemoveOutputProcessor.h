@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Writing/OutputStreamProcessor.h"
 #include "Writing/IWritingStep.h"
+#include "Writing/OutputStreamProcessor.h"
 
 class StepRemoveOutputProcessor final : public IWritingStep
 {

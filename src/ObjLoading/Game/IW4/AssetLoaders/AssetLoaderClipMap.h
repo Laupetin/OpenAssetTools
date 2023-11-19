@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Game/IW4/IW4.h"
 #include "AssetLoading/BasicAssetLoader.h"
+#include "Game/IW4/IW4.h"
 #include "SearchPath/ISearchPath.h"
 
 namespace IW4
@@ -22,4 +22,4 @@ namespace IW4
     public:
         _NODISCARD asset_type_t GetHandlingAssetType() const override;
     };
-}
+} // namespace IW4

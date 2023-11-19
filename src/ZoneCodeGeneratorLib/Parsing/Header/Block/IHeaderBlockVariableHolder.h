@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-
 #include "Domain/Definition/Variable.h"
+
+#include <memory>
 
 class IHeaderBlockVariableHolder
 {

@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-#include "MemberInformation.h"
 #include "Domain/Definition/DefinitionWithMembers.h"
 #include "Domain/Definition/EnumMember.h"
 #include "Domain/Extension/CustomAction.h"
 #include "Domain/FastFile/FastFileBlock.h"
+#include "MemberInformation.h"
+#include "Utils/ClassUtils.h"
 
 class MemberInformation;
+
 class StructureInformation
 {
 public:

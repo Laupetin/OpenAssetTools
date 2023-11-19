@@ -1,10 +1,10 @@
 #pragma once
 
-#include "LocalizeFileParserState.h"
 #include "Game/GameLanguage.h"
+#include "LocalizeFileParserState.h"
+#include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Parsing/Impl/AbstractParser.h"
 
 class LocalizeFileParser final : public AbstractParser<SimpleParserValue, LocalizeFileParserState>
 {

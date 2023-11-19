@@ -1,18 +1,17 @@
 #include "ZoneDumperT5.h"
 
-#include "ObjWriting.h"
-#include "Game/T5/GameT5.h"
-#include "Game/T5/GameAssetPoolT5.h"
-
-#include "AssetDumpers/AssetDumperRawFile.h"
-#include "AssetDumpers/AssetDumperStringTable.h"
-#include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
+#include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperPhysConstraints.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
+#include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperSndBank.h"
+#include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
+#include "Game/T5/GameAssetPoolT5.h"
+#include "Game/T5/GameT5.h"
+#include "ObjWriting.h"
 
 using namespace T5;
 
@@ -23,11 +22,11 @@ bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
 
 bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
 {
-#define DUMP_ASSET_POOL(dumperType, poolName, assetType) \
-    if(assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType)) \
-    { \
-        dumperType dumper; \
-        dumper.DumpPool(context, assetPools->poolName.get()); \
+#define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
+    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
+    {                                                                                                                                                          \
+        dumperType dumper;                                                                                                                                     \
+        dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
     }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolT5*>(context.m_zone->m_pools.get());

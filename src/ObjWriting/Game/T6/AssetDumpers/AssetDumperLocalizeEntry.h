@@ -10,4 +10,4 @@ namespace T6
     public:
         void DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool) override;
     };
-}
+} // namespace T6

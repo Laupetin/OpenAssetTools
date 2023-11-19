@@ -14,7 +14,7 @@ InvalidChunkSizeException::InvalidChunkSizeException(const size_t size, const si
 
 std::string InvalidChunkSizeException::DetailedMessage()
 {
-    if(m_max > 0)
+    if (m_max > 0)
     {
         return "Zone chunk size has a chunk size of " + std::to_string(m_size) + " which is larger than the maximum of " + std::to_string(m_max);
     }

@@ -1,8 +1,8 @@
 #include "ZoneScriptStrings.h"
 
 #include <cassert>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 ZoneScriptStrings::ZoneScriptStrings()
     : m_null_entry_pos(0)

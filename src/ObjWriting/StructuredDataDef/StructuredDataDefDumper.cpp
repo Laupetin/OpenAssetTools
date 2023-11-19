@@ -1,10 +1,10 @@
 #include "StructuredDataDefDumper.h"
 
-#include <cassert>
-#include <sstream>
-
 #include "Utils/Alignment.h"
 #include "Utils/StringUtils.h"
+
+#include <cassert>
+#include <sstream>
 
 StructuredDataDefDumper::StructuredDataDefDumper(std::ostream& stream)
     : AbstractTextDumper(stream),
@@ -52,7 +52,10 @@ void StructuredDataDefDumper::DumpEnum(const CommonStructuredDataEnum& _enum)
     m_stream << "};\n"; // end enum
 }
 
-void StructuredDataDefDumper::DumpType(const CommonStructuredDataDef& def, CommonStructuredDataType type, std::string& typeName, std::vector<std::string>& arraySpecifiers) const
+void StructuredDataDefDumper::DumpType(const CommonStructuredDataDef& def,
+                                       CommonStructuredDataType type,
+                                       std::string& typeName,
+                                       std::vector<std::string>& arraySpecifiers) const
 {
     while (type.m_category != CommonStructuredDataTypeCategory::UNKNOWN)
     {
@@ -79,13 +82,13 @@ void StructuredDataDefDumper::DumpType(const CommonStructuredDataDef& def, Commo
             type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
             break;
         case CommonStructuredDataTypeCategory::STRING:
-            {
-                std::ostringstream ss;
-                ss << "string(" << type.m_info.string_length << ')';
-                typeName = ss.str();
-                type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
-            }
-            break;
+        {
+            std::ostringstream ss;
+            ss << "string(" << type.m_info.string_length << ')';
+            typeName = ss.str();
+            type = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
+        }
+        break;
         case CommonStructuredDataTypeCategory::ENUM:
             assert(type.m_info.type_index < def.m_enums.size());
             if (type.m_info.type_index < def.m_enums.size())
@@ -134,7 +137,9 @@ void StructuredDataDefDumper::DumpType(const CommonStructuredDataDef& def, Commo
     }
 }
 
-void StructuredDataDefDumper::DumpProperty(const CommonStructuredDataDef& def, const CommonStructuredDataStructProperty& property, unsigned& currentOffsetInBit) const
+void StructuredDataDefDumper::DumpProperty(const CommonStructuredDataDef& def,
+                                           const CommonStructuredDataStructProperty& property,
+                                           unsigned& currentOffsetInBit) const
 {
     std::string typeName;
     std::vector<std::string> arraySpecifiers;
@@ -199,7 +204,8 @@ void StructuredDataDefDumper::DumpStruct(const CommonStructuredDataDef& def, con
 
     IncIndent();
 
-    auto currentOffsetInBit = def.m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT && def.m_root_type.m_info.type_index == structIndex ? 64u : 0u;
+    auto currentOffsetInBit =
+        def.m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT && def.m_root_type.m_info.type_index == structIndex ? 64u : 0u;
     for (const auto& property : _struct.m_properties)
         DumpProperty(def, property, currentOffsetInBit);
 

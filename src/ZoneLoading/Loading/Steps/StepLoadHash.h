@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
-#include "Utils/ICapturedDataProvider.h"
-#include "Loading/ILoadingStep.h"
 #include "Loading/IHashProvider.h"
+#include "Loading/ILoadingStep.h"
+#include "Utils/ICapturedDataProvider.h"
+
+#include <memory>
 
 class StepLoadHash final : public ILoadingStep, public IHashProvider, public ICapturedDataProvider
 {

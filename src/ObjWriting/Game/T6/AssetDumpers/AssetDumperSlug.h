@@ -11,4 +11,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<Slug>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<Slug>* asset) override;
     };
-}
+} // namespace T6

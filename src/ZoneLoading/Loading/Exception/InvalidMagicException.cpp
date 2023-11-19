@@ -1,5 +1,5 @@
 #include "InvalidMagicException.h"
- 
+
 InvalidMagicException::InvalidMagicException(const char* expectedMagic)
 {
     m_expected_magic = expectedMagic;

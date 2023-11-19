@@ -1,12 +1,12 @@
 #include "AssetDumperPhysConstraints.h"
 
-#include <cassert>
-#include <type_traits>
-
-#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/PhysConstraintsFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+
+#include <cassert>
+#include <type_traits>
 
 using namespace T6;
 
@@ -22,7 +22,7 @@ namespace T6
             case CFT_TYPE:
                 FillFromEnumInt(std::string(field.szName), field.iOffset, s_constraintTypeNames, std::extent<decltype(s_constraintTypeNames)>::value);
                 break;
-                
+
             default:
                 assert(false);
                 break;
@@ -30,25 +30,31 @@ namespace T6
         }
 
     public:
-        InfoStringFromPhysConstraintsConverter(const PhysConstraints* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromPhysConstraintsConverter(const PhysConstraints* structure,
+                                               const cspField_t* fields,
+                                               const size_t fieldCount,
+                                               std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace T6
 
 InfoString AssetDumperPhysConstraints::CreateInfoString(XAssetInfo<PhysConstraints>* asset)
 {
     assert(asset->Asset()->count <= 4);
 
-    InfoStringFromPhysConstraintsConverter converter(asset->Asset(), phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-        {
-            assert(scrStr < asset->m_zone->m_script_strings.Count());
-            if (scrStr >= asset->m_zone->m_script_strings.Count())
-                return "";
+    InfoStringFromPhysConstraintsConverter converter(asset->Asset(),
+                                                     phys_constraints_fields,
+                                                     std::extent<decltype(phys_constraints_fields)>::value,
+                                                     [asset](const scr_string_t scrStr) -> std::string
+                                                     {
+                                                         assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                         if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                             return "";
 
-            return asset->m_zone->m_script_strings[scrStr];
-        });
+                                                         return asset->m_zone->m_script_strings[scrStr];
+                                                     });
 
     return converter.Convert();
 }

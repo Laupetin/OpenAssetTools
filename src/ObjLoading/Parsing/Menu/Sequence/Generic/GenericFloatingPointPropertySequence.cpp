@@ -1,9 +1,9 @@
 #include "GenericFloatingPointPropertySequence.h"
 
-#include <utility>
-
 #include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+
+#include <utility>
 
 using namespace menu;
 
@@ -13,10 +13,7 @@ GenericFloatingPointPropertySequence::GenericFloatingPointPropertySequence(std::
     const MenuMatcherFactory create(this);
 
     AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
-    AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.NumericExpression()
-    });
+    AddMatchers({create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN), create.NumericExpression()});
 }
 
 void GenericFloatingPointPropertySequence::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const

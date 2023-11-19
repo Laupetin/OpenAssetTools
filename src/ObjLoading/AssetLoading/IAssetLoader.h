@@ -1,11 +1,11 @@
 #pragma once
-#include <string>
-
-#include "Utils/ClassUtils.h"
-#include "SearchPath/ISearchPath.h"
 #include "IAssetLoadingManager.h"
 #include "IGdtQueryable.h"
+#include "SearchPath/ISearchPath.h"
+#include "Utils/ClassUtils.h"
 #include "Zone/ZoneTypes.h"
+
+#include <string>
 
 class IAssetLoader
 {

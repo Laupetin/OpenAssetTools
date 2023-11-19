@@ -49,7 +49,7 @@ bool PointerDeclarationModifier::CountEvaluationIsArray() const
 
 bool PointerDeclarationModifier::CountEvaluationIsArray(const int index) const
 {
-    if(index >= 0 && m_count_evaluation_by_array_index.size() > static_cast<unsigned>(index))
+    if (index >= 0 && m_count_evaluation_by_array_index.size() > static_cast<unsigned>(index))
     {
         return EvaluationIsArray(m_count_evaluation_by_array_index[index].get());
     }
@@ -62,7 +62,7 @@ bool PointerDeclarationModifier::AnyCountEvaluationIsArray() const
     if (m_count_evaluation && EvaluationIsArray(m_count_evaluation.get()))
         return true;
 
-    for(const auto& arrayCountEvaluation : m_count_evaluation_by_array_index)
+    for (const auto& arrayCountEvaluation : m_count_evaluation_by_array_index)
     {
         if (EvaluationIsArray(arrayCountEvaluation.get()))
             return true;

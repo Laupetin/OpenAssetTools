@@ -1,7 +1,8 @@
 #include "UsageInformation.h"
+
+#include <iomanip>
 #include <iostream>
 #include <map>
-#include <iomanip>
 
 UsageInformation::ArgumentUsage::ArgumentUsage(std::string name, const bool optional)
 {
@@ -88,18 +89,14 @@ void UsageInformation::Print()
 
         for (auto option : category.second)
         {
-            str << std::setw(static_cast<std::streamsize>(longestShortName) + 1) << (!option->m_short_name.empty()
-                                                                                         ? "-" + option->m_short_name
-                                                                                         : "");
+            str << std::setw(static_cast<std::streamsize>(longestShortName) + 1) << (!option->m_short_name.empty() ? "-" + option->m_short_name : "");
 
             if (!option->m_short_name.empty() && !option->m_long_name.empty())
                 str << ", ";
             else
                 str << "  ";
 
-            str << std::setw(static_cast<std::streamsize>(longestLongName) + 2) << (!option->m_long_name.empty()
-                                                                                        ? "--" + option->m_long_name
-                                                                                        : "");
+            str << std::setw(static_cast<std::streamsize>(longestLongName) + 2) << (!option->m_long_name.empty() ? "--" + option->m_long_name : "");
 
             str << " ";
             str << std::setw(longestArgumentLength) << GetOptionArgument(option);
@@ -160,7 +157,6 @@ size_t UsageInformation::GetOptionArgumentLength(const CommandLineOption* option
         parameterCombinedStringLength += param.length();
     }
 
-    return parameterCount * 2 // < and >
-        + parameterCombinedStringLength
-        + (parameterCount > 1 ? parameterCount - 1 : 0); // One space between each argument
+    return parameterCount * 2                                                               // < and >
+           + parameterCombinedStringLength + (parameterCount > 1 ? parameterCount - 1 : 0); // One space between each argument
 }

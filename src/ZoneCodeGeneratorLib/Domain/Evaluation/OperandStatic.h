@@ -1,7 +1,7 @@
 #pragma once
 
-#include "IEvaluation.h"
 #include "Domain/Definition/EnumMember.h"
+#include "IEvaluation.h"
 
 class OperandStatic final : public IEvaluation
 {

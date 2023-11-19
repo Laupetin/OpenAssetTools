@@ -1,7 +1,7 @@
 #include "AssetLoader.h"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 AssetLoader::AssetLoader(const asset_type_t assetType, Zone* zone, IZoneInputStream* stream)
     : ContentLoaderBase(zone, stream),

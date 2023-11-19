@@ -1,9 +1,9 @@
 #include "AssetDumperLocalizeEntry.h"
 
-#include <sstream>
-
-#include "Localize/LocalizeCommon.h"
 #include "Dumping/Localize/StringFileDumper.h"
+#include "Localize/LocalizeCommon.h"
+
+#include <sstream>
 
 using namespace T6;
 
@@ -29,7 +29,7 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
 
         stringFileDumper.SetNotes("");
 
-        for(auto* localizeEntry : *pool)
+        for (auto* localizeEntry : *pool)
         {
             stringFileDumper.WriteLocalizeEntry(localizeEntry->m_name, localizeEntry->Asset()->value);
         }

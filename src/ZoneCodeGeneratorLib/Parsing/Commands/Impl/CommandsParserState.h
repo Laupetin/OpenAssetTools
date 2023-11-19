@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Persistence/IDataRepository.h"
+#include "Utils/ClassUtils.h"
+
 #include <memory>
 #include <string>
-
-#include "Utils/ClassUtils.h"
-#include "Persistence/IDataRepository.h"
 
 class CommandsParserState
 {
@@ -13,7 +13,10 @@ class CommandsParserState
 
     static MemberInformation* GetMemberWithName(const std::string& memberName, StructureInformation* type);
     static bool GetNextTypenameSeparatorPos(const std::string& typeNameValue, unsigned startPos, unsigned& separatorPos);
-    static bool ExtractMembersFromTypenameInternal(const std::string& typeNameValue, unsigned typeNameOffset, StructureInformation* type, std::vector<MemberInformation*>& members);
+    static bool ExtractMembersFromTypenameInternal(const std::string& typeNameValue,
+                                                   unsigned typeNameOffset,
+                                                   StructureInformation* type,
+                                                   std::vector<MemberInformation*>& members);
 
 public:
     explicit CommandsParserState(IDataRepository* repository);

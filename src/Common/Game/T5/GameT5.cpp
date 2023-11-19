@@ -1,8 +1,8 @@
 #include "GameT5.h"
 
-#include <algorithm>
-
 #include "T5.h"
+
+#include <algorithm>
 
 using namespace T5;
 

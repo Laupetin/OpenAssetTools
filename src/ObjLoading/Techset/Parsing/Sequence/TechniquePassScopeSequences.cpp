@@ -1,9 +1,9 @@
 #include "TechniquePassScopeSequences.h"
 
+#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+
 #include <cassert>
 #include <sstream>
-
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 using namespace techset;
 
@@ -18,9 +18,7 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Char('}').Capture(CAPTURE_FIRST_TOKEN)
-            });
+            AddMatchers({create.Char('}').Capture(CAPTURE_FIRST_TOKEN)});
         }
 
     protected:
@@ -46,11 +44,7 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Keyword("stateMap").Capture(CAPTURE_START),
-                create.String().Capture(CAPTURE_STATE_MAP_NAME),
-                create.Char(';')
-            });
+            AddMatchers({create.Keyword("stateMap").Capture(CAPTURE_START), create.String().Capture(CAPTURE_STATE_MAP_NAME), create.Char(';')});
         }
 
     protected:
@@ -82,23 +76,21 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Or({
-                    create.Keyword("vertexShader").Tag(TAG_VERTEX_SHADER),
-                    create.Keyword("pixelShader").Tag(TAG_PIXEL_SHADER),
-                }).Capture(CAPTURE_START),
-                create.Or({
-                    create.And({
-                        create.Integer().Capture(CAPTURE_VERSION_MAJOR),
-                        create.Char('.'),
-                        create.Integer().Capture(CAPTURE_VERSION_MINOR),
-                    }),
-                    create.FloatingPoint().Capture(CAPTURE_VERSION), // This is dumb but cod devs made the format so cannot change it
-                    create.String().Capture(CAPTURE_VERSION)
-                }),
-                create.String().Capture(CAPTURE_SHADER_NAME),
-                create.Char('{')
-            });
+            AddMatchers({create
+                             .Or({
+                                 create.Keyword("vertexShader").Tag(TAG_VERTEX_SHADER),
+                                 create.Keyword("pixelShader").Tag(TAG_PIXEL_SHADER),
+                             })
+                             .Capture(CAPTURE_START),
+                         create.Or({create.And({
+                                        create.Integer().Capture(CAPTURE_VERSION_MAJOR),
+                                        create.Char('.'),
+                                        create.Integer().Capture(CAPTURE_VERSION_MINOR),
+                                    }),
+                                    create.FloatingPoint().Capture(CAPTURE_VERSION), // This is dumb but cod devs made the format so cannot change it
+                                    create.String().Capture(CAPTURE_VERSION)}),
+                         create.String().Capture(CAPTURE_SHADER_NAME),
+                         create.Char('{')});
         }
 
     protected:
@@ -145,29 +137,19 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Keyword("vertex").Capture(CAPTURE_FIRST_TOKEN),
-                create.Char('.'),
-                create.Identifier().Capture(CAPTURE_STREAM_DESTINATION_NAME),
-                create.Optional(create.And({
-                    create.Char('['),
-                    create.Integer().Capture(CAPTURE_STREAM_DESTINATION_INDEX),
-                    create.Char(']')
-                })),
+            AddMatchers({create.Keyword("vertex").Capture(CAPTURE_FIRST_TOKEN),
+                         create.Char('.'),
+                         create.Identifier().Capture(CAPTURE_STREAM_DESTINATION_NAME),
+                         create.Optional(create.And({create.Char('['), create.Integer().Capture(CAPTURE_STREAM_DESTINATION_INDEX), create.Char(']')})),
 
-                create.Char('='),
+                         create.Char('='),
 
-                create.Keyword("code"),
-                create.Char('.'),
-                create.Identifier().Capture(CAPTURE_STREAM_SOURCE_NAME),
-                create.Optional(create.And({
-                    create.Char('['),
-                    create.Integer().Capture(CAPTURE_STREAM_SOURCE_INDEX),
-                    create.Char(']')
-                })),
+                         create.Keyword("code"),
+                         create.Char('.'),
+                         create.Identifier().Capture(CAPTURE_STREAM_SOURCE_NAME),
+                         create.Optional(create.And({create.Char('['), create.Integer().Capture(CAPTURE_STREAM_SOURCE_INDEX), create.Char(']')})),
 
-                create.Char(';')
-            });
+                         create.Char(';')});
         }
 
         static std::string CreateRoutingString(SequenceResult<SimpleParserValue>& result, const int nameCapture, const int indexCapture)
@@ -198,16 +180,12 @@ namespace techset
                 throw ParsingException(firstToken.GetPos(), std::move(errorMessage));
         }
     };
-}
+} // namespace techset
 
 const std::vector<TechniqueParser::sequence_t*>& TechniquePassScopeSequences::GetSequences()
 {
-    static std::vector<TechniqueParser::sequence_t*> tests({
-        new SequenceEndPass(),
-        new SequenceStateMap(),
-        new SequenceShader(),
-        new SequenceVertexStreamRouting()
-    });
+    static std::vector<TechniqueParser::sequence_t*> tests(
+        {new SequenceEndPass(), new SequenceStateMap(), new SequenceShader(), new SequenceVertexStreamRouting()});
 
     return tests;
 }

@@ -1,11 +1,11 @@
 #include "MenuDumperIW4.h"
 
-#include <cmath>
-#include <cassert>
-#include <sstream>
-
-#include "ObjWriting.h"
 #include "Game/IW4/MenuConstantsIW4.h"
+#include "ObjWriting.h"
+
+#include <cassert>
+#include <cmath>
+#include <sstream>
 
 using namespace IW4;
 
@@ -92,9 +92,7 @@ void MenuDumper::WriteStatementOperator(const Statement_s* statement, size_t& cu
             const auto& staticDvarEntry = statement->entries[currentPos + 1];
             if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
             {
-                if (statement->supportingData
-                    && statement->supportingData->staticDvarList.staticDvars
-                    && staticDvarEntry.data.operand.internals.intVal >= 0
+                if (statement->supportingData && statement->supportingData->staticDvarList.staticDvars && staticDvarEntry.data.operand.internals.intVal >= 0
                     && staticDvarEntry.data.operand.internals.intVal < statement->supportingData->staticDvarList.numStaticDvars)
                 {
                     const auto* staticDvar = statement->supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
@@ -245,9 +243,7 @@ void MenuDumper::WriteStatementSkipInitialUnnecessaryParenthesis(const Statement
 
     const auto statementEnd = static_cast<size_t>(statementValue->numEntries);
 
-    if (statementValue->numEntries >= 1
-        && statementValue->entries[0].type == EET_OPERATOR
-        && statementValue->entries[0].data.op == OP_LEFTPAREN)
+    if (statementValue->numEntries >= 1 && statementValue->entries[0].type == EET_OPERATOR && statementValue->entries[0].data.op == OP_LEFTPAREN)
     {
         const auto parenthesisEnd = FindStatementClosingParenthesis(statementValue, 0);
 
@@ -296,7 +292,7 @@ void MenuDumper::WriteSetLocalVarData(const std::string& setFunction, const SetL
     m_stream << ";\n";
 }
 
-//#define WRITE_ORIGINAL_SCRIPT
+// #define WRITE_ORIGINAL_SCRIPT
 
 void MenuDumper::WriteUnconditionalScript(const char* script) const
 {
@@ -360,8 +356,7 @@ void MenuDumper::WriteMenuEventHandlerSet(const MenuEventHandlerSet* eventHandle
             break;
 
         case EVENT_IF:
-            if (eventHandler->eventData.conditionalScript == nullptr
-                || eventHandler->eventData.conditionalScript->eventExpression == nullptr
+            if (eventHandler->eventData.conditionalScript == nullptr || eventHandler->eventData.conditionalScript->eventExpression == nullptr
                 || eventHandler->eventData.conditionalScript->eventHandlerSet == nullptr)
             {
                 continue;
@@ -423,7 +418,8 @@ void MenuDumper::WriteRectProperty(const std::string& propertyKey, const rectDef
 {
     Indent();
     WriteKey(propertyKey);
-    m_stream << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << " " << static_cast<int>(rect.horzAlign) << " " << static_cast<int>(rect.vertAlign) << "\n";
+    m_stream << rect.x << " " << rect.y << " " << rect.w << " " << rect.h << " " << static_cast<int>(rect.horzAlign) << " " << static_cast<int>(rect.vertAlign)
+             << "\n";
 }
 
 void MenuDumper::WriteMaterialProperty(const std::string& propertyKey, const Material* materialValue) const
@@ -487,7 +483,7 @@ void MenuDumper::WriteFloatExpressionsProperty(const ItemFloatExpression* floatE
             continue;
 
         std::string propertyName = std::string("exp ") + floatExpressionTargetBindings[floatExpression.target].name + std::string(" ")
-            + floatExpressionTargetBindings[floatExpression.target].componentName;
+                                   + floatExpressionTargetBindings[floatExpression.target].componentName;
 
         WriteStatementProperty(propertyName, floatExpression.expression, false);
     }
@@ -533,10 +529,8 @@ void MenuDumper::WriteColumnProperty(const std::string& propertyKey, const listB
         for (auto i = 0u; i < MENU_KEY_SPACING; i++)
             m_stream << " ";
 
-        m_stream << listBox->columnInfo[col].pos
-            << " " << listBox->columnInfo[col].width
-            << " " << listBox->columnInfo[col].maxChars
-            << " " << listBox->columnInfo[col].alignment << "\n";
+        m_stream << listBox->columnInfo[col].pos << " " << listBox->columnInfo[col].width << " " << listBox->columnInfo[col].maxChars << " "
+                 << listBox->columnInfo[col].alignment << "\n";
     }
 }
 
@@ -719,7 +713,7 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     // WriteFloatProperty("special", item->special, 0.0f);
     WriteSoundAliasProperty("focusSound", item->focusSound);
     WriteStringProperty("dvarTest", item->dvarTest);
-    
+
     if (item->dvarFlags & ITEM_DVAR_FLAG_ENABLE)
         WriteMultiTokenStringProperty("enableDvar", item->enableDvar);
     else if (item->dvarFlags & ITEM_DVAR_FLAG_DISABLE)
@@ -796,7 +790,7 @@ void MenuDumper::WriteMenuData(const menuDef_t* menu)
         WriteStatementProperty("visible", menu->visibleExp, true);
     else if (menu->window.dynamicFlags[0] & WINDOW_FLAG_VISIBLE)
         WriteIntProperty("visible", 1, 0);
-    
+
     WriteStatementProperty("exp rect X", menu->rectXExp, false);
     WriteStatementProperty("exp rect Y", menu->rectYExp, false);
     WriteStatementProperty("exp rect W", menu->rectWExp, false);

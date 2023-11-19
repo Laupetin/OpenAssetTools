@@ -1,7 +1,7 @@
 #pragma once
-#include <iostream>
-
 #include "Gdt.h"
+
+#include <iostream>
 
 class GdtReader
 {

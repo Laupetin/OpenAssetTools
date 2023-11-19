@@ -1,13 +1,12 @@
 #pragma once
 
+#include "AbstractMatcher.h"
+#include "Parsing/IParserValue.h"
+#include "Utils/ClassUtils.h"
+
 #include <cassert>
 
-#include "Utils/ClassUtils.h"
-#include "Parsing/IParserValue.h"
-#include "AbstractMatcher.h"
-
-template <typename TokenType>
-class IMatcherForLabelSupplier
+template<typename TokenType> class IMatcherForLabelSupplier
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -23,8 +22,7 @@ public:
     _NODISCARD virtual AbstractMatcher<TokenType>* GetMatcherForLabel(int label) const = 0;
 };
 
-template <typename TokenType>
-class MatcherLabel final : public AbstractMatcher<TokenType>
+template<typename TokenType> class MatcherLabel final : public AbstractMatcher<TokenType>
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);

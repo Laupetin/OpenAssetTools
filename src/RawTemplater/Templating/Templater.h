@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/IParserLineStream.h"
+#include "Utils/ClassUtils.h"
+
+#include <string>
 
 namespace templating
 {
@@ -19,4 +19,4 @@ namespace templating
         std::ostream* m_build_log;
         std::string m_file_name;
     };
-}
+} // namespace templating

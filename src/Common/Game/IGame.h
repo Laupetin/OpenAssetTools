@@ -1,6 +1,7 @@
 #pragma once
-#include <vector>
 #include "GameLanguage.h"
+
+#include <vector>
 
 class Zone;
 

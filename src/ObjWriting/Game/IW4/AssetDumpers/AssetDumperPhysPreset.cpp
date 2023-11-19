@@ -1,13 +1,13 @@
 #include "AssetDumperPhysPreset.h"
 
+#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
+#include "Game/IW4/InfoString/PhysPresetFields.h"
+#include "Game/IW4/ObjConstantsIW4.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <type_traits>
-
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/InfoString/PhysPresetFields.h"
 
 using namespace IW4;
 
@@ -22,12 +22,15 @@ namespace IW4
         }
 
     public:
-        InfoStringFromPhysPresetConverter(const PhysPresetInfo* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromPhysPresetConverter(const PhysPresetInfo* structure,
+                                          const cspField_t* fields,
+                                          const size_t fieldCount,
+                                          std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace IW4
 
 void AssetDumperPhysPreset::CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
 {
@@ -59,14 +62,17 @@ InfoString AssetDumperPhysPreset::CreateInfoString(XAssetInfo<PhysPreset>* asset
     auto* physPresetInfo = new PhysPresetInfo;
     CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
 
-    InfoStringFromPhysPresetConverter converter(physPresetInfo, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-        {
-            assert(scrStr < asset->m_zone->m_script_strings.Count());
-            if (scrStr >= asset->m_zone->m_script_strings.Count())
-                return "";
+    InfoStringFromPhysPresetConverter converter(physPresetInfo,
+                                                phys_preset_fields,
+                                                std::extent<decltype(phys_preset_fields)>::value,
+                                                [asset](const scr_string_t scrStr) -> std::string
+                                                {
+                                                    assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                    if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                        return "";
 
-            return asset->m_zone->m_script_strings[scrStr];
-        });
+                                                    return asset->m_zone->m_script_strings[scrStr];
+                                                });
 
     return converter.Convert();
 }

@@ -1,129 +1,104 @@
 #include "UnlinkerArgs.h"
 
+#include "ObjLoading.h"
+#include "ObjWriting.h"
+#include "Utils/Arguments/UsageInformation.h"
+#include "Utils/FileUtils.h"
+
 #include <regex>
 #include <type_traits>
 
-#include "Utils/Arguments/UsageInformation.h"
-#include "ObjLoading.h"
-#include "ObjWriting.h"
-#include "Utils/FileUtils.h"
-
 const CommandLineOption* const OPTION_HELP =
-    CommandLineOption::Builder::Create()
-    .WithShortName("?")
-    .WithLongName("help")
-    .WithDescription("Displays usage information.")
-    .Build();
+    CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
-    CommandLineOption::Builder::Create()
-    .WithShortName("v")
-    .WithLongName("verbose")
-    .WithDescription("Outputs a lot more and more detailed messages.")
-    .Build();
+    CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
 
 const CommandLineOption* const OPTION_MINIMAL_ZONE_FILE =
     CommandLineOption::Builder::Create()
-    .WithShortName("min")
-    .WithLongName("minimal-zone")
-    .WithDescription("Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
-    .Build();
+        .WithShortName("min")
+        .WithLongName("minimal-zone")
+        .WithDescription("Minimizes the size of the zone file output by only including assets that are not a dependency of another asset.")
+        .Build();
 
-const CommandLineOption* const OPTION_LOAD =
-    CommandLineOption::Builder::Create()
-    .WithShortName("l")
-    .WithLongName("load")
-    .WithDescription("Loads an existing zone before trying to unlink any zone.")
-    .WithParameter("zonePath")
-    .Reusable()
-    .Build();
+const CommandLineOption* const OPTION_LOAD = CommandLineOption::Builder::Create()
+                                                 .WithShortName("l")
+                                                 .WithLongName("load")
+                                                 .WithDescription("Loads an existing zone before trying to unlink any zone.")
+                                                 .WithParameter("zonePath")
+                                                 .Reusable()
+                                                 .Build();
 
 const CommandLineOption* const OPTION_LIST =
-    CommandLineOption::Builder::Create()
-    .WithLongName("list")
-    .WithDescription("Lists the contents of a zone instead of writing them to the disk.")
-    .Build();
+    CommandLineOption::Builder::Create().WithLongName("list").WithDescription("Lists the contents of a zone instead of writing them to the disk.").Build();
 
 const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
-    .WithShortName("o")
-    .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to \"" + std::string(UnlinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\"")
-    .WithParameter("outputFolderPath")
-    .Build();
+        .WithShortName("o")
+        .WithLongName("output-folder")
+        .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to \""
+                         + std::string(UnlinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\"")
+        .WithParameter("outputFolderPath")
+        .Build();
 
-const CommandLineOption* const OPTION_SEARCH_PATH =
-    CommandLineOption::Builder::Create()
-    .WithLongName("search-path")
-    .WithDescription("Specifies a semi-colon separated list of paths to search for additional game files.")
-    .WithParameter("searchPathString")
-    .Build();
+const CommandLineOption* const OPTION_SEARCH_PATH = CommandLineOption::Builder::Create()
+                                                        .WithLongName("search-path")
+                                                        .WithDescription("Specifies a semi-colon separated list of paths to search for additional game files.")
+                                                        .WithParameter("searchPathString")
+                                                        .Build();
 
-const CommandLineOption* const OPTION_IMAGE_FORMAT =
-    CommandLineOption::Builder::Create()
-    .WithLongName("image-format")
-    .WithDescription("Specifies the format of dumped image files. Valid values are: DDS, IWI")
-    .WithParameter("imageFormatValue")
-    .Build();
+const CommandLineOption* const OPTION_IMAGE_FORMAT = CommandLineOption::Builder::Create()
+                                                         .WithLongName("image-format")
+                                                         .WithDescription("Specifies the format of dumped image files. Valid values are: DDS, IWI")
+                                                         .WithParameter("imageFormatValue")
+                                                         .Build();
 
-const CommandLineOption* const OPTION_MODEL_FORMAT =
-    CommandLineOption::Builder::Create()
-    .WithLongName("model-format")
-    .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ")
-    .WithParameter("modelFormatValue")
-    .Build();
+const CommandLineOption* const OPTION_MODEL_FORMAT = CommandLineOption::Builder::Create()
+                                                         .WithLongName("model-format")
+                                                         .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ")
+                                                         .WithParameter("modelFormatValue")
+                                                         .Build();
 
 const CommandLineOption* const OPTION_SKIP_OBJ =
-    CommandLineOption::Builder::Create()
-    .WithLongName("skip-obj")
-    .WithDescription("Skips loading raw obj data.")
-    .Build();
+    CommandLineOption::Builder::Create().WithLongName("skip-obj").WithDescription("Skips loading raw obj data.").Build();
 
 const CommandLineOption* const OPTION_GDT =
-    CommandLineOption::Builder::Create()
-    .WithLongName("gdt")
-    .WithDescription("Dumps assets in a GDT whenever possible.")
-    .Build();
+    CommandLineOption::Builder::Create().WithLongName("gdt").WithDescription("Dumps assets in a GDT whenever possible.").Build();
 
-const CommandLineOption* const OPTION_EXCLUDE_ASSETS =
-    CommandLineOption::Builder::Create()
-    .WithLongName("exclude-assets")
-    .WithDescription("Specify all asset types that should be excluded.")
-    .WithParameter("assetTypeList")
-    .Reusable()
-    .Build();
+const CommandLineOption* const OPTION_EXCLUDE_ASSETS = CommandLineOption::Builder::Create()
+                                                           .WithLongName("exclude-assets")
+                                                           .WithDescription("Specify all asset types that should be excluded.")
+                                                           .WithParameter("assetTypeList")
+                                                           .Reusable()
+                                                           .Build();
 
-const CommandLineOption* const OPTION_INCLUDE_ASSETS =
-    CommandLineOption::Builder::Create()
-    .WithLongName("include-assets")
-    .WithDescription("Specify all asset types that should be included.")
-    .WithParameter("assetTypeList")
-    .Reusable()
-    .Build();
+const CommandLineOption* const OPTION_INCLUDE_ASSETS = CommandLineOption::Builder::Create()
+                                                           .WithLongName("include-assets")
+                                                           .WithDescription("Specify all asset types that should be included.")
+                                                           .WithParameter("assetTypeList")
+                                                           .Reusable()
+                                                           .Build();
 
 const CommandLineOption* const OPTION_LEGACY_MENUS =
     CommandLineOption::Builder::Create()
-    .WithLongName("legacy-menus")
-    .WithDescription("Dumps menus with a compatibility mode to work with applications not compatible with the newer dumping mode.")
-    .Build();
+        .WithLongName("legacy-menus")
+        .WithDescription("Dumps menus with a compatibility mode to work with applications not compatible with the newer dumping mode.")
+        .Build();
 
-const CommandLineOption* const COMMAND_LINE_OPTIONS[]
-{
-    OPTION_HELP,
-    OPTION_VERBOSE,
-    OPTION_MINIMAL_ZONE_FILE,
-    OPTION_LOAD,
-    OPTION_LIST,
-    OPTION_OUTPUT_FOLDER,
-    OPTION_SEARCH_PATH,
-    OPTION_IMAGE_FORMAT,
-    OPTION_MODEL_FORMAT,
-    OPTION_SKIP_OBJ,
-    OPTION_GDT,
-    OPTION_EXCLUDE_ASSETS,
-    OPTION_INCLUDE_ASSETS,
-    OPTION_LEGACY_MENUS
-};
+const CommandLineOption* const COMMAND_LINE_OPTIONS[]{OPTION_HELP,
+                                                      OPTION_VERBOSE,
+                                                      OPTION_MINIMAL_ZONE_FILE,
+                                                      OPTION_LOAD,
+                                                      OPTION_LIST,
+                                                      OPTION_OUTPUT_FOLDER,
+                                                      OPTION_SEARCH_PATH,
+                                                      OPTION_IMAGE_FORMAT,
+                                                      OPTION_MODEL_FORMAT,
+                                                      OPTION_SKIP_OBJ,
+                                                      OPTION_GDT,
+                                                      OPTION_EXCLUDE_ASSETS,
+                                                      OPTION_INCLUDE_ASSETS,
+                                                      OPTION_LEGACY_MENUS};
 
 UnlinkerArgs::UnlinkerArgs()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
@@ -257,7 +232,6 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
         PrintUsage();
         return false;
     }
-
 
     // -v; --verbose
     SetVerbose(m_argument_parser.IsOptionSpecified(OPTION_VERBOSE));

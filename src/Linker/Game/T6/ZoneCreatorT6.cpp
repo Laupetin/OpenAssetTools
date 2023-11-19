@@ -1,12 +1,12 @@
 #include "ZoneCreatorT6.h"
 
-#include <iostream>
-
-#include "ObjLoading.h"
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/T6.h"
-#include "Game/T6/GameT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/GameT6.h"
+#include "Game/T6/T6.h"
+#include "ObjLoading.h"
+
+#include <iostream>
 
 using namespace T6;
 
@@ -87,12 +87,7 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
                 keyHash = Common::Com_HashKey(strValue.c_str(), 64);
             }
 
-            KeyValuePair kvp
-            {
-                keyHash,
-                Common::Com_HashKey(zone->m_name.c_str(), 64),
-                zone->GetMemory()->Dup(metaData->m_value.c_str())
-            };
+            KeyValuePair kvp{keyHash, Common::Com_HashKey(zone->m_name.c_str(), 64), zone->GetMemory()->Dup(metaData->m_value.c_str())};
             kvpList.push_back(kvp);
         }
     }

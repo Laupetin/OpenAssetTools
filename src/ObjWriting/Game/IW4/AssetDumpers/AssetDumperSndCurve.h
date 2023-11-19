@@ -13,4 +13,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<SndCurve>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<SndCurve>* asset) override;
     };
-}
+} // namespace IW4

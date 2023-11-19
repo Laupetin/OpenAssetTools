@@ -7,10 +7,8 @@ SequenceLocalizeFileConsumeEmptyLines::SequenceLocalizeFileConsumeEmptyLines()
     const SimpleMatcherFactory create(this);
 
     AddMatchers({
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Type(SimpleParserValueType::NEW_LINE),
     });
 }
 
-void SequenceLocalizeFileConsumeEmptyLines::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const
-{
-}
+void SequenceLocalizeFileConsumeEmptyLines::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const {}

@@ -1,12 +1,12 @@
 #include "AssetDumperMenuDef.h"
 
-#include <filesystem>
-#include <string>
-
-#include "ObjWriting.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/Menu/MenuDumperIW5.h"
 #include "Menu/AbstractMenuDumper.h"
+#include "ObjWriting.h"
+
+#include <filesystem>
+#include <string>
 
 namespace fs = std::filesystem;
 
@@ -55,7 +55,7 @@ void AssetDumperMenuDef::DumpAsset(AssetDumpingContext& context, XAssetInfo<menu
     const auto* menu = asset->Asset();
     const auto menuFilePath = GetPathForMenu(asset);
 
-    if(ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
+    if (ObjWriting::ShouldHandleAssetType(ASSET_TYPE_MENULIST))
     {
         // Don't dump menu file separately if the name matches the menu list
         const auto* menuListParent = GetParentMenuList(asset);

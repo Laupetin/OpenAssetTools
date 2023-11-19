@@ -1,11 +1,11 @@
 #pragma once
 
-#include <stack>
-
-#include "Utils/ClassUtils.h"
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IPackValueSupplier.h"
 #include "Parsing/IParserLineStream.h"
+#include "Utils/ClassUtils.h"
+
+#include <stack>
 
 class PackDefinitionStreamProxy final : public AbstractDirectiveStreamProxy, public IPackValueSupplier
 {

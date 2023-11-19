@@ -1,9 +1,9 @@
 #pragma once
 
-#include <set>
-
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IParserLineStream.h"
+
+#include <set>
 
 class IncludingStreamProxy final : public AbstractDirectiveStreamProxy
 {
@@ -14,8 +14,9 @@ class IncludingStreamProxy final : public AbstractDirectiveStreamProxy
 
     IParserLineStream* const m_stream;
     std::set<std::string> m_included_files;
-    
-    _NODISCARD static bool ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
+
+    _NODISCARD static bool
+        ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
     _NODISCARD bool MatchIncludeDirective(const ParserLine& line, unsigned directiveStartPos, unsigned directiveEndPos) const;
     _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, unsigned directiveStartPos, unsigned directiveEndPos);
     _NODISCARD bool MatchDirectives(const ParserLine& line);

@@ -1,5 +1,7 @@
 #include "StepLoadSignature.h"
+
 #include "Loading/Exception/UnexpectedEndOfFileException.h"
+
 #include <cassert>
 
 StepLoadSignature::StepLoadSignature(const size_t signatureSize)
@@ -17,8 +19,8 @@ StepLoadSignature::~StepLoadSignature()
 void StepLoadSignature::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
     assert(stream != nullptr);
-    
-    if(stream->Load(m_signature, m_signature_size) != m_signature_size)
+
+    if (stream->Load(m_signature, m_signature_size) != m_signature_size)
         throw UnexpectedEndOfFileException();
 }
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
+#include "Utils/ClassUtils.h"
+
 #include <functional>
 #include <memory>
-
-#include "Utils/ClassUtils.h"
+#include <string>
 
 class ParserLine
 {

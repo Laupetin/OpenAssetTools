@@ -1,9 +1,9 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Menu/Sequence/ItemScopeSequences.h"
 #include "Parsing/Mock/MockLexer.h"
+#include "Utils/ClassUtils.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 using namespace menu;
 
@@ -61,25 +61,23 @@ namespace test::parsing::menu::sequence::item
             return false;
         }
     };
-    
+
     TEST_CASE("ItemScopeSequences: Simple dvarStrList works", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({
-            SimpleParserValue::Identifier(pos, new std::string("dvarStrList")),
-            SimpleParserValue::Character(pos, '{'),
-            SimpleParserValue::String(pos, new std::string("@MENU_AUTO")),
-            SimpleParserValue::String(pos, new std::string("auto")),
-            SimpleParserValue::String(pos, new std::string("@MENU_STANDARD_4_3")),
-            SimpleParserValue::String(pos, new std::string("standard")),
-            SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_10")),
-            SimpleParserValue::String(pos, new std::string("wide 16:10")),
-            SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_9")),
-            SimpleParserValue::String(pos, new std::string("wide 16:9")),
-            SimpleParserValue::Character(pos, '}'),
-            SimpleParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("dvarStrList")),
+                       SimpleParserValue::Character(pos, '{'),
+                       SimpleParserValue::String(pos, new std::string("@MENU_AUTO")),
+                       SimpleParserValue::String(pos, new std::string("auto")),
+                       SimpleParserValue::String(pos, new std::string("@MENU_STANDARD_4_3")),
+                       SimpleParserValue::String(pos, new std::string("standard")),
+                       SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_10")),
+                       SimpleParserValue::String(pos, new std::string("wide 16:10")),
+                       SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_9")),
+                       SimpleParserValue::String(pos, new std::string("wide 16:9")),
+                       SimpleParserValue::Character(pos, '}'),
+                       SimpleParserValue::EndOfFile(pos)});
 
         helper.m_item->m_feature_type = CommonItemFeatureType::MULTI_VALUE;
         helper.m_item->m_multi_value_features = std::make_unique<CommonItemFeaturesMultiValue>();
@@ -89,4 +87,4 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(result);
         REQUIRE(helper.m_consumed_token_count == 11);
     }
-}
+} // namespace test::parsing::menu::sequence::item

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Loading/AssetLoadingActions.h"
 #include "Game/IW3/IW3.h"
+#include "Loading/AssetLoadingActions.h"
 
 namespace IW3
 {
@@ -12,4 +12,4 @@ namespace IW3
 
         void SetSoundData(MssSound* sound) const;
     };
-}
+} // namespace IW3

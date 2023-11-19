@@ -1,12 +1,12 @@
 #pragma once
 
+#include "AssetLoading/IAssetLoader.h"
+#include "Game/IW5/IW5.h"
+#include "IObjLoader.h"
+#include "SearchPath/ISearchPath.h"
+
 #include <map>
 #include <memory>
-
-#include "IObjLoader.h"
-#include "AssetLoading/IAssetLoader.h"
-#include "SearchPath/ISearchPath.h"
-#include "Game/IW5/IW5.h"
 
 namespace IW5
 {
@@ -34,4 +34,4 @@ namespace IW5
         bool LoadAssetForZone(AssetLoadingContext* context, asset_type_t assetType, const std::string& assetName) const override;
         void FinalizeAssetsForZone(AssetLoadingContext* context) const override;
     };
-}
+} // namespace IW5

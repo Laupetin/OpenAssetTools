@@ -14,9 +14,7 @@ namespace menu::global_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({
-                create.Char('}')
-            });
+            AddMatchers({create.Char('}')});
         }
 
     protected:
@@ -98,11 +96,12 @@ namespace menu::global_scope_sequences
             state->m_menus_to_load.emplace_back(menuNameToken.StringValue());
         }
     };
-}
+} // namespace menu::global_scope_sequences
 
 using namespace global_scope_sequences;
 
-GlobalScopeSequences::GlobalScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences, std::vector<MenuFileParser::sequence_t*>& scopeSequences)
+GlobalScopeSequences::GlobalScopeSequences(std::vector<std::unique_ptr<MenuFileParser::sequence_t>>& allSequences,
+                                           std::vector<MenuFileParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }

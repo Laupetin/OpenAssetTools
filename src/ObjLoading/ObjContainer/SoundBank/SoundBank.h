@@ -1,15 +1,15 @@
 #pragma once
 
-#include <istream>
-
-#include "Utils/ClassUtils.h"
 #include "ObjContainer/ObjContainerReferenceable.h"
 #include "ObjContainer/ObjContainerRepository.h"
 #include "ObjContainer/SoundBank/SoundBankTypes.h"
 #include "SearchPath/ISearchPath.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/FileUtils.h"
 #include "Utils/ObjStream.h"
 #include "Zone/Zone.h"
+
+#include <istream>
 
 class SoundBankEntryInputStream
 {

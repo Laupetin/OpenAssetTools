@@ -1,11 +1,11 @@
 #include "StateMapReader.h"
 
-#include <iostream>
-
-#include "Parsing/StateMapParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Matcher/StateMapExpressionMatchers.h"
+#include "Parsing/StateMapParser.h"
+
+#include <iostream>
 
 using namespace state_map;
 

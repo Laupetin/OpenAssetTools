@@ -1,16 +1,15 @@
 #pragma once
 
-#include <unordered_map>
-#include <cassert>
-
-#include "SequenceResult.h"
-#include "Utils/ClassUtils.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
 #include "Parsing/Matcher/MatcherAnd.h"
 #include "Parsing/Matcher/MatcherLabel.h"
+#include "SequenceResult.h"
+#include "Utils/ClassUtils.h"
 
-template<typename TokenType, typename ParserState>
-class AbstractSequence : protected IMatcherForLabelSupplier<TokenType>
+#include <cassert>
+#include <unordered_map>
+
+template<typename TokenType, typename ParserState> class AbstractSequence : protected IMatcherForLabelSupplier<TokenType>
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -19,7 +18,6 @@ public:
     typedef AbstractMatcher<TokenType> matcher_t;
 
 private:
-
     std::unique_ptr<matcher_t> m_entry;
     std::unordered_map<int, std::unique_ptr<matcher_t>> m_matchers;
 
@@ -80,7 +78,7 @@ public:
             return false;
 
         auto result = m_entry->Match(lexer, 0);
-        
+
         if (result.m_matches)
         {
             SequenceResult<TokenType> sequenceResult(lexer, result);

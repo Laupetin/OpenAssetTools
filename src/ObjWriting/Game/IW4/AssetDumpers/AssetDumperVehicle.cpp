@@ -1,14 +1,14 @@
 #include "AssetDumperVehicle.h"
 
+#include "Game/IW4/CommonIW4.h"
+#include "Game/IW4/InfoString/EnumStrings.h"
+#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
+#include "Game/IW4/InfoString/VehicleFields.h"
+#include "Game/IW4/ObjConstantsIW4.h"
+
 #include <cassert>
 #include <sstream>
 #include <type_traits>
-
-#include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/InfoString/EnumStrings.h"
-#include "Game/IW4/InfoString/VehicleFields.h"
 
 using namespace IW4;
 
@@ -32,28 +32,28 @@ namespace IW4
                 break;
 
             case VFT_TROPHY_TAGS:
+            {
+                const auto* trophyTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                std::stringstream ss;
+                bool first = true;
+
+                for (auto i = 0u; i < std::extent<decltype(VehicleDef::trophyTags)>::value; i++)
                 {
-                    const auto* trophyTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    std::stringstream ss;
-                    bool first = true;
-
-                    for (auto i = 0u; i < std::extent<decltype(VehicleDef::trophyTags)>::value; i++)
+                    const auto& str = m_get_scr_string(trophyTags[i]);
+                    if (!str.empty())
                     {
-                        const auto& str = m_get_scr_string(trophyTags[i]);
-                        if (!str.empty())
-                        {
-                            if (!first)
-                                ss << "\n";
-                            else
-                                first = false;
+                        if (!first)
+                            ss << "\n";
+                        else
+                            first = false;
 
-                            ss << str;
-                        }
+                        ss << str;
                     }
-
-                    m_info_string.SetValueForKey(std::string(field.szName), ss.str());
-                    break;
                 }
+
+                m_info_string.SetValueForKey(std::string(field.szName), ss.str());
+                break;
+            }
 
             case VFT_NUM:
             default:
@@ -63,23 +63,29 @@ namespace IW4
         }
 
     public:
-        InfoStringFromVehicleConverter(const VehicleDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromVehicleConverter(const VehicleDef* structure,
+                                       const cspField_t* fields,
+                                       const size_t fieldCount,
+                                       std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace IW4
 
 InfoString AssetDumperVehicle::CreateInfoString(XAssetInfo<VehicleDef>* asset)
 {
-    InfoStringFromVehicleConverter converter(asset->Asset(), vehicle_fields, std::extent<decltype(vehicle_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-    {
-        assert(scrStr < asset->m_zone->m_script_strings.Count());
-        if (scrStr >= asset->m_zone->m_script_strings.Count())
-            return "";
+    InfoStringFromVehicleConverter converter(asset->Asset(),
+                                             vehicle_fields,
+                                             std::extent<decltype(vehicle_fields)>::value,
+                                             [asset](const scr_string_t scrStr) -> std::string
+                                             {
+                                                 assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                 if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                     return "";
 
-        return asset->m_zone->m_script_strings[scrStr];
-    });
+                                                 return asset->m_zone->m_script_strings[scrStr];
+                                             });
 
     return converter.Convert();
 }

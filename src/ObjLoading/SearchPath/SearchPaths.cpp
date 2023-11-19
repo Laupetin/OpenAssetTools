@@ -4,11 +4,11 @@
 
 SearchPathOpenFile SearchPaths::Open(const std::string& fileName)
 {
-    for(auto* searchPathEntry : m_search_paths)
+    for (auto* searchPathEntry : m_search_paths)
     {
         auto file = searchPathEntry->Open(fileName);
 
-        if(file.IsOpen())
+        if (file.IsOpen())
         {
             return file;
         }
@@ -43,9 +43,9 @@ void SearchPaths::IncludeSearchPath(ISearchPath* searchPath)
 
 void SearchPaths::RemoveSearchPath(ISearchPath* searchPath)
 {
-    for(auto i = m_search_paths.begin(); i != m_search_paths.end(); ++i)
+    for (auto i = m_search_paths.begin(); i != m_search_paths.end(); ++i)
     {
-        if(*i == searchPath)
+        if (*i == searchPath)
         {
             m_search_paths.erase(i);
             return;

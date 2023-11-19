@@ -34,7 +34,7 @@ ParserLine CommentRemovingStreamProxy::NextLine()
                 m_inside_multi_line_comment = false;
             }
         }
-        else if(inString)
+        else if (inString)
         {
             if (isEscaped)
                 isEscaped = false;
@@ -45,11 +45,11 @@ ParserLine CommentRemovingStreamProxy::NextLine()
         }
         else
         {
-            if(c == '"')
+            if (c == '"')
             {
                 inString = true;
             }
-            else if(c == '/' && i + 1 < line.m_line.size())
+            else if (c == '/' && i + 1 < line.m_line.size())
             {
                 const auto c1 = line.m_line[i + 1];
 
@@ -58,7 +58,7 @@ ParserLine CommentRemovingStreamProxy::NextLine()
                     multiLineCommentStart = i;
                     m_inside_multi_line_comment = true;
                 }
-                else if(c1 == '/')
+                else if (c1 == '/')
                 {
                     m_next_line_is_comment = line.m_line[line.m_line.size() - 1] == '\\';
                     line.m_line.erase(i);
@@ -68,7 +68,7 @@ ParserLine CommentRemovingStreamProxy::NextLine()
         }
     }
 
-    if(m_inside_multi_line_comment)
+    if (m_inside_multi_line_comment)
         line.m_line.erase(multiLineCommentStart);
 
     return line;

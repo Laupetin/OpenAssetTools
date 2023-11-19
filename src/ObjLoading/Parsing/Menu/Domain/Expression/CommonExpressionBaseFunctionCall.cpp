@@ -12,9 +12,7 @@ bool CommonExpressionBaseFunctionCall::Equals(const ISimpleExpression* other) co
 {
     const auto otherFunctionCall = dynamic_cast<const CommonExpressionBaseFunctionCall*>(other);
 
-    if (!otherFunctionCall
-        || m_function_name != otherFunctionCall->m_function_name
-        || m_function_index != otherFunctionCall->m_function_index
+    if (!otherFunctionCall || m_function_name != otherFunctionCall->m_function_name || m_function_index != otherFunctionCall->m_function_index
         || m_args.size() != otherFunctionCall->m_args.size())
     {
         return false;

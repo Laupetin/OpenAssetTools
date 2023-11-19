@@ -1,9 +1,5 @@
 #include "HeaderFileReader.h"
 
-#include <algorithm>
-#include <chrono>
-#include <iostream>
-
 #include "Impl/HeaderLexer.h"
 #include "Impl/HeaderParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
@@ -14,6 +10,10 @@
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
 #include "Parsing/PostProcessing/IPostProcessor.h"
+
+#include <algorithm>
+#include <chrono>
+#include <iostream>
 
 HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
@@ -83,7 +83,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
         result = parser->SaveToRepository(repository);
     const auto end = std::chrono::steady_clock::now();
 
-    if(m_args->m_verbose)
+    if (m_args->m_verbose)
     {
         std::cout << "Processing header took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
     }
@@ -91,8 +91,10 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
     if (!result)
         return false;
 
-    return std::all_of(m_post_processors.begin(), m_post_processors.end(), [repository](const std::unique_ptr<IPostProcessor>& postProcessor)
-    {
-        return postProcessor->PostProcess(repository);
-    });
+    return std::all_of(m_post_processors.begin(),
+                       m_post_processors.end(),
+                       [repository](const std::unique_ptr<IPostProcessor>& postProcessor)
+                       {
+                           return postProcessor->PostProcess(repository);
+                       });
 }

@@ -1,12 +1,12 @@
 #include "AssetDumperTracer.h"
 
-#include <cassert>
-#include <type_traits>
-
-#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/TracerFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+
+#include <cassert>
+#include <type_traits>
 
 using namespace T6;
 
@@ -31,23 +31,29 @@ namespace T6
         }
 
     public:
-        InfoStringFromTracerConverter(const TracerDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromTracerConverter(const TracerDef* structure,
+                                      const cspField_t* fields,
+                                      const size_t fieldCount,
+                                      std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace T6
 
 InfoString AssetDumperTracer::CreateInfoString(XAssetInfo<TracerDef>* asset)
 {
-    InfoStringFromTracerConverter converter(asset->Asset(), tracer_fields, std::extent<decltype(tracer_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-    {
-        assert(scrStr < asset->m_zone->m_script_strings.Count());
-        if (scrStr >= asset->m_zone->m_script_strings.Count())
-            return "";
+    InfoStringFromTracerConverter converter(asset->Asset(),
+                                            tracer_fields,
+                                            std::extent<decltype(tracer_fields)>::value,
+                                            [asset](const scr_string_t scrStr) -> std::string
+                                            {
+                                                assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                    return "";
 
-        return asset->m_zone->m_script_strings[scrStr];
-    });
+                                                return asset->m_zone->m_script_strings[scrStr];
+                                            });
 
     return converter.Convert();
 }

@@ -1,12 +1,11 @@
 #pragma once
 
+#include "AbstractMatcher.h"
+#include "Parsing/IParserValue.h"
+
 #include <memory>
 
-#include "Parsing/IParserValue.h"
-#include "AbstractMatcher.h"
-
-template <typename TokenType>
-class MatcherLoop final : public AbstractMatcher<TokenType>
+template<typename TokenType> class MatcherLoop final : public AbstractMatcher<TokenType>
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -19,11 +18,11 @@ protected:
         auto matchResult = MatcherResult<TokenType>::Match(0);
         auto loopedAtLeastOnce = false;
 
-        while(true)
+        while (true)
         {
             auto result = m_matcher->Match(lexer, tokenOffset + matchResult.m_consumed_token_count);
 
-            if(!result.m_matches)
+            if (!result.m_matches)
             {
                 if (loopedAtLeastOnce)
                     return matchResult;

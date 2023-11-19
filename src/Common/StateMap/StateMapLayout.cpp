@@ -37,10 +37,12 @@ namespace state_map
 
             for (auto& resultVar : entry.m_result_vars)
             {
-                const auto correspondingVar = std::find_if(layout.m_var_layout.m_vars.begin(), layout.m_var_layout.m_vars.end(), [&resultVar](const StateMapLayoutVar& var)
-                {
-                    return var.m_name == resultVar;
-                });
+                const auto correspondingVar = std::find_if(layout.m_var_layout.m_vars.begin(),
+                                                           layout.m_var_layout.m_vars.end(),
+                                                           [&resultVar](const StateMapLayoutVar& var)
+                                                           {
+                                                               return var.m_name == resultVar;
+                                                           });
 
                 // Has to have a corresponding var
                 assert(correspondingVar != layout.m_var_layout.m_vars.end());
@@ -48,7 +50,7 @@ namespace state_map
         }
     }
 #endif
-}
+} // namespace state_map
 
 StateMapLayoutEntry::StateMapLayoutEntry(std::string name, const size_t stateBitsIndex, const size_t stateBitsMask, std::vector<std::string> resultVars)
     : m_name(std::move(name)),

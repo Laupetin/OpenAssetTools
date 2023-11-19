@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "Domain/Definition/DataDefinition.h"
+
+#include <string>
 
 class IHeaderBlockVariableDefining
 {

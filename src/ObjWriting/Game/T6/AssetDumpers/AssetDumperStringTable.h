@@ -11,4 +11,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<StringTable>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset) override;
     };
-}
+} // namespace T6

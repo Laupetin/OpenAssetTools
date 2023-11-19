@@ -1,13 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <iterator>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/ILexer.h"
+#include "Utils/ClassUtils.h"
 
-template <typename TokenType>
-class MockLexer final : public ILexer<TokenType>
+#include <iterator>
+#include <vector>
+
+template<typename TokenType> class MockLexer final : public ILexer<TokenType>
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -19,15 +18,15 @@ class MockLexer final : public ILexer<TokenType>
 public:
     MockLexer(std::initializer_list<Movable<TokenType>> tokens, TokenType eof)
         : m_tokens(std::make_move_iterator(tokens.begin()), std::make_move_iterator(tokens.end())),
-        m_eof(std::move(eof)),
-        m_pop_count(0u)
+          m_eof(std::move(eof)),
+          m_pop_count(0u)
     {
     }
 
     MockLexer(std::vector<TokenType> tokens, TokenType eof)
         : m_tokens(std::move(tokens)),
-        m_eof(std::move(eof)),
-        m_pop_count(0u)
+          m_eof(std::move(eof)),
+          m_pop_count(0u)
     {
     }
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "DataDefinition.h"
 #include "Variable.h"
+
+#include <memory>
+#include <vector>
 
 class DefinitionWithMembers : public DataDefinition
 {

@@ -1,14 +1,14 @@
 #include "AssetLoaderGfxImage.h"
 
-#include <cstring>
-#include <iostream>
-#include <sstream>
-#include <zlib.h>
-
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
 #include "Image/IwiLoader.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <zlib.h>
 
 using namespace T6;
 
@@ -25,7 +25,8 @@ bool AssetLoaderGfxImage::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderGfxImage::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderGfxImage::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "images/" + assetName + ".iwi";
     const auto file = searchPath->Open(fileName);
@@ -64,7 +65,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(const std::string& assetName, ISearchPath*
     image->streamedParts[0].levelSize = static_cast<uint32_t>(fileSize);
     image->streamedParts[0].hash = dataHash & 0x1FFFFFFF;
     image->streamedPartCount = 1;
-    
+
     manager->AddAsset(ASSET_TYPE_IMAGE, assetName, image);
 
     return true;

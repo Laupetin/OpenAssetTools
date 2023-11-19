@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Parsing/IParserLineStream.h"
+
 #include <istream>
 #include <memory>
-
-#include "Parsing/IParserLineStream.h"
 
 class ParserSingleInputStream final : public IParserLineStream
 {

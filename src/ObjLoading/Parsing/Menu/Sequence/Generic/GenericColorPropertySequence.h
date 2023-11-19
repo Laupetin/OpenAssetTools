@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <functional>
-
-#include "Parsing/Menu/MenuFileParser.h"
 #include "Parsing/Menu/Domain/CommonMenuTypes.h"
+#include "Parsing/Menu/MenuFileParser.h"
+
+#include <functional>
+#include <string>
 
 namespace menu
 {
@@ -28,4 +28,4 @@ namespace menu
     public:
         GenericColorPropertySequence(std::string keywordName, callback_t setCallback);
     };
-}
+} // namespace menu

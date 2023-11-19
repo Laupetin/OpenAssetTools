@@ -1,10 +1,10 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Commands/Sequence/SequenceGame.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
+#include "Utils/ClassUtils.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 namespace test::parsing::commands::sequence::sequence_game
 {
@@ -41,12 +41,10 @@ namespace test::parsing::commands::sequence::sequence_game
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("game")),
-            CommandsParserValue::Identifier(pos, new std::string("very_cool_game")),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("game")),
+                       CommandsParserValue::Identifier(pos, new std::string("very_cool_game")),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -54,4 +52,4 @@ namespace test::parsing::commands::sequence::sequence_game
         REQUIRE(helper.m_consumed_token_count == 3);
         REQUIRE(helper.m_repository->GetGameName() == "very_cool_game");
     }
-}
+} // namespace test::parsing::commands::sequence::sequence_game

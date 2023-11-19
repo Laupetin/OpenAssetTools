@@ -1,4 +1,5 @@
 #include "XBlock.h"
+
 #include <cassert>
 
 XBlock::XBlock(const std::string& name, const int index, const Type type)
@@ -20,7 +21,7 @@ void XBlock::Alloc(const size_t blockSize)
 {
     delete[] m_buffer;
 
-    if(blockSize > 0)
+    if (blockSize > 0)
     {
         m_buffer = new uint8_t[blockSize];
         m_buffer_size = blockSize;

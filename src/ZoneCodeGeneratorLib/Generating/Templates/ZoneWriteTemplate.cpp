@@ -1,11 +1,11 @@
 #include "ZoneWriteTemplate.h"
 
+#include "Domain/Computations/StructureComputations.h"
+#include "Internal/BaseTemplate.h"
+
 #include <cassert>
 #include <iostream>
 #include <sstream>
-
-#include "Domain/Computations/StructureComputations.h"
-#include "Internal/BaseTemplate.h"
 
 class ZoneWriteTemplate::Internal final : BaseTemplate
 {
@@ -86,7 +86,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     void PrintHeaderConstructor() const
     {
-        LINE(WriterClassName(m_env.m_asset) << "("<<m_env.m_asset->m_definition->GetFullName()<<"* asset, Zone* zone, IZoneOutputStream* stream);")
+        LINE(WriterClassName(m_env.m_asset) << "(" << m_env.m_asset->m_definition->GetFullName() << "* asset, Zone* zone, IZoneOutputStream* stream);")
     }
 
     void PrintVariableInitialization(const DataDefinition* def) const
@@ -111,10 +111,12 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     void PrintConstructorMethod()
     {
-        LINE(WriterClassName(m_env.m_asset) << "::" << WriterClassName(m_env.m_asset) << "("<<m_env.m_asset->m_definition->GetFullName()<<"* asset, Zone* zone, IZoneOutputStream* stream)")
+        LINE(WriterClassName(m_env.m_asset) << "::" << WriterClassName(m_env.m_asset) << "(" << m_env.m_asset->m_definition->GetFullName()
+                                            << "* asset, Zone* zone, IZoneOutputStream* stream)")
 
         m_intendation++;
-        LINE_START(": AssetWriter(zone->m_pools->GetAsset("<<m_env.m_asset->m_asset_enum_entry->m_name<<", GetAssetName(asset))"<<", zone, stream)")
+        LINE_START(": AssetWriter(zone->m_pools->GetAsset(" << m_env.m_asset->m_asset_enum_entry->m_name << ", GetAssetName(asset))"
+                                                            << ", zone, stream)")
         LINE_END("")
         m_intendation--;
 
@@ -148,12 +150,15 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void WriteMember_ScriptString(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    void WriteMember_ScriptString(StructureInformation* info,
+                                  MemberInformation* member,
+                                  const DeclarationModifierComputations& modifier,
+                                  const MemberWriteType writeType) const
     {
         if (writeType == MemberWriteType::ARRAY_POINTER)
         {
             LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("m_stream->MarkFollowing("<<MakeWrittenMemberAccess(info, member, modifier)<<");")
+            LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
             LINE("WriteScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
         else if (writeType == MemberWriteType::EMBEDDED_ARRAY)
@@ -172,11 +177,14 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
     }
 
-    void WriteMember_Asset(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    void WriteMember_Asset(StructureInformation* info,
+                           MemberInformation* member,
+                           const DeclarationModifierComputations& modifier,
+                           const MemberWriteType writeType) const
     {
         if (writeType == MemberWriteType::SINGLE_POINTER)
         {
-            LINE(WriterClassName(member->m_type) << " writer("<<MakeMemberAccess(info, member, modifier)<<", m_zone, m_stream);")
+            LINE(WriterClassName(member->m_type) << " writer(" << MakeMemberAccess(info, member, modifier) << ", m_zone, m_stream);")
             LINE("writer.Write(&" << MakeWrittenMemberAccess(info, member, modifier) << ");")
         }
         else if (writeType == MemberWriteType::POINTER_ARRAY)
@@ -190,7 +198,10 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
     }
 
-    void WriteMember_String(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    void WriteMember_String(StructureInformation* info,
+                            MemberInformation* member,
+                            const DeclarationModifierComputations& modifier,
+                            const MemberWriteType writeType) const
     {
         if (writeType == MemberWriteType::SINGLE_POINTER)
         {
@@ -232,12 +243,14 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "
+                               << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
         else
         {
-            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                    << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                    << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
         }
     }
 
@@ -252,7 +265,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         else
         {
             LINE("m_stream->MarkFollowing(" << MakeWrittenMemberAccess(info, member, modifier) << ");")
-            LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+            LINE("WritePtrArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "
+                                  << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
         }
     }
 
@@ -270,7 +284,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             if (computations.IsAfterPartialLoad())
             {
-                LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type)<<" = "<< MakeMemberAccess(info, member, modifier) <<";")
+                LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
                 LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << arraySizeStr << ");")
             }
             else
@@ -282,8 +296,9 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else if (computations.IsAfterPartialLoad())
         {
-            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << arraySizeStr << ");")
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                    << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                    << ", " << arraySizeStr << ");")
         }
     }
 
@@ -292,12 +307,14 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         if (member->m_type && !member->m_type->m_is_leaf)
         {
             LINE(MakeTypeVarName(member->m_member->m_type_declaration->m_type) << " = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
+            LINE("WriteArray_" << MakeSafeTypeName(member->m_member->m_type_declaration->m_type) << "(true, "
+                               << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
         }
         else
         {
-            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                    << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                    << ", " << MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()) << ");")
         }
     }
 
@@ -321,8 +338,9 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else if (computations.IsAfterPartialLoad())
         {
-            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(&" << MakeMemberAccess(info, member, modifier) << ");")
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                    << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(&" << MakeMemberAccess(info, member, modifier)
+                                    << ");")
         }
     }
 
@@ -337,12 +355,16 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get()) << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers())
-                << ">(" << MakeMemberAccess(info, member, modifier) << ");")
+            LINE("m_stream->Write<" << MakeTypeDecl(member->m_member->m_type_declaration.get())
+                                    << MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()) << ">(" << MakeMemberAccess(info, member, modifier)
+                                    << ");")
         }
     }
 
-    void WriteMember_TypeCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType) const
+    void WriteMember_TypeCheck(StructureInformation* info,
+                               MemberInformation* member,
+                               const DeclarationModifierComputations& modifier,
+                               const MemberWriteType writeType) const
     {
         if (member->m_is_string)
         {
@@ -391,17 +413,17 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
     }
 
-    static bool WriteMember_ShouldMakeInsertReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    static bool WriteMember_ShouldMakeInsertReuse(StructureInformation* info,
+                                                  MemberInformation* member,
+                                                  const DeclarationModifierComputations& modifier,
+                                                  const MemberWriteType writeType)
     {
-        if (writeType != MemberWriteType::ARRAY_POINTER
-            && writeType != MemberWriteType::SINGLE_POINTER
-            && writeType != MemberWriteType::POINTER_ARRAY)
+        if (writeType != MemberWriteType::ARRAY_POINTER && writeType != MemberWriteType::SINGLE_POINTER && writeType != MemberWriteType::POINTER_ARRAY)
         {
             return false;
         }
 
-        if (writeType == MemberWriteType::POINTER_ARRAY
-            && modifier.IsArray())
+        if (writeType == MemberWriteType::POINTER_ARRAY && modifier.IsArray())
         {
             return false;
         }
@@ -425,7 +447,10 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         return true;
     }
 
-    void WriteMember_InsertReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    void WriteMember_InsertReuse(StructureInformation* info,
+                                 MemberInformation* member,
+                                 const DeclarationModifierComputations& modifier,
+                                 const MemberWriteType writeType)
     {
         if (!WriteMember_ShouldMakeInsertReuse(info, member, modifier, writeType))
         {
@@ -435,7 +460,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         if (writeType == MemberWriteType::ARRAY_POINTER)
         {
-            LINE("m_stream->ReusableAddOffset("<<MakeMemberAccess(info, member, modifier)<<", "<<MakeEvaluation(modifier.GetArrayPointerCountEvaluation())<<");")
+            LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation())
+                                                << ");")
         }
         else if (writeType == MemberWriteType::POINTER_ARRAY)
         {
@@ -443,7 +469,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
             if (evaluation)
             {
-                LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ", " << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+                LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ", "
+                                                    << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
             }
             else
             {
@@ -452,17 +479,18 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
         else
         {
-            LINE("m_stream->ReusableAddOffset("<<MakeMemberAccess(info, member, modifier)<<");")
+            LINE("m_stream->ReusableAddOffset(" << MakeMemberAccess(info, member, modifier) << ");")
         }
 
         WriteMember_TypeCheck(info, member, modifier, writeType);
     }
 
-    static bool WriteMember_ShouldMakeAlign(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    static bool WriteMember_ShouldMakeAlign(StructureInformation* info,
+                                            MemberInformation* member,
+                                            const DeclarationModifierComputations& modifier,
+                                            const MemberWriteType writeType)
     {
-        if (writeType != MemberWriteType::ARRAY_POINTER
-            && writeType != MemberWriteType::POINTER_ARRAY
-            && writeType != MemberWriteType::SINGLE_POINTER)
+        if (writeType != MemberWriteType::ARRAY_POINTER && writeType != MemberWriteType::POINTER_ARRAY && writeType != MemberWriteType::SINGLE_POINTER)
         {
             return false;
         }
@@ -485,7 +513,10 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         return true;
     }
 
-    void WriteMember_Align(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    void WriteMember_Align(StructureInformation* info,
+                           MemberInformation* member,
+                           const DeclarationModifierComputations& modifier,
+                           const MemberWriteType writeType)
     {
         if (!WriteMember_ShouldMakeAlign(info, member, modifier, writeType))
         {
@@ -498,27 +529,27 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         if (member->m_alloc_alignment)
         {
-            LINE("m_stream->Align("<<MakeEvaluation(member->m_alloc_alignment.get())<<");")
+            LINE("m_stream->Align(" << MakeEvaluation(member->m_alloc_alignment.get()) << ");")
         }
         else
         {
-            LINE("m_stream->Align("<<modifier.GetAlignment()<<");")
+            LINE("m_stream->Align(" << modifier.GetAlignment() << ");")
         }
 
         WriteMember_InsertReuse(info, member, modifier, writeType);
     }
 
-    static bool WriteMember_ShouldMakeReuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    static bool WriteMember_ShouldMakeReuse(StructureInformation* info,
+                                            MemberInformation* member,
+                                            const DeclarationModifierComputations& modifier,
+                                            const MemberWriteType writeType)
     {
-        if (writeType != MemberWriteType::ARRAY_POINTER
-            && writeType != MemberWriteType::SINGLE_POINTER
-            && writeType != MemberWriteType::POINTER_ARRAY)
+        if (writeType != MemberWriteType::ARRAY_POINTER && writeType != MemberWriteType::SINGLE_POINTER && writeType != MemberWriteType::POINTER_ARRAY)
         {
             return false;
         }
 
-        if (writeType == MemberWriteType::POINTER_ARRAY
-            && modifier.IsArray())
+        if (writeType == MemberWriteType::POINTER_ARRAY && modifier.IsArray())
         {
             return false;
         }
@@ -526,7 +557,10 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         return member->m_is_reusable;
     }
 
-    void WriteMember_Reuse(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    void WriteMember_Reuse(StructureInformation* info,
+                           MemberInformation* member,
+                           const DeclarationModifierComputations& modifier,
+                           const MemberWriteType writeType)
     {
         if (!WriteMember_ShouldMakeReuse(info, member, modifier, writeType))
         {
@@ -544,11 +578,12 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    static bool WriteMember_ShouldMakePointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    static bool WriteMember_ShouldMakePointerCheck(StructureInformation* info,
+                                                   MemberInformation* member,
+                                                   const DeclarationModifierComputations& modifier,
+                                                   const MemberWriteType writeType)
     {
-        if (writeType != MemberWriteType::ARRAY_POINTER
-            && writeType != MemberWriteType::POINTER_ARRAY
-            && writeType != MemberWriteType::SINGLE_POINTER)
+        if (writeType != MemberWriteType::ARRAY_POINTER && writeType != MemberWriteType::POINTER_ARRAY && writeType != MemberWriteType::SINGLE_POINTER)
         {
             return false;
         }
@@ -566,7 +601,10 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         return true;
     }
 
-    void WriteMember_PointerCheck(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberWriteType writeType)
+    void WriteMember_PointerCheck(StructureInformation* info,
+                                  MemberInformation* member,
+                                  const DeclarationModifierComputations& modifier,
+                                  const MemberWriteType writeType)
     {
         if (WriteMember_ShouldMakePointerCheck(info, member, modifier, writeType))
         {
@@ -752,10 +790,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         if (computations.ShouldIgnore())
             return;
 
-        if (member->m_is_string
-            || member->m_is_script_string
-            || computations.ContainsNonEmbeddedReference()
-            || member->m_type && !member->m_type->m_is_leaf
+        if (member->m_is_string || member->m_is_script_string || computations.ContainsNonEmbeddedReference() || member->m_type && !member->m_type->m_is_leaf
             || computations.IsAfterPartialLoad())
         {
             if (info->m_definition->GetType() == DataDefinitionType::UNION)
@@ -783,13 +818,14 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
             if (dynamicMember == nullptr)
             {
-                LINE(MakeTypeWrittenVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << "); // Size: "
-                    << info->m_definition->GetSize())
+                LINE(MakeTypeWrittenVarName(info->m_definition) << " = m_stream->Write<" << info->m_definition->GetFullName() << ">("
+                                                                << MakeTypeVarName(info->m_definition) << "); // Size: " << info->m_definition->GetSize())
             }
             else
             {
-                LINE(MakeTypeWrittenVarName(info->m_definition) << " = m_stream->WritePartial<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << ", offsetof(" <<
-                    info->m_definition->GetFullName() << ", " << dynamicMember->m_member->m_name << "));")
+                LINE(MakeTypeWrittenVarName(info->m_definition)
+                     << " = m_stream->WritePartial<" << info->m_definition->GetFullName() << ">(" << MakeTypeVarName(info->m_definition) << ", offsetof("
+                     << info->m_definition->GetFullName() << ", " << dynamicMember->m_member->m_name << "));")
             }
 
             m_intendation--;
@@ -840,7 +876,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE(MakeTypeWrittenPtrVarName(info->m_definition)<<" = m_stream->Write<" << info->m_definition->GetFullName() << "*>(" << MakeTypePtrVarName(info->m_definition) << ");")
+        LINE(MakeTypeWrittenPtrVarName(info->m_definition)
+             << " = m_stream->Write<" << info->m_definition->GetFullName() << "*>(" << MakeTypePtrVarName(info->m_definition) << ");")
         m_intendation--;
 
         LINE("")
@@ -857,7 +894,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE("m_stream->Align(" << info->m_definition->GetAlignment() << ");")
-        LINE("m_stream->ReusableAddOffset(*"<<MakeTypePtrVarName(info->m_definition)<<");")
+        LINE("m_stream->ReusableAddOffset(*" << MakeTypePtrVarName(info->m_definition) << ");")
         LINE("")
         if (!info->m_is_leaf)
         {
@@ -870,7 +907,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         }
 
         LINE("")
-        LINE("m_stream->MarkFollowing(*"<<MakeTypeWrittenPtrVarName(info->m_definition)<<");")
+        LINE("m_stream->MarkFollowing(*" << MakeTypeWrittenPtrVarName(info->m_definition) << ");")
 
         m_intendation--;
         LINE("}")
@@ -895,7 +932,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("assert(m_asset != nullptr);")
         LINE("assert(m_asset->m_ptr != nullptr);")
         LINE("")
-        LINE("auto* zoneAsset = static_cast<"<<m_env.m_asset->m_definition->GetFullName()<<"*>(m_asset->m_ptr);")
+        LINE("auto* zoneAsset = static_cast<" << m_env.m_asset->m_definition->GetFullName() << "*>(m_asset->m_ptr);")
         LINE(MakeTypePtrVarName(m_env.m_asset->m_definition) << " = &zoneAsset;")
         LINE(MakeTypeWrittenPtrVarName(m_env.m_asset->m_definition) << " = &zoneAsset;")
         LINE("WritePtr_" << MakeSafeTypeName(m_env.m_asset->m_definition) << "(false);")
@@ -941,11 +978,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     void PrintWritePtrArrayMethod_Loading(const DataDefinition* def, StructureInformation* info, const bool reusable) const
     {
-        LINE("m_stream->Align("<<def->GetAlignment()<<");")
+        LINE("m_stream->Align(" << def->GetAlignment() << ");")
 
         if (reusable)
         {
-            LINE("m_stream->ReusableAddOffset(*"<<MakeTypePtrVarName(def)<< ");")
+            LINE("m_stream->ReusableAddOffset(*" << MakeTypePtrVarName(def) << ");")
         }
 
         if (info && !info->m_is_leaf)
@@ -957,7 +994,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         {
             LINE("m_stream->Write<" << def->GetFullName() << ">(*" << MakeTypePtrVarName(def) << ");")
         }
-        LINE("m_stream->MarkFollowing(*"<< MakeTypeWrittenPtrVarName(def)<<");")
+        LINE("m_stream->MarkFollowing(*" << MakeTypeWrittenPtrVarName(def) << ");")
     }
 
     void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
@@ -968,7 +1005,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         if (info && StructureComputations(info).IsAsset())
         {
-            LINE(WriterClassName(info) << " writer(*"<< MakeTypePtrVarName(def)<<", m_zone, m_stream);")
+            LINE(WriterClassName(info) << " writer(*" << MakeTypePtrVarName(def) << ", m_zone, m_stream);")
             LINE("writer.Write(" << MakeTypeWrittenPtrVarName(def) << ");")
         }
         else
@@ -1005,7 +1042,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE(MakeTypeWrittenPtrVarName(def)<<" = m_stream->Write<" << def->GetFullName() << "*>(" << MakeTypePtrVarName(def) << ", count);")
+        LINE(MakeTypeWrittenPtrVarName(def) << " = m_stream->Write<" << def->GetFullName() << "*>(" << MakeTypePtrVarName(def) << ", count);")
         m_intendation--;
 
         LINE("")
@@ -1041,7 +1078,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
         LINE("")
         LINE("if(atStreamStart)")
         m_intendation++;
-        LINE(MakeTypeWrittenVarName(def)<<" = m_stream->Write<" << def->GetFullName() << ">(" << MakeTypeVarName(def) << ", count);")
+        LINE(MakeTypeWrittenVarName(def) << " = m_stream->Write<" << def->GetFullName() << ">(" << MakeTypeVarName(def) << ", count);")
         m_intendation--;
 
         LINE("")

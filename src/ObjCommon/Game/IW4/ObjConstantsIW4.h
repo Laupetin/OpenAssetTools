@@ -18,4 +18,4 @@ namespace IW4
         static constexpr const char* GDF_FILENAME_VEHICLE = "vehicle.gdf";
         static constexpr const char* GDF_FILENAME_WEAPON = "weapon.gdf";
     };
-}
+} // namespace IW4

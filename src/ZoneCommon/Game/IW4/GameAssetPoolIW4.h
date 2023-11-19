@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-
-#include "Utils/ClassUtils.h"
-#include "Pool/ZoneAssetPools.h"
-#include "Pool/AssetPool.h"
 #include "Game/IW4/IW4.h"
+#include "Pool/AssetPool.h"
+#include "Pool/ZoneAssetPools.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
 
 class GameAssetPoolIW4 final : public ZoneAssetPools
 {
@@ -15,7 +15,12 @@ class GameAssetPoolIW4 final : public ZoneAssetPools
     static const char* ASSET_TYPE_NAMES[];
 
 protected:
-    XAssetInfoGeneric* AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings, Zone* zone) override;
+    XAssetInfoGeneric* AddAssetToPool(asset_type_t type,
+                                      std::string name,
+                                      void* asset,
+                                      std::vector<XAssetInfoGeneric*> dependencies,
+                                      std::vector<scr_string_t> usedScriptStrings,
+                                      Zone* zone) override;
 
 public:
     std::unique_ptr<AssetPool<IW4::PhysPreset>> m_phys_preset;

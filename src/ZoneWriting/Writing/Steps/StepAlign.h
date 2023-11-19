@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Writing/IWritingStep.h"
+
 #include <cstddef>
 #include <cstdint>
-
-#include "Writing/IWritingStep.h"
 
 class StepAlign final : public IWritingStep
 {

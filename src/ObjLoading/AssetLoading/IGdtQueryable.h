@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
-
 #include "Obj/Gdt/GdtEntry.h"
+
+#include <string>
 
 class IGdtQueryable
 {

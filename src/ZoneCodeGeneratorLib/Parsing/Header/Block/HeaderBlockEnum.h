@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
+#include "Domain/Definition/BaseTypeDefinition.h"
+#include "Domain/Definition/EnumDefinition.h"
 #include "IHeaderBlock.h"
 #include "IHeaderBlockNameHolder.h"
 #include "IHeaderBlockVariableDefining.h"
-#include "Domain/Definition/BaseTypeDefinition.h"
-#include "Domain/Definition/EnumDefinition.h"
+#include "Utils/ClassUtils.h"
 
 class HeaderBlockEnum final : public IHeaderBlock, public IHeaderBlockNameHolder, public IHeaderBlockVariableDefining
 {

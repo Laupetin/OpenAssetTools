@@ -1,9 +1,9 @@
 #pragma once
 
-#include <ostream>
-#include <memory>
-
 #include "AbstractXModelWriter.h"
+
+#include <memory>
+#include <ostream>
 
 class XModelExportWriter : public AbstractXModelWriter
 {

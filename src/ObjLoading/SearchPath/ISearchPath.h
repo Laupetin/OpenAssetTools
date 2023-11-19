@@ -1,12 +1,12 @@
 #pragma once
 
+#include "SearchPathSearchOptions.h"
+#include "Utils/ClassUtils.h"
+
+#include <cstdint>
 #include <functional>
 #include <istream>
 #include <memory>
-#include <cstdint>
-
-#include "Utils/ClassUtils.h"
-#include "SearchPathSearchOptions.h"
 
 class SearchPathOpenFile
 {

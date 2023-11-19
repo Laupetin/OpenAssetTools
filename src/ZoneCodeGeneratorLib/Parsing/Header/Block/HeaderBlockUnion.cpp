@@ -24,13 +24,8 @@ HeaderBlockType HeaderBlockUnion::GetType()
 
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockUnion::GetTestsForBlock()
 {
-    static std::vector<sequence_t*> tests({
-        new SequenceCloseBlock(true),
-        new SequenceEnum(),
-        new SequenceStruct(),
-        new SequenceUnion(),
-        new SequenceVariable()
-    });
+    static std::vector<sequence_t*> tests(
+        {new SequenceCloseBlock(true), new SequenceEnum(), new SequenceStruct(), new SequenceUnion(), new SequenceVariable()});
 
     return tests;
 }
@@ -83,7 +78,8 @@ void HeaderBlockUnion::OnChildBlockClose(HeaderParserState* state, IHeaderBlock*
     auto* variableDefining = dynamic_cast<IHeaderBlockVariableDefining*>(block);
 
     if (variableDefining && variableDefining->IsDefiningVariable())
-        m_members.emplace_back(std::make_shared<Variable>(variableDefining->GetVariableName(), std::make_unique<TypeDeclaration>(variableDefining->GetVariableType())));
+        m_members.emplace_back(
+            std::make_shared<Variable>(variableDefining->GetVariableName(), std::make_unique<TypeDeclaration>(variableDefining->GetVariableType())));
 }
 
 void HeaderBlockUnion::AddVariable(std::shared_ptr<Variable> variable)

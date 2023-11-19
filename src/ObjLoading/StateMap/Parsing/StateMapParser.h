@@ -1,11 +1,11 @@
 #pragma once
 
-#include "StateMapParserState.h"
-#include "Utils/ClassUtils.h"
-#include "Techset/TechsetDefinition.h"
+#include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Parsing/Impl/AbstractParser.h"
+#include "StateMapParserState.h"
+#include "Techset/TechsetDefinition.h"
+#include "Utils/ClassUtils.h"
 
 namespace state_map
 {
@@ -19,4 +19,4 @@ namespace state_map
         _NODISCARD std::unique_ptr<StateMapDefinition> GetStateMapDefinition() const;
         _NODISCARD StateMapParserState* GetState() const;
     };
-}
+} // namespace state_map

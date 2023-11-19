@@ -1,11 +1,5 @@
 #include "ObjLoaderT6.h"
 
-#include <sstream>
-
-#include "Game/T6/GameT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
-#include "ObjContainer/IPak/IPak.h"
-#include "ObjLoading.h"
 #include "AssetLoaders/AssetLoaderFontIcon.h"
 #include "AssetLoaders/AssetLoaderGfxImage.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
@@ -23,11 +17,17 @@
 #include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
 #include "AssetLoaders/AssetLoaderZBarrier.h"
 #include "AssetLoading/AssetLoadingManager.h"
-#include "Image/Texture.h"
-#include "Image/IwiLoader.h"
 #include "Game/T6/CommonT6.h"
+#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/GameT6.h"
 #include "Image/Dx12TextureLoader.h"
+#include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
+#include "Image/Texture.h"
+#include "ObjContainer/IPak/IPak.h"
+#include "ObjLoading.h"
+
+#include <sstream>
 
 namespace T6
 {
@@ -36,7 +36,11 @@ namespace T6
 
     ObjLoader::ObjLoader()
     {
-#define REGISTER_ASSET_LOADER(t) {auto l = std::make_unique<t>(); m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);}
+#define REGISTER_ASSET_LOADER(t)                                                                                                                               \
+    {                                                                                                                                                          \
+        auto l = std::make_unique<t>();                                                                                                                        \
+        m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);                                                                                     \
+    }
 #define BASIC_LOADER(assetType, assetClass) BasicAssetLoader<assetType, assetClass>
 
         REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
@@ -146,8 +150,12 @@ namespace T6
         return nullptr;
     }
 
-    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath* searchPath, const std::string& soundBankFileName, const SndRuntimeAssetBank* sndBankLinkedInfo, Zone* zone,
-                                                std::set<std::string>& loadedBanksForZone, std::stack<std::string>& dependenciesToLoad)
+    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath* searchPath,
+                                                const std::string& soundBankFileName,
+                                                const SndRuntimeAssetBank* sndBankLinkedInfo,
+                                                Zone* zone,
+                                                std::set<std::string>& loadedBanksForZone,
+                                                std::stack<std::string>& dependenciesToLoad)
     {
         if (loadedBanksForZone.find(soundBankFileName) == loadedBanksForZone.end())
         {
@@ -245,14 +253,12 @@ namespace T6
 
     bool ObjLoader::IsMpZone(Zone* zone)
     {
-        return zone->m_name.compare(0, 3, "mp_") == 0
-            || zone->m_name.compare(zone->m_name.length() - 3, 3, "_mp") == 0;
+        return zone->m_name.compare(0, 3, "mp_") == 0 || zone->m_name.compare(zone->m_name.length() - 3, 3, "_mp") == 0;
     }
 
     bool ObjLoader::IsZmZone(Zone* zone)
     {
-        return zone->m_name.compare(0, 3, "zm_") == 0
-            || zone->m_name.compare(zone->m_name.length() - 3, 3, "_zm") == 0;
+        return zone->m_name.compare(0, 3, "zm_") == 0 || zone->m_name.compare(zone->m_name.length() - 3, 3, "_zm") == 0;
     }
 
     void ObjLoader::LoadCommonIPaks(ISearchPath* searchPath, Zone* zone)
@@ -462,4 +468,4 @@ namespace T6
         for (const auto& [type, loader] : m_asset_loaders_by_type)
             loader->FinalizeAssetsForZone(context);
     }
-}
+} // namespace T6

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <unordered_map>
+#include "StateMap/StateMapDefinition.h"
+#include "StateMap/StateMapLayout.h"
+
 #include <memory>
 #include <set>
 #include <string>
-
-#include "StateMap/StateMapDefinition.h"
-#include "StateMap/StateMapLayout.h"
+#include <unordered_map>
 
 namespace state_map
 {
@@ -26,4 +26,4 @@ namespace state_map
 
         StateMapParserState(std::string stateMapName, const StateMapLayout& layout);
     };
-}
+} // namespace state_map

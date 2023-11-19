@@ -8,8 +8,9 @@ namespace sdd
     class StructuredDataStructScopeSequences final : AbstractScopeSequenceHolder<StructuredDataDefParser>
     {
     public:
-        StructuredDataStructScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences, std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences);
+        StructuredDataStructScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
+                                           std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences);
 
         void AddSequences() const;
     };
-}
+} // namespace sdd

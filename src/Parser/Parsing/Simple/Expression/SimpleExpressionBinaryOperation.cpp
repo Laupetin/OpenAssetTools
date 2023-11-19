@@ -3,7 +3,9 @@
 #include <cassert>
 #include <cmath>
 
-SimpleExpressionBinaryOperationType::SimpleExpressionBinaryOperationType(const SimpleBinaryOperationId id, std::string syntax, const SimpleOperationPrecedence precedence,
+SimpleExpressionBinaryOperationType::SimpleExpressionBinaryOperationType(const SimpleBinaryOperationId id,
+                                                                         std::string syntax,
+                                                                         const SimpleOperationPrecedence precedence,
                                                                          evaluation_function_t evaluationFunction)
     : m_id(id),
       m_syntax(std::move(syntax)),
@@ -47,8 +49,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT(
     SimpleBinaryOperationId::SUBTRACT,
@@ -72,8 +73,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_MULTIPLY(
     SimpleBinaryOperationId::MULTIPLY,
@@ -97,8 +97,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_DIVIDE(
     SimpleBinaryOperationId::DIVIDE,
@@ -122,8 +121,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_REMAINDER(
     SimpleBinaryOperationId::REMAINDER,
@@ -135,8 +133,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
             return SimpleExpressionValue(operand1.m_int_value % operand2.m_int_value);
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_BITWISE_AND(
     SimpleBinaryOperationId::BITWISE_AND,
@@ -148,8 +145,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
             return SimpleExpressionValue(operand1.m_int_value & operand2.m_int_value);
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_BITWISE_OR(
     SimpleBinaryOperationId::BITWISE_OR,
@@ -161,8 +157,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
             return SimpleExpressionValue(operand1.m_int_value | operand2.m_int_value);
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_SHIFT_LEFT(
     SimpleBinaryOperationId::SHIFT_LEFT,
@@ -174,8 +169,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
             return SimpleExpressionValue(operand1.m_int_value << operand2.m_int_value);
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_SHIFT_RIGHT(
     SimpleBinaryOperationId::SHIFT_RIGHT,
@@ -187,8 +181,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
             return SimpleExpressionValue(operand1.m_int_value >> operand2.m_int_value);
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_GREATER_THAN(
     SimpleBinaryOperationId::GREATER_THAN,
@@ -215,8 +208,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_GREATER_EQUAL_THAN(
     SimpleBinaryOperationId::GREATER_EQUAL_THAN,
@@ -243,8 +235,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_LESS_THAN(
     SimpleBinaryOperationId::LESS_THAN,
@@ -271,8 +262,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_LESS_EQUAL_THAN(
     SimpleBinaryOperationId::LESS_EQUAL_THAN,
@@ -299,8 +289,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_EQUALS(
     SimpleBinaryOperationId::EQUALS,
@@ -337,8 +326,7 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
 const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_NOT_EQUAL(
     SimpleBinaryOperationId::NOT_EQUAL,
@@ -375,35 +363,31 @@ const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::O
         }
 
         return SimpleExpressionValue(0);
-    }
-);
+    });
 
-const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_AND(
-    SimpleBinaryOperationId::AND,
-    "&&",
-    SimpleOperationPrecedence::LOGICAL_AND,
-    [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
-    {
-        if (operand1.IsTruthy())
-            return operand2;
-        return operand1;
-    }
-);
+const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_AND(SimpleBinaryOperationId::AND,
+                                                                                             "&&",
+                                                                                             SimpleOperationPrecedence::LOGICAL_AND,
+                                                                                             [](const SimpleExpressionValue& operand1,
+                                                                                                const SimpleExpressionValue& operand2) -> SimpleExpressionValue
+                                                                                             {
+                                                                                                 if (operand1.IsTruthy())
+                                                                                                     return operand2;
+                                                                                                 return operand1;
+                                                                                             });
 
-const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_OR(
-    SimpleBinaryOperationId::OR,
-    "||",
-    SimpleOperationPrecedence::LOGICAL_OR,
-    [](const SimpleExpressionValue& operand1, const SimpleExpressionValue& operand2) -> SimpleExpressionValue
-    {
-        if (operand1.IsTruthy())
-            return operand1;
-        return operand2;
-    }
-);
+const SimpleExpressionBinaryOperationType SimpleExpressionBinaryOperationType::OPERATION_OR(SimpleBinaryOperationId::OR,
+                                                                                            "||",
+                                                                                            SimpleOperationPrecedence::LOGICAL_OR,
+                                                                                            [](const SimpleExpressionValue& operand1,
+                                                                                               const SimpleExpressionValue& operand2) -> SimpleExpressionValue
+                                                                                            {
+                                                                                                if (operand1.IsTruthy())
+                                                                                                    return operand1;
+                                                                                                return operand2;
+                                                                                            });
 
-const SimpleExpressionBinaryOperationType* const SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[static_cast<int>(SimpleBinaryOperationId::COUNT)]
-{
+const SimpleExpressionBinaryOperationType* const SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[static_cast<int>(SimpleBinaryOperationId::COUNT)]{
     &OPERATION_ADD,
     &OPERATION_SUBTRACT,
     &OPERATION_MULTIPLY,
@@ -420,10 +404,10 @@ const SimpleExpressionBinaryOperationType* const SimpleExpressionBinaryOperation
     &OPERATION_EQUALS,
     &OPERATION_NOT_EQUAL,
     &OPERATION_AND,
-    &OPERATION_OR
-};
+    &OPERATION_OR};
 
-SimpleExpressionBinaryOperation::SimpleExpressionBinaryOperation(const SimpleExpressionBinaryOperationType* operationType, std::unique_ptr<ISimpleExpression> operand1,
+SimpleExpressionBinaryOperation::SimpleExpressionBinaryOperation(const SimpleExpressionBinaryOperationType* operationType,
+                                                                 std::unique_ptr<ISimpleExpression> operand1,
                                                                  std::unique_ptr<ISimpleExpression> operand2)
     : m_operation_type(operationType),
       m_operand1(std::move(operand1)),
@@ -447,10 +431,8 @@ bool SimpleExpressionBinaryOperation::Equals(const ISimpleExpression* other) con
 {
     const auto* otherBinaryOperation = dynamic_cast<const SimpleExpressionBinaryOperation*>(other);
 
-    return otherBinaryOperation
-        && m_operation_type->m_id == otherBinaryOperation->m_operation_type->m_id
-        && m_operand1->Equals(otherBinaryOperation->m_operand1.get())
-        && m_operand2->Equals(otherBinaryOperation->m_operand2.get());
+    return otherBinaryOperation && m_operation_type->m_id == otherBinaryOperation->m_operation_type->m_id
+           && m_operand1->Equals(otherBinaryOperation->m_operand1.get()) && m_operand2->Equals(otherBinaryOperation->m_operand2.get());
 }
 
 bool SimpleExpressionBinaryOperation::IsStatic() const

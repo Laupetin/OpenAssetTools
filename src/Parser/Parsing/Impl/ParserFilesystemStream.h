@@ -1,9 +1,9 @@
 #pragma once
 
-#include <stack>
-#include <fstream>
-
 #include "Parsing/IParserLineStream.h"
+
+#include <fstream>
+#include <stack>
 
 class ParserFilesystemStream final : public IParserLineStream
 {
@@ -16,6 +16,7 @@ class ParserFilesystemStream final : public IParserLineStream
 
         explicit FileInfo(std::string filePath);
     };
+
     std::stack<FileInfo> m_files;
 
 public:

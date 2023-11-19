@@ -1,13 +1,13 @@
 #include "AssetDumperTracer.h"
 
+#include "Game/IW4/CommonIW4.h"
+#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
+#include "Game/IW4/InfoString/TracerFields.h"
+#include "Game/IW4/ObjConstantsIW4.h"
+
 #include <cassert>
 #include <sstream>
 #include <type_traits>
-
-#include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/InfoString/TracerFields.h"
 
 using namespace IW4;
 
@@ -22,23 +22,29 @@ namespace IW4
         }
 
     public:
-        InfoStringFromTracerConverter(const TracerDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromTracerConverter(const TracerDef* structure,
+                                      const cspField_t* fields,
+                                      const size_t fieldCount,
+                                      std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace IW4
 
 InfoString AssetDumperTracer::CreateInfoString(XAssetInfo<TracerDef>* asset)
 {
-    InfoStringFromTracerConverter converter(asset->Asset(), tracer_fields, std::extent<decltype(tracer_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-    {
-        assert(scrStr < asset->m_zone->m_script_strings.Count());
-        if (scrStr >= asset->m_zone->m_script_strings.Count())
-            return "";
+    InfoStringFromTracerConverter converter(asset->Asset(),
+                                            tracer_fields,
+                                            std::extent<decltype(tracer_fields)>::value,
+                                            [asset](const scr_string_t scrStr) -> std::string
+                                            {
+                                                assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                    return "";
 
-        return asset->m_zone->m_script_strings[scrStr];
-    });
+                                                return asset->m_zone->m_script_strings[scrStr];
+                                            });
 
     return converter.Convert();
 }

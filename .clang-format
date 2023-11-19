@@ -17,9 +17,8 @@ IndentWidth:     4
 IndentWrappedFunctionNames: true
 InsertNewlineAtEOF: true
 NamespaceIndentation: All
-PackConstructorInitializers: CurrentLine
+PackConstructorInitializers: Never
 PointerAlignment: Left
 SeparateDefinitionBlocks: Always
 SortUsingDeclarations: Lexicographic
 SpaceAfterTemplateKeyword: false
-SpaceBeforeCpp11BracedList: true

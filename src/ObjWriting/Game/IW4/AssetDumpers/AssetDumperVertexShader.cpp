@@ -21,5 +21,6 @@ void AssetDumperVertexShader::DumpAsset(AssetDumpingContext& context, XAssetInfo
     if (!shaderFile)
         return;
 
-    shaderFile->write(reinterpret_cast<const char*>(vertexShader->prog.loadDef.program), static_cast<std::streamsize>(vertexShader->prog.loadDef.programSize) * 4u);
+    shaderFile->write(reinterpret_cast<const char*>(vertexShader->prog.loadDef.program),
+                      static_cast<std::streamsize>(vertexShader->prog.loadDef.programSize) * 4u);
 }

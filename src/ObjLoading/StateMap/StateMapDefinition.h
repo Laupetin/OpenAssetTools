@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
+
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "Parsing/Simple/Expression/ISimpleExpression.h"
 
 namespace state_map
 {
@@ -35,4 +35,4 @@ namespace state_map
         std::string m_name;
         std::vector<StateMapEntry> m_state_map_entries;
     };
-}
+} // namespace state_map

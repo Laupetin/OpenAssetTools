@@ -1,9 +1,9 @@
 #include "AssetLoaderSlug.h"
 
-#include <cstring>
-
 #include "Game/T6/T6.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
 
 using namespace T6;
 

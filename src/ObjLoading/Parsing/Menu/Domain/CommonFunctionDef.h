@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <string>
 
 namespace menu
 {
@@ -12,4 +12,4 @@ namespace menu
         std::string m_name;
         std::unique_ptr<ISimpleExpression> m_value;
     };
-}
+} // namespace menu

@@ -1,9 +1,9 @@
 #include "AssetLoaderLocalizeEntry.h"
 
-#include <sstream>
-
 #include "Localize/LocalizeCommon.h"
 #include "Parsing/LocalizeFile/LocalizeFileReader.h"
+
+#include <sstream>
 
 using namespace T5;
 
@@ -22,7 +22,8 @@ bool AssetLoaderLocalizeEntry::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderLocalizeEntry::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderLocalizeEntry::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     std::string fileName;
     {

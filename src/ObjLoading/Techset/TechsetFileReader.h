@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Parsing/IParserLineStream.h"
+#include "TechsetDefinition.h"
+#include "Utils/ClassUtils.h"
+
 #include <memory>
 #include <string>
-
-#include "Utils/ClassUtils.h"
-#include "TechsetDefinition.h"
-#include "Parsing/IParserLineStream.h"
 
 namespace techset
 {
@@ -22,4 +22,4 @@ namespace techset
 
         _NODISCARD std::unique_ptr<TechsetDefinition> ReadTechsetDefinition() const;
     };
-}
+} // namespace techset

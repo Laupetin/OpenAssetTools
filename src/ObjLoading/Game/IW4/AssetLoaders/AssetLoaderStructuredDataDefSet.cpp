@@ -1,12 +1,12 @@
 #include "AssetLoaderStructuredDataDefSet.h"
 
-#include <cstring>
-
-#include "ObjLoading.h"
 #include "Game/IW4/IW4.h"
-#include "StructuredDataDef/StructuredDataDefReader.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+#include "StructuredDataDef/StructuredDataDefReader.h"
 #include "Utils/Alignment.h"
+
+#include <cstring>
 
 using namespace IW4;
 
@@ -88,7 +88,8 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
     inputStruct->SortPropertiesByName();
     if (!inputStruct->m_properties.empty())
     {
-        outputStruct->properties = static_cast<StructuredDataStructProperty*>(memory->Alloc(sizeof(StructuredDataStructProperty) * inputStruct->m_properties.size()));
+        outputStruct->properties =
+            static_cast<StructuredDataStructProperty*>(memory->Alloc(sizeof(StructuredDataStructProperty) * inputStruct->m_properties.size()));
         for (auto propertyIndex = 0u; propertyIndex < inputStruct->m_properties.size(); propertyIndex++)
         {
             auto& outputProperty = outputStruct->properties[propertyIndex];
@@ -110,14 +111,18 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
         outputStruct->properties = nullptr;
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertIndexedArray(StructuredDataIndexedArray* outputIndexedArray, const CommonStructuredDataIndexedArray* inputIndexedArray, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertIndexedArray(StructuredDataIndexedArray* outputIndexedArray,
+                                                          const CommonStructuredDataIndexedArray* inputIndexedArray,
+                                                          MemoryManager* memory)
 {
     outputIndexedArray->arraySize = static_cast<int>(inputIndexedArray->m_element_count);
     outputIndexedArray->elementType = ConvertType(inputIndexedArray->m_array_type);
     outputIndexedArray->elementSize = utils::Align(inputIndexedArray->m_element_size_in_bits, 8u) / 8u;
 }
 
-void AssetLoaderStructuredDataDefSet::ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray, const CommonStructuredDataEnumedArray* inputEnumedArray, MemoryManager* memory)
+void AssetLoaderStructuredDataDefSet::ConvertEnumedArray(StructuredDataEnumedArray* outputEnumedArray,
+                                                         const CommonStructuredDataEnumedArray* inputEnumedArray,
+                                                         MemoryManager* memory)
 {
     outputEnumedArray->enumIndex = static_cast<int>(inputEnumedArray->m_enum_index);
     outputEnumedArray->elementType = ConvertType(inputEnumedArray->m_array_type);
@@ -152,7 +157,8 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
     outputDef->indexedArrayCount = static_cast<int>(inputDef->m_indexed_arrays.size());
     if (!inputDef->m_indexed_arrays.empty())
     {
-        outputDef->indexedArrays = static_cast<StructuredDataIndexedArray*>(memory->Alloc(sizeof(StructuredDataIndexedArray) * inputDef->m_indexed_arrays.size()));
+        outputDef->indexedArrays =
+            static_cast<StructuredDataIndexedArray*>(memory->Alloc(sizeof(StructuredDataIndexedArray) * inputDef->m_indexed_arrays.size()));
         for (auto indexedArrayIndex = 0u; indexedArrayIndex < inputDef->m_indexed_arrays.size(); indexedArrayIndex++)
             ConvertIndexedArray(&outputDef->indexedArrays[indexedArrayIndex], &inputDef->m_indexed_arrays[indexedArrayIndex], memory);
     }
@@ -173,7 +179,9 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
     outputDef->size = inputDef->m_size_in_byte;
 }
 
-StructuredDataDefSet* AssetLoaderStructuredDataDefSet::ConvertSet(const std::string& assetName, const std::vector<std::unique_ptr<CommonStructuredDataDef>>& defs, MemoryManager* memory)
+StructuredDataDefSet* AssetLoaderStructuredDataDefSet::ConvertSet(const std::string& assetName,
+                                                                  const std::vector<std::unique_ptr<CommonStructuredDataDef>>& defs,
+                                                                  MemoryManager* memory)
 {
     auto* set = memory->Create<StructuredDataDefSet>();
     set->name = memory->Dup(assetName.c_str());
@@ -186,20 +194,23 @@ StructuredDataDefSet* AssetLoaderStructuredDataDefSet::ConvertSet(const std::str
     return set;
 }
 
-bool AssetLoaderStructuredDataDefSet::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderStructuredDataDefSet::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())
         return false;
 
-    StructuredDataDefReader reader(*file.m_stream, assetName, [searchPath](const std::string& filename, const std::string& sourceFile) -> std::unique_ptr<std::istream>
-    {
-        auto foundFileToInclude = searchPath->Open(filename);
-        if (!foundFileToInclude.IsOpen() || !foundFileToInclude.m_stream)
-            return nullptr;
+    StructuredDataDefReader reader(*file.m_stream,
+                                   assetName,
+                                   [searchPath](const std::string& filename, const std::string& sourceFile) -> std::unique_ptr<std::istream>
+                                   {
+                                       auto foundFileToInclude = searchPath->Open(filename);
+                                       if (!foundFileToInclude.IsOpen() || !foundFileToInclude.m_stream)
+                                           return nullptr;
 
-        return std::move(foundFileToInclude.m_stream);
-    });
+                                       return std::move(foundFileToInclude.m_stream);
+                                   });
 
     bool readingDefsSuccessful;
     const auto defs = reader.ReadStructureDataDefs(readingDefsSuccessful);

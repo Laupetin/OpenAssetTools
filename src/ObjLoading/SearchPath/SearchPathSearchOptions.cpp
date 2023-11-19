@@ -34,7 +34,7 @@ SearchPathSearchOptions& SearchPathSearchOptions::FilterExtensions(std::string e
     m_extension = std::move(extension);
     m_filter_extensions = true;
 
-    if(m_extension[0] != '.')
+    if (m_extension[0] != '.')
         m_extension = "." + m_extension;
 
     return *this;

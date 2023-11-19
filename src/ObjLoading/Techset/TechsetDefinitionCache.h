@@ -1,12 +1,12 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
-#include <memory>
-
-#include "Utils/ClassUtils.h"
-#include "TechsetDefinition.h"
 #include "AssetLoading/IZoneAssetLoaderState.h"
+#include "TechsetDefinition.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace techset
 {
@@ -19,4 +19,4 @@ namespace techset
     private:
         std::unordered_map<std::string, std::unique_ptr<TechsetDefinition>> m_cache;
     };
-}
+} // namespace techset

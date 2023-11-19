@@ -1,13 +1,13 @@
 #include "AssetDumperMenuList.h"
 
-#include <cassert>
-#include <filesystem>
-#include <sstream>
-#include <set>
-
-#include "ObjWriting.h"
 #include "Game/IW5/Menu/MenuDumperIW5.h"
 #include "Menu/AbstractMenuDumper.h"
+#include "ObjWriting.h"
+
+#include <cassert>
+#include <filesystem>
+#include <set>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -21,17 +21,17 @@ std::vector<const ExpressionSupportingData*> AssetDumperMenuList::GetAllUniqueEx
     if (menuList->menus == nullptr)
         return result;
 
-    for(auto i = 0; i < menuList->menuCount; i++)
+    for (auto i = 0; i < menuList->menuCount; i++)
     {
-        if(menuList->menus[i] == nullptr)
+        if (menuList->menus[i] == nullptr)
             continue;
 
         const auto* menu = menuList->menus[i];
 
-        if(menu->data == nullptr || menu->data->expressionData == nullptr)
+        if (menu->data == nullptr || menu->data->expressionData == nullptr)
             continue;
 
-        if(alreadyAddedSupportingData.find(menu->data->expressionData) == alreadyAddedSupportingData.end())
+        if (alreadyAddedSupportingData.find(menu->data->expressionData) == alreadyAddedSupportingData.end())
         {
             result.push_back(menu->data->expressionData);
             alreadyAddedSupportingData.emplace(menu->data->expressionData);
@@ -53,10 +53,10 @@ void AssetDumperMenuList::DumpFunctions(MenuDumper& menuDumper, const MenuList* 
         if (supportingData->uifunctions.functions == nullptr)
             continue;
 
-        for(auto i = 0; i < supportingData->uifunctions.totalFunctions; i++)
+        for (auto i = 0; i < supportingData->uifunctions.totalFunctions; i++)
         {
             const auto* function = supportingData->uifunctions.functions[i];
-            if(function == nullptr)
+            if (function == nullptr)
                 continue;
 
             std::stringstream ss;
@@ -114,7 +114,7 @@ void AssetDumperMenuList::DumpAsset(AssetDumpingContext& context, XAssetInfo<Men
 
     menuDumper.Start();
 
-    if(!ObjWriting::Configuration.MenuLegacyMode)
+    if (!ObjWriting::Configuration.MenuLegacyMode)
         DumpFunctions(menuDumper, menuList);
 
     DumpMenus(menuDumper, menuList);

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
-#include "Pool/ZoneAssetPools.h"
-#include "Pool/AssetPool.h"
 #include "Game/T6/T6.h"
+#include "Pool/AssetPool.h"
+#include "Pool/ZoneAssetPools.h"
+
+#include <memory>
 
 class GameAssetPoolT6 final : public ZoneAssetPools
 {
@@ -14,7 +14,12 @@ class GameAssetPoolT6 final : public ZoneAssetPools
     static const char* ASSET_TYPE_NAMES[];
 
 protected:
-    XAssetInfoGeneric* AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings, Zone* zone) override;
+    XAssetInfoGeneric* AddAssetToPool(asset_type_t type,
+                                      std::string name,
+                                      void* asset,
+                                      std::vector<XAssetInfoGeneric*> dependencies,
+                                      std::vector<scr_string_t> usedScriptStrings,
+                                      Zone* zone) override;
 
 public:
     std::unique_ptr<AssetPool<T6::PhysPreset>> m_phys_preset;

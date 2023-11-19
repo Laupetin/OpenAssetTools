@@ -7,15 +7,14 @@ struct MockSequenceState
     char m_dummy;
 };
 
-template<typename TokenType>
-class MockSequence final : public AbstractSequence<TokenType, MockSequenceState>
+template<typename TokenType> class MockSequence final : public AbstractSequence<TokenType, MockSequenceState>
 {
 public:
     typedef AbstractSequence<TokenType, MockSequenceState> parent_t;
 
 private:
-    using parent_t::AddMatchers;
     using parent_t::AddLabeledMatchers;
+    using parent_t::AddMatchers;
 
     std::function<void(SequenceResult<TokenType>&)> m_handler;
 

@@ -1,8 +1,8 @@
 #include "CommonT6.h"
 
-#include <cctype>
-
 #include "Utils/Pack.h"
+
+#include <cctype>
 
 using namespace T6;
 
@@ -30,7 +30,7 @@ int Common::Com_HashString(const char* str)
 
     auto result = 0x1505;
     auto offset = 0;
-    while(str[offset])
+    while (str[offset])
     {
         const auto c = tolower(str[offset++]);
         result = c + 33 * result;
@@ -46,7 +46,7 @@ int Common::Com_HashString(const char* str, const int len)
 
     int result = 0x1505;
     int offset = 0;
-    while(str[offset])
+    while (str[offset])
     {
         if (len > 0 && offset >= len)
             break;
@@ -70,17 +70,17 @@ uint32_t Common::R_HashString(const char* str, uint32_t hash)
 
 PackedTexCoords Common::Vec2PackTexCoords(const vec2_t* in)
 {
-    return PackedTexCoords{ Pack32::Vec2PackTexCoords(in->v) };
+    return PackedTexCoords{Pack32::Vec2PackTexCoords(in->v)};
 }
 
 PackedUnitVec Common::Vec3PackUnitVec(const vec3_t* in)
 {
-    return PackedUnitVec{ Pack32::Vec3PackUnitVec(in->v) };
+    return PackedUnitVec{Pack32::Vec3PackUnitVec(in->v)};
 }
 
 GfxColor Common::Vec4PackGfxColor(const vec4_t* in)
 {
-    return GfxColor{ Pack32::Vec4PackGfxColor(in->v) };
+    return GfxColor{Pack32::Vec4PackGfxColor(in->v)};
 }
 
 void Common::Vec2UnpackTexCoords(const PackedTexCoords& in, vec2_t* out)

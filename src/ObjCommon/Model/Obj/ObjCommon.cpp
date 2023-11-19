@@ -7,8 +7,8 @@
 bool operator==(const ObjVertex& lhs, const ObjVertex& rhs)
 {
     return std::fabs(lhs.coordinates[0] - rhs.coordinates[0]) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.coordinates[1] - rhs.coordinates[1]) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.coordinates[2] - rhs.coordinates[2]) < std::numeric_limits<float>::epsilon();
+           && std::fabs(lhs.coordinates[1] - rhs.coordinates[1]) < std::numeric_limits<float>::epsilon()
+           && std::fabs(lhs.coordinates[2] - rhs.coordinates[2]) < std::numeric_limits<float>::epsilon();
 }
 
 bool operator!=(const ObjVertex& lhs, const ObjVertex& rhs)
@@ -24,8 +24,8 @@ bool operator<(const ObjVertex& lhs, const ObjVertex& rhs)
 bool operator==(const ObjNormal& lhs, const ObjNormal& rhs)
 {
     return std::fabs(lhs.normal[0] - rhs.normal[0]) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.normal[1] - rhs.normal[1]) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.normal[2] - rhs.normal[2]) < std::numeric_limits<float>::epsilon();
+           && std::fabs(lhs.normal[1] - rhs.normal[1]) < std::numeric_limits<float>::epsilon()
+           && std::fabs(lhs.normal[2] - rhs.normal[2]) < std::numeric_limits<float>::epsilon();
 }
 
 bool operator!=(const ObjNormal& lhs, const ObjNormal& rhs)
@@ -40,8 +40,7 @@ bool operator<(const ObjNormal& lhs, const ObjNormal& rhs)
 
 bool operator==(const ObjUv& lhs, const ObjUv& rhs)
 {
-    return std::fabs(lhs.uv[0] - rhs.uv[0]) < std::numeric_limits<float>::epsilon()
-        && std::fabs(lhs.uv[1] - rhs.uv[1]) < std::numeric_limits<float>::epsilon();
+    return std::fabs(lhs.uv[0] - rhs.uv[0]) < std::numeric_limits<float>::epsilon() && std::fabs(lhs.uv[1] - rhs.uv[1]) < std::numeric_limits<float>::epsilon();
 }
 
 bool operator!=(const ObjUv& lhs, const ObjUv& rhs)

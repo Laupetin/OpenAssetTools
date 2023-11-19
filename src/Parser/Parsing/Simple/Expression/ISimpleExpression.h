@@ -1,14 +1,16 @@
 #pragma once
 
-#include <string>
-
 #include "Utils/ClassUtils.h"
 
+#include <string>
+
 class SimpleExpressionValue;
+
 class ISimpleExpressionScopeValues
 {
 protected:
     ISimpleExpressionScopeValues() = default;
+
 public:
     virtual ~ISimpleExpressionScopeValues() = default;
     ISimpleExpressionScopeValues(const ISimpleExpressionScopeValues& other) = default;
@@ -23,6 +25,7 @@ class ISimpleExpression
 {
 protected:
     ISimpleExpression() = default;
+
 public:
     virtual ~ISimpleExpression() = default;
     ISimpleExpression(const ISimpleExpression& other) = default;

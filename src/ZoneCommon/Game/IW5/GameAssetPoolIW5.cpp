@@ -1,62 +1,59 @@
 #include "GameAssetPoolIW5.h"
 
+#include "Pool/AssetPoolDynamic.h"
+#include "Pool/AssetPoolStatic.h"
+
 #include <cassert>
 #include <type_traits>
 
-#include "Pool/AssetPoolStatic.h"
-#include "Pool/AssetPoolDynamic.h"
-
 using namespace IW5;
 
-const char* GameAssetPoolIW5::ASSET_TYPE_NAMES[]
-{
-    "physpreset",
-    "physcollmap",
-    "xanim",
-    "xmodelsurfs",
-    "xmodel",
-    "material",
-    "pixelshader",
-    "vertexshader",
-    "vertexdecl",
-    "techniqueset",
-    "image",
-    "sound",
-    "soundcurve",
-    "loadedsound",
-    "clipmap",
-    "comworld",
-    "glassworld",
-    "pathdata",
-    "vehicletrack",
-    "mapents",
-    "fxworld",
-    "gfxworld",
-    "lightdef",
-    "uimap",
-    "font",
-    "menulist",
-    "menu",
-    "localize",
-    "attachment",
-    "weapon",
-    "snddriverglobals",
-    "fx",
-    "impactfx",
-    "surfacefx",
-    "aitype",
-    "mptype",
-    "character",
-    "xmodelalias",
-    "rawfile",
-    "scriptfile",
-    "stringtable",
-    "leaderboard",
-    "structureddatadef",
-    "tracer",
-    "vehicle",
-    "addonmapents"
-};
+const char* GameAssetPoolIW5::ASSET_TYPE_NAMES[]{"physpreset",
+                                                 "physcollmap",
+                                                 "xanim",
+                                                 "xmodelsurfs",
+                                                 "xmodel",
+                                                 "material",
+                                                 "pixelshader",
+                                                 "vertexshader",
+                                                 "vertexdecl",
+                                                 "techniqueset",
+                                                 "image",
+                                                 "sound",
+                                                 "soundcurve",
+                                                 "loadedsound",
+                                                 "clipmap",
+                                                 "comworld",
+                                                 "glassworld",
+                                                 "pathdata",
+                                                 "vehicletrack",
+                                                 "mapents",
+                                                 "fxworld",
+                                                 "gfxworld",
+                                                 "lightdef",
+                                                 "uimap",
+                                                 "font",
+                                                 "menulist",
+                                                 "menu",
+                                                 "localize",
+                                                 "attachment",
+                                                 "weapon",
+                                                 "snddriverglobals",
+                                                 "fx",
+                                                 "impactfx",
+                                                 "surfacefx",
+                                                 "aitype",
+                                                 "mptype",
+                                                 "character",
+                                                 "xmodelalias",
+                                                 "rawfile",
+                                                 "scriptfile",
+                                                 "stringtable",
+                                                 "leaderboard",
+                                                 "structureddatadef",
+                                                 "tracer",
+                                                 "vehicle",
+                                                 "addonmapents"};
 
 /*
     Asset Pool Table
@@ -107,21 +104,21 @@ const char* GameAssetPoolIW5::ASSET_TYPE_NAMES[]
 
 GameAssetPoolIW5::GameAssetPoolIW5(Zone* zone, const int priority)
     : ZoneAssetPools(zone),
-    m_priority(priority)
+      m_priority(priority)
 {
     assert(std::extent<decltype(ASSET_TYPE_NAMES)>::value == ASSET_TYPE_COUNT);
 }
 
 void GameAssetPoolIW5::InitPoolStatic(const asset_type_t type, const size_t capacity)
 {
-#define CASE_INIT_POOL_STATIC(assetType, poolName, poolType) \
-    case assetType: \
-    { \
-        if((poolName) == nullptr && capacity > 0)  \
-        { \
-            (poolName) = std::make_unique<AssetPoolStatic<poolType>>(capacity, m_priority, (assetType)); \
-        } \
-        break; \
+#define CASE_INIT_POOL_STATIC(assetType, poolName, poolType)                                                                                                   \
+    case assetType:                                                                                                                                            \
+    {                                                                                                                                                          \
+        if ((poolName) == nullptr && capacity > 0)                                                                                                             \
+        {                                                                                                                                                      \
+            (poolName) = std::make_unique<AssetPoolStatic<poolType>>(capacity, m_priority, (assetType));                                                       \
+        }                                                                                                                                                      \
+        break;                                                                                                                                                 \
     }
 
     switch (type)
@@ -177,14 +174,14 @@ void GameAssetPoolIW5::InitPoolStatic(const asset_type_t type, const size_t capa
 
 void GameAssetPoolIW5::InitPoolDynamic(const asset_type_t type)
 {
-#define CASE_INIT_POOL_DYNAMIC(assetType, poolName, poolType) \
-    case assetType: \
-    { \
-        if((poolName) == nullptr) \
-        { \
-            (poolName) = std::make_unique<AssetPoolDynamic<poolType>>(m_priority, (assetType)); \
-        } \
-        break; \
+#define CASE_INIT_POOL_DYNAMIC(assetType, poolName, poolType)                                                                                                  \
+    case assetType:                                                                                                                                            \
+    {                                                                                                                                                          \
+        if ((poolName) == nullptr)                                                                                                                             \
+        {                                                                                                                                                      \
+            (poolName) = std::make_unique<AssetPoolDynamic<poolType>>(m_priority, (assetType));                                                                \
+        }                                                                                                                                                      \
+        break;                                                                                                                                                 \
     }
 
     switch (type)
@@ -238,18 +235,19 @@ void GameAssetPoolIW5::InitPoolDynamic(const asset_type_t type)
 #undef CASE_INIT_POOL_STATIC
 }
 
-XAssetInfoGeneric* GameAssetPoolIW5::AddAssetToPool(asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings, Zone* zone)
+XAssetInfoGeneric* GameAssetPoolIW5::AddAssetToPool(
+    asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings, Zone* zone)
 {
     XAsset xAsset{};
 
     xAsset.type = static_cast<XAssetType>(type);
     xAsset.header.data = asset;
 
-#define CASE_ADD_TO_POOL(assetType, poolName, headerName) \
-    case assetType: \
-    { \
-        assert((poolName) != nullptr); \
-        return (poolName)->AddAsset(std::move(name), xAsset.header.headerName, zone, std::move(dependencies), std::move(usedScriptStrings)); \
+#define CASE_ADD_TO_POOL(assetType, poolName, headerName)                                                                                                      \
+    case assetType:                                                                                                                                            \
+    {                                                                                                                                                          \
+        assert((poolName) != nullptr);                                                                                                                         \
+        return (poolName)->AddAsset(std::move(name), xAsset.header.headerName, zone, std::move(dependencies), std::move(usedScriptStrings));                   \
     }
 
     switch (xAsset.type)
@@ -307,12 +305,12 @@ XAssetInfoGeneric* GameAssetPoolIW5::AddAssetToPool(asset_type_t type, std::stri
 
 XAssetInfoGeneric* GameAssetPoolIW5::GetAsset(const asset_type_t type, std::string name) const
 {
-#define CASE_GET_ASSET(assetType, poolName) \
-    case assetType: \
-    { \
-        if((poolName) != nullptr) \
-            return (poolName)->GetAsset(std::move(name)); \
-        break; \
+#define CASE_GET_ASSET(assetType, poolName)                                                                                                                    \
+    case assetType:                                                                                                                                            \
+    {                                                                                                                                                          \
+        if ((poolName) != nullptr)                                                                                                                             \
+            return (poolName)->GetAsset(std::move(name));                                                                                                      \
+        break;                                                                                                                                                 \
     }
 
     switch (type)

@@ -10,8 +10,7 @@ float HalfFloat::ToFloat(const half_float_t half)
             float f;
         } result{};
 
-        result.u = ((half << 16) & 0x80000000) | (((((half << 14) & 0xFFFC000)
-            - (~(half << 14) & 0x10000000)) ^ 0x80000000) >> 1);
+        result.u = ((half << 16) & 0x80000000) | (((((half << 14) & 0xFFFC000) - (~(half << 14) & 0x10000000)) ^ 0x80000000) >> 1);
         return result.f;
     }
 

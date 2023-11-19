@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Utils/Arguments/ArgumentParser.h"
+
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "Utils/Arguments/ArgumentParser.h"
 
 class RawTemplaterArguments
 {

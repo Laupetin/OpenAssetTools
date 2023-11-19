@@ -11,4 +11,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<MaterialVertexShader>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialVertexShader>* asset) override;
     };
-}
+} // namespace IW4

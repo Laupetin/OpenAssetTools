@@ -1,11 +1,11 @@
 #pragma once
 
-#include <istream>
-#include <stack>
-#include <memory>
-#include <functional>
-
 #include "Parsing/IParserLineStream.h"
+
+#include <functional>
+#include <istream>
+#include <memory>
+#include <stack>
 
 class ParserMultiInputStream final : public IParserLineStream
 {

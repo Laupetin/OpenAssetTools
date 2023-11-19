@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "ICommonEventHandlerElement.h"
+
+#include <string>
 
 namespace menu
 {
@@ -16,4 +16,4 @@ namespace menu
 
         _NODISCARD CommonEventHandlerElementType GetType() const override;
     };
-}
+} // namespace menu

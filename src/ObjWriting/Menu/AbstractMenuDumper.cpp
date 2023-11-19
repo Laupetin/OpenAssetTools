@@ -1,11 +1,11 @@
 #include "AbstractMenuDumper.h"
 
-#include <algorithm>
-#include <sstream>
-#include <cmath>
-
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
+
+#include <algorithm>
+#include <cmath>
+#include <sstream>
 
 AbstractMenuDumper::AbstractMenuDumper(std::ostream& stream)
     : m_stream(stream),
@@ -115,18 +115,22 @@ bool AbstractMenuDumper::DoesTokenNeedQuotationMarks(const std::string& token)
     if (token.empty())
         return true;
 
-    const auto hasAlNumCharacter = std::any_of(token.begin(), token.end(), [](const char& c)
-    {
-        return isalnum(c);
-    });
+    const auto hasAlNumCharacter = std::any_of(token.begin(),
+                                               token.end(),
+                                               [](const char& c)
+                                               {
+                                                   return isalnum(c);
+                                               });
 
     if (!hasAlNumCharacter)
         return false;
 
-    const auto hasNonIdentifierCharacter = std::any_of(token.begin(), token.end(), [](const char& c)
-    {
-        return !isalnum(c) && c != '_';
-    });
+    const auto hasNonIdentifierCharacter = std::any_of(token.begin(),
+                                                       token.end(),
+                                                       [](const char& c)
+                                                       {
+                                                           return !isalnum(c) && c != '_';
+                                                       });
 
     return hasNonIdentifierCharacter;
 }

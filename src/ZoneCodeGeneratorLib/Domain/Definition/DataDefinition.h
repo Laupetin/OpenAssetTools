@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
-
 #include "Utils/ClassUtils.h"
+
+#include <string>
 
 enum class DataDefinitionType
 {
@@ -27,7 +27,7 @@ public:
 
     std::string m_namespace;
     std::string m_name;
-    
+
     _NODISCARD virtual DataDefinitionType GetType() const = 0;
     _NODISCARD virtual unsigned GetAlignment() const = 0;
     _NODISCARD virtual bool GetForceAlignment() const = 0;

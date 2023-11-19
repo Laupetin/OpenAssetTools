@@ -11,6 +11,6 @@ MatcherResult<ZoneDefinitionParserValue> ZoneDefinitionMatcherKeyword::CanMatch(
 {
     const auto& token = lexer->GetToken(tokenOffset);
     return token.m_type == ZoneDefinitionParserValueType::FIELD && token.FieldHash() == m_hash && token.FieldValue() == m_value
-        ? MatcherResult<ZoneDefinitionParserValue>::Match(1)
-        : MatcherResult<ZoneDefinitionParserValue>::NoMatch();
+               ? MatcherResult<ZoneDefinitionParserValue>::Match(1)
+               : MatcherResult<ZoneDefinitionParserValue>::NoMatch();
 }

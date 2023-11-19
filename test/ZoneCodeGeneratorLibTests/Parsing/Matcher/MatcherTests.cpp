@@ -1,15 +1,14 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
-#include <algorithm>
-#include <sstream>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Header/Impl/HeaderParserValue.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Parsing/Mock/MockSequence.h"
+#include "Utils/ClassUtils.h"
+
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
+#include <sstream>
 
 namespace test::parsing::matcher
 {
@@ -80,18 +79,12 @@ namespace test::parsing::matcher
     {
         MatchersTestsHelper test;
         const TokenPos pos;
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE),
-            create.Identifier(),
-            create.Char('{')
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE), create.Identifier(), create.Char('{')});
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -101,18 +94,12 @@ namespace test::parsing::matcher
     {
         MatchersTestsHelper test;
         const TokenPos pos;
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE),
-            create.Identifier(),
-            create.Char('+')
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE), create.Identifier(), create.Char('+')});
 
         REQUIRE(!test.PerformTest());
     }
@@ -122,20 +109,17 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         auto callbackCalled = false;
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE)
-        });
-        test.MatchCallback([&callbackCalled](sequence_result_t& result)
-        {
-            callbackCalled = true;
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE)});
+        test.MatchCallback(
+            [&callbackCalled](sequence_result_t& result)
+            {
+                callbackCalled = true;
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(callbackCalled);
@@ -146,18 +130,14 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         auto callbackCalled = false;
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT), HeaderParserValue::Invalid(pos)});
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE)
-        });
-        test.MatchCallback([&callbackCalled](sequence_result_t& result)
-        {
-            callbackCalled = true;
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE)});
+        test.MatchCallback(
+            [&callbackCalled](sequence_result_t& result)
+            {
+                callbackCalled = true;
+            });
 
         REQUIRE(!test.PerformTest());
         REQUIRE(!callbackCalled);
@@ -171,37 +151,33 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Or({
-                create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-                create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
-            })
-        });
+        test.Matchers({create.Or({
+            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+            create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
+        })});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
+            {
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 1);
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Identifier(pos, new std::string("test_struct")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Identifier(pos, new std::string("test_struct")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
+            {
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 1);
@@ -215,23 +191,20 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Or({
-                create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-                create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
-            })
-        });
+        test.Matchers({create.Or({
+            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+            create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
+        })});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            FAIL();
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
+            {
+                FAIL();
+            });
 
         REQUIRE(!test.PerformTest());
     }
@@ -244,25 +217,22 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Loop(create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE)),
-            create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)
-        });
+        test.Matchers(
+            {create.Loop(create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE)), create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Invalid(pos)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Invalid(pos)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
+            {
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 4);
@@ -276,15 +246,10 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Loop(create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE)),
-            create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)
-        });
+        test.Matchers(
+            {create.Loop(create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE)), create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT), HeaderParserValue::Invalid(pos)});
 
         REQUIRE(!test.PerformTest());
     }
@@ -297,15 +262,10 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.OptionalLoop(create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE)),
-            create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)
-        });
+        test.Matchers({create.OptionalLoop(create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE)),
+                       create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT), HeaderParserValue::Invalid(pos)});
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 1);
@@ -320,17 +280,13 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-            create.Optional(create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)),
-            create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+                       create.Optional(create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)),
+                       create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
+                     HeaderParserValue::Invalid(pos)});
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 2);
@@ -345,18 +301,14 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-            create.Optional(create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)),
-            create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+                       create.Optional(create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)),
+                       create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
+                     HeaderParserValue::Invalid(pos)});
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -371,19 +323,15 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-            create.Optional(create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)),
-            create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+                       create.Optional(create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)),
+                       create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
+                     HeaderParserValue::Invalid(pos)});
 
         REQUIRE(!test.PerformTest());
     }
@@ -398,39 +346,31 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-            create.Loop(create.Or({
-                create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
-                create.Type(HeaderParserValueType::TYPEDEF).Tag(TAG_TYPEDEF)
-            })),
-            create.Or({
-                create.Type(HeaderParserValueType::TYPEDEF).Tag(TAG_TYPEDEF),
-                create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)
-            })
-        });
+        test.Matchers(
+            {create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+             create.Loop(create.Or({create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT), create.Type(HeaderParserValueType::TYPEDEF).Tag(TAG_TYPEDEF)})),
+             create.Or({create.Type(HeaderParserValueType::TYPEDEF).Tag(TAG_TYPEDEF), create.Type(HeaderParserValueType::ENUM).Tag(TAG_ENUM)})});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::TYPEDEF),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::TYPEDEF),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::TYPEDEF),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::TYPEDEF),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::ENUM),
+                     HeaderParserValue::Invalid(pos)});
 
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == TAG_TYPEDEF);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == TAG_TYPEDEF);
-            REQUIRE(result.NextTag() == TAG_ENUM);
-        });
+        test.MatchCallback(
+            [](sequence_result_t& result)
+            {
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == TAG_TYPEDEF);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == TAG_TYPEDEF);
+                REQUIRE(result.NextTag() == TAG_ENUM);
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 7);
@@ -446,30 +386,22 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers(
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE), create.Label(LABEL_TEST)});
+        test.LabeledMatchers({create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT), create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)},
+                             LABEL_TEST);
+
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Invalid(pos)});
+
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-                create.Label(LABEL_TEST)
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
             });
-        test.LabeledMatchers(
-            {
-                create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
-                create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT)
-            }, LABEL_TEST);
-
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Invalid(pos)
-        });
-
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-        });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -485,32 +417,23 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers(
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE), create.Label(LABEL_TEST)});
+        test.LabeledMatchers({create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT), create.Optional(create.Label(LABEL_TEST))}, LABEL_TEST);
+
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Invalid(pos)});
+
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-                create.Label(LABEL_TEST)
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == TAG_STRUCT);
             });
-        test.LabeledMatchers(
-            {
-                create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
-                create.Optional(create.Label(LABEL_TEST))
-            }, LABEL_TEST);
-
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Invalid(pos)
-        });
-
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-        });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 4);
@@ -525,33 +448,29 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-            create.Identifier().Capture(CAPTURE_NAMESPACE_NAME),
-            create.Char('{')
-        });
+        test.Matchers(
+            {create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE), create.Identifier().Capture(CAPTURE_NAMESPACE_NAME), create.Char('{')});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("hello_world")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_world")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
 
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_world");
-            }
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
 
-            REQUIRE(!result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_world");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -568,64 +487,58 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Or({
-                create.And({
-                    create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-                    create.Identifier().Capture(CAPTURE_NAMESPACE_NAME),
-                }),
-                create.And({
-                    create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
-                    create.Identifier().Capture(CAPTURE_STRUCT_NAME),
-                })
-            }),
-            create.Char('{')
-        });
+        test.Matchers({create.Or({create.And({
+                                      create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+                                      create.Identifier().Capture(CAPTURE_NAMESPACE_NAME),
+                                  }),
+                                  create.And({
+                                      create.Type(HeaderParserValueType::STRUCT).Tag(TAG_STRUCT),
+                                      create.Identifier().Capture(CAPTURE_STRUCT_NAME),
+                                  })}),
+                       create.Char('{')});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("hello_world")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_world")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_world");
-            }
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
 
-            REQUIRE(!result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_world");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Identifier(pos, new std::string("bye_struct")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_STRUCT);
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_STRUCT_NAME));
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Identifier(pos, new std::string("bye_struct")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_STRUCT_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "bye_struct");
-            }
+                REQUIRE(result.NextTag() == TAG_STRUCT);
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
 
-            REQUIRE(!result.HasNextCapture(CAPTURE_STRUCT_NAME));
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_STRUCT_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_STRUCT_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "bye_struct");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_STRUCT_NAME));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -640,49 +553,46 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
-            create.Loop(create.Identifier().Capture(CAPTURE_NAMESPACE_NAME)),
-            create.Char('{')
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE).Tag(TAG_NAMESPACE),
+                       create.Loop(create.Identifier().Capture(CAPTURE_NAMESPACE_NAME)),
+                       create.Char('{')});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("hello_world")),
-            HeaderParserValue::Identifier(pos, new std::string("hello_universe")),
-            HeaderParserValue::Identifier(pos, new std::string("hello_everyone")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_world")),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_universe")),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_everyone")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
 
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_NAMESPACE);
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_world");
-            }
+                REQUIRE(result.NextTag() == TAG_NAMESPACE);
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
 
-            REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_universe");
-            }
+                REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_world");
+                }
 
-            REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_everyone");
-            }
+                REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_universe");
+                }
 
-            REQUIRE(!result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_NAMESPACE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_everyone");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_NAMESPACE_NAME));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 5);
@@ -697,38 +607,32 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.And({
-                create.Type(HeaderParserValueType::NAMESPACE),
-                create.Identifier()
-            }).Tag(TAG_AND_GROUP).Capture(CAPTURE_AND_GROUP),
-            create.Char('{')
-        });
+        test.Matchers(
+            {create.And({create.Type(HeaderParserValueType::NAMESPACE), create.Identifier()}).Tag(TAG_AND_GROUP).Capture(CAPTURE_AND_GROUP), create.Char('{')});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("hello_world")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_world")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
 
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_AND_GROUP);
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_AND_GROUP));
-            REQUIRE(result.NextCapture(CAPTURE_AND_GROUP).m_type == HeaderParserValueType::NAMESPACE);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_AND_GROUP));
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_AND_GROUP);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_world");
-            }
+                REQUIRE(result.NextTag() == TAG_AND_GROUP);
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
 
-            REQUIRE(!result.HasNextCapture(CAPTURE_AND_GROUP));
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_AND_GROUP));
+                REQUIRE(result.NextCapture(CAPTURE_AND_GROUP).m_type == HeaderParserValueType::NAMESPACE);
+
+                REQUIRE(result.HasNextCapture(CAPTURE_AND_GROUP));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_AND_GROUP);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_world");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_AND_GROUP));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -743,50 +647,45 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers({
-            create.Loop(create.And({
-                create.Type(HeaderParserValueType::NAMESPACE),
-                create.Identifier()
-            })).Tag(TAG_LOOP_GROUP).Capture(CAPTURE_LOOP_GROUP),
-            create.Char('{')
-        });
+        test.Matchers(
+            {create.Loop(create.And({create.Type(HeaderParserValueType::NAMESPACE), create.Identifier()})).Tag(TAG_LOOP_GROUP).Capture(CAPTURE_LOOP_GROUP),
+             create.Char('{')});
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("hello_world")),
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("hello_universe")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_world")),
+                     HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_universe")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
 
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == TAG_LOOP_GROUP);
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
-            REQUIRE(result.NextCapture(CAPTURE_LOOP_GROUP).m_type == HeaderParserValueType::NAMESPACE);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_LOOP_GROUP);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_world");
-            }
+                REQUIRE(result.NextTag() == TAG_LOOP_GROUP);
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
 
-            REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
-            REQUIRE(result.NextCapture(CAPTURE_LOOP_GROUP).m_type == HeaderParserValueType::NAMESPACE);
+                REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
+                REQUIRE(result.NextCapture(CAPTURE_LOOP_GROUP).m_type == HeaderParserValueType::NAMESPACE);
 
-            REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_LOOP_GROUP);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello_universe");
-            }
+                REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_LOOP_GROUP);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_world");
+                }
 
-            REQUIRE(!result.HasNextCapture(CAPTURE_LOOP_GROUP));
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
+                REQUIRE(result.NextCapture(CAPTURE_LOOP_GROUP).m_type == HeaderParserValueType::NAMESPACE);
+
+                REQUIRE(result.HasNextCapture(CAPTURE_LOOP_GROUP));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_LOOP_GROUP);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello_universe");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_LOOP_GROUP));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 5);
@@ -801,56 +700,43 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers(
+        test.Matchers({create.Type(HeaderParserValueType::STRUCT), create.Label(LABEL_TYPENAME).Capture(CAPTURE_TYPENAME), create.Char('{')});
+        test.LabeledMatchers({create.And({create.Identifier(), create.OptionalLoop(create.And({create.Char(':'), create.Char(':'), create.Identifier()}))})
+                                  .Transform(
+                                      [](HeaderMatcherFactory::token_list_t& values)
+                                      {
+                                          std::ostringstream str;
+                                          str << values[0].get().IdentifierValue();
+
+                                          for (auto i = 3u; i < values.size(); i += 3)
+                                              str << "::" << values[i].get().IdentifierValue();
+
+                                          return HeaderParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
+                                      })},
+                             LABEL_TYPENAME);
+
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Identifier(pos, new std::string("hello")),
+                     HeaderParserValue::Character(pos, ':'),
+                     HeaderParserValue::Character(pos, ':'),
+                     HeaderParserValue::Identifier(pos, new std::string("world")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                create.Type(HeaderParserValueType::STRUCT),
-                create.Label(LABEL_TYPENAME).Capture(CAPTURE_TYPENAME),
-                create.Char('{')
-            });
-        test.LabeledMatchers(
-            {
-                create.And({
-                    create.Identifier(),
-                    create.OptionalLoop(create.And({
-                        create.Char(':'),
-                        create.Char(':'),
-                        create.Identifier()
-                    }))
-                }).Transform([](HeaderMatcherFactory::token_list_t& values)
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
+
+                REQUIRE(result.HasNextCapture(CAPTURE_TYPENAME));
                 {
-                    std::ostringstream str;
-                    str << values[0].get().IdentifierValue();
+                    const auto& capture = result.NextCapture(CAPTURE_TYPENAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::TYPE_NAME);
+                    REQUIRE(capture.TypeNameValue() == "hello::world");
+                }
 
-                    for (auto i = 3u; i < values.size(); i += 3)
-                        str << "::" << values[i].get().IdentifierValue();
-
-                    return HeaderParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
-                })
-            }, LABEL_TYPENAME);
-
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Identifier(pos, new std::string("hello")),
-            HeaderParserValue::Character(pos, ':'),
-            HeaderParserValue::Character(pos, ':'),
-            HeaderParserValue::Identifier(pos, new std::string("world")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_TYPENAME));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_TYPENAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::TYPE_NAME);
-                REQUIRE(capture.TypeNameValue() == "hello::world");
-            }
-
-            REQUIRE(!result.HasNextCapture(CAPTURE_TYPENAME));
-        });
+                REQUIRE(!result.HasNextCapture(CAPTURE_TYPENAME));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 6);
@@ -866,65 +752,54 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers(
+        test.Matchers({create.Type(HeaderParserValueType::STRUCT), create.Label(LABEL_TYPENAME).Capture(CAPTURE_TYPENAME), create.Char('{')});
+        test.LabeledMatchers({create
+                                  .And({create.Identifier().Capture(CAPTURE_FIRST_TYPENAME_IDENTIFIER),
+                                        create.OptionalLoop(create.And({create.Char(':'), create.Char(':'), create.Identifier()}))})
+                                  .Transform(
+                                      [](HeaderMatcherFactory::token_list_t& values)
+                                      {
+                                          std::ostringstream str;
+                                          str << values[0].get().IdentifierValue();
+
+                                          for (auto i = 3u; i < values.size(); i += 3)
+                                              str << "::" << values[i].get().IdentifierValue();
+
+                                          return HeaderParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
+                                      })},
+                             LABEL_TYPENAME);
+
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Identifier(pos, new std::string("hello")),
+                     HeaderParserValue::Character(pos, ':'),
+                     HeaderParserValue::Character(pos, ':'),
+                     HeaderParserValue::Identifier(pos, new std::string("world")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                create.Type(HeaderParserValueType::STRUCT),
-                create.Label(LABEL_TYPENAME).Capture(CAPTURE_TYPENAME),
-                create.Char('{')
-            });
-        test.LabeledMatchers(
-            {
-                create.And({
-                    create.Identifier().Capture(CAPTURE_FIRST_TYPENAME_IDENTIFIER),
-                    create.OptionalLoop(create.And({
-                        create.Char(':'),
-                        create.Char(':'),
-                        create.Identifier()
-                    }))
-                }).Transform([](HeaderMatcherFactory::token_list_t& values)
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
+
+                REQUIRE(result.HasNextCapture(CAPTURE_TYPENAME));
                 {
-                    std::ostringstream str;
-                    str << values[0].get().IdentifierValue();
+                    const auto& capture = result.NextCapture(CAPTURE_TYPENAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::TYPE_NAME);
+                    REQUIRE(capture.TypeNameValue() == "hello::world");
+                }
 
-                    for (auto i = 3u; i < values.size(); i += 3)
-                        str << "::" << values[i].get().IdentifierValue();
+                REQUIRE(!result.HasNextCapture(CAPTURE_TYPENAME));
 
-                    return HeaderParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
-                })
-            }, LABEL_TYPENAME);
+                REQUIRE(result.HasNextCapture(CAPTURE_FIRST_TYPENAME_IDENTIFIER));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_FIRST_TYPENAME_IDENTIFIER);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "hello");
+                }
 
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Identifier(pos, new std::string("hello")),
-            HeaderParserValue::Character(pos, ':'),
-            HeaderParserValue::Character(pos, ':'),
-            HeaderParserValue::Identifier(pos, new std::string("world")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_TYPENAME));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_TYPENAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::TYPE_NAME);
-                REQUIRE(capture.TypeNameValue() == "hello::world");
-            }
-
-            REQUIRE(!result.HasNextCapture(CAPTURE_TYPENAME));
-
-            REQUIRE(result.HasNextCapture(CAPTURE_FIRST_TYPENAME_IDENTIFIER));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_FIRST_TYPENAME_IDENTIFIER);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "hello");
-            }
-
-            REQUIRE(!result.HasNextCapture(CAPTURE_FIRST_TYPENAME_IDENTIFIER));
-        });
+                REQUIRE(!result.HasNextCapture(CAPTURE_FIRST_TYPENAME_IDENTIFIER));
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 6);
@@ -937,38 +812,37 @@ namespace test::parsing::matcher
         MatchersTestsHelper test;
         const TokenPos pos;
         const auto create = test.Factory();
-        test.Matchers(
+        test.Matchers({create.Type(HeaderParserValueType::STRUCT),
+                       create.Identifier()
+                           .Capture(CAPTURE_NAME)
+                           .Transform(
+                               [](HeaderMatcherFactory::token_list_t& tokens)
+                               {
+                                   auto str = tokens[0].get().IdentifierValue();
+                                   std::transform(str.begin(), str.end(), str.begin(), toupper);
+                                   return HeaderParserValue::Identifier(tokens[0].get().GetPos(), new std::string(std::move(str)));
+                               }),
+                       create.Char('{')});
+
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
+                     HeaderParserValue::Identifier(pos, new std::string("hello_world")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
+
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                create.Type(HeaderParserValueType::STRUCT),
-                create.Identifier().Capture(CAPTURE_NAME).Transform([](HeaderMatcherFactory::token_list_t& tokens)
+                REQUIRE(result.NextTag() == matcher_t::NO_ID);
+
+                REQUIRE(result.HasNextCapture(CAPTURE_NAME));
                 {
-                    auto str = tokens[0].get().IdentifierValue();
-                    std::transform(str.begin(), str.end(), str.begin(), toupper);
-                    return HeaderParserValue::Identifier(tokens[0].get().GetPos(), new std::string(std::move(str)));
-                }),
-                create.Char('{')
+                    const auto& capture = result.NextCapture(CAPTURE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "HELLO_WORLD");
+                }
+
+                REQUIRE(!result.HasNextCapture(CAPTURE_NAME));
             });
-
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::STRUCT),
-            HeaderParserValue::Identifier(pos, new std::string("hello_world")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
-
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.NextTag() == matcher_t::NO_ID);
-
-            REQUIRE(result.HasNextCapture(CAPTURE_NAME));
-            {
-                const auto& capture = result.NextCapture(CAPTURE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "HELLO_WORLD");
-            }
-
-            REQUIRE(!result.HasNextCapture(CAPTURE_NAME));
-        });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 3);
@@ -978,18 +852,12 @@ namespace test::parsing::matcher
     {
         MatchersTestsHelper test;
         const TokenPos pos;
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE),
-            create.Identifier(),
-            create.Char('{').NoConsume()
-        });
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE), create.Identifier(), create.Char('{').NoConsume()});
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 2);
@@ -1001,28 +869,24 @@ namespace test::parsing::matcher
 
         MatchersTestsHelper test;
         const TokenPos pos;
-        test.Tokens({
-            HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
-            HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
-            HeaderParserValue::Character(pos, '{'),
-            HeaderParserValue::Invalid(pos)
-        });
+        test.Tokens({HeaderParserValue::Keyword(pos, HeaderParserValueType::NAMESPACE),
+                     HeaderParserValue::Identifier(pos, new std::string("test_namespace")),
+                     HeaderParserValue::Character(pos, '{'),
+                     HeaderParserValue::Invalid(pos)});
         const auto create = test.Factory();
-        test.Matchers({
-            create.Type(HeaderParserValueType::NAMESPACE),
-            create.Identifier().NoConsume().Capture(CAPTURE_NAME)
-        });
-        test.MatchCallback([](sequence_result_t& result)
-        {
-            REQUIRE(result.HasNextCapture(CAPTURE_NAME));
+        test.Matchers({create.Type(HeaderParserValueType::NAMESPACE), create.Identifier().NoConsume().Capture(CAPTURE_NAME)});
+        test.MatchCallback(
+            [](sequence_result_t& result)
             {
-                const auto& capture = result.NextCapture(CAPTURE_NAME);
-                REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
-                REQUIRE(capture.IdentifierValue() == "test_namespace");
-            }
-        });
+                REQUIRE(result.HasNextCapture(CAPTURE_NAME));
+                {
+                    const auto& capture = result.NextCapture(CAPTURE_NAME);
+                    REQUIRE(capture.m_type == HeaderParserValueType::IDENTIFIER);
+                    REQUIRE(capture.IdentifierValue() == "test_namespace");
+                }
+            });
 
         REQUIRE(test.PerformTest());
         REQUIRE(test.GetConsumedTokenCount() == 1);
     }
-}
+} // namespace test::parsing::matcher

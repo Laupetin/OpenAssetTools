@@ -1,9 +1,9 @@
 #include "AssetDumperLocalizeEntry.h"
 
-#include <sstream>
-
-#include "Localize/LocalizeCommon.h"
 #include "Dumping/Localize/StringFileDumper.h"
+#include "Localize/LocalizeCommon.h"
+
+#include <sstream>
 
 using namespace IW4;
 

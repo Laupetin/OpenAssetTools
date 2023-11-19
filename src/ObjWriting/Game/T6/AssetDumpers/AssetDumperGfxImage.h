@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
 #include "Image/IImageWriter.h"
+
+#include <memory>
 
 namespace T6
 {
@@ -21,4 +21,4 @@ namespace T6
     public:
         AssetDumperGfxImage();
     };
-}
+} // namespace T6

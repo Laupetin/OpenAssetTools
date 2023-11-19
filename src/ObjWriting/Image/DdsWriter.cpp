@@ -1,14 +1,13 @@
 #include "DdsWriter.h"
 
+#include "Image/DdsTypes.h"
+#include "Image/TextureConverter.h"
+
 #include <cassert>
 #include <map>
 #include <memory>
 
-#include "Image/DdsTypes.h"
-#include "Image/TextureConverter.h"
-
-const std::map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE
-{
+const std::map<ImageFormatId, ImageFormatId> DDS_CONVERSION_TABLE{
     {ImageFormatId::R8_G8_B8, ImageFormatId::B8_G8_R8_X8},
 };
 
@@ -130,11 +129,8 @@ class DdsWriterInternal
 
         if (m_texture->GetTextureType() == TextureType::T_CUBE)
         {
-            header.dwCaps2 |=
-                DDSCAPS2_CUBEMAP
-                | DDSCAPS2_CUBEMAP_POSITIVEX | DDSCAPS2_CUBEMAP_NEGATIVEX
-                | DDSCAPS2_CUBEMAP_POSITIVEY | DDSCAPS2_CUBEMAP_NEGATIVEY
-                | DDSCAPS2_CUBEMAP_POSITIVEZ | DDSCAPS2_CUBEMAP_NEGATIVEZ;
+            header.dwCaps2 |= DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX | DDSCAPS2_CUBEMAP_NEGATIVEX | DDSCAPS2_CUBEMAP_POSITIVEY
+                              | DDSCAPS2_CUBEMAP_NEGATIVEY | DDSCAPS2_CUBEMAP_POSITIVEZ | DDSCAPS2_CUBEMAP_NEGATIVEZ;
         }
 
         header.dwCaps3 = 0;
@@ -170,7 +166,7 @@ class DdsWriterInternal
     {
         auto entry = DDS_CONVERSION_TABLE.find(m_texture->GetFormat()->GetId());
 
-        if(entry != DDS_CONVERSION_TABLE.end())
+        if (entry != DDS_CONVERSION_TABLE.end())
         {
             TextureConverter converter(m_texture, ImageFormat::ALL_FORMATS[static_cast<unsigned>(entry->second)]);
             m_converted_texture = std::unique_ptr<Texture>(converter.Convert());
@@ -225,8 +221,7 @@ public:
     }
 };
 
-DdsWriter::~DdsWriter()
-= default;
+DdsWriter::~DdsWriter() = default;
 
 bool DdsWriter::SupportsImageFormat(const ImageFormat* imageFormat)
 {

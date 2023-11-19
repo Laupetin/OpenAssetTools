@@ -1,8 +1,5 @@
 #include "ContentWriterT5.h"
 
-#include <cassert>
-#include <sstream>
-
 #include "Game/T5/XAssets/clipmap_t/clipmap_t_write_db.h"
 #include "Game/T5/XAssets/comworld/comworld_write_db.h"
 #include "Game/T5/XAssets/ddlroot_t/ddlroot_t_write_db.h"
@@ -35,8 +32,10 @@
 #include "Game/T5/XAssets/xanimparts/xanimparts_write_db.h"
 #include "Game/T5/XAssets/xglobals/xglobals_write_db.h"
 #include "Game/T5/XAssets/xmodel/xmodel_write_db.h"
-
 #include "Writing/WritingException.h"
+
+#include <cassert>
+#include <sstream>
 
 using namespace T5;
 
@@ -107,15 +106,15 @@ void ContentWriter::WriteScriptStringList(const bool atStreamStart)
 
 void ContentWriter::WriteXAsset(const bool atStreamStart)
 {
-#define WRITE_ASSET(type_index, typeName, headerEntry) \
-    case type_index: \
-        { \
-            Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, m_stream); \
-            writer.Write(&varXAsset->header.headerEntry); \
-            break; \
-        }
-#define SKIP_ASSET(type_index, typeName, headerEntry) \
-    case type_index: \
+#define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
+    case type_index:                                                                                                                                           \
+    {                                                                                                                                                          \
+        Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, m_stream);                                                                             \
+        writer.Write(&varXAsset->header.headerEntry);                                                                                                          \
+        break;                                                                                                                                                 \
+    }
+#define SKIP_ASSET(type_index, typeName, headerEntry)                                                                                                          \
+    case type_index:                                                                                                                                           \
         break;
 
     assert(varXAsset != nullptr);
@@ -125,46 +124,46 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 
     switch (varXAsset->type)
     {
-    WRITE_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-    WRITE_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints)
-    WRITE_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef)
-    WRITE_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-    WRITE_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-    WRITE_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-    WRITE_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-    WRITE_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-    WRITE_ASSET(ASSET_TYPE_SOUND, SndBank, sound)
-    WRITE_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch)
-    WRITE_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
-    WRITE_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
-    WRITE_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-    WRITE_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
-    WRITE_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
-    WRITE_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-    WRITE_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-    WRITE_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-    WRITE_ASSET(ASSET_TYPE_FONT, Font_s, font)
-    WRITE_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
-    WRITE_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-    WRITE_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-    WRITE_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon)
-    WRITE_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
-    WRITE_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-    WRITE_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-    WRITE_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-    WRITE_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
-    WRITE_ASSET(ASSET_TYPE_PACK_INDEX, PackIndex, packIndex)
-    WRITE_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals)
-    WRITE_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot)
-    WRITE_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses)
-    WRITE_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet)
+        WRITE_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
+        WRITE_ASSET(ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints, physConstraints)
+        WRITE_ASSET(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef, destructibleDef)
+        WRITE_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
+        WRITE_ASSET(ASSET_TYPE_XMODEL, XModel, model)
+        WRITE_ASSET(ASSET_TYPE_MATERIAL, Material, material)
+        WRITE_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
+        WRITE_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
+        WRITE_ASSET(ASSET_TYPE_SOUND, SndBank, sound)
+        WRITE_ASSET(ASSET_TYPE_SOUND_PATCH, SndPatch, soundPatch)
+        WRITE_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
+        WRITE_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
+        WRITE_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
+        WRITE_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
+        WRITE_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
+        WRITE_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
+        WRITE_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
+        WRITE_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
+        WRITE_ASSET(ASSET_TYPE_FONT, Font_s, font)
+        WRITE_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
+        WRITE_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
+        WRITE_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
+        WRITE_ASSET(ASSET_TYPE_WEAPON, WeaponVariantDef, weapon)
+        WRITE_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
+        WRITE_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
+        WRITE_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
+        WRITE_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
+        WRITE_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
+        WRITE_ASSET(ASSET_TYPE_PACK_INDEX, PackIndex, packIndex)
+        WRITE_ASSET(ASSET_TYPE_XGLOBALS, XGlobals, xGlobals)
+        WRITE_ASSET(ASSET_TYPE_DDL, ddlRoot_t, ddlRoot)
+        WRITE_ASSET(ASSET_TYPE_GLASSES, Glasses, glasses)
+        WRITE_ASSET(ASSET_TYPE_EMBLEMSET, EmblemSet, emblemSet)
 
     default:
-        {
-            std::ostringstream str;
-            str << "Unsupported asset type: " << varXAsset->type << ".";
-            throw WritingException(str.str());
-        }
+    {
+        std::ostringstream str;
+        str << "Unsupported asset type: " << varXAsset->type << ".";
+        throw WritingException(str.str());
+    }
     }
 
 #undef WRITE_ASSET

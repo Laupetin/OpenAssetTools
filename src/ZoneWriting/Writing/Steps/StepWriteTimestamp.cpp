@@ -3,9 +3,7 @@
 #include <algorithm>
 #include <ctime>
 
-StepWriteTimestamp::StepWriteTimestamp()
-{
-}
+StepWriteTimestamp::StepWriteTimestamp() {}
 
 void StepWriteTimestamp::PerformStep(ZoneWriter* zoneWriter, IWritingStream* stream)
 {

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <memory>
-
-#include "Utils/DistinctMapper.h"
 #include "Math/Quaternion.h"
+#include "Utils/DistinctMapper.h"
+
+#include <memory>
+#include <string>
 
 struct XModelObject
 {
@@ -64,22 +64,28 @@ struct XModelMaterial
     float ambientColor[4];
     float incandescence[4];
     float coeffs[2];
-    struct {
+
+    struct
+    {
         float x;
         int y;
     } glow;
+
     struct
     {
         int x;
         float y;
     } refractive;
+
     float specularColor[4];
     float reflectiveColor[4];
+
     struct
     {
         int x;
         float y;
     } reflective;
+
     float blinn[2];
     float phong;
     std::string colorMapName;

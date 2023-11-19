@@ -1,11 +1,11 @@
 #pragma once
-#include <vector>
-#include <set>
-#include <regex>
-
-#include "Utils/ClassUtils.h"
 #include "Utils/Arguments/ArgumentParser.h"
+#include "Utils/ClassUtils.h"
 #include "Zone/Zone.h"
+
+#include <regex>
+#include <set>
+#include <vector>
 
 class LinkerArgs
 {
@@ -37,12 +37,13 @@ private:
     _NODISCARD std::string GetBasePathForProject(const std::string& projectName) const;
     void SetDefaultBasePath();
     _NODISCARD std::set<std::string> GetProjectIndependentSearchPaths(const std::set<std::string>& set) const;
-    _NODISCARD std::set<std::string> GetSearchPathsForProject(const std::set<std::string>& set, const std::string& gameName, const std::string& projectName) const;
+    _NODISCARD std::set<std::string>
+        GetSearchPathsForProject(const std::set<std::string>& set, const std::string& gameName, const std::string& projectName) const;
 
 public:
     std::vector<std::string> m_zones_to_load;
     std::vector<std::string> m_project_specifiers_to_build;
-    
+
     std::string m_base_folder;
     std::string m_out_folder;
     bool m_base_folder_depends_on_project;
@@ -67,7 +68,7 @@ public:
     _NODISCARD std::set<std::string> GetProjectIndependentAssetSearchPaths() const;
     _NODISCARD std::set<std::string> GetProjectIndependentGdtSearchPaths() const;
     _NODISCARD std::set<std::string> GetProjectIndependentSourceSearchPaths() const;
-    
+
     _NODISCARD std::set<std::string> GetAssetSearchPathsForProject(const std::string& gameName, const std::string& projectName) const;
     _NODISCARD std::set<std::string> GetGdtSearchPathsForProject(const std::string& gameName, const std::string& projectName) const;
     _NODISCARD std::set<std::string> GetSourceSearchPathsForProject(const std::string& projectName) const;

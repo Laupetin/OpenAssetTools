@@ -2,9 +2,9 @@
 
 #include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
+#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 
 enum class SndCurveParserStatus
 {
@@ -36,7 +36,7 @@ public:
     {
         const SimpleMatcherFactory create(this);
         AddMatchers({
-            create.Keyword("SNDCURVE")
+            create.Keyword("SNDCURVE"),
         });
     }
 
@@ -56,7 +56,7 @@ public:
     {
         const SimpleMatcherFactory create(this);
         AddMatchers({
-            create.Integer().Capture(CAPTURE_KNOT_COUNT)
+            create.Integer().Capture(CAPTURE_KNOT_COUNT),
         });
     }
 
@@ -84,15 +84,19 @@ public:
     {
         const SimpleMatcherFactory create(this);
         AddMatchers({
-            create.Or({
-                create.FloatingPoint(),
-                create.Integer()
-            }).Capture(CAPTURE_X),
+            create
+                .Or({
+                    create.FloatingPoint(),
+                    create.Integer(),
+                })
+                .Capture(CAPTURE_X),
 
-            create.Or({
-                create.FloatingPoint(),
-                create.Integer()
-            }).Capture(CAPTURE_Y),
+            create
+                .Or({
+                    create.FloatingPoint(),
+                    create.Integer(),
+                })
+                .Capture(CAPTURE_Y),
         });
     }
 
@@ -135,31 +139,28 @@ protected:
         switch (m_state->m_status)
         {
         case SndCurveParserStatus::EXPECT_MAGIC:
-            {
-                static std::vector<sequence_t*> expectMagicSequences
-                {
-                    new SndCurveMagicSequence()
-                };
-                return expectMagicSequences;
-            }
+        {
+            static std::vector<sequence_t*> expectMagicSequences{
+                new SndCurveMagicSequence(),
+            };
+            return expectMagicSequences;
+        }
 
         case SndCurveParserStatus::EXPECT_KNOT_COUNT:
-            {
-                static std::vector<sequence_t*> expectKnotCountSequences
-                {
-                    new SndCurveKnotCountSequence()
-                };
-                return expectKnotCountSequences;
-            }
+        {
+            static std::vector<sequence_t*> expectKnotCountSequences{
+                new SndCurveKnotCountSequence(),
+            };
+            return expectKnotCountSequences;
+        }
 
         case SndCurveParserStatus::KNOTS:
-            {
-                static std::vector<sequence_t*> knotsSequences
-                {
-                    new SndCurveKnotSequence()
-                };
-                return knotsSequences;
-            }
+        {
+            static std::vector<sequence_t*> knotsSequences{
+                new SndCurveKnotSequence(),
+            };
+            return knotsSequences;
+        }
         }
 
         assert(false);
@@ -203,7 +204,7 @@ std::unique_ptr<SndCurveReader::Result> SndCurveReader::Read() const
         return nullptr;
     }
 
-    if(!parser.HasExpectedKnotCount())
+    if (!parser.HasExpectedKnotCount())
     {
         std::cerr << "Failed to load SndCurve: Actual knot count differs from expected: \"" << m_filename << "\"\n";
         return nullptr;

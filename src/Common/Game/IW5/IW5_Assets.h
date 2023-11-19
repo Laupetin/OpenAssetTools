@@ -536,7 +536,7 @@ namespace IW5
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
         float quantizeScale;
-        r_index16_t(*triIndices)[3];
+        r_index16_t (*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxVertexUnion0 verts0;
         unsigned int vertListCount;
@@ -606,8 +606,8 @@ namespace IW5
         unsigned int noScalePartBits[6];
         ScriptString* boneNames;
         unsigned char* parentList;
-        short(*quats)[4];
-        float(*trans)[3];
+        short (*quats)[4];
+        float (*trans)[3];
         unsigned char* partClassification;
         DObjAnimMat* baseMat;
         Material** materialHandles;
@@ -802,13 +802,13 @@ namespace IW5
         char source;
         char dest;
     };
-    
+
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[13];
         void* decl[16];
     };
-    
+
     struct MaterialVertexDeclaration
     {
         const char* name;
@@ -843,7 +843,7 @@ namespace IW5
 
     union MaterialArgumentDef
     {
-        const float(*literalConst)[4];
+        const float (*literalConst)[4];
         MaterialArgumentCodeConst codeConst;
         unsigned int codeSampler;
         unsigned int nameHash;
@@ -1507,6 +1507,7 @@ namespace IW5
         pathnode_t* pParent;
         float fCost;
         float fHeuristic;
+
         union
         {
             float nodeCost;
@@ -1659,6 +1660,7 @@ namespace IW5
             FxSpatialFrame frame;
             float radius;
         };
+
         unsigned int nextFree;
     };
 
@@ -1817,7 +1819,7 @@ namespace IW5
         bool isAncestor;
         unsigned char recursionDepth;
         unsigned char hullPointCount;
-        float(*hullPoints)[2];
+        float (*hullPoints)[2];
         GfxPortal* queuedParent;
     };
 
@@ -2173,7 +2175,7 @@ namespace IW5
         unsigned int sortKeyEffectAuto;
         unsigned int sortKeyDistortion;
         GfxWorldDpvsPlanes dpvsPlanes;
-        int/*GfxCellTreeCount*/* aabbTreeCounts;
+        int /*GfxCellTreeCount*/* aabbTreeCounts;
         GfxCellTree128* aabbTrees;
         GfxCell* cells;
         GfxWorldDraw draw;
@@ -2569,8 +2571,8 @@ namespace IW5
         WINDOW_FLAG_POPUP = 0x1000000,
         WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE = 0x4000000,
         WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG = 0x10000000, // confirmed
-        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000, // confirmed
-        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000, // confirmed
+        WINDOW_FLAG_HIDDEN_DURING_SCOPE = 0x20000000,      // confirmed
+        WINDOW_FLAG_HIDDEN_DURING_UI = 0x40000000,         // confirmed
         WINDOW_FLAG_TEXT_ONLY_FOCUS = 0x80000000,
     };
 

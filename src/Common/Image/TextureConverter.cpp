@@ -44,8 +44,7 @@ void TextureConverter::SetPixelFunctions(const unsigned inBitCount, const unsign
 
                 for (auto pixelOffset = 0u; pixelOffset < bitCount; pixelOffset += 8)
                 {
-                    result |= (static_cast<uint64_t>(*(static_cast<const uint8_t*>(offset) + (pixelOffset / 8))) <<
-                        pixelOffset);
+                    result |= (static_cast<uint64_t>(*(static_cast<const uint8_t*>(offset) + (pixelOffset / 8))) << pixelOffset);
                 }
 
                 return result;
@@ -99,9 +98,7 @@ void TextureConverter::SetPixelFunctions(const unsigned inBitCount, const unsign
         else
         {
             assert(false);
-            m_write_pixel_func = [](void* offset, uint64_t pixel, unsigned bitCount)
-            {
-            };
+            m_write_pixel_func = [](void* offset, uint64_t pixel, unsigned bitCount) {};
         }
         break;
     }
@@ -120,18 +117,16 @@ void TextureConverter::CreateOutputTexture()
     switch (m_input_texture->GetTextureType())
     {
     case TextureType::T_2D:
-        m_output_texture = new Texture2D(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(),
-                                         m_input_texture->HasMipMaps());
+        m_output_texture = new Texture2D(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->HasMipMaps());
         break;
 
     case TextureType::T_CUBE:
-        m_output_texture = new TextureCube(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(),
-                                           m_input_texture->HasMipMaps());
+        m_output_texture = new TextureCube(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->HasMipMaps());
         break;
 
     case TextureType::T_3D:
-        m_output_texture = new Texture3D(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(),
-                                         m_input_texture->GetDepth(), m_input_texture->HasMipMaps());
+        m_output_texture = new Texture3D(
+            m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->GetDepth(), m_input_texture->HasMipMaps());
         break;
     default:
         assert(false);
@@ -166,8 +161,7 @@ void TextureConverter::ReorderUnsignedToUnsigned() const
         const auto outputBytePerPixel = outputFormat->m_bits_per_pixel / 8;
 
         auto outputOffset = 0u;
-        for (auto inputOffset = 0u; inputOffset < mipLevelSize; inputOffset += inputBytePerPixel, outputOffset +=
-             outputBytePerPixel)
+        for (auto inputOffset = 0u; inputOffset < mipLevelSize; inputOffset += inputBytePerPixel, outputOffset += outputBytePerPixel)
         {
             uint64_t outPixel = 0;
             const auto inPixel = m_read_pixel_func(&inputBuffer[inputOffset], inputFormat->m_bits_per_pixel);
@@ -196,9 +190,7 @@ void TextureConverter::ConvertUnsignedToUnsigned()
 
     SetPixelFunctions(inputFormat->m_bits_per_pixel, outputFormat->m_bits_per_pixel);
 
-    if (inputFormat->m_r_size == outputFormat->m_r_size
-        && inputFormat->m_g_size == outputFormat->m_g_size
-        && inputFormat->m_b_size == outputFormat->m_b_size
+    if (inputFormat->m_r_size == outputFormat->m_r_size && inputFormat->m_g_size == outputFormat->m_g_size && inputFormat->m_b_size == outputFormat->m_b_size
         && inputFormat->m_a_size == outputFormat->m_a_size)
     {
         ReorderUnsignedToUnsigned();
@@ -214,8 +206,7 @@ Texture* TextureConverter::Convert()
 {
     CreateOutputTexture();
 
-    if (m_input_format->GetType() == ImageFormatType::UNSIGNED
-        && m_output_format->GetType() == ImageFormatType::UNSIGNED)
+    if (m_input_format->GetType() == ImageFormatType::UNSIGNED && m_output_format->GetType() == ImageFormatType::UNSIGNED)
     {
         ConvertUnsignedToUnsigned();
     }

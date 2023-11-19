@@ -1,22 +1,21 @@
 #include "ZoneLoaderFactoryIW3.h"
 
-#include <cassert>
-#include <cstring>
-#include <type_traits>
-
-#include "Game/IW3/IW3.h"
-
-#include "Utils/ClassUtils.h"
 #include "ContentLoaderIW3.h"
+#include "Game/GameLanguage.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
 #include "Game/IW3/GameIW3.h"
-#include "Game/GameLanguage.h"
+#include "Game/IW3/IW3.h"
 #include "Game/IW3/ZoneConstantsIW3.h"
 #include "Loading/Processor/ProcessorInflate.h"
-#include "Loading/Steps/StepSkipBytes.h"
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
+#include "Loading/Steps/StepSkipBytes.h"
+#include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <cstring>
+#include <type_traits>
 
 using namespace IW3;
 
@@ -93,7 +92,8 @@ public:
         zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
         // Start of the zone content
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
+            std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
         // Return the fully setup zoneloader
         return zoneLoader;

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <vector>
-#include <cstddef>
-#include <string>
-
 #include "Parsing/TokenPos.h"
 #include "StructuredDataDef/CommonStructuredDataDef.h"
+
+#include <cstddef>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace sdd
 {
@@ -44,4 +44,4 @@ namespace sdd
 
         StructuredDataDefParserState();
     };
-}
+} // namespace sdd

@@ -1,8 +1,8 @@
 #include "SequenceLocalizeFileLanguageValue.h"
 
-#include <sstream>
-
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+
+#include <sstream>
 
 SequenceLocalizeFileLanguageValue::SequenceLocalizeFileLanguageValue()
 {
@@ -11,7 +11,7 @@ SequenceLocalizeFileLanguageValue::SequenceLocalizeFileLanguageValue()
     AddMatchers({
         create.KeywordPrefix("LANG_").Capture(CAPTURE_LANGUAGE_NAME),
         create.String().Capture(CAPTURE_ENTRY_VALUE),
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Type(SimpleParserValueType::NEW_LINE),
     });
 }
 
@@ -22,7 +22,7 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
 
     const auto langName = langToken.IdentifierValue().substr(std::char_traits<char>::length("LANG_"));
     const auto alreadyDefinedLanguage = state->m_current_reference_languages.find(langName);
-    if(alreadyDefinedLanguage != state->m_current_reference_languages.end())
+    if (alreadyDefinedLanguage != state->m_current_reference_languages.end())
     {
         std::ostringstream str;
         str << "Value for reference \"" << state->m_current_reference << "\" already defined for language \"" << langToken.IdentifierValue() << "\"";
@@ -30,6 +30,6 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
     }
     state->m_current_reference_languages.emplace(langName);
 
-    if(langName == state->m_language_name_caps)
+    if (langName == state->m_language_name_caps)
         state->m_entries.emplace_back(state->m_current_reference, valueToken.StringValue());
 }

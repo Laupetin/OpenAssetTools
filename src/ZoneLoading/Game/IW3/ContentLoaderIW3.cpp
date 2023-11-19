@@ -1,9 +1,6 @@
 #include "ContentLoaderIW3.h"
+
 #include "Game/IW3/IW3.h"
-#include "Loading/Exception/UnsupportedAssetTypeException.h"
-
-#include <cassert>
-
 #include "Game/IW3/XAssets/clipmap_t/clipmap_t_load_db.h"
 #include "Game/IW3/XAssets/comworld/comworld_load_db.h"
 #include "Game/IW3/XAssets/font_s/font_s_load_db.h"
@@ -29,6 +26,9 @@
 #include "Game/IW3/XAssets/weapondef/weapondef_load_db.h"
 #include "Game/IW3/XAssets/xanimparts/xanimparts_load_db.h"
 #include "Game/IW3/XAssets/xmodel/xmodel_load_db.h"
+#include "Loading/Exception/UnsupportedAssetTypeException.h"
+
+#include <cassert>
 
 using namespace IW3;
 
@@ -64,15 +64,15 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
 void ContentLoader::LoadXAsset(const bool atStreamStart) const
 {
-#define LOAD_ASSET(type_index, typeName, headerEntry) \
-    case type_index: \
-        { \
-            Loader_##typeName loader(m_zone, m_stream); \
-            loader.Load(&varXAsset->header.headerEntry); \
-            break; \
-        }
-#define SKIP_ASSET(type_index, typeName, headerEntry) \
-    case type_index: \
+#define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
+    case type_index:                                                                                                                                           \
+    {                                                                                                                                                          \
+        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
+        break;                                                                                                                                                 \
+    }
+#define SKIP_ASSET(type_index, typeName, headerEntry)                                                                                                          \
+    case type_index:                                                                                                                                           \
         break;
 
     assert(varXAsset != nullptr);
@@ -82,38 +82,38 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 
     switch (varXAsset->type)
     {
-    LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
-    LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
-    LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
-    LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
-    LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
-    LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
-    LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
-    LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
-    LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
-    LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
-    LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
-    LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
-    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
-    LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
-    LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
-    LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
-    LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
-    LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
-    LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
-    LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
-    LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
-    LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponDef, weapon)
-    SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
-    LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
-    LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
-    LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
-    LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
+        LOAD_ASSET(ASSET_TYPE_PHYSPRESET, PhysPreset, physPreset)
+        LOAD_ASSET(ASSET_TYPE_XANIMPARTS, XAnimParts, parts)
+        LOAD_ASSET(ASSET_TYPE_XMODEL, XModel, model)
+        LOAD_ASSET(ASSET_TYPE_MATERIAL, Material, material)
+        LOAD_ASSET(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet, techniqueSet)
+        LOAD_ASSET(ASSET_TYPE_IMAGE, GfxImage, image)
+        LOAD_ASSET(ASSET_TYPE_SOUND, snd_alias_list_t, sound)
+        LOAD_ASSET(ASSET_TYPE_SOUND_CURVE, SndCurve, sndCurve)
+        LOAD_ASSET(ASSET_TYPE_LOADED_SOUND, LoadedSound, loadSnd)
+        LOAD_ASSET(ASSET_TYPE_CLIPMAP, clipMap_t, clipMap)
+        LOAD_ASSET(ASSET_TYPE_CLIPMAP_PVS, clipMap_t, clipMap)
+        LOAD_ASSET(ASSET_TYPE_COMWORLD, ComWorld, comWorld)
+        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_SP, GameWorldSp, gameWorldSp)
+        LOAD_ASSET(ASSET_TYPE_GAMEWORLD_MP, GameWorldMp, gameWorldMp)
+        LOAD_ASSET(ASSET_TYPE_MAP_ENTS, MapEnts, mapEnts)
+        LOAD_ASSET(ASSET_TYPE_GFXWORLD, GfxWorld, gfxWorld)
+        LOAD_ASSET(ASSET_TYPE_LIGHT_DEF, GfxLightDef, lightDef)
+        LOAD_ASSET(ASSET_TYPE_FONT, Font_s, font)
+        LOAD_ASSET(ASSET_TYPE_MENULIST, MenuList, menuList)
+        LOAD_ASSET(ASSET_TYPE_MENU, menuDef_t, menu)
+        LOAD_ASSET(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry, localize)
+        LOAD_ASSET(ASSET_TYPE_WEAPON, WeaponDef, weapon)
+        SKIP_ASSET(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals, sndDriverGlobals)
+        LOAD_ASSET(ASSET_TYPE_FX, FxEffectDef, fx)
+        LOAD_ASSET(ASSET_TYPE_IMPACT_FX, FxImpactTable, impactFx)
+        LOAD_ASSET(ASSET_TYPE_RAWFILE, RawFile, rawfile)
+        LOAD_ASSET(ASSET_TYPE_STRINGTABLE, StringTable, stringTable)
 
     default:
-        {
-            throw UnsupportedAssetTypeException(varXAsset->type);
-        }
+    {
+        throw UnsupportedAssetTypeException(varXAsset->type);
+    }
     }
 
 #undef LOAD_ASSET

@@ -13,4 +13,4 @@ namespace IW3
         bool ShouldDump(XAssetInfo<LoadedSound>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset) override;
     };
-}
+} // namespace IW3

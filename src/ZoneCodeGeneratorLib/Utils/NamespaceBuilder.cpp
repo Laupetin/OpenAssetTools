@@ -33,7 +33,7 @@ std::string NamespaceBuilder::ToString()
     std::ostringstream str;
     auto first = true;
 
-    for(const auto& element : m_elements)
+    for (const auto& element : m_elements)
     {
         if (first)
             first = false;

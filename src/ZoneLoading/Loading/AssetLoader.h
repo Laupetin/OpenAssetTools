@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <unordered_set>
-
-#include "Zone/ZoneTypes.h"
-#include "Pool/XAssetInfo.h"
 #include "ContentLoaderBase.h"
+#include "Pool/XAssetInfo.h"
+#include "Zone/ZoneTypes.h"
+
+#include <unordered_set>
+#include <vector>
 
 class AssetLoader : public ContentLoaderBase
 {
@@ -18,7 +18,7 @@ protected:
     scr_string_t* varScriptString;
 
     AssetLoader(asset_type_t assetType, Zone* zone, IZoneInputStream* stream);
-    
+
     void AddDependency(XAssetInfoGeneric* assetInfo);
 
     scr_string_t UseScriptString(scr_string_t scrString);

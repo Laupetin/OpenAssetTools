@@ -1,7 +1,7 @@
 #include "SequenceBlock.h"
 
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
 SequenceBlock::SequenceBlock()
 {
@@ -14,13 +14,11 @@ SequenceBlock::SequenceBlock()
     DEFINE_FAST_FILE_BLOCK_TYPE(NORMAL);
 #undef DEFINE_FAST_FILE_BLOCK_TYPE
 
-    AddMatchers({
-        create.Keyword("block"),
-        create.Identifier().Capture(CAPTURE_BLOCK_TYPE),
-        create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY),
-        create.Optional(create.Keyword("default").Tag(TAG_DEFAULT)),
-        create.Char(';')
-    });
+    AddMatchers({create.Keyword("block"),
+                 create.Identifier().Capture(CAPTURE_BLOCK_TYPE),
+                 create.Identifier().Capture(CAPTURE_BLOCK_ENUM_ENTRY),
+                 create.Optional(create.Keyword("default").Tag(TAG_DEFAULT)),
+                 create.Char(';')});
 }
 
 void SequenceBlock::AddFastFileBlockToLookup(std::string name, const FastFileBlockType type)

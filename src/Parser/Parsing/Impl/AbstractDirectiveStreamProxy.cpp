@@ -7,7 +7,7 @@ TokenPos AbstractDirectiveStreamProxy::CreatePos(const ParserLine& line, const u
 
 bool AbstractDirectiveStreamProxy::SkipWhitespace(const ParserLine& line, unsigned& position)
 {
-    while(true)
+    while (true)
     {
         if (position >= line.m_line.size())
             return false;
@@ -31,7 +31,7 @@ bool AbstractDirectiveStreamProxy::ExtractInteger(const ParserLine& line, unsign
     value = strtol(startPosition, &endPosition, 0);
     const auto len = endPosition - startPosition;
 
-    if(len > 0)
+    if (len > 0)
     {
         position += len;
         return true;
@@ -49,9 +49,7 @@ bool AbstractDirectiveStreamProxy::ExtractIdentifier(const ParserLine& line, uns
             return !firstChar;
 
         const auto c = line.m_line[position];
-        if (isalpha(c) 
-            || c == '_' 
-            || !firstChar && isdigit(c))
+        if (isalpha(c) || c == '_' || !firstChar && isdigit(c))
         {
             position++;
         }
@@ -108,10 +106,10 @@ bool AbstractDirectiveStreamProxy::FindDirective(const ParserLine& line, unsigne
             continue;
 
         directiveEndPos = directiveStartPosition + 1;
-        for(; directiveEndPos < line.m_line.size(); directiveEndPos++)
+        for (; directiveEndPos < line.m_line.size(); directiveEndPos++)
         {
             const auto c2 = line.m_line[directiveEndPos];
-            
+
             if (isspace(c2))
                 break;
         }

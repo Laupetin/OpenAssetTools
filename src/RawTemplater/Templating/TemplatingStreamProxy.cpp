@@ -1,8 +1,8 @@
 #include "TemplatingStreamProxy.h"
 
-#include <iostream>
-
 #include "Parsing/ParsingException.h"
+
+#include <iostream>
 
 using namespace templating;
 
@@ -153,10 +153,8 @@ bool TemplatingStreamProxy::MatchDirectives(const ParserLine& line) const
 
     directiveStartPos++;
 
-    return MatchSwitchDirective(line, directiveStartPos, directiveEndPos)
-        || MatchOptionsDirective(line, directiveStartPos, directiveEndPos)
-        || MatchFilenameDirective(line, directiveStartPos, directiveEndPos)
-        || MatchSkipDirective(line, directiveStartPos, directiveEndPos);
+    return MatchSwitchDirective(line, directiveStartPos, directiveEndPos) || MatchOptionsDirective(line, directiveStartPos, directiveEndPos)
+           || MatchFilenameDirective(line, directiveStartPos, directiveEndPos) || MatchSkipDirective(line, directiveStartPos, directiveEndPos);
 }
 
 ParserLine TemplatingStreamProxy::NextLine()

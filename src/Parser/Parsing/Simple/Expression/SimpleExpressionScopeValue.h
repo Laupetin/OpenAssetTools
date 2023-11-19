@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-
 #include "ISimpleExpression.h"
 #include "SimpleExpressionValue.h"
+
+#include <string>
 
 class SimpleExpressionScopeValue final : public ISimpleExpression
 {

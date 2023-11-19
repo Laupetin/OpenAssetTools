@@ -25,4 +25,4 @@ namespace T6
         static constexpr const char* GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE = "attachmentunique.gdf";
         static constexpr const char* GDF_FILENAME_ZBARRIER = "zbarrier.gdf";
     };
-}
+} // namespace T6

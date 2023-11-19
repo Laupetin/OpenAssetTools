@@ -2,23 +2,21 @@
 // ReSharper disable IdentifierTypo
 #pragma once
 
-#include <cassert>
-#include <streambuf>
-#include <iostream>
-#include <memory>
-
 #include "Utils/ClassUtils.h"
 
-template <class Elem, class Traits>
-class basic_objbuf : public std::basic_streambuf<Elem, Traits>
+#include <cassert>
+#include <iostream>
+#include <memory>
+#include <streambuf>
+
+template<class Elem, class Traits> class basic_objbuf : public std::basic_streambuf<Elem, Traits>
 {
 public:
     _NODISCARD virtual bool is_open() const = 0;
     virtual bool close() = 0;
 };
 
-template <class Elem, class Traits>
-class basic_objstream : public std::basic_iostream<Elem, Traits>
+template<class Elem, class Traits> class basic_objstream : public std::basic_iostream<Elem, Traits>
 {
 public:
     using mybase = std::basic_iostream<Elem, Traits>;
@@ -44,7 +42,7 @@ public:
 
     ~basic_objstream() override
     {
-        if(m_ob)
+        if (m_ob)
             m_ob->close();
     }
 
@@ -86,8 +84,7 @@ protected:
     std::unique_ptr<myob> m_ob;
 };
 
-template <class Elem, class Traits>
-class basic_iobjstream : public std::basic_istream<Elem, Traits>
+template<class Elem, class Traits> class basic_iobjstream : public std::basic_istream<Elem, Traits>
 {
 public:
     using mybase = std::basic_istream<Elem, Traits>;
@@ -151,8 +148,7 @@ protected:
     std::unique_ptr<myob> m_ob;
 };
 
-template <class Elem, class Traits>
-class basic_oobjstream : public std::basic_ostream<Elem, Traits>
+template<class Elem, class Traits> class basic_oobjstream : public std::basic_ostream<Elem, Traits>
 {
 public:
     using mybase = std::basic_ostream<Elem, Traits>;
@@ -192,7 +188,7 @@ public:
         swap(other);
         return *this;
     }
-    
+
     // ReSharper disable once CppHidingFunction
     _NODISCARD myob* rdbuf() const
     {

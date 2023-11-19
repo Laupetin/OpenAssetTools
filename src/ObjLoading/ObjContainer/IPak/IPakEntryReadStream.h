@@ -1,10 +1,10 @@
 #pragma once
 
-#include <istream>
-
-#include "Utils/ObjStream.h"
 #include "IPakStreamManager.h"
 #include "ObjContainer/IPak/IPakTypes.h"
+#include "Utils/ObjStream.h"
+
+#include <istream>
 
 class IPakEntryReadStream final : public objbuf
 {
@@ -33,14 +33,12 @@ class IPakEntryReadStream final : public objbuf
     int64_t m_buffer_start_pos;
     int64_t m_buffer_end_pos;
 
-    template <typename T>
-    static T AlignForward(const T num, const T alignTo)
+    template<typename T> static T AlignForward(const T num, const T alignTo)
     {
         return (num + alignTo - 1) / alignTo * alignTo;
     }
 
-    template <typename T>
-    static T AlignBackwards(const T num, const T alignTo)
+    template<typename T> static T AlignBackwards(const T num, const T alignTo)
     {
         return num / alignTo * alignTo;
     }
@@ -86,8 +84,8 @@ class IPakEntryReadStream final : public objbuf
     /**
      * \brief Processes a command with the specified parameters at the current position.
      * \param commandSize The size of the command data
-     * \param compressed The compression value of the command. Can be \c 0 for uncompressed or \c 1 for lzo compression. Any other value skips the specified size of data.
-     * \return \c true if the specified command could be correctly processed or \c otherwise.
+     * \param compressed The compression value of the command. Can be \c 0 for uncompressed or \c 1 for lzo compression. Any other value skips the specified
+     * size of data. \return \c true if the specified command could be correctly processed or \c otherwise.
      */
     bool ProcessCommand(size_t commandSize, int compressed);
 

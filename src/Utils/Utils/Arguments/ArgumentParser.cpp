@@ -1,4 +1,5 @@
 #include "ArgumentParser.h"
+
 #include <sstream>
 
 const std::string PREFIX_LONG = "--";
@@ -6,7 +7,7 @@ const std::string PREFIX_SHORT = "-";
 
 ArgumentParser::ArgumentParser(const CommandLineOption* const* options, const size_t optionCount)
 {
-    for(unsigned optionIndex = 0; optionIndex < optionCount; optionIndex++)
+    for (unsigned optionIndex = 0; optionIndex < optionCount; optionIndex++)
     {
         m_command_line_options.push_back(options[optionIndex]);
     }
@@ -15,8 +16,8 @@ ArgumentParser::ArgumentParser(const CommandLineOption* const* options, const si
 bool ArgumentParser::ParseArguments(const int argc, const char** argv)
 {
     std::vector<std::string> args(argc);
-    
-    for(int arg = 0; arg < argc; arg++)
+
+    for (int arg = 0; arg < argc; arg++)
     {
         args[arg] = argv[arg];
     }
@@ -34,23 +35,23 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
     {
         std::string& arg = args[argIndex];
 
-        if(arg.compare(0, PREFIX_SHORT.size(), PREFIX_SHORT) == 0)
+        if (arg.compare(0, PREFIX_SHORT.size(), PREFIX_SHORT) == 0)
         {
             // Options should be case insensitive. So before comparing we make the argument lower case.
             const size_t argStrLen = arg.size();
-            for(unsigned argStrIndex = 0; argStrIndex < argStrLen; argStrIndex++)
+            for (unsigned argStrIndex = 0; argStrIndex < argStrLen; argStrIndex++)
             {
                 arg[argStrIndex] = tolower(arg[argStrIndex]);
             }
 
             const CommandLineOption* matchedOption = nullptr;
-            if(arg.compare(0, PREFIX_LONG.size(), PREFIX_LONG) == 0)
+            if (arg.compare(0, PREFIX_LONG.size(), PREFIX_LONG) == 0)
             {
                 std::string longName = arg.substr(2);
 
                 for (auto option : m_command_line_options)
                 {
-                    if(option->m_long_name == longName)
+                    if (option->m_long_name == longName)
                     {
                         matchedOption = option;
                         break;
@@ -63,7 +64,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
 
                 for (auto option : m_command_line_options)
                 {
-                    if(option->m_short_name == shortName)
+                    if (option->m_short_name == shortName)
                     {
                         matchedOption = option;
                         break;
@@ -71,15 +72,15 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
                 }
             }
 
-            if(matchedOption == nullptr)
+            if (matchedOption == nullptr)
             {
                 printf("Unknown option '%s'.\n", arg.c_str());
                 return false;
             }
 
-            if(m_matched_options.find(matchedOption) != m_matched_options.end())
+            if (m_matched_options.find(matchedOption) != m_matched_options.end())
             {
-                if(!matchedOption->m_multi_use)
+                if (!matchedOption->m_multi_use)
                 {
                     printf("Option '%s' already specified.\n", arg.c_str());
                     return false;
@@ -89,20 +90,20 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
             {
                 m_matched_options[matchedOption] = std::vector<std::string>();
             }
-            
+
             const size_t parameterCount = matchedOption->m_parameters.size();
-            if(argIndex + parameterCount >= argCount)
+            if (argIndex + parameterCount >= argCount)
             {
                 printf("Not enough parameters for option '%s'.\n", arg.c_str());
                 return false;
             }
 
             std::vector<std::string>& parameters = m_matched_options[matchedOption];
-            for(unsigned parameterIndex = 0; parameterIndex < parameterCount; parameterIndex++)
+            for (unsigned parameterIndex = 0; parameterIndex < parameterCount; parameterIndex++)
             {
                 std::string& param = args[argIndex + parameterIndex + 1];
 
-                if(param.compare(0, PREFIX_SHORT.size(), PREFIX_SHORT) == 0)
+                if (param.compare(0, PREFIX_SHORT.size(), PREFIX_SHORT) == 0)
                 {
                     printf("Not enough parameters for option '%s'.\n", arg.c_str());
                     return false;
@@ -129,14 +130,14 @@ std::vector<std::string> ArgumentParser::GetArguments() const
 
 std::string ArgumentParser::GetValueForOption(const CommandLineOption* option)
 {
-    if(!IsOptionSpecified(option))
+    if (!IsOptionSpecified(option))
         return "";
 
     std::stringstream value;
     bool firstMatch = true;
     for (const auto& match : m_matched_options[option])
     {
-        if(!firstMatch)
+        if (!firstMatch)
         {
             value << " " << match;
         }
@@ -152,7 +153,7 @@ std::string ArgumentParser::GetValueForOption(const CommandLineOption* option)
 
 std::vector<std::string> ArgumentParser::GetParametersForOption(const CommandLineOption* option)
 {
-    if(!IsOptionSpecified(option))
+    if (!IsOptionSpecified(option))
         return std::vector<std::string>();
 
     return m_matched_options[option];

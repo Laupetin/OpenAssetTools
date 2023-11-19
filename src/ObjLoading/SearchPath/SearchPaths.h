@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-
 #include "ISearchPath.h"
+
+#include <vector>
 
 class SearchPaths final : public ISearchPath
 {
@@ -37,8 +37,8 @@ public:
     void IncludeSearchPath(ISearchPath* searchPath);
 
     /**
-     * \brief Removes a search path from the \c SearchPaths object. If the search path was committed then it will \b NOT be deleted when destructing the \c SearchPaths object.
-     * \param searchPath  The search path to remove.
+     * \brief Removes a search path from the \c SearchPaths object. If the search path was committed then it will \b NOT be deleted when destructing the \c
+     * SearchPaths object. \param searchPath  The search path to remove.
      */
     void RemoveSearchPath(ISearchPath* searchPath);
 

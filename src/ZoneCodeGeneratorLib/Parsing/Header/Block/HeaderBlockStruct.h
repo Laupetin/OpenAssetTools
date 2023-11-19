@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string>
-
+#include "Domain/Definition/StructDefinition.h"
+#include "Domain/Definition/Variable.h"
 #include "IHeaderBlock.h"
 #include "IHeaderBlockNameHolder.h"
 #include "IHeaderBlockVariableDefining.h"
 #include "IHeaderBlockVariableHolder.h"
-#include "Domain/Definition/StructDefinition.h"
-#include "Domain/Definition/Variable.h"
+
+#include <string>
 
 class HeaderBlockStruct final : public IHeaderBlock, public IHeaderBlockNameHolder, public IHeaderBlockVariableDefining, public IHeaderBlockVariableHolder
 {

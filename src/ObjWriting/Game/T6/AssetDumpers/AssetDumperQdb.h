@@ -11,4 +11,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<Qdb>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<Qdb>* asset) override;
     };
-}
+} // namespace T6

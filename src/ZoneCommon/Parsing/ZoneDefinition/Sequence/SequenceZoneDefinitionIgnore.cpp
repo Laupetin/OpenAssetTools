@@ -6,11 +6,7 @@ SequenceZoneDefinitionIgnore::SequenceZoneDefinitionIgnore()
 {
     const ZoneDefinitionMatcherFactory create(this);
 
-    AddMatchers({
-        create.Keyword("ignore"),
-        create.Char(','),
-        create.Field().Capture(CAPTURE_IGNORE_NAME)
-    });
+    AddMatchers({create.Keyword("ignore"), create.Char(','), create.Field().Capture(CAPTURE_IGNORE_NAME)});
 }
 
 void SequenceZoneDefinitionIgnore::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const

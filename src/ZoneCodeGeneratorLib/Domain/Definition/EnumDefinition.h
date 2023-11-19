@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "BaseTypeDefinition.h"
 #include "DataDefinition.h"
 #include "EnumMember.h"
+
+#include <memory>
+#include <vector>
 
 class EnumDefinition final : public DataDefinition
 {

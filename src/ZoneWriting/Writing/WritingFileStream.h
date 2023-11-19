@@ -1,7 +1,7 @@
 #pragma once
-#include <ostream>
-
 #include "IWritingStream.h"
+
+#include <ostream>
 
 class WritingFileStream final : public IWritingStream
 {

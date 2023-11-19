@@ -1,16 +1,16 @@
 #include "AssetLoaderPhysPreset.h"
 
-#include <algorithm>
-#include <cstring>
-#include <iostream>
-#include <cassert>
-#include <limits>
-
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/PhysPresetFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+
+#include <algorithm>
+#include <cassert>
+#include <cstring>
+#include <iostream>
+#include <limits>
 
 using namespace T6;
 
@@ -26,13 +26,18 @@ namespace T6
         }
 
     public:
-        InfoStringToPhysPresetConverter(const InfoString& infoString, PhysPresetInfo* physPreset, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-                                        const cspField_t* fields, const size_t fieldCount)
+        InfoStringToPhysPresetConverter(const InfoString& infoString,
+                                        PhysPresetInfo* physPreset,
+                                        ZoneScriptStrings& zoneScriptStrings,
+                                        MemoryManager* memory,
+                                        IAssetLoadingManager* manager,
+                                        const cspField_t* fields,
+                                        const size_t fieldCount)
             : InfoStringToStructConverter(infoString, physPreset, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace T6
 
 void AssetLoaderPhysPreset::CopyFromPhysPresetInfo(const PhysPresetInfo* physPresetInfo, PhysPreset* physPreset)
 {
@@ -55,11 +60,13 @@ void AssetLoaderPhysPreset::CopyFromPhysPresetInfo(const PhysPresetInfo* physPre
     physPreset->buoyancyBoxMax = physPresetInfo->buoyancyBoxMax;
 }
 
-bool AssetLoaderPhysPreset::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderPhysPreset::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
     const auto presetInfo = std::make_unique<PhysPresetInfo>();
     memset(presetInfo.get(), 0, sizeof(PhysPresetInfo));
-    InfoStringToPhysPresetConverter converter(infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
+    InfoStringToPhysPresetConverter converter(
+        infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse phys preset: \"" << assetName << "\"" << std::endl;
@@ -89,7 +96,8 @@ bool AssetLoaderPhysPreset::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderPhysPreset::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPhysPreset::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_PHYS_PRESET, assetName);
     if (gdtEntry == nullptr)
@@ -110,7 +118,8 @@ bool AssetLoaderPhysPreset::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderPhysPreset::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPhysPreset::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "physic/" + assetName;
     const auto file = searchPath->Open(fileName);

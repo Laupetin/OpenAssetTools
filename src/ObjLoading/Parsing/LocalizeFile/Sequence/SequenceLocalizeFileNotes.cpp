@@ -9,10 +9,8 @@ SequenceLocalizeFileNotes::SequenceLocalizeFileNotes()
     AddMatchers({
         create.Keyword("FILENOTES"),
         create.String(),
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Type(SimpleParserValueType::NEW_LINE),
     });
 }
 
-void SequenceLocalizeFileNotes::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const
-{
-}
+void SequenceLocalizeFileNotes::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const {}

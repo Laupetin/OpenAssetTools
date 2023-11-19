@@ -11,7 +11,10 @@ class SequenceCount final : public CommandsParser::sequence_t
     static constexpr auto CAPTURE_TYPE = 2;
     static constexpr auto CAPTURE_ARRAY_INDEX = 3;
 
-    static void SetCountByArrayIndex(CommandsParserState* state, SequenceResult<CommandsParserValue>& result, MemberInformation* member, PointerDeclarationModifier* pointer,
+    static void SetCountByArrayIndex(CommandsParserState* state,
+                                     SequenceResult<CommandsParserValue>& result,
+                                     MemberInformation* member,
+                                     PointerDeclarationModifier* pointer,
                                      std::unique_ptr<IEvaluation> evaluation);
 
 protected:

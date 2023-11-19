@@ -1,12 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <string>
-
 #include "ISimpleExpression.h"
 #include "Utils/ClassUtils.h"
 
+#include <memory>
+#include <string>
+
 class ISimpleExpression;
+
 class SimpleExpressionValue final : public ISimpleExpression
 {
 public:
@@ -19,6 +20,7 @@ public:
 
     Type m_type;
     std::shared_ptr<std::string> m_string_value;
+
     union
     {
         double m_double_value;

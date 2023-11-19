@@ -6,11 +6,12 @@
 
 InfoStringFromStructConverterBase::InfoStringFromStructConverterBase(const void* structure)
     : m_structure(structure),
-      m_get_scr_string([](scr_string_t)
-      {
-          assert(false);
-          return "";
-      })
+      m_get_scr_string(
+          [](scr_string_t)
+          {
+              assert(false);
+              return "";
+          })
 {
 }
 
@@ -44,8 +45,7 @@ void InfoStringFromStructConverterBase::FillFromString(const std::string& key, c
         m_info_string.SetValueForKey(key, "");
 }
 
-void InfoStringFromStructConverterBase::FillFromStringBuffer(const std::string& key, const size_t offset,
-                                                             const size_t bufferSize)
+void InfoStringFromStructConverterBase::FillFromStringBuffer(const std::string& key, const size_t offset, const size_t bufferSize)
 {
     const auto* str = reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(m_structure) + offset);
     const auto strLen = strnlen(str, bufferSize);
@@ -104,8 +104,7 @@ void InfoStringFromStructConverterBase::FillFromScriptString(const std::string& 
     m_info_string.SetValueForKey(key, m_get_scr_string(*scrStr));
 }
 
-void InfoStringFromStructConverterBase::FillFromEnumInt(const std::string& key, const size_t offset,
-                                                        const char** enumValues, const size_t enumSize)
+void InfoStringFromStructConverterBase::FillFromEnumInt(const std::string& key, const size_t offset, const char** enumValues, const size_t enumSize)
 {
     const auto num = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + offset);
 

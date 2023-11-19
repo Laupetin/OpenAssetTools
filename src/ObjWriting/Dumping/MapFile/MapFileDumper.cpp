@@ -128,13 +128,10 @@ void MapFileDumper::WritePhysicsBox(const PhysicsBox box)
     IncIndent();
 
     Indent();
-    m_stream << std::fixed << std::setprecision(6)
-        << box.m_orientation[0].m_x << " " << box.m_orientation[0].m_y << " " << box.m_orientation[0].m_z
-        << " " << box.m_orientation[1].m_x << " " << box.m_orientation[1].m_y << " " << box.m_orientation[1].m_z
-        << " " << box.m_orientation[2].m_x << " " << box.m_orientation[2].m_y << " " << box.m_orientation[2].m_z
-        << " " << box.m_middle_point.m_x << " " << box.m_middle_point.m_y << " " << box.m_middle_point.m_z
-        << " " << box.m_half_size.m_x << " " << box.m_half_size.m_y << " " << box.m_half_size.m_z
-        << "\n";
+    m_stream << std::fixed << std::setprecision(6) << box.m_orientation[0].m_x << " " << box.m_orientation[0].m_y << " " << box.m_orientation[0].m_z << " "
+             << box.m_orientation[1].m_x << " " << box.m_orientation[1].m_y << " " << box.m_orientation[1].m_z << " " << box.m_orientation[2].m_x << " "
+             << box.m_orientation[2].m_y << " " << box.m_orientation[2].m_z << " " << box.m_middle_point.m_x << " " << box.m_middle_point.m_y << " "
+             << box.m_middle_point.m_z << " " << box.m_half_size.m_x << " " << box.m_half_size.m_y << " " << box.m_half_size.m_z << "\n";
 
     DecIndent();
     Indent();
@@ -150,11 +147,9 @@ void MapFileDumper::WritePhysicsCylinder(PhysicsCylinder cylinder)
     IncIndent();
 
     Indent();
-    m_stream << std::fixed << std::setprecision(6)
-        << cylinder.m_orientation.m_x << " " << cylinder.m_orientation.m_y << " " << cylinder.m_orientation.m_z
-        << " " << cylinder.m_middle_point.m_x << " " << cylinder.m_middle_point.m_y << " " << cylinder.m_middle_point.m_z
-        << " " << cylinder.m_height << " " << cylinder.m_radius
-        << "\n";
+    m_stream << std::fixed << std::setprecision(6) << cylinder.m_orientation.m_x << " " << cylinder.m_orientation.m_y << " " << cylinder.m_orientation.m_z
+             << " " << cylinder.m_middle_point.m_x << " " << cylinder.m_middle_point.m_y << " " << cylinder.m_middle_point.m_z << " " << cylinder.m_height
+             << " " << cylinder.m_radius << "\n";
 
     DecIndent();
     Indent();

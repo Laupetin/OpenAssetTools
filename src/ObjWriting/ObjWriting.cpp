@@ -1,4 +1,5 @@
 #include "ObjWriting.h"
+
 #include "Dumping/IZoneDumper.h"
 #include "Game/IW3/ZoneDumperIW3.h"
 #include "Game/IW4/ZoneDumperIW4.h"
@@ -8,14 +9,7 @@
 
 ObjWriting::Configuration_t ObjWriting::Configuration;
 
-const IZoneDumper* const ZONE_DUMPER[]
-{
-    new IW3::ZoneDumper(),
-    new IW4::ZoneDumper(),
-    new IW5::ZoneDumper(),
-    new T5::ZoneDumper(),
-    new T6::ZoneDumper()
-};
+const IZoneDumper* const ZONE_DUMPER[]{new IW3::ZoneDumper(), new IW4::ZoneDumper(), new IW5::ZoneDumper(), new T5::ZoneDumper(), new T6::ZoneDumper()};
 
 bool ObjWriting::DumpZone(AssetDumpingContext& context)
 {

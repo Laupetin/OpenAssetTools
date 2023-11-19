@@ -4,13 +4,11 @@
 
 using namespace iwi6;
 
-IwiWriter::IwiWriter()
-= default;
+IwiWriter::IwiWriter() = default;
 
-IwiWriter::~IwiWriter()
-= default;
+IwiWriter::~IwiWriter() = default;
 
-IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat * imageFormat)
+IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
 {
     switch (imageFormat->GetId())
     {
@@ -40,7 +38,7 @@ IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat * imageFormat)
     }
 }
 
-void IwiWriter::WriteVersion(std::ostream & stream)
+void IwiWriter::WriteVersion(std::ostream& stream)
 {
     IwiVersion version{};
     version.tag[0] = 'I';
@@ -51,14 +49,14 @@ void IwiWriter::WriteVersion(std::ostream & stream)
     stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
 }
 
-void IwiWriter::FillHeader2D(IwiHeader * header, Texture2D * texture)
+void IwiWriter::FillHeader2D(IwiHeader* header, Texture2D* texture)
 {
     header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
     header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
     header->dimensions[2] = 1u;
 }
 
-void IwiWriter::FillHeaderCube(IwiHeader * header, TextureCube * texture)
+void IwiWriter::FillHeaderCube(IwiHeader* header, TextureCube* texture)
 {
     header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
     header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
@@ -66,7 +64,7 @@ void IwiWriter::FillHeaderCube(IwiHeader * header, TextureCube * texture)
     header->flags |= IMG_FLAG_CUBEMAP;
 }
 
-void IwiWriter::FillHeader3D(IwiHeader * header, Texture3D * texture)
+void IwiWriter::FillHeader3D(IwiHeader* header, Texture3D* texture)
 {
     header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
     header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
@@ -74,7 +72,7 @@ void IwiWriter::FillHeader3D(IwiHeader * header, Texture3D * texture)
     header->flags |= IMG_FLAG_VOLMAP;
 }
 
-bool IwiWriter::SupportsImageFormat(const ImageFormat * imageFormat)
+bool IwiWriter::SupportsImageFormat(const ImageFormat* imageFormat)
 {
     return GetIwiFormatForImageFormat(imageFormat) != IwiFormat::IMG_FORMAT_INVALID;
 }
@@ -84,7 +82,7 @@ std::string IwiWriter::GetFileExtension()
     return ".iwi";
 }
 
-void IwiWriter::DumpImage(std::ostream & stream, Texture * texture)
+void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
 {
     assert(texture != nullptr);
 

@@ -1,11 +1,11 @@
 #include "MemberDeclarationModifierComputations.h"
 
-#include <algorithm>
-#include <cassert>
-
-#include "MemberComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
+#include "MemberComputations.h"
+
+#include <algorithm>
+#include <cassert>
 
 DeclarationModifierComputations::DeclarationModifierComputations(const MemberInformation* member, std::vector<int> modifierIndices)
     : m_information(member),
@@ -135,16 +135,17 @@ bool DeclarationModifierComputations::IsSinglePointer() const
 {
     auto* declarationModifier = GetDeclarationModifier();
 
-    if (declarationModifier != nullptr
-        && declarationModifier->GetType() == DeclarationModifierType::POINTER
+    if (declarationModifier != nullptr && declarationModifier->GetType() == DeclarationModifierType::POINTER
         && !dynamic_cast<PointerDeclarationModifier*>(declarationModifier)->CountEvaluationIsArray(m_combined_index))
     {
         const auto following = GetFollowingDeclarationModifiers();
 
-        return !std::any_of(following.begin(), following.end(), [](const DeclarationModifier* modifier)
-        {
-            return modifier->GetType() == DeclarationModifierType::POINTER;
-        });
+        return !std::any_of(following.begin(),
+                            following.end(),
+                            [](const DeclarationModifier* modifier)
+                            {
+                                return modifier->GetType() == DeclarationModifierType::POINTER;
+                            });
     }
 
     return false;
@@ -154,16 +155,17 @@ bool DeclarationModifierComputations::IsArrayPointer() const
 {
     auto* declarationModifier = GetDeclarationModifier();
 
-    if (declarationModifier != nullptr
-        && declarationModifier->GetType() == DeclarationModifierType::POINTER
+    if (declarationModifier != nullptr && declarationModifier->GetType() == DeclarationModifierType::POINTER
         && dynamic_cast<PointerDeclarationModifier*>(declarationModifier)->CountEvaluationIsArray(m_combined_index))
     {
         const auto following = GetFollowingDeclarationModifiers();
 
-        return !std::any_of(following.begin(), following.end(), [](const DeclarationModifier* modifier)
-        {
-            return modifier->GetType() == DeclarationModifierType::POINTER;
-        });
+        return !std::any_of(following.begin(),
+                            following.end(),
+                            [](const DeclarationModifier* modifier)
+                            {
+                                return modifier->GetType() == DeclarationModifierType::POINTER;
+                            });
     }
 
     return false;
@@ -189,14 +191,14 @@ bool DeclarationModifierComputations::IsPointerArray() const
         return false;
 
     const auto thisDeclModIsArray = declarationModifier->GetType() == DeclarationModifierType::POINTER
-        && dynamic_cast<PointerDeclarationModifier*>(declarationModifier)->CountEvaluationIsArray(m_combined_index)
-        || declarationModifier->GetType() == DeclarationModifierType::ARRAY;
+                                        && dynamic_cast<PointerDeclarationModifier*>(declarationModifier)->CountEvaluationIsArray(m_combined_index)
+                                    || declarationModifier->GetType() == DeclarationModifierType::ARRAY;
 
     if (!thisDeclModIsArray)
         return false;
 
     const auto nextDeclModIsSinglePointer = nextDeclarationModifier->GetType() == DeclarationModifierType::POINTER
-        && !dynamic_cast<PointerDeclarationModifier*>(nextDeclarationModifier)->AnyCountEvaluationIsArray();
+                                            && !dynamic_cast<PointerDeclarationModifier*>(nextDeclarationModifier)->AnyCountEvaluationIsArray();
 
     return nextDeclModIsSinglePointer;
 }
@@ -229,14 +231,13 @@ bool DeclarationModifierComputations::IsDynamicArray() const
         return false;
 
     return declarationModifier->GetType() == DeclarationModifierType::ARRAY
-        && dynamic_cast<ArrayDeclarationModifier*>(declarationModifier)->m_dynamic_size_evaluation != nullptr;
+           && dynamic_cast<ArrayDeclarationModifier*>(declarationModifier)->m_dynamic_size_evaluation != nullptr;
 }
 
 const IEvaluation* DeclarationModifierComputations::GetDynamicArraySizeEvaluation() const
 {
     auto* declarationModifier = GetDeclarationModifier();
-    if (declarationModifier == nullptr
-        || declarationModifier->GetType() != DeclarationModifierType::ARRAY)
+    if (declarationModifier == nullptr || declarationModifier->GetType() != DeclarationModifierType::ARRAY)
         return nullptr;
 
     return dynamic_cast<ArrayDeclarationModifier*>(declarationModifier)->m_dynamic_size_evaluation.get();
@@ -246,8 +247,12 @@ unsigned DeclarationModifierComputations::GetAlignment() const
 {
     const auto following = GetFollowingDeclarationModifiers();
 
-    return std::any_of(following.begin(), following.end(), [](const DeclarationModifier* modifier)
-    {
-        return modifier->GetType() == DeclarationModifierType::POINTER;
-    }) ? m_information->m_member->GetAlignment() : m_information->m_member->m_type_declaration->m_type->GetAlignment();
+    return std::any_of(following.begin(),
+                       following.end(),
+                       [](const DeclarationModifier* modifier)
+                       {
+                           return modifier->GetType() == DeclarationModifierType::POINTER;
+                       })
+               ? m_information->m_member->GetAlignment()
+               : m_information->m_member->m_type_declaration->m_type->GetAlignment();
 }

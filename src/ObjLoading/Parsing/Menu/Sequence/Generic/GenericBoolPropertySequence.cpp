@@ -1,8 +1,8 @@
 #include "GenericBoolPropertySequence.h"
 
-#include <utility>
-
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+
+#include <utility>
 
 using namespace menu;
 
@@ -11,10 +11,7 @@ GenericBoolPropertySequence::GenericBoolPropertySequence(std::string keywordName
 {
     const MenuMatcherFactory create(this);
 
-    AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Integer().Capture(CAPTURE_VALUE)
-    });
+    AddMatchers({create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN), create.Integer().Capture(CAPTURE_VALUE)});
 }
 
 void GenericBoolPropertySequence::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const

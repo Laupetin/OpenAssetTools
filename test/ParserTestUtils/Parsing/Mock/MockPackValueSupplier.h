@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Parsing/IPackValueSupplier.h"
+#include "Utils/ClassUtils.h"
 
 class MockPackValueSupplier final : public IPackValueSupplier
 {

@@ -1,7 +1,7 @@
 #pragma once
+#include "Game/IW4/IW4.h"
 #include "Loading/ContentLoaderBase.h"
 #include "Loading/IContentLoadingEntryPoint.h"
-#include "Game/IW4/IW4.h"
 
 namespace IW4
 {
@@ -20,4 +20,4 @@ namespace IW4
 
         void Load(Zone* zone, IZoneInputStream* stream) override;
     };
-}
+} // namespace IW4

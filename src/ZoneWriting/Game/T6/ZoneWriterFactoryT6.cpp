@@ -1,16 +1,11 @@
 #include "ZoneWriterFactoryT6.h"
 
-#include <cassert>
-#include <cstring>
-
 #include "ContentWriterT6.h"
-#include "Utils/ICapturedDataProvider.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/GameT6.h"
+#include "Game/T6/T6.h"
 #include "Game/T6/ZoneConstantsT6.h"
+#include "Utils/ICapturedDataProvider.h"
 #include "Writing/Processor/OutputProcessorXChunks.h"
-#include "Zone/XChunk/XChunkProcessorDeflate.h"
-#include "Zone/XChunk/XChunkProcessorSalsa20Encryption.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
 #include "Writing/Steps/StepAlign.h"
 #include "Writing/Steps/StepRemoveOutputProcessor.h"
@@ -20,6 +15,11 @@
 #include "Writing/Steps/StepWriteZoneContentToMemory.h"
 #include "Writing/Steps/StepWriteZoneHeader.h"
 #include "Writing/Steps/StepWriteZoneSizes.h"
+#include "Zone/XChunk/XChunkProcessorDeflate.h"
+#include "Zone/XChunk/XChunkProcessorSalsa20Encryption.h"
+
+#include <cassert>
+#include <cstring>
 
 using namespace T6;
 
@@ -56,7 +56,7 @@ public:
         ZoneHeader header{};
         header.m_version = ZoneConstants::ZONE_VERSION;
 
-        if(isSecure)
+        if (isSecure)
         {
             if (isOfficial)
                 memcpy(header.m_magic, ZoneConstants::MAGIC_SIGNED_TREYARCH, sizeof(ZoneHeader::m_magic));
@@ -76,7 +76,8 @@ public:
 
     void AddXChunkProcessor(const bool isEncrypted, ICapturedDataProvider** dataToSignProviderPtr, OutputProcessorXChunks** xChunkProcessorPtr) const
     {
-        auto xChunkProcessor = std::make_unique<OutputProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::XCHUNK_MAX_WRITE_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        auto xChunkProcessor = std::make_unique<OutputProcessorXChunks>(
+            ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::XCHUNK_MAX_WRITE_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
         if (xChunkProcessorPtr)
             *xChunkProcessorPtr = xChunkProcessor.get();
 
@@ -86,8 +87,8 @@ public:
         if (isEncrypted)
         {
             // If zone is encrypted, the decryption is applied before the decompression. T6 Zones always use Salsa20.
-            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Encryption>(ZoneConstants::STREAM_COUNT, m_zone->m_name, ZoneConstants::SALSA20_KEY_TREYARCH,
-                sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
+            auto chunkProcessorSalsa20 = std::make_unique<XChunkProcessorSalsa20Encryption>(
+                ZoneConstants::STREAM_COUNT, m_zone->m_name, ZoneConstants::SALSA20_KEY_TREYARCH, sizeof(ZoneConstants::SALSA20_KEY_TREYARCH));
 
             // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
             if (dataToSignProviderPtr)
@@ -97,7 +98,6 @@ public:
         }
 
         m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::move(xChunkProcessor)));
-
     }
 
     std::unique_ptr<ZoneWriter> CreateWriter()
@@ -108,7 +108,8 @@ public:
 
         SetupBlocks();
 
-        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
+            std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
         auto* contentInMemoryPtr = contentInMemory.get();
         m_writer->AddWritingStep(std::move(contentInMemory));
 
@@ -121,7 +122,7 @@ public:
         AddXChunkProcessor(isEncrypted, &dataToSignProvider, &xChunksProcessor);
 
         // Start of the XFile struct
-        //m_writer->AddWritingStep(std::make_unique<StepSkipBytes>(8)); // Skip size and externalSize fields since they are not interesting for us
+        // m_writer->AddWritingStep(std::make_unique<StepSkipBytes>(8)); // Skip size and externalSize fields since they are not interesting for us
         m_writer->AddWritingStep(std::make_unique<StepWriteZoneSizes>(contentInMemoryPtr));
         m_writer->AddWritingStep(std::make_unique<StepWriteXBlockSizes>(m_zone));
 

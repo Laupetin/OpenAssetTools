@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "AssetLoading/IAssetLoadingManager.h"
 #include "Game/IW4/IW4.h"
 #include "Parsing/Menu/Domain/CommonMenuDef.h"
-#include "Utils/MemoryManager.h"
 #include "SearchPath/ISearchPath.h"
+#include "Utils/ClassUtils.h"
+#include "Utils/MemoryManager.h"
 
 namespace IW4
 {
@@ -23,4 +23,4 @@ namespace IW4
         std::vector<XAssetInfoGeneric*>& GetDependencies();
         _NODISCARD menuDef_t* ConvertMenu(const menu::CommonMenuDef& commonMenu);
     };
-}
+} // namespace IW4

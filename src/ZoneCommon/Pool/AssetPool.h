@@ -1,15 +1,14 @@
 #pragma once
 
-#include <string>
-#include <map>
-
 #include "XAssetInfo.h"
 #include "Zone/Zone.h"
 
+#include <map>
+#include <string>
+
 class Zone;
 
-template<typename T>
-class AssetPool
+template<typename T> class AssetPool
 {
 public:
     std::map<std::string, XAssetInfo<T>*> m_asset_lookup;
@@ -47,13 +46,14 @@ public:
 
     virtual ~AssetPool() = default;
 
-    virtual XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) = 0;
+    virtual XAssetInfo<T>*
+        AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) = 0;
 
     XAssetInfo<T>* GetAsset(const std::string& name)
     {
         auto foundAsset = m_asset_lookup.find(name);
 
-        if(foundAsset == m_asset_lookup.end())
+        if (foundAsset == m_asset_lookup.end())
             return nullptr;
 
         return foundAsset->second;

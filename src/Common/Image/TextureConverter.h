@@ -1,8 +1,8 @@
 #pragma once
 
-#include <functional>
-
 #include "Texture.h"
+
+#include <functional>
 
 class TextureConverter
 {
@@ -23,7 +23,6 @@ class TextureConverter
     void ConvertUnsignedToUnsigned();
 
 public:
-
     TextureConverter(Texture* inputTexture, const ImageFormat* targetFormat);
 
     Texture* Convert();

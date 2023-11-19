@@ -35,9 +35,7 @@ bool LeafsPostProcessor::IsLeaf(StructureInformation* info)
         if (computations.HasDynamicArraySize())
             return false;
 
-        if (member->m_type != nullptr
-            && member->m_type != info
-            && !IsLeaf(member->m_type))
+        if (member->m_type != nullptr && member->m_type != info && !IsLeaf(member->m_type))
         {
             return false;
         }

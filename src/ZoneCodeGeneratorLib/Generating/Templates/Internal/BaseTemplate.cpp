@@ -1,10 +1,9 @@
 #include "BaseTemplate.h"
 
-#include <sstream>
-
-
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
+
+#include <sstream>
 
 BaseTemplate::BaseTemplate(std::ostream& stream, RenderingContext* context)
     : m_out(stream),
@@ -88,7 +87,6 @@ std::string BaseTemplate::MakeTypeVarName(const DataDefinition* def)
     return str.str();
 }
 
-
 std::string BaseTemplate::MakeTypeWrittenVarName(const DataDefinition* def)
 {
     std::ostringstream str;
@@ -137,7 +135,10 @@ std::string BaseTemplate::MakeWrittenMemberAccess(StructureInformation* info, Me
     return str.str();
 }
 
-std::string BaseTemplate::MakeMemberAccess(const std::string& variableName, StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+std::string BaseTemplate::MakeMemberAccess(const std::string& variableName,
+                                           StructureInformation* info,
+                                           MemberInformation* member,
+                                           const DeclarationModifierComputations& modifier)
 {
     std::ostringstream str;
     str << variableName << "->" << member->m_member->m_name;
@@ -210,7 +211,7 @@ std::string BaseTemplate::MakeCustomActionCall(CustomAction* action)
 
 std::string BaseTemplate::MakeArrayCount(const ArrayDeclarationModifier* arrayModifier)
 {
-    if(arrayModifier->m_dynamic_count_evaluation)
+    if (arrayModifier->m_dynamic_count_evaluation)
     {
         return MakeEvaluation(arrayModifier->m_dynamic_count_evaluation.get());
     }
@@ -234,11 +235,11 @@ void BaseTemplate::MakeOperandDynamic(const OperandDynamic* op, std::ostringstre
 {
     MakeTypeVarNameInternal(op->m_structure->m_definition, str);
 
-    if(!op->m_referenced_member_chain.empty())
+    if (!op->m_referenced_member_chain.empty())
     {
         str << "->";
         const auto lastEntry = op->m_referenced_member_chain.end() - 1;
-        for(auto i = op->m_referenced_member_chain.begin(); i != lastEntry; ++i)
+        for (auto i = op->m_referenced_member_chain.begin(); i != lastEntry; ++i)
         {
             MemberComputations computations(*i);
             str << (*i)->m_member->m_name;

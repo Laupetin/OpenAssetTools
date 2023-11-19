@@ -1,13 +1,13 @@
 #pragma once
 
 #include "ILoadingStep.h"
-#include "Zone/Zone.h"
-#include "Zone/XBlock.h"
 #include "StreamProcessor.h"
+#include "Zone/XBlock.h"
+#include "Zone/Zone.h"
 
-#include <vector>
 #include <istream>
 #include <memory>
+#include <vector>
 
 class ILoadingStep;
 

@@ -15,4 +15,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<PhysPreset>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset) override;
     };
-}
+} // namespace T6

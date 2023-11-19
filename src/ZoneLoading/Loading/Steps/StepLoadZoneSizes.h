@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstddef>
-
-#include "Utils/ClassUtils.h"
 #include "Loading/ILoadingStep.h"
+#include "Utils/ClassUtils.h"
+
+#include <cstddef>
 
 class StepLoadZoneSizes final : public ILoadingStep
 {

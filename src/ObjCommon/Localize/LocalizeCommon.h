@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "Game/GameLanguage.h"
+
+#include <string>
 
 class LocalizeCommon
 {

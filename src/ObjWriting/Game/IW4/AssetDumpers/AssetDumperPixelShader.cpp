@@ -21,5 +21,6 @@ void AssetDumperPixelShader::DumpAsset(AssetDumpingContext& context, XAssetInfo<
     if (!shaderFile)
         return;
 
-    shaderFile->write(reinterpret_cast<const char*>(pixelShader->prog.loadDef.program), static_cast<std::streamsize>(pixelShader->prog.loadDef.programSize) * 4u);
+    shaderFile->write(reinterpret_cast<const char*>(pixelShader->prog.loadDef.program),
+                      static_cast<std::streamsize>(pixelShader->prog.loadDef.programSize) * 4u);
 }

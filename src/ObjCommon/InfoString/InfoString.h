@@ -1,11 +1,11 @@
 #pragma once
-#include <istream>
-#include <unordered_map>
-#include <string>
-#include <vector>
-
-#include "Utils/ClassUtils.h"
 #include "Obj/Gdt/GdtEntry.h"
+#include "Utils/ClassUtils.h"
+
+#include <istream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 class InfoString
 {

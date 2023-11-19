@@ -1,7 +1,7 @@
 #include "InfoString.h"
 
-#include <sstream>
 #include <cstring>
+#include <sstream>
 #include <stack>
 
 const std::string InfoString::EMPTY_VALUE;
@@ -116,7 +116,7 @@ public:
         auto c = m_stream.get();
         if (c == EOF)
         {
-            if(m_last_separator != EOF)
+            if (m_last_separator != EOF)
             {
                 m_last_separator = EOF;
                 value = std::string();
@@ -210,7 +210,7 @@ bool InfoString::FromGdtProperties(const GdtEntry& gdtEntry)
         }
     }
 
-    while(!entryStack.empty())
+    while (!entryStack.empty())
     {
         const auto* currentEntry = entryStack.top();
         entryStack.pop();
@@ -218,7 +218,7 @@ bool InfoString::FromGdtProperties(const GdtEntry& gdtEntry)
         for (const auto& [key, value] : currentEntry->m_properties)
         {
             auto existingEntry = m_values.find(key);
-            if(existingEntry == m_values.end())
+            if (existingEntry == m_values.end())
             {
                 m_keys_by_insertion.push_back(key);
                 m_values.emplace(std::make_pair(key, value));

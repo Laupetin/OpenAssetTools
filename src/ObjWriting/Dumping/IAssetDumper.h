@@ -3,8 +3,7 @@
 #include "AssetDumpingContext.h"
 #include "Pool/AssetPool.h"
 
-template<class T>
-class IAssetDumper
+template<class T> class IAssetDumper
 {
 public:
     IAssetDumper() = default;

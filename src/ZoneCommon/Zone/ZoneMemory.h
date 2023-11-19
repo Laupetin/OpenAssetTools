@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
 #include "Utils/MemoryManager.h"
 #include "Zone/XBlock.h"
+
+#include <memory>
+#include <vector>
 
 class ZoneMemory : public MemoryManager
 {

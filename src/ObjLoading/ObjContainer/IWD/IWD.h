@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-
+#include "ObjContainer/ObjContainerRepository.h"
+#include "SearchPath/ISearchPath.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/ObjStream.h"
-#include "SearchPath/ISearchPath.h"
-#include "ObjContainer/ObjContainerRepository.h"
+
+#include <memory>
 
 class IWD final : public ISearchPath, IObjContainer
 {

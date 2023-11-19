@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Zone/Stream/IZoneStream.h"
+
 #include <cstddef>
 #include <typeindex>
 #include <typeinfo>
-
-#include "Zone/Stream/IZoneStream.h"
 
 class IZoneOutputStream : public IZoneStream
 {
@@ -23,44 +23,37 @@ public:
     virtual void ReusableAddOffset(void* ptr, size_t size, size_t count, std::type_index type) = 0;
     virtual void MarkFollowing(void** pPtr) = 0;
 
-    template<typename T>
-    bool ReusableShouldWrite(T** pPtr)
+    template<typename T> bool ReusableShouldWrite(T** pPtr)
     {
         return ReusableShouldWrite(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(pPtr)), sizeof(T), std::type_index(typeid(T)));
     }
 
-    template<typename T>
-    void ReusableAddOffset(T* ptr)
+    template<typename T> void ReusableAddOffset(T* ptr)
     {
         ReusableAddOffset(const_cast<void*>(reinterpret_cast<const void*>(ptr)), sizeof(T), 1, std::type_index(typeid(T)));
     }
 
-    template<typename T>
-    void ReusableAddOffset(T* ptr, const size_t count)
+    template<typename T> void ReusableAddOffset(T* ptr, const size_t count)
     {
         ReusableAddOffset(const_cast<void*>(reinterpret_cast<const void*>(ptr)), sizeof(T), count, std::type_index(typeid(T)));
     }
 
-    template<typename T>
-    T* Write(T* dst)
+    template<typename T> T* Write(T* dst)
     {
         return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), sizeof(T)));
     }
 
-    template<typename T>
-    T* Write(T* dst, const uint32_t count)
+    template<typename T> T* Write(T* dst, const uint32_t count)
     {
         return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), count * sizeof(T)));
     }
 
-    template<typename T>
-    T* WritePartial(T* dst, const size_t size)
+    template<typename T> T* WritePartial(T* dst, const size_t size)
     {
         return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), size));
     }
 
-    template<typename T>
-    void MarkFollowing(T*& ptr)
+    template<typename T> void MarkFollowing(T*& ptr)
     {
         MarkFollowing(reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(&ptr)));
     }

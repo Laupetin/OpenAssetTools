@@ -1,8 +1,8 @@
 #include "TechniqueNoScopeSequences.h"
 
-#include <cassert>
-
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
+
+#include <cassert>
 
 using namespace techset;
 
@@ -15,9 +15,7 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Char('{')
-            });
+            AddMatchers({create.Char('{')});
         }
 
     protected:
@@ -29,13 +27,11 @@ namespace techset
             state->m_acceptor->AcceptNextPass();
         }
     };
-}
+} // namespace techset
 
 const std::vector<TechniqueParser::sequence_t*>& TechniqueNoScopeSequences::GetSequences()
 {
-    static std::vector<TechniqueParser::sequence_t*> tests({
-        new SequencePass()
-    });
+    static std::vector<TechniqueParser::sequence_t*> tests({new SequencePass()});
 
     return tests;
 }

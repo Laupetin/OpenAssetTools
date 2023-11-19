@@ -6,11 +6,7 @@ SequenceZoneDefinitionInclude::SequenceZoneDefinitionInclude()
 {
     const ZoneDefinitionMatcherFactory create(this);
 
-    AddMatchers({
-        create.Keyword("include"),
-        create.Char(','),
-        create.Field().Capture(CAPTURE_INCLUDE_NAME)
-    });
+    AddMatchers({create.Keyword("include"), create.Char(','), create.Field().Capture(CAPTURE_INCLUDE_NAME)});
 }
 
 void SequenceZoneDefinitionInclude::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const

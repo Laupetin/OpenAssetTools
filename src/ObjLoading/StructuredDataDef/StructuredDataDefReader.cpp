@@ -1,11 +1,11 @@
 #include "StructuredDataDefReader.h"
 
-#include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserMultiInputStream.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
+#include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
 
 using namespace sdd;
 

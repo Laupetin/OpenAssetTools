@@ -2,8 +2,7 @@
 
 namespace T6
 {
-    inline const char* szWeapTypeNames[]
-    {
+    inline const char* szWeapTypeNames[]{
         "bullet",
         "grenade",
         "projectile",
@@ -12,11 +11,10 @@ namespace T6
         "bomb",
         "mine",
         "melee",
-        "riotshield"
+        "riotshield",
     };
 
-    inline const char* szWeapClassNames[]
-    {
+    inline const char* szWeapClassNames[]{
         "rifle",
         "mg",
         "smg",
@@ -30,47 +28,42 @@ namespace T6
         "item",
         "melee",
         "Killstreak Alt Stored Weapon",
-        "pistol spread"
+        "pistol spread",
     };
 
-    inline const char* szWeapOverlayReticleNames[]
-    {
+    inline const char* szWeapOverlayReticleNames[]{
         "none",
-        "crosshair"
+        "crosshair",
     };
 
-    inline const char* szWeapInventoryTypeNames[]
-    {
+    inline const char* szWeapInventoryTypeNames[]{
         "primary",
         "offhand",
         "item",
         "altmode",
         "melee",
-        "dwlefthand"
+        "dwlefthand",
     };
 
-    inline const char* szWeapClipTypeNames[]
-    {
+    inline const char* szWeapClipTypeNames[]{
         "bottom",
         "top",
         "left",
         "dp28",
         "ptrs",
-        "lmg"
+        "lmg",
     };
 
-    inline const char* barrelTypeNames[]
-    {
+    inline const char* barrelTypeNames[]{
         "Single",
         "Dual Barrel",
         "Dual Barrel Alternate",
         "Quad Barrel",
         "Quad Barrel Alternate",
-        "Quad Barrel Double Alternate"
+        "Quad Barrel Double Alternate",
     };
 
-    inline const char* impactTypeNames[]
-    {
+    inline const char* impactTypeNames[]{
         "none",
         "bullet_small",
         "bullet_large",
@@ -86,18 +79,16 @@ namespace T6
         "mortar_shell",
         "tank_shell",
         "bolt",
-        "blade"
+        "blade",
     };
 
-    inline const char* szWeapStanceNames[]
-    {
+    inline const char* szWeapStanceNames[]{
         "stand",
         "duck",
-        "prone"
+        "prone",
     };
 
-    inline const char* szProjectileExplosionNames[]
-    {
+    inline const char* szProjectileExplosionNames[]{
         "grenade",
         "rocket",
         "flashbang",
@@ -108,71 +99,40 @@ namespace T6
         "fire",
         "napalmblob",
         "bolt",
-        "shrapnel span"
+        "shrapnel span",
     };
 
-    inline const char* offhandClassNames[]
-    {
+    inline const char* offhandClassNames[]{
         "None",
         "Frag Grenade",
         "Smoke Grenade",
         "Flash Grenade",
         "Gear",
-        "Supply Drop Marker"
+        "Supply Drop Marker",
     };
 
-    inline const char* offhandSlotNames[]
-    {
+    inline const char* offhandSlotNames[]{
         "None",
         "Lethal grenade",
         "Tactical grenade",
         "Equipment",
-        "Specific use"
+        "Specific use",
     };
 
-    inline const char* playerAnimTypeNames[]
-    {
-        "none",
-        "default",
-        "other",
-        "sniper",
-        "m203",
-        "hold",
-        "briefcase",
-        "reviver",
-        "radio",
-        "dualwield",
-        "remotecontrol",
-        "crossbow",
-        "minigun",
-        "beltfed",
-        "g11",
-        "rearclip",
-        "handleclip",
-        "rearclipsniper",
-        "ballisticknife",
-        "singleknife",
-        "nopump",
-        "hatchet",
-        "grimreaper",
-        "zipline",
-        "riotshield",
-        "tablet",
-        "turned",
-        "screecher",
-        "staff"
+    inline const char* playerAnimTypeNames[]{
+        "none",          "default",  "other",      "sniper",  "m203",       "hold",     "briefcase",  "reviver",        "radio",          "dualwield",
+        "remotecontrol", "crossbow", "minigun",    "beltfed", "g11",        "rearclip", "handleclip", "rearclipsniper", "ballisticknife", "singleknife",
+        "nopump",        "hatchet",  "grimreaper", "zipline", "riotshield", "tablet",   "turned",     "screecher",      "staff",
     };
 
-    inline const char* activeReticleNames[]
-    {
+    inline const char* activeReticleNames[]{
         "None",
         "Pip-On-A-Stick",
         "Bouncing Diamond",
-        "Missile Lock"
+        "Missile Lock",
     };
 
-    inline const char* guidedMissileNames[]
-    {
+    inline const char* guidedMissileNames[]{
         "None",
         "Sidewinder",
         "Hellfire",
@@ -181,87 +141,53 @@ namespace T6
         "WireGuided",
         "TVGuided",
         "Drone",
-        "HeatSeeking"
+        "HeatSeeking",
     };
 
-    inline const char* stickinessNames[]
-    {
+    inline const char* stickinessNames[]{
         "Don't stick",
         "Stick to all",
         "Stick to all, except ai and clients",
         "Stick to ground",
         "Stick to ground, maintain yaw",
-        "Stick to flesh"
+        "Stick to flesh",
     };
 
-    inline const char* rotateTypeNames[]
-    {
+    inline const char* rotateTypeNames[]{
         "Rotate both axis, grenade style",
         "Rotate one axis, blade style",
-        "Rotate like a cylinder"
+        "Rotate like a cylinder",
     };
 
-    inline const char* overlayInterfaceNames[]
-    {
+    inline const char* overlayInterfaceNames[]{
         "None",
         "Javelin",
-        "Turret Scope"
+        "Turret Scope",
     };
 
-    inline const char* ammoCounterClipNames[]
-    {
+    inline const char* ammoCounterClipNames[]{
         "None",
         "Magazine",
         "ShortMagazine",
         "Shotgun",
         "Rocket",
         "Beltfed",
-        "AltWeapon"
+        "AltWeapon",
     };
 
-    inline const char* weapIconRatioNames[]
-    {
+    inline const char* weapIconRatioNames[]{
         "1:1",
         "2:1",
-        "4:1"
+        "4:1",
     };
 
-    inline const char* szAttachmentTypeNames[]
-    {
-        "none",
-        "acog",
-        "dualclip",
-        "dualoptic",
-        "dw",
-        "extbarrel",
-        "extclip",
-        "extramags",
-        "fastads",
-        "fastreload",
-        "fmj",
-        "gl",
-        "grip",
-        "holo",
-        "ir",
-        "is",
-        "longbreath",
-        "mk",
-        "mms",
-        "rangefinder",
-        "reflex",
-        "rf",
-        "sf",
-        "silencer",
-        "stackfire",
-        "stalker",
-        "steadyaim",
-        "swayreduc",
-        "tacknife",
-        "vzoom"
+    inline const char* szAttachmentTypeNames[]{
+        "none",   "acog", "dualclip", "dualoptic", "dw",        "extbarrel", "extclip",    "extramags", "fastads",  "fastreload",
+        "fmj",    "gl",   "grip",     "holo",      "ir",        "is",        "longbreath", "mk",        "mms",      "rangefinder",
+        "reflex", "rf",   "sf",       "silencer",  "stackfire", "stalker",   "steadyaim",  "swayreduc", "tacknife", "vzoom",
     };
 
-    inline const char* szWeapFireTypeNames[]
-    {
+    inline const char* szWeapFireTypeNames[]{
         "Full Auto",
         "Single Shot",
         "2-Round Burst",
@@ -271,19 +197,17 @@ namespace T6
         "Stacked Fire",
         "Minigun",
         "Charge Shot",
-        "Jetgun"
+        "Jetgun",
     };
 
-    inline const char* penetrateTypeNames[]
-    {
+    inline const char* penetrateTypeNames[]{
         "none",
         "small",
         "medium",
-        "large"
+        "large",
     };
 
-    inline const char* s_constraintTypeNames[]
-    {
+    inline const char* s_constraintTypeNames[]{
         "none",
         "point",
         "distance",
@@ -296,8 +220,7 @@ namespace T6
         "light",
     };
 
-    inline const char* s_vehicleClassNames[]
-    {
+    inline const char* s_vehicleClassNames[]{
         "4 wheel",
         "motorcycle",
         "tank",
@@ -307,8 +230,7 @@ namespace T6
         "helicopter",
     };
 
-    inline const char* s_vehicleCameraModes[]
-    {
+    inline const char* s_vehicleCameraModes[]{
         "first",
         "chase",
         "view",
@@ -319,52 +241,20 @@ namespace T6
         "vtol",
     };
 
-    inline const char* s_tractionTypeNames[]
-    {
+    inline const char* s_tractionTypeNames[]{
         "TRACTION_TYPE_FRONT",
         "TRACTION_TYPE_BACK",
         "TRACTION_TYPE_ALL_WD",
     };
 
-    inline const char* tracerTypeNames[]
-    {
+    inline const char* tracerTypeNames[]{
         "Laser",
-        "Smoke"
+        "Smoke",
     };
 
-    inline const char* bounceSoundSuffixes[]
-    {
-        "_default",
-        "_bark",
-        "_brick",
-        "_carpet",
-        "_cloth",
-        "_concrete",
-        "_dirt",
-        "_flesh",
-        "_foliage",
-        "_glass",
-        "_grass",
-        "_gravel",
-        "_ice",
-        "_metal",
-        "_mud",
-        "_paper",
-        "_plaster",
-        "_rock",
-        "_sand",
-        "_snow",
-        "_water",
-        "_wood",
-        "_asphalt",
-        "_ceramic",
-        "_plastic",
-        "_rubber",
-        "_cushion",
-        "_fruit",
-        "_paintedmetal",
-        "_player",
-        "_tallgrass",
-        "_riotshield"
+    inline const char* bounceSoundSuffixes[]{
+        "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",         "_flesh",  "_foliage",   "_glass",      "_grass",
+        "_gravel",  "_ice",     "_metal",   "_mud",    "_paper",   "_plaster",  "_rock",         "_sand",   "_snow",      "_water",      "_wood",
+        "_asphalt", "_ceramic", "_plastic", "_rubber", "_cushion", "_fruit",    "_paintedmetal", "_player", "_tallgrass", "_riotshield",
     };
-}
+} // namespace T6

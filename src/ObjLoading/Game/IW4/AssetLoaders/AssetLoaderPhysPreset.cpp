@@ -1,15 +1,15 @@
 #include "AssetLoaderPhysPreset.h"
 
+#include "Game/IW4/IW4.h"
+#include "Game/IW4/InfoString/InfoStringToStructConverter.h"
+#include "Game/IW4/InfoString/PhysPresetFields.h"
+#include "Game/IW4/ObjConstantsIW4.h"
+#include "ObjLoading.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstring>
 #include <iostream>
 #include <limits>
-
-#include "ObjLoading.h"
-#include "Game/IW4/IW4.h"
-#include "Game/IW4/ObjConstantsIW4.h"
-#include "Game/IW4/InfoString/InfoStringToStructConverter.h"
-#include "Game/IW4/InfoString/PhysPresetFields.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
 
@@ -25,13 +25,18 @@ namespace IW4
         }
 
     public:
-        InfoStringToPhysPresetConverter(const InfoString& infoString, PhysPresetInfo* physPreset, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-            const cspField_t* fields, const size_t fieldCount)
+        InfoStringToPhysPresetConverter(const InfoString& infoString,
+                                        PhysPresetInfo* physPreset,
+                                        ZoneScriptStrings& zoneScriptStrings,
+                                        MemoryManager* memory,
+                                        IAssetLoadingManager* manager,
+                                        const cspField_t* fields,
+                                        const size_t fieldCount)
             : InfoStringToStructConverter(infoString, physPreset, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace IW4
 
 void AssetLoaderPhysPreset::CopyFromPhysPresetInfo(const PhysPresetInfo* physPresetInfo, PhysPreset* physPreset)
 {
@@ -52,11 +57,13 @@ void AssetLoaderPhysPreset::CopyFromPhysPresetInfo(const PhysPresetInfo* physPre
     physPreset->perSurfaceSndAlias = physPresetInfo->perSurfaceSndAlias != 0;
 }
 
-bool AssetLoaderPhysPreset::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderPhysPreset::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
     const auto presetInfo = std::make_unique<PhysPresetInfo>();
     memset(presetInfo.get(), 0, sizeof(PhysPresetInfo));
-    InfoStringToPhysPresetConverter converter(infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
+    InfoStringToPhysPresetConverter converter(
+        infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse phys preset: \"" << assetName << "\"" << std::endl;
@@ -86,7 +93,8 @@ bool AssetLoaderPhysPreset::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderPhysPreset::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPhysPreset::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_PHYS_PRESET, assetName);
     if (gdtEntry == nullptr)
@@ -107,7 +115,8 @@ bool AssetLoaderPhysPreset::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderPhysPreset::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPhysPreset::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "physic/" + assetName;
     const auto file = searchPath->Open(fileName);
@@ -123,4 +132,3 @@ bool AssetLoaderPhysPreset::LoadFromRaw(const std::string& assetName, ISearchPat
 
     return LoadFromInfoString(infoString, assetName, memory, manager, zone);
 }
-

@@ -1,11 +1,11 @@
 #include "OutputProcessorXChunks.h"
 
+#include "Writing/WritingException.h"
+#include "Zone/XChunk/XChunkException.h"
+#include "Zone/ZoneTypes.h"
+
 #include <cassert>
 #include <cstring>
-
-#include "Writing/WritingException.h"
-#include "Zone/ZoneTypes.h"
-#include "Zone/XChunk/XChunkException.h"
 
 void OutputProcessorXChunks::Init()
 {

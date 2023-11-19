@@ -27,4 +27,4 @@ namespace iwi6
         std::string GetFileExtension() override;
         void DumpImage(std::ostream& stream, Texture* texture) override;
     };
-}
+} // namespace iwi6

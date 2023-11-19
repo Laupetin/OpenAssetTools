@@ -1,12 +1,12 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "Game/GameLanguage.h"
 #include "Localize/LocalizeFile.h"
 #include "Parsing/IParserLineStream.h"
+
+#include <memory>
+#include <string>
+#include <vector>
 
 class LocalizeFileReader
 {

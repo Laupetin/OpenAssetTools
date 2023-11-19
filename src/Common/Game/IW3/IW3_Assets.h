@@ -45,7 +45,7 @@ namespace IW3
         ASSET_TYPE_RAWFILE = 0x1F,
         ASSET_TYPE_STRINGTABLE = 0x20,
         ASSET_TYPE_COUNT,
-        
+
         ASSET_TYPE_STRING = ASSET_TYPE_COUNT,
         ASSET_TYPE_ASSETLIST,
 
@@ -100,35 +100,35 @@ namespace IW3
     union XAssetHeader
     {
         // XModelPieces *xmodelPieces; // NOT AN ASSET
-        PhysPreset *physPreset;
-        XAnimParts *parts;
-        XModel *model;
-        Material *material;
-        MaterialPixelShader *pixelShader;
-        MaterialVertexShader *vertexShader;
-        MaterialTechniqueSet *techniqueSet;
-        GfxImage *image;
-        snd_alias_list_t *sound;
-        SndCurve *sndCurve;
-        LoadedSound *loadSnd;
-        clipMap_t *clipMap;
-        ComWorld *comWorld;
-        GameWorldSp *gameWorldSp;
-        GameWorldMp *gameWorldMp;
-        MapEnts *mapEnts;
-        GfxWorld *gfxWorld;
-        GfxLightDef *lightDef;
-        Font_s *font;
-        MenuList *menuList;
-        menuDef_t *menu;
-        LocalizeEntry *localize;
-        WeaponDef *weapon;
-        SndDriverGlobals *sndDriverGlobals;
-        FxEffectDef *fx;
-        FxImpactTable *impactFx;
-        RawFile *rawfile;
-        StringTable *stringTable;
-        void *data;
+        PhysPreset* physPreset;
+        XAnimParts* parts;
+        XModel* model;
+        Material* material;
+        MaterialPixelShader* pixelShader;
+        MaterialVertexShader* vertexShader;
+        MaterialTechniqueSet* techniqueSet;
+        GfxImage* image;
+        snd_alias_list_t* sound;
+        SndCurve* sndCurve;
+        LoadedSound* loadSnd;
+        clipMap_t* clipMap;
+        ComWorld* comWorld;
+        GameWorldSp* gameWorldSp;
+        GameWorldMp* gameWorldMp;
+        MapEnts* mapEnts;
+        GfxWorld* gfxWorld;
+        GfxLightDef* lightDef;
+        Font_s* font;
+        MenuList* menuList;
+        menuDef_t* menu;
+        LocalizeEntry* localize;
+        WeaponDef* weapon;
+        SndDriverGlobals* sndDriverGlobals;
+        FxEffectDef* fx;
+        FxImpactTable* impactFx;
+        RawFile* rawfile;
+        StringTable* stringTable;
+        void* data;
     };
 
     typedef char cbrushedge_t;
@@ -142,7 +142,7 @@ namespace IW3
         XModel* model;
         float offset[3];
     };
-    
+
     struct XModelPieces
     {
         const char* name;
@@ -152,14 +152,14 @@ namespace IW3
 
     struct PhysPreset
     {
-        const char *name;
+        const char* name;
         int type;
         float mass;
         float bounce;
         float friction;
         float bulletForceScale;
         float explosiveForceScale;
-        const char *sndAliasPrefix;
+        const char* sndAliasPrefix;
         float piecesSpreadFraction;
         float piecesUpwardVelocity;
         bool tempDefaultToCylinder;
@@ -224,7 +224,7 @@ namespace IW3
 
     struct XAnimDeltaPartQuatDataFrames
     {
-        XQuat *frames;
+        XQuat* frames;
         XAnimDynamicIndicesQuat indices;
     };
 
@@ -371,7 +371,7 @@ namespace IW3
         char zoneHandle;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        r_index16_t(*triIndices)[3];
+        r_index16_t (*triIndices)[3];
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         unsigned int vertListCount;
@@ -485,8 +485,8 @@ namespace IW3
         char lodRampType;
         uint16_t* boneNames;
         char* parentList;
-        int16_t(*quats)[4];
-        float(*trans)[4];
+        int16_t (*quats)[4];
+        float (*trans)[4];
         char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
@@ -705,7 +705,7 @@ namespace IW3
         char nameStart;
         char nameEnd;
         unsigned char samplerState; // SamplerStateBits_e
-        unsigned char semantic; // TextureSemantic
+        unsigned char semantic;     // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -820,7 +820,7 @@ namespace IW3
 
     union MaterialArgumentDef
     {
-        const float(*literalConst)[4];
+        const float (*literalConst)[4];
         MaterialArgumentCodeConst codeConst;
         unsigned int codeSampler;
         unsigned int nameHash;
@@ -1156,7 +1156,7 @@ namespace IW3
     struct MaterialVertexStreamRouting
     {
         MaterialStreamRouting data[16];
-        void/*IDirect3DVertexDeclaration9*/* decl[16];
+        void /*IDirect3DVertexDeclaration9*/* decl[16];
     };
 
     struct MaterialVertexDeclaration
@@ -1176,7 +1176,7 @@ namespace IW3
 
     struct MaterialVertexShaderProgram
     {
-        void/*IDirect3DVertexShader9*/* vs;
+        void /*IDirect3DVertexShader9*/* vs;
         GfxVertexShaderLoadDef loadDef;
     };
 
@@ -1195,7 +1195,7 @@ namespace IW3
 
     struct MaterialPixelShaderProgram
     {
-        void/*IDirect3DPixelShader9*/* ps;
+        void /*IDirect3DPixelShader9*/* ps;
         GfxPixelShaderLoadDef loadDef;
     };
 
@@ -1304,10 +1304,10 @@ namespace IW3
 
     union GfxTexture
     {
-        //void/*IDirect3DBaseTexture9*/* basemap;
-        //void/*IDirect3DTexture9*/* map;
-        //void/*IDirect3DVolumeTexture9*/* volmap;
-        //void/*IDirect3DCubeTexture9*/* cubemap;
+        // void/*IDirect3DBaseTexture9*/* basemap;
+        // void/*IDirect3DTexture9*/* map;
+        // void/*IDirect3DVolumeTexture9*/* volmap;
+        // void/*IDirect3DCubeTexture9*/* cubemap;
         Texture* texture;
         GfxImageLoadDef* loadDef;
     };
@@ -1681,7 +1681,7 @@ namespace IW3
         unsigned int numLeafSurfaces;
         unsigned int* leafsurfaces;
         unsigned int vertCount;
-        vec3_t *verts;
+        vec3_t* verts;
         int triCount;
         uint16_t* triIndices;
         char* triEdgeIsWalkable;
@@ -1898,13 +1898,13 @@ namespace IW3
     struct GfxWorldVertexData
     {
         GfxWorldVertex* vertices;
-        void/*IDirect3DVertexBuffer9*/* worldVb;
+        void /*IDirect3DVertexBuffer9*/* worldVb;
     };
 
     struct GfxWorldVertexLayerData
     {
         char* data;
-        void/*IDirect3DVertexBuffer9*/* layerVb;
+        void /*IDirect3DVertexBuffer9*/* layerVb;
     };
 
     struct SunLightParseParams
@@ -1979,7 +1979,7 @@ namespace IW3
         bool isAncestor;
         char recursionDepth;
         char hullPointCount;
-        float(*hullPoints)[2];
+        float (*hullPoints)[2];
         GfxPortal* queuedParent;
     };
 
@@ -3076,13 +3076,13 @@ namespace IW3
         // TODO: Order is accuracyGraphName[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
         // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
         // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
-        //const char* accuracyGraphName[2];
+        // const char* accuracyGraphName[2];
         const char* accuracyGraphName0;
         const char* accuracyGraphName1;
-        //float(*accuracyGraphKnots[2])[2];
+        // float(*accuracyGraphKnots[2])[2];
         vec2_t* accuracyGraphKnots0;
         vec2_t* accuracyGraphKnots1;
-        //float(*originalAccuracyGraphKnots[2])[2];
+        // float(*originalAccuracyGraphKnots[2])[2];
         vec2_t* originalAccuracyGraphKnots0;
         vec2_t* originalAccuracyGraphKnots1;
         int accuracyGraphKnotCount[2];

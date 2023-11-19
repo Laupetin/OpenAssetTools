@@ -13,11 +13,7 @@ namespace sdd::no_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Keyword("version"),
-                create.Integer().Capture(CAPTURE_VERSION),
-                create.Char('{')
-            });
+            AddMatchers({create.Keyword("version"), create.Integer().Capture(CAPTURE_VERSION), create.Char('{')});
         }
 
     protected:
@@ -28,13 +24,13 @@ namespace sdd::no_scope_sequences
             state->m_defs.emplace_back(std::move(newDef));
         }
     };
-}
+} // namespace sdd::no_scope_sequences
 
 using namespace sdd;
 using namespace no_scope_sequences;
 
 StructuredDataNoScopeSequences::StructuredDataNoScopeSequences(std::vector<std::unique_ptr<StructuredDataDefParser::sequence_t>>& allSequences,
-                                                                     std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
+                                                               std::vector<StructuredDataDefParser::sequence_t*>& scopeSequences)
     : AbstractScopeSequenceHolder(allSequences, scopeSequences)
 {
 }

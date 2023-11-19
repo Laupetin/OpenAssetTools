@@ -1,45 +1,43 @@
 #include "Linker.h"
 
-#include <set>
-#include <regex>
-#include <filesystem>
-#include <fstream>
-#include <deque>
-
-#include "Utils/ClassUtils.h"
-#include "Utils/Arguments/ArgumentParser.h"
-#include "ZoneLoading.h"
-#include "ObjWriting.h"
-#include "ObjLoading.h"
-#include "SearchPath/SearchPaths.h"
-#include "ObjContainer/IWD/IWD.h"
-#include "LinkerArgs.h"
-#include "LinkerSearchPaths.h"
-#include "ZoneWriting.h"
 #include "Game/IW3/ZoneCreatorIW3.h"
-#include "ZoneCreation/ZoneCreationContext.h"
-#include "ZoneCreation/IZoneCreator.h"
 #include "Game/IW4/ZoneCreatorIW4.h"
 #include "Game/IW5/ZoneCreatorIW5.h"
 #include "Game/T5/ZoneCreatorT5.h"
 #include "Game/T6/ZoneCreatorT6.h"
+#include "LinkerArgs.h"
+#include "LinkerSearchPaths.h"
 #include "ObjContainer/IPak/IPakWriter.h"
-
+#include "ObjContainer/IWD/IWD.h"
+#include "ObjLoading.h"
+#include "ObjWriting.h"
+#include "SearchPath/SearchPaths.h"
+#include "Utils/Arguments/ArgumentParser.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/ObjFileStream.h"
 #include "Utils/StringUtils.h"
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/AssetList/AssetListStream.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
+#include "ZoneCreation/IZoneCreator.h"
+#include "ZoneCreation/ZoneCreationContext.h"
+#include "ZoneLoading.h"
+#include "ZoneWriting.h"
+
+#include <deque>
+#include <filesystem>
+#include <fstream>
+#include <regex>
+#include <set>
 
 namespace fs = std::filesystem;
 
-const IZoneCreator* const ZONE_CREATORS[]
-{
+const IZoneCreator* const ZONE_CREATORS[]{
     new IW3::ZoneCreator(),
     new IW4::ZoneCreator(),
     new IW5::ZoneCreator(),
     new T5::ZoneCreator(),
-    new T6::ZoneCreator()
+    new T6::ZoneCreator(),
 };
 
 enum class ProjectType
@@ -51,11 +49,10 @@ enum class ProjectType
     MAX
 };
 
-constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]
-{
+constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]{
     "none",
     "fastfile",
-    "ipak"
+    "ipak",
 };
 
 class LinkerImpl final : public Linker
@@ -294,7 +291,7 @@ class LinkerImpl final : public Linker
                 if (projectType != parsedProjectType)
                 {
                     std::cerr << "Conflicting types in target \"" << targetName << "\": " << PROJECT_TYPE_NAMES[static_cast<unsigned>(projectType)]
-                        << " != " << PROJECT_TYPE_NAMES[static_cast<unsigned>(parsedProjectType)] << std::endl;
+                              << " != " << PROJECT_TYPE_NAMES[static_cast<unsigned>(parsedProjectType)] << std::endl;
                     return false;
                 }
             }
@@ -367,7 +364,10 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& targetName, ZoneDefinition& zoneDefinition, ISearchPath* assetSearchPath, ISearchPath* gdtSearchPath,
+    std::unique_ptr<Zone> CreateZoneForDefinition(const std::string& targetName,
+                                                  ZoneDefinition& zoneDefinition,
+                                                  ISearchPath* assetSearchPath,
+                                                  ISearchPath* gdtSearchPath,
                                                   ISearchPath* sourceSearchPath) const
     {
         const auto context = std::make_unique<ZoneCreationContext>(assetSearchPath, &zoneDefinition);
@@ -412,7 +412,11 @@ class LinkerImpl final : public Linker
         return true;
     }
 
-    bool BuildFastFile(const std::string& projectName, const std::string& targetName, ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths, SearchPaths& gdtSearchPaths,
+    bool BuildFastFile(const std::string& projectName,
+                       const std::string& targetName,
+                       ZoneDefinition& zoneDefinition,
+                       SearchPaths& assetSearchPaths,
+                       SearchPaths& gdtSearchPaths,
                        SearchPaths& sourceSearchPaths) const
     {
         const auto zone = CreateZoneForDefinition(targetName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
@@ -460,17 +464,19 @@ class LinkerImpl final : public Linker
 
     bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
-        return std::all_of(zoneDefinition.m_targets_to_build.begin(), zoneDefinition.m_targets_to_build.end(), [this, &projectName, &targetName](const std::string& buildTargetName)
-        {
-            if (buildTargetName == targetName)
-            {
-                std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
-                return false;
-            }
+        return std::all_of(zoneDefinition.m_targets_to_build.begin(),
+                           zoneDefinition.m_targets_to_build.end(),
+                           [this, &projectName, &targetName](const std::string& buildTargetName)
+                           {
+                               if (buildTargetName == targetName)
+                               {
+                                   std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
+                                   return false;
+                               }
 
-            std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
-            return BuildProject(projectName, buildTargetName);
-        });
+                               std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
+                               return BuildProject(projectName, buildTargetName);
+                           });
     }
 
     bool BuildProject(const std::string& projectName, const std::string& targetName)

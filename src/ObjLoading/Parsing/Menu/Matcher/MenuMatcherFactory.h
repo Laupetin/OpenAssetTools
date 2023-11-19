@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Parsing/Menu/MenuFileParserState.h"
 #include "Parsing/Sequence/SequenceResult.h"
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
-#include "Parsing/Menu/MenuFileParserState.h"
 
 namespace menu
 {
@@ -34,4 +34,4 @@ namespace menu
         _NODISCARD static int TokenIntExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
         _NODISCARD static double TokenNumericExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result);
     };
-}
+} // namespace menu

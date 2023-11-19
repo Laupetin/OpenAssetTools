@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <string>
-
 #include "CommonMenuTypes.h"
 #include "EventHandler/CommonEventHandlerSet.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <string>
+#include <vector>
 
 namespace menu
 {
@@ -163,4 +163,4 @@ namespace menu
         std::string m_enum_dvar_name;
         std::unique_ptr<CommonItemFeaturesNewsTicker> m_news_ticker_features;
     };
-}
+} // namespace menu

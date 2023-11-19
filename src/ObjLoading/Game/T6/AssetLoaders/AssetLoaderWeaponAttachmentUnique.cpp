@@ -1,16 +1,16 @@
 #include "AssetLoaderWeaponAttachmentUnique.h"
 
-#include <cstring>
-#include <iostream>
-#include <cassert>
-
-#include "Utils/ClassUtils.h"
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/T6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/InfoString/WeaponAttachmentUniqueFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
+#include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <cstring>
+#include <iostream>
 
 using namespace T6;
 
@@ -102,13 +102,18 @@ namespace T6
         }
 
     public:
-        InfoStringToWeaponAttachmentUniqueConverter(const InfoString& infoString, WeaponAttachmentUniqueFull* attachmentUniqueFull, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory, IAssetLoadingManager* manager,
-            const cspField_t* fields, const size_t fieldCount)
+        InfoStringToWeaponAttachmentUniqueConverter(const InfoString& infoString,
+                                                    WeaponAttachmentUniqueFull* attachmentUniqueFull,
+                                                    ZoneScriptStrings& zoneScriptStrings,
+                                                    MemoryManager* memory,
+                                                    IAssetLoadingManager* manager,
+                                                    const cspField_t* fields,
+                                                    const size_t fieldCount)
             : InfoStringToStructConverter(infoString, attachmentUniqueFull, zoneScriptStrings, memory, manager, fields, fieldCount)
         {
         }
     };
-}
+} // namespace T6
 
 bool AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(const std::string& assetName, std::vector<eAttachment>& attachmentList)
 {
@@ -116,14 +121,14 @@ bool AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(const st
 
     auto attachCount = 1u;
     auto partStart = 0u;
-    for(auto ci = 0u; ci < assetName.size(); ci++)
+    for (auto ci = 0u; ci < assetName.size(); ci++)
     {
-        if(assetName[ci] == '_')
+        if (assetName[ci] == '_')
         {
             parts.emplace_back(assetName, partStart, ci - partStart);
             partStart = ci + 1;
         }
-        else if(assetName[ci] == '+')
+        else if (assetName[ci] == '+')
         {
             attachCount++;
             parts.emplace_back(assetName, partStart, ci - partStart);
@@ -131,10 +136,10 @@ bool AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(const st
         }
     }
 
-    if(partStart < assetName.size())
+    if (partStart < assetName.size())
         parts.emplace_back(assetName, partStart, assetName.size() - partStart);
 
-    for(auto attachPartOffset = parts.size() - attachCount; attachPartOffset < parts.size(); attachPartOffset++)
+    for (auto attachPartOffset = parts.size() - attachCount; attachPartOffset < parts.size(); attachPartOffset++)
     {
         auto& specifiedAttachName = parts[attachPartOffset];
 
@@ -142,9 +147,9 @@ bool AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(const st
             c = static_cast<char>(tolower(c));
 
         auto foundAttachment = false;
-        for(auto attachIndex = 0u; attachIndex < std::extent<decltype(szAttachmentTypeNames)>::value; attachIndex++)
+        for (auto attachIndex = 0u; attachIndex < std::extent<decltype(szAttachmentTypeNames)>::value; attachIndex++)
         {
-            if(specifiedAttachName == szAttachmentTypeNames[attachIndex])
+            if (specifiedAttachName == szAttachmentTypeNames[attachIndex])
             {
                 attachmentList.push_back(static_cast<eAttachment>(attachIndex));
                 foundAttachment = true;
@@ -152,7 +157,7 @@ bool AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(const st
             }
         }
 
-        if(!foundAttachment)
+        if (!foundAttachment)
             return false;
     }
 
@@ -170,7 +175,7 @@ bool AssetLoaderWeaponAttachmentUnique::CalculateAttachmentUniqueFields(const st
 {
     // combinedAttachmentTypeMask
     std::vector<eAttachment> attachmentsFromName;
-    if(!ExtractAttachmentsFromAssetName(assetName, attachmentsFromName))
+    if (!ExtractAttachmentsFromAssetName(assetName, attachmentsFromName))
     {
         std::cout << "Failed to determine attachments from attachment unique name \"" << assetName << "\"" << std::endl;
         return false;
@@ -178,7 +183,7 @@ bool AssetLoaderWeaponAttachmentUnique::CalculateAttachmentUniqueFields(const st
 
     if (attachmentsFromName.size() > 1)
     {
-        for(auto attachment : attachmentsFromName)
+        for (auto attachment : attachmentsFromName)
         {
             attachmentUnique->attachment.combinedAttachmentTypeMask |= 1 << attachment;
         }
@@ -187,14 +192,21 @@ bool AssetLoaderWeaponAttachmentUnique::CalculateAttachmentUniqueFields(const st
     return true;
 }
 
-bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
+bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(
+    const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
 {
 
     auto* attachmentUniqueFull = memory->Create<WeaponAttachmentUniqueFull>();
     memset(attachmentUniqueFull, 0, sizeof(WeaponAttachmentUniqueFull));
     LinkAttachmentUniqueFullSubStructs(attachmentUniqueFull);
 
-    InfoStringToWeaponAttachmentUniqueConverter converter(infoString, attachmentUniqueFull, zone->m_script_strings, memory, manager, attachment_unique_fields, std::extent<decltype(attachment_unique_fields)>::value);
+    InfoStringToWeaponAttachmentUniqueConverter converter(infoString,
+                                                          attachmentUniqueFull,
+                                                          zone->m_script_strings,
+                                                          memory,
+                                                          manager,
+                                                          attachment_unique_fields,
+                                                          std::extent<decltype(attachment_unique_fields)>::value);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse attachment unique: \"" << assetName << "\"" << std::endl;
@@ -209,7 +221,8 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(const InfoString& inf
     auto* assetInfo = GlobalAssetPool<WeaponAttachmentUnique>::GetAssetByName(assetName);
     auto* asset = assetInfo ? assetInfo->Asset() : nullptr;
 
-    manager->AddAsset(ASSET_TYPE_ATTACHMENT_UNIQUE, assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset(
+        ASSET_TYPE_ATTACHMENT_UNIQUE, assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }
@@ -229,7 +242,8 @@ bool AssetLoaderWeaponAttachmentUnique::CanLoadFromGdt() const
     return true;
 }
 
-bool AssetLoaderWeaponAttachmentUnique::LoadFromGdt(const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderWeaponAttachmentUnique::LoadFromGdt(
+    const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE, assetName);
     if (gdtEntry == nullptr)
@@ -250,7 +264,8 @@ bool AssetLoaderWeaponAttachmentUnique::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderWeaponAttachmentUnique::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderWeaponAttachmentUnique::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = "attachmentunique/" + assetName;
     const auto file = searchPath->Open(fileName);

@@ -1,12 +1,12 @@
 #include "AssetLoaderGfxImage.h"
 
-#include <cstring>
-#include <iostream>
-
 #include "Game/IW3/IW3.h"
 #include "Image/DdsLoader.h"
-#include "Pool/GlobalAssetPool.h"
 #include "Image/IwiTypes.h"
+#include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
+#include <iostream>
 
 using namespace IW3;
 
@@ -23,7 +23,8 @@ bool AssetLoaderGfxImage::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderGfxImage::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderGfxImage::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     // Do not load any GfxImages from raw for now that are not loaded
     // TODO: Load iwis and add streaming info to asset

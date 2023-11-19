@@ -1,15 +1,15 @@
 #include "DefinesStreamProxy.h"
 
+#include "ParserSingleInputStream.h"
+#include "Parsing/ParsingException.h"
+#include "Parsing/Simple/Expression/ISimpleExpression.h"
+#include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
+#include "Parsing/Simple/SimpleExpressionInterpreter.h"
+#include "Utils/ClassUtils.h"
+
 #include <regex>
 #include <sstream>
 #include <utility>
-
-#include "Utils/ClassUtils.h"
-#include "ParserSingleInputStream.h"
-#include "Parsing/ParsingException.h"
-#include "Parsing/Simple/SimpleExpressionInterpreter.h"
-#include "Parsing/Simple/Expression/ISimpleExpression.h"
-#include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
 
 DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
     : m_parameter_index(0u),
@@ -23,8 +23,7 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsig
 {
 }
 
-DefinesStreamProxy::Define::Define()
-= default;
+DefinesStreamProxy::Define::Define() = default;
 
 DefinesStreamProxy::Define::Define(std::string name, std::string value)
     : m_name(std::move(name)),
@@ -277,7 +276,8 @@ bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsig
     return true;
 }
 
-std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(std::shared_ptr<std::string> fileName, int lineNumber, std::string expressionString) const
+std::unique_ptr<ISimpleExpression>
+    DefinesStreamProxy::ParseExpression(std::shared_ptr<std::string> fileName, int lineNumber, std::string expressionString) const
 {
     ParserLine pseudoLine(std::move(fileName), lineNumber, std::move(expressionString));
     ExpandDefinedExpressions(pseudoLine);
@@ -463,16 +463,13 @@ bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
 
     if (m_modes.empty() || m_modes.top() == BlockMode::IN_BLOCK)
     {
-        if (MatchDefineDirective(line, directiveStartPos, directiveEndPos)
-            || MatchUndefDirective(line, directiveStartPos, directiveEndPos))
+        if (MatchDefineDirective(line, directiveStartPos, directiveEndPos) || MatchUndefDirective(line, directiveStartPos, directiveEndPos))
             return true;
     }
 
-    return MatchIfdefDirective(line, directiveStartPos, directiveEndPos)
-        || MatchIfDirective(line, directiveStartPos, directiveEndPos)
-        || MatchElIfDirective(line, directiveStartPos, directiveEndPos)
-        || MatchElseDirective(line, directiveStartPos, directiveEndPos)
-        || MatchEndifDirective(line, directiveStartPos, directiveEndPos);
+    return MatchIfdefDirective(line, directiveStartPos, directiveEndPos) || MatchIfDirective(line, directiveStartPos, directiveEndPos)
+           || MatchElIfDirective(line, directiveStartPos, directiveEndPos) || MatchElseDirective(line, directiveStartPos, directiveEndPos)
+           || MatchEndifDirective(line, directiveStartPos, directiveEndPos);
 }
 
 bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigned wordStart, const unsigned wordEnd, const Define*& value) const
@@ -488,7 +485,10 @@ bool DefinesStreamProxy::FindDefineForWord(const ParserLine& line, const unsigne
     return false;
 }
 
-void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line, const unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues)
+void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line,
+                                                          const unsigned parameterStart,
+                                                          unsigned& parameterEnd,
+                                                          std::vector<std::string>& parameterValues)
 {
     if (line.m_line[parameterStart] != '(')
         return;
@@ -553,7 +553,7 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
 bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName)
 {
     unsigned currentPos = pos;
-    
+
     if (!MatchNextCharacter(line, currentPos, '('))
         return false;
 
@@ -609,7 +609,8 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line) const
     do
     {
         if (defineIterations > MAX_DEFINE_ITERATIONS)
-            throw ParsingException(CreatePos(line, 1), "Potential define loop? Exceeded max define iterations of " + std::to_string(MAX_DEFINE_ITERATIONS) + " iterations.");
+            throw ParsingException(CreatePos(line, 1),
+                                   "Potential define loop? Exceeded max define iterations of " + std::to_string(MAX_DEFINE_ITERATIONS) + " iterations.");
 
         usesDefines = false;
 
@@ -684,8 +685,7 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line) const
         }
 
         defineIterations++;
-    }
-    while (usesDefines);
+    } while (usesDefines);
 }
 
 void DefinesStreamProxy::AddDefine(Define define)

@@ -24,8 +24,8 @@ public:
     virtual void LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const = 0;
 
     /**
-     * \brief Unloads all containers of a specified zone. If a container is also loaded by another zone it will only be unloaded when all referencing zones are unloaded.
-     * \param zone The zone to unload all containers for.
+     * \brief Unloads all containers of a specified zone. If a container is also loaded by another zone it will only be unloaded when all referencing zones are
+     * unloaded. \param zone The zone to unload all containers for.
      */
     virtual void UnloadContainersOfZone(Zone* zone) const = 0;
 

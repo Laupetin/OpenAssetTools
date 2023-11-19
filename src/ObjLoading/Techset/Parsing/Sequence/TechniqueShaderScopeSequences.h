@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
-
 #include "Techset/Parsing/TechniqueFileParser.h"
+
+#include <vector>
 
 namespace techset
 {
@@ -12,4 +12,4 @@ namespace techset
     public:
         static const std::vector<TechniqueParser::sequence_t*>& GetSequences();
     };
-}
+} // namespace techset

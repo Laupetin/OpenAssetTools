@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <unordered_map>
-
 #include "Parsing/IParserLineStream.h"
+
+#include <unordered_map>
+#include <vector>
 
 class MockParserLineStream final : public IParserLineStream
 {
@@ -20,7 +20,7 @@ private:
 
         IncludePos(std::string filename, const std::vector<std::string>& lines);
     };
-    
+
     std::unordered_map<std::string, std::vector<std::string>> m_include_lines;
     std::vector<IncludePos> m_include_positions;
 

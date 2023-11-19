@@ -94,7 +94,7 @@ namespace techset
     {
         return !(lhs < rhs);
     }
-}
+} // namespace techset
 
 ShaderArgumentMaterialSource::ShaderArgumentMaterialSource()
     : m_is_hash(false),

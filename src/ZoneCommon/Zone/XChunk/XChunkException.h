@@ -1,8 +1,8 @@
 #pragma once
+#include "Utils/ClassUtils.h"
+
 #include <exception>
 #include <string>
-
-#include "Utils/ClassUtils.h"
 
 class XChunkException final : public std::exception
 {

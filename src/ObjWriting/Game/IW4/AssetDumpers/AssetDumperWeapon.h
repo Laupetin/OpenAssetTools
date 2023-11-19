@@ -15,4 +15,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<WeaponCompleteDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset) override;
     };
-}
+} // namespace IW4

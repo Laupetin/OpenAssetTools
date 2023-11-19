@@ -1,13 +1,13 @@
 #include "AssetDumperMenuList.h"
 
-#include <cassert>
-#include <filesystem>
-#include <sstream>
-#include <set>
-
-#include "ObjWriting.h"
 #include "Game/IW4/Menu/MenuDumperIW4.h"
 #include "Menu/AbstractMenuDumper.h"
+#include "ObjWriting.h"
+
+#include <cassert>
+#include <filesystem>
+#include <set>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -21,17 +21,17 @@ std::vector<const ExpressionSupportingData*> AssetDumperMenuList::GetAllUniqueEx
     if (menuList->menus == nullptr)
         return result;
 
-    for(auto i = 0; i < menuList->menuCount; i++)
+    for (auto i = 0; i < menuList->menuCount; i++)
     {
-        if(menuList->menus[i] == nullptr)
+        if (menuList->menus[i] == nullptr)
             continue;
 
         const auto* menu = menuList->menus[i];
 
-        if(menu->expressionData == nullptr)
+        if (menu->expressionData == nullptr)
             continue;
 
-        if(alreadyAddedSupportingData.find(menu->expressionData) == alreadyAddedSupportingData.end())
+        if (alreadyAddedSupportingData.find(menu->expressionData) == alreadyAddedSupportingData.end())
         {
             result.push_back(menu->expressionData);
             alreadyAddedSupportingData.emplace(menu->expressionData);
@@ -53,10 +53,10 @@ void AssetDumperMenuList::DumpFunctions(MenuDumper& menuDumper, const MenuList* 
         if (supportingData->uifunctions.functions == nullptr)
             continue;
 
-        for(auto i = 0; i < supportingData->uifunctions.totalFunctions; i++)
+        for (auto i = 0; i < supportingData->uifunctions.totalFunctions; i++)
         {
             const auto* function = supportingData->uifunctions.functions[i];
-            if(function != nullptr)
+            if (function != nullptr)
             {
                 std::stringstream ss;
                 ss << "FUNC_" << functionIndex;
@@ -76,7 +76,7 @@ void AssetDumperMenuList::DumpMenus(MenuDumper& menuDumper, menu::MenuDumpingZon
         const auto* menu = menuList->menus[menuNum];
 
         const auto menuDumpingState = zoneState->m_menu_dumping_state_map.find(menu);
-        if(menuDumpingState == zoneState->m_menu_dumping_state_map.end())
+        if (menuDumpingState == zoneState->m_menu_dumping_state_map.end())
             continue;
 
         // If the menu was embedded directly as menu list write its data in the menu list file
@@ -106,7 +106,7 @@ void AssetDumperMenuList::DumpAsset(AssetDumpingContext& context, XAssetInfo<Men
 
     menuDumper.Start();
 
-    if(!ObjWriting::Configuration.MenuLegacyMode)
+    if (!ObjWriting::Configuration.MenuLegacyMode)
         DumpFunctions(menuDumper, menuList);
 
     DumpMenus(menuDumper, zoneState, menuList);
@@ -141,21 +141,21 @@ void AssetDumperMenuList::CreateDumpingStateForMenuList(menu::MenuDumpingZoneSta
     if (p.has_parent_path())
         parentPath = p.parent_path().string() + "/";
 
-    for(auto i = 0; i < menuList->menuCount; i++)
+    for (auto i = 0; i < menuList->menuCount; i++)
     {
         auto* menu = menuList->menus[i];
 
-        if(menu == nullptr)
+        if (menu == nullptr)
             continue;
 
         auto existingState = zoneState->m_menu_dumping_state_map.find(menu);
-        if(existingState == zoneState->m_menu_dumping_state_map.end())
+        if (existingState == zoneState->m_menu_dumping_state_map.end())
         {
             auto menuPath = PathForMenu(parentPath, menu);
             const auto isTheSameAsMenuList = menuPath == menuListName;
             zoneState->CreateMenuDumpingState(menu, std::move(menuPath), isTheSameAsMenuList ? menuList : nullptr);
         }
-        else if(existingState->second.m_alias_menu_list == nullptr)
+        else if (existingState->second.m_alias_menu_list == nullptr)
         {
             auto menuPath = PathForMenu(parentPath, menu);
             const auto isTheSameAsMenuList = menuPath == menuListName;
@@ -172,7 +172,7 @@ void AssetDumperMenuList::DumpPool(AssetDumpingContext& context, AssetPool<MenuL
 {
     auto* zoneState = context.GetZoneAssetDumperState<menu::MenuDumpingZoneState>();
 
-    for(auto* asset : *pool)
+    for (auto* asset : *pool)
         CreateDumpingStateForMenuList(zoneState, asset->Asset());
 
     AbstractAssetDumper<MenuList>::DumpPool(context, pool);

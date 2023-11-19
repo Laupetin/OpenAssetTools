@@ -1,6 +1,6 @@
 #pragma once
-#include "InfoString/InfoStringFromStructConverterBase.h"
 #include "Game/IW4/IW4.h"
+#include "InfoString/InfoStringFromStructConverterBase.h"
 
 namespace IW4
 {
@@ -16,6 +16,9 @@ namespace IW4
 
     public:
         InfoStringFromStructConverter(const void* structure, const cspField_t* fields, size_t fieldCount);
-        InfoStringFromStructConverter(const void* structure, const cspField_t* fields, size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback);
+        InfoStringFromStructConverter(const void* structure,
+                                      const cspField_t* fields,
+                                      size_t fieldCount,
+                                      std::function<std::string(scr_string_t)> scriptStringValueCallback);
     };
-}
+} // namespace IW4

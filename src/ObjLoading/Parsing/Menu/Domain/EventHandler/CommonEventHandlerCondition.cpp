@@ -2,10 +2,10 @@
 
 using namespace menu;
 
-CommonEventHandlerCondition::CommonEventHandlerCondition()
-= default;
+CommonEventHandlerCondition::CommonEventHandlerCondition() = default;
 
-CommonEventHandlerCondition::CommonEventHandlerCondition(std::unique_ptr<ISimpleExpression> condition, std::unique_ptr<CommonEventHandlerSet> conditionElements,
+CommonEventHandlerCondition::CommonEventHandlerCondition(std::unique_ptr<ISimpleExpression> condition,
+                                                         std::unique_ptr<CommonEventHandlerSet> conditionElements,
                                                          std::unique_ptr<CommonEventHandlerSet> elseElements)
     : m_condition(std::move(condition)),
       m_condition_elements(std::move(conditionElements)),

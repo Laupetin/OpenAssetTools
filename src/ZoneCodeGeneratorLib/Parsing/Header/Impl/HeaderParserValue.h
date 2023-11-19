@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-
 #include "Parsing/IParserValue.h"
-#include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
+#include "Utils/ClassUtils.h"
+
+#include <string>
 
 enum class HeaderParserValueType
 {
@@ -63,6 +63,7 @@ class HeaderParserValue final : public IParserValue
 public:
     TokenPos m_pos;
     HeaderParserValueType m_type;
+
     union ValueType
     {
         char char_value;

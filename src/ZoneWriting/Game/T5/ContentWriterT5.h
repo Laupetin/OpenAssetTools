@@ -1,7 +1,7 @@
 #pragma once
+#include "Game/T5/T5.h"
 #include "Writing/ContentWriterBase.h"
 #include "Writing/IContentWritingEntryPoint.h"
-#include "Game/T5/T5.h"
 
 namespace T5
 {
@@ -23,4 +23,4 @@ namespace T5
 
         void WriteContent(Zone* zone, IZoneOutputStream* stream) override;
     };
-}
+} // namespace T5

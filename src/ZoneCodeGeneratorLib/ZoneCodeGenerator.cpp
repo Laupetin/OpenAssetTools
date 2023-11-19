@@ -1,17 +1,17 @@
 #include "ZoneCodeGenerator.h"
 
-#include <cstdio>
-#include <memory>
-#include <string>
-#include <iostream>
-
-#include "ZoneCodeGeneratorArguments.h"
 #include "Generating/CodeGenerator.h"
 #include "Parsing/Commands/CommandsFileReader.h"
 #include "Parsing/Header/HeaderFileReader.h"
 #include "Persistence/IDataRepository.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
 #include "Printing/PrettyPrinter.h"
+#include "ZoneCodeGeneratorArguments.h"
+
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <string>
 
 class ZoneCodeGenerator::Impl
 {
@@ -70,12 +70,12 @@ public:
         if (!ReadHeaderData() || !ReadCommandsData())
             return 1;
 
-        if(m_args.ShouldPrint())
+        if (m_args.ShouldPrint())
         {
             PrintData();
         }
 
-        if(m_args.ShouldGenerate())
+        if (m_args.ShouldGenerate())
         {
             if (!GenerateCode())
                 return 1;

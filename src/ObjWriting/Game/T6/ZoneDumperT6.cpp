@@ -1,20 +1,16 @@
 #include "ZoneDumperT6.h"
 
-#include "ObjWriting.h"
-#include "Game/T6/GameT6.h"
-#include "Game/T6/GameAssetPoolT6.h"
-
-#include "AssetDumpers/AssetDumperRawFile.h"
-#include "AssetDumpers/AssetDumperSlug.h"
-#include "AssetDumpers/AssetDumperQdb.h"
-#include "AssetDumpers/AssetDumperScriptParseTree.h"
-#include "AssetDumpers/AssetDumperStringTable.h"
-#include "AssetDumpers/AssetDumperLocalizeEntry.h"
-#include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperFontIcon.h"
+#include "AssetDumpers/AssetDumperGfxImage.h"
+#include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperPhysConstraints.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
+#include "AssetDumpers/AssetDumperQdb.h"
+#include "AssetDumpers/AssetDumperRawFile.h"
+#include "AssetDumpers/AssetDumperScriptParseTree.h"
+#include "AssetDumpers/AssetDumperSlug.h"
 #include "AssetDumpers/AssetDumperSndBank.h"
+#include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperTracer.h"
 #include "AssetDumpers/AssetDumperVehicle.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
@@ -22,6 +18,9 @@
 #include "AssetDumpers/AssetDumperWeaponAttachmentUnique.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
+#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/GameT6.h"
+#include "ObjWriting.h"
 
 using namespace T6;
 
@@ -32,11 +31,11 @@ bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
 
 bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
 {
-#define DUMP_ASSET_POOL(dumperType, poolName, assetType) \
-    if(assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType)) \
-    { \
-        dumperType dumper; \
-        dumper.DumpPool(context, assetPools->poolName.get()); \
+#define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
+    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
+    {                                                                                                                                                          \
+        dumperType dumper;                                                                                                                                     \
+        dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
     }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolT6*>(context.m_zone->m_pools.get());

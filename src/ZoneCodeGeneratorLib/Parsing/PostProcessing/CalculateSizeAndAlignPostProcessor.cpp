@@ -1,11 +1,11 @@
 #include "CalculateSizeAndAlignPostProcessor.h"
 
-#include <cassert>
-#include <iostream>
-#include <cstdint>
-
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Utils/AlignmentUtils.h"
+
+#include <cassert>
+#include <cstdint>
+#include <iostream>
 
 unsigned CalculateSizeAndAlignPostProcessor::GetPointerSizeForArchitecture(const Architecture architecture)
 {
@@ -141,7 +141,8 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
                 currentBitOffset = 0;
             }
 
-            definition->m_size = AlignmentUtils::Align(definition->m_size, member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack));
+            definition->m_size = AlignmentUtils::Align(
+                definition->m_size, member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack));
 
             member->m_offset = definition->m_size;
 
@@ -186,8 +187,7 @@ bool CalculateSizeAndAlignPostProcessor::CalculateFields(IDataRepository* reposi
     if (declaration->m_flags & TypeDeclaration::FLAG_FIELDS_CALCULATED)
         return true;
 
-    if(!CalculateAlign(repository, declaration)
-        || !CalculateSize(repository, declaration))
+    if (!CalculateAlign(repository, declaration) || !CalculateSize(repository, declaration))
     {
         return false;
     }
@@ -208,8 +208,7 @@ bool CalculateSizeAndAlignPostProcessor::CalculateFields(IDataRepository* reposi
 
     structDefinition->m_flags |= DefinitionWithMembers::FLAG_FIELDS_CALCULATING;
 
-    if (!CalculateAlign(repository, structDefinition)
-        || !CalculateSize(repository, structDefinition))
+    if (!CalculateAlign(repository, structDefinition) || !CalculateSize(repository, structDefinition))
     {
         return false;
     }
@@ -232,8 +231,7 @@ bool CalculateSizeAndAlignPostProcessor::CalculateFields(IDataRepository* reposi
 
     unionDefinition->m_flags |= DefinitionWithMembers::FLAG_FIELDS_CALCULATING;
 
-    if (!CalculateAlign(repository, unionDefinition)
-        || !CalculateSize(repository, unionDefinition))
+    if (!CalculateAlign(repository, unionDefinition) || !CalculateSize(repository, unionDefinition))
     {
         return false;
     }
@@ -246,19 +244,19 @@ bool CalculateSizeAndAlignPostProcessor::CalculateFields(IDataRepository* reposi
 
 bool CalculateSizeAndAlignPostProcessor::CalculateFieldsIfNecessary(IDataRepository* repository, const DataDefinition* definition)
 {
-    if(definition->GetType() == DataDefinitionType::STRUCT)
+    if (definition->GetType() == DataDefinitionType::STRUCT)
     {
         // We can do a const cast here because the only reason that field is const anyway is because it could be a base type
         return CalculateFields(repository, dynamic_cast<StructDefinition*>(const_cast<DataDefinition*>(definition)));
     }
 
-    if(definition->GetType() == DataDefinitionType::UNION)
+    if (definition->GetType() == DataDefinitionType::UNION)
     {
         // We can do a const cast here because the only reason that field is const anyway is because it could be a base type
         return CalculateFields(repository, dynamic_cast<UnionDefinition*>(const_cast<DataDefinition*>(definition)));
     }
 
-    if(definition->GetType() == DataDefinitionType::TYPEDEF)
+    if (definition->GetType() == DataDefinitionType::TYPEDEF)
     {
         // We can do a const cast here because the only reason that field is const anyway is because it could be a base type
         return CalculateFields(repository, dynamic_cast<TypedefDefinition*>(const_cast<DataDefinition*>(definition))->m_type_declaration.get());

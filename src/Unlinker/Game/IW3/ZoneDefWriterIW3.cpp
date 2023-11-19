@@ -1,9 +1,9 @@
 #include "ZoneDefWriterIW3.h"
 
-#include <cassert>
-
-#include "Game/IW3/GameIW3.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW3/GameIW3.h"
+
+#include <cassert>
 
 using namespace IW3;
 
@@ -12,9 +12,7 @@ bool ZoneDefWriter::CanHandleZone(Zone* zone) const
     return zone->m_game == &g_GameIW3;
 }
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
-{
-}
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const {}
 
 void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
 {

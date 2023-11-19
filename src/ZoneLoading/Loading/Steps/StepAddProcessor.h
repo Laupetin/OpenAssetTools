@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-
 #include "Loading/ILoadingStep.h"
+
+#include <memory>
 
 class StepAddProcessor final : public ILoadingStep
 {

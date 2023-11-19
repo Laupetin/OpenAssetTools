@@ -24,7 +24,7 @@ size_t ProcessorIW4xDecryption::Load(void* buffer, const size_t length)
     const auto readLen = m_base_stream->Load(buffer, length);
 
     auto* charBuffer = static_cast<uint8_t*>(buffer);
-    for(auto i = 0u; i < readLen; i++)
+    for (auto i = 0u; i < readLen; i++)
     {
         auto value = charBuffer[i];
         value ^= m_last_byte;

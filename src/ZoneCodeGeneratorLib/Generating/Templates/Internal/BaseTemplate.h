@@ -1,14 +1,14 @@
 #pragma once
 
-#include <ostream>
-#include <sstream>
-
 #include "Domain/Computations/MemberDeclarationModifierComputations.h"
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Evaluation/OperandDynamic.h"
 #include "Domain/Evaluation/OperandStatic.h"
 #include "Domain/Evaluation/Operation.h"
 #include "Generating/RenderingContext.h"
+
+#include <ostream>
+#include <sstream>
 
 class BaseTemplate
 {
@@ -45,7 +45,10 @@ protected:
     static std::string MakeSafeTypeName(const DataDefinition* def);
     static std::string MakeMemberAccess(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier);
     static std::string MakeWrittenMemberAccess(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier);
-    static std::string MakeMemberAccess(const std::string& variableName, StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier);
+    static std::string MakeMemberAccess(const std::string& variableName,
+                                        StructureInformation* info,
+                                        MemberInformation* member,
+                                        const DeclarationModifierComputations& modifier);
     static std::string MakeTypeDecl(const TypeDeclaration* decl);
     static std::string MakeFollowingReferences(const std::vector<DeclarationModifier*>& modifiers);
     static std::string MakeArrayIndices(const DeclarationModifierComputations& modifierComputations);
@@ -54,7 +57,21 @@ protected:
     static std::string MakeEvaluation(const IEvaluation* evaluation);
 };
 
-#define LINE(x) {DoIntendation(); m_out << x << "\n";}
-#define LINE_START(x) {DoIntendation(); m_out << x;}
-#define LINE_MIDDLE(x) {m_out << x;}
-#define LINE_END(x) {m_out << x << "\n";}
+#define LINE(x)                                                                                                                                                \
+    {                                                                                                                                                          \
+        DoIntendation();                                                                                                                                       \
+        m_out << x << "\n";                                                                                                                                    \
+    }
+#define LINE_START(x)                                                                                                                                          \
+    {                                                                                                                                                          \
+        DoIntendation();                                                                                                                                       \
+        m_out << x;                                                                                                                                            \
+    }
+#define LINE_MIDDLE(x)                                                                                                                                         \
+    {                                                                                                                                                          \
+        m_out << x;                                                                                                                                            \
+    }
+#define LINE_END(x)                                                                                                                                            \
+    {                                                                                                                                                          \
+        m_out << x << "\n";                                                                                                                                    \
+    }

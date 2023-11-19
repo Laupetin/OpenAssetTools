@@ -1,14 +1,13 @@
 #include "IwiWriter27.h"
+
 #include <cassert>
 #include <ostream>
 
 using namespace iwi27;
 
-IwiWriter::IwiWriter()
-= default;
+IwiWriter::IwiWriter() = default;
 
-IwiWriter::~IwiWriter()
-= default;
+IwiWriter::~IwiWriter() = default;
 
 IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
 {

@@ -1,7 +1,6 @@
 #include "AbstractXModelWriter.h"
 
-AbstractXModelWriter::AbstractXModelWriter()
-= default;
+AbstractXModelWriter::AbstractXModelWriter() = default;
 
 void AbstractXModelWriter::AddObject(XModelObject object)
 {

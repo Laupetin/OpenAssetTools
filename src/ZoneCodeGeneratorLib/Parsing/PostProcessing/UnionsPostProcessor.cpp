@@ -9,9 +9,9 @@ bool UnionsPostProcessor::ProcessUnion(StructureInformation* info)
     auto lastEntryWithoutCondition = 0u;
     auto entriesWithoutConditionCount = 0u;
 
-    for(const auto& member : info->m_ordered_members)
+    for (const auto& member : info->m_ordered_members)
     {
-        if(!member->m_condition && !member->m_is_leaf)
+        if (!member->m_condition && !member->m_is_leaf)
         {
             entriesWithoutConditionCount++;
             lastEntryWithoutCondition = index;
@@ -40,11 +40,13 @@ bool UnionsPostProcessor::PostProcess(IDataRepository* repository)
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    return std::all_of(allInfos.begin(), allInfos.end(), [](StructureInformation* info)
-    {
-        if (info->m_definition->GetType() != DataDefinitionType::UNION)
-            return true;
+    return std::all_of(allInfos.begin(),
+                       allInfos.end(),
+                       [](StructureInformation* info)
+                       {
+                           if (info->m_definition->GetType() != DataDefinitionType::UNION)
+                               return true;
 
-        return ProcessUnion(info);
-    });
+                           return ProcessUnion(info);
+                       });
 }

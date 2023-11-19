@@ -13,4 +13,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<GfxLightDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxLightDef>* asset) override;
     };
-}
+} // namespace IW4

@@ -15,4 +15,4 @@ namespace IW4
         bool ShouldDump(XAssetInfo<PhysPreset>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset) override;
     };
-}
+} // namespace IW4

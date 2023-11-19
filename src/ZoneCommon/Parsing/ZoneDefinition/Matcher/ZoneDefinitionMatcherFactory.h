@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-
-#include "Parsing/ZoneDefinition/ZoneDefinitionParserValue.h"
 #include "Parsing/Matcher/AbstractMatcherFactory.h"
+#include "Parsing/ZoneDefinition/ZoneDefinitionParserValue.h"
+
+#include <string>
 
 class ZoneDefinitionMatcherFactory final : public AbstractMatcherFactory<ZoneDefinitionParserValue>
 {

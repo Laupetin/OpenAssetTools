@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
-#include "Utils/ClassUtils.h"
 #include "DeclarationModifier.h"
 #include "Domain/Evaluation/IEvaluation.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
 
 class ArrayDeclarationModifier final : public DeclarationModifier
 {

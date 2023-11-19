@@ -1,9 +1,9 @@
 #pragma once
 
-#include "TechniqueFileParserState.h"
+#include "Parsing/Impl/AbstractParser.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/Simple/SimpleParserValue.h"
-#include "Parsing/Impl/AbstractParser.h"
+#include "TechniqueFileParserState.h"
 
 namespace techset
 {
@@ -15,4 +15,4 @@ namespace techset
     public:
         TechniqueParser(SimpleLexer* lexer, ITechniqueDefinitionAcceptor* acceptor);
     };
-}
+} // namespace techset

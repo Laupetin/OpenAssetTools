@@ -16,7 +16,7 @@ void AssetDumperStringTable::DumpAsset(AssetDumpingContext& context, XAssetInfo<
 
     if (!assetFile)
         return;
-    
+
     CsvOutputStream csv(*assetFile);
 
     for (auto row = 0; row < stringTable->rowCount; row++)

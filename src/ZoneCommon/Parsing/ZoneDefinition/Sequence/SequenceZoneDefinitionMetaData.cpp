@@ -6,12 +6,7 @@ SequenceZoneDefinitionMetaData::SequenceZoneDefinitionMetaData()
 {
     const ZoneDefinitionMatcherFactory create(this);
 
-    AddMatchers({
-        create.Char('>'),
-        create.Field().Capture(CAPTURE_KEY),
-        create.Char(','),
-        create.Field().Capture(CAPTURE_VALUE)
-    });
+    AddMatchers({create.Char('>'), create.Field().Capture(CAPTURE_KEY), create.Char(','), create.Field().Capture(CAPTURE_VALUE)});
 }
 
 void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const

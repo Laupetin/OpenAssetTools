@@ -1,10 +1,10 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Commands/Sequence/SequenceArchitecture.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
+#include "Utils/ClassUtils.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 namespace test::parsing::commands::sequence::sequence_architecture
 {
@@ -16,7 +16,7 @@ namespace test::parsing::commands::sequence::sequence_architecture
         std::unique_ptr<ILexer<CommandsParserValue>> m_lexer;
 
         unsigned m_consumed_token_count;
-        
+
         CommandsSequenceTestsHelper()
             : m_repository(std::make_unique<InMemoryRepository>()),
               m_state(std::make_unique<CommandsParserState>(m_repository.get())),
@@ -41,12 +41,10 @@ namespace test::parsing::commands::sequence::sequence_architecture
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("architecture")),
-            CommandsParserValue::Identifier(pos, new std::string("x86")),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("architecture")),
+                       CommandsParserValue::Identifier(pos, new std::string("x86")),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -59,12 +57,10 @@ namespace test::parsing::commands::sequence::sequence_architecture
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("architecture")),
-            CommandsParserValue::Identifier(pos, new std::string("x86")),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("architecture")),
+                       CommandsParserValue::Identifier(pos, new std::string("x86")),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -77,14 +73,12 @@ namespace test::parsing::commands::sequence::sequence_architecture
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("architecture")),
-            CommandsParserValue::Identifier(pos, new std::string("x1337")),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
-        
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("architecture")),
+                       CommandsParserValue::Identifier(pos, new std::string("x1337")),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
+
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
         REQUIRE(helper.m_repository->GetArchitecture() == Architecture::UNKNOWN);
     }
-}
+} // namespace test::parsing::commands::sequence::sequence_architecture

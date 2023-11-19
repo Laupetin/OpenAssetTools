@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <memory>
-
 #include "IWritingStep.h"
 #include "OutputStreamProcessor.h"
 #include "Zone/Zone.h"
+
+#include <memory>
+#include <vector>
 
 class IWritingStep;
 

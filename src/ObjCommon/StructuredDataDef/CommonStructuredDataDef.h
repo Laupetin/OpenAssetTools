@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-
-#include "Utils/ClassUtils.h"
 #include "CommonStructuredDataEnum.h"
 #include "CommonStructuredDataStruct.h"
+#include "Utils/ClassUtils.h"
+
+#include <memory>
+#include <vector>
 
 class CommonStructuredDataDef
 {

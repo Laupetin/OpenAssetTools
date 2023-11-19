@@ -1,6 +1,7 @@
 #include "AlgorithmSHA1.h"
 
 #include "CryptoLibrary.h"
+
 #include <cstdint>
 
 class AlgorithmSHA1::AlgorithmSHA1Impl

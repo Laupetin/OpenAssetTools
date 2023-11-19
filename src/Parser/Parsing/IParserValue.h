@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "TokenPos.h"
+#include "Utils/ClassUtils.h"
 
 class IParserValue
 {

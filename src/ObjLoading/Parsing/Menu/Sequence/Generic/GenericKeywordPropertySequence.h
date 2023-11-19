@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-#include <functional>
-
 #include "Parsing/Menu/MenuFileParser.h"
+
+#include <functional>
+#include <string>
 
 namespace menu
 {
@@ -23,4 +23,4 @@ namespace menu
     public:
         GenericKeywordPropertySequence(std::string keywordName, callback_t setCallback);
     };
-}
+} // namespace menu

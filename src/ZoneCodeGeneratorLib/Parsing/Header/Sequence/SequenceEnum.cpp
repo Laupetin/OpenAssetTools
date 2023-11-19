@@ -1,24 +1,19 @@
 #include "SequenceEnum.h"
 
 #include "Parsing/Header/Block/HeaderBlockEnum.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceEnum::SequenceEnum()
 {
     const HeaderMatcherFactory create(this);
 
     AddLabeledMatchers(HeaderCommonMatchers::Typename(this), HeaderCommonMatchers::LABEL_TYPENAME);
-    AddMatchers({
-        create.Optional(create.Type(HeaderParserValueType::TYPEDEF).Tag(TAG_TYPEDEF)),
-        create.Type(HeaderParserValueType::ENUM),
-        create.Optional(create.Identifier().Capture(CAPTURE_NAME)),
-        create.Optional(create.And({
-            create.Char(':'),
-            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_PARENT_TYPE)
-        })),
-        create.Char('{')
-    });
+    AddMatchers({create.Optional(create.Type(HeaderParserValueType::TYPEDEF).Tag(TAG_TYPEDEF)),
+                 create.Type(HeaderParserValueType::ENUM),
+                 create.Optional(create.Identifier().Capture(CAPTURE_NAME)),
+                 create.Optional(create.And({create.Char(':'), create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_PARENT_TYPE)})),
+                 create.Char('{')});
 }
 
 void SequenceEnum::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const
@@ -30,7 +25,7 @@ void SequenceEnum::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderP
     if (result.HasNextCapture(CAPTURE_NAME))
         name = result.NextCapture(CAPTURE_NAME).IdentifierValue();
 
-    if(result.HasNextCapture(CAPTURE_PARENT_TYPE))
+    if (result.HasNextCapture(CAPTURE_PARENT_TYPE))
     {
         const auto& typeNameToken = result.NextCapture(CAPTURE_PARENT_TYPE);
         const auto* foundTypeDefinition = state->FindType(typeNameToken.TypeNameValue());

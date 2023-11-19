@@ -32,7 +32,7 @@ public:
     void AddVariable(std::shared_ptr<Variable> variable) override;
     void SetCustomAlignment(int alignment);
     void Inherit(const StructDefinition* parentStruct);
-    
+
     void SetBlockName(const TokenPos& nameTokenPos, std::string name) override;
     bool IsDefiningVariable() override;
     DataDefinition* GetVariableType() override;

@@ -11,4 +11,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<FontIcon>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset) override;
     };
-}
+} // namespace T6

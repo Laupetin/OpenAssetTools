@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Parsing/IParserLineStream.h"
+#include "StructuredDataDef/CommonStructuredDataDef.h"
+
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "StructuredDataDef/CommonStructuredDataDef.h"
-#include "Parsing/IParserLineStream.h"
 
 class StructuredDataDefReader
 {

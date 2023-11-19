@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-#include <memory>
-#include <functional>
-
 #include "ISimpleExpression.h"
 #include "SimpleExpressionValue.h"
+
+#include <functional>
+#include <memory>
+#include <string>
 
 enum class SimpleUnaryOperationId
 {

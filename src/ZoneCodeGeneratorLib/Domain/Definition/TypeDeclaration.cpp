@@ -1,8 +1,8 @@
 #include "TypeDeclaration.h"
 
-#include <cassert>
-
 #include "ArrayDeclarationModifier.h"
+
+#include <cassert>
 
 TypeDeclaration::TypeDeclaration(const DataDefinition* type)
     : m_flags(0),

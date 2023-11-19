@@ -1,27 +1,21 @@
 #include "SequenceReorder.h"
 
-#include <list>
-
-#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
+#include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
+
+#include <list>
 
 SequenceReorder::SequenceReorder()
 {
     const CommandsMatcherFactory create(this);
 
     AddLabeledMatchers(CommandsCommonMatchers::Typename(this), CommandsCommonMatchers::LABEL_TYPENAME);
-    AddMatchers({
-        create.Keyword("reorder").Capture(CAPTURE_START),
-        create.Optional(create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE)),
-        create.Char(':'),
-        create.Optional(create.And({
-            create.Char('.'),
-            create.Char('.'),
-            create.Char('.')
-        }).Tag(TAG_FIND_FIRST)),
-        create.Loop(create.Identifier().Capture(CAPTURE_ENTRY)),
-        create.Char(';')
-    });
+    AddMatchers({create.Keyword("reorder").Capture(CAPTURE_START),
+                 create.Optional(create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE)),
+                 create.Char(':'),
+                 create.Optional(create.And({create.Char('.'), create.Char('.'), create.Char('.')}).Tag(TAG_FIND_FIRST)),
+                 create.Loop(create.Identifier().Capture(CAPTURE_ENTRY)),
+                 create.Char(';')});
 }
 
 StructureInformation* SequenceReorder::GetType(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
@@ -58,7 +52,7 @@ void SequenceReorder::ProcessMatch(CommandsParserState* state, SequenceResult<Co
     auto findFirst = result.PeekAndRemoveIfTag(TAG_FIND_FIRST) == TAG_FIND_FIRST;
 
     std::string firstVariableName;
-    if(findFirst)
+    if (findFirst)
         firstVariableName = result.NextCapture(CAPTURE_ENTRY).IdentifierValue();
 
     std::vector<std::unique_ptr<MemberInformation>> newMembers;
@@ -67,15 +61,15 @@ void SequenceReorder::ProcessMatch(CommandsParserState* state, SequenceResult<Co
     for (auto& oldMember : information->m_ordered_members)
         oldMembers.emplace_back(std::move(oldMember));
 
-    while(result.HasNextCapture(CAPTURE_ENTRY))
+    while (result.HasNextCapture(CAPTURE_ENTRY))
     {
         const auto& entryToken = result.NextCapture(CAPTURE_ENTRY);
         const auto& nextVariableName = entryToken.IdentifierValue();
         auto foundEntry = false;
 
-        for(auto i = oldMembers.begin(); i != oldMembers.end(); ++i)
+        for (auto i = oldMembers.begin(); i != oldMembers.end(); ++i)
         {
-            if(i->get()->m_member->m_name == nextVariableName)
+            if (i->get()->m_member->m_name == nextVariableName)
             {
                 newMembers.emplace_back(std::move(*i));
                 oldMembers.erase(i);
@@ -90,7 +84,7 @@ void SequenceReorder::ProcessMatch(CommandsParserState* state, SequenceResult<Co
 
     information->m_ordered_members.clear();
 
-    while(findFirst && !oldMembers.empty())
+    while (findFirst && !oldMembers.empty())
     {
         if (oldMembers.front()->m_member->m_name == firstVariableName)
             findFirst = false;

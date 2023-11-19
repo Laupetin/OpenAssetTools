@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ZoneDefinitionParserValue.h"
 #include "Parsing/Impl/AbstractLexer.h"
+#include "ZoneDefinitionParserValue.h"
 
 class ZoneDefinitionLexer final : public AbstractLexer<ZoneDefinitionParserValue>
 {

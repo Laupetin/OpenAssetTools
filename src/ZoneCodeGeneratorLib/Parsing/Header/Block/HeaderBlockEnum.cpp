@@ -19,10 +19,7 @@ HeaderBlockType HeaderBlockEnum::GetType()
 
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockEnum::GetTestsForBlock()
 {
-    static std::vector<sequence_t*> tests({
-        new SequenceCloseBlock(true),
-        new SequenceEnumMember()
-    });
+    static std::vector<sequence_t*> tests({new SequenceCloseBlock(true), new SequenceEnumMember()});
 
     return tests;
 }
@@ -51,9 +48,7 @@ void HeaderBlockEnum::OnClose(HeaderParserState* state)
         state->AddDataType(std::make_unique<TypedefDefinition>(m_namespace, m_variable_name, std::make_unique<TypeDeclaration>(m_enum_definition)));
 }
 
-void HeaderBlockEnum::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block)
-{
-}
+void HeaderBlockEnum::OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) {}
 
 void HeaderBlockEnum::AddEnumMember(std::unique_ptr<EnumMember> enumMember)
 {

@@ -11,4 +11,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<ScriptParseTree>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<ScriptParseTree>* asset) override;
     };
-}
+} // namespace T6

@@ -1,11 +1,11 @@
 #include "RawTemplater.h"
 
-#include <fstream>
-#include <iostream>
-#include <filesystem>
-
 #include "RawTemplaterArguments.h"
 #include "Templating/Templater.h"
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 
 namespace fs = std::filesystem;
 

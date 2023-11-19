@@ -1,9 +1,9 @@
 #include "IwiLoader.h"
 
+#include "Image/IwiTypes.h"
+
 #include <cassert>
 #include <type_traits>
-
-#include "Image/IwiTypes.h"
 
 IwiLoader::IwiLoader(MemoryManager* memoryManager)
 {
@@ -33,7 +33,7 @@ const ImageFormat* IwiLoader::GetFormat6(int8_t format)
     case iwi6::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
         return &ImageFormat::FORMAT_R8;
     case iwi6::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
-    case iwi6::IwiFormat::IMG_FORMAT_WAVELET_RGB: // used
+    case iwi6::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
     case iwi6::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
     case iwi6::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
     case iwi6::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
@@ -133,7 +133,7 @@ const ImageFormat* IwiLoader::GetFormat8(int8_t format)
     case iwi8::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
         return &ImageFormat::FORMAT_R8;
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
-    case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGB: // used
+    case iwi8::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
     case iwi8::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
@@ -251,7 +251,7 @@ const ImageFormat* IwiLoader::GetFormat13(int8_t format)
     case iwi13::IwiFormat::IMG_FORMAT_BITMAP_LUMINANCE:
         return &ImageFormat::FORMAT_R8;
     case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGBA: // used
-    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGB: // used
+    case iwi13::IwiFormat::IMG_FORMAT_WAVELET_RGB:  // used
     case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE_ALPHA:
     case iwi13::IwiFormat::IMG_FORMAT_WAVELET_LUMINANCE:
     case iwi13::IwiFormat::IMG_FORMAT_WAVELET_ALPHA:
@@ -448,9 +448,7 @@ Texture* IwiLoader::LoadIwi(std::istream& stream)
     if (stream.gcount() != sizeof(iwiVersion))
         return nullptr;
 
-    if (iwiVersion.tag[0] != 'I'
-        || iwiVersion.tag[1] != 'W'
-        || iwiVersion.tag[2] != 'i')
+    if (iwiVersion.tag[0] != 'I' || iwiVersion.tag[1] != 'W' || iwiVersion.tag[2] != 'i')
     {
         printf("Invalid IWI magic\n");
     }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <exception>
-#include <string>
-
 #include "TokenPos.h"
 #include "Utils/ClassUtils.h"
+
+#include <exception>
+#include <string>
 
 class ParsingException final : std::exception
 {

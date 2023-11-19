@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-#include <memory>
-#include <functional>
-
 #include "ISimpleExpression.h"
 #include "SimpleExpressionValue.h"
+
+#include <functional>
+#include <memory>
+#include <string>
 
 // https://en.cppreference.com/w/cpp/language/operator_precedence
 enum class SimpleOperationPrecedence
@@ -55,7 +55,10 @@ public:
     evaluation_function_t m_evaluation_function;
 
 private:
-    SimpleExpressionBinaryOperationType(SimpleBinaryOperationId id, std::string syntax, SimpleOperationPrecedence precedence, evaluation_function_t evaluationFunction);
+    SimpleExpressionBinaryOperationType(SimpleBinaryOperationId id,
+                                        std::string syntax,
+                                        SimpleOperationPrecedence precedence,
+                                        evaluation_function_t evaluationFunction);
 
 public:
     static const SimpleExpressionBinaryOperationType OPERATION_ADD;
@@ -87,8 +90,8 @@ public:
     std::unique_ptr<ISimpleExpression> m_operand2;
 
     SimpleExpressionBinaryOperation(const SimpleExpressionBinaryOperationType* operationType,
-        std::unique_ptr<ISimpleExpression> operand1,
-        std::unique_ptr<ISimpleExpression> operand2);
+                                    std::unique_ptr<ISimpleExpression> operand1,
+                                    std::unique_ptr<ISimpleExpression> operand2);
 
     _NODISCARD bool Operand1NeedsParenthesis() const;
     _NODISCARD bool Operand2NeedsParenthesis() const;

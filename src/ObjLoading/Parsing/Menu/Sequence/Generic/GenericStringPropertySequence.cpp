@@ -1,8 +1,8 @@
 #include "GenericStringPropertySequence.h"
 
-#include <utility>
-
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+
+#include <utility>
 
 using namespace menu;
 
@@ -11,10 +11,7 @@ GenericStringPropertySequence::GenericStringPropertySequence(std::string keyword
 {
     const MenuMatcherFactory create(this);
 
-    AddMatchers({
-        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Text().Capture(CAPTURE_VALUE)
-    });
+    AddMatchers({create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN), create.Text().Capture(CAPTURE_VALUE)});
 }
 
 void GenericStringPropertySequence::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const

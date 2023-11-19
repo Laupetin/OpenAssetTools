@@ -1,9 +1,9 @@
 #include "AssetLoaderScriptParseTree.h"
 
-#include <cstring>
-
 #include "Game/T6/T6.h"
 #include "Pool/GlobalAssetPool.h"
+
+#include <cstring>
 
 using namespace T6;
 
@@ -20,7 +20,8 @@ bool AssetLoaderScriptParseTree::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderScriptParseTree::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderScriptParseTree::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())

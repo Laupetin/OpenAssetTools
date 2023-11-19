@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-
-#include "Menu/AbstractMenuDumper.h"
 #include "Game/IW5/IW5.h"
+#include "Menu/AbstractMenuDumper.h"
+
+#include <string>
 
 namespace IW5
 {
@@ -52,4 +52,4 @@ namespace IW5
         void WriteFunctionDef(const std::string& functionName, const Statement_s* statement);
         void WriteMenu(const menuDef_t* menu);
     };
-}
+} // namespace IW5

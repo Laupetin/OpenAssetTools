@@ -1,9 +1,9 @@
 #include "StructuredDataDefScopeSequences.h"
 
-#include <sstream>
-
 #include "Parsing/Simple/Matcher/SimpleMatcherFactory.h"
 #include "StructuredDataDef/Parsing/StructuredDataDefSizeCalculator.h"
+
+#include <sstream>
 
 namespace sdd::def_scope_sequences
 {
@@ -17,16 +17,10 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Keyword("enum"),
-                create.Optional(create.And({
-                    create.Char('('),
-                    create.Integer().Capture(CAPTURE_RESERVED_COUNT),
-                    create.Char(')')
-                })),
-                create.Identifier().Capture(CAPTURE_NAME),
-                create.Char('{')
-            });
+            AddMatchers({create.Keyword("enum"),
+                         create.Optional(create.And({create.Char('('), create.Integer().Capture(CAPTURE_RESERVED_COUNT), create.Char(')')})),
+                         create.Identifier().Capture(CAPTURE_NAME),
+                         create.Char('{')});
         }
 
     protected:
@@ -76,11 +70,7 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Keyword("struct"),
-                create.Identifier().Capture(CAPTURE_NAME),
-                create.Char('{')
-            });
+            AddMatchers({create.Keyword("struct"), create.Identifier().Capture(CAPTURE_NAME), create.Char('{')});
         }
 
     protected:
@@ -136,11 +126,7 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Keyword("checksumoverride"),
-                create.Integer().Capture(CAPTURE_VALUE),
-                create.Char(';')
-            });
+            AddMatchers({create.Keyword("checksumoverride"), create.Integer().Capture(CAPTURE_VALUE), create.Char(';')});
         }
 
     protected:
@@ -162,9 +148,7 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({
-                create.Char('}')
-            });
+            AddMatchers({create.Char('}')});
         }
 
     private:
@@ -179,7 +163,7 @@ namespace sdd::def_scope_sequences
 
         static void EnsureAllUsedTypesHaveBeenDefined(const StructuredDataDefParserState* state)
         {
-            for(const auto& undefinedType : state->m_undefined_types)
+            for (const auto& undefinedType : state->m_undefined_types)
             {
                 if (undefinedType.m_mapped_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
                 {
@@ -194,11 +178,11 @@ namespace sdd::def_scope_sequences
         {
             auto& def = *state->m_current_def;
 
-            for(const auto& _struct : def.m_structs)
+            for (const auto& _struct : def.m_structs)
             {
-                for(auto& property : _struct->m_properties)
+                for (auto& property : _struct->m_properties)
                 {
-                    if(property.m_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                    if (property.m_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
                     {
                         assert(property.m_type.m_info.type_index < state->m_undefined_types.size());
                         const auto& undefinedType = state->m_undefined_types[property.m_type.m_info.type_index];
@@ -207,9 +191,9 @@ namespace sdd::def_scope_sequences
                 }
             }
 
-            for(auto& indexedArray : def.m_indexed_arrays)
+            for (auto& indexedArray : def.m_indexed_arrays)
             {
-                if(indexedArray.m_array_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                if (indexedArray.m_array_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
                 {
                     assert(indexedArray.m_array_type.m_info.type_index < state->m_undefined_types.size());
                     const auto& undefinedType = state->m_undefined_types[indexedArray.m_array_type.m_info.type_index];
@@ -217,9 +201,9 @@ namespace sdd::def_scope_sequences
                 }
             }
 
-            for(auto& enumedArray : def.m_enumed_arrays)
+            for (auto& enumedArray : def.m_enumed_arrays)
             {
-                if(enumedArray.m_array_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
+                if (enumedArray.m_array_type.m_category == CommonStructuredDataTypeCategory::UNKNOWN)
                 {
                     assert(enumedArray.m_array_type.m_info.type_index < state->m_undefined_types.size());
                     const auto& undefinedType = state->m_undefined_types[enumedArray.m_array_type.m_info.type_index];
@@ -234,7 +218,7 @@ namespace sdd::def_scope_sequences
             {
                 StructuredDataDefSizeCalculator::CalculateSizesAndOffsetsForDef(*state->m_current_def);
             }
-            catch(SizeCalculationException& e)
+            catch (SizeCalculationException& e)
             {
                 throw ParsingException(TokenPos(), e.Message());
             }
@@ -275,7 +259,7 @@ namespace sdd::def_scope_sequences
             state->m_checksum_override_value = 0u;
         }
     };
-}
+} // namespace sdd::def_scope_sequences
 
 using namespace sdd;
 using namespace def_scope_sequences;

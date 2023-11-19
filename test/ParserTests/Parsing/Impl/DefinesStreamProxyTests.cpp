@@ -1,8 +1,8 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 namespace test::parsing::impl::defines_stream_proxy
 {
@@ -15,14 +15,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple define and positive ifdef is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifdef ASDF",
-            "Hello World",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{"#define ASDF", "#ifdef ASDF", "Hello World", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -38,14 +31,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple define and negative ifdef is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifdef NONO",
-            "Hello World",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{"#define ASDF", "#ifdef NONO", "Hello World", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -61,14 +47,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple define and positive ifndef is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifndef NONO",
-            "Hello World",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{"#define ASDF", "#ifndef NONO", "Hello World", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -84,14 +63,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple define and negative ifndef is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifndef ASDF",
-            "Hello World",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{"#define ASDF", "#ifndef ASDF", "Hello World", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -107,16 +79,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure else is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifdef NONO",
-            "Hello World1",
-            "#else",
-            "Hello World2",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{"#define ASDF", "#ifdef NONO", "Hello World1", "#else", "Hello World2", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -134,24 +97,21 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure nested ifdef is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifdef ASDF",
-            "#ifdef NONO",
-            "Hello World1",
-            "#else",
-            "Hello World2",
-            "#endif",
-            "#else",
-            "#ifdef ASDF",
-            "Hello World3",
-            "#else",
-            "Hello World4",
-            "#endif",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{"#define ASDF",
+                                             "#ifdef ASDF",
+                                             "#ifdef NONO",
+                                             "Hello World1",
+                                             "#else",
+                                             "Hello World2",
+                                             "#endif",
+                                             "#else",
+                                             "#ifdef ASDF",
+                                             "Hello World3",
+                                             "#else",
+                                             "Hello World4",
+                                             "#endif",
+                                             "#endif",
+                                             "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -177,18 +137,8 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure undef is working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifdef ASDF",
-            "Hello World",
-            "#endif",
-            "#undef ASDF",
-            "#ifdef ASDF",
-            "Hello World",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{
+            "#define ASDF", "#ifdef ASDF", "Hello World", "#endif", "#undef ASDF", "#ifdef ASDF", "Hello World", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -208,18 +158,8 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure undef does not undefine everything", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF",
-            "#ifdef ASDF",
-            "Hello World",
-            "#endif",
-            "#undef NONO",
-            "#ifdef ASDF",
-            "Hello World",
-            "#endif",
-            "Hello Galaxy"
-        };
+        const std::vector<std::string> lines{
+            "#define ASDF", "#ifdef ASDF", "Hello World", "#endif", "#undef NONO", "#ifdef ASDF", "Hello World", "#endif", "Hello Galaxy"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -239,14 +179,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple defines are working", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF LOL",
-            "ASDF",
-            "A ASDF B",
-            "ASDF B",
-            "A ASDF"
-        };
+        const std::vector<std::string> lines{"#define ASDF LOL", "ASDF", "A ASDF B", "ASDF B", "A ASDF"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -262,11 +195,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure defines can be surrounded by symbols", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define ASDF LOL",
-            "!ASDF%"
-        };
+        const std::vector<std::string> lines{"#define ASDF LOL", "!ASDF%"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -279,12 +208,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use multiple defines in one line", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define A Hello",
-            "#define B world",
-            "A my dear B!"
-        };
+        const std::vector<std::string> lines{"#define A Hello", "#define B world", "A my dear B!"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -298,13 +222,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure defines in disabled block are ignored", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#ifdef LOLO",
-            "#define hello world",
-            "#endif",
-            "hello"
-        };
+        const std::vector<std::string> lines{"#ifdef LOLO", "#define hello world", "#endif", "hello"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -319,14 +237,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure undefs in disabled block are ignored", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define hello world",
-            "#ifdef LOLO",
-            "#undef hello",
-            "#endif",
-            "hello"
-        };
+        const std::vector<std::string> lines{"#define hello world", "#ifdef LOLO", "#undef hello", "#endif", "hello"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -342,11 +253,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can define name with underscores and digits", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define __int16 short",
-            "unsigned __int16 value;"
-        };
+        const std::vector<std::string> lines{"#define __int16 short", "unsigned __int16 value;"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -361,14 +268,10 @@ namespace test::parsing::impl::defines_stream_proxy
     {
         DefinesStreamProxy::Define define("helloworld", "hello universe");
 
-        std::vector<std::string> parameterNames({
-            "universe"
-        });
+        std::vector<std::string> parameterNames({"universe"});
         define.IdentifyParameters(parameterNames);
 
-        std::vector<std::string> parameterValues({
-            "mr moneyman"
-        });
+        std::vector<std::string> parameterValues({"mr moneyman"});
         REQUIRE(define.Render(parameterValues) == "hello mr moneyman");
     }
 
@@ -376,24 +279,16 @@ namespace test::parsing::impl::defines_stream_proxy
     {
         DefinesStreamProxy::Define define("helloworld", "alignas(x)");
 
-        std::vector<std::string> parameterNames({
-            "x"
-        });
+        std::vector<std::string> parameterNames({"x"});
         define.IdentifyParameters(parameterNames);
 
-        std::vector<std::string> parameterValues({
-            "1337"
-        });
+        std::vector<std::string> parameterValues({"1337"});
         REQUIRE(define.Render(parameterValues) == "alignas(1337)");
     }
 
     TEST_CASE("DefinesStreamProxy: Ensure can add define with parameters", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define test(x) alignas(x)",
-            "struct test(1337) test_struct"
-        };
+        const std::vector<std::string> lines{"#define test(x) alignas(x)", "struct test(1337) test_struct"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -406,11 +301,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use parameter multiple times", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define test(x) x|x|x|x",
-            "struct test(1337) test_struct"
-        };
+        const std::vector<std::string> lines{"#define test(x) x|x|x|x", "struct test(1337) test_struct"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -423,11 +314,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use parameterized define in between symbols", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define test(x) x|x|x|x",
-            "%test(5)%"
-        };
+        const std::vector<std::string> lines{"#define test(x) x|x|x|x", "%test(5)%"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -440,11 +327,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can define multiple parameters", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define test(a1, a2, a3) a1 + a2 = a3",
-            "make calc test(1, 2, 3);"
-        };
+        const std::vector<std::string> lines{"#define test(a1, a2, a3) a1 + a2 = a3", "make calc test(1, 2, 3);"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -457,11 +340,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can define multiple parameters without spacing", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define test(a1,a2,a3) a1+a2=a3",
-            "make calc test(1,2,3);"
-        };
+        const std::vector<std::string> lines{"#define test(a1,a2,a3) a1+a2=a3", "make calc test(1,2,3);"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -474,11 +353,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can define parameters with underscore", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define test(test_parameter) this is test_parameter",
-            "Apparently test(a very cool text);"
-        };
+        const std::vector<std::string> lines{"#define test(test_parameter) this is test_parameter", "Apparently test(a very cool text);"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -491,8 +366,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple if is working with truthy value", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#if 1",
             "Hello World",
             "#endif",
@@ -510,8 +384,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple if is working with non-truthy value", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#if 0",
             "Hello World",
             "#endif",
@@ -529,8 +402,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure simple if is working with calculated values", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#if 0 || 1",
             "Hello World",
             "#endif",
@@ -554,8 +426,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can handle defined operator with defined definition", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#define someStuff 1",
             "#if defined(someStuff)",
             "Hello World",
@@ -575,8 +446,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can handle defined operator with undefined definition", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#define someStuff 1",
             "#if defined(someStuff) && defined(thisIsNotDefined)",
             "Hello World",
@@ -602,8 +472,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use elif", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#define someStuff 1",
             "#if defined(someStuff) && defined(thisIsNotDefined)",
             "Hello World",
@@ -637,8 +506,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure elif does not work when if was true", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#define someStuff 1",
             "#if defined(someStuff)",
             "Hello World",
@@ -662,8 +530,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use else when no elif matched", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
+        const std::vector<std::string> lines{
             "#define someStuff 1",
             "#if 0",
             "Hello World",
@@ -691,11 +558,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use parenthesis in parameters values", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define someStuff(param1) Hello param1 World",
-            "someStuff(A sentence with (parenthesis) and stuff)"
-        };
+        const std::vector<std::string> lines{"#define someStuff(param1) Hello param1 World", "someStuff(A sentence with (parenthesis) and stuff)"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -708,11 +571,8 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure can use comma in parenthesis in parameters values", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define someStuff(param1) Hello param1 World",
-            "someStuff(A sentence with (parenthesis and a , character) and stuff)"
-        };
+        const std::vector<std::string> lines{"#define someStuff(param1) Hello param1 World",
+                                             "someStuff(A sentence with (parenthesis and a , character) and stuff)"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -725,12 +585,7 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure defines can go over multiple lines", "[parsing][parsingstream]")
     {
-        const std::vector<std::string> lines
-        {
-            "#define someStuff(param1) Hello param1 World \\",
-            "and hello universe",
-            "someStuff(lovely)"
-        };
+        const std::vector<std::string> lines{"#define someStuff(param1) Hello param1 World \\", "and hello universe", "someStuff(lovely)"};
 
         MockParserLineStream mockStream(lines);
         DefinesStreamProxy proxy(&mockStream);
@@ -741,4 +596,4 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
-}
+} // namespace test::parsing::impl::defines_stream_proxy

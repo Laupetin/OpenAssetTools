@@ -9,8 +9,7 @@ MemoryManager::AllocationInfo::AllocationInfo(IDestructible* data, void* dataPtr
     m_data_ptr = dataPtr;
 }
 
-MemoryManager::MemoryManager()
-= default;
+MemoryManager::MemoryManager() = default;
 
 MemoryManager::~MemoryManager()
 {

@@ -10,4 +10,4 @@ namespace IW4
     public:
         void DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool) override;
     };
-}
+} // namespace IW4

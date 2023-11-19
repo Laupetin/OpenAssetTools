@@ -42,21 +42,6 @@ const BaseTypeDefinition* const BaseTypeDefinition::UNSIGNED_LONG = new BaseType
 const BaseTypeDefinition* const BaseTypeDefinition::LONG_LONG = new BaseTypeDefinition("long long", 8);
 const BaseTypeDefinition* const BaseTypeDefinition::UNSIGNED_LONG_LONG = new BaseTypeDefinition("unsigned long long", 8);
 const BaseTypeDefinition* const BaseTypeDefinition::VOID = new BaseTypeDefinition("void", 0);
-const BaseTypeDefinition* const BaseTypeDefinition::ALL_BASE_TYPES[]
-{
-    FLOAT,
-    DOUBLE,
-    BOOL,
-    CHAR,
-    UNSIGNED_CHAR,
-    SHORT,
-    UNSIGNED_SHORT,
-    INT,
-    UNSIGNED_INT,
-    LONG,
-    UNSIGNED_LONG,
-    LONG_LONG,
-    UNSIGNED_LONG_LONG,
-    VOID
-};
+const BaseTypeDefinition* const BaseTypeDefinition::ALL_BASE_TYPES[]{
+    FLOAT, DOUBLE, BOOL, CHAR, UNSIGNED_CHAR, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, LONG, UNSIGNED_LONG, LONG_LONG, UNSIGNED_LONG_LONG, VOID};
 const size_t BaseTypeDefinition::ALL_BASE_TYPES_COUNT = std::extent<decltype(ALL_BASE_TYPES)>::value;

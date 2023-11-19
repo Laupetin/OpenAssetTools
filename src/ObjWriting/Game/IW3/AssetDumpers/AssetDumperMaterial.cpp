@@ -1,13 +1,13 @@
 #include "AssetDumperMaterial.h"
 
-#include <iomanip>
-#include <sstream>
-#include <nlohmann/json.hpp>
-
 #include "Game/IW3/MaterialConstantsIW3.h"
 #include "Game/IW3/TechsetConstantsIW3.h"
 
-//#define FLAGS_DEBUG 1
+#include <iomanip>
+#include <nlohmann/json.hpp>
+#include <sstream>
+
+// #define FLAGS_DEBUG 1
 
 using namespace IW3;
 using json = nlohmann::json;
@@ -21,8 +21,7 @@ namespace IW3
         return name;
     }
 
-    template <size_t S>
-    json ArrayEntry(const char* (&a)[S], const size_t index)
+    template<size_t S> json ArrayEntry(const char* (&a)[S], const size_t index)
     {
         assert(index < S);
         if (index < S)
@@ -73,20 +72,8 @@ namespace IW3
 
     json BuildSamplerStateJson(unsigned char samplerState)
     {
-        static const char* samplerFilterNames[]
-        {
-            "none",
-            "nearest",
-            "linear",
-            "aniso2x",
-            "aniso4x"
-        };
-        static const char* samplerMipmapNames[]
-        {
-            "disabled",
-            "nearest",
-            "linear"
-        };
+        static const char* samplerFilterNames[]{"none", "nearest", "linear", "aniso2x", "aniso4x"};
+        static const char* samplerMipmapNames[]{"disabled", "nearest", "linear"};
 
         return json{
             {"filter", ArrayEntry(samplerFilterNames, (samplerState & SAMPLER_FILTER_MASK) >> SAMPLER_FILTER_SHIFT)},
@@ -99,21 +86,8 @@ namespace IW3
 
     json BuildTextureTableJson(const MaterialTextureDef* textureTable, const size_t count)
     {
-        static const char* semanticNames[]
-        {
-            "2d",
-            "function",
-            "colorMap",
-            "unused1",
-            "unused2",
-            "normalMap",
-            "unused3",
-            "unused4",
-            "specularMap",
-            "unused5",
-            "unused6",
-            "waterMap"
-        };
+        static const char* semanticNames[]{
+            "2d", "function", "colorMap", "unused1", "unused2", "normalMap", "unused3", "unused4", "specularMap", "unused5", "unused6", "waterMap"};
 
         auto jArray = json::array();
 
@@ -136,9 +110,9 @@ namespace IW3
                 else
                 {
                     jEntry.merge_patch({
-                        {"nameHash", entry.nameHash},
+                        {"nameHash",  entry.nameHash },
                         {"nameStart", entry.nameStart},
-                        {"nameEnd", entry.nameEnd},
+                        {"nameEnd",   entry.nameEnd  },
                     });
                 }
 
@@ -211,8 +185,7 @@ namespace IW3
 
     json BuildStateBitsTableJson(const GfxStateBits* stateBitsTable, const size_t count)
     {
-        static const char* blendNames[]
-        {
+        static const char* blendNames[]{
             "disabled",
             "zero",
             "one",
@@ -225,40 +198,20 @@ namespace IW3
             "destColor",
             "invDestColor",
         };
-        static const char* blendOpNames[]
-        {
-            "disabled",
-            "add",
-            "subtract",
-            "revSubtract",
-            "min",
-            "max"
-        };
-        static const char* depthTestNames[]
-        {
+        static const char* blendOpNames[]{"disabled", "add", "subtract", "revSubtract", "min", "max"};
+        static const char* depthTestNames[]{
             "always",
             "less",
             "equal",
             "lessEqual",
         };
-        static const char* polygonOffsetNames[]
-        {
+        static const char* polygonOffsetNames[]{
             "0",
             "1",
             "2",
             "shadowMap",
         };
-        static const char* stencilOpNames[]
-        {
-            "keep",
-            "zero",
-            "replace",
-            "incrSat",
-            "decrSat",
-            "invert",
-            "incr",
-            "decr"
-        };
+        static const char* stencilOpNames[]{"keep", "zero", "replace", "incrSat", "decrSat", "invert", "incr", "decr"};
 
         auto jArray = json::array();
 
@@ -333,7 +286,8 @@ namespace IW3
         if (!surfaceTypeBits)
             return json(surfaceTypeNames[SURF_TYPE_DEFAULT]);
 
-        static constexpr auto NON_SURFACE_TYPE_BITS = ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
+        static constexpr auto NON_SURFACE_TYPE_BITS =
+            ~(std::numeric_limits<unsigned>::max() >> ((sizeof(unsigned) * 8) - (static_cast<unsigned>(SURF_TYPE_NUM) - 1)));
         assert((surfaceTypeBits & NON_SURFACE_TYPE_BITS) == 0);
 
         std::ostringstream ss;
@@ -372,7 +326,7 @@ namespace IW3
 
         return json(values);
     }
-}
+} // namespace IW3
 
 bool AssetDumperMaterial::ShouldDump(XAssetInfo<Material>* asset)
 {
@@ -392,84 +346,72 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
 
     auto& stream = *assetFile;
 
-    static const char* cameraRegionNames[]
-    {
-        "lit",
-        "decal",
-        "emissive",
-        "none"
-    };
-    static std::unordered_map<size_t, std::string> sortKeyNames
-    {
-        {0, "distortion"},
-        {1, "opaque water"},
-        {2, "boat hull"},
-        {3, "opaque ambient"},
-        {4, "opaque"},
-        {5, "sky"},
-        {6, "skybox - sun / moon"},
-        {7, "skybox - clouds"},
-        {8, "skybox - horizon"},
-        {9, "decal - bottom 1"},
-        {10, "decal - bottom 2"},
-        {11, "decal - bottom 3"},
-        {12, "decal - static decal"},
-        {13, "decal - middle 1"},
-        {14, "decal - middle 2"},
-        {15, "decal - middle 3"},
-        {24, "decal - weapon impact"},
-        {29, "decal - top 1"},
-        {30, "decal - top 2"},
-        {31, "decal - top 3"},
-        {32, "multiplicative"},
-        {33, "banner / curtain"},
-        {34, "hair"},
-        {35, "underwater"},
-        {36, "transparent water"},
-        {37, "corona"},
-        {38, "window inside"},
-        {39, "window outside"},
+    static const char* cameraRegionNames[]{"lit", "decal", "emissive", "none"};
+    static std::unordered_map<size_t, std::string> sortKeyNames{
+        {0,  "distortion"             },
+        {1,  "opaque water"           },
+        {2,  "boat hull"              },
+        {3,  "opaque ambient"         },
+        {4,  "opaque"                 },
+        {5,  "sky"                    },
+        {6,  "skybox - sun / moon"    },
+        {7,  "skybox - clouds"        },
+        {8,  "skybox - horizon"       },
+        {9,  "decal - bottom 1"       },
+        {10, "decal - bottom 2"       },
+        {11, "decal - bottom 3"       },
+        {12, "decal - static decal"   },
+        {13, "decal - middle 1"       },
+        {14, "decal - middle 2"       },
+        {15, "decal - middle 3"       },
+        {24, "decal - weapon impact"  },
+        {29, "decal - top 1"          },
+        {30, "decal - top 2"          },
+        {31, "decal - top 3"          },
+        {32, "multiplicative"         },
+        {33, "banner / curtain"       },
+        {34, "hair"                   },
+        {35, "underwater"             },
+        {36, "transparent water"      },
+        {37, "corona"                 },
+        {38, "window inside"          },
+        {39, "window outside"         },
         {40, "before effects - bottom"},
         {41, "before effects - middle"},
-        {42, "before effects - top"},
-        {43, "blend / additive"},
-        {48, "effect - auto sort"},
-        {56, "after effects - bottom"},
-        {57, "after effects - middle"},
-        {58, "after effects - top"},
-        {59, "viewmodel effect"},
+        {42, "before effects - top"   },
+        {43, "blend / additive"       },
+        {48, "effect - auto sort"     },
+        {56, "after effects - bottom" },
+        {57, "after effects - middle" },
+        {58, "after effects - top"    },
+        {59, "viewmodel effect"       },
     };
 
     const auto foundSortKeyName = sortKeyNames.find(material->info.sortKey);
     assert(foundSortKeyName != sortKeyNames.end());
 
     const json j = {
-        {
-            "info", {
+        {"info",
+         {
 #if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
-                {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
+             {"gameFlags", BuildCharFlagsJson("gameFlag", material->info.gameFlags)}, // TODO: Find out what gameflags mean
 #else
-                {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
+             {"gameFlags", material->info.gameFlags}, // TODO: Find out what gameflags mean
 #endif
-                {"sortKey", foundSortKeyName != sortKeyNames.end() ? foundSortKeyName->second : std::to_string(material->info.sortKey)},
-                {"textureAtlasRowCount", material->info.textureAtlasRowCount},
-                {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
-                {
-                    "drawSurf", {
-                        {"objectId", static_cast<unsigned>(material->info.drawSurf.fields.objectId)},
-                        {"reflectionProbeIndex", static_cast<unsigned>(material->info.drawSurf.fields.reflectionProbeIndex)},
-                        {"customIndex", static_cast<unsigned>(material->info.drawSurf.fields.customIndex)},
-                        {"materialSortedIndex", static_cast<unsigned>(material->info.drawSurf.fields.materialSortedIndex)},
-                        {"prepass", static_cast<unsigned>(material->info.drawSurf.fields.prepass)},
-                        {"useHeroLighting", static_cast<unsigned>(material->info.drawSurf.fields.primaryLightIndex)},
-                        {"surfType", static_cast<unsigned>(material->info.drawSurf.fields.surfType)},
-                        {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}
-                    }
-                },
-                {"surfaceTypeBits", BuildSurfaceTypeBitsJson(material->info.surfaceTypeBits)},
-                {"hashIndex", material->info.hashIndex}
-            }
-        },
+             {"sortKey", foundSortKeyName != sortKeyNames.end() ? foundSortKeyName->second : std::to_string(material->info.sortKey)},
+             {"textureAtlasRowCount", material->info.textureAtlasRowCount},
+             {"textureAtlasColumnCount", material->info.textureAtlasColumnCount},
+             {"drawSurf",
+              {{"objectId", static_cast<unsigned>(material->info.drawSurf.fields.objectId)},
+               {"reflectionProbeIndex", static_cast<unsigned>(material->info.drawSurf.fields.reflectionProbeIndex)},
+               {"customIndex", static_cast<unsigned>(material->info.drawSurf.fields.customIndex)},
+               {"materialSortedIndex", static_cast<unsigned>(material->info.drawSurf.fields.materialSortedIndex)},
+               {"prepass", static_cast<unsigned>(material->info.drawSurf.fields.prepass)},
+               {"useHeroLighting", static_cast<unsigned>(material->info.drawSurf.fields.primaryLightIndex)},
+               {"surfType", static_cast<unsigned>(material->info.drawSurf.fields.surfType)},
+               {"primarySortKey", static_cast<unsigned>(material->info.drawSurf.fields.primarySortKey)}}},
+             {"surfaceTypeBits", BuildSurfaceTypeBitsJson(material->info.surfaceTypeBits)},
+             {"hashIndex", material->info.hashIndex}}},
         {"stateBitsEntry", std::vector(std::begin(material->stateBitsEntry), std::end(material->stateBitsEntry))},
 #if defined(FLAGS_DEBUG) && FLAGS_DEBUG == 1
         {"stateFlags", BuildCharFlagsJson("stateFlag", material->stateFlags)},

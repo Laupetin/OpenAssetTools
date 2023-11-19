@@ -1,9 +1,9 @@
 #pragma once
-#include <memory>
-#include <string>
-
 #include "ICommonEventHandlerElement.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <memory>
+#include <string>
 
 namespace menu
 {
@@ -28,4 +28,4 @@ namespace menu
 
         _NODISCARD CommonEventHandlerElementType GetType() const override;
     };
-}
+} // namespace menu

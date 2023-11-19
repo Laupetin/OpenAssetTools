@@ -4,8 +4,7 @@
 
 namespace IW4
 {
-    inline const char* g_expFunctionNames[]
-    {
+    inline const char* g_expFunctionNames[]{
         "NOOP",
         ")",
         "*",
@@ -194,26 +193,25 @@ namespace IW4
         "coopready",
     };
 
-    inline const ItemExpressionTargetBinding floatExpressionTargetBindings[ITEM_FLOATEXP_TGT_COUNT]
-    {
-        {ITEM_FLOATEXP_TGT_RECT_X, "rect", "x"},
-        {ITEM_FLOATEXP_TGT_RECT_Y, "rect", "y"},
-        {ITEM_FLOATEXP_TGT_RECT_W, "rect", "w"},
-        {ITEM_FLOATEXP_TGT_RECT_H, "rect", "h"},
-        {ITEM_FLOATEXP_TGT_FORECOLOR_R, "forecolor", "r"},
-        {ITEM_FLOATEXP_TGT_FORECOLOR_G, "forecolor", "g"},
-        {ITEM_FLOATEXP_TGT_FORECOLOR_B, "forecolor", "b"},
+    inline const ItemExpressionTargetBinding floatExpressionTargetBindings[ITEM_FLOATEXP_TGT_COUNT]{
+        {ITEM_FLOATEXP_TGT_RECT_X,        "rect",      "x"  },
+        {ITEM_FLOATEXP_TGT_RECT_Y,        "rect",      "y"  },
+        {ITEM_FLOATEXP_TGT_RECT_W,        "rect",      "w"  },
+        {ITEM_FLOATEXP_TGT_RECT_H,        "rect",      "h"  },
+        {ITEM_FLOATEXP_TGT_FORECOLOR_R,   "forecolor", "r"  },
+        {ITEM_FLOATEXP_TGT_FORECOLOR_G,   "forecolor", "g"  },
+        {ITEM_FLOATEXP_TGT_FORECOLOR_B,   "forecolor", "b"  },
         {ITEM_FLOATEXP_TGT_FORECOLOR_RGB, "forecolor", "rgb"},
-        {ITEM_FLOATEXP_TGT_FORECOLOR_A, "forecolor", "a"},
-        {ITEM_FLOATEXP_TGT_GLOWCOLOR_R, "glowcolor", "r"},
-        {ITEM_FLOATEXP_TGT_GLOWCOLOR_G, "glowcolor", "g"},
-        {ITEM_FLOATEXP_TGT_GLOWCOLOR_B, "glowcolor", "b"},
+        {ITEM_FLOATEXP_TGT_FORECOLOR_A,   "forecolor", "a"  },
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_R,   "glowcolor", "r"  },
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_G,   "glowcolor", "g"  },
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_B,   "glowcolor", "b"  },
         {ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, "glowcolor", "rgb"},
-        {ITEM_FLOATEXP_TGT_GLOWCOLOR_A, "glowcolor", "a"},
-        {ITEM_FLOATEXP_TGT_BACKCOLOR_R, "backcolor", "r"},
-        {ITEM_FLOATEXP_TGT_BACKCOLOR_G, "backcolor", "g"},
-        {ITEM_FLOATEXP_TGT_BACKCOLOR_B, "backcolor", "b"},
+        {ITEM_FLOATEXP_TGT_GLOWCOLOR_A,   "glowcolor", "a"  },
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_R,   "backcolor", "r"  },
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_G,   "backcolor", "g"  },
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_B,   "backcolor", "b"  },
         {ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, "backcolor", "rgb"},
-        {ITEM_FLOATEXP_TGT_BACKCOLOR_A, "backcolor", "a"},
+        {ITEM_FLOATEXP_TGT_BACKCOLOR_A,   "backcolor", "a"  },
     };
-}
+} // namespace IW4

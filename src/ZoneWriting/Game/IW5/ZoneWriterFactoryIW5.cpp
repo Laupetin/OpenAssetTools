@@ -1,10 +1,8 @@
 #include "ZoneWriterFactoryIW5.h"
 
-#include <cstring>
-
 #include "ContentWriterIW5.h"
-#include "Game/IW5/IW5.h"
 #include "Game/IW5/GameIW5.h"
+#include "Game/IW5/IW5.h"
 #include "Game/IW5/ZoneConstantsIW5.h"
 #include "Writing/Processor/OutputProcessorDeflate.h"
 #include "Writing/Steps/StepAddOutputProcessor.h"
@@ -16,6 +14,8 @@
 #include "Writing/Steps/StepWriteZoneHeader.h"
 #include "Writing/Steps/StepWriteZoneSizes.h"
 
+#include <cstring>
+
 using namespace IW5;
 
 class ZoneWriterFactory::Impl
@@ -26,7 +26,7 @@ class ZoneWriterFactory::Impl
 public:
     explicit Impl(Zone* zone)
         : m_zone(zone),
-        m_writer(std::make_unique<ZoneWriter>())
+          m_writer(std::make_unique<ZoneWriter>())
     {
     }
 
@@ -74,7 +74,8 @@ public:
 
         SetupBlocks();
 
-        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
+            std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
         auto* contentInMemoryPtr = contentInMemory.get();
         m_writer->AddWritingStep(std::move(contentInMemory));
 

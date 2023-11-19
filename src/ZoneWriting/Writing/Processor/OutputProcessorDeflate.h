@@ -1,8 +1,8 @@
 #pragma once
-#include <cstdint>
-#include <cstddef>
-
 #include "Writing/OutputStreamProcessor.h"
+
+#include <cstddef>
+#include <cstdint>
 
 class OutputProcessorDeflate final : public OutputStreamProcessor
 {

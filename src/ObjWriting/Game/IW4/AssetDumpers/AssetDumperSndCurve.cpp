@@ -1,8 +1,8 @@
 #include "AssetDumperSndCurve.h"
 
-#include <sstream>
-
 #include "Dumping/SndCurve/SndCurveDumper.h"
+
+#include <sstream>
 
 using namespace IW4;
 

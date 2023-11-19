@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-
 #include "AbstractSalsa20Processor.h"
 #include "IXChunkProcessor.h"
+
+#include <string>
 
 class XChunkProcessorSalsa20Encryption final : public IXChunkProcessor, public AbstractSalsa20Processor
 {

@@ -1,12 +1,12 @@
 #include "AssetLoaderRawFile.h"
 
+#include "Game/T5/T5.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <zlib.h>
-
-#include "Game/T5/T5.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace T5;
 
@@ -25,7 +25,8 @@ bool AssetLoaderRawFile::CanLoadFromRaw() const
     return true;
 }
 
-bool AssetLoaderRawFile::LoadGsc(const SearchPathOpenFile& file, const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
+bool AssetLoaderRawFile::LoadGsc(
+    const SearchPathOpenFile& file, const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
 {
     const auto uncompressedBuffer = std::make_unique<char[]>(static_cast<size_t>(file.m_length + 1));
     file.m_stream->read(uncompressedBuffer.get(), file.m_length);
@@ -65,7 +66,7 @@ bool AssetLoaderRawFile::LoadGsc(const SearchPathOpenFile& file, const std::stri
     const auto compressedSize = compressionBufferSize - zs.avail_out;
 
     reinterpret_cast<uint32_t*>(compressedBuffer)[0] = static_cast<uint32_t>(file.m_length + 1); // outLen
-    reinterpret_cast<uint32_t*>(compressedBuffer)[1] = compressedSize; // inLen
+    reinterpret_cast<uint32_t*>(compressedBuffer)[1] = compressedSize;                           // inLen
 
     auto* rawFile = memory->Create<RawFile>();
     rawFile->name = memory->Dup(assetName.c_str());
@@ -77,7 +78,8 @@ bool AssetLoaderRawFile::LoadGsc(const SearchPathOpenFile& file, const std::stri
     return true;
 }
 
-bool AssetLoaderRawFile::LoadDefault(const SearchPathOpenFile& file, const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
+bool AssetLoaderRawFile::LoadDefault(
+    const SearchPathOpenFile& file, const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
 {
     auto* rawFile = memory->Create<RawFile>();
     rawFile->name = memory->Dup(assetName.c_str());
@@ -95,7 +97,8 @@ bool AssetLoaderRawFile::LoadDefault(const SearchPathOpenFile& file, const std::
     return true;
 }
 
-bool AssetLoaderRawFile::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderRawFile::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto file = searchPath->Open(assetName);
     if (!file.IsOpen())
@@ -104,7 +107,7 @@ bool AssetLoaderRawFile::LoadFromRaw(const std::string& assetName, ISearchPath* 
     const fs::path rawFilePath(assetName);
     const auto extension = rawFilePath.extension().string();
 
-    if(extension == ".gsc" ||extension == ".csc")
+    if (extension == ".gsc" || extension == ".csc")
         return LoadGsc(file, assetName, searchPath, memory, manager);
 
     return LoadDefault(file, assetName, searchPath, memory, manager);

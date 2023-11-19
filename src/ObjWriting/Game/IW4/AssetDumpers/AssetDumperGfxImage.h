@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 #include "Image/IImageWriter.h"
+
+#include <memory>
 
 namespace IW4
 {
@@ -21,4 +21,4 @@ namespace IW4
     public:
         AssetDumperGfxImage();
     };
-}
+} // namespace IW4

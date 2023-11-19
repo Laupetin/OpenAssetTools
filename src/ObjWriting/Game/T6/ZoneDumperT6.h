@@ -9,4 +9,4 @@ namespace T6
         bool CanHandleZone(AssetDumpingContext& context) const override;
         bool DumpZone(AssetDumpingContext& context) const override;
     };
-}
+} // namespace T6

@@ -1,5 +1,7 @@
 #include "StepLoadHash.h"
+
 #include "Loading/Exception/UnexpectedEndOfFileException.h"
+
 #include <cassert>
 
 StepLoadHash::StepLoadHash(const size_t hashSize, const unsigned hashCount)
@@ -9,8 +11,7 @@ StepLoadHash::StepLoadHash(const size_t hashSize, const unsigned hashCount)
 {
 }
 
-StepLoadHash::~StepLoadHash()
-= default;
+StepLoadHash::~StepLoadHash() = default;
 
 void StepLoadHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
@@ -36,7 +37,7 @@ void StepLoadHash::GetCapturedData(const uint8_t** pCapturedData, size_t* pSize)
 {
     assert(pCapturedData != nullptr);
     assert(pSize != nullptr);
-    
+
     *pCapturedData = m_hashes.get();
     *pSize = m_hash_size * m_hash_count;
 }

@@ -1,10 +1,10 @@
 #include "DdsLoader.h"
 
-#include <iostream>
-
+#include "Image/DdsTypes.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/FileUtils.h"
-#include "Image/DdsTypes.h"
+
+#include <iostream>
 
 class DdsLoaderInternal
 {
@@ -145,9 +145,8 @@ class DdsLoaderInternal
 
             const auto* unsignedImageFormat = dynamic_cast<const ImageFormatUnsigned*>(imageFormat);
 
-            if (unsignedImageFormat->m_r_offset == rOffset && unsignedImageFormat->m_r_size == rSize
-                && unsignedImageFormat->m_g_offset == gOffset && unsignedImageFormat->m_g_size == gSize
-                && unsignedImageFormat->m_b_offset == bOffset && unsignedImageFormat->m_b_size == bSize
+            if (unsignedImageFormat->m_r_offset == rOffset && unsignedImageFormat->m_r_size == rSize && unsignedImageFormat->m_g_offset == gOffset
+                && unsignedImageFormat->m_g_size == gSize && unsignedImageFormat->m_b_offset == bOffset && unsignedImageFormat->m_b_size == bSize
                 && unsignedImageFormat->m_a_offset == aOffset && unsignedImageFormat->m_a_size == aSize)
             {
                 m_format = imageFormat;
@@ -155,10 +154,8 @@ class DdsLoaderInternal
             }
         }
 
-        std::cout << "Failed to find dds pixel format: R=" << std::hex << pf.dwRBitMask
-            << " G=" << std::hex << pf.dwGBitMask
-            << " B=" << std::hex << pf.dwBBitMask
-            << " A=" << std::hex << pf.dwABitMask << std::endl;
+        std::cout << "Failed to find dds pixel format: R=" << std::hex << pf.dwRBitMask << " G=" << std::hex << pf.dwGBitMask << " B=" << std::hex
+                  << pf.dwBBitMask << " A=" << std::hex << pf.dwABitMask << std::endl;
 
         return false;
     }
@@ -258,8 +255,7 @@ public:
 
     Texture* LoadDds()
     {
-        if (!ReadMagic()
-            || !ReadHeader())
+        if (!ReadMagic() || !ReadHeader())
         {
             return nullptr;
         }

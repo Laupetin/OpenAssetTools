@@ -1,13 +1,13 @@
 #include "AssetDumperPhysPreset.h"
 
+#include "Game/T6/InfoString/InfoStringFromStructConverter.h"
+#include "Game/T6/InfoString/PhysPresetFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <type_traits>
-
-#include "Game/T6/ObjConstantsT6.h"
-#include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/PhysPresetFields.h"
 
 using namespace T6;
 
@@ -22,19 +22,22 @@ namespace T6
         }
 
     public:
-        InfoStringFromPhysPresetConverter(const PhysPresetInfo* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromPhysPresetConverter(const PhysPresetInfo* structure,
+                                          const cspField_t* fields,
+                                          const size_t fieldCount,
+                                          std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace T6
 
 void AssetDumperPhysPreset::CopyToPhysPresetInfo(const PhysPreset* physPreset, PhysPresetInfo* physPresetInfo)
 {
     physPresetInfo->mass = std::clamp(physPreset->mass * 1000.0f, 1.0f, 2000.0f);
     physPresetInfo->bounce = physPreset->bounce;
 
-    if(std::isinf(physPreset->friction))
+    if (std::isinf(physPreset->friction))
     {
         physPresetInfo->isFrictionInfinity = 1;
         physPresetInfo->friction = 0;
@@ -61,14 +64,17 @@ InfoString AssetDumperPhysPreset::CreateInfoString(XAssetInfo<PhysPreset>* asset
     auto* physPresetInfo = new PhysPresetInfo;
     CopyToPhysPresetInfo(asset->Asset(), physPresetInfo);
 
-    InfoStringFromPhysPresetConverter converter(physPresetInfo, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-        {
-            assert(scrStr < asset->m_zone->m_script_strings.Count());
-            if (scrStr >= asset->m_zone->m_script_strings.Count())
-                return "";
+    InfoStringFromPhysPresetConverter converter(physPresetInfo,
+                                                phys_preset_fields,
+                                                std::extent<decltype(phys_preset_fields)>::value,
+                                                [asset](const scr_string_t scrStr) -> std::string
+                                                {
+                                                    assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                    if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                        return "";
 
-            return asset->m_zone->m_script_strings[scrStr];
-        });
+                                                    return asset->m_zone->m_script_strings[scrStr];
+                                                });
 
     return converter.Convert();
 }

@@ -1,9 +1,9 @@
 #include "GenericExpressionPropertySequence.h"
 
-#include <utility>
-
 #include "Parsing/Menu/Matcher/MenuExpressionMatchers.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
+
+#include <utility>
 
 using namespace menu;
 
@@ -19,16 +19,15 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
     auto result = std::unique_ptr<GenericExpressionPropertySequence>(new GenericExpressionPropertySequence(std::move(setCallback)));
 
     const MenuMatcherFactory create(result.get());
-    result->AddMatchers({
-        create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-        create.Optional(create.Char(';'))
-    });
+    result->AddMatchers({create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
+                         create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                         create.Optional(create.Char(';'))});
 
     return std::move(result);
 }
 
-std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequence::WithKeywords(const std::initializer_list<std::string> keywords, callback_t setCallback)
+std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequence::WithKeywords(const std::initializer_list<std::string> keywords,
+                                                                                                   callback_t setCallback)
 {
     auto result = std::unique_ptr<GenericExpressionPropertySequence>(new GenericExpressionPropertySequence(std::move(setCallback)));
 
@@ -37,11 +36,9 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
     for (auto keyword : keywords)
         keywordMatchers.emplace_back(create.KeywordIgnoreCase(std::move(keyword)));
 
-    result->AddMatchers({
-        create.And(std::move(keywordMatchers)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-        create.Optional(create.Char(';'))
-    });
+    result->AddMatchers({create.And(std::move(keywordMatchers)).Capture(CAPTURE_FIRST_TOKEN),
+                         create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                         create.Optional(create.Char(';'))});
 
     return std::move(result);
 }
@@ -51,12 +48,10 @@ std::unique_ptr<GenericExpressionPropertySequence> GenericExpressionPropertySequ
     auto result = std::unique_ptr<GenericExpressionPropertySequence>(new GenericExpressionPropertySequence(std::move(setCallback)));
 
     const MenuMatcherFactory create(result.get());
-    result->AddMatchers({
-        create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
-        create.Optional(create.KeywordIgnoreCase("when")),
-        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-        create.Optional(create.Char(';'))
-    });
+    result->AddMatchers({create.KeywordIgnoreCase(std::move(keyword)).Capture(CAPTURE_FIRST_TOKEN),
+                         create.Optional(create.KeywordIgnoreCase("when")),
+                         create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                         create.Optional(create.Char(';'))});
 
     return std::move(result);
 }

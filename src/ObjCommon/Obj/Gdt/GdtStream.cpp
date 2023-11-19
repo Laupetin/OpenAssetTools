@@ -26,8 +26,7 @@ int GdtReader::PeekChar()
     do
     {
         c = m_stream.get();
-    }
-    while (isspace(c));
+    } while (isspace(c));
 
     m_peeked = true;
     m_char = c;
@@ -46,8 +45,7 @@ int GdtReader::NextChar()
     do
     {
         c = m_stream.get();
-    }
-    while (isspace(c));
+    } while (isspace(c));
 
     return c;
 }
@@ -85,7 +83,7 @@ bool GdtReader::ReadStringContent(std::string& str)
             }
             escaped = false;
         }
-        else if(c == '\\')
+        else if (c == '\\')
         {
             escaped = true;
         }
@@ -135,7 +133,6 @@ bool GdtReader::ReadProperties(GdtEntry& entry)
         entry.m_properties.emplace(std::move(propertyKey), std::move(propertyValue));
     }
 
-
     if (NextChar() != '}')
     {
         PrintError("Expected closing tags");
@@ -147,8 +144,7 @@ bool GdtReader::ReadProperties(GdtEntry& entry)
 
 bool GdtReader::AddEntry(Gdt& gdt, GdtEntry& entry) const
 {
-    if (entry.m_name == GdtConst::VERSION_ENTRY_NAME
-        && entry.m_gdf_name == GdtConst::VERSION_ENTRY_GDF)
+    if (entry.m_name == GdtConst::VERSION_ENTRY_NAME && entry.m_gdf_name == GdtConst::VERSION_ENTRY_GDF)
     {
         auto foundEntry = entry.m_properties.find(GdtConst::VERSION_KEY_GAME);
         if (foundEntry == entry.m_properties.end())
@@ -258,7 +254,6 @@ bool GdtReader::Read(Gdt& gdt)
             return false;
     }
 
-
     if (NextChar() != '}')
     {
         PrintError("Expected closing tags");
@@ -305,11 +300,11 @@ void GdtOutputStream::WriteVersion(const GdtVersion& gdtVersion)
 void GdtOutputStream::WriteEscaped(const std::string& str) const
 {
     auto wroteBefore = false;
-    for(auto i = 0u; i < str.size(); i++)
+    for (auto i = 0u; i < str.size(); i++)
     {
         auto needsEscape = false;
         auto c = str[i];
-        switch(c)
+        switch (c)
         {
         case '\r':
             needsEscape = true;
@@ -329,9 +324,9 @@ void GdtOutputStream::WriteEscaped(const std::string& str) const
             break;
         }
 
-        if(needsEscape)
+        if (needsEscape)
         {
-            if(!wroteBefore)
+            if (!wroteBefore)
             {
                 wroteBefore = true;
                 m_stream << std::string(str, 0, i);
@@ -339,13 +334,13 @@ void GdtOutputStream::WriteEscaped(const std::string& str) const
 
             m_stream << '\\' << c;
         }
-        else if(wroteBefore)
+        else if (wroteBefore)
         {
             m_stream << c;
         }
     }
 
-    if(!wroteBefore)
+    if (!wroteBefore)
     {
         m_stream << str;
     }

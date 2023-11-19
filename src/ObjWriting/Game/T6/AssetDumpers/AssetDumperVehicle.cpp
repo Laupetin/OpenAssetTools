@@ -1,12 +1,12 @@
 #include "AssetDumperVehicle.h"
 
-#include <cassert>
-#include <type_traits>
-
-#include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
 #include "Game/T6/InfoString/VehicleFields.h"
+#include "Game/T6/ObjConstantsT6.h"
+
+#include <cassert>
+#include <type_traits>
 
 using namespace T6;
 
@@ -32,43 +32,43 @@ namespace T6
                 break;
 
             case VFT_MPH_TO_INCHES_PER_SECOND:
-                {
-                    const auto* num = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    m_info_string.SetValueForKey(std::string(field.szName), std::to_string(*num / 17.6f));
-                    break;
-                }
+            {
+                const auto* num = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                m_info_string.SetValueForKey(std::string(field.szName), std::to_string(*num / 17.6f));
+                break;
+            }
 
             case VFT_POUNDS_TO_GAME_MASS:
-                {
-                    const auto* num = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    m_info_string.SetValueForKey(std::string(field.szName), std::to_string(*num / 0.001f));
-                    break;
-                }
+            {
+                const auto* num = reinterpret_cast<float*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                m_info_string.SetValueForKey(std::string(field.szName), std::to_string(*num / 0.001f));
+                break;
+            }
 
             case VFT_TEAM:
+            {
+                const auto* num = reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                switch (*num)
                 {
-                    const auto* num = reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                    switch (*num)
-                    {
-                    case TEAM_AXIS:
-                        m_info_string.SetValueForKey(std::string(field.szName), "axis");
-                        break;
+                case TEAM_AXIS:
+                    m_info_string.SetValueForKey(std::string(field.szName), "axis");
+                    break;
 
-                    case TEAM_ALLIES:
-                        m_info_string.SetValueForKey(std::string(field.szName), "allies");
-                        break;
+                case TEAM_ALLIES:
+                    m_info_string.SetValueForKey(std::string(field.szName), "allies");
+                    break;
 
-                    case TEAM_FOUR:
-                        m_info_string.SetValueForKey(std::string(field.szName), "neutral");
-                        break;
+                case TEAM_FOUR:
+                    m_info_string.SetValueForKey(std::string(field.szName), "neutral");
+                    break;
 
-                    default:
-                        assert(false);
-                        m_info_string.SetValueForKey(std::string(field.szName), "");
-                        break;
-                    }
+                default:
+                    assert(false);
+                    m_info_string.SetValueForKey(std::string(field.szName), "");
                     break;
                 }
+                break;
+            }
 
             case VFT_KEY_BINDING:
             case VFT_GRAPH:
@@ -81,23 +81,29 @@ namespace T6
         }
 
     public:
-        InfoStringFromVehicleConverter(const VehicleDef* structure, const cspField_t* fields, const size_t fieldCount, std::function<std::string(scr_string_t)> scriptStringValueCallback)
+        InfoStringFromVehicleConverter(const VehicleDef* structure,
+                                       const cspField_t* fields,
+                                       const size_t fieldCount,
+                                       std::function<std::string(scr_string_t)> scriptStringValueCallback)
             : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
         {
         }
     };
-}
+} // namespace T6
 
 InfoString AssetDumperVehicle::CreateInfoString(XAssetInfo<VehicleDef>* asset)
 {
-    InfoStringFromVehicleConverter converter(asset->Asset(), vehicle_fields, std::extent<decltype(vehicle_fields)>::value, [asset](const scr_string_t scrStr) -> std::string
-    {
-        assert(scrStr < asset->m_zone->m_script_strings.Count());
-        if (scrStr >= asset->m_zone->m_script_strings.Count())
-            return "";
+    InfoStringFromVehicleConverter converter(asset->Asset(),
+                                             vehicle_fields,
+                                             std::extent<decltype(vehicle_fields)>::value,
+                                             [asset](const scr_string_t scrStr) -> std::string
+                                             {
+                                                 assert(scrStr < asset->m_zone->m_script_strings.Count());
+                                                 if (scrStr >= asset->m_zone->m_script_strings.Count())
+                                                     return "";
 
-        return asset->m_zone->m_script_strings[scrStr];
-    });
+                                                 return asset->m_zone->m_script_strings[scrStr];
+                                             });
 
     return converter.Convert();
 }

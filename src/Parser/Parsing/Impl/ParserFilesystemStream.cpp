@@ -1,7 +1,7 @@
 #include "ParserFilesystemStream.h"
 
-#include <sstream>
 #include <filesystem>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -20,8 +20,7 @@ ParserFilesystemStream::ParserFilesystemStream(const std::string& path)
 
 bool ParserFilesystemStream::IsOpen() const
 {
-    return !m_files.empty()
-        && m_files.top().m_stream.is_open();
+    return !m_files.empty() && m_files.top().m_stream.is_open();
 }
 
 ParserLine ParserFilesystemStream::NextLine()
@@ -32,7 +31,7 @@ ParserLine ParserFilesystemStream::NextLine()
     if (m_files.empty())
         return ParserLine();
 
-    while(!m_files.empty())
+    while (!m_files.empty())
     {
         auto& fileInfo = m_files.top();
 
@@ -61,7 +60,7 @@ ParserLine ParserFilesystemStream::NextLine()
             c = fileInfo.m_stream.get();
         }
 
-        if(hasLength)
+        if (hasLength)
             return ParserLine(fileInfo.m_file_path, fileInfo.m_line_number, str.str());
         m_files.pop();
     }
@@ -73,7 +72,7 @@ bool ParserFilesystemStream::IncludeFile(const std::string& filename)
 {
     if (m_files.empty())
         return false;
-    
+
     auto newFilePath = fs::path(*m_files.top().m_file_path);
     newFilePath.remove_filename().concat(filename);
     newFilePath = absolute(newFilePath);
@@ -89,12 +88,11 @@ bool ParserFilesystemStream::IncludeFile(const std::string& filename)
 
 void ParserFilesystemStream::PopCurrentFile()
 {
-    if(!m_files.empty())
+    if (!m_files.empty())
         m_files.pop();
 }
 
 bool ParserFilesystemStream::Eof() const
 {
-    return m_files.empty()
-        || m_files.top().m_stream.eof();
+    return m_files.empty() || m_files.top().m_stream.eof();
 }

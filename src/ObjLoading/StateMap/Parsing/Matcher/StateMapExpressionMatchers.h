@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
 #include "StateMap/Parsing/StateMapParserState.h"
+
+#include <memory>
 
 namespace state_map
 {
@@ -20,4 +20,4 @@ namespace state_map
     private:
         StateMapParserState* m_state;
     };
-}
+} // namespace state_map

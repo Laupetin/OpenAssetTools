@@ -6,8 +6,7 @@
 
 #include <cstring>
 
-template <typename T>
-class AssetPoolDynamic final : public AssetPool<T>
+template<typename T> class AssetPoolDynamic final : public AssetPool<T>
 {
     using AssetPool<T>::m_asset_lookup;
 
@@ -23,14 +22,14 @@ public:
 
     AssetPoolDynamic(AssetPoolDynamic<T>&) = delete;
     AssetPoolDynamic(AssetPoolDynamic<T>&&) = delete;
-    AssetPoolDynamic<T>& operator =(AssetPoolDynamic<T>&) = delete;
-    AssetPoolDynamic<T>& operator =(AssetPoolDynamic<T>&&) = default;
+    AssetPoolDynamic<T>& operator=(AssetPoolDynamic<T>&) = delete;
+    AssetPoolDynamic<T>& operator=(AssetPoolDynamic<T>&&) = default;
 
     ~AssetPoolDynamic() override
     {
         GlobalAssetPool<T>::UnlinkAssetPool(this);
 
-        for(auto* entry : m_assets)
+        for (auto* entry : m_assets)
         {
             delete entry->Asset();
             delete entry;
@@ -40,7 +39,8 @@ public:
         m_asset_lookup.clear();
     }
 
-    XAssetInfo<T>* AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) override
+    XAssetInfo<T>*
+        AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) override
     {
         auto* newInfo = new XAssetInfo<T>();
         newInfo->m_type = m_type;
@@ -52,10 +52,10 @@ public:
         T* newAsset = new T();
         memcpy(newAsset, asset, sizeof(T));
         newInfo->m_ptr = newAsset;
-        
+
         m_assets.push_back(newInfo);
         m_asset_lookup[newInfo->m_name] = newInfo;
-       
+
         GlobalAssetPool<T>::LinkAsset(this, newInfo);
 
         return newInfo;

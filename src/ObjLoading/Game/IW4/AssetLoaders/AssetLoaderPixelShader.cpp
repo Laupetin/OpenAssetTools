@@ -1,13 +1,13 @@
 #include "AssetLoaderPixelShader.h"
 
+#include "Game/IW4/IW4.h"
+#include "ObjLoading.h"
+#include "Pool/GlobalAssetPool.h"
+
 #include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <sstream>
-
-#include "ObjLoading.h"
-#include "Game/IW4/IW4.h"
-#include "Pool/GlobalAssetPool.h"
 
 using namespace IW4;
 
@@ -31,14 +31,15 @@ std::string AssetLoaderPixelShader::GetFileNameForAsset(const std::string& asset
     return ss.str();
 }
 
-bool AssetLoaderPixelShader::LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+bool AssetLoaderPixelShader::LoadFromRaw(
+    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
     const auto fileName = GetFileNameForAsset(assetName);
     const auto file = searchPath->Open(fileName);
     if (!file.IsOpen())
         return false;
 
-    if(file.m_length % sizeof(uint32_t) != 0)
+    if (file.m_length % sizeof(uint32_t) != 0)
     {
         std::cerr << "Invalid pixel shader \"" << assetName << "\": Size must be dividable by " << sizeof(uint32_t) << "\n";
         return false;

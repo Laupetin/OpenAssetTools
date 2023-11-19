@@ -1,14 +1,14 @@
 #pragma once
 
-#include <string>
-#include <ostream>
-#include <memory>
-#include <typeindex>
-
 #include "IZoneAssetDumperState.h"
-#include "Utils/ClassUtils.h"
 #include "Obj/Gdt/GdtStream.h"
+#include "Utils/ClassUtils.h"
 #include "Zone/Zone.h"
+
+#include <memory>
+#include <ostream>
+#include <string>
+#include <typeindex>
 
 class AssetDumpingContext
 {
@@ -23,8 +23,7 @@ public:
 
     _NODISCARD std::unique_ptr<std::ostream> OpenAssetFile(const std::string& fileName) const;
 
-    template<typename T>
-    T* GetZoneAssetDumperState()
+    template<typename T> T* GetZoneAssetDumperState()
     {
         static_assert(std::is_base_of_v<IZoneAssetDumperState, T>, "T must inherit IZoneAssetDumperState");
         // T must also have a public default constructor

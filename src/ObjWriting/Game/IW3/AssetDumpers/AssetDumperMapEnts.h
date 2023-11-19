@@ -11,4 +11,4 @@ namespace IW3
         bool ShouldDump(XAssetInfo<MapEnts>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset) override;
     };
-}
+} // namespace IW3

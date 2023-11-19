@@ -1,12 +1,12 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/generators/catch_generators.hpp>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Commands/Sequence/SequenceAction.h"
 #include "Parsing/Mock/MockLexer.h"
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
 #include "Persistence/InMemory/InMemoryRepository.h"
+#include "Utils/ClassUtils.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 namespace test::parsing::commands::sequence::sequence_action
 {
@@ -54,8 +54,7 @@ namespace test::parsing::commands::sequence::sequence_action
             auto createStructureInformation = std::make_unique<CreateStructureInformationPostProcessor>();
             auto createMemberInformation = std::make_unique<CreateMemberInformationPostProcessor>();
 
-            return createStructureInformation->PostProcess(m_repository.get())
-                && createMemberInformation->PostProcess(m_repository.get());
+            return createStructureInformation->PostProcess(m_repository.get()) && createMemberInformation->PostProcess(m_repository.get());
         }
 
         void AddSampleData()
@@ -89,7 +88,6 @@ namespace test::parsing::commands::sequence::sequence_action
         }
 
     public:
-
         CommandsSequenceTestsHelper()
             : m_repository(std::make_unique<InMemoryRepository>()),
               m_state(std::make_unique<CommandsParserState>(m_repository.get())),
@@ -127,16 +125,14 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -151,17 +147,15 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Identifier(pos, new std::string("arg_t")),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Identifier(pos, new std::string("arg_t")),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -177,19 +171,17 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Identifier(pos, new std::string("arg_t")),
-            CommandsParserValue::Character(pos, ','),
-            CommandsParserValue::Identifier(pos, new std::string("another_arg_t")),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Identifier(pos, new std::string("arg_t")),
+                       CommandsParserValue::Character(pos, ','),
+                       CommandsParserValue::Identifier(pos, new std::string("another_arg_t")),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -206,21 +198,19 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Identifier(pos, new std::string("arg_t")),
-            CommandsParserValue::Character(pos, ','),
-            CommandsParserValue::Identifier(pos, new std::string("another_arg_t")),
-            CommandsParserValue::Character(pos, ','),
-            CommandsParserValue::Identifier(pos, new std::string("yeet_t")),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Identifier(pos, new std::string("arg_t")),
+                       CommandsParserValue::Character(pos, ','),
+                       CommandsParserValue::Identifier(pos, new std::string("another_arg_t")),
+                       CommandsParserValue::Character(pos, ','),
+                       CommandsParserValue::Identifier(pos, new std::string("yeet_t")),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -238,16 +228,14 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("unknown_struct_t")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("unknown_struct_t")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
@@ -257,21 +245,19 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Identifier(pos, new std::string("arg_t")),
-            CommandsParserValue::Character(pos, ','),
-            CommandsParserValue::Identifier(pos, new std::string("another_arg_t")),
-            CommandsParserValue::Character(pos, ','),
-            CommandsParserValue::Identifier(pos, new std::string("unknown_type_t")),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Identifier(pos, new std::string("arg_t")),
+                       CommandsParserValue::Character(pos, ','),
+                       CommandsParserValue::Identifier(pos, new std::string("another_arg_t")),
+                       CommandsParserValue::Character(pos, ','),
+                       CommandsParserValue::Identifier(pos, new std::string("unknown_type_t")),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
@@ -281,15 +267,13 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
@@ -299,15 +283,13 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
         helper.m_state->SetInUse(helper.m_test_struct);
 
         auto result = helper.PerformTest();
@@ -323,19 +305,17 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("container_struct_t")),
-            CommandsParserValue::Character(pos, ':'),
-            CommandsParserValue::Character(pos, ':'),
-            CommandsParserValue::Identifier(pos, new std::string("m_child")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("container_struct_t")),
+                       CommandsParserValue::Character(pos, ':'),
+                       CommandsParserValue::Character(pos, ':'),
+                       CommandsParserValue::Identifier(pos, new std::string("m_child")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         auto result = helper.PerformTest();
 
@@ -350,16 +330,14 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("m_child")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("m_child")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
         helper.m_state->SetInUse(helper.m_test_struct2);
 
         auto result = helper.PerformTest();
@@ -375,19 +353,17 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("container_struct_t")),
-            CommandsParserValue::Character(pos, ':'),
-            CommandsParserValue::Character(pos, ':'),
-            CommandsParserValue::Identifier(pos, new std::string("m_child")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-        });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("container_struct_t")),
+                       CommandsParserValue::Character(pos, ':'),
+                       CommandsParserValue::Character(pos, ':'),
+                       CommandsParserValue::Identifier(pos, new std::string("m_child")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
         helper.m_state->SetInUse(helper.m_arg_struct2);
 
         auto result = helper.PerformTest();
@@ -403,21 +379,19 @@ namespace test::parsing::commands::sequence::sequence_action
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({
-            CommandsParserValue::Identifier(pos, new std::string("set")),
-            CommandsParserValue::Identifier(pos, new std::string("action")),
-            CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
-            CommandsParserValue::Character(pos, ':'),
-            CommandsParserValue::Character(pos, ':'),
-            CommandsParserValue::Identifier(pos, new std::string("m_test")),
-            CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
-            CommandsParserValue::Character(pos, '('),
-            CommandsParserValue::Character(pos, ')'),
-            CommandsParserValue::Character(pos, ';'),
-            CommandsParserValue::EndOfFile(pos)
-            });
+        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("set")),
+                       CommandsParserValue::Identifier(pos, new std::string("action")),
+                       CommandsParserValue::Identifier(pos, new std::string("test_struct_t")),
+                       CommandsParserValue::Character(pos, ':'),
+                       CommandsParserValue::Character(pos, ':'),
+                       CommandsParserValue::Identifier(pos, new std::string("m_test")),
+                       CommandsParserValue::Identifier(pos, new std::string("TestMethod")),
+                       CommandsParserValue::Character(pos, '('),
+                       CommandsParserValue::Character(pos, ')'),
+                       CommandsParserValue::Character(pos, ';'),
+                       CommandsParserValue::EndOfFile(pos)});
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
         REQUIRE(helper.m_test_struct->m_post_load_action == nullptr);
     }
-}
+} // namespace test::parsing::commands::sequence::sequence_action

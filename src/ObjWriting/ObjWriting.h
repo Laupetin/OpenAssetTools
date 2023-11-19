@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-
 #include "Dumping/AssetDumpingContext.h"
 #include "Zone/ZoneTypes.h"
+
+#include <vector>
 
 class ObjWriting
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Loading/ILoadingStep.h"
 #include "Crypto.h"
+#include "Loading/ILoadingStep.h"
 #include "Loading/ISignatureProvider.h"
 #include "Utils/ICapturedDataProvider.h"
 
@@ -12,7 +12,9 @@ class StepVerifySignature final : public ILoadingStep
     ICapturedDataProvider* m_signature_data_provider;
 
 public:
-    StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm, ISignatureProvider* signatureProvider, ICapturedDataProvider* signatureDataProvider);
+    StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm,
+                        ISignatureProvider* signatureProvider,
+                        ICapturedDataProvider* signatureDataProvider);
     ~StepVerifySignature() override = default;
     StepVerifySignature(const StepVerifySignature& other) = delete;
     StepVerifySignature(StepVerifySignature&& other) noexcept = default;

@@ -1,21 +1,21 @@
 #include "MenuConverterIW4.h"
 
-#include <cassert>
-#include <cstring>
-#include <sstream>
-
-#include "MenuConversionZoneStateIW4.h"
-#include "Utils/ClassUtils.h"
 #include "Menu/AbstractMenuConverter.h"
-#include "Parsing/Menu/MenuAssetZoneState.h"
+#include "MenuConversionZoneStateIW4.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerCondition.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerScript.h"
 #include "Parsing/Menu/Domain/EventHandler/CommonEventHandlerSetLocalVar.h"
 #include "Parsing/Menu/Domain/Expression/CommonExpressionBaseFunctionCall.h"
 #include "Parsing/Menu/Domain/Expression/CommonExpressionCustomFunctionCall.h"
+#include "Parsing/Menu/MenuAssetZoneState.h"
 #include "Parsing/Simple/Expression/SimpleExpressionBinaryOperation.h"
 #include "Parsing/Simple/Expression/SimpleExpressionConditionalOperator.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
+#include "Utils/ClassUtils.h"
+
+#include <cassert>
+#include <cstring>
+#include <sstream>
 
 using namespace IW4;
 using namespace menu;
@@ -35,7 +35,7 @@ namespace IW4
                 static_cast<float>(rect.w),
                 static_cast<float>(rect.h),
                 static_cast<unsigned char>(rect.horizontalAlign),
-                static_cast<unsigned char>(rect.verticalAlign)
+                static_cast<unsigned char>(rect.verticalAlign),
             };
         }
 
@@ -47,7 +47,7 @@ namespace IW4
                 static_cast<float>(rect.w),
                 static_cast<float>(rect.h),
                 static_cast<unsigned char>(rect.horizontalAlign),
-                static_cast<unsigned char>(rect.verticalAlign)
+                static_cast<unsigned char>(rect.verticalAlign),
             };
         }
 
@@ -101,7 +101,10 @@ namespace IW4
             return static_cast<snd_alias_list_t*>(soundDependency->m_ptr);
         }
 
-        bool HandleStaticDvarFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const int targetFunctionIndex) const
+        bool HandleStaticDvarFunctionCall(Statement_s* gameStatement,
+                                          std::vector<expressionEntry>& entries,
+                                          const CommonExpressionBaseFunctionCall* functionCall,
+                                          const int targetFunctionIndex) const
         {
             if (functionCall->m_args.size() != 1)
                 return false;
@@ -122,7 +125,8 @@ namespace IW4
             expressionEntry staticDvarIndexEntry{};
             staticDvarIndexEntry.type = EET_OPERAND;
             staticDvarIndexEntry.data.operand.dataType = VAL_INT;
-            staticDvarIndexEntry.data.operand.internals.intVal = static_cast<int>(m_conversion_zone_state->AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
+            staticDvarIndexEntry.data.operand.internals.intVal =
+                static_cast<int>(m_conversion_zone_state->AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
             entries.emplace_back(staticDvarIndexEntry);
 
             expressionEntry parenRight{};
@@ -135,7 +139,10 @@ namespace IW4
             return true;
         }
 
-        bool HandleSpecialBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
+        bool HandleSpecialBaseFunctionCall(Statement_s* gameStatement,
+                                           std::vector<expressionEntry>& entries,
+                                           const CommonExpressionBaseFunctionCall* functionCall,
+                                           const CommonMenuDef* menu,
                                            const CommonItemDef* item) const
         {
             switch (functionCall->m_function_index)
@@ -155,7 +162,10 @@ namespace IW4
             return false;
         }
 
-        void ConvertExpressionEntryBaseFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionBaseFunctionCall* functionCall, const CommonMenuDef* menu,
+        void ConvertExpressionEntryBaseFunctionCall(Statement_s* gameStatement,
+                                                    std::vector<expressionEntry>& entries,
+                                                    const CommonExpressionBaseFunctionCall* functionCall,
+                                                    const CommonMenuDef* menu,
                                                     const CommonItemDef* item) const
         {
             if (!HandleSpecialBaseFunctionCall(gameStatement, entries, functionCall, menu, item))
@@ -188,7 +198,9 @@ namespace IW4
             }
         }
 
-        void ConvertExpressionEntryCustomFunctionCall(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const CommonExpressionCustomFunctionCall* functionCall,
+        void ConvertExpressionEntryCustomFunctionCall(Statement_s* gameStatement,
+                                                      std::vector<expressionEntry>& entries,
+                                                      const CommonExpressionCustomFunctionCall* functionCall,
                                                       const CommonMenuDef* menu,
                                                       const CommonItemDef* item) const
         {
@@ -216,11 +228,10 @@ namespace IW4
             gameStatement->supportingData = m_conversion_zone_state->m_supporting_data;
         }
 
-        constexpr static expressionOperatorType_e UNARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleUnaryOperationId::COUNT)]
-        {
+        constexpr static expressionOperatorType_e UNARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleUnaryOperationId::COUNT)]{
             OP_NOT,
             OP_BITWISENOT,
-            OP_SUBTRACT
+            OP_SUBTRACT,
         };
 
         bool IsOperation(const ISimpleExpression* expression) const
@@ -231,7 +242,10 @@ namespace IW4
             return dynamic_cast<const SimpleExpressionBinaryOperation*>(expression) || dynamic_cast<const SimpleExpressionUnaryOperation*>(expression);
         }
 
-        void ConvertExpressionEntryUnaryOperation(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const SimpleExpressionUnaryOperation* unaryOperation, const CommonMenuDef* menu,
+        void ConvertExpressionEntryUnaryOperation(Statement_s* gameStatement,
+                                                  std::vector<expressionEntry>& entries,
+                                                  const SimpleExpressionUnaryOperation* unaryOperation,
+                                                  const CommonMenuDef* menu,
                                                   const CommonItemDef* item) const
         {
             assert(static_cast<unsigned>(unaryOperation->m_operation_type->m_id) < static_cast<unsigned>(SimpleUnaryOperationId::COUNT));
@@ -258,8 +272,7 @@ namespace IW4
                 ConvertExpressionEntry(gameStatement, entries, unaryOperation->m_operand.get(), menu, item);
         }
 
-        constexpr static expressionOperatorType_e BINARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleBinaryOperationId::COUNT)]
-        {
+        constexpr static expressionOperatorType_e BINARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleBinaryOperationId::COUNT)]{
             OP_ADD,
             OP_SUBTRACT,
             OP_MULTIPLY,
@@ -276,10 +289,13 @@ namespace IW4
             OP_EQUALS,
             OP_NOTEQUAL,
             OP_AND,
-            OP_OR
+            OP_OR,
         };
 
-        void ConvertExpressionEntryBinaryOperation(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const SimpleExpressionBinaryOperation* binaryOperation, const CommonMenuDef* menu,
+        void ConvertExpressionEntryBinaryOperation(Statement_s* gameStatement,
+                                                   std::vector<expressionEntry>& entries,
+                                                   const SimpleExpressionBinaryOperation* binaryOperation,
+                                                   const CommonMenuDef* menu,
                                                    const CommonItemDef* item) const
         {
             // Game needs all nested operations to have parenthesis
@@ -349,7 +365,11 @@ namespace IW4
             entries.emplace_back(entry);
         }
 
-        void ConvertExpressionEntry(Statement_s* gameStatement, std::vector<expressionEntry>& entries, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item) const
+        void ConvertExpressionEntry(Statement_s* gameStatement,
+                                    std::vector<expressionEntry>& entries,
+                                    const ISimpleExpression* expression,
+                                    const CommonMenuDef* menu,
+                                    const CommonItemDef* item) const
         {
             if (!m_disable_optimizations && expression->IsStatic())
             {
@@ -409,7 +429,10 @@ namespace IW4
             return statement;
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(float& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD Statement_s* ConvertOrApplyStatement(float& staticValue,
+                                                        const ISimpleExpression* expression,
+                                                        const CommonMenuDef* menu,
+                                                        const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -437,7 +460,10 @@ namespace IW4
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(const char*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD Statement_s* ConvertOrApplyStatement(const char*& staticValue,
+                                                        const ISimpleExpression* expression,
+                                                        const CommonMenuDef* menu,
+                                                        const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -464,7 +490,10 @@ namespace IW4
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue, const ISimpleExpression* expression, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue,
+                                                        const ISimpleExpression* expression,
+                                                        const CommonMenuDef* menu,
+                                                        const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -491,7 +520,10 @@ namespace IW4
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertVisibleExpression(windowDef_t* window, const ISimpleExpression* expression, const CommonMenuDef* commonMenu, const CommonItemDef* commonItem = nullptr) const
+        _NODISCARD Statement_s* ConvertVisibleExpression(windowDef_t* window,
+                                                         const ISimpleExpression* expression,
+                                                         const CommonMenuDef* commonMenu,
+                                                         const CommonItemDef* commonItem = nullptr) const
         {
             if (expression == nullptr)
                 return nullptr;
@@ -502,7 +534,8 @@ namespace IW4
             {
                 const auto* staticValue = dynamic_cast<const SimpleExpressionValue*>(expression);
                 isStatic = staticValue != nullptr;
-                isTruthy = isStatic && (staticValue->m_type == SimpleExpressionValue::Type::INT || staticValue->m_type == SimpleExpressionValue::Type::DOUBLE) && staticValue->IsTruthy();
+                isTruthy = isStatic && (staticValue->m_type == SimpleExpressionValue::Type::INT || staticValue->m_type == SimpleExpressionValue::Type::DOUBLE)
+                           && staticValue->IsTruthy();
             }
             else
             {
@@ -540,7 +573,10 @@ namespace IW4
             }
         }
 
-        void ConvertEventHandlerSetLocalVar(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerSetLocalVar* setLocalVar, const CommonMenuDef* menu, const CommonItemDef* item) const
+        void ConvertEventHandlerSetLocalVar(std::vector<MenuEventHandler*>& elements,
+                                            const CommonEventHandlerSetLocalVar* setLocalVar,
+                                            const CommonMenuDef* menu,
+                                            const CommonItemDef* item) const
         {
             assert(setLocalVar);
             if (!setLocalVar)
@@ -571,20 +607,22 @@ namespace IW4
             elements.push_back(outputHandler);
         }
 
-        void ConvertEventHandlerCondition(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerCondition* condition, const CommonMenuDef* menu,
+        void ConvertEventHandlerCondition(std::vector<MenuEventHandler*>& elements,
+                                          const CommonEventHandlerCondition* condition,
+                                          const CommonMenuDef* menu,
                                           const CommonItemDef* item) const
         {
             assert(condition);
             if (!condition || !condition->m_condition)
                 return;
 
-            if(!m_disable_optimizations && condition->m_condition->IsStatic())
+            if (!m_disable_optimizations && condition->m_condition->IsStatic())
             {
                 const auto staticValueIsTruthy = condition->m_condition->EvaluateStatic().IsTruthy();
 
-                if(staticValueIsTruthy)
+                if (staticValueIsTruthy)
                     ConvertEventHandlerElements(elements, condition->m_condition_elements.get(), menu, item);
-                else if(condition->m_else_elements)
+                else if (condition->m_else_elements)
                     ConvertEventHandlerElements(elements, condition->m_else_elements.get(), menu, item);
             }
             else
@@ -611,7 +649,9 @@ namespace IW4
             }
         }
 
-        void ConvertEventHandler(std::vector<MenuEventHandler*>& elements, const ICommonEventHandlerElement* eventHandler, const CommonMenuDef* menu,
+        void ConvertEventHandler(std::vector<MenuEventHandler*>& elements,
+                                 const ICommonEventHandlerElement* eventHandler,
+                                 const CommonMenuDef* menu,
                                  const CommonItemDef* item) const
         {
             assert(eventHandler);
@@ -634,13 +674,17 @@ namespace IW4
             }
         }
 
-        void ConvertEventHandlerElements(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item) const
+        void ConvertEventHandlerElements(std::vector<MenuEventHandler*>& elements,
+                                         const CommonEventHandlerSet* eventHandlerSet,
+                                         const CommonMenuDef* menu,
+                                         const CommonItemDef* item) const
         {
             for (const auto& element : eventHandlerSet->m_elements)
                 ConvertEventHandler(elements, element.get(), menu, item);
         }
 
-        _NODISCARD MenuEventHandlerSet* ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD MenuEventHandlerSet*
+            ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (!eventHandlerSet)
                 return nullptr;
@@ -661,7 +705,9 @@ namespace IW4
             return outputSet;
         }
 
-        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers,
+                                                     const CommonMenuDef* menu,
+                                                     const CommonItemDef* item = nullptr) const
         {
             if (keyHandlers.empty())
                 return nullptr;
@@ -684,7 +730,8 @@ namespace IW4
             return output;
         }
 
-        ItemFloatExpression* ConvertFloatExpressions(const CommonItemDef* commonItem, itemDef_s* item, const CommonMenuDef* parentMenu, int& floatExpressionCount) const
+        ItemFloatExpression*
+            ConvertFloatExpressions(const CommonItemDef* commonItem, itemDef_s* item, const CommonMenuDef* parentMenu, int& floatExpressionCount) const
         {
             struct FloatExpressionLocation
             {
@@ -695,27 +742,42 @@ namespace IW4
                 unsigned m_static_value_array_size;
                 unsigned m_dynamic_flags_to_set;
             };
-            FloatExpressionLocation locations[]
-            {
-                {commonItem->m_rect_x_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_X, &item->window.rectClient.x, 1, 0},
-                {commonItem->m_rect_y_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_Y, &item->window.rectClient.y, 1, 0},
-                {commonItem->m_rect_w_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_W, &item->window.rectClient.w, 1, 0},
-                {commonItem->m_rect_h_exp.get(), false, ITEM_FLOATEXP_TGT_RECT_H, &item->window.rectClient.h, 1, 0},
-                {commonItem->m_forecolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_R, &item->window.foreColor[0], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_G, &item->window.foreColor[1], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_B, &item->window.foreColor[2], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_A, &item->window.foreColor[3], 1, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_forecolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_FORECOLOR_RGB, &item->window.foreColor[0], 3, WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
-                {commonItem->m_glowcolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_R, &item->glowColor[0], 1, 0},
-                {commonItem->m_glowcolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_G, &item->glowColor[1], 1, 0},
-                {commonItem->m_glowcolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_B, &item->glowColor[2], 1, 0},
-                {commonItem->m_glowcolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_A, &item->glowColor[3], 1, 0},
-                {commonItem->m_glowcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, &item->glowColor[0], 3, 0},
-                {commonItem->m_backcolor_expressions.m_r_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_R, &item->window.backColor[0], 1, 0},
-                {commonItem->m_backcolor_expressions.m_g_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_G, &item->window.backColor[1], 1, 0},
-                {commonItem->m_backcolor_expressions.m_b_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_B, &item->window.backColor[2], 1, 0},
-                {commonItem->m_backcolor_expressions.m_a_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_A, &item->window.backColor[3], 1, 0},
-                {commonItem->m_backcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, &item->window.backColor[0], 3, 0},
+
+            FloatExpressionLocation locations[]{
+                {commonItem->m_rect_x_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_X,        &item->window.rectClient.x, 1, 0                                },
+                {commonItem->m_rect_y_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_Y,        &item->window.rectClient.y, 1, 0                                },
+                {commonItem->m_rect_w_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_W,        &item->window.rectClient.w, 1, 0                                },
+                {commonItem->m_rect_h_exp.get(),                      false, ITEM_FLOATEXP_TGT_RECT_H,        &item->window.rectClient.h, 1, 0                                },
+                {commonItem->m_forecolor_expressions.m_r_exp.get(),
+                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_R,
+                 &item->window.foreColor[0],
+                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_g_exp.get(),
+                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_G,
+                 &item->window.foreColor[1],
+                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_b_exp.get(),
+                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_B,
+                 &item->window.foreColor[2],
+                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_a_exp.get(),
+                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_A,
+                 &item->window.foreColor[3],
+                 1,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_forecolor_expressions.m_rgb_exp.get(),
+                 false,                                                      ITEM_FLOATEXP_TGT_FORECOLOR_RGB,
+                 &item->window.foreColor[0],
+                 3,                                                                                                                          WINDOW_FLAG_NON_DEFAULT_FORECOLOR},
+                {commonItem->m_glowcolor_expressions.m_r_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_R,   &item->glowColor[0],        1, 0                                },
+                {commonItem->m_glowcolor_expressions.m_g_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_G,   &item->glowColor[1],        1, 0                                },
+                {commonItem->m_glowcolor_expressions.m_b_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_B,   &item->glowColor[2],        1, 0                                },
+                {commonItem->m_glowcolor_expressions.m_a_exp.get(),   false, ITEM_FLOATEXP_TGT_GLOWCOLOR_A,   &item->glowColor[3],        1, 0                                },
+                {commonItem->m_glowcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_GLOWCOLOR_RGB, &item->glowColor[0],        3, 0                                },
+                {commonItem->m_backcolor_expressions.m_r_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_R,   &item->window.backColor[0], 1, 0                                },
+                {commonItem->m_backcolor_expressions.m_g_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_G,   &item->window.backColor[1], 1, 0                                },
+                {commonItem->m_backcolor_expressions.m_b_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_B,   &item->window.backColor[2], 1, 0                                },
+                {commonItem->m_backcolor_expressions.m_a_exp.get(),   false, ITEM_FLOATEXP_TGT_BACKCOLOR_A,   &item->window.backColor[3], 1, 0                                },
+                {commonItem->m_backcolor_expressions.m_rgb_exp.get(), false, ITEM_FLOATEXP_TGT_BACKCOLOR_RGB, &item->window.backColor[0], 3, 0                                },
             };
 
             floatExpressionCount = 0;
@@ -732,7 +794,7 @@ namespace IW4
                         item->window.dynamicFlags[0] |= dynamicFlagsToSet;
 
                         auto* staticValuePtr = staticValue;
-                        for(auto i = 0u; i < staticValueArraySize; i++)
+                        for (auto i = 0u; i < staticValueArraySize; i++)
                         {
                             *staticValuePtr = static_cast<float>(evaluatedValue.m_int_value);
                             staticValuePtr++;
@@ -829,7 +891,10 @@ namespace IW4
             return nullptr;
         }
 
-        _NODISCARD listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item, CommonItemFeaturesListBox* commonListBox, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        _NODISCARD listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
+                                                        CommonItemFeaturesListBox* commonListBox,
+                                                        const CommonMenuDef& parentMenu,
+                                                        const CommonItemDef& commonItem) const
         {
             if (commonListBox == nullptr)
                 return nullptr;
@@ -863,7 +928,10 @@ namespace IW4
             return listBox;
         }
 
-        _NODISCARD editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item, CommonItemFeaturesEditField* commonEditField, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        _NODISCARD editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item,
+                                                            CommonItemFeaturesEditField* commonEditField,
+                                                            const CommonMenuDef& parentMenu,
+                                                            const CommonItemDef& commonItem) const
         {
             if (commonEditField == nullptr)
                 return nullptr;
@@ -882,7 +950,10 @@ namespace IW4
             return editField;
         }
 
-        _NODISCARD multiDef_s* ConvertMultiValueFeatures(itemDef_s* item, CommonItemFeaturesMultiValue* commonMultiValue, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        _NODISCARD multiDef_s* ConvertMultiValueFeatures(itemDef_s* item,
+                                                         CommonItemFeaturesMultiValue* commonMultiValue,
+                                                         const CommonMenuDef& parentMenu,
+                                                         const CommonItemDef& commonItem) const
         {
             if (commonMultiValue == nullptr)
                 return nullptr;
@@ -912,7 +983,10 @@ namespace IW4
             return multiValue;
         }
 
-        _NODISCARD newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item, CommonItemFeaturesNewsTicker* commonNewsTicker, const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        _NODISCARD newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item,
+                                                              CommonItemFeaturesNewsTicker* commonNewsTicker,
+                                                              const CommonMenuDef& parentMenu,
+                                                              const CommonItemDef& commonItem) const
         {
             if (commonNewsTicker == nullptr)
                 return nullptr;
@@ -1016,7 +1090,7 @@ namespace IW4
 
             case CommonItemFeatureType::NONE:
             default:
-                if(item->type == ITEM_TYPE_TEXT_SCROLL)
+                if (item->type == ITEM_TYPE_TEXT_SCROLL)
                 {
                     item->typeData.scroll = static_cast<textScrollDef_s*>(m_memory->Alloc(sizeof(textScrollDef_s)));
                     memset(item->typeData.scroll, 0, sizeof(textScrollDef_s));
@@ -1110,7 +1184,7 @@ namespace IW4
 
         std::vector<XAssetInfoGeneric*> m_dependencies;
     };
-}
+} // namespace IW4
 
 MenuConverter::MenuConverter(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
     : m_disable_optimizations(disableOptimizations),

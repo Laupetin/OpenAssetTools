@@ -9,10 +9,8 @@ SequenceLocalizeFileConfig::SequenceLocalizeFileConfig()
     AddMatchers({
         create.Keyword("CONFIG"),
         create.String(),
-        create.Type(SimpleParserValueType::NEW_LINE)
+        create.Type(SimpleParserValueType::NEW_LINE),
     });
 }
 
-void SequenceLocalizeFileConfig::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const
-{
-}
+void SequenceLocalizeFileConfig::ProcessMatch(LocalizeFileParserState* state, SequenceResult<SimpleParserValue>& result) const {}

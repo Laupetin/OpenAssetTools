@@ -1,8 +1,8 @@
 #include "GameIW3.h"
 
-#include <algorithm>
-
 #include "IW3.h"
+
+#include <algorithm>
 
 using namespace IW3;
 

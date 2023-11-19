@@ -1,14 +1,13 @@
 #pragma once
 
-#include <unordered_map>
-
-#include "Utils/ClassUtils.h"
 #include "Parsing/Matcher/AbstractMatcher.h"
 #include "Parsing/Matcher/MatcherResult.h"
 #include "Parsing/ParsingException.h"
+#include "Utils/ClassUtils.h"
 
-template <typename TokenType>
-class SequenceResult
+#include <unordered_map>
+
+template<typename TokenType> class SequenceResult
 {
     class Capture
     {
@@ -57,7 +56,7 @@ public:
         if (m_tag_offset < m_tags.size())
         {
             const auto result = m_tags[m_tag_offset];
-            
+
             if (result == tag)
                 m_tag_offset++;
 
@@ -92,7 +91,7 @@ public:
         if (foundEntry == m_captures.end())
             throw ParsingException(TokenPos(), "Tried to access next capture even though no captures exists!");
 
-        if(foundEntry->second.m_offset >= foundEntry->second.m_tokens.size())
+        if (foundEntry->second.m_offset >= foundEntry->second.m_tokens.size())
             throw ParsingException(TokenPos(), "Tried to access next capture even though none exists!");
 
         return foundEntry->second.m_tokens[foundEntry->second.m_offset++];

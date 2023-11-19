@@ -14,4 +14,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
     };
-}
+} // namespace T6

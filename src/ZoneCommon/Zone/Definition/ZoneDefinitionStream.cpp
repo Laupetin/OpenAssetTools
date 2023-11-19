@@ -1,14 +1,13 @@
 #include "ZoneDefinitionStream.h"
 
-#include <chrono>
-
-#include "Parsing/Impl/ParserSingleInputStream.h"
-#include <Parsing/Impl/CommentRemovingStreamProxy.h>
-
 #include "Parsing/Impl/DefinesStreamProxy.h"
+#include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/ZoneDefinition/ZoneDefinitionLexer.h"
 #include "Parsing/ZoneDefinition/ZoneDefinitionParser.h"
+
+#include <Parsing/Impl/CommentRemovingStreamProxy.h>
+#include <chrono>
 
 ZoneDefinitionInputStream::ZoneDefinitionInputStream(std::istream& stream, std::string fileName, bool verbose)
     : m_file_name(std::move(fileName)),
@@ -84,8 +83,7 @@ void ZoneDefinitionOutputStream::WriteEntry(const std::string& entryKey, const s
 {
     m_stream << entryKey << ",";
 
-    if (entryValue.find('"') != std::string::npos
-        || entryValue.find("//") != std::string::npos)
+    if (entryValue.find('"') != std::string::npos || entryValue.find("//") != std::string::npos)
     {
         m_stream << '"';
         for (const auto& c : entryValue)

@@ -2,8 +2,8 @@
 
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
-#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
+#include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
 SequenceTypedef::SequenceTypedef()
 {
@@ -13,36 +13,28 @@ SequenceTypedef::SequenceTypedef()
     AddLabeledMatchers(HeaderCommonMatchers::ArrayDef(this), HeaderCommonMatchers::LABEL_ARRAY_DEF);
     AddLabeledMatchers(HeaderCommonMatchers::Typename(this), HeaderCommonMatchers::LABEL_TYPENAME);
 
-    AddLabeledMatchers(
-        {
-            create.Optional(create.Type(HeaderParserValueType::CONST).Tag(TAG_CONST)),
-            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-            create.OptionalLoop(create.Char('*').Tag(TAG_POINTER)),
-            create.Identifier().Capture(CAPTURE_NAME),
-            create.OptionalLoop(create.Label(HeaderCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY)),
-            create.Char(';')
-        }, LABEL_ARRAY_OF_POINTERS);
+    AddLabeledMatchers({create.Optional(create.Type(HeaderParserValueType::CONST).Tag(TAG_CONST)),
+                        create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
+                        create.OptionalLoop(create.Char('*').Tag(TAG_POINTER)),
+                        create.Identifier().Capture(CAPTURE_NAME),
+                        create.OptionalLoop(create.Label(HeaderCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY)),
+                        create.Char(';')},
+                       LABEL_ARRAY_OF_POINTERS);
 
-    AddLabeledMatchers(
-        {
-            create.Optional(create.Type(HeaderParserValueType::CONST).Tag(TAG_CONST)),
-            create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-            create.Char('('),
-            create.Loop(create.Char('*').Tag(TAG_POINTER)),
-            create.Identifier().Capture(CAPTURE_NAME),
-            create.Char(')'),
-            create.Loop(create.Label(HeaderCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY)),
-            create.Char(';')
-        }, LABEL_POINTER_TO_ARRAY);
+    AddLabeledMatchers({create.Optional(create.Type(HeaderParserValueType::CONST).Tag(TAG_CONST)),
+                        create.Label(HeaderCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
+                        create.Char('('),
+                        create.Loop(create.Char('*').Tag(TAG_POINTER)),
+                        create.Identifier().Capture(CAPTURE_NAME),
+                        create.Char(')'),
+                        create.Loop(create.Label(HeaderCommonMatchers::LABEL_ARRAY_DEF).Capture(CAPTURE_ARRAY)),
+                        create.Char(';')},
+                       LABEL_POINTER_TO_ARRAY);
 
-    AddMatchers({
-        create.Type(HeaderParserValueType::TYPEDEF),
-        create.Optional(create.Label(HeaderCommonMatchers::LABEL_ALIGN).Capture(CAPTURE_ALIGN)),
-        create.Or({
-            create.Label(LABEL_ARRAY_OF_POINTERS).Tag(TAG_ARRAY_OF_POINTERS),
-            create.Label(LABEL_POINTER_TO_ARRAY).Tag(TAG_POINTER_TO_ARRAY)
-        })
-    });
+    AddMatchers(
+        {create.Type(HeaderParserValueType::TYPEDEF),
+         create.Optional(create.Label(HeaderCommonMatchers::LABEL_ALIGN).Capture(CAPTURE_ALIGN)),
+         create.Or({create.Label(LABEL_ARRAY_OF_POINTERS).Tag(TAG_ARRAY_OF_POINTERS), create.Label(LABEL_POINTER_TO_ARRAY).Tag(TAG_POINTER_TO_ARRAY)})});
 }
 
 void SequenceTypedef::AddPointerDeclarationModifiers(SequenceResult<HeaderParserValue>& result, TypeDeclaration* typeDeclaration) const
@@ -93,7 +85,7 @@ void SequenceTypedef::ProcessMatch(HeaderParserState* state, SequenceResult<Head
     auto typedefDefinition = std::make_unique<TypedefDefinition>(state->m_namespace.ToString(), name, std::make_unique<TypeDeclaration>(type));
     typedefDefinition->m_type_declaration->m_is_const = result.PeekAndRemoveIfTag(TAG_CONST) == TAG_CONST;
 
-    if(result.HasNextCapture(CAPTURE_ALIGN))
+    if (result.HasNextCapture(CAPTURE_ALIGN))
     {
         const auto& alignToken = result.NextCapture(CAPTURE_ALIGN);
         typedefDefinition->m_alignment_override = static_cast<unsigned>(alignToken.IntegerValue());

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
 #include <cstddef>
 #include <ostream>
+#include <string>
 #include <vector>
 
 class AbstractMenuDumper
@@ -11,8 +11,8 @@ protected:
     static constexpr auto MENU_KEY_SPACING = 28u;
     static const inline std::string BOOL_VALUE_TRUE = "1";
     static const inline std::string BOOL_VALUE_FALSE = "0";
-    static constexpr inline float COLOR_0000[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
-    static constexpr inline float COLOR_1111[4]{ 1.0f, 1.0f, 1.0f, 1.0f };
+    static constexpr inline float COLOR_0000[4]{0.0f, 0.0f, 0.0f, 0.0f};
+    static constexpr inline float COLOR_1111[4]{1.0f, 1.0f, 1.0f, 1.0f};
 
     std::ostream& m_stream;
     size_t m_indent;
@@ -39,7 +39,7 @@ protected:
     void WriteBoolProperty(const std::string& propertyKey, bool propertyValue, bool defaultValue) const;
     void WriteIntProperty(const std::string& propertyKey, int propertyValue, int defaultValue) const;
     void WriteFloatProperty(const std::string& propertyKey, float propertyValue, float defaultValue) const;
-    void WriteColorProperty(const std::string& propertyKey, const float(&propertyValue)[4], const float(&defaultValue)[4]) const;
+    void WriteColorProperty(const std::string& propertyKey, const float (&propertyValue)[4], const float (&defaultValue)[4]) const;
     void WriteKeywordProperty(const std::string& propertyKey, bool shouldWrite) const;
     void WriteFlagsProperty(const std::string& propertyKey, int flagsValue) const;
 

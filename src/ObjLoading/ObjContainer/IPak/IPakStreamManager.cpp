@@ -1,10 +1,10 @@
 #include "IPakStreamManager.h"
 
-#include <vector>
-#include <algorithm>
-
 #include "IPakEntryReadStream.h"
 #include "ObjContainer/IPak/IPakTypes.h"
+
+#include <algorithm>
+#include <vector>
 
 using namespace ipak_consts;
 
@@ -71,10 +71,12 @@ public:
         m_stream_mutex.lock();
 
         ChunkBuffer* reservedChunkBuffer;
-        const auto freeChunkBuffer = std::find_if(m_chunk_buffers.begin(), m_chunk_buffers.end(), [](ChunkBuffer* chunkBuffer)
-        {
-            return chunkBuffer->m_using_stream == nullptr;
-        });
+        const auto freeChunkBuffer = std::find_if(m_chunk_buffers.begin(),
+                                                  m_chunk_buffers.end(),
+                                                  [](ChunkBuffer* chunkBuffer)
+                                                  {
+                                                      return chunkBuffer->m_using_stream == nullptr;
+                                                  });
 
         if (freeChunkBuffer == m_chunk_buffers.end())
         {
@@ -109,10 +111,12 @@ public:
     {
         m_stream_mutex.lock();
 
-        const auto openStreamEntry = std::find_if(m_open_streams.begin(), m_open_streams.end(), [stream](const ManagedStream& managedStream)
-        {
-            return managedStream.m_stream == stream;
-        });
+        const auto openStreamEntry = std::find_if(m_open_streams.begin(),
+                                                  m_open_streams.end(),
+                                                  [stream](const ManagedStream& managedStream)
+                                                  {
+                                                      return managedStream.m_stream == stream;
+                                                  });
 
         if (openStreamEntry != m_open_streams.end())
         {

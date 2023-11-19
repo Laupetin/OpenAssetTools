@@ -1,8 +1,8 @@
 #pragma once
-#include <memory>
-
 #include "Loading/StreamProcessor.h"
 #include "Zone/XChunk/IXChunkProcessor.h"
+
+#include <memory>
 
 class ProcessorXChunks : public StreamProcessor
 {

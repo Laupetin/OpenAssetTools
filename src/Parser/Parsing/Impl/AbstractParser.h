@@ -1,15 +1,14 @@
 #pragma once
 
+#include "Parsing/ILexer.h"
+#include "Parsing/IParser.h"
+#include "Parsing/ParsingException.h"
+#include "Parsing/Sequence/AbstractSequence.h"
+
 #include <iostream>
 #include <vector>
 
-#include "Parsing/IParser.h"
-#include "Parsing/ILexer.h"
-#include "Parsing/Sequence/AbstractSequence.h"
-#include "Parsing/ParsingException.h"
-
-template <typename TokenType, typename ParserState>
-class AbstractParser : public IParser
+template<typename TokenType, typename ParserState> class AbstractParser : public IParser
 {
     // TokenType must inherit IParserValue
     static_assert(std::is_base_of<IParserValue, TokenType>::value);
@@ -65,11 +64,12 @@ public:
                     if (!line.IsEof())
                     {
                         std::cerr << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression:\n"
-                            << line.m_line.substr(pos.m_column - 1) << std::endl;
+                                  << line.m_line.substr(pos.m_column - 1) << std::endl;
                     }
                     else
                     {
-                        std::cerr << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression." << std::endl;
+                        std::cerr << "Error: " << pos.m_filename.get() << " L" << pos.m_line << ':' << pos.m_column << " Could not parse expression."
+                                  << std::endl;
                     }
                     return false;
                 }

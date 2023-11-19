@@ -10,7 +10,7 @@ namespace IW3
         static constexpr uint32_t R_HashString(const char* string, const uint32_t hash)
         {
             const char* v2 = string; // edx@1
-            char v3 = *string; // cl@1
+            char v3 = *string;       // cl@1
             uint32_t result = hash;
 
             for (; *v2; v3 = *v2)
@@ -28,4 +28,4 @@ namespace IW3
         static void Vec3UnpackUnitVec(const PackedUnitVec& in, vec3_t* out);
         static void Vec4UnpackGfxColor(const GfxColor& in, vec4_t* out);
     };
-}
+} // namespace IW3

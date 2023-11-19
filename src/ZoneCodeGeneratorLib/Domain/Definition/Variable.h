@@ -1,10 +1,10 @@
 #pragma once
 
+#include "TypeDeclaration.h"
+#include "Utils/ClassUtils.h"
+
 #include <memory>
 #include <string>
-
-#include "Utils/ClassUtils.h"
-#include "TypeDeclaration.h"
 
 class Variable
 {

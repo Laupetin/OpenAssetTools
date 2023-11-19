@@ -1,11 +1,11 @@
 #include "LinkerSearchPaths.h"
 
+#include "ObjContainer/IWD/IWD.h"
+#include "ObjLoading.h"
+#include "SearchPath/SearchPathFilesystem.h"
+
 #include <filesystem>
 #include <iostream>
-
-#include "ObjLoading.h"
-#include "ObjContainer/IWD/IWD.h"
-#include "SearchPath/SearchPathFilesystem.h"
 
 namespace fs = std::filesystem;
 
@@ -177,7 +177,6 @@ bool LinkerSearchPaths::BuildProjectIndependentSearchPaths()
 
     return true;
 }
-
 
 void LinkerSearchPaths::UnloadProjectSpecificSearchPaths()
 {

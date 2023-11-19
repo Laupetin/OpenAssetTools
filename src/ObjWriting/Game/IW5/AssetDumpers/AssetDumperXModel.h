@@ -2,9 +2,9 @@
 
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
-#include "Utils/DistinctMapper.h"
-#include "Model/XModel/AbstractXModelWriter.h"
 #include "Model/Obj/ObjWriter.h"
+#include "Model/XModel/AbstractXModelWriter.h"
+#include "Utils/DistinctMapper.h"
 
 namespace IW5
 {
@@ -28,7 +28,8 @@ namespace IW5
         static void AddXModelVertices(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs);
         static void AllocateXModelBoneWeights(const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection);
         static void AddXModelVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection);
-        static void AddXModelFaces(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, int baseSurfaceIndex);
+        static void
+            AddXModelFaces(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, int baseSurfaceIndex);
         static void DumpXModelExportLod(const AssetDumpingContext& context, XAssetInfo<XModel>* asset, unsigned lod);
         static void DumpXModelExport(AssetDumpingContext& context, XAssetInfo<XModel>* asset);
 
@@ -36,4 +37,4 @@ namespace IW5
         bool ShouldDump(XAssetInfo<XModel>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset) override;
     };
-}
+} // namespace IW5

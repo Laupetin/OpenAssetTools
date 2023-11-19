@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-
 #include "Domain/Evaluation/OperationType.h"
 #include "Parsing/IParserValue.h"
-#include "Utils/ClassUtils.h"
 #include "Parsing/TokenPos.h"
+#include "Utils/ClassUtils.h"
+
+#include <string>
 
 enum class CommandsParserValueType
 {
@@ -55,6 +55,7 @@ public:
     TokenPos m_pos;
     CommandsParserValueType m_type;
     size_t m_hash;
+
     union ValueType
     {
         char char_value;

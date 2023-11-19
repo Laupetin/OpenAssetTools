@@ -1,8 +1,8 @@
 #pragma once
 
-#include <map>
-
 #include "Persistence/IDataRepository.h"
+
+#include <map>
 
 class InMemoryRepository final : public IDataRepository
 {

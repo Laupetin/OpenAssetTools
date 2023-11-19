@@ -1,15 +1,15 @@
 #pragma once
 
-#include <vector>
-
-#include "Utils/ClassUtils.h"
 #include "Domain/Definition/EnumDefinition.h"
 #include "Domain/Definition/StructDefinition.h"
 #include "Domain/Definition/TypedefDefinition.h"
 #include "Domain/Definition/UnionDefinition.h"
 #include "Domain/Environment/Architecture.h"
-#include "Domain/Information/StructureInformation.h"
 #include "Domain/FastFile/FastFileBlock.h"
+#include "Domain/Information/StructureInformation.h"
+#include "Utils/ClassUtils.h"
+
+#include <vector>
 
 class IDataRepository
 {

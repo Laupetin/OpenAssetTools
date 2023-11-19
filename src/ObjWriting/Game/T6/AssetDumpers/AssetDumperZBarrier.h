@@ -14,4 +14,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<ZBarrierDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<ZBarrierDef>* asset) override;
     };
-}
+} // namespace T6

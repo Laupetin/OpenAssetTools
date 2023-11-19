@@ -1,7 +1,6 @@
 #include "MenuMatcherScriptNumeric.h"
 
-MenuMatcherScriptNumeric::MenuMatcherScriptNumeric()
-= default;
+MenuMatcherScriptNumeric::MenuMatcherScriptNumeric() = default;
 
 MatcherResult<SimpleParserValue> MenuMatcherScriptNumeric::CanMatch(ILexer<SimpleParserValue>* lexer, const unsigned tokenOffset)
 {
@@ -34,7 +33,7 @@ MatcherResult<SimpleParserValue> MenuMatcherScriptNumeric::CanMatch(ILexer<Simpl
     // The return result does not matter here
     const auto _ = strtod(stringValue.data(), &endPtr);
 
-    if(endPtr != &stringValue[stringValue.size()])
+    if (endPtr != &stringValue[stringValue.size()])
         return MatcherResult<SimpleParserValue>::NoMatch();
 
     return MatcherResult<SimpleParserValue>::Match(1);

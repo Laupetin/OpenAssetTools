@@ -17,22 +17,22 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
     auto c = m_stream.get();
     const auto isEof = c == EOF;
     std::ostringstream col;
-    while(c != EOF)
+    while (c != EOF)
     {
-        if(c == CSV_SEPARATOR)
+        if (c == CSV_SEPARATOR)
         {
             out.emplace_back(col.str());
             col.clear();
             col.str(std::string());
         }
-        else if(c == '\r')
+        else if (c == '\r')
         {
             c = m_stream.get();
             if (c == '\n')
                 break;
             col << '\r';
         }
-        else if(c == '\n')
+        else if (c == '\n')
         {
             break;
         }
@@ -44,7 +44,7 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
         c = m_stream.get();
     }
 
-    if(!isEof)
+    if (!isEof)
     {
         out.emplace_back(col.str());
     }

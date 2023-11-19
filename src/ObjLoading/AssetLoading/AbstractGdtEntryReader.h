@@ -1,10 +1,10 @@
 #pragma once
 
-#include <exception>
-
 #include "Math/Vector.h"
-#include "Utils/ClassUtils.h"
 #include "Obj/Gdt/GdtEntry.h"
+#include "Utils/ClassUtils.h"
+
+#include <exception>
 
 class GdtReadingException : public std::exception
 {

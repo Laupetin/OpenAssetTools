@@ -1,7 +1,8 @@
 #include "StringFileDumper.h"
-#include <regex>
 
 #include "Utils/StringUtils.h"
+
+#include <regex>
 
 StringFileDumper::StringFileDumper(Zone* zone, std::ostream& stream)
     : AbstractTextDumper(stream),
@@ -14,7 +15,8 @@ StringFileDumper::StringFileDumper(Zone* zone, std::ostream& stream)
 void StringFileDumper::SetLanguageName(std::string language)
 {
     m_language_caps = std::move(language);
-    for (auto& c : m_language_caps) c = toupper(c);
+    for (auto& c : m_language_caps)
+        c = toupper(c);
 }
 
 void StringFileDumper::SetConfigFile(std::string configFile)

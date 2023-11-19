@@ -1,12 +1,12 @@
 #pragma once
 
-#include <map>
-#include <stack>
-#include <sstream>
-
 #include "AbstractDirectiveStreamProxy.h"
 #include "Parsing/IParserLineStream.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
+
+#include <map>
+#include <sstream>
+#include <stack>
 
 class DefinesStreamProxy final : public AbstractDirectiveStreamProxy
 {
@@ -77,7 +77,8 @@ private:
     _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
-    static void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
+    static void
+        ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
     bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, const Define*& value) const;
 
     static bool MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName);

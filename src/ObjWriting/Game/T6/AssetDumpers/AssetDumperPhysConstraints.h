@@ -14,4 +14,4 @@ namespace T6
         bool ShouldDump(XAssetInfo<PhysConstraints>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysConstraints>* asset) override;
     };
-}
+} // namespace T6

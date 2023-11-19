@@ -1,9 +1,5 @@
 #include "ZoneDumperIW4.h"
 
-#include "ObjWriting.h"
-#include "Game/IW4/GameIW4.h"
-#include "Game/IW4/GameAssetPoolIW4.h"
-
 #include "AssetDumpers/AssetDumperAddonMapEnts.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperGfxLightDef.h"
@@ -25,6 +21,9 @@
 #include "AssetDumpers/AssetDumperVertexShader.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
+#include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW4/GameIW4.h"
+#include "ObjWriting.h"
 
 using namespace IW4;
 
@@ -35,11 +34,11 @@ bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
 
 bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
 {
-#define DUMP_ASSET_POOL(dumperType, poolName, assetType) \
-    if(assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType)) \
-    { \
-        dumperType dumper; \
-        dumper.DumpPool(context, assetPools->poolName.get()); \
+#define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
+    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
+    {                                                                                                                                                          \
+        dumperType dumper;                                                                                                                                     \
+        dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
     }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(context.m_zone->m_pools.get());

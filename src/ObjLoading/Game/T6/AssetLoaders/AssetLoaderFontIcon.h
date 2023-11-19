@@ -1,13 +1,13 @@
 #pragma once
 
-#include <algorithm>
-#include <vector>
-#include <string>
-
-#include "Game/T6/T6.h"
 #include "AssetLoading/BasicAssetLoader.h"
 #include "AssetLoading/IAssetLoadingManager.h"
+#include "Game/T6/T6.h"
 #include "SearchPath/ISearchPath.h"
+
+#include <algorithm>
+#include <string>
+#include <vector>
 
 namespace T6
 {
@@ -40,13 +40,24 @@ namespace T6
         static bool ParseFloat(float& value, const std::string& str);
         static bool ParseHashStr(int& value, const std::string& str);
 
-        static bool ReadIconRow(const std::vector<std::string>& row, FontIconEntry& icon, const std::string& assetName, unsigned rowIndex, MemoryManager* memory, IAssetLoadingManager* manager,
+        static bool ReadIconRow(const std::vector<std::string>& row,
+                                FontIconEntry& icon,
+                                const std::string& assetName,
+                                unsigned rowIndex,
+                                MemoryManager* memory,
+                                IAssetLoadingManager* manager,
                                 std::vector<XAssetInfoGeneric*>& dependencies);
-        static bool ReadAliasRow(const std::vector<std::string>& row, FontIconAlias& alias, const std::string& assetName, unsigned rowIndex, MemoryManager* memory, IAssetLoadingManager* manager);
+        static bool ReadAliasRow(const std::vector<std::string>& row,
+                                 FontIconAlias& alias,
+                                 const std::string& assetName,
+                                 unsigned rowIndex,
+                                 MemoryManager* memory,
+                                 IAssetLoadingManager* manager);
 
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
         _NODISCARD bool CanLoadFromRaw() const override;
-        bool LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
+        bool
+            LoadFromRaw(const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const override;
     };
-}
+} // namespace T6
