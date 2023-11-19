@@ -66,18 +66,20 @@ namespace test::parsing::menu::sequence::item
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("dvarStrList")),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::String(pos, new std::string("@MENU_AUTO")),
-                       SimpleParserValue::String(pos, new std::string("auto")),
-                       SimpleParserValue::String(pos, new std::string("@MENU_STANDARD_4_3")),
-                       SimpleParserValue::String(pos, new std::string("standard")),
-                       SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_10")),
-                       SimpleParserValue::String(pos, new std::string("wide 16:10")),
-                       SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_9")),
-                       SimpleParserValue::String(pos, new std::string("wide 16:9")),
-                       SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("dvarStrList")),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::String(pos, new std::string("@MENU_AUTO")),
+            SimpleParserValue::String(pos, new std::string("auto")),
+            SimpleParserValue::String(pos, new std::string("@MENU_STANDARD_4_3")),
+            SimpleParserValue::String(pos, new std::string("standard")),
+            SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_10")),
+            SimpleParserValue::String(pos, new std::string("wide 16:10")),
+            SimpleParserValue::String(pos, new std::string("@MENU_WIDE_16_9")),
+            SimpleParserValue::String(pos, new std::string("wide 16:9")),
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         helper.m_item->m_feature_type = CommonItemFeatureType::MULTI_VALUE;
         helper.m_item->m_multi_value_features = std::make_unique<CommonItemFeaturesMultiValue>();

@@ -41,10 +41,12 @@ namespace test::parsing::commands::sequence::sequence_game
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("game")),
-                       CommandsParserValue::Identifier(pos, new std::string("very_cool_game")),
-                       CommandsParserValue::Character(pos, ';'),
-                       CommandsParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            CommandsParserValue::Identifier(pos, new std::string("game")),
+            CommandsParserValue::Identifier(pos, new std::string("very_cool_game")),
+            CommandsParserValue::Character(pos, ';'),
+            CommandsParserValue::EndOfFile(pos),
+        });
 
         auto result = helper.PerformTest();
 

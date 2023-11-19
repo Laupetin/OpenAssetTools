@@ -24,8 +24,13 @@ HeaderBlockType HeaderBlockStruct::GetType()
 
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockStruct::GetTestsForBlock()
 {
-    static std::vector<sequence_t*> tests(
-        {new SequenceCloseBlock(true), new SequenceEnum(), new SequenceStruct(), new SequenceUnion(), new SequenceVariable()});
+    static std::vector<sequence_t*> tests({
+        new SequenceCloseBlock(true),
+        new SequenceEnum(),
+        new SequenceStruct(),
+        new SequenceUnion(),
+        new SequenceVariable(),
+    });
 
     return tests;
 }

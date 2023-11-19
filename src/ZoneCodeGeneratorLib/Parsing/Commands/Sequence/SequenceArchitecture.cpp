@@ -7,7 +7,11 @@ SequenceArchitecture::SequenceArchitecture()
 {
     const CommandsMatcherFactory create(this);
 
-    AddMatchers({create.Keyword("architecture"), create.Identifier().Capture(CAPTURE_ARCHITECTURE), create.Char(';')});
+    AddMatchers({
+        create.Keyword("architecture"),
+        create.Identifier().Capture(CAPTURE_ARCHITECTURE),
+        create.Char(';'),
+    });
 
     m_architecture_mapping["x86"] = Architecture::X86;
     m_architecture_mapping["x64"] = Architecture::X64;

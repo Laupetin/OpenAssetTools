@@ -14,7 +14,9 @@ namespace menu::global_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.Char('}')});
+            AddMatchers({
+                create.Char('}'),
+            });
         }
 
     protected:

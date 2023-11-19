@@ -404,7 +404,8 @@ const SimpleExpressionBinaryOperationType* const SimpleExpressionBinaryOperation
     &OPERATION_EQUALS,
     &OPERATION_NOT_EQUAL,
     &OPERATION_AND,
-    &OPERATION_OR};
+    &OPERATION_OR,
+};
 
 SimpleExpressionBinaryOperation::SimpleExpressionBinaryOperation(const SimpleExpressionBinaryOperationType* operationType,
                                                                  std::unique_ptr<ISimpleExpression> operand1,

@@ -41,7 +41,7 @@ namespace IW3
                 const auto& entry = complexTable[index];
                 jArray.emplace_back(json{
                     {"real", entry.real},
-                    {"imag", entry.imag}
+                    {"imag", entry.imag},
                 });
             }
         }
@@ -66,14 +66,24 @@ namespace IW3
             {"winddir", std::vector(std::begin(water->winddir), std::end(water->winddir))},
             {"amplitude", water->amplitude},
             {"codeConstant", std::vector(std::begin(water->codeConstant), std::end(water->codeConstant))},
-            {"image", water->image && water->image->name ? AssetName(water->image->name) : nullptr}
+            {"image", water->image && water->image->name ? AssetName(water->image->name) : nullptr},
         };
     }
 
     json BuildSamplerStateJson(unsigned char samplerState)
     {
-        static const char* samplerFilterNames[]{"none", "nearest", "linear", "aniso2x", "aniso4x"};
-        static const char* samplerMipmapNames[]{"disabled", "nearest", "linear"};
+        static const char* samplerFilterNames[]{
+            "none",
+            "nearest",
+            "linear",
+            "aniso2x",
+            "aniso4x",
+        };
+        static const char* samplerMipmapNames[]{
+            "disabled",
+            "nearest",
+            "linear",
+        };
 
         return json{
             {"filter", ArrayEntry(samplerFilterNames, (samplerState & SAMPLER_FILTER_MASK) >> SAMPLER_FILTER_SHIFT)},
@@ -87,7 +97,19 @@ namespace IW3
     json BuildTextureTableJson(const MaterialTextureDef* textureTable, const size_t count)
     {
         static const char* semanticNames[]{
-            "2d", "function", "colorMap", "unused1", "unused2", "normalMap", "unused3", "unused4", "specularMap", "unused5", "unused6", "waterMap"};
+            "2d",
+            "function",
+            "colorMap",
+            "unused1",
+            "unused2",
+            "normalMap",
+            "unused3",
+            "unused4",
+            "specularMap",
+            "unused5",
+            "unused6",
+            "waterMap",
+        };
 
         auto jArray = json::array();
 
@@ -99,7 +121,7 @@ namespace IW3
 
                 json jEntry = {
                     {"samplerState", BuildSamplerStateJson(entry.samplerState)},
-                    {"semantic", ArrayEntry(semanticNames, entry.semantic)}
+                    {"semantic", ArrayEntry(semanticNames, entry.semantic)},
                 };
 
                 const auto knownMaterialSourceName = knownMaterialSourceNames.find(entry.nameHash);
@@ -142,7 +164,7 @@ namespace IW3
             {
                 const auto& entry = constantTable[index];
                 json jEntry = {
-                    {"literal", std::vector(std::begin(entry.literal), std::end(entry.literal))}
+                    {"literal", std::vector(std::begin(entry.literal), std::end(entry.literal))},
                 };
 
                 const auto nameLen = strnlen(entry.name, std::extent_v<decltype(MaterialConstantDef::name)>);
@@ -166,7 +188,7 @@ namespace IW3
                         {
                             jEntry.merge_patch({
                                 {"nameHash", entry.nameHash},
-                                {"namePart", fullLengthName}
+                                {"namePart", fullLengthName},
                             });
                         }
                     }
@@ -198,7 +220,14 @@ namespace IW3
             "destColor",
             "invDestColor",
         };
-        static const char* blendOpNames[]{"disabled", "add", "subtract", "revSubtract", "min", "max"};
+        static const char* blendOpNames[]{
+            "disabled",
+            "add",
+            "subtract",
+            "revSubtract",
+            "min",
+            "max",
+        };
         static const char* depthTestNames[]{
             "always",
             "less",
@@ -211,7 +240,16 @@ namespace IW3
             "2",
             "shadowMap",
         };
-        static const char* stencilOpNames[]{"keep", "zero", "replace", "incrSat", "decrSat", "invert", "incr", "decr"};
+        static const char* stencilOpNames[]{
+            "keep",
+            "zero",
+            "replace",
+            "incrSat",
+            "decrSat",
+            "invert",
+            "incr",
+            "decr",
+        };
 
         auto jArray = json::array();
 
@@ -422,7 +460,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         {"techniqueSet", material->techniqueSet && material->techniqueSet->name ? AssetName(material->techniqueSet->name) : nullptr},
         {"textureTable", BuildTextureTableJson(material->textureTable, material->textureCount)},
         {"constantTable", BuildConstantTableJson(material->constantTable, material->constantCount)},
-        {"stateBitsTable", BuildStateBitsTableJson(material->stateBitsTable, material->stateBitsCount)}
+        {"stateBitsTable", BuildStateBitsTableJson(material->stateBitsTable, material->stateBitsCount)},
     };
 
     stream << std::setw(4) << j;

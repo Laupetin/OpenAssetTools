@@ -11,7 +11,10 @@ GenericMenuEventHandlerSetPropertySequence::GenericMenuEventHandlerSetPropertySe
 {
     const MenuMatcherFactory create(this);
 
-    AddMatchers({create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN), create.Char('{')});
+    AddMatchers({
+        create.KeywordIgnoreCase(std::move(keywordName)).Capture(CAPTURE_FIRST_TOKEN),
+        create.Char('{'),
+    });
 }
 
 void GenericMenuEventHandlerSetPropertySequence::ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const

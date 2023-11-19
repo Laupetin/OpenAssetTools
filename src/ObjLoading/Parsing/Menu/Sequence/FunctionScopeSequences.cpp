@@ -19,7 +19,9 @@ namespace menu::function_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.Char('}').Capture(CAPTURE_TOKEN)});
+            AddMatchers({
+                create.Char('}').Capture(CAPTURE_TOKEN),
+            });
         }
 
     protected:

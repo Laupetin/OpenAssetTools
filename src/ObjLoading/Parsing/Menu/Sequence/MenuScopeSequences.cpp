@@ -28,7 +28,9 @@ namespace menu::menu_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.Char('}').Capture(CAPTURE_TOKEN)});
+            AddMatchers({
+                create.Char('}').Capture(CAPTURE_TOKEN),
+            });
         }
 
     protected:
@@ -59,7 +61,9 @@ namespace menu::menu_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.Char(';')});
+            AddMatchers({
+                create.Char(';'),
+            });
         }
 
     protected:
@@ -75,7 +79,10 @@ namespace menu::menu_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.Keyword("itemDef"), create.Char('{')});
+            AddMatchers({
+                create.Keyword("itemDef"),
+                create.Char('{'),
+            });
         }
 
     protected:
@@ -98,12 +105,17 @@ namespace menu::menu_scope_sequences
             const MenuMatcherFactory create(this);
 
             AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
-            AddMatchers({create.KeywordIgnoreCase("rect"),
-                         create.NumericExpression(), // x
-                         create.NumericExpression(), // y
-                         create.NumericExpression(), // w
-                         create.NumericExpression(), // h
-                         create.Optional(create.And({create.Integer().Capture(CAPTURE_ALIGN_HORIZONTAL), create.Integer().Capture(CAPTURE_ALIGN_VERTICAL)}))});
+            AddMatchers({
+                create.KeywordIgnoreCase("rect"),
+                create.NumericExpression(), // x
+                create.NumericExpression(), // y
+                create.NumericExpression(), // w
+                create.NumericExpression(), // h
+                create.Optional(create.And({
+                    create.Integer().Capture(CAPTURE_ALIGN_HORIZONTAL),
+                    create.Integer().Capture(CAPTURE_ALIGN_VERTICAL),
+                })),
+            });
         }
 
     protected:
@@ -136,7 +148,11 @@ namespace menu::menu_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.KeywordIgnoreCase("execKey"), create.StringChain().Capture(CAPTURE_KEY), create.Char('{')});
+            AddMatchers({
+                create.KeywordIgnoreCase("execKey"),
+                create.StringChain().Capture(CAPTURE_KEY),
+                create.Char('{'),
+            });
         }
 
     protected:
@@ -168,7 +184,11 @@ namespace menu::menu_scope_sequences
         {
             const MenuMatcherFactory create(this);
 
-            AddMatchers({create.KeywordIgnoreCase("execKeyInt"), create.Integer().Capture(CAPTURE_KEY), create.Char('{')});
+            AddMatchers({
+                create.KeywordIgnoreCase("execKeyInt"),
+                create.Integer().Capture(CAPTURE_KEY),
+                create.Char('{'),
+            });
         }
 
     protected:

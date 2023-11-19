@@ -21,12 +21,14 @@ void AssetDumperLoadedSound::DumpWavPcm(AssetDumpingContext& context, const Load
     const WavChunkHeader formatChunkHeader{WAV_CHUNK_ID_FMT, sizeof(WavFormatChunkPcm)};
     stream.write(reinterpret_cast<const char*>(&formatChunkHeader), sizeof(formatChunkHeader));
 
-    WavFormatChunkPcm formatChunk{WavFormat::PCM,
-                                  static_cast<uint16_t>(asset->sound.info.channels),
-                                  asset->sound.info.rate,
-                                  asset->sound.info.rate * asset->sound.info.channels * asset->sound.info.bits / 8,
-                                  static_cast<uint16_t>(asset->sound.info.block_size),
-                                  static_cast<uint16_t>(asset->sound.info.bits)};
+    WavFormatChunkPcm formatChunk{
+        WavFormat::PCM,
+        static_cast<uint16_t>(asset->sound.info.channels),
+        asset->sound.info.rate,
+        asset->sound.info.rate * asset->sound.info.channels * asset->sound.info.bits / 8,
+        static_cast<uint16_t>(asset->sound.info.block_size),
+        static_cast<uint16_t>(asset->sound.info.bits),
+    };
     stream.write(reinterpret_cast<const char*>(&formatChunk), sizeof(formatChunk));
 
     const WavChunkHeader dataChunkHeader{WAV_CHUNK_ID_DATA, asset->sound.info.data_len};

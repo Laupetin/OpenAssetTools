@@ -15,7 +15,8 @@ const char* GameAssetPoolT5::ASSET_TYPE_NAMES[]{
     "menulist",     "menu",          "localize",        "weapon",          "weapondef",   "weaponvariant", "snddriverglobals",
     "fx",           "fximpacttable", "aitype",          "mptype",          "mpbody",      "mphead",        "character",
     "xmodelalias",  "rawfile",       "stringtable",     "packindex",       "xglobals",    "ddl",           "glasses",
-    "emblemset"};
+    "emblemset",
+};
 
 GameAssetPoolT5::GameAssetPoolT5(Zone* zone, const int priority)
     : ZoneAssetPools(zone),

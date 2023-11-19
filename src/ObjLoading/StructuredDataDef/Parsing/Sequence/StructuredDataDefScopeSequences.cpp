@@ -17,10 +17,16 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Keyword("enum"),
-                         create.Optional(create.And({create.Char('('), create.Integer().Capture(CAPTURE_RESERVED_COUNT), create.Char(')')})),
-                         create.Identifier().Capture(CAPTURE_NAME),
-                         create.Char('{')});
+            AddMatchers({
+                create.Keyword("enum"),
+                create.Optional(create.And({
+                    create.Char('('),
+                    create.Integer().Capture(CAPTURE_RESERVED_COUNT),
+                    create.Char(')'),
+                })),
+                create.Identifier().Capture(CAPTURE_NAME),
+                create.Char('{'),
+            });
         }
 
     protected:
@@ -70,7 +76,11 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Keyword("struct"), create.Identifier().Capture(CAPTURE_NAME), create.Char('{')});
+            AddMatchers({
+                create.Keyword("struct"),
+                create.Identifier().Capture(CAPTURE_NAME),
+                create.Char('{'),
+            });
         }
 
     protected:
@@ -126,7 +136,11 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Keyword("checksumoverride"), create.Integer().Capture(CAPTURE_VALUE), create.Char(';')});
+            AddMatchers({
+                create.Keyword("checksumoverride"),
+                create.Integer().Capture(CAPTURE_VALUE),
+                create.Char(';'),
+            });
         }
 
     protected:
@@ -148,7 +162,9 @@ namespace sdd::def_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Char('}')});
+            AddMatchers({
+                create.Char('}'),
+            });
         }
 
     private:

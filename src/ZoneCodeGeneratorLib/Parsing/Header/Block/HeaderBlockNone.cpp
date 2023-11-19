@@ -14,8 +14,14 @@ HeaderBlockType HeaderBlockNone::GetType()
 
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockNone::GetTestsForBlock()
 {
-    static std::vector<sequence_t*> tests(
-        {new SequenceEnum(), new SequenceForwardDecl(), new SequenceNamespace(), new SequenceStruct(), new SequenceTypedef(), new SequenceUnion()});
+    static std::vector<sequence_t*> tests({
+        new SequenceEnum(),
+        new SequenceForwardDecl(),
+        new SequenceNamespace(),
+        new SequenceStruct(),
+        new SequenceTypedef(),
+        new SequenceUnion(),
+    });
 
     return tests;
 }

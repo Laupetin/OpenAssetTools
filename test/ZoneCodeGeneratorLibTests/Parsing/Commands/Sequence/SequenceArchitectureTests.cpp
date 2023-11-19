@@ -41,10 +41,12 @@ namespace test::parsing::commands::sequence::sequence_architecture
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("architecture")),
-                       CommandsParserValue::Identifier(pos, new std::string("x86")),
-                       CommandsParserValue::Character(pos, ';'),
-                       CommandsParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            CommandsParserValue::Identifier(pos, new std::string("architecture")),
+            CommandsParserValue::Identifier(pos, new std::string("x86")),
+            CommandsParserValue::Character(pos, ';'),
+            CommandsParserValue::EndOfFile(pos),
+        });
 
         auto result = helper.PerformTest();
 
@@ -57,10 +59,12 @@ namespace test::parsing::commands::sequence::sequence_architecture
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("architecture")),
-                       CommandsParserValue::Identifier(pos, new std::string("x86")),
-                       CommandsParserValue::Character(pos, ';'),
-                       CommandsParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            CommandsParserValue::Identifier(pos, new std::string("architecture")),
+            CommandsParserValue::Identifier(pos, new std::string("x86")),
+            CommandsParserValue::Character(pos, ';'),
+            CommandsParserValue::EndOfFile(pos),
+        });
 
         auto result = helper.PerformTest();
 
@@ -73,10 +77,12 @@ namespace test::parsing::commands::sequence::sequence_architecture
     {
         CommandsSequenceTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({CommandsParserValue::Identifier(pos, new std::string("architecture")),
-                       CommandsParserValue::Identifier(pos, new std::string("x1337")),
-                       CommandsParserValue::Character(pos, ';'),
-                       CommandsParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            CommandsParserValue::Identifier(pos, new std::string("architecture")),
+            CommandsParserValue::Identifier(pos, new std::string("x1337")),
+            CommandsParserValue::Character(pos, ';'),
+            CommandsParserValue::EndOfFile(pos),
+        });
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
         REQUIRE(helper.m_repository->GetArchitecture() == Architecture::UNKNOWN);

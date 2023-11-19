@@ -6,10 +6,17 @@ SequenceZoneDefinitionEntry::SequenceZoneDefinitionEntry()
 {
     const ZoneDefinitionMatcherFactory create(this);
 
-    AddMatchers({create.Field().Capture(CAPTURE_TYPE_NAME),
-                 create.Char(','),
-                 create.Optional(create.Char(',').Tag(TAG_REFERENCE)),
-                 create.Or({create.String(), create.Field()}).Capture(CAPTURE_ASSET_NAME)});
+    AddMatchers({
+        create.Field().Capture(CAPTURE_TYPE_NAME),
+        create.Char(','),
+        create.Optional(create.Char(',').Tag(TAG_REFERENCE)),
+        create
+            .Or({
+                create.String(),
+                create.Field(),
+            })
+            .Capture(CAPTURE_ASSET_NAME),
+    });
 }
 
 void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const

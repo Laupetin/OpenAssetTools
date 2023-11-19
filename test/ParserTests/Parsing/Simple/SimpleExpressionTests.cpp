@@ -59,7 +59,9 @@ namespace test::parsing::simple::expression
     protected:
         const std::vector<sequence_t*>& GetTestsForState() override
         {
-            static std::vector<sequence_t*> tests({new SimpleExpressionSequence()});
+            static std::vector<sequence_t*> tests({
+                new SimpleExpressionSequence(),
+            });
 
             return tests;
         }
@@ -140,10 +142,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 1336),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1336),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -162,10 +166,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 428),
-                       SimpleParserValue::Character(pos, '-'),
-                       SimpleParserValue::Integer(pos, 8),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 428),
+            SimpleParserValue::Character(pos, '-'),
+            SimpleParserValue::Integer(pos, 8),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -184,10 +190,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 105),
-                       SimpleParserValue::Character(pos, '*'),
-                       SimpleParserValue::Integer(pos, 4),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 105),
+            SimpleParserValue::Character(pos, '*'),
+            SimpleParserValue::Integer(pos, 4),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -206,10 +214,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 561540),
-                       SimpleParserValue::Character(pos, '/'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 561540),
+            SimpleParserValue::Character(pos, '/'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -228,10 +238,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 92673),
-                       SimpleParserValue::Character(pos, '%'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 92673),
+            SimpleParserValue::Character(pos, '%'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -250,10 +262,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 0x7FFFFFF0),
-                       SimpleParserValue::Character(pos, '&'),
-                       SimpleParserValue::Integer(pos, 0x2AAAAAAA),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 0x7FFFFFF0),
+            SimpleParserValue::Character(pos, '&'),
+            SimpleParserValue::Integer(pos, 0x2AAAAAAA),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -272,10 +286,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 5),
-                       SimpleParserValue::Character(pos, '|'),
-                       SimpleParserValue::Integer(pos, 3),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 5),
+            SimpleParserValue::Character(pos, '|'),
+            SimpleParserValue::Integer(pos, 3),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -294,11 +310,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 105),
-                       SimpleParserValue::MultiCharacter(
-                           pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::SHIFT_LEFT)),
-                       SimpleParserValue::Integer(pos, 2),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 105),
+            SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::SHIFT_LEFT)),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -317,11 +334,13 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 42784),
-                       SimpleParserValue::MultiCharacter(
-                           pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::SHIFT_RIGHT)),
-                       SimpleParserValue::Integer(pos, 5),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 42784),
+            SimpleParserValue::MultiCharacter(pos,
+                                              SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::SHIFT_RIGHT)),
+            SimpleParserValue::Integer(pos, 5),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -340,10 +359,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::Character(pos, '>'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::Character(pos, '>'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -362,11 +383,13 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::MultiCharacter(
-                           pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::GREATER_EQUAL_THAN)),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::MultiCharacter(
+                pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::GREATER_EQUAL_THAN)),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -385,10 +408,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, '<'),
-                       SimpleParserValue::Integer(pos, 421),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, '<'),
+            SimpleParserValue::Integer(pos, 421),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -407,11 +432,13 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::MultiCharacter(
-                           pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::LESS_EQUAL_THAN)),
-                       SimpleParserValue::Integer(pos, 421),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::MultiCharacter(pos,
+                                              SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::LESS_EQUAL_THAN)),
+            SimpleParserValue::Integer(pos, 421),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -430,11 +457,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens(
-            {SimpleParserValue::Integer(pos, 1337),
-             SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::EQUALS)),
-             SimpleParserValue::Integer(pos, 1337),
-             SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::EQUALS)),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -453,11 +481,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens(
-            {SimpleParserValue::Integer(pos, 1337),
-             SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::NOT_EQUAL)),
-             SimpleParserValue::Integer(pos, 1337),
-             SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::NOT_EQUAL)),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -476,11 +505,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens(
-            {SimpleParserValue::Integer(pos, 1337),
-             SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::AND)),
-             SimpleParserValue::Integer(pos, 420),
-             SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::AND)),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -499,11 +529,12 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens(
-            {SimpleParserValue::Integer(pos, 0),
-             SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::OR)),
-             SimpleParserValue::Integer(pos, 1337),
-             SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::MultiCharacter(pos, SimpleExpressionMatchers::MULTI_TOKEN_OFFSET_BINARY + static_cast<int>(SimpleBinaryOperationId::OR)),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -522,14 +553,16 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 100),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 4),
-                       SimpleParserValue::Character(pos, '*'),
-                       SimpleParserValue::Integer(pos, 25),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 220),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 100),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 4),
+            SimpleParserValue::Character(pos, '*'),
+            SimpleParserValue::Integer(pos, 25),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 220),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -548,14 +581,16 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 40),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 2),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '*'),
-                       SimpleParserValue::Integer(pos, 10),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 40),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '*'),
+            SimpleParserValue::Integer(pos, 10),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -574,12 +609,14 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -598,12 +635,14 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 0),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -622,16 +661,18 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -650,16 +691,18 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 0),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -678,16 +721,18 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, -1),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 2),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, -1),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -706,16 +751,18 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 210),
-                       SimpleParserValue::Character(pos, '*'),
-                       SimpleParserValue::Integer(pos, 2),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Integer(pos, 1337),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 210),
+            SimpleParserValue::Character(pos, '*'),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Integer(pos, 1337),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -734,16 +781,18 @@ namespace test::parsing::simple::expression
     {
         SimpleExpressionTestsHelper helper;
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Integer(pos, 0),
-                       SimpleParserValue::Character(pos, '?'),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ':'),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 1336),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Integer(pos, 0),
+            SimpleParserValue::Character(pos, '?'),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ':'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1336),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 

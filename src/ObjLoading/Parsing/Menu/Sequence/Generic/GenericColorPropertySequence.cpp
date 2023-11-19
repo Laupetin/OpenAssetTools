@@ -18,7 +18,7 @@ GenericColorPropertySequence::GenericColorPropertySequence(std::string keywordNa
         create.NumericExpression().Tag(TAG_COLOR),                  // r
         create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // g
         create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // b
-        create.Optional(create.NumericExpression().Tag(TAG_COLOR))  // a
+        create.Optional(create.NumericExpression().Tag(TAG_COLOR)), // a
     });
 }
 

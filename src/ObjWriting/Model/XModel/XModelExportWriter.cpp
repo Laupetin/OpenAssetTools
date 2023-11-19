@@ -129,9 +129,11 @@ class XModelExportWriter6 final : public XModelExportWriterBase
         stream << "NUMFACES " << m_faces.size() << "\n";
         for (const auto& face : m_faces)
         {
-            const size_t distinctPositions[3]{m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[0]),
-                                              m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[1]),
-                                              m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[2])};
+            const size_t distinctPositions[3]{
+                m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[0]),
+                m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[1]),
+                m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[2]),
+            };
 
             const XModelVertex& v0 = m_vertices[face.vertexIndex[0]];
             const XModelVertex& v1 = m_vertices[face.vertexIndex[1]];

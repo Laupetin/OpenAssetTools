@@ -9,8 +9,13 @@ SequenceCloseBlock::SequenceCloseBlock(const bool semicolonRequired)
 {
     const HeaderMatcherFactory create(this);
 
-    AddMatchers({create.Char('}').Capture(CAPTURE_CLOSING_PARENTHESIS),
-                 create.Optional(create.And({create.Optional(create.Identifier().Capture(CAPTURE_NAME)), create.Char(';').Tag(TAG_SEMICOLON)}))});
+    AddMatchers({
+        create.Char('}').Capture(CAPTURE_CLOSING_PARENTHESIS),
+        create.Optional(create.And({
+            create.Optional(create.Identifier().Capture(CAPTURE_NAME)),
+            create.Char(';').Tag(TAG_SEMICOLON),
+        })),
+    });
 }
 
 void SequenceCloseBlock::ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const

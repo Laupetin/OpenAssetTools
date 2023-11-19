@@ -71,10 +71,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("fadein")),
-                       SimpleParserValue::String(pos, new std::string("some_element")),
-                       SimpleParserValue::Character(pos, ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("fadein")),
+            SimpleParserValue::String(pos, new std::string("some_element")),
+            SimpleParserValue::Character(pos, ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -89,10 +91,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("noScriptCommand")),
-                       SimpleParserValue::String(pos, new std::string("some_element")),
-                       SimpleParserValue::Character(pos, ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("noScriptCommand")),
+            SimpleParserValue::String(pos, new std::string("some_element")),
+            SimpleParserValue::Character(pos, ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -104,11 +108,13 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, true);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("uiScript")),
-                       SimpleParserValue::Identifier(pos, new std::string("somethingUnknown")),
-                       SimpleParserValue::String(pos, new std::string("anArgumentForTheUnknownScript")),
-                       SimpleParserValue::Character(pos, ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("uiScript")),
+            SimpleParserValue::Identifier(pos, new std::string("somethingUnknown")),
+            SimpleParserValue::String(pos, new std::string("anArgumentForTheUnknownScript")),
+            SimpleParserValue::Character(pos, ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         auto result = helper.PerformTest();
         REQUIRE(result);
@@ -161,42 +167,60 @@ namespace test::parsing::menu::sequence::event_handler_set
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use fadeIn", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("fadeIn")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("fadeIn")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("fadeIn" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use fadeOut", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("fadeOut")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("fadeOut")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("fadeOut" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use show", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("show")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("show")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("show" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use hide", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("hide")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("hide")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("hide" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use showMenu", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("showMenu")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("showMenu")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("showMenu" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use hideMenu", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("hideMenu")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("hideMenu")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("hideMenu" "some_element" ; )");
     }
 
@@ -254,10 +278,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("setColor")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
-                       SimpleParserValue::Character(pos, ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("setColor")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("backColor")),
+            SimpleParserValue::Character(pos, ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -268,50 +294,71 @@ namespace test::parsing::menu::sequence::event_handler_set
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use open", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("open")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("open")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("open" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use close", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("close")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("close")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("close" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use escape", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("escape")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("escape")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("escape" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use closeForAllPlayers", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("closeForAllPlayers")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
-                                   R"("closeForAllPlayers" "some_element" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("closeForAllPlayers")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
+            R"("closeForAllPlayers" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use ingameOpen", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("ingameOpen")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("ingameOpen")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("ingameOpen" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use ingameClose", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("ingameClose")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("ingameClose")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("ingameClose" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setBackground", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("setBackground")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
-                                   R"("setBackground" "some_element" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("setBackground")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
+            R"("setBackground" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setItemColor with forecolor", "[parsing][sequence][menu]")
@@ -386,14 +433,20 @@ namespace test::parsing::menu::sequence::event_handler_set
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setFocus", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("setFocus")), SimpleParserValue::String(TokenPos(), new std::string("some_element"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("setFocus")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_element")),
+            },
             R"("setFocus" "some_element" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setFocusByDvar", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("setFocusByDvar")), SimpleParserValue::String(TokenPos(), new std::string("some_dvar"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("setFocusByDvar")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+            },
             R"("setFocusByDvar" "some_dvar" ; )");
     }
 
@@ -411,202 +464,305 @@ namespace test::parsing::menu::sequence::event_handler_set
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use exec", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("exec")), SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("exec")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
             R"("exec" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execNow", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("execNow")), SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execNow")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
             R"("execNow" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execOnDvarStringValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("execOnDvarStringValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_value")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
-                                   R"("execOnDvarStringValue" "some_dvar" "some_value" "some_command" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execOnDvarStringValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_value")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
+            R"("execOnDvarStringValue" "some_dvar" "some_value" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execOnDvarIntValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("execOnDvarIntValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::Integer(TokenPos(), 1),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
-                                   R"("execOnDvarIntValue" "some_dvar" "1" "some_command" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execOnDvarIntValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
+            R"("execOnDvarIntValue" "some_dvar" "1" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execOnDvarFloatValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("execOnDvarFloatValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::Integer(TokenPos(), 1),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
-                                   R"("execOnDvarFloatValue" "some_dvar" "1" "some_command" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execOnDvarFloatValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
+            R"("execOnDvarFloatValue" "some_dvar" "1" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execNowOnDvarStringValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("execNowOnDvarStringValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_value")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
-                                   R"("execNowOnDvarStringValue" "some_dvar" "some_value" "some_command" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execNowOnDvarStringValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_value")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
+            R"("execNowOnDvarStringValue" "some_dvar" "some_value" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execNowOnDvarIntValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("execNowOnDvarIntValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::Integer(TokenPos(), 1),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
-                                   R"("execNowOnDvarIntValue" "some_dvar" "1" "some_command" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execNowOnDvarIntValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
+            R"("execNowOnDvarIntValue" "some_dvar" "1" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use execNowOnDvarFloatValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("execNowOnDvarFloatValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::Integer(TokenPos(), 1),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_command"))},
-                                   R"("execNowOnDvarFloatValue" "some_dvar" "1" "some_command" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("execNowOnDvarFloatValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::String(TokenPos(), new std::string("some_command")),
+            },
+            R"("execNowOnDvarFloatValue" "some_dvar" "1" "some_command" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use play", "[parsing][sequence][menu]")
     {
         TestGenericScriptStatement(
-            {SimpleParserValue::Identifier(TokenPos(), new std::string("play")), SimpleParserValue::String(TokenPos(), new std::string("some_sound"))},
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("play")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_sound")),
+            },
             R"("play" "some_sound" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuResponse", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuResponse")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_response"))},
-                                   R"("scriptMenuResponse" "some_response" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuResponse")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_response")),
+            },
+            R"("scriptMenuResponse" "some_response" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuRespondOnDvarStringValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarStringValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_value")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_response"))},
-                                   R"("scriptMenuRespondOnDvarStringValue" "some_dvar" "some_value" "some_response" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarStringValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_value")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_response")),
+            },
+            R"("scriptMenuRespondOnDvarStringValue" "some_dvar" "some_value" "some_response" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuRespondOnDvarIntValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarIntValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::Integer(TokenPos(), 1),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_response"))},
-                                   R"("scriptMenuRespondOnDvarIntValue" "some_dvar" "1" "some_response" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarIntValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::String(TokenPos(), new std::string("some_response")),
+            },
+            R"("scriptMenuRespondOnDvarIntValue" "some_dvar" "1" "some_response" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use scriptMenuRespondOnDvarFloatValue", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarFloatValue")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
-                                    SimpleParserValue::Integer(TokenPos(), 1),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_response"))},
-                                   R"("scriptMenuRespondOnDvarFloatValue" "some_dvar" "1" "some_response" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("scriptMenuRespondOnDvarFloatValue")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_dvar")),
+                SimpleParserValue::Integer(TokenPos(), 1),
+                SimpleParserValue::String(TokenPos(), new std::string("some_response")),
+            },
+            R"("scriptMenuRespondOnDvarFloatValue" "some_dvar" "1" "some_response" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use updateMail", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("updateMail"))}, R"("updateMail" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("updateMail")),
+            },
+            R"("updateMail" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use openMail", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("openMail"))}, R"("openMail" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("openMail")),
+            },
+            R"("openMail" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use deleteMail", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("deleteMail"))}, R"("deleteMail" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("deleteMail")),
+            },
+            R"("deleteMail" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use doMailLottery", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("doMailLottery"))}, R"("doMailLottery" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("doMailLottery")),
+            },
+            R"("doMailLottery" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use resetStatsConfirm", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("resetStatsConfirm"))}, R"("resetStatsConfirm" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("resetStatsConfirm")),
+            },
+            R"("resetStatsConfirm" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use resetStatsCancel", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("resetStatsCancel"))}, R"("resetStatsCancel" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("resetStatsCancel")),
+            },
+            R"("resetStatsCancel" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use setGameMode", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("setGameMode")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_game_mode"))},
-                                   R"("setGameMode" "some_game_mode" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("setGameMode")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_game_mode")),
+            },
+            R"("setGameMode" "some_game_mode" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use feederTop", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("feederTop"))}, R"("feederTop" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("feederTop")),
+            },
+            R"("feederTop" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use feederBottom", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("feederBottom"))}, R"("feederBottom" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("feederBottom")),
+            },
+            R"("feederBottom" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use showGamerCard", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("showGamerCard"))}, R"("showGamerCard" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("showGamerCard")),
+            },
+            R"("showGamerCard" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use openForGameType", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("openForGameType")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_game_type"))},
-                                   R"("openForGameType" "some_game_type" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("openForGameType")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_game_type")),
+            },
+            R"("openForGameType" "some_game_type" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use closeForGameType", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("closeForGameType")),
-                                    SimpleParserValue::String(TokenPos(), new std::string("some_game_type"))},
-                                   R"("closeForGameType" "some_game_type" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("closeForGameType")),
+                SimpleParserValue::String(TokenPos(), new std::string("some_game_type")),
+            },
+            R"("closeForGameType" "some_game_type" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use kickPlayer", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("kickPlayer"))}, R"("kickPlayer" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("kickPlayer")),
+            },
+            R"("kickPlayer" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use getKickPlayerQuestion", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("getKickPlayerQuestion"))}, R"("getKickPlayerQuestion" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("getKickPlayerQuestion")),
+            },
+            R"("getKickPlayerQuestion" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use partyUpdateMissingMapPackDvar", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("partyUpdateMissingMapPackDvar"))},
-                                   R"("partyUpdateMissingMapPackDvar" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("partyUpdateMissingMapPackDvar")),
+            },
+            R"("partyUpdateMissingMapPackDvar" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use togglePlayerMute", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("togglePlayerMute"))}, R"("togglePlayerMute" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("togglePlayerMute")),
+            },
+            R"("togglePlayerMute" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use resolveError", "[parsing][sequence][menu]")
     {
-        TestGenericScriptStatement({SimpleParserValue::Identifier(TokenPos(), new std::string("resolveError"))}, R"("resolveError" ; )");
+        TestGenericScriptStatement(
+            {
+                SimpleParserValue::Identifier(TokenPos(), new std::string("resolveError")),
+            },
+            R"("resolveError" ; )");
     }
 
     TEST_CASE("EventHandlerSetScopeSequences: Ensure can use lerp scale", "[parsing][sequence][menu]")
@@ -745,15 +901,17 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarBool")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
-                       SimpleParserValue::Character(TokenPos(), '('),
-                       SimpleParserValue::Character(TokenPos(), ')'),
-                       SimpleParserValue::Character(TokenPos(), '%'),
-                       SimpleParserValue::Integer(TokenPos(), 2),
-                       SimpleParserValue::Character(TokenPos(), ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarBool")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
+            SimpleParserValue::Character(TokenPos(), '('),
+            SimpleParserValue::Character(TokenPos(), ')'),
+            SimpleParserValue::Character(TokenPos(), '%'),
+            SimpleParserValue::Integer(TokenPos(), 2),
+            SimpleParserValue::Character(TokenPos(), ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
         REQUIRE(result);
@@ -778,15 +936,17 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarInt")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
-                       SimpleParserValue::Character(TokenPos(), '('),
-                       SimpleParserValue::Character(TokenPos(), ')'),
-                       SimpleParserValue::Character(TokenPos(), '*'),
-                       SimpleParserValue::Integer(TokenPos(), 2),
-                       SimpleParserValue::Character(TokenPos(), ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarInt")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
+            SimpleParserValue::Character(TokenPos(), '('),
+            SimpleParserValue::Character(TokenPos(), ')'),
+            SimpleParserValue::Character(TokenPos(), '*'),
+            SimpleParserValue::Integer(TokenPos(), 2),
+            SimpleParserValue::Character(TokenPos(), ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
         REQUIRE(result);
@@ -811,15 +971,17 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarFloat")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
-                       SimpleParserValue::Character(TokenPos(), '('),
-                       SimpleParserValue::Character(TokenPos(), ')'),
-                       SimpleParserValue::Character(TokenPos(), '/'),
-                       SimpleParserValue::Integer(TokenPos(), 2),
-                       SimpleParserValue::Character(TokenPos(), ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarFloat")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
+            SimpleParserValue::Character(TokenPos(), '('),
+            SimpleParserValue::Character(TokenPos(), ')'),
+            SimpleParserValue::Character(TokenPos(), '/'),
+            SimpleParserValue::Integer(TokenPos(), 2),
+            SimpleParserValue::Character(TokenPos(), ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
         REQUIRE(result);
@@ -844,15 +1006,17 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarString")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
-                       SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
-                       SimpleParserValue::Character(TokenPos(), '('),
-                       SimpleParserValue::Character(TokenPos(), ')'),
-                       SimpleParserValue::Character(TokenPos(), '+'),
-                       SimpleParserValue::String(TokenPos(), new std::string(" Hello")),
-                       SimpleParserValue::Character(TokenPos(), ';'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarString")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("sample_var")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("milliseconds")),
+            SimpleParserValue::Character(TokenPos(), '('),
+            SimpleParserValue::Character(TokenPos(), ')'),
+            SimpleParserValue::Character(TokenPos(), '+'),
+            SimpleParserValue::String(TokenPos(), new std::string(" Hello")),
+            SimpleParserValue::Character(TokenPos(), ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
         REQUIRE(result);
@@ -881,7 +1045,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -899,7 +1066,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         helper.m_state->m_current_script << R"("fadeIn" "some_element" ; )";
 
@@ -925,14 +1095,16 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("if")),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 1336),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("if")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1336),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto result = helper.PerformTest();
 
@@ -969,12 +1141,14 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Identifier(pos, new std::string("if")),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("if")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         helper.m_state->m_current_script << R"("fadeIn" "some_element" ; )";
 
@@ -1006,15 +1180,17 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("elseif")),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 1336),
-                       SimpleParserValue::Character(pos, '+'),
-                       SimpleParserValue::Integer(pos, 1),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("elseif")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1336),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = currentIfCondition->m_condition_elements.get();
@@ -1058,13 +1234,15 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("elseif")),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("elseif")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = currentIfCondition->m_condition_elements.get();
@@ -1100,13 +1278,15 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("elseif")),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("elseif")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
     }
@@ -1115,13 +1295,15 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("elseif")),
-                       SimpleParserValue::Character(pos, '('),
-                       SimpleParserValue::Integer(pos, 420),
-                       SimpleParserValue::Character(pos, ')'),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("elseif")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 420),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition =
             std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), std::make_unique<CommonEventHandlerSet>());
@@ -1136,10 +1318,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("else")),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("else")),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = currentIfCondition->m_condition_elements.get();
@@ -1166,10 +1350,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("else")),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("else")),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = currentIfCondition->m_condition_elements.get();
@@ -1196,10 +1382,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("else")),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("else")),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         REQUIRE_THROWS_AS(helper.PerformTest(), ParsingException);
     }
@@ -1208,10 +1396,12 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'),
-                       SimpleParserValue::Identifier(pos, new std::string("else")),
-                       SimpleParserValue::Character(pos, '{'),
-                       SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::Identifier(pos, new std::string("else")),
+            SimpleParserValue::Character(pos, '{'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition =
             std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), std::make_unique<CommonEventHandlerSet>());
@@ -1226,7 +1416,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto currentIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = currentIfCondition->m_condition_elements.get();
@@ -1248,7 +1441,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto baseIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = baseIfCondition->m_condition_elements.get();
@@ -1274,7 +1470,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto baseIfCondition =
             std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), std::make_unique<CommonEventHandlerSet>());
@@ -1302,7 +1501,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto baseIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = baseIfCondition->m_condition_elements.get();
@@ -1332,7 +1534,10 @@ namespace test::parsing::menu::sequence::event_handler_set
     {
         EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, false);
         const TokenPos pos;
-        helper.Tokens({SimpleParserValue::Character(pos, '}'), SimpleParserValue::EndOfFile(pos)});
+        helper.Tokens({
+            SimpleParserValue::Character(pos, '}'),
+            SimpleParserValue::EndOfFile(pos),
+        });
 
         const auto baseIfCondition = std::make_unique<CommonEventHandlerCondition>(nullptr, std::make_unique<CommonEventHandlerSet>(), nullptr);
         helper.m_state->m_current_nested_event_handler_set = baseIfCondition->m_condition_elements.get();

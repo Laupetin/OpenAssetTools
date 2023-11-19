@@ -15,7 +15,9 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Char('{')});
+            AddMatchers({
+                create.Char('{'),
+            });
         }
 
     protected:
@@ -31,7 +33,9 @@ namespace techset
 
 const std::vector<TechniqueParser::sequence_t*>& TechniqueNoScopeSequences::GetSequences()
 {
-    static std::vector<TechniqueParser::sequence_t*> tests({new SequencePass()});
+    static std::vector<TechniqueParser::sequence_t*> tests({
+        new SequencePass(),
+    });
 
     return tests;
 }

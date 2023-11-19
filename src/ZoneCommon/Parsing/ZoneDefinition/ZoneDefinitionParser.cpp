@@ -14,12 +14,14 @@ ZoneDefinitionParser::ZoneDefinitionParser(ZoneDefinitionLexer* lexer)
 
 const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>::sequence_t*>& ZoneDefinitionParser::GetTestsForState()
 {
-    static std::vector<sequence_t*> tests({new SequenceZoneDefinitionMetaData(),
-                                           new SequenceZoneDefinitionInclude(),
-                                           new SequenceZoneDefinitionIgnore(),
-                                           new SequenceZoneDefinitionAssetList(),
-                                           new SequenceZoneDefinitionBuild(),
-                                           new SequenceZoneDefinitionEntry()});
+    static std::vector<sequence_t*> tests({
+        new SequenceZoneDefinitionMetaData(),
+        new SequenceZoneDefinitionInclude(),
+        new SequenceZoneDefinitionIgnore(),
+        new SequenceZoneDefinitionAssetList(),
+        new SequenceZoneDefinitionBuild(),
+        new SequenceZoneDefinitionEntry(),
+    });
 
     return tests;
 }

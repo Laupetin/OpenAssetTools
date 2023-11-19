@@ -298,7 +298,11 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
 
     if (hasAddOperation && hasSubtractOperation)
     {
-        binaryOperationsMatchers.emplace_back(create.Or({create.IntegerWithSign(), create.FloatingPointWithSign()})
+        binaryOperationsMatchers.emplace_back(create
+                                                  .Or({
+                                                      create.IntegerWithSign(),
+                                                      create.FloatingPointWithSign(),
+                                                  })
                                                   .NoConsume()
                                                   .Transform(
                                                       [](const SimpleMatcherFactory::token_list_t& values)
@@ -360,11 +364,13 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
     if (!m_enable_conditional_operator)
         return create.False();
 
-    return create.And({create.Char('?').Tag(TAG_CONDITIONAL_OPERATOR),
-                       create.Label(LABEL_EXPRESSION),
-                       create.Char(':').Tag(TAG_CONDITIONAL_OPERATOR_SEPARATOR),
-                       create.Label(LABEL_EXPRESSION),
-                       create.True().Tag(TAG_CONDITIONAL_OPERATOR_END)});
+    return create.And({
+        create.Char('?').Tag(TAG_CONDITIONAL_OPERATOR),
+        create.Label(LABEL_EXPRESSION),
+        create.Char(':').Tag(TAG_CONDITIONAL_OPERATOR_SEPARATOR),
+        create.Label(LABEL_EXPRESSION),
+        create.True().Tag(TAG_CONDITIONAL_OPERATOR_END),
+    });
 }
 
 std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::Expression(const supplier_t* labelSupplier) const
@@ -372,11 +378,32 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::E
     const SimpleMatcherFactory create(labelSupplier);
 
     return create
-        .And({create.OptionalLoop(ParseUnaryOperationType(labelSupplier)),
-              create.Or({create.And({create.Char('('), create.Label(LABEL_EXPRESSION), create.Char(')').Tag(TAG_PARENTHESIS_END)}).Tag(TAG_PARENTHESIS),
-                         create.And({create.True().Tag(TAG_OPERAND_EXT), ParseOperandExtension(labelSupplier), create.True().Tag(TAG_OPERAND_EXT_END)}),
-                         ParseOperand(labelSupplier)}),
-              create.Optional(create.Or({ParseConditionalOperator(labelSupplier),
-                                         create.And({ParseBinaryOperationType(labelSupplier), create.Label(LABEL_EXPRESSION)}).Tag(TAG_BINARY_OPERATION)}))})
+        .And({
+            create.OptionalLoop(ParseUnaryOperationType(labelSupplier)),
+            create.Or({
+                create
+                    .And({
+                        create.Char('('),
+                        create.Label(LABEL_EXPRESSION),
+                        create.Char(')').Tag(TAG_PARENTHESIS_END),
+                    })
+                    .Tag(TAG_PARENTHESIS),
+                create.And({
+                    create.True().Tag(TAG_OPERAND_EXT),
+                    ParseOperandExtension(labelSupplier),
+                    create.True().Tag(TAG_OPERAND_EXT_END),
+                }),
+                ParseOperand(labelSupplier),
+            }),
+            create.Optional(create.Or({
+                ParseConditionalOperator(labelSupplier),
+                create
+                    .And({
+                        ParseBinaryOperationType(labelSupplier),
+                        create.Label(LABEL_EXPRESSION),
+                    })
+                    .Tag(TAG_BINARY_OPERATION),
+            })),
+        })
         .Tag(TAG_EXPRESSION);
 }

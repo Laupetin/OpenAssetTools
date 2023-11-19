@@ -24,21 +24,34 @@ namespace sdd::struct_scope_sequences
 
         static std::unique_ptr<matcher_t> TypeMatchers(const SimpleMatcherFactory& create)
         {
-            return create.Or({create.Keyword("int").Tag(TAG_TYPE_INT),
-                              create.Keyword("byte").Tag(TAG_TYPE_BYTE),
-                              create.Keyword("bool").Tag(TAG_TYPE_BOOL),
-                              create.Keyword("float").Tag(TAG_TYPE_FLOAT),
-                              create.Keyword("short").Tag(TAG_TYPE_SHORT),
-                              create.And({create.Keyword("string"), create.Char('('), create.Integer().Capture(CAPTURE_STRING_LENGTH), create.Char(')')})
-                                  .Tag(TAG_TYPE_STRING),
-                              create.Identifier().Tag(TAG_TYPE_NAMED).Capture(CAPTURE_TYPE_NAME)});
+            return create.Or({
+                create.Keyword("int").Tag(TAG_TYPE_INT),
+                create.Keyword("byte").Tag(TAG_TYPE_BYTE),
+                create.Keyword("bool").Tag(TAG_TYPE_BOOL),
+                create.Keyword("float").Tag(TAG_TYPE_FLOAT),
+                create.Keyword("short").Tag(TAG_TYPE_SHORT),
+                create
+                    .And({
+                        create.Keyword("string"),
+                        create.Char('('),
+                        create.Integer().Capture(CAPTURE_STRING_LENGTH),
+                        create.Char(')'),
+                    })
+                    .Tag(TAG_TYPE_STRING),
+                create.Identifier().Tag(TAG_TYPE_NAMED).Capture(CAPTURE_TYPE_NAME),
+            });
         }
 
         static std::unique_ptr<matcher_t> ArrayMatchers(const SimpleMatcherFactory& create)
         {
-            return create.And({create.Char('['),
-                               create.Or({create.Integer().Capture(CAPTURE_ARRAY_SIZE), create.Identifier().Capture(CAPTURE_ARRAY_SIZE)}),
-                               create.Char(']')});
+            return create.And({
+                create.Char('['),
+                create.Or({
+                    create.Integer().Capture(CAPTURE_ARRAY_SIZE),
+                    create.Identifier().Capture(CAPTURE_ARRAY_SIZE),
+                }),
+                create.Char(']'),
+            });
         }
 
     public:
@@ -46,7 +59,12 @@ namespace sdd::struct_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({TypeMatchers(create), create.Identifier().Capture(CAPTURE_ENTRY_NAME), create.OptionalLoop(ArrayMatchers(create)), create.Char(';')});
+            AddMatchers({
+                TypeMatchers(create),
+                create.Identifier().Capture(CAPTURE_ENTRY_NAME),
+                create.OptionalLoop(ArrayMatchers(create)),
+                create.Char(';'),
+            });
         }
 
     private:
@@ -178,7 +196,13 @@ namespace sdd::struct_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Keyword("pad"), create.Char('('), create.Integer().Capture(CAPTURE_PADDING_VALUE), create.Char(')'), create.Char(';')});
+            AddMatchers({
+                create.Keyword("pad"),
+                create.Char('('),
+                create.Integer().Capture(CAPTURE_PADDING_VALUE),
+                create.Char(')'),
+                create.Char(';'),
+            });
         }
 
     protected:
@@ -201,7 +225,10 @@ namespace sdd::struct_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Char('}'), create.Optional(create.Char(';'))});
+            AddMatchers({
+                create.Char('}'),
+                create.Optional(create.Char(';')),
+            });
         }
 
     protected:

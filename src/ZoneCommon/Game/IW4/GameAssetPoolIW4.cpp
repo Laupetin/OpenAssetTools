@@ -9,11 +9,12 @@
 using namespace IW4;
 
 const char* GameAssetPoolIW4::ASSET_TYPE_NAMES[]{
-    "physpreset", "physcollmap", "xanim",       "xmodelsurfs", "xmodel",    "material",    "pixelshader", "vertexshader", "vertexdecl",  "techniqueset",
-    "image",      "sound",       "soundcurve",  "loadedsound", "clipmap",   "clipmap",     "comworld",    "gameworldsp",  "gameworldmp", "mapents",
-    "fxworld",    "gfxworld",    "lightdef",    "uimap",       "font",      "menulist",    "menu",        "localize",     "weapon",      "snddriverglobals",
-    "fx",         "impactfx",    "aitype",      "mptype",      "character", "xmodelalias", "rawfile",     "stringtable",  "leaderboard", "structureddatadef",
-    "tracer",     "vehicle",     "addonmapents"};
+    "physpreset", "physcollmap", "xanim",        "xmodelsurfs", "xmodel",    "material",    "pixelshader", "vertexshader", "vertexdecl",  "techniqueset",
+    "image",      "sound",       "soundcurve",   "loadedsound", "clipmap",   "clipmap",     "comworld",    "gameworldsp",  "gameworldmp", "mapents",
+    "fxworld",    "gfxworld",    "lightdef",     "uimap",       "font",      "menulist",    "menu",        "localize",     "weapon",      "snddriverglobals",
+    "fx",         "impactfx",    "aitype",       "mptype",      "character", "xmodelalias", "rawfile",     "stringtable",  "leaderboard", "structureddatadef",
+    "tracer",     "vehicle",     "addonmapents",
+};
 
 /*
     Asset Pool Table

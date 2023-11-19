@@ -82,18 +82,26 @@ public:
 
         const IPakHeader header{ipak_consts::IPAK_MAGIC, ipak_consts::IPAK_VERSION, static_cast<uint32_t>(m_total_size), SECTION_COUNT};
 
-        const IPakSection dataSection{ipak_consts::IPAK_DATA_SECTION,
-                                      static_cast<uint32_t>(m_data_section_offset),
-                                      static_cast<uint32_t>(m_data_section_size),
-                                      static_cast<uint32_t>(m_index_entries.size())};
+        const IPakSection dataSection{
+            ipak_consts::IPAK_DATA_SECTION,
+            static_cast<uint32_t>(m_data_section_offset),
+            static_cast<uint32_t>(m_data_section_size),
+            static_cast<uint32_t>(m_index_entries.size()),
+        };
 
-        const IPakSection indexSection{ipak_consts::IPAK_INDEX_SECTION,
-                                       static_cast<uint32_t>(m_index_section_offset),
-                                       static_cast<uint32_t>(sizeof(IPakIndexEntry) * m_index_entries.size()),
-                                       static_cast<uint32_t>(m_index_entries.size())};
+        const IPakSection indexSection{
+            ipak_consts::IPAK_INDEX_SECTION,
+            static_cast<uint32_t>(m_index_section_offset),
+            static_cast<uint32_t>(sizeof(IPakIndexEntry) * m_index_entries.size()),
+            static_cast<uint32_t>(m_index_entries.size()),
+        };
 
         const IPakSection brandingSection{
-            ipak_consts::IPAK_BRANDING_SECTION, static_cast<uint32_t>(m_branding_section_offset), std::extent_v<decltype(BRANDING)>, 1};
+            ipak_consts::IPAK_BRANDING_SECTION,
+            static_cast<uint32_t>(m_branding_section_offset),
+            std::extent_v<decltype(BRANDING)>,
+            1,
+        };
 
         Write(&header, sizeof(header));
         Write(&dataSection, sizeof(dataSection));

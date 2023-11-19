@@ -13,7 +13,11 @@ namespace sdd::no_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Keyword("version"), create.Integer().Capture(CAPTURE_VERSION), create.Char('{')});
+            AddMatchers({
+                create.Keyword("version"),
+                create.Integer().Capture(CAPTURE_VERSION),
+                create.Char('{'),
+            });
         }
 
     protected:

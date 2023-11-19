@@ -20,13 +20,15 @@ HeaderBlockType HeaderBlockNamespace::GetType()
 
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockNamespace::GetTestsForBlock()
 {
-    static std::vector<sequence_t*> tests({new SequenceCloseBlock(false),
-                                           new SequenceEnum(),
-                                           new SequenceForwardDecl(),
-                                           new SequenceNamespace(),
-                                           new SequenceStruct(),
-                                           new SequenceTypedef(),
-                                           new SequenceUnion()});
+    static std::vector<sequence_t*> tests({
+        new SequenceCloseBlock(false),
+        new SequenceEnum(),
+        new SequenceForwardDecl(),
+        new SequenceNamespace(),
+        new SequenceStruct(),
+        new SequenceTypedef(),
+        new SequenceUnion(),
+    });
 
     return tests;
 }

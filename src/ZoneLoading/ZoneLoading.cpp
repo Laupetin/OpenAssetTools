@@ -14,7 +14,12 @@
 namespace fs = std::filesystem;
 
 IZoneLoaderFactory* ZoneLoaderFactories[]{
-    new IW3::ZoneLoaderFactory(), new IW4::ZoneLoaderFactory(), new IW5::ZoneLoaderFactory(), new T5::ZoneLoaderFactory(), new T6::ZoneLoaderFactory()};
+    new IW3::ZoneLoaderFactory(),
+    new IW4::ZoneLoaderFactory(),
+    new IW5::ZoneLoaderFactory(),
+    new T5::ZoneLoaderFactory(),
+    new T6::ZoneLoaderFactory(),
+};
 
 std::unique_ptr<Zone> ZoneLoading::LoadZone(const std::string& path)
 {

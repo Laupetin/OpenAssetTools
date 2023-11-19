@@ -85,7 +85,17 @@ namespace
         "devraw/",
     };
 
-    constexpr size_t FRAME_RATE_FOR_INDEX[]{8000, 12000, 16000, 24000, 32000, 44100, 48000, 96000, 192000};
+    constexpr size_t FRAME_RATE_FOR_INDEX[]{
+        8000,
+        12000,
+        16000,
+        24000,
+        32000,
+        44100,
+        48000,
+        96000,
+        192000,
+    };
 } // namespace
 
 class AssetDumperSndBank::Internal

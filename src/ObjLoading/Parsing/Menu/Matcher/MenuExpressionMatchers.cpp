@@ -30,15 +30,22 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> MenuExpressionMatchers::Par
 {
     const MenuMatcherFactory create(labelSupplier);
 
-    return create.Or({create
-                          .And({create.Identifier().Capture(CAPTURE_FUNCTION_NAME),
-                                create.Char('('),
-                                create.Optional(create.And({
-                                    create.Label(LABEL_EXPRESSION),
-                                    create.OptionalLoop(create.And({create.Char(','), create.Label(LABEL_EXPRESSION)})),
-                                })),
-                                create.Char(')').Tag(TAG_EXPRESSION_FUNCTION_CALL_END)})
-                          .Tag(TAG_EXPRESSION_FUNCTION_CALL)});
+    return create.Or({
+        create
+            .And({
+                create.Identifier().Capture(CAPTURE_FUNCTION_NAME),
+                create.Char('('),
+                create.Optional(create.And({
+                    create.Label(LABEL_EXPRESSION),
+                    create.OptionalLoop(create.And({
+                        create.Char(','),
+                        create.Label(LABEL_EXPRESSION),
+                    })),
+                })),
+                create.Char(')').Tag(TAG_EXPRESSION_FUNCTION_CALL_END),
+            })
+            .Tag(TAG_EXPRESSION_FUNCTION_CALL),
+    });
 }
 
 const std::map<std::string, size_t>& MenuExpressionMatchers::GetBaseFunctionMapForFeatureLevel(const FeatureLevel featureLevel)

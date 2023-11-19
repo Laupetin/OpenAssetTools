@@ -12,55 +12,85 @@
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Typename(const supplier_t* labelSupplier)
 {
-    static constexpr const char* BUILT_IN_TYPE_NAMES[]{"unsigned", "char", "short", "int", "long"};
+    static constexpr const char* BUILT_IN_TYPE_NAMES[]{
+        "unsigned",
+        "char",
+        "short",
+        "int",
+        "long",
+    };
     static_assert(std::extent<decltype(BUILT_IN_TYPE_NAMES)>::value
                   == static_cast<int>(CommandsParserValueType::BUILT_IN_LAST) - static_cast<int>(CommandsParserValueType::BUILT_IN_FIRST) + 1);
 
     const CommandsMatcherFactory create(labelSupplier);
 
-    return create.Or(
-        {create
-             .And({create.Optional(create.Type(CommandsParserValueType::UNSIGNED)),
-                   create.Or({create.Type(CommandsParserValueType::CHAR),
-                              create.Type(CommandsParserValueType::SHORT),
-                              create.Type(CommandsParserValueType::INT),
-                              create.And({create.Type(CommandsParserValueType::LONG), create.Optional(create.Type(CommandsParserValueType::LONG))})})})
-             .Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     std::ostringstream str;
-                     auto first = true;
+    return create.Or({
+        create
+            .And({
+                create.Optional(create.Type(CommandsParserValueType::UNSIGNED)),
+                create.Or({
+                    create.Type(CommandsParserValueType::CHAR),
+                    create.Type(CommandsParserValueType::SHORT),
+                    create.Type(CommandsParserValueType::INT),
+                    create.And({
+                        create.Type(CommandsParserValueType::LONG),
+                        create.Optional(create.Type(CommandsParserValueType::LONG)),
+                    }),
+                }),
+            })
+            .Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    std::ostringstream str;
+                    auto first = true;
 
-                     for (const auto& token : values)
-                     {
-                         if (first)
-                             first = false;
-                         else
-                             str << " ";
-                         str << BUILT_IN_TYPE_NAMES[static_cast<int>(token.get().m_type) - static_cast<int>(CommandsParserValueType::BUILT_IN_FIRST)];
-                     }
+                    for (const auto& token : values)
+                    {
+                        if (first)
+                            first = false;
+                        else
+                            str << " ";
+                        str << BUILT_IN_TYPE_NAMES[static_cast<int>(token.get().m_type) - static_cast<int>(CommandsParserValueType::BUILT_IN_FIRST)];
+                    }
 
-                     return CommandsParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
-                 }),
-         create.And({create.Identifier(), create.OptionalLoop(create.And({create.Char(':'), create.Char(':'), create.Identifier()}))})
-             .Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     std::ostringstream str;
-                     str << values[0].get().IdentifierValue();
+                    return CommandsParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
+                }),
+        create
+            .And({
+                create.Identifier(),
+                create.OptionalLoop(create.And({
+                    create.Char(':'),
+                    create.Char(':'),
+                    create.Identifier(),
+                })),
+            })
+            .Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    std::ostringstream str;
+                    str << values[0].get().IdentifierValue();
 
-                     for (auto i = 3u; i < values.size(); i += 3)
-                         str << "::" << values[i].get().IdentifierValue();
+                    for (auto i = 3u; i < values.size(); i += 3)
+                        str << "::" << values[i].get().IdentifierValue();
 
-                     return CommandsParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
-                 })});
+                    return CommandsParserValue::TypeName(values[0].get().GetPos(), new std::string(str.str()));
+                }),
+    });
 }
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ArrayDef(const supplier_t* labelSupplier)
 {
     const CommandsMatcherFactory create(labelSupplier);
 
-    return create.And({create.Char('['), create.Or({create.Integer(), create.Identifier()}), create.Char(']')})
+    return create
+        .And({
+            create.Char('['),
+            create.Or({
+                create.Integer(),
+                create.Identifier(),
+            }),
+            create.Char(']'),
+        })
         .Transform(
             [](CommandsMatcherFactory::token_list_t& values)
             {
@@ -91,7 +121,13 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Parse
 {
     const CommandsMatcherFactory create(labelSupplier);
 
-    return create.And({create.Char('['), create.Label(LABEL_EVALUATION), create.Char(']').Tag(TAG_OPERAND_ARRAY_END)}).Tag(TAG_OPERAND_ARRAY);
+    return create
+        .And({
+            create.Char('['),
+            create.Label(LABEL_EVALUATION),
+            create.Char(']').Tag(TAG_OPERAND_ARRAY_END),
+        })
+        .Tag(TAG_OPERAND_ARRAY);
 }
 
 std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::ParseOperand(const supplier_t* labelSupplier)
@@ -99,11 +135,15 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Parse
     const CommandsMatcherFactory create(labelSupplier);
 
     return create
-        .Or({create
-                 .And({create.Label(LABEL_TYPENAME).Capture(CAPTURE_OPERAND_TYPENAME),
-                       create.OptionalLoop(MatcherFactoryWrapper<CommandsParserValue>(ParseOperandArray(labelSupplier)).Capture(CAPTURE_OPERAND_ARRAY))})
-                 .Tag(TAG_OPERAND_TYPENAME),
-             create.Integer().Tag(TAG_OPERAND_INTEGER).Capture(CAPTURE_OPERAND_INTEGER)})
+        .Or({
+            create
+                .And({
+                    create.Label(LABEL_TYPENAME).Capture(CAPTURE_OPERAND_TYPENAME),
+                    create.OptionalLoop(MatcherFactoryWrapper<CommandsParserValue>(ParseOperandArray(labelSupplier)).Capture(CAPTURE_OPERAND_ARRAY)),
+                })
+                .Tag(TAG_OPERAND_TYPENAME),
+            create.Integer().Tag(TAG_OPERAND_INTEGER).Capture(CAPTURE_OPERAND_INTEGER),
+        })
         .Tag(TAG_OPERAND);
 }
 
@@ -112,104 +152,106 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Parse
     const CommandsMatcherFactory create(labelSupplier);
 
     return create
-        .Or({create.Char('+').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_ADD);
-                 }),
-             create.Char('-').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SUBTRACT);
-                 }),
-             create.Char('*').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_MULTIPLY);
-                 }),
-             create.Char('/').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_DIVIDE);
-                 }),
-             create.Char('%').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_REMAINDER);
-                 }),
-             create.Char('&').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_AND);
-                 }),
-             create.Char('^').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_XOR);
-                 }),
-             create.Char('|').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_OR);
-                 }),
-             create.Type(CommandsParserValueType::SHIFT_LEFT)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SHIFT_LEFT);
-                     }),
-             create.Type(CommandsParserValueType::SHIFT_RIGHT)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SHIFT_RIGHT);
-                     }),
-             create.Char('>').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_GREATER_THAN);
-                 }),
-             create.Type(CommandsParserValueType::GREATER_EQUAL)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_GREATER_EQUAL_THAN);
-                     }),
-             create.Char('<').Transform(
-                 [](CommandsMatcherFactory::token_list_t& values)
-                 {
-                     return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_LESS_THAN);
-                 }),
-             create.Type(CommandsParserValueType::LESS_EQUAL)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_LESS_EQUAL_THAN);
-                     }),
-             create.Type(CommandsParserValueType::EQUALS)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_EQUALS);
-                     }),
-             create.Type(CommandsParserValueType::NOT_EQUAL)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_NOT_EQUAL);
-                     }),
-             create.Type(CommandsParserValueType::LOGICAL_AND)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_AND);
-                     }),
-             create.Type(CommandsParserValueType::LOGICAL_OR)
-                 .Transform(
-                     [](CommandsMatcherFactory::token_list_t& values)
-                     {
-                         return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_OR);
-                     })})
+        .Or({
+            create.Char('+').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_ADD);
+                }),
+            create.Char('-').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SUBTRACT);
+                }),
+            create.Char('*').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_MULTIPLY);
+                }),
+            create.Char('/').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_DIVIDE);
+                }),
+            create.Char('%').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_REMAINDER);
+                }),
+            create.Char('&').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_AND);
+                }),
+            create.Char('^').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_XOR);
+                }),
+            create.Char('|').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_BITWISE_OR);
+                }),
+            create.Type(CommandsParserValueType::SHIFT_LEFT)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SHIFT_LEFT);
+                    }),
+            create.Type(CommandsParserValueType::SHIFT_RIGHT)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_SHIFT_RIGHT);
+                    }),
+            create.Char('>').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_GREATER_THAN);
+                }),
+            create.Type(CommandsParserValueType::GREATER_EQUAL)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_GREATER_EQUAL_THAN);
+                    }),
+            create.Char('<').Transform(
+                [](CommandsMatcherFactory::token_list_t& values)
+                {
+                    return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_LESS_THAN);
+                }),
+            create.Type(CommandsParserValueType::LESS_EQUAL)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_LESS_EQUAL_THAN);
+                    }),
+            create.Type(CommandsParserValueType::EQUALS)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_EQUALS);
+                    }),
+            create.Type(CommandsParserValueType::NOT_EQUAL)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_NOT_EQUAL);
+                    }),
+            create.Type(CommandsParserValueType::LOGICAL_AND)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_AND);
+                    }),
+            create.Type(CommandsParserValueType::LOGICAL_OR)
+                .Transform(
+                    [](CommandsMatcherFactory::token_list_t& values)
+                    {
+                        return CommandsParserValue::OpType(values[0].get().GetPos(), OperationType::OPERATION_OR);
+                    }),
+        })
         .Capture(CAPTURE_BINARY_OPERATION_TYPE);
 }
 
@@ -218,14 +260,25 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Evalu
     const CommandsMatcherFactory create(labelSupplier);
 
     return create
-        .And({create.Or({create
-                             .And({create.Optional(create.Char('!').Tag(TAG_EVALUATION_NOT)),
-                                   create.Char('('),
-                                   create.Label(LABEL_EVALUATION),
-                                   create.Char(')').Tag(TAG_EVALUATION_PARENTHESIS_END)})
-                             .Tag(TAG_EVALUATION_PARENTHESIS),
-                         ParseOperand(labelSupplier)}),
-              create.Optional(create.And({ParseOperationType(labelSupplier), create.Label(LABEL_EVALUATION)}).Tag(TAG_EVALUATION_OPERATION))})
+        .And({
+            create.Or({
+                create
+                    .And({
+                        create.Optional(create.Char('!').Tag(TAG_EVALUATION_NOT)),
+                        create.Char('('),
+                        create.Label(LABEL_EVALUATION),
+                        create.Char(')').Tag(TAG_EVALUATION_PARENTHESIS_END),
+                    })
+                    .Tag(TAG_EVALUATION_PARENTHESIS),
+                ParseOperand(labelSupplier),
+            }),
+            create.Optional(create
+                                .And({
+                                    ParseOperationType(labelSupplier),
+                                    create.Label(LABEL_EVALUATION),
+                                })
+                                .Tag(TAG_EVALUATION_OPERATION)),
+        })
         .Tag(TAG_EVALUATION);
 }
 

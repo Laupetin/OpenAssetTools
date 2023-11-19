@@ -16,7 +16,10 @@ namespace state_map
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Identifier().Capture(CAPTURE_ENTRY_NAME), create.Char('{')});
+            AddMatchers({
+                create.Identifier().Capture(CAPTURE_ENTRY_NAME),
+                create.Char('{'),
+            });
         }
 
     protected:
@@ -42,7 +45,9 @@ namespace state_map
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Char('}').Capture(CAPTURE_FIRST_TOKEN)});
+            AddMatchers({
+                create.Char('}').Capture(CAPTURE_FIRST_TOKEN),
+            });
         }
 
     protected:
@@ -67,9 +72,13 @@ namespace state_map
             AddLabeledMatchers(StateMapExpressionMatchers().Expression(this), StateMapExpressionMatchers::LABEL_EXPRESSION);
             const SimpleMatcherFactory create(this);
 
-            AddMatchers(
-                {create.Or({create.Keyword("default").Tag(TAG_DEFAULT), create.Label(StateMapExpressionMatchers::LABEL_EXPRESSION).Tag(TAG_EXPRESSION)}),
-                 create.Char(':')});
+            AddMatchers({
+                create.Or({
+                    create.Keyword("default").Tag(TAG_DEFAULT),
+                    create.Label(StateMapExpressionMatchers::LABEL_EXPRESSION).Tag(TAG_EXPRESSION),
+                }),
+                create.Char(':'),
+            });
         }
 
     protected:
@@ -117,14 +126,29 @@ namespace state_map
         {
             const SimpleMatcherFactory create(this);
 
-            AddLabeledMatchers(create.Or({create.Identifier(), create.Integer()}), LABEL_VALUE);
+            AddLabeledMatchers(create.Or({
+                                   create.Identifier(),
+                                   create.Integer(),
+                               }),
+                               LABEL_VALUE);
 
-            AddLabeledMatchers({create.Label(LABEL_VALUE).Capture(CAPTURE_VALUE),
-                                create.OptionalLoop(create.And({create.Char(','), create.Label(LABEL_VALUE).Capture(CAPTURE_VALUE)}))},
-                               LABEL_VALUE_LIST);
+            AddLabeledMatchers(
+                {
+                    create.Label(LABEL_VALUE).Capture(CAPTURE_VALUE),
+                    create.OptionalLoop(create.And({
+                        create.Char(','),
+                        create.Label(LABEL_VALUE).Capture(CAPTURE_VALUE),
+                    })),
+                },
+                LABEL_VALUE_LIST);
 
-            AddMatchers({create.Or({create.Keyword("passthrough").Tag(TAG_PASSTHROUGH), create.Label(LABEL_VALUE_LIST).Tag(TAG_VALUE_LIST)}),
-                         create.Char(';').Capture(CAPTURE_VALUE_END)});
+            AddMatchers({
+                create.Or({
+                    create.Keyword("passthrough").Tag(TAG_PASSTHROUGH),
+                    create.Label(LABEL_VALUE_LIST).Tag(TAG_VALUE_LIST),
+                }),
+                create.Char(';').Capture(CAPTURE_VALUE_END),
+            });
         }
 
     protected:
@@ -195,11 +219,19 @@ StateMapParser::StateMapParser(SimpleLexer* lexer, std::string stateMapName, con
 
 const std::vector<StateMapParser::sequence_t*>& StateMapParser::GetTestsForState()
 {
-    static std::vector<sequence_t*> rootSequences({new SequenceStateMapEntry()});
+    static std::vector<sequence_t*> rootSequences({
+        new SequenceStateMapEntry(),
+    });
 
-    static std::vector<sequence_t*> entrySequences({new SequenceStateMapEntryClose(), new SequenceCondition()});
+    static std::vector<sequence_t*> entrySequences({
+        new SequenceStateMapEntryClose(),
+        new SequenceCondition(),
+    });
 
-    static std::vector<sequence_t*> ruleSequences({new SequenceCondition(), new SequenceValue()});
+    static std::vector<sequence_t*> ruleSequences({
+        new SequenceCondition(),
+        new SequenceValue(),
+    });
 
     if (m_state->m_in_entry)
     {

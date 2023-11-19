@@ -14,7 +14,13 @@
 
 ObjLoading::Configuration_t ObjLoading::Configuration;
 
-const IObjLoader* const OBJ_LOADERS[]{new IW3::ObjLoader(), new IW4::ObjLoader(), new IW5::ObjLoader(), new T5::ObjLoader(), new T6::ObjLoader()};
+const IObjLoader* const OBJ_LOADERS[]{
+    new IW3::ObjLoader(),
+    new IW4::ObjLoader(),
+    new IW5::ObjLoader(),
+    new T5::ObjLoader(),
+    new T6::ObjLoader(),
+};
 
 void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
 {

@@ -10,12 +10,20 @@ SequenceReorder::SequenceReorder()
     const CommandsMatcherFactory create(this);
 
     AddLabeledMatchers(CommandsCommonMatchers::Typename(this), CommandsCommonMatchers::LABEL_TYPENAME);
-    AddMatchers({create.Keyword("reorder").Capture(CAPTURE_START),
-                 create.Optional(create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE)),
-                 create.Char(':'),
-                 create.Optional(create.And({create.Char('.'), create.Char('.'), create.Char('.')}).Tag(TAG_FIND_FIRST)),
-                 create.Loop(create.Identifier().Capture(CAPTURE_ENTRY)),
-                 create.Char(';')});
+    AddMatchers({
+        create.Keyword("reorder").Capture(CAPTURE_START),
+        create.Optional(create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE)),
+        create.Char(':'),
+        create.Optional(create
+                            .And({
+                                create.Char('.'),
+                                create.Char('.'),
+                                create.Char('.'),
+                            })
+                            .Tag(TAG_FIND_FIRST)),
+        create.Loop(create.Identifier().Capture(CAPTURE_ENTRY)),
+        create.Char(';'),
+    });
 }
 
 StructureInformation* SequenceReorder::GetType(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)

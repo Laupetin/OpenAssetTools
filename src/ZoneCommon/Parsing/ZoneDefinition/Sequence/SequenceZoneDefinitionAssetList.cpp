@@ -6,7 +6,11 @@ SequenceZoneDefinitionAssetList::SequenceZoneDefinitionAssetList()
 {
     const ZoneDefinitionMatcherFactory create(this);
 
-    AddMatchers({create.Keyword("assetlist"), create.Char(','), create.Field().Capture(CAPTURE_ASSET_LIST_NAME)});
+    AddMatchers({
+        create.Keyword("assetlist"),
+        create.Char(','),
+        create.Field().Capture(CAPTURE_ASSET_LIST_NAME),
+    });
 }
 
 void SequenceZoneDefinitionAssetList::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const

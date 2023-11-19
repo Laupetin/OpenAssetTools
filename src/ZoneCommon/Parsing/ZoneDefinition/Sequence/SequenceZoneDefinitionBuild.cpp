@@ -6,7 +6,11 @@ SequenceZoneDefinitionBuild::SequenceZoneDefinitionBuild()
 {
     const ZoneDefinitionMatcherFactory create(this);
 
-    AddMatchers({create.Keyword("build"), create.Char(','), create.Field().Capture(CAPTURE_BUILD_TARGET_NAME)});
+    AddMatchers({
+        create.Keyword("build"),
+        create.Char(','),
+        create.Field().Capture(CAPTURE_BUILD_TARGET_NAME),
+    });
 }
 
 void SequenceZoneDefinitionBuild::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const

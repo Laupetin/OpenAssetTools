@@ -15,7 +15,10 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.String().Capture(CAPTURE_TYPE_NAME), create.Char(':')});
+            AddMatchers({
+                create.String().Capture(CAPTURE_TYPE_NAME),
+                create.Char(':'),
+            });
         }
 
     protected:
@@ -40,7 +43,15 @@ namespace techset
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Or({create.Identifier(), create.String()}).Capture(CAPTURE_NAME), create.Char(';')});
+            AddMatchers({
+                create
+                    .Or({
+                        create.Identifier(),
+                        create.String(),
+                    })
+                    .Capture(CAPTURE_NAME),
+                create.Char(';'),
+            });
         }
 
     protected:
@@ -66,8 +77,13 @@ TechsetParser::TechsetParser(SimpleLexer* lexer, const char** validTechniqueType
 
 const std::vector<TechsetParser::sequence_t*>& TechsetParser::GetTestsForState()
 {
-    static std::vector<sequence_t*> allTests({new SequenceTechniqueTypeName(), new SequenceTechniqueName()});
-    static std::vector<sequence_t*> techniqueTypeNameOnlyTests({new SequenceTechniqueTypeName()});
+    static std::vector<sequence_t*> allTests({
+        new SequenceTechniqueTypeName(),
+        new SequenceTechniqueName(),
+    });
+    static std::vector<sequence_t*> techniqueTypeNameOnlyTests({
+        new SequenceTechniqueTypeName(),
+    });
 
     return m_state->m_current_technique_types.empty() ? techniqueTypeNameOnlyTests : allTests;
 }

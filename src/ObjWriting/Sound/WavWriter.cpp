@@ -19,12 +19,14 @@ void WavWriter::WritePcmHeader(const WavMetaData& metaData, const size_t dataLen
     constexpr WavChunkHeader formatChunkHeader{WAV_CHUNK_ID_FMT, sizeof(WavFormatChunkPcm)};
     m_stream.write(reinterpret_cast<const char*>(&formatChunkHeader), sizeof(formatChunkHeader));
 
-    const WavFormatChunkPcm formatChunk{WavFormat::PCM,
-                                        static_cast<uint16_t>(metaData.channelCount),
-                                        metaData.samplesPerSec,
-                                        metaData.samplesPerSec * metaData.channelCount * metaData.bitsPerSample / 8,
-                                        static_cast<uint16_t>(metaData.channelCount * (metaData.bitsPerSample / 8)),
-                                        static_cast<uint16_t>(metaData.bitsPerSample)};
+    const WavFormatChunkPcm formatChunk{
+        WavFormat::PCM,
+        static_cast<uint16_t>(metaData.channelCount),
+        metaData.samplesPerSec,
+        metaData.samplesPerSec * metaData.channelCount * metaData.bitsPerSample / 8,
+        static_cast<uint16_t>(metaData.channelCount * (metaData.bitsPerSample / 8)),
+        static_cast<uint16_t>(metaData.bitsPerSample),
+    };
     m_stream.write(reinterpret_cast<const char*>(&formatChunk), sizeof(formatChunk));
 
     const WavChunkHeader dataChunkHeader{WAV_CHUNK_ID_DATA, dataLen};

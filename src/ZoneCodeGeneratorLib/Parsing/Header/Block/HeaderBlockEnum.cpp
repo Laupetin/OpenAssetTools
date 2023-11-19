@@ -19,7 +19,10 @@ HeaderBlockType HeaderBlockEnum::GetType()
 
 const std::vector<IHeaderBlock::sequence_t*>& HeaderBlockEnum::GetTestsForBlock()
 {
-    static std::vector<sequence_t*> tests({new SequenceCloseBlock(true), new SequenceEnumMember()});
+    static std::vector<sequence_t*> tests({
+        new SequenceCloseBlock(true),
+        new SequenceEnumMember(),
+    });
 
     return tests;
 }

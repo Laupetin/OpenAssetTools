@@ -15,7 +15,13 @@ namespace sdd::enum_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.String().Capture(CAPTURE_ENTRY_VALUE), create.Or({create.Char(','), create.Char('}').NoConsume()})});
+            AddMatchers({
+                create.String().Capture(CAPTURE_ENTRY_VALUE),
+                create.Or({
+                    create.Char(','),
+                    create.Char('}').NoConsume(),
+                }),
+            });
         }
 
     protected:
@@ -39,7 +45,10 @@ namespace sdd::enum_scope_sequences
         {
             const SimpleMatcherFactory create(this);
 
-            AddMatchers({create.Char('}'), create.Optional(create.Char(';'))});
+            AddMatchers({
+                create.Char('}'),
+                create.Optional(create.Char(';')),
+            });
         }
 
     protected:
