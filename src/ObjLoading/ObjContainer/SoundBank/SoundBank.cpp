@@ -1,6 +1,6 @@
 #include "SoundBank.h"
 
-#include "Utils/FileUtils.h"
+#include "Utils/ObjStream.h"
 #include "zlib.h"
 
 #include <cstring>
@@ -114,7 +114,7 @@ SoundBankEntryInputStream::SoundBankEntryInputStream()
 {
 }
 
-SoundBankEntryInputStream::SoundBankEntryInputStream(std::unique_ptr<std::istream> stream, SoundAssetBankEntry entry)
+SoundBankEntryInputStream::SoundBankEntryInputStream(std::unique_ptr<std::istream> stream, const SoundAssetBankEntry& entry)
     : m_stream(std::move(stream)),
       m_entry(entry)
 {
@@ -122,7 +122,7 @@ SoundBankEntryInputStream::SoundBankEntryInputStream(std::unique_ptr<std::istrea
 
 bool SoundBankEntryInputStream::IsOpen() const
 {
-    return m_stream.get() != nullptr;
+    return static_cast<bool>(m_stream);
 }
 
 bool SoundBank::ReadHeader()
@@ -134,15 +134,15 @@ bool SoundBank::ReadHeader()
         return false;
     }
 
-    if (m_header.magic != MAGIC)
+    if (m_header.magic != sndbank_consts::MAGIC)
     {
         std::cout << "Invalid sndbank magic 0x" << std::hex << m_header.magic << std::endl;
         return false;
     }
 
-    if (m_header.version != VERSION)
+    if (m_header.version != sndbank_consts::VERSION)
     {
-        std::cout << "Unsupported sndbank version " << m_header.version << " (should be " << VERSION << ")" << std::endl;
+        std::cout << "Unsupported sndbank version " << m_header.version << " (should be " << sndbank_consts::VERSION << ")" << std::endl;
         return false;
     }
 
@@ -159,13 +159,14 @@ bool SoundBank::ReadHeader()
         return false;
     }
 
-    if (m_header.entryCount && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > m_file_size))
+    if (m_header.entryCount
+        && (m_header.entryOffset <= 0 || m_header.entryOffset + static_cast<int64_t>(sizeof(SoundAssetBankEntry) * m_header.entryCount) > m_file_size))
     {
         std::cout << "Invalid sndbank entry offset " << m_header.entryOffset << " (filesize is " << m_file_size << ")" << std::endl;
         return false;
     }
 
-    if (m_header.checksumOffset <= 0 || m_header.checksumOffset + sizeof(SoundAssetBankChecksum) * m_header.entryCount > m_file_size)
+    if (m_header.checksumOffset <= 0 || m_header.checksumOffset + static_cast<int64_t>(sizeof(SoundAssetBankChecksum) * m_header.entryCount) > m_file_size)
     {
         std::cout << "Invalid sndbank checksum offset " << m_header.checksumOffset << " (filesize is " << m_file_size << ")" << std::endl;
         return false;

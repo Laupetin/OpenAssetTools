@@ -1,30 +1,32 @@
 #pragma once
 
+#include "Utils/FileUtils.h"
+
 #include <cstdint>
 
-class SoundBankConsts
+namespace sndbank_consts
 {
-    SoundBankConsts() = default;
+    static constexpr uint32_t MAGIC = FileUtils::MakeMagic32('2', 'U', 'X', '#');
+    static constexpr uint32_t VERSION = 14u;
 
-public:
     static constexpr unsigned OFFSET_DATA_START = 0x800;
-};
+}; // namespace sndbank_consts
 
 struct SoundAssetBankChecksum
 {
-    char checksumBytes[16];
+    uint8_t checksumBytes[16];
 };
 
 struct SoundAssetBankHeader
 {
-    unsigned int magic;                      // + 0x0
-    unsigned int version;                    // + 0x4
-    unsigned int entrySize;                  // + 0x8
-    unsigned int checksumSize;               // + 0xC
-    unsigned int dependencySize;             // + 0x10
-    unsigned int entryCount;                 // + 0x14
-    unsigned int dependencyCount;            // + 0x18
-    unsigned int pad32;                      // + 0x1C
+    uint32_t magic;                          // + 0x0
+    uint32_t version;                        // + 0x4
+    uint32_t entrySize;                      // + 0x8
+    uint32_t checksumSize;                   // + 0xC
+    uint32_t dependencySize;                 // + 0x10
+    uint32_t entryCount;                     // + 0x14
+    uint32_t dependencyCount;                // + 0x18
+    uint32_t pad32;                          // + 0x1C
     int64_t fileSize;                        // + 0x20
     int64_t entryOffset;                     // + 0x28
     int64_t checksumOffset;                  // + 0x30
@@ -34,12 +36,12 @@ struct SoundAssetBankHeader
 
 struct SoundAssetBankEntry
 {
-    unsigned int id;
-    unsigned int size;
-    unsigned int offset;
-    unsigned int frameCount;
-    unsigned char frameRateIndex;
-    unsigned char channelCount;
-    unsigned char looping;
-    unsigned char format;
+    uint32_t id;
+    uint32_t size;
+    uint32_t offset;
+    uint32_t frameCount;
+    uint8_t frameRateIndex;
+    uint8_t channelCount;
+    uint8_t looping;
+    uint8_t format;
 };

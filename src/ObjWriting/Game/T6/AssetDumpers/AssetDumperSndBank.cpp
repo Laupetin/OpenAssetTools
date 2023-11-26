@@ -5,6 +5,7 @@
 #include "Sound/WavWriter.h"
 #include "Utils/ClassUtils.h"
 
+#include <cassert>
 #include <filesystem>
 #include <fstream>
 #include <unordered_set>
