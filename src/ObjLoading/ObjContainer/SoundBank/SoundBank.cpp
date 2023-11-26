@@ -297,6 +297,17 @@ bool SoundBank::VerifyChecksum(const SoundAssetBankChecksum& checksum) const
     return m_initialized && memcmp(checksum.checksumBytes, m_header.checksumChecksum.checksumBytes, sizeof(SoundAssetBankChecksum)) == 0;
 }
 
+bool SoundBank::GetEntry(const unsigned id, SoundAssetBankEntry& entry) const
+{
+    const auto foundEntry = m_entries_by_id.find(id);
+
+    if (foundEntry == m_entries_by_id.end())
+        return false;
+
+    entry = m_entries[foundEntry->second];
+    return true;
+}
+
 SoundBankEntryInputStream SoundBank::GetEntryStream(const unsigned id) const
 {
     const auto foundEntry = m_entries_by_id.find(id);

@@ -5619,16 +5619,16 @@ namespace T6
         int16_t fadeIn;
         int16_t fadeOut;
         int16_t dopplerScale;
-        char minPriorityThreshold;
-        char maxPriorityThreshold;
-        char probability;
-        char occlusionLevel;
-        char minPriority;
-        char maxPriority;
-        char pan;
-        char limitCount;
-        char entityLimitCount;
-        char duckGroup;
+        uint8_t minPriorityThreshold;
+        uint8_t maxPriorityThreshold;
+        uint8_t probability;
+        uint8_t occlusionLevel;
+        uint8_t minPriority;
+        uint8_t maxPriority;
+        uint8_t pan;
+        uint8_t limitCount;
+        uint8_t entityLimitCount;
+        uint8_t duckGroup;
     };
 
     struct type_align(4) pathlink_s

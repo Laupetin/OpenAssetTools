@@ -42,6 +42,8 @@ public:
     _NODISCARD const std::vector<std::string>& GetDependencies() const;
 
     _NODISCARD bool VerifyChecksum(const SoundAssetBankChecksum& checksum) const;
+
+    bool GetEntry(unsigned id, SoundAssetBankEntry& entry) const;
     _NODISCARD SoundBankEntryInputStream GetEntryStream(unsigned int id) const;
 
     static ObjContainerRepository<SoundBank, Zone> Repository;
