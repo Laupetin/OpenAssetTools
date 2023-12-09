@@ -7,6 +7,7 @@
 #include "AssetDumpers/AssetDumperMenuDef.h"
 #include "AssetDumpers/AssetDumperMenuList.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
+#include "AssetDumpers/AssetDumperScriptFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
@@ -63,7 +64,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     // DUMP_ASSET_POOL(AssetDumperSurfaceFxTable, m_surface_fx_table, ASSET_TYPE_SURFACE_FX)
     DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
-    // DUMP_ASSET_POOL(AssetDumperScriptFile, m_script_file, ASSET_TYPE_SCRIPTFILE)
+    DUMP_ASSET_POOL(AssetDumperScriptFile, m_script_file, ASSET_TYPE_SCRIPTFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
     // DUMP_ASSET_POOL(AssetDumperLeaderboardDef, m_leaderboard, ASSET_TYPE_LEADERBOARD)
     // DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)

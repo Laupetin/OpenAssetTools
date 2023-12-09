@@ -10,25 +10,6 @@ bool AssetDumperRawFile::ShouldDump(XAssetInfo<RawFile>* asset)
     return true;
 }
 
-std::string AssetDumperRawFile::GetAssetFileName(XAssetInfo<GfxImage>* asset)
-{
-    std::string cleanAssetName = asset->m_name;
-    for (auto& c : cleanAssetName)
-    {
-        switch (c)
-        {
-        case '*':
-            c = '_';
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    return cleanAssetName;
-}
-
 void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
 {
     const auto* rawFile = asset->Asset();
@@ -68,7 +49,7 @@ void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawF
 
         if (ret < 0)
         {
-            printf("Inflate failed for dumping rawfile '%s'\n", rawFile->name);
+            std::cerr << "Inflate failed when attempting to dump rawfile " << rawFile->name << std::endl;
             inflateEnd(&zs);
             return;
         }
