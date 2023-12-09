@@ -1,6 +1,7 @@
 #include "AssetDumperSndBank.h"
 
 #include "Game/T6/Sound/AliasDumperCsv.h"
+#include "Game/T6/Sound/AliasDumperJson.h"
 #include "Game/T6/Sound/SoundFileDumper.h"
 
 using namespace T6;
@@ -11,8 +12,10 @@ namespace T6::sound
     {
         const auto* sndBank = sndBankInfo->Asset();
 
-        const AliasDumperCsv aliasDumper(context);
-        aliasDumper.DumpSndBankAliases(sndBank);
+        // const AliasDumperCsv aliasDumper(context);
+        // aliasDumper.DumpSndBankAliases(sndBank);
+        const auto aliasDumper = CreateAliasDumperJson(context);
+        aliasDumper->DumpSndBankAliases(sndBank);
 
         DumpSoundData(context, sndBank);
     }

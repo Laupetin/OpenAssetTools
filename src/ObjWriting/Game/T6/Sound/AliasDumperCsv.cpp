@@ -82,27 +82,8 @@ namespace T6::sound
     };
 
     AliasDumperCsv::AliasDumperCsv(const AssetDumpingContext& context)
-        : m_context(context)
+        : AbstractAliasDumper(context)
     {
-    }
-
-    std::unique_ptr<std::ostream> AliasDumperCsv::OpenAliasOutputFile(const SndBank* sndBank) const
-    {
-        std::ostringstream ss;
-
-        const char* name;
-        if (sndBank->streamAssetBank.zone)
-            name = sndBank->streamAssetBank.zone;
-        else if (sndBank->loadAssetBank.zone)
-            name = sndBank->loadAssetBank.zone;
-        else if (sndBank->loadedAssets.zone)
-            name = sndBank->loadedAssets.zone;
-        else
-            name = sndBank->name;
-
-        ss << "soundaliases/" << name << "_aliases.csv";
-
-        return m_context.OpenAssetFile(ss.str());
     }
 
     void AliasDumperCsv::WriteAliasFileHeader(CsvOutputStream& stream)
@@ -115,18 +96,7 @@ namespace T6::sound
         stream.NextRow();
     }
 
-    bool AliasDumperCsv::FindSoundBankEntry(const unsigned assetId, SoundAssetBankEntry& entry)
-    {
-        for (const auto* soundBank : SoundBank::Repository)
-        {
-            if (soundBank->GetEntry(assetId, entry))
-                return true;
-        }
-
-        return false;
-    }
-
-    void AliasDumperCsv::WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias) const
+    void AliasDumperCsv::WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias)
     {
         SoundAssetBankEntry entry;
         std::string extension;
@@ -142,7 +112,7 @@ namespace T6::sound
 
         // file
         if (alias->assetFileName)
-            stream.WriteColumn(GetAssetFilename(m_context.m_base_path, alias->assetFileName, extension));
+            stream.WriteColumn(GetAssetFilename(alias->assetFileName, extension));
         else
             stream.WriteColumn("");
 
@@ -370,7 +340,7 @@ namespace T6::sound
 
     void AliasDumperCsv::DumpSndBankAliases(const SndBank* sndBank) const
     {
-        const auto outputFile = OpenAliasOutputFile(sndBank);
+        const auto outputFile = OpenAliasOutputFile(sndBank, ".csv");
 
         if (outputFile == nullptr)
         {

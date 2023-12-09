@@ -11,10 +11,8 @@ namespace T6::sound
         "devraw/",
     };
 
-    _NODISCARD std::string GetAssetFilename(const std::string& basePath, std::string outputFileName, const std::string& extension)
+    _NODISCARD std::string GetAssetFilename(std::string outputFileName, const std::string& extension)
     {
-        fs::path assetPath(basePath);
-
         std::replace(outputFileName.begin(), outputFileName.end(), '\\', '/');
         for (const auto& droppedPrefix : PREFIXES_TO_DROP)
         {
@@ -25,7 +23,7 @@ namespace T6::sound
             }
         }
 
-        assetPath.append(outputFileName);
+        fs::path assetPath(outputFileName);
         if (!extension.empty())
             assetPath.concat(extension);
 

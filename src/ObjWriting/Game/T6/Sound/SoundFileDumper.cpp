@@ -20,7 +20,8 @@ namespace T6::sound
     _NODISCARD std::unique_ptr<std::ostream>
         OpenAssetOutputFile(const AssetDumpingContext& context, const std::string& outputFileName, const std::string& extension)
     {
-        fs::path assetPath(GetAssetFilename(context.m_base_path, outputFileName, extension));
+        fs::path assetPath(context.m_base_path);
+        assetPath.append(GetAssetFilename(outputFileName, extension));
 
         auto assetDir(assetPath);
         assetDir.remove_filename();
@@ -37,7 +38,7 @@ namespace T6::sound
         return nullptr;
     }
 
-    static SoundBankEntryInputStream FindSoundDataInSoundBanks(const unsigned assetId)
+    SoundBankEntryInputStream FindSoundDataInSoundBanks(const unsigned assetId)
     {
         for (const auto* soundBank : SoundBank::Repository)
         {

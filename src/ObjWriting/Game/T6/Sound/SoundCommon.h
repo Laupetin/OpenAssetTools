@@ -32,5 +32,5 @@ namespace T6::sound
         ".mpc",  // SND_ASSET_FORMAT_MPC
     };
 
-    _NODISCARD std::string GetAssetFilename(const std::string& basePath, std::string outputFileName, const std::string& extension);
+    _NODISCARD std::string GetAssetFilename(std::string outputFileName, const std::string& extension);
 }
