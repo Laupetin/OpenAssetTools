@@ -53,10 +53,13 @@ bool AssetLoaderScriptFile::LoadFromRaw(
     memcpy(&scriptFile->bytecodeLen, fileBuffer.get() + offset, sizeof(scriptFile->bytecodeLen));
     offset += sizeof(scriptFile->bytecodeLen);
 
-    // Get the file size
-    auto fileSize = file.m_length;
+    if (scriptFile->compressedLen <= 0 || scriptFile->bytecodeLen <= 0)
+    {
+        std::cerr << "Error: Invalid length of the buffers in " << assetName << " specified" << std::endl;
+        return false;
+    }
 
-    if (offset + scriptFile->compressedLen > fileSize || offset + scriptFile->bytecodeLen > fileSize)
+    if (offset + (scriptFile->compressedLen + scriptFile->bytecodeLen) > file.m_length)
     {
         std::cerr << "Error: Specified length in " << assetName << " GSC BIN structure exceeds the actual file size" << std::endl;
         return false;
@@ -68,7 +71,6 @@ bool AssetLoaderScriptFile::LoadFromRaw(
 
     scriptFile->bytecode = static_cast<unsigned char*>(memory->Alloc(scriptFile->bytecodeLen));
     memcpy(scriptFile->bytecode, fileBuffer.get() + offset, scriptFile->bytecodeLen);
-    offset += scriptFile->bytecodeLen;
 
     manager->AddAsset(ASSET_TYPE_SCRIPTFILE, assetName, scriptFile);
 
