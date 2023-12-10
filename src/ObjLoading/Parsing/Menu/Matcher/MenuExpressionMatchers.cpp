@@ -92,6 +92,7 @@ std::unique_ptr<ISimpleExpression> MenuExpressionMatchers::ProcessOperandExtensi
 
     const auto& functionCallToken = result.NextCapture(CAPTURE_FUNCTION_NAME);
     auto functionCallName = functionCallToken.IdentifierValue();
+    utils::MakeStringLowerCase(functionCallName);
 
     const auto& baseFunctionMap = GetBaseFunctionMapForFeatureLevel(m_state->m_feature_level);
     const auto foundBaseFunction = baseFunctionMap.find(functionCallName);

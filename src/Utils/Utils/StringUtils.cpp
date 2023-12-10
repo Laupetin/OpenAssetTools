@@ -92,12 +92,12 @@ namespace utils
     void MakeStringLowerCase(std::string& str)
     {
         for (auto& c : str)
-            c = static_cast<char>(tolower(c));
+            c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
     }
 
     void MakeStringUpperCase(std::string& str)
     {
         for (auto& c : str)
-            c = static_cast<char>(toupper(c));
+            c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
     }
 } // namespace utils
