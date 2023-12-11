@@ -16,38 +16,56 @@ class AssetDumperSndDriverGlobals::Internal
     AssetDumpingContext& m_context;
 
     inline static const std::string GROUPS_HEADERS[]
-    {
-        "name","attenuationSp","attenuationMp","category","parent"
+    {"name", "attenuationSp", "attenuationMp", "category", "parent", "id"
     };
 
     inline static const std::string GROUPS_CATEGORIES[]
-    {
-        "sfx","music","void","ui","cinematic"
+    {"sfx", "music", "void", "ui", "cinematic", "id"
     };
 
     inline static const std::string CURVE_HEADERS[]
     {
-        "name","x0","y0","x1","y1","x2","y2","x3","y3","x4","y4","x5","y5","x6","y6","x7","y7"
+        "name", "x0", "y0", "x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4", "x5", "y5", "x6", "y6", "x7", "y7", "id"
     };
 
     inline static const std::string PAN_HEADERS[]
-    {
-        "name","front","back","center","lfe","left","right",
+    {"name", "front", "back", "center", "lfe", "left", "right","id"
     };
 
     inline static const std::string MASTER_HEADERS[]
     {
-        "name","lowE","lowG","lowF","lowQ","peak1E","peak1G","peak1F","peak1Q","peak2E","peak2G","peak2F","peak2Q","hiE","hiG","hiF","hiQ","eqG","compE","compPG","compMG","compT","compR","compTA","compTR","limitE","limitPG","limitMG","limitT","limitR","limitTA","limitTR","busReverbG","busFxG","busVoiceG","busPfutzG","busHdrfxG","busUiG","busMusicG","busMovieG","busVcsG","busReverbE","busFxE","busVoiceE","busPfutzE","busHdrfxE","busUiE","busMusicE","busMovieE","hdrfxCompE","voiceEqE","voiceCompE"
+        "name",      "lowE",      "lowG",      "lowF",      "lowQ",      "peak1E",     "peak1G",    "peak1F",     "peak1Q",     "peak2E",  "peak2G",
+        "peak2F",    "peak2Q",    "hiE",       "hiG",       "hiF",       "hiQ",        "eqG",       "compE",      "compPG",     "compMG",  "compT",
+        "compR",     "compTA",    "compTR",    "limitE",    "limitPG",   "limitMG",    "limitT",    "limitR",     "limitTA",    "limitTR", "busReverbG",
+        "busFxG",    "busVoiceG", "busPfutzG", "busHdrfxG", "busUiG",    "busMusicG",  "busMovieG", "busVcsG",    "busReverbE", "busFxE",  "busVoiceE",
+        "busPfutzE", "busHdrfxE", "busUiE",    "busMusicE", "busMovieE", "hdrfxCompE", "voiceEqE",  "voiceCompE", "id"
     };
 
     inline static const std::string SIDECHAIN_HEADERS[]
     {
-        "name","g","f","q","ta","tr","tf"
+        "name", "g", "f", "q", "ta", "tr", "tf", "id"
     };
 
     inline static const std::string FUTZ_HEADERS[]
     {   
-        "name","bpfF","bpfQ","lsG","lsF","lsQ","dist","preG","postG","th","tg","clippre","clippost","blend","startAliasId","stopAliasId","loopAliasId"
+        "name",
+        "bpfF",
+        "bpfQ",
+        "lsG",
+        "lsF",
+        "lsQ",
+        "dist",
+        "preG",
+        "postG",
+        "th",
+        "tg",
+        "clippre",
+        "clippost",
+        "blend",
+        "startAliasId",
+        "stopAliasId",
+        "loopAliasId",
+        "id"
     };
 
     std::unique_ptr<std::ostream> OpenAssetFile(const std::string& filename)
@@ -78,7 +96,7 @@ class AssetDumperSndDriverGlobals::Internal
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, GROUPS_HEADERS, 5);
+            WriteFileHeader(csvStream, GROUPS_HEADERS, 6);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -88,6 +106,7 @@ class AssetDumperSndDriverGlobals::Internal
                 csvStream.WriteColumn(std::to_string(group.attenuationMp));
                 csvStream.WriteColumn(GROUPS_CATEGORIES[group.category]);
                 csvStream.WriteColumn(group.parentName);
+                csvStream.WriteColumn(std::to_string(group.id));
                 csvStream.NextRow();
             }
         }
@@ -100,7 +119,7 @@ class AssetDumperSndDriverGlobals::Internal
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, CURVE_HEADERS, 17);
+            WriteFileHeader(csvStream, CURVE_HEADERS, 18);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -112,6 +131,8 @@ class AssetDumperSndDriverGlobals::Internal
                     csvStream.WriteColumn(std::to_string(curve.points[j].x));
                     csvStream.WriteColumn(std::to_string(curve.points[j].y));
                 }
+
+                csvStream.WriteColumn(std::to_string(curve.id));
 
                 csvStream.NextRow();
             }
@@ -125,7 +146,7 @@ class AssetDumperSndDriverGlobals::Internal
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, PAN_HEADERS, 7);
+            WriteFileHeader(csvStream, PAN_HEADERS, 8);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -137,6 +158,7 @@ class AssetDumperSndDriverGlobals::Internal
                 csvStream.WriteColumn(std::to_string(pan.lfe));
                 csvStream.WriteColumn(std::to_string(pan.left));
                 csvStream.WriteColumn(std::to_string(pan.right));
+                csvStream.WriteColumn(std::to_string(pan.id));
                 csvStream.NextRow();
             }
         }
@@ -156,6 +178,7 @@ class AssetDumperSndDriverGlobals::Internal
             {
                 const auto& duckGroup = duckGroups[i];
                 csvStream.WriteColumn(duckGroup.name);
+                csvStream.WriteColumn(std::to_string(duckGroup.id));
                 csvStream.NextRow();
             }
         }
@@ -168,7 +191,7 @@ class AssetDumperSndDriverGlobals::Internal
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, MASTER_HEADERS, 52);
+            WriteFileHeader(csvStream, MASTER_HEADERS, 53);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -225,6 +248,7 @@ class AssetDumperSndDriverGlobals::Internal
                 csvStream.WriteColumn(std::to_string(master.hdrfxCompE));
                 csvStream.WriteColumn(std::to_string(master.voiceEqE));
                 csvStream.WriteColumn(std::to_string(master.voiceCompE));
+                csvStream.WriteColumn(std::to_string(master.id));
                 csvStream.NextRow();
             }
         }
@@ -237,7 +261,7 @@ class AssetDumperSndDriverGlobals::Internal
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, SIDECHAIN_HEADERS, 7);
+            WriteFileHeader(csvStream, SIDECHAIN_HEADERS, 8);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -249,6 +273,7 @@ class AssetDumperSndDriverGlobals::Internal
                 csvStream.WriteColumn(std::to_string(sidechain.ta));
                 csvStream.WriteColumn(std::to_string(sidechain.tr));
                 csvStream.WriteColumn(std::to_string(sidechain.tf));
+                csvStream.WriteColumn(std::to_string(sidechain.id));
                 csvStream.NextRow();
             }
         }
@@ -261,7 +286,7 @@ class AssetDumperSndDriverGlobals::Internal
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, FUTZ_HEADERS, 17);
+            WriteFileHeader(csvStream, FUTZ_HEADERS, 18);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -283,6 +308,7 @@ class AssetDumperSndDriverGlobals::Internal
                 csvStream.WriteColumn(std::to_string(futz.startAliasId));
                 csvStream.WriteColumn(std::to_string(futz.stopAliasId));
                 csvStream.WriteColumn(std::to_string(futz.loopAliasId));
+                csvStream.WriteColumn(std::to_string(futz.id));
                 csvStream.NextRow();
             }
         }

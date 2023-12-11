@@ -100,6 +100,10 @@ namespace
         "returnHighpass"
     };
 
+    const std::string DUCK_HEADERS[]{
+        "name", "fadeIn", "fadeOut", "startDelay", "distance", "length", "fadeInCurve", "fadeOutCurve", "attenuation", "filter", "updateWhilePaused"
+    };
+
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
         "devraw/",
@@ -130,6 +134,27 @@ namespace
         "default", "defaultmin", "allon", "alloff", "rcurve0", "rcurve1", "rcurve2", "rcurve3", "rcurve4", "rcurve5", "steep", 
         "sindelay", "cosdelay", "sin", "cos", "rev60", "rev65",
         ""
+    };
+
+    const std::unordered_map<unsigned int, std::string> CURVES_MAP
+    {
+        { 4135636924, CURVES_ENUM[0]},   // "default"
+        { 1298231670, CURVES_ENUM[1] },  // "defaultmin"
+        { 2783299419, CURVES_ENUM[2] },  // "allon"
+        { 2598309331, CURVES_ENUM[3] },  // "alloff"
+        { 2462421902, CURVES_ENUM[4] },  // "rcurve0"
+        { 2462421903, CURVES_ENUM[5] },  // "rcurve1"
+        { 2462421904, CURVES_ENUM[6] },  // "rcurve2"
+        { 2462421905, CURVES_ENUM[7] },  // "rcurve3"
+        { 2462421906, CURVES_ENUM[8] },  // "rcurve4"
+        { 2462421907, CURVES_ENUM[9] },  // "rcurve5"
+        { 3711863914, CURVES_ENUM[10]},  // "steep"
+        { 4107033168, CURVES_ENUM[11]},  // "sindelay"
+        { 932232097,  CURVES_ENUM[12]},  // "cosdelay"
+        { 818663411,  CURVES_ENUM[13]},  // "sin"
+        { 686872930,  CURVES_ENUM[14]},  // "cos"
+        { 3885755896, CURVES_ENUM[15]},  // "rev60"
+        { 3885755901, CURVES_ENUM[16]},  // "rev65"
     };
 
     const std::string LOOP_TYPES_ENUM[]
@@ -340,7 +365,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->reverbSend));
         
         // duck",
-        stream.WriteColumn(""); // FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
+        stream.WriteColumn(FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
 
         // pan",
         stream.WriteColumn(((alias->flags0 >> 6) & 0x1) == 0 ? "2d" : "3d");
@@ -429,7 +454,7 @@ class AssetDumperSndBank::Internal
 
     void DumpSndBankAliases(const SndBank* sndBank) const
     {
-        const auto outFile = OpenAssetOutputFile("soundbank\\aliases\\" + std::string(sndBank->name), ".csv");
+        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".aliases", ".csv");
         if (!outFile)
         {
             std::cerr << "Failed to open sound alias output file: \"" << sndBank->name << "\"\n";
@@ -558,7 +583,7 @@ class AssetDumperSndBank::Internal
             return;
         }
 
-        const auto outFile = OpenAssetOutputFile("soundbank\\reverbs\\" + std::string(sndBank->name), ".csv");
+        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".reverbs", ".csv");
         if (!outFile)
         {
             std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
@@ -592,6 +617,49 @@ class AssetDumperSndBank::Internal
         }
     }
 
+    void DumpSoundDucks(const SndBank* sndBank) const
+    {
+        if (sndBank->duckCount <= 0)
+        {
+            return;
+        }
+
+        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".ducklist", ".csv");
+        if (!outFile)
+        {
+            std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
+            return;
+        }
+
+        CsvOutputStream csvStream(*outFile);
+        csvStream.WriteColumn("name");
+        csvStream.NextRow();
+
+        for (auto i = 0u; i < sndBank->duckCount; i++)
+        {
+            const auto& duck = sndBank->ducks[i];
+            csvStream.WriteColumn(duck.name);
+            csvStream.NextRow();
+
+            // dump duck file
+            //csvStream.WriteColumn(std::to_string(duck.fadeIn));
+            //csvStream.WriteColumn(std::to_string(duck.fadeOut));
+            //csvStream.WriteColumn(std::to_string(duck.startDelay));
+            //csvStream.WriteColumn(std::to_string(duck.distance));
+            //csvStream.WriteColumn(std::to_string(duck.length));
+
+            //auto fadeInItr = CURVES_MAP.find(duck.fadeInCurve);
+            //csvStream.WriteColumn(fadeInItr == CURVES_MAP.end() ? std::to_string(duck.fadeInCurve) : fadeInItr->second);
+
+            //auto fadeOutItr = CURVES_MAP.find(duck.fadeOutCurve);
+            //csvStream.WriteColumn(fadeOutItr == CURVES_MAP.end() ? std::to_string(duck.fadeOutCurve) : fadeOutItr->second);
+
+            //csvStream.WriteColumn(""); // attenuation
+            //csvStream.WriteColumn(""); // filter
+            //csvStream.WriteColumn(std::to_string(duck.updateWhilePaused));
+        }
+    }
+
     void DumpSoundData(const SndBank* sndBank) const
     {
         std::unordered_set<unsigned> dumpedAssets;
@@ -618,6 +686,7 @@ class AssetDumperSndBank::Internal
 
         DumpSndBankAliases(sndBank);
         DumpSoundRadverb(sndBank);
+        DumpSoundDucks(sndBank);
         DumpSoundData(sndBank);
     }
 
