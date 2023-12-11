@@ -91,7 +91,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndVolumesGroups(const SndVolumeGroup* groups, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\group.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\group.csv");
 
         if (outputFile != nullptr)
         {
