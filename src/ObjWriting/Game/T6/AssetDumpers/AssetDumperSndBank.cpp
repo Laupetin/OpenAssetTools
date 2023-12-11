@@ -80,6 +80,26 @@ namespace
         "snapshot",
     };
 
+    const std::string REVERB_HEADERS[]{
+        "name",
+        "smoothing",
+        "earlyTime",
+        "lateTime",
+        "earlyGain",
+        "lateGain",
+        "returnGain",
+        "earlyLpf",
+        "lateLpf",
+        "inputLpf",
+        "dampLpf",
+        "wallReflect",
+        "dryGain",
+        "earlySize",
+        "lateSize",
+        "diffusion",
+        "returnHighpass"
+    };
+
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
         "devraw/",
@@ -185,6 +205,16 @@ class AssetDumperSndBank::Internal
     static void WriteAliasFileHeader(CsvOutputStream& stream)
     {
         for (const auto& headerField : ALIAS_HEADERS)
+        {
+            stream.WriteColumn(headerField);
+        }
+
+        stream.NextRow();
+    }
+
+    static void WriteReverbFileHeader(CsvOutputStream& stream)
+    {
+        for (const auto& headerField : REVERB_HEADERS)
         {
             stream.WriteColumn(headerField);
         }
@@ -402,7 +432,7 @@ class AssetDumperSndBank::Internal
         const auto outFile = OpenAssetOutputFile("soundbank\\aliases\\" + std::string(sndBank->name), ".csv");
         if (!outFile)
         {
-            std::cerr << "Failed to open sound output file: \"" << sndBank->name << "\"\n";
+            std::cerr << "Failed to open sound alias output file: \"" << sndBank->name << "\"\n";
             return;
         }
 
@@ -523,11 +553,42 @@ class AssetDumperSndBank::Internal
 
     void DumpSoundRadverb(const SndBank* sndBank) const
     {
-        std::cout << sndBank->radverbCount << "\n";
+        if (sndBank->radverbCount <= 0)
+        {
+            return;
+        }
+
+        const auto outFile = OpenAssetOutputFile("soundbank\\reverbs\\" + std::string(sndBank->name), ".csv");
+        if (!outFile)
+        {
+            std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
+            return;
+        }
+
+        CsvOutputStream csvStream(*outFile);
+        WriteReverbFileHeader(csvStream);
+
         for (auto i = 0u; i < sndBank->radverbCount; i++)
         {
-            const auto& radverb = sndBank->radverbs[i];
-            std::cout << radverb.name << "\n";
+            const auto& reverb = sndBank->radverbs[i];
+            csvStream.WriteColumn(reverb.name);
+            csvStream.WriteColumn(std::to_string(reverb.smoothing));
+            csvStream.WriteColumn(std::to_string(reverb.earlyTime));
+            csvStream.WriteColumn(std::to_string(reverb.lateTime));
+            csvStream.WriteColumn(std::to_string(reverb.earlyGain));
+            csvStream.WriteColumn(std::to_string(reverb.lateGain));
+            csvStream.WriteColumn(std::to_string(reverb.returnGain));
+            csvStream.WriteColumn(std::to_string(reverb.earlyLpf));
+            csvStream.WriteColumn(std::to_string(reverb.lateLpf));
+            csvStream.WriteColumn(std::to_string(reverb.inputLpf));
+            csvStream.WriteColumn(std::to_string(reverb.dampLpf));
+            csvStream.WriteColumn(std::to_string(reverb.wallReflect));
+            csvStream.WriteColumn(std::to_string(reverb.dryGain));
+            csvStream.WriteColumn(std::to_string(reverb.earlySize));
+            csvStream.WriteColumn(std::to_string(reverb.lateSize));
+            csvStream.WriteColumn(std::to_string(reverb.diffusion));
+            csvStream.WriteColumn(std::to_string(reverb.returnHighpass));
+            csvStream.NextRow();
         }
     }
 
