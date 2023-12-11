@@ -123,7 +123,8 @@ DefinesStreamProxy::DefinesStreamProxy(IParserLineStream* stream, const bool ski
     : m_stream(stream),
       m_skip_directive_lines(skipDirectiveLines),
       m_ignore_depth(0),
-      m_in_define(false)
+      m_in_define(false),
+      m_parameter_state(ParameterState::NOT_IN_PARAMETERS)
 {
 }
 
@@ -142,12 +143,16 @@ int DefinesStreamProxy::GetLineEndEscapePos(const ParserLine& line)
     return -1;
 }
 
-void DefinesStreamProxy::ContinueDefine(const ParserLine& line)
+void DefinesStreamProxy::ContinueDefine(const ParserLine& line, const unsigned currentPos)
 {
     const auto lineEndEscapePos = GetLineEndEscapePos(line);
     if (lineEndEscapePos < 0)
     {
-        m_current_define_value << line.m_line;
+        if (currentPos <= 0)
+            m_current_define_value << line.m_line;
+        else
+            m_current_define_value << line.m_line.substr(currentPos);
+
         m_current_define.m_value = m_current_define_value.str();
         m_current_define.IdentifyParameters(m_current_define_parameters);
         AddDefine(std::move(m_current_define));
@@ -159,49 +164,58 @@ void DefinesStreamProxy::ContinueDefine(const ParserLine& line)
     }
     else
     {
-        if (line.m_line.size() > static_cast<unsigned>(lineEndEscapePos))
-            m_current_define_value << line.m_line.substr(0, static_cast<unsigned>(lineEndEscapePos));
+        if (line.m_line.size() > static_cast<unsigned>(lineEndEscapePos) && currentPos < static_cast<unsigned>(lineEndEscapePos))
+            m_current_define_value << line.m_line.substr(currentPos, static_cast<unsigned>(lineEndEscapePos) - currentPos);
     }
 }
 
-std::vector<std::string> DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition)
+void DefinesStreamProxy::ContinueParameters(const ParserLine& line, unsigned& currentPos)
 {
-    if (line.m_line[parameterPosition] != '(')
-        return std::vector<std::string>();
-
-    parameterPosition++;
-    std::vector<std::string> parameters;
-
+    const auto lineEndEscapePos = GetLineEndEscapePos(line);
     while (true)
     {
-        if (!SkipWhitespace(line, parameterPosition) || parameterPosition >= line.m_line.size())
-            throw ParsingException(CreatePos(line, parameterPosition), "Invalid define parameter list");
+        if (!SkipWhitespace(line, currentPos))
+            throw ParsingException(CreatePos(line, currentPos), "Invalid define parameter list");
 
-        const auto nameStartPos = parameterPosition;
-        if (!ExtractIdentifier(line, parameterPosition))
-            throw ParsingException(CreatePos(line, parameterPosition), "Cannot extract name of parameter of define");
+        if (lineEndEscapePos >= 0 && currentPos >= static_cast<unsigned>(lineEndEscapePos))
+            return;
 
-        parameters.emplace_back(std::string(line.m_line, nameStartPos, parameterPosition - nameStartPos));
+        if (currentPos >= line.m_line.size())
+            throw ParsingException(CreatePos(line, currentPos), "Invalid define parameter list");
 
-        if (!SkipWhitespace(line, parameterPosition))
-            throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
-
-        if (parameterPosition >= line.m_line.size())
-            throw ParsingException(CreatePos(line, parameterPosition), "Unclosed define parameters");
-
-        if (line.m_line[parameterPosition] == ')')
+        if ((m_parameter_state == ParameterState::AFTER_OPEN || m_parameter_state == ParameterState::AFTER_PARAM) && line.m_line[currentPos] == ')')
         {
-            parameterPosition++;
-            break;
+            currentPos++;
+            m_parameter_state = ParameterState::NOT_IN_PARAMETERS;
+            return;
         }
 
-        if (line.m_line[parameterPosition] != ',')
-            throw ParsingException(CreatePos(line, parameterPosition), "Unknown symbol in define parameter list");
+        if (m_parameter_state == ParameterState::AFTER_PARAM && line.m_line[currentPos] == ',')
+        {
+            currentPos++;
+            m_parameter_state = ParameterState::AFTER_COMMA;
+            continue;
+        }
 
-        parameterPosition++;
+        const auto nameStartPos = currentPos;
+        if (!ExtractIdentifier(line, currentPos))
+            throw ParsingException(CreatePos(line, currentPos), "Cannot extract name of parameter of define");
+
+        m_current_define_parameters.emplace_back(line.m_line, nameStartPos, currentPos - nameStartPos);
+        m_parameter_state = ParameterState::AFTER_PARAM;
     }
+}
 
-    return parameters;
+void DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, unsigned& currentPos)
+{
+    m_current_define_parameters = std::vector<std::string>();
+    if (line.m_line[currentPos] != '(')
+        return;
+
+    m_parameter_state = ParameterState::AFTER_OPEN;
+    currentPos++;
+
+    ContinueParameters(line, currentPos);
 }
 
 bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
@@ -223,17 +237,18 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsi
 
     const auto name = line.m_line.substr(nameStartPos, currentPos - nameStartPos);
 
-    auto parameters = MatchDefineParameters(line, currentPos);
+    MatchDefineParameters(line, currentPos);
+    SkipWhitespace(line, currentPos);
 
     const auto lineEndEscapePos = GetLineEndEscapePos(line);
     if (lineEndEscapePos < 0)
     {
         std::string value;
         if (currentPos < line.m_line.size())
-            value = line.m_line.substr(currentPos + 1);
+            value = line.m_line.substr(currentPos);
 
         Define define(name, value);
-        define.IdentifyParameters(parameters);
+        define.IdentifyParameters(m_current_define_parameters);
         AddDefine(std::move(define));
     }
     else
@@ -241,10 +256,9 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsi
         m_in_define = true;
         m_current_define = Define(name, std::string());
         m_current_define_value.str(std::string());
-        m_current_define_parameters = std::move(parameters);
 
-        if (currentPos < line.m_line.size() && (currentPos + 1) < static_cast<unsigned>(lineEndEscapePos))
-            m_current_define_value << line.m_line.substr(currentPos + 1, static_cast<unsigned>(lineEndEscapePos) - (currentPos + 1));
+        if (currentPos < line.m_line.size() && (currentPos) < static_cast<unsigned>(lineEndEscapePos))
+            m_current_define_value << line.m_line.substr(currentPos, static_cast<unsigned>(lineEndEscapePos) - (currentPos));
     }
 
     return true;
@@ -451,7 +465,7 @@ bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, const unsig
     return true;
 }
 
-bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
+bool DefinesStreamProxy::MatchDirectives(ParserLine& line)
 {
     unsigned directiveStartPos;
     unsigned directiveEndPos;
@@ -709,7 +723,15 @@ ParserLine DefinesStreamProxy::NextLine()
     {
         if (m_in_define)
         {
-            ContinueDefine(line);
+            unsigned currentPos = 0u;
+
+            if (m_parameter_state != ParameterState::NOT_IN_PARAMETERS)
+            {
+                ContinueParameters(line, currentPos);
+                SkipWhitespace(line, currentPos);
+            }
+
+            ContinueDefine(line, currentPos);
             if (!m_skip_directive_lines)
             {
                 line.m_line = std::string();
