@@ -15,69 +15,69 @@ namespace fs = std::filesystem;
 namespace
 {
     const std::string ALIAS_HEADERS[]{
-        "# name",
-        "# file",
-        "# template",
-        "# loadspec",
-        "# secondary",
-        "# group",
-        "# vol_min",
-        "# vol_max",
-        "# team_vol_mod",
-        "# dist_min",
-        "# dist_max",
-        "# dist_reverb_max",
-        "# volume_falloff_curve",
-        "# reverb_falloff_curve",
-        "# volume_min_falloff_curve",
-        "# reverb_min_falloff_curve",
-        "# limit_count",
-        "# limit_type",
-        "# entity_limit_count",
-        "# entity_limit_type",
-        "# pitch_min",
-        "# pitch_max",
-        "# team_pitch_mod",
-        "# min_priority",
-        "# max_priority",
-        "# min_priority_threshold",
-        "# max_priority_threshold",
-        "# spatialized",
-        "# type",
-        "# loop",
-        "# randomize_type",
-        "# probability",
-        "# start_delay",
-        "# reverb_send",
-        "# duck",
-        "# pan",
-        "# center_send",
-        "# envelop_min",
-        "# envelop_max",
-        "# envelop_percentage",
-        "# occlusion_level",
-        "# occlusion_wet_dry",
-        "# is_big",
-        "# distance_lpf",
-        "# move_type",
-        "# move_time",
-        "# real_delay",
-        "# subtitle",
-        "# mature",
-        "# doppler",
-        "# futz",
-        "# context_type",
-        "# context_value",
-        "# compression",
-        "# timescale",
-        "# music",
-        "# fade_in",
-        "# fade_out",
-        "# pc_format",
-        "# pause",
-        "# stop_on_death",
-        "# bus",
-        "# snapshot",
+        "name",
+        "file",
+        "template",
+        "loadspec",
+        "secondary",
+        "group",
+        "vol_min",
+        "vol_max",
+        "team_vol_mod",
+        "dist_min",
+        "dist_max",
+        "dist_reverb_max",
+        "volume_falloff_curve",
+        "reverb_falloff_curve",
+        "volume_min_falloff_curve",
+        "reverb_min_falloff_curve",
+        "limit_count",
+        "limit_type",
+        "entity_limit_count",
+        "entity_limit_type",
+        "pitch_min",
+        "pitch_max",
+        "team_pitch_mod",
+        "min_priority",
+        "max_priority",
+        "min_priority_threshold",
+        "max_priority_threshold",
+        "spatialized",
+        "type",
+        "loop",
+        "randomize_type",
+        "probability",
+        "start_delay",
+        "reverb_send",
+        "duck",
+        "pan",
+        "center_send",
+        "envelop_min",
+        "envelop_max",
+        "envelop_percentage",
+        "occlusion_level",
+        "occlusion_wet_dry",
+        "is_big",
+        "distance_lpf",
+        "move_type",
+        "move_time",
+        "real_delay",
+        "subtitle",
+        "mature",
+        "doppler",
+        "futz",
+        "context_type",
+        "context_value",
+        "compression",
+        "timescale",
+        "music",
+        "fade_in",
+        "fade_out",
+        "pc_format",
+        "pause",
+        "stop_on_death",
+        "bus",
+        "snapshot",
     };
 
     const std::string PREFIXES_TO_DROP[]{
@@ -192,19 +192,6 @@ class AssetDumperSndBank::Internal
         stream.NextRow();
     }
 
-    static const char* FindNameForDuck(unsigned int id, const SndDuck* ducks, unsigned int duckCount)
-    {
-        for (auto i = 0u; i < duckCount; i++)
-        {
-            if (id == ducks[i].id)
-            {
-                return ducks[i].name;
-            }
-        }
-
-        return "";
-    }
-
     static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const SndBank* bank)
     {
         // name
@@ -300,100 +287,100 @@ class AssetDumperSndBank::Internal
         // randomize_type
         stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 15) & 0x3]);
 
-        //     "# probability",
+        // probability",
         stream.WriteColumn(std::to_string(alias->probability));
 
-        //     "# start_delay",
+        // start_delay",
         stream.WriteColumn(std::to_string(alias->startDelay));
 
-        //     "# reverb_send",
+        // reverb_send",
         stream.WriteColumn(std::to_string(alias->reverbSend));
         
-        //     "# duck",
-        stream.WriteColumn(""); // FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
+        // duck",
+        stream.WriteColumn("");
 
-        //     "# pan",
+        // pan",
         stream.WriteColumn(((alias->flags0 >> 6) & 0x1) == 0 ? "2d" : "3d");
 
-        //     "# center_send",
+        // center_send",
         stream.WriteColumn(std::to_string(alias->centerSend));
 
-        //     "# envelop_min",
+        // envelop_min",
         stream.WriteColumn(std::to_string(alias->envelopMin));
 
-        //     "# envelop_max",
+        // envelop_max",
         stream.WriteColumn(std::to_string(alias->envelopMax));
 
-        //     "# envelop_percentage",
+        // envelop_percentage",
         stream.WriteColumn(std::to_string(alias->envelopPercentage));
 
-        //     "# occlusion_level",
+        // occlusion_level",
         stream.WriteColumn(std::to_string(alias->occlusionLevel));
 
-        //     "# occlusion_wet_dry",
+        // occlusion_wet_dry",
         stream.WriteColumn("");
 
-        //     "# is_big",
+        // is_big",
         stream.WriteColumn(((alias->flags0 >> 4) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# distance_lpf"
+        // distance_lpf"
         stream.WriteColumn(((alias->flags0 >> 2) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# move_type",
-        stream.WriteColumn(MOVE_TYPES_ENUM[(alias->flags0 >> 22) & 0x7]);
+        // move_type",
+        stream.WriteColumn(MOVE_TYPES_ENUM[std::min((alias->flags0 >> 22) & 0x7, 7u)]);
 
-        //     "# move_time",
+        // move_time",
         stream.WriteColumn(std::to_string(alias->fluxTime));
 
-        //     "# real_delay",
+        // real_delay",
         stream.WriteColumn("");
 
-        //     "# subtitle",
+        // subtitle",
         //stream.WriteColumn(alias->subtitle);
 
-        //     "# mature",
+        // mature",
         stream.WriteColumn("");
 
-        //     "# doppler",
+        // doppler",
         stream.WriteColumn(((alias->flags0 >> 1) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# futz",
+        // futz",
         stream.WriteColumn("");
 
-        //     "# context_type",
+        // context_type",
         stream.WriteColumn("hash_" + std::to_string(alias->contextType));
 
-        //     "# context_value",
+        // context_value",
         stream.WriteColumn("hash_" + std::to_string(alias->contextValue));
 
-        //     "# compression",
+        // compression",
         stream.WriteColumn("");
 
-        //     "# timescale",
+        // timescale",
         stream.WriteColumn(((alias->flags0 >> 8) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# music",
+        // music",
         stream.WriteColumn(((alias->flags0 >> 10) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# fade_in",
+        // fade_in",
         stream.WriteColumn(std::to_string(alias->fadeIn));
 
-        //     "# fade_out",
+        // fade_out",
         stream.WriteColumn(std::to_string(alias->fadeOut));
 
-        //     "# pc_format",
+        // pc_format",
         stream.WriteColumn("");
 
-        //     "# pause",
+        // pause",
         stream.WriteColumn(((alias->flags0 >> 5) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# stop_on_death",
+        // stop_on_death",
         stream.WriteColumn(((alias->flags0 >> 7) & 0x1) == 0 ? "no" : "yes");
 
-        //     "# bus",
+        // bus",
         stream.WriteColumn(BUS_IDS_ENUM[std::min((alias->flags0 >> 13) & 0xF, 10u)]);
 
-        //     "# snapshot",
+        // snapshot",
         stream.WriteColumn("");
     }
 
@@ -417,6 +404,7 @@ class AssetDumperSndBank::Internal
             {
                 const auto& alias = aliasList.head[j];
                 WriteAliasToFile(csvStream, &alias, sndBank);
+                csvStream.NextRow();
             }
         }
     }
