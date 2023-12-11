@@ -192,6 +192,19 @@ class AssetDumperSndBank::Internal
         stream.NextRow();
     }
 
+    static const char* FindNameForDuck(unsigned int id, const SndDuck* ducks, unsigned int duckCount)
+    {
+        for (auto i = 0u; i < duckCount; i++)
+        {
+            if (id == ducks[i].id)
+            {
+                return ducks[i].name;
+            }
+        }
+
+        return "";
+    }
+
     static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const SndBank* bank)
     {
         // name
@@ -297,7 +310,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->reverbSend));
         
         // duck",
-        stream.WriteColumn("");
+        stream.WriteColumn(""); // FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
 
         // pan",
         stream.WriteColumn(((alias->flags0 >> 6) & 0x1) == 0 ? "2d" : "3d");

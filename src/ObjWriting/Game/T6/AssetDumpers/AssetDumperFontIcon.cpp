@@ -24,21 +24,21 @@ class AssetDumperFontIconInternal
 
     inline static const std::string TYPE_ICON = "icon";
     inline static const std::string ICON_HEADERS[]{
-    index",
-    type",
-    name",
-    material",
-    size",
-    xScale",
-    yScale",
+        "# index",
+        "# type",
+        "# name",
+        "# material",
+        "# size",
+        "# xScale",
+        "# yScale",
     };
 
     inline static const std::string TYPE_ALIAS = "alias";
     inline static const std::string ALIAS_HEADERS[]{
-    index",
-    type",
-    alias",
-    button",
+        "# index",
+        "# type",
+        "# alias",
+        "# button",
     };
 
     inline static const KnownAlias KNOWN_ALIASES[]{
