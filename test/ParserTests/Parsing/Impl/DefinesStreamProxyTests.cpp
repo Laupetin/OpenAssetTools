@@ -596,4 +596,50 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Macro definition can span multiple lines when used with backslash", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro( \\",
+            "  a, \\",
+            "  b, \\",
+            "  c) a + b - c",
+            "testMacro(1, 2, 3)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "1 + 2 - 3");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Macro usages can span multiple lines if they have args", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a, b, c) Hello a, this is b. Lets meet at c!",
+            "testMacro(",
+            "Peter,",
+            "Anna,",
+            "the cinema",
+            ")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "Hello Peter, this is Anna. Lets meet at the cinema!");
+
+        REQUIRE(proxy.Eof());
+    }
 } // namespace test::parsing::impl::defines_stream_proxy
