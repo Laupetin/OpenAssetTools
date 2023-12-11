@@ -96,7 +96,47 @@ namespace
         96000,
         192000,
     };
-} // namespace
+
+    const std::string GROUPS_ENUM[]
+    {
+        "grp_reference", "grp_master", "grp_wpn_lfe", "grp_lfe", "grp_hdrfx", "grp_music", "grp_voice", "grp_set_piece", "grp_igc", 
+        "grp_mp_game", "grp_explosion", "grp_player_impacts", "grp_scripted_moment", "grp_menu", "grp_whizby", "grp_weapon", "grp_vehicle", 
+        "grp_impacts", "grp_foley", "grp_destructible", "grp_physics", "grp_ambience", "grp_alerts", "grp_air", "grp_bink", "grp_announcer",
+        ""
+    };
+
+    const std::string CURVES_ENUM[]
+    {
+        "default", "defaultmin", "allon", "alloff", "rcurve0", "rcurve1", "rcurve2", "rcurve3", "rcurve4", "rcurve5", "steep", 
+        "sindelay", "cosdelay", "sin", "cos", "rev60", "rev65",
+        ""
+    };
+
+    const std::string LOOP_TYPES_ENUM[]
+    {
+        "nonlooping", "looping"
+    };
+
+    const std::string LIMIT_TYPES_ENUM[]
+    {
+        "none", "oldest", "reject", "priority"
+    };
+
+    const std::string MOVE_TYPES_ENUM[]
+    {
+        "none", "left_player", "center_player", "right_player", "random", "left_shot", "center_shot", "right_shot"
+    };
+
+    const std::string LOAD_TYPES_ENUM[]
+    {
+        "unknown", "loaded", "streamed", "primed"
+    };
+
+    const std::string BUS_IDS_ENUM[]
+    {
+        "bus_reverb", "bus_fx", "bus_voice", "bus_pfutz", "bus_hdrfx", "bus_ui", "bus_reference", "bus_music", "bus_movie", "bus_reference", ""
+    };
+}
 
 class AssetDumperSndBank::Internal
 {
@@ -142,11 +182,6 @@ class AssetDumperSndBank::Internal
         return nullptr;
     }
 
-    static std::unique_ptr<std::ostream> OpenAliasOutputFile(const SndBank* sndBank)
-    {
-        return nullptr;
-    }
-
     static void WriteAliasFileHeader(CsvOutputStream& stream)
     {
         for (const auto& headerField : ALIAS_HEADERS)
@@ -157,7 +192,20 @@ class AssetDumperSndBank::Internal
         stream.NextRow();
     }
 
-    static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias)
+    static const char* FindNameForDuck(unsigned int id, const SndDuck* ducks, unsigned int duckCount)
+    {
+        for (auto i = 0u; i < duckCount; i++)
+        {
+            if (id == ducks[i].id)
+            {
+                return ducks[i].name;
+            }
+        }
+
+        return "";
+    }
+
+    static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const SndBank* bank)
     {
         // name
         stream.WriteColumn(alias->name);
@@ -165,7 +213,6 @@ class AssetDumperSndBank::Internal
         // file
         stream.WriteColumn(alias->assetFileName);
 
-        // "# template",
         // template
         stream.WriteColumn("");
 
@@ -173,122 +220,203 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // secondary
-        stream.WriteColumn(alias->secondaryname);
+        //stream.WriteColumn(alias->secondaryname);
 
-        //     "# group",
-        stream.WriteColumn("");
+        // group
+        stream.WriteColumn(GROUPS_ENUM[std::min((alias->flags0 >> 17) & 0x1F, 26u)]);
 
-        //     "# vol_min",
-        stream.WriteColumn("");
+        // vol_min
+        stream.WriteColumn(std::to_string(alias->volMin));
 
-        //     "# vol_max",
-        stream.WriteColumn("");
+        // vol_max
+        stream.WriteColumn(std::to_string(alias->volMax));
 
-        //     "# team_vol_mod",
-        stream.WriteColumn("");
-
-        //     "# dist_min",
+        // team_vol_mod
         stream.WriteColumn("");
 
-        //     "# dist_max",
-        stream.WriteColumn("");
+        // dist_min
+        stream.WriteColumn(std::to_string(alias->distMin));
 
-        //     "# dist_reverb_max",
-        stream.WriteColumn("");
+        // dist_max
+        stream.WriteColumn(std::to_string(alias->distMax));
 
-        //     "# volume_falloff_curve",
-        stream.WriteColumn("");
+        // dist_reverb_max
+        stream.WriteColumn(std::to_string(alias->distReverbMax));
 
-        //     "# reverb_falloff_curve",
-        stream.WriteColumn("");
-        stream.WriteColumn("");
-        stream.WriteColumn("");
-        stream.WriteColumn("");
-        stream.WriteColumn("");
-        stream.WriteColumn("");
-        stream.WriteColumn("");
-        stream.WriteColumn("");
+        // volume_falloff_curve
+        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 14) & 0x1F, 17u)]);
+
+        // reverb_falloff_curve
+        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 20) & 0x1F, 17u)]);
+
+        // volume_min_falloff_curve
+        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 2) & 0x1F, 17u)]);
+
+        // reverb_min_falloff_curve"
+        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 8) & 0x1F, 17u)]);
+
+        // limit_count
+        stream.WriteColumn(std::to_string(alias->limitCount));
+
+        // limit_type
+        stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 25) & 0x3]);
+
+        // entity_limit_count
+        stream.WriteColumn(std::to_string(alias->entityLimitCount));
+
+        // entity_limit_type
+        stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 27) & 0x3]);
+
+        // pitch_min
+        stream.WriteColumn(std::to_string(alias->pitchMin));
         
+        // pitch_max
+        stream.WriteColumn(std::to_string(alias->pitchMax));
 
+        // team_pitch_mod
+        stream.WriteColumn("");
 
+        // min_priority
+        stream.WriteColumn(std::to_string(alias->minPriority));
 
+        // max_priority
+        stream.WriteColumn(std::to_string(alias->maxPriority));
 
+        // min_priority_threshold
+        stream.WriteColumn(std::to_string(alias->minPriorityThreshold));
 
+        // max_priority_threshold
+        stream.WriteColumn(std::to_string(alias->maxPriorityThreshold));
 
+        // spatialized
+        stream.WriteColumn("");
 
+        // type
+        stream.WriteColumn(std::to_string(alias->contextType));
 
+        // loop
+        stream.WriteColumn((alias->flags0 & 0x1) == 0 ? "nonlooping" : "looping");
 
-        //     "# volume_min_falloff_curve",
-        //     "# reverb_min_falloff_curve",
-        //     "# limit_count",
-        //     "# limit_type",
-        //     "# entity_limit_count",
-        //     "# entity_limit_type",
-        //     "# pitch_min",
-        //     "# pitch_max",
-        //     "# team_pitch_mod",
-        //     "# min_priority",
-        //     "# max_priority",
-        //     "# min_priority_threshold",
-        //     "# max_priority_threshold",
-        //     "# spatialized",
-        //     "# type",
-        //     "# loop",
-        //     "# randomize_type",
+        // randomize_type
+        stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 15) & 0x3]);
+
         //     "# probability",
+        stream.WriteColumn(std::to_string(alias->probability));
+
         //     "# start_delay",
+        stream.WriteColumn(std::to_string(alias->startDelay));
+
         //     "# reverb_send",
+        stream.WriteColumn(std::to_string(alias->reverbSend));
+        
         //     "# duck",
+        stream.WriteColumn(""); // FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
+
         //     "# pan",
+        stream.WriteColumn(((alias->flags0 >> 6) & 0x1) == 0 ? "2d" : "3d");
+
         //     "# center_send",
+        stream.WriteColumn(std::to_string(alias->centerSend));
+
         //     "# envelop_min",
+        stream.WriteColumn(std::to_string(alias->envelopMin));
+
         //     "# envelop_max",
+        stream.WriteColumn(std::to_string(alias->envelopMax));
+
         //     "# envelop_percentage",
+        stream.WriteColumn(std::to_string(alias->envelopPercentage));
+
         //     "# occlusion_level",
+        stream.WriteColumn(std::to_string(alias->occlusionLevel));
+
         //     "# occlusion_wet_dry",
+        stream.WriteColumn("");
+
         //     "# is_big",
-        //     "# distance_lpf",
+        stream.WriteColumn(((alias->flags0 >> 4) & 0x1) == 0 ? "no" : "yes");
+
+        //     "# distance_lpf"
+        stream.WriteColumn(((alias->flags0 >> 2) & 0x1) == 0 ? "no" : "yes");
+
         //     "# move_type",
+        stream.WriteColumn(MOVE_TYPES_ENUM[(alias->flags0 >> 22) & 0x7]);
+
         //     "# move_time",
+        stream.WriteColumn(std::to_string(alias->fluxTime));
+
         //     "# real_delay",
+        stream.WriteColumn("");
+
         //     "# subtitle",
+        //stream.WriteColumn(alias->subtitle);
+
         //     "# mature",
+        stream.WriteColumn("");
+
         //     "# doppler",
+        stream.WriteColumn(((alias->flags0 >> 1) & 0x1) == 0 ? "no" : "yes");
+
         //     "# futz",
+        stream.WriteColumn("");
+
         //     "# context_type",
+        stream.WriteColumn("hash_" + std::to_string(alias->contextType));
+
         //     "# context_value",
+        stream.WriteColumn("hash_" + std::to_string(alias->contextValue));
+
         //     "# compression",
+        stream.WriteColumn("");
+
         //     "# timescale",
+        stream.WriteColumn(((alias->flags0 >> 8) & 0x1) == 0 ? "no" : "yes");
+
         //     "# music",
+        stream.WriteColumn(((alias->flags0 >> 10) & 0x1) == 0 ? "no" : "yes");
+
         //     "# fade_in",
+        stream.WriteColumn(std::to_string(alias->fadeIn));
+
         //     "# fade_out",
+        stream.WriteColumn(std::to_string(alias->fadeOut));
+
         //     "# pc_format",
+        stream.WriteColumn("");
+
         //     "# pause",
+        stream.WriteColumn(((alias->flags0 >> 5) & 0x1) == 0 ? "no" : "yes");
+
         //     "# stop_on_death",
+        stream.WriteColumn(((alias->flags0 >> 7) & 0x1) == 0 ? "no" : "yes");
+
         //     "# bus",
+        stream.WriteColumn(BUS_IDS_ENUM[std::min((alias->flags0 >> 13) & 0xF, 10u)]);
+
         //     "# snapshot",
+        stream.WriteColumn("");
     }
 
-    static void DumpSndBankAliases(const SndBank* sndBank)
+    void DumpSndBankAliases(const SndBank* sndBank) const
     {
-        const auto outputFile = OpenAliasOutputFile(sndBank);
-
-        if (outputFile == nullptr)
+        const auto outFile = OpenAssetOutputFile("soundaliases\\" + std::string(sndBank->name), ".csv");
+        if (!outFile)
         {
-            std::cout << "Failed to open sound alias output file for: \"" << sndBank->name << "\"" << std::endl;
+            std::cerr << "Failed to open sound output file: \"" << sndBank->name << "\"\n";
             return;
         }
 
-        CsvOutputStream csvStream(*outputFile);
+        CsvOutputStream csvStream(*outFile);
         WriteAliasFileHeader(csvStream);
 
         for (auto i = 0u; i < sndBank->aliasCount; i++)
         {
             const auto& aliasList = sndBank->alias[i];
+
             for (auto j = 0; j < aliasList.count; j++)
             {
                 const auto& alias = aliasList.head[j];
-                WriteAliasToFile(csvStream, &alias);
+                WriteAliasToFile(csvStream, &alias, sndBank);
             }
         }
     }
