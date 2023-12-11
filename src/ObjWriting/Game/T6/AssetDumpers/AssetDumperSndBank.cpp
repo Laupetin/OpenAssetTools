@@ -416,8 +416,11 @@ class AssetDumperSndBank::Internal
             for (auto j = 0; j < aliasList.count; j++)
             {
                 const auto& alias = aliasList.head[j];
-                WriteAliasToFile(csvStream, &alias, sndBank);
-                csvStream.NextRow();
+                if (alias.assetId && alias.assetFileName)
+                {
+                    WriteAliasToFile(csvStream, &alias, sndBank);
+                    csvStream.NextRow();
+                }
             }
         }
     }
