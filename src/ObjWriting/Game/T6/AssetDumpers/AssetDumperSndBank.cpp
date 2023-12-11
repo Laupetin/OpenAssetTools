@@ -399,7 +399,7 @@ class AssetDumperSndBank::Internal
 
     void DumpSndBankAliases(const SndBank* sndBank) const
     {
-        const auto outFile = OpenAssetOutputFile("soundaliases\\" + std::string(sndBank->name), ".csv");
+        const auto outFile = OpenAssetOutputFile("soundbank\\aliases\\" + std::string(sndBank->name), ".csv");
         if (!outFile)
         {
             std::cerr << "Failed to open sound output file: \"" << sndBank->name << "\"\n";
@@ -521,6 +521,16 @@ class AssetDumperSndBank::Internal
         }
     }
 
+    void DumpSoundRadverb(const SndBank* sndBank) const
+    {
+        std::cout << sndBank->radverbCount << "\n";
+        for (auto i = 0u; i < sndBank->radverbCount; i++)
+        {
+            const auto& radverb = sndBank->radverbs[i];
+            std::cout << radverb.name << "\n";
+        }
+    }
+
     void DumpSoundData(const SndBank* sndBank) const
     {
         std::unordered_set<unsigned> dumpedAssets;
@@ -546,6 +556,7 @@ class AssetDumperSndBank::Internal
         const auto* sndBank = sndBankInfo->Asset();
 
         DumpSndBankAliases(sndBank);
+        DumpSoundRadverb(sndBank);
         DumpSoundData(sndBank);
     }
 

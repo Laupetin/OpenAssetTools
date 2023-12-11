@@ -95,7 +95,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndCurves(const SndCurve* curves, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\curves.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\curves.csv");
 
         if (outputFile != nullptr)
         {
@@ -120,7 +120,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndPans(const SndPan* pans, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\pan.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\pan.csv");
 
         if (outputFile != nullptr)
         {
@@ -144,7 +144,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndDuckGroups(const SndDuckGroup* duckGroups, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\duck_groups.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\duck_groups.csv");
 
         if (outputFile != nullptr)
         {
@@ -163,7 +163,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndMasters(const SndMaster* masters, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\master.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\master.csv");
 
         if (outputFile != nullptr)
         {
@@ -232,7 +232,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndSidechainDucks(const SndSidechainDuck* sidechains, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\sidechain_duck.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\sidechain_duck.csv");
 
         if (outputFile != nullptr)
         {
@@ -256,7 +256,7 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndFutz(const SndFutz* futzes, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundaliases\\globals\\futz.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\futz.csv");
 
         if (outputFile != nullptr)
         {
