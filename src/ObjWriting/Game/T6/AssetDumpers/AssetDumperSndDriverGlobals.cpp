@@ -1,12 +1,12 @@
 #include "AssetDumperSndDriverGlobals.h"
 
-#include <fstream>
-#include <filesystem>
-#include <unordered_map>
-
-#include "Utils/ClassUtils.h"
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
+#include "Utils/ClassUtils.h"
+
+#include <filesystem>
+#include <fstream>
+#include <unordered_map>
 
 using namespace T6;
 namespace fs = std::filesystem;
@@ -15,58 +15,42 @@ class AssetDumperSndDriverGlobals::Internal
 {
     AssetDumpingContext& m_context;
 
-    inline static const std::string GROUPS_HEADERS[]
-    {"name", "attenuationSp", "attenuationMp", "category", "parent", "id"
-    };
+    inline static const std::string GROUPS_HEADERS[]{"name", "attenuationSp", "attenuationMp", "category", "parent", "id"};
 
-    inline static const std::string GROUPS_CATEGORIES[]
-    {"sfx", "music", "void", "ui", "cinematic", "id"
-    };
+    inline static const std::string GROUPS_CATEGORIES[]{"sfx", "music", "void", "ui", "cinematic", "id"};
 
-    inline static const std::string CURVE_HEADERS[]
-    {
-        "name", "x0", "y0", "x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4", "x5", "y5", "x6", "y6", "x7", "y7", "id"
-    };
+    inline static const std::string CURVE_HEADERS[]{
+        "name", "x0", "y0", "x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4", "x5", "y5", "x6", "y6", "x7", "y7", "id"};
 
-    inline static const std::string PAN_HEADERS[]
-    {"name", "front", "back", "center", "lfe", "left", "right","id"
-    };
+    inline static const std::string PAN_HEADERS[]{"name", "front", "back", "center", "lfe", "left", "right", "id"};
 
-    inline static const std::string MASTER_HEADERS[]
-    {
+    inline static const std::string MASTER_HEADERS[]{
         "name",      "lowE",      "lowG",      "lowF",      "lowQ",      "peak1E",     "peak1G",    "peak1F",     "peak1Q",     "peak2E",  "peak2G",
         "peak2F",    "peak2Q",    "hiE",       "hiG",       "hiF",       "hiQ",        "eqG",       "compE",      "compPG",     "compMG",  "compT",
         "compR",     "compTA",    "compTR",    "limitE",    "limitPG",   "limitMG",    "limitT",    "limitR",     "limitTA",    "limitTR", "busReverbG",
         "busFxG",    "busVoiceG", "busPfutzG", "busHdrfxG", "busUiG",    "busMusicG",  "busMovieG", "busVcsG",    "busReverbE", "busFxE",  "busVoiceE",
-        "busPfutzE", "busHdrfxE", "busUiE",    "busMusicE", "busMovieE", "hdrfxCompE", "voiceEqE",  "voiceCompE", "id"
-    };
+        "busPfutzE", "busHdrfxE", "busUiE",    "busMusicE", "busMovieE", "hdrfxCompE", "voiceEqE",  "voiceCompE", "id"};
 
-    inline static const std::string SIDECHAIN_HEADERS[]
-    {
-        "name", "g", "f", "q", "ta", "tr", "tf", "id"
-    };
+    inline static const std::string SIDECHAIN_HEADERS[]{"name", "g", "f", "q", "ta", "tr", "tf", "id"};
 
-    inline static const std::string FUTZ_HEADERS[]
-    {   
-        "name",
-        "bpfF",
-        "bpfQ",
-        "lsG",
-        "lsF",
-        "lsQ",
-        "dist",
-        "preG",
-        "postG",
-        "th",
-        "tg",
-        "clippre",
-        "clippost",
-        "blend",
-        "startAliasId",
-        "stopAliasId",
-        "loopAliasId",
-        "id"
-    };
+    inline static const std::string FUTZ_HEADERS[]{"name",
+                                                   "bpfF",
+                                                   "bpfQ",
+                                                   "lsG",
+                                                   "lsF",
+                                                   "lsQ",
+                                                   "dist",
+                                                   "preG",
+                                                   "postG",
+                                                   "th",
+                                                   "tg",
+                                                   "clippre",
+                                                   "clippost",
+                                                   "blend",
+                                                   "startAliasId",
+                                                   "stopAliasId",
+                                                   "loopAliasId",
+                                                   "id"};
 
     std::unique_ptr<std::ostream> OpenAssetFile(const std::string& filename)
     {
@@ -322,7 +306,7 @@ class AssetDumperSndDriverGlobals::Internal
         DumpSndCurves(sndDriverGlobals->curves, sndDriverGlobals->curveCount);
         DumpSndPans(sndDriverGlobals->pans, sndDriverGlobals->panCount);
         DumpSndDuckGroups(sndDriverGlobals->duckGroups, sndDriverGlobals->duckGroupCount);
-        //DumpSndContexts(sndDriverGlobals->contexts, sndDriverGlobals->contextCount);
+        // DumpSndContexts(sndDriverGlobals->contexts, sndDriverGlobals->contextCount);
         DumpSndMasters(sndDriverGlobals->masters, sndDriverGlobals->masterCount);
         DumpSndSidechainDucks(sndDriverGlobals->voiceDucks, sndDriverGlobals->voiceDuckCount);
         DumpSndFutz(sndDriverGlobals->futzes, sndDriverGlobals->futzCount);

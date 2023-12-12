@@ -4,6 +4,7 @@
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
 #include "Utils/ClassUtils.h"
+#include "nlohmann/json.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -80,29 +81,23 @@ namespace
         "snapshot",
     };
 
-    const std::string REVERB_HEADERS[]{
-        "name",
-        "smoothing",
-        "earlyTime",
-        "lateTime",
-        "earlyGain",
-        "lateGain",
-        "returnGain",
-        "earlyLpf",
-        "lateLpf",
-        "inputLpf",
-        "dampLpf",
-        "wallReflect",
-        "dryGain",
-        "earlySize",
-        "lateSize",
-        "diffusion",
-        "returnHighpass"
-    };
-
-    const std::string DUCK_HEADERS[]{
-        "name", "fadeIn", "fadeOut", "startDelay", "distance", "length", "fadeInCurve", "fadeOutCurve", "attenuation", "filter", "updateWhilePaused"
-    };
+    const std::string REVERB_HEADERS[]{"name",
+                                       "smoothing",
+                                       "earlyTime",
+                                       "lateTime",
+                                       "earlyGain",
+                                       "lateGain",
+                                       "returnGain",
+                                       "earlyLpf",
+                                       "lateLpf",
+                                       "inputLpf",
+                                       "dampLpf",
+                                       "wallReflect",
+                                       "dryGain",
+                                       "earlySize",
+                                       "lateSize",
+                                       "diffusion",
+                                       "returnHighpass"};
 
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
@@ -121,67 +116,119 @@ namespace
         192000,
     };
 
-    const std::string GROUPS_ENUM[]
-    {
-        "grp_reference", "grp_master", "grp_wpn_lfe", "grp_lfe", "grp_hdrfx", "grp_music", "grp_voice", "grp_set_piece", "grp_igc", 
-        "grp_mp_game", "grp_explosion", "grp_player_impacts", "grp_scripted_moment", "grp_menu", "grp_whizby", "grp_weapon", "grp_vehicle", 
-        "grp_impacts", "grp_foley", "grp_destructible", "grp_physics", "grp_ambience", "grp_alerts", "grp_air", "grp_bink", "grp_announcer",
-        ""
+    const std::string GROUPS_ENUM[]{"grp_reference",
+                                    "grp_master",
+                                    "grp_wpn_lfe",
+                                    "grp_lfe",
+                                    "grp_hdrfx",
+                                    "grp_music",
+                                    "grp_voice",
+                                    "grp_set_piece",
+                                    "grp_igc",
+                                    "grp_mp_game",
+                                    "grp_explosion",
+                                    "grp_player_impacts",
+                                    "grp_scripted_moment",
+                                    "grp_menu",
+                                    "grp_whizby",
+                                    "grp_weapon",
+                                    "grp_vehicle",
+                                    "grp_impacts",
+                                    "grp_foley",
+                                    "grp_destructible",
+                                    "grp_physics",
+                                    "grp_ambience",
+                                    "grp_alerts",
+                                    "grp_air",
+                                    "grp_bink",
+                                    "grp_announcer",
+                                    ""};
+
+    const std::string CURVES_ENUM[]{"default",
+                                    "defaultmin",
+                                    "allon",
+                                    "alloff",
+                                    "rcurve0",
+                                    "rcurve1",
+                                    "rcurve2",
+                                    "rcurve3",
+                                    "rcurve4",
+                                    "rcurve5",
+                                    "steep",
+                                    "sindelay",
+                                    "cosdelay",
+                                    "sin",
+                                    "cos",
+                                    "rev60",
+                                    "rev65",
+                                    ""};
+
+    const std::unordered_map<unsigned int, std::string> CURVES_MAP{
+        {4135636924, CURVES_ENUM[0] }, // "default"
+        {1298231670, CURVES_ENUM[1] }, // "defaultmin"
+        {2783299419, CURVES_ENUM[2] }, // "allon"
+        {2598309331, CURVES_ENUM[3] }, // "alloff"
+        {2462421902, CURVES_ENUM[4] }, // "rcurve0"
+        {2462421903, CURVES_ENUM[5] }, // "rcurve1"
+        {2462421904, CURVES_ENUM[6] }, // "rcurve2"
+        {2462421905, CURVES_ENUM[7] }, // "rcurve3"
+        {2462421906, CURVES_ENUM[8] }, // "rcurve4"
+        {2462421907, CURVES_ENUM[9] }, // "rcurve5"
+        {3711863914, CURVES_ENUM[10]}, // "steep"
+        {4107033168, CURVES_ENUM[11]}, // "sindelay"
+        {932232097,  CURVES_ENUM[12]}, // "cosdelay"
+        {818663411,  CURVES_ENUM[13]}, // "sin"
+        {686872930,  CURVES_ENUM[14]}, // "cos"
+        {3885755896, CURVES_ENUM[15]}, // "rev60"
+        {3885755901, CURVES_ENUM[16]}, // "rev65"
     };
 
-    const std::string CURVES_ENUM[]
-    {
-        "default", "defaultmin", "allon", "alloff", "rcurve0", "rcurve1", "rcurve2", "rcurve3", "rcurve4", "rcurve5", "steep", 
-        "sindelay", "cosdelay", "sin", "cos", "rev60", "rev65",
-        ""
+    const std::string DUCK_GROUPS_ENUM[]{
+        "snp_alerts_gameplay",
+        "snp_ambience",
+        "snp_claw",
+        "snp_destructible",
+        "snp_dying",
+        "snp_dying_ice",
+        "snp_evt_2d",
+        "snp_explosion",
+        "snp_foley",
+        "snp_grenade",
+        "snp_hdrfx",
+        "snp_igc",
+        "snp_impacts",
+        "snp_menu",
+        "snp_movie",
+        "snp_music",
+        "snp_never_duck",
+        "snp_player_dead",
+        "snp_player_impacts",
+        "snp_scripted_moment",
+        "snp_set_piece",
+        "snp_special",
+        "snp_vehicle",
+        "snp_vehicle_interior",
+        "snp_voice",
+        "snp_weapon_decay_1p",
+        "snp_whizby",
+        "snp_wpn_1p",
+        "snp_wpn_3p",
+        "snp_wpn_turret",
+        "snp_x2",
+        "snp_x3",
     };
 
-    const std::unordered_map<unsigned int, std::string> CURVES_MAP
-    {
-        { 4135636924, CURVES_ENUM[0]},   // "default"
-        { 1298231670, CURVES_ENUM[1] },  // "defaultmin"
-        { 2783299419, CURVES_ENUM[2] },  // "allon"
-        { 2598309331, CURVES_ENUM[3] },  // "alloff"
-        { 2462421902, CURVES_ENUM[4] },  // "rcurve0"
-        { 2462421903, CURVES_ENUM[5] },  // "rcurve1"
-        { 2462421904, CURVES_ENUM[6] },  // "rcurve2"
-        { 2462421905, CURVES_ENUM[7] },  // "rcurve3"
-        { 2462421906, CURVES_ENUM[8] },  // "rcurve4"
-        { 2462421907, CURVES_ENUM[9] },  // "rcurve5"
-        { 3711863914, CURVES_ENUM[10]},  // "steep"
-        { 4107033168, CURVES_ENUM[11]},  // "sindelay"
-        { 932232097,  CURVES_ENUM[12]},  // "cosdelay"
-        { 818663411,  CURVES_ENUM[13]},  // "sin"
-        { 686872930,  CURVES_ENUM[14]},  // "cos"
-        { 3885755896, CURVES_ENUM[15]},  // "rev60"
-        { 3885755901, CURVES_ENUM[16]},  // "rev65"
-    };
+    const std::string LOOP_TYPES_ENUM[]{"nonlooping", "looping"};
 
-    const std::string LOOP_TYPES_ENUM[]
-    {
-        "nonlooping", "looping"
-    };
+    const std::string LIMIT_TYPES_ENUM[]{"none", "oldest", "reject", "priority"};
 
-    const std::string LIMIT_TYPES_ENUM[]
-    {
-        "none", "oldest", "reject", "priority"
-    };
+    const std::string MOVE_TYPES_ENUM[]{"none", "left_player", "center_player", "right_player", "random", "left_shot", "center_shot", "right_shot"};
 
-    const std::string MOVE_TYPES_ENUM[]
-    {
-        "none", "left_player", "center_player", "right_player", "random", "left_shot", "center_shot", "right_shot"
-    };
+    const std::string LOAD_TYPES_ENUM[]{"unknown", "loaded", "streamed", "primed"};
 
-    const std::string LOAD_TYPES_ENUM[]
-    {
-        "unknown", "loaded", "streamed", "primed"
-    };
-
-    const std::string BUS_IDS_ENUM[]
-    {
-        "bus_reverb", "bus_fx", "bus_voice", "bus_pfutz", "bus_hdrfx", "bus_ui", "bus_reference", "bus_music", "bus_movie", "bus_reference", ""
-    };
-}
+    const std::string BUS_IDS_ENUM[]{
+        "bus_reverb", "bus_fx", "bus_voice", "bus_pfutz", "bus_hdrfx", "bus_ui", "bus_reference", "bus_music", "bus_movie", "bus_reference", ""};
+} // namespace
 
 class AssetDumperSndBank::Internal
 {
@@ -275,7 +322,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // secondary
-        //stream.WriteColumn(alias->secondaryname);
+        stream.WriteColumn((alias->secondaryname && *alias->secondaryname) ? alias->secondaryname : "");
 
         // group
         stream.WriteColumn(GROUPS_ENUM[std::min((alias->flags0 >> 17) & 0x1F, 26u)]);
@@ -324,7 +371,7 @@ class AssetDumperSndBank::Internal
 
         // pitch_min
         stream.WriteColumn(std::to_string(alias->pitchMin));
-        
+
         // pitch_max
         stream.WriteColumn(std::to_string(alias->pitchMax));
 
@@ -363,7 +410,7 @@ class AssetDumperSndBank::Internal
 
         // reverb_send",
         stream.WriteColumn(std::to_string(alias->reverbSend));
-        
+
         // duck",
         stream.WriteColumn(FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
 
@@ -404,7 +451,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // subtitle",
-        //stream.WriteColumn(alias->subtitle);
+        stream.WriteColumn((alias->subtitle && *alias->subtitle) ? alias->subtitle : "");
 
         // mature",
         stream.WriteColumn("");
@@ -416,10 +463,10 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // context_type",
-        stream.WriteColumn("hash_" + std::to_string(alias->contextType));
+        stream.WriteColumn(std::to_string(alias->contextType));
 
         // context_value",
-        stream.WriteColumn("hash_" + std::to_string(alias->contextValue));
+        stream.WriteColumn(std::to_string(alias->contextValue));
 
         // compression",
         stream.WriteColumn("");
@@ -450,34 +497,6 @@ class AssetDumperSndBank::Internal
 
         // snapshot",
         stream.WriteColumn("");
-    }
-
-    void DumpSndBankAliases(const SndBank* sndBank) const
-    {
-        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".aliases", ".csv");
-        if (!outFile)
-        {
-            std::cerr << "Failed to open sound alias output file: \"" << sndBank->name << "\"\n";
-            return;
-        }
-
-        CsvOutputStream csvStream(*outFile);
-        WriteAliasFileHeader(csvStream);
-
-        for (auto i = 0u; i < sndBank->aliasCount; i++)
-        {
-            const auto& aliasList = sndBank->alias[i];
-
-            for (auto j = 0; j < aliasList.count; j++)
-            {
-                const auto& alias = aliasList.head[j];
-                if (alias.assetId && alias.assetFileName)
-                {
-                    WriteAliasToFile(csvStream, &alias, sndBank);
-                    csvStream.NextRow();
-                }
-            }
-        }
     }
 
     static SoundBankEntryInputStream FindSoundDataInSoundBanks(const unsigned assetId)
@@ -576,6 +595,39 @@ class AssetDumperSndBank::Internal
         }
     }
 
+    void DumpSndBankAliases(const SndBank* sndBank) const
+    {
+        std::unordered_set<unsigned> dumpedAssets;
+
+        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".aliases", ".csv");
+        if (!outFile)
+        {
+            std::cerr << "Failed to open sound alias output file: \"" << sndBank->name << "\"\n";
+            return;
+        }
+
+        CsvOutputStream csvStream(*outFile);
+        WriteAliasFileHeader(csvStream);
+
+        for (auto i = 0u; i < sndBank->aliasCount; i++)
+        {
+            const auto& aliasList = sndBank->alias[i];
+
+            for (auto j = 0; j < aliasList.count; j++)
+            {
+                const auto& alias = aliasList.head[j];
+                if (alias.assetId && alias.assetFileName && dumpedAssets.find(alias.assetId) == dumpedAssets.end())
+                {
+                    DumpSndAlias(alias);
+                    dumpedAssets.emplace(alias.assetId);
+
+                    WriteAliasToFile(csvStream, &alias, sndBank);
+                    csvStream.NextRow();
+                }
+            }
+        }
+    }
+
     void DumpSoundRadverb(const SndBank* sndBank) const
     {
         if (sndBank->radverbCount <= 0)
@@ -641,42 +693,47 @@ class AssetDumperSndBank::Internal
             csvStream.WriteColumn(duck.name);
             csvStream.NextRow();
 
-            // dump duck file
-            //csvStream.WriteColumn(std::to_string(duck.fadeIn));
-            //csvStream.WriteColumn(std::to_string(duck.fadeOut));
-            //csvStream.WriteColumn(std::to_string(duck.startDelay));
-            //csvStream.WriteColumn(std::to_string(duck.distance));
-            //csvStream.WriteColumn(std::to_string(duck.length));
-
-            //auto fadeInItr = CURVES_MAP.find(duck.fadeInCurve);
-            //csvStream.WriteColumn(fadeInItr == CURVES_MAP.end() ? std::to_string(duck.fadeInCurve) : fadeInItr->second);
-
-            //auto fadeOutItr = CURVES_MAP.find(duck.fadeOutCurve);
-            //csvStream.WriteColumn(fadeOutItr == CURVES_MAP.end() ? std::to_string(duck.fadeOutCurve) : fadeOutItr->second);
-
-            //csvStream.WriteColumn(""); // attenuation
-            //csvStream.WriteColumn(""); // filter
-            //csvStream.WriteColumn(std::to_string(duck.updateWhilePaused));
-        }
-    }
-
-    void DumpSoundData(const SndBank* sndBank) const
-    {
-        std::unordered_set<unsigned> dumpedAssets;
-
-        for (auto i = 0u; i < sndBank->aliasCount; i++)
-        {
-            const auto& aliasList = sndBank->alias[i];
-
-            for (auto j = 0; j < aliasList.count; j++)
+            const auto duckFile = OpenAssetOutputFile("soundbank\\ducks\\" + std::string(duck.name), ".duk");
+            if (!outFile)
             {
-                const auto& alias = aliasList.head[j];
-                if (alias.assetId && alias.assetFileName && dumpedAssets.find(alias.assetId) == dumpedAssets.end())
-                {
-                    DumpSndAlias(alias);
-                    dumpedAssets.emplace(alias.assetId);
-                }
+                std::cerr << "Failed to open sound duck output file: \"" << duck.name << "\"\n";
+                return;
             }
+
+            nlohmann::json duckObj{};
+            duckObj["fadeIn"] = duck.fadeIn;
+            duckObj["fadeOut"] = duck.fadeOut;
+            duckObj["startDelay"] = duck.startDelay;
+            duckObj["distance"] = duck.distance;
+            duckObj["length"] = duck.length;
+            duckObj["fadeInCurveId"] = duck.fadeInCurve;
+            duckObj["fadeOutCurveId"] = duck.fadeOutCurve;
+            duckObj["updateWhilePaused"] = duck.updateWhilePaused;
+
+            auto fadeInItr = CURVES_MAP.find(duck.fadeInCurve);
+            if (fadeInItr != CURVES_MAP.end())
+            {
+                duckObj["fadeInCurve"] = fadeInItr->second;
+            }
+
+            auto fadeOutItr = CURVES_MAP.find(duck.fadeOutCurve);
+            if (fadeOutItr != CURVES_MAP.end())
+            {
+                duckObj["fadeOutCurve"] = fadeOutItr->second;
+            }
+
+            auto values = std::vector<nlohmann::json>{};
+            for (auto i = 0u; i < 32u; i++)
+            {
+                values.push_back({
+                    {"duckGroup",   DUCK_GROUPS_ENUM[i]},
+                    {"attenuation", duck.attenuation[i]},
+                    {"filter",      duck.filter[i]     }
+                });
+            }
+
+            duckObj["values"] = values;
+            *duckFile << duckObj.dump(4) << std::endl;
         }
     }
 
@@ -687,7 +744,6 @@ class AssetDumperSndBank::Internal
         DumpSndBankAliases(sndBank);
         DumpSoundRadverb(sndBank);
         DumpSoundDucks(sndBank);
-        DumpSoundData(sndBank);
     }
 
 public:
