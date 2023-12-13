@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <zlib.h>
+#include <zutil.h>
 
 using namespace T6;
 
@@ -39,7 +40,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
     zs.avail_in = 0;
     zs.next_in = Z_NULL;
 
-    int ret = inflateInit2(&zs, -13);
+    int ret = inflateInit2(&zs, -DEF_WBITS);
 
     if (ret != Z_OK)
     {
@@ -47,7 +48,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
     }
 
     zs.next_in = reinterpret_cast<const Bytef*>(&rawFile->buffer[4]);
-    zs.avail_in = inLen - 4;
+    zs.avail_in = inLen - sizeof(uint32_t);
 
     Bytef buffer[0x1000];
 
