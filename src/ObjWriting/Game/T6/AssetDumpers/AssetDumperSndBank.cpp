@@ -3,7 +3,6 @@
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
-#include "Utils/ClassUtils.h"
 #include "nlohmann/json.hpp"
 
 #include <filesystem>
@@ -81,23 +80,25 @@ namespace
         "snapshot",
     };
 
-    const std::string REVERB_HEADERS[]{"name",
-                                       "smoothing",
-                                       "earlyTime",
-                                       "lateTime",
-                                       "earlyGain",
-                                       "lateGain",
-                                       "returnGain",
-                                       "earlyLpf",
-                                       "lateLpf",
-                                       "inputLpf",
-                                       "dampLpf",
-                                       "wallReflect",
-                                       "dryGain",
-                                       "earlySize",
-                                       "lateSize",
-                                       "diffusion",
-                                       "returnHighpass"};
+    const std::string REVERB_HEADERS[]{
+        "name",
+        "smoothing",
+        "earlyTime",
+        "lateTime",
+        "earlyGain",
+        "lateGain",
+        "returnGain",
+        "earlyLpf",
+        "lateLpf",
+        "inputLpf",
+        "dampLpf",
+        "wallReflect",
+        "dryGain",
+        "earlySize",
+        "lateSize",
+        "diffusion",
+        "returnHighpass",
+    };
 
     const std::string PREFIXES_TO_DROP[]{
         "raw/",
@@ -116,52 +117,56 @@ namespace
         192000,
     };
 
-    const std::string GROUPS_ENUM[]{"grp_reference",
-                                    "grp_master",
-                                    "grp_wpn_lfe",
-                                    "grp_lfe",
-                                    "grp_hdrfx",
-                                    "grp_music",
-                                    "grp_voice",
-                                    "grp_set_piece",
-                                    "grp_igc",
-                                    "grp_mp_game",
-                                    "grp_explosion",
-                                    "grp_player_impacts",
-                                    "grp_scripted_moment",
-                                    "grp_menu",
-                                    "grp_whizby",
-                                    "grp_weapon",
-                                    "grp_vehicle",
-                                    "grp_impacts",
-                                    "grp_foley",
-                                    "grp_destructible",
-                                    "grp_physics",
-                                    "grp_ambience",
-                                    "grp_alerts",
-                                    "grp_air",
-                                    "grp_bink",
-                                    "grp_announcer",
-                                    ""};
+    const std::string GROUPS_ENUM[]{
+        "grp_reference",
+        "grp_master",
+        "grp_wpn_lfe",
+        "grp_lfe",
+        "grp_hdrfx",
+        "grp_music",
+        "grp_voice",
+        "grp_set_piece",
+        "grp_igc",
+        "grp_mp_game",
+        "grp_explosion",
+        "grp_player_impacts",
+        "grp_scripted_moment",
+        "grp_menu",
+        "grp_whizby",
+        "grp_weapon",
+        "grp_vehicle",
+        "grp_impacts",
+        "grp_foley",
+        "grp_destructible",
+        "grp_physics",
+        "grp_ambience",
+        "grp_alerts",
+        "grp_air",
+        "grp_bink",
+        "grp_announcer",
+        "",
+    };
 
-    const std::string CURVES_ENUM[]{"default",
-                                    "defaultmin",
-                                    "allon",
-                                    "alloff",
-                                    "rcurve0",
-                                    "rcurve1",
-                                    "rcurve2",
-                                    "rcurve3",
-                                    "rcurve4",
-                                    "rcurve5",
-                                    "steep",
-                                    "sindelay",
-                                    "cosdelay",
-                                    "sin",
-                                    "cos",
-                                    "rev60",
-                                    "rev65",
-                                    ""};
+    const std::string CURVES_ENUM[]{
+        "default",
+        "defaultmin",
+        "allon",
+        "alloff",
+        "rcurve0",
+        "rcurve1",
+        "rcurve2",
+        "rcurve3",
+        "rcurve4",
+        "rcurve5",
+        "steep",
+        "sindelay",
+        "cosdelay",
+        "sin",
+        "cos",
+        "rev60",
+        "rev65",
+        "",
+    };
 
     const std::unordered_map<unsigned int, std::string> CURVES_MAP{
         {4135636924, CURVES_ENUM[0] }, // "default"
@@ -218,16 +223,44 @@ namespace
         "snp_x3",
     };
 
-    const std::string LOOP_TYPES_ENUM[]{"nonlooping", "looping"};
+    const std::string LIMIT_TYPES_ENUM[]{
+        "none",
+        "oldest",
+        "reject",
+        "priority",
+    };
 
-    const std::string LIMIT_TYPES_ENUM[]{"none", "oldest", "reject", "priority"};
+    const std::string MOVE_TYPES_ENUM[]{
+        "none",
+        "left_player",
+        "center_player",
+        "right_player",
+        "random",
+        "left_shot",
+        "center_shot",
+        "right_shot",
+    };
 
-    const std::string MOVE_TYPES_ENUM[]{"none", "left_player", "center_player", "right_player", "random", "left_shot", "center_shot", "right_shot"};
-
-    const std::string LOAD_TYPES_ENUM[]{"unknown", "loaded", "streamed", "primed"};
+    const std::string LOAD_TYPES_ENUM[]{
+        "unknown",
+        "loaded",
+        "streamed",
+        "primed",
+    };
 
     const std::string BUS_IDS_ENUM[]{
-        "bus_reverb", "bus_fx", "bus_voice", "bus_pfutz", "bus_hdrfx", "bus_ui", "bus_reference", "bus_music", "bus_movie", "bus_reference", ""};
+        "bus_reverb",
+        "bus_fx",
+        "bus_voice",
+        "bus_pfutz",
+        "bus_hdrfx",
+        "bus_ui",
+        "bus_reference",
+        "bus_music",
+        "bus_movie",
+        "bus_reference",
+        "",
+    };
 } // namespace
 
 class AssetDumperSndBank::Internal
@@ -460,7 +493,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(((alias->flags0 >> 1) & 0x1) == 0 ? "no" : "yes");
 
         // futz",
-        stream.WriteColumn("");
+        stream.WriteColumn(std::to_string(alias->futzPatch));
 
         // context_type",
         stream.WriteColumn(std::to_string(alias->contextType));
@@ -599,7 +632,7 @@ class AssetDumperSndBank::Internal
     {
         std::unordered_set<unsigned> dumpedAssets;
 
-        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".aliases", ".csv");
+        const auto outFile = OpenAssetOutputFile("soundbank/" + std::string(sndBank->name) + ".aliases", ".csv");
         if (!outFile)
         {
             std::cerr << "Failed to open sound alias output file: \"" << sndBank->name << "\"\n";
@@ -635,7 +668,7 @@ class AssetDumperSndBank::Internal
             return;
         }
 
-        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".reverbs", ".csv");
+        const auto outFile = OpenAssetOutputFile("soundbank/" + std::string(sndBank->name) + ".reverbs", ".csv");
         if (!outFile)
         {
             std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
@@ -676,7 +709,7 @@ class AssetDumperSndBank::Internal
             return;
         }
 
-        const auto outFile = OpenAssetOutputFile("soundbank\\" + std::string(sndBank->name) + ".ducklist", ".csv");
+        const auto outFile = OpenAssetOutputFile("soundbank/" + std::string(sndBank->name) + ".ducklist", ".csv");
         if (!outFile)
         {
             std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
@@ -693,7 +726,7 @@ class AssetDumperSndBank::Internal
             csvStream.WriteColumn(duck.name);
             csvStream.NextRow();
 
-            const auto duckFile = OpenAssetOutputFile("soundbank\\ducks\\" + std::string(duck.name), ".duk");
+            const auto duckFile = OpenAssetOutputFile("soundbank/ducks/" + std::string(duck.name), ".duk");
             if (!outFile)
             {
                 std::cerr << "Failed to open sound duck output file: \"" << duck.name << "\"\n";

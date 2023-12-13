@@ -2,55 +2,102 @@
 
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
-#include "Utils/ClassUtils.h"
-
-#include <filesystem>
-#include <fstream>
-#include <unordered_map>
 
 using namespace T6;
-namespace fs = std::filesystem;
 
 class AssetDumperSndDriverGlobals::Internal
 {
     AssetDumpingContext& m_context;
 
-    inline static const std::string GROUPS_HEADERS[]{"name", "attenuationSp", "attenuationMp", "category", "parent", "id"};
+    inline static const std::string GROUPS_HEADERS[]{
+        "name",
+        "attenuationSp",
+        "attenuationMp",
+        "category",
+        "parent",
+        "id",
+    };
 
-    inline static const std::string GROUPS_CATEGORIES[]{"sfx", "music", "void", "ui", "cinematic", "id"};
+    inline static const std::string GROUPS_CATEGORIES[]{
+        "sfx",
+        "music",
+        "void",
+        "ui",
+        "cinematic",
+        "id",
+    };
 
     inline static const std::string CURVE_HEADERS[]{
-        "name", "x0", "y0", "x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4", "x5", "y5", "x6", "y6", "x7", "y7", "id"};
+        "name",
+        "x0",
+        "y0",
+        "x1",
+        "y1",
+        "x2",
+        "y2",
+        "x3",
+        "y3",
+        "x4",
+        "y4",
+        "x5",
+        "y5",
+        "x6",
+        "y6",
+        "x7",
+        "y7",
+        "id",
+    };
 
-    inline static const std::string PAN_HEADERS[]{"name", "front", "back", "center", "lfe", "left", "right", "id"};
+    inline static const std::string PAN_HEADERS[]{
+        "name",
+        "front",
+        "back",
+        "center",
+        "lfe",
+        "left",
+        "right",
+        "id",
+    };
 
     inline static const std::string MASTER_HEADERS[]{
         "name",      "lowE",      "lowG",      "lowF",      "lowQ",      "peak1E",     "peak1G",    "peak1F",     "peak1Q",     "peak2E",  "peak2G",
         "peak2F",    "peak2Q",    "hiE",       "hiG",       "hiF",       "hiQ",        "eqG",       "compE",      "compPG",     "compMG",  "compT",
         "compR",     "compTA",    "compTR",    "limitE",    "limitPG",   "limitMG",    "limitT",    "limitR",     "limitTA",    "limitTR", "busReverbG",
         "busFxG",    "busVoiceG", "busPfutzG", "busHdrfxG", "busUiG",    "busMusicG",  "busMovieG", "busVcsG",    "busReverbE", "busFxE",  "busVoiceE",
-        "busPfutzE", "busHdrfxE", "busUiE",    "busMusicE", "busMovieE", "hdrfxCompE", "voiceEqE",  "voiceCompE", "id"};
+        "busPfutzE", "busHdrfxE", "busUiE",    "busMusicE", "busMovieE", "hdrfxCompE", "voiceEqE",  "voiceCompE", "id",
+    };
 
-    inline static const std::string SIDECHAIN_HEADERS[]{"name", "g", "f", "q", "ta", "tr", "tf", "id"};
+    inline static const std::string SIDECHAIN_HEADERS[]{
+        "name",
+        "g",
+        "f",
+        "q",
+        "ta",
+        "tr",
+        "tf",
+        "id",
+    };
 
-    inline static const std::string FUTZ_HEADERS[]{"name",
-                                                   "bpfF",
-                                                   "bpfQ",
-                                                   "lsG",
-                                                   "lsF",
-                                                   "lsQ",
-                                                   "dist",
-                                                   "preG",
-                                                   "postG",
-                                                   "th",
-                                                   "tg",
-                                                   "clippre",
-                                                   "clippost",
-                                                   "blend",
-                                                   "startAliasId",
-                                                   "stopAliasId",
-                                                   "loopAliasId",
-                                                   "id"};
+    inline static const std::string FUTZ_HEADERS[]{
+        "name",
+        "bpfF",
+        "bpfQ",
+        "lsG",
+        "lsF",
+        "lsQ",
+        "dist",
+        "preG",
+        "postG",
+        "th",
+        "tg",
+        "clippre",
+        "clippost",
+        "blend",
+        "startAliasId",
+        "stopAliasId",
+        "loopAliasId",
+        "id",
+    };
 
     std::unique_ptr<std::ostream> OpenAssetFile(const std::string& filename)
     {
@@ -75,12 +122,12 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndVolumesGroups(const SndVolumeGroup* groups, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\group.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/group.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, GROUPS_HEADERS, 6);
+            WriteFileHeader(csvStream, GROUPS_HEADERS, std::extent_v<decltype(GROUPS_HEADERS)>);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -98,12 +145,12 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndCurves(const SndCurve* curves, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\curves.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/curves.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, CURVE_HEADERS, 18);
+            WriteFileHeader(csvStream, CURVE_HEADERS, std::extent_v<decltype(CURVE_HEADERS)>);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -125,12 +172,12 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndPans(const SndPan* pans, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\pan.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/pan.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, PAN_HEADERS, 8);
+            WriteFileHeader(csvStream, PAN_HEADERS, std::extent_v<decltype(PAN_HEADERS)>);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -150,12 +197,13 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndDuckGroups(const SndDuckGroup* duckGroups, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\duck_groups.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/duck_groups.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
             csvStream.WriteColumn("name");
+            csvStream.WriteColumn("id");
             csvStream.NextRow();
 
             for (auto i = 0u; i < count; i++)
@@ -170,12 +218,12 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndMasters(const SndMaster* masters, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\master.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/master.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, MASTER_HEADERS, 53);
+            WriteFileHeader(csvStream, MASTER_HEADERS, std::extent_v<decltype(MASTER_HEADERS)>);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -240,12 +288,12 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndSidechainDucks(const SndSidechainDuck* sidechains, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\sidechain_duck.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/sidechain_duck.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, SIDECHAIN_HEADERS, 8);
+            WriteFileHeader(csvStream, SIDECHAIN_HEADERS, std::extent_v<decltype(SIDECHAIN_HEADERS)>);
 
             for (auto i = 0u; i < count; i++)
             {
@@ -265,12 +313,12 @@ class AssetDumperSndDriverGlobals::Internal
 
     void DumpSndFutz(const SndFutz* futzes, const size_t count)
     {
-        const auto outputFile = this->OpenAssetFile("soundbank\\globals\\futz.csv");
+        const auto outputFile = this->OpenAssetFile("soundbank/globals/futz.csv");
 
         if (outputFile != nullptr)
         {
             CsvOutputStream csvStream(*outputFile);
-            WriteFileHeader(csvStream, FUTZ_HEADERS, 18);
+            WriteFileHeader(csvStream, FUTZ_HEADERS, std::extent_v<decltype(FUTZ_HEADERS)>);
 
             for (auto i = 0u; i < count; i++)
             {
