@@ -93,6 +93,8 @@ bool AssetLoaderRawFile::LoadDefault(
 
     rawFile->buffer = static_cast<char16*>(fileBuffer);
     manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
+
+    return true;
 }
 
 bool AssetLoaderRawFile::LoadFromRaw(
