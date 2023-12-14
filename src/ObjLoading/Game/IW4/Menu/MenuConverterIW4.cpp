@@ -12,6 +12,7 @@
 #include "Parsing/Simple/Expression/SimpleExpressionConditionalOperator.h"
 #include "Parsing/Simple/Expression/SimpleExpressionUnaryOperation.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <cassert>
 #include <cstring>
@@ -204,12 +205,15 @@ namespace IW4
                                                       const CommonMenuDef* menu,
                                                       const CommonItemDef* item) const
         {
-            Statement_s* functionStatement = m_conversion_zone_state->FindFunction(functionCall->m_function_name);
+            std::string lowerCaseFunctionName(functionCall->m_function_name);
+            utils::MakeStringLowerCase(lowerCaseFunctionName);
+
+            Statement_s* functionStatement = m_conversion_zone_state->FindFunction(lowerCaseFunctionName);
 
             if (functionStatement == nullptr)
             {
                 // Function was not converted yet: Convert it now
-                const auto foundCommonFunction = m_parsing_zone_state->m_functions_by_name.find(functionCall->m_function_name);
+                const auto foundCommonFunction = m_parsing_zone_state->m_functions_by_name.find(lowerCaseFunctionName);
 
                 if (foundCommonFunction == m_parsing_zone_state->m_functions_by_name.end())
                     throw MenuConversionException("Failed to find definition for custom function \"" + functionCall->m_function_name + "\"", menu, item);
