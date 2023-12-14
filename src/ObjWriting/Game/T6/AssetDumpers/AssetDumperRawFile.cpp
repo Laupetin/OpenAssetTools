@@ -19,7 +19,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
     if (rawFile->len <= 4)
     {
-        std::cout << "Invalid len of animtree file \"" << rawFile->name << "\"" << std::endl;
+        std::cerr << "Invalid len of animtree file \"" << rawFile->name << "\"" << std::endl;
         return;
     }
 
@@ -28,7 +28,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
     if (outLen > ANIMTREE_MAX_SIZE)
     {
-        std::cout << "Invalid size of animtree file \"" << rawFile->name << "\": " << outLen << std::endl;
+        std::cerr << "Invalid size of animtree file \"" << rawFile->name << "\": " << outLen << std::endl;
         return;
     }
 
@@ -52,7 +52,6 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
     Bytef buffer[0x1000];
 
-    size_t writtenSize = 0;
     while (zs.avail_in > 0)
     {
         zs.next_out = buffer;
@@ -61,23 +60,14 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
         if (ret < 0)
         {
-            std::cout << "Inflate failed for dumping animtree file \"" << rawFile->name << "\"" << std::endl;
+            std::cerr << "Inflate failed for dumping animtree file \"" << rawFile->name << "\"" << std::endl;
             inflateEnd(&zs);
             return;
         }
 
         const auto inflateOutSize = sizeof buffer - zs.avail_out;
 
-        if (writtenSize + inflateOutSize >= outLen)
-        {
-            // Last byte is a \0 byte. Skip it.
-            stream.write(reinterpret_cast<char*>(buffer), inflateOutSize - 1);
-        }
-        else
-        {
-            stream.write(reinterpret_cast<char*>(buffer), inflateOutSize);
-        }
-        writtenSize += inflateOutSize;
+        stream.write(reinterpret_cast<char*>(buffer), inflateOutSize);
     }
 
     inflateEnd(&zs);
