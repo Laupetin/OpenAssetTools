@@ -34,10 +34,13 @@ namespace menu::function_scope_sequences
                 throw ParsingException(result.NextCapture(CAPTURE_TOKEN).GetPos(), ss.str());
             }
 
-            const auto existingFunction = state->m_functions_by_name.find(state->m_current_function->m_name);
+            auto lowerCaseName = state->m_current_function->m_name;
+            utils::MakeStringLowerCase(lowerCaseName);
+
+            const auto existingFunction = state->m_functions_by_name.find(lowerCaseName);
             if (existingFunction == state->m_functions_by_name.end())
             {
-                state->m_functions_by_name.emplace(std::make_pair(state->m_current_function->m_name, state->m_current_function));
+                state->m_functions_by_name.emplace(std::make_pair(lowerCaseName, state->m_current_function));
                 state->m_current_function = nullptr;
             }
             else if (!state->m_current_function->m_value->Equals(existingFunction->second->m_value.get()))

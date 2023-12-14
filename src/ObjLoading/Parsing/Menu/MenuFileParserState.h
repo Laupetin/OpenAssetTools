@@ -36,7 +36,9 @@ namespace menu
         std::vector<std::unique_ptr<CommonFunctionDef>> m_functions;
         std::vector<std::unique_ptr<CommonMenuDef>> m_menus;
 
+        // Function names are case-insensitive, therefore keys are always lowercase
         std::map<std::string, CommonFunctionDef*> m_functions_by_name;
+
         std::map<std::string, CommonMenuDef*> m_menus_by_name;
 
         bool m_in_global_scope;
