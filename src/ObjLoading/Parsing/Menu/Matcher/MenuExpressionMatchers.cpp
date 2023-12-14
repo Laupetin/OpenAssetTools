@@ -58,7 +58,11 @@ const std::map<std::string, size_t>& MenuExpressionMatchers::GetBaseFunctionMapF
         if (!iw4FunctionMapInitialized)
         {
             for (size_t i = IW4::expressionFunction_e::EXP_FUNC_DYN_START; i < std::extent_v<decltype(IW4::g_expFunctionNames)>; i++)
-                iw4FunctionMap.emplace(std::make_pair(IW4::g_expFunctionNames[i], i));
+            {
+                std::string functionName(IW4::g_expFunctionNames[i]);
+                utils::MakeStringLowerCase(functionName);
+                iw4FunctionMap.emplace(std::make_pair(functionName, i));
+            }
         }
 
         return iw4FunctionMap;
@@ -71,7 +75,11 @@ const std::map<std::string, size_t>& MenuExpressionMatchers::GetBaseFunctionMapF
         if (!iw5FunctionMapInitialized)
         {
             for (size_t i = IW5::expressionFunction_e::EXP_FUNC_DYN_START; i < std::extent_v<decltype(IW5::g_expFunctionNames)>; i++)
-                iw5FunctionMap.emplace(std::make_pair(IW5::g_expFunctionNames[i], i));
+            {
+                std::string functionName(IW5::g_expFunctionNames[i]);
+                utils::MakeStringLowerCase(functionName);
+                iw5FunctionMap.emplace(std::make_pair(std::move(functionName), i));
+            }
         }
 
         return iw5FunctionMap;
