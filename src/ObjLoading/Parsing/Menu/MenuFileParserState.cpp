@@ -1,5 +1,7 @@
 #include "MenuFileParserState.h"
 
+#include "Utils/StringUtils.h"
+
 using namespace menu;
 
 MenuFileParserState::EventHandlerConditionState::EventHandlerConditionState(CommonEventHandlerCondition* condition)
@@ -32,7 +34,9 @@ MenuFileParserState::MenuFileParserState(const FeatureLevel featureLevel, const 
 {
     for (const auto& function : zoneState->m_functions)
     {
-        m_functions_by_name.emplace(std::make_pair(function->m_name, function.get()));
+        std::string lowerCaseName(function->m_name);
+        utils::MakeStringLowerCase(lowerCaseName);
+        m_functions_by_name.emplace(std::make_pair(lowerCaseName, function.get()));
     }
 
     for (const auto& menu : zoneState->m_menus)

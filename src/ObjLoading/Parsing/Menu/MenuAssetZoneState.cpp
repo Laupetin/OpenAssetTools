@@ -1,10 +1,15 @@
 #include "MenuAssetZoneState.h"
 
+#include "Utils/StringUtils.h"
+
 using namespace menu;
 
 void MenuAssetZoneState::AddFunction(std::unique_ptr<CommonFunctionDef> function)
 {
-    m_functions_by_name.emplace(std::make_pair(function->m_name, function.get()));
+    std::string lowerCaseFunctionName(function->m_name);
+    utils::MakeStringLowerCase(lowerCaseFunctionName);
+
+    m_functions_by_name.emplace(std::make_pair(lowerCaseFunctionName, function.get()));
     m_functions.emplace_back(std::move(function));
 }
 
