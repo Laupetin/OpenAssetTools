@@ -697,6 +697,38 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Ensure can use comma in square brackets in parameters values", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define someStuff(param1) Hello param1 World",
+            "someStuff(A sentence with [brackets and a , character] and stuff)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "Hello A sentence with [brackets and a , character] and stuff World");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure can use comma in curly braces in parameters values", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define someStuff(param1) Hello param1 World",
+            "someStuff(A sentence with {braces and a , character} and stuff)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "Hello A sentence with {braces and a , character} and stuff World");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure defines can go over multiple lines", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
