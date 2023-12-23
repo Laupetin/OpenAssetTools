@@ -80,7 +80,7 @@ The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
 ## Documentation
 
 The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
-It is hosted on Github Pages and its source can be found in the (OAT-Docs Repository)[https://github.com/Laupetin/OAT-Docs].
+It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
 
 ## Legal
 
