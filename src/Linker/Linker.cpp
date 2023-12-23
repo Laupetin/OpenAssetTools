@@ -50,11 +50,7 @@ enum class ProjectType
     MAX
 };
 
-constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]{
-    "none",
-    "fastfile",
-    "ipak",
-    "iwd"};
+constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]{"none", "fastfile", "ipak", "iwd"};
 
 class LinkerImpl final : public Linker
 {

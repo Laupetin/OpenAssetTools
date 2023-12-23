@@ -1,8 +1,9 @@
 #include "IWDWriter.h"
 
+#include "../minizip/zip.h"
+
 #include <algorithm>
 #include <iostream>
-#include "../minizip/zip.h"
 
 class IWDWriterImpl final : public IWDWriter
 {
@@ -24,14 +25,14 @@ public:
         m_files.emplace_back(std::move(fileName));
     }
 
-    bool AddFileToArchive(const std::string& fileName, const std::unique_ptr<char []>& fileData, const size_t& fileSize)
+    bool AddFileToArchive(const std::string& fileName, const std::unique_ptr<char[]>& fileData, const size_t& fileSize)
     {
         zip_fileinfo zi = {};
 
         if (zipOpenNewFileInZip(m_zipfile, fileName.c_str(), &zi, NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION) != ZIP_OK)
         {
             zipClose(m_zipfile, NULL);
-            throw std::runtime_error( "Could not open new file in IWD \"" + fileName + "\"\n");
+            throw std::runtime_error("Could not open new file in IWD \"" + fileName + "\"\n");
         }
 
         if (zipWriteInFileInZip(m_zipfile, fileData.get(), fileSize) != ZIP_OK)
