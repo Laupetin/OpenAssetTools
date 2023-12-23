@@ -1,8 +1,14 @@
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Mock/MockParserLineStream.h"
+#include "Parsing/ParsingException.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_exception.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+
+using namespace Catch::Matchers;
 
 namespace test::parsing::impl::defines_stream_proxy
 {
@@ -11,6 +17,12 @@ namespace test::parsing::impl::defines_stream_proxy
         auto line = stream->NextLine();
         REQUIRE(line.m_line_number == lineNumber);
         REQUIRE(line.m_line == value);
+    }
+
+    void ExpectErrorInLine(IParserLineStream* stream, const int lineNumber, const int columnNumber)
+    {
+        REQUIRE_THROWS_MATCHES(
+            stream->NextLine(), ParsingException, MessageMatches(ContainsSubstring("L" + std::to_string(lineNumber) + ":" + std::to_string(columnNumber))));
     }
 
     TEST_CASE("DefinesStreamProxy: Ensure simple define and positive ifdef is working", "[parsing][parsingstream]")
@@ -723,6 +735,22 @@ namespace test::parsing::impl::defines_stream_proxy
         ExpectLine(&proxy, 5, "1 + 2 - 3");
 
         REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Macro definition that has unclosed parameters throws an error", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(",
+            "  a,",
+            "  b,",
+            "  c) a + b - c",
+            "testMacro(1, 2, 3)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectErrorInLine(&proxy, 1, 19);
     }
 
     TEST_CASE("DefinesStreamProxy: Macro usages can span multiple lines if they have args", "[parsing][parsingstream]")

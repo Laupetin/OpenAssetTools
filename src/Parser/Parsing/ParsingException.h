@@ -6,7 +6,7 @@
 #include <exception>
 #include <string>
 
-class ParsingException final : std::exception
+class ParsingException final : public std::exception
 {
     TokenPos m_pos;
     std::string m_message;

@@ -148,6 +148,9 @@ void DefinesStreamProxy::ContinueDefine(const ParserLine& line, const unsigned c
     const auto lineEndEscapePos = GetLineEndEscapePos(line);
     if (lineEndEscapePos < 0)
     {
+        if (m_parameter_state != ParameterState::NOT_IN_PARAMETERS)
+            throw ParsingException(CreatePos(line, currentPos), "Unclosed macro parameters");
+
         if (currentPos <= 0)
             m_current_define_value << line.m_line;
         else
