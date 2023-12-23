@@ -10,9 +10,10 @@ class IWDWriterImpl final : public IWDWriter
 public:
     explicit IWDWriterImpl(const std::string& iwdFileName, ISearchPath* assetSearchPath)
         : m_filename(iwdFileName),
-          m_asset_search_path(assetSearchPath),
-          m_files(0)
+          m_asset_search_path(assetSearchPath)
     {
+        m_files.clear();
+        m_added_files.clear();
         m_zipfile = zipOpen(m_filename.c_str(), APPEND_STATUS_CREATE);
         if (!m_zipfile)
         {
@@ -22,10 +23,16 @@ public:
 
     void AddFile(std::string fileName) override
     {
-        m_files.emplace_back(std::move(fileName));
+        const auto existingEntry = std::find(m_added_files.cbegin(), m_added_files.cend(), fileName);
+        if (existingEntry != m_added_files.cend())
+        {
+            std::cerr << "Duplicate entry in " << m_filename << "'s zone definition; ignoring" << "\n";
+            return;
+        }
+        m_files.emplace_back(fileName);
     }
 
-    bool AddFileToArchive(const std::string& fileName, const std::unique_ptr<char[]>& fileData, const size_t& fileSize)
+    void AddFileToArchive(const std::string& fileName, const std::unique_ptr<char[]>& fileData, const size_t& fileSize)
     {
         zip_fileinfo zi = {};
 
@@ -46,8 +53,6 @@ public:
             zipClose(m_zipfile, NULL);
             throw std::runtime_error("Could not close file in IWD \"" + fileName + "\"\n");
         }
-
-        return true;
     }
 
     std::unique_ptr<char[]> ReadFileDataFromSearchPath(const std::string& fileName, size_t& fileSize) const
@@ -80,12 +85,21 @@ public:
 
     bool Write() override
     {
-        const auto result = std::all_of(m_files.begin(),
-                                        m_files.end(),
-                                        [this](const std::string& fileName)
-                                        {
-                                            return WriteFileData(fileName);
-                                        });
+        auto result = false;
+        try
+        {
+            result = std::all_of(m_files.cbegin(),
+                                            m_files.cend(),
+                                            [this](const std::string& fileName)
+                                            {
+                                                return WriteFileData(fileName);
+                                            });
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error while creating IWD " << m_filename << " : " << e.what();
+            result = false;
+        }
 
         zipClose(m_zipfile, NULL);
         return result;
@@ -96,6 +110,7 @@ private:
 
     ISearchPath* m_asset_search_path;
     std::vector<std::string> m_files;
+    std::vector<std::string> m_added_files;
 
     zipFile m_zipfile;
 };
