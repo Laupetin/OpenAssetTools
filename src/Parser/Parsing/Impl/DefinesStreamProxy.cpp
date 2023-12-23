@@ -240,26 +240,11 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsi
     MatchDefineParameters(line, currentPos);
     SkipWhitespace(line, currentPos);
 
-    const auto lineEndEscapePos = GetLineEndEscapePos(line);
-    if (lineEndEscapePos < 0)
-    {
-        std::string value;
-        if (currentPos < line.m_line.size())
-            value = line.m_line.substr(currentPos);
+    m_in_define = true;
+    m_current_define = Define(name, std::string());
+    m_current_define_value.str(std::string());
 
-        Define define(name, value);
-        define.IdentifyParameters(m_current_define_parameters);
-        AddDefine(std::move(define));
-    }
-    else
-    {
-        m_in_define = true;
-        m_current_define = Define(name, std::string());
-        m_current_define_value.str(std::string());
-
-        if (currentPos < line.m_line.size() && (currentPos) < static_cast<unsigned>(lineEndEscapePos))
-            m_current_define_value << line.m_line.substr(currentPos, static_cast<unsigned>(lineEndEscapePos) - (currentPos));
-    }
+    ContinueDefine(line, currentPos);
 
     return true;
 }
