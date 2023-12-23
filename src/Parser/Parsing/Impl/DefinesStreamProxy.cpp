@@ -7,6 +7,7 @@
 #include "Parsing/Simple/SimpleExpressionInterpreter.h"
 #include "Utils/ClassUtils.h"
 
+#include <iostream>
 #include <regex>
 #include <sstream>
 #include <utility>
@@ -581,9 +582,11 @@ void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line
     if (line.m_line[parameterStart] != '(')
         return;
 
-    m_macro_parameters = std::vector<std::string>();
-    m_macro_bracket_depth = std::stack<char>();
     m_macro_parameter_state = ParameterState::AFTER_OPEN;
+    m_macro_parameters = std::vector<std::string>();
+    m_current_macro_parameter.clear();
+    m_current_macro_parameter.str(std::string());
+    m_macro_bracket_depth = std::stack<char>();
     parameterEnd = parameterStart + 1;
 
     ContinueMacroParameters(line, parameterEnd);

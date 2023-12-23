@@ -776,4 +776,58 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Can use second macro after multi-line macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define LOL HAHA",
+            "#define testMacro(a, b) a likes b",
+            "testMacro(",
+            "Peter,",
+            "Anna",
+            ") LOL funny",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "Peter likes Anna HAHA funny");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use second multi-line macro after multi-line macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define LOL HAHA",
+            "#define testMacro(a, b) a likes b",
+            "testMacro(",
+            "Peter,",
+            "Anna",
+            ") and testMacro(",
+            "Anna,",
+            "Peter",
+            ")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "Peter likes Anna and ");
+        ExpectLine(&proxy, 7, "");
+        ExpectLine(&proxy, 8, "");
+        ExpectLine(&proxy, 9, "Anna likes Peter");
+
+        REQUIRE(proxy.Eof());
+    }
 } // namespace test::parsing::impl::defines_stream_proxy
