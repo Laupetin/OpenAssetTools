@@ -7,7 +7,6 @@
 #include "Parsing/Simple/SimpleExpressionInterpreter.h"
 #include "Utils/ClassUtils.h"
 
-#include <iostream>
 #include <regex>
 #include <sstream>
 #include <utility>
@@ -716,7 +715,6 @@ void DefinesStreamProxy::ExpandDefines(ParserLine& line)
         auto pos = 0u;
         auto defineStart = 0u;
         auto lastDefineEnd = 0u;
-        const Define* define;
         std::ostringstream str;
 
         while (FindNextDefine(line.m_line, pos, defineStart, m_current_macro))
