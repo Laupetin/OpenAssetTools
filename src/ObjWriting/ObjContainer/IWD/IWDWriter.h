@@ -17,8 +17,8 @@ public:
     IWDWriter& operator=(const IWDWriter& other) = default;
     IWDWriter& operator=(IWDWriter&& other) noexcept = default;
 
-    virtual void AddFile(std::string fileName) = 0;
+    virtual void AddFile(const std::string& fileName) = 0;
     virtual bool Write() = 0;
 
-    static std::unique_ptr<IWDWriter> Create(const std::string& iwdFileName, ISearchPath* assetSearchPath);
+    static std::unique_ptr<IWDWriter> Create(const std::string& zoneDefinition, const std::string& iwdFileName, ISearchPath* assetSearchPath);
 };

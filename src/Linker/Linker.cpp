@@ -468,7 +468,7 @@ class LinkerImpl final : public Linker
 
         fs::create_directories(iwdFolderPath);
 
-        const auto iwdWriter = IWDWriter::Create(iwdFilePath.string(), &assetSearchPaths);
+        const auto iwdWriter = IWDWriter::Create(zoneDefinition.m_name, iwdFilePath.string(), &assetSearchPaths);
         for (const auto& assetEntry : zoneDefinition.m_assets)
         {
             iwdWriter->AddFile(assetEntry.m_asset_name);
