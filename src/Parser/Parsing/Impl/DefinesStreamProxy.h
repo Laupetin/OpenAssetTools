@@ -47,11 +47,19 @@ public:
     };
 
 private:
-    enum class BlockMode
+    enum class BlockMode : uint8_t
     {
         NOT_IN_BLOCK,
         IN_BLOCK,
         BLOCK_BLOCKED
+    };
+
+    enum class ParameterState : uint8_t
+    {
+        NOT_IN_PARAMETERS,
+        AFTER_OPEN,
+        AFTER_PARAM,
+        AFTER_COMMA
     };
 
     IParserLineStream* const m_stream;
@@ -61,13 +69,21 @@ private:
     unsigned m_ignore_depth;
 
     bool m_in_define;
+    ParameterState m_parameter_state;
     Define m_current_define;
     std::ostringstream m_current_define_value;
     std::vector<std::string> m_current_define_parameters;
 
+    const Define* m_current_macro;
+    ParameterState m_macro_parameter_state;
+    std::vector<std::string> m_macro_parameters;
+    std::ostringstream m_current_macro_parameter;
+    std::stack<char> m_macro_bracket_depth;
+
     static int GetLineEndEscapePos(const ParserLine& line);
-    static std::vector<std::string> MatchDefineParameters(const ParserLine& line, unsigned& parameterPosition);
-    void ContinueDefine(const ParserLine& line);
+    void MatchDefineParameters(const ParserLine& line, unsigned& currentPos);
+    void ContinueDefine(const ParserLine& line, unsigned currentPos);
+    void ContinueParameters(const ParserLine& line, unsigned& currentPos);
     _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchIfDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
@@ -75,14 +91,18 @@ private:
     _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchElseDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
     _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchDirectives(const ParserLine& line);
+    _NODISCARD bool MatchDirectives(ParserLine& line);
 
-    static void
-        ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd, std::vector<std::string>& parameterValues);
-    bool FindDefineForWord(const ParserLine& line, unsigned wordStart, unsigned wordEnd, const Define*& value) const;
+    void ExtractParametersFromDefineUsage(const ParserLine& line, unsigned parameterStart, unsigned& parameterEnd);
+    bool FindDefineForWord(const std::string& line, unsigned wordStart, unsigned wordEnd, const Define*& value) const;
 
     static bool MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName);
     void ExpandDefinedExpressions(ParserLine& line) const;
+
+    void ContinueMacroParameters(const ParserLine& line, unsigned& pos);
+    void ContinueMacro(ParserLine& line);
+    void ProcessDefine(const ParserLine& line, unsigned& pos, std::ostringstream& out);
+    bool FindNextDefine(const std::string& line, unsigned& pos, unsigned& defineStart, const DefinesStreamProxy::Define*& define);
 
 public:
     explicit DefinesStreamProxy(IParserLineStream* stream, bool skipDirectiveLines = false);
@@ -90,9 +110,9 @@ public:
     void AddDefine(Define define);
     void Undefine(const std::string& name);
 
-    void ExpandDefines(ParserLine& line) const;
+    void ExpandDefines(ParserLine& line);
 
-    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(std::shared_ptr<std::string> fileName, int lineNumber, std::string expressionString) const;
+    _NODISCARD std::unique_ptr<ISimpleExpression> ParseExpression(std::shared_ptr<std::string> fileName, int lineNumber, std::string expressionString);
 
     ParserLine NextLine() override;
     bool IncludeFile(const std::string& filename) override;

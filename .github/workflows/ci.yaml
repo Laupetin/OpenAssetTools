@@ -86,11 +86,18 @@ jobs:
       - name: Test
         working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
         run: |
+          $combinedExitCode = 0
           ./ObjCommonTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ObjLoadingTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ParserTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ZoneCodeGeneratorLibTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ZoneCommonTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
+          exit $combinedExitCode
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
