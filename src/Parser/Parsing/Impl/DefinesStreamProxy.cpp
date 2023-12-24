@@ -510,10 +510,10 @@ void DefinesStreamProxy::ContinueMacroParameters(const ParserLine& line, unsigne
                 m_macro_parameter_state = ParameterState::AFTER_COMMA;
             }
         }
-        else if (c == '(')
+        else if (c == '(' || c == '[' || c == '{')
         {
             m_macro_parameter_state = ParameterState::AFTER_PARAM;
-            m_macro_bracket_depth.push('(');
+            m_macro_bracket_depth.push(c);
             m_current_macro_parameter << c;
         }
         else if (c == ')')
@@ -523,8 +523,8 @@ void DefinesStreamProxy::ContinueMacroParameters(const ParserLine& line, unsigne
                 if (m_macro_bracket_depth.top() != '(')
                     throw ParsingException(CreatePos(line, pos), "Unbalanced brackets in macro parameters");
 
-                m_macro_parameter_state = ParameterState::AFTER_PARAM;
                 m_macro_bracket_depth.pop();
+                m_macro_parameter_state = ParameterState::AFTER_PARAM;
                 m_current_macro_parameter << c;
             }
             else if (m_macro_parameter_state == ParameterState::AFTER_COMMA)
@@ -536,6 +536,19 @@ void DefinesStreamProxy::ContinueMacroParameters(const ParserLine& line, unsigne
                 m_macro_parameters.emplace_back(m_current_macro_parameter.str());
                 m_macro_parameter_state = ParameterState::NOT_IN_PARAMETERS;
             }
+        }
+        else if (c == ']' || c == '}')
+        {
+            if (!m_macro_bracket_depth.empty())
+            {
+                const auto otherBracket = c == ']' ? '[' : '{';
+                if (m_macro_bracket_depth.top() != otherBracket)
+                    throw ParsingException(CreatePos(line, pos), "Unbalanced brackets in macro parameters");
+                m_macro_bracket_depth.pop();
+            }
+
+            m_macro_parameter_state = ParameterState::AFTER_PARAM;
+            m_current_macro_parameter << c;
         }
         else if (m_macro_parameter_state == ParameterState::AFTER_PARAM || !isspace(c))
         {

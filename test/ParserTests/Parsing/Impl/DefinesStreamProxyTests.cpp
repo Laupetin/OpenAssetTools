@@ -729,6 +729,44 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Ensure throws error on unclosed parenthesis in params", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define someStuff(param1) Hello param1 World",
+            "someStuff(A sentence with [brackets and a , character and stuff)",
+            "someStuff(A sentence with {braces and a , character and stuff)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectErrorInLine(&proxy, 2, 64);
+        ExpectErrorInLine(&proxy, 3, 62);
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Ensure throws error on parenthesis in params closed with wrong equivalent", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define someStuff(param1) Hello param1 World",
+            "someStuff(A sentence with (parenthesis and a , character] and stuff)",
+            "someStuff(A sentence with [brackets and a , character} and stuff)",
+            "someStuff(A sentence with {braces and a , character) and stuff)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectErrorInLine(&proxy, 2, 57);
+        ExpectErrorInLine(&proxy, 3, 54);
+        ExpectErrorInLine(&proxy, 4, 52);
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure defines can go over multiple lines", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
