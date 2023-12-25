@@ -88,5 +88,23 @@ namespace test::parsing::menu::sequence::item
 
         REQUIRE(result);
         REQUIRE(helper.m_consumed_token_count == 11);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+        const auto* multiValueFeatures = item->m_multi_value_features.get();
+        REQUIRE(multiValueFeatures);
+
+        REQUIRE(multiValueFeatures->m_step_names.size() == 4);
+        REQUIRE(multiValueFeatures->m_string_values.size() == 4);
+
+        REQUIRE(multiValueFeatures->m_step_names[0] == "@MENU_AUTO");
+        REQUIRE(multiValueFeatures->m_step_names[1] == "@MENU_STANDARD_4_3");
+        REQUIRE(multiValueFeatures->m_step_names[2] == "@MENU_WIDE_16_10");
+        REQUIRE(multiValueFeatures->m_step_names[3] == "@MENU_WIDE_16_9");
+
+        REQUIRE(multiValueFeatures->m_string_values[0] == "auto");
+        REQUIRE(multiValueFeatures->m_string_values[1] == "standard");
+        REQUIRE(multiValueFeatures->m_string_values[2] == "wide 16:10");
+        REQUIRE(multiValueFeatures->m_string_values[3] == "wide 16:9");
     }
 } // namespace test::parsing::menu::sequence::item
