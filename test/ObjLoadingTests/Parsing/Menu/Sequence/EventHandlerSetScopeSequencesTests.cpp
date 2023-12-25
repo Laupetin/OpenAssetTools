@@ -1037,6 +1037,28 @@ namespace test::parsing::menu::sequence::event_handler_set
         REQUIRE(setLocalVarElement->m_value->IsStatic() == false);
     }
 
+    TEST_CASE("EventHandlerSetScopeSequences: Ensure setLocalVarString uses missing value as default value", "[parsing][sequence][menu]")
+    {
+        EventHandlerSetSequenceTestsHelper helper(FeatureLevel::IW4, true);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(TokenPos(), new std::string("setLocalVarString")),
+            SimpleParserValue::Identifier(TokenPos(), new std::string("ui_hint_text")),
+            SimpleParserValue::Character(TokenPos(), ';'),
+            SimpleParserValue::Character(TokenPos(), ';'),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 3);
+
+        REQUIRE(helper.m_event_handler_set->m_elements.size() == 0);
+
+        const auto currentScript = helper.m_state->m_current_script.str();
+        REQUIRE(currentScript == R"("setLocalVarString" "ui_hint_text" "" ; )");
+    }
+
 #pragma endregion
 
 #pragma region Unit Tests for If/ElseIf/Else/CloseBracket
