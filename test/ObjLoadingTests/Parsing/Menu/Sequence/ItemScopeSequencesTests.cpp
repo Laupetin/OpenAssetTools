@@ -190,6 +190,37 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(item->m_rect.verticalAlign == 2);
     }
 
+    TEST_CASE("ItemScopeSequences: Can specify origin", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("origin")),
+            SimpleParserValue::FloatingPoint(pos, 4.20),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::FloatingPoint(pos, 11.37),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::FloatingPoint(pos, 2.0),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 7);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE_THAT(item->m_rect.x, WithinRel(4.20));
+        REQUIRE_THAT(item->m_rect.y, WithinRel(13.37));
+        REQUIRE_THAT(item->m_rect.w, WithinRel(0.0));
+        REQUIRE_THAT(item->m_rect.h, WithinRel(0.0));
+        REQUIRE(item->m_rect.horizontalAlign == 0);
+        REQUIRE(item->m_rect.verticalAlign == 0);
+    }
+
     TEST_CASE("ItemScopeSequences: Simple dvarStrList works", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
