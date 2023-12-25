@@ -568,8 +568,15 @@ namespace menu::event_handler_set_scope_sequences
                     create.ScriptKeyword("setLocalVarString").Tag(TAG_STRING),
                 }),
                 create.ScriptText().Capture(CAPTURE_VAR_NAME),
-                create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
-                create.Optional(create.Char(';')),
+                create.Or({
+                    create.And({
+                        create.Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                        create.Optional(create.Char(';')),
+                    }),
+                    // The game seems to accept setLocalVar expressions without value as setting the var to the default value
+                    // This only applies to the menu parser though and not to the script parser so we need to separately parse this
+                    create.Char(';'),
+                }),
             });
         }
 
@@ -661,6 +668,26 @@ namespace menu::event_handler_set_scope_sequences
                 std::make_unique<CommonEventHandlerSetLocalVar>(type, varName, std::move(expression)));
         }
 
+        static std::unique_ptr<ISimpleExpression> DefaultExpressionForType(const SetLocalVarType type)
+        {
+            switch (type)
+            {
+            case SetLocalVarType::INT:
+            case SetLocalVarType::BOOL:
+                return std::make_unique<SimpleExpressionValue>(0);
+
+            case SetLocalVarType::FLOAT:
+                return std::make_unique<SimpleExpressionValue>(0.0);
+
+            case SetLocalVarType::STRING:
+                return std::make_unique<SimpleExpressionValue>(std::string());
+
+            default:
+                assert(false);
+                return nullptr;
+            }
+        }
+
     protected:
         void ProcessMatch(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result) const override
         {
@@ -671,13 +698,15 @@ namespace menu::event_handler_set_scope_sequences
             const auto& varName = MenuMatcherFactory::TokenTextValue(varNameToken);
             auto expression = expressionMatchers.ProcessExpression(result);
 
-            if (!expression)
-                throw ParsingException(varNameToken.GetPos(), "No expression");
-
-            if (expression && expression->IsStatic())
-                EmitStaticSetLocalVar(state, varNameToken.GetPos(), typeTag, varName, std::move(expression));
+            if (expression)
+            {
+                if (expression->IsStatic())
+                    EmitStaticSetLocalVar(state, varNameToken.GetPos(), typeTag, varName, std::move(expression));
+                else
+                    EmitDynamicSetLocalVar(state, typeTag, varName, std::move(expression));
+            }
             else
-                EmitDynamicSetLocalVar(state, typeTag, varName, std::move(expression));
+                EmitStaticSetLocalVar(state, varNameToken.GetPos(), typeTag, varName, DefaultExpressionForType(typeTag));
         }
     };
 
