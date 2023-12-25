@@ -4,8 +4,10 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 using namespace menu;
+using namespace Catch::Matchers;
 
 namespace test::parsing::menu::sequence::item
 {
@@ -61,6 +63,132 @@ namespace test::parsing::menu::sequence::item
             return false;
         }
     };
+
+    TEST_CASE("ItemScopeSequences: Rect works with only x,y,w,h as ints", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("rect")),
+            SimpleParserValue::Integer(pos, 20),
+            SimpleParserValue::Integer(pos, 40),
+            SimpleParserValue::Integer(pos, 100),
+            SimpleParserValue::Integer(pos, 520),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 5);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE_THAT(item->m_rect.x, WithinRel(20.0));
+        REQUIRE_THAT(item->m_rect.y, WithinRel(40.0));
+        REQUIRE_THAT(item->m_rect.w, WithinRel(100.0));
+        REQUIRE_THAT(item->m_rect.h, WithinRel(520.0));
+        REQUIRE(item->m_rect.horizontalAlign == 0);
+        REQUIRE(item->m_rect.verticalAlign == 0);
+    }
+
+    TEST_CASE("ItemScopeSequences: Rect works with only x,y,w,h as floats", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("rect")),
+            SimpleParserValue::FloatingPoint(pos, 20.2),
+            SimpleParserValue::FloatingPoint(pos, 40.4),
+            SimpleParserValue::FloatingPoint(pos, 100.6),
+            SimpleParserValue::FloatingPoint(pos, 520.8),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 5);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE_THAT(item->m_rect.x, WithinRel(20.2));
+        REQUIRE_THAT(item->m_rect.y, WithinRel(40.4));
+        REQUIRE_THAT(item->m_rect.w, WithinRel(100.6));
+        REQUIRE_THAT(item->m_rect.h, WithinRel(520.8));
+    }
+
+    TEST_CASE("ItemScopeSequences: Rect supports expressions", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("rect")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::FloatingPoint(pos, 20.2),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 40),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::FloatingPoint(pos, 40.2),
+            SimpleParserValue::Character(pos, '-'),
+            SimpleParserValue::FloatingPoint(pos, 1.4),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::FloatingPoint(pos, 100.6),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::FloatingPoint(pos, 2.0),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::FloatingPoint(pos, 5.0),
+            SimpleParserValue::Character(pos, '*'),
+            SimpleParserValue::FloatingPoint(pos, 1.5),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 21);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE_THAT(item->m_rect.x, WithinRel(60.2));
+        REQUIRE_THAT(item->m_rect.y, WithinRel(38.8));
+        REQUIRE_THAT(item->m_rect.w, WithinRel(102.6));
+        REQUIRE_THAT(item->m_rect.h, WithinRel(7.5));
+    }
+
+    TEST_CASE("ItemScopeSequences: Rect can specify align", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("rect")),
+            SimpleParserValue::FloatingPoint(pos, 20.2),
+            SimpleParserValue::FloatingPoint(pos, 40.4),
+            SimpleParserValue::FloatingPoint(pos, 100.6),
+            SimpleParserValue::FloatingPoint(pos, 520.8),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 7);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE(item->m_rect.horizontalAlign == 1);
+        REQUIRE(item->m_rect.verticalAlign == 2);
+    }
 
     TEST_CASE("ItemScopeSequences: Simple dvarStrList works", "[parsing][sequence][menu]")
     {
