@@ -11,6 +11,7 @@
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 #include "Parsing/Menu/MenuFileCommonOperations.h"
 
+#include <cassert>
 #include <string>
 #include <vector>
 
@@ -449,19 +450,16 @@ namespace menu::item_scope_sequences
 
     class SequenceColumns final : public MenuFileParser::sequence_t
     {
+        static constexpr auto TAG_COLUMN = 1;
+
         static constexpr auto CAPTURE_FIRST_TOKEN = 1;
         static constexpr auto CAPTURE_COLUMN_COUNT = 2;
-        static constexpr auto CAPTURE_X_POS = 3;
-        static constexpr auto CAPTURE_Y_POS = 4;
-        static constexpr auto CAPTURE_WIDTH = 5;
-        static constexpr auto CAPTURE_HEIGHT = 6;
-        static constexpr auto CAPTURE_MAX_CHARS = 7;
-        static constexpr auto CAPTURE_ALIGNMENT = 8;
 
     public:
         explicit SequenceColumns(const FeatureLevel featureLevel)
         {
             const MenuMatcherFactory create(this);
+            AddLabeledMatchers(MenuExpressionMatchers().Expression(this), MenuExpressionMatchers::LABEL_EXPRESSION);
 
             if (featureLevel == FeatureLevel::IW5)
             {
@@ -469,12 +467,13 @@ namespace menu::item_scope_sequences
                     create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
                     create.Integer().Capture(CAPTURE_COLUMN_COUNT),
                     create.Loop(create.And({
-                        create.Integer().Capture(CAPTURE_X_POS),
-                        create.Integer().Capture(CAPTURE_Y_POS),
-                        create.Integer().Capture(CAPTURE_WIDTH),
-                        create.Integer().Capture(CAPTURE_HEIGHT),
-                        create.Integer().Capture(CAPTURE_MAX_CHARS),
-                        create.Integer().Capture(CAPTURE_ALIGNMENT),
+                        create.True().Tag(TAG_COLUMN),
+                        create.IntExpression(), // xpos
+                        create.IntExpression(), // ypos
+                        create.IntExpression(), // width
+                        create.IntExpression(), // height
+                        create.IntExpression(), // maxChars
+                        create.IntExpression(), // alignment
                     })),
                 });
             }
@@ -484,10 +483,11 @@ namespace menu::item_scope_sequences
                     create.KeywordIgnoreCase("columns").Capture(CAPTURE_FIRST_TOKEN),
                     create.Integer().Capture(CAPTURE_COLUMN_COUNT),
                     create.Loop(create.And({
-                        create.Integer().Capture(CAPTURE_X_POS),
-                        create.Integer().Capture(CAPTURE_WIDTH),
-                        create.Integer().Capture(CAPTURE_MAX_CHARS),
-                        create.Integer().Capture(CAPTURE_ALIGNMENT),
+                        create.True().Tag(TAG_COLUMN),
+                        create.IntExpression(), // xpos
+                        create.IntExpression(), // width
+                        create.IntExpression(), // maxChars
+                        create.IntExpression(), // alignment
                     })),
                 });
             }
@@ -500,16 +500,42 @@ namespace menu::item_scope_sequences
 
             ItemScopeOperations::EnsureHasListboxFeatures(*state->m_current_item, result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos());
 
+            assert(state->m_feature_level == FeatureLevel::IW4 || state->m_feature_level == FeatureLevel::IW5);
+
             const auto& listBoxFeatures = state->m_current_item->m_list_box_features;
-            while (result.HasNextCapture(CAPTURE_X_POS))
+            while (result.PeekAndRemoveIfTag(TAG_COLUMN) == TAG_COLUMN)
             {
+                int xPos = 0;
+                int yPos = 0;
+                int width = 0;
+                int height = 0;
+                int maxChars = 0;
+                int alignment = 0;
+
+                if (state->m_feature_level == FeatureLevel::IW4)
+                {
+                    xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    width = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                }
+                else if (state->m_feature_level == FeatureLevel::IW5)
+                {
+                    xPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    yPos = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    width = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    height = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    maxChars = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                    alignment = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                }
+
                 CommonItemFeaturesListBox::Column column{
-                    result.NextCapture(CAPTURE_X_POS).IntegerValue(),
-                    state->m_feature_level == FeatureLevel::IW5 ? result.NextCapture(CAPTURE_Y_POS).IntegerValue() : 0,
-                    result.NextCapture(CAPTURE_WIDTH).IntegerValue(),
-                    state->m_feature_level == FeatureLevel::IW5 ? result.NextCapture(CAPTURE_HEIGHT).IntegerValue() : 0,
-                    result.NextCapture(CAPTURE_MAX_CHARS).IntegerValue(),
-                    result.NextCapture(CAPTURE_ALIGNMENT).IntegerValue(),
+                    xPos,
+                    yPos,
+                    width,
+                    height,
+                    maxChars,
+                    alignment,
                 };
                 listBoxFeatures->m_columns.emplace_back(column);
             }
