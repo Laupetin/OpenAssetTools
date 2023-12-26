@@ -39,13 +39,13 @@ bool AssetLoaderLocalizeEntry::LoadFromRaw(
     LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language);
     const auto localizeEntries = reader.ReadLocalizeFile();
 
-    for (const auto& entry : localizeEntries)
+    for (const auto& [key, value] : localizeEntries)
     {
         auto* localizeEntry = memory->Create<LocalizeEntry>();
-        localizeEntry->name = memory->Dup(entry.m_key.c_str());
-        localizeEntry->value = memory->Dup(entry.m_value.c_str());
+        localizeEntry->name = memory->Dup(key.c_str());
+        localizeEntry->value = memory->Dup(value.c_str());
 
-        manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, entry.m_key, localizeEntry);
+        manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, key, localizeEntry);
     }
 
     return true;

@@ -1,16 +1,15 @@
 #pragma once
 #include "Game/GameLanguage.h"
-#include "Localize/LocalizeFile.h"
 
+#include <map>
 #include <unordered_set>
-#include <vector>
 
 class LocalizeFileParserState
 {
 public:
     bool m_end;
 
-    std::vector<LocalizeFileEntry> m_entries;
+    std::map<std::string, std::string> m_entries;
 
     GameLanguage m_language;
     std::string m_language_name_caps;
