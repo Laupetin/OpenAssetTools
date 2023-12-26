@@ -58,6 +58,20 @@ MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::Numeric() const
     }));
 }
 
+MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::TextExpression() const
+{
+    return MatcherFactoryWrapper(Or({
+        StringChain().Tag(TAG_STRING_CHAIN).Capture(CAPTURE_STRING_CHAIN),
+        Identifier().Tag(TAG_IDENTIFIER).Capture(CAPTURE_IDENTIFIER),
+        And({
+                Char('(').Capture(CAPTURE_FIRST_TOKEN),
+                Label(MenuExpressionMatchers::LABEL_EXPRESSION),
+                Char(')'),
+            })
+            .Tag(TAG_EXPRESSION),
+    }));
+}
+
 MatcherFactoryWrapper<SimpleParserValue> MenuMatcherFactory::IntExpression() const
 {
     return MatcherFactoryWrapper(Or({
@@ -139,6 +153,42 @@ int MenuMatcherFactory::TokenIntExpressionValue(MenuFileParserState* state, Sequ
             throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Expression MUST be int type");
 
         return value.m_int_value;
+    }
+
+    throw ParsingException(TokenPos(), "TokenIntExpressionValue must be expression or int");
+}
+
+std::string MenuMatcherFactory::TokenTextExpressionValue(MenuFileParserState* state, SequenceResult<SimpleParserValue>& result)
+{
+    const auto nextTag = result.PeekTag();
+
+    assert(nextTag == TAG_STRING_CHAIN || nextTag == TAG_IDENTIFIER || nextTag == TAG_EXPRESSION);
+    if (nextTag == TAG_STRING_CHAIN)
+    {
+        result.NextTag();
+        return result.NextCapture(CAPTURE_STRING_CHAIN).StringValue();
+    }
+
+    if (nextTag == TAG_IDENTIFIER)
+    {
+        result.NextTag();
+        return result.NextCapture(CAPTURE_IDENTIFIER).IdentifierValue();
+    }
+
+    if (nextTag == TAG_EXPRESSION)
+    {
+        result.NextTag();
+        const auto expression = MenuExpressionMatchers(state).ProcessExpression(result);
+
+        if (!expression || !expression->IsStatic())
+            throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Not a valid static expression");
+
+        const auto value = expression->EvaluateStatic();
+
+        if (value.m_type != SimpleExpressionValue::Type::STRING)
+            throw ParsingException(result.NextCapture(CAPTURE_FIRST_TOKEN).GetPos(), "Expression MUST be string type");
+
+        return std::move(*value.m_string_value);
     }
 
     throw ParsingException(TokenPos(), "TokenIntExpressionValue must be expression or int");

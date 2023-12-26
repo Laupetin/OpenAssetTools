@@ -189,8 +189,7 @@ namespace menu::item_scope_sequences
 
     class SequenceRect final : public MenuFileParser::sequence_t
     {
-        static constexpr auto CAPTURE_ALIGN_HORIZONTAL = 1;
-        static constexpr auto CAPTURE_ALIGN_VERTICAL = 2;
+        static constexpr auto TAG_ALIGN = 1;
 
     public:
         SequenceRect()
@@ -204,10 +203,12 @@ namespace menu::item_scope_sequences
                 create.NumericExpression(), // y
                 create.NumericExpression(), // w
                 create.NumericExpression(), // h
-                create.Optional(create.And({
-                    create.Integer().Capture(CAPTURE_ALIGN_HORIZONTAL),
-                    create.Integer().Capture(CAPTURE_ALIGN_VERTICAL),
-                })),
+                create.Optional(create
+                                    .And({
+                                        create.IntExpression(), // Align horizontal
+                                        create.IntExpression(), // Align vertical
+                                    })
+                                    .Tag(TAG_ALIGN)),
             });
         }
 
@@ -222,10 +223,10 @@ namespace menu::item_scope_sequences
             const auto h = MenuMatcherFactory::TokenNumericExpressionValue(state, result);
             CommonRect rect{x, y, w, h, 0, 0};
 
-            if (result.HasNextCapture(CAPTURE_ALIGN_HORIZONTAL) && result.HasNextCapture(CAPTURE_ALIGN_VERTICAL))
+            if (result.PeekAndRemoveIfTag(TAG_ALIGN) == TAG_ALIGN)
             {
-                rect.horizontalAlign = result.NextCapture(CAPTURE_ALIGN_HORIZONTAL).IntegerValue();
-                rect.verticalAlign = result.NextCapture(CAPTURE_ALIGN_VERTICAL).IntegerValue();
+                rect.horizontalAlign = MenuMatcherFactory::TokenIntExpressionValue(state, result);
+                rect.verticalAlign = MenuMatcherFactory::TokenIntExpressionValue(state, result);
             }
 
             state->m_current_item->m_rect = rect;
@@ -259,10 +260,6 @@ namespace menu::item_scope_sequences
 
     class SequenceDecodeEffect final : public MenuFileParser::sequence_t
     {
-        static constexpr auto CAPTURE_LETTER_TIME = 1;
-        static constexpr auto CAPTURE_DECAY_START_TIME = 2;
-        static constexpr auto CAPTURE_DECAY_DURATION = 3;
-
     public:
         SequenceDecodeEffect()
         {
