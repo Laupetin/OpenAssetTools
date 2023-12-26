@@ -91,6 +91,33 @@ namespace test::parsing::menu::sequence::item
         REQUIRE(item->m_name == "Hello World");
     }
 
+    TEST_CASE("ItemScopeSequences: Can use static expressions for simple int properties", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("style")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::Integer(pos, 1),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 2),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::Integer(pos, 6),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 8);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE(item->m_style == 9);
+    }
+
     TEST_CASE("ItemScopeSequences: Rect works with only x,y,w,h as ints", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
