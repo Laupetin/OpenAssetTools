@@ -145,6 +145,39 @@ namespace test::parsing::menu::sequence::item
         REQUIRE_THAT(item->m_border_size, WithinRel(9.4));
     }
 
+    TEST_CASE("ItemScopeSequences: Can use static expressions for simple color properties", "[parsing][sequence][menu]")
+    {
+        ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
+        const TokenPos pos;
+        helper.Tokens({
+            SimpleParserValue::Identifier(pos, new std::string("backColor")),
+            SimpleParserValue::Character(pos, '('),
+            SimpleParserValue::FloatingPoint(pos, 0.2),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::FloatingPoint(pos, 0.5),
+            SimpleParserValue::Character(pos, '+'),
+            SimpleParserValue::FloatingPoint(pos, 0.2),
+            SimpleParserValue::Character(pos, ')'),
+            SimpleParserValue::FloatingPoint(pos, 0.5),
+            SimpleParserValue::FloatingPoint(pos, 0.6),
+            SimpleParserValue::FloatingPoint(pos, 1.0),
+            SimpleParserValue::EndOfFile(pos),
+        });
+
+        const auto result = helper.PerformTest();
+
+        REQUIRE(result);
+        REQUIRE(helper.m_consumed_token_count == 11);
+
+        const auto* item = helper.m_state->m_current_item;
+        REQUIRE(item);
+
+        REQUIRE_THAT(item->m_back_color.r, WithinRel(0.9));
+        REQUIRE_THAT(item->m_back_color.g, WithinRel(0.5));
+        REQUIRE_THAT(item->m_back_color.b, WithinRel(0.6));
+        REQUIRE_THAT(item->m_back_color.a, WithinRel(1.0));
+    }
+
     TEST_CASE("ItemScopeSequences: Rect works with only x,y,w,h as ints", "[parsing][sequence][menu]")
     {
         ItemSequenceTestsHelper helper(FeatureLevel::IW4, false);
