@@ -900,4 +900,130 @@ namespace test::parsing::impl::defines_stream_proxy
 
         REQUIRE(proxy.Eof());
     }
+
+    TEST_CASE("DefinesStreamProxy: Can use strinizing operator", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a) #a",
+            "testMacro(Hello)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "\"Hello\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use strinizing operator inside sample code", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a) System.out.println(#a)",
+            "testMacro(Hello)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "System.out.println(\"Hello\")");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with identifier", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a) Hello##a",
+            "testMacro(World)",
+            "testMacro(5)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "HelloWorld");
+        ExpectLine(&proxy, 3, "Hello5");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with string", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a) \"Hello\"##a",
+            "testMacro(\"World\")",
+            "testMacro(\"5\")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "\"HelloWorld\"");
+        ExpectLine(&proxy, 3, "\"Hello5\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Token-pasting operator ignores whitespace", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define glue(a, b) a   ##      b",
+            "glue(\"Hello\", \"World\")",
+            "testMacro(Hello, 5)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "\"HelloWorld\"");
+        ExpectLine(&proxy, 3, "Hello5");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with string and stringization outside macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define s(t) #t",
+            "#define testMacro(a) \"Hello\" ## a",
+            "testMacro(s(World))",
+            "testMacro(s(5))",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "\"HelloWorld\"");
+        ExpectLine(&proxy, 4, "\"Hello5\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with string and stringization inside macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define s(t) #t",
+            "#define testMacro(a) \"Hello\" ## s(a)",
+            "testMacro(World)",
+            "testMacro(5)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "\"HelloWorld\"");
+        ExpectLine(&proxy, 4, "\"Hello5\"");
+
+        REQUIRE(proxy.Eof());
+    }
 } // namespace test::parsing::impl::defines_stream_proxy
