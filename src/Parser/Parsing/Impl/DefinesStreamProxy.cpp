@@ -6,6 +6,7 @@
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
 #include "Parsing/Simple/SimpleExpressionInterpreter.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <regex>
 #include <sstream>
@@ -13,13 +14,15 @@
 
 DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
     : m_parameter_index(0u),
-      m_parameter_position(0u)
+      m_parameter_position(0u),
+      m_stringize(false)
 {
 }
 
-DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const unsigned position)
+DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const unsigned position, const bool stringize)
     : m_parameter_index(index),
-      m_parameter_position(position)
+      m_parameter_position(position),
+      m_stringize(stringize)
 {
 }
 
@@ -40,12 +43,16 @@ std::string DefinesStreamProxy::Define::Render(const std::vector<std::string>& p
     auto lastPos = 0u;
     for (const auto& parameterPosition : m_parameter_positions)
     {
+        const auto stringizeSkipLastChar = parameterPosition.m_stringize ? 1 : 0;
         if (lastPos < parameterPosition.m_parameter_position)
-            str << std::string(m_value, lastPos, parameterPosition.m_parameter_position - lastPos);
+            str << std::string(m_value, lastPos, parameterPosition.m_parameter_position - lastPos - stringizeSkipLastChar);
 
         if (parameterPosition.m_parameter_index < parameterValues.size())
         {
-            str << parameterValues[parameterPosition.m_parameter_index];
+            if (parameterPosition.m_stringize)
+                str << '"' << utils::EscapeStringForQuotationMarks(parameterValues[parameterPosition.m_parameter_index]) << '"';
+            else
+                str << parameterValues[parameterPosition.m_parameter_index];
         }
 
         lastPos = parameterPosition.m_parameter_position;
@@ -82,8 +89,14 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
                 if (parameterIndex < parameterNames.size())
                 {
+                    const auto stringize =
+                        // Check if # is prepended to the word
+                        (wordStart > 0 && m_value[wordStart - 1] == '#')
+                        // Make sure it's not a token pasting operator
+                        && (wordStart <= 1 || m_value[wordStart - 2] != '#');
+
                     m_value.erase(wordStart, i - wordStart);
-                    m_parameter_positions.emplace_back(parameterIndex, wordStart);
+                    m_parameter_positions.emplace_back(parameterIndex, wordStart, stringize);
                     i = wordStart;
                 }
 
@@ -113,8 +126,14 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
         if (parameterIndex < parameterNames.size())
         {
+            const auto stringize =
+                // Check if # is prepended to the word
+                (wordStart > 0 && m_value[wordStart - 1] == '#')
+                // Make sure it's not a token pasting operator
+                && (wordStart <= 1 || m_value[wordStart - 2] != '#');
+
             m_value.erase(wordStart, m_value.size() - wordStart);
-            m_parameter_positions.emplace_back(parameterIndex, wordStart);
+            m_parameter_positions.emplace_back(parameterIndex, wordStart, stringize);
         }
     }
 }

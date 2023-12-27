@@ -28,9 +28,10 @@ public:
     public:
         unsigned m_parameter_index;
         unsigned m_parameter_position;
+        bool m_stringize;
 
         DefineParameterPosition();
-        DefineParameterPosition(unsigned index, unsigned position);
+        DefineParameterPosition(unsigned index, unsigned position, bool stringize);
     };
 
     class Define
