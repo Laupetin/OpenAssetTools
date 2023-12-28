@@ -435,7 +435,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // type
-        stream.WriteColumn(std::to_string(alias->contextType));
+        stream.WriteColumn(LOAD_TYPES_ENUM[alias->flags.loadType]);
 
         // loop
         stream.WriteColumn(alias->flags.looping == T6::SA_NON_LOOPING ? "nonlooping" : "looping");
