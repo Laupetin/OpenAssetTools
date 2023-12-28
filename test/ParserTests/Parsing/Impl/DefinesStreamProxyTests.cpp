@@ -357,27 +357,21 @@ namespace test::parsing::impl::defines_stream_proxy
 
     TEST_CASE("DefinesStreamProxy: Ensure define can render parameters", "[parsing][parsingstream]")
     {
-        DefinesStreamProxy::Define define("helloworld", "hello universe");
+        const std::vector<std::string> lines{
+            "#define test(universe) hello universe",
+            "test(mr moneyman)",
+        };
 
-        std::vector<std::string> parameterNames({"universe"});
-        define.IdentifyParameters(parameterNames);
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
 
-        std::vector<std::string> parameterValues({"mr moneyman"});
-        REQUIRE(define.Render(parameterValues) == "hello mr moneyman");
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "hello mr moneyman");
+
+        REQUIRE(proxy.Eof());
     }
 
-    TEST_CASE("DefinesStreamProxy: Ensure define can render parameters in middle of symbols", "[parsing][parsingstream]")
-    {
-        DefinesStreamProxy::Define define("helloworld", "alignas(x)");
-
-        std::vector<std::string> parameterNames({"x"});
-        define.IdentifyParameters(parameterNames);
-
-        std::vector<std::string> parameterValues({"1337"});
-        REQUIRE(define.Render(parameterValues) == "alignas(1337)");
-    }
-
-    TEST_CASE("DefinesStreamProxy: Ensure can add define with parameters", "[parsing][parsingstream]")
+    TEST_CASE("DefinesStreamProxy: Ensure can add define with parameters surrounded by symbols", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
             "#define test(x) alignas(x)",
@@ -933,6 +927,28 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Stringization does not expand macros", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define TEST WRONG",
+            "#define TESTTWO(b) WRONG WITH ARG b",
+            "#define STR(a) #a",
+            "STR(TEST)",
+            "STR(TESTTWO(testArg))",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "TEST");
+        ExpectLine(&proxy, 5, "TESTTWO(testArg)");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Can use token-pasting operator with identifier", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
@@ -1023,6 +1039,88 @@ namespace test::parsing::impl::defines_stream_proxy
         ExpectLine(&proxy, 2, "");
         ExpectLine(&proxy, 3, "\"HelloWorld\"");
         ExpectLine(&proxy, 4, "\"Hello5\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can omit whitespace when using token-pasting operator in combination with stringization macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define s(t) #t",
+            "#define testMacro(a) \"Hello\"##s(a)",
+            "testMacro(World)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "\"HelloWorld\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can omit whitespace when using token-pasting operator and stringization on same macro parameter", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define testMacro(a) \"Hello\"###a",
+            "testMacro(World)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "\"HelloWorld\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Interprets nested macros in context of top-level macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define TEST HELLO",
+            "TEST",
+            "#define HELLO ONE",
+            "TEST",
+            "#undef HELLO",
+            "TEST",
+            "#define HELLO TWO",
+            "TEST",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "HELLO");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "ONE");
+        ExpectLine(&proxy, 5, "");
+        ExpectLine(&proxy, 6, "HELLO");
+        ExpectLine(&proxy, 7, "");
+        ExpectLine(&proxy, 8, "TWO");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Recursive macro usages stops upon first reuse of same macro", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define ONE TWO",
+            "#define TWO THREE",
+            "#define THREE ONE",
+            "ONE",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "");
+        ExpectLine(&proxy, 4, "ONE");
 
         REQUIRE(proxy.Eof());
     }
