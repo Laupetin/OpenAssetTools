@@ -1,4 +1,5 @@
 #include "AssetDumperSndBank.h"
+#include "Game/T6/CommonT6.h"
 
 #include "Csv/CsvStream.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
@@ -169,23 +170,23 @@ namespace
     };
 
     const std::unordered_map<unsigned int, std::string> CURVES_MAP{
-        {4135636924, CURVES_ENUM[0] }, // "default"
-        {1298231670, CURVES_ENUM[1] }, // "defaultmin"
-        {2783299419, CURVES_ENUM[2] }, // "allon"
-        {2598309331, CURVES_ENUM[3] }, // "alloff"
-        {2462421902, CURVES_ENUM[4] }, // "rcurve0"
-        {2462421903, CURVES_ENUM[5] }, // "rcurve1"
-        {2462421904, CURVES_ENUM[6] }, // "rcurve2"
-        {2462421905, CURVES_ENUM[7] }, // "rcurve3"
-        {2462421906, CURVES_ENUM[8] }, // "rcurve4"
-        {2462421907, CURVES_ENUM[9] }, // "rcurve5"
-        {3711863914, CURVES_ENUM[10]}, // "steep"
-        {4107033168, CURVES_ENUM[11]}, // "sindelay"
-        {932232097,  CURVES_ENUM[12]}, // "cosdelay"
-        {818663411,  CURVES_ENUM[13]}, // "sin"
-        {686872930,  CURVES_ENUM[14]}, // "cos"
-        {3885755896, CURVES_ENUM[15]}, // "rev60"
-        {3885755901, CURVES_ENUM[16]}, // "rev65"
+        {T6::Common::SND_HashName(CURVES_ENUM[0].data()), CURVES_ENUM[0]},
+        {T6::Common::SND_HashName(CURVES_ENUM[1].data()), CURVES_ENUM[1]},
+        {T6::Common::SND_HashName(CURVES_ENUM[2].data()), CURVES_ENUM[2]},
+        {T6::Common::SND_HashName(CURVES_ENUM[3].data()), CURVES_ENUM[3]},
+        {T6::Common::SND_HashName(CURVES_ENUM[4].data()), CURVES_ENUM[4]},
+        {T6::Common::SND_HashName(CURVES_ENUM[5].data()), CURVES_ENUM[5]},
+        {T6::Common::SND_HashName(CURVES_ENUM[6].data()), CURVES_ENUM[6]},
+        {T6::Common::SND_HashName(CURVES_ENUM[7].data()), CURVES_ENUM[7]},
+        {T6::Common::SND_HashName(CURVES_ENUM[8].data()), CURVES_ENUM[8]},
+        {T6::Common::SND_HashName(CURVES_ENUM[9].data()), CURVES_ENUM[9]},
+        {T6::Common::SND_HashName(CURVES_ENUM[10].data()), CURVES_ENUM[10]},
+        {T6::Common::SND_HashName(CURVES_ENUM[11].data()), CURVES_ENUM[11]},
+        {T6::Common::SND_HashName(CURVES_ENUM[12].data()), CURVES_ENUM[12]},
+        {T6::Common::SND_HashName(CURVES_ENUM[13].data()), CURVES_ENUM[13]},
+        {T6::Common::SND_HashName(CURVES_ENUM[14].data()), CURVES_ENUM[14]},
+        {T6::Common::SND_HashName(CURVES_ENUM[15].data()), CURVES_ENUM[15]},
+        {T6::Common::SND_HashName(CURVES_ENUM[16].data()), CURVES_ENUM[16]},
     };
 
     const std::string DUCK_GROUPS_ENUM[]{
@@ -261,6 +262,13 @@ namespace
         "bus_reference",
         "",
     };
+
+    const std::string RANDOMIZE_TYPES_ENUM[]{
+        "volume",
+        "pitch",
+        "variant",
+        "",
+    };
 } // namespace
 
 class AssetDumperSndBank::Internal
@@ -327,13 +335,13 @@ class AssetDumperSndBank::Internal
         stream.NextRow();
     }
 
-    static const char* FindNameForDuck(unsigned int id, const SndDuck* ducks, unsigned int duckCount)
+    static const char* FindNameForDuck(unsigned int id, const SndBank* bank)
     {
-        for (auto i = 0u; i < duckCount; i++)
+        for (auto i = 0u; i < bank->duckCount; i++)
         {
-            if (id == ducks[i].id)
+            if (id == bank->ducks[i].id)
             {
-                return ducks[i].name;
+                return bank->ducks[i].name;
             }
         }
 
@@ -358,7 +366,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn((alias->secondaryname && *alias->secondaryname) ? alias->secondaryname : "");
 
         // group
-        stream.WriteColumn(GROUPS_ENUM[std::min((alias->flags0 >> 17) & 0x1F, 26u)]);
+        stream.WriteColumn(GROUPS_ENUM[alias->flags.volumeGroup]);
 
         // vol_min
         stream.WriteColumn(std::to_string(alias->volMin));
@@ -379,28 +387,28 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->distReverbMax));
 
         // volume_falloff_curve
-        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 14) & 0x1F, 17u)]);
+        stream.WriteColumn(CURVES_ENUM[alias->flags.volumeFalloffCurve]);
 
         // reverb_falloff_curve
-        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 20) & 0x1F, 17u)]);
+        stream.WriteColumn(CURVES_ENUM[alias->flags.reverbFalloffCurve]);
 
         // volume_min_falloff_curve
-        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 2) & 0x1F, 17u)]);
+        stream.WriteColumn(CURVES_ENUM[alias->flags.volumeMinFalloffCurve]);
 
         // reverb_min_falloff_curve"
-        stream.WriteColumn(CURVES_ENUM[std::min((alias->flags1 >> 8) & 0x1F, 17u)]);
+        stream.WriteColumn(CURVES_ENUM[alias->flags.reverbMinFalloffCurve]);
 
         // limit_count
         stream.WriteColumn(std::to_string(alias->limitCount));
 
         // limit_type
-        stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 25) & 0x3]);
+        stream.WriteColumn(LIMIT_TYPES_ENUM[alias->flags.limitType]);
 
         // entity_limit_count
         stream.WriteColumn(std::to_string(alias->entityLimitCount));
 
         // entity_limit_type
-        stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 27) & 0x3]);
+        stream.WriteColumn(LIMIT_TYPES_ENUM[alias->flags.entityLimitType]);
 
         // pitch_min
         stream.WriteColumn(std::to_string(alias->pitchMin));
@@ -430,10 +438,10 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->contextType));
 
         // loop
-        stream.WriteColumn((alias->flags0 & 0x1) == 0 ? "nonlooping" : "looping");
+        stream.WriteColumn(alias->flags.looping == T6::SA_NON_LOOPING ? "nonlooping" : "looping");
 
         // randomize_type
-        stream.WriteColumn(LIMIT_TYPES_ENUM[(alias->flags0 >> 15) & 0x3]);
+        stream.WriteColumn(RANDOMIZE_TYPES_ENUM[alias->flags.randomizeType]);
 
         // probability",
         stream.WriteColumn(std::to_string(alias->probability));
@@ -445,10 +453,10 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->reverbSend));
 
         // duck",
-        stream.WriteColumn(FindNameForDuck(alias->duck, bank->ducks, bank->duckCount));
+        stream.WriteColumn(FindNameForDuck(alias->duck, bank));
 
         // pan",
-        stream.WriteColumn(((alias->flags0 >> 6) & 0x1) == 0 ? "2d" : "3d");
+        stream.WriteColumn(alias->flags.panType == SA_PAN_2D ? "2d" : "3d");
 
         // center_send",
         stream.WriteColumn(std::to_string(alias->centerSend));
@@ -469,13 +477,13 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // is_big",
-        stream.WriteColumn(((alias->flags0 >> 4) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.isBig ? "yes" : "no");
 
         // distance_lpf"
-        stream.WriteColumn(((alias->flags0 >> 2) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.distanceLpf ? "yes" : "no");
 
         // move_type",
-        stream.WriteColumn(MOVE_TYPES_ENUM[std::min((alias->flags0 >> 22) & 0x7, 7u)]);
+        stream.WriteColumn(MOVE_TYPES_ENUM[alias->flags.fluxType]);
 
         // move_time",
         stream.WriteColumn(std::to_string(alias->fluxTime));
@@ -490,7 +498,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // doppler",
-        stream.WriteColumn(((alias->flags0 >> 1) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.doppler ? "yes" : "no");
 
         // futz",
         stream.WriteColumn(std::to_string(alias->futzPatch));
@@ -505,10 +513,10 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // timescale",
-        stream.WriteColumn(((alias->flags0 >> 8) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.timescale ? "yes" : "no");
 
         // music",
-        stream.WriteColumn(((alias->flags0 >> 10) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.isMusic ? "yes" : "no");
 
         // fade_in",
         stream.WriteColumn(std::to_string(alias->fadeIn));
@@ -520,13 +528,13 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // pause",
-        stream.WriteColumn(((alias->flags0 >> 5) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.pauseable ? "yes" : "no");
 
         // stop_on_death",
-        stream.WriteColumn(((alias->flags0 >> 7) & 0x1) == 0 ? "no" : "yes");
+        stream.WriteColumn(alias->flags.stopOnDeath ? "yes" : "no");
 
         // bus",
-        stream.WriteColumn(BUS_IDS_ENUM[std::min((alias->flags0 >> 13) & 0xF, 10u)]);
+        stream.WriteColumn(BUS_IDS_ENUM[alias->flags.busType]);
 
         // snapshot",
         stream.WriteColumn("");

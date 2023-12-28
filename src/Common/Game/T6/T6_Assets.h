@@ -5578,13 +5578,57 @@ namespace T6
         MaterialArgumentDef u;
     };
 
-    enum SndAliasType
+    enum SndAliasLoopType
     {
-        SAT_UNKNOWN = 0x0,
-        SAT_LOADED = 0x1,
-        SAT_STREAMED = 0x2,
-        SAT_PRIMED = 0x3,
-        SAT_COUNT = 0x4,
+        SA_NON_LOOPING = 0x0,
+        SA_LOOPING = 0x1,
+    };
+
+    enum SndAliasPanType
+    {
+        SA_PAN_2D = 0x0,
+        SA_PAN_3D = 0x1,
+    };
+
+    enum SndAliasLoadType
+    {
+        SA_UNKNOWN = 0x0,
+        SA_LOADED = 0x1,
+        SA_STREAMED = 0x2,
+        SA_PRIMED = 0x3,
+        SA_COUNT = 0x4,
+    };
+
+    struct SndAliasFlags
+    {
+        // flags0
+        SndAliasLoopType looping : 1;     // 0
+        SndAliasPanType panType : 1;      // 1
+        unsigned int distanceLpf : 1;     // 2
+        unsigned int doppler : 1;         // 3
+        unsigned int isBig : 1;           // 4
+        unsigned int pauseable : 1;       // 5
+        unsigned int isMusic : 1;         // 6
+        unsigned int stopOnDeath : 1;     // 7
+        unsigned int timescale : 1;       // 8
+        unsigned int voiceLimit : 1;      // 9
+        unsigned int ignoreMaxDist : 1;   // 10
+        unsigned int busType : 4;         // 11-14
+        SndAliasLoadType loadType : 2;    // 15-16
+        unsigned int volumeGroup : 5;     // 17-21
+        unsigned int fluxType : 3;        // 22-24
+        unsigned int limitType : 2;       // 25-26
+        unsigned int entityLimitType : 2; // 27-28
+        unsigned int randomizeType : 3;   // 29-31
+
+        // flags1
+        unsigned int neverPlayTwice : 1;        // 0
+        unsigned int unknown1_0 : 1;            // 1
+        unsigned int volumeFalloffCurve : 6;    // 2-7
+        unsigned int reverbFalloffCurve : 6;    // 8-13
+        unsigned int volumeMinFalloffCurve : 6; // 14-19
+        unsigned int reverbMinFalloffCurve : 6; // 20-25
+        unsigned int unknown1_1 : 6;            // 26-31
     };
 
     struct SndAlias
@@ -5595,8 +5639,7 @@ namespace T6
         const char* secondaryname;
         unsigned int assetId;
         const char* assetFileName;
-        unsigned int flags0; // Bits 15/16 are SndAliasType
-        unsigned int flags1;
+        SndAliasFlags flags;
         unsigned int duck;
         unsigned int contextType;
         unsigned int contextValue;
@@ -5630,6 +5673,10 @@ namespace T6
         char entityLimitCount;
         char duckGroup;
     };
+
+    #ifndef __zonecodegenerator
+    static_assert(sizeof(SndAliasFlags) == 8);
+    #endif
 
     struct type_align(4) pathlink_s
     {
