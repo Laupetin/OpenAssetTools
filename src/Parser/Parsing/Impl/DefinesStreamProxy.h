@@ -49,8 +49,6 @@ public:
         void IdentifyParameters(const std::vector<std::string>& parameterNames);
 
     private:
-        static bool IsStringizeParameterForwardLookup(const std::string& value, unsigned pos);
-        static bool IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos);
         void IdentifyTokenJoinsOnly();
     };
 
@@ -118,6 +116,7 @@ private:
 
     bool FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define);
 
+    void ProcessTokenJoiningOperators(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos);
     void InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, std::vector<std::string>& parameterValues);
     void ExpandMacro(ParserLine& line,
                      unsigned& linePos,

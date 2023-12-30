@@ -12,6 +12,19 @@
 #include <sstream>
 #include <utility>
 
+namespace
+{
+    bool IsStringizeParameterForwardLookup(const std::string& value, unsigned pos)
+    {
+        return pos + 1 && (isalpha(value[pos + 1]) || value[pos + 1] == '_');
+    }
+
+    bool IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos)
+    {
+        return pos + 1 < value.size() && value[pos + 1] == '#';
+    }
+} // namespace
+
 DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
     : m_parameter_index(0u),
       m_parameter_position(0u),
@@ -39,17 +52,6 @@ DefinesStreamProxy::Define::Define(std::string name, std::string value)
 DefinesStreamProxy::MacroParameterState::MacroParameterState()
     : m_parameter_state(ParameterState::NOT_IN_PARAMETERS)
 {
-}
-
-bool DefinesStreamProxy::Define::IsStringizeParameterForwardLookup(const std::string& value, unsigned pos)
-{
-    // Check if # is prepended to the word
-    return pos + 1 && (isalpha(value[pos + 1]) || value[pos + 1] == '_');
-}
-
-bool DefinesStreamProxy::Define::IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos)
-{
-    return pos + 1 < value.size() && value[pos + 1] == '#';
 }
 
 void DefinesStreamProxy::Define::IdentifyTokenJoinsOnly()
@@ -651,6 +653,174 @@ bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& input
     return false;
 }
 
+namespace
+{
+    enum class TokenJoinTokenType
+    {
+        NONE,
+        STRING,
+        IDENTIFIER,
+        SYMBOL
+    };
+
+    class TokenJoinToken
+    {
+    public:
+        TokenJoinToken()
+            : m_type(TokenJoinTokenType::NONE),
+              m_start(0u),
+              m_end(0u)
+        {
+        }
+
+        ~TokenJoinToken() = default;
+        TokenJoinToken(const TokenJoinToken& other) = default;
+        TokenJoinToken(TokenJoinToken&& other) = default;
+        TokenJoinToken& operator=(const TokenJoinToken& other) = default;
+        TokenJoinToken& operator=(TokenJoinToken&& other) noexcept = default;
+
+        void SetFromInput(ParserLine& line, unsigned& linePos, const std::string& input, unsigned& offset)
+        {
+            m_start = offset;
+
+            const auto firstChar = input[offset++];
+            const auto inputSize = input.size();
+            if (firstChar == '"')
+            {
+                m_type = TokenJoinTokenType::STRING;
+                for (; offset < inputSize; offset++)
+                {
+                    const auto c = input[offset];
+                    if (c == '\\')
+                        offset++; // Skip next char
+                    else if (c == '"')
+                        break;
+                }
+
+                if (offset >= inputSize)
+                    throw new ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
+                                               "Token-pasting operator cannot be used on unclosed string");
+
+                offset++;
+            }
+            else if (isalpha(firstChar) || firstChar == '_')
+            {
+                m_type = TokenJoinTokenType::IDENTIFIER;
+                for (; offset < inputSize; offset++)
+                {
+                    const auto c = input[offset];
+                    if (!isalnum(c) && c != '_')
+                        break;
+                }
+            }
+            else
+            {
+                m_type = TokenJoinTokenType::SYMBOL;
+            }
+
+            m_end = offset;
+        }
+
+        void EmitValue(std::ostream& out, const std::string& input) const
+        {
+            if (m_end <= m_start)
+                return;
+
+            if (m_type == TokenJoinTokenType::STRING)
+            {
+                if (m_end - m_start > 2)
+                    out << std::string(input, m_start + 1, m_end - m_start - 2);
+            }
+            else
+            {
+                assert(m_type == TokenJoinTokenType::IDENTIFIER || m_type == TokenJoinTokenType::SYMBOL);
+                out << std::string(input, m_start, m_end - m_start);
+            }
+        }
+
+        TokenJoinTokenType m_type;
+        unsigned m_start;
+        unsigned m_end;
+    };
+
+    void EmitJoinedToken(
+        ParserLine& line, unsigned& linePos, std::ostream& out, const std::string& input, const TokenJoinToken& token0, const TokenJoinToken& token1)
+    {
+        if ((token0.m_type == TokenJoinTokenType::STRING) != (token1.m_type == TokenJoinTokenType::STRING))
+            throw new ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
+                                       "String token can only use token-pasting operator on other string token");
+        if (token0.m_type == TokenJoinTokenType::STRING)
+        {
+            out << '"';
+            token0.EmitValue(out, input);
+            token1.EmitValue(out, input);
+            out << '"';
+        }
+        else
+        {
+            assert(token0.m_type == TokenJoinTokenType::IDENTIFIER || token0.m_type == TokenJoinTokenType::SYMBOL);
+
+            token0.EmitValue(out, input);
+            token1.EmitValue(out, input);
+        }
+    }
+} // namespace
+
+void DefinesStreamProxy::ProcessTokenJoiningOperators(
+    ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
+{
+    std::ostringstream ss;
+
+    auto joinNext = false;
+    TokenJoinToken previousToken;
+    TokenJoinToken currentToken;
+
+    const auto inputSize = input.size();
+    for (auto i = 0u; i < inputSize;)
+    {
+        const auto c = input[i];
+
+        if (isspace(c))
+        {
+            i++;
+            continue;
+        }
+
+        if (c == '#' && IsTokenJoiningOperatorForwardLookup(input, i))
+        {
+            if (currentToken.m_type == TokenJoinTokenType::NONE)
+                throw new ParsingException(CreatePos(line, linePos), "Cannot use token-joining operator without previous token");
+
+            if (previousToken.m_end < currentToken.m_start)
+                ss << std::string(input, previousToken.m_end, currentToken.m_start - previousToken.m_end);
+
+            previousToken = currentToken;
+            joinNext = true;
+
+            // Skip second #
+            i += 2;
+        }
+        else
+        {
+            currentToken.SetFromInput(line, linePos, input, i);
+            if (joinNext)
+            {
+                EmitJoinedToken(line, linePos, ss, input, previousToken, currentToken);
+                previousToken = currentToken;
+                joinNext = false;
+            }
+        }
+    }
+
+    if (inputSize > previousToken.m_end)
+        ss << std::string(input, previousToken.m_end, inputSize - previousToken.m_end);
+
+    if (joinNext)
+        throw new ParsingException(CreatePos(line, linePos), "Cannot use token-joining operator without following token");
+
+    input = ss.str();
+}
+
 void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, std::vector<std::string>& parameterValues)
 {
     if (parameterValues.empty() || macro->m_parameter_positions.empty())
@@ -695,6 +865,9 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
     std::string str = rawOutput.str();
     unsigned nestedPos = 0;
     ProcessNestedMacros(line, linePos, callstack, str, nestedPos);
+
+    if (macro->m_contains_token_joining_operators)
+        ProcessTokenJoiningOperators(line, linePos, callstack, str, nestedPos);
 
     out << str;
 }

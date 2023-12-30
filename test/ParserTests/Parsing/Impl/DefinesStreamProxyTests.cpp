@@ -1001,12 +1001,46 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
-    TEST_CASE("DefinesStreamProxy: Token-pasting operator ignores whitespace", "[parsing][parsingstream]")
+    TEST_CASE("DefinesStreamProxy: Can token-join symbols", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
-            "#define glue(a, b) a   ##      b",
-            "glue(\"Hello\", \"World\")",
-            "testMacro(Hello, 5)",
+            "#define GLUE(a, b) a ## b",
+            "GLUE(+, =)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "+=");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can token-join symbols and identifiers", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define GLUE(a, b) a ## b",
+            "GLUE(+, hello)",
+            "GLUE(world, =)",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "+hello");
+        ExpectLine(&proxy, 3, "world=");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can token-join strings", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define GLUE(a, b) a ## b",
+            "GLUE(\"Hello\", \"World\")",
+            "GLUE(\"\", \"Cat\")",
         };
 
         MockParserLineStream mockStream(lines);
@@ -1014,7 +1048,23 @@ namespace test::parsing::impl::defines_stream_proxy
 
         ExpectLine(&proxy, 1, "");
         ExpectLine(&proxy, 2, "\"HelloWorld\"");
-        ExpectLine(&proxy, 3, "Hello5");
+        ExpectLine(&proxy, 3, "\"Cat\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Combined string tokens keep escape sequences", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define GLUE(a, b) a ## b",
+            "GLUE(\"He\\\"llo\", \"W\\\\orld\")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "\"He\\\"lloW\\\\orld\"");
 
         REQUIRE(proxy.Eof());
     }
