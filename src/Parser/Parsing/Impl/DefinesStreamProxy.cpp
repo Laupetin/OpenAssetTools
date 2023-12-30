@@ -69,10 +69,11 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
                         (wordStart > 0 && m_value[wordStart - 1] == '#')
                         // Make sure it's not a token pasting operator
                         && (wordStart <= 1 || m_value[wordStart - 2] != '#');
+                    const auto stringizeOffset = stringize ? 1 : 0;
 
-                    m_value.erase(wordStart, i - wordStart);
-                    m_parameter_positions.emplace_back(parameterIndex, wordStart, stringize);
-                    i = wordStart;
+                    m_value.erase(wordStart - stringizeOffset, i - wordStart + stringizeOffset);
+                    m_parameter_positions.emplace_back(parameterIndex, wordStart - stringizeOffset, stringize);
+                    i = wordStart - stringizeOffset;
                 }
 
                 inWord = false;
@@ -106,9 +107,10 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
                 (wordStart > 0 && m_value[wordStart - 1] == '#')
                 // Make sure it's not a token pasting operator
                 && (wordStart <= 1 || m_value[wordStart - 2] != '#');
+            const auto stringizeOffset = stringize ? 1 : 0;
 
-            m_value.erase(wordStart, m_value.size() - wordStart);
-            m_parameter_positions.emplace_back(parameterIndex, wordStart, stringize);
+            m_value.erase(wordStart - stringizeOffset, m_value.size() - wordStart + stringizeOffset);
+            m_parameter_positions.emplace_back(parameterIndex, wordStart - stringizeOffset, stringize);
         }
     }
 }
@@ -607,9 +609,8 @@ void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const De
     auto lastPos = 0u;
     for (const auto& parameterPosition : macro->m_parameter_positions)
     {
-        const auto stringizeSkipLastChar = parameterPosition.m_stringize ? 1 : 0;
         if (lastPos < parameterPosition.m_parameter_position)
-            out << std::string(macro->m_value, lastPos, parameterPosition.m_parameter_position - lastPos - stringizeSkipLastChar);
+            out << std::string(macro->m_value, lastPos, parameterPosition.m_parameter_position - lastPos);
 
         if (parameterPosition.m_parameter_index < parameterValues.size())
         {
@@ -647,8 +648,8 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
 void DefinesStreamProxy::ContinueMacroParameters(
     const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
 {
-    const auto lineLength = line.m_line.size();
-    while (state.m_parameter_state != ParameterState::NOT_IN_PARAMETERS && inputPos < lineLength)
+    const auto inputLength = input.size();
+    while (state.m_parameter_state != ParameterState::NOT_IN_PARAMETERS && inputPos < inputLength)
     {
         const auto c = input[inputPos];
 
@@ -773,7 +774,7 @@ void DefinesStreamProxy::ProcessNestedMacros(ParserLine& line, unsigned& linePos
         callstack.push_back(nestedMacro);
 
         MacroParameterState nestedMacroState;
-        ExtractParametersFromMacroUsage(line, pos, nestedMacroState, input, inputPos);
+        ExtractParametersFromMacroUsage(line, linePos, nestedMacroState, input, pos);
         if (nestedMacroState.m_parameter_state != ParameterState::NOT_IN_PARAMETERS)
             throw ParsingException(CreatePos(line, linePos), "Unbalanced brackets in macro parameters");
         ExpandMacro(line, linePos, ss, callstack, nestedMacro, nestedMacroState.m_parameters);
