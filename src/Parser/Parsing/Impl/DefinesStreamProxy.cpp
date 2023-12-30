@@ -19,7 +19,7 @@ namespace
         return pos + 1 && (isalpha(value[pos + 1]) || value[pos + 1] == '_');
     }
 
-    bool IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos)
+    bool IsTokenPastingOperatorForwardLookup(const std::string& value, unsigned pos)
     {
         return pos + 1 < value.size() && value[pos + 1] == '#';
     }
@@ -40,12 +40,12 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsig
 }
 
 DefinesStreamProxy::Define::Define()
-    : m_contains_token_joining_operators(false){};
+    : m_contains_token_pasting_operators(false){};
 
 DefinesStreamProxy::Define::Define(std::string name, std::string value)
     : m_name(std::move(name)),
       m_value(std::move(value)),
-      m_contains_token_joining_operators(false)
+      m_contains_token_pasting_operators(false)
 {
 }
 
@@ -54,13 +54,13 @@ DefinesStreamProxy::MacroParameterState::MacroParameterState()
 {
 }
 
-void DefinesStreamProxy::Define::IdentifyTokenJoinsOnly()
+void DefinesStreamProxy::Define::IdentifyTokenPasteOperatorOnly()
 {
     for (auto i = 0u; i < m_value.size(); i++)
     {
-        if (m_value[i] == '#' && IsTokenJoiningOperatorForwardLookup(m_value, i))
+        if (m_value[i] == '#' && IsTokenPastingOperatorForwardLookup(m_value, i))
         {
-            m_contains_token_joining_operators = true;
+            m_contains_token_pasting_operators = true;
             return;
         }
     }
@@ -70,7 +70,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 {
     if (parameterNames.empty())
     {
-        IdentifyTokenJoinsOnly();
+        IdentifyTokenPasteOperatorOnly();
         return;
     }
 
@@ -110,9 +110,9 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
             {
                 if (IsStringizeParameterForwardLookup(m_value, i))
                     stringizeNext = true;
-                else if (IsTokenJoiningOperatorForwardLookup(m_value, i))
+                else if (IsTokenPastingOperatorForwardLookup(m_value, i))
                 {
-                    m_contains_token_joining_operators = true;
+                    m_contains_token_pasting_operators = true;
 
                     // Skip next char since it's # anyway and we do not want to count it as stringize
                     i++;
@@ -655,7 +655,7 @@ bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& input
 
 namespace
 {
-    enum class TokenJoinTokenType
+    enum class TokenPasteTokenType
     {
         NONE,
         STRING,
@@ -663,21 +663,21 @@ namespace
         SYMBOL
     };
 
-    class TokenJoinToken
+    class TokenPasteToken
     {
     public:
-        TokenJoinToken()
-            : m_type(TokenJoinTokenType::NONE),
+        TokenPasteToken()
+            : m_type(TokenPasteTokenType::NONE),
               m_start(0u),
               m_end(0u)
         {
         }
 
-        ~TokenJoinToken() = default;
-        TokenJoinToken(const TokenJoinToken& other) = default;
-        TokenJoinToken(TokenJoinToken&& other) = default;
-        TokenJoinToken& operator=(const TokenJoinToken& other) = default;
-        TokenJoinToken& operator=(TokenJoinToken&& other) noexcept = default;
+        ~TokenPasteToken() = default;
+        TokenPasteToken(const TokenPasteToken& other) = default;
+        TokenPasteToken(TokenPasteToken&& other) = default;
+        TokenPasteToken& operator=(const TokenPasteToken& other) = default;
+        TokenPasteToken& operator=(TokenPasteToken&& other) noexcept = default;
 
         void SetFromInput(ParserLine& line, unsigned& linePos, const std::string& input, unsigned& offset)
         {
@@ -687,7 +687,7 @@ namespace
             const auto inputSize = input.size();
             if (firstChar == '"')
             {
-                m_type = TokenJoinTokenType::STRING;
+                m_type = TokenPasteTokenType::STRING;
                 for (; offset < inputSize; offset++)
                 {
                     const auto c = input[offset];
@@ -705,7 +705,7 @@ namespace
             }
             else if (isalpha(firstChar) || firstChar == '_')
             {
-                m_type = TokenJoinTokenType::IDENTIFIER;
+                m_type = TokenPasteTokenType::IDENTIFIER;
                 for (; offset < inputSize; offset++)
                 {
                     const auto c = input[offset];
@@ -715,7 +715,7 @@ namespace
             }
             else
             {
-                m_type = TokenJoinTokenType::SYMBOL;
+                m_type = TokenPasteTokenType::SYMBOL;
             }
 
             m_end = offset;
@@ -726,30 +726,30 @@ namespace
             if (m_end <= m_start)
                 return;
 
-            if (m_type == TokenJoinTokenType::STRING)
+            if (m_type == TokenPasteTokenType::STRING)
             {
                 if (m_end - m_start > 2)
                     out << std::string(input, m_start + 1, m_end - m_start - 2);
             }
             else
             {
-                assert(m_type == TokenJoinTokenType::IDENTIFIER || m_type == TokenJoinTokenType::SYMBOL);
+                assert(m_type == TokenPasteTokenType::IDENTIFIER || m_type == TokenPasteTokenType::SYMBOL);
                 out << std::string(input, m_start, m_end - m_start);
             }
         }
 
-        TokenJoinTokenType m_type;
+        TokenPasteTokenType m_type;
         unsigned m_start;
         unsigned m_end;
     };
 
-    void EmitJoinedToken(
-        ParserLine& line, unsigned& linePos, std::ostream& out, const std::string& input, const TokenJoinToken& token0, const TokenJoinToken& token1)
+    void EmitPastedTokens(
+        ParserLine& line, unsigned& linePos, std::ostream& out, const std::string& input, const TokenPasteToken& token0, const TokenPasteToken& token1)
     {
-        if ((token0.m_type == TokenJoinTokenType::STRING) != (token1.m_type == TokenJoinTokenType::STRING))
+        if ((token0.m_type == TokenPasteTokenType::STRING) != (token1.m_type == TokenPasteTokenType::STRING))
             throw new ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
                                        "String token can only use token-pasting operator on other string token");
-        if (token0.m_type == TokenJoinTokenType::STRING)
+        if (token0.m_type == TokenPasteTokenType::STRING)
         {
             out << '"';
             token0.EmitValue(out, input);
@@ -758,7 +758,7 @@ namespace
         }
         else
         {
-            assert(token0.m_type == TokenJoinTokenType::IDENTIFIER || token0.m_type == TokenJoinTokenType::SYMBOL);
+            assert(token0.m_type == TokenPasteTokenType::IDENTIFIER || token0.m_type == TokenPasteTokenType::SYMBOL);
 
             token0.EmitValue(out, input);
             token1.EmitValue(out, input);
@@ -766,14 +766,14 @@ namespace
     }
 } // namespace
 
-void DefinesStreamProxy::ProcessTokenJoiningOperators(
+void DefinesStreamProxy::ProcessTokenPastingOperators(
     ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
 {
     std::ostringstream ss;
 
-    auto joinNext = false;
-    TokenJoinToken previousToken;
-    TokenJoinToken currentToken;
+    auto pasteNext = false;
+    TokenPasteToken previousToken;
+    TokenPasteToken currentToken;
 
     const auto inputSize = input.size();
     for (auto i = 0u; i < inputSize;)
@@ -786,16 +786,16 @@ void DefinesStreamProxy::ProcessTokenJoiningOperators(
             continue;
         }
 
-        if (c == '#' && IsTokenJoiningOperatorForwardLookup(input, i))
+        if (c == '#' && IsTokenPastingOperatorForwardLookup(input, i))
         {
-            if (currentToken.m_type == TokenJoinTokenType::NONE)
-                throw new ParsingException(CreatePos(line, linePos), "Cannot use token-joining operator without previous token");
+            if (currentToken.m_type == TokenPasteTokenType::NONE)
+                throw new ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without previous token");
 
             if (previousToken.m_end < currentToken.m_start)
                 ss << std::string(input, previousToken.m_end, currentToken.m_start - previousToken.m_end);
 
             previousToken = currentToken;
-            joinNext = true;
+            pasteNext = true;
 
             // Skip second #
             i += 2;
@@ -803,11 +803,11 @@ void DefinesStreamProxy::ProcessTokenJoiningOperators(
         else
         {
             currentToken.SetFromInput(line, linePos, input, i);
-            if (joinNext)
+            if (pasteNext)
             {
-                EmitJoinedToken(line, linePos, ss, input, previousToken, currentToken);
+                EmitPastedTokens(line, linePos, ss, input, previousToken, currentToken);
                 previousToken = currentToken;
-                joinNext = false;
+                pasteNext = false;
             }
         }
     }
@@ -815,8 +815,8 @@ void DefinesStreamProxy::ProcessTokenJoiningOperators(
     if (inputSize > previousToken.m_end)
         ss << std::string(input, previousToken.m_end, inputSize - previousToken.m_end);
 
-    if (joinNext)
-        throw new ParsingException(CreatePos(line, linePos), "Cannot use token-joining operator without following token");
+    if (pasteNext)
+        throw new ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without following token");
 
     input = ss.str();
 }
@@ -866,8 +866,8 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
     unsigned nestedPos = 0;
     ProcessNestedMacros(line, linePos, callstack, str, nestedPos);
 
-    if (macro->m_contains_token_joining_operators)
-        ProcessTokenJoiningOperators(line, linePos, callstack, str, nestedPos);
+    if (macro->m_contains_token_pasting_operators)
+        ProcessTokenPastingOperators(line, linePos, callstack, str, nestedPos);
 
     out << str;
 }

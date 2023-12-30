@@ -42,14 +42,14 @@ public:
         std::string m_name;
         std::string m_value;
         std::vector<DefineParameterPosition> m_parameter_positions;
-        bool m_contains_token_joining_operators;
+        bool m_contains_token_pasting_operators;
 
         Define();
         Define(std::string name, std::string value);
         void IdentifyParameters(const std::vector<std::string>& parameterNames);
 
     private:
-        void IdentifyTokenJoinsOnly();
+        void IdentifyTokenPasteOperatorOnly();
     };
 
     enum class ParameterState : uint8_t
@@ -116,7 +116,7 @@ private:
 
     bool FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define);
 
-    void ProcessTokenJoiningOperators(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos);
+    void ProcessTokenPastingOperators(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos);
     void InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, std::vector<std::string>& parameterValues);
     void ExpandMacro(ParserLine& line,
                      unsigned& linePos,
