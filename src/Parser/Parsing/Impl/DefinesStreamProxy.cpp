@@ -685,7 +685,7 @@ void DefinesStreamProxy::ContinueMacroParameters(
                 state.m_parameters.emplace_back(state.m_current_parameter.str());
                 state.m_current_parameter.clear();
                 state.m_current_parameter.str(std::string());
-                m_parameter_state = ParameterState::AFTER_COMMA;
+                state.m_parameter_state = ParameterState::AFTER_COMMA;
             }
         }
         else if (c == '(' || c == '[' || c == '{')

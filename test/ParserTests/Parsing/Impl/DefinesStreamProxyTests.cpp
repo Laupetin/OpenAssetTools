@@ -959,8 +959,8 @@ namespace test::parsing::impl::defines_stream_proxy
         ExpectLine(&proxy, 1, "");
         ExpectLine(&proxy, 2, "");
         ExpectLine(&proxy, 3, "");
-        ExpectLine(&proxy, 4, "TEST");
-        ExpectLine(&proxy, 5, "TESTTWO(testArg)");
+        ExpectLine(&proxy, 4, "\"TEST\"");
+        ExpectLine(&proxy, 5, "\"TESTTWO(testArg)\"");
 
         REQUIRE(proxy.Eof());
     }
