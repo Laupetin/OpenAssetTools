@@ -34,34 +34,9 @@ DefinesStreamProxy::Define::Define(std::string name, std::string value)
 {
 }
 
-std::string DefinesStreamProxy::Define::Render(const std::vector<std::string>& parameterValues) const
+DefinesStreamProxy::MacroParameterState::MacroParameterState()
+    : m_parameter_state(ParameterState::NOT_IN_PARAMETERS)
 {
-    if (parameterValues.empty() || m_parameter_positions.empty())
-        return m_value;
-
-    std::ostringstream str;
-    auto lastPos = 0u;
-    for (const auto& parameterPosition : m_parameter_positions)
-    {
-        const auto stringizeSkipLastChar = parameterPosition.m_stringize ? 1 : 0;
-        if (lastPos < parameterPosition.m_parameter_position)
-            str << std::string(m_value, lastPos, parameterPosition.m_parameter_position - lastPos - stringizeSkipLastChar);
-
-        if (parameterPosition.m_parameter_index < parameterValues.size())
-        {
-            if (parameterPosition.m_stringize)
-                str << '"' << utils::EscapeStringForQuotationMarks(parameterValues[parameterPosition.m_parameter_index]) << '"';
-            else
-                str << parameterValues[parameterPosition.m_parameter_index];
-        }
-
-        lastPos = parameterPosition.m_parameter_position;
-    }
-
-    if (lastPos < m_value.size())
-        str << std::string(m_value, lastPos, m_value.size() - lastPos);
-
-    return str.str();
 }
 
 void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::string>& parameterNames)
@@ -144,8 +119,7 @@ DefinesStreamProxy::DefinesStreamProxy(IParserLineStream* stream, const bool ski
       m_ignore_depth(0),
       m_in_define(false),
       m_parameter_state(ParameterState::NOT_IN_PARAMETERS),
-      m_current_macro(nullptr),
-      m_macro_parameter_state(ParameterState::NOT_IN_PARAMETERS)
+      m_current_macro(nullptr)
 {
 }
 
@@ -303,7 +277,7 @@ std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(std::shar
 {
     ParserLine pseudoLine(std::move(fileName), lineNumber, std::move(expressionString));
     ExpandDefinedExpressions(pseudoLine);
-    ExpandDefines(pseudoLine);
+    ProcessMacrosMultiLine(pseudoLine);
 
     std::istringstream ss(pseudoLine.m_line);
     ParserSingleInputStream inputStream(ss, "defines directive expression");
@@ -494,10 +468,13 @@ bool DefinesStreamProxy::MatchDirectives(ParserLine& line)
            || MatchEndifDirective(line, directiveStartPos, directiveEndPos);
 }
 
-bool DefinesStreamProxy::FindDefineForWord(const std::string& line, const unsigned wordStart, const unsigned wordEnd, const Define*& value) const
+bool DefinesStreamProxy::FindMacroForIdentifier(const std::string& input,
+                                                const unsigned identifierStart,
+                                                const unsigned identifierEnd,
+                                                const Define*& value) const
 {
-    const std::string word(line, wordStart, wordEnd - wordStart);
-    const auto foundEntry = m_defines.find(word);
+    const std::string identifier(input, identifierStart, identifierEnd - identifierStart);
+    const auto foundEntry = m_defines.find(identifier);
     if (foundEntry != m_defines.end())
     {
         value = &foundEntry->second;
@@ -507,120 +484,20 @@ bool DefinesStreamProxy::FindDefineForWord(const std::string& line, const unsign
     return false;
 }
 
-void DefinesStreamProxy::ContinueMacroParameters(const ParserLine& line, unsigned& pos)
+void DefinesStreamProxy::ExtractParametersFromMacroUsage(
+    const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
 {
-    const auto lineLength = line.m_line.size();
-    while (m_macro_parameter_state != ParameterState::NOT_IN_PARAMETERS && pos < lineLength)
-    {
-        const auto c = line.m_line[pos];
-
-        if (c == ',')
-        {
-            if (!m_macro_bracket_depth.empty())
-            {
-                m_macro_parameter_state = ParameterState::AFTER_PARAM;
-                m_current_macro_parameter << c;
-            }
-            else
-            {
-                m_macro_parameters.emplace_back(m_current_macro_parameter.str());
-                m_current_macro_parameter.clear();
-                m_current_macro_parameter.str(std::string());
-                m_macro_parameter_state = ParameterState::AFTER_COMMA;
-            }
-        }
-        else if (c == '(' || c == '[' || c == '{')
-        {
-            m_macro_parameter_state = ParameterState::AFTER_PARAM;
-            m_macro_bracket_depth.push(c);
-            m_current_macro_parameter << c;
-        }
-        else if (c == ')')
-        {
-            if (!m_macro_bracket_depth.empty())
-            {
-                if (m_macro_bracket_depth.top() != '(')
-                    throw ParsingException(CreatePos(line, pos), "Unbalanced brackets in macro parameters");
-
-                m_macro_bracket_depth.pop();
-                m_macro_parameter_state = ParameterState::AFTER_PARAM;
-                m_current_macro_parameter << c;
-            }
-            else if (m_macro_parameter_state == ParameterState::AFTER_COMMA)
-            {
-                throw ParsingException(CreatePos(line, pos), "Cannot close macro parameters after comma");
-            }
-            else
-            {
-                m_macro_parameters.emplace_back(m_current_macro_parameter.str());
-                m_macro_parameter_state = ParameterState::NOT_IN_PARAMETERS;
-            }
-        }
-        else if (c == ']' || c == '}')
-        {
-            if (!m_macro_bracket_depth.empty())
-            {
-                const auto otherBracket = c == ']' ? '[' : '{';
-                if (m_macro_bracket_depth.top() != otherBracket)
-                    throw ParsingException(CreatePos(line, pos), "Unbalanced brackets in macro parameters");
-                m_macro_bracket_depth.pop();
-            }
-
-            m_macro_parameter_state = ParameterState::AFTER_PARAM;
-            m_current_macro_parameter << c;
-        }
-        else if (m_macro_parameter_state == ParameterState::AFTER_PARAM || !isspace(c))
-        {
-            m_macro_parameter_state = ParameterState::AFTER_PARAM;
-            m_current_macro_parameter << c;
-        }
-
-        pos++;
-    }
-}
-
-void DefinesStreamProxy::ContinueMacro(ParserLine& line)
-{
-    auto pos = 0u;
-    ContinueMacroParameters(line, pos);
-
-    if (m_macro_parameter_state == ParameterState::NOT_IN_PARAMETERS)
-    {
-        const auto defineValue = m_current_macro->Render(m_macro_parameters);
-
-        if (pos < line.m_line.size())
-        {
-            std::ostringstream ss;
-            ss << defineValue;
-            ss << std::string(line.m_line, pos, line.m_line.size() - pos);
-            line.m_line = ss.str();
-        }
-        else
-        {
-            line.m_line = defineValue;
-        }
-
-        ExpandDefines(line);
-    }
-    else
-    {
-        line.m_line = "";
-    }
-}
-
-void DefinesStreamProxy::ExtractParametersFromDefineUsage(const ParserLine& line, const unsigned parameterStart, unsigned& parameterEnd)
-{
-    if (line.m_line[parameterStart] != '(')
+    if (input[inputPos] != '(')
         return;
 
-    m_macro_parameter_state = ParameterState::AFTER_OPEN;
-    m_macro_parameters = std::vector<std::string>();
-    m_current_macro_parameter.clear();
-    m_current_macro_parameter.str(std::string());
-    m_macro_bracket_depth = std::stack<char>();
-    parameterEnd = parameterStart + 1;
+    inputPos++;
+    state.m_parameter_state = ParameterState::AFTER_OPEN;
+    state.m_parameters = std::vector<std::string>();
+    state.m_current_parameter.clear();
+    state.m_current_parameter.str(std::string());
+    state.m_bracket_depth = std::stack<char>();
 
-    ContinueMacroParameters(line, parameterEnd);
+    ContinueMacroParameters(line, linePos, state, input, inputPos);
 }
 
 bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName)
@@ -674,32 +551,21 @@ void DefinesStreamProxy::ExpandDefinedExpressions(ParserLine& line) const
     }
 }
 
-void DefinesStreamProxy::ProcessDefine(const ParserLine& line, unsigned& pos, std::ostringstream& out)
+bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define)
 {
-    ExtractParametersFromDefineUsage(line, pos, pos);
-
-    if (m_macro_parameter_state == ParameterState::NOT_IN_PARAMETERS)
-    {
-        const auto defineValue = m_current_macro->Render(m_macro_parameters);
-        out << defineValue;
-    }
-}
-
-bool DefinesStreamProxy::FindNextDefine(const std::string& line, unsigned& pos, unsigned& defineStart, const DefinesStreamProxy::Define*& define)
-{
-    const auto lineSize = line.size();
+    const auto inputSize = input.size();
     auto wordStart = 0u;
     auto lastWordEnd = 0u;
     auto inWord = false;
 
-    for (; pos < lineSize; pos++)
+    for (; inputPos < inputSize; inputPos++)
     {
-        const auto c = line[pos];
+        const auto c = input[inputPos];
         if (!inWord)
         {
             if (isalpha(c) || c == '_')
             {
-                wordStart = pos;
+                wordStart = inputPos;
                 inWord = true;
             }
         }
@@ -707,7 +573,7 @@ bool DefinesStreamProxy::FindNextDefine(const std::string& line, unsigned& pos, 
         {
             if (!isalnum(c) && c != '_')
             {
-                if (FindDefineForWord(line, wordStart, pos, define))
+                if (FindMacroForIdentifier(input, wordStart, inputPos, define))
                 {
                     defineStart = wordStart;
                     return true;
@@ -720,7 +586,7 @@ bool DefinesStreamProxy::FindNextDefine(const std::string& line, unsigned& pos, 
 
     if (inWord)
     {
-        if (FindDefineForWord(line, wordStart, pos, define))
+        if (FindMacroForIdentifier(input, wordStart, inputPos, define))
         {
             defineStart = wordStart;
             return true;
@@ -730,51 +596,253 @@ bool DefinesStreamProxy::FindNextDefine(const std::string& line, unsigned& pos, 
     return false;
 }
 
-void DefinesStreamProxy::ExpandDefines(ParserLine& line)
+void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, std::vector<std::string>& parameterValues)
 {
-    auto defineIterations = 0u;
-    bool usesDefines;
-
-    do
+    if (parameterValues.empty() || macro->m_parameter_positions.empty())
     {
-        if (defineIterations > MAX_DEFINE_ITERATIONS)
+        out << macro->m_value;
+        return;
+    }
+
+    auto lastPos = 0u;
+    for (const auto& parameterPosition : macro->m_parameter_positions)
+    {
+        const auto stringizeSkipLastChar = parameterPosition.m_stringize ? 1 : 0;
+        if (lastPos < parameterPosition.m_parameter_position)
+            out << std::string(macro->m_value, lastPos, parameterPosition.m_parameter_position - lastPos - stringizeSkipLastChar);
+
+        if (parameterPosition.m_parameter_index < parameterValues.size())
         {
-            throw ParsingException(CreatePos(line, 1),
-                                   "Potential define loop? Exceeded max define iterations of " + std::to_string(MAX_DEFINE_ITERATIONS) + " iterations.");
+            if (!parameterPosition.m_stringize)
+            {
+                out << parameterValues[parameterPosition.m_parameter_index];
+            }
+            else
+                out << '"' << utils::EscapeStringForQuotationMarks(parameterValues[parameterPosition.m_parameter_index]) << '"';
         }
 
-        usesDefines = false;
-        auto pos = 0u;
-        auto defineStart = 0u;
-        auto lastDefineEnd = 0u;
-        std::ostringstream str;
+        lastPos = parameterPosition.m_parameter_position;
+    }
 
-        while (FindNextDefine(line.m_line, pos, defineStart, m_current_macro))
+    if (lastPos < macro->m_value.size())
+        out << std::string(macro->m_value, lastPos, macro->m_value.size() - lastPos);
+}
+
+void DefinesStreamProxy::ExpandMacro(ParserLine& line,
+                                     unsigned& linePos,
+                                     std::ostringstream& out,
+                                     std::vector<const Define*>& callstack,
+                                     const DefinesStreamProxy::Define* macro,
+                                     std::vector<std::string>& parameterValues)
+{
+    std::ostringstream rawOutput;
+    InsertMacroParameters(rawOutput, macro, parameterValues);
+
+    std::string str = rawOutput.str();
+    unsigned nestedPos = 0;
+    ProcessNestedMacros(line, linePos, callstack, str, nestedPos);
+    out << str;
+}
+
+void DefinesStreamProxy::ContinueMacroParameters(
+    const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
+{
+    const auto lineLength = line.m_line.size();
+    while (state.m_parameter_state != ParameterState::NOT_IN_PARAMETERS && inputPos < lineLength)
+    {
+        const auto c = input[inputPos];
+
+        if (c == ',')
         {
-            if (!usesDefines)
+            if (!state.m_bracket_depth.empty())
             {
-                usesDefines = true;
-                str << std::string(line.m_line, 0, defineStart);
+                state.m_parameter_state = ParameterState::AFTER_PARAM;
+                state.m_current_parameter << c;
             }
             else
             {
-                str << std::string(line.m_line, lastDefineEnd, defineStart - (lastDefineEnd));
+                state.m_parameters.emplace_back(state.m_current_parameter.str());
+                state.m_current_parameter.clear();
+                state.m_current_parameter.str(std::string());
+                m_parameter_state = ParameterState::AFTER_COMMA;
+            }
+        }
+        else if (c == '(' || c == '[' || c == '{')
+        {
+            state.m_parameter_state = ParameterState::AFTER_PARAM;
+            state.m_bracket_depth.push(c);
+            state.m_current_parameter << c;
+        }
+        else if (c == ')')
+        {
+            if (!state.m_bracket_depth.empty())
+            {
+                if (state.m_bracket_depth.top() != '(')
+                    throw ParsingException(CreatePos(line, linePos), "Unbalanced brackets in macro parameters");
+
+                state.m_bracket_depth.pop();
+                state.m_parameter_state = ParameterState::AFTER_PARAM;
+                state.m_current_parameter << c;
+            }
+            else if (state.m_parameter_state == ParameterState::AFTER_COMMA)
+            {
+                throw ParsingException(CreatePos(line, linePos), "Cannot close macro parameters after comma");
+            }
+            else
+            {
+                state.m_parameters.emplace_back(state.m_current_parameter.str());
+                state.m_parameter_state = ParameterState::NOT_IN_PARAMETERS;
+            }
+        }
+        else if (c == ']' || c == '}')
+        {
+            if (!state.m_bracket_depth.empty())
+            {
+                const auto otherBracket = c == ']' ? '[' : '{';
+                if (state.m_bracket_depth.top() != otherBracket)
+                    throw ParsingException(CreatePos(line, linePos), "Unbalanced brackets in macro parameters");
+                state.m_bracket_depth.pop();
             }
 
-            ProcessDefine(line, pos, str);
-
-            lastDefineEnd = pos;
+            state.m_parameter_state = ParameterState::AFTER_PARAM;
+            state.m_current_parameter << c;
         }
-
-        if (usesDefines)
+        else if (state.m_parameter_state == ParameterState::AFTER_PARAM || !isspace(c))
         {
-            if (lastDefineEnd < line.m_line.size())
-                str << std::string(line.m_line, lastDefineEnd, line.m_line.size() - lastDefineEnd);
-            line.m_line = str.str();
+            state.m_parameter_state = ParameterState::AFTER_PARAM;
+            state.m_current_parameter << c;
         }
 
-        defineIterations++;
-    } while (usesDefines);
+        inputPos++;
+    }
+}
+
+void DefinesStreamProxy::ContinueMultiLineMacro(ParserLine& line)
+{
+    auto pos = 0u;
+    ContinueMacroParameters(line, pos, m_multi_line_macro_parameters, line.m_line, pos);
+
+    if (m_multi_line_macro_parameters.m_parameter_state == ParameterState::NOT_IN_PARAMETERS)
+    {
+        std::ostringstream ss;
+        std::vector<const Define*> callstack;
+        ExpandMacro(line, pos, ss, callstack, m_current_macro, m_multi_line_macro_parameters.m_parameters);
+
+        if (pos < line.m_line.size())
+            ss << std::string(line.m_line, pos, line.m_line.size() - pos);
+
+        line.m_line = ss.str();
+
+        ProcessMacrosMultiLine(line);
+    }
+    else
+    {
+        line.m_line = std::string();
+    }
+}
+
+void DefinesStreamProxy::ProcessNestedMacros(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
+{
+    bool usesDefines = false;
+
+    auto pos = 0u;
+    auto defineStart = 0u;
+    auto lastDefineEnd = 0u;
+    std::ostringstream ss;
+
+    const Define* nestedMacro = nullptr;
+    while (FindNextMacro(input, pos, defineStart, nestedMacro))
+    {
+        if (std::find(callstack.cbegin(), callstack.cend(), nestedMacro) != callstack.cend())
+        {
+            // Do not expand recursively
+            continue;
+        }
+
+        // Make sure we account for all text between the last macro (or beginning) and now
+        if (!usesDefines)
+        {
+            usesDefines = true;
+            ss << std::string(input, 0, defineStart);
+        }
+        else
+        {
+            ss << std::string(input, lastDefineEnd, defineStart - (lastDefineEnd));
+        }
+
+        callstack.push_back(nestedMacro);
+
+        MacroParameterState nestedMacroState;
+        ExtractParametersFromMacroUsage(line, pos, nestedMacroState, input, inputPos);
+        if (nestedMacroState.m_parameter_state != ParameterState::NOT_IN_PARAMETERS)
+            throw ParsingException(CreatePos(line, linePos), "Unbalanced brackets in macro parameters");
+        ExpandMacro(line, linePos, ss, callstack, nestedMacro, nestedMacroState.m_parameters);
+
+        callstack.pop_back();
+
+        lastDefineEnd = pos;
+    }
+
+    if (usesDefines)
+    {
+        // Make sure we account for all text between the last macro and the end
+        if (lastDefineEnd < line.m_line.size())
+            ss << std::string(line.m_line, lastDefineEnd, line.m_line.size() - lastDefineEnd);
+        input = ss.str();
+    }
+}
+
+void DefinesStreamProxy::ProcessMacrosSingleLine(ParserLine& line)
+{
+    unsigned pos = 0;
+    std::vector<const Define*> callstack;
+    ProcessNestedMacros(line, pos, callstack, line.m_line, pos);
+}
+
+void DefinesStreamProxy::ProcessMacrosMultiLine(ParserLine& line)
+{
+    bool usesDefines = false;
+
+    auto pos = 0u;
+    auto defineStart = 0u;
+    auto lastDefineEnd = 0u;
+    std::ostringstream str;
+    std::vector<const Define*> callstack;
+    while (FindNextMacro(line.m_line, pos, defineStart, m_current_macro))
+    {
+        // Make sure we account for all text between the last macro (or beginning) and now
+        if (!usesDefines)
+        {
+            usesDefines = true;
+            str << std::string(line.m_line, 0, defineStart);
+        }
+        else
+        {
+            str << std::string(line.m_line, lastDefineEnd, defineStart - (lastDefineEnd));
+        }
+
+        callstack.push_back(m_current_macro);
+
+        ExtractParametersFromMacroUsage(line, pos, m_multi_line_macro_parameters, line.m_line, pos);
+
+        // If still in parameters they continue on the next line
+        if (m_multi_line_macro_parameters.m_parameter_state == ParameterState::NOT_IN_PARAMETERS)
+        {
+            ExpandMacro(line, pos, str, callstack, m_current_macro, m_multi_line_macro_parameters.m_parameters);
+        }
+
+        callstack.pop_back();
+
+        lastDefineEnd = pos;
+    }
+
+    if (usesDefines)
+    {
+        // Make sure we account for all text between the last macro and the end
+        if (lastDefineEnd < line.m_line.size())
+            str << std::string(line.m_line, lastDefineEnd, line.m_line.size() - lastDefineEnd);
+        line.m_line = str.str();
+    }
 }
 
 void DefinesStreamProxy::AddDefine(Define define)
@@ -815,9 +883,9 @@ ParserLine DefinesStreamProxy::NextLine()
 
             line = m_stream->NextLine();
         }
-        else if (m_macro_parameter_state != ParameterState::NOT_IN_PARAMETERS)
+        else if (m_multi_line_macro_parameters.m_parameter_state != ParameterState::NOT_IN_PARAMETERS)
         {
-            ContinueMacro(line);
+            ContinueMultiLineMacro(line);
             return line;
         }
         else if (MatchDirectives(line) || !m_modes.empty() && m_modes.top() != BlockMode::IN_BLOCK)
@@ -832,7 +900,7 @@ ParserLine DefinesStreamProxy::NextLine()
         }
         else
         {
-            ExpandDefines(line);
+            ProcessMacrosMultiLine(line);
             return line;
         }
     }
