@@ -46,6 +46,9 @@ public:
         Define();
         Define(std::string name, std::string value);
         void IdentifyParameters(const std::vector<std::string>& parameterNames);
+
+    private:
+        static bool IsStringizeParameter(const std::string& value, unsigned pos);
     };
 
     enum class ParameterState : uint8_t

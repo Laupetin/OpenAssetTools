@@ -39,6 +39,23 @@ DefinesStreamProxy::MacroParameterState::MacroParameterState()
 {
 }
 
+bool DefinesStreamProxy::Define::IsStringizeParameter(const std::string& value, unsigned pos)
+{
+    // Check if # is prepended to the word
+    if (pos <= 0 || value[pos - 1] != '#')
+        return false;
+
+    bool min2IsNumberSign = pos >= 2 && value[pos - 2] == '#';
+    bool min3IsNumberSign = pos >= 3 && value[pos - 3] == '#';
+    bool min4IsNumberSign = pos >= 4 && value[pos - 4] == '#';
+
+    return
+        // #
+        !min2IsNumberSign
+        // ###
+        || (min3IsNumberSign && !min4IsNumberSign);
+}
+
 void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::string>& parameterNames)
 {
     if (parameterNames.empty())
@@ -64,11 +81,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
                 if (parameterIndex < parameterNames.size())
                 {
-                    const auto stringize =
-                        // Check if # is prepended to the word
-                        (wordStart > 0 && m_value[wordStart - 1] == '#')
-                        // Make sure it's not a token pasting operator
-                        && (wordStart <= 1 || m_value[wordStart - 2] != '#');
+                    const auto stringize = IsStringizeParameter(m_value, wordStart);
                     const auto stringizeOffset = stringize ? 1 : 0;
 
                     m_value.erase(wordStart - stringizeOffset, i - wordStart + stringizeOffset);
@@ -102,11 +115,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
         if (parameterIndex < parameterNames.size())
         {
-            const auto stringize =
-                // Check if # is prepended to the word
-                (wordStart > 0 && m_value[wordStart - 1] == '#')
-                // Make sure it's not a token pasting operator
-                && (wordStart <= 1 || m_value[wordStart - 2] != '#');
+            const auto stringize = IsStringizeParameter(m_value, wordStart);
             const auto stringizeOffset = stringize ? 1 : 0;
 
             m_value.erase(wordStart - stringizeOffset, m_value.size() - wordStart + stringizeOffset);
