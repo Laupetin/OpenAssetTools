@@ -1,18 +1,15 @@
-name: ci
+name: release
 
 on:
   push:
-    branches:
-      - "main"
-  pull_request:
-    branches:
-      - "main"
+    tags:
+      - "v*.*.*"
 
 env:
   PREMAKE_VERSION: "5.0.0-beta2"
 
 jobs:
-  build-test-linux:
+  build-release-linux:
     env:
       PREMAKE_CONFIG: gmake2
     runs-on: ubuntu-latest
@@ -40,16 +37,14 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: make -C build -j$(nproc) config=release_x86 all
 
-      - name: Test
-        working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
-        run: |
-          ./ObjCommonTests
-          ./ObjLoadingTests
-          ./ParserTests
-          ./ZoneCodeGeneratorLibTests
-          ./ZoneCommonTests
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oat-linux
+          path: |
+            ${{ github.workspace }}/build/bin/Release_x86
 
-  build-test-windows:
+  build-release-windows:
     env:
       PREMAKE_CONFIG: vs2022
     runs-on: windows-latest
@@ -74,19 +69,36 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}
         run: msbuild /m /p:Configuration=Release /p:Platform=Win32 build
-
-      - name: Test
-        working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oat-windows
+          path: |
+            ${{ github.workspace }}/build/bin/Release_x86
+  
+  release:
+    needs: 
+      - build-release-linux
+      - build-release-windows
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Zip artifacts
         run: |
-          $combinedExitCode = 0
-          ./ObjCommonTests
-          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
-          ./ObjLoadingTests
-          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
-          ./ParserTests
-          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
-          ./ZoneCodeGeneratorLibTests
-          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
-          ./ZoneCommonTests
-          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
-          exit $combinedExitCode
+          7z a oat-linux.tar ./oat-linux/*
+          7z a oat-linux.tar.gz ./oat-linux.tar
+          7z a oat-windows.zip ./oat-windows/*
+      - uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          artifacts: "oat-linux.tar.gz,oat-windows.zip"
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          draft: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
