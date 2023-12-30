@@ -837,8 +837,8 @@ void DefinesStreamProxy::ProcessNestedMacros(ParserLine& line, unsigned& linePos
     if (usesDefines)
     {
         // Make sure we account for all text between the last macro and the end
-        if (lastDefineEnd < line.m_line.size())
-            ss << std::string(line.m_line, lastDefineEnd, line.m_line.size() - lastDefineEnd);
+        if (lastDefineEnd < input.size())
+            ss << std::string(input, lastDefineEnd, input.size() - lastDefineEnd);
         input = ss.str();
     }
 }
