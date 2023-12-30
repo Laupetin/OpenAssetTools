@@ -559,29 +559,49 @@ bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& input
     auto wordStart = 0u;
     auto lastWordEnd = 0u;
     auto inWord = false;
+    auto inString = false;
+    auto stringEscape = false;
 
     for (; inputPos < inputSize; inputPos++)
     {
         const auto c = input[inputPos];
-        if (!inWord)
+        if (inString)
         {
-            if (isalpha(c) || c == '_')
+            if (!stringEscape)
             {
-                wordStart = inputPos;
-                inWord = true;
+                if (c == '"')
+                    inString = false;
+                else if (c == '\\')
+                    stringEscape = true;
             }
+            else
+                stringEscape = false;
         }
         else
         {
-            if (!isalnum(c) && c != '_')
-            {
-                if (FindMacroForIdentifier(input, wordStart, inputPos, define))
-                {
-                    defineStart = wordStart;
-                    return true;
-                }
+            if (c == '"')
+                inString = true;
 
-                inWord = false;
+            if (!inWord)
+            {
+                if (isalpha(c) || c == '_')
+                {
+                    wordStart = inputPos;
+                    inWord = true;
+                }
+            }
+            else
+            {
+                if (!isalnum(c) && c != '_')
+                {
+                    if (FindMacroForIdentifier(input, wordStart, inputPos, define))
+                    {
+                        defineStart = wordStart;
+                        return true;
+                    }
+
+                    inWord = false;
+                }
             }
         }
     }

@@ -467,6 +467,22 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Ensure does not expand macros in strings", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define TEST Wrong",
+            "System.out.println(\"TEST\")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "System.out.println(\"TEST\")");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Ensure simple if is working with truthy value", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
@@ -911,7 +927,7 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
-    TEST_CASE("DefinesStreamProxy: Can use strinizing operator inside sample code", "[parsing][parsingstream]")
+    TEST_CASE("DefinesStreamProxy: Can use stringizing operator inside sample code", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
             "#define testMacro(a) System.out.println(#a)",
