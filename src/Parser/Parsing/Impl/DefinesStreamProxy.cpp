@@ -39,27 +39,41 @@ DefinesStreamProxy::MacroParameterState::MacroParameterState()
 {
 }
 
-bool DefinesStreamProxy::Define::IsStringizeParameter(const std::string& value, unsigned pos)
+bool DefinesStreamProxy::Define::IsStringizeParameterBackwardsLookup(const std::string& value, unsigned pos)
 {
     // Check if # is prepended to the word
-    if (pos <= 0 || value[pos - 1] != '#')
-        return false;
+    return pos > 0 && value[pos - 1] == '#';
+}
 
-    bool min2IsNumberSign = pos >= 2 && value[pos - 2] == '#';
-    bool min3IsNumberSign = pos >= 3 && value[pos - 3] == '#';
-    bool min4IsNumberSign = pos >= 4 && value[pos - 4] == '#';
+bool DefinesStreamProxy::Define::IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos)
+{
+    return pos + 1 < value.size() && value[pos + 1] == '#';
+}
 
-    return
-        // #
-        !min2IsNumberSign
-        // ###
-        || (min3IsNumberSign && !min4IsNumberSign);
+void DefinesStreamProxy::Define::IdentifyTokenJoinsOnly()
+{
+    for (auto i = 0u; i < m_value.size(); i++)
+    {
+        const auto c = m_value[i];
+        if (!isalnum(c) && c != '_')
+        {
+            if (c == '#' && IsTokenJoiningOperatorForwardLookup(m_value, i))
+            {
+                m_token_joins.push_back(i);
+                m_value.erase(i, 2);
+                i -= 1;
+            }
+        }
+    }
 }
 
 void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::string>& parameterNames)
 {
     if (parameterNames.empty())
+    {
+        IdentifyTokenJoinsOnly();
         return;
+    }
 
     auto inWord = false;
     auto wordStart = 0u;
@@ -81,7 +95,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
                 if (parameterIndex < parameterNames.size())
                 {
-                    const auto stringize = IsStringizeParameter(m_value, wordStart);
+                    const auto stringize = IsStringizeParameterBackwardsLookup(m_value, wordStart);
                     const auto stringizeOffset = stringize ? 1 : 0;
 
                     m_value.erase(wordStart - stringizeOffset, i - wordStart + stringizeOffset);
@@ -90,6 +104,13 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
                 }
 
                 inWord = false;
+            }
+
+            if (c == '#' && IsTokenJoiningOperatorForwardLookup(m_value, i))
+            {
+                m_token_joins.push_back(i);
+                m_value.erase(i, 2);
+                i -= 1;
             }
         }
         else
@@ -115,7 +136,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
         if (parameterIndex < parameterNames.size())
         {
-            const auto stringize = IsStringizeParameter(m_value, wordStart);
+            const auto stringize = IsStringizeParameterBackwardsLookup(m_value, wordStart);
             const auto stringizeOffset = stringize ? 1 : 0;
 
             m_value.erase(wordStart - stringizeOffset, m_value.size() - wordStart + stringizeOffset);

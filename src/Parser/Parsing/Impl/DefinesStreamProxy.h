@@ -42,13 +42,16 @@ public:
         std::string m_name;
         std::string m_value;
         std::vector<DefineParameterPosition> m_parameter_positions;
+        std::vector<unsigned> m_token_joins;
 
         Define();
         Define(std::string name, std::string value);
         void IdentifyParameters(const std::vector<std::string>& parameterNames);
 
     private:
-        static bool IsStringizeParameter(const std::string& value, unsigned pos);
+        static bool IsStringizeParameterBackwardsLookup(const std::string& value, unsigned pos);
+        static bool IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos);
+        void IdentifyTokenJoinsOnly();
     };
 
     enum class ParameterState : uint8_t
