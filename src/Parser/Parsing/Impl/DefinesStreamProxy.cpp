@@ -26,11 +26,13 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsig
 {
 }
 
-DefinesStreamProxy::Define::Define() = default;
+DefinesStreamProxy::Define::Define()
+    : m_contains_token_joining_operators(false){};
 
 DefinesStreamProxy::Define::Define(std::string name, std::string value)
     : m_name(std::move(name)),
-      m_value(std::move(value))
+      m_value(std::move(value)),
+      m_contains_token_joining_operators(false)
 {
 }
 
@@ -39,10 +41,10 @@ DefinesStreamProxy::MacroParameterState::MacroParameterState()
 {
 }
 
-bool DefinesStreamProxy::Define::IsStringizeParameterBackwardsLookup(const std::string& value, unsigned pos)
+bool DefinesStreamProxy::Define::IsStringizeParameterForwardLookup(const std::string& value, unsigned pos)
 {
     // Check if # is prepended to the word
-    return pos > 0 && value[pos - 1] == '#';
+    return pos + 1 && (isalpha(value[pos + 1]) || value[pos + 1] == '_');
 }
 
 bool DefinesStreamProxy::Define::IsTokenJoiningOperatorForwardLookup(const std::string& value, unsigned pos)
@@ -54,15 +56,10 @@ void DefinesStreamProxy::Define::IdentifyTokenJoinsOnly()
 {
     for (auto i = 0u; i < m_value.size(); i++)
     {
-        const auto c = m_value[i];
-        if (!isalnum(c) && c != '_')
+        if (m_value[i] == '#' && IsTokenJoiningOperatorForwardLookup(m_value, i))
         {
-            if (c == '#' && IsTokenJoiningOperatorForwardLookup(m_value, i))
-            {
-                m_token_joins.push_back(i);
-                m_value.erase(i, 2);
-                i -= 1;
-            }
+            m_contains_token_joining_operators = true;
+            return;
         }
     }
 }
@@ -76,6 +73,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
     }
 
     auto inWord = false;
+    auto stringizeNext = false;
     auto wordStart = 0u;
     for (auto i = 0u; i < m_value.size(); i++)
     {
@@ -95,22 +93,28 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
                 if (parameterIndex < parameterNames.size())
                 {
-                    const auto stringize = IsStringizeParameterBackwardsLookup(m_value, wordStart);
-                    const auto stringizeOffset = stringize ? 1 : 0;
+                    const auto stringizeOffset = stringizeNext ? 1 : 0;
 
                     m_value.erase(wordStart - stringizeOffset, i - wordStart + stringizeOffset);
-                    m_parameter_positions.emplace_back(parameterIndex, wordStart - stringizeOffset, stringize);
+                    m_parameter_positions.emplace_back(parameterIndex, wordStart - stringizeOffset, stringizeNext);
                     i = wordStart - stringizeOffset;
                 }
 
                 inWord = false;
+                stringizeNext = false;
             }
 
-            if (c == '#' && IsTokenJoiningOperatorForwardLookup(m_value, i))
+            if (c == '#')
             {
-                m_token_joins.push_back(i);
-                m_value.erase(i, 2);
-                i -= 1;
+                if (IsStringizeParameterForwardLookup(m_value, i))
+                    stringizeNext = true;
+                else if (IsTokenJoiningOperatorForwardLookup(m_value, i))
+                {
+                    m_contains_token_joining_operators = true;
+
+                    // Skip next char since it's # anyway and we do not want to count it as stringize
+                    i++;
+                }
             }
         }
         else
@@ -136,11 +140,10 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
 
         if (parameterIndex < parameterNames.size())
         {
-            const auto stringize = IsStringizeParameterBackwardsLookup(m_value, wordStart);
-            const auto stringizeOffset = stringize ? 1 : 0;
+            const auto stringizeOffset = stringizeNext ? 1 : 0;
 
             m_value.erase(wordStart - stringizeOffset, m_value.size() - wordStart + stringizeOffset);
-            m_parameter_positions.emplace_back(parameterIndex, wordStart - stringizeOffset, stringize);
+            m_parameter_positions.emplace_back(parameterIndex, wordStart - stringizeOffset, stringizeNext);
         }
     }
 }
@@ -692,6 +695,7 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
     std::string str = rawOutput.str();
     unsigned nestedPos = 0;
     ProcessNestedMacros(line, linePos, callstack, str, nestedPos);
+
     out << str;
 }
 

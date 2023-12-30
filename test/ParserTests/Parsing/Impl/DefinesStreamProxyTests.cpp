@@ -1093,6 +1093,42 @@ namespace test::parsing::impl::defines_stream_proxy
         REQUIRE(proxy.Eof());
     }
 
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator after length deflating macros", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define VERY_LONG_MACRO \"T\"",
+            "#define testMacro(a) VERY_LONG_MACRO VERY_LONG_MACRO \"Hello\"##a VERY_LONG_MACRO",
+            "testMacro(\"World\")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "\"T\" \"T\" \"HelloWorld\" \"T\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
+    TEST_CASE("DefinesStreamProxy: Can use token-pasting operator after length inflating macros", "[parsing][parsingstream]")
+    {
+        const std::vector<std::string> lines{
+            "#define BLA \"This is very long\"",
+            "#define testMacro(a) BLA BLA \"Hello\"##a BLA",
+            "testMacro(\"World\")",
+        };
+
+        MockParserLineStream mockStream(lines);
+        DefinesStreamProxy proxy(&mockStream);
+
+        ExpectLine(&proxy, 1, "");
+        ExpectLine(&proxy, 2, "");
+        ExpectLine(&proxy, 3, "\"This is very long\" \"This is very long\" \"HelloWorld\" \"This is very long\"");
+
+        REQUIRE(proxy.Eof());
+    }
+
     TEST_CASE("DefinesStreamProxy: Interprets nested macros in context of top-level macro", "[parsing][parsingstream]")
     {
         const std::vector<std::string> lines{
