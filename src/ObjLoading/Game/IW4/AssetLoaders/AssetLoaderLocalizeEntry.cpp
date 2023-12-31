@@ -1,7 +1,7 @@
 #include "AssetLoaderLocalizeEntry.h"
 
 #include "Localize/LocalizeCommon.h"
-#include "Parsing/LocalizeFile/LocalizeFileReader.h"
+#include "Localize/Parsing/LocalizeFileReader.h"
 
 #include <sstream>
 

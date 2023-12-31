@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Parsing/LocalizeFile/LocalizeFileParser.h"
+#include "Localize/Parsing/LocalizeFileParser.h"
 
 class SequenceLocalizeFileEndMarker final : public LocalizeFileParser::sequence_t
 {
