@@ -1,9 +1,6 @@
 #include "AssetLoaderLocalizeEntry.h"
 
-#include "Localize/LocalizeCommon.h"
-#include "Localize/Parsing/LocalizeFileReader.h"
-
-#include <sstream>
+#include "Localize/LocalizeCommonAssetLoader.h"
 
 using namespace T5;
 
@@ -25,29 +22,15 @@ bool AssetLoaderLocalizeEntry::CanLoadFromRaw() const
 bool AssetLoaderLocalizeEntry::LoadFromRaw(
     const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    std::string fileName;
-    {
-        std::ostringstream str;
-        str << LocalizeCommon::GetNameOfLanguage(zone->m_language) << "/localizedstrings/" << assetName << ".str";
-        fileName = str.str();
-    }
+    LocalizeCommonAssetLoader commonLoader(
+        [memory, manager](const CommonLocalizeEntry& entry)
+        {
+            auto* localizeEntry = memory->Create<LocalizeEntry>();
+            localizeEntry->name = memory->Dup(entry.m_key.c_str());
+            localizeEntry->value = memory->Dup(entry.m_value.c_str());
 
-    const auto file = searchPath->Open(fileName);
-    if (!file.IsOpen())
-        return false;
+            manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, entry.m_key, localizeEntry);
+        });
 
-    auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<LocalizeReadingZoneState>();
-    LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language, zoneState);
-    const auto localizeEntries = reader.ReadLocalizeFile();
-
-    for (const auto& [key, value] : localizeEntries)
-    {
-        auto* localizeEntry = memory->Create<LocalizeEntry>();
-        localizeEntry->name = memory->Dup(key.c_str());
-        localizeEntry->value = memory->Dup(value.c_str());
-
-        manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, key, localizeEntry);
-    }
-
-    return true;
+    return commonLoader.LoadLocalizeAsset(assetName, searchPath, manager, zone);
 }
