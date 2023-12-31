@@ -28,7 +28,10 @@ bool LocalizeCommonAssetLoader::LoadLocalizeAsset(const std::string& assetName, 
 
     auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<LocalizeReadingZoneState>();
     LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language, zoneState);
-    const auto localizeEntries = reader.ReadLocalizeFile();
+
+    std::vector<CommonLocalizeEntry> localizeEntries;
+    if (!reader.ReadLocalizeFile(localizeEntries))
+        return false;
 
     for (const auto& entry : localizeEntries)
     {

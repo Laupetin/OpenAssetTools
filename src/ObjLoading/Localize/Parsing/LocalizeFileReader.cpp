@@ -28,7 +28,7 @@ void LocalizeFileReader::SetupStreamProxies()
     m_stream = m_open_streams.back().get();
 }
 
-std::vector<CommonLocalizeEntry> LocalizeFileReader::ReadLocalizeFile()
+bool LocalizeFileReader::ReadLocalizeFile(std::vector<CommonLocalizeEntry>& entries)
 {
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = true;
@@ -41,8 +41,11 @@ std::vector<CommonLocalizeEntry> LocalizeFileReader::ReadLocalizeFile()
     const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language, m_zone_state);
 
     if (parser->Parse())
-        return parser->GetParsedValues();
+    {
+        entries = parser->GetParsedValues();
+        return true;
+    }
 
     std::cerr << "Parsing localization file failed!" << std::endl;
-    return std::vector<CommonLocalizeEntry>();
+    return false;
 }

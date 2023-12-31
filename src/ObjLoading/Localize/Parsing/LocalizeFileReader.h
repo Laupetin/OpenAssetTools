@@ -24,5 +24,5 @@ class LocalizeFileReader
 public:
     LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, LocalizeReadingZoneState* zoneState);
 
-    std::vector<CommonLocalizeEntry> ReadLocalizeFile();
+    bool ReadLocalizeFile(std::vector<CommonLocalizeEntry>& entries);
 };
