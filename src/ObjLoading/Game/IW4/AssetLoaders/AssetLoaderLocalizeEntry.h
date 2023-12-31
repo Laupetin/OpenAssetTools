@@ -1,4 +1,5 @@
 #pragma once
+
 #include "AssetLoading/BasicAssetLoader.h"
 #include "AssetLoading/IAssetLoadingManager.h"
 #include "Game/IW4/IW4.h"

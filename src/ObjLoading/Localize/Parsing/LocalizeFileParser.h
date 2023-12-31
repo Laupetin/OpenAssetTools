@@ -13,5 +13,5 @@ protected:
 
 public:
     LocalizeFileParser(SimpleLexer* lexer, GameLanguage language, LocalizeReadingZoneState* zoneState);
-    std::map<std::string, std::string> GetParsedValues();
+    std::vector<CommonLocalizeEntry> GetParsedValues();
 };

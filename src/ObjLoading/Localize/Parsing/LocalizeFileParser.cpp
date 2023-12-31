@@ -32,7 +32,7 @@ const std::vector<AbstractParser<SimpleParserValue, LocalizeFileParserState>::se
     return !m_state->m_end ? tests : noTests;
 }
 
-std::map<std::string, std::string> LocalizeFileParser::GetParsedValues()
+std::vector<CommonLocalizeEntry> LocalizeFileParser::GetParsedValues()
 {
     return std::move(m_state->m_entries);
 }

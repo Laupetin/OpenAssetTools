@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game/GameLanguage.h"
+#include "Localize/CommonLocalizeEntry.h"
 #include "Localize/LocalizeReadingZoneState.h"
 #include "Parsing/IParserLineStream.h"
 
@@ -23,5 +24,5 @@ class LocalizeFileReader
 public:
     LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, LocalizeReadingZoneState* zoneState);
 
-    std::map<std::string, std::string> ReadLocalizeFile();
+    bool ReadLocalizeFile(std::vector<CommonLocalizeEntry>& entries);
 };
