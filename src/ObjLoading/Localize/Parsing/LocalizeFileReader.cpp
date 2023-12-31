@@ -4,10 +4,11 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 
-LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language)
+LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, LocalizeReadingZoneState* zoneState)
     : m_file_name(std::move(fileName)),
       m_stream(nullptr),
-      m_language(language)
+      m_language(language),
+      m_zone_state(zoneState)
 {
     OpenBaseStream(stream);
     SetupStreamProxies();
@@ -27,7 +28,7 @@ void LocalizeFileReader::SetupStreamProxies()
     m_stream = m_open_streams.back().get();
 }
 
-std::vector<LocalizeFileEntry> LocalizeFileReader::ReadLocalizeFile()
+std::map<std::string, std::string> LocalizeFileReader::ReadLocalizeFile()
 {
     SimpleLexer::Config lexerConfig;
     lexerConfig.m_emit_new_line_tokens = true;
@@ -37,11 +38,11 @@ std::vector<LocalizeFileEntry> LocalizeFileReader::ReadLocalizeFile()
     lexerConfig.m_read_floating_point_numbers = false;
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
 
-    const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language);
+    const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language, m_zone_state);
 
     if (parser->Parse())
         return parser->GetParsedValues();
 
     std::cout << "Parsing localization file failed!" << std::endl;
-    return std::vector<LocalizeFileEntry>();
+    return std::map<std::string, std::string>();
 }

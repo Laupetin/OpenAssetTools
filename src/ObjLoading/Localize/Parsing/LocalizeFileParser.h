@@ -12,6 +12,6 @@ protected:
     const std::vector<sequence_t*>& GetTestsForState() override;
 
 public:
-    LocalizeFileParser(SimpleLexer* lexer, GameLanguage language);
-    std::vector<LocalizeFileEntry> GetParsedValues();
+    LocalizeFileParser(SimpleLexer* lexer, GameLanguage language, LocalizeReadingZoneState* zoneState);
+    std::map<std::string, std::string> GetParsedValues();
 };

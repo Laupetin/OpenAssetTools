@@ -1,7 +1,7 @@
 #include "AssetLoaderLocalizeEntry.h"
 
 #include "Localize/LocalizeCommon.h"
-#include "Parsing/LocalizeFile/LocalizeFileReader.h"
+#include "Localize/Parsing/LocalizeFileReader.h"
 
 #include <sstream>
 
@@ -36,16 +36,17 @@ bool AssetLoaderLocalizeEntry::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language);
+    auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<LocalizeReadingZoneState>();
+    LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language, zoneState);
     const auto localizeEntries = reader.ReadLocalizeFile();
 
-    for (const auto& entry : localizeEntries)
+    for (const auto& [key, value] : localizeEntries)
     {
         auto* localizeEntry = memory->Create<LocalizeEntry>();
-        localizeEntry->name = memory->Dup(entry.m_key.c_str());
-        localizeEntry->value = memory->Dup(entry.m_value.c_str());
+        localizeEntry->name = memory->Dup(key.c_str());
+        localizeEntry->value = memory->Dup(value.c_str());
 
-        manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, entry.m_key, localizeEntry);
+        manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, key, localizeEntry);
     }
 
     return true;

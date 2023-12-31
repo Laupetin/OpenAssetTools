@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Parsing/LocalizeFile/LocalizeFileParser.h"
+#include "Localize/Parsing/LocalizeFileParser.h"
 
 class SequenceLocalizeFileConfig final : public LocalizeFileParser::sequence_t
 {

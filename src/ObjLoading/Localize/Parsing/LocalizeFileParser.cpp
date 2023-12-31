@@ -8,8 +8,8 @@
 #include "Sequence/SequenceLocalizeFileReference.h"
 #include "Sequence/SequenceLocalizeFileVersion.h"
 
-LocalizeFileParser::LocalizeFileParser(SimpleLexer* lexer, GameLanguage language)
-    : AbstractParser(lexer, std::make_unique<LocalizeFileParserState>(language))
+LocalizeFileParser::LocalizeFileParser(SimpleLexer* lexer, GameLanguage language, LocalizeReadingZoneState* zoneState)
+    : AbstractParser(lexer, std::make_unique<LocalizeFileParserState>(language, zoneState))
 {
 }
 
@@ -32,7 +32,7 @@ const std::vector<AbstractParser<SimpleParserValue, LocalizeFileParserState>::se
     return !m_state->m_end ? tests : noTests;
 }
 
-std::vector<LocalizeFileEntry> LocalizeFileParser::GetParsedValues()
+std::map<std::string, std::string> LocalizeFileParser::GetParsedValues()
 {
     return std::move(m_state->m_entries);
 }
