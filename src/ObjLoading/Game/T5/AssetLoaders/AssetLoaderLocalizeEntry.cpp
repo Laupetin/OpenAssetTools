@@ -36,7 +36,8 @@ bool AssetLoaderLocalizeEntry::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language);
+    auto* zoneState = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<LocalizeReadingZoneState>();
+    LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language, zoneState);
     const auto localizeEntries = reader.ReadLocalizeFile();
 
     for (const auto& [key, value] : localizeEntries)

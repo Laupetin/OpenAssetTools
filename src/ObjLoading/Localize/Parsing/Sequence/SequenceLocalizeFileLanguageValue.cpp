@@ -33,7 +33,7 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
     if (langName == state->m_language_name_caps)
     {
         const auto& currentReference = state->m_current_reference;
-        if (const auto i = state->m_entries.find(currentReference); i != state->m_entries.end())
+        if (!state->m_zone_state->DoLocalizeEntryDuplicateCheck(currentReference))
         {
             std::cout << "Localize: a value for reference \"" << currentReference << "\" was already defined\n";
         }

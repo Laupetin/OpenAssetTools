@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game/GameLanguage.h"
+#include "Localize/LocalizeReadingZoneState.h"
 #include "Parsing/IParserLineStream.h"
 
 #include <map>
@@ -14,12 +15,13 @@ class LocalizeFileReader
     IParserLineStream* m_stream;
     std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
     GameLanguage m_language;
+    LocalizeReadingZoneState* m_zone_state;
 
     bool OpenBaseStream(std::istream& stream);
     void SetupStreamProxies();
 
 public:
-    LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language);
+    LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, LocalizeReadingZoneState* zoneState);
 
     std::map<std::string, std::string> ReadLocalizeFile();
 };
