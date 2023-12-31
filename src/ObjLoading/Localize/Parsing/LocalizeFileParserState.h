@@ -1,17 +1,18 @@
 #pragma once
 
 #include "Game/GameLanguage.h"
+#include "Localize/CommonLocalizeEntry.h"
 #include "Localize/LocalizeReadingZoneState.h"
 
-#include <map>
 #include <unordered_set>
+#include <vector>
 
 class LocalizeFileParserState
 {
 public:
     bool m_end;
 
-    std::map<std::string, std::string> m_entries;
+    std::vector<CommonLocalizeEntry> m_entries;
 
     GameLanguage m_language;
     LocalizeReadingZoneState* m_zone_state;

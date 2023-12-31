@@ -30,9 +30,8 @@ bool LocalizeCommonAssetLoader::LoadLocalizeAsset(const std::string& assetName, 
     LocalizeFileReader reader(*file.m_stream, assetName, zone->m_language, zoneState);
     const auto localizeEntries = reader.ReadLocalizeFile();
 
-    for (const auto& [key, value] : localizeEntries)
+    for (const auto& entry : localizeEntries)
     {
-        CommonLocalizeEntry entry(key, value);
         m_entry_callback(entry);
     }
 

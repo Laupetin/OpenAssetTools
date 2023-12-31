@@ -38,6 +38,6 @@ void SequenceLocalizeFileLanguageValue::ProcessMatch(LocalizeFileParserState* st
             std::cout << "Localize: a value for reference \"" << currentReference << "\" was already defined\n";
         }
 
-        state->m_entries[currentReference] = valueToken.StringValue();
+        state->m_entries.emplace_back(currentReference, valueToken.StringValue());
     }
 }
