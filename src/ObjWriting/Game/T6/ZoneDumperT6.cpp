@@ -10,6 +10,7 @@
 #include "AssetDumpers/AssetDumperScriptParseTree.h"
 #include "AssetDumpers/AssetDumperSlug.h"
 #include "AssetDumpers/AssetDumperSndBank.h"
+#include "AssetDumpers/AssetDumperSndDriverGlobals.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperTracer.h"
 #include "AssetDumpers/AssetDumperVehicle.h"
@@ -66,7 +67,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment, ASSET_TYPE_ATTACHMENT)
     DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique, ASSET_TYPE_ATTACHMENT_UNIQUE)
     // DUMP_ASSET_POOL(AssetDumperWeaponCamo, m_camo, ASSET_TYPE_WEAPON_CAMO)
-    // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
+    DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
