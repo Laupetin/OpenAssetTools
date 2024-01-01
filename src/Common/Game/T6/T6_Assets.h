@@ -5602,8 +5602,8 @@ namespace T6
     struct SndAliasFlags
     {
         // flags0
-        SndAliasLoopType looping : 1;     // 0
-        SndAliasPanType panType : 1;      // 1
+        unsigned int looping : 1;         // 0
+        unsigned int panType : 1;         // 1
         unsigned int distanceLpf : 1;     // 2
         unsigned int doppler : 1;         // 3
         unsigned int isBig : 1;           // 4
@@ -5614,7 +5614,7 @@ namespace T6
         unsigned int voiceLimit : 1;      // 9
         unsigned int ignoreMaxDist : 1;   // 10
         unsigned int busType : 4;         // 11-14
-        SndAliasLoadType loadType : 2;    // 15-16
+        unsigned int loadType : 2;        // 15-16
         unsigned int volumeGroup : 5;     // 17-21
         unsigned int fluxType : 3;        // 22-24
         unsigned int limitType : 2;       // 25-26
@@ -5674,9 +5674,9 @@ namespace T6
         char duckGroup;
     };
 
-    #ifndef __zonecodegenerator
+#ifndef __zonecodegenerator
     static_assert(sizeof(SndAliasFlags) == 8);
-    #endif
+#endif
 
     struct type_align(4) pathlink_s
     {

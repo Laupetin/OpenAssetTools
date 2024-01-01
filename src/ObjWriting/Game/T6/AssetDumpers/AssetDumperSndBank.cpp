@@ -1,7 +1,7 @@
 #include "AssetDumperSndBank.h"
-#include "Game/T6/CommonT6.h"
 
 #include "Csv/CsvStream.h"
+#include "Game/T6/CommonT6.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
 #include "nlohmann/json.hpp"
@@ -169,25 +169,15 @@ namespace
         "",
     };
 
-    const std::unordered_map<unsigned int, std::string> CURVES_MAP{
-        {T6::Common::SND_HashName(CURVES_ENUM[0].data()), CURVES_ENUM[0]},
-        {T6::Common::SND_HashName(CURVES_ENUM[1].data()), CURVES_ENUM[1]},
-        {T6::Common::SND_HashName(CURVES_ENUM[2].data()), CURVES_ENUM[2]},
-        {T6::Common::SND_HashName(CURVES_ENUM[3].data()), CURVES_ENUM[3]},
-        {T6::Common::SND_HashName(CURVES_ENUM[4].data()), CURVES_ENUM[4]},
-        {T6::Common::SND_HashName(CURVES_ENUM[5].data()), CURVES_ENUM[5]},
-        {T6::Common::SND_HashName(CURVES_ENUM[6].data()), CURVES_ENUM[6]},
-        {T6::Common::SND_HashName(CURVES_ENUM[7].data()), CURVES_ENUM[7]},
-        {T6::Common::SND_HashName(CURVES_ENUM[8].data()), CURVES_ENUM[8]},
-        {T6::Common::SND_HashName(CURVES_ENUM[9].data()), CURVES_ENUM[9]},
-        {T6::Common::SND_HashName(CURVES_ENUM[10].data()), CURVES_ENUM[10]},
-        {T6::Common::SND_HashName(CURVES_ENUM[11].data()), CURVES_ENUM[11]},
-        {T6::Common::SND_HashName(CURVES_ENUM[12].data()), CURVES_ENUM[12]},
-        {T6::Common::SND_HashName(CURVES_ENUM[13].data()), CURVES_ENUM[13]},
-        {T6::Common::SND_HashName(CURVES_ENUM[14].data()), CURVES_ENUM[14]},
-        {T6::Common::SND_HashName(CURVES_ENUM[15].data()), CURVES_ENUM[15]},
-        {T6::Common::SND_HashName(CURVES_ENUM[16].data()), CURVES_ENUM[16]},
-    };
+    std::unordered_map<unsigned int, std::string> CreateCurvesMap()
+    {
+        std::unordered_map<unsigned int, std::string> result;
+        for (auto i = 0u; i < std::extent_v<decltype(CURVES_ENUM)>; i++)
+            result.emplace(T6::Common::SND_HashName(CURVES_ENUM[i].data()), CURVES_ENUM[i]);
+        return result;
+    }
+
+    const std::unordered_map<unsigned int, std::string> CURVES_MAP = CreateCurvesMap();
 
     const std::string DUCK_GROUPS_ENUM[]{
         "snp_alerts_gameplay",

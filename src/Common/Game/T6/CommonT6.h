@@ -23,7 +23,7 @@ namespace T6
             while (str[offset])
             {
                 const auto c = tolower(str[offset++]);
-                result = c + 33 * result;
+                result = c + 0x1003F * result;
             }
 
             if (!result)
