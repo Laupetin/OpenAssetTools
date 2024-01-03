@@ -931,7 +931,7 @@ namespace IW4
     };
 
     // Names unknown
-    // There's probably: MTL_GAMEFLAG_CASTS_SHADOW (part of iw3; 0x40 there)
+    // There's probably: MTL_GAMEFLAG_CASTS_SHADOW (part of iw3/t5; 0x40 there)
     enum MaterialGameFlags
     {
         MTL_GAMEFLAG_1 = 0x1,

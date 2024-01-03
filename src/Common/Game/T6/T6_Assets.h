@@ -647,20 +647,77 @@ namespace T6
         gcc_align(8) uint64_t packed;
     };
 
+    // The sort key is translated to a numeric value inside the material templates
+    // when converting the material.
+    // TODO: Try to find out which value is which sort key by investigating on materials
+    enum SortKey_e
+    {
+        SORTKEY_DECAL = 24,
+
+        SORTKEY_MAX = 64
+    };
+
+    enum MaterialGameFlags
+    {
+        // Set when surfaceFlags has 0x80 or 0x80000 set
+        MTL_GAMEFLAG_1 = 0x1,
+
+        // Cannot be set when material type is not "world"
+        // So not either 4,5,6,7
+        MTL_GAMEFLAG_2 = 0x2,
+
+        MTL_GAMEFLAG_NO_MARKS = 0x4,
+        MTL_GAMEFLAG_8 = 0x8,
+        MTL_GAMEFLAG_10 = 0x10,
+        MTL_GAMEFLAG_20 = 0x20,
+
+        // Probably, seems to be this in T5
+        MTL_GAMEFLAG_CASTS_SHADOW = 0x40,
+
+        // Set when surface flags has 0x100 set
+        MTL_GAMEFLAG_80 = 0x80,
+
+        // Seems to be related to the material being used for FX
+        MTL_GAMEFLAG_100 = 0x100,
+
+        // Set when surface flags has 0x800 set
+        MTL_GAMEFLAG_200 = 0x200,
+        MTL_GAMEFLAG_400 = 0x400,
+        MTL_GAMEFLAG_800 = 0x800,
+        MTL_GAMEFLAG_1000 = 0x1000,
+    };
+
     struct type_align(8) MaterialInfo
     {
         const char* name;
         unsigned int gameFlags;
         char pad;
-        char sortKey;
-        char textureAtlasRowCount;
-        char textureAtlasColumnCount;
+        unsigned char sortKey;
+        unsigned char textureAtlasRowCount;
+        unsigned char textureAtlasColumnCount;
         GfxDrawSurf drawSurf;
         unsigned int surfaceTypeBits;
         unsigned int layeredSurfaceTypes;
         uint16_t hashIndex;
-        int surfaceFlags;
-        int contents;
+        unsigned int surfaceFlags;
+        unsigned int contents;
+    };
+
+    enum GfxCameraRegionType
+    {
+        CAMERA_REGION_LIT_OPAQUE = 0x0,
+        CAMERA_REGION_LIT_TRANS = 0x1,
+        CAMERA_REGION_LIT_QUASI_OPAQUE = 0x2,
+        CAMERA_REGION_EMISSIVE_OPAQUE = 0x3,
+        CAMERA_REGION_EMISSIVE_TRANS = 0x4,
+        CAMERA_REGION_EMISSIVE_FX = 0x5,
+        CAMERA_REGION_LIGHT_MAP_OPAQUE = 0x6,
+        CAMERA_REGION_DEPTH_HACK = 0x7,
+        CAMERA_REGION_UNUSED = 0x8,
+        CAMERA_REGION_SONAR = 0x9,
+
+        CAMERA_REGION_COUNT,
+        CAMERA_REGION_NONE = CAMERA_REGION_COUNT,
     };
 
     typedef tdef_align(8) GfxStateBits GfxStateBitsTable;
@@ -672,9 +729,9 @@ namespace T6
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
-        char stateFlags;
-        char cameraRegion;
-        char probeMipBits;
+        unsigned char stateFlags;
+        unsigned char cameraRegion;
+        unsigned char probeMipBits;
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;
@@ -716,6 +773,54 @@ namespace T6
     {
         const char* name;
         MaterialVertexShaderProgram prog;
+    };
+
+    enum MaterialTechniqueType
+    {
+        TECHNIQUE_DEPTH_PREPASS = 0x0,
+        TECHNIQUE_BUILD_SHADOWMAP_DEPTH = 0x1,
+        TECHNIQUE_UNLIT = 0x2,
+        TECHNIQUE_EMISSIVE = 0x3,
+
+        TECHNIQUE_LIT_BEGIN = 0x4,
+
+        TECHNIQUE_LIT = 0x4,
+        TECHNIQUE_LIT_SUN = 0x5,
+        TECHNIQUE_LIT_SUN_SHADOW = 0x6,
+        TECHNIQUE_LIT_SPOT = 0x7,
+        TECHNIQUE_LIT_SPOT_SHADOW = 0x8,
+        TECHNIQUE_LIT_SPOT_SQUARE = 0x9,
+        TECHNIQUE_LIT_SPOT_SQUARE_SHADOW = 0xA,
+        TECHNIQUE_LIT_SPOT_ROUND = 0xB,
+        TECHNIQUE_LIT_SPOT_ROUND_SHADOW = 0xC,
+        TECHNIQUE_LIT_OMNI = 0xD,
+        TECHNIQUE_LIT_OMNI_SHADOW = 0xE,
+        TECHNIQUE_LIT_DLIGHT_GLIGHT = 0xF,
+        TECHNIQUE_LIT_SUN_DLIGHT_GLIGHT = 0x10,
+        TECHNIQUE_LIT_SUN_SHADOW_DLIGHT_GLIGHT = 0x11,
+        TECHNIQUE_LIT_SPOT_DLIGHT_GLIGHT = 0x12,
+        TECHNIQUE_LIT_SPOT_SHADOW_DLIGHT_GLIGHT = 0x13,
+        TECHNIQUE_LIT_SPOT_SQUARE_DLIGHT_GLIGHT = 0x14,
+        TECHNIQUE_LIT_SPOT_SQUARE_SHADOW_DLIGHT_GLIGHT = 0x15,
+        TECHNIQUE_LIT_SPOT_ROUND_DLIGHT_GLIGHT = 0x16,
+        TECHNIQUE_LIT_SPOT_ROUND_SHADOW_DLIGHT_GLIGHT = 0x17,
+        TECHNIQUE_LIT_OMNI_DLIGHT_GLIGHT = 0x18,
+        TECHNIQUE_LIT_OMNI_SHADOW_DLIGHT_GLIGHT = 0x19,
+
+        TECHNIQUE_LIT_END = 0x1A,
+
+        TECHNIQUE_LIGHT_SPOT = 0x1A,
+        TECHNIQUE_LIGHT_OMNI = 0x1B,
+        TECHNIQUE_FAKELIGHT_NORMAL = 0x1C,
+        TECHNIQUE_FAKELIGHT_VIEW = 0x1D,
+        TECHNIQUE_SUNLIGHT_PREVIEW = 0x1E,
+        TECHNIQUE_CASE_TEXTURE = 0x1F,
+        TECHNIQUE_WIREFRAME_SOLID = 0x20,
+        TECHNIQUE_WIREFRAME_SHADED = 0x21,
+        TECHNIQUE_DEBUG_BUMPMAP = 0x22,
+        TECHNIQUE_DEBUG_PERFORMANCE = 0x23,
+
+        TECHNIQUE_COUNT
     };
 
     struct MaterialTechniqueSet
@@ -789,6 +894,8 @@ namespace T6
         TS_COLOR14_MAP = 0x1A,
         TS_COLOR15_MAP = 0x1B,
         TS_THROW_MAP = 0x1C,
+
+        TS_COUNT,
     };
 
     enum ImageCategory
@@ -2655,14 +2762,89 @@ namespace T6
         PhysGeomList* geomList;
     };
 
+    enum TextureFilter
+    {
+        TEXTURE_FILTER_DISABLED = 0x0,
+        TEXTURE_FILTER_NEAREST = 0x1,
+        TEXTURE_FILTER_LINEAR = 0x2,
+        TEXTURE_FILTER_ANISO2X = 0x3,
+        TEXTURE_FILTER_ANISO4X = 0x4,
+        TEXTURE_FILTER_COMPARE = 0x5,
+
+        TEXTURE_FILTER_COUNT
+    };
+
+    enum SamplerStateBitsMipMap_e
+    {
+        SAMPLER_MIPMAP_ENUM_DISABLED,
+        SAMPLER_MIPMAP_ENUM_NEAREST,
+        SAMPLER_MIPMAP_ENUM_LINEAR,
+
+        SAMPLER_MIPMAP_ENUM_COUNT
+    };
+
+    enum SamplerStateBits_e
+    {
+        SAMPLER_FILTER_SHIFT = 0x0,
+        SAMPLER_FILTER_NEAREST = 0x1,
+        SAMPLER_FILTER_LINEAR = 0x2,
+        SAMPLER_FILTER_ANISO2X = 0x3,
+        SAMPLER_FILTER_ANISO4X = 0x4,
+        SAMPLER_FILTER_COMPARE = 0x5,
+        SAMPLER_FILTER_MASK = 0x7,
+
+        SAMPLER_MIPMAP_SHIFT = 0x3,
+        SAMPLER_MIPMAP_DISABLED = 0x0,
+        SAMPLER_MIPMAP_NEAREST = 0x8,
+        SAMPLER_MIPMAP_LINEAR = 0x10,
+        SAMPLER_MIPMAP_COUNT = 0x3,
+        SAMPLER_MIPMAP_MASK = 0x18,
+
+        SAMPLER_CLAMP_U_SHIFT = 0x5,
+        SAMPLER_CLAMP_V_SHIFT = 0x6,
+        SAMPLER_CLAMP_W_SHIFT = 0x7,
+        SAMPLER_CLAMP_U = 0x20,
+        SAMPLER_CLAMP_V = 0x40,
+        SAMPLER_CLAMP_W = 0x80,
+        SAMPLER_CLAMP_MASK = 0xE0,
+
+        SAMPLER_ANISO_SHIFT = 0x8,
+        SAMPLER_ANISO_1X = 0x0,
+        SAMPLER_ANISO_2X = 0x100,
+        SAMPLER_ANISO_4X = 0x200,
+        SAMPLER_ANISO_6X = 0x300,
+        SAMPLER_ANISO_8X = 0x400,
+        SAMPLER_ANISO_10X = 0x500,
+        SAMPLER_ANISO_12X = 0x600,
+        SAMPLER_ANISO_16X = 0x700,
+        SAMPLER_ANISO_MASK = 0x700,
+        SAMPLER_CONVOLUTION = 0x20000,
+        SAMPLER_GAMMA = 0x40000,
+        SAMPLER_UNNORMALIZED_UV = 0x80000,
+        SAMPLER_DIRECT_FILTER_UNNORMALIZED = 0x80000,
+    };
+
+    struct MaterialTextureDefSamplerState
+    {
+        unsigned char filter : 3;
+        unsigned char mipMap : 2;
+        unsigned char clampU : 1;
+        unsigned char clampV : 1;
+        unsigned char clampW : 1;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(MaterialTextureDefSamplerState) == 1u);
+#endif
+
     struct MaterialTextureDef
     {
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        char samplerState;
-        char semantic;
-        char isMatureContent;
+        MaterialTextureDefSamplerState samplerState;
+        unsigned char semantic; // TextureSemantic
+        bool isMatureContent;
         char pad[3];
         GfxImage* image;
     };
@@ -2674,92 +2856,149 @@ namespace T6
         vec4_t literal;
     };
 
-    enum GfxStateBitsEnum : unsigned int
+    enum GfxBlend
     {
-        GFXS0_SRCBLEND_RGB_SHIFT = 0x0,
-        GFXS0_SRCBLEND_RGB_MASK = 0xF,
-        GFXS0_DSTBLEND_RGB_SHIFT = 0x4,
-        GFXS0_DSTBLEND_RGB_MASK = 0xF0,
-        GFXS0_BLENDOP_RGB_SHIFT = 0x8,
-        GFXS0_BLENDOP_RGB_MASK = 0x700,
-        GFXS0_BLEND_RGB_MASK = 0x7FF,
-        GFXS0_ATEST_SHIFT = 0xB,
-        GFXS0_ATEST_DISABLE = 0x800,
-        GFXS0_ATEST_GT_0 = 0x0,
-        GFXS0_ATEST_GE_128 = 0x1000,
-        GFXS0_ATEST_MASK = 0x1000,
-        GFXS0_CULL_SHIFT = 0xE,
-        GFXS0_CULL_NONE = 0x4000,
-        GFXS0_CULL_BACK = 0x8000,
-        GFXS0_CULL_FRONT = 0xC000,
-        GFXS0_CULL_MASK = 0xC000,
-        GFXS0_SRCBLEND_ALPHA_SHIFT = 0x10,
-        GFXS0_SRCBLEND_ALPHA_MASK = 0xF0000,
-        GFXS0_DSTBLEND_ALPHA_SHIFT = 0x14,
-        GFXS0_DSTBLEND_ALPHA_MASK = 0xF00000,
-        GFXS0_BLENDOP_ALPHA_SHIFT = 0x18,
-        GFXS0_BLENDOP_ALPHA_MASK = 0x7000000,
-        GFXS0_BLEND_ALPHA_MASK = 0x7FF0000,
-        GFXS0_COLORWRITE_RGB = 0x8000000,
-        GFXS0_COLORWRITE_ALPHA = 0x10000000,
-        GFXS0_COLORWRITE_MASK = 0x18000000,
-        GFXS0_POLYMODE_LINE = 0x80000000,
-        GFXS1_DEPTHWRITE = 0x1,
-        GFXS1_DEPTHTEST_DISABLE = 0x2,
-        GFXS1_DEPTHTEST_SHIFT = 0x2,
-        GFXS1_DEPTHTEST_ALWAYS = 0x0,
-        GFXS1_DEPTHTEST_LESS = 0x4,
-        GFXS1_DEPTHTEST_EQUAL = 0x8,
-        GFXS1_DEPTHTEST_LESSEQUAL = 0xC,
-        GFXS1_DEPTHTEST_MASK = 0xC,
-        GFXS1_DEPTHFUNC_MASK = 0xF,
-        GFXS1_POLYGON_OFFSET_SHIFT = 0x4,
-        GFXS1_POLYGON_OFFSET_0 = 0x0,
-        GFXS1_POLYGON_OFFSET_1 = 0x10,
-        GFXS1_POLYGON_OFFSET_2 = 0x20,
-        GFXS1_POLYGON_OFFSET_SHADOWMAP = 0x30,
-        GFXS1_POLYGON_OFFSET_MASK = 0x30,
-        GFXS1_STENCIL_FRONT_ENABLE = 0x40,
-        GFXS1_STENCIL_BACK_ENABLE = 0x80,
-        GFXS1_STENCIL_MASK = 0xC0,
-        GFXS1_STENCIL_FRONT_PASS_SHIFT = 0x8,
-        GFXS1_STENCIL_FRONT_FAIL_SHIFT = 0xB,
-        GFXS1_STENCIL_FRONT_ZFAIL_SHIFT = 0xE,
-        GFXS1_STENCIL_FRONT_FUNC_SHIFT = 0x11,
-        GFXS1_STENCIL_FRONT_MASK = 0xFFF00,
-        GFXS1_STENCIL_BACK_PASS_SHIFT = 0x14,
-        GFXS1_STENCIL_BACK_FAIL_SHIFT = 0x17,
-        GFXS1_STENCIL_BACK_ZFAIL_SHIFT = 0x1A,
-        GFXS1_STENCIL_BACK_FUNC_SHIFT = 0x1D,
-        GFXS1_STENCIL_BACK_MASK = 0xFFF00000,
-        GFXS1_STENCILFUNC_FRONTBACK_MASK = 0xE00E0000,
-        GFXS1_STENCILOP_FRONTBACK_MASK = 0x1FF1FF00,
+        GFXS_BLEND_DISABLED = 0x0,
+        GFXS_BLEND_ZERO = 0x1,
+        GFXS_BLEND_ONE = 0x2,
+        GFXS_BLEND_SRCCOLOR = 0x3,
+        GFXS_BLEND_INVSRCCOLOR = 0x4,
+        GFXS_BLEND_SRCALPHA = 0x5,
+        GFXS_BLEND_INVSRCALPHA = 0x6,
+        GFXS_BLEND_DESTALPHA = 0x7,
+        GFXS_BLEND_INVDESTALPHA = 0x8,
+        GFXS_BLEND_DESTCOLOR = 0x9,
+        GFXS_BLEND_INVDESTCOLOR = 0xA,
+
+        GFXS_BLEND_COUNT
     };
+
+    enum GfxBlendOp
+    {
+        GFXS_BLENDOP_DISABLED = 0x0,
+        GFXS_BLENDOP_ADD = 0x1,
+        GFXS_BLENDOP_SUBTRACT = 0x2,
+        GFXS_BLENDOP_REVSUBTRACT = 0x3,
+        GFXS_BLENDOP_MIN = 0x4,
+        GFXS_BLENDOP_MAX = 0x5,
+
+        GFXS_BLENDOP_COUNT
+    };
+
+    enum GfxAlphaTest_e
+    {
+        GFXS_ALPHA_TEST_GT_0 = 0,
+        GFXS_ALPHA_TEST_GE_128 = 1,
+
+        GFXS_ALPHA_TEST_COUNT
+    };
+
+    enum GfxCullFace_e
+    {
+        GFXS0_CULL_NONE = 1,
+        GFXS0_CULL_BACK = 2,
+        GFXS0_CULL_FRONT = 3,
+    };
+
+    enum GfxDepthTest_e
+    {
+        GFXS_DEPTHTEST_ALWAYS = 0,
+        GFXS_DEPTHTEST_LESS = 1,
+        GFXS_DEPTHTEST_EQUAL = 2,
+        GFXS_DEPTHTEST_LESSEQUAL = 3
+    };
+
+    enum GfxPolygonOffset_e
+    {
+        GFXS_POLYGON_OFFSET_0 = 0,
+        GFXS_POLYGON_OFFSET_1 = 1,
+        GFXS_POLYGON_OFFSET_2 = 2,
+        GFXS_POLYGON_OFFSET_SHADOWMAP = 3,
+
+        GFXS_POLYGON_OFFSET_COUNT
+    };
+
+    enum GfxStencilOp
+    {
+        GFXS_STENCILOP_KEEP = 0x0,
+        GFXS_STENCILOP_ZERO = 0x1,
+        GFXS_STENCILOP_REPLACE = 0x2,
+        GFXS_STENCILOP_INCRSAT = 0x3,
+        GFXS_STENCILOP_DECRSAT = 0x4,
+        GFXS_STENCILOP_INVERT = 0x5,
+        GFXS_STENCILOP_INCR = 0x6,
+        GFXS_STENCILOP_DECR = 0x7,
+
+        GFXS_STENCILOP_COUNT,
+    };
+
+    enum GfxStencilFunc
+    {
+        GFXS_STENCILFUNC_NEVER = 0x0,
+        GFXS_STENCILFUNC_LESS = 0x1,
+        GFXS_STENCILFUNC_EQUAL = 0x2,
+        GFXS_STENCILFUNC_LESSEQUAL = 0x3,
+        GFXS_STENCILFUNC_GREATER = 0x4,
+        GFXS_STENCILFUNC_NOTEQUAL = 0x5,
+        GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
+        GFXS_STENCILFUNC_ALWAYS = 0x7,
+
+        GFXS_STENCILFUNC_COUNT,
+    };
+
+    struct GfxStateBitsLoadBitsStructured
+    {
+        // Byte 0
+        unsigned int srcBlendRgb : 4;       // 0-3
+        unsigned int dstBlendRgb : 4;       // 4-7
+        unsigned int blendOpRgb : 3;        // 8-10
+        unsigned int alphaTestDisabled : 1; // 11
+        unsigned int alphaTest : 1;         // 12
+        unsigned int unused0 : 1;           // 13
+        unsigned int cullFace : 2;          // 14-15
+        unsigned int srcBlendAlpha : 4;     // 16-19
+        unsigned int dstBlendAlpha : 4;     // 20-23
+        unsigned int blendOpAlpha : 3;      // 24-26
+        unsigned int colorWriteRgb : 1;     // 27
+        unsigned int colorWriteAlpha : 1;   // 28
+        unsigned int unused1 : 2;           // 29-30
+        unsigned int polymodeLine : 1;      // 31
+
+        // Byte 1
+        unsigned int depthWrite : 1;          // 0
+        unsigned int depthTestDisabled : 1;   // 1
+        unsigned int depthTest : 2;           // 2-3
+        unsigned int polygonOffset : 2;       // 4-5
+        unsigned int stencilFrontEnabled : 1; // 6
+        unsigned int stencilBackEnabled : 1;  // 7
+        unsigned int stencilFrontPass : 3;    // 8-10
+        unsigned int stencilFrontFail : 3;    // 11-13
+        unsigned int stencilFrontZFail : 3;   // 14-16
+        unsigned int stencilFrontFunc : 3;    // 17-19
+        unsigned int stencilBackPass : 3;     // 20-22
+        unsigned int stencilBackFail : 3;     // 23-25
+        unsigned int stencilBackZFail : 3;    // 26-28
+        unsigned int stencilBackFunc : 3;     // 29-31
+    };
+
+    union GfxStateBitsLoadBits
+    {
+        unsigned int raw[2];
+        GfxStateBitsLoadBitsStructured structured;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(GfxStateBitsLoadBits) == 8);
+    static_assert(sizeof(GfxStateBitsLoadBitsStructured) == 8);
+#endif
 
     struct GfxStateBits
     {
-        unsigned int loadBits[2];
+        GfxStateBitsLoadBits loadBits;
         void /*ID3D11BlendState*/* blendState;
         void /*ID3D11DepthStencilState*/* depthStencilState;
         void /*ID3D11RasterizerState*/* rasterizerState;
     };
-
-    /* struct IUnknown
-    {
-      IUnknownVtbl *vfptr;
-    };*/
-
-    /* struct __cppobj ID3D11DeviceChild : IUnknown
-    {
-    };*/
-
-    /* struct __cppobj ID3D11PixelShader : ID3D11DeviceChild
-    {
-    };*/
-
-    /* struct __cppobj ID3D11VertexShader : ID3D11DeviceChild
-    {
-    };*/
 
     struct MaterialPass
     {
@@ -5489,24 +5728,50 @@ namespace T6
         int contents;
     };
 
-    /* struct __cppobj ID3D11BlendState : ID3D11DeviceChild
+    enum MaterialStreamStreamSource_e
     {
-    };*/
+        STREAM_SRC_POSITION = 0x0,
+        STREAM_SRC_COLOR = 0x1,
+        STREAM_SRC_TEXCOORD_0 = 0x2,
+        STREAM_SRC_NORMAL = 0x3,
+        STREAM_SRC_TANGENT = 0x4,
+        STREAM_SRC_TEXCOORD_1 = 0x5,
+        STREAM_SRC_OPTIONAL_BEGIN = 0x6,
+        STREAM_SRC_PRE_OPTIONAL_BEGIN = 0x5,
+        STREAM_SRC_TEXCOORD_2 = 0x6,
+        STREAM_SRC_TEXCOORD_3 = 0x7,
+        STREAM_SRC_NORMAL_TRANSFORM_0 = 0x8,
+        STREAM_SRC_NORMAL_TRANSFORM_1 = 0x9,
+        STREAM_SRC_BLEND_WEIGHT = 0xA,
 
-    /* struct __cppobj ID3D11DepthStencilState : ID3D11DeviceChild
-    {
-    };*/
+        STREAM_SRC_COUNT,
+    };
 
-    /* struct __cppobj ID3D11RasterizerState : ID3D11DeviceChild
+    enum MaterialStreamDestination_e
     {
-    };*/
+        STREAM_DST_POSITION = 0x0,
+        STREAM_DST_NORMAL = 0x1,
+        STREAM_DST_COLOR_0 = 0x2,
+        STREAM_DST_COLOR_1 = 0x3,
+        STREAM_DST_DEPTH = 0x4,
+        STREAM_DST_TEXCOORD_0 = 0x5,
+        STREAM_DST_TEXCOORD_1 = 0x6,
+        STREAM_DST_TEXCOORD_2 = 0x7,
+        STREAM_DST_TEXCOORD_3 = 0x8,
+        STREAM_DST_TEXCOORD_4 = 0x9,
+        STREAM_DST_TEXCOORD_5 = 0xA,
+        STREAM_DST_TEXCOORD_6 = 0xB,
+        STREAM_DST_TEXCOORD_7 = 0xC,
+        STREAM_DST_TEXCOORD_8 = 0xD,
+        STREAM_DST_TEXCOORD_9 = 0xE,
+        STREAM_DST_TEXCOORD_10 = 0xF,
+        STREAM_DST_TEXCOORD_11 = 0x10,
+        STREAM_DST_TEXCOORD_12 = 0x11,
+        STREAM_DST_TEXCOORD_13 = 0x12,
+        STREAM_DST_BLENDWEIGHT = 0x13,
 
-    /* struct IUnknownVtbl
-    {
-      HRESULT (__stdcall *QueryInterface)(IUnknown *this, _GUID *, void **);
-      unsigned int (__stdcall *AddRef)(IUnknown *this);
-      unsigned int (__stdcall *Release)(IUnknown *this);
-    };*/
+        STREAM_DST_COUNT,
+    };
 
     struct MaterialStreamRouting
     {
@@ -5537,6 +5802,301 @@ namespace T6
             char textureIndex;
             char samplerIndex;
         };
+    };
+
+    enum MaterialType
+    {
+        MTL_TYPE_DEFAULT = 0x0,
+        MTL_TYPE_MODEL = 0x1,                // m_
+        MTL_TYPE_MODEL_VERTCOL = 0x2,        // mc_
+        MTL_TYPE_MODEL_LIGHTMAP_VC = 0x3,    // ?
+        MTL_TYPE_WORLD_VERTCOL = 0x4,        // wc_
+        MTL_TYPE_PACKED_WORLD_VERTCOL = 0x5, // ?
+        MTL_TYPE_QUANT_WORLD = 0x6,          // ?
+        MTL_TYPE_QUANT_WORLD_VERTCOL = 0x7,  // ?
+
+        MTL_TYPE_COUNT,
+    };
+
+    struct MaterialTypeInfo
+    {
+        const char* materialPrefix;
+        const char* techniqueSetPrefix;
+    };
+
+    enum MaterialConstantSource
+    {
+        CONST_SRC_CODE_MAYBE_DIRTY_PS_BEGIN = 0x0,
+
+        CONST_SRC_CODE_LIGHT_POSITION = 0x0,
+        CONST_SRC_CODE_LIGHT_DIFFUSE = 0x1,
+        CONST_SRC_CODE_LIGHT_SPOTDIR = 0x2,
+        CONST_SRC_CODE_LIGHT_SPOTFACTORS = 0x3,
+        CONST_SRC_CODE_LIGHT_ATTENUATION = 0x4,
+        CONST_SRC_CODE_LIGHT_FALLOFF_A = 0x5,
+        CONST_SRC_CODE_LIGHT_FALLOFF_B = 0x6,
+        CONST_SRC_CODE_LIGHT_SPOT_MATRIX0 = 0x7,
+        CONST_SRC_CODE_LIGHT_SPOT_MATRIX1 = 0x8,
+        CONST_SRC_CODE_LIGHT_SPOT_MATRIX2 = 0x9,
+        CONST_SRC_CODE_LIGHT_SPOT_MATRIX3 = 0xA,
+        CONST_SRC_CODE_LIGHT_SPOT_AABB = 0xB,
+        CONST_SRC_CODE_LIGHT_CONE_CONTROL1 = 0xC,
+        CONST_SRC_CODE_LIGHT_CONE_CONTROL2 = 0xD,
+        CONST_SRC_CODE_LIGHT_SPOT_COOKIE_SLIDE_CONTROL = 0xE,
+        CONST_SRC_CODE_SHADOW_PARMS = 0xF,
+        CONST_SRC_CODE_SHADOWMAP_POLYGON_OFFSET = 0x10,
+        CONST_SRC_CODE_RENDER_TARGET_SIZE = 0x11,
+        CONST_SRC_CODE_UPSCALED_TARGET_SIZE = 0x12,
+        CONST_SRC_CODE_DOF_EQUATION_VIEWMODEL_AND_FAR_BLUR = 0x13,
+        CONST_SRC_CODE_DOF_EQUATION_SCENE = 0x14,
+        CONST_SRC_CODE_DOF_LERP_SCALE = 0x15,
+        CONST_SRC_CODE_DOF_LERP_BIAS = 0x16,
+        CONST_SRC_CODE_DOF_ROW_DELTA = 0x17,
+        CONST_SRC_CODE_PARTICLE_CLOUD_COLOR = 0x18,
+        CONST_SRC_CODE_GAMETIME = 0x19,
+
+        CONST_SRC_CODE_MAYBE_DIRTY_PS_END = 0x1A,
+        CONST_SRC_CODE_ALWAYS_DIRTY_PS_BEGIN = 0x1A,
+
+        CONST_SRC_CODE_FILTER_TAP_0 = 0x1A,
+        CONST_SRC_CODE_FILTER_TAP_1 = 0x1B,
+        CONST_SRC_CODE_FILTER_TAP_2 = 0x1C,
+        CONST_SRC_CODE_FILTER_TAP_3 = 0x1D,
+        CONST_SRC_CODE_FILTER_TAP_4 = 0x1E,
+        CONST_SRC_CODE_FILTER_TAP_5 = 0x1F,
+        CONST_SRC_CODE_FILTER_TAP_6 = 0x20,
+        CONST_SRC_CODE_FILTER_TAP_7 = 0x21,
+        CONST_SRC_CODE_COLOR_MATRIX_R = 0x22,
+        CONST_SRC_CODE_COLOR_MATRIX_G = 0x23,
+        CONST_SRC_CODE_COLOR_MATRIX_B = 0x24,
+
+        CONST_SRC_CODE_ALWAYS_DIRTY_PS_END = 0x25,
+        CONST_SRC_CODE_NEVER_DIRTY_PS_BEGIN = 0x25,
+
+        CONST_SRC_CODE_SHADOWMAP_SWITCH_PARTITION = 0x25,
+        CONST_SRC_CODE_SUNSHADOWMAP_PIXEL_SIZE = 0x26,
+        CONST_SRC_CODE_SHADOWMAP_SCALE = 0x27,
+        CONST_SRC_CODE_ZNEAR = 0x28,
+        CONST_SRC_CODE_SUN_POSITION = 0x29,
+        CONST_SRC_CODE_SUN_DIFFUSE = 0x2A,
+        CONST_SRC_CODE_LIGHTING_LOOKUP_SCALE = 0x2B,
+        CONST_SRC_CODE_DEBUG_BUMPMAP = 0x2C,
+        CONST_SRC_CODE_DEBUG_PERFORMANCE = 0x2D,
+        CONST_SRC_CODE_MATERIAL_COLOR = 0x2E,
+        CONST_SRC_CODE_FOG = 0x2F,
+        CONST_SRC_CODE_FOG2 = 0x30,
+        CONST_SRC_CODE_FOG_COLOR = 0x31,
+        CONST_SRC_CODE_SUN_FOG = 0x32,
+        CONST_SRC_CODE_SUN_FOG_DIR = 0x33,
+        CONST_SRC_CODE_SUN_FOG_COLOR = 0x34,
+        CONST_SRC_CODE_GLOW_SETUP = 0x35,
+        CONST_SRC_CODE_GLOW_APPLY = 0x36,
+        CONST_SRC_CODE_COLOR_BIAS = 0x37,
+        CONST_SRC_CODE_COLOR_TINT_BASE = 0x38,
+        CONST_SRC_CODE_COLOR_TINT_DELTA = 0x39,
+        CONST_SRC_CODE_OUTDOOR_FEATHER_PARMS = 0x3A,
+        CONST_SRC_CODE_SKY_TRANSITION = 0x3B,
+        CONST_SRC_CODE_SPOT_SHADOWMAP_PIXEL_ADJUST = 0x3C,
+        CONST_SRC_CODE_DLIGHT_SPOT_SHADOWMAP_PIXEL_ADJUST = 0x3D,
+        CONST_SRC_CODE_CLIP_SPACE_LOOKUP_SCALE = 0x3E,
+        CONST_SRC_CODE_CLIP_SPACE_LOOKUP_OFFSET = 0x3F,
+        CONST_SRC_CODE_PARTICLE_CLOUD_MATRIX = 0x40,
+        CONST_SRC_CODE_PARTICLE_CLOUD_VEL_WORLD = 0x41,
+        CONST_SRC_CODE_DEPTH_FROM_CLIP = 0x42,
+        CONST_SRC_CODE_CODE_MESH_ARG_0 = 0x43,
+        CONST_SRC_CODE_CODE_MESH_ARG_1 = 0x44,
+        CONST_SRC_CODE_CODE_MESH_ARG_LAST = 0x44,
+        CONST_SRC_CODE_GRID_LIGHTING_COORDS_AND_VIS = 0x45,
+        CONST_SRC_CODE_GRID_LIGHTING_SH_0 = 0x46,
+        CONST_SRC_CODE_GRID_LIGHTING_SH_1 = 0x47,
+        CONST_SRC_CODE_GRID_LIGHTING_SH_2 = 0x48,
+        CONST_SRC_CODE_REFLECTION_LIGHTING_SH_0 = 0x49,
+        CONST_SRC_CODE_REFLECTION_LIGHTING_SH_1 = 0x4A,
+        CONST_SRC_CODE_REFLECTION_LIGHTING_SH_2 = 0x4B,
+        CONST_SRC_CODE_WIND_DIRECTION = 0x4C,
+        CONST_SRC_CODE_MOTIONBLUR_DIRECTION_AND_MAGNITUDE = 0x4D,
+        CONST_SRC_CODE_COMPOSITE_FX_DISTORTION = 0x4E,
+        CONST_SRC_CODE_GLOW_BLOOM_SCALE = 0x4F,
+        CONST_SRC_CODE_COMPOSITE_FX_OVERLAY_TEXCOORD = 0x50,
+        CONST_SRC_CODE_COLOR_BIAS1 = 0x51,
+        CONST_SRC_CODE_COLOR_TINT_BASE1 = 0x52,
+        CONST_SRC_CODE_COLOR_TINT_DELTA1 = 0x53,
+        CONST_SRC_CODE_POSTFX_FADE_EFFECT = 0x54,
+        CONST_SRC_CODE_VIEWPORT_DIMENSIONS = 0x55,
+        CONST_SRC_CODE_FRAMEBUFFER_READ = 0x56,
+        CONST_SRC_CODE_RESIZE_PARAMS1 = 0x57,
+        CONST_SRC_CODE_RESIZE_PARAMS2 = 0x58,
+        CONST_SRC_CODE_RESIZE_PARAMS3 = 0x59,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_0 = 0x5A,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_1 = 0x5B,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_2 = 0x5C,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_3 = 0x5D,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_4 = 0x5E,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_5 = 0x5F,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_6 = 0x60,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_7 = 0x61,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_8 = 0x62,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_9 = 0x63,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_10 = 0x64,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_11 = 0x65,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_12 = 0x66,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_13 = 0x67,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_14 = 0x68,
+        CONST_SRC_CODE_VARIANT_WIND_SPRING_15 = 0x69,
+        CONST_SRC_CODE_CHARACTER_CHARRED_AMOUNT = 0x6A,
+        CONST_SRC_CODE_POSTFX_CONTROL0 = 0x6B,
+        CONST_SRC_CODE_POSTFX_CONTROL1 = 0x6C,
+        CONST_SRC_CODE_POSTFX_CONTROL2 = 0x6D,
+        CONST_SRC_CODE_POSTFX_CONTROL3 = 0x6E,
+        CONST_SRC_CODE_POSTFX_CONTROL4 = 0x6F,
+        CONST_SRC_CODE_POSTFX_CONTROL5 = 0x70,
+        CONST_SRC_CODE_POSTFX_CONTROL6 = 0x71,
+        CONST_SRC_CODE_POSTFX_CONTROL7 = 0x72,
+        CONST_SRC_CODE_POSTFX_CONTROL8 = 0x73,
+        CONST_SRC_CODE_POSTFX_CONTROL9 = 0x74,
+        CONST_SRC_CODE_POSTFX_CONTROLA = 0x75,
+        CONST_SRC_CODE_POSTFX_CONTROLB = 0x76,
+        CONST_SRC_CODE_POSTFX_CONTROLC = 0x77,
+        CONST_SRC_CODE_POSTFX_CONTROLD = 0x78,
+        CONST_SRC_CODE_POSTFX_CONTROLE = 0x79,
+        CONST_SRC_CODE_POSTFX_CONTROLF = 0x7A,
+        CONST_SRC_CODE_HDRCONTROL_0 = 0x7B,
+        CONST_SRC_CODE_HDRCONTROL_1 = 0x7C,
+        CONST_SRC_CODE_GLIGHT_POSXS = 0x7D,
+        CONST_SRC_CODE_GLIGHT_POSYS = 0x7E,
+        CONST_SRC_CODE_GLIGHT_POSZS = 0x7F,
+        CONST_SRC_CODE_GLIGHT_FALLOFFS = 0x80,
+        CONST_SRC_CODE_GLIGHT_REDS = 0x81,
+        CONST_SRC_CODE_GLIGHT_GREENS = 0x82,
+        CONST_SRC_CODE_GLIGHT_BLUES = 0x83,
+        CONST_SRC_CODE_DLIGHT_POSITION = 0x84,
+        CONST_SRC_CODE_DLIGHT_DIFFUSE = 0x85,
+        CONST_SRC_CODE_DLIGHT_ATTENUATION = 0x86,
+        CONST_SRC_CODE_DLIGHT_FALLOFF = 0x87,
+        CONST_SRC_CODE_DLIGHT_SPOT_MATRIX_0 = 0x88,
+        CONST_SRC_CODE_DLIGHT_SPOT_MATRIX_1 = 0x89,
+        CONST_SRC_CODE_DLIGHT_SPOT_MATRIX_2 = 0x8A,
+        CONST_SRC_CODE_DLIGHT_SPOT_MATRIX_3 = 0x8B,
+        CONST_SRC_CODE_DLIGHT_SPOT_DIR = 0x8C,
+        CONST_SRC_CODE_DLIGHT_SPOT_FACTORS = 0x8D,
+        CONST_SRC_CODE_DLIGHT_SHADOW_LOOKUP_MATRIX_0 = 0x8E,
+        CONST_SRC_CODE_DLIGHT_SHADOW_LOOKUP_MATRIX_1 = 0x8F,
+        CONST_SRC_CODE_DLIGHT_SHADOW_LOOKUP_MATRIX_2 = 0x90,
+        CONST_SRC_CODE_DLIGHT_SHADOW_LOOKUP_MATRIX_3 = 0x91,
+        CONST_SRC_CODE_CLOUD_LAYER_CONTROL0 = 0x92,
+        CONST_SRC_CODE_CLOUD_LAYER_CONTROL1 = 0x93,
+        CONST_SRC_CODE_CLOUD_LAYER_CONTROL2 = 0x94,
+        CONST_SRC_CODE_CLOUD_LAYER_CONTROL3 = 0x95,
+        CONST_SRC_CODE_CLOUD_LAYER_CONTROL4 = 0x96,
+        CONST_SRC_CODE_HERO_LIGHTING_R = 0x97,
+        CONST_SRC_CODE_HERO_LIGHTING_G = 0x98,
+        CONST_SRC_CODE_HERO_LIGHTING_B = 0x99,
+        CONST_SRC_CODE_LIGHT_HERO_SCALE = 0x9A,
+        CONST_SRC_CODE_CINEMATIC_BLUR_BOX = 0x9B,
+        CONST_SRC_CODE_CINEMATIC_BLUR_BOX2 = 0x9C,
+        CONST_SRC_CODE_ADSZSCALE = 0x9D,
+        CONST_SRC_CODE_UI3D_UV_SETUP_0 = 0x9E,
+        CONST_SRC_CODE_UI3D_UV_SETUP_1 = 0x9F,
+        CONST_SRC_CODE_UI3D_UV_SETUP_2 = 0xA0,
+        CONST_SRC_CODE_UI3D_UV_SETUP_3 = 0xA1,
+        CONST_SRC_CODE_UI3D_UV_SETUP_4 = 0xA2,
+        CONST_SRC_CODE_UI3D_UV_SETUP_5 = 0xA3,
+        CONST_SRC_CODE_CHARACTER_DISSOLVE_COLOR = 0xA4,
+        CONST_SRC_CODE_CAMERA_LOOK = 0xA5,
+        CONST_SRC_CODE_CAMERA_UP = 0xA6,
+        CONST_SRC_CODE_CAMERA_SIDE = 0xA7,
+        CONST_SRC_CODE_RIMINTENSITY = 0xA8,
+        CONST_SRC_CODE_GENERIC_PARAM0 = 0xA9,
+        CONST_SRC_CODE_GENERIC_PARAM1 = 0xAA,
+        CONST_SRC_CODE_GENERIC_PARAM2 = 0xAB,
+        CONST_SRC_CODE_GENERIC_PARAM3 = 0xAC,
+        CONST_SRC_CODE_GENERIC_PARAM4 = 0xAD,
+        CONST_SRC_CODE_GENERIC_PARAM5 = 0xAE,
+        CONST_SRC_CODE_GENERIC_PARAM6 = 0xAF,
+        CONST_SRC_CODE_GENERIC_PARAM7 = 0xB0,
+        CONST_SRC_CODE_GENERIC_EYEOFFSET = 0xB1,
+        CONST_SRC_CODE_GENERIC_QUADINTENSITY = 0xB2,
+        CONST_SRC_CODE_WEAPON_PARAM0 = 0xB3,
+        CONST_SRC_CODE_WEAPON_PARAM1 = 0xB4,
+        CONST_SRC_CODE_WEAPON_PARAM2 = 0xB5,
+        CONST_SRC_CODE_WEAPON_PARAM3 = 0xB6,
+        CONST_SRC_CODE_WEAPON_PARAM4 = 0xB7,
+        CONST_SRC_CODE_WEAPON_PARAM5 = 0xB8,
+        CONST_SRC_CODE_WEAPON_PARAM6 = 0xB9,
+        CONST_SRC_CODE_WEAPON_PARAM7 = 0xBA,
+        CONST_SRC_CODE_WEAPON_PARAM8 = 0xBB,
+        CONST_SRC_CODE_WEAPON_PARAM9 = 0xBC,
+        CONST_SRC_CODE_QRCODE_0 = 0xBD,
+        CONST_SRC_CODE_QRCODE_1 = 0xBE,
+        CONST_SRC_CODE_QRCODE_2 = 0xBF,
+        CONST_SRC_CODE_QRCODE_3 = 0xC0,
+        CONST_SRC_CODE_QRCODE_4 = 0xC1,
+        CONST_SRC_CODE_QRCODE_5 = 0xC2,
+        CONST_SRC_CODE_QRCODE_6 = 0xC3,
+        CONST_SRC_CODE_QRCODE_7 = 0xC4,
+        CONST_SRC_CODE_QRCODE_8 = 0xC5,
+        CONST_SRC_CODE_QRCODE_9 = 0xC6,
+        CONST_SRC_CODE_QRCODE_10 = 0xC7,
+        CONST_SRC_CODE_QRCODE_11 = 0xC8,
+        CONST_SRC_CODE_EYEOFFSET = 0xC9,
+        CONST_SRC_CODE_SKY_COLOR_MULTIPLIER = 0xCA,
+        CONST_SRC_CODE_EXTRA_CAM_PARAM = 0xCB,
+        CONST_SRC_CODE_EMBLEM_LUT_SELECTOR = 0xCC,
+        CONST_SRC_CODE_DEBUG_COLOR_OVERRIDE = 0xCD,
+        CONST_SRC_CODE_DEBUG_ALPHA_OVERRIDE = 0xCE,
+        CONST_SRC_CODE_DEBUG_NORMAL_OVERRIDE = 0xCF,
+        CONST_SRC_CODE_DEBUG_SPECULAR_OVERRIDE = 0xD0,
+        CONST_SRC_CODE_DEBUG_GLOSS_OVERRIDE = 0xD1,
+        CONST_SRC_CODE_DEBUG_OCCLUSION_OVERRIDE = 0xD2,
+
+        CONST_SRC_CODE_NEVER_DIRTY_PS_END = 0xD3,
+        CONST_SRC_CODE_COUNT_FLOAT4 = 0xD3,
+        CONST_SRC_FIRST_CODE_MATRIX = 0xD3,
+
+        CONST_SRC_CODE_WORLD_MATRIX = 0xD3,
+        CONST_SRC_CODE_INVERSE_WORLD_MATRIX = 0xD4,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_MATRIX = 0xD5,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_MATRIX = 0xD6,
+        CONST_SRC_CODE_VIEW_MATRIX = 0xD7,
+        CONST_SRC_CODE_INVERSE_VIEW_MATRIX = 0xD8,
+        CONST_SRC_CODE_TRANSPOSE_VIEW_MATRIX = 0xD9,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_MATRIX = 0xDA,
+        CONST_SRC_CODE_PROJECTION_MATRIX = 0xDB,
+        CONST_SRC_CODE_INVERSE_PROJECTION_MATRIX = 0xDC,
+        CONST_SRC_CODE_TRANSPOSE_PROJECTION_MATRIX = 0xDD,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_PROJECTION_MATRIX = 0xDE,
+        CONST_SRC_CODE_WORLD_VIEW_MATRIX = 0xDF,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_MATRIX = 0xE0,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_MATRIX = 0xE1,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_MATRIX = 0xE2,
+        CONST_SRC_CODE_VIEW_PROJECTION_MATRIX = 0xE3,
+        CONST_SRC_CODE_INVERSE_VIEW_PROJECTION_MATRIX = 0xE4,
+        CONST_SRC_CODE_TRANSPOSE_VIEW_PROJECTION_MATRIX = 0xE5,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_VIEW_PROJECTION_MATRIX = 0xE6,
+        CONST_SRC_CODE_WORLD_VIEW_PROJECTION_MATRIX = 0xE7,
+        CONST_SRC_CODE_INVERSE_WORLD_VIEW_PROJECTION_MATRIX = 0xE8,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX = 0xE9,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_VIEW_PROJECTION_MATRIX = 0xEA,
+        CONST_SRC_CODE_SHADOW_LOOKUP_MATRIX = 0xEB,
+        CONST_SRC_CODE_INVERSE_SHADOW_LOOKUP_MATRIX = 0xEC,
+        CONST_SRC_CODE_TRANSPOSE_SHADOW_LOOKUP_MATRIX = 0xED,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_SHADOW_LOOKUP_MATRIX = 0xEE,
+        CONST_SRC_CODE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0xEF,
+        CONST_SRC_CODE_INVERSE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0xF0,
+        CONST_SRC_CODE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0xF1,
+        CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX = 0xF2,
+
+        CONST_SRC_TOTAL_COUNT,
+        CONST_SRC_NONE,
+    };
+
+    struct CodeConstantSource
+    {
+        const char* name;
+        char source;
+        CodeConstantSource* subtable;
+        int arrayCount;
+        int arrayStride;
     };
 
     struct MaterialArgumentCodeConst

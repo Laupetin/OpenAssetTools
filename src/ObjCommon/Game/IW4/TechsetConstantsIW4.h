@@ -77,6 +77,7 @@ namespace IW4
         "texcoord[7]",
     };
     static_assert(std::extent_v<decltype(materialStreamDestinationNames)> == STREAM_DST_COUNT);
+
     static const char* materialStreamDestinationAbbreviation[]{
         "p",
         "n",
@@ -106,6 +107,7 @@ namespace IW4
         "normalTransform[1]",
     };
     static_assert(std::extent_v<decltype(materialStreamSourceNames)> == STREAM_SRC_COUNT);
+
     static const char* materialStreamSourceAbbreviation[]{
         "p",
         "c",
