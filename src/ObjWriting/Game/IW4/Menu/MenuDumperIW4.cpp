@@ -728,7 +728,6 @@ void MenuDumper::WriteItemData(const itemDef_s* item)
     WriteItemKeyHandlerProperty(item->onKey);
     WriteStatementProperty("exp text", item->textExp, false);
     WriteStatementProperty("exp material", item->materialExp, false);
-    WriteStatementProperty("exp disabled", item->disabledExp, false);
     WriteFloatExpressionsProperty(item->floatExpressions, item->floatExpressionCount);
     WriteIntProperty("gamemsgwindowindex", item->gameMsgWindowIndex, 0);
     WriteIntProperty("gamemsgwindowmode", item->gameMsgWindowMode, 0);
