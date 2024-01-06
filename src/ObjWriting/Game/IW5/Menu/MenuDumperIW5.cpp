@@ -9,6 +9,15 @@
 
 using namespace IW5;
 
+// Uncomment this macro to skip interpretative expression dumping
+// #define DUMP_NAIVE
+
+#ifdef DUMP_NAIVE
+#define DUMP_FUNC WriteStatementNaive
+#else
+#define DUMP_FUNC WriteStatementSkipInitialUnnecessaryParenthesis
+#endif
+
 size_t MenuDumper::FindStatementClosingParenthesis(const Statement_s* statement, size_t openingParenthesisPosition)
 {
     assert(statement->numEntries >= 0);
@@ -23,7 +32,7 @@ size_t MenuDumper::FindStatementClosingParenthesis(const Statement_s* statement,
     {
         const auto& expEntry = statement->entries[currentSearchPosition];
         if (expEntry.type != EET_OPERATOR)
-            continue;
+            continue; 
 
         // Any function means a "left out" left paren
         if (expEntry.data.op == OP_LEFTPAREN || expEntry.data.op >= OP_COUNT)
@@ -228,6 +237,83 @@ void MenuDumper::WriteStatementEntryRange(const Statement_s* statement, size_t s
     }
 }
 
+void MenuDumper::WriteStatementNaive(const Statement_s* statement) const
+{
+    const auto entryCount = static_cast<unsigned>(statement->numEntries);
+    for (auto i = 0u; i < entryCount; i++)
+    {
+        const auto& entry = statement->entries[i];
+        if (entry.type == EET_OPERAND)
+        {
+            size_t pos = i;
+            bool discard = false;
+            WriteStatementOperand(statement, pos, discard);
+        }
+        else if (entry.data.op >= EXP_FUNC_STATIC_DVAR_INT && entry.data.op <= EXP_FUNC_STATIC_DVAR_STRING)
+        {
+            switch (entry.data.op)
+            {
+            case EXP_FUNC_STATIC_DVAR_INT:
+                m_stream << "dvarint";
+                break;
+
+            case EXP_FUNC_STATIC_DVAR_BOOL:
+                m_stream << "dvarbool";
+                break;
+
+            case EXP_FUNC_STATIC_DVAR_FLOAT:
+                m_stream << "dvarfloat";
+                break;
+
+            case EXP_FUNC_STATIC_DVAR_STRING:
+                m_stream << "dvarstring";
+                break;
+
+            default:
+                break;
+            }
+
+            // Functions do not have opening parenthesis in the entries. We can just pretend they do though
+            const auto closingParenPos = FindStatementClosingParenthesis(statement, i);
+            m_stream << "(";
+
+            if (closingParenPos - i + 1 >= 1)
+            {
+                const auto& staticDvarEntry = statement->entries[i + 1];
+                if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
+                {
+                    if (statement->supportingData && statement->supportingData->staticDvarList.staticDvars && staticDvarEntry.data.operand.internals.intVal >= 0
+                        && staticDvarEntry.data.operand.internals.intVal < statement->supportingData->staticDvarList.numStaticDvars)
+                    {
+                        const auto* staticDvar = statement->supportingData->staticDvarList.staticDvars[staticDvarEntry.data.operand.internals.intVal];
+                        if (staticDvar && staticDvar->dvarName)
+                            m_stream << staticDvar->dvarName;
+                    }
+                    else
+                    {
+                        m_stream << "#INVALID_DVAR_INDEX";
+                    }
+                }
+                else
+                {
+                    m_stream << "#INVALID_DVAR_OPERAND";
+                }
+            }
+
+            m_stream << ")";
+            i = closingParenPos;
+        }
+        else
+        {
+            assert(entry.data.op >= 0 && static_cast<unsigned>(entry.data.op) < std::extent_v<decltype(g_expFunctionNames)>);
+            if (entry.data.op >= 0 && static_cast<unsigned>(entry.data.op) < std::extent_v<decltype(g_expFunctionNames)>)
+                m_stream << g_expFunctionNames[entry.data.op];
+            if (entry.data.op >= OP_COUNT)
+                m_stream << "(";
+        }
+    }
+}
+
 void MenuDumper::WriteStatement(const Statement_s* statement) const
 {
     if (statement == nullptr || statement->numEntries < 0)
@@ -271,12 +357,12 @@ void MenuDumper::WriteStatementProperty(const std::string& propertyKey, const St
     if (isBooleanStatement)
     {
         m_stream << "when(";
-        WriteStatementSkipInitialUnnecessaryParenthesis(statementValue);
+        DUMP_FUNC(statementValue);
         m_stream << ");\n";
     }
     else
     {
-        WriteStatementSkipInitialUnnecessaryParenthesis(statementValue);
+        DUMP_FUNC(statementValue);
         m_stream << ";\n";
     }
 }
