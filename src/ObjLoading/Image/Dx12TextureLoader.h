@@ -12,7 +12,7 @@ class Dx12TextureLoader
     static std::unordered_map<ImageFormatId, ImageFormatId> m_conversion_table;
 
     MemoryManager* m_memory_manager;
-    DXGI_FORMAT m_format;
+    oat::DXGI_FORMAT m_format;
     TextureType m_type;
     bool m_has_mip_maps;
     size_t m_width;
@@ -24,7 +24,7 @@ class Dx12TextureLoader
 public:
     explicit Dx12TextureLoader(MemoryManager* memoryManager);
 
-    Dx12TextureLoader& Format(DXGI_FORMAT format);
+    Dx12TextureLoader& Format(oat::DXGI_FORMAT format);
     Dx12TextureLoader& Type(TextureType textureType);
     Dx12TextureLoader& HasMipMaps(bool hasMipMaps);
     Dx12TextureLoader& Width(size_t width);

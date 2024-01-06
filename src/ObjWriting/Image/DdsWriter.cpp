@@ -39,13 +39,13 @@ class DdsWriterInternal
         // Use standard pixel format for DXT1-5 for maximum compatibility and only otherwise use DX10 extension
         switch (format->GetDxgiFormat())
         {
-        case DXGI_FORMAT_BC1_UNORM:
+        case oat::DXGI_FORMAT_BC1_UNORM:
             pf.dwFourCC = MakeFourCc('D', 'X', 'T', '1');
             break;
-        case DXGI_FORMAT_BC2_UNORM:
+        case oat::DXGI_FORMAT_BC2_UNORM:
             pf.dwFourCC = MakeFourCc('D', 'X', 'T', '3');
             break;
-        case DXGI_FORMAT_BC3_UNORM:
+        case oat::DXGI_FORMAT_BC3_UNORM:
             pf.dwFourCC = MakeFourCc('D', 'X', 'T', '5');
             break;
         default:

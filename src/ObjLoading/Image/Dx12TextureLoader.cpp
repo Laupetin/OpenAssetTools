@@ -4,7 +4,7 @@
 
 Dx12TextureLoader::Dx12TextureLoader(MemoryManager* memoryManager)
     : m_memory_manager(memoryManager),
-      m_format(DXGI_FORMAT_UNKNOWN),
+      m_format(oat::DXGI_FORMAT_UNKNOWN),
       m_type(TextureType::T_2D),
       m_has_mip_maps(false),
       m_width(1u),
@@ -24,7 +24,7 @@ const ImageFormat* Dx12TextureLoader::GetFormatForDx12Format() const
     return nullptr;
 }
 
-Dx12TextureLoader& Dx12TextureLoader::Format(const DXGI_FORMAT format)
+Dx12TextureLoader& Dx12TextureLoader::Format(const oat::DXGI_FORMAT format)
 {
     m_format = format;
     return *this;
