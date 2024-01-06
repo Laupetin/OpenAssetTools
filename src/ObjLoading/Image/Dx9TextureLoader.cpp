@@ -4,7 +4,7 @@
 
 Dx9TextureLoader::Dx9TextureLoader(MemoryManager* memoryManager)
     : m_memory_manager(memoryManager),
-      m_format(D3DFMT_UNKNOWN),
+      m_format(oat::D3DFMT_UNKNOWN),
       m_type(TextureType::T_2D),
       m_has_mip_maps(false),
       m_width(1u),
@@ -24,7 +24,7 @@ const ImageFormat* Dx9TextureLoader::GetFormatForDx9Format() const
     return nullptr;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Format(const D3DFORMAT format)
+Dx9TextureLoader& Dx9TextureLoader::Format(const oat::D3DFORMAT format)
 {
     m_format = format;
     return *this;

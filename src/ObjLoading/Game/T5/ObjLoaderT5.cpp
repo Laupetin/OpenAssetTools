@@ -95,7 +95,7 @@ void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
     else
         textureLoader.Type(TextureType::T_2D);
 
-    textureLoader.Format(static_cast<D3DFORMAT>(loadDef->format));
+    textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef->format));
     textureLoader.HasMipMaps(!(loadDef->flags & iwi13::IMG_FLAG_NOMIPMAPS));
     Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
 

@@ -10,7 +10,7 @@
 class Dx9TextureLoader
 {
     MemoryManager* m_memory_manager;
-    D3DFORMAT m_format;
+    oat::D3DFORMAT m_format;
     TextureType m_type;
     bool m_has_mip_maps;
     size_t m_width;
@@ -22,7 +22,7 @@ class Dx9TextureLoader
 public:
     explicit Dx9TextureLoader(MemoryManager* memoryManager);
 
-    Dx9TextureLoader& Format(D3DFORMAT format);
+    Dx9TextureLoader& Format(oat::D3DFORMAT format);
     Dx9TextureLoader& Type(TextureType textureType);
     Dx9TextureLoader& HasMipMaps(bool hasMipMaps);
     Dx9TextureLoader& Width(size_t width);

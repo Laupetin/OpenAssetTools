@@ -39,17 +39,17 @@ class ImageFormatBlockCompressed;
 class ImageFormat
 {
     ImageFormatId m_id;
-    D3DFORMAT m_d3d_format;
+    oat::D3DFORMAT m_d3d_format;
     DXGI_FORMAT m_dxgi_format;
 
 protected:
-    ImageFormat(ImageFormatId id, D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat);
+    ImageFormat(ImageFormatId id, oat::D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat);
 
 public:
     virtual ~ImageFormat() = default;
 
     ImageFormatId GetId() const;
-    D3DFORMAT GetD3DFormat() const;
+    oat::D3DFORMAT GetD3DFormat() const;
     DXGI_FORMAT GetDxgiFormat() const;
 
     virtual ImageFormatType GetType() const = 0;
@@ -86,7 +86,7 @@ public:
     unsigned m_a_size;
 
     ImageFormatUnsigned(ImageFormatId id,
-                        D3DFORMAT d3dFormat,
+                        oat::D3DFORMAT d3dFormat,
                         DXGI_FORMAT dxgiFormat,
                         unsigned bitsPerPixel,
                         unsigned rOffset,
@@ -114,7 +114,7 @@ public:
     unsigned m_block_size;
     unsigned m_bits_per_block;
 
-    ImageFormatBlockCompressed(ImageFormatId id, D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
+    ImageFormatBlockCompressed(ImageFormatId id, oat::D3DFORMAT d3dFormat, DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
 
     ImageFormatType GetType() const override;
     size_t GetPitch(unsigned mipLevel, unsigned width) const override;
