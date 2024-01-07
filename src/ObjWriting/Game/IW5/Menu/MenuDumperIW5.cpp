@@ -32,7 +32,7 @@ size_t MenuDumper::FindStatementClosingParenthesis(const Statement_s* statement,
     {
         const auto& expEntry = statement->entries[currentSearchPosition];
         if (expEntry.type != EET_OPERATOR)
-            continue; 
+            continue;
 
         // Any function means a "left out" left paren
         if (expEntry.data.op == OP_LEFTPAREN || expEntry.data.op >= OP_COUNT)
