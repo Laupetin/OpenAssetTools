@@ -9,6 +9,7 @@
 #include "LinkerSearchPaths.h"
 #include "ObjContainer/IPak/IPakWriter.h"
 #include "ObjContainer/IWD/IWD.h"
+#include "ObjContainer/IWD/IWDWriter.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
 #include "SearchPath/SearchPaths.h"
@@ -45,15 +46,11 @@ enum class ProjectType
     NONE,
     FASTFILE,
     IPAK,
-
+    IWD,
     MAX
 };
 
-constexpr const char* PROJECT_TYPE_NAMES[static_cast<unsigned>(ProjectType::MAX)]{
-    "none",
-    "fastfile",
-    "ipak",
-};
+constexpr const char* PROJECT_TYPE_NAMES[static_cast<std::underlying_type_t<ProjectType>>(ProjectType::MAX)]{"none", "fastfile", "ipak", "iwd"};
 
 class LinkerImpl final : public Linker
 {
@@ -462,6 +459,32 @@ class LinkerImpl final : public Linker
         return true;
     }
 
+    bool BuildIWD(const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths) const
+    {
+        const fs::path iwdFolderPath(m_args.GetOutputFolderPathForProject(projectName));
+        auto iwdFilePath(iwdFolderPath);
+        const auto iwdFileName = zoneDefinition.m_name + ".iwd";
+        iwdFilePath.append(iwdFileName);
+
+        fs::create_directories(iwdFolderPath);
+
+        const auto iwdWriter = IWDWriter::Create(zoneDefinition.m_name, iwdFilePath.string(), &assetSearchPaths);
+        for (const auto& assetEntry : zoneDefinition.m_assets)
+        {
+            iwdWriter->AddFile(assetEntry.m_asset_name);
+        }
+
+        if (!iwdWriter->Write())
+        {
+            std::cerr << "Writing iwd failed." << std::endl;
+            return false;
+        }
+
+        std::cout << "Created iwd \"" << iwdFilePath.string() << "\"\n";
+
+        return true;
+    }
+
     bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
         return std::all_of(zoneDefinition.m_targets_to_build.begin(),
@@ -510,6 +533,10 @@ class LinkerImpl final : public Linker
 
             case ProjectType::IPAK:
                 result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths);
+                break;
+
+            case ProjectType::IWD:
+                result = BuildIWD(projectName, *zoneDefinition, assetSearchPaths);
                 break;
 
             default:
