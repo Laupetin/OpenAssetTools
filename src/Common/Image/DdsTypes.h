@@ -103,7 +103,7 @@ enum DDS_HEADER_DXT10_MISC2
 
 struct DDS_HEADER_DXT10
 {
-    DXGI_FORMAT dxgiFormat;
+    oat::DXGI_FORMAT dxgiFormat;
     D3D10_RESOURCE_DIMENSION resourceDimension;
     uint32_t miscFlag;
     uint32_t arraySize;

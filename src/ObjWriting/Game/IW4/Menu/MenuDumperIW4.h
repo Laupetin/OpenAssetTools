@@ -11,6 +11,8 @@ namespace IW4
     {
         static size_t FindStatementClosingParenthesis(const Statement_s* statement, size_t openingParenthesisPosition);
 
+        void WriteStatementNaive(const Statement_s* statement) const;
+
         void WriteStatementOperator(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const;
         void WriteStatementOperandFunction(const Statement_s* statement, size_t currentPos) const;
         void WriteStatementOperand(const Statement_s* statement, size_t& currentPos, bool& spaceNext) const;

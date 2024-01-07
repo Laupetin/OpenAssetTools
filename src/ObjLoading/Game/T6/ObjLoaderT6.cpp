@@ -351,7 +351,7 @@ namespace T6
         else
             textureLoader.Type(TextureType::T_2D);
 
-        textureLoader.Format(static_cast<DXGI_FORMAT>(loadDef->format));
+        textureLoader.Format(static_cast<oat::DXGI_FORMAT>(loadDef->format));
         textureLoader.HasMipMaps(!(loadDef->flags & iwi27::IMG_FLAG_NOMIPMAPS));
         Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
 
