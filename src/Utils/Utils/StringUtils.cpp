@@ -1,6 +1,7 @@
 #include "StringUtils.h"
 
 #include <sstream>
+#include <iostream>
 
 namespace utils
 {
@@ -99,5 +100,19 @@ namespace utils
     {
         for (auto& c : str)
             c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
+    }
+
+    std::vector<std::string> StringSplit(const std::string& str, const char delim)
+    {
+        std::vector<std::string> strings{};
+        std::istringstream stream(str);
+        
+        std::string s;
+        while (std::getline(stream, s, delim))
+        {
+            strings.push_back(s);
+        }
+
+        return strings;
     }
 } // namespace utils
