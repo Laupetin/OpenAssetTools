@@ -39,6 +39,7 @@
 #include "Loading/Exception/UnsupportedAssetTypeException.h"
 
 #include <cassert>
+#include <iostream>
 
 using namespace IW4;
 
