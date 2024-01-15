@@ -95,6 +95,8 @@ bool GetSoundAliasValueBool(const std::string& header, const std::vector<std::st
 
 bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const std::vector<std::string>& values)
 {
+    memset(alias, 0, sizeof(SndAlias));
+
     const auto* name = GetSoundAliasValue("name", values, true);
     if (name == nullptr)
         return false;
@@ -171,7 +173,34 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const std::vector<st
     return true;
 }
 
-bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPathOpenFile& file)
+unsigned int GetAliasSubListCount(unsigned int startRow, std::vector<std::vector<std::string>>& csvLines)
+{
+    auto count = 1u;
+
+    const auto* name = GetSoundAliasValue("name", csvLines[startRow], true);
+    if (!name || !*name)
+        return 0;
+
+    while (true)
+    {
+        if (startRow + count >= csvLines.size())
+            break;
+
+        const auto* testName = GetSoundAliasValue("name", csvLines[startRow + count], true);
+        if (!name || !*name)
+            break;
+
+        // if the name of the next entry does not match the first entry checked, it is not part of the sub list
+        if (strcmp(name, testName) != 0)
+            break;
+
+        count++;
+    }
+
+    return count;
+}
+
+bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPathOpenFile& file, unsigned int* loadedEntryCount)
 {
     const CsvInputStream aliasCsv(*file.m_stream);
     std::vector<std::vector<std::string>> csvLines;
@@ -189,24 +218,55 @@ bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPat
     // Ensure there is at least one entry in the csv after the headers
     if (maxCols * csvLines.size() > maxCols)
     {
-        sndBank->aliasCount = 1;
-        sndBank->alias = static_cast<SndAliasList*>(memory->Alloc(sizeof(SndAliasList)));
+        // should be the total number of assets
+        sndBank->aliasCount = csvLines.size() - 1;
+        sndBank->alias = static_cast<SndAliasList*>(memory->Alloc(sizeof(SndAliasList) * sndBank->aliasCount));
+        memset(sndBank->alias, 0, sizeof(SndAliasList) * sndBank->aliasCount);
 
-        sndBank->alias->count = csvLines.size() - 1;
-        sndBank->alias->head = static_cast<SndAlias*>(memory->Alloc(sizeof(SndAlias) * sndBank->alias->count));
-        sndBank->alias->sequence = 0;
+        // contains a list of all the alias ids in the sound bank
+        sndBank->aliasIndex = static_cast<SndIndexEntry*>(memory->Alloc(sizeof(SndIndexEntry) * sndBank->aliasCount));
+        memset(sndBank->aliasIndex, 0, sizeof(SndIndexEntry) * sndBank->aliasCount);
 
         LoadSoundAliasHeader(csvLines[0]);
 
-        for (auto row = 1u; row < csvLines.size(); row++)
+        auto row = 1u;
+        auto listIndex = 0u;
+        while (row < csvLines.size())
         {
-            const auto& aliasValues = csvLines[row];
-            if (!LoadSoundAlias(memory, &sndBank->alias->head[row - 1], aliasValues))
+            // count how many of the next rows should be in the sound alias sub-list. Aliases are part of the same sub list if they have the same name for a different file
+            auto subListCount = GetAliasSubListCount(row, csvLines);
+            if (subListCount < 1)
                 return false;
-        }
 
-        sndBank->alias->id = sndBank->alias->head[0].id;
-        sndBank->alias->name = sndBank->alias->head[0].name;
+            // allocate the sub list
+            sndBank->alias[listIndex].count = subListCount;
+            sndBank->alias[listIndex].head = static_cast<SndAlias*>(memory->Alloc(sizeof(SndAlias) * subListCount));
+            sndBank->alias[listIndex].sequence = 0;
+
+            // populate the sublist with the next X number of aliases in the file. Note: this will only work correctly if the aliases that are a part of a sub list are next to each other in the file
+            for (auto i = 0; i < subListCount; i++)
+            {
+                const auto& aliasValues = csvLines[row];
+                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasValues))
+                    return false;
+
+                // if this asset is loaded instead of stream, increment the loaded count for later
+                if (sndBank->alias[listIndex].head[i].flags.loadType == T6::SA_LOADED)
+                    (*loadedEntryCount)++;
+
+                // populate the aliasIndex array
+                sndBank->aliasIndex[row - 1].value = sndBank->alias[listIndex].head[i].id;
+                sndBank->aliasIndex[row - 1].next = 0xFFFF;
+
+                row++;
+            }
+
+            // the main alias list id and name should match that of the entries in the sub list (since they all have the same name, all sub entries will be the same)
+            sndBank->alias[listIndex].id = sndBank->alias[listIndex].head[0].id;
+            sndBank->alias[listIndex].name = sndBank->alias[listIndex].head[0].name;
+
+            listIndex++;
+        }
     }
 
     return true;
@@ -228,26 +288,39 @@ bool AssetLoaderSoundBank::LoadFromRaw(
 
     // set the defaults
     auto* sndBank = memory->Create<SndBank>();
+    memset(sndBank, 0, sizeof(SndBank));
+
     sndBank->name = memory->Dup(assetName.c_str());
 
     auto sndBankLocalization = utils::StringSplit(assetName, '.');
-    const auto* zoneName = memory->Dup(sndBankLocalization.at(0).c_str());
-    const auto* languageName = memory->Dup(sndBankLocalization.at(1).c_str());
+    sndBank->streamAssetBank.zone = memory->Dup(sndBankLocalization.at(0).c_str());
+    sndBank->streamAssetBank.language = memory->Dup(sndBankLocalization.at(1).c_str());
+    memset(sndBank->streamAssetBank.linkTimeChecksum, 0xCC, 16);
 
-    sndBank->streamAssetBank.zone = zoneName;
-    sndBank->streamAssetBank.language = languageName;
-    sndBank->loadAssetBank.zone = zoneName;
-    sndBank->loadAssetBank.language = languageName;
-    sndBank->loadedAssets.zone = zoneName;
-    sndBank->loadedAssets.language = languageName;
+    sndBank->loadAssetBank.zone = memory->Dup(sndBankLocalization.at(0).c_str());
+    sndBank->loadAssetBank.language = memory->Dup(sndBankLocalization.at(1).c_str());
+    memset(sndBank->loadAssetBank.linkTimeChecksum, 0xCC, 16);
+
+    sndBank->loadedAssets.zone = memory->Dup(sndBankLocalization.at(0).c_str());
+    sndBank->loadedAssets.language = memory->Dup(sndBankLocalization.at(1).c_str());
     sndBank->loadedAssets.loadedCount = 0;
 
-    if (!LoadSoundAliasList(memory, sndBank, aliasFile))
+    unsigned int loadedEntryCount = 0u;
+    if (!LoadSoundAliasList(memory, sndBank, aliasFile, &loadedEntryCount))
         return false;
 
+    // allocate memory for the number of non-streamed assets
+    sndBank->loadedAssets.entryCount = loadedEntryCount;
+    sndBank->loadedAssets.entries = static_cast<SndAssetBankEntry*>(memory->Alloc(sizeof(SndAssetBankEntry) * loadedEntryCount));
+    memset(sndBank->loadedAssets.entries, 0, sizeof(SndAssetBankEntry) * loadedEntryCount);
+
     // open the soundbank reverbs
+    sndBank->radverbs = nullptr;
+    sndBank->radverbCount = 0;
 
     // open the soundbank ducks
+    sndBank->ducks = nullptr;
+    sndBank->duckCount = 0;
 
     manager->AddAsset(ASSET_TYPE_SOUND, assetName, sndBank);
     return true;
