@@ -1,5 +1,6 @@
 #include "AssetLoaderMenuList.h"
 
+#include "Game/IW4/Cache/MenuCacheReader.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/Menu/MenuConversionZoneStateIW4.h"
 #include "Game/IW4/Menu/MenuConverterIW4.h"
@@ -14,6 +15,141 @@ using namespace IW4;
 
 namespace IW4
 {
+    void EnrichMenu(ISearchPath* searchPath, menuDef_t* menu, MemoryManager* memory)
+    {
+        std::ostringstream ss;
+        ss << "menubin/" << menu->window.name << ".bin";
+        const auto file = searchPath->Open(ss.str());
+
+        if (!file.IsOpen())
+            return;
+
+        const MenuCacheReader reader(*file.m_stream, *memory, menu->expressionData);
+        const auto readMenu = reader.ReadMenu();
+
+        // const auto* globalAsset = GlobalAssetPool<menuDef_t>::GetAssetByName(menu->window.name);
+        // const auto* readMenu = globalAsset->Asset();
+
+#define COPY(p, a, b) (a)->p = (b)->p
+#define MEMCOPY(p, a, b) memcpy(&a->p, &b->p, sizeof(a->p))
+
+        COPY(window.name, menu, readMenu);
+        COPY(window.rect, menu, readMenu);
+        COPY(window.rectClient, menu, readMenu);
+        COPY(window.group, menu, readMenu);
+        COPY(window.style, menu, readMenu);
+        COPY(window.border, menu, readMenu);
+        COPY(window.ownerDraw, menu, readMenu);
+        COPY(window.ownerDrawFlags, menu, readMenu);
+        COPY(window.borderSize, menu, readMenu);
+        COPY(window.staticFlags, menu, readMenu);
+        COPY(window.dynamicFlags[0], menu, readMenu);
+        COPY(window.nextTime, menu, readMenu);
+        MEMCOPY(window.foreColor, menu, readMenu);
+        MEMCOPY(window.backColor, menu, readMenu);
+        MEMCOPY(window.borderColor, menu, readMenu);
+        MEMCOPY(window.outlineColor, menu, readMenu);
+        MEMCOPY(window.disableColor, menu, readMenu);
+        COPY(font, menu, readMenu);
+        COPY(fullScreen, menu, readMenu);
+        COPY(fontIndex, menu, readMenu);
+        COPY(cursorItem[0], menu, readMenu);
+        COPY(fadeCycle, menu, readMenu);
+        COPY(fadeClamp, menu, readMenu);
+        COPY(fadeAmount, menu, readMenu);
+        COPY(fadeInAmount, menu, readMenu);
+        COPY(blurRadius, menu, readMenu);
+        COPY(onOpen, menu, readMenu);
+        COPY(onClose, menu, readMenu);
+        COPY(onCloseRequest, menu, readMenu);
+        COPY(onESC, menu, readMenu);
+        COPY(onKey, menu, readMenu);
+        COPY(visibleExp, menu, readMenu);
+        COPY(allowedBinding, menu, readMenu);
+        COPY(soundName, menu, readMenu);
+        COPY(imageTrack, menu, readMenu);
+        MEMCOPY(focusColor, menu, readMenu);
+        COPY(rectXExp, menu, readMenu);
+        COPY(rectYExp, menu, readMenu);
+        COPY(rectWExp, menu, readMenu);
+        COPY(rectHExp, menu, readMenu);
+        COPY(openSoundExp, menu, readMenu);
+        COPY(closeSoundExp, menu, readMenu);
+        MEMCOPY(scaleTransition, menu, readMenu);
+        MEMCOPY(alphaTransition, menu, readMenu);
+        MEMCOPY(xTransition, menu, readMenu);
+        MEMCOPY(yTransition, menu, readMenu);
+
+        const auto itemCount = std::min(menu->itemCount, readMenu->itemCount);
+        for (auto i = 0; i < itemCount; i++)
+        {
+            auto* item = menu->items[i];
+            const auto* readItem = readMenu->items[i];
+
+            COPY(window.name, item, readItem);
+            COPY(window.rect, item, readItem);
+            COPY(window.rectClient, item, readItem);
+            COPY(window.group, item, readItem);
+            COPY(window.style, item, readItem);
+            COPY(window.border, item, readItem);
+            COPY(window.ownerDraw, item, readItem);
+            COPY(window.ownerDrawFlags, item, readItem);
+            COPY(window.borderSize, item, readItem);
+            COPY(window.staticFlags, item, readItem);
+            COPY(window.dynamicFlags[0], item, readItem);
+            COPY(window.nextTime, item, readItem);
+            MEMCOPY(window.foreColor, item, readItem);
+            MEMCOPY(window.backColor, item, readItem);
+            MEMCOPY(window.borderColor, item, readItem);
+            MEMCOPY(window.outlineColor, item, readItem);
+            MEMCOPY(window.disableColor, item, readItem);
+            MEMCOPY(textRect[0], item, readItem);
+            COPY(type, item, readItem);
+            COPY(dataType, item, readItem);
+            COPY(alignment, item, readItem);
+            COPY(fontEnum, item, readItem);
+            COPY(textAlignMode, item, readItem);
+            COPY(textalignx, item, readItem);
+            COPY(textaligny, item, readItem);
+            COPY(textscale, item, readItem);
+            COPY(textStyle, item, readItem);
+            COPY(gameMsgWindowIndex, item, readItem);
+            COPY(gameMsgWindowMode, item, readItem);
+            COPY(text, item, readItem);
+            COPY(itemFlags, item, readItem);
+            COPY(mouseEnterText, item, readItem);
+            COPY(mouseExitText, item, readItem);
+            COPY(mouseEnter, item, readItem);
+            COPY(mouseExit, item, readItem);
+            COPY(action, item, readItem);
+            COPY(accept, item, readItem);
+            COPY(onFocus, item, readItem);
+            COPY(leaveFocus, item, readItem);
+            COPY(dvar, item, readItem);
+            COPY(dvarTest, item, readItem);
+            COPY(onKey, item, readItem);
+            COPY(enableDvar, item, readItem);
+            COPY(localVar, item, readItem);
+            COPY(dvarFlags, item, readItem);
+            COPY(special, item, readItem);
+            COPY(cursorPos[0], item, readItem);
+            COPY(imageTrack, item, readItem);
+            COPY(visibleExp, item, readItem);
+            COPY(disabledExp, item, readItem);
+            COPY(textExp, item, readItem);
+            COPY(materialExp, item, readItem);
+            MEMCOPY(glowColor, item, readItem);
+            COPY(decayActive, item, readItem);
+            COPY(fxBirthTime, item, readItem);
+            COPY(fxLetterTime, item, readItem);
+            COPY(fxDecayStartTime, item, readItem);
+            COPY(fxDecayDuration, item, readItem);
+            COPY(lastSoundPlayedTime, item, readItem);
+        }
+
+        std::cout << "Enriched \"" << menu->window.name << "\"!\n";
+    }
+
     class MenuLoader
     {
     public:
@@ -55,6 +191,8 @@ namespace IW4
                     std::cout << "Failed to convert menu file \"" << menu->m_name << "\"\n";
                     return false;
                 }
+
+                EnrichMenu(searchPath, menuAsset, memory);
 
                 menus.push_back(menuAsset);
                 auto* menuAssetInfo =

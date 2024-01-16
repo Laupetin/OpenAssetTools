@@ -17,7 +17,7 @@ void AbstractCacheWriter::WriteString(const char* str) const
     if (!str)
         return;
 
-    const auto len = strnlen(str, 0xFFFF);
+    const auto len = static_cast<uint16_t>(strnlen(str, 0xFFFF));
     Write(&len, sizeof(len));
     Write(str, len);
 }

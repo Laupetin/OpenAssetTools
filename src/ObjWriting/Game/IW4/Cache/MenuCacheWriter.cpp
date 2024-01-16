@@ -7,17 +7,6 @@ MenuCacheWriter::MenuCacheWriter(std::ostream& stream)
 {
 }
 
-void MenuCacheWriter::WriteItemKeyHandler(const ItemKeyHandler& itemKeyHandler) const
-{
-    Write(&itemKeyHandler, sizeof(ItemKeyHandler));
-
-    if (itemKeyHandler.action)
-        WriteMenuEventHandlerSet(*itemKeyHandler.action);
-
-    if (itemKeyHandler.next)
-        WriteItemKeyHandler(*itemKeyHandler.next);
-}
-
 void MenuCacheWriter::WriteStatement(const Statement_s& statement) const
 {
     Write(&statement, sizeof(Statement_s));
@@ -45,6 +34,17 @@ void MenuCacheWriter::WriteStatement(const Statement_s& statement) const
     }
 
     // supportingData
+}
+
+void MenuCacheWriter::WriteItemKeyHandler(const ItemKeyHandler& itemKeyHandler) const
+{
+    Write(&itemKeyHandler, sizeof(ItemKeyHandler));
+
+    if (itemKeyHandler.action)
+        WriteMenuEventHandlerSet(*itemKeyHandler.action);
+
+    if (itemKeyHandler.next)
+        WriteItemKeyHandler(*itemKeyHandler.next);
 }
 
 void MenuCacheWriter::WriteMenuEventHandler(const MenuEventHandler& menuEventHandler) const
