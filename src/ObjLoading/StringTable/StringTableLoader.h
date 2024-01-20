@@ -130,6 +130,8 @@ namespace string_table
             }
 
             stringTable->cellIndex = static_cast<int16_t*>(memory.Alloc(sizeof(int16_t) * cellCount));
+            for (auto i = 0u; i < cellCount; i++)
+                stringTable->cellIndex[i] = i;
 
             std::sort(&stringTable->cellIndex[0],
                       &stringTable->cellIndex[cellCount - 1],
