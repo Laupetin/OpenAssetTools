@@ -1,14 +1,14 @@
 #include "AssetLoaderStringTable.h"
 
 #include "Csv/CsvStream.h"
-#include "Game/T5/CommonT5.h"
-#include "Game/T5/T5.h"
+#include "Game/IW3/CommonIW3.h"
+#include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
 #include "StringTable/StringTableLoader.h"
 
 #include <cstring>
 
-using namespace T5;
+using namespace IW3;
 
 void* AssetLoaderStringTable::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -30,7 +30,7 @@ bool AssetLoaderStringTable::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    string_table::StringTableLoaderV3<StringTable, Common::Com_HashString> loader;
+    string_table::StringTableLoaderV1<StringTable> loader;
     auto* stringTable = loader.LoadFromStream(assetName, *memory, *file.m_stream);
 
     manager->AddAsset(ASSET_TYPE_STRINGTABLE, assetName, stringTable);
