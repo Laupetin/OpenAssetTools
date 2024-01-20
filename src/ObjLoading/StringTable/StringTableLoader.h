@@ -86,4 +86,60 @@ namespace string_table
             cell = content;
         }
     };
+
+    // =================================
+    // V2: IW4, IW5
+    // - Cells are a struct and have a hash
+    // =================================
+    template<typename StringTableType, int (*HashFunc)(const char*)>
+    class StringTableLoaderV2 final : public AbstractStringTableLoader<StringTableType, std::remove_pointer_t<decltype(StringTableType::values)>>
+    {
+        using CellType_t = decltype(*StringTableType::values);
+
+    protected:
+        void SetCellContent(CellType_t& cell, const char* content) override
+        {
+            cell.string = content;
+            cell.hash = HashFunc(content);
+        }
+    };
+
+    // =================================
+    // V3: T5, T6
+    // - Cells are a struct and have a hash
+    // - StringTable has an index array for binary search
+    // =================================
+    template<typename StringTableType, int (*HashFunc)(const char*)>
+    class StringTableLoaderV3 final : public AbstractStringTableLoader<StringTableType, std::remove_pointer_t<decltype(StringTableType::values)>>
+    {
+        using CellType_t = decltype(*StringTableType::values);
+
+    protected:
+        void SetCellContent(CellType_t& cell, const char* content) override
+        {
+            cell.string = content;
+            cell.hash = HashFunc(content);
+        }
+
+        void PostProcessStringTable(StringTableType* stringTable, const unsigned cellCount, MemoryManager& memory) override
+        {
+            if (!cellCount)
+            {
+                stringTable->cellIndex = nullptr;
+                return;
+            }
+
+            stringTable->cellIndex = static_cast<int16_t*>(memory.Alloc(sizeof(int16_t) * cellCount));
+
+            std::sort(&stringTable->cellIndex[0],
+                      &stringTable->cellIndex[cellCount - 1],
+                      [stringTable](const int16_t a, const int16_t b)
+                      {
+                          auto compareResult = stringTable->values[a].hash - stringTable->values[b].hash;
+                          if (compareResult == 0)
+                              compareResult = (a % stringTable->columnCount) - (b % stringTable->columnCount);
+                          return compareResult < 0;
+                      });
+        }
+    };
 } // namespace string_table
