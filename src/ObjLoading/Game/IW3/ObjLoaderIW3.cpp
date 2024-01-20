@@ -1,6 +1,7 @@
 #include "ObjLoaderIW3.h"
 
 #include "AssetLoaders/AssetLoaderGfxImage.h"
+#include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
@@ -43,7 +44,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FONT, Font_s))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENULIST, MenuList))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MENU, menuDef_t))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry))
+    REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON, WeaponDef))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))
