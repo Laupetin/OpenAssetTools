@@ -22,7 +22,7 @@ bool AssetLoaderLocalizeEntry::CanLoadFromRaw() const
 bool AssetLoaderLocalizeEntry::LoadFromRaw(
     const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    LocalizeCommonAssetLoader commonLoader(
+    const LocalizeCommonAssetLoader commonLoader(
         [memory, manager](const CommonLocalizeEntry& entry)
         {
             auto* localizeEntry = memory->Create<LocalizeEntry>();
