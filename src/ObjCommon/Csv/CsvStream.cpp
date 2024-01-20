@@ -14,6 +14,27 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
     if (!out.empty())
         out.clear();
 
+    return EmitNextRow(
+        [&out](std::string value)
+        {
+            out.emplace_back(std::move(value));
+        });
+}
+
+bool CsvInputStream::NextRow(std::vector<const char*>& out, MemoryManager& memory) const
+{
+    if (!out.empty())
+        out.clear();
+
+    return EmitNextRow(
+        [&out, &memory](const std::string& value)
+        {
+            out.emplace_back(memory.Dup(value.c_str()));
+        });
+}
+
+bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) const
+{
     auto c = m_stream.get();
     const auto isEof = c == EOF;
     std::ostringstream col;
@@ -21,7 +42,7 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
     {
         if (c == CSV_SEPARATOR)
         {
-            out.emplace_back(col.str());
+            cb(col.str());
             col.clear();
             col.str(std::string());
         }
@@ -46,7 +67,7 @@ bool CsvInputStream::NextRow(std::vector<std::string>& out) const
 
     if (!isEof)
     {
-        out.emplace_back(col.str());
+        cb(col.str());
     }
 
     return !isEof;
