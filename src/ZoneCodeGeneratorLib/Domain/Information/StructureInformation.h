@@ -19,6 +19,7 @@ public:
     std::vector<std::unique_ptr<MemberInformation>> m_ordered_members;
 
     bool m_is_leaf;
+    bool m_requires_marking;
 
     bool m_non_embedded_reference_exists;
     bool m_single_pointer_reference_exists;

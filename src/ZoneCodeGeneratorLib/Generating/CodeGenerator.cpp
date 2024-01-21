@@ -3,6 +3,7 @@
 #include "Domain/Computations/StructureComputations.h"
 #include "Templates/AssetStructTestsTemplate.h"
 #include "Templates/ZoneLoadTemplate.h"
+#include "Templates/ZoneMarkTemplate.h"
 #include "Templates/ZoneWriteTemplate.h"
 
 #include <filesystem>
@@ -20,6 +21,7 @@ CodeGenerator::CodeGenerator(const ZoneCodeGeneratorArguments* args)
 void CodeGenerator::SetupTemplates()
 {
     m_template_mapping["zoneload"] = std::make_unique<ZoneLoadTemplate>();
+    m_template_mapping["zonemark"] = std::make_unique<ZoneMarkTemplate>();
     m_template_mapping["zonewrite"] = std::make_unique<ZoneWriteTemplate>();
     m_template_mapping["assetstructtests"] = std::make_unique<AssetStructTestsTemplate>();
 }
