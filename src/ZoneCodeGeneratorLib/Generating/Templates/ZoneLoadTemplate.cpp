@@ -155,7 +155,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (info && StructureComputations(info).IsAsset())
         {
             LINE(LoaderClassName(info) << " loader(m_zone, m_stream);")
-            LINE("AddDependency(loader.Load(" << MakeTypePtrVarName(def) << "));")
+            LINE("loader.Load(" << MakeTypePtrVarName(def) << ");")
         }
         else
         {
@@ -249,32 +249,6 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("}")
     }
 
-    void LoadMember_ScriptString(StructureInformation* info,
-                                 MemberInformation* member,
-                                 const DeclarationModifierComputations& modifier,
-                                 const MemberLoadType loadType) const
-    {
-        if (loadType == MemberLoadType::ARRAY_POINTER)
-        {
-            LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("LoadScriptStringArray(true, " << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
-        }
-        else if (loadType == MemberLoadType::EMBEDDED_ARRAY)
-        {
-            LINE("varScriptString = " << MakeMemberAccess(info, member, modifier) << ";")
-            LINE("LoadScriptStringArray(false, " << MakeArrayCount(dynamic_cast<ArrayDeclarationModifier*>(modifier.GetDeclarationModifier())) << ");")
-        }
-        else if (loadType == MemberLoadType::EMBEDDED)
-        {
-            LINE(MakeMemberAccess(info, member, modifier) << " = UseScriptString(" << MakeMemberAccess(info, member, modifier) << ");")
-        }
-        else
-        {
-            assert(false);
-            LINE("#error unsupported loadType " << static_cast<int>(loadType) << " for scripstring")
-        }
-    }
-
     void LoadMember_Asset(StructureInformation* info,
                           MemberInformation* member,
                           const DeclarationModifierComputations& modifier,
@@ -283,7 +257,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (loadType == MemberLoadType::SINGLE_POINTER)
         {
             LINE(LoaderClassName(member->m_type) << " loader(m_zone, m_stream);")
-            LINE("AddDependency(loader.Load(&" << MakeMemberAccess(info, member, modifier) << "));")
+            LINE("loader.Load(&" << MakeMemberAccess(info, member, modifier) << ");")
         }
         else if (loadType == MemberLoadType::POINTER_ARRAY)
         {
@@ -483,10 +457,6 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         {
             LoadMember_String(info, member, modifier, loadType);
         }
-        else if (member->m_is_script_string)
-        {
-            LoadMember_ScriptString(info, member, modifier, loadType);
-        }
         else if (member->m_type && StructureComputations(member->m_type).IsAsset())
         {
             LoadMember_Asset(info, member, modifier, loadType);
@@ -670,12 +640,6 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             m_intendation++;
 
             LINE(MakeMemberAccess(info, member, modifier) << " = m_stream->ConvertOffsetToPointer(" << MakeMemberAccess(info, member, modifier) << ");")
-
-            if (member->m_is_script_string && loadType == MemberLoadType::ARRAY_POINTER)
-            {
-                LINE("MarkScriptStringArrayAsUsed(" << MakeMemberAccess(info, member, modifier) << ", "
-                                                    << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
-            }
 
             m_intendation--;
             LINE("}")
@@ -894,7 +858,7 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         if (computations.ShouldIgnore())
             return;
 
-        if (member->m_is_string || member->m_is_script_string || computations.ContainsNonEmbeddedReference() || member->m_type && !member->m_type->m_is_leaf
+        if (member->m_is_string || computations.ContainsNonEmbeddedReference() || member->m_type && !member->m_type->m_is_leaf
             || computations.IsAfterPartialLoad())
         {
             if (info->m_definition->GetType() == DataDefinitionType::UNION)
