@@ -27,6 +27,13 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         return str.str();
     }
 
+    static std::string MarkerClassName(StructureInformation* asset)
+    {
+        std::ostringstream str;
+        str << "Marker_" << asset->m_definition->m_name;
+        return str.str();
+    }
+
     static std::string VariableDecl(const DataDefinition* def)
     {
         std::ostringstream str;
@@ -1063,7 +1070,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         m_intendation++;
 
         LINE("assert(pAsset != nullptr);")
-        LINE("m_asset_info = reinterpret_cast<XAssetInfo<" << info->m_definition->GetFullName() << ">*>(LinkAsset(GetAssetName(*pAsset), *pAsset));")
+        LINE("")
+        LINE(MarkerClassName(m_env.m_asset) << " marker(m_zone);")
+        LINE("marker.Mark(*pAsset);")
+        LINE("")
+        LINE("m_asset_info = reinterpret_cast<XAssetInfo<"
+             << info->m_definition->GetFullName() << ">*>(LinkAsset(GetAssetName(*pAsset), *pAsset, marker.GetUsedScriptStrings(), marker.GetDependencies()));")
         LINE("*pAsset = m_asset_info->Asset();")
 
         m_intendation--;
@@ -1236,6 +1248,7 @@ public:
         LINE("// ====================================================================")
         LINE("")
         LINE("#include \"" << Lower(m_env.m_asset->m_definition->m_name) << "_load_db.h\"")
+        LINE("#include \"" << Lower(m_env.m_asset->m_definition->m_name) << "_mark_db.h\"")
         LINE("#include <cassert>")
         LINE("")
 
