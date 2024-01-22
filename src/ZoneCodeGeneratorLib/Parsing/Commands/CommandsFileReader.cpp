@@ -8,6 +8,7 @@
 #include "Parsing/Impl/ParserFilesystemStream.h"
 #include "Parsing/PostProcessing/CalculateSizeAndAlignPostProcessor.h"
 #include "Parsing/PostProcessing/LeafsPostProcessor.h"
+#include "Parsing/PostProcessing/MarkingRequiredPostProcessor.h"
 #include "Parsing/PostProcessing/MemberLeafsPostProcessor.h"
 #include "Parsing/PostProcessing/UnionsPostProcessor.h"
 #include "Parsing/PostProcessing/UsagesPostProcessor.h"
@@ -58,6 +59,7 @@ void CommandsFileReader::SetupPostProcessors()
     m_post_processors.emplace_back(std::make_unique<CalculateSizeAndAlignPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<UsagesPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<LeafsPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<MarkingRequiredPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<MemberLeafsPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<UnionsPostProcessor>());
 }
