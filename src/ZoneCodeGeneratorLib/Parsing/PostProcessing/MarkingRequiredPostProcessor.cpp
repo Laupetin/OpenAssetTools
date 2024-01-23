@@ -13,6 +13,9 @@ bool MarkingRequiredPostProcessor::RequiresMarking(std::unordered_set<const void
 
     visitedStructures.emplace(info);
 
+    if (info->m_asset_enum_entry)
+        return true;
+
     for (const auto& member : info->m_ordered_members)
     {
         // If there is a condition to this member, and it always evaluates to false: Skip this member
@@ -39,7 +42,7 @@ bool MarkingRequiredPostProcessor::RequiresMarking(std::unordered_set<const void
             continue;
 
         // Any ScriptStrings or Strings need to be processed.
-        if (member->m_is_script_string || member->m_is_string || member->m_type && member->m_type->m_asset_enum_entry)
+        if (member->m_is_script_string || member->m_type && member->m_type->m_asset_enum_entry)
             return true;
 
         if (member->m_type != nullptr && member->m_type != info && RequiresMarking(visitedStructures, member->m_type))
