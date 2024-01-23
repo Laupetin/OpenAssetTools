@@ -1,5 +1,6 @@
 #include "ZoneCodeGeneratorArguments.h"
 
+#include "GitVersion.h"
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
@@ -8,6 +9,9 @@
 
 const CommandLineOption* const OPTION_HELP =
     CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
+
+const CommandLineOption* const OPTION_VERSION =
+    CommandLineOption::Builder::Create().WithLongName("version").WithDescription("Prints the application version.").Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
     CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
@@ -70,7 +74,15 @@ const CommandLineOption* const OPTION_GENERATE =
         .Build();
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
-    OPTION_HELP, OPTION_VERBOSE, OPTION_HEADER, OPTION_COMMANDS_FILE, OPTION_OUTPUT_FOLDER, OPTION_PRINT, OPTION_GENERATE};
+    OPTION_HELP,
+    OPTION_VERSION,
+    OPTION_VERBOSE,
+    OPTION_HEADER,
+    OPTION_COMMANDS_FILE,
+    OPTION_OUTPUT_FOLDER,
+    OPTION_PRINT,
+    OPTION_GENERATE,
+};
 
 ZoneCodeGeneratorArguments::GenerationTask::GenerationTask()
     : m_all_assets(false)
@@ -91,7 +103,7 @@ ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName
 }
 
 ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent<decltype(COMMAND_LINE_OPTIONS)>::value),
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
       m_task_flags(0)
 {
     m_verbose = false;
@@ -109,8 +121,14 @@ void ZoneCodeGeneratorArguments::PrintUsage()
     usage.Print();
 }
 
-bool ZoneCodeGeneratorArguments::Parse(const int argc, const char** argv)
+void ZoneCodeGeneratorArguments::PrintVersion()
 {
+    std::cout << "OpenAssetTools ZoneCodeGenerator " << std::string(GIT_VERSION) << "\n";
+}
+
+bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
+{
+    shouldContinue = true;
     if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
     {
         PrintUsage();
@@ -122,6 +140,14 @@ bool ZoneCodeGeneratorArguments::Parse(const int argc, const char** argv)
     {
         PrintUsage();
         return false;
+    }
+
+    // Check if the user wants to see the version
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERSION))
+    {
+        PrintVersion();
+        shouldContinue = false;
+        return true;
     }
 
     // -v; --verbose

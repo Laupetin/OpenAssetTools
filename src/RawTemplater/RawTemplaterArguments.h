@@ -14,6 +14,7 @@ class RawTemplaterArguments
      * \brief Prints a command line usage help text for the RawTemplater tool to stdout.
      */
     static void PrintUsage();
+    static void PrintVersion();
 
 public:
     bool m_verbose;
@@ -27,5 +28,5 @@ public:
 
     RawTemplaterArguments();
 
-    bool Parse(int argc, const char** argv);
+    bool ParseArgs(int argc, const char** argv, bool& shouldContinue);
 };

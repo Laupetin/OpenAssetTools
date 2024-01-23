@@ -1,10 +1,12 @@
 #include "UnlinkerArgs.h"
 
+#include "GitVersion.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
 
+#include <iostream>
 #include <regex>
 #include <type_traits>
 
@@ -14,6 +16,12 @@ const CommandLineOption* const OPTION_HELP =
     .WithShortName("?")
     .WithLongName("help")
     .WithDescription("Displays usage information.")
+    .Build();
+
+const CommandLineOption* const OPTION_VERSION =
+    CommandLineOption::Builder::Create()
+    .WithLongName("version")
+    .WithDescription("Prints the application version.")
     .Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
@@ -113,6 +121,7 @@ const CommandLineOption* const OPTION_LEGACY_MENUS =
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
+    OPTION_VERSION,
     OPTION_VERBOSE,
     OPTION_MINIMAL_ZONE_FILE,
     OPTION_LOAD,
@@ -153,6 +162,11 @@ void UnlinkerArgs::PrintUsage()
     usage.SetVariableArguments(true);
 
     usage.Print();
+}
+
+void UnlinkerArgs::PrintVersion()
+{
+    std::cout << "OpenAssetTools Unlinker " << std::string(GIT_VERSION) << "\n";
 }
 
 void UnlinkerArgs::SetVerbose(const bool isVerbose)
@@ -237,8 +251,9 @@ void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
         AddSpecifiedAssetType(std::string(lowerInput, currentPos, lowerInput.size() - currentPos));
 }
 
-bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
+bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
 {
+    shouldContinue = true;
     if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
     {
         PrintUsage();
@@ -250,6 +265,14 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv)
     {
         PrintUsage();
         return false;
+    }
+
+    // Check if the user wants to see the version
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERSION))
+    {
+        PrintVersion();
+        shouldContinue = false;
+        return true;
     }
 
     m_zones_to_unlink = m_argument_parser.GetArguments();

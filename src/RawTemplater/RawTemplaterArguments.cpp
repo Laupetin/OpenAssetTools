@@ -1,10 +1,17 @@
 #include "RawTemplaterArguments.h"
 
+#include "GitVersion.h"
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
+#include <iostream>
+#include <type_traits>
+
 const CommandLineOption* const OPTION_HELP =
     CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
+
+const CommandLineOption* const OPTION_VERSION =
+    CommandLineOption::Builder::Create().WithLongName("version").WithDescription("Prints the application version.").Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
     CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
@@ -30,7 +37,14 @@ const CommandLineOption* const OPTION_DEFINE = CommandLineOption::Builder::Creat
                                                    .Reusable()
                                                    .Build();
 
-const CommandLineOption* const COMMAND_LINE_OPTIONS[]{OPTION_HELP, OPTION_VERBOSE, OPTION_OUTPUT_FOLDER, OPTION_BUILD_LOG, OPTION_DEFINE};
+const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
+    OPTION_HELP,
+    OPTION_VERSION,
+    OPTION_VERBOSE,
+    OPTION_OUTPUT_FOLDER,
+    OPTION_BUILD_LOG,
+    OPTION_DEFINE,
+};
 
 RawTemplaterArguments::RawTemplaterArguments()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
@@ -50,8 +64,14 @@ void RawTemplaterArguments::PrintUsage()
     usage.Print();
 }
 
-bool RawTemplaterArguments::Parse(const int argc, const char** argv)
+void RawTemplaterArguments::PrintVersion()
 {
+    std::cout << "OpenAssetTools RawTemplater " << std::string(GIT_VERSION) << "\n";
+}
+
+bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
+{
+    shouldContinue = true;
     if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
     {
         PrintUsage();
@@ -63,6 +83,14 @@ bool RawTemplaterArguments::Parse(const int argc, const char** argv)
     {
         PrintUsage();
         return false;
+    }
+
+    // Check if the user wants to see the version
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERSION))
+    {
+        PrintVersion();
+        shouldContinue = false;
+        return true;
     }
 
     m_input_files = m_argument_parser.GetArguments();

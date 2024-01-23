@@ -1,11 +1,13 @@
 #include "LinkerArgs.h"
 
+#include "GitVersion.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
 
 #include <filesystem>
+#include <iostream>
 #include <regex>
 #include <type_traits>
 
@@ -17,6 +19,12 @@ const CommandLineOption* const OPTION_HELP =
     .WithShortName("?")
     .WithLongName("help")
     .WithDescription("Displays usage information.")
+    .Build();
+
+const CommandLineOption* const OPTION_VERSION =
+    CommandLineOption::Builder::Create()
+    .WithLongName("version")
+    .WithDescription("Prints the application version.")
     .Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
@@ -88,6 +96,7 @@ const CommandLineOption* const OPTION_MENU_NO_OPTIMIZATION =
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
+    OPTION_VERSION,
     OPTION_VERBOSE,
     OPTION_BASE_FOLDER,
     OPTION_OUTPUT_FOLDER,
@@ -100,7 +109,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 LinkerArgs::LinkerArgs()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent<decltype(COMMAND_LINE_OPTIONS)>::value),
+    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
       m_base_pattern(R"(\?base\?)"),
       m_game_pattern(R"(\?game\?)"),
       m_project_pattern(R"(\?project\?)"),
@@ -123,6 +132,11 @@ void LinkerArgs::PrintUsage()
     usage.SetVariableArguments(true);
 
     usage.Print();
+}
+
+void LinkerArgs::PrintVersion()
+{
+    std::cout << "OpenAssetTools Linker " << std::string(GIT_VERSION) << "\n";
 }
 
 void LinkerArgs::SetVerbose(const bool isVerbose)
@@ -198,8 +212,9 @@ std::set<std::string> LinkerArgs::GetSearchPathsForProject(const std::set<std::s
     return out;
 }
 
-bool LinkerArgs::ParseArgs(const int argc, const char** argv)
+bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
 {
+    shouldContinue = true;
     if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
     {
         PrintUsage();
@@ -211,6 +226,14 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv)
     {
         PrintUsage();
         return false;
+    }
+
+    // Check if the user wants to see the version
+    if (m_argument_parser.IsOptionSpecified(OPTION_VERSION))
+    {
+        PrintVersion();
+        shouldContinue = false;
+        return true;
     }
 
     m_project_specifiers_to_build = m_argument_parser.GetArguments();
