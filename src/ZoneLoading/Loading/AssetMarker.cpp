@@ -47,7 +47,7 @@ XAssetInfoGeneric* AssetMarker::GetAssetInfoByName(std::string name) const
 std::vector<XAssetInfoGeneric*> AssetMarker::GetDependencies() const
 {
     std::vector<XAssetInfoGeneric*> dependencies;
-    if (!m_used_script_strings.empty())
+    if (!m_dependencies.empty())
     {
         dependencies.reserve(m_dependencies.size());
         for (auto dependency : m_dependencies)
