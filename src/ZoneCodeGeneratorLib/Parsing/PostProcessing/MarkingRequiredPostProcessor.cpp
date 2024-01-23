@@ -13,6 +13,9 @@ bool MarkingRequiredPostProcessor::RequiresMarking(std::unordered_set<const void
 
     visitedStructures.emplace(info);
 
+    if (info->m_asset_enum_entry)
+        return true;
+
     for (const auto& member : info->m_ordered_members)
     {
         // If there is a condition to this member, and it always evaluates to false: Skip this member
