@@ -64,8 +64,12 @@ public:
 
     int Run(const int argc, const char** argv)
     {
-        if (!m_args.Parse(argc, argv))
+        auto shouldContinue = true;
+        if (!m_args.ParseArgs(argc, argv, shouldContinue))
             return 1;
+
+        if (!shouldContinue)
+            return 0;
 
         if (!ReadHeaderData() || !ReadCommandsData())
             return 1;

@@ -613,8 +613,12 @@ public:
 
     bool Start(const int argc, const char** argv) override
     {
-        if (!m_args.ParseArgs(argc, argv))
+        auto shouldContinue = true;
+        if (!m_args.ParseArgs(argc, argv, shouldContinue))
             return false;
+
+        if (!shouldContinue)
+            return true;
 
         if (!m_search_paths.BuildProjectIndependentSearchPaths())
             return false;
