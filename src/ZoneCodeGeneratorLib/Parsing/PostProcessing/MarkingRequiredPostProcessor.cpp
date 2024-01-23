@@ -6,7 +6,7 @@
 
 #include <unordered_set>
 
-bool MarkingRequiredPostProcessor::RequiresMarking(std::unordered_set<const void*>& visitedStructures, const StructureInformation* info)
+bool MarkingRequiredPostProcessor::CalculateRequiresMarking(std::unordered_set<const void*>& visitedStructures, StructureInformation* info)
 {
     if (visitedStructures.find(info) != visitedStructures.end())
         return info->m_requires_marking;
@@ -14,7 +14,10 @@ bool MarkingRequiredPostProcessor::RequiresMarking(std::unordered_set<const void
     visitedStructures.emplace(info);
 
     if (info->m_asset_enum_entry)
+    {
+        info->m_requires_marking = true;
         return true;
+    }
 
     for (const auto& member : info->m_ordered_members)
     {
@@ -43,12 +46,19 @@ bool MarkingRequiredPostProcessor::RequiresMarking(std::unordered_set<const void
 
         // Any ScriptStrings or Strings need to be processed.
         if (member->m_is_script_string || member->m_type && member->m_type->m_asset_enum_entry)
+        {
+            info->m_requires_marking = true;
             return true;
+        }
 
-        if (member->m_type != nullptr && member->m_type != info && RequiresMarking(visitedStructures, member->m_type))
+        if (member->m_type != nullptr && member->m_type != info && CalculateRequiresMarking(visitedStructures, member->m_type))
+        {
+            info->m_requires_marking = true;
             return true;
+        }
     }
 
+    info->m_requires_marking = false;
     return false;
 }
 
@@ -59,7 +69,7 @@ bool MarkingRequiredPostProcessor::PostProcess(IDataRepository* repository)
     std::unordered_set<const void*> visitedStructures;
     for (const auto& info : allInfos)
     {
-        info->m_requires_marking = RequiresMarking(visitedStructures, info);
+        CalculateRequiresMarking(visitedStructures, info);
     }
 
     return true;
