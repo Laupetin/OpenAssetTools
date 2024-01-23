@@ -3,6 +3,7 @@ include "tools/scripts/including.lua"
 include "tools/scripts/linking.lua"
 include "tools/scripts/options.lua"
 include "tools/scripts/platform.lua"
+include "tools/scripts/version.lua"
 
 -- ==================
 -- Workspace
@@ -62,6 +63,13 @@ workspace "OpenAssetTools"
         "__STDC_LIB_EXT1__",
         "__STDC_WANT_LIB_EXT1__=1",
         "_CRT_SECURE_NO_WARNINGS"
+    }
+
+    -- Write the current version to a header
+    -- This is better than adding it as macro here since changing a global macro would cause a full rebuild
+    WriteVersionHeader()
+    includedirs {
+        GetVersionHeaderFolder()
     }
     
     filter "options:debug-structureddatadef"
