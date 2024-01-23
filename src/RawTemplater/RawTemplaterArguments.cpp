@@ -82,7 +82,8 @@ bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& s
     if (m_argument_parser.IsOptionSpecified(OPTION_HELP))
     {
         PrintUsage();
-        return false;
+        shouldContinue = false;
+        return true;
     }
 
     // Check if the user wants to see the version
