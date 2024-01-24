@@ -52,6 +52,7 @@ namespace
         "start_delay",
         "reverb_send",
         "duck",
+        "duck_group",
         "pan",
         "center_send",
         "envelop_min",
@@ -313,6 +314,9 @@ class AssetDumperSndBank::Internal
 
         // duck",
         stream.WriteColumn(FindNameForDuck(alias->duck, bank));
+
+        // duck_group",
+        stream.WriteColumn(ObjConstants::SOUND_DUCK_GROUPS[alias->duckGroup]);
 
         // pan",
         stream.WriteColumn(alias->flags.panType == SA_PAN_2D ? "2d" : "3d");
