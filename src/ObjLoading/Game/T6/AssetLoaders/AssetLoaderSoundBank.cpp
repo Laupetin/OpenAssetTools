@@ -1,6 +1,8 @@
 #include "AssetLoaderSoundBank.h"
 
-#include "Csv/CsvStream.h"
+#include "Csv/ParsedCsv.h"
+#include "nlohmann/json.hpp"
+
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/T6.h"
@@ -11,7 +13,6 @@
 #include <iostream>
 
 using namespace T6;
-std::unordered_map<std::string, unsigned int> AliasHeaders{};
 
 void* AssetLoaderSoundBank::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -26,54 +27,9 @@ bool AssetLoaderSoundBank::CanLoadFromRaw() const
     return true;
 }
 
-void LoadSoundAliasHeader(const std::vector<std::string>& values)
+size_t GetValueIndex(const std::string& value, const std::string* lookupTable, size_t len)
 {
-    for (auto i = 0u; i < values.size(); i++)
-    {
-        AliasHeaders[values[i]] = i;
-    }
-}
-
-const char* GetSoundAliasValue(const std::string& header, const std::vector<std::string>& values, bool required = false)
-{
-    if (AliasHeaders.find(header) == AliasHeaders.end())
-    {
-        if (required)
-            std::cerr << "ERROR: Required column \"" << header << "\" was not found";
-        else
-            std::cerr << "WARNING: Expected column \"" << header << "\" was not found";
-        return nullptr;
-    }
-
-    auto value = values.at(AliasHeaders[header]).c_str();
-    if (required && (!value || !*value))
-    {
-        std::cerr << "ERROR: Required column \"" << header << "\" does not have a value";
-        return nullptr;
-    }
-
-    return value;
-}
-
-char* GetSoundAliasValueString(const std::string& header, const std::vector<std::string>& values, MemoryManager* memory, bool required = false)
-{
-    const auto* value = GetSoundAliasValue(header, values, required);
-    return value ? memory->Dup(value) : nullptr;
-}
-
-long long GetSoundAliasValueInt(const std::string& header, const std::vector<std::string>& values, bool required = false)
-{
-    const auto* value = GetSoundAliasValue(header, values, required);
-    if (value && *value)
-        return std::stoll(value);
-    return 0;
-}
-
-size_t GetSoundAliasValueIndex(
-    const std::string& header, const std::vector<std::string>& values, const std::string* lookupTable, size_t len, bool required = false)
-{
-    const auto* value = GetSoundAliasValue(header, values, required);
-    if (!value || !*value)
+    if (value.empty())
         return 0;
 
     for (auto i = 0u; i < len; i++)
@@ -85,120 +41,112 @@ size_t GetSoundAliasValueIndex(
     return 0;
 }
 
-bool GetSoundAliasValueBool(const std::string& header, const std::vector<std::string>& values, const std::string& comparison, bool required = false)
-{
-    const auto* value = GetSoundAliasValue(header, values, required);
-    if (value && *value)
-        return comparison == value;
-    return false;
-}
-
-bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const std::vector<std::string>& values)
-{
-    memset(alias, 0, sizeof(SndAlias));
-
-    const auto* name = GetSoundAliasValue("name", values, true);
-    if (name == nullptr)
-        return false;
-
-    const auto* aliasFileName = GetSoundAliasValue("file", values, true);
-    if (aliasFileName == nullptr)
-        return false;
-
-    alias->name = memory->Dup(name);
-    alias->id = Common::SND_HashName(name);
-    alias->assetFileName = memory->Dup(aliasFileName);
-    alias->assetId = Common::SND_HashName(aliasFileName);
-    alias->secondaryname = GetSoundAliasValueString("secondary", values, memory);
-    alias->subtitle = GetSoundAliasValueString("subtitle", values, memory);
-
-    alias->duck = Common::SND_HashName(GetSoundAliasValue("duck", values));
-
-    alias->volMin = GetSoundAliasValueInt("vol_min", values);
-    alias->volMax = GetSoundAliasValueInt("vol_max", values);
-    alias->distMin = GetSoundAliasValueInt("dist_min", values);
-    alias->distMax = GetSoundAliasValueInt("dist_max", values);
-    alias->distReverbMax = GetSoundAliasValueInt("dist_reverb_max", values);
-    alias->limitCount = GetSoundAliasValueInt("limit_count", values);
-    alias->entityLimitCount = GetSoundAliasValueInt("entity_limit_count", values);
-    alias->pitchMin = GetSoundAliasValueInt("pitch_min", values);
-    alias->pitchMax = GetSoundAliasValueInt("pitch_max", values);
-    alias->minPriority = GetSoundAliasValueInt("min_priority", values);
-    alias->maxPriority = GetSoundAliasValueInt("max_priority", values);
-    alias->minPriorityThreshold = GetSoundAliasValueInt("min_priority_threshold", values);
-    alias->maxPriorityThreshold = GetSoundAliasValueInt("max_priority_threshold", values);
-    alias->probability = GetSoundAliasValueInt("probability", values);
-    alias->startDelay = GetSoundAliasValueInt("start_delay", values);
-    alias->reverbSend = GetSoundAliasValueInt("reverb_send", values);
-    alias->centerSend = GetSoundAliasValueInt("center_send", values);
-    alias->envelopMin = GetSoundAliasValueInt("envelop_min", values);
-    alias->envelopMax = GetSoundAliasValueInt("envelop_max", values);
-    alias->envelopPercentage = GetSoundAliasValueInt("envelop_percentage", values);
-    alias->occlusionLevel = GetSoundAliasValueInt("occlusion_level", values);
-    alias->fluxTime = GetSoundAliasValueInt("move_time", values);
-    alias->futzPatch = GetSoundAliasValueInt("futz", values);
-    alias->contextType = GetSoundAliasValueInt("context_type", values);
-    alias->contextValue = GetSoundAliasValueInt("context_value", values);
-    alias->fadeIn = GetSoundAliasValueInt("fade_in", values);
-    alias->fadeOut = GetSoundAliasValueInt("fade_out", values);
-
-    alias->flags.looping = GetSoundAliasValueBool("loop", values, "looping");
-    alias->flags.panType = GetSoundAliasValueBool("pan", values, "3d");
-    alias->flags.isBig = GetSoundAliasValueBool("is_big", values, "yes");
-    alias->flags.distanceLpf = GetSoundAliasValueBool("distance_lpf", values, "yes");
-    alias->flags.doppler = GetSoundAliasValueBool("doppler", values, "yes");
-    alias->flags.timescale = GetSoundAliasValueBool("timescale", values, "yes");
-    alias->flags.isMusic = GetSoundAliasValueBool("music", values, "yes");
-    alias->flags.pauseable = GetSoundAliasValueBool("pause", values, "yes");
-    alias->flags.stopOnDeath = GetSoundAliasValueBool("stop_on_death", values, "yes");
-    
-    alias->duckGroup = GetSoundAliasValueIndex("duck_group", values, ObjConstants::SOUND_DUCK_GROUPS.data(), ObjConstants::SOUND_DUCK_GROUPS.size());
-    alias->flags.volumeGroup = GetSoundAliasValueIndex("group", values, ObjConstants::SOUND_GROUPS.data(), ObjConstants::SOUND_GROUPS.size());
-    alias->flags.fluxType = GetSoundAliasValueIndex("move_type", values, ObjConstants::SOUND_MOVE_TYPES.data(), ObjConstants::SOUND_MOVE_TYPES.size());
-    alias->flags.loadType = GetSoundAliasValueIndex("type", values, ObjConstants::SOUND_LOAD_TYPES.data(), ObjConstants::SOUND_LOAD_TYPES.size());
-    alias->flags.busType = GetSoundAliasValueIndex("bus", values, ObjConstants::SOUND_BUS_IDS.data(), ObjConstants::SOUND_BUS_IDS.size());
-    alias->flags.limitType = GetSoundAliasValueIndex("limit_type", values, ObjConstants::SOUND_LIMIT_TYPES.data(), ObjConstants::SOUND_LIMIT_TYPES.size());
-    alias->flags.entityLimitType =
-        GetSoundAliasValueIndex("entity_limit_type", values, ObjConstants::SOUND_LIMIT_TYPES.data(), ObjConstants::SOUND_LIMIT_TYPES.size());
-    alias->flags.volumeFalloffCurve =
-        GetSoundAliasValueIndex("volume_falloff_curve", values, ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
-    alias->flags.reverbFalloffCurve =
-        GetSoundAliasValueIndex("reverb_falloff_curve", values, ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
-    alias->flags.volumeMinFalloffCurve =
-        GetSoundAliasValueIndex("volume_min_falloff_curve", values, ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
-    alias->flags.reverbMinFalloffCurve =
-        GetSoundAliasValueIndex("reverb_min_falloff_curve", values, ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
-    alias->flags.randomizeType =
-        GetSoundAliasValueIndex("randomize_type", values, ObjConstants::SOUND_RANDOMIZE_TYPES.data(), ObjConstants::SOUND_RANDOMIZE_TYPES.size());
-
-    return true;
-}
-
-unsigned int GetAliasSubListCount(unsigned int startRow, std::vector<std::vector<std::string>>& csvLines)
+unsigned int GetAliasSubListCount(unsigned int startRow, const ParsedCsv& csv)
 {
     auto count = 1u;
 
-    const auto* name = GetSoundAliasValue("name", csvLines[startRow], true);
-    if (!name || !*name)
+    const auto name = csv[startRow].GetValue("name", true);
+    if (name.empty())
         return 0;
 
     while (true)
     {
-        if (startRow + count >= csvLines.size())
+        if (startRow + count >= csv.Size())
             break;
 
-        const auto* testName = GetSoundAliasValue("name", csvLines[startRow + count], true);
-        if (!name || !*name)
+        const auto testName = csv[startRow + count].GetValue("name", true);
+        if (testName.empty())
             break;
 
         // if the name of the next entry does not match the first entry checked, it is not part of the sub list
-        if (strcmp(name, testName) != 0)
+        if (name != testName)
             break;
 
         count++;
     }
 
     return count;
+}
+
+bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& row)
+{
+    memset(alias, 0, sizeof(SndAlias));
+
+    const auto& name = row.GetValue("name", true);
+    if (name.empty())
+        return false;
+
+    const auto& aliasFileName = row.GetValue("file", true);
+    if (aliasFileName.empty())
+        return false;
+
+    alias->name = memory->Dup(name.data());
+    alias->id = Common::SND_HashName(name.data());
+    alias->assetFileName = memory->Dup(aliasFileName.data());
+    alias->assetId = Common::SND_HashName(aliasFileName.data());
+    alias->secondaryname = memory->Dup(row.GetValue("secondary").data());
+    alias->subtitle = memory->Dup(row.GetValue("subtitle").data());
+
+    alias->duck = Common::SND_HashName(row.GetValue("duck").data());
+
+    alias->volMin = row.GetValueAs<uint16_t>("vol_min");
+    alias->volMax = row.GetValueAs<uint16_t>("vol_max");
+    alias->distMin = row.GetValueAs<uint16_t>("dist_min");
+    alias->distMax = row.GetValueAs<uint16_t>("dist_max");
+    alias->distReverbMax = row.GetValueAs<uint16_t>("dist_reverb_max");
+    alias->limitCount = row.GetValueAs<char>("limit_count");
+    alias->entityLimitCount = row.GetValueAs<char>("entity_limit_count");
+    alias->pitchMin = row.GetValueAs<uint16_t>("pitch_min");
+    alias->pitchMax = row.GetValueAs<uint16_t>("pitch_max");
+    alias->minPriority = row.GetValueAs<char>("min_priority");
+    alias->maxPriority = row.GetValueAs<char>("max_priority");
+    alias->minPriorityThreshold = row.GetValueAs<char>("min_priority_threshold");
+    alias->maxPriorityThreshold = row.GetValueAs<char>("max_priority_threshold");
+    alias->probability = row.GetValueAs<char>("probability");
+    alias->startDelay = row.GetValueAs<uint16_t>("start_delay");
+    alias->reverbSend = row.GetValueAs<uint16_t>("reverb_send");
+    alias->centerSend = row.GetValueAs<uint16_t>("center_send");
+    alias->envelopMin = row.GetValueAs<uint16_t>("envelop_min");
+    alias->envelopMax = row.GetValueAs<uint16_t>("envelop_max");
+    alias->envelopPercentage = row.GetValueAs<uint16_t>("envelop_percentage");
+    alias->occlusionLevel = row.GetValueAs<char>("occlusion_level");
+    alias->fluxTime = row.GetValueAs<uint16_t>("move_time");
+    alias->futzPatch = row.GetValueAs<unsigned int>("futz");
+    alias->contextType = row.GetValueAs<unsigned int>("context_type");
+    alias->contextValue = row.GetValueAs<unsigned int>("context_value");
+    alias->fadeIn = row.GetValueAs<int16_t>("fade_in");
+    alias->fadeOut = row.GetValueAs<int16_t>("fade_out");
+
+    alias->flags.looping = row.GetValue("loop") == "looping";
+    alias->flags.panType = row.GetValue("pan") == "3d";
+    alias->flags.isBig = row.GetValue("is_big") == "yes";
+    alias->flags.distanceLpf = row.GetValue("distance_lpf") == "yes";
+    alias->flags.doppler = row.GetValue("doppler") == "yes";
+    alias->flags.timescale = row.GetValue("timescale") == "yes";
+    alias->flags.isMusic = row.GetValue("music") == "yes";
+    alias->flags.pauseable = row.GetValue("pause") == "yes";
+    alias->flags.stopOnDeath = row.GetValue("stop_on_death") == "yes";
+
+    alias->duckGroup =
+        static_cast<char>(GetValueIndex(row.GetValue("duck_group"), ObjConstants::SOUND_DUCK_GROUPS.data(), ObjConstants::SOUND_DUCK_GROUPS.size()));
+    alias->flags.volumeGroup = GetValueIndex(row.GetValue("group"), ObjConstants::SOUND_GROUPS.data(), ObjConstants::SOUND_GROUPS.size());
+    alias->flags.fluxType = GetValueIndex(row.GetValue("move_type"), ObjConstants::SOUND_MOVE_TYPES.data(), ObjConstants::SOUND_MOVE_TYPES.size());
+    alias->flags.loadType = GetValueIndex(row.GetValue("type"), ObjConstants::SOUND_LOAD_TYPES.data(), ObjConstants::SOUND_LOAD_TYPES.size());
+    alias->flags.busType = GetValueIndex(row.GetValue("bus"), ObjConstants::SOUND_BUS_IDS.data(), ObjConstants::SOUND_BUS_IDS.size());
+    alias->flags.limitType = GetValueIndex(row.GetValue("limit_type"), ObjConstants::SOUND_LIMIT_TYPES.data(), ObjConstants::SOUND_LIMIT_TYPES.size());
+    alias->flags.volumeFalloffCurve = GetValueIndex(row.GetValue("volume_falloff_curve"), ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
+    alias->flags.reverbFalloffCurve = GetValueIndex(row.GetValue("reverb_falloff_curve"), ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
+
+    alias->flags.entityLimitType =
+        GetValueIndex(row.GetValue("entity_limit_type"), ObjConstants::SOUND_LIMIT_TYPES.data(), ObjConstants::SOUND_LIMIT_TYPES.size());
+    alias->flags.volumeMinFalloffCurve =
+        GetValueIndex(row.GetValue("volume_min_falloff_curve"), ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
+    alias->flags.reverbMinFalloffCurve =
+        GetValueIndex(row.GetValue("reverb_min_falloff_curve"), ObjConstants::SOUND_CURVES.data(), ObjConstants::SOUND_CURVES.size());
+    alias->flags.randomizeType =
+        GetValueIndex(row.GetValue("randomize_type"), ObjConstants::SOUND_RANDOMIZE_TYPES.data(), ObjConstants::SOUND_RANDOMIZE_TYPES.size());
+
+    return true;
 }
 
 bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
@@ -210,7 +158,7 @@ bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
     bool* setAliasIndexList = new bool[sndBank->aliasCount];
     memset(setAliasIndexList, false, sndBank->aliasCount);
 
-    for (auto i = 0; i < sndBank->aliasCount; i++)
+    for (auto i = 0u; i < sndBank->aliasCount; i++)
     {
         auto idx = sndBank->alias[i].id % sndBank->aliasCount;
         if (sndBank->aliasIndex[idx].value == USHRT_MAX)
@@ -221,7 +169,7 @@ bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
         }
     }
 
-    for (auto i = 0; i < sndBank->aliasCount; i++)
+    for (auto i = 0u; i < sndBank->aliasCount; i++)
     {
         if (setAliasIndexList[i])
             continue;
@@ -232,15 +180,15 @@ bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
             idx = sndBank->aliasIndex[idx].next;
         }
 
-        auto offset = 1;
+        auto offset = 1u;
         auto freeIdx = USHRT_MAX;
         while (true)
         {
             freeIdx = (idx + offset) % sndBank->aliasCount;
             if (sndBank->aliasIndex[freeIdx].value == USHRT_MAX)
                 break;
-            
-            freeIdx = (idx + sndBank->aliasCount - offset) % sndBank->aliasCount; 
+
+            freeIdx = (idx + sndBank->aliasCount - offset) % sndBank->aliasCount;
             if (sndBank->aliasIndex[freeIdx].value == USHRT_MAX)
                 break;
 
@@ -268,37 +216,27 @@ bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
     return true;
 }
 
-bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPathOpenFile& file, unsigned int* loadedEntryCount, unsigned int* streamedEntryCount)
+bool LoadSoundAliasList(
+    MemoryManager* memory, SndBank* sndBank, const SearchPathOpenFile& file, unsigned int* loadedEntryCount, unsigned int* streamedEntryCount)
 {
-    const CsvInputStream aliasCsv(*file.m_stream);
-    std::vector<std::vector<std::string>> csvLines;
-    std::vector<std::string> currentLine;
-    auto maxCols = 0u;
-
-    while (aliasCsv.NextRow(currentLine))
-    {
-        if (currentLine.size() > maxCols)
-            maxCols = currentLine.size();
-        csvLines.emplace_back(std::move(currentLine));
-        currentLine = std::vector<std::string>();
-    }
+    const CsvInputStream aliasCsvStream(*file.m_stream);
+    const ParsedCsv aliasCsv(aliasCsvStream, true);
 
     // Ensure there is at least one entry in the csv after the headers
-    if (maxCols * csvLines.size() > maxCols)
+    if (aliasCsv.Size() > 0)
     {
         // should be the total number of assets
-        sndBank->aliasCount = csvLines.size() - 1;
+        sndBank->aliasCount = aliasCsv.Size();
         sndBank->alias = static_cast<SndAliasList*>(memory->Alloc(sizeof(SndAliasList) * sndBank->aliasCount));
         memset(sndBank->alias, 0, sizeof(SndAliasList) * sndBank->aliasCount);
 
-        LoadSoundAliasHeader(csvLines[0]);
-
-        auto row = 1u;
+        auto row = 0u;
         auto listIndex = 0u;
-        while (row < csvLines.size())
+        while (row < sndBank->aliasCount)
         {
-            // count how many of the next rows should be in the sound alias sub-list. Aliases are part of the same sub list if they have the same name for a different file
-            auto subListCount = GetAliasSubListCount(row, csvLines);
+            // count how many of the next rows should be in the sound alias sub-list. Aliases are part of the same sub list if they have the same name for a
+            // different file
+            auto subListCount = GetAliasSubListCount(row, aliasCsv);
             if (subListCount < 1)
                 return false;
 
@@ -307,11 +245,11 @@ bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPat
             sndBank->alias[listIndex].head = static_cast<SndAlias*>(memory->Alloc(sizeof(SndAlias) * subListCount));
             sndBank->alias[listIndex].sequence = 0;
 
-            // populate the sublist with the next X number of aliases in the file. Note: this will only work correctly if the aliases that are a part of a sub list are next to each other in the file
-            for (auto i = 0; i < subListCount; i++)
+            // populate the sublist with the next X number of aliases in the file. Note: this will only work correctly if the aliases that are a part of a sub
+            // list are next to each other in the file
+            for (auto i = 0u; i < subListCount; i++)
             {
-                const auto& aliasValues = csvLines[row];
-                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasValues))
+                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasCsv[row]))
                     return false;
 
                 // if this asset is loaded instead of stream, increment the loaded count for later
@@ -323,7 +261,8 @@ bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPat
                 row++;
             }
 
-            // the main alias list id and name should match that of the entries in the sub list (since they all have the same name, all sub entries will be the same)
+            // the main alias list id and name should match that of the entries in the sub list (since they all have the same name, all sub entries will be the
+            // same)
             sndBank->alias[listIndex].id = sndBank->alias[listIndex].head[0].id;
             sndBank->alias[listIndex].name = sndBank->alias[listIndex].head[0].name;
 
@@ -344,6 +283,113 @@ bool LoadSoundAliasList(MemoryManager* memory, SndBank* sndBank, const SearchPat
 
         if (!LoadSoundAliasIndexList(memory, sndBank))
             return false;
+    }
+
+    return true;
+}
+
+bool LoadSoundRadverbs(MemoryManager* memory, SndBank* sndBank, const SearchPathOpenFile& file)
+{
+    const CsvInputStream radverbCsvStream(*file.m_stream);
+    const ParsedCsv radverbCsv(radverbCsvStream, true);
+
+    if (radverbCsv.Size() > 0)
+    {
+        sndBank->radverbCount = radverbCsv.Size();
+        sndBank->radverbs = static_cast<SndRadverb*>(memory->Alloc(sizeof(SndRadverb) * sndBank->radverbCount));
+        memset(sndBank->radverbs, 0, sizeof(SndRadverb) * sndBank->radverbCount);
+
+        for (auto i = 0u; i < sndBank->radverbCount; i++)
+        {
+            auto& row = radverbCsv[i];
+
+            auto& name = row.GetValue("name", true);
+            if (name.empty())
+                return false;
+
+            strncpy_s(sndBank->radverbs[i].name, name.data(), 32);
+            sndBank->radverbs[i].id = Common::SND_HashName(name.data());
+            sndBank->radverbs[i].smoothing = row.GetValueAs<float>("smoothing");
+            sndBank->radverbs[i].earlyTime = row.GetValueAs<float>("earlyTime");
+            sndBank->radverbs[i].lateTime = row.GetValueAs<float>("lateTime");
+            sndBank->radverbs[i].earlyGain = row.GetValueAs<float>("earlyGain");
+            sndBank->radverbs[i].lateGain = row.GetValueAs<float>("lateGain");
+            sndBank->radverbs[i].returnGain = row.GetValueAs<float>("returnGain");
+            sndBank->radverbs[i].earlyLpf = row.GetValueAs<float>("earlyLpf");
+            sndBank->radverbs[i].lateLpf = row.GetValueAs<float>("lateLpf");
+            sndBank->radverbs[i].inputLpf = row.GetValueAs<float>("inputLpf");
+            sndBank->radverbs[i].dampLpf = row.GetValueAs<float>("dampLpf");
+            sndBank->radverbs[i].wallReflect = row.GetValueAs<float>("wallReflect");
+            sndBank->radverbs[i].dryGain = row.GetValueAs<float>("dryGain");
+            sndBank->radverbs[i].earlySize = row.GetValueAs<float>("earlySize");
+            sndBank->radverbs[i].lateSize = row.GetValueAs<float>("lateSize");
+            sndBank->radverbs[i].diffusion = row.GetValueAs<float>("diffusion");
+            sndBank->radverbs[i].returnHighpass = row.GetValueAs<float>("returnHighpass");
+        }
+    }
+
+    return true;
+}
+
+bool LoadSoundDuckList(ISearchPath* searchPath, MemoryManager* memory, SndBank* sndBank, const SearchPathOpenFile& file)
+{
+    const CsvInputStream duckListCsvStream(*file.m_stream);
+    const ParsedCsv duckListCsv(duckListCsvStream, true);
+
+    if (duckListCsv.Size() > 0)
+    {
+        sndBank->duckCount = duckListCsv.Size();
+        sndBank->ducks = static_cast<SndDuck*>(memory->Alloc(sizeof(SndDuck) * sndBank->duckCount));
+        memset(sndBank->ducks, 0, sizeof(SndDuck) * sndBank->duckCount);
+
+        for (auto i = 0u; i < sndBank->duckCount; i++)
+        {
+            auto* duck = &sndBank->ducks[i];
+            auto& row = duckListCsv[i];
+ 
+            const auto name = row.GetValue("name", true);
+            if (name.empty())
+                return false;
+
+            const auto duckFile = searchPath->Open("soundbank/ducks/" + name + ".duk");
+            if (!duckFile.IsOpen())
+            {
+                std::cerr << "Unable to find .duk file for " << name << " in ducklist for sound bank " << sndBank->name << std::endl;
+                return false;
+            }
+
+            strncpy_s(duck->name, name.data(), 32);
+            duck->id = Common::SND_HashName(name.data());
+
+            auto duckJson = nlohmann::json::parse(*duckFile.m_stream);
+            duck->fadeIn = duckJson["fadeIn"].get<float>();
+            duck->fadeOut = duckJson["fadeOut"].get<float>();
+            duck->startDelay = duckJson["startDelay"].get<float>();
+            duck->distance = duckJson["distance"].get<float>();
+            duck->length = duckJson["length"].get<float>();
+            duck->updateWhilePaused = duckJson["updateWhilePaused"].get<int>();
+
+            duck->fadeInCurve = duckJson["fadeInCurveId"].get<unsigned int>();
+            duck->fadeOutCurve = duckJson["fadeOutCurveId"].get<unsigned int>();
+
+            if (duckJson.contains("fadeInCurve"))
+                duck->fadeInCurve = Common::SND_HashName(duckJson["fadeInCurve"].get<std::string>().data());
+
+            if (duckJson.contains("fadeOutCurve"))
+                duck->fadeOutCurve = Common::SND_HashName(duckJson["fadeOutCurve"].get<std::string>().data());
+
+            duck->attenuation = static_cast<SndFloatAlign16*>(memory->Alloc(sizeof(SndFloatAlign16) * 32));
+            duck->filter = static_cast<SndFloatAlign16*>(memory->Alloc(sizeof(SndFloatAlign16) * 32));
+
+            for (auto& valueJson : duckJson["values"])
+            {
+                auto index =
+                    GetValueIndex(valueJson["duckGroup"].get<std::string>(), ObjConstants::SOUND_DUCK_GROUPS.data(), ObjConstants::SOUND_DUCK_GROUPS.size());
+
+                duck->attenuation[index] = valueJson["attenuation"].get<float>();
+                duck->filter[index] = valueJson["filter"].get<float>();
+            }
+        }
     }
 
     return true;
@@ -374,13 +420,27 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     if (!LoadSoundAliasList(memory, sndBank, aliasFile, &loadedEntryCount, &streamedEntryCount))
         return false;
 
-    // open the soundbank reverbs
-    sndBank->radverbs = nullptr;
-    sndBank->radverbCount = 0;
+    // load the soundbank reverbs
+    const auto radverbFile = searchPath->Open("soundbank/" + assetName + ".reverbs.csv");
+    if (radverbFile.IsOpen())
+    {
+        if (!LoadSoundRadverbs(memory, sndBank, radverbFile))
+        {
+            std::cerr << "Sound Bank reverbs file for " << assetName << " is invalid" << std::endl;
+            return false;
+        }
+    }
 
-    // open the soundbank ducks
-    sndBank->ducks = nullptr;
-    sndBank->duckCount = 0;
+    // load the soundbank ducks
+    const auto duckListFile = searchPath->Open("soundbank/" + assetName + ".ducklist.csv");
+    if (duckListFile.IsOpen())
+    {
+        if (!LoadSoundDuckList(searchPath, memory, sndBank, duckListFile))
+        {
+            std::cerr << "Sound Bank ducklist file for " << assetName << " is invalid" << std::endl;
+            return false;
+        }
+    }
 
     if (loadedEntryCount > 0)
     {

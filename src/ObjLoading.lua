@@ -55,4 +55,5 @@ function ObjLoading:project()
 		minilzo:include(includes)
 		minizip:include(includes)
 		zlib:include(includes)
+		json:include(includes)
 end
