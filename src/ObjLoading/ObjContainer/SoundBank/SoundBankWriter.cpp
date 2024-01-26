@@ -6,6 +6,7 @@
 #include "Utils/Alignment.h"
 #include "Utils/FileUtils.h"
 
+#include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <unordered_map>
@@ -32,7 +33,7 @@ class SoundBankWriterImpl : public SoundBankWriter
     inline static const std::string PAD_DATA = std::string(16, '\x00');
 
 public:
-    explicit SoundBankWriterImpl::SoundBankWriterImpl(const std::string& fileName, std::ostream& stream, ISearchPath* assetSearchPath)
+    explicit SoundBankWriterImpl(const std::string& fileName, std::ostream& stream, ISearchPath* assetSearchPath)
         : m_file_name(fileName),
           m_stream(stream),
           m_asset_search_path(assetSearchPath),
