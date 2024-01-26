@@ -19,7 +19,7 @@ std::unordered_map<unsigned int, unsigned char> INDEX_FOR_FRAMERATE{
     {44100,  5},
     {48000,  6},
     {96000,  7},
-    {192000, 8}, 
+    {192000, 8},
 };
 
 class SoundBankWriterImpl : public SoundBankWriter

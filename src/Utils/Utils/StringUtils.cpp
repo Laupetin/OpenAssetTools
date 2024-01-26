@@ -1,7 +1,7 @@
 #include "StringUtils.h"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 namespace utils
 {
@@ -106,7 +106,7 @@ namespace utils
     {
         std::vector<std::string> strings{};
         std::istringstream stream(str);
-        
+
         std::string s;
         while (std::getline(stream, s, delim))
         {

@@ -14,7 +14,7 @@ const std::string ParsedCsvRow::GetValue(const std::string& header, bool require
             std::cerr << "ERROR: Required column \"" << header << "\" was not found";
         else
             std::cerr << "WARNING: Expected column \"" << header << "\" was not found";
-        
+
         return {};
     }
 

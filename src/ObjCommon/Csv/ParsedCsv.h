@@ -12,7 +12,7 @@ public:
     explicit ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std::vector<std::string>& row);
     const std::string GetValue(const std::string& header, bool required = false) const;
     const float GetValueFloat(const std::string& header, bool required = false) const;
-    
+
     template<typename T> T GetValueInt(const std::string& header, bool required = false) const
     {
         const auto& value = this->GetValue(header, required);
@@ -35,7 +35,7 @@ class ParsedCsv
 
 public:
     explicit ParsedCsv(const CsvInputStream& inputStream, bool hasHeaders = true);
-    
+
     size_t Size() const;
 
     ParsedCsvRow operator[](size_t index) const;

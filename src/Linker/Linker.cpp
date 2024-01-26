@@ -421,7 +421,7 @@ class LinkerImpl final : public Linker
                        SearchPaths& sourceSearchPaths) const
     {
         SoundBankWriter::OutputPath = fs::path(m_args.GetOutputFolderPathForProject(projectName));
-        
+
         const auto zone = CreateZoneForDefinition(targetName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;
         if (zone)

@@ -1,9 +1,9 @@
 #pragma once
 #include "SearchPath/ISearchPath.h"
 
+#include <filesystem>
 #include <memory>
 #include <ostream>
-#include <filesystem>
 
 class SoundBankWriter
 {
