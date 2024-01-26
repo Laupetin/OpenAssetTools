@@ -1,26 +1,25 @@
 #include "AssetLoaderSoundBank.h"
 
 #include "Csv/ParsedCsv.h"
-#include "ObjContainer/SoundBank/SoundBankWriter.h"
-#include "nlohmann/json.hpp"
-
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/ObjConstantsT6.h"
 #include "Game/T6/T6.h"
+#include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "Pool/GlobalAssetPool.h"
+#include "nlohmann/json.hpp"
 
 #include <Utils/StringUtils.h>
-#include <cstring>
-#include <iostream>
-#include <fstream>
 #include <climits>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 using namespace T6;
 namespace fs = std::filesystem;
 
 namespace
 {
-    const std::string PREFIXES_TO_DROP[] {
+    const std::string PREFIXES_TO_DROP[]{
         "raw/",
         "devraw/",
     };
@@ -60,7 +59,7 @@ namespace
 
         return nullptr;
     }
-}
+} // namespace
 
 void* AssetLoaderSoundBank::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -355,13 +354,13 @@ bool LoadSoundRadverbs(MemoryManager* memory, SndBank* sndBank, const SearchPath
 
         for (auto i = 0u; i < sndBank->radverbCount; i++)
         {
-            auto& row = radverbCsv[i];
+            auto row = radverbCsv[i];
 
             auto& name = row.GetValue("name", true);
             if (name.empty())
                 return false;
 
-            strncpy_s(sndBank->radverbs[i].name, name.data(), 32);
+            strncpy(sndBank->radverbs[i].name, name.data(), 32);
             sndBank->radverbs[i].id = Common::SND_HashName(name.data());
             sndBank->radverbs[i].smoothing = row.GetValueFloat("smoothing");
             sndBank->radverbs[i].earlyTime = row.GetValueFloat("earlyTime");
@@ -398,9 +397,8 @@ bool LoadSoundDuckList(ISearchPath* searchPath, MemoryManager* memory, SndBank* 
 
         for (auto i = 0u; i < sndBank->duckCount; i++)
         {
-            auto* duck = &sndBank->ducks[i];
-            auto& row = duckListCsv[i];
- 
+            auto row = duckListCsv[i];
+
             const auto name = row.GetValue("name", true);
             if (name.empty())
                 return false;
@@ -412,7 +410,8 @@ bool LoadSoundDuckList(ISearchPath* searchPath, MemoryManager* memory, SndBank* 
                 return false;
             }
 
-            strncpy_s(duck->name, name.data(), 32);
+            auto* duck = &sndBank->ducks[i];
+            strncpy(duck->name, name.data(), 32);
             duck->id = Common::SND_HashName(name.data());
 
             auto duckJson = nlohmann::json::parse(*duckFile.m_stream);
@@ -545,7 +544,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
                 sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId);
         }
     }
-    
+
     // write the output linked sound bank
     if (sablWriter)
     {
