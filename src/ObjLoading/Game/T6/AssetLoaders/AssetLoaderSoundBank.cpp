@@ -13,6 +13,7 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
+#include <climits>
 
 using namespace T6;
 namespace fs = std::filesystem;
