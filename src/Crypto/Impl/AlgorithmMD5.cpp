@@ -1,15 +1,15 @@
-#include "AlgorithmSHA1.h"
+#include "AlgorithmMD5.h"
 
 #include "CryptoLibrary.h"
 
 #include <cstdint>
 
-class AlgorithmSHA1::AlgorithmSHA1Impl
+class AlgorithmMD5::AlgorithmMD5Impl
 {
     hash_state m_state{};
 
 public:
-    AlgorithmSHA1Impl()
+    AlgorithmMD5Impl()
     {
         CryptoLibrary::Init();
 
@@ -18,47 +18,47 @@ public:
 
     void Init()
     {
-        sha1_init(&m_state);
+        md5_init(&m_state);
     }
 
     void Process(const void* input, const size_t inputSize)
     {
-        sha1_process(&m_state, static_cast<const uint8_t*>(input), inputSize);
+        md5_process(&m_state, static_cast<const uint8_t*>(input), inputSize);
     }
 
     void Finish(void* hashBuffer)
     {
-        sha1_done(&m_state, static_cast<uint8_t*>(hashBuffer));
+        md5_done(&m_state, static_cast<uint8_t*>(hashBuffer));
     }
 };
 
-AlgorithmSHA1::AlgorithmSHA1()
+AlgorithmMD5::AlgorithmMD5()
 {
-    m_impl = new AlgorithmSHA1Impl();
+    m_impl = new AlgorithmMD5Impl();
 }
 
-AlgorithmSHA1::~AlgorithmSHA1()
+AlgorithmMD5::~AlgorithmMD5()
 {
     delete m_impl;
     m_impl = nullptr;
 }
 
-size_t AlgorithmSHA1::GetHashSize()
+size_t AlgorithmMD5::GetHashSize()
 {
     return HASH_SIZE;
 }
 
-void AlgorithmSHA1::Init()
+void AlgorithmMD5::Init()
 {
     m_impl->Init();
 }
 
-void AlgorithmSHA1::Process(const void* input, const size_t inputSize)
+void AlgorithmMD5::Process(const void* input, const size_t inputSize)
 {
     m_impl->Process(input, inputSize);
 }
 
-void AlgorithmSHA1::Finish(void* hashBuffer)
+void AlgorithmMD5::Finish(void* hashBuffer)
 {
     m_impl->Finish(hashBuffer);
 }
