@@ -4,6 +4,7 @@ StructureInformation::StructureInformation(DefinitionWithMembers* definition)
     : m_definition(definition),
       m_asset_enum_entry(nullptr),
       m_is_leaf(false),
+      m_requires_marking(false),
       m_non_embedded_reference_exists(false),
       m_single_pointer_reference_exists(false),
       m_array_pointer_reference_exists(false),

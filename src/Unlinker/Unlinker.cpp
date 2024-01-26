@@ -429,8 +429,12 @@ public:
      */
     bool Start(const int argc, const char** argv)
     {
-        if (!m_args.ParseArgs(argc, argv))
+        auto shouldContinue = true;
+        if (!m_args.ParseArgs(argc, argv, shouldContinue))
             return false;
+
+        if (!shouldContinue)
+            return true;
 
         if (!BuildSearchPaths())
             return false;

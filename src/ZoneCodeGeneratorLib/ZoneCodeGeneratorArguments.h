@@ -13,6 +13,7 @@ class ZoneCodeGeneratorArguments
      * \brief Prints a command line usage help text for the Unlinker tool to stdout.
      */
     static void PrintUsage();
+    static void PrintVersion();
 
 public:
     static constexpr unsigned FLAG_TASK_GENERATE = 1 << 0;
@@ -40,8 +41,7 @@ public:
     std::vector<GenerationTask> m_generation_tasks;
 
     ZoneCodeGeneratorArguments();
-
-    bool Parse(int argc, const char** argv);
+    bool ParseArgs(int argc, const char** argv, bool& shouldContinue);
 
     _NODISCARD bool ShouldGenerate() const;
     _NODISCARD bool ShouldPrint() const;

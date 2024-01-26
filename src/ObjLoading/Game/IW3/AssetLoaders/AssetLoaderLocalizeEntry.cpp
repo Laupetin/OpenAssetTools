@@ -2,7 +2,7 @@
 
 #include "Localize/LocalizeCommonAssetLoader.h"
 
-using namespace T5;
+using namespace IW3;
 
 XAssetInfoGeneric* AssetLoaderLocalizeEntry::LoadFromGlobalAssetPools(const std::string& assetName) const
 {

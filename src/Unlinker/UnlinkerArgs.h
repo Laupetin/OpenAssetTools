@@ -21,6 +21,7 @@ private:
      * \brief Prints a command line usage help text for the Unlinker tool to stdout.
      */
     static void PrintUsage();
+    static void PrintVersion();
 
     void SetVerbose(bool isVerbose);
     bool SetImageDumpingMode();
@@ -60,7 +61,7 @@ public:
     bool m_verbose;
 
     UnlinkerArgs();
-    bool ParseArgs(int argc, const char** argv);
+    bool ParseArgs(int argc, const char** argv, bool& shouldContinue);
 
     /**
      * \brief Converts the output path specified by command line arguments to a path applies for the specified zone.
