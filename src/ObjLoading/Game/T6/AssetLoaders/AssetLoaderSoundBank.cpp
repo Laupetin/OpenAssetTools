@@ -1,6 +1,7 @@
 #include "AssetLoaderSoundBank.h"
 
 #include "Csv/ParsedCsv.h"
+#include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "nlohmann/json.hpp"
 
 #include "Game/T6/CommonT6.h"
@@ -11,8 +12,54 @@
 #include <Utils/StringUtils.h>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 
 using namespace T6;
+namespace fs = std::filesystem;
+
+namespace
+{
+    const std::string PREFIXES_TO_DROP[] {
+        "raw/",
+        "devraw/",
+    };
+
+    _NODISCARD std::string GetSoundFilePath(SndAlias* sndAlias)
+    {
+        std::string soundFilePath(sndAlias->assetFileName);
+
+        std::replace(soundFilePath.begin(), soundFilePath.end(), '\\', '/');
+        for (const auto& droppedPrefix : PREFIXES_TO_DROP)
+        {
+            if (soundFilePath.rfind(droppedPrefix, 0) != std::string::npos)
+            {
+                soundFilePath.erase(0, droppedPrefix.size());
+                break;
+            }
+        }
+
+        return soundFilePath;
+    }
+
+    _NODISCARD std::unique_ptr<std::ofstream> OpenSoundBankOutputFile(const std::string& bankName)
+    {
+        fs::path assetPath = SoundBankWriter::OutputPath / bankName;
+
+        auto assetDir(assetPath);
+        assetDir.remove_filename();
+
+        create_directories(assetDir);
+
+        auto outputStream = std::make_unique<std::ofstream>(assetPath, std::ios_base::out | std::ios_base::binary);
+
+        if (outputStream->is_open())
+        {
+            return std::move(outputStream);
+        }
+
+        return nullptr;
+    }
+}
 
 void* AssetLoaderSoundBank::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -84,38 +131,44 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
     alias->id = Common::SND_HashName(name.data());
     alias->assetFileName = memory->Dup(aliasFileName.data());
     alias->assetId = Common::SND_HashName(aliasFileName.data());
-    alias->secondaryname = memory->Dup(row.GetValue("secondary").data());
-    alias->subtitle = memory->Dup(row.GetValue("subtitle").data());
+
+    auto secondaryName = row.GetValue("secondary");
+    if (!secondaryName.empty())
+        alias->secondaryname = memory->Dup(secondaryName.data());
+
+    auto subtitle = row.GetValue("subtitle");
+    if (!subtitle.empty())
+        alias->subtitle = memory->Dup(subtitle.data());
 
     alias->duck = Common::SND_HashName(row.GetValue("duck").data());
 
-    alias->volMin = row.GetValueAs<uint16_t>("vol_min");
-    alias->volMax = row.GetValueAs<uint16_t>("vol_max");
-    alias->distMin = row.GetValueAs<uint16_t>("dist_min");
-    alias->distMax = row.GetValueAs<uint16_t>("dist_max");
-    alias->distReverbMax = row.GetValueAs<uint16_t>("dist_reverb_max");
-    alias->limitCount = row.GetValueAs<char>("limit_count");
-    alias->entityLimitCount = row.GetValueAs<char>("entity_limit_count");
-    alias->pitchMin = row.GetValueAs<uint16_t>("pitch_min");
-    alias->pitchMax = row.GetValueAs<uint16_t>("pitch_max");
-    alias->minPriority = row.GetValueAs<char>("min_priority");
-    alias->maxPriority = row.GetValueAs<char>("max_priority");
-    alias->minPriorityThreshold = row.GetValueAs<char>("min_priority_threshold");
-    alias->maxPriorityThreshold = row.GetValueAs<char>("max_priority_threshold");
-    alias->probability = row.GetValueAs<char>("probability");
-    alias->startDelay = row.GetValueAs<uint16_t>("start_delay");
-    alias->reverbSend = row.GetValueAs<uint16_t>("reverb_send");
-    alias->centerSend = row.GetValueAs<uint16_t>("center_send");
-    alias->envelopMin = row.GetValueAs<uint16_t>("envelop_min");
-    alias->envelopMax = row.GetValueAs<uint16_t>("envelop_max");
-    alias->envelopPercentage = row.GetValueAs<uint16_t>("envelop_percentage");
-    alias->occlusionLevel = row.GetValueAs<char>("occlusion_level");
-    alias->fluxTime = row.GetValueAs<uint16_t>("move_time");
-    alias->futzPatch = row.GetValueAs<unsigned int>("futz");
-    alias->contextType = row.GetValueAs<unsigned int>("context_type");
-    alias->contextValue = row.GetValueAs<unsigned int>("context_value");
-    alias->fadeIn = row.GetValueAs<int16_t>("fade_in");
-    alias->fadeOut = row.GetValueAs<int16_t>("fade_out");
+    alias->volMin = row.GetValueInt<uint16_t>("vol_min");
+    alias->volMax = row.GetValueInt<uint16_t>("vol_max");
+    alias->distMin = row.GetValueInt<uint16_t>("dist_min");
+    alias->distMax = row.GetValueInt<uint16_t>("dist_max");
+    alias->distReverbMax = row.GetValueInt<uint16_t>("dist_reverb_max");
+    alias->limitCount = row.GetValueInt<uint8_t>("limit_count");
+    alias->entityLimitCount = row.GetValueInt<uint8_t>("entity_limit_count");
+    alias->pitchMin = row.GetValueInt<uint16_t>("pitch_min");
+    alias->pitchMax = row.GetValueInt<uint16_t>("pitch_max");
+    alias->minPriority = row.GetValueInt<uint8_t>("min_priority");
+    alias->maxPriority = row.GetValueInt<uint8_t>("max_priority");
+    alias->minPriorityThreshold = row.GetValueInt<uint8_t>("min_priority_threshold");
+    alias->maxPriorityThreshold = row.GetValueInt<uint8_t>("max_priority_threshold");
+    alias->probability = row.GetValueInt<uint8_t>("probability");
+    alias->startDelay = row.GetValueInt<uint16_t>("start_delay");
+    alias->reverbSend = row.GetValueInt<uint16_t>("reverb_send");
+    alias->centerSend = row.GetValueInt<uint16_t>("center_send");
+    alias->envelopMin = row.GetValueInt<uint16_t>("envelop_min");
+    alias->envelopMax = row.GetValueInt<uint16_t>("envelop_max");
+    alias->envelopPercentage = row.GetValueInt<uint16_t>("envelop_percentage");
+    alias->occlusionLevel = row.GetValueInt<uint8_t>("occlusion_level");
+    alias->fluxTime = row.GetValueInt<uint16_t>("move_time");
+    alias->futzPatch = row.GetValueInt<unsigned int>("futz");
+    alias->contextType = row.GetValueInt<unsigned int>("context_type");
+    alias->contextValue = row.GetValueInt<unsigned int>("context_value");
+    alias->fadeIn = row.GetValueInt<int16_t>("fade_in");
+    alias->fadeOut = row.GetValueInt<int16_t>("fade_out");
 
     alias->flags.looping = row.GetValue("loop") == "looping";
     alias->flags.panType = row.GetValue("pan") == "3d";
@@ -309,22 +362,22 @@ bool LoadSoundRadverbs(MemoryManager* memory, SndBank* sndBank, const SearchPath
 
             strncpy_s(sndBank->radverbs[i].name, name.data(), 32);
             sndBank->radverbs[i].id = Common::SND_HashName(name.data());
-            sndBank->radverbs[i].smoothing = row.GetValueAs<float>("smoothing");
-            sndBank->radverbs[i].earlyTime = row.GetValueAs<float>("earlyTime");
-            sndBank->radverbs[i].lateTime = row.GetValueAs<float>("lateTime");
-            sndBank->radverbs[i].earlyGain = row.GetValueAs<float>("earlyGain");
-            sndBank->radverbs[i].lateGain = row.GetValueAs<float>("lateGain");
-            sndBank->radverbs[i].returnGain = row.GetValueAs<float>("returnGain");
-            sndBank->radverbs[i].earlyLpf = row.GetValueAs<float>("earlyLpf");
-            sndBank->radverbs[i].lateLpf = row.GetValueAs<float>("lateLpf");
-            sndBank->radverbs[i].inputLpf = row.GetValueAs<float>("inputLpf");
-            sndBank->radverbs[i].dampLpf = row.GetValueAs<float>("dampLpf");
-            sndBank->radverbs[i].wallReflect = row.GetValueAs<float>("wallReflect");
-            sndBank->radverbs[i].dryGain = row.GetValueAs<float>("dryGain");
-            sndBank->radverbs[i].earlySize = row.GetValueAs<float>("earlySize");
-            sndBank->radverbs[i].lateSize = row.GetValueAs<float>("lateSize");
-            sndBank->radverbs[i].diffusion = row.GetValueAs<float>("diffusion");
-            sndBank->radverbs[i].returnHighpass = row.GetValueAs<float>("returnHighpass");
+            sndBank->radverbs[i].smoothing = row.GetValueFloat("smoothing");
+            sndBank->radverbs[i].earlyTime = row.GetValueFloat("earlyTime");
+            sndBank->radverbs[i].lateTime = row.GetValueFloat("lateTime");
+            sndBank->radverbs[i].earlyGain = row.GetValueFloat("earlyGain");
+            sndBank->radverbs[i].lateGain = row.GetValueFloat("lateGain");
+            sndBank->radverbs[i].returnGain = row.GetValueFloat("returnGain");
+            sndBank->radverbs[i].earlyLpf = row.GetValueFloat("earlyLpf");
+            sndBank->radverbs[i].lateLpf = row.GetValueFloat("lateLpf");
+            sndBank->radverbs[i].inputLpf = row.GetValueFloat("inputLpf");
+            sndBank->radverbs[i].dampLpf = row.GetValueFloat("dampLpf");
+            sndBank->radverbs[i].wallReflect = row.GetValueFloat("wallReflect");
+            sndBank->radverbs[i].dryGain = row.GetValueFloat("dryGain");
+            sndBank->radverbs[i].earlySize = row.GetValueFloat("earlySize");
+            sndBank->radverbs[i].lateSize = row.GetValueFloat("lateSize");
+            sndBank->radverbs[i].diffusion = row.GetValueFloat("diffusion");
+            sndBank->radverbs[i].returnHighpass = row.GetValueFloat("returnHighpass");
         }
     }
 
@@ -416,6 +469,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     sndBank->name = memory->Dup(assetName.c_str());
     auto sndBankLocalization = utils::StringSplit(assetName, '.');
 
+    // load the soundbank aliases
     unsigned int loadedEntryCount = 0u, streamedEntryCount = 0u;
     if (!LoadSoundAliasList(memory, sndBank, aliasFile, &loadedEntryCount, &streamedEntryCount))
         return false;
@@ -442,6 +496,9 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         }
     }
 
+    std::unique_ptr<std::ofstream> sablStream, sabsStream;
+    std::unique_ptr<SoundBankWriter> sablWriter, sabsWriter;
+
     if (loadedEntryCount > 0)
     {
         sndBank->loadAssetBank.zone = memory->Dup(sndBankLocalization.at(0).c_str());
@@ -454,6 +511,11 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         sndBank->loadedAssets.entryCount = loadedEntryCount;
         sndBank->loadedAssets.entries = static_cast<SndAssetBankEntry*>(memory->Alloc(sizeof(SndAssetBankEntry) * loadedEntryCount));
         memset(sndBank->loadedAssets.entries, 0, sizeof(SndAssetBankEntry) * loadedEntryCount);
+
+        const auto sablName = assetName + ".sabl";
+        sablStream = OpenSoundBankOutputFile(sablName);
+        if (sablStream)
+            sablWriter = SoundBankWriter::Create(sablName, *sablStream, searchPath);
     }
 
     if (streamedEntryCount > 0)
@@ -461,6 +523,40 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         sndBank->streamAssetBank.zone = memory->Dup(sndBankLocalization.at(0).c_str());
         sndBank->streamAssetBank.language = memory->Dup(sndBankLocalization.at(1).c_str());
         memset(sndBank->streamAssetBank.linkTimeChecksum, 0xCC, 16);
+
+        const auto sabsName = assetName + ".sabs";
+        sabsStream = OpenSoundBankOutputFile(sabsName);
+        if (sabsStream)
+            sablWriter = SoundBankWriter::Create(sabsName, *sabsStream, searchPath);
+    }
+
+    // add aliases to the correct sound bank writer
+    for (auto i = 0u; i < sndBank->aliasCount; i++)
+    {
+        auto* aliasList = &sndBank->alias[i];
+        for (auto j = 0; j < aliasList->count; j++)
+        {
+            auto* alias = &aliasList->head[j];
+
+            if (sabsWriter && alias->flags.loadType == T6::SA_STREAMED)
+                sabsWriter->AddSound(GetSoundFilePath(alias), alias->assetId);
+            else if (sablWriter)
+                sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId);
+        }
+    }
+    
+    // write the output linked sound bank
+    if (sablWriter)
+    {
+        sablWriter->Write();
+        sablStream->close();
+    }
+
+    // write the output streamed sound bank
+    if (sabsWriter)
+    {
+        sabsWriter->Write();
+        sabsStream->close();
     }
 
     manager->AddAsset(ASSET_TYPE_SOUND, assetName, sndBank);

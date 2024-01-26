@@ -10,17 +10,18 @@ class ParsedCsvRow
 
 public:
     explicit ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std::vector<std::string>& row);
-    const std::string& GetValue(const std::string& header, bool required = false) const;
+    const std::string GetValue(const std::string& header, bool required = false) const;
+    const float GetValueFloat(const std::string& header, bool required = false) const;
     
-    template<typename T> T GetValueAs(const std::string& header, bool required = false) const
+    template<typename T> T GetValueInt(const std::string& header, bool required = false) const
     {
         const auto& value = this->GetValue(header, required);
         if (!value.empty())
         {
             std::istringstream ss(value);
-            T out{};
+            long long out;
             ss >> out;
-            return out;
+            return static_cast<T>(out);
         }
 
         return {};

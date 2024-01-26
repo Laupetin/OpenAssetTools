@@ -6,7 +6,7 @@ ParsedCsvRow::ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std
 {
 }
 
-const std::string& ParsedCsvRow::GetValue(const std::string& header, bool required) const
+const std::string ParsedCsvRow::GetValue(const std::string& header, bool required) const
 {
     if (this->headers.find(header) == this->headers.end())
     {
@@ -14,17 +14,32 @@ const std::string& ParsedCsvRow::GetValue(const std::string& header, bool requir
             std::cerr << "ERROR: Required column \"" << header << "\" was not found";
         else
             std::cerr << "WARNING: Expected column \"" << header << "\" was not found";
-        return nullptr;
+        
+        return {};
     }
 
     auto& value = this->values.at(this->headers[header]);
     if (required && value.empty())
     {
         std::cerr << "ERROR: Required column \"" << header << "\" does not have a value";
-        return nullptr;
+        return {};
     }
 
     return value;
+}
+
+const float ParsedCsvRow::GetValueFloat(const std::string& header, bool required) const
+{
+    const auto& value = this->GetValue(header, required);
+    if (!value.empty())
+    {
+        std::istringstream ss(value);
+        float out;
+        ss >> out;
+        return out;
+    }
+
+    return {};
 }
 
 ParsedCsv::ParsedCsv(const CsvInputStream& inputStream, bool hasHeaders)

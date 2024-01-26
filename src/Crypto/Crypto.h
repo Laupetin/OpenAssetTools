@@ -16,6 +16,8 @@ public:
         RSA_PADDING_PSS,
     };
 
+    static std::unique_ptr<IHashFunction> CreateMD5();
+
     static std::unique_ptr<IHashFunction> CreateSHA1();
     static std::unique_ptr<IHashFunction> CreateSHA256();
 
