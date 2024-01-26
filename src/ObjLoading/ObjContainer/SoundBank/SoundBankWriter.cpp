@@ -147,7 +147,7 @@ public:
             else
             {
                 // if there is no wav file, try flac file
-                const auto flacFile = m_asset_search_path->Open(soundFilePath + ".wav");
+                const auto flacFile = m_asset_search_path->Open(soundFilePath + ".flac");
                 if (flacFile.IsOpen())
                 {
                     soundSize = static_cast<size_t>(flacFile.m_length);
