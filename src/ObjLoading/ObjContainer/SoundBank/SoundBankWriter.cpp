@@ -222,7 +222,12 @@ public:
 
     bool Write() override
     {
-        WriteEntries();
+        if (!WriteEntries())
+        {
+            std::cerr << "An error occurred writing the sound bank entires. Please check output." << std::endl;
+            return false;
+        }
+
         WriteEntryList();
         WriteChecksumList();
         WriteBranding();
