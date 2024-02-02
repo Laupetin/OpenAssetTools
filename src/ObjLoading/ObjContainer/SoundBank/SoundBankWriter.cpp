@@ -84,6 +84,8 @@ public:
     {
         GoTo(0);
 
+        // The checksum here is supposed to be a MD5 of the entire data portion of the file. However T6 does not validate this.
+        // As long as the values here match the values in the SndBank asset, everything loads fine
         SoundAssetBankChecksum checksum{};
         memset(&checksum, 0xCC, sizeof(SoundAssetBankChecksum));
 
