@@ -512,6 +512,8 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         sndBank->loadedAssets.entries = static_cast<SndAssetBankEntry*>(memory->Alloc(sizeof(SndAssetBankEntry) * loadedEntryCount));
         memset(sndBank->loadedAssets.entries, 0, sizeof(SndAssetBankEntry) * loadedEntryCount);
 
+        sndBank->runtimeAssetLoad = true;
+
         const auto sablName = assetName + ".sabl";
         sablStream = OpenSoundBankOutputFile(sablName);
         if (sablStream)
@@ -527,7 +529,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         const auto sabsName = assetName + ".sabs";
         sabsStream = OpenSoundBankOutputFile(sabsName);
         if (sabsStream)
-            sablWriter = SoundBankWriter::Create(sabsName, *sabsStream, searchPath);
+            sabsWriter = SoundBankWriter::Create(sabsName, *sabsStream, searchPath);
     }
 
     // add aliases to the correct sound bank writer
@@ -539,24 +541,42 @@ bool AssetLoaderSoundBank::LoadFromRaw(
             auto* alias = &aliasList->head[j];
 
             if (sabsWriter && alias->flags.loadType == T6::SA_STREAMED)
-                sabsWriter->AddSound(GetSoundFilePath(alias), alias->assetId);
+                sabsWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping, true);
             else if (sablWriter)
-                sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId);
+                sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping);
         }
     }
 
     // write the output linked sound bank
     if (sablWriter)
     {
-        sablWriter->Write();
+        auto size = static_cast<size_t>(sablWriter->Write());
         sablStream->close();
+
+        if (size != UINT32_MAX)
+        {
+            sndBank->loadedAssets.dataSize = size;
+            sndBank->loadedAssets.data = static_cast<SndChar2048*>(memory->Alloc(size));
+            memset(sndBank->loadedAssets.data, 0, size);
+        }
+        else
+        {
+            std::cerr << "Loaded Sound Bank for " << assetName << " failed to generate. Please check your build files." << std::endl;
+            return false;
+        }
     }
 
     // write the output streamed sound bank
     if (sabsWriter)
     {
-        sabsWriter->Write();
+        auto size = static_cast<size_t>(sabsWriter->Write());
         sabsStream->close();
+
+        if (size == UINT32_MAX)
+        {
+            std::cerr << "Streamed Sound Bank for " << assetName << " failed to generate. Please check your build files." << std::endl;
+            return false;
+        }
     }
 
     manager->AddAsset(ASSET_TYPE_SOUND, assetName, sndBank);

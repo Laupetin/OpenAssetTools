@@ -45,9 +45,9 @@ public:
     {
     }
 
-    void AddSound(const std::string& soundFilePath, unsigned int soundId) override
+    void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping, bool streamed) override
     {
-        this->m_sounds.push_back(std::make_pair(soundFilePath, soundId));
+        this->m_sounds.push_back({soundFilePath, soundId, looping, streamed});
     }
 
     void GoTo(const int64_t offset)
@@ -113,8 +113,8 @@ public:
 
         for (auto& sound : m_sounds)
         {
-            const auto soundFilePath = sound.first;
-            const auto soundId = sound.second;
+            const auto& soundFilePath = sound.filePath;
+            const auto soundId = sound.soundId;
 
             size_t soundSize = -1;
             std::unique_ptr<char[]> soundData;
@@ -128,6 +128,13 @@ public:
 
                 soundSize = static_cast<size_t>(wavFile.m_length - sizeof(WavHeader));
                 auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
+
+                if (!sound.streamed && header.formatChunk.nSamplesPerSec != 48000)
+                {
+                    std::cout << "WARNING: \"" << soundFilePath << "\" has a framerate of " << header.formatChunk.nSamplesPerSec
+                              << ". Loaded sounds are recommended to have a framerate of 48000. This sound may not work on all games!" << std::endl;
+                }
+
                 auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
 
                 SoundAssetBankEntry entry{
@@ -137,7 +144,7 @@ public:
                     frameCount,
                     frameRateIndex,
                     static_cast<unsigned char>(header.formatChunk.nChannels),
-                    0,
+                    sound.looping,
                     0,
                 };
 
@@ -222,12 +229,12 @@ public:
         AlignToChunk();
     }
 
-    bool Write() override
+    std::int64_t Write() override
     {
         if (!WriteEntries())
         {
             std::cerr << "An error occurred writing the sound bank entires. Please check output." << std::endl;
-            return false;
+            return -1;
         }
 
         WriteEntryList();
@@ -241,17 +248,26 @@ public:
         if (m_current_offset > UINT32_MAX)
         {
             std::cerr << "Sound bank files must be under 4GB. Please reduce the number of sounds being written!" << std::endl;
-            return false;
+            return -1;
         }
 
-        return true;
+        // return the total size for the sound asset data
+        return m_entry_section_offset - DATA_OFFSET;
     }
 
 private:
+    struct SoundBankEntryInfo
+    {
+        std::string filePath;
+        unsigned int soundId;
+        bool looping;
+        bool streamed;
+    };
+
     std::string m_file_name;
     std::ostream& m_stream;
     ISearchPath* m_asset_search_path;
-    std::vector<std::pair<std::string, unsigned int>> m_sounds;
+    std::vector<SoundBankEntryInfo> m_sounds;
 
     int64_t m_current_offset;
     std::vector<SoundAssetBankEntry> m_entries;
