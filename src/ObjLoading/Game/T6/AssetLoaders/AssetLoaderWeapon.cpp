@@ -83,14 +83,13 @@ namespace T6
             std::vector<std::pair<std::string, std::string>> pairs;
             if (!ParseAsPairs(value, pairs))
             {
-                std::cout << "Failed to parse notetracksoundmap as pairs" << std::endl;
+                std::cout << "Failed to parse notetracksoundmap as pairs\n";
                 return false;
             }
 
             if (pairs.size() > std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
-                std::cout << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)> << " notetracksoundmap entries!"
-                          << std::endl;
+                std::cout << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)> << " notetracksoundmap entries!\n";
                 return false;
             }
 
@@ -100,21 +99,27 @@ namespace T6
 
             if (pairs.size() < std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
-                m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
+                m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(nullptr));
             }
 
             for (; currentEntryNum < pairs.size(); currentEntryNum++)
             {
-                keys[currentEntryNum] = m_zone_script_strings.AddOrGetScriptString(pairs[currentEntryNum].first);
-                m_used_script_string_list.emplace(keys[currentEntryNum]);
+                const auto& currentValue = pairs[currentEntryNum];
+                const auto keyScriptString = !currentValue.first.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue.first)
+                                                                         : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                const auto valueScriptString = !currentValue.second.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue.second)
+                                                                            : m_zone_script_strings.AddOrGetScriptString(nullptr);
 
-                values[currentEntryNum] = m_zone_script_strings.AddOrGetScriptString(pairs[currentEntryNum].second);
-                m_used_script_string_list.emplace(values[currentEntryNum]);
+                keys[currentEntryNum] = keyScriptString;
+                m_used_script_string_list.emplace(keyScriptString);
+
+                values[currentEntryNum] = valueScriptString;
+                m_used_script_string_list.emplace(valueScriptString);
             }
 
             for (; currentEntryNum < std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>; currentEntryNum++)
             {
-                const auto emptyScr = m_zone_script_strings.GetScriptString("");
+                const auto emptyScr = m_zone_script_strings.GetScriptString(nullptr);
                 keys[currentEntryNum] = emptyScr;
                 values[currentEntryNum] = emptyScr;
             }
