@@ -24,34 +24,36 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cout << "Failed to parse hide tags as array" << std::endl;
+                std::cout << "Failed to parse hide tags as array\n";
                 return false;
             }
 
-            if (valueArray.size() > std::extent<decltype(WeaponFullDef::hideTags)>::value)
+            if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << " hide tags!" << std::endl;
+                std::cout << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!\n";
                 return false;
             }
 
             auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-            auto currentHideTag = 0u;
 
-            if (valueArray.size() < std::extent<decltype(WeaponFullDef::hideTags)>::value)
+            if (valueArray.size() < std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
+                m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(nullptr));
             }
 
+            auto currentHideTag = 0u;
             for (; currentHideTag < valueArray.size(); currentHideTag++)
             {
-                const auto scrString = m_zone_script_strings.AddOrGetScriptString(valueArray[currentHideTag]);
+                const auto& currentValue = valueArray[currentHideTag];
+                const auto scrString =
+                    !currentValue.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue) : m_zone_script_strings.AddOrGetScriptString(nullptr);
                 hideTags[currentHideTag] = scrString;
                 m_used_script_string_list.emplace(scrString);
             }
 
-            for (; currentHideTag < std::extent<decltype(WeaponFullDef::hideTags)>::value; currentHideTag++)
+            for (; currentHideTag < std::extent_v<decltype(WeaponFullDef::hideTags)>; currentHideTag++)
             {
-                hideTags[currentHideTag] = m_zone_script_strings.GetScriptString("");
+                hideTags[currentHideTag] = m_zone_script_strings.GetScriptString(nullptr);
             }
 
             return true;
@@ -85,18 +87,18 @@ namespace T6
                 return false;
             }
 
-            if (pairs.size() > std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
+            if (pairs.size() > std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
-                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value << " notetracksoundmap entries!"
+                std::cout << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)> << " notetracksoundmap entries!"
                           << std::endl;
                 return false;
             }
 
             auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-            auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value];
+            auto* values = &keys[std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>];
             auto currentEntryNum = 0u;
 
-            if (pairs.size() < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value)
+            if (pairs.size() < std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
                 m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
             }
@@ -110,7 +112,7 @@ namespace T6
                 m_used_script_string_list.emplace(values[currentEntryNum]);
             }
 
-            for (; currentEntryNum < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value; currentEntryNum++)
+            for (; currentEntryNum < std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>; currentEntryNum++)
             {
                 const auto emptyScr = m_zone_script_strings.GetScriptString("");
                 keys[currentEntryNum] = emptyScr;
@@ -201,7 +203,7 @@ namespace T6
             }
 
             auto** attachmentUniques = reinterpret_cast<WeaponAttachmentUnique**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-            auto attachmentCombinationIndex = std::extent<decltype(WeaponFullDef::attachments)>::value;
+            auto attachmentCombinationIndex = std::extent_v<decltype(WeaponFullDef::attachments)>;
 
             for (const auto& attachmentUniqueName : valueArray)
             {
@@ -216,10 +218,10 @@ namespace T6
 
                 if (HasMoreThanOneAttachmentSetInMask(attachmentUniqueAsset->combinedAttachmentTypeMask))
                 {
-                    if (attachmentCombinationIndex >= std::extent<decltype(WeaponFullDef::attachmentUniques)>::value)
+                    if (attachmentCombinationIndex >= std::extent_v<decltype(WeaponFullDef::attachmentUniques)>)
                     {
                         std::cout << "Cannot have more than "
-                                  << (std::extent<decltype(WeaponFullDef::attachmentUniques)>::value - std::extent<decltype(WeaponFullDef::attachments)>::value)
+                                  << (std::extent_v<decltype(WeaponFullDef::attachmentUniques)> - std::extent_v<decltype(WeaponFullDef::attachments)>)
                                   << " combined attachment attachment unique entries!" << std::endl;
                         return false;
                     }
@@ -258,74 +260,74 @@ namespace T6
             switch (static_cast<weapFieldType_t>(field.iFieldType))
             {
             case WFT_WEAPONTYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapTypeNames, std::extent<decltype(szWeapTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapTypeNames, std::extent_v<decltype(szWeapTypeNames)>);
 
             case WFT_WEAPONCLASS:
-                return ConvertEnumInt(value, field.iOffset, szWeapClassNames, std::extent<decltype(szWeapClassNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapClassNames, std::extent_v<decltype(szWeapClassNames)>);
 
             case WFT_OVERLAYRETICLE:
-                return ConvertEnumInt(value, field.iOffset, szWeapOverlayReticleNames, std::extent<decltype(szWeapOverlayReticleNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
 
             case WFT_PENETRATE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, penetrateTypeNames, std::extent<decltype(penetrateTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
 
             case WFT_IMPACT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, impactTypeNames, std::extent<decltype(impactTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, impactTypeNames, std::extent_v<decltype(impactTypeNames)>);
 
             case WFT_STANCE:
-                return ConvertEnumInt(value, field.iOffset, szWeapStanceNames, std::extent<decltype(szWeapStanceNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapStanceNames, std::extent_v<decltype(szWeapStanceNames)>);
 
             case WFT_PROJ_EXPLOSION:
-                return ConvertEnumInt(value, field.iOffset, szProjectileExplosionNames, std::extent<decltype(szProjectileExplosionNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szProjectileExplosionNames, std::extent_v<decltype(szProjectileExplosionNames)>);
 
             case WFT_OFFHAND_CLASS:
-                return ConvertEnumInt(value, field.iOffset, offhandClassNames, std::extent<decltype(offhandClassNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, offhandClassNames, std::extent_v<decltype(offhandClassNames)>);
 
             case WFT_OFFHAND_SLOT:
-                return ConvertEnumInt(value, field.iOffset, offhandSlotNames, std::extent<decltype(offhandSlotNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, offhandSlotNames, std::extent_v<decltype(offhandSlotNames)>);
 
             case WFT_ANIMTYPE:
-                return ConvertEnumInt(value, field.iOffset, playerAnimTypeNames, std::extent<decltype(playerAnimTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, playerAnimTypeNames, std::extent_v<decltype(playerAnimTypeNames)>);
 
             case WFT_ACTIVE_RETICLE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, activeReticleNames, std::extent<decltype(activeReticleNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, activeReticleNames, std::extent_v<decltype(activeReticleNames)>);
 
             case WFT_GUIDED_MISSILE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, guidedMissileNames, std::extent<decltype(guidedMissileNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, guidedMissileNames, std::extent_v<decltype(guidedMissileNames)>);
 
             case WFT_BOUNCE_SOUND:
                 return ConvertBounceSounds(field, value);
 
             case WFT_STICKINESS:
-                return ConvertEnumInt(value, field.iOffset, stickinessNames, std::extent<decltype(stickinessNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, stickinessNames, std::extent_v<decltype(stickinessNames)>);
 
             case WFT_ROTATETYPE:
-                return ConvertEnumInt(value, field.iOffset, rotateTypeNames, std::extent<decltype(rotateTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, rotateTypeNames, std::extent_v<decltype(rotateTypeNames)>);
 
             case WFT_OVERLAYINTERFACE:
-                return ConvertEnumInt(value, field.iOffset, overlayInterfaceNames, std::extent<decltype(overlayInterfaceNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, overlayInterfaceNames, std::extent_v<decltype(overlayInterfaceNames)>);
 
             case WFT_INVENTORYTYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapInventoryTypeNames, std::extent<decltype(szWeapInventoryTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapInventoryTypeNames, std::extent_v<decltype(szWeapInventoryTypeNames)>);
 
             case WFT_FIRETYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapFireTypeNames, std::extent<decltype(szWeapFireTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
 
             case WFT_CLIPTYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapClipTypeNames, std::extent<decltype(szWeapClipTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapClipTypeNames, std::extent_v<decltype(szWeapClipTypeNames)>);
 
             case WFT_AMMOCOUNTER_CLIPTYPE:
-                return ConvertEnumInt(value, field.iOffset, ammoCounterClipNames, std::extent<decltype(ammoCounterClipNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, ammoCounterClipNames, std::extent_v<decltype(ammoCounterClipNames)>);
 
             case WFT_ICONRATIO_HUD:
             case WFT_ICONRATIO_AMMOCOUNTER:
             case WFT_ICONRATIO_KILL:
             case WFT_ICONRATIO_DPAD:
             case WFT_ICONRATIO_INDICATOR:
-                return ConvertEnumInt(value, field.iOffset, weapIconRatioNames, std::extent<decltype(weapIconRatioNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, weapIconRatioNames, std::extent_v<decltype(weapIconRatioNames)>);
 
             case WFT_BARRELTYPE:
-                return ConvertEnumInt(value, field.iOffset, barrelTypeNames, std::extent<decltype(barrelTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, barrelTypeNames, std::extent_v<decltype(barrelTypeNames)>);
 
             case WFT_HIDETAGS:
                 return ConvertHideTags(field, value);
@@ -418,7 +420,7 @@ bool AssetLoaderWeapon::IsStringOverride(const char* str1, const char* str2)
     return strcmp(str1, str2) != 0;
 }
 
-bool AssetLoaderWeapon::IsFxOverride(FxEffectDef* effect1, FxEffectDef* effect2)
+bool AssetLoaderWeapon::IsFxOverride(const FxEffectDef* effect1, const FxEffectDef* effect2)
 {
     if ((effect1 == nullptr) != (effect2 == nullptr))
         return true;
@@ -439,20 +441,20 @@ void AssetLoaderWeapon::HandleSoundOverride(WeaponAttachmentUnique* attachmentUn
 }
 
 void AssetLoaderWeapon::HandleFxOverride(WeaponAttachmentUnique* attachmentUnique,
-                                         FxEffectDef* effect1,
-                                         FxEffectDef* effect2,
+                                         const FxEffectDef* effect1,
+                                         const FxEffectDef* effect2,
                                          const eAttachmentOverrideEffects fxOverrideIndex)
 {
     if (IsFxOverride(effect1, effect2))
         attachmentUnique->effectOverrides |= 1 << static_cast<unsigned>(fxOverrideIndex);
 }
 
-void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigned attachmentIndex, WeaponAttachmentUnique* attachmentUnique)
+void AssetLoaderWeapon::CalculateAttachmentFields(const WeaponFullDef* weapon, unsigned attachmentIndex, WeaponAttachmentUnique* attachmentUnique)
 {
     for (auto& val : attachmentUnique->animationOverrides)
         val = 0;
 
-    for (auto animIndex = 0u; animIndex < std::extent<decltype(WeaponFullDef::szXAnims)>::value; animIndex++)
+    for (auto animIndex = 0u; animIndex < std::extent_v<decltype(WeaponFullDef::szXAnims)>; animIndex++)
     {
         if (IsStringOverride(weapon->szXAnims[animIndex], attachmentUnique->szXAnims[animIndex]))
             attachmentUnique->animationOverrides[animIndex / 32] |= 1 << (animIndex % 32);
@@ -485,8 +487,8 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigne
     if (attachmentUnique->combinedAttachmentTypeMask == 0)
     {
         WeaponAttachmentUnique* lastSibling = nullptr;
-        for (auto attachmentUniqueIndex = std::extent<decltype(WeaponFullDef::attachments)>::value;
-             attachmentUniqueIndex < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value;
+        for (auto attachmentUniqueIndex = std::extent_v<decltype(WeaponFullDef::attachments)>;
+             attachmentUniqueIndex < std::extent_v<decltype(WeaponFullDef::attachmentUniques)>;
              attachmentUniqueIndex++)
         {
             if (weapon->attachmentUniques[attachmentUniqueIndex] != nullptr
@@ -516,7 +518,7 @@ void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon, unsigne
 
 void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon)
 {
-    for (auto attachmentUniqueIndex = 0u; attachmentUniqueIndex < std::extent<decltype(WeaponFullDef::attachmentUniques)>::value; attachmentUniqueIndex++)
+    for (auto attachmentUniqueIndex = 0u; attachmentUniqueIndex < std::extent_v<decltype(WeaponFullDef::attachmentUniques)>; attachmentUniqueIndex++)
     {
         if (weapon->attachmentUniques[attachmentUniqueIndex] == nullptr)
             continue;
@@ -533,7 +535,7 @@ bool AssetLoaderWeapon::LoadFromInfoString(
     LinkWeaponFullDefSubStructs(weaponFullDef);
 
     InfoStringToWeaponConverter converter(
-        infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent<decltype(weapon_fields)>::value);
+        infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent_v<decltype(weapon_fields)>);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse weapon: \"" << assetName << "\"" << std::endl;
