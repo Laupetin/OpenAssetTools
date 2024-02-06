@@ -243,6 +243,10 @@ namespace T6
                 break;
             }
 
+            case WFT_ANIM_NAME:
+                FillFromString(std::string(field.szName), field.iOffset);
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);

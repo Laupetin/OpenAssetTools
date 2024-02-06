@@ -23,6 +23,7 @@ public:
     std::unique_ptr<IEvaluation> m_condition;
     std::unique_ptr<IEvaluation> m_alloc_alignment;
     const FastFileBlock* m_fast_file_block;
+    const EnumMember* m_asset_ref;
 
     MemberInformation(StructureInformation* parent, StructureInformation* type, Variable* member);
 };
