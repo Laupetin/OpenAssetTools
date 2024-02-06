@@ -227,7 +227,7 @@ namespace T6
                     {
                         std::cout << "Cannot have more than "
                                   << (std::extent_v<decltype(WeaponFullDef::attachmentUniques)> - std::extent_v<decltype(WeaponFullDef::attachments)>)
-                                  << " combined attachment attachment unique entries!" << std::endl;
+                                  << " combined attachment attachment unique entries!\n";
                         return false;
                     }
 
@@ -239,15 +239,14 @@ namespace T6
                     if (static_cast<unsigned>(attachmentUniqueAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                     {
                         std::cout << "Invalid attachment type " << attachmentUniqueAsset->attachmentType << " for attachment unique asset \""
-                                  << attachmentUniqueName << "\"" << std::endl;
+                                  << attachmentUniqueName << "\"\n";
                         return false;
                     }
 
                     if (attachmentUniques[attachmentUniqueAsset->attachmentType] != nullptr)
                     {
                         std::cout << "Already loaded attachment unique with same type " << attachmentUniqueAsset->attachmentType << ": \""
-                                  << attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName << "\", \"" << attachmentUniqueName << "\""
-                                  << std::endl;
+                                  << attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName << "\", \"" << attachmentUniqueName << "\"\n";
                         return false;
                     }
 
@@ -257,6 +256,18 @@ namespace T6
             }
 
             return true;
+        }
+
+        bool ConvertAnimName(const cspField_t& field, const std::string& value)
+        {
+            if (ConvertString(value, field.iOffset))
+            {
+                if (!value.empty())
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                return true;
+            }
+
+            return false;
         }
 
     protected:
@@ -352,7 +363,9 @@ namespace T6
             case WFT_ATTACHMENT_UNIQUES:
                 return ConvertAttachmentUniques(field, value);
 
-            case WFT_NUM_FIELD_TYPES:
+            case WFT_ANIM_NAME:
+                return ConvertAnimName(field, value);
+
             default:
                 assert(false);
                 return false;
@@ -553,7 +566,12 @@ bool AssetLoaderWeapon::LoadFromInfoString(
     CalculateWeaponFields(weaponFullDef);
     CalculateAttachmentFields(weaponFullDef);
 
-    manager->AddAsset(ASSET_TYPE_WEAPON, assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset(ASSET_TYPE_WEAPON,
+                      assetName,
+                      &weaponFullDef->weapVariantDef,
+                      converter.GetDependencies(),
+                      converter.GetUsedScriptStrings(),
+                      converter.GetIndirectAssetReferences());
 
     return true;
 }
