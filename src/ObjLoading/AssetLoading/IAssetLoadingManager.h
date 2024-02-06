@@ -23,6 +23,7 @@ public:
                                         void* asset,
                                         std::vector<XAssetInfoGeneric*> dependencies,
                                         std::vector<scr_string_t> usedScriptStrings) = 0;
+    virtual XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) = 0;
 
     XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset)
     {

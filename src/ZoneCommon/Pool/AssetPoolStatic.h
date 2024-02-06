@@ -67,9 +67,7 @@ public:
     ~AssetPoolStatic() override
     {
         if (m_capacity > 0)
-        {
             GlobalAssetPool<T>::UnlinkAssetPool(this);
-        }
 
         delete[] m_pool;
         m_pool = nullptr;
@@ -81,25 +79,19 @@ public:
         m_capacity = 0;
     }
 
-    XAssetInfo<T>*
-        AddAsset(std::string name, T* asset, Zone* zone, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings) override
+    XAssetInfo<T>* AddAsset(std::unique_ptr<XAssetInfo<T>> xAssetInfo) override
     {
         if (m_free == nullptr)
-        {
             throw std::runtime_error("Could not add asset to static asset pool: capacity exhausted.");
-        }
 
         AssetPoolEntry* poolSlot = m_free;
         m_free = m_free->m_next;
 
-        memcpy(&poolSlot->m_entry, asset, sizeof(T));
+        const T* pAsset = xAssetInfo->Asset();
+        xAssetInfo->m_ptr = static_cast<void*>(&poolSlot->m_entry);
+        memcpy(&poolSlot->m_entry, pAsset, sizeof(T));
 
-        poolSlot->m_info->m_type = m_type;
-        poolSlot->m_info->m_name = std::move(name);
-        poolSlot->m_info->m_ptr = &poolSlot->m_entry;
-        poolSlot->m_info->m_zone = zone;
-        poolSlot->m_info->m_dependencies = std::move(dependencies);
-        poolSlot->m_info->m_used_script_strings = std::move(usedScriptStrings);
+        *poolSlot->m_info = std::move(*xAssetInfo);
 
         m_asset_lookup[poolSlot->m_info->m_name] = poolSlot->m_info;
 

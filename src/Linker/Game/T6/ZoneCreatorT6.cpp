@@ -102,7 +102,7 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
         for (auto i = 0u; i < kvpList.size(); i++)
             kvps->keyValuePairs[i] = kvpList[i];
 
-        zone->m_pools->AddAsset(ASSET_TYPE_KEYVALUEPAIRS, zone->m_name, kvps, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
+        zone->m_pools->AddAsset(std::make_unique<XAssetInfo<KeyValuePairs>>(ASSET_TYPE_KEYVALUEPAIRS, zone->m_name, kvps));
     }
 }
 

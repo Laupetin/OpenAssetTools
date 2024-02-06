@@ -13,7 +13,9 @@ AssetLoader::AssetLoader(const asset_type_t assetType, Zone* zone, IZoneInputStr
 XAssetInfoGeneric*
     AssetLoader::LinkAsset(std::string name, void* asset, std::vector<scr_string_t> scriptStrings, std::vector<XAssetInfoGeneric*> dependencies) const
 {
-    return m_zone->m_pools->AddAsset(m_asset_type, std::move(name), asset, std::move(dependencies), std::move(scriptStrings));
+    // TODO: Add indirect asset references here
+    return m_zone->m_pools->AddAsset(
+        m_asset_type, std::move(name), asset, std::move(dependencies), std::move(scriptStrings), std::vector<IndirectAssetReference>());
 }
 
 XAssetInfoGeneric* AssetLoader::GetAssetInfo(std::string name) const

@@ -12,18 +12,21 @@ AssetLoadingContext* MockAssetLoadingManager::GetAssetLoadingContext() const
     return m_context.get();
 }
 
+XAssetInfoGeneric* MockAssetLoadingManager::AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo)
+{
+    const auto assetInfoPtr = xAssetInfo.get();
+    m_added_assets.emplace(std::make_pair(xAssetInfo->m_name, std::move(xAssetInfo)));
+
+    return assetInfoPtr;
+}
+
 XAssetInfoGeneric* MockAssetLoadingManager::AddAsset(const asset_type_t assetType,
                                                      const std::string& assetName,
                                                      void* asset,
                                                      std::vector<XAssetInfoGeneric*> dependencies,
                                                      std::vector<scr_string_t> usedScriptStrings)
 {
-    XAssetInfoGeneric assetInfoObj{assetType, assetName, m_zone, std::move(dependencies), std::move(usedScriptStrings), asset};
-    auto assetInfo = std::make_unique<XAssetInfoGeneric>(std::move(assetInfoObj));
-    const auto assetInfoPtr = assetInfo.get();
-    m_added_assets.emplace(std::make_pair(assetInfo->m_name, std::move(assetInfo)));
-
-    return assetInfoPtr;
+    return AddAsset(std::make_unique<XAssetInfoGeneric>(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings)));
 }
 
 XAssetInfoGeneric* MockAssetLoadingManager::LoadDependency(const asset_type_t assetType, const std::string& assetName)
@@ -43,9 +46,8 @@ XAssetInfoGeneric* MockAssetLoadingManager::LoadDependency(const asset_type_t as
 
 void MockAssetLoadingManager::MockAddAvailableDependency(const asset_type_t assetType, std::string assetName, void* asset)
 {
-    XAssetInfoGeneric assetInfoObj{assetType, std::move(assetName), m_zone, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>(), asset};
-    auto assetInfo = std::make_unique<XAssetInfoGeneric>(std::move(assetInfoObj));
-    m_available_dependencies.emplace(std::make_pair(assetInfo->m_name, std::move(assetInfo)));
+    auto assetInfo = std::make_unique<XAssetInfoGeneric>(assetType, std::move(assetName), asset);
+    m_available_dependencies.emplace(assetInfo->m_name, std::move(assetInfo));
 }
 
 XAssetInfoGeneric* MockAssetLoadingManager::MockGetAddedAsset(const std::string& assetName)

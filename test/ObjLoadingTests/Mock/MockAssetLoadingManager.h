@@ -17,6 +17,7 @@ public:
     MockAssetLoadingManager(Zone* zone, ISearchPath* searchPath);
 
     _NODISCARD AssetLoadingContext* GetAssetLoadingContext() const override;
+    XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
     XAssetInfoGeneric* AddAsset(asset_type_t assetType,
                                 const std::string& assetName,
                                 void* asset,
