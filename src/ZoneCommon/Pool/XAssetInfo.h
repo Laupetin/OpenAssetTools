@@ -17,6 +17,14 @@ public:
 
     IndirectAssetReference();
     IndirectAssetReference(asset_type_t type, std::string name);
+
+    friend bool operator==(const IndirectAssetReference& lhs, const IndirectAssetReference& rhs);
+    friend bool operator!=(const IndirectAssetReference& lhs, const IndirectAssetReference& rhs);
+};
+
+template<> struct std::hash<IndirectAssetReference>
+{
+    std::size_t operator()(const IndirectAssetReference& v) const noexcept;
 };
 
 class XAssetInfoGeneric
@@ -34,6 +42,12 @@ public:
     XAssetInfoGeneric(asset_type_t type, std::string name, void* ptr);
     XAssetInfoGeneric(
         asset_type_t type, std::string name, void* ptr, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings);
+    XAssetInfoGeneric(asset_type_t type,
+                      std::string name,
+                      void* ptr,
+                      std::vector<XAssetInfoGeneric*> dependencies,
+                      std::vector<scr_string_t> usedScriptStrings,
+                      std::vector<IndirectAssetReference> indirectAssetReferences);
     XAssetInfoGeneric(asset_type_t type,
                       std::string name,
                       void* ptr,
@@ -61,6 +75,17 @@ public:
 
     XAssetInfo(const asset_type_t type, std::string name, T* ptr, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings)
         : XAssetInfoGeneric(type, std::move(name), static_cast<void*>(ptr), std::move(dependencies), std::move(usedScriptStrings))
+    {
+    }
+
+    XAssetInfo(const asset_type_t type,
+               std::string name,
+               T* ptr,
+               std::vector<XAssetInfoGeneric*> dependencies,
+               std::vector<scr_string_t> usedScriptStrings,
+               std::vector<IndirectAssetReference> indirectAssetReferences)
+        : XAssetInfoGeneric(
+              type, std::move(name), static_cast<void*>(ptr), std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences))
     {
     }
 

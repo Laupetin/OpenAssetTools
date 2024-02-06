@@ -29,6 +29,17 @@ XAssetInfoGeneric* MockAssetLoadingManager::AddAsset(const asset_type_t assetTyp
     return AddAsset(std::make_unique<XAssetInfoGeneric>(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings)));
 }
 
+XAssetInfoGeneric* MockAssetLoadingManager::AddAsset(asset_type_t assetType,
+                                                     const std::string& assetName,
+                                                     void* asset,
+                                                     std::vector<XAssetInfoGeneric*> dependencies,
+                                                     std::vector<scr_string_t> usedScriptStrings,
+                                                     std::vector<IndirectAssetReference> indirectAssetReferences)
+{
+    return AddAsset(std::make_unique<XAssetInfoGeneric>(
+        assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences)));
+}
+
 XAssetInfoGeneric* MockAssetLoadingManager::LoadDependency(const asset_type_t assetType, const std::string& assetName)
 {
     auto foundDependencies = m_available_dependencies.find(assetName);
@@ -42,6 +53,11 @@ XAssetInfoGeneric* MockAssetLoadingManager::LoadDependency(const asset_type_t as
     }
 
     return nullptr;
+}
+
+IndirectAssetReference MockAssetLoadingManager::LoadIndirectAssetReference(const asset_type_t assetType, const std::string& assetName)
+{
+    return IndirectAssetReference(assetType, assetName);
 }
 
 void MockAssetLoadingManager::MockAddAvailableDependency(const asset_type_t assetType, std::string assetName, void* asset)

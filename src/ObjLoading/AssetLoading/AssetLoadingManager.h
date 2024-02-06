@@ -28,6 +28,13 @@ public:
                                 void* asset,
                                 std::vector<XAssetInfoGeneric*> dependencies,
                                 std::vector<scr_string_t> usedScriptStrings) override;
+    XAssetInfoGeneric* AddAsset(asset_type_t assetType,
+                                const std::string& assetName,
+                                void* asset,
+                                std::vector<XAssetInfoGeneric*> dependencies,
+                                std::vector<scr_string_t> usedScriptStrings,
+                                std::vector<IndirectAssetReference> indirectAssetReferences) override;
     XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
     XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) override;
+    IndirectAssetReference LoadIndirectAssetReference(asset_type_t assetType, const std::string& assetName) override;
 };
