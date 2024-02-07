@@ -8,6 +8,7 @@ set name szInternalName;
 set string szDisplayName;
 set string szOverlayName;
 set string szXAnims;
+set assetref szXAnims ASSET_TYPE_XANIMPARTS;
 set string szModeName;
 set scriptstring hideTags;
 set scriptstring notetrackSoundMapKeys;

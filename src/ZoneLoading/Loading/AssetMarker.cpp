@@ -39,6 +39,22 @@ void AssetMarker::MarkArray_ScriptString(const scr_string_t* scrStringArray, con
         Mark_ScriptString(scrStringArray[index]);
 }
 
+void AssetMarker::Mark_IndirectAssetRef(asset_type_t type, const char* assetRefName)
+{
+    if (!assetRefName || !assetRefName[0])
+        return;
+
+    m_indirect_asset_references.emplace(type, assetRefName);
+}
+
+void AssetMarker::MarkArray_IndirectAssetRef(const asset_type_t type, const char** assetRefNames, const size_t count)
+{
+    assert(assetRefNames != nullptr);
+
+    for (size_t index = 0; index < count; index++)
+        Mark_IndirectAssetRef(type, assetRefNames[index]);
+}
+
 XAssetInfoGeneric* AssetMarker::GetAssetInfoByName(std::string name) const
 {
     return m_zone->m_pools->GetAsset(m_asset_type, std::move(name));
@@ -70,4 +86,17 @@ std::vector<scr_string_t> AssetMarker::GetUsedScriptStrings() const
     }
 
     return usedScriptStrings;
+}
+
+std::vector<IndirectAssetReference> AssetMarker::GetIndirectAssetReferences() const
+{
+    std::vector<IndirectAssetReference> assetReferences;
+    if (!m_indirect_asset_references.empty())
+    {
+        assetReferences.reserve(m_indirect_asset_references.size());
+        for (const auto& assetReference : m_indirect_asset_references)
+            assetReferences.emplace_back(assetReference);
+    }
+
+    return assetReferences;
 }

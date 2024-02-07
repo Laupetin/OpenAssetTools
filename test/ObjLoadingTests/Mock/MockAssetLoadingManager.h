@@ -17,12 +17,20 @@ public:
     MockAssetLoadingManager(Zone* zone, ISearchPath* searchPath);
 
     _NODISCARD AssetLoadingContext* GetAssetLoadingContext() const override;
+    XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
     XAssetInfoGeneric* AddAsset(asset_type_t assetType,
                                 const std::string& assetName,
                                 void* asset,
                                 std::vector<XAssetInfoGeneric*> dependencies,
                                 std::vector<scr_string_t> usedScriptStrings) override;
+    XAssetInfoGeneric* AddAsset(asset_type_t assetType,
+                                const std::string& assetName,
+                                void* asset,
+                                std::vector<XAssetInfoGeneric*> dependencies,
+                                std::vector<scr_string_t> usedScriptStrings,
+                                std::vector<IndirectAssetReference> indirectAssetReferences) override;
     XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) override;
+    IndirectAssetReference LoadIndirectAssetReference(asset_type_t assetType, const std::string& assetName) override;
 
     void MockAddAvailableDependency(asset_type_t assetType, std::string assetName, void* asset);
     XAssetInfoGeneric* MockGetAddedAsset(const std::string& assetName);

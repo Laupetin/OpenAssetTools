@@ -98,6 +98,9 @@ namespace T6
         WFT_ATTACHMENTS,
         WFT_ATTACHMENT_UNIQUES,
 
+        // Custom
+        WFT_ANIM_NAME,
+
         WFT_NUM_FIELD_TYPES
     };
 

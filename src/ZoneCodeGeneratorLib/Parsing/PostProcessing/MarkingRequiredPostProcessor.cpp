@@ -44,8 +44,8 @@ bool MarkingRequiredPostProcessor::CalculateRequiresMarking(std::unordered_set<c
         if (skip)
             continue;
 
-        // Any ScriptStrings or Strings need to be processed.
-        if (member->m_is_script_string || member->m_type && member->m_type->m_asset_enum_entry)
+        // Any script strings, asset refs and assets need to be processed.
+        if (member->m_is_script_string || member->m_asset_ref || member->m_type && member->m_type->m_asset_enum_entry)
         {
             info->m_requires_marking = true;
             return true;

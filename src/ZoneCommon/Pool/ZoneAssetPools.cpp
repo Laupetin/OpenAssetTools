@@ -5,24 +5,22 @@ ZoneAssetPools::ZoneAssetPools(Zone* zone)
 {
 }
 
-XAssetInfoGeneric* ZoneAssetPools::AddAsset(
-    const asset_type_t type, std::string name, void* asset, std::vector<XAssetInfoGeneric*> dependencies, std::vector<scr_string_t> usedScriptStrings)
-{
-    return AddAsset(type, std::move(name), asset, std::move(dependencies), std::move(usedScriptStrings), m_zone);
-}
-
 XAssetInfoGeneric* ZoneAssetPools::AddAsset(const asset_type_t type,
                                             std::string name,
                                             void* asset,
                                             std::vector<XAssetInfoGeneric*> dependencies,
                                             std::vector<scr_string_t> usedScriptStrings,
-                                            Zone* zone)
+                                            std::vector<IndirectAssetReference> indirectAssetReferences)
 {
-    auto* assetInfo = AddAssetToPool(type, std::move(name), asset, std::move(dependencies), std::move(usedScriptStrings), zone);
+    return AddAsset(std::make_unique<XAssetInfoGeneric>(
+        type, std::move(name), asset, std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences), m_zone));
+}
+
+XAssetInfoGeneric* ZoneAssetPools::AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo)
+{
+    auto* assetInfo = AddAssetToPool(std::move(xAssetInfo));
     if (assetInfo)
-    {
         m_assets_in_order.push_back(assetInfo);
-    }
 
     return assetInfo;
 }
