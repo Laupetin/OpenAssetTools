@@ -232,8 +232,16 @@ class ZoneMarkTemplate::Internal final : BaseTemplate
     {
         if (loadType == MemberLoadType::POINTER_ARRAY)
         {
-            LINE("MarkArray_IndirectAssetRef(" << member->m_asset_ref->m_name << ", " << MakeMemberAccess(info, member, modifier) << ", "
-                                               << MakeEvaluation(modifier.GetArrayPointerCountEvaluation()) << ");")
+            if (modifier.IsArray())
+            {
+                LINE("MarkArray_IndirectAssetRef(" << member->m_asset_ref->m_name << ", " << MakeMemberAccess(info, member, modifier) << ", "
+                                                   << modifier.GetArraySize() << ");")
+            }
+            else
+            {
+                LINE("MarkArray_IndirectAssetRef(" << member->m_asset_ref->m_name << ", " << MakeMemberAccess(info, member, modifier) << ", "
+                                                   << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+            }
         }
         else if (loadType == MemberLoadType::SINGLE_POINTER)
         {
