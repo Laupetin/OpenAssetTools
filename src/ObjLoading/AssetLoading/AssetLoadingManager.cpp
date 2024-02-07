@@ -109,6 +109,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
     if (existingAsset)
     {
         std::vector<XAssetInfoGeneric*> dependencies;
+        std::vector<IndirectAssetReference> indirectAssetReferences;
         for (const auto* dependency : existingAsset->m_dependencies)
         {
             auto* newDependency = LoadDependency(dependency->m_type, dependency->m_name);
@@ -117,6 +118,10 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
             else
                 return nullptr;
         }
+
+        indirectAssetReferences.reserve(existingAsset->m_indirect_asset_references.size());
+        for (const auto& indirectAssetReference : existingAsset->m_indirect_asset_references)
+            indirectAssetReferences.emplace_back(LoadIndirectAssetReference(indirectAssetReference.m_type, indirectAssetReference.m_name));
 
         // Make sure any used script string is available in the created zone
         // The replacement of the scr_string_t values will be done upon writing
@@ -128,7 +133,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
                                                              existingAsset->m_ptr,
                                                              std::move(dependencies),
                                                              existingAsset->m_used_script_strings,
-                                                             existingAsset->m_indirect_asset_references,
+                                                             std::move(indirectAssetReferences),
                                                              existingAsset->m_zone));
 
         auto* lastDependency = m_last_dependency_loaded;
