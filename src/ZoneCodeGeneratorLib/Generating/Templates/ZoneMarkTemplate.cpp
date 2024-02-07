@@ -225,6 +225,35 @@ class ZoneMarkTemplate::Internal final : BaseTemplate
         }
     }
 
+    void MarkMember_AssetRef(StructureInformation* info,
+                             MemberInformation* member,
+                             const DeclarationModifierComputations& modifier,
+                             const MemberLoadType loadType) const
+    {
+        if (loadType == MemberLoadType::POINTER_ARRAY)
+        {
+            if (modifier.IsArray())
+            {
+                LINE("MarkArray_IndirectAssetRef(" << member->m_asset_ref->m_name << ", " << MakeMemberAccess(info, member, modifier) << ", "
+                                                   << modifier.GetArraySize() << ");")
+            }
+            else
+            {
+                LINE("MarkArray_IndirectAssetRef(" << member->m_asset_ref->m_name << ", " << MakeMemberAccess(info, member, modifier) << ", "
+                                                   << MakeEvaluation(modifier.GetPointerArrayCountEvaluation()) << ");")
+            }
+        }
+        else if (loadType == MemberLoadType::SINGLE_POINTER)
+        {
+            LINE("Mark_IndirectAssetRef(" << member->m_asset_ref->m_name << ", " << MakeMemberAccess(info, member, modifier) << ");")
+        }
+        else
+        {
+            assert(false);
+            LINE("#error unsupported loadType " << static_cast<int>(loadType) << " for scriptstring")
+        }
+    }
+
     void MarkMember_Asset(StructureInformation* info,
                           MemberInformation* member,
                           const DeclarationModifierComputations& modifier,
@@ -307,6 +336,10 @@ class ZoneMarkTemplate::Internal final : BaseTemplate
         if (member->m_is_script_string)
         {
             MarkMember_ScriptString(info, member, modifier, loadType);
+        }
+        else if (member->m_asset_ref)
+        {
+            MarkMember_AssetRef(info, member, modifier, loadType);
         }
         else if (member->m_type && StructureComputations(member->m_type).IsAsset())
         {
@@ -541,7 +574,8 @@ class ZoneMarkTemplate::Internal final : BaseTemplate
         if (computations.ShouldIgnore() || computations.IsInRuntimeBlock())
             return;
 
-        if (member->m_is_script_string || member->m_type && (member->m_type->m_requires_marking || StructureComputations(member->m_type).IsAsset()))
+        if (member->m_is_script_string || member->m_asset_ref
+            || member->m_type && (member->m_type->m_requires_marking || StructureComputations(member->m_type).IsAsset()))
         {
             if (info->m_definition->GetType() == DataDefinitionType::UNION)
                 MarkMember_Condition_Union(info, member);

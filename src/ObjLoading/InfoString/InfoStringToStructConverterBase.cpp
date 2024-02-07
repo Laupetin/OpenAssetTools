@@ -41,7 +41,7 @@ bool InfoStringToStructConverterBase::ParseAsArray(const std::string& value, std
     return true;
 }
 
-bool InfoStringToStructConverterBase::ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray) const
+bool InfoStringToStructConverterBase::ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray)
 {
     std::string key;
     auto isKey = true;
@@ -227,6 +227,7 @@ bool InfoStringToStructConverterBase::ConvertEnumInt(const std::string& value, c
 std::vector<scr_string_t> InfoStringToStructConverterBase::GetUsedScriptStrings() const
 {
     std::vector<scr_string_t> scrStringList;
+    scrStringList.reserve(m_used_script_string_list.size());
     for (auto scrStr : m_used_script_string_list)
     {
         scrStringList.push_back(scrStr);
@@ -238,10 +239,23 @@ std::vector<scr_string_t> InfoStringToStructConverterBase::GetUsedScriptStrings(
 std::vector<XAssetInfoGeneric*> InfoStringToStructConverterBase::GetDependencies() const
 {
     std::vector<XAssetInfoGeneric*> dependencyList;
+    dependencyList.reserve(m_dependencies.size());
     for (auto* dependency : m_dependencies)
     {
         dependencyList.push_back(dependency);
     }
 
     return dependencyList;
+}
+
+std::vector<IndirectAssetReference> InfoStringToStructConverterBase::GetIndirectAssetReferences() const
+{
+    std::vector<IndirectAssetReference> indirectAssetReferences;
+    indirectAssetReferences.reserve(m_indirect_asset_references.size());
+    for (auto& assetReference : m_indirect_asset_references)
+    {
+        indirectAssetReferences.emplace_back(assetReference);
+    }
+
+    return indirectAssetReferences;
 }

@@ -1075,7 +1075,8 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE("marker.Mark(*pAsset);")
         LINE("")
         LINE("m_asset_info = reinterpret_cast<XAssetInfo<"
-             << info->m_definition->GetFullName() << ">*>(LinkAsset(GetAssetName(*pAsset), *pAsset, marker.GetUsedScriptStrings(), marker.GetDependencies()));")
+             << info->m_definition->GetFullName()
+             << ">*>(LinkAsset(GetAssetName(*pAsset), *pAsset, marker.GetDependencies(), marker.GetUsedScriptStrings(), marker.GetIndirectAssetReferences()));")
         LINE("*pAsset = m_asset_info->Asset();")
 
         m_intendation--;

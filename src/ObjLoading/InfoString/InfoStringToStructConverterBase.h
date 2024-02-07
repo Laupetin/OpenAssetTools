@@ -17,11 +17,12 @@ protected:
     ZoneScriptStrings& m_zone_script_strings;
     std::unordered_set<scr_string_t> m_used_script_string_list;
     std::unordered_set<XAssetInfoGeneric*> m_dependencies;
+    std::unordered_set<IndirectAssetReference> m_indirect_asset_references;
     MemoryManager* m_memory;
     void* m_structure;
 
     static bool ParseAsArray(const std::string& value, std::vector<std::string>& valueArray);
-    bool ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray) const;
+    static bool ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray);
 
     bool ConvertString(const std::string& value, size_t offset);
     bool ConvertStringBuffer(const std::string& value, size_t offset, size_t bufferSize);
@@ -45,4 +46,5 @@ public:
     virtual bool Convert() = 0;
     _NODISCARD std::vector<scr_string_t> GetUsedScriptStrings() const;
     _NODISCARD std::vector<XAssetInfoGeneric*> GetDependencies() const;
+    _NODISCARD std::vector<IndirectAssetReference> GetIndirectAssetReferences() const;
 };

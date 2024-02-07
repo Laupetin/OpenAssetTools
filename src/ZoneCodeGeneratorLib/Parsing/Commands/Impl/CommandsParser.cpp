@@ -6,6 +6,7 @@
 #include "Parsing/Commands/Sequence/SequenceArrayCount.h"
 #include "Parsing/Commands/Sequence/SequenceArraySize.h"
 #include "Parsing/Commands/Sequence/SequenceAsset.h"
+#include "Parsing/Commands/Sequence/SequenceAssetRef.h"
 #include "Parsing/Commands/Sequence/SequenceBlock.h"
 #include "Parsing/Commands/Sequence/SequenceCondition.h"
 #include "Parsing/Commands/Sequence/SequenceCount.h"
@@ -33,6 +34,7 @@ const std::vector<CommandsParser::sequence_t*>& CommandsParser::GetTestsForState
         new SequenceArrayCount(),
         new SequenceArraySize(),
         new SequenceAsset(),
+        new SequenceAssetRef(),
         new SequenceBlock(),
         new SequenceCondition(),
         new SequenceCount(),

@@ -16,7 +16,11 @@ protected:
 
     AssetLoader(asset_type_t assetType, Zone* zone, IZoneInputStream* stream);
 
-    XAssetInfoGeneric* LinkAsset(std::string name, void* asset, std::vector<scr_string_t> scriptStrings, std::vector<XAssetInfoGeneric*> dependencies) const;
+    XAssetInfoGeneric* LinkAsset(std::string name,
+                                 void* asset,
+                                 std::vector<XAssetInfoGeneric*> dependencies,
+                                 std::vector<scr_string_t> scriptStrings,
+                                 std::vector<IndirectAssetReference> indirectAssetReferences) const;
 
     _NODISCARD XAssetInfoGeneric* GetAssetInfo(std::string name) const;
 };
