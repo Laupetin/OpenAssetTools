@@ -1,5 +1,7 @@
 #include "XAssetInfo.h"
 
+#include "Utils/StringUtils.h"
+
 IndirectAssetReference::IndirectAssetReference()
     : m_type(-1)
 {
@@ -9,6 +11,7 @@ IndirectAssetReference::IndirectAssetReference(const asset_type_t type, std::str
     : m_type(type),
       m_name(std::move(name))
 {
+    utils::MakeStringLowerCase(m_name);
 }
 
 bool operator==(const IndirectAssetReference& lhs, const IndirectAssetReference& rhs)
