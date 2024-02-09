@@ -2,7 +2,7 @@
 
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/SoundConstantsT6.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
 #include "nlohmann/json.hpp"
@@ -123,8 +123,8 @@ namespace
     std::unordered_map<unsigned int, std::string> CreateCurvesMap()
     {
         std::unordered_map<unsigned int, std::string> result;
-        for (auto i = 0u; i < ObjConstants::SOUND_CURVES.size(); i++)
-            result.emplace(T6::Common::SND_HashName(ObjConstants::SOUND_CURVES[i].data()), ObjConstants::SOUND_CURVES[i]);
+        for (auto i = 0u; i < std::extent_v<decltype(SOUND_CURVES)>; i++)
+            result.emplace(T6::Common::SND_HashName(SOUND_CURVES[i].data()), SOUND_CURVES[i]);
         return result;
     }
 
@@ -226,7 +226,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn((alias->secondaryname && *alias->secondaryname) ? alias->secondaryname : "");
 
         // group
-        stream.WriteColumn(ObjConstants::SOUND_GROUPS[alias->flags.volumeGroup]);
+        stream.WriteColumn(SOUND_GROUPS[alias->flags.volumeGroup]);
 
         // vol_min
         stream.WriteColumn(std::to_string(alias->volMin));
@@ -247,28 +247,28 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->distReverbMax));
 
         // volume_falloff_curve
-        stream.WriteColumn(ObjConstants::SOUND_CURVES[alias->flags.volumeFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.volumeFalloffCurve]);
 
         // reverb_falloff_curve
-        stream.WriteColumn(ObjConstants::SOUND_CURVES[alias->flags.reverbFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.reverbFalloffCurve]);
 
         // volume_min_falloff_curve
-        stream.WriteColumn(ObjConstants::SOUND_CURVES[alias->flags.volumeMinFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.volumeMinFalloffCurve]);
 
         // reverb_min_falloff_curve"
-        stream.WriteColumn(ObjConstants::SOUND_CURVES[alias->flags.reverbMinFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.reverbMinFalloffCurve]);
 
         // limit_count
         stream.WriteColumn(std::to_string(alias->limitCount));
 
         // limit_type
-        stream.WriteColumn(ObjConstants::SOUND_LIMIT_TYPES[alias->flags.limitType]);
+        stream.WriteColumn(SOUND_LIMIT_TYPES[alias->flags.limitType]);
 
         // entity_limit_count
         stream.WriteColumn(std::to_string(alias->entityLimitCount));
 
         // entity_limit_type
-        stream.WriteColumn(ObjConstants::SOUND_LIMIT_TYPES[alias->flags.entityLimitType]);
+        stream.WriteColumn(SOUND_LIMIT_TYPES[alias->flags.entityLimitType]);
 
         // pitch_min
         stream.WriteColumn(std::to_string(alias->pitchMin));
@@ -295,13 +295,13 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // type
-        stream.WriteColumn(ObjConstants::SOUND_LOAD_TYPES[alias->flags.loadType]);
+        stream.WriteColumn(SOUND_LOAD_TYPES[alias->flags.loadType]);
 
         // loop
         stream.WriteColumn(alias->flags.looping == T6::SA_NON_LOOPING ? "nonlooping" : "looping");
 
         // randomize_type
-        stream.WriteColumn(ObjConstants::SOUND_RANDOMIZE_TYPES[std::min(alias->flags.randomizeType, 3u)]);
+        stream.WriteColumn(SOUND_RANDOMIZE_TYPES[std::min(alias->flags.randomizeType, 3u)]);
 
         // probability",
         stream.WriteColumn(std::to_string(alias->probability));
@@ -316,7 +316,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(FindNameForDuck(alias->duck, bank));
 
         // duck_group",
-        stream.WriteColumn(ObjConstants::SOUND_DUCK_GROUPS[alias->duckGroup]);
+        stream.WriteColumn(SOUND_DUCK_GROUPS[alias->duckGroup]);
 
         // pan",
         stream.WriteColumn(alias->flags.panType == SA_PAN_2D ? "2d" : "3d");
@@ -346,7 +346,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->flags.distanceLpf ? "yes" : "no");
 
         // move_type",
-        stream.WriteColumn(ObjConstants::SOUND_MOVE_TYPES[alias->flags.fluxType]);
+        stream.WriteColumn(SOUND_MOVE_TYPES[alias->flags.fluxType]);
 
         // move_time",
         stream.WriteColumn(std::to_string(alias->fluxTime));
@@ -397,7 +397,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->flags.stopOnDeath ? "yes" : "no");
 
         // bus",
-        stream.WriteColumn(ObjConstants::SOUND_BUS_IDS[alias->flags.busType]);
+        stream.WriteColumn(SOUND_BUS_IDS[alias->flags.busType]);
 
         // snapshot",
         stream.WriteColumn("");
@@ -630,9 +630,9 @@ class AssetDumperSndBank::Internal
             for (auto i = 0u; i < 32u; i++)
             {
                 values.push_back({
-                    {"duckGroup",   ObjConstants::SOUND_DUCK_GROUPS[i]},
-                    {"attenuation", duck.attenuation[i]               },
-                    {"filter",      duck.filter[i]                    }
+                    {"duckGroup",   SOUND_DUCK_GROUPS[i]},
+                    {"attenuation", duck.attenuation[i] },
+                    {"filter",      duck.filter[i]      }
                 });
             }
 

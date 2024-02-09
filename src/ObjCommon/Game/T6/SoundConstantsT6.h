@@ -1,8 +1,9 @@
-#include "ObjConstantsT6.h"
+#pragma once
+#include <string>
 
 namespace T6
 {
-    const std::array<std::string, 27> ObjConstants::SOUND_GROUPS{
+    inline const std::string SOUND_GROUPS[]{
         "grp_reference",
         "grp_master",
         "grp_wpn_lfe",
@@ -32,7 +33,7 @@ namespace T6
         "",
     };
 
-    const std::array<std::string, 18> ObjConstants::SOUND_CURVES{
+    inline const std::string SOUND_CURVES[]{
         "default",
         "defaultmin",
         "allon",
@@ -53,7 +54,7 @@ namespace T6
         "",
     };
 
-    const std::array<std::string, 32> ObjConstants::SOUND_DUCK_GROUPS{
+    inline const std::string SOUND_DUCK_GROUPS[]{
         "snp_alerts_gameplay",
         "snp_ambience",
         "snp_claw",
@@ -88,14 +89,14 @@ namespace T6
         "snp_x3",
     };
 
-    const std::array<std::string, 4> ObjConstants::SOUND_LIMIT_TYPES{
+    inline const std::string SOUND_LIMIT_TYPES[]{
         "none",
         "oldest",
         "reject",
         "priority",
     };
 
-    const std::array<std::string, 8> ObjConstants::SOUND_MOVE_TYPES{
+    inline const std::string SOUND_MOVE_TYPES[]{
         "none",
         "left_player",
         "center_player",
@@ -106,14 +107,14 @@ namespace T6
         "right_shot",
     };
 
-    const std::array<std::string, 4> ObjConstants::SOUND_LOAD_TYPES{
+    inline const std::string SOUND_LOAD_TYPES[]{
         "unknown",
         "loaded",
         "streamed",
         "primed",
     };
 
-    const std::array<std::string, 11> ObjConstants::SOUND_BUS_IDS{
+    inline const std::string SOUND_BUS_IDS[]{
         "bus_reverb",
         "bus_fx",
         "bus_voice",
@@ -127,11 +128,10 @@ namespace T6
         "",
     };
 
-    const std::array<std::string, 4> ObjConstants::SOUND_RANDOMIZE_TYPES{
+    inline const std::string SOUND_RANDOMIZE_TYPES[]{
         "volume",
         "pitch",
         "variant",
         "",
     };
-
 } // namespace T6

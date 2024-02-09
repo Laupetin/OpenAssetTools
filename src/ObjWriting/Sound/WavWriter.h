@@ -1,6 +1,6 @@
 #pragma once
-#include <Sound/WavTypes.h>
 #include <ostream>
+#include "Sound/WavTypes.h"
 
 class WavWriter
 {

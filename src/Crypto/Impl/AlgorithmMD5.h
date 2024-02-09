@@ -7,7 +7,7 @@ class AlgorithmMD5 : public IHashFunction
     AlgorithmMD5Impl* m_impl;
 
 public:
-    static const int HASH_SIZE = 20;
+    static const int HASH_SIZE = 16;
 
     AlgorithmMD5();
     ~AlgorithmMD5() override;

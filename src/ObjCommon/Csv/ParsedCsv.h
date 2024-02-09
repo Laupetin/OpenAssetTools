@@ -1,7 +1,7 @@
 #pragma once
-#include <Csv/CsvStream.h>
 #include <sstream>
 #include <unordered_map>
+#include "Csv/CsvStream.h"
 
 class ParsedCsvRow
 {
@@ -9,9 +9,9 @@ class ParsedCsvRow
     std::vector<std::string> values;
 
 public:
-    explicit ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std::vector<std::string>& row);
-    const std::string GetValue(const std::string& header, bool required = false) const;
-    const float GetValueFloat(const std::string& header, bool required = false) const;
+    explicit ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std::vector<std::string> row);
+    std::string GetValue(const std::string& header, bool required = false) const;
+    float GetValueFloat(const std::string& header, bool required = false) const;
 
     template<typename T> T GetValueInt(const std::string& header, bool required = false) const
     {

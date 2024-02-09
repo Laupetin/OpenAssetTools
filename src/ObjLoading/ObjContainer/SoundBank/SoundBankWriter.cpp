@@ -2,11 +2,10 @@
 
 #include "Crypto.h"
 #include "ObjContainer/SoundBank/SoundBankTypes.h"
-#include "Sound/WavTypes.h"
 #include "Sound/FlacDecoder.h"
+#include "Sound/WavTypes.h"
 #include "Utils/Alignment.h"
 #include "Utils/FileUtils.h"
-
 
 #include <cstring>
 #include <filesystem>
@@ -78,8 +77,8 @@ public:
 
     void AlignToChunk()
     {
-        if ((m_current_offset & 0xF) != 0)
-            Pad(0x10 - (m_current_offset & 0xF));
+        if (m_current_offset % 16 != 0)
+            Pad(16 - (m_current_offset % 16));
     }
 
     void WriteHeader()
@@ -91,18 +90,20 @@ public:
         SoundAssetBankChecksum checksum{};
         memset(&checksum, 0xCC, sizeof(SoundAssetBankChecksum));
 
-        SoundAssetBankHeader header{MAGIC,
-                                    VERSION,
-                                    sizeof(SoundAssetBankEntry),
-                                    sizeof(SoundAssetBankChecksum),
-                                    0x40,
-                                    m_entries.size(),
-                                    0,
-                                    0,
-                                    m_total_size,
-                                    m_entry_section_offset,
-                                    m_checksum_section_offset,
-                                    checksum};
+        SoundAssetBankHeader header{
+            MAGIC,
+            VERSION,
+            sizeof(SoundAssetBankEntry),
+            sizeof(SoundAssetBankChecksum),
+            0x40,
+            m_entries.size(),
+            0,
+            0,
+            m_total_size,
+            m_entry_section_offset,
+            m_checksum_section_offset,
+            checksum,
+        };
 
         strncpy(header.dependencies, m_file_name.data(), header.dependencySize);
 
@@ -169,7 +170,7 @@ public:
                             static_cast<size_t>(m_current_offset),
                             decoder->GetFrameCount(),
                             frameRateIndex,
-                            decoder->GetNumChannels(),
+                            static_cast<unsigned char>(decoder->GetNumChannels()),
                             sound.looping,
                             8,
                         };
@@ -192,7 +193,8 @@ public:
             auto lastEntry = m_entries.rbegin();
             if (!sound.streamed && lastEntry->frameRateIndex != 6)
             {
-                std::cout << "WARNING: Loaded sound \"" << soundFilePath << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!" << std::endl;
+                std::cout << "WARNING: Loaded sound \"" << soundFilePath
+                          << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!" << std::endl;
             }
 
             // calculate checksum
@@ -240,12 +242,12 @@ public:
         AlignToChunk();
     }
 
-    std::int64_t Write() override
+    bool Write(size_t& dataSize) override
     {
         if (!WriteEntries())
         {
             std::cerr << "An error occurred writing the sound bank entires. Please check output." << std::endl;
-            return -1;
+            return false;
         }
 
         WriteEntryList();
@@ -259,11 +261,12 @@ public:
         if (m_current_offset > UINT32_MAX)
         {
             std::cerr << "Sound bank files must be under 4GB. Please reduce the number of sounds being written!" << std::endl;
-            return -1;
+            return false;
         }
 
-        // return the total size for the sound asset data
-        return m_entry_section_offset - DATA_OFFSET;
+        // output the total size for the sound asset data
+        dataSize = static_cast<size_t>(m_entry_section_offset - DATA_OFFSET);
+        return true;
     }
 
 private:

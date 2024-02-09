@@ -104,13 +104,13 @@ namespace utils
 
     std::vector<std::string> StringSplit(const std::string& str, const char delim)
     {
-        std::vector<std::string> strings{};
+        std::vector<std::string> strings;
         std::istringstream stream(str);
 
         std::string s;
         while (std::getline(stream, s, delim))
         {
-            strings.push_back(s);
+            strings.emplace_back(std::move(s));
         }
 
         return strings;

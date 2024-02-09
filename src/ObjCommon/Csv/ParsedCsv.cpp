@@ -1,19 +1,19 @@
 #include "Csv/ParsedCsv.h"
 
-ParsedCsvRow::ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std::vector<std::string>& row)
+ParsedCsvRow::ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std::vector<std::string> row)
     : headers(headers),
-      values(row)
+      values(std::move(row))
 {
 }
 
-const std::string ParsedCsvRow::GetValue(const std::string& header, bool required) const
+std::string ParsedCsvRow::GetValue(const std::string& header, bool required) const
 {
     if (this->headers.find(header) == this->headers.end())
     {
         if (required)
-            std::cerr << "ERROR: Required column \"" << header << "\" was not found";
+            std::cerr << "ERROR: Required column \"" << header << "\" was not found" << std::endl;
         else
-            std::cerr << "WARNING: Expected column \"" << header << "\" was not found";
+            std::cerr << "WARNING: Expected column \"" << header << "\" was not found" << std::endl;
 
         return {};
     }
@@ -21,14 +21,14 @@ const std::string ParsedCsvRow::GetValue(const std::string& header, bool require
     auto& value = this->values.at(this->headers[header]);
     if (required && value.empty())
     {
-        std::cerr << "ERROR: Required column \"" << header << "\" does not have a value";
+        std::cerr << "ERROR: Required column \"" << header << "\" does not have a value" << std::endl;
         return {};
     }
 
     return value;
 }
 
-const float ParsedCsvRow::GetValueFloat(const std::string& header, bool required) const
+float ParsedCsvRow::GetValueFloat(const std::string& header, bool required) const
 {
     const auto& value = this->GetValue(header, required);
     if (!value.empty())
@@ -65,7 +65,7 @@ ParsedCsv::ParsedCsv(const CsvInputStream& inputStream, bool hasHeaders)
     for (auto i = hasHeaders ? 1u : 0u; i < csvLines.size(); i++)
     {
         auto& rowValues = csvLines[i];
-        this->rows.push_back(ParsedCsvRow(this->headers, rowValues));
+        this->rows.emplace_back(this->headers, std::move(rowValues));
     }
 }
 

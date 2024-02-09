@@ -17,7 +17,7 @@ public:
     SoundBankWriter& operator=(SoundBankWriter&& other) noexcept = default;
 
     virtual void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping = false, bool streamed = false) = 0;
-    virtual std::int64_t Write() = 0;
+    virtual bool Write(size_t& dataSize) = 0;
 
     static std::unique_ptr<SoundBankWriter> Create(const std::string& fileName, std::ostream& stream, ISearchPath* assetSearchPath);
 
