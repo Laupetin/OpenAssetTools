@@ -3,8 +3,10 @@
 #include "Crypto.h"
 #include "ObjContainer/SoundBank/SoundBankTypes.h"
 #include "Sound/WavTypes.h"
+#include "Sound/FlacDecoder.h"
 #include "Utils/Alignment.h"
 #include "Utils/FileUtils.h"
+
 
 #include <cstring>
 #include <filesystem>
@@ -128,13 +130,6 @@ public:
 
                 soundSize = static_cast<size_t>(wavFile.m_length - sizeof(WavHeader));
                 auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
-
-                if (!sound.streamed && header.formatChunk.nSamplesPerSec != 48000)
-                {
-                    std::cout << "WARNING: \"" << soundFilePath << "\" has a framerate of " << header.formatChunk.nSamplesPerSec
-                              << ". Loaded sounds are recommended to have a framerate of 48000. This sound may not work on all games!" << std::endl;
-                }
-
                 auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
 
                 SoundAssetBankEntry entry{
@@ -161,27 +156,43 @@ public:
                 {
                     soundSize = static_cast<size_t>(flacFile.m_length);
 
-                    SoundAssetBankEntry entry{
-                        soundId,
-                        soundSize,
-                        static_cast<size_t>(m_current_offset),
-                        0,
-                        0,
-                        0,
-                        0,
-                        8,
-                    };
-
-                    m_entries.push_back(entry);
-
                     soundData = std::make_unique<char[]>(soundSize);
                     flacFile.m_stream->read(soundData.get(), soundSize);
+
+                    auto decoder = FlacDecoder::Create(soundData.get(), soundSize);
+                    if (decoder->Decode())
+                    {
+                        auto frameRateIndex = INDEX_FOR_FRAMERATE[decoder->GetFrameRate()];
+                        SoundAssetBankEntry entry{
+                            soundId,
+                            soundSize,
+                            static_cast<size_t>(m_current_offset),
+                            decoder->GetFrameCount(),
+                            frameRateIndex,
+                            decoder->GetNumChannels(),
+                            sound.looping,
+                            8,
+                        };
+
+                        m_entries.push_back(entry);
+                    }
+                    else
+                    {
+                        std::cerr << "Unable to decode .flac file for sound " << soundFilePath << std::endl;
+                        return false;
+                    }
                 }
                 else
                 {
                     std::cerr << "Unable to find a compatible file for sound " << soundFilePath << std::endl;
                     return false;
                 }
+            }
+
+            auto lastEntry = m_entries.rbegin();
+            if (!sound.streamed && lastEntry->frameRateIndex != 6)
+            {
+                std::cout << "WARNING: Loaded sound \"" << soundFilePath << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!" << std::endl;
             }
 
             // calculate checksum
