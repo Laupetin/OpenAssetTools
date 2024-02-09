@@ -1,5 +1,6 @@
 #pragma once
 #include <istream>
+#include <memory>
 
 class FlacDecoder
 {
