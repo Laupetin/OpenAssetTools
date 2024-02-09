@@ -1,5 +1,6 @@
-#include <foxen/flac.h>
 #include "FlacDecoder.h"
+
+#include <foxen/flac.h>
 
 class fx_flac_raii
 {
@@ -14,12 +15,12 @@ public:
         free(ptr);
     }
 
-    operator fx_flac_t* ()
+    operator fx_flac_t*()
     {
         return ptr;
     }
 
-private: 
+private:
     fx_flac_t* ptr;
 };
 
@@ -35,7 +36,6 @@ public:
         : m_data(data),
           m_length(length)
     {
-
     }
 
     unsigned int GetFrameCount() override
@@ -48,7 +48,7 @@ public:
         return static_cast<unsigned int>(fx_flac_get_streaminfo(*m_flac.get(), FLAC_KEY_SAMPLE_RATE));
     }
 
-    unsigned int GetNumChannels() override 
+    unsigned int GetNumChannels() override
     {
         return static_cast<unsigned int>(fx_flac_get_streaminfo(*m_flac.get(), FLAC_KEY_N_CHANNELS));
     }

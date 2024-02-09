@@ -1,7 +1,8 @@
 #pragma once
+#include "Csv/CsvStream.h"
+
 #include <sstream>
 #include <unordered_map>
-#include "Csv/CsvStream.h"
 
 class ParsedCsvRow
 {
