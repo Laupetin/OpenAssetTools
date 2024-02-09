@@ -347,7 +347,7 @@ bool LoadSoundRadverbs(MemoryManager* memory, SndBank* sndBank, const SearchPath
         {
             auto row = radverbCsv[i];
 
-            auto& name = row.GetValue("name", true);
+            auto name = row.GetValue("name", true);
             if (name.empty())
                 return false;
 
