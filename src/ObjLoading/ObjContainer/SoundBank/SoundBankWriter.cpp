@@ -38,7 +38,6 @@ public:
         : m_file_name(fileName),
           m_stream(stream),
           m_asset_search_path(assetSearchPath),
-          m_sounds(),
           m_current_offset(0),
           m_total_size(0),
           m_entry_section_offset(0),
@@ -48,7 +47,7 @@ public:
 
     void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping, bool streamed) override
     {
-        this->m_sounds.push_back({soundFilePath, soundId, looping, streamed});
+        this->m_sounds.emplace_back(soundFilePath, soundId, looping, streamed);
     }
 
     void GoTo(const int64_t offset)
@@ -116,8 +115,8 @@ public:
 
         for (auto& sound : m_sounds)
         {
-            const auto& soundFilePath = sound.filePath;
-            const auto soundId = sound.soundId;
+            const auto& soundFilePath = sound.m_file_path;
+            const auto soundId = sound.m_sound_id;
 
             size_t soundSize = -1;
             std::unique_ptr<char[]> soundData;
@@ -140,7 +139,7 @@ public:
                     frameCount,
                     frameRateIndex,
                     static_cast<unsigned char>(header.formatChunk.nChannels),
-                    sound.looping,
+                    sound.m_looping,
                     0,
                 };
 
@@ -171,7 +170,7 @@ public:
                             decoder->GetFrameCount(),
                             frameRateIndex,
                             static_cast<unsigned char>(decoder->GetNumChannels()),
-                            sound.looping,
+                            sound.m_looping,
                             8,
                         };
 
@@ -191,7 +190,7 @@ public:
             }
 
             auto lastEntry = m_entries.rbegin();
-            if (!sound.streamed && lastEntry->frameRateIndex != 6)
+            if (!sound.m_streamed && lastEntry->frameRateIndex != 6)
             {
                 std::cout << "WARNING: Loaded sound \"" << soundFilePath
                           << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!" << std::endl;
@@ -270,12 +269,28 @@ public:
     }
 
 private:
-    struct SoundBankEntryInfo
+    class SoundBankEntryInfo
     {
-        std::string filePath;
-        unsigned int soundId;
-        bool looping;
-        bool streamed;
+    public:
+        SoundBankEntryInfo()
+            : m_sound_id(0u),
+              m_looping(false),
+              m_streamed(false)
+        {
+        }
+
+        SoundBankEntryInfo(std::string filePath, const unsigned int soundId, const bool looping, const bool streamed)
+            : m_file_path(std::move(filePath)),
+              m_sound_id(soundId),
+              m_looping(looping),
+              m_streamed(streamed)
+        {
+        }
+
+        std::string m_file_path;
+        unsigned int m_sound_id;
+        bool m_looping;
+        bool m_streamed;
     };
 
     std::string m_file_name;
