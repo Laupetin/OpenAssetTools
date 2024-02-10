@@ -1,6 +1,7 @@
 #include "FlacDecoder.h"
 
 #include "Utils/Alignment.h"
+#include "Utils/ClassUtils.h"
 #include "Utils/Endianness.h"
 #include "Utils/FileUtils.h"
 
