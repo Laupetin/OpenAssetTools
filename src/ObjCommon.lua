@@ -15,7 +15,6 @@ function ObjCommon:link(links)
 	links:linkto(Utils)
 	links:linkto(Common)
 	links:linkto(minizip)
-	links:linkto(flac)
 end
 
 function ObjCommon:use()
@@ -49,5 +48,4 @@ function ObjCommon:project()
 		
         self:include(includes)
 		Utils:include(includes)
-		flac:include(includes)
 end

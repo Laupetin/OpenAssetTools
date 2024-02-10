@@ -1,22 +1,26 @@
 #pragma once
+
+#include <cstdint>
 #include <istream>
-#include <memory>
 
-class FlacDecoder
+namespace flac
 {
-public:
-    FlacDecoder() = default;
-    virtual ~FlacDecoder() = default;
+    class FlacMetaData
+    {
+    public:
+        uint16_t m_minimum_block_size;
+        uint16_t m_maximum_block_size;
+        uint32_t m_minimum_frame_size;
+        uint32_t m_maximum_frame_size;
+        uint32_t m_sample_rate;
+        uint8_t m_number_of_channels;
+        uint8_t m_bits_per_sample;
+        uint64_t m_total_samples;
+        uint8_t m_md5_signature[16];
 
-    FlacDecoder(const FlacDecoder& other) = default;
-    FlacDecoder(FlacDecoder&& other) noexcept = default;
-    FlacDecoder& operator=(const FlacDecoder& other) = default;
-    FlacDecoder& operator=(FlacDecoder&& other) noexcept = default;
+        FlacMetaData();
+    };
 
-    virtual bool Decode() = 0;
-    virtual unsigned int GetFrameCount() = 0;
-    virtual unsigned int GetFrameRate() = 0;
-    virtual unsigned int GetNumChannels() = 0;
-
-    static std::unique_ptr<FlacDecoder> Create(void* data, size_t length);
-};
+    bool GetFlacMetaData(std::istream& stream, FlacMetaData& metaData);
+    bool GetFlacMetaData(const void* data, size_t dataSize, FlacMetaData& metaData);
+} // namespace flac

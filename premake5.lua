@@ -83,7 +83,6 @@ workspace "OpenAssetTools"
 -- ThirdParty
 -- ========================
 include "thirdparty/catch2.lua"
-include "thirdparty/flac.lua"
 include "thirdparty/libtomcrypt.lua"
 include "thirdparty/libtommath.lua"
 include "thirdparty/json.lua"
@@ -95,7 +94,6 @@ include "thirdparty/zlib.lua"
 -- ThirdParty group: All projects that are external dependencies
 group "ThirdParty"
     catch2:project()
-	flac:project()
     libtommath:project()
     libtomcrypt:project()
     json:project()

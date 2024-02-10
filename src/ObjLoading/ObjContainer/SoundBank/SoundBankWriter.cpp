@@ -159,17 +159,17 @@ public:
                     soundData = std::make_unique<char[]>(soundSize);
                     flacFile.m_stream->read(soundData.get(), soundSize);
 
-                    const auto decoder = FlacDecoder::Create(soundData.get(), soundSize);
-                    if (decoder->Decode())
+                    flac::FlacMetaData metaData;
+                    if (flac::GetFlacMetaData(soundData.get(), soundSize, metaData))
                     {
-                        const auto frameRateIndex = INDEX_FOR_FRAMERATE[decoder->GetFrameRate()];
+                        const auto frameRateIndex = INDEX_FOR_FRAMERATE[metaData.m_sample_rate];
                         SoundAssetBankEntry entry{
                             soundId,
                             soundSize,
                             static_cast<size_t>(m_current_offset),
-                            decoder->GetFrameCount(),
+                            static_cast<unsigned>(metaData.m_total_samples),
                             frameRateIndex,
-                            static_cast<unsigned char>(decoder->GetNumChannels()),
+                            metaData.m_number_of_channels,
                             sound.m_looping,
                             8,
                         };
