@@ -4,7 +4,6 @@
 #include "ObjContainer/SoundBank/SoundBankTypes.h"
 #include "Sound/FlacDecoder.h"
 #include "Sound/WavTypes.h"
-#include "Utils/Alignment.h"
 #include "Utils/FileUtils.h"
 
 #include <cstring>
@@ -34,8 +33,8 @@ class SoundBankWriterImpl : public SoundBankWriter
     inline static const std::string PAD_DATA = std::string(16, '\x00');
 
 public:
-    explicit SoundBankWriterImpl(const std::string& fileName, std::ostream& stream, ISearchPath* assetSearchPath)
-        : m_file_name(fileName),
+    explicit SoundBankWriterImpl(std::string fileName, std::ostream& stream, ISearchPath* assetSearchPath)
+        : m_file_name(std::move(fileName)),
           m_stream(stream),
           m_asset_search_path(assetSearchPath),
           m_current_offset(0),
@@ -102,6 +101,7 @@ public:
             m_entry_section_offset,
             m_checksum_section_offset,
             checksum,
+            {},
         };
 
         strncpy(header.dependencies, m_file_name.data(), header.dependencySize);
@@ -118,7 +118,7 @@ public:
             const auto& soundFilePath = sound.m_file_path;
             const auto soundId = sound.m_sound_id;
 
-            size_t soundSize = -1;
+            size_t soundSize;
             std::unique_ptr<char[]> soundData;
 
             // try to find a wav file for the sound path
@@ -129,8 +129,8 @@ public:
                 wavFile.m_stream->read(reinterpret_cast<char*>(&header), sizeof(WavHeader));
 
                 soundSize = static_cast<size_t>(wavFile.m_length - sizeof(WavHeader));
-                auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
-                auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
+                const auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
+                const auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
 
                 SoundAssetBankEntry entry{
                     soundId,
@@ -159,10 +159,10 @@ public:
                     soundData = std::make_unique<char[]>(soundSize);
                     flacFile.m_stream->read(soundData.get(), soundSize);
 
-                    auto decoder = FlacDecoder::Create(soundData.get(), soundSize);
+                    const auto decoder = FlacDecoder::Create(soundData.get(), soundSize);
                     if (decoder->Decode())
                     {
-                        auto frameRateIndex = INDEX_FOR_FRAMERATE[decoder->GetFrameRate()];
+                        const auto frameRateIndex = INDEX_FOR_FRAMERATE[decoder->GetFrameRate()];
                         SoundAssetBankEntry entry{
                             soundId,
                             soundSize,
@@ -189,7 +189,7 @@ public:
                 }
             }
 
-            auto lastEntry = m_entries.rbegin();
+            const auto lastEntry = m_entries.rbegin();
             if (!sound.m_streamed && lastEntry->frameRateIndex != 6)
             {
                 std::cout << "WARNING: Loaded sound \"" << soundFilePath
@@ -245,7 +245,7 @@ public:
     {
         if (!WriteEntries())
         {
-            std::cerr << "An error occurred writing the sound bank entires. Please check output." << std::endl;
+            std::cerr << "An error occurred writing the sound bank entries. Please check output." << std::endl;
             return false;
         }
 

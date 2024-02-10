@@ -6,13 +6,12 @@
 #include "Game/T6/T6.h"
 #include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "Pool/GlobalAssetPool.h"
-#include "nlohmann/json.hpp"
+#include "Utils/StringUtils.h"
 
-#include <Utils/StringUtils.h>
-#include <climits>
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 
 using namespace T6;
 namespace fs = std::filesystem;
@@ -24,7 +23,7 @@ namespace
         "devraw/",
     };
 
-    _NODISCARD std::string GetSoundFilePath(SndAlias* sndAlias)
+    _NODISCARD std::string GetSoundFilePath(const SndAlias* sndAlias)
     {
         std::string soundFilePath(sndAlias->assetFileName);
 
@@ -88,7 +87,7 @@ size_t GetValueIndex(const std::string& value, const std::string* lookupTable, s
     return 0;
 }
 
-unsigned int GetAliasSubListCount(unsigned int startRow, const ParsedCsv& csv)
+unsigned int GetAliasSubListCount(const unsigned int startRow, const ParsedCsv& csv)
 {
     auto count = 1u;
 
@@ -132,11 +131,11 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
     alias->assetFileName = memory->Dup(aliasFileName.data());
     alias->assetId = Common::SND_HashName(aliasFileName.data());
 
-    auto secondaryName = row.GetValue("secondary");
+    const auto secondaryName = row.GetValue("secondary");
     if (!secondaryName.empty())
         alias->secondaryname = memory->Dup(secondaryName.data());
 
-    auto subtitle = row.GetValue("subtitle");
+    const auto subtitle = row.GetValue("subtitle");
     if (!subtitle.empty())
         alias->subtitle = memory->Dup(subtitle.data());
 
@@ -206,7 +205,7 @@ bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
 
     for (auto i = 0u; i < sndBank->aliasCount; i++)
     {
-        auto idx = sndBank->alias[i].id % sndBank->aliasCount;
+        const auto idx = sndBank->alias[i].id % sndBank->aliasCount;
         if (sndBank->aliasIndex[idx].value == std::numeric_limits<unsigned short>::max())
         {
             sndBank->aliasIndex[idx].value = i;
@@ -280,7 +279,7 @@ bool LoadSoundAliasList(
         {
             // count how many of the next rows should be in the sound alias sub-list. Aliases are part of the same sub list if they have the same name for a
             // different file
-            auto subListCount = GetAliasSubListCount(row, aliasCsv);
+            const auto subListCount = GetAliasSubListCount(row, aliasCsv);
             if (subListCount < 1)
                 return false;
 
@@ -297,7 +296,7 @@ bool LoadSoundAliasList(
                     return false;
 
                 // if this asset is loaded instead of stream, increment the loaded count for later
-                if (sndBank->alias[listIndex].head[i].flags.loadType == T6::SA_LOADED)
+                if (sndBank->alias[listIndex].head[i].flags.loadType == SA_LOADED)
                     (*loadedEntryCount)++;
                 else
                     (*streamedEntryCount)++;
@@ -457,7 +456,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     memset(sndBank, 0, sizeof(SndBank));
 
     sndBank->name = memory->Dup(assetName.c_str());
-    auto sndBankLocalization = utils::StringSplit(assetName, '.');
+    const auto sndBankLocalization = utils::StringSplit(assetName, '.');
 
     // load the soundbank aliases
     unsigned int loadedEntryCount = 0u, streamedEntryCount = 0u;
@@ -525,12 +524,12 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     // add aliases to the correct sound bank writer
     for (auto i = 0u; i < sndBank->aliasCount; i++)
     {
-        auto* aliasList = &sndBank->alias[i];
+        const auto* aliasList = &sndBank->alias[i];
         for (auto j = 0; j < aliasList->count; j++)
         {
-            auto* alias = &aliasList->head[j];
+            const auto* alias = &aliasList->head[j];
 
-            if (sabsWriter && alias->flags.loadType == T6::SA_STREAMED)
+            if (sabsWriter && alias->flags.loadType == SA_STREAMED)
                 sabsWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping, true);
             else if (sablWriter)
                 sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping);
@@ -541,7 +540,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     if (sablWriter)
     {
         size_t dataSize = 0u;
-        auto result = sablWriter->Write(dataSize);
+        const auto result = sablWriter->Write(dataSize);
         sablStream->close();
 
         if (result)
@@ -561,7 +560,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     if (sabsWriter)
     {
         size_t dataSize = 0u;
-        auto result = sabsWriter->Write(dataSize);
+        const auto result = sabsWriter->Write(dataSize);
         sabsStream->close();
 
         if (!result)

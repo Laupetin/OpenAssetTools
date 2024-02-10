@@ -6,7 +6,7 @@ ParsedCsvRow::ParsedCsvRow(std::unordered_map<std::string, size_t>& headers, std
 {
 }
 
-std::string ParsedCsvRow::GetValue(const std::string& header, bool required) const
+std::string ParsedCsvRow::GetValue(const std::string& header, const bool required) const
 {
     if (this->headers.find(header) == this->headers.end())
     {
@@ -28,7 +28,7 @@ std::string ParsedCsvRow::GetValue(const std::string& header, bool required) con
     return value;
 }
 
-float ParsedCsvRow::GetValueFloat(const std::string& header, bool required) const
+float ParsedCsvRow::GetValueFloat(const std::string& header, const bool required) const
 {
     const auto& value = this->GetValue(header, required);
     if (!value.empty())
@@ -42,7 +42,7 @@ float ParsedCsvRow::GetValueFloat(const std::string& header, bool required) cons
     return {};
 }
 
-ParsedCsv::ParsedCsv(const CsvInputStream& inputStream, bool hasHeaders)
+ParsedCsv::ParsedCsv(const CsvInputStream& inputStream, const bool hasHeaders)
 {
     std::vector<std::vector<std::string>> csvLines;
     std::vector<std::string> currentLine;
@@ -55,7 +55,7 @@ ParsedCsv::ParsedCsv(const CsvInputStream& inputStream, bool hasHeaders)
 
     if (hasHeaders)
     {
-        auto& headersRow = csvLines[0];
+        const auto& headersRow = csvLines[0];
         for (auto i = 0u; i < headersRow.size(); i++)
         {
             this->headers[headersRow[i]] = i;
@@ -74,7 +74,7 @@ size_t ParsedCsv::Size() const
     return this->rows.size();
 }
 
-ParsedCsvRow ParsedCsv::operator[](size_t index) const
+ParsedCsvRow ParsedCsv::operator[](const size_t index) const
 {
     return this->rows.at(index);
 }
