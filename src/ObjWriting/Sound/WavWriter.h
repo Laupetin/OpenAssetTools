@@ -1,12 +1,7 @@
 #pragma once
-#include <ostream>
+#include "Sound/WavTypes.h"
 
-struct WavMetaData
-{
-    unsigned channelCount;
-    unsigned samplesPerSec;
-    unsigned bitsPerSample;
-};
+#include <ostream>
 
 class WavWriter
 {

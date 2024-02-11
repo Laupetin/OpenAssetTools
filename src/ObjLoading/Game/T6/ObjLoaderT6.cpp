@@ -9,6 +9,7 @@
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
 #include "AssetLoaders/AssetLoaderSlug.h"
+#include "AssetLoaders/AssetLoaderSoundBank.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
 #include "AssetLoaders/AssetLoaderTracer.h"
 #include "AssetLoaders/AssetLoaderVehicle.h"
@@ -51,7 +52,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MATERIAL, Material))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet))
         REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND, SndBank))
+        REGISTER_ASSET_LOADER(AssetLoaderSoundBank)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SOUND_PATCH, SndPatch))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_CLIPMAP, clipMap_t))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_CLIPMAP_PVS, clipMap_t))

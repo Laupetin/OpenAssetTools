@@ -1,9 +1,15 @@
 #include "Crypto.h"
 
+#include "Impl/AlgorithmMD5.h"
 #include "Impl/AlgorithmRSA.h"
 #include "Impl/AlgorithmSHA1.h"
 #include "Impl/AlgorithmSHA256.h"
 #include "Impl/AlgorithmSalsa20.h"
+
+std::unique_ptr<IHashFunction> Crypto::CreateMD5()
+{
+    return std::make_unique<AlgorithmMD5>();
+}
 
 std::unique_ptr<IHashFunction> Crypto::CreateSHA1()
 {

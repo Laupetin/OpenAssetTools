@@ -52,7 +52,8 @@ function ObjWriting:project()
 		
         self:include(includes)
 		Utils:include(includes)
-		json:include(includes)
 		minilzo:include(includes)
 		minizip:include(includes)
+		json:include(includes)
+
 end

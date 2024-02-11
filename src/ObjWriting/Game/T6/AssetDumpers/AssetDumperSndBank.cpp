@@ -2,6 +2,7 @@
 
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
+#include "Game/T6/SoundConstantsT6.h"
 #include "ObjContainer/SoundBank/SoundBank.h"
 #include "Sound/WavWriter.h"
 #include "nlohmann/json.hpp"
@@ -51,6 +52,7 @@ namespace
         "start_delay",
         "reverb_send",
         "duck",
+        "duck_group",
         "pan",
         "center_send",
         "envelop_min",
@@ -118,147 +120,15 @@ namespace
         192000,
     };
 
-    const std::string GROUPS_ENUM[]{
-        "grp_reference",
-        "grp_master",
-        "grp_wpn_lfe",
-        "grp_lfe",
-        "grp_hdrfx",
-        "grp_music",
-        "grp_voice",
-        "grp_set_piece",
-        "grp_igc",
-        "grp_mp_game",
-        "grp_explosion",
-        "grp_player_impacts",
-        "grp_scripted_moment",
-        "grp_menu",
-        "grp_whizby",
-        "grp_weapon",
-        "grp_vehicle",
-        "grp_impacts",
-        "grp_foley",
-        "grp_destructible",
-        "grp_physics",
-        "grp_ambience",
-        "grp_alerts",
-        "grp_air",
-        "grp_bink",
-        "grp_announcer",
-        "",
-    };
-
-    const std::string CURVES_ENUM[]{
-        "default",
-        "defaultmin",
-        "allon",
-        "alloff",
-        "rcurve0",
-        "rcurve1",
-        "rcurve2",
-        "rcurve3",
-        "rcurve4",
-        "rcurve5",
-        "steep",
-        "sindelay",
-        "cosdelay",
-        "sin",
-        "cos",
-        "rev60",
-        "rev65",
-        "",
-    };
-
     std::unordered_map<unsigned int, std::string> CreateCurvesMap()
     {
         std::unordered_map<unsigned int, std::string> result;
-        for (auto i = 0u; i < std::extent_v<decltype(CURVES_ENUM)>; i++)
-            result.emplace(T6::Common::SND_HashName(CURVES_ENUM[i].data()), CURVES_ENUM[i]);
+        for (auto i = 0u; i < std::extent_v<decltype(SOUND_CURVES)>; i++)
+            result.emplace(T6::Common::SND_HashName(SOUND_CURVES[i].data()), SOUND_CURVES[i]);
         return result;
     }
 
     const std::unordered_map<unsigned int, std::string> CURVES_MAP = CreateCurvesMap();
-
-    const std::string DUCK_GROUPS_ENUM[]{
-        "snp_alerts_gameplay",
-        "snp_ambience",
-        "snp_claw",
-        "snp_destructible",
-        "snp_dying",
-        "snp_dying_ice",
-        "snp_evt_2d",
-        "snp_explosion",
-        "snp_foley",
-        "snp_grenade",
-        "snp_hdrfx",
-        "snp_igc",
-        "snp_impacts",
-        "snp_menu",
-        "snp_movie",
-        "snp_music",
-        "snp_never_duck",
-        "snp_player_dead",
-        "snp_player_impacts",
-        "snp_scripted_moment",
-        "snp_set_piece",
-        "snp_special",
-        "snp_vehicle",
-        "snp_vehicle_interior",
-        "snp_voice",
-        "snp_weapon_decay_1p",
-        "snp_whizby",
-        "snp_wpn_1p",
-        "snp_wpn_3p",
-        "snp_wpn_turret",
-        "snp_x2",
-        "snp_x3",
-    };
-
-    const std::string LIMIT_TYPES_ENUM[]{
-        "none",
-        "oldest",
-        "reject",
-        "priority",
-    };
-
-    const std::string MOVE_TYPES_ENUM[]{
-        "none",
-        "left_player",
-        "center_player",
-        "right_player",
-        "random",
-        "left_shot",
-        "center_shot",
-        "right_shot",
-    };
-
-    const std::string LOAD_TYPES_ENUM[]{
-        "unknown",
-        "loaded",
-        "streamed",
-        "primed",
-    };
-
-    const std::string BUS_IDS_ENUM[]{
-        "bus_reverb",
-        "bus_fx",
-        "bus_voice",
-        "bus_pfutz",
-        "bus_hdrfx",
-        "bus_ui",
-        "bus_reference",
-        "bus_music",
-        "bus_movie",
-        "bus_reference",
-        "",
-    };
-
-    const std::string RANDOMIZE_TYPES_ENUM[]{
-        "volume",
-        "pitch",
-        "variant",
-        "",
-    };
 } // namespace
 
 class AssetDumperSndBank::Internal
@@ -344,7 +214,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->name);
 
         // file
-        stream.WriteColumn(alias->assetFileName);
+        stream.WriteColumn(alias->assetFileName ? alias->assetFileName : "");
 
         // template
         stream.WriteColumn("");
@@ -356,7 +226,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn((alias->secondaryname && *alias->secondaryname) ? alias->secondaryname : "");
 
         // group
-        stream.WriteColumn(GROUPS_ENUM[alias->flags.volumeGroup]);
+        stream.WriteColumn(SOUND_GROUPS[alias->flags.volumeGroup]);
 
         // vol_min
         stream.WriteColumn(std::to_string(alias->volMin));
@@ -377,28 +247,28 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->distReverbMax));
 
         // volume_falloff_curve
-        stream.WriteColumn(CURVES_ENUM[alias->flags.volumeFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.volumeFalloffCurve]);
 
         // reverb_falloff_curve
-        stream.WriteColumn(CURVES_ENUM[alias->flags.reverbFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.reverbFalloffCurve]);
 
         // volume_min_falloff_curve
-        stream.WriteColumn(CURVES_ENUM[alias->flags.volumeMinFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.volumeMinFalloffCurve]);
 
         // reverb_min_falloff_curve"
-        stream.WriteColumn(CURVES_ENUM[alias->flags.reverbMinFalloffCurve]);
+        stream.WriteColumn(SOUND_CURVES[alias->flags.reverbMinFalloffCurve]);
 
         // limit_count
         stream.WriteColumn(std::to_string(alias->limitCount));
 
         // limit_type
-        stream.WriteColumn(LIMIT_TYPES_ENUM[alias->flags.limitType]);
+        stream.WriteColumn(SOUND_LIMIT_TYPES[alias->flags.limitType]);
 
         // entity_limit_count
         stream.WriteColumn(std::to_string(alias->entityLimitCount));
 
         // entity_limit_type
-        stream.WriteColumn(LIMIT_TYPES_ENUM[alias->flags.entityLimitType]);
+        stream.WriteColumn(SOUND_LIMIT_TYPES[alias->flags.entityLimitType]);
 
         // pitch_min
         stream.WriteColumn(std::to_string(alias->pitchMin));
@@ -425,13 +295,13 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn("");
 
         // type
-        stream.WriteColumn(LOAD_TYPES_ENUM[alias->flags.loadType]);
+        stream.WriteColumn(SOUND_LOAD_TYPES[alias->flags.loadType]);
 
         // loop
         stream.WriteColumn(alias->flags.looping == T6::SA_NON_LOOPING ? "nonlooping" : "looping");
 
         // randomize_type
-        stream.WriteColumn(RANDOMIZE_TYPES_ENUM[alias->flags.randomizeType]);
+        stream.WriteColumn(SOUND_RANDOMIZE_TYPES[std::min(alias->flags.randomizeType, 3u)]);
 
         // probability",
         stream.WriteColumn(std::to_string(alias->probability));
@@ -444,6 +314,9 @@ class AssetDumperSndBank::Internal
 
         // duck",
         stream.WriteColumn(FindNameForDuck(alias->duck, bank));
+
+        // duck_group",
+        stream.WriteColumn(SOUND_DUCK_GROUPS[alias->duckGroup]);
 
         // pan",
         stream.WriteColumn(alias->flags.panType == SA_PAN_2D ? "2d" : "3d");
@@ -473,7 +346,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->flags.distanceLpf ? "yes" : "no");
 
         // move_type",
-        stream.WriteColumn(MOVE_TYPES_ENUM[alias->flags.fluxType]);
+        stream.WriteColumn(SOUND_MOVE_TYPES[alias->flags.fluxType]);
 
         // move_time",
         stream.WriteColumn(std::to_string(alias->fluxTime));
@@ -524,7 +397,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->flags.stopOnDeath ? "yes" : "no");
 
         // bus",
-        stream.WriteColumn(BUS_IDS_ENUM[alias->flags.busType]);
+        stream.WriteColumn(SOUND_BUS_IDS[alias->flags.busType]);
 
         // snapshot",
         stream.WriteColumn("");
@@ -647,13 +520,14 @@ class AssetDumperSndBank::Internal
             for (auto j = 0; j < aliasList.count; j++)
             {
                 const auto& alias = aliasList.head[j];
+
+                WriteAliasToFile(csvStream, &alias, sndBank);
+                csvStream.NextRow();
+
                 if (alias.assetId && alias.assetFileName && dumpedAssets.find(alias.assetId) == dumpedAssets.end())
                 {
                     DumpSndAlias(alias);
                     dumpedAssets.emplace(alias.assetId);
-
-                    WriteAliasToFile(csvStream, &alias, sndBank);
-                    csvStream.NextRow();
                 }
             }
         }
@@ -757,9 +631,9 @@ class AssetDumperSndBank::Internal
             for (auto i = 0u; i < 32u; i++)
             {
                 values.push_back({
-                    {"duckGroup",   DUCK_GROUPS_ENUM[i]},
-                    {"attenuation", duck.attenuation[i]},
-                    {"filter",      duck.filter[i]     }
+                    {"duckGroup",   SOUND_DUCK_GROUPS[i]},
+                    {"attenuation", duck.attenuation[i] },
+                    {"filter",      duck.filter[i]      }
                 });
             }
 

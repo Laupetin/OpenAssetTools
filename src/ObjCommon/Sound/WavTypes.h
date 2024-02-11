@@ -28,3 +28,20 @@ struct WavFormatChunkPcm
     uint16_t nBlockAlign;
     uint16_t wBitsPerSample;
 };
+
+struct WavMetaData
+{
+    unsigned channelCount;
+    unsigned samplesPerSec;
+    unsigned bitsPerSample;
+};
+
+struct WavHeader
+{
+    unsigned int chunkIdRiff;
+    unsigned int chunkIdSize;
+    unsigned int format;
+    WavChunkHeader chunkHeader;
+    WavFormatChunkPcm formatChunk;
+    WavChunkHeader subChunkHeader;
+};

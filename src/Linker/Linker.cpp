@@ -9,6 +9,7 @@
 #include "LinkerSearchPaths.h"
 #include "ObjContainer/IPak/IPakWriter.h"
 #include "ObjContainer/IWD/IWD.h"
+#include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
 #include "SearchPath/SearchPaths.h"
@@ -419,6 +420,8 @@ class LinkerImpl final : public Linker
                        SearchPaths& gdtSearchPaths,
                        SearchPaths& sourceSearchPaths) const
     {
+        SoundBankWriter::OutputPath = fs::path(m_args.GetOutputFolderPathForProject(projectName));
+
         const auto zone = CreateZoneForDefinition(targetName, zoneDefinition, &assetSearchPaths, &gdtSearchPaths, &sourceSearchPaths);
         auto result = zone != nullptr;
         if (zone)

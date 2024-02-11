@@ -1,7 +1,5 @@
 #include "WavWriter.h"
 
-#include "Sound/WavTypes.h"
-
 WavWriter::WavWriter(std::ostream& stream)
     : m_stream(stream)
 {

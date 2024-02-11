@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace utils
 {
@@ -14,4 +15,6 @@ namespace utils
 
     void MakeStringLowerCase(std::string& str);
     void MakeStringUpperCase(std::string& str);
+
+    std::vector<std::string> StringSplit(const std::string& str, const char delim);
 } // namespace utils
