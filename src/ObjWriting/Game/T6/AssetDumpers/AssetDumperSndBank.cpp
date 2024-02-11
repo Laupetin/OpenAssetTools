@@ -214,7 +214,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->name);
 
         // file
-        stream.WriteColumn(alias->assetFileName);
+        stream.WriteColumn(alias->assetFileName ? alias->assetFileName : "");
 
         // template
         stream.WriteColumn("");
@@ -520,13 +520,14 @@ class AssetDumperSndBank::Internal
             for (auto j = 0; j < aliasList.count; j++)
             {
                 const auto& alias = aliasList.head[j];
+
+                WriteAliasToFile(csvStream, &alias, sndBank);
+                csvStream.NextRow();
+
                 if (alias.assetId && alias.assetFileName && dumpedAssets.find(alias.assetId) == dumpedAssets.end())
                 {
                     DumpSndAlias(alias);
                     dumpedAssets.emplace(alias.assetId);
-
-                    WriteAliasToFile(csvStream, &alias, sndBank);
-                    csvStream.NextRow();
                 }
             }
         }
