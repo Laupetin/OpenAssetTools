@@ -122,14 +122,15 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
     if (name.empty())
         return false;
 
-    const auto& aliasFileName = row.GetValue("file", true);
-    if (aliasFileName.empty())
-        return false;
-
     alias->name = memory->Dup(name.data());
     alias->id = Common::SND_HashName(name.data());
-    alias->assetFileName = memory->Dup(aliasFileName.data());
-    alias->assetId = Common::SND_HashName(aliasFileName.data());
+
+    const auto aliasFileName = row.GetValue("file");
+    if (!aliasFileName.empty())
+    {
+        alias->assetFileName = memory->Dup(aliasFileName.data());
+        alias->assetId = Common::SND_HashName(aliasFileName.data());
+    }
 
     const auto secondaryName = row.GetValue("secondary");
     if (!secondaryName.empty())
@@ -529,10 +530,13 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         {
             const auto* alias = &aliasList->head[j];
 
-            if (sabsWriter && alias->flags.loadType == SA_STREAMED)
-                sabsWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping, true);
-            else if (sablWriter)
-                sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping);
+            if (alias->assetFileName && alias->assetId)
+            {
+                if (sabsWriter && alias->flags.loadType == SA_STREAMED)
+                    sabsWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping, true);
+                else if (sablWriter)
+                    sablWriter->AddSound(GetSoundFilePath(alias), alias->assetId, alias->flags.looping);
+            }
         }
     }
 
