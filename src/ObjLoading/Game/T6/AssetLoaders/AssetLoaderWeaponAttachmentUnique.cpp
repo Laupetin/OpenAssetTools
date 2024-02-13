@@ -23,13 +23,13 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse hide tags as array" << std::endl;
+                std::cerr << "Failed to parse hide tags as array\n";
                 return false;
             }
 
             if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!" << std::endl;
+                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!\n";
                 return false;
             }
 
