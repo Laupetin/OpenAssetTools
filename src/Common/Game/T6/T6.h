@@ -153,6 +153,9 @@ namespace T6
         AUFT_OVERLAYRETICLE,
         AUFT_CAMO,
 
+        // Custom
+        AUFT_ANIM_NAME,
+
         AUFT_NUM_FIELD_TYPES,
     };
 

@@ -23,20 +23,20 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cout << "Failed to parse hide tags as array" << std::endl;
+                std::cerr << "Failed to parse hide tags as array" << std::endl;
                 return false;
             }
 
-            if (valueArray.size() > std::extent<decltype(WeaponFullDef::hideTags)>::value)
+            if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cout << "Cannot have more than " << std::extent<decltype(WeaponFullDef::hideTags)>::value << " hide tags!" << std::endl;
+                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!" << std::endl;
                 return false;
             }
 
             auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
             auto currentHideTag = 0u;
 
-            if (valueArray.size() < std::extent<decltype(WeaponFullDef::hideTags)>::value)
+            if (valueArray.size() < std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
                 m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
             }
@@ -48,7 +48,7 @@ namespace T6
                 m_used_script_string_list.emplace(scrString);
             }
 
-            for (; currentHideTag < std::extent<decltype(WeaponFullDef::hideTags)>::value; currentHideTag++)
+            for (; currentHideTag < std::extent_v<decltype(WeaponFullDef::hideTags)>; currentHideTag++)
             {
                 hideTags[currentHideTag] = m_zone_script_strings.GetScriptString("");
             }
@@ -68,7 +68,7 @@ namespace T6
 
             if (camo == nullptr)
             {
-                std::cout << "Failed to load camo asset \"" << value << "\"" << std::endl;
+                std::cerr << "Failed to load camo asset \"" << value << "\"\n";
                 return false;
             }
 
@@ -78,22 +78,37 @@ namespace T6
             return true;
         }
 
+        bool ConvertAnimName(const cspField_t& field, const std::string& value)
+        {
+            if (ConvertString(value, field.iOffset))
+            {
+                if (!value.empty())
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                return true;
+            }
+
+            return false;
+        }
+
     protected:
         bool ConvertExtensionField(const cspField_t& field, const std::string& value) override
         {
             switch (static_cast<attachmentUniqueFieldType_t>(field.iFieldType))
             {
             case AUFT_ATTACHMENTTYPE:
-                return ConvertEnumInt(value, field.iOffset, szAttachmentTypeNames, std::extent<decltype(szAttachmentTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
 
             case AUFT_HIDETAGS:
                 return ConvertHideTags(field, value);
 
             case AUFT_OVERLAYRETICLE:
-                return ConvertEnumInt(value, field.iOffset, szWeapOverlayReticleNames, std::extent<decltype(szWeapOverlayReticleNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
 
             case AUFT_CAMO:
                 return ConvertWeaponCamo(field, value);
+
+            case AUFT_ANIM_NAME:
+                return ConvertAnimName(field, value);
 
             default:
                 assert(false);
@@ -147,7 +162,7 @@ bool AssetLoaderWeaponAttachmentUnique::ExtractAttachmentsFromAssetName(const st
             c = static_cast<char>(tolower(c));
 
         auto foundAttachment = false;
-        for (auto attachIndex = 0u; attachIndex < std::extent<decltype(szAttachmentTypeNames)>::value; attachIndex++)
+        for (auto attachIndex = 0u; attachIndex < std::extent_v<decltype(szAttachmentTypeNames)>; attachIndex++)
         {
             if (specifiedAttachName == szAttachmentTypeNames[attachIndex])
             {
@@ -177,13 +192,13 @@ bool AssetLoaderWeaponAttachmentUnique::CalculateAttachmentUniqueFields(const st
     std::vector<eAttachment> attachmentsFromName;
     if (!ExtractAttachmentsFromAssetName(assetName, attachmentsFromName))
     {
-        std::cout << "Failed to determine attachments from attachment unique name \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to determine attachments from attachment unique name \"" << assetName << "\"\n";
         return false;
     }
 
     if (attachmentsFromName.size() > 1)
     {
-        for (auto attachment : attachmentsFromName)
+        for (const auto attachment : attachmentsFromName)
         {
             attachmentUnique->attachment.combinedAttachmentTypeMask |= 1 << attachment;
         }
@@ -200,16 +215,11 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(
     memset(attachmentUniqueFull, 0, sizeof(WeaponAttachmentUniqueFull));
     LinkAttachmentUniqueFullSubStructs(attachmentUniqueFull);
 
-    InfoStringToWeaponAttachmentUniqueConverter converter(infoString,
-                                                          attachmentUniqueFull,
-                                                          zone->m_script_strings,
-                                                          memory,
-                                                          manager,
-                                                          attachment_unique_fields,
-                                                          std::extent<decltype(attachment_unique_fields)>::value);
+    InfoStringToWeaponAttachmentUniqueConverter converter(
+        infoString, attachmentUniqueFull, zone->m_script_strings, memory, manager, attachment_unique_fields, std::extent_v<decltype(attachment_unique_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse attachment unique: \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to parse attachment unique: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -218,11 +228,12 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(
 
     attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());
 
-    auto* assetInfo = GlobalAssetPool<WeaponAttachmentUnique>::GetAssetByName(assetName);
-    auto* asset = assetInfo ? assetInfo->Asset() : nullptr;
-
-    manager->AddAsset(
-        ASSET_TYPE_ATTACHMENT_UNIQUE, assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset(ASSET_TYPE_ATTACHMENT_UNIQUE,
+                      assetName,
+                      &attachmentUniqueFull->attachment,
+                      converter.GetDependencies(),
+                      converter.GetUsedScriptStrings(),
+                      converter.GetIndirectAssetReferences());
 
     return true;
 }
@@ -245,14 +256,14 @@ bool AssetLoaderWeaponAttachmentUnique::CanLoadFromGdt() const
 bool AssetLoaderWeaponAttachmentUnique::LoadFromGdt(
     const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE, assetName);
+    const auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT_UNIQUE, assetName);
     if (gdtEntry == nullptr)
         return false;
 
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read attachment unique gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to read attachment unique gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -275,7 +286,7 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT_UNIQUE, *file.m_stream))
     {
-        std::cout << "Failed to read attachment unique raw file: \"" << fileName << "\"" << std::endl;
+        std::cerr << "Failed to read attachment unique raw file: \"" << fileName << "\"\n";
         return true;
     }
 
