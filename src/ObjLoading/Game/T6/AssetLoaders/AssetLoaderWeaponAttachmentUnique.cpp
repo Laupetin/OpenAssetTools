@@ -23,34 +23,36 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cerr << "Failed to parse hide tags as array" << std::endl;
+                std::cerr << "Failed to parse hide tags as array\n";
                 return false;
             }
 
             if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!" << std::endl;
+                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!\n";
                 return false;
             }
 
             auto* hideTags = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-            auto currentHideTag = 0u;
 
             if (valueArray.size() < std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(""));
+                m_used_script_string_list.emplace(m_zone_script_strings.AddOrGetScriptString(nullptr));
             }
 
+            auto currentHideTag = 0u;
             for (; currentHideTag < valueArray.size(); currentHideTag++)
             {
-                const auto scrString = m_zone_script_strings.AddOrGetScriptString(valueArray[currentHideTag]);
+                const auto& currentValue = valueArray[currentHideTag];
+                const auto scrString =
+                    !currentValue.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue) : m_zone_script_strings.AddOrGetScriptString(nullptr);
                 hideTags[currentHideTag] = scrString;
                 m_used_script_string_list.emplace(scrString);
             }
 
             for (; currentHideTag < std::extent_v<decltype(WeaponFullDef::hideTags)>; currentHideTag++)
             {
-                hideTags[currentHideTag] = m_zone_script_strings.GetScriptString("");
+                hideTags[currentHideTag] = m_zone_script_strings.GetScriptString(nullptr);
             }
 
             return true;

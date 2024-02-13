@@ -22,7 +22,7 @@ namespace T6
 
         static void CalculateWeaponFields(WeaponFullDef* weapon);
         static void CalculateAttachmentFields(const WeaponFullDef* weapon, unsigned attachmentIndex, WeaponAttachmentUnique* attachmentUnique);
-        static void CalculateAttachmentFields(WeaponFullDef* weapon);
+        static void CalculateAttachmentFields(const WeaponFullDef* weapon);
 
         static bool
             LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone);

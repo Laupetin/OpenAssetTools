@@ -24,13 +24,13 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cout << "Failed to parse hide tags as array\n";
+                std::cerr << "Failed to parse hide tags as array\n";
                 return false;
             }
 
             if (valueArray.size() > std::extent_v<decltype(WeaponFullDef::hideTags)>)
             {
-                std::cout << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!\n";
+                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::hideTags)> << " hide tags!\n";
                 return false;
             }
 
@@ -83,13 +83,13 @@ namespace T6
             std::vector<std::pair<std::string, std::string>> pairs;
             if (!ParseAsPairs(value, pairs))
             {
-                std::cout << "Failed to parse notetracksoundmap as pairs\n";
+                std::cerr << "Failed to parse notetracksoundmap as pairs\n";
                 return false;
             }
 
             if (pairs.size() > std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>)
             {
-                std::cout << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)> << " notetracksoundmap entries!\n";
+                std::cerr << "Cannot have more than " << std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)> << " notetracksoundmap entries!\n";
                 return false;
             }
 
@@ -139,7 +139,7 @@ namespace T6
 
             if (camo == nullptr)
             {
-                std::cout << "Failed to load camo asset \"" << value << "\"" << std::endl;
+                std::cerr << "Failed to load camo asset \"" << value << "\"\n";
                 return false;
             }
 
@@ -154,7 +154,7 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cout << "Failed to parse attachments as array" << std::endl;
+                std::cerr << "Failed to parse attachments as array\n";
                 return false;
             }
 
@@ -165,7 +165,7 @@ namespace T6
                 auto* attachmentAssetInfo = m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT, attachmentName);
                 if (attachmentAssetInfo == nullptr)
                 {
-                    std::cout << "Failed to load attachment asset \"" << attachmentName << "\"" << std::endl;
+                    std::cerr << "Failed to load attachment asset \"" << attachmentName << "\"\n";
                     return false;
                 }
 
@@ -173,15 +173,14 @@ namespace T6
 
                 if (static_cast<unsigned>(attachmentAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                 {
-                    std::cout << "Invalid attachment type " << attachmentAsset->attachmentType << " for attachment asset \"" << attachmentName << "\""
-                              << std::endl;
+                    std::cerr << "Invalid attachment type " << attachmentAsset->attachmentType << " for attachment asset \"" << attachmentName << "\"\n";
                     return false;
                 }
 
                 if (attachments[attachmentAsset->attachmentType] != nullptr)
                 {
-                    std::cout << "Already loaded attachment with same type " << attachmentAsset->attachmentType << ": \""
-                              << attachments[attachmentAsset->attachmentType]->szInternalName << "\", \"" << attachmentName << "\"" << std::endl;
+                    std::cerr << "Already loaded attachment with same type " << attachmentAsset->attachmentType << ": \""
+                              << attachments[attachmentAsset->attachmentType]->szInternalName << "\", \"" << attachmentName << "\"\n";
                     return false;
                 }
 
@@ -203,7 +202,7 @@ namespace T6
             std::vector<std::string> valueArray;
             if (!ParseAsArray(value, valueArray))
             {
-                std::cout << "Failed to parse attachment uniques as array" << std::endl;
+                std::cerr << "Failed to parse attachment uniques as array\n";
                 return false;
             }
 
@@ -215,7 +214,7 @@ namespace T6
                 auto* attachmentUniqueAssetInfo = m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT_UNIQUE, attachmentUniqueName);
                 if (attachmentUniqueAssetInfo == nullptr)
                 {
-                    std::cout << "Failed to load attachment unique asset \"" << attachmentUniqueName << "\"" << std::endl;
+                    std::cerr << "Failed to load attachment unique asset \"" << attachmentUniqueName << "\"\n";
                     return false;
                 }
 
@@ -225,7 +224,7 @@ namespace T6
                 {
                     if (attachmentCombinationIndex >= std::extent_v<decltype(WeaponFullDef::attachmentUniques)>)
                     {
-                        std::cout << "Cannot have more than "
+                        std::cerr << "Cannot have more than "
                                   << (std::extent_v<decltype(WeaponFullDef::attachmentUniques)> - std::extent_v<decltype(WeaponFullDef::attachments)>)
                                   << " combined attachment attachment unique entries!\n";
                         return false;
@@ -238,14 +237,14 @@ namespace T6
                 {
                     if (static_cast<unsigned>(attachmentUniqueAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                     {
-                        std::cout << "Invalid attachment type " << attachmentUniqueAsset->attachmentType << " for attachment unique asset \""
+                        std::cerr << "Invalid attachment type " << attachmentUniqueAsset->attachmentType << " for attachment unique asset \""
                                   << attachmentUniqueName << "\"\n";
                         return false;
                     }
 
                     if (attachmentUniques[attachmentUniqueAsset->attachmentType] != nullptr)
                     {
-                        std::cout << "Already loaded attachment unique with same type " << attachmentUniqueAsset->attachmentType << ": \""
+                        std::cerr << "Already loaded attachment unique with same type " << attachmentUniqueAsset->attachmentType << ": \""
                                   << attachmentUniques[attachmentUniqueAsset->attachmentType]->szInternalName << "\", \"" << attachmentUniqueName << "\"\n";
                         return false;
                     }
@@ -534,7 +533,7 @@ void AssetLoaderWeapon::CalculateAttachmentFields(const WeaponFullDef* weapon, u
     }
 }
 
-void AssetLoaderWeapon::CalculateAttachmentFields(WeaponFullDef* weapon)
+void AssetLoaderWeapon::CalculateAttachmentFields(const WeaponFullDef* weapon)
 {
     for (auto attachmentUniqueIndex = 0u; attachmentUniqueIndex < std::extent_v<decltype(WeaponFullDef::attachmentUniques)>; attachmentUniqueIndex++)
     {
@@ -556,7 +555,7 @@ bool AssetLoaderWeapon::LoadFromInfoString(
         infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent_v<decltype(weapon_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse weapon: \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to parse weapon: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -594,14 +593,14 @@ bool AssetLoaderWeapon::CanLoadFromGdt() const
 bool AssetLoaderWeapon::LoadFromGdt(
     const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON, assetName);
+    const auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON, assetName);
     if (gdtEntry == nullptr)
         return false;
 
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read weapon gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to read weapon gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -624,7 +623,7 @@ bool AssetLoaderWeapon::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_WEAPON, *file.m_stream))
     {
-        std::cout << "Failed to read weapon raw file: \"" << fileName << "\"" << std::endl;
+        std::cerr << "Failed to read weapon raw file: \"" << fileName << "\"\n";
         return true;
     }
 

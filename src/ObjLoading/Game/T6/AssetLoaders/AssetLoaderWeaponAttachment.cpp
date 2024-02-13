@@ -48,7 +48,7 @@ namespace T6
         ATTACHMENT_POINT_TOP,     // vzoom
     };
 
-    static_assert(std::extent<decltype(attachmentPointByAttachmentTable)>::value == ATTACHMENT_TYPE_COUNT);
+    static_assert(std::extent_v<decltype(attachmentPointByAttachmentTable)> == ATTACHMENT_TYPE_COUNT);
 
     class InfoStringToWeaponAttachmentConverter final : public InfoStringToStructConverter
     {
@@ -58,13 +58,13 @@ namespace T6
             switch (static_cast<attachmentFieldType_t>(field.iFieldType))
             {
             case AFT_ATTACHMENTTYPE:
-                return ConvertEnumInt(value, field.iOffset, szAttachmentTypeNames, std::extent<decltype(szAttachmentTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
 
             case AFT_PENETRATE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, penetrateTypeNames, std::extent<decltype(penetrateTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
 
             case AFT_FIRETYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapFireTypeNames, std::extent<decltype(szWeapFireTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
 
             default:
                 assert(false);
@@ -102,17 +102,18 @@ bool AssetLoaderWeaponAttachment::LoadFromInfoString(
     memset(attachment, 0, sizeof(WeaponAttachment));
 
     InfoStringToWeaponAttachmentConverter converter(
-        infoString, attachment, zone->m_script_strings, memory, manager, attachment_fields, std::extent<decltype(attachment_fields)>::value);
+        infoString, attachment, zone->m_script_strings, memory, manager, attachment_fields, std::extent_v<decltype(attachment_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse attachment: \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to parse attachment: \"" << assetName << "\"\n";
         return true;
     }
 
     CalculateAttachmentFields(attachment);
     attachment->szInternalName = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_ATTACHMENT, assetName, attachment, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset(
+        ASSET_TYPE_ATTACHMENT, assetName, attachment, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
     return true;
 }
@@ -134,14 +135,14 @@ bool AssetLoaderWeaponAttachment::CanLoadFromGdt() const
 bool AssetLoaderWeaponAttachment::LoadFromGdt(
     const std::string& assetName, IGdtQueryable* gdtQueryable, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT, assetName);
+    const auto* gdtEntry = gdtQueryable->GetGdtEntryByGdfAndName(ObjConstants::GDF_FILENAME_WEAPON_ATTACHMENT, assetName);
     if (gdtEntry == nullptr)
         return false;
 
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read attachment gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cerr << "Failed to read attachment gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -164,7 +165,7 @@ bool AssetLoaderWeaponAttachment::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_WEAPON_ATTACHMENT, *file.m_stream))
     {
-        std::cout << "Failed to read attachment raw file: \"" << fileName << "\"" << std::endl;
+        std::cerr << "Failed to read attachment raw file: \"" << fileName << "\"\n";
         return true;
     }
 
