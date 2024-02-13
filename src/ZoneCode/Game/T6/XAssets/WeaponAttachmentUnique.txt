@@ -13,6 +13,7 @@ set reusable hideTags;
 set string viewModelTag;
 set string worldModelTag;
 set string szXAnims;
+set assetref szXAnims ASSET_TYPE_XANIMPARTS;
 set count szXAnims 88;
 set reusable szXAnims;
 set count locationDamageMultipliers 21;
