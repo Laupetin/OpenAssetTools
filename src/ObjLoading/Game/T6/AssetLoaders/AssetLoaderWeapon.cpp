@@ -426,26 +426,26 @@ void AssetLoaderWeapon::CalculateWeaponFields(WeaponFullDef* weapon)
         weapon->weapVariantDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weapon->weapVariantDef.iAdsTransOutTime);
 }
 
-bool AssetLoaderWeapon::IsStringOverride(const char* str1, const char* str2)
+bool AssetLoaderWeapon::IsStringOverride(const char* baseString, const char* overrideString)
 {
-    if ((str1 == nullptr) != (str2 == nullptr))
-        return true;
-
-    if (str1 == nullptr)
+    if (overrideString == nullptr || overrideString[0] == '\0')
         return false;
 
-    return strcmp(str1, str2) != 0;
+    if (baseString == nullptr || baseString[0] == '\0')
+        return true;
+
+    return strcmp(baseString, overrideString) != 0;
 }
 
-bool AssetLoaderWeapon::IsFxOverride(const FxEffectDef* effect1, const FxEffectDef* effect2)
+bool AssetLoaderWeapon::IsFxOverride(const FxEffectDef* baseEffect, const FxEffectDef* overrideEffect)
 {
-    if ((effect1 == nullptr) != (effect2 == nullptr))
-        return true;
-
-    if (effect1 == nullptr)
+    if (overrideEffect == nullptr)
         return false;
 
-    return strcmp(effect1->name, effect2->name) != 0;
+    if (baseEffect == nullptr)
+        return true;
+
+    return strcmp(baseEffect->name, overrideEffect->name) != 0;
 }
 
 void AssetLoaderWeapon::HandleSoundOverride(WeaponAttachmentUnique* attachmentUnique,

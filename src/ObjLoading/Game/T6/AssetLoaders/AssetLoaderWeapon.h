@@ -11,8 +11,8 @@ namespace T6
     {
         static void LinkWeaponFullDefSubStructs(WeaponFullDef* weapon);
 
-        static bool IsStringOverride(const char* str1, const char* str2);
-        static bool IsFxOverride(const FxEffectDef* effect1, const FxEffectDef* effect2);
+        static bool IsStringOverride(const char* baseString, const char* overrideString);
+        static bool IsFxOverride(const FxEffectDef* baseEffect, const FxEffectDef* overrideEffect);
         static void
             HandleSoundOverride(WeaponAttachmentUnique* attachmentUnique, const char* snd1, const char* snd2, eAttachmentOverrideSounds sndOverrideIndex);
         static void HandleFxOverride(WeaponAttachmentUnique* attachmentUnique,
