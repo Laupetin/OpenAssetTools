@@ -10,7 +10,16 @@ namespace T6
         static int Com_HashKey(const char* str, int maxLen);
         static int Com_HashString(const char* str);
         static int Com_HashString(const char* str, int len);
-        static uint32_t R_HashString(const char* str, uint32_t hash);
+
+        static constexpr uint32_t R_HashString(const char* str, uint32_t hash)
+        {
+            for (const auto* pos = str; *pos; pos++)
+            {
+                hash = 33 * hash ^ (*pos | 0x20);
+            }
+
+            return hash;
+        }
 
         static constexpr uint32_t SND_HashName(const char* str)
         {

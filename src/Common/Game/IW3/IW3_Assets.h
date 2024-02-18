@@ -763,6 +763,24 @@ namespace IW3
         SURF_TYPE_NUM
     };
 
+    // Unknown if this is the right amount of flags
+    enum MaterialGameFlags
+    {
+        MTL_GAMEFLAG_1 = 0x1,
+        MTL_GAMEFLAG_2 = 0x2,
+        MTL_GAMEFLAG_4 = 0x4,
+        MTL_GAMEFLAG_8 = 0x8,
+        MTL_GAMEFLAG_10 = 0x10,
+        MTL_GAMEFLAG_20 = 0x20,
+        MTL_GAMEFLAG_CASTS_SHADOW = 0x40,
+        MTL_GAMEFLAG_80 = 0x80,
+        MTL_GAMEFLAG_100 = 0x100,
+        MTL_GAMEFLAG_200 = 0x200,
+        MTL_GAMEFLAG_400 = 0x400,
+        MTL_GAMEFLAG_800 = 0x800,
+        MTL_GAMEFLAG_1000 = 0x1000,
+    };
+
     struct MaterialInfo
     {
         const char* name;
