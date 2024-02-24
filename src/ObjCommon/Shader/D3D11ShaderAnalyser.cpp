@@ -8,6 +8,31 @@ using namespace d3d11;
 
 namespace d3d11
 {
+    BoundResource::BoundResource()
+        : m_type(BoundResourceType::UNKNOWN),
+          m_return_type(BoundResourceReturnType::UNKNOWN),
+          m_dimension(BoundResourceDimension::UNKNOWN),
+          m_num_samples(0u),
+          m_bind_point(0u),
+          m_bind_count(0u),
+          m_flags(0u)
+    {
+    }
+
+    ConstantBuffer::ConstantBuffer()
+        : m_size(0u),
+          m_flags(0u),
+          m_type(ConstantBufferType::UNKNOWN)
+    {
+    }
+
+    ConstantBufferVariable::ConstantBufferVariable()
+        : m_offset(0u),
+          m_size(0u),
+          m_flags(0u)
+    {
+    }
+
     static constexpr auto TAG_RDEF = FileUtils::MakeMagic32('R', 'D', 'E', 'F');
     static constexpr auto TAG_SHDR = FileUtils::MakeMagic32('S', 'H', 'D', 'R');
 
@@ -488,7 +513,7 @@ namespace d3d11
         if (targetVersion < VERSION_5_0)
         {
             const auto* variables = reinterpret_cast<const FileConstantBufferVariable*>(shaderByteCode + chunkOffset + fileConstantBuffer.variableOffset);
-            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable) * fileConstantBuffer.variableCount < chunkSize)
+            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable) * fileConstantBuffer.variableCount > chunkSize)
                 return false;
 
             for (auto variableIndex = 0u; variableIndex < fileConstantBuffer.variableCount; variableIndex++)
@@ -505,7 +530,7 @@ namespace d3d11
         else
         {
             const auto* variables = reinterpret_cast<const FileConstantBufferVariable_5_0*>(shaderByteCode + chunkOffset + fileConstantBuffer.variableOffset);
-            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable_5_0) * fileConstantBuffer.variableCount < chunkSize)
+            if (fileConstantBuffer.variableOffset + sizeof(FileConstantBufferVariable_5_0) * fileConstantBuffer.variableCount > chunkSize)
                 return false;
 
             for (auto variableIndex = 0u; variableIndex < fileConstantBuffer.variableCount; variableIndex++)
@@ -529,7 +554,7 @@ namespace d3d11
         if (!FindChunk(TAG_RDEF, shaderByteCode, shaderByteCodeSize, chunkOffset, chunkSize))
             return false;
 
-        if (sizeof(FileRdefHeader) < chunkSize)
+        if (sizeof(FileRdefHeader) > chunkSize)
             return false;
 
         const auto* header = reinterpret_cast<const FileRdefHeader*>(shaderByteCode + chunkOffset);
@@ -545,7 +570,7 @@ namespace d3d11
         if (targetVersion < VERSION_5_1)
         {
             const auto* boundResources = reinterpret_cast<const FileBoundResource*>(shaderByteCode + chunkOffset + header->boundResourceOffset);
-            if (header->boundResourceOffset + sizeof(FileBoundResource) * header->boundResourceCount < chunkSize)
+            if (header->boundResourceOffset + sizeof(FileBoundResource) * header->boundResourceCount > chunkSize)
                 return false;
 
             for (auto boundResourceIndex = 0u; boundResourceIndex < header->boundResourceCount; boundResourceIndex++)
@@ -561,7 +586,7 @@ namespace d3d11
         else
         {
             const auto* boundResources = reinterpret_cast<const FileBoundResource_5_1*>(shaderByteCode + chunkOffset + header->boundResourceOffset);
-            if (header->boundResourceOffset + sizeof(FileBoundResource_5_1) * header->boundResourceCount < chunkSize)
+            if (header->boundResourceOffset + sizeof(FileBoundResource_5_1) * header->boundResourceCount > chunkSize)
                 return false;
 
             for (auto boundResourceIndex = 0u; boundResourceIndex < header->boundResourceCount; boundResourceIndex++)
@@ -577,7 +602,7 @@ namespace d3d11
         }
 
         const auto* constantBuffers = reinterpret_cast<const FileConstantBuffer*>(shaderByteCode + chunkOffset + header->constantBufferOffset);
-        if (header->constantBufferOffset + sizeof(FileConstantBuffer) * header->constantBufferCount < chunkSize)
+        if (header->constantBufferOffset + sizeof(FileConstantBuffer) * header->constantBufferCount > chunkSize)
             return false;
 
         for (auto constantBufferIndex = 0u; constantBufferIndex < header->constantBufferCount; constantBufferIndex++)
@@ -621,7 +646,7 @@ namespace d3d11
         if (!FindChunk(TAG_SHDR, shaderByteCode, shaderByteCodeSize, chunkOffset, chunkSize))
             return false;
 
-        if (sizeof(FileShaderHeader) < chunkSize)
+        if (sizeof(FileShaderHeader) > chunkSize)
             return false;
 
         const auto* header = reinterpret_cast<const FileShaderHeader*>(shaderByteCode + chunkOffset);
