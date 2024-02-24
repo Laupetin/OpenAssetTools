@@ -36,12 +36,120 @@ namespace d3d11
     static_assert(sizeof(FileRdefHeader) == 28);
     static_assert(sizeof(FileRdefExtraHeader_5_0) == 32);
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3dcommon/ne-d3dcommon-d3d_shader_input_type
+    enum D3D_SHADER_INPUT_TYPE : uint32_t
+    {
+        D3D_SIT_CBUFFER = 0,
+        D3D_SIT_TBUFFER,
+        D3D_SIT_TEXTURE,
+        D3D_SIT_SAMPLER,
+        D3D_SIT_UAV_RWTYPED,
+        D3D_SIT_STRUCTURED,
+        D3D_SIT_UAV_RWSTRUCTURED,
+        D3D_SIT_BYTEADDRESS,
+        D3D_SIT_UAV_RWBYTEADDRESS,
+        D3D_SIT_UAV_APPEND_STRUCTURED,
+        D3D_SIT_UAV_CONSUME_STRUCTURED,
+        D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER,
+        D3D_SIT_RTACCELERATIONSTRUCTURE,
+        D3D_SIT_UAV_FEEDBACKTEXTURE,
+        D3D10_SIT_CBUFFER,
+        D3D10_SIT_TBUFFER,
+        D3D10_SIT_TEXTURE,
+        D3D10_SIT_SAMPLER,
+        D3D11_SIT_UAV_RWTYPED,
+        D3D11_SIT_STRUCTURED,
+        D3D11_SIT_UAV_RWSTRUCTURED,
+        D3D11_SIT_BYTEADDRESS,
+        D3D11_SIT_UAV_RWBYTEADDRESS,
+        D3D11_SIT_UAV_APPEND_STRUCTURED,
+        D3D11_SIT_UAV_CONSUME_STRUCTURED,
+        D3D11_SIT_UAV_RWSTRUCTURED_WITH_COUNTER
+    };
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3dcommon/ne-d3dcommon-d3d_resource_return_type
+    enum D3D_RESOURCE_RETURN_TYPE : uint32_t
+    {
+        D3D_RETURN_TYPE_UNORM = 1,
+        D3D_RETURN_TYPE_SNORM = 2,
+        D3D_RETURN_TYPE_SINT = 3,
+        D3D_RETURN_TYPE_UINT = 4,
+        D3D_RETURN_TYPE_FLOAT = 5,
+        D3D_RETURN_TYPE_MIXED = 6,
+        D3D_RETURN_TYPE_DOUBLE = 7,
+        D3D_RETURN_TYPE_CONTINUED = 8,
+        D3D10_RETURN_TYPE_UNORM,
+        D3D10_RETURN_TYPE_SNORM,
+        D3D10_RETURN_TYPE_SINT,
+        D3D10_RETURN_TYPE_UINT,
+        D3D10_RETURN_TYPE_FLOAT,
+        D3D10_RETURN_TYPE_MIXED,
+        D3D11_RETURN_TYPE_UNORM,
+        D3D11_RETURN_TYPE_SNORM,
+        D3D11_RETURN_TYPE_SINT,
+        D3D11_RETURN_TYPE_UINT,
+        D3D11_RETURN_TYPE_FLOAT,
+        D3D11_RETURN_TYPE_MIXED,
+        D3D11_RETURN_TYPE_DOUBLE,
+        D3D11_RETURN_TYPE_CONTINUED
+    };
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3dcommon/ne-d3dcommon-d3d_srv_dimension
+    enum D3D_SRV_DIMENSION : uint32_t
+    {
+        D3D_SRV_DIMENSION_UNKNOWN = 0,
+        D3D_SRV_DIMENSION_BUFFER = 1,
+        D3D_SRV_DIMENSION_TEXTURE1D = 2,
+        D3D_SRV_DIMENSION_TEXTURE1DARRAY = 3,
+        D3D_SRV_DIMENSION_TEXTURE2D = 4,
+        D3D_SRV_DIMENSION_TEXTURE2DARRAY = 5,
+        D3D_SRV_DIMENSION_TEXTURE2DMS = 6,
+        D3D_SRV_DIMENSION_TEXTURE2DMSARRAY = 7,
+        D3D_SRV_DIMENSION_TEXTURE3D = 8,
+        D3D_SRV_DIMENSION_TEXTURECUBE = 9,
+        D3D_SRV_DIMENSION_TEXTURECUBEARRAY = 10,
+        D3D_SRV_DIMENSION_BUFFEREX = 11,
+        D3D10_SRV_DIMENSION_UNKNOWN,
+        D3D10_SRV_DIMENSION_BUFFER,
+        D3D10_SRV_DIMENSION_TEXTURE1D,
+        D3D10_SRV_DIMENSION_TEXTURE1DARRAY,
+        D3D10_SRV_DIMENSION_TEXTURE2D,
+        D3D10_SRV_DIMENSION_TEXTURE2DARRAY,
+        D3D10_SRV_DIMENSION_TEXTURE2DMS,
+        D3D10_SRV_DIMENSION_TEXTURE2DMSARRAY,
+        D3D10_SRV_DIMENSION_TEXTURE3D,
+        D3D10_SRV_DIMENSION_TEXTURECUBE,
+        D3D10_1_SRV_DIMENSION_UNKNOWN,
+        D3D10_1_SRV_DIMENSION_BUFFER,
+        D3D10_1_SRV_DIMENSION_TEXTURE1D,
+        D3D10_1_SRV_DIMENSION_TEXTURE1DARRAY,
+        D3D10_1_SRV_DIMENSION_TEXTURE2D,
+        D3D10_1_SRV_DIMENSION_TEXTURE2DARRAY,
+        D3D10_1_SRV_DIMENSION_TEXTURE2DMS,
+        D3D10_1_SRV_DIMENSION_TEXTURE2DMSARRAY,
+        D3D10_1_SRV_DIMENSION_TEXTURE3D,
+        D3D10_1_SRV_DIMENSION_TEXTURECUBE,
+        D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY,
+        D3D11_SRV_DIMENSION_UNKNOWN,
+        D3D11_SRV_DIMENSION_BUFFER,
+        D3D11_SRV_DIMENSION_TEXTURE1D,
+        D3D11_SRV_DIMENSION_TEXTURE1DARRAY,
+        D3D11_SRV_DIMENSION_TEXTURE2D,
+        D3D11_SRV_DIMENSION_TEXTURE2DARRAY,
+        D3D11_SRV_DIMENSION_TEXTURE2DMS,
+        D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY,
+        D3D11_SRV_DIMENSION_TEXTURE3D,
+        D3D11_SRV_DIMENSION_TEXTURECUBE,
+        D3D11_SRV_DIMENSION_TEXTURECUBEARRAY,
+        D3D11_SRV_DIMENSION_BUFFEREX
+    };
+
     struct FileBoundResource
     {
         uint32_t nameOffset;
-        uint32_t type;
-        uint32_t returnType;
-        uint32_t dimension;
+        D3D_SHADER_INPUT_TYPE type;
+        D3D_RESOURCE_RETURN_TYPE returnType;
+        D3D_SRV_DIMENSION dimension;
         uint32_t numSamples;
         uint32_t bindPoint;
         uint32_t bindCount;
@@ -57,6 +165,21 @@ namespace d3d11
     static_assert(sizeof(FileBoundResource) == 32);
     static_assert(sizeof(FileBoundResource_5_1) == 40);
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3dcommon/ne-d3dcommon-d3d_cbuffer_type
+    enum D3D_CBUFFER_TYPE : uint32_t
+    {
+        D3D_CT_CBUFFER = 0,
+        D3D_CT_TBUFFER,
+        D3D_CT_INTERFACE_POINTERS,
+        D3D_CT_RESOURCE_BIND_INFO,
+        D3D10_CT_CBUFFER,
+        D3D10_CT_TBUFFER,
+        D3D11_CT_CBUFFER,
+        D3D11_CT_TBUFFER,
+        D3D11_CT_INTERFACE_POINTERS,
+        D3D11_CT_RESOURCE_BIND_INFO
+    };
+
     struct FileConstantBuffer
     {
         uint32_t nameOffset;
@@ -64,7 +187,7 @@ namespace d3d11
         uint32_t variableOffset;
         uint32_t size;
         uint32_t flags;
-        uint32_t type;
+        D3D_CBUFFER_TYPE type;
     };
 
     struct FileConstantBufferVariable
@@ -156,6 +279,127 @@ namespace d3d11
         return str[strLen] == '\0';
     }
 
+    BoundResourceType GetType(const D3D_SHADER_INPUT_TYPE type)
+    {
+        switch (type)
+        {
+        case D3D_SIT_CBUFFER:
+        case D3D10_SIT_CBUFFER:
+            return BoundResourceType::CBUFFER;
+        case D3D_SIT_TBUFFER:
+        case D3D10_SIT_TBUFFER:
+            return BoundResourceType::TBUFFER;
+        case D3D_SIT_TEXTURE:
+        case D3D10_SIT_TEXTURE:
+            return BoundResourceType::TEXTURE;
+        case D3D_SIT_SAMPLER:
+        case D3D10_SIT_SAMPLER:
+            return BoundResourceType::SAMPLER;
+        default:
+            return BoundResourceType::UNKNOWN;
+        }
+    }
+
+    BoundResourceReturnType GetReturnType(const D3D_RESOURCE_RETURN_TYPE returnType)
+    {
+        switch (returnType)
+        {
+        case D3D_RETURN_TYPE_UNORM:
+        case D3D10_RETURN_TYPE_UNORM:
+        case D3D11_RETURN_TYPE_UNORM:
+            return BoundResourceReturnType::UNORM;
+        case D3D_RETURN_TYPE_SNORM:
+        case D3D10_RETURN_TYPE_SNORM:
+        case D3D11_RETURN_TYPE_SNORM:
+            return BoundResourceReturnType::SNORM;
+        case D3D_RETURN_TYPE_SINT:
+        case D3D10_RETURN_TYPE_SINT:
+        case D3D11_RETURN_TYPE_SINT:
+            return BoundResourceReturnType::SINT;
+        case D3D_RETURN_TYPE_UINT:
+        case D3D10_RETURN_TYPE_UINT:
+        case D3D11_RETURN_TYPE_UINT:
+            return BoundResourceReturnType::UINT;
+        case D3D_RETURN_TYPE_FLOAT:
+        case D3D10_RETURN_TYPE_FLOAT:
+        case D3D11_RETURN_TYPE_FLOAT:
+            return BoundResourceReturnType::FLOAT;
+        case D3D_RETURN_TYPE_MIXED:
+        case D3D10_RETURN_TYPE_MIXED:
+        case D3D11_RETURN_TYPE_MIXED:
+            return BoundResourceReturnType::MIXED;
+        case D3D_RETURN_TYPE_DOUBLE:
+        case D3D11_RETURN_TYPE_DOUBLE:
+            return BoundResourceReturnType::DOUBLE;
+        case D3D_RETURN_TYPE_CONTINUED:
+        case D3D11_RETURN_TYPE_CONTINUED:
+            return BoundResourceReturnType::CONTINUED;
+        default:
+            return BoundResourceReturnType::UNKNOWN;
+        }
+    }
+
+    BoundResourceDimension GetDimension(const D3D_SRV_DIMENSION dimension)
+    {
+        switch (dimension)
+        {
+        case D3D_SRV_DIMENSION_BUFFER:
+        case D3D10_SRV_DIMENSION_BUFFER:
+        case D3D10_1_SRV_DIMENSION_BUFFER:
+        case D3D11_SRV_DIMENSION_BUFFER:
+            return BoundResourceDimension::BUFFER;
+        case D3D_SRV_DIMENSION_TEXTURE1D:
+        case D3D10_SRV_DIMENSION_TEXTURE1D:
+        case D3D10_1_SRV_DIMENSION_TEXTURE1D:
+        case D3D11_SRV_DIMENSION_TEXTURE1D:
+            return BoundResourceDimension::TEXTURE_1D;
+        case D3D_SRV_DIMENSION_TEXTURE1DARRAY:
+        case D3D10_SRV_DIMENSION_TEXTURE1DARRAY:
+        case D3D10_1_SRV_DIMENSION_TEXTURE1DARRAY:
+        case D3D11_SRV_DIMENSION_TEXTURE1DARRAY:
+            return BoundResourceDimension::TEXTURE_1D_ARRAY;
+        case D3D_SRV_DIMENSION_TEXTURE2D:
+        case D3D10_SRV_DIMENSION_TEXTURE2D:
+        case D3D10_1_SRV_DIMENSION_TEXTURE2D:
+        case D3D11_SRV_DIMENSION_TEXTURE2D:
+            return BoundResourceDimension::TEXTURE_2D;
+        case D3D_SRV_DIMENSION_TEXTURE2DARRAY:
+        case D3D10_SRV_DIMENSION_TEXTURE2DARRAY:
+        case D3D10_1_SRV_DIMENSION_TEXTURE2DARRAY:
+        case D3D11_SRV_DIMENSION_TEXTURE2DARRAY:
+            return BoundResourceDimension::TEXTURE_2D_ARRAY;
+        case D3D_SRV_DIMENSION_TEXTURE2DMS:
+        case D3D10_SRV_DIMENSION_TEXTURE2DMS:
+        case D3D10_1_SRV_DIMENSION_TEXTURE2DMS:
+        case D3D11_SRV_DIMENSION_TEXTURE2DMS:
+            return BoundResourceDimension::TEXTURE_2D_MS;
+        case D3D_SRV_DIMENSION_TEXTURE2DMSARRAY:
+        case D3D10_SRV_DIMENSION_TEXTURE2DMSARRAY:
+        case D3D10_1_SRV_DIMENSION_TEXTURE2DMSARRAY:
+        case D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY:
+            return BoundResourceDimension::TEXTURE_2D_MS_ARRAY;
+        case D3D_SRV_DIMENSION_TEXTURE3D:
+        case D3D10_SRV_DIMENSION_TEXTURE3D:
+        case D3D10_1_SRV_DIMENSION_TEXTURE3D:
+        case D3D11_SRV_DIMENSION_TEXTURE3D:
+            return BoundResourceDimension::TEXTURE_3D;
+        case D3D_SRV_DIMENSION_TEXTURECUBE:
+        case D3D10_SRV_DIMENSION_TEXTURECUBE:
+        case D3D10_1_SRV_DIMENSION_TEXTURECUBE:
+        case D3D11_SRV_DIMENSION_TEXTURECUBE:
+            return BoundResourceDimension::TEXTURE_CUBE;
+        case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:
+        case D3D10_1_SRV_DIMENSION_TEXTURECUBEARRAY:
+        case D3D11_SRV_DIMENSION_TEXTURECUBEARRAY:
+            return BoundResourceDimension::TEXTURE_CUBE_ARRAY;
+        case D3D_SRV_DIMENSION_BUFFEREX:
+        case D3D11_SRV_DIMENSION_BUFFEREX:
+            return BoundResourceDimension::BUFFER_EX;
+        default:
+            return BoundResourceDimension::UNKNOWN;
+        }
+    }
+
     bool PopulateBoundResource(BoundResource& boundResource,
                                const FileBoundResource& fileBoundResource,
                                const uint8_t* shaderByteCode,
@@ -168,9 +412,9 @@ namespace d3d11
             return false;
 
         boundResource.m_name = std::string(nameString);
-        boundResource.m_type = fileBoundResource.type;
-        boundResource.m_return_type = fileBoundResource.returnType;
-        boundResource.m_dimension = fileBoundResource.dimension;
+        boundResource.m_type = GetType(fileBoundResource.type);
+        boundResource.m_return_type = GetReturnType(fileBoundResource.returnType);
+        boundResource.m_dimension = GetDimension(fileBoundResource.dimension);
         boundResource.m_num_samples = fileBoundResource.numSamples;
         boundResource.m_bind_point = fileBoundResource.bindPoint;
         boundResource.m_bind_count = fileBoundResource.bindCount;
@@ -199,6 +443,29 @@ namespace d3d11
         return true;
     }
 
+    ConstantBufferType GetType(const D3D_CBUFFER_TYPE type)
+    {
+        switch (type)
+        {
+        case D3D_CT_CBUFFER:
+        case D3D10_CT_CBUFFER:
+        case D3D11_CT_CBUFFER:
+            return ConstantBufferType::CBUFFER;
+        case D3D_CT_TBUFFER:
+        case D3D10_CT_TBUFFER:
+        case D3D11_CT_TBUFFER:
+            return ConstantBufferType::TBUFFER;
+        case D3D_CT_INTERFACE_POINTERS:
+        case D3D11_CT_INTERFACE_POINTERS:
+            return ConstantBufferType::INTERFACE_POINTERS;
+        case D3D_CT_RESOURCE_BIND_INFO:
+        case D3D11_CT_RESOURCE_BIND_INFO:
+            return ConstantBufferType::RESOURCE_BIND_INFO;
+        default:
+            return ConstantBufferType::UNKNOWN;
+        }
+    }
+
     bool PopulateConstantBuffer(ConstantBuffer& constantBuffer,
                                 const FileConstantBuffer& fileConstantBuffer,
                                 const uint8_t* shaderByteCode,
@@ -216,7 +483,7 @@ namespace d3d11
 
         constantBuffer.m_size = fileConstantBuffer.size;
         constantBuffer.m_flags = fileConstantBuffer.flags;
-        constantBuffer.m_type = fileConstantBuffer.type;
+        constantBuffer.m_type = GetType(fileConstantBuffer.type);
 
         if (targetVersion < VERSION_5_0)
         {
@@ -327,6 +594,27 @@ namespace d3d11
         return true;
     }
 
+    ShaderType GetShaderType(const FileProgramType programType)
+    {
+        switch (programType)
+        {
+        case D3D10_SB_PIXEL_SHADER:
+            return ShaderType::PIXEL_SHADER;
+        case D3D10_SB_VERTEX_SHADER:
+            return ShaderType::VERTEX_SHADER;
+        case D3D10_SB_GEOMETRY_SHADER:
+            return ShaderType::GEOMETRY_SHADER;
+        case D3D11_SB_HULL_SHADER:
+            return ShaderType::HULL_SHADER;
+        case D3D11_SB_DOMAIN_SHADER:
+            return ShaderType::DOMAIN_SHADER;
+        case D3D11_SB_COMPUTE_SHADER:
+            return ShaderType::COMPUTE_SHADER;
+        default:
+            return ShaderType::UNKNOWN;
+        }
+    }
+
     bool PopulateShaderInfoFromShdr(ShaderInfo& shaderInfo, const uint8_t* shaderByteCode, const size_t shaderByteCodeSize)
     {
         size_t chunkOffset, chunkSize;
@@ -341,30 +629,7 @@ namespace d3d11
         shaderInfo.m_version_major = header->versionMajor;
         shaderInfo.m_version_minor = header->versionMinor;
 
-        switch (header->programType)
-        {
-        case D3D10_SB_PIXEL_SHADER:
-            shaderInfo.m_type = ShaderType::PIXEL_SHADER;
-            break;
-        case D3D10_SB_VERTEX_SHADER:
-            shaderInfo.m_type = ShaderType::VERTEX_SHADER;
-            break;
-        case D3D10_SB_GEOMETRY_SHADER:
-            shaderInfo.m_type = ShaderType::GEOMETRY_SHADER;
-            break;
-        case D3D11_SB_HULL_SHADER:
-            shaderInfo.m_type = ShaderType::HULL_SHADER;
-            break;
-        case D3D11_SB_DOMAIN_SHADER:
-            shaderInfo.m_type = ShaderType::DOMAIN_SHADER;
-            break;
-        case D3D11_SB_COMPUTE_SHADER:
-            shaderInfo.m_type = ShaderType::COMPUTE_SHADER;
-            break;
-        default:
-            shaderInfo.m_type = ShaderType::UNKNOWN;
-            break;
-        }
+        shaderInfo.m_type = GetShaderType(header->programType);
 
         return true;
     }

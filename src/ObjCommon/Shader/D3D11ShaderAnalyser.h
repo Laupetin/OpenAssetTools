@@ -33,6 +33,15 @@ namespace d3d11
         unsigned m_flags;
     };
 
+    enum class ConstantBufferType
+    {
+        UNKNOWN,
+        CBUFFER,
+        TBUFFER,
+        INTERFACE_POINTERS,
+        RESOURCE_BIND_INFO,
+    };
+
     class ConstantBuffer
     {
     public:
@@ -46,8 +55,46 @@ namespace d3d11
         std::string m_name;
         unsigned m_size;
         unsigned m_flags;
-        unsigned m_type;
+        ConstantBufferType m_type;
         std::vector<ConstantBufferVariable> m_variables;
+    };
+
+    enum class BoundResourceType
+    {
+        UNKNOWN,
+        CBUFFER,
+        TBUFFER,
+        TEXTURE,
+        SAMPLER
+    };
+
+    enum class BoundResourceReturnType
+    {
+        UNKNOWN,
+        UNORM,
+        SNORM,
+        SINT,
+        UINT,
+        FLOAT,
+        MIXED,
+        DOUBLE,
+        CONTINUED,
+    };
+
+    enum class BoundResourceDimension
+    {
+        UNKNOWN,
+        BUFFER,
+        TEXTURE_1D,
+        TEXTURE_1D_ARRAY,
+        TEXTURE_2D,
+        TEXTURE_2D_ARRAY,
+        TEXTURE_2D_MS,
+        TEXTURE_2D_MS_ARRAY,
+        TEXTURE_3D,
+        TEXTURE_CUBE,
+        TEXTURE_CUBE_ARRAY,
+        BUFFER_EX,
     };
 
     class BoundResource
@@ -61,9 +108,9 @@ namespace d3d11
         BoundResource& operator=(BoundResource&& other) noexcept = default;
 
         std::string m_name;
-        unsigned m_type;
-        unsigned m_return_type;
-        unsigned m_dimension;
+        BoundResourceType m_type;
+        BoundResourceReturnType m_return_type;
+        BoundResourceDimension m_dimension;
         unsigned m_num_samples;
         unsigned m_bind_point;
         unsigned m_bind_count;
