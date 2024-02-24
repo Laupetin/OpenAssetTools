@@ -35,6 +35,8 @@ namespace T6::material
             if (ObjWriting::Configuration.Verbose)
                 std::cout << "Building material constant name lookup...\n";
 
+            const auto begin = std::chrono::high_resolution_clock::now();
+
             for (const auto* zone : g_GameT6.GetZones())
             {
                 const auto* t6AssetPools = dynamic_cast<const GameAssetPoolT6*>(zone->m_pools.get());
@@ -53,10 +55,13 @@ namespace T6::material
                 }
             }
 
+            const auto end = std::chrono::high_resolution_clock::now();
+
             if (ObjWriting::Configuration.Verbose)
             {
-                std::cout << "Built material constant name lookup: " << m_constant_names_from_shaders.size() << " constant names; "
-                          << m_texture_def_names_from_shaders.size() << " texture def names\n";
+                const auto durationInMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+                std::cout << "Built material constant name lookup in " << durationInMs.count() << "ms: " << m_constant_names_from_shaders.size()
+                          << " constant names; " << m_texture_def_names_from_shaders.size() << " texture def names\n";
             }
         }
 
