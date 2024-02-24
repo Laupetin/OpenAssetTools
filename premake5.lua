@@ -13,7 +13,7 @@ workspace "OpenAssetTools"
     objdir "%{wks.location}/obj"
     symbols "On"
     systemversion "latest"
-    cppdialect "C++17"
+    cppdialect "C++20"
 
 	flags {
 		"MultiProcessorCompile"
