@@ -1,12 +1,17 @@
 #include "AssetDumperMaterial.h"
 
 #include "Game/T6/CommonT6.h"
+#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/GameT6.h"
 #include "Game/T6/MaterialConstantsT6.h"
 #include "Game/T6/TechsetConstantsT6.h"
+#include "ObjWriting.h"
+#include "Shader/D3D11ShaderAnalyser.h"
 
 #include <cassert>
 #include <nlohmann/json.hpp>
 #include <sstream>
+#include <unordered_set>
 
 using namespace T6;
 using namespace nlohmann;
@@ -18,17 +23,152 @@ namespace T6::material
         Common::R_HashString(strValue, 0), strValue                                                                                                            \
     }
 
-    std::unordered_map<unsigned, std::string> knownHashes{
-        KNOWN_HASH("colorMap"),
-        KNOWN_HASH("normalMap"),
-        KNOWN_HASH("specularMap"),
+    static constexpr const char* SAMPLER_STR = "Sampler";
+    static constexpr const char* GLOBALS_CBUFFER_NAME = "$Globals";
+    static constexpr const char* PER_OBJECT_CONSTS_CBUFFER_NAME = "PerObjectConsts";
+
+    class MaterialConstantZoneState final : public IZoneAssetDumperState
+    {
+    public:
+        void ExtractNamesFromZone()
+        {
+            if (ObjWriting::Configuration.Verbose)
+                std::cout << "Building material constant name lookup...\n";
+
+            for (const auto* zone : g_GameT6.GetZones())
+            {
+                const auto* t6AssetPools = dynamic_cast<const GameAssetPoolT6*>(zone->m_pools.get());
+                if (!t6AssetPools)
+                    return;
+
+                for (const auto* techniqueSetInfo : *t6AssetPools->m_technique_set)
+                {
+                    const auto* techniqueSet = techniqueSetInfo->Asset();
+
+                    for (const auto* technique : techniqueSet->techniques)
+                    {
+                        if (technique)
+                            ExtractNamesFromTechnique(technique);
+                    }
+                }
+            }
+
+            if (ObjWriting::Configuration.Verbose)
+            {
+                std::cout << "Built material constant name lookup: " << m_constant_names_from_shaders.size() << " constant names; "
+                          << m_texture_def_names_from_shaders.size() << " texture def names\n";
+            }
+        }
+
+        bool GetConstantName(const unsigned hash, std::string& constantName) const
+        {
+            const auto existingConstantName = m_constant_names_from_shaders.find(hash);
+            if (existingConstantName != m_constant_names_from_shaders.end())
+            {
+                constantName = existingConstantName->second;
+                return true;
+            }
+
+            return false;
+        }
+
+        bool GetTextureDefName(const unsigned hash, std::string& textureDefName) const
+        {
+            const auto existingTextureDefName = m_texture_def_names_from_shaders.find(hash);
+            if (existingTextureDefName != m_texture_def_names_from_shaders.end())
+            {
+                textureDefName = existingTextureDefName->second;
+                return true;
+            }
+
+            return false;
+        }
+
+    private:
+        void ExtractNamesFromTechnique(const MaterialTechnique* technique)
+        {
+            const auto existingTechnique = m_dumped_techniques.find(technique);
+            if (existingTechnique != m_dumped_techniques.end())
+                return;
+
+            m_dumped_techniques.emplace(technique);
+
+            for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+            {
+                const auto& pass = technique->passArray[passIndex];
+
+                if (pass.vertexShader && pass.vertexShader->prog.loadDef.program)
+                    ExtractNamesFromShader(pass.vertexShader->prog.loadDef.program, pass.vertexShader->prog.loadDef.programSize);
+
+                if (pass.pixelShader && pass.pixelShader->prog.loadDef.program)
+                    ExtractNamesFromShader(pass.pixelShader->prog.loadDef.program, pass.pixelShader->prog.loadDef.programSize);
+            }
+        }
+
+        void ExtractNamesFromShader(const char* shader, const size_t shaderSize)
+        {
+            const auto shaderInfo = d3d11::ShaderAnalyser::GetShaderInfo(reinterpret_cast<const uint8_t*>(shader), shaderSize);
+            if (!shaderInfo)
+                return;
+
+            const auto globalsConstantBuffer = std::find_if(shaderInfo->m_constant_buffers.cbegin(),
+                                                            shaderInfo->m_constant_buffers.cend(),
+                                                            [](const d3d11::ConstantBuffer& constantBuffer)
+                                                            {
+                                                                return constantBuffer.m_name == GLOBALS_CBUFFER_NAME;
+                                                            });
+
+            const auto perObjectConsts = std::find_if(shaderInfo->m_constant_buffers.cbegin(),
+                                                      shaderInfo->m_constant_buffers.cend(),
+                                                      [](const d3d11::ConstantBuffer& constantBuffer)
+                                                      {
+                                                          return constantBuffer.m_name == PER_OBJECT_CONSTS_CBUFFER_NAME;
+                                                      });
+
+            if (globalsConstantBuffer != shaderInfo->m_constant_buffers.end())
+            {
+                for (const auto& variable : globalsConstantBuffer->m_variables)
+                {
+                    m_constant_names_from_shaders.emplace(Common::R_HashString(variable.m_name.c_str(), 0), variable.m_name);
+                }
+            }
+
+            if (perObjectConsts != shaderInfo->m_constant_buffers.end())
+            {
+                for (const auto& variable : perObjectConsts->m_variables)
+                {
+                    m_constant_names_from_shaders.emplace(Common::R_HashString(variable.m_name.c_str(), 0), variable.m_name);
+                }
+            }
+
+            for (const auto& boundResource : shaderInfo->m_bound_resources)
+            {
+                if (boundResource.m_type == d3d11::BoundResourceType::SAMPLER || boundResource.m_type == d3d11::BoundResourceType::TEXTURE)
+                {
+                    m_texture_def_names_from_shaders.emplace(Common::R_HashString(boundResource.m_name.c_str(), 0), boundResource.m_name);
+
+                    const auto samplerPos = boundResource.m_name.rfind(SAMPLER_STR);
+                    if (samplerPos != std::string::npos)
+                    {
+                        auto nameWithoutSamplerStr = boundResource.m_name;
+                        nameWithoutSamplerStr.erase(samplerPos, std::char_traits<char>::length(SAMPLER_STR));
+                        m_texture_def_names_from_shaders.emplace(Common::R_HashString(nameWithoutSamplerStr.c_str(), 0), nameWithoutSamplerStr);
+                    }
+                }
+            }
+        }
+
+        std::unordered_set<const MaterialTechnique*> m_dumped_techniques;
+        std::unordered_map<unsigned, std::string> m_constant_names_from_shaders;
+        std::unordered_map<unsigned, std::string> m_texture_def_names_from_shaders;
     };
 
     class JsonDumper
     {
     public:
-        explicit JsonDumper(std::ostream& stream)
-            : m_stream(stream)
+        explicit JsonDumper(AssetDumpingContext& context, std::ostream& stream)
+            : m_stream(stream),
+              m_material_constants(*context.GetZoneAssetDumperState<MaterialConstantZoneState>())
         {
         }
 
@@ -61,8 +201,9 @@ namespace T6::material
                 j[key] = nullptr;
         }
 
-        static void MaterialToJson(json& jRoot, const Material* material)
+        void MaterialToJson(json& jRoot, const Material* material) const
         {
+
             MaterialInfoToJson(jRoot, material);
             StateBitsEntryToJson(jRoot, material);
             jRoot["stateFlags"] = material->stateFlags;
@@ -128,7 +269,7 @@ namespace T6::material
                 jRoot["techniqueSet"] = nullptr;
         }
 
-        static void TextureTableToJson(json& jRoot, const Material* material)
+        void TextureTableToJson(json& jRoot, const Material* material) const
         {
             json jTextures = json::array();
             if (material->textureTable)
@@ -143,18 +284,18 @@ namespace T6::material
             jRoot["textures"] = std::move(jTextures);
         }
 
-        static void TextureDefToJson(json& jTexture, const MaterialTextureDef* textureDef)
+        void TextureDefToJson(json& jTexture, const MaterialTextureDef* textureDef) const
         {
-            const auto knownHash = knownHashes.find(textureDef->nameHash);
-            if (knownHash == knownHashes.end())
+            std::string textureDefName;
+            if (m_material_constants.GetTextureDefName(textureDef->nameHash, textureDefName))
+            {
+                jTexture["name"] = textureDefName;
+            }
+            else
             {
                 jTexture["nameHash"] = textureDef->nameHash;
                 jTexture["nameStart"] = std::string(1u, textureDef->nameStart);
                 jTexture["nameEnd"] = std::string(1u, textureDef->nameEnd);
-            }
-            else
-            {
-                jTexture["name"] = knownHash->second;
             }
 
             JsonEnumEntry(jTexture, "semantic", textureDef->semantic, textureSemanticNames);
@@ -179,7 +320,7 @@ namespace T6::material
             jSamplerState["clampW"] = samplerState.clampW ? true : false;
         }
 
-        static void ConstantTableToJson(json& jRoot, const Material* material)
+        void ConstantTableToJson(json& jRoot, const Material* material) const
         {
             json jConstants = json::array();
             if (material->constantTable)
@@ -194,26 +335,31 @@ namespace T6::material
             jRoot["constants"] = std::move(jConstants);
         }
 
-        static void ConstantDefToJson(json& jConstant, const MaterialConstantDef* textureDef)
+        void ConstantDefToJson(json& jConstant, const MaterialConstantDef* constantDef) const
         {
-            const auto fragmentLength = strnlen(textureDef->name, std::extent_v<decltype(MaterialConstantDef::name)>);
-            const std::string nameFragment(textureDef->name, fragmentLength);
+            const auto fragmentLength = strnlen(constantDef->name, std::extent_v<decltype(MaterialConstantDef::name)>);
+            const std::string nameFragment(constantDef->name, fragmentLength);
+            std::string knownConstantName;
 
-            if (fragmentLength < std::extent_v<decltype(MaterialConstantDef::name)> || Common::R_HashString(nameFragment.c_str(), 0) == textureDef->nameHash)
+            if (fragmentLength < std::extent_v<decltype(MaterialConstantDef::name)> || Common::R_HashString(nameFragment.c_str(), 0) == constantDef->nameHash)
             {
                 jConstant["name"] = nameFragment;
             }
+            else if (m_material_constants.GetConstantName(constantDef->nameHash, knownConstantName))
+            {
+                jConstant["name"] = knownConstantName;
+            }
             else
             {
-                jConstant["nameHash"] = textureDef->nameHash;
+                jConstant["nameHash"] = constantDef->nameHash;
                 jConstant["nameFragment"] = nameFragment;
             }
 
             json jLiteral;
-            jLiteral.push_back(textureDef->literal.v[0]);
-            jLiteral.push_back(textureDef->literal.v[1]);
-            jLiteral.push_back(textureDef->literal.v[2]);
-            jLiteral.push_back(textureDef->literal.v[3]);
+            jLiteral.push_back(constantDef->literal.v[0]);
+            jLiteral.push_back(constantDef->literal.v[1]);
+            jLiteral.push_back(constantDef->literal.v[2]);
+            jLiteral.push_back(constantDef->literal.v[3]);
             jConstant["literal"] = std::move(jLiteral);
         }
 
@@ -324,6 +470,7 @@ namespace T6::material
         }
 
         std::ostream& m_stream;
+        const MaterialConstantZoneState& m_material_constants;
     };
 } // namespace T6::material
 
@@ -357,6 +504,14 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     if (!assetFile)
         return;
 
-    const material::JsonDumper dumper(*assetFile);
+    const material::JsonDumper dumper(context, *assetFile);
     dumper.Dump(asset->Asset());
+}
+
+void AssetDumperMaterial::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
+{
+    auto* materialConstantState = context.GetZoneAssetDumperState<material::MaterialConstantZoneState>();
+    materialConstantState->ExtractNamesFromZone();
+
+    AbstractAssetDumper<Material>::DumpPool(context, pool);
 }

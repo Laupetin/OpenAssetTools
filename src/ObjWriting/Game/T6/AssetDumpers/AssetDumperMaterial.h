@@ -14,5 +14,8 @@ namespace T6
     protected:
         bool ShouldDump(XAssetInfo<Material>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset) override;
+
+    public:
+        void DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool) override;
     };
 } // namespace T6
