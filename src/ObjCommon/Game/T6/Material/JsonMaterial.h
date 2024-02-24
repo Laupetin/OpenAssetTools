@@ -199,9 +199,9 @@ namespace T6
 
     inline void from_json(const nlohmann::json& in, JsonConstant& out)
     {
-        in.at("name").get_to(out.name);
-        in.at("nameFragment").get_to(out.nameFragment);
-        in.at("nameHash").get_to(out.nameHash);
+        in.value("name", nlohmann::json()).get_to(out.name);
+        in.value("nameFragment", nlohmann::json()).get_to(out.nameFragment);
+        in.value("nameHash", nlohmann::json()).get_to(out.nameHash);
         in.at("literal").get_to(out.literal);
     };
 
@@ -301,10 +301,10 @@ namespace T6
 
     inline void from_json(const nlohmann::json& in, JsonTexture& out)
     {
-        in.at("name").get_to(out.name);
-        in.at("nameHash").get_to(out.nameHash);
-        in.at("nameStart").get_to(out.nameStart);
-        in.at("nameEnd").get_to(out.nameEnd);
+        in.value("name", nlohmann::json()).get_to(out.name);
+        in.value("nameHash", nlohmann::json()).get_to(out.nameHash);
+        in.value("nameStart", nlohmann::json()).get_to(out.nameStart);
+        in.value("nameEnd", nlohmann::json()).get_to(out.nameEnd);
         in.at("semantic").get_to(out.semantic);
         in.at("isMatureContent").get_to(out.isMatureContent);
         in.at("samplerState").get_to(out.samplerState);

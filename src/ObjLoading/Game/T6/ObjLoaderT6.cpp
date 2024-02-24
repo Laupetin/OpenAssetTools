@@ -3,6 +3,7 @@
 #include "AssetLoaders/AssetLoaderFontIcon.h"
 #include "AssetLoaders/AssetLoaderGfxImage.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderMaterial.h"
 #include "AssetLoaders/AssetLoaderPhysConstraints.h"
 #include "AssetLoaders/AssetLoaderPhysPreset.h"
 #include "AssetLoaders/AssetLoaderQdb.h"
@@ -49,7 +50,8 @@ namespace T6
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XANIMPARTS, XAnimParts))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_XMODEL, XModel))
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MATERIAL, Material))
+        // REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_MATERIAL, Material))
+        REGISTER_ASSET_LOADER(AssetLoaderMaterial)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet))
         REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
         REGISTER_ASSET_LOADER(AssetLoaderSoundBank)
