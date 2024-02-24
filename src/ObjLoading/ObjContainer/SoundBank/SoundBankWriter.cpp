@@ -46,7 +46,17 @@ public:
 
     void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping, bool streamed) override
     {
-        this->m_sounds.emplace_back(soundFilePath, soundId, looping, streamed);
+        auto itr = std::find_if(this->m_sounds.begin(),
+                                this->m_sounds.end(),
+                                [soundId](SoundBankEntryInfo& entry)
+                                {
+                                    return entry.m_sound_id == soundId;
+                                });
+
+        if (itr == this->m_sounds.end())
+        {
+            this->m_sounds.emplace_back(soundFilePath, soundId, looping, streamed);
+        }
     }
 
     void GoTo(const int64_t offset)
