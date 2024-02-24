@@ -133,34 +133,50 @@ namespace T6::material
             if (globalsConstantBuffer != shaderInfo->m_constant_buffers.end())
             {
                 for (const auto& variable : globalsConstantBuffer->m_variables)
-                {
-                    m_constant_names_from_shaders.emplace(Common::R_HashString(variable.m_name.c_str(), 0), variable.m_name);
-                }
+                    AddConstantName(variable.m_name);
             }
 
             if (perObjectConsts != shaderInfo->m_constant_buffers.end())
             {
                 for (const auto& variable : perObjectConsts->m_variables)
-                {
-                    m_constant_names_from_shaders.emplace(Common::R_HashString(variable.m_name.c_str(), 0), variable.m_name);
-                }
+                    AddConstantName(variable.m_name);
             }
 
             for (const auto& boundResource : shaderInfo->m_bound_resources)
             {
                 if (boundResource.m_type == d3d11::BoundResourceType::SAMPLER || boundResource.m_type == d3d11::BoundResourceType::TEXTURE)
                 {
-                    m_texture_def_names_from_shaders.emplace(Common::R_HashString(boundResource.m_name.c_str(), 0), boundResource.m_name);
-
-                    const auto samplerPos = boundResource.m_name.rfind(SAMPLER_STR);
-                    if (samplerPos != std::string::npos)
+                    if (AddTextureDefName(boundResource.m_name))
                     {
-                        auto nameWithoutSamplerStr = boundResource.m_name;
-                        nameWithoutSamplerStr.erase(samplerPos, std::char_traits<char>::length(SAMPLER_STR));
-                        m_texture_def_names_from_shaders.emplace(Common::R_HashString(nameWithoutSamplerStr.c_str(), 0), nameWithoutSamplerStr);
+                        const auto samplerPos = boundResource.m_name.rfind(SAMPLER_STR);
+                        if (samplerPos != std::string::npos)
+                        {
+                            auto nameWithoutSamplerStr = boundResource.m_name;
+                            nameWithoutSamplerStr.erase(samplerPos, std::char_traits<char>::length(SAMPLER_STR));
+                            AddTextureDefName(std::move(nameWithoutSamplerStr));
+                        }
                     }
                 }
             }
+        }
+
+        void AddConstantName(std::string constantName)
+        {
+            const auto hash = Common::R_HashString(constantName.c_str(), 0);
+            if (m_constant_names_from_shaders.find(hash) != m_constant_names_from_shaders.end())
+                return;
+
+            m_constant_names_from_shaders.emplace(hash, std::move(constantName));
+        }
+
+        bool AddTextureDefName(std::string textureDefName)
+        {
+            const auto hash = Common::R_HashString(textureDefName.c_str(), 0);
+            if (m_texture_def_names_from_shaders.find(hash) != m_texture_def_names_from_shaders.end())
+                return false;
+
+            m_texture_def_names_from_shaders.emplace(hash, std::move(textureDefName));
+            return true;
         }
 
         std::unordered_set<const MaterialTechnique*> m_dumped_techniques;
