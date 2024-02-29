@@ -3,6 +3,7 @@
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/Material/JsonMaterial.h"
 
+#include <format>
 #include <iomanip>
 #include <iostream>
 #include <nlohmann/json.hpp>
