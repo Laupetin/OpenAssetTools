@@ -3,6 +3,7 @@ ObjCommon = {}
 function ObjCommon:include(includes)
 	if includes:handle(self:name()) then
 		Common:include(includes)
+		json:include(includes)
 		minizip:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjCommon")

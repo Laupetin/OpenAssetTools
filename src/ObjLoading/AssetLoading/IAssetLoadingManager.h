@@ -36,6 +36,11 @@ public:
         return AddAsset(assetType, assetName, asset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
     }
 
+    XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies)
+    {
+        return AddAsset(assetType, assetName, asset, std::move(dependencies), std::vector<scr_string_t>());
+    }
+
     virtual XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) = 0;
     virtual IndirectAssetReference LoadIndirectAssetReference(asset_type_t assetType, const std::string& assetName) = 0;
 };

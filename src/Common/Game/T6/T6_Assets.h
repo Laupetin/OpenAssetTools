@@ -2913,9 +2913,7 @@ namespace T6
         GFXS_POLYGON_OFFSET_0 = 0,
         GFXS_POLYGON_OFFSET_1 = 1,
         GFXS_POLYGON_OFFSET_2 = 2,
-        GFXS_POLYGON_OFFSET_SHADOWMAP = 3,
-
-        GFXS_POLYGON_OFFSET_COUNT
+        GFXS_POLYGON_OFFSET_SHADOWMAP = 3
     };
 
     enum GfxStencilOp
@@ -2927,9 +2925,7 @@ namespace T6
         GFXS_STENCILOP_DECRSAT = 0x4,
         GFXS_STENCILOP_INVERT = 0x5,
         GFXS_STENCILOP_INCR = 0x6,
-        GFXS_STENCILOP_DECR = 0x7,
-
-        GFXS_STENCILOP_COUNT,
+        GFXS_STENCILOP_DECR = 0x7
     };
 
     enum GfxStencilFunc
@@ -2941,9 +2937,7 @@ namespace T6
         GFXS_STENCILFUNC_GREATER = 0x4,
         GFXS_STENCILFUNC_NOTEQUAL = 0x5,
         GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
-        GFXS_STENCILFUNC_ALWAYS = 0x7,
-
-        GFXS_STENCILFUNC_COUNT,
+        GFXS_STENCILFUNC_ALWAYS = 0x7
     };
 
     struct GfxStateBitsLoadBitsStructured
