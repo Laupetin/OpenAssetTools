@@ -22,10 +22,17 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install multilib
+      - name: Install g++ and multilib
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-multilib g++-multilib
+          sudo apt-get install gcc-13 g++-13 gcc-13-multilib g++-13-multilib
+
+      - name: Set gcc/g++ to version 13
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
+          sudo update-alternatives --set gcc /usr/bin/gcc-13
+          sudo update-alternatives --set g++ /usr/bin/g++-13
 
       - name: Setup premake
         uses: abel0b/setup-premake@v2.3
