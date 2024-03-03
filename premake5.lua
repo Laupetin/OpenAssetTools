@@ -14,6 +14,7 @@ workspace "OpenAssetTools"
     symbols "On"
     systemversion "latest"
     cppdialect "C++20"
+    largeaddressaware "on"
 
 	flags {
 		"MultiProcessorCompile"
