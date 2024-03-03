@@ -77,10 +77,18 @@ You now run `make` manually or use `./scripts/make_release.sh` or `./scripts/mak
 
 The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
 
-## Documentation
+## Documentation & Examples
 
 The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
 It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
+
+For examples of mods that can be built with OAT you can either look into the [docs folder]() for some (currently very barebones) examples
+or check out one of the following projects that are using OAT:
+
+* [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
+* [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
+
+If you have a mod that you feel like would fit great here as well, feel free to open a PR to add it.
 
 ## Legal
 
