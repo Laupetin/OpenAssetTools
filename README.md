@@ -35,6 +35,9 @@ A full list of the subcomponents can be found [here](https://openassettools.dev/
 ## Using the tools
 
 Either download [the latest release from Github](https://github.com/Laupetin/OpenAssetTools/releases/latest) or [build OAT yourself](#building-oat).
+Building the tools yourself is only recommended if you want to do some changes to the code.
+Otherwise you are probably better off just using the latest release.
+
 You can put OAT anywhere, it does **not** need to be placed in your game folder.
 In fact i recommend against it to be able to better distinguish OAT files from game files.
 
@@ -50,6 +53,19 @@ Building OAT requires Git to be installed on your machine and to be in your PATH
 This project uses Premake to generate project files depending on your platform.
 
 Note: The first time setting up will clone any submodules with git so the first initialization might take a bit.
+
+## Documentation & Examples
+
+The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
+It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
+
+For examples of mods that can be built with OAT you can either look into the [docs folder]() for some (currently very barebones) examples
+or check out one of the following projects that are using OAT:
+
+* [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
+* [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
+
+If you have a mod that you feel like would fit great here as well, feel free to open a PR to add it.
 
 ### Windows
 
@@ -76,11 +92,6 @@ When this is done you will have a `build` folder with a `Makefile`.
 You now run `make` manually or use `./scripts/make_release.sh` or `./scripts/make_debug.sh` to build.
 
 The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
-
-## Documentation
-
-The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
-It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
 
 ## Legal
 
