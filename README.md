@@ -51,6 +51,19 @@ This project uses Premake to generate project files depending on your platform.
 
 Note: The first time setting up will clone any submodules with git so the first initialization might take a bit.
 
+## Documentation & Examples
+
+The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
+It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
+
+For examples of mods that can be built with OAT you can either look into the [docs folder]() for some (currently very barebones) examples
+or check out one of the following projects that are using OAT:
+
+* [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
+* [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
+
+If you have a mod that you feel like would fit great here as well, feel free to open a PR to add it.
+
 ### Windows
 
 When building on Windows you will need to have Visual Studio 2022 installed.
@@ -76,19 +89,6 @@ When this is done you will have a `build` folder with a `Makefile`.
 You now run `make` manually or use `./scripts/make_release.sh` or `./scripts/make_debug.sh` to build.
 
 The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
-
-## Documentation & Examples
-
-The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
-It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
-
-For examples of mods that can be built with OAT you can either look into the [docs folder]() for some (currently very barebones) examples
-or check out one of the following projects that are using OAT:
-
-* [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
-* [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
-
-If you have a mod that you feel like would fit great here as well, feel free to open a PR to add it.
 
 ## Legal
 
