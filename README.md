@@ -35,6 +35,9 @@ A full list of the subcomponents can be found [here](https://openassettools.dev/
 ## Using the tools
 
 Either download [the latest release from Github](https://github.com/Laupetin/OpenAssetTools/releases/latest) or [build OAT yourself](#building-oat).
+Building the tools yourself is only recommended if you want to do some changes to the code.
+Otherwise you are probably better off just using the latest release.
+
 You can put OAT anywhere, it does **not** need to be placed in your game folder.
 In fact i recommend against it to be able to better distinguish OAT files from game files.
 
