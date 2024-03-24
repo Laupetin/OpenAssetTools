@@ -4,13 +4,13 @@
 #include "Game/T6/Json/JsonMaterial.h"
 
 #include <format>
-#include <iomanip>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
+using namespace T6;
 
-namespace T6
+namespace
 {
     class JsonLoader
     {
@@ -362,7 +362,10 @@ namespace T6
         IAssetLoadingManager& m_manager;
         std::vector<XAssetInfoGeneric*>& m_dependencies;
     };
+} // namespace
 
+namespace T6
+{
     bool LoadMaterialAsJson(
         std::istream& stream, Material& material, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
     {
