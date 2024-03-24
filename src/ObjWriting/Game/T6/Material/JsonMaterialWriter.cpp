@@ -8,8 +8,9 @@
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
+using namespace T6;
 
-namespace T6
+namespace
 {
     class JsonDumper
     {
@@ -236,7 +237,10 @@ namespace T6
         std::ostream& m_stream;
         const MaterialConstantZoneState& m_material_constants;
     };
+} // namespace
 
+namespace T6
+{
     void DumpMaterialAsJson(std::ostream& stream, const Material* material, AssetDumpingContext& context)
     {
         const JsonDumper dumper(context, stream);
