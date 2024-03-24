@@ -27,7 +27,7 @@ namespace
     {
         std::string soundFilePath(sndAlias->assetFileName);
 
-        std::replace(soundFilePath.begin(), soundFilePath.end(), '\\', '/');
+        std::ranges::replace(soundFilePath, '\\', '/');
         for (const auto& droppedPrefix : PREFIXES_TO_DROP)
         {
             if (soundFilePath.rfind(droppedPrefix, 0) != std::string::npos)

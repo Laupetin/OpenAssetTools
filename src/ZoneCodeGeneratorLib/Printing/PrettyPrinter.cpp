@@ -97,12 +97,11 @@ void PrettyPrinter::PrintVariable(Variable* variable) const
     else
     {
         if (declarationModifiers[0]->GetType() == DeclarationModifierType::POINTER
-            && std::any_of(declarationModifiers.begin(),
-                           declarationModifiers.end(),
-                           [](const std::unique_ptr<DeclarationModifier>& modifier)
-                           {
-                               return modifier->GetType() == DeclarationModifierType::ARRAY;
-                           }))
+            && std::ranges::any_of(declarationModifiers,
+                                   [](const std::unique_ptr<DeclarationModifier>& modifier)
+                                   {
+                                       return modifier->GetType() == DeclarationModifierType::ARRAY;
+                                   }))
         {
             PrintVariablePointerToArray(variable);
         }
@@ -262,12 +261,11 @@ void PrettyPrinter::PrintTypedefs() const
         else
         {
             if (declarationModifiers[0]->GetType() == DeclarationModifierType::POINTER
-                && std::any_of(declarationModifiers.begin(),
-                               declarationModifiers.end(),
-                               [](const std::unique_ptr<DeclarationModifier>& modifier)
-                               {
-                                   return modifier->GetType() == DeclarationModifierType::ARRAY;
-                               }))
+                && std::ranges::any_of(declarationModifiers,
+                                       [](const std::unique_ptr<DeclarationModifier>& modifier)
+                                       {
+                                           return modifier->GetType() == DeclarationModifierType::ARRAY;
+                                       }))
             {
                 PrintTypedefPointerToArray(typedefDefinition);
             }

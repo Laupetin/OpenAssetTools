@@ -91,10 +91,9 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
     if (!result)
         return false;
 
-    return std::all_of(m_post_processors.begin(),
-                       m_post_processors.end(),
-                       [repository](const std::unique_ptr<IPostProcessor>& postProcessor)
-                       {
-                           return postProcessor->PostProcess(repository);
-                       });
+    return std::ranges::all_of(m_post_processors,
+                               [repository](const std::unique_ptr<IPostProcessor>& postProcessor)
+                               {
+                                   return postProcessor->PostProcess(repository);
+                               });
 }

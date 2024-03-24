@@ -30,12 +30,11 @@ void ZoneLoader::AddXBlock(std::unique_ptr<XBlock> block)
 {
     m_blocks.push_back(block.get());
 
-    std::sort(m_blocks.begin(),
-              m_blocks.end(),
-              [](XBlock* b1, XBlock* b2) -> bool
-              {
-                  return b1->m_index < b2->m_index;
-              });
+    std::ranges::sort(m_blocks,
+                      [](XBlock* b1, XBlock* b2) -> bool
+                      {
+                          return b1->m_index < b2->m_index;
+                      });
 
     m_zone->GetMemory()->AddBlock(std::move(block));
 }

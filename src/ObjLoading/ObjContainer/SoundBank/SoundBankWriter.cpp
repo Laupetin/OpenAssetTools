@@ -46,12 +46,11 @@ public:
 
     void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping, bool streamed) override
     {
-        auto itr = std::find_if(this->m_sounds.begin(),
-                                this->m_sounds.end(),
-                                [soundId](SoundBankEntryInfo& entry)
-                                {
-                                    return entry.m_sound_id == soundId;
-                                });
+        auto itr = std::ranges::find_if(this->m_sounds,
+                                        [soundId](SoundBankEntryInfo& entry)
+                                        {
+                                            return entry.m_sound_id == soundId;
+                                        });
 
         if (itr == this->m_sounds.end())
         {

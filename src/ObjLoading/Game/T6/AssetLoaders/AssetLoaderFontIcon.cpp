@@ -48,12 +48,11 @@ void AssetLoaderFontIcon::PreprocessRow(std::vector<std::string>& row)
 
 bool AssetLoaderFontIcon::RowIsEmpty(const std::vector<std::string>& row)
 {
-    return std::all_of(row.begin(),
-                       row.end(),
-                       [](const std::string& cell)
-                       {
-                           return cell.empty();
-                       });
+    return std::ranges::all_of(row,
+                               [](const std::string& cell)
+                               {
+                                   return cell.empty();
+                               });
 }
 
 bool AssetLoaderFontIcon::ParseInt(int& value, const std::string& str)

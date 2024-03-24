@@ -118,20 +118,18 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
 
 void CommonStructuredDataStruct::SortPropertiesByOffset()
 {
-    std::sort(m_properties.begin(),
-              m_properties.end(),
-              [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
-              {
-                  return e1.m_offset_in_bits < e2.m_offset_in_bits;
-              });
+    std::ranges::sort(m_properties,
+                      [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
+                      {
+                          return e1.m_offset_in_bits < e2.m_offset_in_bits;
+                      });
 }
 
 void CommonStructuredDataStruct::SortPropertiesByName()
 {
-    std::sort(m_properties.begin(),
-              m_properties.end(),
-              [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
-              {
-                  return e1.m_name < e2.m_name;
-              });
+    std::ranges::sort(m_properties,
+                      [](const CommonStructuredDataStructProperty& e1, const CommonStructuredDataStructProperty& e2)
+                      {
+                          return e1.m_name < e2.m_name;
+                      });
 }

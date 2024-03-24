@@ -64,16 +64,14 @@ bool AssetLoaderVertexDecl::LoadFromRaw(
             return false;
         }
 
-        const auto foundSourceAbbreviation =
-            std::find(std::begin(materialStreamSourceAbbreviation), std::end(materialStreamSourceAbbreviation), sourceAbbreviation);
+        const auto foundSourceAbbreviation = std::ranges::find(materialStreamSourceAbbreviation, sourceAbbreviation);
         if (foundSourceAbbreviation == std::end(materialStreamSourceAbbreviation))
         {
             std::cout << "Unknown vertex decl source abbreviation: " << sourceAbbreviation << "\n";
             return false;
         }
 
-        const auto foundDestinationAbbreviation =
-            std::find(std::begin(materialStreamDestinationAbbreviation), std::end(materialStreamDestinationAbbreviation), destinationAbbreviation);
+        const auto foundDestinationAbbreviation = std::ranges::find(materialStreamDestinationAbbreviation, destinationAbbreviation);
         if (foundDestinationAbbreviation == std::end(materialStreamDestinationAbbreviation))
         {
             std::cout << "Unknown vertex decl destination abbreviation: " << destinationAbbreviation << "\n";

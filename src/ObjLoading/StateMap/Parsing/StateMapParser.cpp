@@ -179,12 +179,11 @@ namespace state_map
                         const auto tokenValue =
                             valueToken.m_type == SimpleParserValueType::IDENTIFIER ? valueToken.IdentifierValue() : std::to_string(valueToken.IntegerValue());
 
-                        const auto referencedValue = std::find_if(var.m_values.begin(),
-                                                                  var.m_values.end(),
-                                                                  [&tokenValue](const StateMapLayoutVarValue& value)
-                                                                  {
-                                                                      return value.m_name == tokenValue;
-                                                                  });
+                        const auto referencedValue = std::ranges::find_if(var.m_values,
+                                                                          [&tokenValue](const StateMapLayoutVarValue& value)
+                                                                          {
+                                                                              return value.m_name == tokenValue;
+                                                                          });
 
                         if (referencedValue == var.m_values.end())
                             throw ParsingException(valueToken.GetPos(), "Not part of the valid values for this var");

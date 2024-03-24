@@ -291,12 +291,11 @@ public:
 
         m_index_entries.reserve(m_images.size());
 
-        const auto result = std::all_of(m_images.begin(),
-                                        m_images.end(),
-                                        [this](const std::string& imageName)
-                                        {
-                                            return WriteImageData(imageName);
-                                        });
+        const auto result = std::ranges::all_of(m_images,
+                                                [this](const std::string& imageName)
+                                                {
+                                                    return WriteImageData(imageName);
+                                                });
 
         FlushBlock();
         m_data_section_size = static_cast<size_t>(m_current_offset - m_data_section_offset);
@@ -311,7 +310,7 @@ public:
 
     void SortIndexSectionEntries()
     {
-        std::sort(m_index_entries.begin(), m_index_entries.end(), CompareIndices);
+        std::ranges::sort(m_index_entries, CompareIndices);
     }
 
     void WriteIndexSection()

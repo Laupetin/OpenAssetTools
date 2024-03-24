@@ -63,11 +63,10 @@ bool UsagesPostProcessor::PostProcess(IDataRepository* repository)
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    return std::all_of(allInfos.begin(),
-                       allInfos.end(),
-                       [](StructureInformation* info)
-                       {
-                           const StructureComputations computations(info);
-                           return !computations.IsAsset() || ProcessAsset(info);
-                       });
+    return std::ranges::all_of(allInfos,
+                               [](StructureInformation* info)
+                               {
+                                   const StructureComputations computations(info);
+                                   return !computations.IsAsset() || ProcessAsset(info);
+                               });
 }

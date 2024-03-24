@@ -25,7 +25,7 @@ void GameIW3::AddZone(Zone* zone)
 
 void GameIW3::RemoveZone(Zone* zone)
 {
-    const auto foundEntry = std::find(m_zones.begin(), m_zones.end(), zone);
+    const auto foundEntry = std::ranges::find(m_zones, zone);
 
     if (foundEntry != m_zones.end())
         m_zones.erase(foundEntry);

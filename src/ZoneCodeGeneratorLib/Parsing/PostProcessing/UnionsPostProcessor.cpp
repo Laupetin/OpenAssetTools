@@ -40,13 +40,12 @@ bool UnionsPostProcessor::PostProcess(IDataRepository* repository)
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    return std::all_of(allInfos.begin(),
-                       allInfos.end(),
-                       [](StructureInformation* info)
-                       {
-                           if (info->m_definition->GetType() != DataDefinitionType::UNION)
-                               return true;
+    return std::ranges::all_of(allInfos,
+                               [](StructureInformation* info)
+                               {
+                                   if (info->m_definition->GetType() != DataDefinitionType::UNION)
+                                       return true;
 
-                           return ProcessUnion(info);
-                       });
+                                   return ProcessUnion(info);
+                               });
 }

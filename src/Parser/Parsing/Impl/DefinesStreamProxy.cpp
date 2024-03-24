@@ -981,7 +981,7 @@ void DefinesStreamProxy::ProcessNestedMacros(ParserLine& line, unsigned& linePos
     const Define* nestedMacro = nullptr;
     while (FindNextMacro(input, pos, defineStart, nestedMacro))
     {
-        if (std::find(callstack.cbegin(), callstack.cend(), nestedMacro) != callstack.cend())
+        if (std::ranges::find(std::as_const(callstack), nestedMacro) != callstack.cend())
         {
             // Do not expand recursively
             continue;

@@ -126,13 +126,12 @@ namespace IW4
         {
             const auto expectedRegisterSet =
                 arg.type == MTL_ARG_CODE_PIXEL_SAMPLER || arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER ? d3d9::RegisterSet::SAMPLER : d3d9::RegisterSet::FLOAT_4;
-            const auto targetShaderArg = std::find_if(shaderInfo.m_constants.begin(),
-                                                      shaderInfo.m_constants.end(),
-                                                      [arg, expectedRegisterSet](const d3d9::ShaderConstant& constant)
-                                                      {
-                                                          return constant.m_register_set == expectedRegisterSet && constant.m_register_index <= arg.dest
-                                                                 && constant.m_register_index + constant.m_register_count > arg.dest;
-                                                      });
+            const auto targetShaderArg = std::ranges::find_if(shaderInfo.m_constants,
+                                                              [arg, expectedRegisterSet](const d3d9::ShaderConstant& constant)
+                                                              {
+                                                                  return constant.m_register_set == expectedRegisterSet && constant.m_register_index <= arg.dest
+                                                                         && constant.m_register_index + constant.m_register_count > arg.dest;
+                                                              });
 
             assert(targetShaderArg != shaderInfo.m_constants.end());
             if (targetShaderArg == shaderInfo.m_constants.end())

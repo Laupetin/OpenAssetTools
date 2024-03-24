@@ -248,7 +248,7 @@ public:
         }
 
         auto iwdFilename = fileName;
-        std::replace(iwdFilename.begin(), iwdFilename.end(), '\\', '/');
+        std::ranges::replace(iwdFilename, '\\', '/');
 
         const auto iwdEntry = m_entry_map.find(iwdFilename);
 

@@ -467,19 +467,18 @@ class LinkerImpl final : public Linker
 
     bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
-        return std::all_of(zoneDefinition.m_targets_to_build.begin(),
-                           zoneDefinition.m_targets_to_build.end(),
-                           [this, &projectName, &targetName](const std::string& buildTargetName)
-                           {
-                               if (buildTargetName == targetName)
-                               {
-                                   std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
-                                   return false;
-                               }
+        return std::ranges::all_of(zoneDefinition.m_targets_to_build,
+                                   [this, &projectName, &targetName](const std::string& buildTargetName)
+                                   {
+                                       if (buildTargetName == targetName)
+                                       {
+                                           std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
+                                           return false;
+                                       }
 
-                               std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
-                               return BuildProject(projectName, buildTargetName);
-                           });
+                                       std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
+                                       return BuildProject(projectName, buildTargetName);
+                                   });
     }
 
     bool BuildProject(const std::string& projectName, const std::string& targetName)

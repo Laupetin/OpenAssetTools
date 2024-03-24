@@ -283,18 +283,16 @@ std::unique_ptr<SimpleExpressionMatchers::matcher_t> SimpleExpressionMatchers::P
         }
     }
 
-    const auto hasAddOperation = std::any_of(enabledBinaryOperations.begin(),
-                                             enabledBinaryOperations.end(),
-                                             [](const SimpleExpressionBinaryOperationType* type)
-                                             {
-                                                 return type == &SimpleExpressionBinaryOperationType::OPERATION_ADD;
-                                             });
-    const auto hasSubtractOperation = std::any_of(enabledBinaryOperations.begin(),
-                                                  enabledBinaryOperations.end(),
-                                                  [](const SimpleExpressionBinaryOperationType* type)
-                                                  {
-                                                      return type == &SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT;
-                                                  });
+    const auto hasAddOperation = std::ranges::any_of(enabledBinaryOperations,
+                                                     [](const SimpleExpressionBinaryOperationType* type)
+                                                     {
+                                                         return type == &SimpleExpressionBinaryOperationType::OPERATION_ADD;
+                                                     });
+    const auto hasSubtractOperation = std::ranges::any_of(enabledBinaryOperations,
+                                                          [](const SimpleExpressionBinaryOperationType* type)
+                                                          {
+                                                              return type == &SimpleExpressionBinaryOperationType::OPERATION_SUBTRACT;
+                                                          });
 
     if (hasAddOperation && hasSubtractOperation)
     {

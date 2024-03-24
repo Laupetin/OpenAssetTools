@@ -45,12 +45,11 @@ void SequenceAssetRef::ProcessMatch(CommandsParserState* state, SequenceResult<C
         if (!hasPointerRef)
         {
             const auto& modifiers = typeDecl->m_declaration_modifiers;
-            hasPointerRef = std::any_of(modifiers.begin(),
-                                        modifiers.end(),
-                                        [](const std::unique_ptr<DeclarationModifier>& modifier)
-                                        {
-                                            return modifier->GetType() == DeclarationModifierType::POINTER;
-                                        });
+            hasPointerRef = std::ranges::any_of(modifiers,
+                                                [](const std::unique_ptr<DeclarationModifier>& modifier)
+                                                {
+                                                    return modifier->GetType() == DeclarationModifierType::POINTER;
+                                                });
         }
 
         if (typeDecl->m_type->GetType() == DataDefinitionType::TYPEDEF)

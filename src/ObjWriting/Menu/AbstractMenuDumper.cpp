@@ -115,22 +115,20 @@ bool AbstractMenuDumper::DoesTokenNeedQuotationMarks(const std::string& token)
     if (token.empty())
         return true;
 
-    const auto hasAlNumCharacter = std::any_of(token.begin(),
-                                               token.end(),
-                                               [](const char& c)
-                                               {
-                                                   return isalnum(c);
-                                               });
+    const auto hasAlNumCharacter = std::ranges::any_of(token,
+                                                       [](const char& c)
+                                                       {
+                                                           return isalnum(c);
+                                                       });
 
     if (!hasAlNumCharacter)
         return false;
 
-    const auto hasNonIdentifierCharacter = std::any_of(token.begin(),
-                                                       token.end(),
-                                                       [](const char& c)
-                                                       {
-                                                           return !isalnum(c) && c != '_';
-                                                       });
+    const auto hasNonIdentifierCharacter = std::ranges::any_of(token,
+                                                               [](const char& c)
+                                                               {
+                                                                   return !isalnum(c) && c != '_';
+                                                               });
 
     return hasNonIdentifierCharacter;
 }

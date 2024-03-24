@@ -17,14 +17,12 @@ MatcherResult<SimpleParserValue> SimpleMatcherKeywordIgnoreCase::CanMatch(ILexer
         return MatcherResult<SimpleParserValue>::NoMatch();
 
     const auto& identifierValue = token.IdentifierValue();
-    const auto isEqual = std::equal(identifierValue.begin(),
-                                    identifierValue.end(),
-                                    m_value.begin(),
-                                    m_value.end(),
-                                    [](const char a, const char b)
-                                    {
-                                        return tolower(a) == b;
-                                    });
+    const auto isEqual = std::ranges::equal(identifierValue,
+                                            m_value,
+                                            [](const char a, const char b)
+                                            {
+                                                return tolower(a) == b;
+                                            });
 
     if (isEqual)
         return MatcherResult<SimpleParserValue>::Match(1);

@@ -56,12 +56,11 @@ class IPak::Impl : public ObjContainerReferenceable
             m_index_entries.push_back(indexEntry);
         }
 
-        std::sort(m_index_entries.begin(),
-                  m_index_entries.end(),
-                  [](const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
-                  {
-                      return entry1.key.combinedKey < entry2.key.combinedKey;
-                  });
+        std::ranges::sort(m_index_entries,
+                          [](const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
+                          {
+                              return entry1.key.combinedKey < entry2.key.combinedKey;
+                          });
 
         return true;
     }

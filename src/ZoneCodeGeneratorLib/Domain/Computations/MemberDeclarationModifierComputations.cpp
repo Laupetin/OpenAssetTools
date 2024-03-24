@@ -123,7 +123,7 @@ std::vector<DeclarationModifierComputations> DeclarationModifierComputations::Ge
     for (auto i = 0; i < arraySize; i++)
     {
         std::vector<int> childModifierIndices(m_modifier_indices.size() + 1);
-        std::copy(m_modifier_indices.begin(), m_modifier_indices.end(), childModifierIndices.begin());
+        std::ranges::copy(m_modifier_indices, childModifierIndices.begin());
         childModifierIndices[childModifierIndices.size() - 1] = i;
         arrayEntries.push_back(DeclarationModifierComputations(m_information, std::move(childModifierIndices)));
     }
@@ -140,12 +140,11 @@ bool DeclarationModifierComputations::IsSinglePointer() const
     {
         const auto following = GetFollowingDeclarationModifiers();
 
-        return !std::any_of(following.begin(),
-                            following.end(),
-                            [](const DeclarationModifier* modifier)
-                            {
-                                return modifier->GetType() == DeclarationModifierType::POINTER;
-                            });
+        return !std::ranges::any_of(following,
+                                    [](const DeclarationModifier* modifier)
+                                    {
+                                        return modifier->GetType() == DeclarationModifierType::POINTER;
+                                    });
     }
 
     return false;
@@ -160,12 +159,11 @@ bool DeclarationModifierComputations::IsArrayPointer() const
     {
         const auto following = GetFollowingDeclarationModifiers();
 
-        return !std::any_of(following.begin(),
-                            following.end(),
-                            [](const DeclarationModifier* modifier)
-                            {
-                                return modifier->GetType() == DeclarationModifierType::POINTER;
-                            });
+        return !std::ranges::any_of(following,
+                                    [](const DeclarationModifier* modifier)
+                                    {
+                                        return modifier->GetType() == DeclarationModifierType::POINTER;
+                                    });
     }
 
     return false;
@@ -247,12 +245,11 @@ unsigned DeclarationModifierComputations::GetAlignment() const
 {
     const auto following = GetFollowingDeclarationModifiers();
 
-    return std::any_of(following.begin(),
-                       following.end(),
-                       [](const DeclarationModifier* modifier)
-                       {
-                           return modifier->GetType() == DeclarationModifierType::POINTER;
-                       })
+    return std::ranges::any_of(following,
+                               [](const DeclarationModifier* modifier)
+                               {
+                                   return modifier->GetType() == DeclarationModifierType::POINTER;
+                               })
                ? m_information->m_member->GetAlignment()
                : m_information->m_member->m_type_declaration->m_type->GetAlignment();
 }
