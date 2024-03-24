@@ -19,6 +19,7 @@
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
 #include "AssetDumpers/AssetDumperWeaponAttachmentUnique.h"
+#include "AssetDumpers/AssetDumperWeaponCamo.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
 #include "Game/T6/GameAssetPoolT6.h"
@@ -68,7 +69,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon, ASSET_TYPE_WEAPON)
     DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment, ASSET_TYPE_ATTACHMENT)
     DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique, ASSET_TYPE_ATTACHMENT_UNIQUE)
-    // DUMP_ASSET_POOL(AssetDumperWeaponCamo, m_camo, ASSET_TYPE_WEAPON_CAMO)
+    DUMP_ASSET_POOL(AssetDumperWeaponCamo, m_camo, ASSET_TYPE_WEAPON_CAMO)
     DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
