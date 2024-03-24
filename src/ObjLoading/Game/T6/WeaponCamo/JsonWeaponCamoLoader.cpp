@@ -86,16 +86,15 @@ namespace
                                               WeaponCamoMaterial& weaponCamoMaterial,
                                               const WeaponCamo& weaponCamo) const
         {
-            weaponCamoMaterial.replaceFlags = static_cast<uint16_t>(jWeaponCamoMaterial.replaceFlags);
+            if (jWeaponCamoMaterial.useColorMap)
+                weaponCamoMaterial.replaceFlags |= WCM_REPLACE_COLOR;
+            if (jWeaponCamoMaterial.useNormalMap)
+                weaponCamoMaterial.replaceFlags |= WCM_REPLACE_NORMAL;
+            if (jWeaponCamoMaterial.useSpecularMap)
+                weaponCamoMaterial.replaceFlags |= WCM_REPLACE_SPECULAR;
 
-            if (jWeaponCamoMaterial.baseMaterials.size() != jWeaponCamoMaterial.camoMaterials.size())
-            {
-                PrintError(weaponCamo, "baseMaterials and camoMaterials arrays must have the same amount of entries");
-                return false;
-            }
-
-            weaponCamoMaterial.numBaseMaterials = static_cast<uint16_t>(jWeaponCamoMaterial.baseMaterials.size());
-            if (weaponCamoMaterial.numBaseMaterials > 0)
+            weaponCamoMaterial.numBaseMaterials = static_cast<uint16_t>(jWeaponCamoMaterial.materialOverrides.size());
+            if (!jWeaponCamoMaterial.materialOverrides.empty())
             {
                 weaponCamoMaterial.baseMaterials = static_cast<Material**>(m_memory.Alloc(sizeof(Material*) * weaponCamoMaterial.numBaseMaterials));
                 weaponCamoMaterial.camoMaterials = static_cast<Material**>(m_memory.Alloc(sizeof(Material*) * weaponCamoMaterial.numBaseMaterials));
@@ -104,10 +103,9 @@ namespace
 
                 for (auto i = 0u; i < weaponCamoMaterial.numBaseMaterials; i++)
                 {
-                    auto* baseMaterial =
-                        static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, jWeaponCamoMaterial.baseMaterials[i]));
-                    auto* camoMaterial =
-                        static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, jWeaponCamoMaterial.camoMaterials[i]));
+                    const auto& materialOverride = jWeaponCamoMaterial.materialOverrides[i];
+                    auto* baseMaterial = static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, materialOverride.baseMaterial));
+                    auto* camoMaterial = static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, materialOverride.camoMaterial));
 
                     if (!baseMaterial)
                     {
