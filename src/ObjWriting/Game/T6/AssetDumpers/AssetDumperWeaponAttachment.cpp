@@ -20,15 +20,15 @@ namespace T6
             switch (static_cast<attachmentFieldType_t>(field.iFieldType))
             {
             case AFT_ATTACHMENTTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szAttachmentTypeNames, std::extent<decltype(szAttachmentTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
                 break;
 
             case AFT_PENETRATE_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, penetrateTypeNames, std::extent<decltype(penetrateTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
                 break;
 
             case AFT_FIRETYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapFireTypeNames, std::extent<decltype(szWeapFireTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
                 break;
 
             default:
@@ -51,7 +51,7 @@ InfoString AssetDumperWeaponAttachment::CreateInfoString(XAssetInfo<WeaponAttach
 {
     InfoStringFromAttachmentConverter converter(asset->Asset(),
                                                 attachment_fields,
-                                                std::extent<decltype(attachment_fields)>::value,
+                                                std::extent_v<decltype(attachment_fields)>,
                                                 [asset](const scr_string_t scrStr) -> std::string
                                                 {
                                                     assert(scrStr < asset->m_zone->m_script_strings.Count());

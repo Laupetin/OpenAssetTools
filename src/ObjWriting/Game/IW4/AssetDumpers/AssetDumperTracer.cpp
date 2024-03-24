@@ -36,7 +36,7 @@ InfoString AssetDumperTracer::CreateInfoString(XAssetInfo<TracerDef>* asset)
 {
     InfoStringFromTracerConverter converter(asset->Asset(),
                                             tracer_fields,
-                                            std::extent<decltype(tracer_fields)>::value,
+                                            std::extent_v<decltype(tracer_fields)>,
                                             [asset](const scr_string_t scrStr) -> std::string
                                             {
                                                 assert(scrStr < asset->m_zone->m_script_strings.Count());

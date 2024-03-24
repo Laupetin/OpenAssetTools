@@ -88,7 +88,7 @@ Texture* IwiLoader::LoadIwi6(std::istream& stream) const
         const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
-        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi6::IwiHeader::fileSizeForPicmip)>::value)
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi6::IwiHeader::fileSizeForPicmip)>)
             && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
         {
             printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);
@@ -206,7 +206,7 @@ Texture* IwiLoader::LoadIwi8(std::istream& stream) const
         const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
-        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi8::IwiHeader::fileSizeForPicmip)>::value)
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi8::IwiHeader::fileSizeForPicmip)>)
             && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
         {
             printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);
@@ -311,7 +311,7 @@ Texture* IwiLoader::LoadIwi13(std::istream& stream) const
         const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
-        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi13::IwiHeader::fileSizeForPicmip)>::value)
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi13::IwiHeader::fileSizeForPicmip)>)
             && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
         {
             printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);
@@ -418,7 +418,7 @@ Texture* IwiLoader::LoadIwi27(std::istream& stream) const
         const auto sizeOfMipLevel = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += sizeOfMipLevel;
 
-        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi27::IwiHeader::fileSizeForPicmip)>::value)
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi27::IwiHeader::fileSizeForPicmip)>)
             && currentFileSize != header.fileSizeForPicmip[currentMipLevel])
         {
             printf("Iwi has invalid file size for picmip %i\n", currentMipLevel);

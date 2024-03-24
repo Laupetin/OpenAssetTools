@@ -23,7 +23,7 @@ namespace T6
             switch (static_cast<tracerFieldType_t>(field.iFieldType))
             {
             case TFT_TRACERTYPE:
-                return ConvertEnumInt(value, field.iOffset, tracerTypeNames, std::extent<decltype(tracerTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, tracerTypeNames, std::extent_v<decltype(tracerTypeNames)>);
 
             case TFT_NUM_FIELD_TYPES:
             default:
@@ -52,8 +52,7 @@ bool AssetLoaderTracer::LoadFromInfoString(
     auto* tracer = memory->Create<TracerDef>();
     memset(tracer, 0, sizeof(TracerDef));
 
-    InfoStringToTracerConverter converter(
-        infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent<decltype(tracer_fields)>::value);
+    InfoStringToTracerConverter converter(infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent_v<decltype(tracer_fields)>);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse tracer: \"" << assetName << "\"" << std::endl;

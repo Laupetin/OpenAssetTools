@@ -23,47 +23,47 @@ namespace IW4
             switch (static_cast<weapFieldType_t>(field.iFieldType))
             {
             case WFT_WEAPONTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapTypeNames, std::extent<decltype(szWeapTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapTypeNames, std::extent_v<decltype(szWeapTypeNames)>);
                 break;
 
             case WFT_WEAPONCLASS:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapClassNames, std::extent<decltype(szWeapClassNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapClassNames, std::extent_v<decltype(szWeapClassNames)>);
                 break;
 
             case WFT_OVERLAYRETICLE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent<decltype(szWeapOverlayReticleNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
                 break;
 
             case WFT_PENETRATE_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, penetrateTypeNames, std::extent<decltype(penetrateTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
                 break;
 
             case WFT_IMPACT_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, impactTypeNames, std::extent<decltype(impactTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, impactTypeNames, std::extent_v<decltype(impactTypeNames)>);
                 break;
 
             case WFT_STANCE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapStanceNames, std::extent<decltype(szWeapStanceNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapStanceNames, std::extent_v<decltype(szWeapStanceNames)>);
                 break;
 
             case WFT_PROJ_EXPLOSION:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szProjectileExplosionNames, std::extent<decltype(szProjectileExplosionNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szProjectileExplosionNames, std::extent_v<decltype(szProjectileExplosionNames)>);
                 break;
 
             case WFT_OFFHAND_CLASS:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, offhandClassNames, std::extent<decltype(offhandClassNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, offhandClassNames, std::extent_v<decltype(offhandClassNames)>);
                 break;
 
             case WFT_ANIMTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, playerAnimTypeNames, std::extent<decltype(playerAnimTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, playerAnimTypeNames, std::extent_v<decltype(playerAnimTypeNames)>);
                 break;
 
             case WFT_ACTIVE_RETICLE_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, activeReticleNames, std::extent<decltype(activeReticleNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, activeReticleNames, std::extent_v<decltype(activeReticleNames)>);
                 break;
 
             case WFT_GUIDED_MISSILE_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, guidedMissileNames, std::extent<decltype(guidedMissileNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, guidedMissileNames, std::extent_v<decltype(guidedMissileNames)>);
                 break;
 
             case WFT_BOUNCE_SOUND:
@@ -90,23 +90,23 @@ namespace IW4
             }
 
             case WFT_STICKINESS:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, stickinessNames, std::extent<decltype(stickinessNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, stickinessNames, std::extent_v<decltype(stickinessNames)>);
                 break;
 
             case WFT_OVERLAYINTERFACE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, overlayInterfaceNames, std::extent<decltype(overlayInterfaceNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, overlayInterfaceNames, std::extent_v<decltype(overlayInterfaceNames)>);
                 break;
 
             case WFT_INVENTORYTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapInventoryTypeNames, std::extent<decltype(szWeapInventoryTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapInventoryTypeNames, std::extent_v<decltype(szWeapInventoryTypeNames)>);
                 break;
 
             case WFT_FIRETYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapFireTypeNames, std::extent<decltype(szWeapFireTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
                 break;
 
             case WFT_AMMOCOUNTER_CLIPTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, ammoCounterClipNames, std::extent<decltype(ammoCounterClipNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, ammoCounterClipNames, std::extent_v<decltype(ammoCounterClipNames)>);
                 break;
 
             case WFT_ICONRATIO_HUD:
@@ -114,7 +114,7 @@ namespace IW4
             case WFT_ICONRATIO_AMMOCOUNTER:
             case WFT_ICONRATIO_KILL:
             case WFT_ICONRATIO_DPAD:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, weapIconRatioNames, std::extent<decltype(weapIconRatioNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, weapIconRatioNames, std::extent_v<decltype(weapIconRatioNames)>);
                 break;
 
             case WFT_HIDETAGS:
@@ -123,7 +123,7 @@ namespace IW4
                 std::stringstream ss;
                 bool first = true;
 
-                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::hideTags)>::value; i++)
+                for (auto i = 0u; i < std::extent_v<decltype(WeaponFullDef::hideTags)>; i++)
                 {
                     const auto& str = m_get_scr_string(hideTags[i]);
                     if (!str.empty())
@@ -144,11 +144,11 @@ namespace IW4
             case WFT_NOTETRACKSOUNDMAP:
             {
                 const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                const auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value];
+                const auto* values = &keys[std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>];
                 std::stringstream ss;
                 bool first = true;
 
-                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value; i++)
+                for (auto i = 0u; i < std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>; i++)
                 {
                     const auto& key = m_get_scr_string(keys[i]);
                     const auto& value = m_get_scr_string(values[i]);
@@ -173,11 +173,11 @@ namespace IW4
             case WFT_NOTETRACKRUMBLEMAP:
             {
                 const auto* keys = reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
-                const auto* values = &keys[std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value];
+                const auto* values = &keys[std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>];
                 std::stringstream ss;
                 bool first = true;
 
-                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value; i++)
+                for (auto i = 0u; i < std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>; i++)
                 {
                     const auto& key = m_get_scr_string(keys[i]);
                     const auto& value = m_get_scr_string(values[i]);
@@ -229,8 +229,8 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (weapon->hideTags)
     {
-        assert(sizeof(WeaponFullDef::hideTags) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::hideTags)>::value);
-        memcpy(fullDef->hideTags, weapon->hideTags, sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::hideTags)>::value);
+        assert(sizeof(WeaponFullDef::hideTags) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::hideTags)>);
+        memcpy(fullDef->hideTags, weapon->hideTags, sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::hideTags)>);
         fullDef->weapCompleteDef.hideTags = fullDef->hideTags;
     }
 
@@ -243,8 +243,8 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.gunXModel)
     {
-        assert(sizeof(WeaponFullDef::gunXModel) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::gunXModel)>::value);
-        memcpy(fullDef->gunXModel, fullDef->weapDef.gunXModel, sizeof(void*) * std::extent<decltype(WeaponFullDef::gunXModel)>::value);
+        assert(sizeof(WeaponFullDef::gunXModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::gunXModel)>);
+        memcpy(fullDef->gunXModel, fullDef->weapDef.gunXModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::gunXModel)>);
         fullDef->weapDef.gunXModel = fullDef->gunXModel;
     }
 
@@ -264,69 +264,67 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.notetrackSoundMapKeys)
     {
-        assert(sizeof(WeaponFullDef::notetrackSoundMapKeys) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+        assert(sizeof(WeaponFullDef::notetrackSoundMapKeys) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         memcpy(fullDef->notetrackSoundMapKeys,
                fullDef->weapDef.notetrackSoundMapKeys,
-               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         fullDef->weapDef.notetrackSoundMapKeys = fullDef->notetrackSoundMapKeys;
     }
 
     if (fullDef->weapDef.notetrackSoundMapValues)
     {
-        assert(sizeof(WeaponFullDef::notetrackSoundMapValues) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+        assert(sizeof(WeaponFullDef::notetrackSoundMapValues) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         memcpy(fullDef->notetrackSoundMapValues,
                fullDef->weapDef.notetrackSoundMapValues,
-               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         fullDef->weapDef.notetrackSoundMapValues = fullDef->notetrackSoundMapValues;
     }
 
     if (fullDef->weapDef.notetrackRumbleMapKeys)
     {
-        assert(sizeof(WeaponFullDef::notetrackRumbleMapKeys) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
+        assert(sizeof(WeaponFullDef::notetrackRumbleMapKeys) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
         memcpy(fullDef->notetrackRumbleMapKeys,
                fullDef->weapDef.notetrackRumbleMapKeys,
-               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
+               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
         fullDef->weapDef.notetrackRumbleMapKeys = fullDef->notetrackRumbleMapKeys;
     }
 
     if (fullDef->weapDef.notetrackRumbleMapValues)
     {
-        assert(sizeof(WeaponFullDef::notetrackRumbleMapValues) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
+        assert(sizeof(WeaponFullDef::notetrackRumbleMapValues) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
         memcpy(fullDef->notetrackRumbleMapValues,
                fullDef->weapDef.notetrackRumbleMapValues,
-               sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackRumbleMapKeys)>::value);
+               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
         fullDef->weapDef.notetrackRumbleMapValues = fullDef->notetrackRumbleMapValues;
     }
 
     if (fullDef->weapDef.worldModel)
     {
-        assert(sizeof(WeaponFullDef::worldModel) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::worldModel)>::value);
-        memcpy(fullDef->worldModel, fullDef->weapDef.worldModel, sizeof(void*) * std::extent<decltype(WeaponFullDef::worldModel)>::value);
+        assert(sizeof(WeaponFullDef::worldModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::worldModel)>);
+        memcpy(fullDef->worldModel, fullDef->weapDef.worldModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::worldModel)>);
         fullDef->weapDef.worldModel = fullDef->worldModel;
     }
 
     if (fullDef->weapDef.parallelBounce)
     {
-        assert(sizeof(WeaponFullDef::parallelBounce) >= sizeof(float) * std::extent<decltype(WeaponFullDef::parallelBounce)>::value);
-        memcpy(fullDef->parallelBounce, fullDef->weapDef.parallelBounce, sizeof(float) * std::extent<decltype(WeaponFullDef::parallelBounce)>::value);
+        assert(sizeof(WeaponFullDef::parallelBounce) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::parallelBounce)>);
+        memcpy(fullDef->parallelBounce, fullDef->weapDef.parallelBounce, sizeof(float) * std::extent_v<decltype(WeaponFullDef::parallelBounce)>);
         fullDef->weapDef.parallelBounce = fullDef->parallelBounce;
     }
 
     if (fullDef->weapDef.perpendicularBounce)
     {
-        assert(sizeof(WeaponFullDef::perpendicularBounce) >= sizeof(float) * std::extent<decltype(WeaponFullDef::perpendicularBounce)>::value);
-        memcpy(fullDef->perpendicularBounce,
-               fullDef->weapDef.perpendicularBounce,
-               sizeof(float) * std::extent<decltype(WeaponFullDef::perpendicularBounce)>::value);
+        assert(sizeof(WeaponFullDef::perpendicularBounce) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::perpendicularBounce)>);
+        memcpy(fullDef->perpendicularBounce, fullDef->weapDef.perpendicularBounce, sizeof(float) * std::extent_v<decltype(WeaponFullDef::perpendicularBounce)>);
         fullDef->weapDef.perpendicularBounce = fullDef->perpendicularBounce;
     }
 
     if (fullDef->weapDef.locationDamageMultipliers)
     {
-        assert(sizeof(WeaponFullDef::locationDamageMultipliers) >= sizeof(float) * std::extent<decltype(WeaponFullDef::locationDamageMultipliers)>::value);
+        assert(sizeof(WeaponFullDef::locationDamageMultipliers) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)>);
         memcpy(fullDef->locationDamageMultipliers,
                fullDef->weapDef.locationDamageMultipliers,
-               sizeof(float) * std::extent<decltype(WeaponFullDef::locationDamageMultipliers)>::value);
+               sizeof(float) * std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)>);
         fullDef->weapDef.locationDamageMultipliers = fullDef->locationDamageMultipliers;
     }
 }
@@ -339,7 +337,7 @@ InfoString AssetDumperWeapon::CreateInfoString(XAssetInfo<WeaponCompleteDef>* as
 
     InfoStringFromWeaponConverter converter(fullDef.get(),
                                             weapon_fields,
-                                            std::extent<decltype(weapon_fields)>::value,
+                                            std::extent_v<decltype(weapon_fields)>,
                                             [asset](const scr_string_t scrStr) -> std::string
                                             {
                                                 assert(scrStr < asset->m_zone->m_script_strings.Count());

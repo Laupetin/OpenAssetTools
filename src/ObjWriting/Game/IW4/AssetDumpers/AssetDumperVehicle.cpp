@@ -22,13 +22,13 @@ namespace IW4
             switch (static_cast<VehicleFieldType>(field.iFieldType))
             {
             case VFT_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleClassNames, std::extent<decltype(s_vehicleClassNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
                 break;
 
             case VFT_AXLE_STEERING:
             case VFT_AXLE_POWER:
             case VFT_AXLE_BRAKING:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleAxleTypeNames, std::extent<decltype(s_vehicleAxleTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleAxleTypeNames, std::extent_v<decltype(s_vehicleAxleTypeNames)>);
                 break;
 
             case VFT_TROPHY_TAGS:
@@ -37,7 +37,7 @@ namespace IW4
                 std::stringstream ss;
                 bool first = true;
 
-                for (auto i = 0u; i < std::extent<decltype(VehicleDef::trophyTags)>::value; i++)
+                for (auto i = 0u; i < std::extent_v<decltype(VehicleDef::trophyTags)>; i++)
                 {
                     const auto& str = m_get_scr_string(trophyTags[i]);
                     if (!str.empty())
@@ -77,7 +77,7 @@ InfoString AssetDumperVehicle::CreateInfoString(XAssetInfo<VehicleDef>* asset)
 {
     InfoStringFromVehicleConverter converter(asset->Asset(),
                                              vehicle_fields,
-                                             std::extent<decltype(vehicle_fields)>::value,
+                                             std::extent_v<decltype(vehicle_fields)>,
                                              [asset](const scr_string_t scrStr) -> std::string
                                              {
                                                  assert(scrStr < asset->m_zone->m_script_strings.Count());

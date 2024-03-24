@@ -23,13 +23,13 @@ namespace T6
             switch (static_cast<VehicleFieldType>(field.iFieldType))
             {
             case VFT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_vehicleClassNames, std::extent<decltype(s_vehicleClassNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
 
             case VFT_CAMERAMODE:
-                return ConvertEnumInt(value, field.iOffset, s_vehicleCameraModes, std::extent<decltype(s_vehicleCameraModes)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_vehicleCameraModes, std::extent_v<decltype(s_vehicleCameraModes)>);
 
             case VFT_TRACTION_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_tractionTypeNames, std::extent<decltype(s_tractionTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_tractionTypeNames, std::extent_v<decltype(s_tractionTypeNames)>);
 
             case VFT_MPH_TO_INCHES_PER_SECOND:
             {
@@ -115,7 +115,7 @@ bool AssetLoaderVehicle::LoadFromInfoString(
     memset(vehicleDef, 0, sizeof(VehicleDef));
 
     InfoStringToVehicleConverter converter(
-        infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent<decltype(vehicle_fields)>::value);
+        infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent_v<decltype(vehicle_fields)>);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse vehicle: \"" << assetName << "\"" << std::endl;

@@ -64,7 +64,7 @@ InfoString AssetDumperPhysPreset::CreateInfoString(XAssetInfo<PhysPreset>* asset
 
     InfoStringFromPhysPresetConverter converter(physPresetInfo,
                                                 phys_preset_fields,
-                                                std::extent<decltype(phys_preset_fields)>::value,
+                                                std::extent_v<decltype(phys_preset_fields)>,
                                                 [asset](const scr_string_t scrStr) -> std::string
                                                 {
                                                     assert(scrStr < asset->m_zone->m_script_strings.Count());

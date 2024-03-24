@@ -63,7 +63,7 @@ bool AssetLoaderPhysPreset::LoadFromInfoString(
     const auto presetInfo = std::make_unique<PhysPresetInfo>();
     memset(presetInfo.get(), 0, sizeof(PhysPresetInfo));
     InfoStringToPhysPresetConverter converter(
-        infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
+        infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
     if (!converter.Convert())
     {
         std::cout << "Failed to parse phys preset: \"" << assetName << "\"" << std::endl;

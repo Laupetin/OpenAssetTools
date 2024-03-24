@@ -112,7 +112,7 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
         const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
-        if (currentMipLevel < static_cast<int>(std::extent<decltype(iwi27::IwiHeader::fileSizeForPicmip)>::value))
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi27::IwiHeader::fileSizeForPicmip)>))
             header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
     }
 
