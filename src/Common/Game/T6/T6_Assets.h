@@ -6666,6 +6666,13 @@ namespace T6
         const char* flameCooldownSound;
     };
 
+    enum WeaponCamoMaterialFlags
+    {
+        WCM_REPLACE_COLOR = 0x1,
+        WCM_REPLACE_NORMAL = 0x2,
+        WCM_REPLACE_SPECULAR = 0x4,
+    };
+
     struct WeaponCamoMaterial
     {
         uint16_t replaceFlags;

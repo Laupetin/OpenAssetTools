@@ -55,20 +55,17 @@ namespace
 
         static void CreateJsonWeaponCamoMaterial(JsonWeaponCamoMaterial& jWeaponCamoMaterial, const WeaponCamoMaterial& weaponCamoMaterial)
         {
-            jWeaponCamoMaterial.replaceFlags = weaponCamoMaterial.replaceFlags;
+            jWeaponCamoMaterial.useColorMap = weaponCamoMaterial.replaceFlags & WCM_REPLACE_COLOR;
+            jWeaponCamoMaterial.useNormalMap = weaponCamoMaterial.replaceFlags & WCM_REPLACE_NORMAL;
+            jWeaponCamoMaterial.useSpecularMap = weaponCamoMaterial.replaceFlags & WCM_REPLACE_SPECULAR;
 
-            jWeaponCamoMaterial.baseMaterials.resize(weaponCamoMaterial.numBaseMaterials);
+            jWeaponCamoMaterial.materialOverrides.resize(weaponCamoMaterial.numBaseMaterials);
             for (auto i = 0u; i < weaponCamoMaterial.numBaseMaterials; i++)
             {
                 if (weaponCamoMaterial.baseMaterials[i] && weaponCamoMaterial.baseMaterials[i]->info.name)
-                    jWeaponCamoMaterial.baseMaterials[i] = AssetName(weaponCamoMaterial.baseMaterials[i]->info.name);
-            }
-
-            jWeaponCamoMaterial.camoMaterials.resize(weaponCamoMaterial.numBaseMaterials);
-            for (auto i = 0u; i < weaponCamoMaterial.numBaseMaterials; i++)
-            {
+                    jWeaponCamoMaterial.materialOverrides[i].baseMaterial = AssetName(weaponCamoMaterial.baseMaterials[i]->info.name);
                 if (weaponCamoMaterial.camoMaterials[i] && weaponCamoMaterial.camoMaterials[i]->info.name)
-                    jWeaponCamoMaterial.camoMaterials[i] = AssetName(weaponCamoMaterial.camoMaterials[i]->info.name);
+                    jWeaponCamoMaterial.materialOverrides[i].camoMaterial = AssetName(weaponCamoMaterial.camoMaterials[i]->info.name);
             }
 
             for (auto i = 0u; i < std::extent_v<decltype(WeaponCamoMaterial::shaderConsts)>; i++)
