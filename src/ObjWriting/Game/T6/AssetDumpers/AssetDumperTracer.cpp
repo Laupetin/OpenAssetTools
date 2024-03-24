@@ -20,7 +20,7 @@ namespace T6
             switch (static_cast<tracerFieldType_t>(field.iFieldType))
             {
             case TFT_TRACERTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, tracerTypeNames, std::extent<decltype(tracerTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, tracerTypeNames, std::extent_v<decltype(tracerTypeNames)>);
                 break;
 
             case TFT_NUM_FIELD_TYPES:
@@ -45,7 +45,7 @@ InfoString AssetDumperTracer::CreateInfoString(XAssetInfo<TracerDef>* asset)
 {
     InfoStringFromTracerConverter converter(asset->Asset(),
                                             tracer_fields,
-                                            std::extent<decltype(tracer_fields)>::value,
+                                            std::extent_v<decltype(tracer_fields)>,
                                             [asset](const scr_string_t scrStr) -> std::string
                                             {
                                                 assert(scrStr < asset->m_zone->m_script_strings.Count());

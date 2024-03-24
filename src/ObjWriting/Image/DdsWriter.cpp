@@ -95,7 +95,7 @@ class DdsWriterInternal
 
     void PopulateDdsHeader(DDS_HEADER& header)
     {
-        header.dwSize = sizeof header;
+        header.dwSize = sizeof(header);
         header.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
 
         if (m_texture->HasMipMaps())
@@ -201,14 +201,14 @@ public:
 
         constexpr auto magic = MakeFourCc('D', 'D', 'S', ' ');
 
-        m_stream.write(reinterpret_cast<const char*>(&magic), sizeof magic);
-        m_stream.write(reinterpret_cast<const char*>(&header), sizeof header);
+        m_stream.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
+        m_stream.write(reinterpret_cast<const char*>(&header), sizeof(header));
 
         if (m_use_dx10_extension)
         {
             DDS_HEADER_DXT10 dxt10{};
             PopulateDxt10Header(dxt10);
-            m_stream.write(reinterpret_cast<const char*>(&dxt10), sizeof dxt10);
+            m_stream.write(reinterpret_cast<const char*>(&dxt10), sizeof(dxt10));
         }
 
         const auto mipCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;

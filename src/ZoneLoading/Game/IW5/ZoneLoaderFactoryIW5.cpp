@@ -114,11 +114,11 @@ class ZoneLoaderFactory::Impl
         zoneLoader->AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        auto subHeaderHash = std::make_unique<StepLoadHash>(sizeof DB_AuthHash::bytes, 1);
+        auto subHeaderHash = std::make_unique<StepLoadHash>(sizeof(DB_AuthHash::bytes), 1);
         auto* subHeaderHashPtr = subHeaderHash.get();
         zoneLoader->AddLoadingStep(std::move(subHeaderHash));
 
-        auto subHeaderHashSignature = std::make_unique<StepLoadSignature>(sizeof DB_AuthSignature::bytes);
+        auto subHeaderHashSignature = std::make_unique<StepLoadSignature>(sizeof(DB_AuthSignature::bytes));
         auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
         zoneLoader->AddLoadingStep(std::move(subHeaderHashSignature));
 
@@ -131,7 +131,7 @@ class ZoneLoaderFactory::Impl
         zoneLoader->AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        auto masterBlockHashes = std::make_unique<StepLoadHash>(sizeof DB_AuthHash::bytes, std::extent<decltype(DB_AuthSubHeader::masterBlockHashes)>::value);
+        auto masterBlockHashes = std::make_unique<StepLoadHash>(sizeof(DB_AuthHash::bytes), std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>);
         auto* masterBlockHashesPtr = masterBlockHashes.get();
         zoneLoader->AddLoadingStep(std::move(masterBlockHashes));
 
@@ -145,7 +145,7 @@ class ZoneLoaderFactory::Impl
         zoneLoader->AddLoadingStep(
             std::make_unique<StepAddProcessor>(std::make_unique<ProcessorAuthedBlocks>(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
                                                                                        ZoneConstants::AUTHED_CHUNK_SIZE,
-                                                                                       std::extent<decltype(DB_AuthSubHeader::masterBlockHashes)>::value,
+                                                                                       std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>,
                                                                                        std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()),
                                                                                        masterBlockHashesPtr)));
     }

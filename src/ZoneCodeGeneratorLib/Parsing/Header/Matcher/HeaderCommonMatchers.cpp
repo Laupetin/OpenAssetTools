@@ -66,7 +66,7 @@ std::unique_ptr<HeaderCommonMatchers::matcher_t> HeaderCommonMatchers::ArrayDef(
 std::unique_ptr<HeaderCommonMatchers::matcher_t> HeaderCommonMatchers::Typename(const supplier_t* labelSupplier)
 {
     static constexpr const char* BUILT_IN_TYPE_NAMES[]{"unsigned", "char", "short", "int", "long"};
-    static_assert(std::extent<decltype(BUILT_IN_TYPE_NAMES)>::value
+    static_assert(std::extent_v<decltype(BUILT_IN_TYPE_NAMES)>
                   == static_cast<int>(HeaderParserValueType::BUILT_IN_LAST) - static_cast<int>(HeaderParserValueType::BUILT_IN_FIRST) + 1);
 
     const HeaderMatcherFactory create(labelSupplier);

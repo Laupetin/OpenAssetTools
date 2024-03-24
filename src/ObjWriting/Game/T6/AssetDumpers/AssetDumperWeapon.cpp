@@ -277,21 +277,21 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponVariantDef* weapon, WeaponFull
 
     if (weapon->attachments)
     {
-        assert(sizeof(WeaponFullDef::attachments) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::attachments)>::value);
+        assert(sizeof(WeaponFullDef::attachments) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachments)>);
         memcpy(fullDef->attachments, weapon->attachments, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachments)>);
         fullDef->weapVariantDef.attachments = fullDef->attachments;
     }
 
     if (weapon->attachmentUniques)
     {
-        assert(sizeof(WeaponFullDef::attachmentUniques) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::attachmentUniques)>::value);
+        assert(sizeof(WeaponFullDef::attachmentUniques) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachmentUniques)>);
         memcpy(fullDef->attachmentUniques, weapon->attachmentUniques, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachmentUniques)>);
         fullDef->weapVariantDef.attachmentUniques = fullDef->attachmentUniques;
     }
 
     if (fullDef->weapDef.gunXModel)
     {
-        assert(sizeof(WeaponFullDef::gunXModel) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::gunXModel)>::value);
+        assert(sizeof(WeaponFullDef::gunXModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::gunXModel)>);
         memcpy(fullDef->gunXModel, fullDef->weapDef.gunXModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::gunXModel)>);
         fullDef->weapDef.gunXModel = fullDef->gunXModel;
     }
@@ -305,14 +305,14 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponVariantDef* weapon, WeaponFull
 
     if (weapon->hideTags)
     {
-        assert(sizeof(WeaponFullDef::hideTags) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::hideTags)>::value);
+        assert(sizeof(WeaponFullDef::hideTags) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::hideTags)>);
         memcpy(fullDef->hideTags, weapon->hideTags, sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::hideTags)>);
         fullDef->weapVariantDef.hideTags = fullDef->hideTags;
     }
 
     if (fullDef->weapDef.notetrackSoundMapKeys)
     {
-        assert(sizeof(WeaponFullDef::notetrackSoundMapKeys) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapKeys)>::value);
+        assert(sizeof(WeaponFullDef::notetrackSoundMapKeys) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         memcpy(fullDef->notetrackSoundMapKeys,
                fullDef->weapDef.notetrackSoundMapKeys,
                sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
@@ -321,7 +321,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponVariantDef* weapon, WeaponFull
 
     if (fullDef->weapDef.notetrackSoundMapValues)
     {
-        assert(sizeof(WeaponFullDef::notetrackSoundMapValues) >= sizeof(scr_string_t) * std::extent<decltype(WeaponFullDef::notetrackSoundMapValues)>::value);
+        assert(sizeof(WeaponFullDef::notetrackSoundMapValues) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapValues)>);
         memcpy(fullDef->notetrackSoundMapValues,
                fullDef->weapDef.notetrackSoundMapValues,
                sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapValues)>);
@@ -330,35 +330,35 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponVariantDef* weapon, WeaponFull
 
     if (fullDef->weapDef.worldModel)
     {
-        assert(sizeof(WeaponFullDef::worldModel) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::worldModel)>::value);
+        assert(sizeof(WeaponFullDef::worldModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::worldModel)>);
         memcpy(fullDef->worldModel, fullDef->weapDef.worldModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::worldModel)>);
         fullDef->weapDef.worldModel = fullDef->worldModel;
     }
 
     if (weapon->attachViewModel)
     {
-        assert(sizeof(WeaponFullDef::attachViewModel) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::attachViewModel)>::value);
+        assert(sizeof(WeaponFullDef::attachViewModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachViewModel)>);
         memcpy(fullDef->attachViewModel, weapon->attachViewModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachViewModel)>);
         fullDef->weapVariantDef.attachViewModel = fullDef->attachViewModel;
     }
 
     if (weapon->attachWorldModel)
     {
-        assert(sizeof(WeaponFullDef::attachWorldModel) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::attachWorldModel)>::value);
+        assert(sizeof(WeaponFullDef::attachWorldModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachWorldModel)>);
         memcpy(fullDef->attachWorldModel, weapon->attachWorldModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachWorldModel)>);
         fullDef->weapVariantDef.attachWorldModel = fullDef->attachWorldModel;
     }
 
     if (weapon->attachViewModelTag)
     {
-        assert(sizeof(WeaponFullDef::attachViewModelTag) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::attachViewModelTag)>::value);
+        assert(sizeof(WeaponFullDef::attachViewModelTag) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachViewModelTag)>);
         memcpy(fullDef->attachViewModelTag, weapon->attachViewModelTag, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachViewModelTag)>);
         fullDef->weapVariantDef.attachViewModelTag = fullDef->attachViewModelTag;
     }
 
     if (weapon->attachWorldModelTag)
     {
-        assert(sizeof(WeaponFullDef::attachWorldModelTag) >= sizeof(void*) * std::extent<decltype(WeaponFullDef::attachWorldModelTag)>::value);
+        assert(sizeof(WeaponFullDef::attachWorldModelTag) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachWorldModelTag)>);
         memcpy(fullDef->attachWorldModelTag, weapon->attachWorldModelTag, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::attachWorldModelTag)>);
         fullDef->weapVariantDef.attachWorldModelTag = fullDef->attachWorldModelTag;
     }

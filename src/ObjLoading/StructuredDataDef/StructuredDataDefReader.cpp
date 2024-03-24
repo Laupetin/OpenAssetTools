@@ -58,6 +58,6 @@ std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::R
     if (success)
         return parser->GetDefs();
 
-    std::cout << "Parsing structured data def file \"" << m_file_name << "\" failed!" << std::endl;
+    std::cout << "Parsing structured data def file \"" << m_file_name << "\" failed!\n";
     return {};
 }

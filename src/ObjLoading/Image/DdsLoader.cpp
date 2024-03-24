@@ -26,13 +26,13 @@ class DdsLoaderInternal
         m_stream.read(reinterpret_cast<char*>(&magic), sizeof(magic));
         if (m_stream.gcount() != sizeof(magic))
         {
-            std::cout << "Failed to read dds data" << std::endl;
+            std::cout << "Failed to read dds data\n";
             return false;
         }
 
         if (magic != DDS_MAGIC)
         {
-            std::cout << "Invalid magic for dds" << std::endl;
+            std::cout << "Invalid magic for dds\n";
             return false;
         }
 
@@ -45,7 +45,7 @@ class DdsLoaderInternal
         m_stream.read(reinterpret_cast<char*>(&headerDx10), sizeof(headerDx10));
         if (m_stream.gcount() != sizeof(headerDx10))
         {
-            std::cout << "Failed to read dds data" << std::endl;
+            std::cout << "Failed to read dds data\n";
             return false;
         }
 
@@ -66,7 +66,7 @@ class DdsLoaderInternal
         }
         else
         {
-            std::cout << "Unsupported dds resourceDimension " << headerDx10.resourceDimension << std::endl;
+            std::cout << "Unsupported dds resourceDimension " << headerDx10.resourceDimension << "\n";
             return false;
         }
 
@@ -79,7 +79,7 @@ class DdsLoaderInternal
             }
         }
 
-        std::cout << "Unsupported dds dxgi format " << headerDx10.dxgiFormat << std::endl;
+        std::cout << "Unsupported dds dxgi format " << headerDx10.dxgiFormat << "\n";
         return false;
     }
 
@@ -103,7 +103,7 @@ class DdsLoaderInternal
             return ReadDxt10Header();
 
         default:
-            std::cout << "Unknown dds FourCC " << pf.dwFourCC << std::endl;
+            std::cout << "Unknown dds FourCC " << pf.dwFourCC << "\n";
             return false;
         }
     }
@@ -155,7 +155,7 @@ class DdsLoaderInternal
         }
 
         std::cout << "Failed to find dds pixel format: R=" << std::hex << pf.dwRBitMask << " G=" << std::hex << pf.dwGBitMask << " B=" << std::hex
-                  << pf.dwBBitMask << " A=" << std::hex << pf.dwABitMask << std::endl;
+                  << pf.dwBBitMask << " A=" << std::hex << pf.dwABitMask << "\n";
 
         return false;
     }
@@ -174,7 +174,7 @@ class DdsLoaderInternal
         m_stream.read(reinterpret_cast<char*>(&header), sizeof(header));
         if (m_stream.gcount() != sizeof(header))
         {
-            std::cout << "Failed to read dds data" << std::endl;
+            std::cout << "Failed to read dds data\n";
             return false;
         }
 
@@ -230,7 +230,7 @@ class DdsLoaderInternal
 
                 if (m_stream.gcount() != mipSize)
                 {
-                    std::cout << "Failed to read texture data from dds" << std::endl;
+                    std::cout << "Failed to read texture data from dds\n";
                     delete result;
                     return nullptr;
                 }

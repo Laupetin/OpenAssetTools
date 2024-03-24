@@ -41,7 +41,7 @@ bool CodeGenerator::GenerateCodeForTemplate(RenderingContext* context, ICodeTemp
 
         if (!stream.is_open())
         {
-            std::cout << "Failed to open file '" << p.string() << "'" << std::endl;
+            std::cout << "Failed to open file '" << p.string() << "'\n";
             return false;
         }
 
@@ -58,7 +58,7 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
     auto* def = repository->GetDataDefinitionByName(name);
     if (def == nullptr)
     {
-        std::cout << "Could not find type with name '" << name << "'" << std::endl;
+        std::cout << "Could not find type with name '" << name << "'\n";
         return false;
     }
 
@@ -66,13 +66,13 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
     auto* info = defWithMembers != nullptr ? repository->GetInformationFor(defWithMembers) : nullptr;
     if (info == nullptr)
     {
-        std::cout << "Could not find type with name '" << name << "'" << std::endl;
+        std::cout << "Could not find type with name '" << name << "'\n";
         return false;
     }
 
     if (!StructureComputations(info).IsAsset())
     {
-        std::cout << "Type is not an asset '" << name << "'" << std::endl;
+        std::cout << "Type is not an asset '" << name << "'\n";
         return false;
     }
 
@@ -100,7 +100,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
         const auto foundTemplate = m_template_mapping.find(templateName);
         if (foundTemplate == m_template_mapping.end())
         {
-            std::cout << "Unknown template '" << generationTask.m_template_name << "'." << std::endl;
+            std::cout << "Unknown template '" << generationTask.m_template_name << "'.\n";
             return false;
         }
 
@@ -134,7 +134,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
     const auto end = std::chrono::steady_clock::now();
     if (m_args->m_verbose)
     {
-        std::cout << "Generating code took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        std::cout << "Generating code took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
     }
 
     return true;

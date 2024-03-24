@@ -55,13 +55,13 @@ bool AssetLoaderScriptFile::LoadFromRaw(
 
     if (scriptFile->compressedLen <= 0 || scriptFile->bytecodeLen <= 0)
     {
-        std::cerr << "Error: Invalid length of the buffers in " << assetName << " specified" << std::endl;
+        std::cerr << "Error: Invalid length of the buffers in " << assetName << " specified\n";
         return false;
     }
 
     if (offset + (scriptFile->compressedLen + scriptFile->bytecodeLen) > file.m_length)
     {
-        std::cerr << "Error: Specified length in " << assetName << " GSC BIN structure exceeds the actual file size" << std::endl;
+        std::cerr << "Error: Specified length in " << assetName << " GSC BIN structure exceeds the actual file size\n";
         return false;
     }
 

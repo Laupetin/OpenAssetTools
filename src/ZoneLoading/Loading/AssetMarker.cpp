@@ -82,7 +82,7 @@ std::vector<scr_string_t> AssetMarker::GetUsedScriptStrings() const
         for (auto scrString : m_used_script_strings)
             usedScriptStrings.push_back(scrString);
 
-        std::sort(usedScriptStrings.begin(), usedScriptStrings.end());
+        std::ranges::sort(usedScriptStrings);
     }
 
     return usedScriptStrings;

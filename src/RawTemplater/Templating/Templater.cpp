@@ -412,7 +412,7 @@ bool Templater::TemplateToDirectory(const std::string& outputDirectory) const
     }
     catch (ParsingException& e)
     {
-        std::cerr << "Error: " << e.FullMessage() << std::endl;
+        std::cerr << "Error: " << e.FullMessage() << "\n";
 
         return false;
     }

@@ -58,7 +58,7 @@ bool AssetLoaderRawFile::LoadAnimtree(
 
     if (ret != Z_STREAM_END)
     {
-        std::cerr << "Deflate failed for loading animtree file \"" << assetName << "\"" << std::endl;
+        std::cerr << "Deflate failed for loading animtree file \"" << assetName << "\"\n";
         deflateEnd(&zs);
         return false;
     }

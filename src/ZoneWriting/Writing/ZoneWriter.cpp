@@ -72,12 +72,12 @@ bool ZoneWriter::WriteZone(std::ostream& stream)
     }
     catch (WritingException& e)
     {
-        std::cout << "Writing fastfile failed: " << e.Message() << std::endl;
+        std::cout << "Writing fastfile failed: " << e.Message() << "\n";
         return false;
     }
     catch (std::runtime_error& e)
     {
-        std::cout << "Writing fastfile failed: " << e.what() << std::endl;
+        std::cout << "Writing fastfile failed: " << e.what() << "\n";
         return false;
     }
 

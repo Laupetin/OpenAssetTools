@@ -23,13 +23,13 @@ namespace T6
             switch (static_cast<VehicleFieldType>(field.iFieldType))
             {
             case VFT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_vehicleClassNames, std::extent<decltype(s_vehicleClassNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
 
             case VFT_CAMERAMODE:
-                return ConvertEnumInt(value, field.iOffset, s_vehicleCameraModes, std::extent<decltype(s_vehicleCameraModes)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_vehicleCameraModes, std::extent_v<decltype(s_vehicleCameraModes)>);
 
             case VFT_TRACTION_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_tractionTypeNames, std::extent<decltype(s_tractionTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_tractionTypeNames, std::extent_v<decltype(s_tractionTypeNames)>);
 
             case VFT_MPH_TO_INCHES_PER_SECOND:
             {
@@ -38,7 +38,7 @@ namespace T6
 
                 if (endPtr != &value[value.size()])
                 {
-                    std::cout << "Failed to parse value \"" << value << "\" as mph" << std::endl;
+                    std::cout << "Failed to parse value \"" << value << "\" as mph\n";
                     return false;
                 }
 
@@ -52,7 +52,7 @@ namespace T6
 
                 if (endPtr != &value[value.size()])
                 {
-                    std::cout << "Failed to parse value \"" << value << "\" as pounds" << std::endl;
+                    std::cout << "Failed to parse value \"" << value << "\" as pounds\n";
                     return false;
                 }
 
@@ -80,7 +80,7 @@ namespace T6
                 }
 
                 *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = TEAM_BAD;
-                std::cout << "Failed to parse value \"" << value << "\" as team" << std::endl;
+                std::cout << "Failed to parse value \"" << value << "\" as team\n";
                 return false;
             }
 
@@ -115,10 +115,10 @@ bool AssetLoaderVehicle::LoadFromInfoString(
     memset(vehicleDef, 0, sizeof(VehicleDef));
 
     InfoStringToVehicleConverter converter(
-        infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent<decltype(vehicle_fields)>::value);
+        infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent_v<decltype(vehicle_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse vehicle: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse vehicle: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -152,7 +152,7 @@ bool AssetLoaderVehicle::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read vehicle gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read vehicle gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -175,7 +175,7 @@ bool AssetLoaderVehicle::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_VEHICLE, *file.m_stream))
     {
-        std::cout << "Failed to read vehicle raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read vehicle raw file: \"" << fileName << "\"\n";
         return true;
     }
 

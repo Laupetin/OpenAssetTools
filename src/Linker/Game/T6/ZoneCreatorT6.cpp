@@ -40,7 +40,7 @@ bool ZoneCreator::CreateIgnoredAssetMap(const ZoneCreationContext& context, std:
         const auto foundAssetTypeEntry = m_asset_types_by_name.find(ignoreEntry.m_type);
         if (foundAssetTypeEntry == m_asset_types_by_name.end())
         {
-            std::cout << "Unknown asset type \"" << ignoreEntry.m_type << "\" for ignore \"" << ignoreEntry.m_name << "\"" << std::endl;
+            std::cout << "Unknown asset type \"" << ignoreEntry.m_type << "\" for ignore \"" << ignoreEntry.m_name << "\"\n";
             return false;
         }
 
@@ -78,7 +78,7 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
 
                 if (endPtr != &strValue[strValue.size()])
                 {
-                    std::cout << "Could not parse metadata key \"" << metaData->m_key << "\" as hash" << std::endl;
+                    std::cout << "Could not parse metadata key \"" << metaData->m_key << "\" as hash\n";
                     continue;
                 }
             }
@@ -135,7 +135,7 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
         const auto foundAssetTypeEntry = m_asset_types_by_name.find(assetEntry.m_asset_type);
         if (foundAssetTypeEntry == m_asset_types_by_name.end())
         {
-            std::cout << "Unknown asset type \"" << assetEntry.m_asset_type << "\"" << std::endl;
+            std::cout << "Unknown asset type \"" << assetEntry.m_asset_type << "\"\n";
             return nullptr;
         }
 

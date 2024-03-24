@@ -40,19 +40,18 @@ void StateMapHandler::ApplyStateMap(const uint32_t* baseStateBits, uint32_t* out
     for (auto entryIndex = 0u; entryIndex < m_state_map.m_state_map_entries.size(); entryIndex++)
     {
         const auto& entry = m_state_map.m_state_map_entries[entryIndex];
-        const auto matchingRule = std::find_if(entry.m_rules.begin(),
-                                               entry.m_rules.end(),
-                                               [&vars](const std::unique_ptr<StateMapRule>& rule)
-                                               {
-                                                   const auto matchingCondition = std::find_if(rule->m_conditions.begin(),
-                                                                                               rule->m_conditions.end(),
-                                                                                               [&vars](std::unique_ptr<ISimpleExpression>& condition)
-                                                                                               {
-                                                                                                   return condition->EvaluateNonStatic(&vars).IsTruthy();
-                                                                                               });
+        const auto matchingRule = std::ranges::find_if(entry.m_rules,
+                                                       [&vars](const std::unique_ptr<StateMapRule>& rule)
+                                                       {
+                                                           const auto matchingCondition =
+                                                               std::ranges::find_if(rule->m_conditions,
+                                                                                    [&vars](std::unique_ptr<ISimpleExpression>& condition)
+                                                                                    {
+                                                                                        return condition->EvaluateNonStatic(&vars).IsTruthy();
+                                                                                    });
 
-                                                   return matchingCondition != rule->m_conditions.end();
-                                               });
+                                                           return matchingCondition != rule->m_conditions.end();
+                                                       });
 
         if (matchingRule != entry.m_rules.end())
             ApplyRule(m_state_map_layout.m_entry_layout.m_entries[entryIndex], **matchingRule, outStateBits);
@@ -68,12 +67,11 @@ StateMapVars StateMapHandler::BuildVars(const uint32_t* baseStateBits) const
     for (const auto& var : m_state_map_layout.m_var_layout.m_vars)
     {
         const auto baseStateBitField = baseStateBits[var.m_state_bits_index];
-        const auto matchingValue = std::find_if(var.m_values.begin(),
-                                                var.m_values.end(),
-                                                [&baseStateBitField](const StateMapLayoutVarValue& value)
-                                                {
-                                                    return (baseStateBitField & value.m_state_bits_mask) == value.m_state_bits_mask;
-                                                });
+        const auto matchingValue = std::ranges::find_if(var.m_values,
+                                                        [&baseStateBitField](const StateMapLayoutVarValue& value)
+                                                        {
+                                                            return (baseStateBitField & value.m_state_bits_mask) == value.m_state_bits_mask;
+                                                        });
 
         if (matchingValue != var.m_values.end())
             result.AddValue(var.m_name, matchingValue->m_name);

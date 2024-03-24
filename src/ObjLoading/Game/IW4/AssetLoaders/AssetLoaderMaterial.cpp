@@ -844,13 +844,12 @@ namespace IW4
                 if (techsetDefinition->GetTechniqueByIndex(i, techniqueName))
                 {
                     const auto stateBitsForTechnique = GetStateBitsForTechnique(techniqueName);
-                    const auto foundStateBits =
-                        std::find_if(m_state_bits.begin(),
-                                     m_state_bits.end(),
-                                     [stateBitsForTechnique](const GfxStateBits& s1)
-                                     {
-                                         return s1.loadBits[0] == stateBitsForTechnique.loadBits[0] && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
-                                     });
+                    const auto foundStateBits = std::ranges::find_if(m_state_bits,
+                                                                     [stateBitsForTechnique](const GfxStateBits& s1)
+                                                                     {
+                                                                         return s1.loadBits[0] == stateBitsForTechnique.loadBits[0]
+                                                                                && s1.loadBits[1] == stateBitsForTechnique.loadBits[1];
+                                                                     });
 
                     if (foundStateBits != m_state_bits.end())
                     {

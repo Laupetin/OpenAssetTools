@@ -46,12 +46,11 @@ public:
 
     void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping, bool streamed) override
     {
-        auto itr = std::find_if(this->m_sounds.begin(),
-                                this->m_sounds.end(),
-                                [soundId](SoundBankEntryInfo& entry)
-                                {
-                                    return entry.m_sound_id == soundId;
-                                });
+        auto itr = std::ranges::find_if(this->m_sounds,
+                                        [soundId](SoundBankEntryInfo& entry)
+                                        {
+                                            return entry.m_sound_id == soundId;
+                                        });
 
         if (itr == this->m_sounds.end())
         {
@@ -188,13 +187,13 @@ public:
                     }
                     else
                     {
-                        std::cerr << "Unable to decode .flac file for sound " << soundFilePath << std::endl;
+                        std::cerr << "Unable to decode .flac file for sound " << soundFilePath << "\n";
                         return false;
                     }
                 }
                 else
                 {
-                    std::cerr << "Unable to find a compatible file for sound " << soundFilePath << std::endl;
+                    std::cerr << "Unable to find a compatible file for sound " << soundFilePath << "\n";
                     return false;
                 }
             }
@@ -203,7 +202,7 @@ public:
             if (!sound.m_streamed && lastEntry->frameRateIndex != 6)
             {
                 std::cout << "WARNING: Loaded sound \"" << soundFilePath
-                          << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!" << std::endl;
+                          << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!\n";
             }
 
             // calculate checksum
@@ -255,7 +254,7 @@ public:
     {
         if (!WriteEntries())
         {
-            std::cerr << "An error occurred writing the sound bank entries. Please check output." << std::endl;
+            std::cerr << "An error occurred writing the sound bank entries. Please check output.\n";
             return false;
         }
 
@@ -269,7 +268,7 @@ public:
 
         if (m_current_offset > UINT32_MAX)
         {
-            std::cerr << "Sound bank files must be under 4GB. Please reduce the number of sounds being written!" << std::endl;
+            std::cerr << "Sound bank files must be under 4GB. Please reduce the number of sounds being written!\n";
             return false;
         }
 

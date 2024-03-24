@@ -973,7 +973,7 @@ namespace test::parsing::matcher
                     [](HeaderMatcherFactory::token_list_t& tokens)
                     {
                         auto str = tokens[0].get().IdentifierValue();
-                        std::transform(str.begin(), str.end(), str.begin(), toupper);
+                        std::ranges::transform(str, str.begin(), toupper);
                         return HeaderParserValue::Identifier(tokens[0].get().GetPos(), new std::string(std::move(str)));
                     }),
             create.Char('{'),

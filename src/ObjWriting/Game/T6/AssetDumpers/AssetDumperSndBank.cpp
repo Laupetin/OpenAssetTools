@@ -139,7 +139,7 @@ class AssetDumperSndBank::Internal
     {
         fs::path assetPath(m_context.m_base_path);
 
-        std::replace(outputFileName.begin(), outputFileName.end(), '\\', '/');
+        std::ranges::replace(outputFileName, '\\', '/');
         for (const auto& droppedPrefix : PREFIXES_TO_DROP)
         {
             if (outputFileName.rfind(droppedPrefix, 0) != std::string::npos)
@@ -638,7 +638,7 @@ class AssetDumperSndBank::Internal
             }
 
             duckObj["values"] = values;
-            *duckFile << duckObj.dump(4) << std::endl;
+            *duckFile << duckObj.dump(4) << "\n";
         }
     }
 

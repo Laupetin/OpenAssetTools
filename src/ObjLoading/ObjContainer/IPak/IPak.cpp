@@ -46,8 +46,8 @@ class IPak::Impl : public ObjContainerReferenceable
 
         for (unsigned itemIndex = 0; itemIndex < m_index_section->itemCount; itemIndex++)
         {
-            m_stream->read(reinterpret_cast<char*>(&indexEntry), sizeof indexEntry);
-            if (m_stream->gcount() != sizeof indexEntry)
+            m_stream->read(reinterpret_cast<char*>(&indexEntry), sizeof(indexEntry));
+            if (m_stream->gcount() != sizeof(indexEntry))
             {
                 printf("Unexpected eof when trying to load index entry %u.\n", itemIndex);
                 return false;
@@ -56,12 +56,11 @@ class IPak::Impl : public ObjContainerReferenceable
             m_index_entries.push_back(indexEntry);
         }
 
-        std::sort(m_index_entries.begin(),
-                  m_index_entries.end(),
-                  [](const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
-                  {
-                      return entry1.key.combinedKey < entry2.key.combinedKey;
-                  });
+        std::ranges::sort(m_index_entries,
+                          [](const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
+                          {
+                              return entry1.key.combinedKey < entry2.key.combinedKey;
+                          });
 
         return true;
     }
@@ -99,7 +98,7 @@ class IPak::Impl : public ObjContainerReferenceable
         IPakHeader header{};
 
         m_stream->read(reinterpret_cast<char*>(&header), sizeof(header));
-        if (m_stream->gcount() != sizeof header)
+        if (m_stream->gcount() != sizeof(header))
         {
             printf("Unexpected eof when trying to load header.\n");
             return false;

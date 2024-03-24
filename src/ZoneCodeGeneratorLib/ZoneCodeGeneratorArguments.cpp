@@ -172,7 +172,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
     else
     {
-        std::cout << "At least one header file must be specified via -h / --header." << std::endl;
+        std::cout << "At least one header file must be specified via -h / --header.\n";
         return false;
     }
 
@@ -184,7 +184,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
     }
     else
     {
-        std::cout << "At least one commands file must be specified via -c / --commands-file." << std::endl;
+        std::cout << "At least one commands file must be specified via -c / --commands-file.\n";
         return false;
     }
 
@@ -206,7 +206,7 @@ bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bo
 
     if (m_task_flags == 0)
     {
-        std::cout << "There was no output task specified." << std::endl;
+        std::cout << "There was no output task specified.\n";
         PrintUsage();
         return false;
     }

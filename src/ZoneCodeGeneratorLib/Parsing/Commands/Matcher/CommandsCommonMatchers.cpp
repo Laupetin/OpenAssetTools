@@ -19,7 +19,7 @@ std::unique_ptr<CommandsCommonMatchers::matcher_t> CommandsCommonMatchers::Typen
         "int",
         "long",
     };
-    static_assert(std::extent<decltype(BUILT_IN_TYPE_NAMES)>::value
+    static_assert(std::extent_v<decltype(BUILT_IN_TYPE_NAMES)>
                   == static_cast<int>(CommandsParserValueType::BUILT_IN_LAST) - static_cast<int>(CommandsParserValueType::BUILT_IN_FIRST) + 1);
 
     const CommandsMatcherFactory create(labelSupplier);

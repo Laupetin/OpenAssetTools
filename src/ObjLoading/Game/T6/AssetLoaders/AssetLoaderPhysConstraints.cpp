@@ -23,7 +23,7 @@ namespace T6
             switch (static_cast<constraintsFieldType_t>(field.iFieldType))
             {
             case CFT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_constraintTypeNames, std::extent<decltype(s_constraintTypeNames)>::value);
+                return ConvertEnumInt(value, field.iOffset, s_constraintTypeNames, std::extent_v<decltype(s_constraintTypeNames)>);
 
             default:
                 assert(false);
@@ -61,7 +61,7 @@ void AssetLoaderPhysConstraints::CalculatePhysConstraintsFields(PhysConstraints*
     // count
     {
         auto foundEnd = false;
-        for (auto i = 0u; i < std::extent<decltype(PhysConstraints::data)>::value; i++)
+        for (auto i = 0u; i < std::extent_v<decltype(PhysConstraints::data)>; i++)
         {
             if (physConstraints->data[i].type == CONSTRAINT_NONE)
             {
@@ -72,7 +72,7 @@ void AssetLoaderPhysConstraints::CalculatePhysConstraintsFields(PhysConstraints*
         }
 
         if (!foundEnd)
-            physConstraints->count = std::extent<decltype(PhysConstraints::data)>::value;
+            physConstraints->count = std::extent_v<decltype(PhysConstraints::data)>;
     }
 }
 
@@ -83,10 +83,10 @@ bool AssetLoaderPhysConstraints::LoadFromInfoString(
     memset(physConstraints, 0, sizeof(PhysConstraints));
 
     InfoStringToPhysConstraintsConverter converter(
-        infoString, physConstraints, zone->m_script_strings, memory, manager, phys_constraints_fields, std::extent<decltype(phys_constraints_fields)>::value);
+        infoString, physConstraints, zone->m_script_strings, memory, manager, phys_constraints_fields, std::extent_v<decltype(phys_constraints_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse phys constraints: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse phys constraints: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -123,7 +123,7 @@ bool AssetLoaderPhysConstraints::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read phys constraints gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read phys constraints gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -146,7 +146,7 @@ bool AssetLoaderPhysConstraints::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, *file.m_stream))
     {
-        std::cout << "Failed to read phys constraints raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read phys constraints raw file: \"" << fileName << "\"\n";
         return true;
     }
 

@@ -11,9 +11,9 @@ std::string ParsedCsvRow::GetValue(const std::string& header, const bool require
     if (this->headers.find(header) == this->headers.end())
     {
         if (required)
-            std::cerr << "ERROR: Required column \"" << header << "\" was not found" << std::endl;
+            std::cerr << "ERROR: Required column \"" << header << "\" was not found\n";
         else
-            std::cerr << "WARNING: Expected column \"" << header << "\" was not found" << std::endl;
+            std::cerr << "WARNING: Expected column \"" << header << "\" was not found\n";
 
         return {};
     }
@@ -21,7 +21,7 @@ std::string ParsedCsvRow::GetValue(const std::string& header, const bool require
     auto& value = this->values.at(this->headers[header]);
     if (required && value.empty())
     {
-        std::cerr << "ERROR: Required column \"" << header << "\" does not have a value" << std::endl;
+        std::cerr << "ERROR: Required column \"" << header << "\" does not have a value\n";
         return {};
     }
 

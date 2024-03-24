@@ -22,7 +22,7 @@ namespace T6
             switch (static_cast<attachmentUniqueFieldType_t>(field.iFieldType))
             {
             case AUFT_ATTACHMENTTYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szAttachmentTypeNames, std::extent<decltype(szAttachmentTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
                 break;
 
             case AUFT_HIDETAGS:
@@ -31,7 +31,7 @@ namespace T6
                 std::stringstream ss;
                 auto first = true;
 
-                for (auto i = 0u; i < std::extent<decltype(WeaponFullDef::hideTags)>::value; i++)
+                for (auto i = 0u; i < std::extent_v<decltype(WeaponFullDef::hideTags)>; i++)
                 {
                     const auto& str = m_get_scr_string(hideTags[i]);
                     if (!str.empty())
@@ -50,7 +50,7 @@ namespace T6
             }
 
             case AUFT_OVERLAYRETICLE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent<decltype(szWeapOverlayReticleNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
                 break;
 
             case AUFT_CAMO:
@@ -94,8 +94,8 @@ void AssetDumperWeaponAttachmentUnique::CopyToFullDef(const WeaponAttachmentUniq
 
     if (attachment->hideTags)
     {
-        assert(sizeof(WeaponAttachmentUniqueFull::hideTags) >= sizeof(scr_string_t) * std::extent<decltype(WeaponAttachmentUniqueFull::hideTags)>::value);
-        memcpy(fullDef->hideTags, attachment->hideTags, sizeof(scr_string_t) * std::extent<decltype(WeaponAttachmentUniqueFull::hideTags)>::value);
+        assert(sizeof(WeaponAttachmentUniqueFull::hideTags) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponAttachmentUniqueFull::hideTags)>);
+        memcpy(fullDef->hideTags, attachment->hideTags, sizeof(scr_string_t) * std::extent_v<decltype(WeaponAttachmentUniqueFull::hideTags)>);
         fullDef->attachment.hideTags = fullDef->hideTags;
     }
 
@@ -115,7 +115,7 @@ InfoString AssetDumperWeaponAttachmentUnique::CreateInfoString(XAssetInfo<Weapon
 
     InfoStringFromWeaponAttachmentUniqueConverter converter(fullDef.get(),
                                                             attachment_unique_fields,
-                                                            std::extent<decltype(attachment_unique_fields)>::value,
+                                                            std::extent_v<decltype(attachment_unique_fields)>,
                                                             [asset](const scr_string_t scrStr) -> std::string
                                                             {
                                                                 assert(scrStr < asset->m_zone->m_script_strings.Count());

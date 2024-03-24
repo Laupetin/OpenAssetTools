@@ -54,7 +54,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(
 
     if (texture == nullptr)
     {
-        std::cout << "Failed to load dds file for image asset \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to load dds file for image asset \"" << assetName << "\"\n";
         return false;
     }
 

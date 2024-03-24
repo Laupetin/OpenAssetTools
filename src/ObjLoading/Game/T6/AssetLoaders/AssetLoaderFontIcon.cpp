@@ -48,12 +48,11 @@ void AssetLoaderFontIcon::PreprocessRow(std::vector<std::string>& row)
 
 bool AssetLoaderFontIcon::RowIsEmpty(const std::vector<std::string>& row)
 {
-    return std::all_of(row.begin(),
-                       row.end(),
-                       [](const std::string& cell)
-                       {
-                           return cell.empty();
-                       });
+    return std::ranges::all_of(row,
+                               [](const std::string& cell)
+                               {
+                                   return cell.empty();
+                               });
 }
 
 bool AssetLoaderFontIcon::ParseInt(int& value, const std::string& str)
@@ -102,26 +101,26 @@ bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row,
 {
     if (row.size() < COL_COUNT_ICON)
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Column count lower than min column count for entries (" << COL_COUNT_ICON << ")" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Column count lower than min column count for entries (" << COL_COUNT_ICON << ")\n";
         return false;
     }
 
     if (!ParseInt(icon.fontIconSize, row[ROW_ICON_SIZE]))
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse size" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse size\n";
         return false;
     }
 
     if (!ParseFloat(icon.xScale, row[ROW_ICON_XSCALE]) || !ParseFloat(icon.yScale, row[ROW_ICON_YSCALE]))
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse scale" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse scale\n";
         return false;
     }
 
     auto* materialDependency = manager->LoadDependency(ASSET_TYPE_MATERIAL, row[ROW_ICON_MATERIAL]);
     if (materialDependency == nullptr)
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to load material \"" << row[ROW_ICON_MATERIAL] << "\"" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to load material \"" << row[ROW_ICON_MATERIAL] << "\"\n";
         return false;
     }
 
@@ -141,19 +140,19 @@ bool AssetLoaderFontIcon::ReadAliasRow(const std::vector<std::string>& row,
 {
     if (row.size() < COL_COUNT_ALIAS)
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Column count lower than min column count for aliases (" << COL_COUNT_ALIAS << ")" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Column count lower than min column count for aliases (" << COL_COUNT_ALIAS << ")\n";
         return false;
     }
 
     if (!ParseHashStr(alias.aliasHash, row[ROW_ALIAS_NAME]))
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse alias \"" << row[ROW_ALIAS_NAME] << "\"" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse alias \"" << row[ROW_ALIAS_NAME] << "\"\n";
         return false;
     }
 
     if (!ParseHashStr(alias.buttonHash, row[ROW_ALIAS_BUTTON]))
     {
-        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse button \"" << row[ROW_ALIAS_BUTTON] << "\"" << std::endl;
+        std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to parse button \"" << row[ROW_ALIAS_BUTTON] << "\"\n";
         return false;
     }
 
@@ -187,14 +186,14 @@ bool AssetLoaderFontIcon::LoadFromRaw(
 
         if (currentRow.size() < COL_COUNT_MIN)
         {
-            std::cout << ErrorPrefix(assetName, currentRowIndex) << "Column count lower than min column count (" << COL_COUNT_MIN << ")" << std::endl;
+            std::cout << ErrorPrefix(assetName, currentRowIndex) << "Column count lower than min column count (" << COL_COUNT_MIN << ")\n";
             return true;
         }
 
         int index;
         if (!ParseInt(index, currentRow[ROW_INDEX]) || index < 0)
         {
-            std::cout << ErrorPrefix(assetName, currentRowIndex) << "Failed to parse index" << std::endl;
+            std::cout << ErrorPrefix(assetName, currentRowIndex) << "Failed to parse index\n";
             return true;
         }
 
@@ -240,7 +239,7 @@ bool AssetLoaderFontIcon::LoadFromRaw(
         }
         else
         {
-            std::cout << ErrorPrefix(assetName, currentRowIndex) << "Unknown row type \"" << currentRow[ROW_TYPE] << "\"" << std::endl;
+            std::cout << ErrorPrefix(assetName, currentRowIndex) << "Unknown row type \"" << currentRow[ROW_TYPE] << "\"\n";
             return true;
         }
     }

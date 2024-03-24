@@ -66,10 +66,10 @@ bool AssetLoaderPhysPreset::LoadFromInfoString(
     const auto presetInfo = std::make_unique<PhysPresetInfo>();
     memset(presetInfo.get(), 0, sizeof(PhysPresetInfo));
     InfoStringToPhysPresetConverter converter(
-        infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent<decltype(phys_preset_fields)>::value);
+        infoString, presetInfo.get(), zone->m_script_strings, memory, manager, phys_preset_fields, std::extent_v<decltype(phys_preset_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse phys preset: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse phys preset: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -106,7 +106,7 @@ bool AssetLoaderPhysPreset::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read phys preset gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read phys preset gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -129,7 +129,7 @@ bool AssetLoaderPhysPreset::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
     {
-        std::cout << "Failed to read phys preset raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read phys preset raw file: \"" << fileName << "\"\n";
         return true;
     }
 

@@ -126,7 +126,7 @@ protected:
             while (skipAmount > 0)
             {
                 char temp[1024];
-                const auto toRead = skipAmount > sizeof temp ? sizeof temp : static_cast<size_t>(skipAmount);
+                const auto toRead = skipAmount > sizeof(temp) ? sizeof(temp) : static_cast<size_t>(skipAmount);
                 unzReadCurrentFile(m_container, temp, toRead);
                 skipAmount -= toRead;
             }
@@ -216,7 +216,7 @@ public:
         {
             unz_file_info64 info;
             char fileNameBuffer[256];
-            unzGetCurrentFileInfo64(m_unz_file, &info, fileNameBuffer, sizeof fileNameBuffer, nullptr, 0, nullptr, 0);
+            unzGetCurrentFileInfo64(m_unz_file, &info, fileNameBuffer, sizeof(fileNameBuffer), nullptr, 0, nullptr, 0);
 
             std::string fileName(fileNameBuffer);
             std::filesystem::path path(fileName);
@@ -248,7 +248,7 @@ public:
         }
 
         auto iwdFilename = fileName;
-        std::replace(iwdFilename.begin(), iwdFilename.end(), '\\', '/');
+        std::ranges::replace(iwdFilename, '\\', '/');
 
         const auto iwdEntry = m_entry_map.find(iwdFilename);
 

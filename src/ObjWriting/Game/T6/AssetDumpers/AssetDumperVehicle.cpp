@@ -20,15 +20,15 @@ namespace T6
             switch (static_cast<VehicleFieldType>(field.iFieldType))
             {
             case VFT_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleClassNames, std::extent<decltype(s_vehicleClassNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
                 break;
 
             case VFT_CAMERAMODE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleCameraModes, std::extent<decltype(s_vehicleCameraModes)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_vehicleCameraModes, std::extent_v<decltype(s_vehicleCameraModes)>);
                 break;
 
             case VFT_TRACTION_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_tractionTypeNames, std::extent<decltype(s_tractionTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_tractionTypeNames, std::extent_v<decltype(s_tractionTypeNames)>);
                 break;
 
             case VFT_MPH_TO_INCHES_PER_SECOND:
@@ -95,7 +95,7 @@ InfoString AssetDumperVehicle::CreateInfoString(XAssetInfo<VehicleDef>* asset)
 {
     InfoStringFromVehicleConverter converter(asset->Asset(),
                                              vehicle_fields,
-                                             std::extent<decltype(vehicle_fields)>::value,
+                                             std::extent_v<decltype(vehicle_fields)>,
                                              [asset](const scr_string_t scrStr) -> std::string
                                              {
                                                  assert(scrStr < asset->m_zone->m_script_strings.Count());

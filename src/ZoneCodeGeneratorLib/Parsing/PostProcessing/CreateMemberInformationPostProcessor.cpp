@@ -29,10 +29,9 @@ bool CreateMemberInformationPostProcessor::PostProcess(IDataRepository* reposito
 {
     const auto& allStructureInformation = repository->GetAllStructureInformation();
 
-    return std::all_of(allStructureInformation.begin(),
-                       allStructureInformation.end(),
-                       [this, repository](StructureInformation* structure)
-                       {
-                           return CreateMemberInformationForStructure(repository, structure);
-                       });
+    return std::ranges::all_of(allStructureInformation,
+                               [this, repository](StructureInformation* structure)
+                               {
+                                   return CreateMemberInformationForStructure(repository, structure);
+                               });
 }

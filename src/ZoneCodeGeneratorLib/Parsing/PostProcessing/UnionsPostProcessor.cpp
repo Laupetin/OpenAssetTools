@@ -21,7 +21,7 @@ bool UnionsPostProcessor::ProcessUnion(StructureInformation* info)
 
     if (entriesWithoutConditionCount > 1 && !info->m_usages.empty() && !info->m_is_leaf)
     {
-        std::cout << "Union '" << info->m_definition->GetFullName() << "' has more than one entry without a condition!" << std::endl;
+        std::cout << "Union '" << info->m_definition->GetFullName() << "' has more than one entry without a condition!\n";
         return false;
     }
 
@@ -40,13 +40,12 @@ bool UnionsPostProcessor::PostProcess(IDataRepository* repository)
 {
     const auto& allInfos = repository->GetAllStructureInformation();
 
-    return std::all_of(allInfos.begin(),
-                       allInfos.end(),
-                       [](StructureInformation* info)
-                       {
-                           if (info->m_definition->GetType() != DataDefinitionType::UNION)
-                               return true;
+    return std::ranges::all_of(allInfos,
+                               [](StructureInformation* info)
+                               {
+                                   if (info->m_definition->GetType() != DataDefinitionType::UNION)
+                                       return true;
 
-                           return ProcessUnion(info);
-                       });
+                                   return ProcessUnion(info);
+                               });
 }

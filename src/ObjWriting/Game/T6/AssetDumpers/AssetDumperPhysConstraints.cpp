@@ -20,7 +20,7 @@ namespace T6
             switch (static_cast<constraintsFieldType_t>(field.iFieldType))
             {
             case CFT_TYPE:
-                FillFromEnumInt(std::string(field.szName), field.iOffset, s_constraintTypeNames, std::extent<decltype(s_constraintTypeNames)>::value);
+                FillFromEnumInt(std::string(field.szName), field.iOffset, s_constraintTypeNames, std::extent_v<decltype(s_constraintTypeNames)>);
                 break;
 
             default:
@@ -46,7 +46,7 @@ InfoString AssetDumperPhysConstraints::CreateInfoString(XAssetInfo<PhysConstrain
 
     InfoStringFromPhysConstraintsConverter converter(asset->Asset(),
                                                      phys_constraints_fields,
-                                                     std::extent<decltype(phys_constraints_fields)>::value,
+                                                     std::extent_v<decltype(phys_constraints_fields)>,
                                                      [asset](const scr_string_t scrStr) -> std::string
                                                      {
                                                          assert(scrStr < asset->m_zone->m_script_strings.Count());

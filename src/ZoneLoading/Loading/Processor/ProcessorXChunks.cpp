@@ -150,16 +150,16 @@ class ProcessorXChunks::ProcessorXChunksImpl
         xchunk_size_t chunkSize;
         if (m_vanilla_buffer_size > 0)
         {
-            if (m_vanilla_buffer_offset + sizeof chunkSize > m_vanilla_buffer_size)
+            if (m_vanilla_buffer_offset + sizeof(chunkSize) > m_vanilla_buffer_size)
             {
                 m_base->m_base_stream->Load(&chunkSize, m_vanilla_buffer_size - m_vanilla_buffer_offset);
                 m_vanilla_buffer_offset = 0;
             }
 
-            m_vanilla_buffer_offset = (m_vanilla_buffer_offset + sizeof chunkSize) % m_vanilla_buffer_size;
+            m_vanilla_buffer_offset = (m_vanilla_buffer_offset + sizeof(chunkSize)) % m_vanilla_buffer_size;
         }
 
-        const size_t readSize = m_base->m_base_stream->Load(&chunkSize, sizeof chunkSize);
+        const size_t readSize = m_base->m_base_stream->Load(&chunkSize, sizeof(chunkSize));
 
         if (readSize == 0)
         {

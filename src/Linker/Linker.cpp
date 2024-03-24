@@ -90,7 +90,7 @@ class LinkerImpl final : public Linker
                     const auto definitionStream = sourceSearchPath->Open(definitionFileName);
                     if (!definitionStream.IsOpen())
                     {
-                        std::cout << "Could not find zone definition file for project \"" << source << "\"." << std::endl;
+                        std::cout << "Could not find zone definition file for project \"" << source << "\".\n";
                         return false;
                     }
 
@@ -100,7 +100,7 @@ class LinkerImpl final : public Linker
 
                 if (!includeDefinition)
                 {
-                    std::cout << "Failed to read zone definition file for project \"" << source << "\"." << std::endl;
+                    std::cout << "Failed to read zone definition file for project \"" << source << "\".\n";
                     return false;
                 }
 
@@ -183,7 +183,7 @@ class LinkerImpl final : public Linker
             {
                 if (name != i->second->m_value)
                 {
-                    std::cout << "Conflicting names in target \"" << targetName << "\": " << name << " != " << i->second << std::endl;
+                    std::cout << "Conflicting names in target \"" << targetName << "\": " << name << " != " << i->second << "\n";
                     return false;
                 }
             }
@@ -203,7 +203,7 @@ class LinkerImpl final : public Linker
             const auto definitionStream = sourceSearchPath->Open(definitionFileName);
             if (!definitionStream.IsOpen())
             {
-                std::cout << "Could not find zone definition file for target \"" << targetName << "\"." << std::endl;
+                std::cout << "Could not find zone definition file for target \"" << targetName << "\".\n";
                 return nullptr;
             }
 
@@ -213,7 +213,7 @@ class LinkerImpl final : public Linker
 
         if (!zoneDefinition)
         {
-            std::cout << "Failed to read zone definition file for target \"" << targetName << "\"." << std::endl;
+            std::cout << "Failed to read zone definition file for target \"" << targetName << "\".\n";
             return nullptr;
         }
 
@@ -248,7 +248,7 @@ class LinkerImpl final : public Linker
             std::vector<AssetListEntry> assetList;
             if (!ReadAssetList(ignore, context.m_ignored_assets, sourceSearchPath))
             {
-                std::cout << "Failed to read asset listing for ignoring assets of project \"" << ignore << "\"." << std::endl;
+                std::cout << "Failed to read asset listing for ignoring assets of project \"" << ignore << "\".\n";
                 return false;
             }
         }
@@ -292,7 +292,7 @@ class LinkerImpl final : public Linker
                 if (projectType != parsedProjectType)
                 {
                     std::cerr << "Conflicting types in target \"" << targetName << "\": " << PROJECT_TYPE_NAMES[static_cast<unsigned>(projectType)]
-                              << " != " << PROJECT_TYPE_NAMES[static_cast<unsigned>(parsedProjectType)] << std::endl;
+                              << " != " << PROJECT_TYPE_NAMES[static_cast<unsigned>(parsedProjectType)] << "\n";
                     return false;
                 }
             }
@@ -324,7 +324,7 @@ class LinkerImpl final : public Linker
             {
                 if (gameName != i->second->m_value)
                 {
-                    std::cout << "Conflicting game names in target \"" << targetName << "\": " << gameName << " != " << i->second << std::endl;
+                    std::cout << "Conflicting game names in target \"" << targetName << "\": " << gameName << " != " << i->second << "\n";
                     return false;
                 }
             }
@@ -332,7 +332,7 @@ class LinkerImpl final : public Linker
 
         if (firstGameEntry)
         {
-            std::cout << "No game name was specified for target \"" << targetName << "\"" << std::endl;
+            std::cout << "No game name was specified for target \"" << targetName << "\"\n";
             return false;
         }
 
@@ -347,7 +347,7 @@ class LinkerImpl final : public Linker
             const auto gdtFile = gdtSearchPath->Open(i->second->m_value + ".gdt");
             if (!gdtFile.IsOpen())
             {
-                std::cout << "Failed to open file for gdt \"" << i->second->m_value << "\"" << std::endl;
+                std::cout << "Failed to open file for gdt \"" << i->second->m_value << "\"\n";
                 return false;
             }
 
@@ -355,7 +355,7 @@ class LinkerImpl final : public Linker
             auto gdt = std::make_unique<Gdt>();
             if (!gdtReader.Read(*gdt))
             {
-                std::cout << "Failed to read gdt file \"" << i->second << "\"" << std::endl;
+                std::cout << "Failed to read gdt file \"" << i->second << "\"\n";
                 return false;
             }
 
@@ -402,7 +402,7 @@ class LinkerImpl final : public Linker
 
         if (!ZoneWriting::WriteZone(stream, zone))
         {
-            std::cout << "Writing zone failed." << std::endl;
+            std::cout << "Writing zone failed.\n";
             stream.close();
             return false;
         }
@@ -454,7 +454,7 @@ class LinkerImpl final : public Linker
 
         if (!ipakWriter->Write())
         {
-            std::cout << "Writing ipak failed." << std::endl;
+            std::cout << "Writing ipak failed.\n";
             stream.close();
             return false;
         }
@@ -467,19 +467,18 @@ class LinkerImpl final : public Linker
 
     bool BuildReferencedTargets(const std::string& projectName, const std::string& targetName, const ZoneDefinition& zoneDefinition)
     {
-        return std::all_of(zoneDefinition.m_targets_to_build.begin(),
-                           zoneDefinition.m_targets_to_build.end(),
-                           [this, &projectName, &targetName](const std::string& buildTargetName)
-                           {
-                               if (buildTargetName == targetName)
-                               {
-                                   std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
-                                   return false;
-                               }
+        return std::ranges::all_of(zoneDefinition.m_targets_to_build,
+                                   [this, &projectName, &targetName](const std::string& buildTargetName)
+                                   {
+                                       if (buildTargetName == targetName)
+                                       {
+                                           std::cerr << "Cannot build target with same name: \"" << targetName << "\"\n";
+                                           return false;
+                                       }
 
-                               std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
-                               return BuildProject(projectName, buildTargetName);
-                           });
+                                       std::cout << "Building referenced target \"" << buildTargetName << "\"\n";
+                                       return BuildProject(projectName, buildTargetName);
+                                   });
     }
 
     bool BuildProject(const std::string& projectName, const std::string& targetName)

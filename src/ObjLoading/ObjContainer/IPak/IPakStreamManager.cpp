@@ -71,12 +71,11 @@ public:
         m_stream_mutex.lock();
 
         ChunkBuffer* reservedChunkBuffer;
-        const auto freeChunkBuffer = std::find_if(m_chunk_buffers.begin(),
-                                                  m_chunk_buffers.end(),
-                                                  [](ChunkBuffer* chunkBuffer)
-                                                  {
-                                                      return chunkBuffer->m_using_stream == nullptr;
-                                                  });
+        const auto freeChunkBuffer = std::ranges::find_if(m_chunk_buffers,
+                                                          [](ChunkBuffer* chunkBuffer)
+                                                          {
+                                                              return chunkBuffer->m_using_stream == nullptr;
+                                                          });
 
         if (freeChunkBuffer == m_chunk_buffers.end())
         {
@@ -111,12 +110,11 @@ public:
     {
         m_stream_mutex.lock();
 
-        const auto openStreamEntry = std::find_if(m_open_streams.begin(),
-                                                  m_open_streams.end(),
-                                                  [stream](const ManagedStream& managedStream)
-                                                  {
-                                                      return managedStream.m_stream == stream;
-                                                  });
+        const auto openStreamEntry = std::ranges::find_if(m_open_streams,
+                                                          [stream](const ManagedStream& managedStream)
+                                                          {
+                                                              return managedStream.m_stream == stream;
+                                                          });
 
         if (openStreamEntry != m_open_streams.end())
         {
@@ -127,7 +125,7 @@ public:
             // Only keep previously allocated chunk buffer if we did not get over the limit of idle chunk buffers
             if (m_chunk_buffers.size() > CHUNK_BUFFER_COUNT_IDLE_LIMIT)
             {
-                const auto chunkBufferEntry = std::find(m_chunk_buffers.begin(), m_chunk_buffers.end(), chunkBuffer);
+                const auto chunkBufferEntry = std::ranges::find(m_chunk_buffers, chunkBuffer);
 
                 if (chunkBufferEntry != m_chunk_buffers.end())
                 {

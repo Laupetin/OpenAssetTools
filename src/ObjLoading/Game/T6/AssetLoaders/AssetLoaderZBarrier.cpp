@@ -42,7 +42,7 @@ void AssetLoaderZBarrier::CalculateZBarrierFields(ZBarrierDef* zbarrier)
     // numBoardsInBarrier
     {
         auto foundEnd = false;
-        for (auto i = 0u; i < std::extent<decltype(ZBarrierDef::boards)>::value; i++)
+        for (auto i = 0u; i < std::extent_v<decltype(ZBarrierDef::boards)>; i++)
         {
             if (zbarrier->boards[i].pBoardModel == nullptr)
             {
@@ -53,7 +53,7 @@ void AssetLoaderZBarrier::CalculateZBarrierFields(ZBarrierDef* zbarrier)
         }
 
         if (!foundEnd)
-            zbarrier->numBoardsInBarrier = std::extent<decltype(ZBarrierDef::boards)>::value;
+            zbarrier->numBoardsInBarrier = std::extent_v<decltype(ZBarrierDef::boards)>;
     }
 }
 
@@ -64,10 +64,10 @@ bool AssetLoaderZBarrier::LoadFromInfoString(
     memset(zbarrier, 0, sizeof(ZBarrierDef));
 
     InfoStringToZBarrierConverter converter(
-        infoString, zbarrier, zone->m_script_strings, memory, manager, zbarrier_fields, std::extent<decltype(zbarrier_fields)>::value);
+        infoString, zbarrier, zone->m_script_strings, memory, manager, zbarrier_fields, std::extent_v<decltype(zbarrier_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse zbarrier: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse zbarrier: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -103,7 +103,7 @@ bool AssetLoaderZBarrier::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read zbarrier gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read zbarrier gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -126,7 +126,7 @@ bool AssetLoaderZBarrier::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, *file.m_stream))
     {
-        std::cout << "Failed to read zbarrier raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read zbarrier raw file: \"" << fileName << "\"\n";
         return true;
     }
 

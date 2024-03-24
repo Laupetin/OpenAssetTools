@@ -39,7 +39,7 @@ std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
 {
     if (m_verbose)
     {
-        std::cout << "Reading zone definition file: " << m_file_name << std::endl;
+        std::cout << "Reading zone definition file: " << m_file_name << "\n";
     }
 
     const auto lexer = std::make_unique<ZoneDefinitionLexer>(m_stream);
@@ -53,7 +53,7 @@ std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
 
     if (m_verbose)
     {
-        std::cout << "Processing zone definition took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        std::cout << "Processing zone definition took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
     }
 
     return std::move(definition);

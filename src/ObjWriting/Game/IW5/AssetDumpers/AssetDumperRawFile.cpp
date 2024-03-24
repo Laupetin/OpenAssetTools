@@ -44,17 +44,17 @@ void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawF
     while (zs.avail_in > 0)
     {
         zs.next_out = buffer;
-        zs.avail_out = sizeof buffer;
+        zs.avail_out = sizeof(buffer);
         ret = inflate(&zs, Z_SYNC_FLUSH);
 
         if (ret < 0)
         {
-            std::cerr << "Inflate failed when attempting to dump rawfile " << rawFile->name << std::endl;
+            std::cerr << "Inflate failed when attempting to dump rawfile " << rawFile->name << "\n";
             inflateEnd(&zs);
             return;
         }
 
-        stream.write(reinterpret_cast<char*>(buffer), sizeof buffer - zs.avail_out);
+        stream.write(reinterpret_cast<char*>(buffer), sizeof(buffer) - zs.avail_out);
     }
 
     inflateEnd(&zs);

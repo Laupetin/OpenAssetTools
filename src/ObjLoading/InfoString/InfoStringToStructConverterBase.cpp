@@ -55,7 +55,7 @@ bool InfoStringToStructConverterBase::ParseAsPairs(const std::string& value, std
 
         if (c == '\n' && !isKey)
         {
-            std::cout << "Expected value but got new line" << std::endl;
+            std::cout << "Expected value but got new line\n";
             return false;
         }
 
@@ -86,7 +86,7 @@ bool InfoStringToStructConverterBase::ParseAsPairs(const std::string& value, std
         {
             if (separator == '\n' || separator == EOF)
             {
-                std::cout << "Expected value but got new line" << std::endl;
+                std::cout << "Expected value but got new line\n";
                 return false;
             }
             key = std::string(value, startPos, ci - startPos);
@@ -122,7 +122,7 @@ bool InfoStringToStructConverterBase::ConvertInt(const std::string& value, const
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as int" << std::endl;
+        std::cout << "Failed to parse value \"" << value << "\" as int\n";
         return false;
     }
 
@@ -136,7 +136,7 @@ bool InfoStringToStructConverterBase::ConvertUint(const std::string& value, cons
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as uint" << std::endl;
+        std::cout << "Failed to parse value \"" << value << "\" as uint\n";
         return false;
     }
 
@@ -151,7 +151,7 @@ bool InfoStringToStructConverterBase::ConvertBool(const std::string& value, cons
     *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = intValue != 0;
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as bool" << std::endl;
+        std::cout << "Failed to parse value \"" << value << "\" as bool\n";
         return false;
     }
 
@@ -166,7 +166,7 @@ bool InfoStringToStructConverterBase::ConvertQBoolean(const std::string& value, 
     *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = intValue != 0 ? 1 : 0;
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as qboolean" << std::endl;
+        std::cout << "Failed to parse value \"" << value << "\" as qboolean\n";
         return false;
     }
 
@@ -180,7 +180,7 @@ bool InfoStringToStructConverterBase::ConvertFloat(const std::string& value, con
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as float" << std::endl;
+        std::cout << "Failed to parse value \"" << value << "\" as float\n";
         return false;
     }
 
@@ -194,7 +194,7 @@ bool InfoStringToStructConverterBase::ConvertMilliseconds(const std::string& val
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as milliseconds" << std::endl;
+        std::cout << "Failed to parse value \"" << value << "\" as milliseconds\n";
         return false;
     }
 

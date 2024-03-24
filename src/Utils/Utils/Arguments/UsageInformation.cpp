@@ -41,11 +41,11 @@ void UsageInformation::Print()
     std::stringstream str;
     std::map<std::string, std::vector<const CommandLineOption*>> categories;
 
-    str << "Usage:" << std::endl;
+    str << "Usage:\n";
 
     PrintUsageOverview(str);
 
-    str << "The following options are available:" << std::endl;
+    str << "The following options are available:\n";
 
     str.fill(' ');
 
@@ -78,13 +78,13 @@ void UsageInformation::Print()
     for (auto& category : categories)
     {
         if (!firstCategory)
-            str << std::endl;
+            str << "\n";
         else
             firstCategory = false;
 
         if (!category.first.empty())
         {
-            str << "== " << category.first << " ==" << std::endl;
+            str << "== " << category.first << " ==\n";
         }
 
         for (auto option : category.second)
@@ -101,11 +101,11 @@ void UsageInformation::Print()
             str << " ";
             str << std::setw(longestArgumentLength) << GetOptionArgument(option);
 
-            str << " " << option->m_description << std::endl;
+            str << " " << option->m_description << "\n";
         }
     }
 
-    std::cout << str.str() << std::endl;
+    std::cout << str.str() << "\n";
 }
 
 void UsageInformation::PrintUsageOverview(std::stringstream& str)
@@ -126,7 +126,7 @@ void UsageInformation::PrintUsageOverview(std::stringstream& str)
     {
         str << "...";
     }
-    str << std::endl << std::endl;
+    str << "\n\n";
 }
 
 std::string UsageInformation::GetOptionArgument(const CommandLineOption* option)

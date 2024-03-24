@@ -104,7 +104,7 @@ class AssetDumperSndDriverGlobals::Internal
         auto outputFile = this->m_context.OpenAssetFile(filename);
         if (outputFile == nullptr)
         {
-            std::cout << "Failed to open sound driver globals output file for: \"" << filename << "\"" << std::endl;
+            std::cout << "Failed to open sound driver globals output file for: \"" << filename << "\"\n";
         }
 
         return outputFile;

@@ -21,12 +21,11 @@ bool MemberComputations::ShouldIgnore() const
 bool MemberComputations::ContainsNonEmbeddedReference() const
 {
     const auto& declarationModifiers = m_info->m_member->m_type_declaration->m_declaration_modifiers;
-    return std::any_of(declarationModifiers.begin(),
-                       declarationModifiers.end(),
-                       [](const std::unique_ptr<DeclarationModifier>& modifier)
-                       {
-                           return modifier->GetType() == DeclarationModifierType::POINTER;
-                       });
+    return std::ranges::any_of(declarationModifiers,
+                               [](const std::unique_ptr<DeclarationModifier>& modifier)
+                               {
+                                   return modifier->GetType() == DeclarationModifierType::POINTER;
+                               });
 }
 
 bool MemberComputations::ContainsSinglePointerReference() const
@@ -136,12 +135,11 @@ bool MemberComputations::IsPointerToArray() const
     if (lastModifier->GetType() != DeclarationModifierType::ARRAY)
         return false;
 
-    return std::any_of(declarationModifiers.begin(),
-                       declarationModifiers.end(),
-                       [](const std::unique_ptr<DeclarationModifier>& modifier)
-                       {
-                           return modifier->GetType() == DeclarationModifierType::POINTER;
-                       });
+    return std::ranges::any_of(declarationModifiers,
+                               [](const std::unique_ptr<DeclarationModifier>& modifier)
+                               {
+                                   return modifier->GetType() == DeclarationModifierType::POINTER;
+                               });
 }
 
 std::vector<int> MemberComputations::GetPointerToArraySizes() const
@@ -207,13 +205,12 @@ bool MemberComputations::HasDynamicArraySize() const
 {
     const auto& declarationModifiers = m_info->m_member->m_type_declaration->m_declaration_modifiers;
 
-    return std::any_of(declarationModifiers.begin(),
-                       declarationModifiers.end(),
-                       [](const std::unique_ptr<DeclarationModifier>& declarationModifier)
-                       {
-                           return declarationModifier->GetType() == DeclarationModifierType::ARRAY
-                                  && dynamic_cast<ArrayDeclarationModifier*>(declarationModifier.get())->m_dynamic_size_evaluation;
-                       });
+    return std::ranges::any_of(declarationModifiers,
+                               [](const std::unique_ptr<DeclarationModifier>& declarationModifier)
+                               {
+                                   return declarationModifier->GetType() == DeclarationModifierType::ARRAY
+                                          && dynamic_cast<ArrayDeclarationModifier*>(declarationModifier.get())->m_dynamic_size_evaluation;
+                               });
 }
 
 bool MemberComputations::IsDynamicMember() const

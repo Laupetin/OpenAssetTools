@@ -68,7 +68,7 @@ namespace T6
                 return true;
             }
 
-            assert(std::extent<decltype(bounceSoundSuffixes)>::value == SURF_TYPE_NUM);
+            assert(std::extent_v<decltype(bounceSoundSuffixes)> == SURF_TYPE_NUM);
             *bounceSound = static_cast<const char**>(m_memory->Alloc(sizeof(const char*) * SURF_TYPE_NUM));
             for (auto i = 0u; i < SURF_TYPE_NUM; i++)
             {

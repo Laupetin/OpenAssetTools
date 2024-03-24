@@ -403,22 +403,21 @@ namespace IW4
                 return false;
 
             // Sort args by their update frequency
-            std::sort(pass.m_arguments.begin(),
-                      pass.m_arguments.end(),
-                      [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
-                      {
-                          if (arg1.m_update_frequency != arg2.m_update_frequency)
-                              return arg1.m_update_frequency < arg2.m_update_frequency;
+            std::ranges::sort(pass.m_arguments,
+                              [](const PassShaderArgument& arg1, const PassShaderArgument& arg2)
+                              {
+                                  if (arg1.m_update_frequency != arg2.m_update_frequency)
+                                      return arg1.m_update_frequency < arg2.m_update_frequency;
 
-                          if (arg1.m_arg.type != arg2.m_arg.type)
-                              return arg1.m_arg.type < arg2.m_arg.type;
+                                  if (arg1.m_arg.type != arg2.m_arg.type)
+                                      return arg1.m_arg.type < arg2.m_arg.type;
 
-                          if (arg1.m_arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
-                              || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
-                              return arg1.m_arg.u.codeSampler < arg2.m_arg.u.codeSampler;
+                                  if (arg1.m_arg.type == MTL_ARG_MATERIAL_VERTEX_CONST || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_CONST
+                                      || arg1.m_arg.type == MTL_ARG_MATERIAL_PIXEL_SAMPLER)
+                                      return arg1.m_arg.u.codeSampler < arg2.m_arg.u.codeSampler;
 
-                          return arg1.m_arg.dest < arg2.m_arg.dest;
-                      });
+                                  return arg1.m_arg.dest < arg2.m_arg.dest;
+                              });
 
             AllocateVertexDecl();
 
@@ -600,12 +599,11 @@ namespace IW4
                                 size_t& registerOffset,
                                 std::string& errorMessage) const
         {
-            const auto matchingShaderConstant = std::find_if(shaderInfo.m_constants.begin(),
-                                                             shaderInfo.m_constants.end(),
-                                                             [argument](const d3d9::ShaderConstant& constant)
-                                                             {
-                                                                 return constant.m_name == argument.m_argument_name;
-                                                             });
+            const auto matchingShaderConstant = std::ranges::find_if(shaderInfo.m_constants,
+                                                                     [argument](const d3d9::ShaderConstant& constant)
+                                                                     {
+                                                                         return constant.m_name == argument.m_argument_name;
+                                                                     });
 
             if (matchingShaderConstant == shaderInfo.m_constants.end())
             {
@@ -1013,14 +1011,14 @@ namespace IW4
                 return false;
             }
 
-            const auto foundDestination = std::find(std::begin(materialStreamDestinationNames), std::end(materialStreamDestinationNames), destination);
+            const auto foundDestination = std::ranges::find(materialStreamDestinationNames, destination);
             if (foundDestination == std::end(materialStreamDestinationNames))
             {
                 errorMessage = "Unknown stream destination";
                 return false;
             }
 
-            const auto foundSource = std::find(std::begin(materialStreamSourceNames), std::end(materialStreamSourceNames), source);
+            const auto foundSource = std::ranges::find(materialStreamSourceNames, source);
             if (foundSource == std::end(materialStreamSourceNames))
             {
                 errorMessage = "Unknown stream source";
@@ -1187,7 +1185,7 @@ namespace IW4
                     assert(arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER);
                     if (arg.m_arg.type == MTL_ARG_CODE_PIXEL_SAMPLER)
                     {
-                        const auto customSampler = std::find(std::begin(g_customSamplerSrc), std::end(g_customSamplerSrc), arg.m_arg.u.codeSampler);
+                        const auto customSampler = std::ranges::find(g_customSamplerSrc, arg.m_arg.u.codeSampler);
                         assert(customSampler != std::end(g_customSamplerSrc));
                         if (customSampler != std::end(g_customSamplerSrc))
                         {
