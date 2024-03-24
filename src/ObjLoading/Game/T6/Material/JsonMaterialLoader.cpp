@@ -1,7 +1,7 @@
 #include "JsonMaterialLoader.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/Material/JsonMaterial.h"
+#include "Game/T6/Json/JsonMaterial.h"
 
 #include <format>
 #include <iomanip>

@@ -1,15 +1,16 @@
 #include "JsonMaterialWriter.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/Material/JsonMaterial.h"
+#include "Game/T6/Json/JsonMaterial.h"
 #include "MaterialConstantZoneState.h"
 
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
+using namespace T6;
 
-namespace T6
+namespace
 {
     class JsonDumper
     {
@@ -236,7 +237,10 @@ namespace T6
         std::ostream& m_stream;
         const MaterialConstantZoneState& m_material_constants;
     };
+} // namespace
 
+namespace T6
+{
     void DumpMaterialAsJson(std::ostream& stream, const Material* material, AssetDumpingContext& context)
     {
         const JsonDumper dumper(context, stream);
