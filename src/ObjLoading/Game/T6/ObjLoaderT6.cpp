@@ -17,6 +17,7 @@
 #include "AssetLoaders/AssetLoaderWeapon.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachment.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
+#include "AssetLoaders/AssetLoaderWeaponCamo.h"
 #include "AssetLoaders/AssetLoaderZBarrier.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Game/T6/CommonT6.h"
@@ -72,7 +73,7 @@ namespace T6
         REGISTER_ASSET_LOADER(AssetLoaderWeapon)
         REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachment)
         REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachmentUnique)
-        REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON_CAMO, WeaponCamo))
+        REGISTER_ASSET_LOADER(AssetLoaderWeaponCamo)
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))
         REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMPACT_FX, FxImpactTable))
