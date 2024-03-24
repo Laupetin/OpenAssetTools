@@ -19,7 +19,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
     if (rawFile->len <= 4)
     {
-        std::cerr << "Invalid len of animtree file \"" << rawFile->name << "\"" << std::endl;
+        std::cerr << "Invalid len of animtree file \"" << rawFile->name << "\"\n";
         return;
     }
 
@@ -28,7 +28,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
     if (outLen > ANIMTREE_MAX_SIZE)
     {
-        std::cerr << "Invalid size of animtree file \"" << rawFile->name << "\": " << outLen << std::endl;
+        std::cerr << "Invalid size of animtree file \"" << rawFile->name << "\": " << outLen << "\n";
         return;
     }
 
@@ -60,7 +60,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
 
         if (ret < 0)
         {
-            std::cerr << "Inflate failed for dumping animtree file \"" << rawFile->name << "\"" << std::endl;
+            std::cerr << "Inflate failed for dumping animtree file \"" << rawFile->name << "\"\n";
             inflateEnd(&zs);
             return;
         }

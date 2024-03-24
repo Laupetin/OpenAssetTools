@@ -80,7 +80,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (fx == nullptr)
         {
-            std::cout << "Failed to load fx asset \"" << value << "\"" << std::endl;
+            std::cout << "Failed to load fx asset \"" << value << "\"\n";
             return false;
         }
 
@@ -102,7 +102,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (xmodel == nullptr)
         {
-            std::cout << "Failed to load xmodel asset \"" << value << "\"" << std::endl;
+            std::cout << "Failed to load xmodel asset \"" << value << "\"\n";
             return false;
         }
 
@@ -125,7 +125,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (material == nullptr)
         {
-            std::cout << "Failed to load material asset \"" << value << "\"" << std::endl;
+            std::cout << "Failed to load material asset \"" << value << "\"\n";
             return false;
         }
 
@@ -147,7 +147,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (physPreset == nullptr)
         {
-            std::cout << "Failed to load physpreset asset \"" << value << "\"" << std::endl;
+            std::cout << "Failed to load physpreset asset \"" << value << "\"\n";
             return false;
         }
 
@@ -172,7 +172,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
 
         if (tracer == nullptr)
         {
-            std::cout << "Failed to load tracer asset \"" << value << "\"" << std::endl;
+            std::cout << "Failed to load tracer asset \"" << value << "\"\n";
             return false;
         }
 
@@ -187,7 +187,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         unsigned int soundAliasHash;
         if (!GetHashValue(value, soundAliasHash))
         {
-            std::cout << "Failed to parse value \"" << value << "\" as hash" << std::endl;
+            std::cout << "Failed to parse value \"" << value << "\" as hash\n";
             return false;
         }
 

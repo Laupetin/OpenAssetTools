@@ -269,7 +269,7 @@ bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository
 {
     if (repository->GetArchitecture() == Architecture::UNKNOWN)
     {
-        std::cout << "You must set an architecture!" << std::endl;
+        std::cout << "You must set an architecture!\n";
         return false;
     }
 
@@ -277,7 +277,7 @@ bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository
     {
         if (!CalculateFields(repository, structDefinition))
         {
-            std::cout << std::endl;
+            std::cout << "\n";
             return false;
         }
     }
@@ -286,7 +286,7 @@ bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository
     {
         if (!CalculateFields(repository, unionDefinition))
         {
-            std::cout << std::endl;
+            std::cout << "\n";
             return false;
         }
     }
@@ -295,7 +295,7 @@ bool CalculateSizeAndAlignPostProcessor::PostProcess(IDataRepository* repository
     {
         if (!CalculateFields(repository, typedefDeclaration->m_type_declaration.get()))
         {
-            std::cout << std::endl;
+            std::cout << "\n";
             return false;
         }
     }

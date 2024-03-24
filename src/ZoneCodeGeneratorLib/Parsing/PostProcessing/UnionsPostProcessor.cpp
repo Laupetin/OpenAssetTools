@@ -21,7 +21,7 @@ bool UnionsPostProcessor::ProcessUnion(StructureInformation* info)
 
     if (entriesWithoutConditionCount > 1 && !info->m_usages.empty() && !info->m_is_leaf)
     {
-        std::cout << "Union '" << info->m_definition->GetFullName() << "' has more than one entry without a condition!" << std::endl;
+        std::cout << "Union '" << info->m_definition->GetFullName() << "' has more than one entry without a condition!\n";
         return false;
     }
 

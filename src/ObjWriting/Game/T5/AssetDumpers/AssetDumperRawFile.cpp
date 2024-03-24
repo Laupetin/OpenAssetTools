@@ -14,7 +14,7 @@ void AssetDumperRawFile::DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFil
 
     if (rawFile->len <= 8)
     {
-        std::cout << "Invalid len of gsc file \"" << rawFile->name << "\"" << std::endl;
+        std::cout << "Invalid len of gsc file \"" << rawFile->name << "\"\n";
         return;
     }
 
@@ -25,13 +25,13 @@ void AssetDumperRawFile::DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFil
 
     if (inLen > static_cast<unsigned>(rawFile->len - 8) + 1)
     {
-        std::cout << "Invalid compression of gsc file \"" << rawFile->name << "\": " << inLen << std::endl;
+        std::cout << "Invalid compression of gsc file \"" << rawFile->name << "\": " << inLen << "\n";
         return;
     }
 
     if (outLen > GSC_MAX_SIZE)
     {
-        std::cout << "Invalid size of gsc file \"" << rawFile->name << "\": " << outLen << std::endl;
+        std::cout << "Invalid size of gsc file \"" << rawFile->name << "\": " << outLen << "\n";
         return;
     }
 
@@ -64,7 +64,7 @@ void AssetDumperRawFile::DumpGsc(AssetDumpingContext& context, XAssetInfo<RawFil
 
         if (ret < 0)
         {
-            std::cout << "Inflate failed for dumping gsc file \"" << rawFile->name << "\"" << std::endl;
+            std::cout << "Inflate failed for dumping gsc file \"" << rawFile->name << "\"\n";
             inflateEnd(&zs);
             return;
         }

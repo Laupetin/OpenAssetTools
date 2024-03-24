@@ -118,13 +118,13 @@ namespace T6
     SoundBank* ObjLoader::LoadSoundBankForZone(ISearchPath* searchPath, const std::string& soundBankFileName, Zone* zone)
     {
         if (ObjLoading::Configuration.Verbose)
-            std::cout << "Trying to load sound bank '" << soundBankFileName << "' for zone '" << zone->m_name << "'" << std::endl;
+            std::cout << "Trying to load sound bank '" << soundBankFileName << "' for zone '" << zone->m_name << "'\n";
 
         auto* existingSoundBank = SoundBank::Repository.GetContainerByName(soundBankFileName);
         if (existingSoundBank != nullptr)
         {
             if (ObjLoading::Configuration.Verbose)
-                std::cout << "Referencing loaded sound bank '" << soundBankFileName << "'." << std::endl;
+                std::cout << "Referencing loaded sound bank '" << soundBankFileName << "'.\n";
 
             SoundBank::Repository.AddContainerReference(existingSoundBank, zone);
             return existingSoundBank;
@@ -138,19 +138,19 @@ namespace T6
 
             if (!sndBank->Initialize())
             {
-                std::cout << "Failed to load sound bank '" << soundBankFileName << "'" << std::endl;
+                std::cout << "Failed to load sound bank '" << soundBankFileName << "'\n";
                 return nullptr;
             }
 
             SoundBank::Repository.AddContainer(std::move(sndBank), zone);
 
             if (ObjLoading::Configuration.Verbose)
-                std::cout << "Found and loaded sound bank '" << soundBankFileName << "'" << std::endl;
+                std::cout << "Found and loaded sound bank '" << soundBankFileName << "'\n";
 
             return sndBankPtr;
         }
 
-        std::cout << "Failed to load sound bank '" << soundBankFileName << "'" << std::endl;
+        std::cout << "Failed to load sound bank '" << soundBankFileName << "'\n";
         return nullptr;
     }
 
@@ -169,7 +169,7 @@ namespace T6
             {
                 if (!VerifySoundBankChecksum(soundBank, *sndBankLinkedInfo))
                 {
-                    std::cout << "Checksum of sound bank does not match link time checksum for '" << soundBankFileName << "'" << std::endl;
+                    std::cout << "Checksum of sound bank does not match link time checksum for '" << soundBankFileName << "'\n";
                 }
                 loadedBanksForZone.emplace(soundBankFileName);
 

@@ -49,7 +49,7 @@ void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawF
 
         if (ret < 0)
         {
-            std::cerr << "Inflate failed when attempting to dump rawfile " << rawFile->name << std::endl;
+            std::cerr << "Inflate failed when attempting to dump rawfile " << rawFile->name << "\n";
             inflateEnd(&zs);
             return;
         }

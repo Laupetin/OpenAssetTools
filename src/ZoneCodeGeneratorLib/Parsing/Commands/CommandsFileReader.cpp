@@ -30,7 +30,7 @@ bool CommandsFileReader::OpenBaseStream()
     auto stream = std::make_unique<ParserFilesystemStream>(m_filename);
     if (!stream->IsOpen())
     {
-        std::cout << "Could not open commands file" << std::endl;
+        std::cout << "Could not open commands file\n";
         return false;
     }
 
@@ -68,7 +68,7 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 {
     if (m_args->m_verbose)
     {
-        std::cout << "Reading commands file: " << m_filename << std::endl;
+        std::cout << "Reading commands file: " << m_filename << "\n";
     }
 
     if (!OpenBaseStream())
@@ -85,7 +85,7 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 
     if (m_args->m_verbose)
     {
-        std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
     }
 
     if (!result)

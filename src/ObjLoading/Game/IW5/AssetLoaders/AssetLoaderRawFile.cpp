@@ -59,7 +59,7 @@ bool AssetLoaderRawFile::LoadFromRaw(
 
     if (ret != Z_STREAM_END)
     {
-        std::cout << "Deflate failed for loading rawfile \"" << assetName << "\"" << std::endl;
+        std::cout << "Deflate failed for loading rawfile \"" << assetName << "\"\n";
         deflateEnd(&zs);
         return false;
     }

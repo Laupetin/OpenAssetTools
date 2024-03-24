@@ -67,7 +67,7 @@ bool AssetLoaderZBarrier::LoadFromInfoString(
         infoString, zbarrier, zone->m_script_strings, memory, manager, zbarrier_fields, std::extent_v<decltype(zbarrier_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse zbarrier: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse zbarrier: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -103,7 +103,7 @@ bool AssetLoaderZBarrier::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read zbarrier gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read zbarrier gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -126,7 +126,7 @@ bool AssetLoaderZBarrier::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, *file.m_stream))
     {
-        std::cout << "Failed to read zbarrier raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read zbarrier raw file: \"" << fileName << "\"\n";
         return true;
     }
 

@@ -58,7 +58,7 @@ bool AssetLoaderRawFile::LoadGsc(
 
     if (ret != Z_STREAM_END)
     {
-        std::cout << "Deflate failed for loading gsc file \"" << assetName << "\"" << std::endl;
+        std::cout << "Deflate failed for loading gsc file \"" << assetName << "\"\n";
         deflateEnd(&zs);
         return false;
     }

@@ -247,7 +247,7 @@ bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
 
         if (freeIdx == std::numeric_limits<unsigned short>::max())
         {
-            std::cerr << "Unable to allocate sound bank alias index list" << std::endl;
+            std::cerr << "Unable to allocate sound bank alias index list\n";
             return false;
         }
 
@@ -397,7 +397,7 @@ bool LoadSoundDuckList(ISearchPath* searchPath, MemoryManager* memory, SndBank* 
             const auto duckFile = searchPath->Open("soundbank/ducks/" + name + ".duk");
             if (!duckFile.IsOpen())
             {
-                std::cerr << "Unable to find .duk file for " << name << " in ducklist for sound bank " << sndBank->name << std::endl;
+                std::cerr << "Unable to find .duk file for " << name << " in ducklist for sound bank " << sndBank->name << "\n";
                 return false;
             }
 
@@ -443,7 +443,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
 {
     if (assetName.find('.') == std::string::npos)
     {
-        std::cerr << "A language must be specific in the soundbank asset name! (Ex: mpl_common.all)" << std::endl;
+        std::cerr << "A language must be specific in the soundbank asset name! (Ex: mpl_common.all)\n";
         return false;
     }
 
@@ -470,7 +470,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     {
         if (!LoadSoundRadverbs(memory, sndBank, radverbFile))
         {
-            std::cerr << "Sound Bank reverbs file for " << assetName << " is invalid" << std::endl;
+            std::cerr << "Sound Bank reverbs file for " << assetName << " is invalid\n";
             return false;
         }
     }
@@ -481,7 +481,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
     {
         if (!LoadSoundDuckList(searchPath, memory, sndBank, duckListFile))
         {
-            std::cerr << "Sound Bank ducklist file for " << assetName << " is invalid" << std::endl;
+            std::cerr << "Sound Bank ducklist file for " << assetName << " is invalid\n";
             return false;
         }
     }
@@ -555,7 +555,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         }
         else
         {
-            std::cerr << "Loaded Sound Bank for " << assetName << " failed to generate. Please check your build files." << std::endl;
+            std::cerr << "Loaded Sound Bank for " << assetName << " failed to generate. Please check your build files.\n";
             return false;
         }
     }
@@ -569,7 +569,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
 
         if (!result)
         {
-            std::cerr << "Streamed Sound Bank for " << assetName << " failed to generate. Please check your build files." << std::endl;
+            std::cerr << "Streamed Sound Bank for " << assetName << " failed to generate. Please check your build files.\n";
             return false;
         }
     }

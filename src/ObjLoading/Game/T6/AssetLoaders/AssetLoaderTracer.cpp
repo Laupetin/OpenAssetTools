@@ -55,7 +55,7 @@ bool AssetLoaderTracer::LoadFromInfoString(
     InfoStringToTracerConverter converter(infoString, tracer, zone->m_script_strings, memory, manager, tracer_fields, std::extent_v<decltype(tracer_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse tracer: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse tracer: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -89,7 +89,7 @@ bool AssetLoaderTracer::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read tracer gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read tracer gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -112,7 +112,7 @@ bool AssetLoaderTracer::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_TRACER, *file.m_stream))
     {
-        std::cout << "Failed to read tracer raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read tracer raw file: \"" << fileName << "\"\n";
         return true;
     }
 

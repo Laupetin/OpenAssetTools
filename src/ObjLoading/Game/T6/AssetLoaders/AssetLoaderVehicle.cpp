@@ -38,7 +38,7 @@ namespace T6
 
                 if (endPtr != &value[value.size()])
                 {
-                    std::cout << "Failed to parse value \"" << value << "\" as mph" << std::endl;
+                    std::cout << "Failed to parse value \"" << value << "\" as mph\n";
                     return false;
                 }
 
@@ -52,7 +52,7 @@ namespace T6
 
                 if (endPtr != &value[value.size()])
                 {
-                    std::cout << "Failed to parse value \"" << value << "\" as pounds" << std::endl;
+                    std::cout << "Failed to parse value \"" << value << "\" as pounds\n";
                     return false;
                 }
 
@@ -80,7 +80,7 @@ namespace T6
                 }
 
                 *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = TEAM_BAD;
-                std::cout << "Failed to parse value \"" << value << "\" as team" << std::endl;
+                std::cout << "Failed to parse value \"" << value << "\" as team\n";
                 return false;
             }
 
@@ -118,7 +118,7 @@ bool AssetLoaderVehicle::LoadFromInfoString(
         infoString, vehicleDef, zone->m_script_strings, memory, manager, vehicle_fields, std::extent_v<decltype(vehicle_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse vehicle: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse vehicle: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -152,7 +152,7 @@ bool AssetLoaderVehicle::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read vehicle gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read vehicle gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -175,7 +175,7 @@ bool AssetLoaderVehicle::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_VEHICLE, *file.m_stream))
     {
-        std::cout << "Failed to read vehicle raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read vehicle raw file: \"" << fileName << "\"\n";
         return true;
     }
 

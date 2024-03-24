@@ -29,7 +29,7 @@ bool HeaderFileReader::OpenBaseStream()
     auto stream = std::make_unique<ParserFilesystemStream>(m_filename);
     if (!stream->IsOpen())
     {
-        std::cout << "Could not open header file" << std::endl;
+        std::cout << "Could not open header file\n";
         return false;
     }
 
@@ -66,7 +66,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
 {
     if (m_args->m_verbose)
     {
-        std::cout << "Reading header file: " << m_filename << std::endl;
+        std::cout << "Reading header file: " << m_filename << "\n";
     }
 
     if (!OpenBaseStream())
@@ -85,7 +85,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
 
     if (m_args->m_verbose)
     {
-        std::cout << "Processing header took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        std::cout << "Processing header took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
     }
 
     if (!result)

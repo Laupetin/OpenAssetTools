@@ -86,7 +86,7 @@ bool AssetLoaderPhysConstraints::LoadFromInfoString(
         infoString, physConstraints, zone->m_script_strings, memory, manager, phys_constraints_fields, std::extent_v<decltype(phys_constraints_fields)>);
     if (!converter.Convert())
     {
-        std::cout << "Failed to parse phys constraints: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to parse phys constraints: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -123,7 +123,7 @@ bool AssetLoaderPhysConstraints::LoadFromGdt(
     InfoString infoString;
     if (!infoString.FromGdtProperties(*gdtEntry))
     {
-        std::cout << "Failed to read phys constraints gdt entry: \"" << assetName << "\"" << std::endl;
+        std::cout << "Failed to read phys constraints gdt entry: \"" << assetName << "\"\n";
         return true;
     }
 
@@ -146,7 +146,7 @@ bool AssetLoaderPhysConstraints::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, *file.m_stream))
     {
-        std::cout << "Failed to read phys constraints raw file: \"" << fileName << "\"" << std::endl;
+        std::cout << "Failed to read phys constraints raw file: \"" << fileName << "\"\n";
         return true;
     }
 

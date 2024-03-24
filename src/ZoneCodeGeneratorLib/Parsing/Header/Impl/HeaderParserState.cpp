@@ -96,7 +96,7 @@ bool HeaderParserState::ResolveForwardDeclarations()
 
         if (dataDefinition == nullptr)
         {
-            std::cout << "Forward declaration \"" << forwardDeclaration->GetFullName() << "\" was not defined" << std::endl;
+            std::cout << "Forward declaration \"" << forwardDeclaration->GetFullName() << "\" was not defined\n";
             return false;
         }
 

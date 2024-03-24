@@ -45,12 +45,12 @@ SearchPaths LinkerSearchPaths::GetAssetSearchPathsForProject(const std::string& 
         if (!fs::is_directory(absolutePath))
         {
             if (m_args.m_verbose)
-                std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
+                std::cout << "Adding asset search path (Not found): " << absolutePath.string() << "\n";
             continue;
         }
 
         if (m_args.m_verbose)
-            std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
+            std::cout << "Adding asset search path: " << absolutePath.string() << "\n";
 
         auto searchPath = std::make_unique<SearchPathFilesystem>(searchPathStr);
         LoadSearchPath(searchPath.get());
@@ -79,12 +79,12 @@ SearchPaths LinkerSearchPaths::GetGdtSearchPathsForProject(const std::string& ga
         if (!fs::is_directory(absolutePath))
         {
             if (m_args.m_verbose)
-                std::cout << "Adding gdt search path (Not found): " << absolutePath.string() << std::endl;
+                std::cout << "Adding gdt search path (Not found): " << absolutePath.string() << "\n";
             continue;
         }
 
         if (m_args.m_verbose)
-            std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
+            std::cout << "Adding gdt search path: " << absolutePath.string() << "\n";
 
         searchPathsForProject.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
     }
@@ -105,12 +105,12 @@ SearchPaths LinkerSearchPaths::GetSourceSearchPathsForProject(const std::string&
         if (!fs::is_directory(absolutePath))
         {
             if (m_args.m_verbose)
-                std::cout << "Adding source search path (Not found): " << absolutePath.string() << std::endl;
+                std::cout << "Adding source search path (Not found): " << absolutePath.string() << "\n";
             continue;
         }
 
         if (m_args.m_verbose)
-            std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
+            std::cout << "Adding source search path: " << absolutePath.string() << "\n";
 
         searchPathsForProject.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathStr));
     }
@@ -129,12 +129,12 @@ bool LinkerSearchPaths::BuildProjectIndependentSearchPaths()
         if (!fs::is_directory(absolutePath))
         {
             if (m_args.m_verbose)
-                std::cout << "Adding asset search path (Not found): " << absolutePath.string() << std::endl;
+                std::cout << "Adding asset search path (Not found): " << absolutePath.string() << "\n";
             continue;
         }
 
         if (m_args.m_verbose)
-            std::cout << "Adding asset search path: " << absolutePath.string() << std::endl;
+            std::cout << "Adding asset search path: " << absolutePath.string() << "\n";
 
         auto searchPath = std::make_unique<SearchPathFilesystem>(absolutePath.string());
         LoadSearchPath(searchPath.get());
@@ -148,12 +148,12 @@ bool LinkerSearchPaths::BuildProjectIndependentSearchPaths()
         if (!fs::is_directory(absolutePath))
         {
             if (m_args.m_verbose)
-                std::cout << "Loading gdt search path (Not found): " << absolutePath.string() << std::endl;
+                std::cout << "Loading gdt search path (Not found): " << absolutePath.string() << "\n";
             continue;
         }
 
         if (m_args.m_verbose)
-            std::cout << "Adding gdt search path: " << absolutePath.string() << std::endl;
+            std::cout << "Adding gdt search path: " << absolutePath.string() << "\n";
 
         m_gdt_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
     }
@@ -165,12 +165,12 @@ bool LinkerSearchPaths::BuildProjectIndependentSearchPaths()
         if (!fs::is_directory(absolutePath))
         {
             if (m_args.m_verbose)
-                std::cout << "Loading source search path (Not found): " << absolutePath.string() << std::endl;
+                std::cout << "Loading source search path (Not found): " << absolutePath.string() << "\n";
             continue;
         }
 
         if (m_args.m_verbose)
-            std::cout << "Adding source search path: " << absolutePath.string() << std::endl;
+            std::cout << "Adding source search path: " << absolutePath.string() << "\n";
 
         m_source_search_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(absolutePath.string()));
     }

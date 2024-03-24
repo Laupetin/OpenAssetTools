@@ -638,7 +638,7 @@ class AssetDumperSndBank::Internal
             }
 
             duckObj["values"] = values;
-            *duckFile << duckObj.dump(4) << std::endl;
+            *duckFile << duckObj.dump(4) << "\n";
         }
     }
 

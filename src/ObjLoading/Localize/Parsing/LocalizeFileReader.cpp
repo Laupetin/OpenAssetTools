@@ -46,6 +46,6 @@ bool LocalizeFileReader::ReadLocalizeFile(std::vector<CommonLocalizeEntry>& entr
         return true;
     }
 
-    std::cerr << "Parsing localization file failed!" << std::endl;
+    std::cerr << "Parsing localization file failed!\n";
     return false;
 }
