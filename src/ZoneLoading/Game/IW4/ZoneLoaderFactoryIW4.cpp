@@ -130,11 +130,11 @@ class ZoneLoaderFactory::Impl
         zoneLoader->AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        auto subHeaderHash = std::make_unique<StepLoadHash>(sizeof DB_AuthHash::bytes, 1);
+        auto subHeaderHash = std::make_unique<StepLoadHash>(sizeof(DB_AuthHash::bytes), 1);
         auto* subHeaderHashPtr = subHeaderHash.get();
         zoneLoader->AddLoadingStep(std::move(subHeaderHash));
 
-        auto subHeaderHashSignature = std::make_unique<StepLoadSignature>(sizeof DB_AuthSignature::bytes);
+        auto subHeaderHashSignature = std::make_unique<StepLoadSignature>(sizeof(DB_AuthSignature::bytes));
         auto* subHeaderHashSignaturePtr = subHeaderHashSignature.get();
         zoneLoader->AddLoadingStep(std::move(subHeaderHashSignature));
 
@@ -147,7 +147,7 @@ class ZoneLoaderFactory::Impl
         zoneLoader->AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
         zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        auto masterBlockHashes = std::make_unique<StepLoadHash>(sizeof DB_AuthHash::bytes, std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>);
+        auto masterBlockHashes = std::make_unique<StepLoadHash>(sizeof(DB_AuthHash::bytes), std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>);
         auto* masterBlockHashesPtr = masterBlockHashes.get();
         zoneLoader->AddLoadingStep(std::move(masterBlockHashes));
 

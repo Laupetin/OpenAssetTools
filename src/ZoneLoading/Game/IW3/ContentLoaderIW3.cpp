@@ -146,7 +146,7 @@ void ContentLoader::Load(Zone* zone, IZoneInputStream* stream)
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     XAssetList assetList{};
-    m_stream->LoadDataRaw(&assetList, sizeof assetList);
+    m_stream->LoadDataRaw(&assetList, sizeof(assetList));
 
     varScriptStringList = &assetList.stringList;
     LoadScriptStringList(false);

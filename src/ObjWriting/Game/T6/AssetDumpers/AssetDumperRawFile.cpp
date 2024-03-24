@@ -55,7 +55,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
     while (zs.avail_in > 0)
     {
         zs.next_out = buffer;
-        zs.avail_out = sizeof buffer;
+        zs.avail_out = sizeof(buffer);
         ret = inflate(&zs, Z_SYNC_FLUSH);
 
         if (ret < 0)
@@ -65,7 +65,7 @@ void AssetDumperRawFile::DumpAnimtree(AssetDumpingContext& context, XAssetInfo<R
             return;
         }
 
-        const auto inflateOutSize = sizeof buffer - zs.avail_out;
+        const auto inflateOutSize = sizeof(buffer) - zs.avail_out;
 
         stream.write(reinterpret_cast<char*>(buffer), inflateOutSize);
     }

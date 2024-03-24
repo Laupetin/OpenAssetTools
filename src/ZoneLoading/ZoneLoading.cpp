@@ -33,8 +33,8 @@ std::unique_ptr<Zone> ZoneLoading::LoadZone(const std::string& path)
     }
 
     ZoneHeader header{};
-    file.read(reinterpret_cast<char*>(&header), sizeof header);
-    if (file.gcount() != sizeof header)
+    file.read(reinterpret_cast<char*>(&header), sizeof(header));
+    if (file.gcount() != sizeof(header))
     {
         std::cout << "Failed to read zone header from file '" << path << "'.\n";
         return nullptr;
