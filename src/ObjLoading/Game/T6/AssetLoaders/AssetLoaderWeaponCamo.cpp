@@ -1,7 +1,7 @@
 #include "AssetLoaderWeaponCamo.h"
 
-#include "Game/T6/WeaponCamo/JsonWeaponCamoLoader.h"
 #include "Game/T6/T6.h"
+#include "Game/T6/WeaponCamo/JsonWeaponCamoLoader.h"
 #include "Pool/GlobalAssetPool.h"
 
 #include <cstring>
