@@ -132,6 +132,9 @@ namespace
                 weaponCamoMaterial.camoMaterials = nullptr;
             }
 
+            for (auto i = 0u; i < std::extent_v<decltype(WeaponCamoMaterial::shaderConsts)>; i++)
+                weaponCamoMaterial.shaderConsts[i] = jWeaponCamoMaterial.shaderConsts[i];
+
             return true;
         }
 

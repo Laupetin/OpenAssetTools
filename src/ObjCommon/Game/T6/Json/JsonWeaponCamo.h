@@ -32,6 +32,8 @@ namespace T6
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamoMaterialOverride, baseMaterial, camoMaterial);
 
+    constexpr auto SHADER_CONST_COUNT = 8;
+
     class JsonWeaponCamoMaterial
     {
     public:
@@ -39,8 +41,10 @@ namespace T6
         bool useNormalMap;
         bool useSpecularMap;
         std::vector<JsonWeaponCamoMaterialOverride> materialOverrides;
-        std::array<float, 8> shaderConsts;
+        std::array<float, SHADER_CONST_COUNT> shaderConsts;
     };
+
+    static_assert(SHADER_CONST_COUNT == std::extent_v<decltype(WeaponCamoMaterial::shaderConsts)>);
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamoMaterial, useColorMap, useNormalMap, useSpecularMap, materialOverrides, shaderConsts);
 
