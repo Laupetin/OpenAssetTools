@@ -27,7 +27,7 @@ The formats of the dumped assets are either as close as possible to the original
 
 The **Linker** tool allows building custom fastfiles (.ff) for the supported games.
 It can also load existing zones and reuse their assets from in-memory.
-Only a subset of assets can be read from disk, however, depending on the game.
+Only a subset of assets can be read from disk depending on the game.
 
 Additionally, there are a couple of libraries and tools.
 A full list of the subcomponents can be found [here](https://openassettools.dev/guide/components.html). 
