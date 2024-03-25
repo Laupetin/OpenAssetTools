@@ -64,6 +64,7 @@ or check out one of the following projects that are using OAT:
 
 * [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
 * [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
+* [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Contains GitHub CI/CD pipeline for building fastfiles)
 
 If you have a mod that you believe would be a perfect fit here, don't hesitate to open a pull request to include it
 
