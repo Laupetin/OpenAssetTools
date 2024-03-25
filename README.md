@@ -4,7 +4,7 @@
 OpenAssetTools (OAT) is a work in progress project aiming to create a modding tools suite for older Call Of Duty titles.
 It is not a reimplementation of existing modding tools or related to them but aims to be as compatible as possible in terms of formats and add support for previously unsupported titles.
 
-In its current form it is still incomplete and only offers a small subset of modding features.
+In its current form, it is still incomplete and only offers a small subset of modding features.
 It currently offers support for the PC versions of:
 
 - [IW3 (COD4: Modern Warfare - 2007)](https://en.wikipedia.org/wiki/Call_of_Duty_4:_Modern_Warfare)
@@ -27,7 +27,7 @@ The formats of the dumped assets are either as close as possible to the original
 
 The **Linker** tool allows building custom fastfiles (.ff) for the supported games.
 It can also load existing zones and reuse their assets from in-memory.
-Only a subset of assets can be read from disk however, depending on the game.
+Only a subset of asset types can be read from disk depending on the game.
 
 Additionally, there are a couple of libraries and tools.
 A full list of the subcomponents can be found [here](https://openassettools.dev/guide/components.html). 
@@ -36,10 +36,10 @@ A full list of the subcomponents can be found [here](https://openassettools.dev/
 
 Either download [the latest release from Github](https://github.com/Laupetin/OpenAssetTools/releases/latest) or [build OAT yourself](#building-oat).
 Building the tools yourself is only recommended if you want to do some changes to the code.
-Otherwise you are probably better off just using the latest release.
+Otherwise, you are probably better off just using the latest release.
 
 You can put OAT anywhere, it does **not** need to be placed in your game folder.
-In fact i recommend against it to be able to better distinguish OAT files from game files.
+In fact, I recommend against it to be able to better distinguish OAT files from game files.
 
 For more information, check out the ["Getting started" guide in the OAT documentation](https://openassettools.dev/guide/getting-started.html).
 You can find other useful guides and reference documentation there as well.
@@ -59,18 +59,19 @@ Note: The first time setting up will clone any submodules with git so the first 
 The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
 It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
 
-For examples of mods that can be built with OAT you can either look into the [docs folder](docs/example) for some (currently very barebones) examples
+For examples of mods that can be built with OAT, you can either look into the [docs folder](docs/example) for some (currently very barebones) examples
 or check out one of the following projects that are using OAT:
 
 * [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
 * [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
+* [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Includes a GitHub action pipeline for building the mod)
 
-If you have a mod that you feel like would fit great here as well, feel free to open a PR to add it.
+If you have a mod that you believe would be a perfect fit here, don't hesitate to open a pull request to include it.
 
 ### Windows
 
 When building on Windows you will need to have Visual Studio 2022 installed.
-It is also possible to use other compilers, however due to memory layout of structs being important you might
+It is also possible to use other compilers, however, due to the memory layout of structs being important you might
 run into crashes or invalid data so no guarantees can be given.
 
 Use `generate.bat` to generate Visual Studio solution files.
@@ -84,8 +85,8 @@ The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
 
 ### Linux
 
-When building on Linux you need to have g++ installed.
-Since you are most likely on a 64bit machine you will also need multilib for compiling for 32bit.
+When building on Linux you need to have g++ 13 or later installed.
+Since you are most likely on a 64-bit machine you will also need multilib for compiling for 32-bit.
 
 Use `generate.sh` to generate make files.
 When this is done you will have a `build` folder with a `Makefile`.
