@@ -27,7 +27,7 @@ The formats of the dumped assets are either as close as possible to the original
 
 The **Linker** tool allows building custom fastfiles (.ff) for the supported games.
 It can also load existing zones and reuse their assets from in-memory.
-Only a subset of assets can be read from disk depending on the game.
+Only a subset of asset types can be read from disk depending on the game.
 
 Additionally, there are a couple of libraries and tools.
 A full list of the subcomponents can be found [here](https://openassettools.dev/guide/components.html). 
@@ -64,9 +64,9 @@ or check out one of the following projects that are using OAT:
 
 * [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
 * [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
-* [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Contains GitHub CI/CD pipeline for building fastfiles)
+* [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Includes a GitHub action pipeline for building the mod)
 
-If you have a mod that you believe would be a perfect fit here, don't hesitate to open a pull request to include it
+If you have a mod that you believe would be a perfect fit here, don't hesitate to open a pull request to include it.
 
 ### Windows
 
@@ -87,7 +87,6 @@ The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
 
 When building on Linux you need to have g++ 13 or later installed.
 Since you are most likely on a 64-bit machine you will also need multilib for compiling for 32-bit.
-Using other compilers may also be possible, but they are not guaranteed to work out of the box. You may need to edit [premake5.lua](premake5.lua) to ensure compatibility with other compilers such as Clang.
 
 Use `generate.sh` to generate make files.
 When this is done you will have a `build` folder with a `Makefile`.
