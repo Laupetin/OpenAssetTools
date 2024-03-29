@@ -57,7 +57,7 @@ Note: The first time setting up will clone any submodules with git so the first 
 ## Documentation & Examples
 
 The documentation can be found on the [OpenAssetTools.dev page](https://openassettools.dev).
-It is hosted on Github Pages and its source can be found in the [OAT-Docs Repository](https://github.com/Laupetin/OAT-Docs).
+It is hosted on Github Pages and its source can be found in the [OAT Docs Repository](https://github.com/OpenAssetTools/Docs).
 
 For examples of mods that can be built with OAT, you can either look into the [docs folder](docs/example) for some (currently very barebones) examples
 or check out one of the following projects that are using OAT:
