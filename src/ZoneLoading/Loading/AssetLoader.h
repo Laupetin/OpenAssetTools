@@ -22,5 +22,5 @@ protected:
                                  std::vector<scr_string_t> scriptStrings,
                                  std::vector<IndirectAssetReference> indirectAssetReferences) const;
 
-    _NODISCARD XAssetInfoGeneric* GetAssetInfo(std::string name) const;
+    _NODISCARD XAssetInfoGeneric* GetAssetInfo(const std::string& name) const;
 };

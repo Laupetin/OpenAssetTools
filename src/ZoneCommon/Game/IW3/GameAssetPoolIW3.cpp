@@ -169,7 +169,7 @@ XAssetInfoGeneric* GameAssetPoolIW3::AddAssetToPool(std::unique_ptr<XAssetInfoGe
 #undef CASE_ADD_TO_POOL
 }
 
-XAssetInfoGeneric* GameAssetPoolIW3::GetAsset(const asset_type_t type, std::string name) const
+XAssetInfoGeneric* GameAssetPoolIW3::GetAsset(const asset_type_t type, const std::string& name) const
 {
 #define CASE_GET_ASSET(assetType, poolName)                                                                                                                    \
     case assetType:                                                                                                                                            \

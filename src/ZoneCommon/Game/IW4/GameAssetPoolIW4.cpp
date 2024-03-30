@@ -200,13 +200,13 @@ XAssetInfoGeneric* GameAssetPoolIW4::AddAssetToPool(std::unique_ptr<XAssetInfoGe
 #undef CASE_ADD_TO_POOL
 }
 
-XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, std::string name) const
+XAssetInfoGeneric* GameAssetPoolIW4::GetAsset(const asset_type_t type, const std::string& name) const
 {
 #define CASE_GET_ASSET(assetType, poolName)                                                                                                                    \
     case assetType:                                                                                                                                            \
     {                                                                                                                                                          \
         if ((poolName) != nullptr)                                                                                                                             \
-            return (poolName)->GetAsset(std::move(name));                                                                                                      \
+            return (poolName)->GetAsset(name);                                                                                                                 \
         break;                                                                                                                                                 \
     }
 

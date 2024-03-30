@@ -59,7 +59,7 @@ XAssetInfoGeneric* AssetLoadingManager::AddAsset(std::unique_ptr<XAssetInfoGener
 
 XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t assetType, const std::string& assetName, IAssetLoader* loader)
 {
-    auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAsset(assetType, assetName);
+    auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return alreadyLoadedAsset;
 
@@ -147,7 +147,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
 
 XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetType, const std::string& assetName)
 {
-    auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAsset(assetType, assetName);
+    auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return alreadyLoadedAsset;
 
@@ -171,7 +171,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetT
 
 IndirectAssetReference AssetLoadingManager::LoadIndirectAssetReference(const asset_type_t assetType, const std::string& assetName)
 {
-    const auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAsset(assetType, assetName);
+    const auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return IndirectAssetReference(assetType, assetName);
 
