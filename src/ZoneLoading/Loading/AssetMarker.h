@@ -26,7 +26,7 @@ protected:
     void Mark_IndirectAssetRef(asset_type_t type, const char* assetRefName);
     void MarkArray_IndirectAssetRef(asset_type_t type, const char** assetRefNames, size_t count);
 
-    _NODISCARD XAssetInfoGeneric* GetAssetInfoByName(std::string name) const;
+    _NODISCARD XAssetInfoGeneric* GetAssetInfoByName(const std::string& name) const;
 
     Zone* m_zone;
 

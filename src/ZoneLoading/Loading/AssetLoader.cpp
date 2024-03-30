@@ -20,7 +20,7 @@ XAssetInfoGeneric* AssetLoader::LinkAsset(std::string name,
         m_asset_type, std::move(name), asset, std::move(dependencies), std::move(scriptStrings), std::move(indirectAssetReferences));
 }
 
-XAssetInfoGeneric* AssetLoader::GetAssetInfo(std::string name) const
+XAssetInfoGeneric* AssetLoader::GetAssetInfo(const std::string& name) const
 {
-    return m_zone->m_pools->GetAsset(m_asset_type, std::move(name));
+    return m_zone->m_pools->GetAsset(m_asset_type, name);
 }

@@ -55,9 +55,9 @@ void AssetMarker::MarkArray_IndirectAssetRef(const asset_type_t type, const char
         Mark_IndirectAssetRef(type, assetRefNames[index]);
 }
 
-XAssetInfoGeneric* AssetMarker::GetAssetInfoByName(std::string name) const
+XAssetInfoGeneric* AssetMarker::GetAssetInfoByName(const std::string& name) const
 {
-    return m_zone->m_pools->GetAsset(m_asset_type, std::move(name));
+    return m_zone->m_pools->GetAsset(m_asset_type, name);
 }
 
 std::vector<XAssetInfoGeneric*> AssetMarker::GetDependencies() const

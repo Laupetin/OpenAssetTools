@@ -38,7 +38,7 @@ public:
                                 std::vector<XAssetInfoGeneric*> dependencies,
                                 std::vector<scr_string_t> usedScriptStrings,
                                 std::vector<IndirectAssetReference> indirectAssetReferences);
-    _NODISCARD virtual XAssetInfoGeneric* GetAsset(asset_type_t type, std::string name) const = 0;
+    _NODISCARD virtual XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const = 0;
     _NODISCARD virtual asset_type_t GetAssetTypeCount() const = 0;
     _NODISCARD virtual const char* GetAssetTypeName(asset_type_t assetType) const = 0;
 
