@@ -2,9 +2,9 @@
 
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/T6/T6.h"
-#include "Model/Obj/ObjWriter.h"
-#include "Model/XModel/AbstractXModelWriter.h"
 #include "Utils/DistinctMapper.h"
+#include "XModel/AbstractXModelWriter.h"
+#include "XModel/Obj/ObjWriter.h"
 
 namespace T6
 {

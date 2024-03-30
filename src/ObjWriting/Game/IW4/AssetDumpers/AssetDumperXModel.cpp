@@ -2,10 +2,10 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Math/Quaternion.h"
-#include "Model/XModel/XModelExportWriter.h"
 #include "ObjWriting.h"
 #include "Utils/HalfFloat.h"
 #include "Utils/QuatInt16.h"
+#include "XModel/Export/XModelExportWriter.h"
 
 #include <cassert>
 

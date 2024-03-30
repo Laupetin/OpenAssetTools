@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Model/XModel/XModelCommon.h"
+#include "XModel/XModelCommon.h"
 
 #include <vector>
 

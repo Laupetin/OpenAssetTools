@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AbstractXModelWriter.h"
+#include "XModel/AbstractXModelWriter.h"
 
 #include <memory>
 #include <ostream>

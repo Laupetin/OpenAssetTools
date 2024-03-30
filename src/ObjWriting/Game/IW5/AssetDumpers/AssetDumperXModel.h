@@ -2,9 +2,9 @@
 
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
-#include "Model/Obj/ObjWriter.h"
-#include "Model/XModel/AbstractXModelWriter.h"
 #include "Utils/DistinctMapper.h"
+#include "XModel/AbstractXModelWriter.h"
+#include "XModel/Obj/ObjWriter.h"
 
 namespace IW5
 {

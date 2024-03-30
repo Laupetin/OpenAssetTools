@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Model/Obj/ObjCommon.h"
 #include "Utils/DistinctMapper.h"
+#include "XModel/Obj/ObjCommon.h"
 
 #include <ostream>
 #include <vector>
