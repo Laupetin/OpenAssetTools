@@ -1,5 +1,7 @@
 #include "ZoneAssetPools.h"
 
+#include <format>
+
 ZoneAssetPools::ZoneAssetPools(Zone* zone)
     : m_zone(zone)
 {
@@ -23,6 +25,17 @@ XAssetInfoGeneric* ZoneAssetPools::AddAsset(std::unique_ptr<XAssetInfoGeneric> x
         m_assets_in_order.push_back(assetInfo);
 
     return assetInfo;
+}
+
+XAssetInfoGeneric* ZoneAssetPools::GetAssetOrAssetReference(const asset_type_t type, const std::string& name) const
+{
+    auto* result = GetAsset(type, name);
+
+    if (result != nullptr || (!name.empty() && name[0] == ','))
+        return result;
+
+    result = GetAsset(type, std::format(",{}", name));
+    return result;
 }
 
 size_t ZoneAssetPools::GetTotalAssetCount() const

@@ -115,8 +115,8 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
                                             << "* asset, Zone* zone, IZoneOutputStream* stream)")
 
         m_intendation++;
-        LINE_START(": AssetWriter(zone->m_pools->GetAsset(" << m_env.m_asset->m_asset_enum_entry->m_name << ", GetAssetName(asset))"
-                                                            << ", zone, stream)")
+        LINE_START(": AssetWriter(zone->m_pools->GetAssetOrAssetReference(" << m_env.m_asset->m_asset_enum_entry->m_name << ", GetAssetName(asset))"
+                                                                            << ", zone, stream)")
         LINE_END("")
         m_intendation--;
 
