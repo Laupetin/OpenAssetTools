@@ -22,6 +22,8 @@ namespace T6
 
     typedef tdef_align(128) float float_align128;
 
+    typedef uint16_t ScriptString;
+
     struct dvar_t;
     struct MenuCell;
     struct cplane_s;
@@ -591,14 +593,22 @@ namespace T6
         int partBits[5];
     };
 
+    enum XModelLodRampType : unsigned char
+    {
+        XMODEL_LOD_RAMP_RIGID = 0x0,
+        XMODEL_LOD_RAMP_SKINNED = 0x1,
+
+        XMODEL_LOD_RAMP_COUNT
+    };
+
     struct XModel
     {
         const char* name;
         unsigned char numBones;
         unsigned char numRootBones;
         unsigned char numsurfs;
-        char lodRampType;
-        uint16_t* boneNames;
+        XModelLodRampType lodRampType;
+        ScriptString* boneNames;
         unsigned char* parentList;
         uint16_t (*quats)[4];
         float (*trans)[4];
@@ -618,7 +628,7 @@ namespace T6
         uint16_t collLod;
         float* himipInvSqRadii;
         int memUsage;
-        int flags;
+        unsigned int flags;
         bool bad;
         PhysPreset* physPreset;
         unsigned char numCollmaps;
