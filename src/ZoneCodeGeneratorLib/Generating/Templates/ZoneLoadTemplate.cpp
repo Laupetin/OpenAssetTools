@@ -327,6 +327,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
                 LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
+
+            if (member->m_post_load_action)
+            {
+                LINE("")
+                LINE(MakeCustomActionCall(member->m_post_load_action.get()))
+            }
         }
         else
         {
@@ -378,6 +384,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
                 LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
+
+            if (member->m_post_load_action)
+            {
+                LINE("")
+                LINE(MakeCustomActionCall(member->m_post_load_action.get()))
+            }
         }
         else if (computations.IsAfterPartialLoad())
         {
@@ -424,6 +436,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
                 LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
             }
+
+            if (member->m_post_load_action)
+            {
+                LINE("")
+                LINE(MakeCustomActionCall(member->m_post_load_action.get()))
+            }
         }
         else if (computations.IsAfterPartialLoad())
         {
@@ -445,6 +463,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
             {
                 LINE("")
                 LINE(MakeCustomActionCall(member->m_type->m_post_load_action.get()))
+            }
+
+            if (member->m_post_load_action)
+            {
+                LINE("")
+                LINE(MakeCustomActionCall(member->m_post_load_action.get()))
             }
         }
         else

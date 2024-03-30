@@ -4,7 +4,6 @@
 #include "Domain/Evaluation/IEvaluation.h"
 #include "Domain/FastFile/FastFileBlock.h"
 #include "StructureInformation.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 
@@ -22,6 +21,7 @@ public:
     bool m_is_leaf;
     std::unique_ptr<IEvaluation> m_condition;
     std::unique_ptr<IEvaluation> m_alloc_alignment;
+    std::unique_ptr<CustomAction> m_post_load_action;
     const FastFileBlock* m_fast_file_block;
     const EnumMember* m_asset_ref;
 

@@ -7,6 +7,7 @@ set string name;
 set name name;
 set block pInfo XFILE_BLOCK_TEMP;
 set reusable pInfo;
+set action pInfo ReallocClipInfo(ClipInfo, clipMap_t);
 set count staticModelList numStaticModels;
 set count nodes numNodes;
 set count leafs numLeafs;
