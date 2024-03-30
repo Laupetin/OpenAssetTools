@@ -36,6 +36,7 @@ class RenderingContext
     void ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
     void MakeAsset(const IDataRepository* repository, StructureInformation* asset);
     void CreateUsedTypeCollections();
+    bool UsedTypeHasActions(const RenderingUsedType* usedType) const;
 
 public:
     std::string m_game;

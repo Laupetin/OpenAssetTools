@@ -3,6 +3,8 @@
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
 
+#include <algorithm>
+
 RenderingUsedType::RenderingUsedType(const DataDefinition* type, StructureInformation* info)
     : m_members_loaded(false),
       m_type(type),
@@ -140,24 +142,50 @@ void RenderingContext::CreateUsedTypeCollections()
     {
         if (usedType->m_info != nullptr)
         {
-            StructureComputations computations(usedType->m_info);
+            const StructureComputations computations(usedType->m_info);
 
             if (usedType->m_info->m_definition == usedType->m_type)
                 m_used_structures.push_back(usedType);
 
-            if (computations.IsAsset() && usedType->m_info != m_asset)
-                m_referenced_assets.push_back(usedType);
-
-            if (!m_has_actions)
+            if (computations.IsAsset())
             {
-                if ((!computations.IsAsset() || usedType->m_is_context_asset) && usedType->m_non_runtime_reference_exists
-                    && usedType->m_info->m_post_load_action)
-                {
-                    m_has_actions = true;
-                }
+                if (usedType->m_info != m_asset)
+                    m_referenced_assets.push_back(usedType);
+                else
+                    usedType->m_is_context_asset = true;
+            }
+
+            if (!m_has_actions && UsedTypeHasActions(usedType))
+            {
+                m_has_actions = true;
             }
         }
     }
+}
+
+bool RenderingContext::UsedTypeHasActions(const RenderingUsedType* usedType) const
+{
+    const StructureComputations computations(usedType->m_info);
+
+    if (computations.IsAsset() && !usedType->m_is_context_asset)
+        return false;
+
+    if (!usedType->m_non_runtime_reference_exists && !usedType->m_is_context_asset)
+        return false;
+
+    if (usedType->m_info->m_post_load_action)
+        return true;
+
+    if (std::ranges::any_of(usedType->m_info->m_ordered_members,
+                            [](const auto& member) -> bool
+                            {
+                                return member->m_post_load_action && !MemberComputations(member.get()).ShouldIgnore();
+                            }))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 std::unique_ptr<RenderingContext> RenderingContext::BuildContext(const IDataRepository* repository, StructureInformation* asset)

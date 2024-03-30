@@ -40,6 +40,7 @@ SequenceAction::SequenceAction()
 void SequenceAction::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
     StructureInformation* type;
+    MemberInformation* member = nullptr;
     const auto& actionNameToken = result.NextCapture(CAPTURE_ACTION_NAME);
 
     // If a typename was specified then try to parse it
@@ -53,11 +54,7 @@ void SequenceAction::ProcessMatch(CommandsParserState* state, SequenceResult<Com
             throw ParsingException(typeNameToken.GetPos(), "Unknown type");
 
         if (!memberChain.empty())
-        {
-            type = memberChain.back()->m_type;
-            if (type == nullptr)
-                throw ParsingException(typeNameToken.GetPos(), "Member is not a data type with members.");
-        }
+            member = memberChain.back();
     }
     else if (state->GetInUse() != nullptr)
     {
@@ -79,5 +76,12 @@ void SequenceAction::ProcessMatch(CommandsParserState* state, SequenceResult<Com
         parameterTypes.push_back(dataDefinition);
     }
 
-    type->m_post_load_action = std::make_unique<CustomAction>(actionNameToken.IdentifierValue(), std::move(parameterTypes));
+    auto action = std::make_unique<CustomAction>(actionNameToken.IdentifierValue(), std::move(parameterTypes));
+
+    if (member != nullptr)
+        member->m_post_load_action = std::move(action);
+    else if (type != nullptr)
+        type->m_post_load_action = std::move(action);
+    else
+        throw ParsingException(actionNameToken.GetPos(), "Unknown type");
 }
