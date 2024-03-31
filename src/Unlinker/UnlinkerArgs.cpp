@@ -5,6 +5,7 @@
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <iostream>
 #include <regex>
@@ -79,7 +80,7 @@ const CommandLineOption* const OPTION_IMAGE_FORMAT =
 const CommandLineOption* const OPTION_MODEL_FORMAT = 
     CommandLineOption::Builder::Create()
     .WithLongName("model-format")
-    .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ")
+    .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ, GLTF, GLB")
     .WithParameter("modelFormatValue")
     .Build();
 
@@ -179,8 +180,7 @@ void UnlinkerArgs::SetVerbose(const bool isVerbose)
 bool UnlinkerArgs::SetImageDumpingMode()
 {
     auto specifiedValue = m_argument_parser.GetValueForOption(OPTION_IMAGE_FORMAT);
-    for (auto& c : specifiedValue)
-        c = static_cast<char>(tolower(c));
+    utils::MakeStringLowerCase(specifiedValue);
 
     if (specifiedValue == "dds")
     {
@@ -202,8 +202,7 @@ bool UnlinkerArgs::SetImageDumpingMode()
 bool UnlinkerArgs::SetModelDumpingMode()
 {
     auto specifiedValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
-    for (auto& c : specifiedValue)
-        c = static_cast<char>(tolower(c));
+    utils::MakeStringLowerCase(specifiedValue);
 
     if (specifiedValue == "xmodel_export")
     {
@@ -214,6 +213,18 @@ bool UnlinkerArgs::SetModelDumpingMode()
     if (specifiedValue == "obj")
     {
         ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ;
+        return true;
+    }
+
+    if (specifiedValue == "gltf")
+    {
+        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF;
+        return true;
+    }
+
+    if (specifiedValue == "glb")
+    {
+        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::GLB;
         return true;
     }
 
@@ -238,8 +249,7 @@ void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
     size_t endPos;
 
     std::string lowerInput(input);
-    for (auto& c : lowerInput)
-        c = static_cast<char>(tolower(c));
+    utils::MakeStringLowerCase(lowerInput);
 
     while (currentPos < lowerInput.size() && (endPos = lowerInput.find_first_of(',', currentPos)) != std::string::npos)
     {
