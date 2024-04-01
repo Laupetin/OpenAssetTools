@@ -22,7 +22,7 @@ std::optional<std::string> TextOutput::CreateBufferUri(const void* buffer, const
 
     std::string output(base64BufferSize, '\0');
 
-    std::memcpy(output.data(), &GLTF_DATA_URI_PREFIX, URI_PREFIX_LENGTH);
+    std::memcpy(output.data(), GLTF_DATA_URI_PREFIX, URI_PREFIX_LENGTH);
 
     unsigned long outLength = base64Length;
     base64_encode(static_cast<const unsigned char*>(buffer), bufferSize, &output[URI_PREFIX_LENGTH], &outLength);

@@ -1,7 +1,7 @@
 #include "AssetLoaderXModel.h"
 
-#include "Game/T6/XModel/JsonXModelLoader.h"
 #include "Game/T6/T6.h"
+#include "Game/T6/XModel/JsonXModelLoader.h"
 #include "Pool/GlobalAssetPool.h"
 
 #include <cstring>

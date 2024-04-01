@@ -6,6 +6,7 @@
 #include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <vector>
 
 using namespace nlohmann;
 using namespace T6;
@@ -109,7 +110,7 @@ namespace T6
         std::set<XAssetInfoGeneric*> dependenciesSet;
         const JsonLoader loader(stream, *memory, *manager, dependenciesSet);
 
-        dependencies.assign_range(dependenciesSet);
+        dependencies.assign(dependenciesSet.cbegin(), dependenciesSet.cend());
 
         return loader.Load(xmodel);
     }

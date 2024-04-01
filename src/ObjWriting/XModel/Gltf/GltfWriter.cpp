@@ -76,11 +76,6 @@ namespace
             gltf.meshes->emplace_back(std::move(mesh));
         }
 
-        static unsigned CreateNodeIndexFromBoneIndex(const unsigned boneIndex)
-        {
-            return boneIndex + NODE_FIRST_INDEX_BONES;
-        }
-
         void CreateSkeletonNodes(JsonRoot& gltf) const
         {
             if (m_bones.empty())
@@ -89,20 +84,22 @@ namespace
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
-            for (const auto [boneIndex, bone] : std::views::enumerate(m_bones))
+            const auto boneCount = m_bones.size();
+            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
+                const auto& bone = m_bones[boneIndex];
 
                 boneNode.name = bone.name;
                 boneNode.translation = std::to_array(bone.globalOffset);
                 boneNode.rotation = std::to_array({bone.globalRotation.m_x, bone.globalRotation.m_y, bone.globalRotation.m_z, bone.globalRotation.m_w});
 
-                const auto isParentOf = [this, boneIndex](const unsigned b)
+                std::vector<unsigned> children;
+                for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
-                    return m_bones[b].parentIndex == boneIndex;
-                };
-                auto children = std::ranges::iota_view(0u, m_bones.size()) | std::views::filter(isParentOf)
-                                | std::views::transform(CreateNodeIndexFromBoneIndex) | std::ranges::to<std::vector<unsigned>>();
+                    if (m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
+                        children.emplace_back(boneIndex + NODE_FIRST_INDEX_BONES);
+                }
                 if (!children.empty())
                     boneNode.children = std::move(children);
 
@@ -115,12 +112,17 @@ namespace
             if (m_bones.empty())
                 return;
 
-            JsonSkin skin;
-            skin.joints =
-                std::ranges::iota_view(0u, m_bones.size()) | std::views::transform(CreateNodeIndexFromBoneIndex) | std::ranges::to<std::vector<unsigned>>();
-
             if (!gltf.skins.has_value())
                 gltf.skins.emplace();
+
+            JsonSkin skin;
+
+            const auto boneCount = m_bones.size();
+
+            skin.joints.reserve(boneCount);
+            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
+                skin.joints.emplace_back(boneIndex + NODE_FIRST_INDEX_BONES);
+
             gltf.skins->emplace_back(std::move(skin));
         }
 
