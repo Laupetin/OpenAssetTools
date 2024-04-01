@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Json/JsonExtension.h"
+#include <array>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
@@ -20,14 +21,16 @@ namespace gltf
     class JsonNode
     {
     public:
-        std::string name;
-        std::vector<float> translation;
-        std::vector<float> rotation;
-        std::vector<float> scale;
-        std::vector<unsigned> children;
+        std::optional<std::string> name;
+        std::optional<std::array<float, 3>> translation;
+        std::optional<std::array<float, 4>> rotation;
+        std::optional<std::array<float, 3>> scale;
+        std::optional<std::vector<unsigned>> children;
+        std::optional<unsigned> skin;
+        std::optional<unsigned> mesh;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, children);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonNode, name, translation, rotation, scale, children, skin, mesh);
 
     class JsonBuffer
     {
@@ -166,7 +169,7 @@ namespace gltf
         unsigned output;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonAnimationSampler, input);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonAnimationSampler, input, interpolation, output);
 
     class JsonAnimation
     {
@@ -238,19 +241,30 @@ namespace gltf
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonSkin, inverseBindMatrices, skeleton, joints);
 
+    class JsonScene
+    {
+    public:
+        std::vector<unsigned> nodes;
+        std::optional<std::string> name;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonScene, nodes, name);
+
     class JsonRoot
     {
     public:
-        std::vector<JsonAccessor> accessors;
-        std::vector<JsonAnimation> animations;
+        std::optional<std::vector<JsonAccessor>> accessors;
+        std::optional<std::vector<JsonAnimation>> animations;
         JsonAsset asset;
-        std::vector<JsonBuffer> buffers;
-        std::vector<JsonBufferView> bufferViews;
-        std::vector<JsonMaterial> materials;
-        std::vector<JsonMesh> meshes;
-        std::vector<JsonNode> nodes;
-        std::vector<JsonSkin> skins;
+        std::optional<std::vector<JsonBuffer>> buffers;
+        std::optional<std::vector<JsonBufferView>> bufferViews;
+        std::optional<std::vector<JsonMaterial>> materials;
+        std::optional<std::vector<JsonMesh>> meshes;
+        std::optional<std::vector<JsonNode>> nodes;
+        std::optional<std::vector<JsonSkin>> skins;
+        std::optional<unsigned> scene;
+        std::optional<std::vector<JsonScene>> scenes;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonRoot, asset);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonRoot, accessors, animations, asset, buffers, bufferViews, materials, meshes, nodes, skins, scene, scenes);
 } // namespace gltf
