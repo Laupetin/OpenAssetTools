@@ -3,7 +3,7 @@
 #include "Game/T6/T6.h"
 
 #include "Json/JsonCommon.h"
-#include "Json/JsonOptional.h"
+#include "Json/JsonExtension.h"
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <optional>
@@ -21,7 +21,7 @@ namespace T6
         float patternScale;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamoSet, solidCamoImage, patternCamoImage, patternOffset, patternScale);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonWeaponCamoSet, solidCamoImage, patternCamoImage, patternOffset, patternScale);
 
     class JsonWeaponCamoMaterialOverride
     {
@@ -30,7 +30,7 @@ namespace T6
         std::string camoMaterial;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamoMaterialOverride, baseMaterial, camoMaterial);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonWeaponCamoMaterialOverride, baseMaterial, camoMaterial);
 
     constexpr auto SHADER_CONST_COUNT = 8;
 
@@ -46,7 +46,7 @@ namespace T6
 
     static_assert(SHADER_CONST_COUNT == std::extent_v<decltype(WeaponCamoMaterial::shaderConsts)>);
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamoMaterial, useColorMap, useNormalMap, useSpecularMap, materialOverrides, shaderConsts);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonWeaponCamoMaterial, useColorMap, useNormalMap, useSpecularMap, materialOverrides, shaderConsts);
 
     class JsonWeaponCamoMaterialSet
     {
@@ -54,7 +54,7 @@ namespace T6
         std::vector<JsonWeaponCamoMaterial> materials;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamoMaterialSet, materials);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonWeaponCamoMaterialSet, materials);
 
     class JsonWeaponCamo
     {
@@ -65,5 +65,5 @@ namespace T6
         std::vector<JsonWeaponCamoMaterialSet> camoMaterials;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonWeaponCamo, solidBaseImage, patternBaseImage, camoSets, camoMaterials);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonWeaponCamo, solidBaseImage, patternBaseImage, camoSets, camoMaterials);
 } // namespace T6

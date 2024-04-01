@@ -2,7 +2,7 @@
 
 #include "Game/T6/T6.h"
 
-#include "Json/JsonOptional.h"
+#include "Json/JsonExtension.h"
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <optional>
@@ -44,7 +44,7 @@ namespace T6
         GfxStencilFunc func;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonStencil, pass, fail, zfail, func);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonStencil, pass, fail, zfail, func);
 
     enum class JsonAlphaTest
     {
@@ -154,24 +154,24 @@ namespace T6
         std::optional<JsonStencil> stencilBack;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonStateBitsTableEntry,
-                                       srcBlendRgb,
-                                       dstBlendRgb,
-                                       blendOpRgb,
-                                       alphaTest,
-                                       cullFace,
-                                       srcBlendAlpha,
-                                       dstBlendAlpha,
-                                       blendOpAlpha,
-                                       colorWriteRgb,
-                                       colorWriteAlpha,
-                                       polymodeLine,
-                                       depthWrite,
-                                       depthWrite,
-                                       depthTest,
-                                       polygonOffset,
-                                       stencilFront,
-                                       stencilBack);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonStateBitsTableEntry,
+                                   srcBlendRgb,
+                                   dstBlendRgb,
+                                   blendOpRgb,
+                                   alphaTest,
+                                   cullFace,
+                                   srcBlendAlpha,
+                                   dstBlendAlpha,
+                                   blendOpAlpha,
+                                   colorWriteRgb,
+                                   colorWriteAlpha,
+                                   polymodeLine,
+                                   depthWrite,
+                                   depthWrite,
+                                   depthTest,
+                                   polygonOffset,
+                                   stencilFront,
+                                   stencilBack);
 
     class JsonConstant
     {
@@ -186,12 +186,12 @@ namespace T6
     {
         if (in.name.has_value())
         {
-            out["name"] = in.name;
+            optional_to_json(out, "name", in.name);
         }
         else
         {
-            out["nameFragment"] = in.nameFragment;
-            out["nameHash"] = in.nameHash;
+            optional_to_json(out, "nameFragment", in.nameFragment);
+            optional_to_json(out, "nameHash", in.nameHash);
         }
 
         out["literal"] = in.literal;
@@ -199,9 +199,9 @@ namespace T6
 
     inline void from_json(const nlohmann::json& in, JsonConstant& out)
     {
-        in.value("name", nlohmann::json()).get_to(out.name);
-        in.value("nameFragment", nlohmann::json()).get_to(out.nameFragment);
-        in.value("nameHash", nlohmann::json()).get_to(out.nameHash);
+        optional_from_json(in, "name", out.name);
+        optional_from_json(in, "nameFragment", out.nameFragment);
+        optional_from_json(in, "nameHash", out.nameHash);
         in.at("literal").get_to(out.literal);
     };
 
@@ -232,7 +232,7 @@ namespace T6
         bool clampW;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonSamplerState, filter, mipMap, clampU, clampV, clampW);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonSamplerState, filter, mipMap, clampU, clampV, clampW);
 
     NLOHMANN_JSON_SERIALIZE_ENUM(TextureSemantic,
                                  {
@@ -284,13 +284,13 @@ namespace T6
     {
         if (in.name.has_value())
         {
-            out["name"] = in.name;
+            optional_to_json(out, "name", in.name);
         }
         else
         {
-            out["nameHash"] = in.nameHash;
-            out["nameStart"] = in.nameStart;
-            out["nameEnd"] = in.nameEnd;
+            optional_to_json(out, "nameHash", in.nameHash);
+            optional_to_json(out, "nameStart", in.nameStart);
+            optional_to_json(out, "nameEnd", in.nameEnd);
         }
 
         out["semantic"] = in.semantic;
@@ -301,10 +301,10 @@ namespace T6
 
     inline void from_json(const nlohmann::json& in, JsonTexture& out)
     {
-        in.value("name", nlohmann::json()).get_to(out.name);
-        in.value("nameHash", nlohmann::json()).get_to(out.nameHash);
-        in.value("nameStart", nlohmann::json()).get_to(out.nameStart);
-        in.value("nameEnd", nlohmann::json()).get_to(out.nameEnd);
+        optional_from_json(in, "name", out.name);
+        optional_from_json(in, "nameHash", out.nameHash);
+        optional_from_json(in, "nameStart", out.nameStart);
+        optional_from_json(in, "nameEnd", out.nameEnd);
         in.at("semantic").get_to(out.semantic);
         in.at("isMatureContent").get_to(out.isMatureContent);
         in.at("samplerState").get_to(out.samplerState);
@@ -318,7 +318,7 @@ namespace T6
         uint8_t columns;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonTextureAtlas, rows, columns);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonTextureAtlas, rows, columns);
 
     NLOHMANN_JSON_SERIALIZE_ENUM(MaterialGameFlags,
                                  {
@@ -376,22 +376,22 @@ namespace T6
         std::optional<std::string> thermalMaterial;
     };
 
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JsonMaterial,
-                                       gameFlags,
-                                       sortKey,
-                                       textureAtlas,
-                                       surfaceTypeBits,
-                                       layeredSurfaceTypes,
-                                       hashIndex,
-                                       surfaceFlags,
-                                       contents,
-                                       stateBitsEntry,
-                                       stateFlags,
-                                       cameraRegion,
-                                       probeMipBits,
-                                       techniqueSet,
-                                       textures,
-                                       constants,
-                                       stateBits,
-                                       thermalMaterial);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMaterial,
+                                   gameFlags,
+                                   sortKey,
+                                   textureAtlas,
+                                   surfaceTypeBits,
+                                   layeredSurfaceTypes,
+                                   hashIndex,
+                                   surfaceFlags,
+                                   contents,
+                                   stateBitsEntry,
+                                   stateFlags,
+                                   cameraRegion,
+                                   probeMipBits,
+                                   techniqueSet,
+                                   textures,
+                                   constants,
+                                   stateBits,
+                                   thermalMaterial);
 } // namespace T6
