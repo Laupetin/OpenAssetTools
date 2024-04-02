@@ -6,12 +6,12 @@
 #include "Utils/DistinctMapper.h"
 #include "Utils/HalfFloat.h"
 #include "Utils/QuatInt16.h"
-#include "XModel/AbstractXModelWriter.h"
 #include "XModel/Export/XModelExportWriter.h"
 #include "XModel/Gltf/GltfBinOutput.h"
 #include "XModel/Gltf/GltfTextOutput.h"
 #include "XModel/Gltf/GltfWriter.h"
 #include "XModel/Obj/ObjWriter.h"
+#include "XModel/XModelWriter.h"
 
 #include <cassert>
 #include <format>
@@ -147,7 +147,7 @@ namespace
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
             ObjObject object;
-            object.name = "surf" + std::to_string(surfIndex);
+            object.name = std::format("surf{}", surfIndex);
             object.materialIndex = static_cast<int>(materialMapper.GetDistinctPositionByInputPosition(surfIndex + baseSurfaceIndex));
 
             writer.AddObject(std::move(object));
@@ -251,7 +251,7 @@ namespace
         writer.WriteObj(*assetFile, std::format("{}.mtl", model->name));
     }
 
-    void AddXModelBones(const AssetDumpingContext& context, AbstractXModelWriter& writer, const XModel* model)
+    void AddXModelBones(XModelCommon& out, const AssetDumpingContext& context, const XModel* model)
     {
         for (auto boneNum = 0u; boneNum < model->numBones; boneNum++)
         {
@@ -294,11 +294,11 @@ namespace
                                                   QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][3]));
             }
 
-            writer.AddBone(std::move(bone));
+            out.m_bones.emplace_back(std::move(bone));
         }
     }
 
-    void AddXModelMaterials(AbstractXModelWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model)
+    void AddXModelMaterials(XModelCommon& out, DistinctMapper<Material*>& materialMapper, const XModel* model)
     {
         for (auto surfaceMaterialNum = 0; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
         {
@@ -313,27 +313,24 @@ namespace
                 if (colorMap)
                     xMaterial.colorMapName = std::string(colorMap->name);
 
-                writer.AddMaterial(std::move(xMaterial));
+                out.m_materials.emplace_back(std::move(xMaterial));
             }
         }
     }
 
-    void AddXModelObjects(AbstractXModelWriter& writer,
-                          const XModelSurfs* modelSurfs,
-                          const DistinctMapper<Material*>& materialMapper,
-                          const int baseSurfaceIndex)
+    void AddXModelObjects(XModelCommon& out, const XModelSurfs* modelSurfs, const DistinctMapper<Material*>& materialMapper, const int baseSurfaceIndex)
     {
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
             XModelObject object;
-            object.name = "surf" + std::to_string(surfIndex);
+            object.name = std::format("surf{}", surfIndex);
             object.materialIndex = static_cast<int>(materialMapper.GetDistinctPositionByInputPosition(surfIndex + baseSurfaceIndex));
 
-            writer.AddObject(std::move(object));
+            out.m_objects.emplace_back(std::move(object));
         }
     }
 
-    void AddXModelVertices(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
+    void AddXModelVertices(XModelCommon& out, const XModelSurfs* modelSurfs)
     {
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
@@ -364,36 +361,36 @@ namespace
                 vertex.uv[0] = uv[0];
                 vertex.uv[1] = uv[1];
 
-                writer.AddVertex(vertex);
+                out.m_vertices.emplace_back(vertex);
             }
         }
     }
 
     void AllocateXModelBoneWeights(const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
     {
-        weightCollection.totalWeightCount = 0u;
+        auto totalWeightCount = 0u;
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
             const auto& surface = modelSurfs->surfs[surfIndex];
 
             if (surface.vertList)
             {
-                weightCollection.totalWeightCount += surface.vertListCount;
+                totalWeightCount += surface.vertListCount;
             }
 
             if (surface.vertInfo.vertsBlend)
             {
-                weightCollection.totalWeightCount += surface.vertInfo.vertCount[0] * 1;
-                weightCollection.totalWeightCount += surface.vertInfo.vertCount[1] * 2;
-                weightCollection.totalWeightCount += surface.vertInfo.vertCount[2] * 3;
-                weightCollection.totalWeightCount += surface.vertInfo.vertCount[3] * 4;
+                totalWeightCount += surface.vertInfo.vertCount[0] * 1;
+                totalWeightCount += surface.vertInfo.vertCount[1] * 2;
+                totalWeightCount += surface.vertInfo.vertCount[2] * 3;
+                totalWeightCount += surface.vertInfo.vertCount[3] * 4;
             }
         }
 
-        weightCollection.weights = std::make_unique<XModelBoneWeight[]>(weightCollection.totalWeightCount);
+        weightCollection.weights.resize(totalWeightCount);
     }
 
-    void AddXModelVertexBoneWeights(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
+    void AddXModelVertexBoneWeights(XModelCommon& out, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
     {
         size_t weightOffset = 0u;
 
@@ -413,7 +410,7 @@ namespace
 
                     for (auto vertListVertexOffset = 0u; vertListVertexOffset < vertList.vertCount; vertListVertexOffset++)
                     {
-                        writer.AddVertexBoneWeights(XModelVertexBoneWeights{boneWeightOffset, 1});
+                        out.m_vertex_bone_weights.emplace_back(boneWeightOffset, 1);
                     }
                     handledVertices += vertList.vertCount;
                 }
@@ -431,7 +428,7 @@ namespace
 
                     vertsBlendOffset += 1;
 
-                    writer.AddVertexBoneWeights(XModelVertexBoneWeights{boneWeightOffset, 1});
+                    out.m_vertex_bone_weights.emplace_back(boneWeightOffset, 1);
                 }
 
                 // 2 bone weights
@@ -448,7 +445,7 @@ namespace
 
                     vertsBlendOffset += 3;
 
-                    writer.AddVertexBoneWeights(XModelVertexBoneWeights{boneWeightOffset, 2});
+                    out.m_vertex_bone_weights.emplace_back(boneWeightOffset, 2);
                 }
 
                 // 3 bone weights
@@ -468,7 +465,7 @@ namespace
 
                     vertsBlendOffset += 5;
 
-                    writer.AddVertexBoneWeights(XModelVertexBoneWeights{boneWeightOffset, 3});
+                    out.m_vertex_bone_weights.emplace_back(boneWeightOffset, 3);
                 }
 
                 // 4 bone weights
@@ -491,7 +488,7 @@ namespace
 
                     vertsBlendOffset += 7;
 
-                    writer.AddVertexBoneWeights(XModelVertexBoneWeights{boneWeightOffset, 4});
+                    out.m_vertex_bone_weights.emplace_back(boneWeightOffset, 4);
                 }
 
                 handledVertices +=
@@ -500,12 +497,12 @@ namespace
 
             for (; handledVertices < surface.vertCount; handledVertices++)
             {
-                writer.AddVertexBoneWeights(XModelVertexBoneWeights{nullptr, 0});
+                out.m_vertex_bone_weights.emplace_back(nullptr, 0);
             }
         }
     }
 
-    void AddXModelFaces(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
+    void AddXModelFaces(XModelCommon& out, const XModelSurfs* modelSurfs)
     {
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
@@ -519,12 +516,12 @@ namespace
                 face.vertexIndex[1] = tri[1] + surface.baseVertIndex;
                 face.vertexIndex[2] = tri[2] + surface.baseVertIndex;
                 face.objectIndex = static_cast<int>(surfIndex);
-                writer.AddFace(face);
+                out.m_faces.emplace_back(face);
             }
         }
     }
 
-    void PopulateXModelWriter(const AssetDumpingContext& context, const unsigned lod, const XModel* model, AbstractXModelWriter& writer)
+    void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel* model)
     {
         const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
 
@@ -532,15 +529,15 @@ namespace
         XModelVertexBoneWeightCollection boneWeightCollection;
         AllocateXModelBoneWeights(modelSurfs, boneWeightCollection);
 
-        AddXModelBones(context, writer, model);
-        AddXModelMaterials(writer, materialMapper, model);
-        AddXModelObjects(writer, modelSurfs, materialMapper, model->lodInfo[lod].surfIndex);
-        AddXModelVertices(writer, modelSurfs);
-        AddXModelVertexBoneWeights(writer, modelSurfs, boneWeightCollection);
-        AddXModelFaces(writer, modelSurfs);
+        AddXModelBones(out, context, model);
+        AddXModelMaterials(out, materialMapper, model);
+        AddXModelObjects(out, modelSurfs, materialMapper, model->lodInfo[lod].surfIndex);
+        AddXModelVertices(out, modelSurfs);
+        AddXModelVertexBoneWeights(out, modelSurfs, boneWeightCollection);
+        AddXModelFaces(out, modelSurfs);
     }
 
-    void DumpXModelExportLod(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
+    void DumpXModelExportLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
     {
         const auto* model = asset->Asset();
         const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
@@ -549,13 +546,13 @@ namespace
         if (!assetFile)
             return;
 
-        const auto writer = XModelExportWriter::CreateWriterForVersion6(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
-        PopulateXModelWriter(context, lod, model, *writer);
-
-        writer->Write(*assetFile);
+        const auto writer = xmodel_export::CreateWriterForVersion6(*assetFile, context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        writer->Write(common);
     }
 
-    template<typename T> void DumpGltfLod(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod, const std::string& extension)
+    template<typename T>
+    void DumpGltfLod(
+        const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod, const std::string& extension)
     {
         const auto* model = asset->Asset();
         const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
@@ -566,9 +563,8 @@ namespace
 
         const auto output = std::make_unique<T>(*assetFile);
         const auto writer = gltf::Writer::CreateWriter(output.get(), context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
-        PopulateXModelWriter(context, lod, model, *writer);
 
-        writer->Write(*assetFile);
+        writer->Write(common);
     }
 
     void DumpXModelSurfs(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
@@ -580,6 +576,9 @@ namespace
 
         for (auto currentLod = 0u; currentLod < model->numLods; currentLod++)
         {
+            XModelCommon common;
+            PopulateXModelWriter(common, context, currentLod, asset->Asset());
+
             switch (ObjWriting::Configuration.ModelOutputFormat)
             {
             case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
@@ -587,15 +586,15 @@ namespace
                 break;
 
             case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
-                DumpXModelExportLod(context, asset, currentLod);
+                DumpXModelExportLod(common, context, asset, currentLod);
                 break;
 
             case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
-                DumpGltfLod<gltf::TextOutput>(context, asset, currentLod, ".gltf");
+                DumpGltfLod<gltf::TextOutput>(common, context, asset, currentLod, ".gltf");
                 break;
 
             case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
-                DumpGltfLod<gltf::BinOutput>(context, asset, currentLod, ".glb");
+                DumpGltfLod<gltf::BinOutput>(common, context, asset, currentLod, ".glb");
                 break;
 
             default:

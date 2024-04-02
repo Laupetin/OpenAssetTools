@@ -24,15 +24,15 @@ namespace
         {
         }
 
-        void Write(std::ostream& stream) override
+        void Write(const XModelCommon& xmodel) override
         {
             JsonRoot gltf;
             CreateJsonAsset(gltf.asset);
-            CreateMeshNode(gltf);
-            CreateMesh(gltf);
-            CreateSkeletonNodes(gltf);
-            CreateSkin(gltf);
-            CreateScene(gltf);
+            CreateMeshNode(gltf, xmodel);
+            CreateMesh(gltf, xmodel);
+            CreateSkeletonNodes(gltf, xmodel);
+            CreateSkin(gltf, xmodel);
+            CreateScene(gltf, xmodel);
 
             const json jRoot = gltf;
             m_output->EmitJson(jRoot);
@@ -46,7 +46,7 @@ namespace
             asset.generator = GLTF_GENERATOR;
         }
 
-        void CreateMeshNode(JsonRoot& gltf) const
+        static void CreateMeshNode(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             JsonNode meshNode;
 
@@ -54,7 +54,7 @@ namespace
             meshNode.mesh = 0u;
 
             // Only add skin if the model has bones
-            if (!m_bones.empty())
+            if (!xmodel.m_bones.empty())
             {
                 // We only have one skin
                 meshNode.skin = 0u;
@@ -66,7 +66,7 @@ namespace
             gltf.nodes->emplace_back(std::move(meshNode));
         }
 
-        void CreateMesh(JsonRoot& gltf) const
+        static void CreateMesh(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             if (!gltf.meshes.has_value())
                 gltf.meshes.emplace();
@@ -76,19 +76,19 @@ namespace
             gltf.meshes->emplace_back(std::move(mesh));
         }
 
-        void CreateSkeletonNodes(JsonRoot& gltf) const
+        static void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
         {
-            if (m_bones.empty())
+            if (xmodel.m_bones.empty())
                 return;
 
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
-            const auto boneCount = m_bones.size();
+            const auto boneCount = xmodel.m_bones.size();
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
-                const auto& bone = m_bones[boneIndex];
+                const auto& bone = xmodel.m_bones[boneIndex];
 
                 boneNode.name = bone.name;
                 boneNode.translation = std::to_array(bone.globalOffset);
@@ -97,7 +97,7 @@ namespace
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
-                    if (m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
+                    if (xmodel.m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
                         children.emplace_back(boneIndex + NODE_FIRST_INDEX_BONES);
                 }
                 if (!children.empty())
@@ -107,9 +107,9 @@ namespace
             }
         }
 
-        void CreateSkin(JsonRoot& gltf) const
+        static void CreateSkin(JsonRoot& gltf, const XModelCommon& xmodel)
         {
-            if (m_bones.empty())
+            if (xmodel.m_bones.empty())
                 return;
 
             if (!gltf.skins.has_value())
@@ -117,7 +117,7 @@ namespace
 
             JsonSkin skin;
 
-            const auto boneCount = m_bones.size();
+            const auto boneCount = xmodel.m_bones.size();
 
             skin.joints.reserve(boneCount);
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
@@ -126,12 +126,12 @@ namespace
             gltf.skins->emplace_back(std::move(skin));
         }
 
-        void CreateScene(JsonRoot& gltf) const
+        void CreateScene(JsonRoot& gltf, const XModelCommon& xmodel) const
         {
             JsonScene scene;
 
             // Only add skin if the model has bones
-            if (m_bones.empty())
+            if (xmodel.m_bones.empty())
                 scene.nodes.emplace_back(NODE_INDEX_MESH);
             else
                 scene.nodes.emplace_back(m_skeleton_node);

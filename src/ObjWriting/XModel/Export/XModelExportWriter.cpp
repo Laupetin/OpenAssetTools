@@ -6,25 +6,20 @@
 #include <iomanip>
 #include <iostream>
 
-class XModelExportWriterBase : public XModelExportWriter
+class XModelExportWriterBase : public XModelWriter
 {
 protected:
-    std::string m_game_name;
-    std::string m_zone_name;
-
-    VertexMerger m_vertex_merger;
-
-    void PrepareVertexMerger()
+    void PrepareVertexMerger(const XModelCommon& xmodel)
     {
-        m_vertex_merger = VertexMerger(m_vertices.size());
+        m_vertex_merger = VertexMerger(xmodel.m_vertices.size());
 
         auto vertexOffset = 0u;
-        for (const auto& vertex : m_vertices)
+        for (const auto& vertex : xmodel.m_vertices)
         {
             XModelVertexBoneWeights weights{nullptr, 0};
 
-            if (vertexOffset < m_vertex_bone_weights.size())
-                weights = m_vertex_bone_weights[vertexOffset];
+            if (vertexOffset < xmodel.m_vertex_bone_weights.size())
+                weights = xmodel.m_vertex_bone_weights[vertexOffset];
 
             m_vertex_merger.Add(VertexMergerPos{vertex.coordinates[0], vertex.coordinates[1], vertex.coordinates[2], weights.weights, weights.weightCount});
 
@@ -32,103 +27,99 @@ protected:
         }
     }
 
-    void WriteHeader(std::ostream& stream, const int version) const
+    void WriteHeader(const int version) const
     {
-        stream << "// OpenAssetTools XMODEL_EXPORT File\n";
-        stream << "// Game Origin: " << m_game_name << "\n";
-        stream << "// Zone Origin: " << m_zone_name << "\n";
-        stream << "MODEL\n";
-        stream << "VERSION " << version << "\n";
-        stream << "\n";
+        m_stream << "// OpenAssetTools XMODEL_EXPORT File\n";
+        m_stream << "// Game Origin: " << m_game_name << "\n";
+        m_stream << "// Zone Origin: " << m_zone_name << "\n";
+        m_stream << "MODEL\n";
+        m_stream << "VERSION " << version << "\n";
+        m_stream << "\n";
     }
 
-    void WriteBones(std::ostream& stream) const
+    void WriteBones(const XModelCommon& xmodel) const
     {
-        stream << "NUMBONES " << m_bones.size() << "\n";
+        m_stream << "NUMBONES " << xmodel.m_bones.size() << "\n";
         size_t boneNum = 0u;
-        for (const auto& bone : m_bones)
+        for (const auto& bone : xmodel.m_bones)
         {
-            stream << "BONE " << boneNum << " ";
+            m_stream << "BONE " << boneNum << " ";
             if (bone.parentIndex < 0)
-                stream << "-1";
+                m_stream << "-1";
             else
-                stream << bone.parentIndex;
+                m_stream << bone.parentIndex;
 
-            stream << " \"" << bone.name << "\"\n";
+            m_stream << " \"" << bone.name << "\"\n";
             boneNum++;
         }
-        stream << "\n";
+        m_stream << "\n";
 
         boneNum = 0u;
-        for (const auto& bone : m_bones)
+        for (const auto& bone : xmodel.m_bones)
         {
-            stream << "BONE " << boneNum << "\n";
-            stream << "OFFSET ";
-            stream << std::setprecision(6) << std::fixed << bone.globalOffset[0] << ", " << std::setprecision(6) << std::fixed << bone.globalOffset[1] << ", "
-                   << std::setprecision(6) << std::fixed << bone.globalOffset[2] << "\n";
-
-            stream << "SCALE ";
-            stream << std::setprecision(6) << std::fixed << bone.scale[0] << ", " << std::setprecision(6) << std::fixed << bone.scale[1] << ", "
-                   << std::setprecision(6) << std::fixed << bone.scale[2] << "\n";
+            m_stream << "BONE " << boneNum << "\n";
+            m_stream << std::format("OFFSET {:.6f}, {:.6f}, {:.6f}\n", bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
+            m_stream << std::format("SCALE {:.6f}, {:.6f}, {:.6f}\n", bone.scale[0], bone.scale[1], bone.scale[2]);
 
             const Matrix32 mat = bone.globalRotation.ToMatrix();
-            stream << "X " << std::setprecision(6) << std::fixed << mat.m_data[0][0] << ", " << std::setprecision(6) << std::fixed << mat.m_data[1][0] << ", "
-                   << std::setprecision(6) << std::fixed << mat.m_data[2][0] << "\n";
-            stream << "Y " << std::setprecision(6) << std::fixed << mat.m_data[0][1] << ", " << std::setprecision(6) << std::fixed << mat.m_data[1][1] << ", "
-                   << std::setprecision(6) << std::fixed << mat.m_data[2][1] << "\n";
-            stream << "Z " << std::setprecision(6) << std::fixed << mat.m_data[0][2] << ", " << std::setprecision(6) << std::fixed << mat.m_data[1][2] << ", "
-                   << std::setprecision(6) << std::fixed << mat.m_data[2][2] << "\n";
-            stream << "\n";
+            m_stream << std::format("X {:.6f}, {:.6f}, {:.6f}\n", mat.m_data[0][0], mat.m_data[1][0], mat.m_data[2][0]);
+            m_stream << std::format("Y {:.6f}, {:.6f}, {:.6f}\n", mat.m_data[0][1], mat.m_data[1][1], mat.m_data[2][1]);
+            m_stream << std::format("Z {:.6f}, {:.6f}, {:.6f}\n", mat.m_data[0][2], mat.m_data[1][2], mat.m_data[2][2]);
+            m_stream << '\n';
             boneNum++;
         }
     }
 
-    XModelExportWriterBase(std::string gameName, std::string zoneName)
-        : m_game_name(std::move(gameName)),
+    XModelExportWriterBase(std::ostream& stream, std::string gameName, std::string zoneName)
+        : m_stream(stream),
+          m_game_name(std::move(gameName)),
           m_zone_name(std::move(zoneName))
     {
     }
+
+    std::ostream& m_stream;
+    std::string m_game_name;
+    std::string m_zone_name;
+    VertexMerger m_vertex_merger;
 };
 
 class XModelExportWriter6 final : public XModelExportWriterBase
 {
-    void WriteVertices(std::ostream& stream) const
+    void WriteVertices(const XModelCommon& xmodel) const
     {
         const auto& distinctVertexValues = m_vertex_merger.GetDistinctValues();
-        stream << "NUMVERTS " << distinctVertexValues.size() << "\n";
+        m_stream << "NUMVERTS " << distinctVertexValues.size() << "\n";
         size_t vertexNum = 0u;
         for (const auto& vertexPos : distinctVertexValues)
         {
-            stream << "VERT " << vertexNum << "\n";
-            stream << "OFFSET ";
-            stream << std::setprecision(6) << std::fixed << vertexPos.x << ", " << std::setprecision(6) << std::fixed << vertexPos.y << ", "
-                   << std::setprecision(6) << std::fixed << vertexPos.z << "\n";
-            stream << "BONES " << vertexPos.weightCount << "\n";
+            m_stream << "VERT " << vertexNum << "\n";
+            m_stream << std::format("OFFSET {:.6f}, {:.6f}, {:.6f}\n", vertexPos.x, vertexPos.y, vertexPos.z);
+            m_stream << "BONES " << vertexPos.weightCount << "\n";
 
             for (auto weightIndex = 0u; weightIndex < vertexPos.weightCount; weightIndex++)
             {
-                stream << "BONE " << vertexPos.weights[weightIndex].boneIndex << " " << std::setprecision(6) << std::fixed
-                       << vertexPos.weights[weightIndex].weight << "\n";
+                const auto& weight = vertexPos.weights[weightIndex];
+                m_stream << std::format("BONE {} {:.6f}\n", weight.boneIndex, weight.weight);
             }
-            stream << "\n";
+            m_stream << "\n";
             vertexNum++;
         }
     }
 
-    static void WriteFaceVertex(std::ostream& stream, const size_t index, const XModelVertex& vertex)
+    void WriteFaceVertex(const size_t index, const XModelVertex& vertex) const
     {
-        stream << "VERT " << index << "\n";
-        stream << "NORMAL " << std::setprecision(6) << std::fixed << vertex.normal[0] << " " << std::setprecision(6) << std::fixed << vertex.normal[1] << " "
-               << std::setprecision(6) << std::fixed << vertex.normal[2] << "\n";
-        stream << "COLOR " << std::setprecision(6) << std::fixed << vertex.color[0] << " " << std::setprecision(6) << std::fixed << vertex.color[1] << " "
-               << std::setprecision(6) << std::fixed << vertex.color[2] << " " << std::setprecision(6) << std::fixed << vertex.color[3] << "\n";
-        stream << "UV 1 " << std::setprecision(6) << std::fixed << vertex.uv[0] << " " << std::setprecision(6) << std::fixed << vertex.uv[1] << "\n";
+        m_stream << "VERT " << index << "\n";
+        m_stream << std::format("NORMAL {:.6f} {:.6f} {:.6f}\n", vertex.normal[0], vertex.normal[1], vertex.normal[2]);
+        m_stream << "NORMAL " << std::setprecision(6) << std::fixed << vertex.normal[0] << " " << std::setprecision(6) << std::fixed << vertex.normal[1] << " "
+                 << std::setprecision(6) << std::fixed << vertex.normal[2] << "\n";
+        m_stream << std::format("COLOR {:.6f} {:.6f} {:.6f} {:.6f}\n", vertex.color[0], vertex.color[1], vertex.color[2], vertex.color[3]);
+        m_stream << std::format("UV 1 {:.6f} {:.6f}\n", vertex.uv[0], vertex.uv[1]);
     }
 
-    void WriteFaces(std::ostream& stream) const
+    void WriteFaces(const XModelCommon& xmodel) const
     {
-        stream << "NUMFACES " << m_faces.size() << "\n";
-        for (const auto& face : m_faces)
+        m_stream << "NUMFACES " << xmodel.m_faces.size() << "\n";
+        for (const auto& face : xmodel.m_faces)
         {
             const size_t distinctPositions[3]{
                 m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[0]),
@@ -136,87 +127,97 @@ class XModelExportWriter6 final : public XModelExportWriterBase
                 m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[2]),
             };
 
-            const XModelVertex& v0 = m_vertices[face.vertexIndex[0]];
-            const XModelVertex& v1 = m_vertices[face.vertexIndex[1]];
-            const XModelVertex& v2 = m_vertices[face.vertexIndex[2]];
+            const XModelVertex& v0 = xmodel.m_vertices[face.vertexIndex[0]];
+            const XModelVertex& v1 = xmodel.m_vertices[face.vertexIndex[1]];
+            const XModelVertex& v2 = xmodel.m_vertices[face.vertexIndex[2]];
 
-            stream << "TRI " << face.objectIndex << " " << m_objects[face.objectIndex].materialIndex << " 0 0\n";
-            WriteFaceVertex(stream, distinctPositions[0], v0);
-            WriteFaceVertex(stream, distinctPositions[1], v1);
-            WriteFaceVertex(stream, distinctPositions[2], v2);
-            stream << "\n";
+            m_stream << "TRI " << face.objectIndex << " " << xmodel.m_objects[face.objectIndex].materialIndex << " 0 0\n";
+            WriteFaceVertex(distinctPositions[0], v0);
+            WriteFaceVertex(distinctPositions[1], v1);
+            WriteFaceVertex(distinctPositions[2], v2);
+            m_stream << "\n";
         }
     }
 
-    void WriteObjects(std::ostream& stream) const
+    void WriteObjects(const XModelCommon& xmodel) const
     {
-        stream << "NUMOBJECTS " << m_objects.size() << "\n";
+        m_stream << "NUMOBJECTS " << xmodel.m_objects.size() << "\n";
         size_t objectNum = 0u;
-        for (const auto& object : m_objects)
+        for (const auto& object : xmodel.m_objects)
         {
-            stream << "OBJECT " << objectNum << " \"" << object.name << "\"\n";
+            m_stream << "OBJECT " << objectNum << " \"" << object.name << "\"\n";
             objectNum++;
         }
-        stream << "\n";
+        m_stream << "\n";
     }
 
-    void WriteMaterials(std::ostream& stream) const
+    void WriteMaterials(const XModelCommon& xmodel) const
     {
-        stream << "NUMMATERIALS " << m_materials.size() << "\n";
+        m_stream << "NUMMATERIALS " << xmodel.m_materials.size() << "\n";
         size_t materialNum = 0u;
-        for (const auto& material : m_materials)
+        for (const auto& material : xmodel.m_materials)
         {
             const auto colorMapPath = "../images/" + material.colorMapName + ".dds";
-            stream << "MATERIAL " << materialNum << " \"" << material.name << "\" \"" << material.materialTypeName << "\" \"" << colorMapPath << "\"\n";
-            stream << "COLOR " << std::setprecision(6) << std::fixed << material.color[0] << " " << std::setprecision(6) << std::fixed << material.color[1]
-                   << " " << std::setprecision(6) << std::fixed << material.color[2] << " " << std::setprecision(6) << std::fixed << material.color[3] << "\n";
-            stream << "TRANSPARENCY " << std::setprecision(6) << std::fixed << material.transparency[0] << " " << std::setprecision(6) << std::fixed
-                   << material.transparency[1] << " " << std::setprecision(6) << std::fixed << material.transparency[2] << " " << std::setprecision(6)
-                   << std::fixed << material.transparency[3] << "\n";
-            stream << "AMBIENTCOLOR " << std::setprecision(6) << std::fixed << material.ambientColor[0] << " " << std::setprecision(6) << std::fixed
-                   << material.ambientColor[1] << " " << std::setprecision(6) << std::fixed << material.ambientColor[2] << " " << std::setprecision(6)
-                   << std::fixed << material.ambientColor[3] << "\n";
-            stream << "INCANDESCENCE " << std::setprecision(6) << std::fixed << material.incandescence[0] << " " << std::setprecision(6) << std::fixed
-                   << material.incandescence[1] << " " << std::setprecision(6) << std::fixed << material.incandescence[2] << " " << std::setprecision(6)
-                   << std::fixed << material.incandescence[3] << "\n";
-            stream << "COEFFS " << std::setprecision(6) << std::fixed << material.coeffs[0] << " " << std::setprecision(6) << std::fixed << material.coeffs[1]
-                   << "\n";
-            stream << "GLOW " << std::setprecision(6) << std::fixed << material.glow.x << " " << material.glow.y << "\n";
-            stream << "REFRACTIVE " << material.refractive.x << " " << std::setprecision(6) << std::fixed << material.refractive.y << "\n";
-            stream << "SPECULARCOLOR " << std::setprecision(6) << std::fixed << material.specularColor[0] << " " << std::setprecision(6) << std::fixed
-                   << material.specularColor[1] << " " << std::setprecision(6) << std::fixed << material.specularColor[2] << " " << std::setprecision(6)
-                   << std::fixed << material.specularColor[3] << "\n";
-            stream << "REFLECTIVECOLOR " << std::setprecision(6) << std::fixed << material.reflectiveColor[0] << " " << std::setprecision(6) << std::fixed
-                   << material.reflectiveColor[1] << " " << std::setprecision(6) << std::fixed << material.reflectiveColor[2] << " " << std::setprecision(6)
-                   << std::fixed << material.reflectiveColor[3] << "\n";
-            stream << "REFLECTIVE " << material.reflective.x << " " << std::setprecision(6) << std::fixed << material.reflective.y << "\n";
-            stream << "BLINN " << std::setprecision(6) << std::fixed << material.blinn[0] << " " << std::setprecision(6) << std::fixed << material.blinn[1]
-                   << "\n";
-            stream << "PHONG " << std::setprecision(6) << std::fixed << material.phong << "\n";
-            stream << "\n";
+            m_stream << "MATERIAL " << materialNum << " \"" << material.name << "\" \"" << material.materialTypeName << "\" \"" << colorMapPath << "\"\n";
+            m_stream << std::format("COLOR {:.6f} {:.6f} {:.6f} {:.6f}\n", material.color[0], material.color[1], material.color[2], material.color[3]);
+            m_stream << std::format("TRANSPARENCY {:.6f} {:.6f} {:.6f} {:.6f}\n",
+                                    material.transparency[0],
+                                    material.transparency[1],
+                                    material.transparency[2],
+                                    material.transparency[3]);
+            m_stream << std::format("AMBIENTCOLOR {:.6f} {:.6f} {:.6f} {:.6f}\n",
+                                    material.ambientColor[0],
+                                    material.ambientColor[1],
+                                    material.ambientColor[2],
+                                    material.ambientColor[3]);
+            m_stream << std::format("INCANDESCENCE {:.6f} {:.6f} {:.6f} {:.6f}\n",
+                                    material.incandescence[0],
+                                    material.incandescence[1],
+                                    material.incandescence[2],
+                                    material.incandescence[3]);
+            m_stream << std::format("COEFFS {:.6f} {:.6f}\n", material.coeffs[0], material.coeffs[1]);
+            m_stream << std::format("GLOW {:.6f} {}\n", material.glow.x, material.glow.y);
+            m_stream << std::format("REFRACTIVE {} {:.6f}\n", material.refractive.x, material.refractive.y);
+            m_stream << std::format("SPECULARCOLOR {:.6f} {:.6f} {:.6f} {:.6f}\n",
+                                    material.specularColor[0],
+                                    material.specularColor[1],
+                                    material.specularColor[2],
+                                    material.specularColor[3]);
+            m_stream << std::format("REFLECTIVECOLOR {:.6f} {:.6f} {:.6f} {:.6f}\n",
+                                    material.reflectiveColor[0],
+                                    material.reflectiveColor[1],
+                                    material.reflectiveColor[2],
+                                    material.reflectiveColor[3]);
+            m_stream << std::format("REFLECTIVE {} {:.6f}\n", material.reflective.x, material.reflective.y);
+            m_stream << std::format("BLINN {:.6f} {:.6f}\n", material.blinn[0], material.blinn[1]);
+            m_stream << std::format("PHONG {:.6f}\n", material.phong);
+            m_stream << '\n';
             materialNum++;
         }
     }
 
 public:
-    XModelExportWriter6(std::string gameName, std::string zoneName)
-        : XModelExportWriterBase(std::move(gameName), std::move(zoneName))
+    XModelExportWriter6(std::ostream& stream, std::string gameName, std::string zoneName)
+        : XModelExportWriterBase(stream, std::move(gameName), std::move(zoneName))
     {
     }
 
-    void Write(std::ostream& stream) override
+    void Write(const XModelCommon& xmodel) override
     {
-        PrepareVertexMerger();
-        WriteHeader(stream, 6);
-        WriteBones(stream);
-        WriteVertices(stream);
-        WriteFaces(stream);
-        WriteObjects(stream);
-        WriteMaterials(stream);
+        PrepareVertexMerger(xmodel);
+        WriteHeader(6);
+        WriteBones(xmodel);
+        WriteVertices(xmodel);
+        WriteFaces(xmodel);
+        WriteObjects(xmodel);
+        WriteMaterials(xmodel);
     }
 };
 
-std::unique_ptr<XModelExportWriter> XModelExportWriter::CreateWriterForVersion6(std::string gameName, std::string zoneName)
+namespace xmodel_export
 {
-    return std::make_unique<XModelExportWriter6>(std::move(gameName), std::move(zoneName));
-}
+    std::unique_ptr<XModelWriter> CreateWriterForVersion6(std::ostream& stream, std::string gameName, std::string zoneName)
+    {
+        return std::make_unique<XModelExportWriter6>(stream, std::move(gameName), std::move(zoneName));
+    }
+} // namespace xmodel_export
