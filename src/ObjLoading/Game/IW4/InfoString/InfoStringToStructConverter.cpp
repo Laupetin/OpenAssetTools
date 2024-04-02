@@ -178,21 +178,16 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     {
         if (value.empty())
         {
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+            reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = nullptr;
             return true;
         }
 
-        auto* sound = m_loading_manager->LoadDependency(ASSET_TYPE_SOUND, value);
+        auto* name = static_cast<snd_alias_list_name*>(m_memory->Alloc(sizeof(snd_alias_list_name)));
+        name->soundName = m_memory->Dup(value.c_str());
 
-        if (sound == nullptr)
-        {
-            std::cout << "Failed to load sound asset \"" << value << "\"\n";
-            return false;
-        }
+        reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = name;
 
-        m_dependencies.emplace(sound);
-        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = sound->m_ptr;
-
+        m_indirect_asset_references.emplace(ASSET_TYPE_SOUND, value);
         return true;
     }
 

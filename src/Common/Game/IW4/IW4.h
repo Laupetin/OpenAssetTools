@@ -113,6 +113,9 @@ namespace IW4
         WFT_NOTETRACKSOUNDMAP,
         WFT_NOTETRACKRUMBLEMAP,
 
+        // Custom
+        WFT_ANIM_NAME,
+
         WFT_NUM_FIELD_TYPES,
     };
 
