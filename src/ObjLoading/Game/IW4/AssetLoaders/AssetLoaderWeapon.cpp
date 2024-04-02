@@ -11,6 +11,7 @@
 #include "Utils/StringUtils.h"
 
 #include <cstring>
+#include <format>
 #include <iostream>
 
 using namespace IW4;
