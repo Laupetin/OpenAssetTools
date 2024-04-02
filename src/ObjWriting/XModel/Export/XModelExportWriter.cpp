@@ -140,7 +140,7 @@ class XModelExportWriter6 final : public XModelExportWriterBase
             const XModelVertex& v1 = m_vertices[face.vertexIndex[1]];
             const XModelVertex& v2 = m_vertices[face.vertexIndex[2]];
 
-            stream << "TRI " << face.objectIndex << " " << face.materialIndex << " 0 0\n";
+            stream << "TRI " << face.objectIndex << " " << m_objects[face.objectIndex].materialIndex << " 0 0\n";
             WriteFaceVertex(stream, distinctPositions[0], v0);
             WriteFaceVertex(stream, distinctPositions[1], v1);
             WriteFaceVertex(stream, distinctPositions[2], v2);

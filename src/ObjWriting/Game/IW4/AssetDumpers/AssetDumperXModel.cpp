@@ -318,12 +318,16 @@ namespace
         }
     }
 
-    void AddXModelObjects(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
+    void AddXModelObjects(AbstractXModelWriter& writer,
+                          const XModelSurfs* modelSurfs,
+                          const DistinctMapper<Material*>& materialMapper,
+                          const int baseSurfaceIndex)
     {
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
             XModelObject object;
             object.name = "surf" + std::to_string(surfIndex);
+            object.materialIndex = static_cast<int>(materialMapper.GetDistinctPositionByInputPosition(surfIndex + baseSurfaceIndex));
 
             writer.AddObject(std::move(object));
         }
@@ -501,8 +505,7 @@ namespace
         }
     }
 
-    void
-        AddXModelFaces(AbstractXModelWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModelSurfs* modelSurfs, const int baseSurfaceIndex)
+    void AddXModelFaces(AbstractXModelWriter& writer, const XModelSurfs* modelSurfs)
     {
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
         {
@@ -516,7 +519,6 @@ namespace
                 face.vertexIndex[1] = tri[1] + surface.baseVertIndex;
                 face.vertexIndex[2] = tri[2] + surface.baseVertIndex;
                 face.objectIndex = static_cast<int>(surfIndex);
-                face.materialIndex = static_cast<int>(materialMapper.GetDistinctPositionByInputPosition(surfIndex + baseSurfaceIndex));
                 writer.AddFace(face);
             }
         }
@@ -532,10 +534,10 @@ namespace
 
         AddXModelBones(context, writer, model);
         AddXModelMaterials(writer, materialMapper, model);
-        AddXModelObjects(writer, modelSurfs);
+        AddXModelObjects(writer, modelSurfs, materialMapper, model->lodInfo[lod].surfIndex);
         AddXModelVertices(writer, modelSurfs);
         AddXModelVertexBoneWeights(writer, modelSurfs, boneWeightCollection);
-        AddXModelFaces(writer, materialMapper, modelSurfs, model->lodInfo[lod].surfIndex);
+        AddXModelFaces(writer, modelSurfs);
     }
 
     void DumpXModelExportLod(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)

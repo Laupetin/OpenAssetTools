@@ -9,6 +9,7 @@
 struct XModelObject
 {
     std::string name;
+    int materialIndex;
 };
 
 struct XModelBone
@@ -52,7 +53,6 @@ struct XModelFace
 {
     int vertexIndex[3];
     int objectIndex;
-    int materialIndex;
 };
 
 struct XModelMaterial
