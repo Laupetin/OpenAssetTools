@@ -8,6 +8,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "Utils/ClassUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <cassert>
 #include <cstring>
@@ -262,7 +263,11 @@ namespace T6
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                {
+                    auto lowerValue = value;
+                    utils::MakeStringLowerCase(lowerValue);
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, lowerValue));
+                }
                 return true;
             }
 

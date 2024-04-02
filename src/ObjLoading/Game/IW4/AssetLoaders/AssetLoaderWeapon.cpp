@@ -8,6 +8,7 @@
 #include "InfoString/InfoString.h"
 #include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Utils/StringUtils.h"
 
 #include <cstring>
 #include <iostream>
@@ -132,7 +133,11 @@ namespace
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                {
+                    auto lowerValue = value;
+                    utils::MakeStringLowerCase(lowerValue);
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, lowerValue));
+                }
                 return true;
             }
 
