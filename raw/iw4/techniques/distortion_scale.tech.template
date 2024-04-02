@@ -22,13 +22,13 @@
 
 #filename "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".tech"
 
-#set VERTEX_SHADER "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".hlsl"
-#set PIXEL_SHADER "distortion" + ZFEATHER_SUFFIX + ".hlsl"
+#set VERTEX_SHADER "\"" + "distortion_scale" + UV_ANIM_SUFFIX + ZFEATHER_SUFFIX + DTEX_SUFFIX + ".hlsl" + "\""
+#set PIXEL_SHADER "\"" + "distortion" + ZFEATHER_SUFFIX + ".hlsl" + "\""
 
 {
   stateMap "default";
 
-  vertexShader 3.0 "VERTEX_SHADER"
+  vertexShader 3.0 VERTEX_SHADER
   {
     worldViewProjectionMatrix = constant.transposeWorldViewProjectionMatrix;
 #ifdef UV_ANIM
@@ -37,7 +37,7 @@
     distortionScale = material.distortionScale;
   }
 
-  pixelShader 3.0 "PIXEL_SHADER"
+  pixelShader 3.0 PIXEL_SHADER
   {
     normalMapSampler = material.colorMap;
     colorMapSampler = sampler.resolvedPostSun;
