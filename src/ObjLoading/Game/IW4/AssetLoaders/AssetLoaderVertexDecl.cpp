@@ -48,6 +48,10 @@ bool AssetLoaderVertexDecl::LoadFromRaw(
     MaterialVertexDeclaration decl{};
 
     size_t currentOffset = 0u;
+
+    if (!assetName.empty() && assetName[0] == ',')
+        currentOffset = 1u;
+
     std::string sourceAbbreviation;
     while (NextAbbreviation(assetName, sourceAbbreviation, currentOffset))
     {
