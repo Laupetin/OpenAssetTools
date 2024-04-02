@@ -40,13 +40,13 @@
 
 #filename "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + PREMUL_SUFFIX + SPOT_SUFFIX + SHADOW_SUFFIX + ".tech"
 
-#set VERTEX_SHADER "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + ".hlsl"
-#set PIXEL_SHADER "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + SHADOW_SUFFIX + PREMUL_SUFFIX + ".hlsl"
+#set VERTEX_SHADER "\"" + "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + ".hlsl" + "\""
+#set PIXEL_SHADER "\"" + "particle_cloud" + SPARK_SUFFIX + OUTDOOR_SUFFIX + SPOT_SUFFIX + SHADOW_SUFFIX + PREMUL_SUFFIX + ".hlsl" + "\""
 
 {
   stateMap "default";
 
-  vertexShader 3.0 "VERTEX_SHADER"
+  vertexShader 3.0 VERTEX_SHADER
   {
     worldViewMatrix = constant.transposeWorldViewMatrix;
 #if MODE == "spark"
@@ -62,7 +62,7 @@
 #endif
   }
 
-  pixelShader 3.0 "PIXEL_SHADER"
+  pixelShader 3.0 PIXEL_SHADER
   {
     colorMapSampler = material.colorMap;
 #ifdef OUTDOOR
