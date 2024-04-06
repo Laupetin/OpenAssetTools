@@ -3457,6 +3457,43 @@ namespace IW5
         HITLOC_NUM
     };
 
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_RIOT_SHIELD,
+        SURF_TYPE_SLUSH,
+
+        SURF_TYPE_NUM
+    };
+
     struct WeaponDef
     {
         const char* szOverlayName;
@@ -3950,6 +3987,25 @@ namespace IW5
         bool motionTracker;
         bool enhanced;
         bool dpadIconShowsAmmo;
+    };
+
+    struct WeaponFullDef
+    {
+        WeaponCompleteDef weapCompleteDef;
+        WeaponDef weapDef;
+        uint16_t hideTags[32];
+        const char* szXAnims[42];
+        XModel* gunXModel[16];
+        const char* szXAnimsRightHanded[42];
+        const char* szXAnimsLeftHanded[42];
+        uint16_t notetrackSoundMapKeys[16];
+        uint16_t notetrackSoundMapValues[16];
+        uint16_t notetrackRumbleMapKeys[16];
+        uint16_t notetrackRumbleMapValues[16];
+        XModel* worldModel[16];
+        float parallelBounce[31];
+        float perpendicularBounce[31];
+        float locationDamageMultipliers[20];
     };
 
     struct FxFloatRange
