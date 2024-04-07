@@ -3998,8 +3998,8 @@ namespace IW5
         XModel* gunXModel[16];
         const char* szXAnimsRightHanded[42];
         const char* szXAnimsLeftHanded[42];
-        uint16_t notetrackSoundMapKeys[16];
-        uint16_t notetrackSoundMapValues[16];
+        uint16_t notetrackSoundMapKeys[24];
+        uint16_t notetrackSoundMapValues[24];
         uint16_t notetrackRumbleMapKeys[16];
         uint16_t notetrackRumbleMapValues[16];
         XModel* worldModel[16];

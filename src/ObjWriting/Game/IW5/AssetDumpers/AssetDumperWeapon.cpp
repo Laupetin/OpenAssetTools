@@ -232,42 +232,39 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (weapon->hideTags)
     {
-        assert(sizeof(WeaponFullDef::hideTags) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::hideTags)>);
         memcpy(fullDef->hideTags, weapon->hideTags, sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::hideTags)>);
         fullDef->weapCompleteDef.hideTags = fullDef->hideTags;
     }
 
     if (weapon->szXAnims)
     {
-        assert(sizeof(WeaponFullDef::szXAnims) >= sizeof(void*) * NUM_WEAP_ANIMS);
+        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnims)> == NUM_WEAP_ANIMS);
         memcpy(fullDef->szXAnims, weapon->szXAnims, sizeof(void*) * NUM_WEAP_ANIMS);
         fullDef->weapCompleteDef.szXAnims = fullDef->szXAnims;
     }
 
     if (fullDef->weapDef.gunXModel)
     {
-        assert(sizeof(WeaponFullDef::gunXModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::gunXModel)>);
         memcpy(fullDef->gunXModel, fullDef->weapDef.gunXModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::gunXModel)>);
         fullDef->weapDef.gunXModel = fullDef->gunXModel;
     }
 
     if (fullDef->weapDef.szXAnimsRightHanded)
     {
-        assert(sizeof(WeaponFullDef::szXAnimsRightHanded) >= sizeof(void*) * NUM_WEAP_ANIMS);
+        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnimsRightHanded)> == NUM_WEAP_ANIMS);
         memcpy(fullDef->szXAnimsRightHanded, fullDef->weapDef.szXAnimsRightHanded, sizeof(void*) * NUM_WEAP_ANIMS);
         fullDef->weapDef.szXAnimsRightHanded = fullDef->szXAnimsRightHanded;
     }
 
     if (fullDef->weapDef.szXAnimsLeftHanded)
     {
-        assert(sizeof(WeaponFullDef::szXAnimsLeftHanded) >= sizeof(void*) * NUM_WEAP_ANIMS);
+        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnimsLeftHanded)> == NUM_WEAP_ANIMS);
         memcpy(fullDef->szXAnimsLeftHanded, fullDef->weapDef.szXAnimsLeftHanded, sizeof(void*) * NUM_WEAP_ANIMS);
         fullDef->weapDef.szXAnimsLeftHanded = fullDef->szXAnimsLeftHanded;
     }
 
     if (fullDef->weapDef.notetrackSoundMapKeys)
     {
-        assert(sizeof(WeaponFullDef::notetrackSoundMapKeys) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         memcpy(fullDef->notetrackSoundMapKeys,
                fullDef->weapDef.notetrackSoundMapKeys,
                sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
@@ -276,7 +273,6 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.notetrackSoundMapValues)
     {
-        assert(sizeof(WeaponFullDef::notetrackSoundMapValues) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
         memcpy(fullDef->notetrackSoundMapValues,
                fullDef->weapDef.notetrackSoundMapValues,
                sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
@@ -285,7 +281,6 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.notetrackRumbleMapKeys)
     {
-        assert(sizeof(WeaponFullDef::notetrackRumbleMapKeys) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
         memcpy(fullDef->notetrackRumbleMapKeys,
                fullDef->weapDef.notetrackRumbleMapKeys,
                sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
@@ -294,7 +289,6 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.notetrackRumbleMapValues)
     {
-        assert(sizeof(WeaponFullDef::notetrackRumbleMapValues) >= sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
         memcpy(fullDef->notetrackRumbleMapValues,
                fullDef->weapDef.notetrackRumbleMapValues,
                sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
@@ -303,13 +297,13 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.worldModel)
     {
-        assert(sizeof(WeaponFullDef::worldModel) >= sizeof(void*) * std::extent_v<decltype(WeaponFullDef::worldModel)>);
         memcpy(fullDef->worldModel, fullDef->weapDef.worldModel, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::worldModel)>);
         fullDef->weapDef.worldModel = fullDef->worldModel;
     }
 
     if (fullDef->weapDef.parallelBounce)
     {
+        static_assert(std::extent_v<decltype(WeaponFullDef::parallelBounce)> == SURF_TYPE_NUM);
         assert(sizeof(WeaponFullDef::parallelBounce) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::parallelBounce)>);
         memcpy(fullDef->parallelBounce, fullDef->weapDef.parallelBounce, sizeof(float) * std::extent_v<decltype(WeaponFullDef::parallelBounce)>);
         fullDef->weapDef.parallelBounce = fullDef->parallelBounce;
@@ -317,6 +311,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.perpendicularBounce)
     {
+        static_assert(std::extent_v<decltype(WeaponFullDef::perpendicularBounce)> == SURF_TYPE_NUM);
         assert(sizeof(WeaponFullDef::perpendicularBounce) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::perpendicularBounce)>);
         memcpy(fullDef->perpendicularBounce, fullDef->weapDef.perpendicularBounce, sizeof(float) * std::extent_v<decltype(WeaponFullDef::perpendicularBounce)>);
         fullDef->weapDef.perpendicularBounce = fullDef->perpendicularBounce;
@@ -324,6 +319,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.locationDamageMultipliers)
     {
+        static_assert(std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)> == HITLOC_NUM);
         assert(sizeof(WeaponFullDef::locationDamageMultipliers) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)>);
         memcpy(fullDef->locationDamageMultipliers,
                fullDef->weapDef.locationDamageMultipliers,
