@@ -3,11 +3,6 @@
 
 namespace IW5
 {
-    // WeaponCompleteDef:
-    // TODO: iFireTimeAkimbo
-    // TODO: iAltRaiseTimeAkimbo
-    // TODO: fireAnimLengthAkimbo
-    // TODO: iFirstRaiseTimeAkimbo
     // WeaponDef:
     // TODO: changeVariableZoomSound
     // TODO: rollingSound
@@ -347,6 +342,7 @@ namespace IW5
         {"meleeDelay",                          offsetof(WeaponFullDef, weapDef.stateTimers.iMeleeDelay),                      CSPFT_MILLISECONDS       },
         {"meleeChargeDelay",                    offsetof(WeaponFullDef, weapDef.stateTimers.meleeChargeDelay),                 CSPFT_MILLISECONDS       },
         {"fireTime",                            offsetof(WeaponFullDef, weapCompleteDef.iFireTime),                            CSPFT_MILLISECONDS       },
+        {"fireTimeAkimbo",                      offsetof(WeaponFullDef, weapCompleteDef.iFireTimeAkimbo),                      CSPFT_MILLISECONDS       },
         {"rechamberTime",                       offsetof(WeaponFullDef, weapDef.stateTimers.iRechamberTime),                   CSPFT_MILLISECONDS       },
         {"rechamberTimeOneHanded",              offsetof(WeaponFullDef, weapDef.stateTimers.rechamberTimeOneHanded),           CSPFT_MILLISECONDS       },
         {"rechamberBoltTime",                   offsetof(WeaponFullDef, weapDef.stateTimers.iRechamberBoltTime),               CSPFT_MILLISECONDS       },
@@ -366,9 +362,11 @@ namespace IW5
         {"raiseTime",                           offsetof(WeaponFullDef, weapDef.stateTimers.iRaiseTime),                       CSPFT_MILLISECONDS       },
         {"altDropTime",                         offsetof(WeaponFullDef, weapDef.stateTimers.iAltDropTime),                     CSPFT_MILLISECONDS       },
         {"altRaiseTime",                        offsetof(WeaponFullDef, weapCompleteDef.iAltRaiseTime),                        CSPFT_MILLISECONDS       },
+        {"altRaiseTimeAkimbo",                  offsetof(WeaponFullDef, weapCompleteDef.iAltRaiseTimeAkimbo),                  CSPFT_MILLISECONDS       },
         {"quickDropTime",                       offsetof(WeaponFullDef, weapDef.stateTimers.quickDropTime),                    CSPFT_MILLISECONDS       },
         {"quickRaiseTime",                      offsetof(WeaponFullDef, weapDef.stateTimers.quickRaiseTime),                   CSPFT_MILLISECONDS       },
         {"firstRaiseTime",                      offsetof(WeaponFullDef, weapCompleteDef.iFirstRaiseTime),                      CSPFT_MILLISECONDS       },
+        {"firstRaiseTimeAkimbo",                offsetof(WeaponFullDef, weapCompleteDef.iFirstRaiseTimeAkimbo),                CSPFT_MILLISECONDS       },
         {"breachRaiseTime",                     offsetof(WeaponFullDef, weapDef.stateTimers.iBreachRaiseTime),                 CSPFT_MILLISECONDS       },
         {"emptyRaiseTime",                      offsetof(WeaponFullDef, weapDef.stateTimers.iEmptyRaiseTime),                  CSPFT_MILLISECONDS       },
         {"emptyDropTime",                       offsetof(WeaponFullDef, weapDef.stateTimers.iEmptyDropTime),                   CSPFT_MILLISECONDS       },
