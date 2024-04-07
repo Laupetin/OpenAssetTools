@@ -39,6 +39,8 @@ set count accuracyGraphKnots[1] accuracyGraphKnotCount[1];
 use AnimOverrideEntry;
 set string overrideAnim;
 set string altmodeAnim;
+set assetref overrideAnim ASSET_TYPE_XANIMPARTS;
+set assetref altmodeAnim ASSET_TYPE_XANIMPARTS;
 
 // NoteTrackToSoundEntry
 use NoteTrackToSoundEntry;
@@ -117,4 +119,6 @@ set reusable name;
 set condition sound never;
 
 // snd_alias_list_name
-set string snd_alias_list_name::soundName;
+use snd_alias_list_name;
+set string soundName;
+set assetref soundName ASSET_TYPE_SOUND;
