@@ -4,7 +4,6 @@
 namespace IW5
 {
     // WeaponCompleteDef:
-    // TODO: animOverrides
     // TODO: soundOverrides
     // TODO: fxOverrides
     // TODO: reloadOverrides
@@ -734,6 +733,7 @@ namespace IW5
         {"missileConeSoundCrossfadeTopSize",    offsetof(WeaponFullDef, weapDef.missileConeSoundCrossfadeTopSize),             CSPFT_FLOAT              },
         {"missileConeSoundCrossfadeBottomSize", offsetof(WeaponFullDef, weapDef.missileConeSoundCrossfadeBottomSize),          CSPFT_FLOAT              },
         {"attachments",                         offsetof(WeaponFullDef, scopes),                                               WFT_ATTACHMENT           },
+        {"animOverrides",                       offsetof(WeaponFullDef, weapCompleteDef.animOverrides),                        WFT_ANIM_OVERRIDES       },
     };
 
     inline const char* szWeapTypeNames[]{
@@ -914,4 +914,15 @@ namespace IW5
         "_gravel",  "_ice",     "_metal",   "_mud",    "_paper",   "_plaster",  "_rock",          "_sand",        "_snow",    "_water", "_wood",
         "_asphalt", "_ceramic", "_plastic", "_rubber", "_cushion", "_fruit",    "_painted_metal", "_riot_shield", "_slush",
     };
+    static_assert(std::extent_v<decltype(bounceSoundSuffixes)> == SURF_TYPE_COUNT);
+
+    inline const char* weapAnimFilesNames[]{
+        "root",         "idle",         "empty_idle",    "fire",         "hold_fire",   "lastshot",    "rechamber",        "melee",
+        "melee_charge", "reload",       "reload_empty",  "reload_start", "reload_end",  "raise",       "first_raise",      "breach_raise",
+        "drop",         "alt_raise",    "alt_drop",      "quick_raise",  "quick_drop",  "empty_raise", "empty_drop",       "sprint_in",
+        "sprint_loop",  "sprint_out",   "stunned_start", "stunned_loop", "stunned_end", "detonate",    "nightvision_wear", "nightvision_remove",
+        "ads_fire",     "ads_lastshot", "ads_rechamber", "blast_front",  "blast_right", "blast_back",  "blast_left",       "ads_up",
+        "ads_down",     "alt_adjust",
+    };
+    static_assert(std::extent_v<decltype(weapAnimFilesNames)> == WEAP_ANIM_COUNT);
 } // namespace IW5

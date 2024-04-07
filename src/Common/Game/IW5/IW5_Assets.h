@@ -3383,7 +3383,7 @@ namespace IW5
         MISSILE_GUIDANCE_COUNT
     };
 
-    enum weapAnimFiles_t
+    enum weapAnimFiles_t : unsigned int
     {
         WEAP_ANIM_ROOT = 0x0,
         WEAP_ANIM_IDLE = 0x1,
@@ -3428,7 +3428,7 @@ namespace IW5
         WEAP_ANIM_ADS_DOWN = 0x28,
         WEAP_ALT_ANIM_ADJUST = 0x29,
 
-        NUM_WEAP_ANIMS
+        WEAP_ANIM_COUNT
     };
 
     enum hitLocation_t
@@ -3895,13 +3895,30 @@ namespace IW5
         XModel* stowOffsetModel;
     };
 
+    union WeaponAttachmentCombination
+    {
+        struct
+        {
+            // Specifies the index as a number
+            // since there can only be one scope
+            unsigned short scope : 3;
+            // Specifies the index as a number
+            // since there can only be one under barrel
+            unsigned short underBarrel : 2;
+            // Specifies all other attachments as a bit array
+            unsigned short other : 4;
+        };
+
+        unsigned short fields;
+    };
+
     struct AnimOverrideEntry
     {
-        unsigned short attachment1;
-        unsigned short attachment2;
+        WeaponAttachmentCombination attachment1;
+        WeaponAttachmentCombination attachment2;
         const char* overrideAnim;
         const char* altmodeAnim;
-        unsigned int animTreeType;
+        weapAnimFiles_t animTreeType;
         int animTime;
         int altTime;
     };

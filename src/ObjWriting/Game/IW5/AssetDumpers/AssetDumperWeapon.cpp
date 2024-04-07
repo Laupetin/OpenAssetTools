@@ -5,6 +5,7 @@
 #include "Game/IW5/InfoString/WeaponFields.h"
 #include "Game/IW5/ObjConstantsIW5.h"
 
+#include <bit>
 #include <cassert>
 #include <cstring>
 #include <sstream>
@@ -216,6 +217,10 @@ namespace IW5
                 FillFromAttachments(std::string(field.szName));
                 break;
 
+            case WFT_ANIM_OVERRIDES:
+                FillFromAnimOverrides(std::string(field.szName));
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -271,6 +276,87 @@ namespace IW5
             m_info_string.SetValueForKey(key, ss.str());
         }
 
+        [[nodiscard]] std::string GetNameForSingleWeaponAttachment(const WeaponAttachmentCombination& combination) const
+        {
+            // Only one attachment type can be set
+            assert(combination.scope == 0 || (combination.underBarrel == 0 && combination.other == 0));
+            assert(combination.underBarrel == 0 || (combination.scope == 0 && combination.other == 0));
+            assert(combination.other == 0 || (combination.scope == 0 && std::popcount(combination.other) == 1));
+
+            if (combination.scope > 0 && m_weapon->weapCompleteDef.scopes)
+            {
+                const auto attachment = m_weapon->weapCompleteDef.scopes[combination.scope - 1];
+                if (attachment && attachment->szInternalName)
+                    return attachment->szInternalName;
+            }
+            else if (combination.underBarrel > 0 && m_weapon->weapCompleteDef.underBarrels)
+            {
+                const auto attachment = m_weapon->weapCompleteDef.underBarrels[combination.underBarrel - 1];
+                if (attachment && attachment->szInternalName)
+                    return attachment->szInternalName;
+            }
+            else if (combination.other > 0 && m_weapon->weapCompleteDef.others)
+            {
+                const auto attachment = m_weapon->weapCompleteDef.others[std::countr_zero(combination.other)];
+                if (attachment && attachment->szInternalName)
+                    return attachment->szInternalName;
+            }
+
+            return {};
+        }
+
+        void FillFromAnimOverrides(const std::string& key)
+        {
+            std::stringstream ss;
+            bool first = true;
+
+            for (auto i = 0u; i < m_weapon->weapCompleteDef.numAnimOverrides; i++)
+            {
+                const auto& animOverride = m_weapon->weapCompleteDef.animOverrides[i];
+
+                if (!first)
+                    ss << "\n";
+                else
+                    first = false;
+
+                assert(animOverride.attachment1.fields);
+                assert(animOverride.animTreeType < WEAP_ANIM_COUNT);
+
+                if (animOverride.attachment1.fields)
+                    ss << GetNameForSingleWeaponAttachment(animOverride.attachment1);
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (animOverride.attachment2.fields)
+                    ss << GetNameForSingleWeaponAttachment(animOverride.attachment2);
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (animOverride.animTreeType < WEAP_ANIM_COUNT)
+                    ss << weapAnimFilesNames[animOverride.animTreeType] << ' ';
+
+                if (animOverride.overrideAnim && animOverride.overrideAnim[0])
+                    ss << animOverride.overrideAnim;
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (animOverride.altmodeAnim && animOverride.altmodeAnim[0])
+                    ss << animOverride.altmodeAnim;
+                else
+                    ss << "none";
+
+                ss << ' ' << animOverride.animTime << ' ' << animOverride.altTime;
+            }
+
+            m_info_string.SetValueForKey(key, ss.str());
+        }
+
         const WeaponFullDef* m_weapon;
     };
 } // namespace IW5
@@ -293,8 +379,8 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (weapon->szXAnims)
     {
-        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnims)> == NUM_WEAP_ANIMS);
-        memcpy(fullDef->szXAnims, weapon->szXAnims, sizeof(void*) * NUM_WEAP_ANIMS);
+        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnims)> == WEAP_ANIM_COUNT);
+        memcpy(fullDef->szXAnims, weapon->szXAnims, sizeof(void*) * WEAP_ANIM_COUNT);
         fullDef->weapCompleteDef.szXAnims = fullDef->szXAnims;
     }
 
@@ -306,15 +392,15 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.szXAnimsRightHanded)
     {
-        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnimsRightHanded)> == NUM_WEAP_ANIMS);
-        memcpy(fullDef->szXAnimsRightHanded, fullDef->weapDef.szXAnimsRightHanded, sizeof(void*) * NUM_WEAP_ANIMS);
+        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnimsRightHanded)> == WEAP_ANIM_COUNT);
+        memcpy(fullDef->szXAnimsRightHanded, fullDef->weapDef.szXAnimsRightHanded, sizeof(void*) * WEAP_ANIM_COUNT);
         fullDef->weapDef.szXAnimsRightHanded = fullDef->szXAnimsRightHanded;
     }
 
     if (fullDef->weapDef.szXAnimsLeftHanded)
     {
-        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnimsLeftHanded)> == NUM_WEAP_ANIMS);
-        memcpy(fullDef->szXAnimsLeftHanded, fullDef->weapDef.szXAnimsLeftHanded, sizeof(void*) * NUM_WEAP_ANIMS);
+        static_assert(std::extent_v<decltype(WeaponFullDef::szXAnimsLeftHanded)> == WEAP_ANIM_COUNT);
+        memcpy(fullDef->szXAnimsLeftHanded, fullDef->weapDef.szXAnimsLeftHanded, sizeof(void*) * WEAP_ANIM_COUNT);
         fullDef->weapDef.szXAnimsLeftHanded = fullDef->szXAnimsLeftHanded;
     }
 
