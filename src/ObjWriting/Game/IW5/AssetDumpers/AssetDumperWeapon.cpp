@@ -589,7 +589,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
     {
         memcpy(fullDef->notetrackSoundMapValues,
                fullDef->weapDef.notetrackSoundMapValues,
-               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapKeys)>);
+               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackSoundMapValues)>);
         fullDef->weapDef.notetrackSoundMapValues = fullDef->notetrackSoundMapValues;
     }
 
@@ -605,7 +605,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
     {
         memcpy(fullDef->notetrackRumbleMapValues,
                fullDef->weapDef.notetrackRumbleMapValues,
-               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapKeys)>);
+               sizeof(scr_string_t) * std::extent_v<decltype(WeaponFullDef::notetrackRumbleMapValues)>);
         fullDef->weapDef.notetrackRumbleMapValues = fullDef->notetrackRumbleMapValues;
     }
 
