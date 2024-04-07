@@ -76,13 +76,13 @@ namespace IW5
                 FillFromEnumInt(std::string(field.szName), field.iOffset, guidedMissileNames, std::extent_v<decltype(guidedMissileNames)>);
                 break;
 
-            case WFT_BOUNCE_SOUND:
+            case WFT_PER_SURFACE_TYPE_SOUND:
             {
-                const auto* bounceSound = *reinterpret_cast<SndAliasCustom**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+                const auto* perSurfaceTypeSound = *reinterpret_cast<SndAliasCustom**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
 
-                if (bounceSound && bounceSound->name)
+                if (perSurfaceTypeSound && perSurfaceTypeSound->name)
                 {
-                    const std::string firstBounceSound(bounceSound->name->soundName);
+                    const std::string firstBounceSound(perSurfaceTypeSound->name->soundName);
                     const auto endOfBouncePrefix = firstBounceSound.rfind("_default");
                     assert(endOfBouncePrefix != std::string::npos);
 

@@ -117,6 +117,10 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
         break;
     }
 
+    case CSPFT_SCRIPT_STRING:
+        FillFromScriptString(std::string(field.szName), field.iOffset);
+        break;
+
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:
         assert(false);
