@@ -229,6 +229,10 @@ namespace IW5
                 FillFromFxOverrides(std::string(field.szName));
                 break;
 
+            case WFT_RELOAD_OVERRIDES:
+                FillFromReloadOverrides(std::string(field.szName));
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -458,6 +462,31 @@ namespace IW5
                     ss << fxOverride.altmodeFX->name;
                 else
                     ss << "none";
+            }
+
+            m_info_string.SetValueForKey(key, ss.str());
+        }
+
+        void FillFromReloadOverrides(const std::string& key)
+        {
+            std::stringstream ss;
+            bool first = true;
+
+            for (auto i = 0u; i < m_weapon->weapCompleteDef.numReloadStateTimerOverrides; i++)
+            {
+                const auto& reloadOverride = m_weapon->weapCompleteDef.reloadOverrides[i];
+
+                if (!first)
+                    ss << "\n";
+                else
+                    first = false;
+
+                if (reloadOverride.attachment.fields)
+                    ss << GetNameForSingleWeaponAttachment(reloadOverride.attachment);
+                else
+                    ss << "none";
+
+                ss << ' ' << reloadOverride.reloadAddTime << ' ' << reloadOverride.reloadStartAddTime;
             }
 
             m_info_string.SetValueForKey(key, ss.str());

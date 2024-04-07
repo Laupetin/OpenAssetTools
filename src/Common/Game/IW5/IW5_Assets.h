@@ -3963,7 +3963,8 @@ namespace IW5
 
     struct ReloadStateTimerEntry
     {
-        int attachment;
+        WeaponAttachmentCombination attachment;
+        short unused;
         int reloadAddTime;
         int reloadStartAddTime;
     };
