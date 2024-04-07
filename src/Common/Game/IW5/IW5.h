@@ -115,6 +115,7 @@ namespace IW5
 
         // Custom
         WFT_ANIM_NAME,
+        WFT_ATTACHMENT,
 
         WFT_NUM_FIELD_TYPES,
     };

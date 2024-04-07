@@ -16,6 +16,16 @@ namespace IW5
 {
     class InfoStringFromWeaponConverter final : public InfoStringFromStructConverter
     {
+    public:
+        InfoStringFromWeaponConverter(const WeaponFullDef* structure,
+                                      const cspField_t* fields,
+                                      const size_t fieldCount,
+                                      std::function<std::string(scr_string_t)> scriptStringValueCallback)
+            : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback)),
+              m_weapon(structure)
+        {
+        }
+
     protected:
         void FillFromExtensionField(const cspField_t& field) override
         {
@@ -202,6 +212,10 @@ namespace IW5
                 FillFromString(std::string(field.szName), field.iOffset);
                 break;
 
+            case WFT_ATTACHMENT:
+                FillFromAttachments(std::string(field.szName));
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -209,14 +223,55 @@ namespace IW5
             }
         }
 
-    public:
-        InfoStringFromWeaponConverter(const WeaponFullDef* structure,
-                                      const cspField_t* fields,
-                                      const size_t fieldCount,
-                                      std::function<std::string(scr_string_t)> scriptStringValueCallback)
-            : InfoStringFromStructConverter(structure, fields, fieldCount, std::move(scriptStringValueCallback))
+    private:
+        void FillFromAttachments(const std::string& key)
         {
+            std::stringstream ss;
+            bool first = true;
+
+            for (const auto& scope : m_weapon->scopes)
+            {
+                if (scope && scope->szInternalName)
+                {
+                    if (!first)
+                        ss << "\n";
+                    else
+                        first = false;
+
+                    ss << scope->szInternalName;
+                }
+            }
+
+            for (const auto& underBarrel : m_weapon->underBarrels)
+            {
+                if (underBarrel && underBarrel->szInternalName)
+                {
+                    if (!first)
+                        ss << "\n";
+                    else
+                        first = false;
+
+                    ss << underBarrel->szInternalName;
+                }
+            }
+
+            for (const auto& other : m_weapon->others)
+            {
+                if (other && other->szInternalName)
+                {
+                    if (!first)
+                        ss << "\n";
+                    else
+                        first = false;
+
+                    ss << other->szInternalName;
+                }
+            }
+
+            m_info_string.SetValueForKey(key, ss.str());
         }
+
+        const WeaponFullDef* m_weapon;
     };
 } // namespace IW5
 
@@ -325,6 +380,24 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
                fullDef->weapDef.locationDamageMultipliers,
                sizeof(float) * std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)>);
         fullDef->weapDef.locationDamageMultipliers = fullDef->locationDamageMultipliers;
+    }
+
+    if (fullDef->weapCompleteDef.scopes)
+    {
+        memcpy(fullDef->scopes, fullDef->weapCompleteDef.scopes, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::scopes)>);
+        fullDef->weapCompleteDef.scopes = fullDef->scopes;
+    }
+
+    if (fullDef->weapCompleteDef.underBarrels)
+    {
+        memcpy(fullDef->underBarrels, fullDef->weapCompleteDef.underBarrels, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::underBarrels)>);
+        fullDef->weapCompleteDef.underBarrels = fullDef->underBarrels;
+    }
+
+    if (fullDef->weapCompleteDef.others)
+    {
+        memcpy(fullDef->others, fullDef->weapCompleteDef.others, sizeof(void*) * std::extent_v<decltype(WeaponFullDef::others)>);
+        fullDef->weapCompleteDef.others = fullDef->others;
     }
 }
 

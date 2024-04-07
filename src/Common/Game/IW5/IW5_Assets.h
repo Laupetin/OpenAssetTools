@@ -4006,6 +4006,9 @@ namespace IW5
         float parallelBounce[31];
         float perpendicularBounce[31];
         float locationDamageMultipliers[20];
+        WeaponAttachment* scopes[6];
+        WeaponAttachment* underBarrels[3];
+        WeaponAttachment* others[4];
     };
 
     struct FxFloatRange

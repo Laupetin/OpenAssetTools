@@ -4,9 +4,6 @@
 namespace IW5
 {
     // WeaponCompleteDef:
-    // TODO: scopes
-    // TODO: underBarrels
-    // TODO: others
     // TODO: animOverrides
     // TODO: soundOverrides
     // TODO: fxOverrides
@@ -736,6 +733,7 @@ namespace IW5
         {"missileConeSoundCrossfadeEnabled",    offsetof(WeaponFullDef, weapDef.missileConeSoundCrossfadeEnabled),             CSPFT_BOOL               },
         {"missileConeSoundCrossfadeTopSize",    offsetof(WeaponFullDef, weapDef.missileConeSoundCrossfadeTopSize),             CSPFT_FLOAT              },
         {"missileConeSoundCrossfadeBottomSize", offsetof(WeaponFullDef, weapDef.missileConeSoundCrossfadeBottomSize),          CSPFT_FLOAT              },
+        {"attachments",                         offsetof(WeaponFullDef, scopes),                                               WFT_ATTACHMENT           },
     };
 
     inline const char* szWeapTypeNames[]{
