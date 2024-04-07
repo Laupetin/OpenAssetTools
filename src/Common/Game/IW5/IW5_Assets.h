@@ -2852,7 +2852,7 @@ namespace IW5
         WEAPTYPE_PROJECTILE = 0x3,
         WEAPTYPE_RIOTSHIELD = 0x4,
 
-        WEAPTYPE_NUM
+        WEAPTYPE_COUNT
     };
 
     enum weapClass_t
@@ -2870,7 +2870,7 @@ namespace IW5
         WEAPCLASS_NON_PLAYER = 0xA,
         WEAPCLASS_ITEM = 0xB,
 
-        WEAPCLASS_NUM
+        WEAPCLASS_COUNT
     };
 
     enum PenetrateType
@@ -2909,9 +2909,7 @@ namespace IW5
         WEAPON_FIRETYPE_BURSTFIRE4 = 0x4,
         WEAPON_FIRETYPE_DOUBLEBARREL = 0x5,
 
-        WEAPON_FIRETYPECOUNT,
-        WEAPON_FIRETYPE_BURSTFIRE_FIRST = WEAPON_FIRETYPE_BURSTFIRE2,
-        WEAPON_FIRETYPE_BURSTFIRE_LAST = WEAPON_FIRETYPE_BURSTFIRE4
+        WEAPON_FIRETYPE_COUNT
     };
 
     struct AttAmmoGeneral
@@ -3099,7 +3097,7 @@ namespace IW5
         WEAPOVERLAYRETICLE_NONE = 0x0,
         WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
 
-        WEAPOVERLAYRETICLE_NUM
+        WEAPOVERLAYRETICLE_COUNT
     };
 
     struct ADSOverlay
@@ -3168,7 +3166,7 @@ namespace IW5
         WEAPPROJEXP_SMOKE = 0x5,
         WEAPPROJEXP_HEAVY = 0x6,
 
-        WEAPPROJEXP_NUM
+        WEAPPROJEXP_COUNT
     };
 
     struct snd_alias_list_name
@@ -3266,7 +3264,7 @@ namespace IW5
         WEAPINVENTORY_EXCLUSIVE = 0x4,
         WEAPINVENTORY_SCAVENGER = 0x5,
 
-        WEAPINVENTORYCOUNT
+        WEAPINVENTORY_COUNT
     };
 
     enum OffhandClass
@@ -3287,7 +3285,7 @@ namespace IW5
         WEAPSTANCE_DUCK = 0x1,
         WEAPSTANCE_PRONE = 0x2,
 
-        WEAPSTANCE_NUM
+        WEAPSTANCE_COUNT
     };
 
     enum activeReticleType_t
@@ -3358,7 +3356,7 @@ namespace IW5
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
         WEAPOVERLAYINTERFACE_TURRETSCOPE = 0x2,
 
-        WEAPOVERLAYINTERFACECOUNT
+        WEAPOVERLAYINTERFACE_COUNT
     };
 
     enum WeapStickinessType
@@ -3491,7 +3489,7 @@ namespace IW5
         SURF_TYPE_RIOT_SHIELD,
         SURF_TYPE_SLUSH,
 
-        SURF_TYPE_NUM
+        SURF_TYPE_COUNT
     };
 
     struct WeaponDef
@@ -4524,7 +4522,8 @@ namespace IW5
         VEH_SNOWMOBILE = 0x6,
         VEH_SUBMARINE = 0x7,
         VEH_UGV = 0x8,
-        VEH_TYPE_COUNT = 0x9
+
+        VEH_TYPE_COUNT
     };
 
     enum VehicleAxleType
@@ -4532,7 +4531,8 @@ namespace IW5
         VEH_AXLE_FRONT = 0x0,
         VEH_AXLE_REAR = 0x1,
         VEH_AXLE_ALL = 0x2,
-        VEH_AXLE_COUNT = 0x3
+
+        VEH_AXLE_COUNT
     };
 
     enum VehCamZOffsetMode

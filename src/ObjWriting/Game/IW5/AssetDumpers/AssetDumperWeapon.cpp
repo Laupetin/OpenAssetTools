@@ -550,7 +550,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.parallelBounce)
     {
-        static_assert(std::extent_v<decltype(WeaponFullDef::parallelBounce)> == SURF_TYPE_NUM);
+        static_assert(std::extent_v<decltype(WeaponFullDef::parallelBounce)> == SURF_TYPE_COUNT);
         assert(sizeof(WeaponFullDef::parallelBounce) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::parallelBounce)>);
         memcpy(fullDef->parallelBounce, fullDef->weapDef.parallelBounce, sizeof(float) * std::extent_v<decltype(WeaponFullDef::parallelBounce)>);
         fullDef->weapDef.parallelBounce = fullDef->parallelBounce;
@@ -558,7 +558,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.perpendicularBounce)
     {
-        static_assert(std::extent_v<decltype(WeaponFullDef::perpendicularBounce)> == SURF_TYPE_NUM);
+        static_assert(std::extent_v<decltype(WeaponFullDef::perpendicularBounce)> == SURF_TYPE_COUNT);
         assert(sizeof(WeaponFullDef::perpendicularBounce) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::perpendicularBounce)>);
         memcpy(fullDef->perpendicularBounce, fullDef->weapDef.perpendicularBounce, sizeof(float) * std::extent_v<decltype(WeaponFullDef::perpendicularBounce)>);
         fullDef->weapDef.perpendicularBounce = fullDef->perpendicularBounce;

@@ -743,6 +743,7 @@ namespace IW5
         "projectile",
         "riotshield",
     };
+    static_assert(std::extent_v<decltype(szWeapTypeNames)> == WEAPTYPE_COUNT);
 
     inline const char* szWeapClassNames[]{
         "rifle",
@@ -758,11 +759,13 @@ namespace IW5
         "non-player",
         "item",
     };
+    static_assert(std::extent_v<decltype(szWeapClassNames)> == WEAPCLASS_COUNT);
 
     inline const char* szWeapOverlayReticleNames[]{
         "none",
         "crosshair",
     };
+    static_assert(std::extent_v<decltype(szWeapOverlayReticleNames)> == WEAPOVERLAYRETICLE_COUNT);
 
     inline const char* szWeapInventoryTypeNames[]{
         "primary",
@@ -772,6 +775,7 @@ namespace IW5
         "exclusive",
         "scavenger",
     };
+    static_assert(std::extent_v<decltype(szWeapInventoryTypeNames)> == WEAPINVENTORY_COUNT);
 
     inline const char* szWeapFireTypeNames[]{
         "Full Auto",
@@ -781,6 +785,7 @@ namespace IW5
         "4-Round Burst",
         "Double Barrel",
     };
+    static_assert(std::extent_v<decltype(szWeapFireTypeNames)> == WEAPON_FIRETYPE_COUNT);
 
     inline const char* penetrateTypeNames[]{
         "none",
@@ -788,6 +793,7 @@ namespace IW5
         "medium",
         "large",
     };
+    static_assert(std::extent_v<decltype(penetrateTypeNames)> == PENETRATE_TYPE_COUNT);
 
     inline const char* impactTypeNames[]{
         "none",
@@ -802,12 +808,14 @@ namespace IW5
         "rocket_explode",
         "projectile_dud",
     };
+    static_assert(std::extent_v<decltype(impactTypeNames)> == IMPACT_TYPE_COUNT);
 
     inline const char* szWeapStanceNames[]{
         "stand",
         "duck",
         "prone",
     };
+    static_assert(std::extent_v<decltype(szWeapStanceNames)> == WEAPSTANCE_COUNT);
 
     inline const char* szProjectileExplosionNames[]{
         "grenade",
@@ -818,6 +826,7 @@ namespace IW5
         "smoke",
         "heavy explosive",
     };
+    static_assert(std::extent_v<decltype(szProjectileExplosionNames)> == WEAPPROJEXP_COUNT);
 
     inline const char* offhandClassNames[]{
         "None",
@@ -827,6 +836,7 @@ namespace IW5
         "Throwing Knife",
         "Other",
     };
+    static_assert(std::extent_v<decltype(offhandClassNames)> == OFFHAND_CLASS_COUNT);
 
     inline const char* playerAnimTypeNames[]{
         "none",
@@ -854,6 +864,7 @@ namespace IW5
         "Pip-On-A-Stick",
         "Bouncing diamond",
     };
+    static_assert(std::extent_v<decltype(activeReticleNames)> == VEH_ACTIVE_RETICLE_COUNT);
 
     inline const char* guidedMissileNames[]{
         "None",
@@ -861,6 +872,7 @@ namespace IW5
         "Hellfire",
         "Javelin",
     };
+    static_assert(std::extent_v<decltype(guidedMissileNames)> == MISSILE_GUIDANCE_COUNT);
 
     inline const char* stickinessNames[]{
         "Don't stick",
@@ -870,12 +882,14 @@ namespace IW5
         "Stick to ground, maintain yaw",
         "Knife",
     };
+    static_assert(std::extent_v<decltype(stickinessNames)> == WEAPSTICKINESS_COUNT);
 
     inline const char* overlayInterfaceNames[]{
         "None",
         "Javelin",
         "Turret Scope",
     };
+    static_assert(std::extent_v<decltype(overlayInterfaceNames)> == WEAPOVERLAYINTERFACE_COUNT);
 
     inline const char* ammoCounterClipNames[]{
         "None",
@@ -886,12 +900,14 @@ namespace IW5
         "Beltfed",
         "AltWeapon",
     };
+    static_assert(std::extent_v<decltype(ammoCounterClipNames)> == AMMO_COUNTER_CLIP_COUNT);
 
     inline const char* weapIconRatioNames[]{
         "1:1",
         "2:1",
         "4:1",
     };
+    static_assert(std::extent_v<decltype(weapIconRatioNames)> == WEAPON_ICON_RATIO_COUNT);
 
     inline const char* s_vehicleClassNames[]{
         "4 wheel",
@@ -901,13 +917,17 @@ namespace IW5
         "artillery",
         "helicopter",
         "snowmobile",
+        "submarine",
+        "ugv",
     };
+    static_assert(std::extent_v<decltype(s_vehicleClassNames)> == VEH_TYPE_COUNT);
 
     inline const char* s_vehicleAxleTypeNames[]{
         "front",
         "rear",
         "all",
     };
+    static_assert(std::extent_v<decltype(s_vehicleAxleTypeNames)> == VEH_AXLE_COUNT);
 
     inline const char* bounceSoundSuffixes[]{
         "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",          "_flesh",       "_foliage", "_glass", "_grass",
