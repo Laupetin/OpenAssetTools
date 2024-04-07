@@ -4,7 +4,6 @@
 namespace IW5
 {
     // WeaponCompleteDef:
-    // TODO: soundOverrides
     // TODO: fxOverrides
     // TODO: reloadOverrides
     // TODO: notetrackOverrides
@@ -734,6 +733,7 @@ namespace IW5
         {"missileConeSoundCrossfadeBottomSize", offsetof(WeaponFullDef, weapDef.missileConeSoundCrossfadeBottomSize),          CSPFT_FLOAT              },
         {"attachments",                         offsetof(WeaponFullDef, scopes),                                               WFT_ATTACHMENT           },
         {"animOverrides",                       offsetof(WeaponFullDef, weapCompleteDef.animOverrides),                        WFT_ANIM_OVERRIDES       },
+        {"soundOverrides",                      offsetof(WeaponFullDef, weapCompleteDef.soundOverrides),                       WFT_SOUND_OVERRIDES      },
     };
 
     inline const char* szWeapTypeNames[]{
@@ -925,4 +925,13 @@ namespace IW5
         "ads_down",     "alt_adjust",
     };
     static_assert(std::extent_v<decltype(weapAnimFilesNames)> == WEAP_ANIM_COUNT);
+
+    inline const char* soundOverrideTypeNames[]{
+        "none",
+        "fire",
+        "player_fire",
+        "player_akimbo",
+        "player_lastshot",
+    };
+    static_assert(std::extent_v<decltype(soundOverrideTypeNames)> == SNDTYPE_PLAYER_COUNT);
 } // namespace IW5

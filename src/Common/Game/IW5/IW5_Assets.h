@@ -3923,13 +3923,24 @@ namespace IW5
         int altTime;
     };
 
+    enum SoundOverrideTypes : unsigned int
+    {
+        SNDTYPE_NONE = 0x0,
+        SNDTYPE_FIRE = 0x1,
+        SNDTYPE_PLAYER_FIRE = 0x2,
+        SNDTYPE_PLAYER_AKIMBO = 0x3,
+        SNDTYPE_PLAYER_LASTSHOT = 0x4,
+
+        SNDTYPE_PLAYER_COUNT
+    };
+
     struct SoundOverrideEntry
     {
-        unsigned short attachment1;
-        unsigned short attachment2;
+        WeaponAttachmentCombination attachment1;
+        WeaponAttachmentCombination attachment2;
         SndAliasCustom overrideSound;
         SndAliasCustom altmodeSound;
-        unsigned int soundType;
+        SoundOverrideTypes soundType;
     };
 
     struct FXOverrideEntry

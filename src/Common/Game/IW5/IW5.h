@@ -117,6 +117,7 @@ namespace IW5
         WFT_ANIM_NAME,
         WFT_ATTACHMENT,
         WFT_ANIM_OVERRIDES,
+        WFT_SOUND_OVERRIDES,
 
         WFT_NUM_FIELD_TYPES,
     };

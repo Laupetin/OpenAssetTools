@@ -221,6 +221,10 @@ namespace IW5
                 FillFromAnimOverrides(std::string(field.szName));
                 break;
 
+            case WFT_SOUND_OVERRIDES:
+                FillFromSoundOverrides(std::string(field.szName));
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -352,6 +356,55 @@ namespace IW5
                     ss << "none";
 
                 ss << ' ' << animOverride.animTime << ' ' << animOverride.altTime;
+            }
+
+            m_info_string.SetValueForKey(key, ss.str());
+        }
+
+        void FillFromSoundOverrides(const std::string& key)
+        {
+            std::stringstream ss;
+            bool first = true;
+
+            for (auto i = 0u; i < m_weapon->weapCompleteDef.numSoundOverrides; i++)
+            {
+                const auto& soundOverride = m_weapon->weapCompleteDef.soundOverrides[i];
+
+                if (!first)
+                    ss << "\n";
+                else
+                    first = false;
+
+                assert(soundOverride.soundType < SNDTYPE_PLAYER_COUNT);
+
+                if (soundOverride.attachment1.fields)
+                    ss << GetNameForSingleWeaponAttachment(soundOverride.attachment1);
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (soundOverride.attachment2.fields)
+                    ss << GetNameForSingleWeaponAttachment(soundOverride.attachment2);
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (soundOverride.soundType < SNDTYPE_PLAYER_COUNT)
+                    ss << soundOverrideTypeNames[soundOverride.soundType] << ' ';
+
+                if (soundOverride.overrideSound.name && soundOverride.overrideSound.name->soundName && soundOverride.overrideSound.name->soundName[0])
+                    ss << soundOverride.overrideSound.name->soundName;
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (soundOverride.altmodeSound.name && soundOverride.altmodeSound.name->soundName && soundOverride.altmodeSound.name->soundName[0])
+                    ss << soundOverride.altmodeSound.name->soundName;
+                else
+                    ss << "none";
             }
 
             m_info_string.SetValueForKey(key, ss.str());
