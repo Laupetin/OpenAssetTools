@@ -3,6 +3,51 @@
 
 namespace IW5
 {
+    // WeaponCompleteDef:
+    // TODO: scopes
+    // TODO: underBarrels
+    // TODO: others
+    // TODO: animOverrides
+    // TODO: soundOverrides
+    // TODO: fxOverrides
+    // TODO: reloadOverrides
+    // TODO: notetrackOverrides
+    // TODO: iFireTimeAkimbo
+    // TODO: iAltRaiseTimeAkimbo
+    // TODO: fireAnimLengthAkimbo
+    // TODO: iFirstRaiseTimeAkimbo
+    // WeaponDef:
+    // TODO: changeVariableZoomSound
+    // TODO: rollingSound
+    // TODO: akimboStateTimers
+    // TODO: adsIdleLerpStartTime
+    // TODO: adsIdleLerpTime
+    // TODO: riotShieldEnableDamage
+    // TODO: riotShieldHealth
+    // TODO: riotShieldDamageMult
+    // TODO: turretADSEnabled
+    // TODO: turretADSTime
+    // TODO: turretFov
+    // TODO: turretFovADS
+    // TODO: isAirburstWeapon
+    // TODO: canHoldBreath
+    // TODO: canVariableZoom
+    // TODO: stickToVehicles
+    // TODO: stickToTurrets
+    // TODO: doNotAllowAttachmentsToOverrideSpread
+    // TODO: stowTag
+    // TODO: stowOffsetModel
+    // StateTimers:
+    // TODO: blastFrontTime;
+    // TODO: blastRightTime;
+    // TODO: blastBackTime;
+    // TODO: blastLeftTime;
+    // TODO: raiseInterruptableTime;
+    // TODO: firstRaiseInterruptableTime;
+    // TODO: reloadInterruptableTime;
+    // TODO: reloadEmptyInterruptableTime;
+    // TODO: fireInterruptableTime;
+
     inline cspField_t weapon_fields[]{
         {"displayName",                         offsetof(WeaponFullDef, weapCompleteDef.szDisplayName),                        CSPFT_STRING             },
         {"AIOverlayDescription",                offsetof(WeaponFullDef, weapDef.szOverlayName),                                CSPFT_STRING             },
