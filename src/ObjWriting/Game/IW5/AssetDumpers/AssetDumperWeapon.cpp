@@ -233,6 +233,10 @@ namespace IW5
                 FillFromReloadOverrides(std::string(field.szName));
                 break;
 
+            case WFT_NOTETRACK_OVERRIDES:
+                FillFromNoteTrackOverrides(std::string(field.szName));
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -487,6 +491,40 @@ namespace IW5
                     ss << "none";
 
                 ss << ' ' << reloadOverride.reloadAddTime << ' ' << reloadOverride.reloadStartAddTime;
+            }
+
+            m_info_string.SetValueForKey(key, ss.str());
+        }
+
+        void FillFromNoteTrackOverrides(const std::string& key)
+        {
+            std::stringstream ss;
+            bool first = true;
+
+            for (auto i = 0u; i < m_weapon->weapCompleteDef.numNotetrackOverrides; i++)
+            {
+                const auto& noteTrackOverrides = m_weapon->weapCompleteDef.notetrackOverrides[i];
+
+                assert(noteTrackOverrides.notetrackSoundMapKeys || noteTrackOverrides.notetrackSoundMapValues);
+                if (!noteTrackOverrides.notetrackSoundMapKeys || !noteTrackOverrides.notetrackSoundMapValues)
+                    continue;
+
+                const auto attachmentName = noteTrackOverrides.attachment.fields ? GetNameForSingleWeaponAttachment(noteTrackOverrides.attachment) : "none";
+                for (auto j = 0u; j < 24u; j++)
+                {
+                    const auto& noteTrackKey = m_get_scr_string(noteTrackOverrides.notetrackSoundMapKeys[j]);
+                    const auto& noteTrackValue = m_get_scr_string(noteTrackOverrides.notetrackSoundMapValues[j]);
+
+                    if (noteTrackKey.empty() || noteTrackValue.empty())
+                        continue;
+
+                    if (!first)
+                        ss << "\n";
+                    else
+                        first = false;
+
+                    ss << attachmentName << ' ' << noteTrackKey << ' ' << noteTrackValue;
+                }
             }
 
             m_info_string.SetValueForKey(key, ss.str());

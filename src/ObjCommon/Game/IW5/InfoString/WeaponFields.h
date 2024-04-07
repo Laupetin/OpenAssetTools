@@ -4,7 +4,6 @@
 namespace IW5
 {
     // WeaponCompleteDef:
-    // TODO: notetrackOverrides
     // TODO: iFireTimeAkimbo
     // TODO: iAltRaiseTimeAkimbo
     // TODO: fireAnimLengthAkimbo
@@ -734,6 +733,7 @@ namespace IW5
         {"soundOverrides",                      offsetof(WeaponFullDef, weapCompleteDef.soundOverrides),                       WFT_SOUND_OVERRIDES      },
         {"fxOverrides",                         offsetof(WeaponFullDef, weapCompleteDef.fxOverrides),                          WFT_FX_OVERRIDES         },
         {"reloadOverrides",                     offsetof(WeaponFullDef, weapCompleteDef.reloadOverrides),                      WFT_RELOAD_OVERRIDES     },
+        {"notetrackOverrides",                  offsetof(WeaponFullDef, weapCompleteDef.notetrackOverrides),                   WFT_NOTETRACK_OVERRIDES  },
     };
 
     inline const char* szWeapTypeNames[]{

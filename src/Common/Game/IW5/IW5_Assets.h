@@ -3971,7 +3971,8 @@ namespace IW5
 
     struct NoteTrackToSoundEntry
     {
-        int attachment;
+        WeaponAttachmentCombination attachment;
+        short unused;
         ScriptString* notetrackSoundMapKeys;
         ScriptString* notetrackSoundMapValues;
     };
