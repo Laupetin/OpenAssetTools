@@ -3352,7 +3352,7 @@ namespace IW5
         int fireInterruptableTime;
     };
 
-    enum WeapOverlayInteface_t
+    enum WeapOverlayInterface_t
     {
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
@@ -3635,7 +3635,7 @@ namespace IW5
         float fAdsZoomInFrac;
         float fAdsZoomOutFrac;
         ADSOverlay overlay;
-        WeapOverlayInteface_t overlayInterface;
+        WeapOverlayInterface_t overlayInterface;
         float fAdsBobFactor;
         float fAdsViewBobMult;
         float fHipSpreadStandMin;
