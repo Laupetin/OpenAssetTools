@@ -3943,13 +3943,24 @@ namespace IW5
         SoundOverrideTypes soundType;
     };
 
+    enum FXOverrideTypes : unsigned int
+    {
+        FXTYPE_NONE = 0x0,
+        FXTYPE_VIEW_FLASH = 0x1,
+        FXTYPE_WORLD_FLASH = 0x2,
+        FXTYPE_VIEW_SHELL_EJECT = 0x3,
+        FXTYPE_WORLD_SHELL_EJECT = 0x4,
+
+        FXTYPE_COUNT
+    };
+
     struct FXOverrideEntry
     {
-        unsigned short attachment1;
-        unsigned short attachment2;
+        WeaponAttachmentCombination attachment1;
+        WeaponAttachmentCombination attachment2;
         FxEffectDef* overrideFX;
         FxEffectDef* altmodeFX;
-        unsigned int fxType;
+        FXOverrideTypes fxType;
     };
 
     struct ReloadStateTimerEntry

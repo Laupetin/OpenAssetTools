@@ -4,7 +4,6 @@
 namespace IW5
 {
     // WeaponCompleteDef:
-    // TODO: fxOverrides
     // TODO: reloadOverrides
     // TODO: notetrackOverrides
     // TODO: iFireTimeAkimbo
@@ -734,6 +733,7 @@ namespace IW5
         {"attachments",                         offsetof(WeaponFullDef, scopes),                                               WFT_ATTACHMENT           },
         {"animOverrides",                       offsetof(WeaponFullDef, weapCompleteDef.animOverrides),                        WFT_ANIM_OVERRIDES       },
         {"soundOverrides",                      offsetof(WeaponFullDef, weapCompleteDef.soundOverrides),                       WFT_SOUND_OVERRIDES      },
+        {"fxOverrides",                         offsetof(WeaponFullDef, weapCompleteDef.fxOverrides),                          WFT_FX_OVERRIDES         },
     };
 
     inline const char* szWeapTypeNames[]{
@@ -934,4 +934,13 @@ namespace IW5
         "player_lastshot",
     };
     static_assert(std::extent_v<decltype(soundOverrideTypeNames)> == SNDTYPE_PLAYER_COUNT);
+
+    inline const char* fxOverrideTypeNames[]{
+        "none",
+        "view_flash",
+        "world_flash",
+        "view_shell_eject",
+        "world_shell_eject",
+    };
+    static_assert(std::extent_v<decltype(fxOverrideTypeNames)> == FXTYPE_COUNT);
 } // namespace IW5

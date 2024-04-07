@@ -225,6 +225,10 @@ namespace IW5
                 FillFromSoundOverrides(std::string(field.szName));
                 break;
 
+            case WFT_FX_OVERRIDES:
+                FillFromFxOverrides(std::string(field.szName));
+                break;
+
             case WFT_NUM_FIELD_TYPES:
             default:
                 assert(false);
@@ -403,6 +407,55 @@ namespace IW5
 
                 if (soundOverride.altmodeSound.name && soundOverride.altmodeSound.name->soundName && soundOverride.altmodeSound.name->soundName[0])
                     ss << soundOverride.altmodeSound.name->soundName;
+                else
+                    ss << "none";
+            }
+
+            m_info_string.SetValueForKey(key, ss.str());
+        }
+
+        void FillFromFxOverrides(const std::string& key)
+        {
+            std::stringstream ss;
+            bool first = true;
+
+            for (auto i = 0u; i < m_weapon->weapCompleteDef.numFXOverrides; i++)
+            {
+                const auto& fxOverride = m_weapon->weapCompleteDef.fxOverrides[i];
+
+                if (!first)
+                    ss << "\n";
+                else
+                    first = false;
+
+                assert(fxOverride.fxType < FXTYPE_COUNT);
+
+                if (fxOverride.attachment1.fields)
+                    ss << GetNameForSingleWeaponAttachment(fxOverride.attachment1);
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (fxOverride.attachment2.fields)
+                    ss << GetNameForSingleWeaponAttachment(fxOverride.attachment2);
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (fxOverride.fxType < FXTYPE_COUNT)
+                    ss << fxOverrideTypeNames[fxOverride.fxType] << ' ';
+
+                if (fxOverride.overrideFX && fxOverride.overrideFX->name && fxOverride.overrideFX->name[0])
+                    ss << fxOverride.overrideFX->name;
+                else
+                    ss << "none";
+
+                ss << ' ';
+
+                if (fxOverride.altmodeFX && fxOverride.altmodeFX->name && fxOverride.altmodeFX->name[0])
+                    ss << fxOverride.altmodeFX->name;
                 else
                     ss << "none";
             }
