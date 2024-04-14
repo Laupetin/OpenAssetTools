@@ -2852,7 +2852,7 @@ namespace IW5
         WEAPTYPE_PROJECTILE = 0x3,
         WEAPTYPE_RIOTSHIELD = 0x4,
 
-        WEAPTYPE_NUM
+        WEAPTYPE_COUNT
     };
 
     enum weapClass_t
@@ -2870,7 +2870,7 @@ namespace IW5
         WEAPCLASS_NON_PLAYER = 0xA,
         WEAPCLASS_ITEM = 0xB,
 
-        WEAPCLASS_NUM
+        WEAPCLASS_COUNT
     };
 
     enum PenetrateType
@@ -2909,9 +2909,7 @@ namespace IW5
         WEAPON_FIRETYPE_BURSTFIRE4 = 0x4,
         WEAPON_FIRETYPE_DOUBLEBARREL = 0x5,
 
-        WEAPON_FIRETYPECOUNT,
-        WEAPON_FIRETYPE_BURSTFIRE_FIRST = WEAPON_FIRETYPE_BURSTFIRE2,
-        WEAPON_FIRETYPE_BURSTFIRE_LAST = WEAPON_FIRETYPE_BURSTFIRE4
+        WEAPON_FIRETYPE_COUNT
     };
 
     struct AttAmmoGeneral
@@ -3099,7 +3097,7 @@ namespace IW5
         WEAPOVERLAYRETICLE_NONE = 0x0,
         WEAPOVERLAYRETICLE_CROSSHAIR = 0x1,
 
-        WEAPOVERLAYRETICLE_NUM
+        WEAPOVERLAYRETICLE_COUNT
     };
 
     struct ADSOverlay
@@ -3168,7 +3166,7 @@ namespace IW5
         WEAPPROJEXP_SMOKE = 0x5,
         WEAPPROJEXP_HEAVY = 0x6,
 
-        WEAPPROJEXP_NUM
+        WEAPPROJEXP_COUNT
     };
 
     struct snd_alias_list_name
@@ -3221,7 +3219,7 @@ namespace IW5
         XModel** worldModels;
         XModel** viewModels;
         XModel** reticleViewModels;
-        AttAmmoGeneral* ammogeneral;
+        AttAmmoGeneral* ammoGeneral;
         AttSight4* sight;
         AttReload* reload;
         AttAddOns* addOns;
@@ -3266,7 +3264,7 @@ namespace IW5
         WEAPINVENTORY_EXCLUSIVE = 0x4,
         WEAPINVENTORY_SCAVENGER = 0x5,
 
-        WEAPINVENTORYCOUNT
+        WEAPINVENTORY_COUNT
     };
 
     enum OffhandClass
@@ -3287,7 +3285,7 @@ namespace IW5
         WEAPSTANCE_DUCK = 0x1,
         WEAPSTANCE_PRONE = 0x2,
 
-        WEAPSTANCE_NUM
+        WEAPSTANCE_COUNT
     };
 
     enum activeReticleType_t
@@ -3352,13 +3350,13 @@ namespace IW5
         int fireInterruptableTime;
     };
 
-    enum WeapOverlayInteface_t
+    enum WeapOverlayInterface_t
     {
         WEAPOVERLAYINTERFACE_NONE = 0x0,
         WEAPOVERLAYINTERFACE_JAVELIN = 0x1,
         WEAPOVERLAYINTERFACE_TURRETSCOPE = 0x2,
 
-        WEAPOVERLAYINTERFACECOUNT
+        WEAPOVERLAYINTERFACE_COUNT
     };
 
     enum WeapStickinessType
@@ -3383,7 +3381,7 @@ namespace IW5
         MISSILE_GUIDANCE_COUNT
     };
 
-    enum weapAnimFiles_t
+    enum weapAnimFiles_t : unsigned int
     {
         WEAP_ANIM_ROOT = 0x0,
         WEAP_ANIM_IDLE = 0x1,
@@ -3428,7 +3426,7 @@ namespace IW5
         WEAP_ANIM_ADS_DOWN = 0x28,
         WEAP_ALT_ANIM_ADJUST = 0x29,
 
-        NUM_WEAP_ANIMS
+        WEAP_ANIM_COUNT
     };
 
     enum hitLocation_t
@@ -3455,6 +3453,43 @@ namespace IW5
         HITLOC_SHIELD = 0x13,
 
         HITLOC_NUM
+    };
+
+    enum materialSurfType_t
+    {
+        SURF_TYPE_DEFAULT,
+        SURF_TYPE_BARK,
+        SURF_TYPE_BRICK,
+        SURF_TYPE_CARPET,
+        SURF_TYPE_CLOTH,
+        SURF_TYPE_CONCRETE,
+        SURF_TYPE_DIRT,
+        SURF_TYPE_FLESH,
+        SURF_TYPE_FOLIAGE,
+        SURF_TYPE_GLASS,
+        SURF_TYPE_GRASS,
+        SURF_TYPE_GRAVEL,
+        SURF_TYPE_ICE,
+        SURF_TYPE_METAL,
+        SURF_TYPE_MUD,
+        SURF_TYPE_PAPER,
+        SURF_TYPE_PLASTER,
+        SURF_TYPE_ROCK,
+        SURF_TYPE_SAND,
+        SURF_TYPE_SNOW,
+        SURF_TYPE_WATER,
+        SURF_TYPE_WOOD,
+        SURF_TYPE_ASPHALT,
+        SURF_TYPE_CERAMIC,
+        SURF_TYPE_PLASTIC,
+        SURF_TYPE_RUBBER,
+        SURF_TYPE_CUSHION,
+        SURF_TYPE_FRUIT,
+        SURF_TYPE_PAINTED_METAL,
+        SURF_TYPE_RIOT_SHIELD,
+        SURF_TYPE_SLUSH,
+
+        SURF_TYPE_COUNT
     };
 
     struct WeaponDef
@@ -3598,7 +3633,7 @@ namespace IW5
         float fAdsZoomInFrac;
         float fAdsZoomOutFrac;
         ADSOverlay overlay;
-        WeapOverlayInteface_t overlayInterface;
+        WeapOverlayInterface_t overlayInterface;
         float fAdsBobFactor;
         float fAdsViewBobMult;
         float fHipSpreadStandMin;
@@ -3858,45 +3893,86 @@ namespace IW5
         XModel* stowOffsetModel;
     };
 
+    union WeaponAttachmentCombination
+    {
+        struct
+        {
+            // Specifies the index as a number
+            // since there can only be one scope
+            unsigned short scope : 3;
+            // Specifies the index as a number
+            // since there can only be one under barrel
+            unsigned short underBarrel : 2;
+            // Specifies all other attachments as a bit array
+            unsigned short other : 4;
+        };
+
+        unsigned short fields;
+    };
+
     struct AnimOverrideEntry
     {
-        unsigned short attachment1;
-        unsigned short attachment2;
+        WeaponAttachmentCombination attachment1;
+        WeaponAttachmentCombination attachment2;
         const char* overrideAnim;
         const char* altmodeAnim;
-        unsigned int animTreeType;
+        weapAnimFiles_t animTreeType;
         int animTime;
         int altTime;
     };
 
+    enum SoundOverrideTypes : unsigned int
+    {
+        SNDTYPE_NONE = 0x0,
+        SNDTYPE_FIRE = 0x1,
+        SNDTYPE_PLAYER_FIRE = 0x2,
+        SNDTYPE_PLAYER_AKIMBO = 0x3,
+        SNDTYPE_PLAYER_LASTSHOT = 0x4,
+
+        SNDTYPE_PLAYER_COUNT
+    };
+
     struct SoundOverrideEntry
     {
-        unsigned short attachment1;
-        unsigned short attachment2;
+        WeaponAttachmentCombination attachment1;
+        WeaponAttachmentCombination attachment2;
         SndAliasCustom overrideSound;
         SndAliasCustom altmodeSound;
-        unsigned int soundType;
+        SoundOverrideTypes soundType;
+    };
+
+    enum FXOverrideTypes : unsigned int
+    {
+        FXTYPE_NONE = 0x0,
+        FXTYPE_VIEW_FLASH = 0x1,
+        FXTYPE_WORLD_FLASH = 0x2,
+        FXTYPE_VIEW_SHELL_EJECT = 0x3,
+        FXTYPE_WORLD_SHELL_EJECT = 0x4,
+
+        FXTYPE_COUNT
     };
 
     struct FXOverrideEntry
     {
-        unsigned short attachment1;
-        unsigned short attachment2;
+        WeaponAttachmentCombination attachment1;
+        WeaponAttachmentCombination attachment2;
         FxEffectDef* overrideFX;
         FxEffectDef* altmodeFX;
-        unsigned int fxType;
+        FXOverrideTypes fxType;
     };
 
     struct ReloadStateTimerEntry
     {
-        int attachment;
+        WeaponAttachmentCombination attachment;
+        short unused;
         int reloadAddTime;
         int reloadStartAddTime;
     };
 
     struct NoteTrackToSoundEntry
     {
-        int attachment;
+        WeaponAttachmentCombination attachment;
+        short unused;
         ScriptString* notetrackSoundMapKeys;
         ScriptString* notetrackSoundMapValues;
     };
@@ -3950,6 +4026,28 @@ namespace IW5
         bool motionTracker;
         bool enhanced;
         bool dpadIconShowsAmmo;
+    };
+
+    struct WeaponFullDef
+    {
+        WeaponCompleteDef weapCompleteDef;
+        WeaponDef weapDef;
+        uint16_t hideTags[32];
+        const char* szXAnims[42];
+        XModel* gunXModel[16];
+        const char* szXAnimsRightHanded[42];
+        const char* szXAnimsLeftHanded[42];
+        uint16_t notetrackSoundMapKeys[24];
+        uint16_t notetrackSoundMapValues[24];
+        uint16_t notetrackRumbleMapKeys[16];
+        uint16_t notetrackRumbleMapValues[16];
+        XModel* worldModel[16];
+        float parallelBounce[31];
+        float perpendicularBounce[31];
+        float locationDamageMultipliers[20];
+        WeaponAttachment* scopes[6];
+        WeaponAttachment* underBarrels[3];
+        WeaponAttachment* others[4];
     };
 
     struct FxFloatRange
@@ -4426,7 +4524,8 @@ namespace IW5
         VEH_SNOWMOBILE = 0x6,
         VEH_SUBMARINE = 0x7,
         VEH_UGV = 0x8,
-        VEH_TYPE_COUNT = 0x9
+
+        VEH_TYPE_COUNT
     };
 
     enum VehicleAxleType
@@ -4434,7 +4533,8 @@ namespace IW5
         VEH_AXLE_FRONT = 0x0,
         VEH_AXLE_REAR = 0x1,
         VEH_AXLE_ALL = 0x2,
-        VEH_AXLE_COUNT = 0x3
+
+        VEH_AXLE_COUNT
     };
 
     enum VehCamZOffsetMode

@@ -84,6 +84,17 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
         break;
     }
 
+    case CSPFT_PHYS_COLLMAP:
+    {
+        const auto* physCollMap = *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+
+        if (physCollMap)
+            m_info_string.SetValueForKey(std::string(field.szName), std::string(AssetName(physCollMap->name)));
+        else
+            m_info_string.SetValueForKey(std::string(field.szName), "");
+        break;
+    }
+
     case CSPFT_SOUND:
     {
         const auto* sndAlias = reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
@@ -105,6 +116,10 @@ void InfoStringFromStructConverter::FillFromBaseField(const cspField_t& field)
             m_info_string.SetValueForKey(std::string(field.szName), "");
         break;
     }
+
+    case CSPFT_SCRIPT_STRING:
+        FillFromScriptString(std::string(field.szName), field.iOffset);
+        break;
 
     case CSPFT_NUM_BASE_FIELD_TYPES:
     default:
