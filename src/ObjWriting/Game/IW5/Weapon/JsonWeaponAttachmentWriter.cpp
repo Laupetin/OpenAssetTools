@@ -68,9 +68,9 @@ namespace
             jAttachment.weaponType = attachment.weaponType;
             jAttachment.weapClass = attachment.weapClass;
 
-            CONVERT_XMODEL_ARRAY(worldModels, 16u)
-            CONVERT_XMODEL_ARRAY(viewModels, 16u)
-            CONVERT_XMODEL_ARRAY(reticleViewModels, 8u)
+            CONVERT_XMODEL_ARRAY(worldModels, ATTACHMENT_WORLD_MODEL_COUNT)
+            CONVERT_XMODEL_ARRAY(viewModels, ATTACHMENT_VIEW_MODEL_COUNT)
+            CONVERT_XMODEL_ARRAY(reticleViewModels, ATTACHMENT_RETICLE_VIEW_MODEL_COUNT)
 
             CONVERT_ATTRIBUTE(JsonAttAmmoGeneral, ammoGeneral)
             CONVERT_ATTRIBUTE(JsonAttSight, sight)
