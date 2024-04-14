@@ -3219,7 +3219,7 @@ namespace IW5
         XModel** worldModels;
         XModel** viewModels;
         XModel** reticleViewModels;
-        AttAmmoGeneral* ammogeneral;
+        AttAmmoGeneral* ammoGeneral;
         AttSight4* sight;
         AttReload* reload;
         AttAddOns* addOns;

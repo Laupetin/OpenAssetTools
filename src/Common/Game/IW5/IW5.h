@@ -125,4 +125,16 @@ namespace IW5
 
         WFT_NUM_FIELD_TYPES,
     };
+
+    enum weaponAttachmentFieldType_t
+    {
+        WAFT_ATTACHMENT_TYPE = CSPFT_NUM_BASE_FIELD_TYPES,
+        WAFT_WEAPONTYPE,
+        WAFT_WEAPONCLASS,
+        WAFT_PENETRATE_TYPE,
+        WAFT_IMPACT_TYPE,
+        WAFT_FIRETYPE,
+
+        WAFT_NUM_FIELD_TYPES,
+    };
 } // namespace IW5
