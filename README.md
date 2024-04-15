@@ -22,12 +22,12 @@ While still incomplete these are the features that are currently available:
 ### Tools
 
 The **Unlinker** tool allows loading any fastfile (.ff) of supported games and works standalone.
-While being able to load any asset it can currently only dump a subset of these assets to disk, depending on the game.
+While being able to load any asset it can currently only dump [a subset of these assets](docs/SupportedAssetTypes.md) to disk, depending on the game.
 The formats of the dumped assets are either as close as possible to the originally used formats for these games or a commonly used format.
 
 The **Linker** tool allows building custom fastfiles (.ff) for the supported games.
 It can also load existing zones and reuse their assets from in-memory.
-Only a subset of asset types can be read from disk depending on the game.
+Only [a subset of asset types](docs/SupportedAssetTypes.md) can be read from disk depending on the game.
 
 Additionally, there are a couple of libraries and tools.
 A full list of the subcomponents can be found [here](https://openassettools.dev/guide/components.html). 
