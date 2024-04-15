@@ -7,7 +7,7 @@ The following section specify which assets are supported to be dumped to disk (u
 - ✅ = Supported
 - ⁉️ = Partial support
 
-## IW3
+## IW3 (Call of Duty 4: Modern Warfare)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                    |
 | -------------------- | --------------- | --------------- | -------------------------------------------------------- |
@@ -37,7 +37,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | RawFile              | ✅              | ✅              |                                                          |
 | StringTable          | ✅              | ✅              |                                                          |
 
-## IW4
+## IW4 (Call of Duty: Modern Warfare 2)
 
 | Asset Type                | Dumping Support | Loading Support | Notes                                                                   |
 | ------------------------- | --------------- | --------------- | ----------------------------------------------------------------------- |
@@ -77,7 +77,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | VehicleDef                | ✅              | ❌              |                                                                         |
 | AddonMapEnts              | ⁉️              | ❌              | MapEnts String can be exported. Binary data currently not.              |
 
-## IW5
+## IW5 (Call of Duty: Modern Warfare 3)
 
 | Asset Type                | Dumping Support | Loading Support | Notes                                                                                                         |
 | ------------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -122,7 +122,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | VehicleDef                | ❌              | ❌              |                                                                                                               |
 | AddonMapEnts              | ⁉️              | ❌              | MapEnts String can be exported. Binary data currently not.                                                    |
 
-## T5
+## T5 (Call of Duty: Black Ops)
 
 | Asset Type           | Dumping Support | Loading Support | Notes                                                    |
 | -------------------- | --------------- | --------------- | -------------------------------------------------------- |
@@ -159,7 +159,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | Glasses              | ❌              | ❌              |                                                          |
 | EmblemSet            | ❌              | ❌              |                                                          |
 
-## T6
+## T6 (Call of Duty: Black Ops II)
 
 | Asset Type             | Dumping Support | Loading Support | Notes                                                                                                                                                          |
 | ---------------------- | --------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
