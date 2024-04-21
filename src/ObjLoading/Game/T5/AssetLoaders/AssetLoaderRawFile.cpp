@@ -58,7 +58,7 @@ bool AssetLoaderRawFile::LoadGsc(
 
     if (ret != Z_STREAM_END)
     {
-        std::cout << "Deflate failed for loading gsc file \"" << assetName << "\"\n";
+        std::cerr << "Deflate failed for loading gsc file \"" << assetName << "\"\n";
         deflateEnd(&zs);
         return false;
     }
@@ -72,6 +72,8 @@ bool AssetLoaderRawFile::LoadGsc(
     rawFile->name = memory->Dup(assetName.c_str());
     rawFile->len = static_cast<int>(compressedSize + sizeof(uint32_t) + sizeof(uint32_t));
     rawFile->buffer = static_cast<const char*>(compressedBuffer);
+
+    deflateEnd(&zs);
 
     manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
 
