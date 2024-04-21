@@ -41,68 +41,6 @@ bool InfoStringToStructConverterBase::ParseAsArray(const std::string& value, std
     return true;
 }
 
-bool InfoStringToStructConverterBase::ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray)
-{
-    std::string key;
-    auto isKey = true;
-
-    for (auto ci = 0u; ci < value.size(); ci++)
-    {
-        auto c = value[ci];
-
-        if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
-            c = value[++ci];
-
-        if (c == '\n' && !isKey)
-        {
-            std::cout << "Expected value but got new line\n";
-            return false;
-        }
-
-        if (isspace(c))
-            continue;
-
-        int separator;
-        const auto startPos = ci;
-        while (true)
-        {
-            ci++;
-            if (ci >= value.size())
-            {
-                separator = EOF;
-                break;
-            }
-            c = value[ci];
-            if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
-                c = value[++ci];
-            if (isspace(c))
-            {
-                separator = static_cast<int>(static_cast<unsigned char>(c));
-                break;
-            }
-        }
-
-        if (isKey)
-        {
-            if (separator == '\n' || separator == EOF)
-            {
-                std::cout << "Expected value but got new line\n";
-                return false;
-            }
-            key = std::string(value, startPos, ci - startPos);
-        }
-        else
-        {
-            auto parsedValue = std::string(value, startPos, ci - startPos);
-            valueArray.emplace_back(std::make_pair(std::move(key), std::move(parsedValue)));
-            key = std::string();
-        }
-        isKey = !isKey;
-    }
-
-    return true;
-}
-
 bool InfoStringToStructConverterBase::ConvertString(const std::string& value, const size_t offset)
 {
     *reinterpret_cast<const char**>(reinterpret_cast<uintptr_t>(m_structure) + offset) = m_memory->Dup(value.c_str());

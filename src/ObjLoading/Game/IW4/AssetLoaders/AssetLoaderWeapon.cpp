@@ -84,8 +84,8 @@ namespace
 
         _NODISCARD bool ConvertNotetrackMap(const cspField_t& field, const std::string& value, const char* mapName, const size_t keyAndValueCount)
         {
-            std::vector<std::pair<std::string, std::string>> pairs;
-            if (!ParseAsPairs(value, pairs))
+            std::vector<std::array<std::string, 2>> pairs;
+            if (!ParseAsArray(value, pairs))
             {
                 std::cerr << "Failed to parse notetrack" << mapName << "map as pairs\n";
                 return false;
@@ -110,10 +110,10 @@ namespace
             for (; currentEntryNum < pairs.size(); currentEntryNum++)
             {
                 const auto& currentValue = pairs[currentEntryNum];
-                const auto keyScriptString = !currentValue.first.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue.first)
-                                                                         : m_zone_script_strings.AddOrGetScriptString(nullptr);
-                const auto valueScriptString = !currentValue.second.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue.second)
-                                                                            : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                const auto keyScriptString = !currentValue[0].empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue[0])
+                                                                      : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                const auto valueScriptString = !currentValue[1].empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue[1])
+                                                                        : m_zone_script_strings.AddOrGetScriptString(nullptr);
 
                 keys[currentEntryNum] = keyScriptString;
                 m_used_script_string_list.emplace(keyScriptString);
