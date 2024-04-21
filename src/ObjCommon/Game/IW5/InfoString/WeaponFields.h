@@ -972,12 +972,12 @@ namespace IW5
     };
     static_assert(std::extent_v<decltype(s_vehicleAxleTypeNames)> == VEH_AXLE_COUNT);
 
-    inline const char* bounceSoundSuffixes[]{
+    inline const char* surfaceTypeSoundSuffixes[]{
         "_default", "_bark",    "_brick",   "_carpet", "_cloth",   "_concrete", "_dirt",          "_flesh",       "_foliage", "_glass", "_grass",
         "_gravel",  "_ice",     "_metal",   "_mud",    "_paper",   "_plaster",  "_rock",          "_sand",        "_snow",    "_water", "_wood",
         "_asphalt", "_ceramic", "_plastic", "_rubber", "_cushion", "_fruit",    "_painted_metal", "_riot_shield", "_slush",
     };
-    static_assert(std::extent_v<decltype(bounceSoundSuffixes)> == SURF_TYPE_COUNT);
+    static_assert(std::extent_v<decltype(surfaceTypeSoundSuffixes)> == SURF_TYPE_COUNT);
 
     inline const char* weapAnimFilesNames[]{
         "root",         "idle",         "empty_idle",    "fire",         "hold_fire",   "lastshot",    "rechamber",        "melee",

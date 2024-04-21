@@ -7,6 +7,8 @@
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderScriptFile.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
+#include "AssetLoaders/AssetLoaderWeapon.h"
+#include "AssetLoaders/AssetLoaderWeaponAttachment.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/GameIW5.h"
@@ -55,8 +57,8 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(AssetLoaderMenuList)
     REGISTER_ASSET_LOADER(AssetLoaderMenuDef)
     REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_ATTACHMENT, WeaponAttachment))
-    REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_WEAPON, WeaponCompleteDef))
+    REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachment)
+    REGISTER_ASSET_LOADER(AssetLoaderWeapon)
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_FX, FxEffectDef))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_IMPACT_FX, FxImpactTable))
     REGISTER_ASSET_LOADER(BASIC_LOADER(ASSET_TYPE_SURFACE_FX, SurfaceFxTable))

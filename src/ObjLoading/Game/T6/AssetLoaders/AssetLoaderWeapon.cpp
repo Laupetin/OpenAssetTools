@@ -81,8 +81,8 @@ namespace T6
 
         _NODISCARD bool ConvertNotetrackSoundMap(const cspField_t& field, const std::string& value)
         {
-            std::vector<std::pair<std::string, std::string>> pairs;
-            if (!ParseAsPairs(value, pairs))
+            std::vector<std::array<std::string, 2>> pairs;
+            if (!ParseAsArray(value, pairs))
             {
                 std::cerr << "Failed to parse notetracksoundmap as pairs\n";
                 return false;
@@ -106,10 +106,10 @@ namespace T6
             for (; currentEntryNum < pairs.size(); currentEntryNum++)
             {
                 const auto& currentValue = pairs[currentEntryNum];
-                const auto keyScriptString = !currentValue.first.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue.first)
-                                                                         : m_zone_script_strings.AddOrGetScriptString(nullptr);
-                const auto valueScriptString = !currentValue.second.empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue.second)
-                                                                            : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                const auto keyScriptString = !currentValue[0].empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue[0])
+                                                                      : m_zone_script_strings.AddOrGetScriptString(nullptr);
+                const auto valueScriptString = !currentValue[1].empty() ? m_zone_script_strings.AddOrGetScriptString(currentValue[1])
+                                                                        : m_zone_script_strings.AddOrGetScriptString(nullptr);
 
                 keys[currentEntryNum] = keyScriptString;
                 m_used_script_string_list.emplace(keyScriptString);

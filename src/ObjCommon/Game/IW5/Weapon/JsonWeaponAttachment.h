@@ -510,6 +510,10 @@ namespace IW5
                                      {WEAPCLASS_ITEM,           "item"          },
     });
 
+    constexpr auto ATTACHMENT_WORLD_MODEL_COUNT = 16u;
+    constexpr auto ATTACHMENT_VIEW_MODEL_COUNT = 16u;
+    constexpr auto ATTACHMENT_RETICLE_VIEW_MODEL_COUNT = 8u;
+
     class JsonWeaponAttachment
     {
     public:

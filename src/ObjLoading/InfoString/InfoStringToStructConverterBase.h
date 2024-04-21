@@ -6,6 +6,8 @@
 #include "Utils/MemoryManager.h"
 #include "Zone/ZoneScriptStrings.h"
 
+#include <array>
+#include <iostream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -22,7 +24,82 @@ protected:
     void* m_structure;
 
     static bool ParseAsArray(const std::string& value, std::vector<std::string>& valueArray);
-    static bool ParseAsPairs(const std::string& value, std::vector<std::pair<std::string, std::string>>& valueArray);
+
+    template<size_t ARRAY_SIZE> static bool ParseAsArray(const std::string& value, std::vector<std::array<std::string, ARRAY_SIZE>>& valueArray)
+    {
+        static_assert(ARRAY_SIZE >= 1);
+
+        std::array<std::string, ARRAY_SIZE> currentEntry;
+        auto currentEntryOffset = 0u;
+
+        for (auto ci = 0u; ci < value.size(); ci++)
+        {
+            auto c = value[ci];
+
+            if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
+                c = value[++ci];
+
+            if (c == '\n' && currentEntryOffset != ARRAY_SIZE)
+            {
+                std::cerr << "Expected value but got new line\n";
+                return false;
+            }
+
+            if (isspace(c))
+                continue;
+
+            int separator;
+            const auto startPos = ci;
+            while (true)
+            {
+                ci++;
+
+                // If value ends we use EOF as separator
+                if (ci >= value.size())
+                {
+                    separator = EOF;
+                    break;
+                }
+
+                c = value[ci];
+
+                // Skip \r from \r\n
+                if (c == '\r' && ci + 1 < value.size() && value[ci + 1] == '\n')
+                    c = value[++ci];
+
+                // Newline is considered space
+                if (isspace(c))
+                {
+                    separator = static_cast<int>(static_cast<unsigned char>(c));
+                    break;
+                }
+            }
+
+            const auto isNextEntrySeparator = separator == '\n' || separator == EOF;
+            const auto isLastEntry = currentEntryOffset >= (ARRAY_SIZE - 1);
+            if (isNextEntrySeparator != isLastEntry)
+            {
+                std::cout << "Expected " << ARRAY_SIZE << " values but got new line\n";
+                return false;
+            }
+
+            currentEntry[currentEntryOffset++] = std::string(value, startPos, ci - startPos);
+
+            if (isLastEntry)
+            {
+                valueArray.emplace_back(std::move(currentEntry));
+                currentEntryOffset = 0u;
+            }
+        }
+
+        if (currentEntryOffset > 0)
+        {
+            std::cout << "Expected " << ARRAY_SIZE << " values but got new line\n";
+            return false;
+        }
+
+        return true;
+    }
 
     bool ConvertString(const std::string& value, size_t offset);
     bool ConvertStringBuffer(const std::string& value, size_t offset, size_t bufferSize);

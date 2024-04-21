@@ -3941,7 +3941,7 @@ namespace IW5
         SoundOverrideTypes soundType;
     };
 
-    enum FXOverrideTypes : unsigned int
+    enum FxOverrideTypes : unsigned int
     {
         FXTYPE_NONE = 0x0,
         FXTYPE_VIEW_FLASH = 0x1,
@@ -3952,13 +3952,13 @@ namespace IW5
         FXTYPE_COUNT
     };
 
-    struct FXOverrideEntry
+    struct FxOverrideEntry
     {
         WeaponAttachmentCombination attachment1;
         WeaponAttachmentCombination attachment2;
-        FxEffectDef* overrideFX;
-        FxEffectDef* altmodeFX;
-        FXOverrideTypes fxType;
+        FxEffectDef* overrideFx;
+        FxEffectDef* altmodeFx;
+        FxOverrideTypes fxType;
     };
 
     struct ReloadStateTimerEntry
@@ -3991,8 +3991,8 @@ namespace IW5
         AnimOverrideEntry* animOverrides;
         unsigned int numSoundOverrides;
         SoundOverrideEntry* soundOverrides;
-        unsigned int numFXOverrides;
-        FXOverrideEntry* fxOverrides;
+        unsigned int numFxOverrides;
+        FxOverrideEntry* fxOverrides;
         unsigned int numReloadStateTimerOverrides;
         ReloadStateTimerEntry* reloadOverrides;
         unsigned int numNotetrackOverrides;
