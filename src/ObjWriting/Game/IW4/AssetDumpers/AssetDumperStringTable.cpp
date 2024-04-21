@@ -24,7 +24,14 @@ void AssetDumperStringTable::DumpAsset(AssetDumpingContext& context, XAssetInfo<
         for (auto column = 0; column < stringTable->columnCount; column++)
         {
             const auto* cell = &stringTable->values[column + row * stringTable->columnCount];
-            csv.WriteColumn(cell->string);
+            if (cell->string != nullptr)
+            {
+                csv.WriteColumn(cell->string);
+            }
+            else
+            {
+                csv.WriteColumn("");
+            }
         }
 
         csv.NextRow();
