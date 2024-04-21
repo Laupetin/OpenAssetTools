@@ -237,6 +237,7 @@ namespace
             }
 
             m_weapon->weapCompleteDef.animOverrides = animOverrides;
+            m_weapon->weapCompleteDef.numAnimOverrides = valueArray.size();
 
             return true;
         }
@@ -271,6 +272,7 @@ namespace
             }
 
             m_weapon->weapCompleteDef.soundOverrides = soundOverrides;
+            m_weapon->weapCompleteDef.numSoundOverrides = valueArray.size();
 
             return true;
         }
@@ -308,6 +310,7 @@ namespace
             }
 
             m_weapon->weapCompleteDef.fxOverrides = fxOverrides;
+            m_weapon->weapCompleteDef.numFxOverrides = valueArray.size();
 
             return true;
         }
@@ -341,6 +344,7 @@ namespace
             }
 
             m_weapon->weapCompleteDef.reloadOverrides = reloadOverrides;
+            m_weapon->weapCompleteDef.numReloadStateTimerOverrides = valueArray.size();
 
             return true;
         }
@@ -396,6 +400,7 @@ namespace
             m_weapon->weapCompleteDef.notetrackOverrides =
                 static_cast<NoteTrackToSoundEntry*>(m_memory->Alloc(sizeof(NoteTrackToSoundEntry) * overrideVector.size()));
             memcpy(m_weapon->weapCompleteDef.notetrackOverrides, overrideVector.data(), sizeof(NoteTrackToSoundEntry) * overrideVector.size());
+            m_weapon->weapCompleteDef.numNotetrackOverrides = overrideVector.size();
 
             return true;
         }
@@ -411,7 +416,7 @@ namespace
                 const auto* scope = m_weapon->scopes[i];
                 if (scope && scope->szInternalName && value == scope->szInternalName)
                 {
-                    attachment.scope = static_cast<unsigned short>(i);
+                    attachment.scope = static_cast<unsigned short>(i + 1);
                     return true;
                 }
             }
@@ -421,7 +426,7 @@ namespace
                 const auto* underBarrel = m_weapon->underBarrels[i];
                 if (underBarrel && underBarrel->szInternalName && value == underBarrel->szInternalName)
                 {
-                    attachment.underBarrel = static_cast<unsigned short>(i);
+                    attachment.underBarrel = static_cast<unsigned short>(i + 1);
                     return true;
                 }
             }
@@ -672,6 +677,9 @@ namespace
         weapon->weapCompleteDef.weapDef = &weapon->weapDef;
         weapon->weapCompleteDef.hideTags = weapon->hideTags;
         weapon->weapCompleteDef.szXAnims = weapon->szXAnims;
+        weapon->weapCompleteDef.scopes = weapon->scopes;
+        weapon->weapCompleteDef.underBarrels = weapon->underBarrels;
+        weapon->weapCompleteDef.others = weapon->others;
         weapon->weapDef.gunXModel = weapon->gunXModel;
         weapon->weapDef.szXAnimsRightHanded = weapon->szXAnimsRightHanded;
         weapon->weapDef.szXAnimsLeftHanded = weapon->szXAnimsLeftHanded;
