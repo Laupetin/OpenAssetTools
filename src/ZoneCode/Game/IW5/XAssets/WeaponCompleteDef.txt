@@ -25,7 +25,7 @@ set count animOverrides numAnimOverrides;
 set reusable soundOverrides;
 set count soundOverrides numSoundOverrides;
 set reusable fxOverrides;
-set count fxOverrides numFXOverrides;
+set count fxOverrides numFxOverrides;
 set reusable reloadOverrides;
 set count reloadOverrides numReloadStateTimerOverrides;
 set reusable notetrackOverrides;

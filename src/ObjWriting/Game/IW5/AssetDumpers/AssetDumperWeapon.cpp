@@ -427,7 +427,7 @@ namespace IW5
             std::stringstream ss;
             bool first = true;
 
-            for (auto i = 0u; i < m_weapon->weapCompleteDef.numFXOverrides; i++)
+            for (auto i = 0u; i < m_weapon->weapCompleteDef.numFxOverrides; i++)
             {
                 const auto& fxOverride = m_weapon->weapCompleteDef.fxOverrides[i];
 
@@ -455,15 +455,15 @@ namespace IW5
                 if (fxOverride.fxType < FXTYPE_COUNT)
                     ss << fxOverrideTypeNames[fxOverride.fxType] << ' ';
 
-                if (fxOverride.overrideFX && fxOverride.overrideFX->name && fxOverride.overrideFX->name[0])
-                    ss << fxOverride.overrideFX->name;
+                if (fxOverride.overrideFx && fxOverride.overrideFx->name && fxOverride.overrideFx->name[0])
+                    ss << fxOverride.overrideFx->name;
                 else
                     ss << "none";
 
                 ss << ' ';
 
-                if (fxOverride.altmodeFX && fxOverride.altmodeFX->name && fxOverride.altmodeFX->name[0])
-                    ss << fxOverride.altmodeFX->name;
+                if (fxOverride.altmodeFx && fxOverride.altmodeFx->name && fxOverride.altmodeFx->name[0])
+                    ss << fxOverride.altmodeFx->name;
                 else
                     ss << "none";
             }
