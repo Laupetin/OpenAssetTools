@@ -688,6 +688,8 @@ bool AssetDumperWeapon::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
 
 void AssetDumperWeapon::DumpAsset(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
 {
+    // TODO: only dump infostring fields when non-default
+
     // Only dump raw when no gdt available
     if (context.m_gdt)
     {
