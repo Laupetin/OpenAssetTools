@@ -72,6 +72,8 @@ bool AssetLoaderRawFile::LoadAnimtree(
     rawFile->len = static_cast<int>(compressedSize);
     rawFile->buffer = static_cast<const char*>(compressedBuffer);
 
+    deflateEnd(&zs);
+
     manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
 
     return true;

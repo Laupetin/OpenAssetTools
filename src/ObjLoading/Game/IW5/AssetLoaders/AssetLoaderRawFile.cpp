@@ -59,7 +59,7 @@ bool AssetLoaderRawFile::LoadFromRaw(
 
     if (ret != Z_STREAM_END)
     {
-        std::cout << "Deflate failed for loading rawfile \"" << assetName << "\"\n";
+        std::cerr << "Deflate failed for loading rawfile \"" << assetName << "\"\n";
         deflateEnd(&zs);
         return false;
     }
@@ -71,6 +71,8 @@ bool AssetLoaderRawFile::LoadFromRaw(
     rawFile->compressedLen = static_cast<int>(compressedSize);
     rawFile->len = static_cast<int>(file.m_length);
     rawFile->buffer = static_cast<const char*>(compressedBuffer);
+
+    deflateEnd(&zs);
 
     manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
 
