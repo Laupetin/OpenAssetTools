@@ -60,7 +60,7 @@ namespace
     CreateXModelArrayFromJson(jAttachment.propertyName, attachment.propertyName, #propertyName, count, attachment);
 
 #define CONVERT_ATTRIBUTE(attributeClass, attributeName)                                                                                                       \
-    if (jAttachment.ammoGeneral)                                                                                                                               \
+    if (jAttachment.attributeName)                                                                                                                             \
     {                                                                                                                                                          \
         using AttributeType = std::remove_pointer_t<decltype(attachment.attributeName)>;                                                                       \
         attachment.attributeName = static_cast<AttributeType*>(m_memory.Alloc(sizeof(AttributeType)));                                                         \
@@ -520,8 +520,13 @@ namespace
         {
             if (jRumbles.fireRumble)
                 rumbles.fireRumble = m_memory.Dup(jRumbles.fireRumble.value().c_str());
+            else
+                rumbles.fireRumble = nullptr;
+
             if (jRumbles.meleeImpactRumble)
                 rumbles.meleeImpactRumble = m_memory.Dup(jRumbles.meleeImpactRumble.value().c_str());
+            else
+                rumbles.meleeImpactRumble = nullptr;
 
             return true;
         }
