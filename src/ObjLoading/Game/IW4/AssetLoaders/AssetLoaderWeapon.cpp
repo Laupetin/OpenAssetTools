@@ -62,7 +62,7 @@ namespace
 
         _NODISCARD bool ConvertBounceSounds(const cspField_t& field, const std::string& value) const
         {
-            auto*** bounceSound = reinterpret_cast<const char***>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
+            auto** bounceSound = reinterpret_cast<SndAliasCustom**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset);
             if (value.empty())
             {
                 *bounceSound = nullptr;
@@ -70,12 +70,15 @@ namespace
             }
 
             assert(std::extent_v<decltype(bounceSoundSuffixes)> == SURF_TYPE_NUM);
-            *bounceSound = static_cast<const char**>(m_memory->Alloc(sizeof(const char*) * SURF_TYPE_NUM));
+            *bounceSound = static_cast<SndAliasCustom*>(m_memory->Alloc(sizeof(SndAliasCustom) * SURF_TYPE_NUM));
             for (auto i = 0u; i < SURF_TYPE_NUM; i++)
             {
                 const auto currentBounceSound = value + bounceSoundSuffixes[i];
-                (*bounceSound)[i] = m_memory->Dup(currentBounceSound.c_str());
+
+                (*bounceSound)[i].name = static_cast<snd_alias_list_name*>(m_memory->Alloc(sizeof(snd_alias_list_name)));
+                (*bounceSound)[i].name->soundName = m_memory->Dup(currentBounceSound.c_str());
             }
+
             return true;
         }
 
