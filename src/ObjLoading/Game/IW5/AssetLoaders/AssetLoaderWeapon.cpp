@@ -757,17 +757,6 @@ namespace
         if (!weaponDef.worldLastShotEjectEffect)
             weaponDef.worldLastShotEjectEffect = weaponDef.worldShellEjectEffect;
 
-        if (!weaponDef.raiseSound.name)
-            weaponDef.raiseSound.name = CreateSoundAliasListName("weap_raise", memory);
-        if (!weaponDef.putawaySound.name)
-            weaponDef.putawaySound.name = CreateSoundAliasListName("weap_putaway", memory);
-        if (!weaponDef.pickupSound.name)
-            weaponDef.pickupSound.name = CreateSoundAliasListName("weap_pickup", memory);
-        if (!weaponDef.ammoPickupSound.name)
-            weaponDef.ammoPickupSound.name = CreateSoundAliasListName("weap_ammo_pickup", memory);
-        if (!weaponDef.emptyFireSound.name)
-            weaponDef.emptyFireSound.name = CreateSoundAliasListName("weap_dryfire_smg_npc", memory);
-
         if (weaponCompleteDef.iAdsTransInTime <= 0)
             weaponDef.fOOPosAnimLength[0] = 0.0033333334f;
         else
@@ -778,9 +767,9 @@ namespace
         else
             weaponDef.fOOPosAnimLength[1] = 1.0f / static_cast<float>(weaponCompleteDef.iAdsTransOutTime);
 
-        if (weaponDef.fMaxDamageRange <= 0.0f)
+        if (weaponDef.fMaxDamageRange < 0.0f)
             weaponDef.fMaxDamageRange = 999999.0f;
-        if (weaponDef.fMinDamageRange <= 0.0f)
+        if (weaponDef.fMinDamageRange < 0.0f)
             weaponDef.fMinDamageRange = 999999.12f;
 
         if (weaponDef.enemyCrosshairRange > 15000.0f)
