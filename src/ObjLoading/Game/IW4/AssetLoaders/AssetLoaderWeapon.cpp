@@ -258,7 +258,6 @@ namespace
         weapon->weapDef.parallelBounce = weapon->parallelBounce;
         weapon->weapDef.perpendicularBounce = weapon->perpendicularBounce;
         weapon->weapDef.locationDamageMultipliers = weapon->locationDamageMultipliers;
-        weapon->weapCompleteDef.szInternalName = "";
 
         for (const auto& field : weapon_fields)
         {
@@ -397,6 +396,7 @@ namespace
         auto* weaponFullDef = memory->Create<WeaponFullDef>();
         memset(weaponFullDef, 0, sizeof(WeaponFullDef));
         InitWeaponFullDef(weaponFullDef);
+        weaponFullDef->weapCompleteDef.szInternalName = memory->Dup(assetName.c_str());
 
         InfoStringToWeaponConverter converter(
             infoString, weaponFullDef, zone->m_script_strings, memory, manager, weapon_fields, std::extent_v<decltype(weapon_fields)>);
@@ -405,8 +405,6 @@ namespace
             std::cerr << "Failed to parse weapon: \"" << assetName << "\"\n";
             return true;
         }
-
-        weaponFullDef->weapCompleteDef.szInternalName = memory->Dup(assetName.c_str());
 
         CalculateWeaponFields(weaponFullDef, memory);
 
