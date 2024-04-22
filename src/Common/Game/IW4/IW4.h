@@ -3,6 +3,7 @@
 // clang-format off: Order of includes matters here
 
 // #include <d3d9.h>
+#include "Game/IAsset.h"
 #include "Image/Texture.h"
 
 #include "IW4_Assets.h"
@@ -129,4 +130,42 @@ namespace IW4
 
         VFT_NUM,
     };
+
+    using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
+    using AssetPhysCollMap = Asset<ASSET_TYPE_PHYSCOLLMAP, PhysCollmap>;
+    using AssetXAnim = Asset<ASSET_TYPE_XANIMPARTS, XAnimParts>;
+    using AssetXModelSurfs = Asset<ASSET_TYPE_XMODEL_SURFS, XModelSurfs>;
+    using AssetXModel = Asset<ASSET_TYPE_XMODEL, XModel>;
+    using AssetMaterial = Asset<ASSET_TYPE_MATERIAL, Material>;
+    using AssetPixelShader = Asset<ASSET_TYPE_PIXELSHADER, MaterialPixelShader>;
+    using AssetVertexShader = Asset<ASSET_TYPE_VERTEXSHADER, MaterialVertexShader>;
+    using AssetVertexDecl = Asset<ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration>;
+    using AssetTechniqueSet = Asset<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>;
+    using AssetImage = Asset<ASSET_TYPE_IMAGE, GfxImage>;
+    using AssetSound = Asset<ASSET_TYPE_SOUND, snd_alias_list_t>;
+    using AssetSoundCurve = Asset<ASSET_TYPE_SOUND_CURVE, SndCurve>;
+    using AssetLoadedSound = Asset<ASSET_TYPE_LOADED_SOUND, LoadedSound>;
+    using AssetClipMapSp = Asset<ASSET_TYPE_CLIPMAP_SP, clipMap_t>;
+    using AssetClipMapMp = Asset<ASSET_TYPE_CLIPMAP_MP, clipMap_t>;
+    using AssetComWorld = Asset<ASSET_TYPE_COMWORLD, ComWorld>;
+    using AssetGameWorldSp = Asset<ASSET_TYPE_GAMEWORLD_SP, GameWorldSp>;
+    using AssetGameWorldMp = Asset<ASSET_TYPE_GAMEWORLD_MP, GameWorldMp>;
+    using AssetMapEnts = Asset<ASSET_TYPE_MAP_ENTS, MapEnts>;
+    using AssetFxWorld = Asset<ASSET_TYPE_FXWORLD, FxWorld>;
+    using AssetGfxWorld = Asset<ASSET_TYPE_GFXWORLD, GfxWorld>;
+    using AssetLightDef = Asset<ASSET_TYPE_LIGHT_DEF, GfxLightDef>;
+    using AssetFont = Asset<ASSET_TYPE_FONT, Font_s>;
+    using AssetMenuList = Asset<ASSET_TYPE_MENULIST, MenuList>;
+    using AssetMenu = Asset<ASSET_TYPE_MENU, menuDef_t>;
+    using AssetLocalize = Asset<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>;
+    using AssetWeapon = Asset<ASSET_TYPE_WEAPON, WeaponCompleteDef>;
+    using AssetFx = Asset<ASSET_TYPE_FX, FxEffectDef>;
+    using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
+    using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
+    using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
+    using AssetLeaderBoard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
+    using AssetStructuredDataDef = Asset<ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDef>;
+    using AssetTracer = Asset<ASSET_TYPE_TRACER, TracerDef>;
+    using AssetVehicle = Asset<ASSET_TYPE_VEHICLE, VehicleDef>;
+    using AssetAddonMapEnts = Asset<ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts>;
 } // namespace IW4
