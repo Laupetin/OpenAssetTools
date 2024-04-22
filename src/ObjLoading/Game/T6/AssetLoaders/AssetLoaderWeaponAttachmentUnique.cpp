@@ -86,6 +86,7 @@ namespace T6
             {
                 if (!value.empty())
                     m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+
                 return true;
             }
 
