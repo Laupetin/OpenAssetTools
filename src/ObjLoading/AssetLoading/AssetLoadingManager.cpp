@@ -31,26 +31,6 @@ XAssetInfoGeneric* AssetLoadingManager::AddAssetInternal(std::unique_ptr<XAssetI
     return m_last_dependency_loaded;
 }
 
-XAssetInfoGeneric* AssetLoadingManager::AddAsset(const asset_type_t assetType,
-                                                 const std::string& assetName,
-                                                 void* asset,
-                                                 std::vector<XAssetInfoGeneric*> dependencies,
-                                                 std::vector<scr_string_t> usedScriptStrings)
-{
-    return AddAsset(std::make_unique<XAssetInfoGeneric>(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings)));
-}
-
-XAssetInfoGeneric* AssetLoadingManager::AddAsset(asset_type_t assetType,
-                                                 const std::string& assetName,
-                                                 void* asset,
-                                                 std::vector<XAssetInfoGeneric*> dependencies,
-                                                 std::vector<scr_string_t> usedScriptStrings,
-                                                 std::vector<IndirectAssetReference> indirectAssetReferences)
-{
-    return AddAsset(std::make_unique<XAssetInfoGeneric>(
-        assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences)));
-}
-
 XAssetInfoGeneric* AssetLoadingManager::AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo)
 {
     xAssetInfo->m_zone = m_context.m_zone;
@@ -66,7 +46,8 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
     auto* linkAsset = loader->CreateEmptyAsset(assetName, m_context.m_zone->GetMemory());
     if (linkAsset)
     {
-        AddAsset(assetType, assetName, linkAsset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
+        IAssetLoadingManager::AddAsset(
+            assetType, assetName, linkAsset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>(), std::vector<IndirectAssetReference>());
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;
@@ -85,7 +66,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
     return nullptr;
 }
 
-XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t assetType, const std::string& assetName, IAssetLoader* loader)
+XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t assetType, const std::string& assetName, const IAssetLoader* loader)
 {
     if (loader->CanLoadFromGdt() && !m_context.m_gdt_files.empty()
         && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone->GetMemory(), this, m_context.m_zone))

@@ -18,17 +18,6 @@ public:
 
     _NODISCARD virtual AssetLoadingContext* GetAssetLoadingContext() const = 0;
 
-    virtual XAssetInfoGeneric* AddAsset(asset_type_t assetType,
-                                        const std::string& assetName,
-                                        void* asset,
-                                        std::vector<XAssetInfoGeneric*> dependencies,
-                                        std::vector<scr_string_t> usedScriptStrings) = 0;
-    virtual XAssetInfoGeneric* AddAsset(asset_type_t assetType,
-                                        const std::string& assetName,
-                                        void* asset,
-                                        std::vector<XAssetInfoGeneric*> dependencies,
-                                        std::vector<scr_string_t> usedScriptStrings,
-                                        std::vector<IndirectAssetReference> indirectAssetReferences) = 0;
     virtual XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) = 0;
 
     XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset)
@@ -39,6 +28,26 @@ public:
     XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies)
     {
         return AddAsset(assetType, assetName, asset, std::move(dependencies), std::vector<scr_string_t>());
+    }
+
+    XAssetInfoGeneric* AddAsset(const asset_type_t assetType,
+                                const std::string& assetName,
+                                void* asset,
+                                std::vector<XAssetInfoGeneric*> dependencies,
+                                std::vector<scr_string_t> usedScriptStrings)
+    {
+        return AddAsset(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::vector<IndirectAssetReference>());
+    }
+
+    XAssetInfoGeneric* AddAsset(const asset_type_t assetType,
+                                const std::string& assetName,
+                                void* asset,
+                                std::vector<XAssetInfoGeneric*> dependencies,
+                                std::vector<scr_string_t> usedScriptStrings,
+                                std::vector<IndirectAssetReference> indirectAssetReferences)
+    {
+        return AddAsset(std::make_unique<XAssetInfoGeneric>(
+            assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences)));
     }
 
     virtual XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) = 0;
