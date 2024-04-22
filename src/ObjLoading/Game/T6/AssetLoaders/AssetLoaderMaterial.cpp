@@ -46,8 +46,7 @@ bool AssetLoaderMaterial::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    auto* material = static_cast<Material*>(memory->Alloc(sizeof(Material)));
-    memset(material, 0, sizeof(Material));
+    auto* material = memory->Alloc<Material>();
     material->info.name = memory->Dup(assetName.c_str());
 
     std::vector<XAssetInfoGeneric*> dependencies;

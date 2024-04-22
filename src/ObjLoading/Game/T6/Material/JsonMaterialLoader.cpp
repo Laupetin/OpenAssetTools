@@ -287,8 +287,7 @@ namespace
             if (!jMaterial.textures.empty())
             {
                 material.textureCount = static_cast<unsigned char>(jMaterial.textures.size());
-                material.textureTable = static_cast<MaterialTextureDef*>(m_memory.Alloc(sizeof(MaterialTextureDef) * material.textureCount));
-                memset(material.textureTable, 0, sizeof(MaterialTextureDef) * material.textureCount);
+                material.textureTable = m_memory.Alloc<MaterialTextureDef>(material.textureCount);
 
                 for (auto i = 0u; i < material.textureCount; i++)
                 {
@@ -305,8 +304,7 @@ namespace
             if (!jMaterial.constants.empty())
             {
                 material.constantCount = static_cast<unsigned char>(jMaterial.constants.size());
-                material.constantTable = static_cast<MaterialConstantDef*>(m_memory.Alloc(sizeof(MaterialConstantDef) * material.constantCount));
-                memset(material.constantTable, 0, sizeof(MaterialConstantDef) * material.constantCount);
+                material.constantTable = m_memory.Alloc<MaterialConstantDef>(material.constantCount);
 
                 for (auto i = 0u; i < material.constantCount; i++)
                 {
@@ -323,8 +321,7 @@ namespace
             if (!jMaterial.stateBits.empty())
             {
                 material.stateBitsCount = static_cast<unsigned char>(jMaterial.stateBits.size());
-                material.stateBitsTable = static_cast<GfxStateBitsTable*>(m_memory.Alloc(sizeof(GfxStateBitsTable) * material.stateBitsCount));
-                memset(material.stateBitsTable, 0, sizeof(GfxStateBitsTable) * material.stateBitsCount);
+                material.stateBitsTable = m_memory.Alloc<GfxStateBitsTable>(material.stateBitsCount);
 
                 for (auto i = 0u; i < material.stateBitsCount; i++)
                 {

@@ -51,12 +51,12 @@ bool AssetLoaderVertexShader::LoadFromRaw(
     vertexShader->prog.loadDef.loadForRenderer = 0;
     vertexShader->prog.vs = nullptr;
 
-    auto* fileBuffer = static_cast<char*>(memory->Alloc(vertexShader->prog.loadDef.programSize * sizeof(uint32_t)));
-    file.m_stream->read(fileBuffer, static_cast<std::streamsize>(vertexShader->prog.loadDef.programSize) * sizeof(uint32_t));
+    auto* fileBuffer = memory->Alloc<uint32_t>(vertexShader->prog.loadDef.programSize);
+    file.m_stream->read(reinterpret_cast<char*>(fileBuffer), static_cast<std::streamsize>(vertexShader->prog.loadDef.programSize) * sizeof(uint32_t));
     if (file.m_stream->gcount() != file.m_length)
         return false;
 
-    vertexShader->prog.loadDef.program = reinterpret_cast<uint32_t*>(fileBuffer);
+    vertexShader->prog.loadDef.program = fileBuffer;
     manager->AddAsset(ASSET_TYPE_VERTEXSHADER, assetName, vertexShader);
 
     return true;

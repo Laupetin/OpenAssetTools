@@ -32,8 +32,7 @@ bool AssetLoaderWeaponCamo::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    auto* weaponCamo = static_cast<WeaponCamo*>(memory->Alloc(sizeof(WeaponCamo)));
-    memset(weaponCamo, 0, sizeof(WeaponCamo));
+    auto* weaponCamo = memory->Alloc<WeaponCamo>();
     weaponCamo->name = memory->Dup(assetName.c_str());
 
     std::vector<XAssetInfoGeneric*> dependencies;

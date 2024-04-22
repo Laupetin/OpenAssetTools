@@ -97,7 +97,7 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
         auto* kvps = zone->GetMemory()->Create<KeyValuePairs>();
         kvps->name = zone->GetMemory()->Dup(zone->m_name.c_str());
         kvps->numVariables = kvpList.size();
-        kvps->keyValuePairs = static_cast<KeyValuePair*>(zone->GetMemory()->Alloc(sizeof(KeyValuePair) * kvpList.size()));
+        kvps->keyValuePairs = zone->GetMemory()->Alloc<KeyValuePair>(kvpList.size());
 
         for (auto i = 0u; i < kvpList.size(); i++)
             kvps->keyValuePairs[i] = kvpList[i];

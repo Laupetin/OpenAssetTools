@@ -182,7 +182,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* name = static_cast<snd_alias_list_name*>(m_memory->Alloc(sizeof(snd_alias_list_name)));
+        auto* name = m_memory->Alloc<snd_alias_list_name>();
         name->soundName = m_memory->Dup(value.c_str());
 
         reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = name;

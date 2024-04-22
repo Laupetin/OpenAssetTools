@@ -48,7 +48,7 @@ namespace string_table
 
             if (cellCount)
             {
-                stringTable->values = static_cast<CellType*>(memory.Alloc(sizeof(CellType) * cellCount));
+                stringTable->values = memory.Alloc<CellType>(cellCount);
 
                 for (auto row = 0u; row < csvLines.size(); row++)
                 {
@@ -129,7 +129,7 @@ namespace string_table
                 return;
             }
 
-            stringTable->cellIndex = static_cast<int16_t*>(memory.Alloc(sizeof(int16_t) * cellCount));
+            stringTable->cellIndex = memory.Alloc<int16_t>(cellCount);
             for (auto i = 0u; i < cellCount; i++)
                 stringTable->cellIndex[i] = i;
 

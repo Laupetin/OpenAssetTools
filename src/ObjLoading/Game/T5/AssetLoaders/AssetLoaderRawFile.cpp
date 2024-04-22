@@ -35,7 +35,7 @@ bool AssetLoaderRawFile::LoadGsc(
     uncompressedBuffer[static_cast<size_t>(file.m_length)] = '\0';
 
     const auto compressionBufferSize = static_cast<size_t>(file.m_length + 1 + sizeof(uint32_t) + sizeof(uint32_t) + COMPRESSED_BUFFER_SIZE_PADDING);
-    auto* compressedBuffer = static_cast<char*>(memory->Alloc(compressionBufferSize));
+    auto* compressedBuffer = memory->Alloc<char>(compressionBufferSize);
 
     z_stream_s zs{};
 
@@ -87,7 +87,7 @@ bool AssetLoaderRawFile::LoadDefault(
     rawFile->name = memory->Dup(assetName.c_str());
     rawFile->len = static_cast<int>(file.m_length);
 
-    auto* fileBuffer = static_cast<char*>(memory->Alloc(static_cast<size_t>(file.m_length + 1)));
+    auto* fileBuffer = memory->Alloc<char>(static_cast<size_t>(file.m_length + 1));
     file.m_stream->read(fileBuffer, file.m_length);
     if (file.m_stream->gcount() != file.m_length)
         return false;

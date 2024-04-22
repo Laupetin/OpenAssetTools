@@ -10,8 +10,8 @@ Actions_clipMap_t::Actions_clipMap_t(Zone* zone)
 {
 }
 
-void Actions_clipMap_t::ReallocClipInfo(ClipInfo* clipInfo, clipMap_t* clipMap) const
+void Actions_clipMap_t::ReallocClipInfo(const ClipInfo* clipInfo, clipMap_t* clipMap) const
 {
-    clipMap->pInfo = static_cast<ClipInfo*>(m_zone->GetMemory()->Alloc(sizeof(ClipInfo)));
+    clipMap->pInfo = m_zone->GetMemory()->Alloc<ClipInfo>();
     memcpy(clipMap->pInfo, clipInfo, sizeof(ClipInfo));
 }

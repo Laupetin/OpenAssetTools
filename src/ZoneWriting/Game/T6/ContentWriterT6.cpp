@@ -68,7 +68,7 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
     {
         assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
         xAssetList.stringList.count = static_cast<int>(m_zone->m_script_strings.Count());
-        xAssetList.stringList.strings = static_cast<const char**>(memory.Alloc(sizeof(const char*) * m_zone->m_script_strings.Count()));
+        xAssetList.stringList.strings = memory.Alloc<const char*>(m_zone->m_script_strings.Count());
 
         for (auto i = 0u; i < m_zone->m_script_strings.Count(); i++)
             xAssetList.stringList.strings[i] = m_zone->m_script_strings.CValue(i);
@@ -86,7 +86,7 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
     if (assetCount > 0)
     {
         xAssetList.assetCount = static_cast<int>(assetCount);
-        xAssetList.assets = static_cast<XAsset*>(memory.Alloc(sizeof(XAsset) * assetCount));
+        xAssetList.assets = memory.Alloc<XAsset>(assetCount);
 
         const auto end = m_zone->m_pools->end();
         auto index = 0u;

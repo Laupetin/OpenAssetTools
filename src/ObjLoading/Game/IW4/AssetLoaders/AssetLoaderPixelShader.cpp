@@ -51,12 +51,12 @@ bool AssetLoaderPixelShader::LoadFromRaw(
     pixelShader->prog.loadDef.loadForRenderer = 0;
     pixelShader->prog.ps = nullptr;
 
-    auto* fileBuffer = static_cast<char*>(memory->Alloc(pixelShader->prog.loadDef.programSize * sizeof(uint32_t)));
-    file.m_stream->read(fileBuffer, static_cast<std::streamsize>(pixelShader->prog.loadDef.programSize) * sizeof(uint32_t));
+    auto* fileBuffer = memory->Alloc<uint32_t>(pixelShader->prog.loadDef.programSize);
+    file.m_stream->read(reinterpret_cast<char*>(fileBuffer), static_cast<std::streamsize>(pixelShader->prog.loadDef.programSize) * sizeof(uint32_t));
     if (file.m_stream->gcount() != file.m_length)
         return false;
 
-    pixelShader->prog.loadDef.program = reinterpret_cast<uint32_t*>(fileBuffer);
+    pixelShader->prog.loadDef.program = fileBuffer;
     manager->AddAsset(ASSET_TYPE_PIXELSHADER, assetName, pixelShader);
 
     return true;

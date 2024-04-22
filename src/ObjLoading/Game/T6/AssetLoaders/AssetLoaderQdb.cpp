@@ -30,7 +30,7 @@ bool AssetLoaderQdb::LoadFromRaw(const std::string& assetName, ISearchPath* sear
     qdb->name = memory->Dup(assetName.c_str());
     qdb->len = static_cast<int>(file.m_length);
 
-    auto* fileBuffer = static_cast<char*>(memory->Alloc(static_cast<size_t>(file.m_length + 1)));
+    auto* fileBuffer = memory->Alloc<char>(static_cast<size_t>(file.m_length + 1));
     file.m_stream->read(fileBuffer, file.m_length);
     if (file.m_stream->gcount() != file.m_length)
         return false;

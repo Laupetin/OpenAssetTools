@@ -424,7 +424,7 @@ namespace IW4
             std::vector<expressionEntry> expressionEntries;
             ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
 
-            auto* outputExpressionEntries = static_cast<expressionEntry*>(m_memory->Alloc(sizeof(expressionEntry) * expressionEntries.size()));
+            auto* outputExpressionEntries = m_memory->Alloc<expressionEntry>(expressionEntries.size());
             memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
 
             statement->entries = outputExpressionEntries;
@@ -586,8 +586,8 @@ namespace IW4
             if (!setLocalVar)
                 return;
 
-            auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(SetLocalVarData)));
-            auto* outputSetLocalVar = reinterpret_cast<SetLocalVarData*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
+            auto* outputHandler = m_memory->Alloc<MenuEventHandler>();
+            auto* outputSetLocalVar = m_memory->Alloc<SetLocalVarData>();
 
             outputHandler->eventType = SetLocalVarTypeToEventType(setLocalVar->m_type);
             outputHandler->eventData.setLocalVarData = outputSetLocalVar;
@@ -631,8 +631,8 @@ namespace IW4
             }
             else
             {
-                auto* outputHandler = static_cast<MenuEventHandler*>(m_memory->Alloc(sizeof(MenuEventHandler) + sizeof(ConditionalScript)));
-                auto* outputCondition = reinterpret_cast<ConditionalScript*>(reinterpret_cast<int8_t*>(outputHandler) + sizeof(MenuEventHandler));
+                auto* outputHandler = m_memory->Alloc<MenuEventHandler>();
+                auto* outputCondition = m_memory->Alloc<ConditionalScript>();
 
                 outputHandler->eventType = EVENT_IF;
                 outputHandler->eventData.conditionalScript = outputCondition;
@@ -699,9 +699,9 @@ namespace IW4
             if (elements.empty())
                 return nullptr;
 
-            auto* outputSet = static_cast<MenuEventHandlerSet*>(m_memory->Alloc(sizeof(MenuEventHandlerSet) + sizeof(void*) * elements.size()));
-            auto* outputElements = reinterpret_cast<MenuEventHandler**>(reinterpret_cast<int8_t*>(outputSet) + sizeof(MenuEventHandlerSet));
-            memcpy(outputElements, &elements[0], sizeof(void*) * elements.size());
+            auto* outputSet = m_memory->Alloc<MenuEventHandlerSet>();
+            auto* outputElements = m_memory->Alloc<MenuEventHandler*>(elements.size());
+            memcpy(outputElements, elements.data(), sizeof(void*) * elements.size());
 
             outputSet->eventHandlerCount = static_cast<int>(elements.size());
             outputSet->eventHandlers = outputElements;
@@ -717,7 +717,7 @@ namespace IW4
                 return nullptr;
 
             const auto keyHandlerCount = keyHandlers.size();
-            auto* output = static_cast<ItemKeyHandler*>(m_memory->Alloc(sizeof(ItemKeyHandler) * keyHandlerCount));
+            auto* output = m_memory->Alloc<ItemKeyHandler>(keyHandlerCount);
             auto currentKeyHandler = keyHandlers.cbegin();
             for (auto i = 0u; i < keyHandlerCount; i++)
             {
@@ -829,7 +829,7 @@ namespace IW4
             if (floatExpressionCount <= 0)
                 return nullptr;
 
-            auto* floatExpressions = static_cast<ItemFloatExpression*>(m_memory->Alloc(sizeof(ItemFloatExpression) * floatExpressionCount));
+            auto* floatExpressions = m_memory->Alloc<ItemFloatExpression>(floatExpressionCount);
             auto floatExpressionIndex = 0;
             for (const auto& [expression, expressionIsStatic, target, staticValue, staticValueArraySize, dynamicFlagsToSet] : locations)
             {
@@ -903,9 +903,7 @@ namespace IW4
             if (commonListBox == nullptr)
                 return nullptr;
 
-            auto* listBox = static_cast<listBoxDef_s*>(m_memory->Alloc(sizeof(listBoxDef_s)));
-            memset(listBox, 0, sizeof(listBoxDef_s));
-
+            auto* listBox = m_memory->Alloc<listBoxDef_s>();
             listBox->notselectable = commonListBox->m_not_selectable ? 1 : 0;
             listBox->noScrollBars = commonListBox->m_no_scrollbars ? 1 : 0;
             listBox->usePaging = commonListBox->m_use_paging ? 1 : 0;
@@ -940,9 +938,7 @@ namespace IW4
             if (commonEditField == nullptr)
                 return nullptr;
 
-            auto* editField = static_cast<editFieldDef_s*>(m_memory->Alloc(sizeof(editFieldDef_s)));
-            memset(editField, 0, sizeof(editFieldDef_s));
-
+            auto* editField = m_memory->Alloc<editFieldDef_s>();
             editField->defVal = static_cast<float>(commonEditField->m_def_val);
             editField->minVal = static_cast<float>(commonEditField->m_min_val);
             editField->maxVal = static_cast<float>(commonEditField->m_max_val);
@@ -962,9 +958,7 @@ namespace IW4
             if (commonMultiValue == nullptr)
                 return nullptr;
 
-            auto* multiValue = static_cast<multiDef_s*>(m_memory->Alloc(sizeof(multiDef_s)));
-            memset(multiValue, 0, sizeof(multiDef_s));
-
+            auto* multiValue = m_memory->Alloc<multiDef_s>();
             multiValue->count = static_cast<int>(std::min(std::extent_v<decltype(multiDef_s::dvarList)>, commonMultiValue->m_step_names.size()));
             multiValue->strDef = !commonMultiValue->m_string_values.empty() ? 1 : 0;
 
@@ -995,9 +989,7 @@ namespace IW4
             if (commonNewsTicker == nullptr)
                 return nullptr;
 
-            auto* newsTicker = static_cast<newsTickerDef_s*>(m_memory->Alloc(sizeof(newsTickerDef_s)));
-            memset(newsTicker, 0, sizeof(newsTickerDef_s));
-
+            auto* newsTicker = m_memory->Alloc<newsTickerDef_s>();
             newsTicker->spacing = commonNewsTicker->m_spacing;
             newsTicker->speed = commonNewsTicker->m_speed;
             newsTicker->feedId = commonNewsTicker->m_news_feed_id;
@@ -1095,10 +1087,8 @@ namespace IW4
             case CommonItemFeatureType::NONE:
             default:
                 if (item->type == ITEM_TYPE_TEXT_SCROLL)
-                {
-                    item->typeData.scroll = static_cast<textScrollDef_s*>(m_memory->Alloc(sizeof(textScrollDef_s)));
-                    memset(item->typeData.scroll, 0, sizeof(textScrollDef_s));
-                }
+                    item->typeData.scroll = m_memory->Alloc<textScrollDef_s>();
+
                 break;
             }
 
@@ -1113,9 +1103,7 @@ namespace IW4
                 return nullptr;
             }
 
-            auto* items = static_cast<itemDef_s**>(m_memory->Alloc(sizeof(void*) * commonMenu.m_items.size()));
-            memset(items, 0, sizeof(void*) * commonMenu.m_items.size());
-
+            auto* items = m_memory->Alloc<itemDef_s*>(commonMenu.m_items.size());
             for (auto i = 0u; i < commonMenu.m_items.size(); i++)
                 items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
 

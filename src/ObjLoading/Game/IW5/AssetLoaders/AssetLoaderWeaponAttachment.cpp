@@ -31,8 +31,7 @@ bool AssetLoaderWeaponAttachment::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    auto* attachment = static_cast<WeaponAttachment*>(memory->Alloc(sizeof(WeaponAttachment)));
-    memset(attachment, 0, sizeof(Material));
+    auto* attachment = memory->Alloc<WeaponAttachment>();
     attachment->szInternalName = memory->Dup(assetName.c_str());
 
     std::vector<XAssetInfoGeneric*> dependencies;

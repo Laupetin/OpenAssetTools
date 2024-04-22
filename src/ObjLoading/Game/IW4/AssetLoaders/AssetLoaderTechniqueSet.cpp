@@ -72,7 +72,7 @@ namespace IW4
             if (existingEntry != m_allocated_literals.end())
                 return existingEntry->second;
 
-            auto* newLiteral = static_cast<float(*)[4]>(memory->Alloc(sizeof(float) * 4u));
+            auto* newLiteral = memory->Alloc<float[4]>();
             (*newLiteral)[0] = source.m_value[0];
             (*newLiteral)[1] = source.m_value[1];
             (*newLiteral)[2] = source.m_value[2];
@@ -1159,8 +1159,7 @@ namespace IW4
             out.pixelShader = in.m_pixel_shader->Asset();
             out.vertexDecl = in.m_vertex_decl_asset->Asset();
 
-            const auto argDataSize = sizeof(MaterialShaderArgument) * in.m_arguments.size();
-            out.args = static_cast<MaterialShaderArgument*>(m_memory->Alloc(argDataSize));
+            out.args = m_memory->Alloc<MaterialShaderArgument>(in.m_arguments.size());
 
             size_t perObjArgCount = 0u;
             size_t perPrimArgCount = 0u;
@@ -1221,8 +1220,7 @@ namespace IW4
         {
             assert(!passes.empty());
             const auto techniqueSize = sizeof(MaterialTechnique) + (passes.size() - 1u) * sizeof(MaterialPass);
-            auto* technique = static_cast<MaterialTechnique*>(m_memory->Alloc(techniqueSize));
-            memset(technique, 0, techniqueSize);
+            auto* technique = static_cast<MaterialTechnique*>(m_memory->AllocRaw(techniqueSize));
             technique->name = m_memory->Dup(techniqueName.c_str());
             technique->passCount = static_cast<uint16_t>(passes.size());
 

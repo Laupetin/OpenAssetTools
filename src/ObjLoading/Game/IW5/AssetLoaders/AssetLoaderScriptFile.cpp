@@ -65,11 +65,11 @@ bool AssetLoaderScriptFile::LoadFromRaw(
         return false;
     }
 
-    scriptFile->buffer = static_cast<char*>(memory->Alloc(scriptFile->compressedLen));
+    scriptFile->buffer = memory->Alloc<char>(scriptFile->compressedLen);
     memcpy(const_cast<char*>(scriptFile->buffer), fileBuffer.get() + offset, scriptFile->compressedLen);
     offset += scriptFile->compressedLen;
 
-    scriptFile->bytecode = static_cast<unsigned char*>(memory->Alloc(scriptFile->bytecodeLen));
+    scriptFile->bytecode = memory->Alloc<unsigned char>(scriptFile->bytecodeLen);
     memcpy(scriptFile->bytecode, fileBuffer.get() + offset, scriptFile->bytecodeLen);
 
     manager->AddAsset(ASSET_TYPE_SCRIPTFILE, assetName, scriptFile);

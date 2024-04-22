@@ -10,6 +10,6 @@ namespace IW5
     public:
         explicit Actions_clipMap_t(Zone* zone);
 
-        void ReallocClipInfo(ClipInfo* clipInfo, clipMap_t* clipMap) const;
+        void ReallocClipInfo(const ClipInfo* clipInfo, clipMap_t* clipMap) const;
     };
 } // namespace IW5

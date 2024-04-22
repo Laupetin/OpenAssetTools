@@ -13,8 +13,8 @@ void Actions_LoadedSound::SetSoundData(MssSound* sound) const
 {
     if (sound->info.data_len > 0)
     {
-        char* tempData = sound->data;
-        sound->data = static_cast<char*>(m_zone->GetMemory()->Alloc(sound->info.data_len));
+        const auto* tempData = sound->data;
+        sound->data = m_zone->GetMemory()->Alloc<char>(sound->info.data_len);
         memcpy(sound->data, tempData, sound->info.data_len);
     }
     else
