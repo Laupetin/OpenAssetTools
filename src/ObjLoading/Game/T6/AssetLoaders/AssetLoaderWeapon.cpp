@@ -263,11 +263,8 @@ namespace T6
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                {
-                    auto lowerValue = value;
-                    utils::MakeStringLowerCase(lowerValue);
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, lowerValue));
-                }
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+
                 return true;
             }
 
