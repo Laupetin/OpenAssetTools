@@ -83,11 +83,11 @@ namespace IW5
             if (materialName.empty())
                 return nullptr;
 
-            auto* materialDependency = m_manager->LoadDependency(ASSET_TYPE_MATERIAL, materialName);
+            auto* materialDependency = m_manager->LoadDependency<AssetMaterial>(materialName);
             if (!materialDependency)
                 throw MenuConversionException("Failed to load material \"" + materialName + "\"", menu, item);
 
-            return static_cast<Material*>(materialDependency->m_ptr);
+            return materialDependency->Asset();
         }
 
         _NODISCARD snd_alias_list_t* ConvertSound(const std::string& soundName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
@@ -95,11 +95,11 @@ namespace IW5
             if (soundName.empty())
                 return nullptr;
 
-            auto* soundDependency = m_manager->LoadDependency(ASSET_TYPE_SOUND, soundName);
+            auto* soundDependency = m_manager->LoadDependency<AssetSound>(soundName);
             if (!soundDependency)
                 throw MenuConversionException("Failed to load sound \"" + soundName + "\"", menu, item);
 
-            return static_cast<snd_alias_list_t*>(soundDependency->m_ptr);
+            return soundDependency->Asset();
         }
 
         bool HandleStaticDvarFunctionCall(Statement_s* gameStatement,

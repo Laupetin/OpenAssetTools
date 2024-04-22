@@ -54,11 +54,11 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     {
         if (value.empty())
         {
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+            *reinterpret_cast<FxEffectDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
 
-        auto* fx = m_loading_manager->LoadDependency(ASSET_TYPE_FX, value);
+        auto* fx = m_loading_manager->LoadDependency<AssetFx>(value);
 
         if (fx == nullptr)
         {
@@ -67,7 +67,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         m_dependencies.emplace(fx);
-        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = fx->m_ptr;
+        *reinterpret_cast<FxEffectDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = fx->Asset();
 
         return true;
     }
@@ -76,11 +76,11 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     {
         if (value.empty())
         {
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+            *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
 
-        auto* xmodel = m_loading_manager->LoadDependency(ASSET_TYPE_XMODEL, value);
+        auto* xmodel = m_loading_manager->LoadDependency<AssetXModel>(value);
 
         if (xmodel == nullptr)
         {
@@ -89,7 +89,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         m_dependencies.emplace(xmodel);
-        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = xmodel->m_ptr;
+        *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = xmodel->Asset();
 
         return true;
     }
@@ -98,11 +98,11 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     {
         if (value.empty())
         {
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+            *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
 
-        auto* material = m_loading_manager->LoadDependency(ASSET_TYPE_MATERIAL, value);
+        auto* material = m_loading_manager->LoadDependency<AssetMaterial>(value);
 
         if (material == nullptr)
         {
@@ -111,7 +111,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         m_dependencies.emplace(material);
-        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = material->m_ptr;
+        *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = material->Asset();
 
         return true;
     }
@@ -120,11 +120,11 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     {
         if (value.empty())
         {
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+            *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
 
-        auto* tracer = m_loading_manager->LoadDependency(ASSET_TYPE_TRACER, value);
+        auto* tracer = m_loading_manager->LoadDependency<AssetTracer>(value);
 
         if (tracer == nullptr)
         {
@@ -133,7 +133,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         m_dependencies.emplace(tracer);
-        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = tracer->m_ptr;
+        *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = tracer->Asset();
 
         return true;
     }
@@ -156,11 +156,11 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
     {
         if (value.empty())
         {
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+            *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
             return true;
         }
 
-        auto* collmap = m_loading_manager->LoadDependency(ASSET_TYPE_PHYSCOLLMAP, value);
+        auto* collmap = m_loading_manager->LoadDependency<AssetPhysCollMap>(value);
 
         if (collmap == nullptr)
         {
@@ -169,7 +169,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         }
 
         m_dependencies.emplace(collmap);
-        *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = collmap->m_ptr;
+        *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = collmap->Asset();
 
         return true;
     }

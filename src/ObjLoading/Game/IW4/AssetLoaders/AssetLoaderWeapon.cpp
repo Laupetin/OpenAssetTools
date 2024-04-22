@@ -137,7 +137,7 @@ namespace
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetXAnim>(value));
 
                 return true;
             }

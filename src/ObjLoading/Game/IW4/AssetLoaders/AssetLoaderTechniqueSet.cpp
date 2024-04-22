@@ -391,7 +391,7 @@ namespace IW4
                 ss << materialStreamSourceAbbreviation[stream.source] << materialStreamDestinationAbbreviation[stream.dest];
             }
 
-            pass.m_vertex_decl_asset = reinterpret_cast<XAssetInfo<MaterialVertexDeclaration>*>(m_manager->LoadDependency(ASSET_TYPE_VERTEXDECL, ss.str()));
+            pass.m_vertex_decl_asset = m_manager->LoadDependency<AssetVertexDecl>(ss.str());
         }
 
         bool AcceptEndPass(std::string& errorMessage) override
@@ -461,7 +461,7 @@ namespace IW4
 
         bool AcceptVertexShader(const std::string& vertexShaderName, std::string& errorMessage) override
         {
-            auto* vertexShaderDependency = m_manager->LoadDependency(ASSET_TYPE_VERTEXSHADER, vertexShaderName);
+            auto* vertexShaderDependency = m_manager->LoadDependency<AssetVertexShader>(vertexShaderName);
             if (vertexShaderDependency == nullptr)
             {
                 std::ostringstream ss;
@@ -472,7 +472,7 @@ namespace IW4
 
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
-            pass.m_vertex_shader = reinterpret_cast<XAssetInfo<MaterialVertexShader>*>(vertexShaderDependency);
+            pass.m_vertex_shader = vertexShaderDependency;
 
             if (pass.m_vertex_shader->Asset()->name && pass.m_vertex_shader->Asset()->name[0] == ',')
             {
@@ -501,7 +501,7 @@ namespace IW4
 
         bool AcceptPixelShader(const std::string& pixelShaderName, std::string& errorMessage) override
         {
-            auto* pixelShaderDependency = m_manager->LoadDependency(ASSET_TYPE_PIXELSHADER, pixelShaderName);
+            auto* pixelShaderDependency = m_manager->LoadDependency<AssetPixelShader>(pixelShaderName);
             if (pixelShaderDependency == nullptr)
             {
                 std::ostringstream ss;
@@ -512,7 +512,7 @@ namespace IW4
 
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
-            pass.m_pixel_shader = reinterpret_cast<XAssetInfo<MaterialPixelShader>*>(pixelShaderDependency);
+            pass.m_pixel_shader = pixelShaderDependency;
 
             if (pass.m_pixel_shader->Asset()->name && pass.m_pixel_shader->Asset()->name[0] == ',')
             {

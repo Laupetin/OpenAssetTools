@@ -53,7 +53,7 @@ namespace
         {
             if (jWeaponCamoSet.solidCamoImage)
             {
-                auto* image = static_cast<XAssetInfo<GfxImage>*>(m_manager.LoadDependency(ASSET_TYPE_IMAGE, jWeaponCamoSet.solidCamoImage.value()));
+                auto* image = m_manager.LoadDependency<AssetImage>(jWeaponCamoSet.solidCamoImage.value());
                 if (!image)
                 {
                     PrintError(weaponCamo, "Could not find solidCamoImage");
@@ -65,7 +65,7 @@ namespace
 
             if (jWeaponCamoSet.patternCamoImage)
             {
-                auto* image = static_cast<XAssetInfo<GfxImage>*>(m_manager.LoadDependency(ASSET_TYPE_IMAGE, jWeaponCamoSet.patternCamoImage.value()));
+                auto* image = m_manager.LoadDependency<AssetImage>(jWeaponCamoSet.patternCamoImage.value());
                 if (!image)
                 {
                     PrintError(weaponCamo, "Could not find patternCamoImage");
@@ -102,8 +102,8 @@ namespace
                 for (auto i = 0u; i < weaponCamoMaterial.numBaseMaterials; i++)
                 {
                     const auto& materialOverride = jWeaponCamoMaterial.materialOverrides[i];
-                    auto* baseMaterial = static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, materialOverride.baseMaterial));
-                    auto* camoMaterial = static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, materialOverride.camoMaterial));
+                    auto* baseMaterial = m_manager.LoadDependency<AssetMaterial>(materialOverride.baseMaterial);
+                    auto* camoMaterial = m_manager.LoadDependency<AssetMaterial>(materialOverride.camoMaterial);
 
                     if (!baseMaterial)
                     {
@@ -164,7 +164,7 @@ namespace
         {
             if (jWeaponCamo.solidBaseImage)
             {
-                auto* image = static_cast<XAssetInfo<GfxImage>*>(m_manager.LoadDependency(ASSET_TYPE_IMAGE, jWeaponCamo.solidBaseImage.value()));
+                auto* image = m_manager.LoadDependency<AssetImage>(jWeaponCamo.solidBaseImage.value());
                 if (!image)
                 {
                     PrintError(weaponCamo, "Could not find solidBaseImage");
@@ -176,7 +176,7 @@ namespace
 
             if (jWeaponCamo.patternBaseImage)
             {
-                auto* image = static_cast<XAssetInfo<GfxImage>*>(m_manager.LoadDependency(ASSET_TYPE_IMAGE, jWeaponCamo.patternBaseImage.value()));
+                auto* image = m_manager.LoadDependency<AssetImage>(jWeaponCamo.patternBaseImage.value());
                 if (!image)
                 {
                     PrintError(weaponCamo, "Could not find patternBaseImage");

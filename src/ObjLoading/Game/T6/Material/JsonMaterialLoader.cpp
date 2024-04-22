@@ -99,7 +99,7 @@ namespace
             textureDef.semantic = jTexture.semantic;
             textureDef.isMatureContent = jTexture.isMatureContent;
 
-            auto* image = static_cast<XAssetInfo<GfxImage>*>(m_manager.LoadDependency(ASSET_TYPE_IMAGE, jTexture.image));
+            auto* image = m_manager.LoadDependency<AssetImage>(jTexture.image);
             if (!image)
             {
                 PrintError(material, std::format("Could not find textureDef image: {}", jTexture.image));
@@ -275,7 +275,7 @@ namespace
             material.cameraRegion = jMaterial.cameraRegion;
             material.probeMipBits = jMaterial.probeMipBits;
 
-            auto* techniqueSet = static_cast<XAssetInfo<MaterialTechniqueSet>*>(m_manager.LoadDependency(ASSET_TYPE_TECHNIQUE_SET, jMaterial.techniqueSet));
+            auto* techniqueSet = m_manager.LoadDependency<AssetTechniqueSet>(jMaterial.techniqueSet);
             if (!techniqueSet)
             {
                 PrintError(material, "Could not find technique set");
@@ -337,7 +337,7 @@ namespace
 
             if (jMaterial.thermalMaterial)
             {
-                auto* thermalMaterial = static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, jMaterial.thermalMaterial.value()));
+                auto* thermalMaterial = m_manager.LoadDependency<AssetMaterial>(jMaterial.thermalMaterial.value());
                 if (!thermalMaterial)
                 {
                     PrintError(material, "Could not find thermal material");

@@ -52,7 +52,7 @@ bool AssetLoaderGfxLightDef::LoadFromRaw(
     file.m_stream->read(&imageName[0], static_cast<size_t>(imageNameSize));
     file.m_stream->read(reinterpret_cast<char*>(&lmapLookupStart), sizeof(int8_t));
 
-    auto* imageDependency = reinterpret_cast<XAssetInfo<GfxImage>*>(manager->LoadDependency(ASSET_TYPE_IMAGE, imageName));
+    auto* imageDependency = manager->LoadDependency<AssetImage>(imageName);
 
     if (!imageDependency)
     {
