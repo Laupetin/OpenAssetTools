@@ -26,9 +26,9 @@ MemoryManager::~MemoryManager()
     m_destructible.clear();
 }
 
-void* MemoryManager::Alloc(const size_t size)
+void* MemoryManager::AllocRaw(const size_t size)
 {
-    void* result = malloc(size);
+    void* result = calloc(size, 1u);
     m_allocations.push_back(result);
 
     return result;
@@ -46,7 +46,7 @@ char* MemoryManager::Dup(const char* str)
     return result;
 }
 
-void MemoryManager::Free(void* data)
+void MemoryManager::Free(const void* data)
 {
     for (auto iAlloc = m_allocations.begin(); iAlloc != m_allocations.end(); ++iAlloc)
     {
@@ -59,7 +59,7 @@ void MemoryManager::Free(void* data)
     }
 }
 
-void MemoryManager::Delete(void* data)
+void MemoryManager::Delete(const void* data)
 {
     for (auto iAlloc = m_destructible.begin(); iAlloc != m_destructible.end(); ++iAlloc)
     {
