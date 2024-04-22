@@ -199,7 +199,7 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
 bool LoadSoundAliasIndexList(MemoryManager* memory, SndBank* sndBank)
 {
     // contains a list of all the alias ids in the sound bank
-    sndBank->aliasIndex = static_cast<SndIndexEntry*>(memory->Alloc(sizeof(SndIndexEntry) * sndBank->aliasCount));
+    sndBank->aliasIndex = memory->Alloc<SndIndexEntry>(sndBank->aliasCount);
     memset(sndBank->aliasIndex, 0xFF, sizeof(SndIndexEntry) * sndBank->aliasCount);
 
     const auto setAliasIndexList = std::make_unique<bool[]>(sndBank->aliasCount);
@@ -271,8 +271,7 @@ bool LoadSoundAliasList(
     {
         // should be the total number of assets
         sndBank->aliasCount = aliasCsv.Size();
-        sndBank->alias = static_cast<SndAliasList*>(memory->Alloc(sizeof(SndAliasList) * sndBank->aliasCount));
-        memset(sndBank->alias, 0, sizeof(SndAliasList) * sndBank->aliasCount);
+        sndBank->alias = memory->Alloc<SndAliasList>(sndBank->aliasCount);
 
         auto row = 0u;
         auto listIndex = 0u;
@@ -286,7 +285,7 @@ bool LoadSoundAliasList(
 
             // allocate the sub list
             sndBank->alias[listIndex].count = subListCount;
-            sndBank->alias[listIndex].head = static_cast<SndAlias*>(memory->Alloc(sizeof(SndAlias) * subListCount));
+            sndBank->alias[listIndex].head = memory->Alloc<SndAlias>(subListCount);
             sndBank->alias[listIndex].sequence = 0;
 
             // populate the sublist with the next X number of aliases in the file. Note: this will only work correctly if the aliases that are a part of a sub
@@ -319,7 +318,7 @@ bool LoadSoundAliasList(
             auto* oldAliases = sndBank->alias;
 
             sndBank->aliasCount = listIndex;
-            sndBank->alias = static_cast<SndAliasList*>(memory->Alloc(sizeof(SndAliasList) * sndBank->aliasCount));
+            sndBank->alias = memory->Alloc<SndAliasList>(sndBank->aliasCount);
             memcpy(sndBank->alias, oldAliases, sizeof(SndAliasList) * sndBank->aliasCount);
 
             memory->Free(oldAliases);
@@ -340,8 +339,7 @@ bool LoadSoundRadverbs(MemoryManager* memory, SndBank* sndBank, const SearchPath
     if (radverbCsv.Size() > 0)
     {
         sndBank->radverbCount = radverbCsv.Size();
-        sndBank->radverbs = static_cast<SndRadverb*>(memory->Alloc(sizeof(SndRadverb) * sndBank->radverbCount));
-        memset(sndBank->radverbs, 0, sizeof(SndRadverb) * sndBank->radverbCount);
+        sndBank->radverbs = memory->Alloc<SndRadverb>(sndBank->radverbCount);
 
         for (auto i = 0u; i < sndBank->radverbCount; i++)
         {
@@ -383,8 +381,7 @@ bool LoadSoundDuckList(ISearchPath* searchPath, MemoryManager* memory, SndBank* 
     if (duckListCsv.Size() > 0)
     {
         sndBank->duckCount = duckListCsv.Size();
-        sndBank->ducks = static_cast<SndDuck*>(memory->Alloc(sizeof(SndDuck) * sndBank->duckCount));
-        memset(sndBank->ducks, 0, sizeof(SndDuck) * sndBank->duckCount);
+        sndBank->ducks = memory->Alloc<SndDuck>(sndBank->duckCount);
 
         for (auto i = 0u; i < sndBank->duckCount; i++)
         {
@@ -422,8 +419,8 @@ bool LoadSoundDuckList(ISearchPath* searchPath, MemoryManager* memory, SndBank* 
             if (duckJson.contains("fadeOutCurve"))
                 duck->fadeOutCurve = Common::SND_HashName(duckJson["fadeOutCurve"].get<std::string>().data());
 
-            duck->attenuation = static_cast<SndFloatAlign16*>(memory->Alloc(sizeof(SndFloatAlign16) * 32));
-            duck->filter = static_cast<SndFloatAlign16*>(memory->Alloc(sizeof(SndFloatAlign16) * 32));
+            duck->attenuation = memory->Alloc<SndFloatAlign16>(32u);
+            duck->filter = memory->Alloc<SndFloatAlign16>(32u);
 
             for (auto& valueJson : duckJson["values"])
             {
@@ -499,8 +496,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         sndBank->loadedAssets.zone = memory->Dup(sndBankLocalization.at(0).c_str());
         sndBank->loadedAssets.language = memory->Dup(sndBankLocalization.at(1).c_str());
         sndBank->loadedAssets.entryCount = loadedEntryCount;
-        sndBank->loadedAssets.entries = static_cast<SndAssetBankEntry*>(memory->Alloc(sizeof(SndAssetBankEntry) * loadedEntryCount));
-        memset(sndBank->loadedAssets.entries, 0, sizeof(SndAssetBankEntry) * loadedEntryCount);
+        sndBank->loadedAssets.entries = memory->Alloc<SndAssetBankEntry>(loadedEntryCount);
 
         sndBank->runtimeAssetLoad = true;
 
@@ -550,8 +546,7 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         if (result)
         {
             sndBank->loadedAssets.dataSize = dataSize;
-            sndBank->loadedAssets.data = static_cast<SndChar2048*>(memory->Alloc(dataSize));
-            memset(sndBank->loadedAssets.data, 0, dataSize);
+            sndBank->loadedAssets.data = memory->Alloc<SndChar2048>(dataSize);
         }
         else
         {

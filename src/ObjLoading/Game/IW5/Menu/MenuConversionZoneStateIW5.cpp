@@ -45,7 +45,7 @@ size_t MenuConversionZoneState::AddStaticDvar(const std::string& dvarName)
         return foundDvar->second;
 
     auto* memory = m_zone->GetMemory();
-    auto* staticDvar = static_cast<StaticDvar*>(memory->Alloc(sizeof(StaticDvar)));
+    auto* staticDvar = memory->Alloc<StaticDvar>();
 
     staticDvar->dvarName = memory->Dup(dvarName.c_str());
     staticDvar->dvar = nullptr;
@@ -97,24 +97,24 @@ void MenuConversionZoneState::FinalizeSupportingData() const
 
     if (!m_functions.empty())
     {
-        m_supporting_data->uifunctions.functions = static_cast<Statement_s**>(memory->Alloc(sizeof(void*) * m_functions.size()));
-        memcpy(m_supporting_data->uifunctions.functions, &m_functions[0], sizeof(void*) * m_functions.size());
+        m_supporting_data->uifunctions.functions = memory->Alloc<Statement_s*>(m_functions.size());
+        memcpy(m_supporting_data->uifunctions.functions, m_functions.data(), sizeof(void*) * m_functions.size());
     }
     else
         m_supporting_data->uifunctions.functions = nullptr;
 
     if (!m_static_dvars.empty())
     {
-        m_supporting_data->staticDvarList.staticDvars = static_cast<StaticDvar**>(memory->Alloc(sizeof(void*) * m_static_dvars.size()));
-        memcpy(m_supporting_data->staticDvarList.staticDvars, &m_static_dvars[0], sizeof(void*) * m_static_dvars.size());
+        m_supporting_data->staticDvarList.staticDvars = memory->Alloc<StaticDvar*>(m_static_dvars.size());
+        memcpy(m_supporting_data->staticDvarList.staticDvars, m_static_dvars.data(), sizeof(void*) * m_static_dvars.size());
     }
     else
         m_supporting_data->staticDvarList.staticDvars = nullptr;
 
     if (!m_strings.empty())
     {
-        m_supporting_data->uiStrings.strings = static_cast<const char**>(memory->Alloc(sizeof(void*) * m_strings.size()));
-        memcpy(m_supporting_data->uiStrings.strings, &m_strings[0], sizeof(void*) * m_strings.size());
+        m_supporting_data->uiStrings.strings = memory->Alloc<const char*>(m_strings.size());
+        memcpy(m_supporting_data->uiStrings.strings, m_strings.data(), sizeof(void*) * m_strings.size());
     }
     else
         m_supporting_data->uiStrings.strings = nullptr;

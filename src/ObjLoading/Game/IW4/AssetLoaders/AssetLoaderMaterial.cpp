@@ -1287,7 +1287,7 @@ namespace IW4
         {
             if (!m_textures.empty())
             {
-                m_material->textureTable = static_cast<MaterialTextureDef*>(m_memory->Alloc(sizeof(MaterialTextureDef) * m_textures.size()));
+                m_material->textureTable = m_memory->Alloc<MaterialTextureDef>(m_textures.size());
                 m_material->textureCount = static_cast<unsigned char>(m_textures.size());
                 memcpy(m_material->textureTable, m_textures.data(), sizeof(MaterialTextureDef) * m_textures.size());
             }
@@ -1299,7 +1299,7 @@ namespace IW4
 
             if (!m_constants.empty())
             {
-                m_material->constantTable = static_cast<MaterialConstantDef*>(m_memory->Alloc(sizeof(MaterialConstantDef) * m_constants.size()));
+                m_material->constantTable = m_memory->Alloc<MaterialConstantDef>(m_constants.size());
                 m_material->constantCount = static_cast<unsigned char>(m_constants.size());
                 memcpy(m_material->constantTable, m_constants.data(), sizeof(MaterialConstantDef) * m_constants.size());
             }
@@ -1311,7 +1311,7 @@ namespace IW4
 
             if (!m_state_bits.empty())
             {
-                m_material->stateBitsTable = static_cast<GfxStateBits*>(m_memory->Alloc(sizeof(GfxStateBits) * m_state_bits.size()));
+                m_material->stateBitsTable = m_memory->Alloc<GfxStateBits>(m_state_bits.size());
                 m_material->stateBitsCount = static_cast<unsigned char>(m_state_bits.size());
                 memcpy(m_material->stateBitsTable, m_state_bits.data(), sizeof(GfxStateBits) * m_state_bits.size());
             }

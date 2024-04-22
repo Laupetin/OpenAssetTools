@@ -65,7 +65,7 @@ void AssetLoaderStructuredDataDefSet::ConvertEnum(StructuredDataEnum* outputEnum
     inputEnum->SortEntriesByName();
     if (!inputEnum->m_entries.empty())
     {
-        outputEnum->entries = static_cast<StructuredDataEnumEntry*>(memory->Alloc(sizeof(StructuredDataEnumEntry) * inputEnum->m_entries.size()));
+        outputEnum->entries = memory->Alloc<StructuredDataEnumEntry>(inputEnum->m_entries.size());
         for (auto entryIndex = 0u; entryIndex < inputEnum->m_entries.size(); entryIndex++)
         {
             auto& outputEntry = outputEnum->entries[entryIndex];
@@ -88,8 +88,7 @@ void AssetLoaderStructuredDataDefSet::ConvertStruct(StructuredDataStruct* output
     inputStruct->SortPropertiesByName();
     if (!inputStruct->m_properties.empty())
     {
-        outputStruct->properties =
-            static_cast<StructuredDataStructProperty*>(memory->Alloc(sizeof(StructuredDataStructProperty) * inputStruct->m_properties.size()));
+        outputStruct->properties = memory->Alloc<StructuredDataStructProperty>(inputStruct->m_properties.size());
         for (auto propertyIndex = 0u; propertyIndex < inputStruct->m_properties.size(); propertyIndex++)
         {
             auto& outputProperty = outputStruct->properties[propertyIndex];
@@ -137,7 +136,7 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
     outputDef->enumCount = static_cast<int>(inputDef->m_enums.size());
     if (!inputDef->m_enums.empty())
     {
-        outputDef->enums = static_cast<StructuredDataEnum*>(memory->Alloc(sizeof(StructuredDataEnum) * inputDef->m_enums.size()));
+        outputDef->enums = memory->Alloc<StructuredDataEnum>(inputDef->m_enums.size());
         for (auto enumIndex = 0u; enumIndex < inputDef->m_enums.size(); enumIndex++)
             ConvertEnum(&outputDef->enums[enumIndex], inputDef->m_enums[enumIndex].get(), memory);
     }
@@ -147,7 +146,7 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
     outputDef->structCount = static_cast<int>(inputDef->m_structs.size());
     if (!inputDef->m_structs.empty())
     {
-        outputDef->structs = static_cast<StructuredDataStruct*>(memory->Alloc(sizeof(StructuredDataStruct) * inputDef->m_structs.size()));
+        outputDef->structs = memory->Alloc<StructuredDataStruct>(inputDef->m_structs.size());
         for (auto structIndex = 0u; structIndex < inputDef->m_structs.size(); structIndex++)
             ConvertStruct(&outputDef->structs[structIndex], inputDef->m_structs[structIndex].get(), memory);
     }
@@ -157,8 +156,7 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
     outputDef->indexedArrayCount = static_cast<int>(inputDef->m_indexed_arrays.size());
     if (!inputDef->m_indexed_arrays.empty())
     {
-        outputDef->indexedArrays =
-            static_cast<StructuredDataIndexedArray*>(memory->Alloc(sizeof(StructuredDataIndexedArray) * inputDef->m_indexed_arrays.size()));
+        outputDef->indexedArrays = memory->Alloc<StructuredDataIndexedArray>(inputDef->m_indexed_arrays.size());
         for (auto indexedArrayIndex = 0u; indexedArrayIndex < inputDef->m_indexed_arrays.size(); indexedArrayIndex++)
             ConvertIndexedArray(&outputDef->indexedArrays[indexedArrayIndex], &inputDef->m_indexed_arrays[indexedArrayIndex], memory);
     }
@@ -168,7 +166,7 @@ void AssetLoaderStructuredDataDefSet::ConvertDef(StructuredDataDef* outputDef, c
     outputDef->enumedArrayCount = static_cast<int>(inputDef->m_enumed_arrays.size());
     if (!inputDef->m_enumed_arrays.empty())
     {
-        outputDef->enumedArrays = static_cast<StructuredDataEnumedArray*>(memory->Alloc(sizeof(StructuredDataEnumedArray) * inputDef->m_enumed_arrays.size()));
+        outputDef->enumedArrays = memory->Alloc<StructuredDataEnumedArray>(inputDef->m_enumed_arrays.size());
         for (auto enumedArrayIndex = 0u; enumedArrayIndex < inputDef->m_enumed_arrays.size(); enumedArrayIndex++)
             ConvertEnumedArray(&outputDef->enumedArrays[enumedArrayIndex], &inputDef->m_enumed_arrays[enumedArrayIndex], memory);
     }
@@ -186,7 +184,7 @@ StructuredDataDefSet* AssetLoaderStructuredDataDefSet::ConvertSet(const std::str
     auto* set = memory->Create<StructuredDataDefSet>();
     set->name = memory->Dup(assetName.c_str());
     set->defCount = defs.size();
-    set->defs = static_cast<StructuredDataDef*>(memory->Alloc(sizeof(StructuredDataDef) * defs.size()));
+    set->defs = memory->Alloc<StructuredDataDef>(defs.size());
 
     for (auto defIndex = 0u; defIndex < defs.size(); defIndex++)
         ConvertDef(&set->defs[defIndex], defs[defIndex].get(), memory);

@@ -68,12 +68,12 @@ namespace
                 return true;
             }
 
-            *perSurfaceTypeSound = static_cast<SndAliasCustom*>(m_memory->Alloc(sizeof(SndAliasCustom) * SURF_TYPE_COUNT));
+            *perSurfaceTypeSound = m_memory->Alloc<SndAliasCustom>(SURF_TYPE_COUNT);
             for (auto i = 0u; i < SURF_TYPE_COUNT; i++)
             {
                 const auto currentPerSurfaceTypeSound = value + surfaceTypeSoundSuffixes[i];
 
-                (*perSurfaceTypeSound)[i].name = static_cast<snd_alias_list_name*>(m_memory->Alloc(sizeof(snd_alias_list_name)));
+                (*perSurfaceTypeSound)[i].name = m_memory->Alloc<snd_alias_list_name>();
                 (*perSurfaceTypeSound)[i].name->soundName = m_memory->Dup(currentPerSurfaceTypeSound.c_str());
             }
 
@@ -207,7 +207,7 @@ namespace
                 return false;
             }
 
-            auto* animOverrides = static_cast<AnimOverrideEntry*>(m_memory->Alloc(sizeof(AnimOverrideEntry) * valueArray.size()));
+            auto* animOverrides = m_memory->Alloc<AnimOverrideEntry>(valueArray.size());
 
             auto i = 0u;
             for (const auto& overrideValues : valueArray)
@@ -248,7 +248,7 @@ namespace
                 return false;
             }
 
-            auto* soundOverrides = static_cast<SoundOverrideEntry*>(m_memory->Alloc(sizeof(SoundOverrideEntry) * valueArray.size()));
+            auto* soundOverrides = m_memory->Alloc<SoundOverrideEntry>(valueArray.size());
 
             auto i = 0u;
             for (const auto& overrideValues : valueArray)
@@ -283,7 +283,7 @@ namespace
                 return false;
             }
 
-            auto* fxOverrides = static_cast<FxOverrideEntry*>(m_memory->Alloc(sizeof(FxOverrideEntry) * valueArray.size()));
+            auto* fxOverrides = m_memory->Alloc<FxOverrideEntry>(valueArray.size());
 
             auto i = 0u;
             for (const auto& overrideValues : valueArray)
@@ -321,7 +321,7 @@ namespace
                 return false;
             }
 
-            auto* reloadOverrides = static_cast<ReloadStateTimerEntry*>(m_memory->Alloc(sizeof(ReloadStateTimerEntry) * valueArray.size()));
+            auto* reloadOverrides = m_memory->Alloc<ReloadStateTimerEntry>(valueArray.size());
 
             auto i = 0u;
             for (const auto& overrideValues : valueArray)
@@ -372,10 +372,8 @@ namespace
                     if (!ParseSingleWeaponAttachment(overrideValues[0], currentOverride.attachment))
                         return false;
 
-                    currentOverride.notetrackSoundMapKeys = static_cast<ScriptString*>(m_memory->Alloc(sizeof(ScriptString) * 24u));
-                    memset(currentOverride.notetrackSoundMapKeys, 0u, sizeof(ScriptString) * 24u);
-                    currentOverride.notetrackSoundMapValues = static_cast<ScriptString*>(m_memory->Alloc(sizeof(ScriptString) * 24u));
-                    memset(currentOverride.notetrackSoundMapValues, 0u, sizeof(ScriptString) * 24u);
+                    currentOverride.notetrackSoundMapKeys = m_memory->Alloc<ScriptString>(24u);
+                    currentOverride.notetrackSoundMapValues = m_memory->Alloc<ScriptString>(24u);
                     lastAttachment = overrideValues[0];
                     currentOverrideKeyOffset = 0u;
                 }
@@ -394,8 +392,7 @@ namespace
             if (currentOverrideKeyOffset > 0u)
                 overrideVector.emplace_back(currentOverride);
 
-            m_weapon->weapCompleteDef.notetrackOverrides =
-                static_cast<NoteTrackToSoundEntry*>(m_memory->Alloc(sizeof(NoteTrackToSoundEntry) * overrideVector.size()));
+            m_weapon->weapCompleteDef.notetrackOverrides = m_memory->Alloc<NoteTrackToSoundEntry>(overrideVector.size());
             memcpy(m_weapon->weapCompleteDef.notetrackOverrides, overrideVector.data(), sizeof(NoteTrackToSoundEntry) * overrideVector.size());
             m_weapon->weapCompleteDef.numNotetrackOverrides = overrideVector.size();
 
@@ -462,7 +459,7 @@ namespace
                 return;
             }
 
-            soundAlias.name = static_cast<snd_alias_list_name*>(m_memory->Alloc(sizeof(snd_alias_list_name)));
+            soundAlias.name = m_memory->Alloc<snd_alias_list_name>();
             soundAlias.name->soundName = m_memory->Dup(value.c_str());
             m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_SOUND, value));
         }
@@ -696,13 +693,6 @@ namespace
 
             *reinterpret_cast<const char**>(reinterpret_cast<char*>(weapon) + field.iOffset) = "";
         }
-    }
-
-    snd_alias_list_name* CreateSoundAliasListName(const char* value, MemoryManager* memory)
-    {
-        auto* name = static_cast<snd_alias_list_name*>(memory->Alloc(sizeof(snd_alias_list_name)));
-        name->soundName = memory->Dup(value);
-        return name;
     }
 
     void CheckProjectileValues(const WeaponCompleteDef& weaponCompleteDef, const WeaponDef& weaponDef)

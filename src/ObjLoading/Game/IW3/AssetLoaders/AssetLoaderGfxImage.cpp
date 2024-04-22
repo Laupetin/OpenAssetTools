@@ -99,7 +99,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(
     for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         dataSize += texture->GetSizeOfMipLevel(mipLevel) * faceCount;
 
-    auto* loadDef = static_cast<GfxImageLoadDef*>(zone->GetMemory()->Alloc(offsetof(GfxImageLoadDef, data) + dataSize));
+    auto* loadDef = static_cast<GfxImageLoadDef*>(zone->GetMemory()->AllocRaw(offsetof(GfxImageLoadDef, data) + dataSize));
     image->texture.loadDef = loadDef;
     loadDef->levelCount = static_cast<char>(mipCount);
     loadDef->flags = 0;

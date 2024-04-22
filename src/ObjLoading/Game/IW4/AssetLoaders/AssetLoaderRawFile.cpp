@@ -36,7 +36,7 @@ bool AssetLoaderRawFile::LoadFromRaw(
         return false;
 
     const auto compressionBufferSize = static_cast<size_t>(file.m_length + COMPRESSED_BUFFER_SIZE_PADDING);
-    auto* compressedBuffer = static_cast<char*>(memory->Alloc(compressionBufferSize));
+    auto* compressedBuffer = memory->Alloc<char>(compressionBufferSize);
 
     z_stream_s zs{};
 

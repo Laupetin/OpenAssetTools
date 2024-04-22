@@ -83,7 +83,7 @@ namespace IW5
 
             if (menuListAsset->menuCount > 0)
             {
-                menuListAsset->menus = static_cast<menuDef_t**>(memory->Alloc(sizeof(uintptr_t) * menuListAsset->menuCount));
+                menuListAsset->menus = memory->Alloc<menuDef_t*>(menuListAsset->menuCount);
                 for (auto i = 0; i < menuListAsset->menuCount; i++)
                     menuListAsset->menus[i] = menus[i];
             }

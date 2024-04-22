@@ -249,7 +249,7 @@ bool AssetLoaderFontIcon::LoadFromRaw(
 
     if (fontIcon->numEntries > 0)
     {
-        fontIcon->fontIconEntry = static_cast<FontIconEntry*>(memory->Alloc(sizeof(FontIconEntry) * fontIcon->numEntries));
+        fontIcon->fontIconEntry = memory->Alloc<FontIconEntry>(fontIcon->numEntries);
         for (auto i = 0u; i < entries.size(); i++)
             fontIcon->fontIconEntry[i] = entries[i];
     }
@@ -258,7 +258,7 @@ bool AssetLoaderFontIcon::LoadFromRaw(
 
     if (fontIcon->numAliasEntries > 0)
     {
-        fontIcon->fontIconAlias = static_cast<FontIconAlias*>(memory->Alloc(sizeof(FontIconAlias) * fontIcon->numAliasEntries));
+        fontIcon->fontIconAlias = memory->Alloc<FontIconAlias>(fontIcon->numAliasEntries);
         for (auto i = 0u; i < aliases.size(); i++)
             fontIcon->fontIconAlias[i] = aliases[i];
     }

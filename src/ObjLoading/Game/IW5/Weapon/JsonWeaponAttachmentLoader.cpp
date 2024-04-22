@@ -63,7 +63,7 @@ namespace
     if (jAttachment.attributeName)                                                                                                                             \
     {                                                                                                                                                          \
         using AttributeType = std::remove_pointer_t<decltype(attachment.attributeName)>;                                                                       \
-        attachment.attributeName = static_cast<AttributeType*>(m_memory.Alloc(sizeof(AttributeType)));                                                         \
+        attachment.attributeName = m_memory.Alloc<AttributeType>();                                                                                            \
         if (!Create##attributeClass##FromJson(jAttachment.attributeName.value(), *attachment.attributeName, attachment))                                       \
             return false;                                                                                                                                      \
     }                                                                                                                                                          \
@@ -164,7 +164,7 @@ namespace
         {
             auto sound = m_manager.LoadIndirectAssetReference(ASSET_TYPE_SOUND, assetName);
             m_indirect_asset_references.push_back(std::move(sound));
-            sndAliasCustom.name = static_cast<snd_alias_list_name*>(m_memory.Alloc(sizeof(snd_alias_list_name)));
+            sndAliasCustom.name = m_memory.Alloc<snd_alias_list_name>();
             sndAliasCustom.name->soundName = m_memory.Dup(assetName.c_str());
 
             return true;
@@ -198,7 +198,7 @@ namespace
                     PrintError(attachment, std::format("{} size cannot exceed {}", propertyName, propertyCount));
                     return false;
                 }
-                xmodelArray = static_cast<XModel**>(m_memory.Alloc(sizeof(void*) * propertyCount));
+                xmodelArray = m_memory.Alloc<XModel*>(propertyCount);
                 memset(xmodelArray, 0, sizeof(void*) * propertyCount);
 
                 for (auto i = 0u; i < arraySize; i++)
