@@ -19,36 +19,53 @@ public:
 
     _NODISCARD virtual AssetLoadingContext* GetAssetLoadingContext() const = 0;
 
-    virtual XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) = 0;
-
-    XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset)
+    template<typename AssetType> XAssetInfo<typename AssetType::Type>* AddAsset(const std::string& assetName, typename AssetType::Type* asset)
     {
-        return AddAsset(assetType, assetName, asset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>());
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAsset(std::make_unique<XAssetInfoGeneric>(
+            AssetType::EnumEntry, assetName, asset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>(), std::vector<IndirectAssetReference>())));
     }
 
-    XAssetInfoGeneric* AddAsset(const asset_type_t assetType, const std::string& assetName, void* asset, std::vector<XAssetInfoGeneric*> dependencies)
+    template<typename AssetType>
+    XAssetInfo<typename AssetType::Type>* AddAsset(const std::string& assetName, typename AssetType::Type* asset, std::vector<XAssetInfoGeneric*> dependencies)
     {
-        return AddAsset(assetType, assetName, asset, std::move(dependencies), std::vector<scr_string_t>());
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAsset(std::make_unique<XAssetInfoGeneric>(
+            AssetType::EnumEntry, assetName, asset, std::move(dependencies), std::vector<scr_string_t>(), std::vector<IndirectAssetReference>())));
     }
 
-    XAssetInfoGeneric* AddAsset(const asset_type_t assetType,
-                                const std::string& assetName,
-                                void* asset,
-                                std::vector<XAssetInfoGeneric*> dependencies,
-                                std::vector<scr_string_t> usedScriptStrings)
+    template<typename AssetType>
+    XAssetInfo<typename AssetType::Type>* AddAsset(const std::string& assetName,
+                                                   typename AssetType::Type* asset,
+                                                   std::vector<XAssetInfoGeneric*> dependencies,
+                                                   std::vector<scr_string_t> usedScriptStrings)
     {
-        return AddAsset(assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::vector<IndirectAssetReference>());
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAsset(std::make_unique<XAssetInfoGeneric>(
+            AssetType::EnumEntry, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::vector<IndirectAssetReference>())));
     }
 
-    XAssetInfoGeneric* AddAsset(const asset_type_t assetType,
-                                const std::string& assetName,
-                                void* asset,
-                                std::vector<XAssetInfoGeneric*> dependencies,
-                                std::vector<scr_string_t> usedScriptStrings,
-                                std::vector<IndirectAssetReference> indirectAssetReferences)
+    template<typename AssetType>
+    XAssetInfo<typename AssetType::Type>* AddAsset(const std::string& assetName,
+                                                   typename AssetType::Type* asset,
+                                                   std::vector<XAssetInfoGeneric*> dependencies,
+                                                   std::vector<scr_string_t> usedScriptStrings,
+                                                   std::vector<IndirectAssetReference> indirectAssetReferences)
     {
-        return AddAsset(std::make_unique<XAssetInfoGeneric>(
-            assetType, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences)));
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAsset(std::make_unique<XAssetInfoGeneric>(
+            AssetType::EnumEntry, assetName, asset, std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences))));
+    }
+
+    template<typename AssetType> XAssetInfo<typename AssetType::Type>* AddAsset(std::unique_ptr<XAssetInfo<typename AssetType::Type>> xAssetInfo)
+    {
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAsset(std::unique_ptr<XAssetInfoGeneric>(xAssetInfo.release())));
     }
 
     template<typename AssetType> XAssetInfo<typename AssetType::Type>* LoadDependency(const std::string& assetName)
@@ -66,6 +83,7 @@ public:
     }
 
 protected:
+    virtual XAssetInfoGeneric* AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) = 0;
     virtual XAssetInfoGeneric* LoadDependency(asset_type_t assetType, const std::string& assetName) = 0;
     virtual IndirectAssetReference LoadIndirectAssetReference(asset_type_t assetType, const std::string& assetName) = 0;
 };
