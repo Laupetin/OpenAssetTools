@@ -1329,7 +1329,7 @@ bool AssetLoaderTechniqueSet::CreateTechsetFromDefinition(
         }
     }
 
-    manager->AddAsset(ASSET_TYPE_TECHNIQUE_SET, assetName, techset, std::vector(dependencies.begin(), dependencies.end()), std::vector<scr_string_t>());
+    manager->AddAsset<AssetTechniqueSet>(assetName, techset, std::vector(dependencies.begin(), dependencies.end()));
 
     return true;
 }

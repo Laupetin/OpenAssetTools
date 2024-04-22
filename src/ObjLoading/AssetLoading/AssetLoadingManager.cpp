@@ -50,8 +50,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
     auto* linkAsset = loader->CreateEmptyAsset(assetName, m_context.m_zone->GetMemory());
     if (linkAsset)
     {
-        IAssetLoadingManager::AddAsset(
-            assetType, assetName, linkAsset, std::vector<XAssetInfoGeneric*>(), std::vector<scr_string_t>(), std::vector<IndirectAssetReference>());
+        AddAsset(std::make_unique<XAssetInfoGeneric>(assetType, assetName, linkAsset));
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;

@@ -567,12 +567,8 @@ bool AssetLoaderWeapon::LoadFromInfoString(
     CalculateWeaponFields(weaponFullDef);
     CalculateAttachmentFields(weaponFullDef);
 
-    manager->AddAsset(ASSET_TYPE_WEAPON,
-                      assetName,
-                      &weaponFullDef->weapVariantDef,
-                      converter.GetDependencies(),
-                      converter.GetUsedScriptStrings(),
-                      converter.GetIndirectAssetReferences());
+    manager->AddAsset<AssetWeapon>(
+        assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
     return true;
 }

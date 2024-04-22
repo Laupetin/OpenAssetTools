@@ -29,7 +29,7 @@ bool AssetLoaderLocalizeEntry::LoadFromRaw(
             localizeEntry->name = memory->Dup(entry.m_key.c_str());
             localizeEntry->value = memory->Dup(entry.m_value.c_str());
 
-            manager->AddAsset(ASSET_TYPE_LOCALIZE_ENTRY, entry.m_key, localizeEntry);
+            manager->AddAsset<AssetLocalize>(entry.m_key, localizeEntry);
         });
 
     return commonLoader.LoadLocalizeAsset(assetName, searchPath, manager, zone);

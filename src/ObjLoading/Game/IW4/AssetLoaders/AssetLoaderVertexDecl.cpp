@@ -96,6 +96,6 @@ bool AssetLoaderVertexDecl::LoadFromRaw(
 
     auto* allocatedDecl = memory->Create<MaterialVertexDeclaration>(decl);
 
-    manager->AddAsset(ASSET_TYPE_VERTEXDECL, assetName, allocatedDecl);
+    manager->AddAsset<AssetVertexDecl>(assetName, allocatedDecl);
     return true;
 }

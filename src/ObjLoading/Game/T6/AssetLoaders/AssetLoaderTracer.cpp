@@ -61,7 +61,7 @@ bool AssetLoaderTracer::LoadFromInfoString(
 
     tracer->name = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_TRACER, assetName, tracer, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset<AssetTracer>(assetName, tracer, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }

@@ -231,12 +231,8 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(
 
     attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_ATTACHMENT_UNIQUE,
-                      assetName,
-                      &attachmentUniqueFull->attachment,
-                      converter.GetDependencies(),
-                      converter.GetUsedScriptStrings(),
-                      converter.GetIndirectAssetReferences());
+    manager->AddAsset<AssetAttachmentUnique>(
+        assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
     return true;
 }

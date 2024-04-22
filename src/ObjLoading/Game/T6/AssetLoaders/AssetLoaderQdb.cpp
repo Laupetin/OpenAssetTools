@@ -37,7 +37,7 @@ bool AssetLoaderQdb::LoadFromRaw(const std::string& assetName, ISearchPath* sear
     fileBuffer[qdb->len] = '\0';
 
     qdb->buffer = static_cast<char16*>(fileBuffer);
-    manager->AddAsset(ASSET_TYPE_QDB, assetName, qdb);
+    manager->AddAsset<AssetQdb>(assetName, qdb);
 
     return true;
 }

@@ -1381,7 +1381,9 @@ bool AssetLoaderMaterial::LoadFromGdt(
     try
     {
         if (loader.Load())
-            manager->AddAsset(ASSET_TYPE_MATERIAL, assetName, loader.GetMaterial(), loader.GetDependencies(), std::vector<scr_string_t>());
+        {
+            manager->AddAsset<AssetMaterial>(assetName, loader.GetMaterial(), loader.GetDependencies());
+        }
     }
     catch (const SkipMaterialException&)
     {

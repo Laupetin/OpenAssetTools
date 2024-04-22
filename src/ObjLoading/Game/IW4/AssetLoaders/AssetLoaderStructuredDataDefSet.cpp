@@ -214,7 +214,7 @@ bool AssetLoaderStructuredDataDefSet::LoadFromRaw(
     const auto defs = reader.ReadStructureDataDefs(readingDefsSuccessful);
 
     if (readingDefsSuccessful)
-        manager->AddAsset(ASSET_TYPE_STRUCTURED_DATA_DEF, assetName, ConvertSet(assetName, defs, memory));
+        manager->AddAsset<AssetStructuredDataDef>(assetName, ConvertSet(assetName, defs, memory));
 
     return true;
 }

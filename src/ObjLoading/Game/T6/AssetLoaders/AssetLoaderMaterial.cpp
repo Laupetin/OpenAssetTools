@@ -51,7 +51,7 @@ bool AssetLoaderMaterial::LoadFromRaw(
 
     std::vector<XAssetInfoGeneric*> dependencies;
     if (LoadMaterialAsJson(*file.m_stream, *material, memory, manager, dependencies))
-        manager->AddAsset(ASSET_TYPE_MATERIAL, assetName, material, std::move(dependencies));
+        manager->AddAsset<AssetMaterial>(assetName, material, std::move(dependencies));
     else
         std::cerr << "Failed to load material \"" << assetName << "\"\n";
 

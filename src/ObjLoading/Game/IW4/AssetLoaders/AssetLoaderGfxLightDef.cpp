@@ -66,7 +66,7 @@ bool AssetLoaderGfxLightDef::LoadFromRaw(
     lightDef->attenuation.image = imageDependency->Asset();
     lightDef->lmapLookupStart = static_cast<int>(static_cast<uint8_t>(lmapLookupStart));
 
-    manager->AddAsset(ASSET_TYPE_LIGHT_DEF, assetName, lightDef);
+    manager->AddAsset<AssetLightDef>(assetName, lightDef);
 
     return true;
 }

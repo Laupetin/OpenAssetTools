@@ -57,7 +57,7 @@ bool AssetLoaderPixelShader::LoadFromRaw(
         return false;
 
     pixelShader->prog.loadDef.program = fileBuffer;
-    manager->AddAsset(ASSET_TYPE_PIXELSHADER, assetName, pixelShader);
+    manager->AddAsset<AssetPixelShader>(assetName, pixelShader);
 
     return true;
 }

@@ -73,7 +73,7 @@ bool AssetLoaderSndCurve::LoadFromRaw(
         }
     }
 
-    manager->AddAsset(ASSET_TYPE_SOUND_CURVE, assetName, sndCurve);
+    manager->AddAsset<AssetSoundCurve>(assetName, sndCurve);
 
     return true;
 }

@@ -57,7 +57,7 @@ bool AssetLoaderVertexShader::LoadFromRaw(
         return false;
 
     vertexShader->prog.loadDef.program = fileBuffer;
-    manager->AddAsset(ASSET_TYPE_VERTEXSHADER, assetName, vertexShader);
+    manager->AddAsset<AssetVertexShader>(assetName, vertexShader);
 
     return true;
 }

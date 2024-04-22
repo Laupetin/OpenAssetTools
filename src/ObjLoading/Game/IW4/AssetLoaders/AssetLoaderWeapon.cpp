@@ -387,12 +387,8 @@ namespace
 
         CalculateWeaponFields(weaponFullDef, memory);
 
-        manager->AddAsset(ASSET_TYPE_WEAPON,
-                          assetName,
-                          &weaponFullDef->weapCompleteDef,
-                          converter.GetDependencies(),
-                          converter.GetUsedScriptStrings(),
-                          converter.GetIndirectAssetReferences());
+        manager->AddAsset<AssetWeapon>(
+            assetName, &weaponFullDef->weapCompleteDef, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
         return true;
     }

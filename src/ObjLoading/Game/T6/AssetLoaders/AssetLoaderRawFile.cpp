@@ -74,7 +74,7 @@ bool AssetLoaderRawFile::LoadAnimtree(
 
     deflateEnd(&zs);
 
-    manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
+    manager->AddAsset<AssetRawFile>(assetName, rawFile);
 
     return true;
 }
@@ -93,7 +93,7 @@ bool AssetLoaderRawFile::LoadDefault(
     fileBuffer[rawFile->len] = '\0';
 
     rawFile->buffer = static_cast<char16*>(fileBuffer);
-    manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
+    manager->AddAsset<AssetRawFile>(assetName, rawFile);
 
     return true;
 }

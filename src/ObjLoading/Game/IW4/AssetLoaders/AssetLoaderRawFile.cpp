@@ -74,7 +74,7 @@ bool AssetLoaderRawFile::LoadFromRaw(
 
     deflateEnd(&zs);
 
-    manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
+    manager->AddAsset<AssetRawFile>(assetName, rawFile);
 
     return true;
 }

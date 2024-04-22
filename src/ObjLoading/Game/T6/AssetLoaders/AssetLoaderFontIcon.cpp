@@ -265,7 +265,7 @@ bool AssetLoaderFontIcon::LoadFromRaw(
     else
         fontIcon->fontIconAlias = nullptr;
 
-    manager->AddAsset(ASSET_TYPE_FONTICON, assetName, fontIcon);
+    manager->AddAsset<AssetFontIcon>(assetName, fontIcon);
 
     return true;
 }

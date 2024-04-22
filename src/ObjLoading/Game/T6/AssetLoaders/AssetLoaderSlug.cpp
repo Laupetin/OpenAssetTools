@@ -37,7 +37,7 @@ bool AssetLoaderSlug::LoadFromRaw(const std::string& assetName, ISearchPath* sea
     fileBuffer[slug->len] = '\0';
 
     slug->buffer = static_cast<char16*>(fileBuffer);
-    manager->AddAsset(ASSET_TYPE_SLUG, assetName, slug);
+    manager->AddAsset<AssetSlug>(assetName, slug);
 
     return true;
 }

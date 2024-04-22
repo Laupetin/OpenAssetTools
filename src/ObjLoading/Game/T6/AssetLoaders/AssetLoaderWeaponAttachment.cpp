@@ -112,8 +112,8 @@ bool AssetLoaderWeaponAttachment::LoadFromInfoString(
     CalculateAttachmentFields(attachment);
     attachment->szInternalName = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(
-        ASSET_TYPE_ATTACHMENT, assetName, attachment, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
+    manager->AddAsset<AssetAttachment>(
+        assetName, attachment, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
     return true;
 }

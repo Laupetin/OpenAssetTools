@@ -120,7 +120,7 @@ namespace
 
         bool CreateTracerFromJson(const std::string& assetName, TracerDef*& tracerPtr, const WeaponAttachment& attachment) const
         {
-            auto* tracer = static_cast<XAssetInfo<TracerDef>*>(m_manager.LoadDependency(ASSET_TYPE_TRACER, assetName));
+            auto* tracer = m_manager.LoadDependency<AssetTracer>(assetName);
             if (!tracer)
             {
                 PrintError(attachment, std::format("Could not find tracer {}", assetName));
@@ -134,7 +134,7 @@ namespace
 
         bool CreateMaterialFromJson(const std::string& assetName, Material*& materialPtr, const WeaponAttachment& attachment) const
         {
-            auto* material = static_cast<XAssetInfo<Material>*>(m_manager.LoadDependency(ASSET_TYPE_MATERIAL, assetName));
+            auto* material = m_manager.LoadDependency<AssetMaterial>(assetName);
             if (!material)
             {
                 PrintError(attachment, std::format("Could not find material {}", assetName));
@@ -148,7 +148,7 @@ namespace
 
         bool CreateFxFromJson(const std::string& assetName, FxEffectDef*& fxPtr, const WeaponAttachment& attachment) const
         {
-            auto* fx = static_cast<XAssetInfo<FxEffectDef>*>(m_manager.LoadDependency(ASSET_TYPE_FX, assetName));
+            auto* fx = m_manager.LoadDependency<AssetFx>(assetName);
             if (!fx)
             {
                 PrintError(attachment, std::format("Could not find fx {}", assetName));
@@ -162,7 +162,7 @@ namespace
 
         bool CreateSoundFromJson(const std::string& assetName, SndAliasCustom& sndAliasCustom, const WeaponAttachment& attachment) const
         {
-            auto sound = m_manager.LoadIndirectAssetReference(ASSET_TYPE_SOUND, assetName);
+            auto sound = m_manager.LoadIndirectAssetReference<AssetSound>(assetName);
             m_indirect_asset_references.push_back(std::move(sound));
             sndAliasCustom.name = m_memory.Alloc<snd_alias_list_name>();
             sndAliasCustom.name->soundName = m_memory.Dup(assetName.c_str());
@@ -172,7 +172,7 @@ namespace
 
         bool CreateXModelFromJson(const std::string& assetName, XModel*& xmodelPtr, const WeaponAttachment& attachment) const
         {
-            auto* xmodel = static_cast<XAssetInfo<XModel>*>(m_manager.LoadDependency(ASSET_TYPE_XMODEL, assetName));
+            auto* xmodel = m_manager.LoadDependency<AssetXModel>(assetName);
             if (!xmodel)
             {
                 PrintError(attachment, std::format("Could not find xmodel {}", assetName));
