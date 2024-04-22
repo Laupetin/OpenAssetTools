@@ -137,7 +137,7 @@ namespace
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetXAnim>(value));
 
                 return true;
             }
@@ -387,12 +387,8 @@ namespace
 
         CalculateWeaponFields(weaponFullDef, memory);
 
-        manager->AddAsset(ASSET_TYPE_WEAPON,
-                          assetName,
-                          &weaponFullDef->weapCompleteDef,
-                          converter.GetDependencies(),
-                          converter.GetUsedScriptStrings(),
-                          converter.GetIndirectAssetReferences());
+        manager->AddAsset<AssetWeapon>(
+            assetName, &weaponFullDef->weapCompleteDef, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
         return true;
     }

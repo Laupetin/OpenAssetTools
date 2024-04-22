@@ -33,7 +33,7 @@ bool AssetLoaderStringTable::LoadFromRaw(
     string_table::StringTableLoaderV1<StringTable> loader;
     auto* stringTable = loader.LoadFromStream(assetName, *memory, *file.m_stream);
 
-    manager->AddAsset(ASSET_TYPE_STRINGTABLE, assetName, stringTable);
+    manager->AddAsset<AssetStringTable>(assetName, stringTable);
 
     return true;
 }

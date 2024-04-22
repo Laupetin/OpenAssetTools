@@ -95,7 +95,7 @@ bool AssetLoaderPhysConstraints::LoadFromInfoString(
 
     auto scrStrings = converter.GetUsedScriptStrings();
     scrStrings.push_back(zone->m_script_strings.AddOrGetScriptString(""));
-    manager->AddAsset(ASSET_TYPE_PHYSCONSTRAINTS, assetName, physConstraints, converter.GetDependencies(), scrStrings);
+    manager->AddAsset<AssetPhysConstraints>(assetName, physConstraints, converter.GetDependencies(), scrStrings);
 
     return true;
 }

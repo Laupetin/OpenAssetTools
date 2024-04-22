@@ -132,11 +132,11 @@ namespace T6
         {
             if (value.empty())
             {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+                *reinterpret_cast<WeaponCamo**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
                 return true;
             }
 
-            auto* camo = m_loading_manager->LoadDependency(ASSET_TYPE_WEAPON_CAMO, value);
+            auto* camo = m_loading_manager->LoadDependency<AssetWeaponCamo>(value);
 
             if (camo == nullptr)
             {
@@ -145,7 +145,7 @@ namespace T6
             }
 
             m_dependencies.emplace(camo);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = camo->m_ptr;
+            *reinterpret_cast<WeaponCamo**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = camo->Asset();
 
             return true;
         }
@@ -163,14 +163,14 @@ namespace T6
 
             for (const auto& attachmentName : valueArray)
             {
-                auto* attachmentAssetInfo = m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT, attachmentName);
+                auto* attachmentAssetInfo = m_loading_manager->LoadDependency<AssetAttachment>(attachmentName);
                 if (attachmentAssetInfo == nullptr)
                 {
                     std::cerr << "Failed to load attachment asset \"" << attachmentName << "\"\n";
                     return false;
                 }
 
-                auto* attachmentAsset = static_cast<WeaponAttachment*>(attachmentAssetInfo->m_ptr);
+                auto* attachmentAsset = attachmentAssetInfo->Asset();
 
                 if (static_cast<unsigned>(attachmentAsset->attachmentType) >= ATTACHMENT_TYPE_COUNT)
                 {
@@ -212,14 +212,14 @@ namespace T6
 
             for (const auto& attachmentUniqueName : valueArray)
             {
-                auto* attachmentUniqueAssetInfo = m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT_UNIQUE, attachmentUniqueName);
+                auto* attachmentUniqueAssetInfo = m_loading_manager->LoadDependency<AssetAttachmentUnique>(attachmentUniqueName);
                 if (attachmentUniqueAssetInfo == nullptr)
                 {
                     std::cerr << "Failed to load attachment unique asset \"" << attachmentUniqueName << "\"\n";
                     return false;
                 }
 
-                auto* attachmentUniqueAsset = static_cast<WeaponAttachmentUnique*>(attachmentUniqueAssetInfo->m_ptr);
+                auto* attachmentUniqueAsset = attachmentUniqueAssetInfo->Asset();
 
                 if (HasMoreThanOneAttachmentSetInMask(attachmentUniqueAsset->combinedAttachmentTypeMask))
                 {
@@ -263,7 +263,7 @@ namespace T6
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetXAnim>(value));
 
                 return true;
             }
@@ -567,12 +567,8 @@ bool AssetLoaderWeapon::LoadFromInfoString(
     CalculateWeaponFields(weaponFullDef);
     CalculateAttachmentFields(weaponFullDef);
 
-    manager->AddAsset(ASSET_TYPE_WEAPON,
-                      assetName,
-                      &weaponFullDef->weapVariantDef,
-                      converter.GetDependencies(),
-                      converter.GetUsedScriptStrings(),
-                      converter.GetIndirectAssetReferences());
+    manager->AddAsset<AssetWeapon>(
+        assetName, &weaponFullDef->weapVariantDef, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
     return true;
 }

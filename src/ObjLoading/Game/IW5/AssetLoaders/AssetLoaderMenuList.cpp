@@ -57,12 +57,11 @@ namespace IW5
                 }
 
                 menus.push_back(menuAsset);
-                auto* menuAssetInfo =
-                    manager->AddAsset(ASSET_TYPE_MENU, menu->m_name, menuAsset, std::move(converter.GetDependencies()), std::vector<scr_string_t>());
+                auto* menuAssetInfo = manager->AddAsset<AssetMenu>(menu->m_name, menuAsset, std::move(converter.GetDependencies()));
 
                 if (menuAssetInfo)
                 {
-                    allMenusOfFile.push_back(reinterpret_cast<XAssetInfo<menuDef_t>*>(menuAssetInfo));
+                    allMenusOfFile.push_back(menuAssetInfo);
                     menuListDependencies.push_back(menuAssetInfo);
                 }
 
@@ -223,7 +222,7 @@ bool AssetLoaderMenuList::LoadFromRaw(
     auto* menuListAsset = MenuLoader::CreateMenuListAsset(assetName, memory, menus);
 
     if (menuListAsset)
-        manager->AddAsset(ASSET_TYPE_MENULIST, assetName, menuListAsset, menuListDependencies, std::vector<scr_string_t>());
+        manager->AddAsset<AssetMenuList>(assetName, menuListAsset, menuListDependencies);
 
     return true;
 }

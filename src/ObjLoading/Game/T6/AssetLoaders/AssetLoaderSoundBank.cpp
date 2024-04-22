@@ -569,6 +569,6 @@ bool AssetLoaderSoundBank::LoadFromRaw(
         }
     }
 
-    manager->AddAsset(ASSET_TYPE_SOUND, assetName, sndBank);
+    manager->AddAsset<AssetSoundBank>(assetName, sndBank);
     return true;
 }

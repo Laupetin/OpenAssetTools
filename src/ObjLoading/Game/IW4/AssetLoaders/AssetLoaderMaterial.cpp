@@ -808,7 +808,7 @@ namespace IW4
 
         void SetTechniqueSet(const std::string& techsetName)
         {
-            auto* techset = reinterpret_cast<XAssetInfo<MaterialTechniqueSet>*>(m_manager->LoadDependency(ASSET_TYPE_TECHNIQUE_SET, techsetName));
+            auto* techset = m_manager->LoadDependency<AssetTechniqueSet>(techsetName);
 
             if (techset == nullptr)
             {
@@ -994,7 +994,7 @@ namespace IW4
                 break;
             }
 
-            auto* image = reinterpret_cast<XAssetInfo<GfxImage>*>(m_manager->LoadDependency(ASSET_TYPE_IMAGE, textureName));
+            auto* image = m_manager->LoadDependency<AssetImage>(textureName);
 
             if (image == nullptr)
             {
@@ -1381,7 +1381,9 @@ bool AssetLoaderMaterial::LoadFromGdt(
     try
     {
         if (loader.Load())
-            manager->AddAsset(ASSET_TYPE_MATERIAL, assetName, loader.GetMaterial(), loader.GetDependencies(), std::vector<scr_string_t>());
+        {
+            manager->AddAsset<AssetMaterial>(assetName, loader.GetMaterial(), loader.GetDependencies());
+        }
     }
     catch (const SkipMaterialException&)
     {

@@ -72,7 +72,7 @@ bool AssetLoaderScriptFile::LoadFromRaw(
     scriptFile->bytecode = memory->Alloc<unsigned char>(scriptFile->bytecodeLen);
     memcpy(scriptFile->bytecode, fileBuffer.get() + offset, scriptFile->bytecodeLen);
 
-    manager->AddAsset(ASSET_TYPE_SCRIPTFILE, assetName, scriptFile);
+    manager->AddAsset<AssetScript>(assetName, scriptFile);
 
     return true;
 }

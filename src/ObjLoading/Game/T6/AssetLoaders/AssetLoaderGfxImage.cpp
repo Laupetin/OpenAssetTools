@@ -66,7 +66,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(
     image->streamedParts[0].hash = dataHash & 0x1FFFFFFF;
     image->streamedPartCount = 1;
 
-    manager->AddAsset(ASSET_TYPE_IMAGE, assetName, image);
+    manager->AddAsset<AssetImage>(assetName, image);
 
     return true;
 }

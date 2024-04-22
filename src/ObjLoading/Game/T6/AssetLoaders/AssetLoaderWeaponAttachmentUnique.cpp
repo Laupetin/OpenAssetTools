@@ -62,11 +62,11 @@ namespace T6
         {
             if (value.empty())
             {
-                *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
+                *reinterpret_cast<WeaponCamo**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = nullptr;
                 return true;
             }
 
-            auto* camo = m_loading_manager->LoadDependency(ASSET_TYPE_WEAPON_CAMO, value);
+            auto* camo = m_loading_manager->LoadDependency<AssetWeaponCamo>(value);
 
             if (camo == nullptr)
             {
@@ -75,7 +75,7 @@ namespace T6
             }
 
             m_dependencies.emplace(camo);
-            *reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = camo->m_ptr;
+            *reinterpret_cast<WeaponCamo**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = camo->Asset();
 
             return true;
         }
@@ -85,7 +85,7 @@ namespace T6
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetXAnim>(value));
 
                 return true;
             }
@@ -231,12 +231,8 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(
 
     attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_ATTACHMENT_UNIQUE,
-                      assetName,
-                      &attachmentUniqueFull->attachment,
-                      converter.GetDependencies(),
-                      converter.GetUsedScriptStrings(),
-                      converter.GetIndirectAssetReferences());
+    manager->AddAsset<AssetAttachmentUnique>(
+        assetName, &attachmentUniqueFull->attachment, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
     return true;
 }

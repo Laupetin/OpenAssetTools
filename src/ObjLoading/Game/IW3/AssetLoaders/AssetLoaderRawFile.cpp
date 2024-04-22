@@ -38,7 +38,7 @@ bool AssetLoaderRawFile::LoadFromRaw(
     fileBuffer[rawFile->len] = '\0';
 
     rawFile->buffer = fileBuffer;
-    manager->AddAsset(ASSET_TYPE_RAWFILE, assetName, rawFile);
+    manager->AddAsset<AssetRawFile>(assetName, rawFile);
 
     return true;
 }

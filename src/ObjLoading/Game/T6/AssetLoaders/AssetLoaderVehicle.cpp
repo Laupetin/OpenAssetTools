@@ -124,7 +124,7 @@ bool AssetLoaderVehicle::LoadFromInfoString(
 
     vehicleDef->name = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_VEHICLEDEF, assetName, vehicleDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset<AssetVehicle>(assetName, vehicleDef, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }

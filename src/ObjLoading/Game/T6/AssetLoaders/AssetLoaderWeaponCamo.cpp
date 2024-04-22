@@ -37,7 +37,7 @@ bool AssetLoaderWeaponCamo::LoadFromRaw(
 
     std::vector<XAssetInfoGeneric*> dependencies;
     if (LoadWeaponCamoAsJson(*file.m_stream, *weaponCamo, memory, manager, dependencies))
-        manager->AddAsset(ASSET_TYPE_WEAPON_CAMO, assetName, weaponCamo, std::move(dependencies));
+        manager->AddAsset<AssetWeaponCamo>(assetName, weaponCamo, std::move(dependencies));
     else
         std::cerr << "Failed to load weapon camo \"" << assetName << "\"\n";
 

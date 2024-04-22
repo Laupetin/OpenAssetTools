@@ -135,7 +135,7 @@ namespace
             if (ConvertString(value, field.iOffset))
             {
                 if (!value.empty())
-                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+                    m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetXAnim>(value));
 
                 return true;
             }
@@ -157,7 +157,7 @@ namespace
             auto currentOther = 0u;
             for (const auto& attachmentName : valueArray)
             {
-                auto* attachmentInfo = static_cast<XAssetInfo<WeaponAttachment>*>(m_loading_manager->LoadDependency(ASSET_TYPE_ATTACHMENT, attachmentName));
+                auto* attachmentInfo = m_loading_manager->LoadDependency<AssetAttachment>(attachmentName);
                 if (!attachmentInfo)
                     return false;
                 m_dependencies.emplace(attachmentInfo);
@@ -448,7 +448,7 @@ namespace
             }
 
             animName = m_memory->Dup(value.c_str());
-            m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_XANIMPARTS, value));
+            m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetXAnim>(value));
         }
 
         void ParseSoundAlias(const std::string& value, SndAliasCustom& soundAlias)
@@ -461,7 +461,7 @@ namespace
 
             soundAlias.name = m_memory->Alloc<snd_alias_list_name>();
             soundAlias.name->soundName = m_memory->Dup(value.c_str());
-            m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference(ASSET_TYPE_SOUND, value));
+            m_indirect_asset_references.emplace(m_loading_manager->LoadIndirectAssetReference<AssetSound>(value));
         }
 
         bool ParseFxEffectDef(const std::string& value, FxEffectDef*& fx)
@@ -472,7 +472,7 @@ namespace
                 return true;
             }
 
-            auto* fxInfo = static_cast<XAssetInfo<FxEffectDef>*>(m_loading_manager->LoadDependency(ASSET_TYPE_FX, value));
+            auto* fxInfo = m_loading_manager->LoadDependency<AssetFx>(value);
             if (!fxInfo)
             {
                 std::cerr << "Failed to load fx for override \"" << value << "\"\n";
@@ -817,12 +817,8 @@ namespace
 
         CalculateWeaponFields(weaponFullDef, memory);
 
-        manager->AddAsset(ASSET_TYPE_WEAPON,
-                          assetName,
-                          &weaponFullDef->weapCompleteDef,
-                          converter.GetDependencies(),
-                          converter.GetUsedScriptStrings(),
-                          converter.GetIndirectAssetReferences());
+        manager->AddAsset<AssetWeapon>(
+            assetName, &weaponFullDef->weapCompleteDef, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());
 
         return true;
     }

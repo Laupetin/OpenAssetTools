@@ -37,8 +37,7 @@ bool AssetLoaderWeaponAttachment::LoadFromRaw(
     std::vector<XAssetInfoGeneric*> dependencies;
     std::vector<IndirectAssetReference> indirectAssetReferences;
     if (LoadWeaponAttachmentAsJson(*file.m_stream, *attachment, memory, manager, dependencies, indirectAssetReferences))
-        manager->AddAsset(
-            ASSET_TYPE_ATTACHMENT, assetName, attachment, std::move(dependencies), std::vector<scr_string_t>(), std::move(indirectAssetReferences));
+        manager->AddAsset<AssetAttachment>(assetName, attachment, std::move(dependencies), std::vector<scr_string_t>(), std::move(indirectAssetReferences));
     else
         std::cerr << "Failed to load attachment \"" << assetName << "\"\n";
 

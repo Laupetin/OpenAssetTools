@@ -127,7 +127,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(
         }
     }
 
-    manager->AddAsset(ASSET_TYPE_IMAGE, assetName, image);
+    manager->AddAsset<AssetImage>(assetName, image);
 
     return true;
 }

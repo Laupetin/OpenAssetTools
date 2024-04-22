@@ -74,7 +74,7 @@ bool AssetLoaderZBarrier::LoadFromInfoString(
     CalculateZBarrierFields(zbarrier);
     zbarrier->name = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_ZBARRIER, assetName, zbarrier, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset<AssetZBarrier>(assetName, zbarrier, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }

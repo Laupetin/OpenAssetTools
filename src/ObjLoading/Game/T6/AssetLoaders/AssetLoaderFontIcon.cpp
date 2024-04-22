@@ -117,14 +117,14 @@ bool AssetLoaderFontIcon::ReadIconRow(const std::vector<std::string>& row,
         return false;
     }
 
-    auto* materialDependency = manager->LoadDependency(ASSET_TYPE_MATERIAL, row[ROW_ICON_MATERIAL]);
+    auto* materialDependency = manager->LoadDependency<AssetMaterial>(row[ROW_ICON_MATERIAL]);
     if (materialDependency == nullptr)
     {
         std::cout << ErrorPrefix(assetName, rowIndex) << "Failed to load material \"" << row[ROW_ICON_MATERIAL] << "\"\n";
         return false;
     }
 
-    icon.fontIconMaterialHandle = static_cast<Material*>(materialDependency->m_ptr);
+    icon.fontIconMaterialHandle = materialDependency->Asset();
     icon.fontIconName.string = memory->Dup(row[ROW_ICON_NAME].c_str());
     icon.fontIconName.hash = Common::Com_HashString(icon.fontIconName.string);
 
@@ -265,7 +265,7 @@ bool AssetLoaderFontIcon::LoadFromRaw(
     else
         fontIcon->fontIconAlias = nullptr;
 
-    manager->AddAsset(ASSET_TYPE_FONTICON, assetName, fontIcon);
+    manager->AddAsset<AssetFontIcon>(assetName, fontIcon);
 
     return true;
 }

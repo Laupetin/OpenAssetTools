@@ -38,7 +38,7 @@ bool AssetLoaderScriptParseTree::LoadFromRaw(
     fileBuffer[scriptParseTree->len] = '\0';
 
     scriptParseTree->buffer = static_cast<char16*>(fileBuffer);
-    manager->AddAsset(ASSET_TYPE_SCRIPTPARSETREE, assetName, scriptParseTree);
+    manager->AddAsset<AssetScript>(assetName, scriptParseTree);
 
     return true;
 }

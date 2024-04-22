@@ -75,7 +75,7 @@ bool AssetLoaderPhysPreset::LoadFromInfoString(
     CopyFromPhysPresetInfo(presetInfo.get(), physPreset);
     physPreset->name = memory->Dup(assetName.c_str());
 
-    manager->AddAsset(ASSET_TYPE_PHYSPRESET, assetName, physPreset, converter.GetDependencies(), converter.GetUsedScriptStrings());
+    manager->AddAsset<AssetPhysPreset>(assetName, physPreset, converter.GetDependencies(), converter.GetUsedScriptStrings());
 
     return true;
 }
