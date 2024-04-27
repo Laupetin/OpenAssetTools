@@ -11,6 +11,13 @@ namespace
 {
     constexpr auto GLTF_GENERATOR = "OpenAssetTools " GIT_VERSION;
 
+    struct GltfVertex
+    {
+        float coordinates[3];
+        float normal[3];
+        float uv[2];
+    };
+
     class GltfWriterImpl final : public gltf::Writer
     {
         static constexpr auto NODE_INDEX_MESH = 0u;
@@ -27,15 +34,26 @@ namespace
         void Write(const XModelCommon& xmodel) override
         {
             JsonRoot gltf;
+            std::vector<uint8_t> bufferData;
+
             CreateJsonAsset(gltf.asset);
             CreateMeshNode(gltf, xmodel);
-            CreateMesh(gltf, xmodel);
+            CreateMaterials(gltf, xmodel);
             CreateSkeletonNodes(gltf, xmodel);
             CreateSkin(gltf, xmodel);
+            CreateBufferViews(gltf, xmodel);
+            CreateAccessors(gltf, xmodel);
+            CreateMesh(gltf, xmodel);
             CreateScene(gltf, xmodel);
+            FillBufferData(xmodel, bufferData);
+            CreateBuffer(gltf, xmodel, bufferData);
 
             const json jRoot = gltf;
             m_output->EmitJson(jRoot);
+
+            if (!bufferData.empty())
+                m_output->EmitBuffer(bufferData.data(), bufferData.size());
+
             m_output->Finalize();
         }
 
@@ -66,14 +84,48 @@ namespace
             gltf.nodes->emplace_back(std::move(meshNode));
         }
 
-        static void CreateMesh(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateMesh(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             if (!gltf.meshes.has_value())
                 gltf.meshes.emplace();
 
             JsonMesh mesh;
 
+            auto objectIndex = 0u;
+            for (const auto& object : xmodel.m_objects)
+            {
+                JsonMeshPrimitives primitives;
+
+                if (object.materialIndex >= 0)
+                    primitives.material = static_cast<unsigned>(object.materialIndex);
+
+                primitives.attributes.POSITION = m_position_accessor;
+                primitives.attributes.NORMAL = m_normal_accessor;
+                primitives.attributes.TEXCOORD_0 = m_uv_accessor;
+
+                primitives.mode = JsonMeshPrimitivesMode::TRIANGLES;
+                primitives.indices = m_first_index_accessor + objectIndex;
+
+                mesh.primitives.emplace_back(primitives);
+                objectIndex++;
+            }
+
             gltf.meshes->emplace_back(std::move(mesh));
+        }
+
+        static void CreateMaterials(JsonRoot& gltf, const XModelCommon& xmodel)
+        {
+            if (!gltf.materials.has_value())
+                gltf.materials.emplace();
+
+            for (const auto& modelMaterial : xmodel.m_materials)
+            {
+                JsonMaterial material;
+
+                material.name = modelMaterial.name;
+
+                gltf.materials->emplace_back(material);
+            }
         }
 
         static void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
@@ -98,7 +150,7 @@ namespace
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
                     if (xmodel.m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
-                        children.emplace_back(boneIndex + NODE_FIRST_INDEX_BONES);
+                        children.emplace_back(maybeChildIndex + NODE_FIRST_INDEX_BONES);
                 }
                 if (!children.empty())
                     boneNode.children = std::move(children);
@@ -143,7 +195,161 @@ namespace
             gltf.scene = 0u;
         }
 
+        void CreateBufferViews(JsonRoot& gltf, const XModelCommon& xmodel)
+        {
+            if (!gltf.bufferViews.has_value())
+                gltf.bufferViews.emplace();
+
+            unsigned bufferOffset = 0u;
+
+            JsonBufferView vertexBufferView;
+            vertexBufferView.buffer = 0u;
+            vertexBufferView.byteOffset = bufferOffset;
+            vertexBufferView.byteStride = sizeof(GltfVertex);
+            vertexBufferView.byteLength = sizeof(GltfVertex) * xmodel.m_vertices.size();
+            vertexBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
+            bufferOffset += vertexBufferView.byteLength;
+
+            m_vertex_buffer_view = gltf.bufferViews->size();
+            gltf.bufferViews->emplace_back(vertexBufferView);
+
+            m_first_index_buffer_view = gltf.bufferViews->size();
+            for (const auto& object : xmodel.m_objects)
+            {
+                JsonBufferView indicesBufferView;
+                indicesBufferView.buffer = 0u;
+                indicesBufferView.byteOffset = bufferOffset;
+                indicesBufferView.byteLength = sizeof(unsigned short) * object.m_faces.size() * 3u;
+                indicesBufferView.target = JsonBufferViewTarget::ELEMENT_ARRAY_BUFFER;
+                bufferOffset += indicesBufferView.byteLength;
+
+                gltf.bufferViews->emplace_back(indicesBufferView);
+            }
+        }
+
+        void CreateAccessors(JsonRoot& gltf, const XModelCommon& xmodel)
+        {
+            if (!gltf.accessors.has_value())
+                gltf.accessors.emplace();
+
+            JsonAccessor positionAccessor;
+            positionAccessor.bufferView = m_vertex_buffer_view;
+            positionAccessor.byteOffset = offsetof(GltfVertex, coordinates);
+            positionAccessor.componentType = JsonAccessorComponentType::FLOAT;
+            positionAccessor.count = xmodel.m_vertices.size();
+            positionAccessor.type = JsonAccessorType::VEC3;
+            m_position_accessor = gltf.accessors->size();
+            gltf.accessors->emplace_back(positionAccessor);
+
+            JsonAccessor normalAccessor;
+            normalAccessor.bufferView = m_vertex_buffer_view;
+            normalAccessor.byteOffset = offsetof(GltfVertex, normal);
+            normalAccessor.componentType = JsonAccessorComponentType::FLOAT;
+            normalAccessor.count = xmodel.m_vertices.size();
+            normalAccessor.type = JsonAccessorType::VEC3;
+            m_normal_accessor = gltf.accessors->size();
+            gltf.accessors->emplace_back(normalAccessor);
+
+            JsonAccessor uvAccessor;
+            uvAccessor.bufferView = m_vertex_buffer_view;
+            uvAccessor.byteOffset = offsetof(GltfVertex, uv);
+            uvAccessor.componentType = JsonAccessorComponentType::FLOAT;
+            uvAccessor.count = xmodel.m_vertices.size();
+            uvAccessor.type = JsonAccessorType::VEC2;
+            m_uv_accessor = gltf.accessors->size();
+            gltf.accessors->emplace_back(uvAccessor);
+
+            m_first_index_accessor = gltf.accessors->size();
+            for (auto i = 0u; i < xmodel.m_objects.size(); i++)
+            {
+                const auto& object = xmodel.m_objects[i];
+
+                JsonAccessor indicesAccessor;
+                indicesAccessor.bufferView = m_first_index_buffer_view + i;
+                indicesAccessor.componentType = JsonAccessorComponentType::UNSIGNED_SHORT;
+                indicesAccessor.count = object.m_faces.size() * 3u;
+                indicesAccessor.type = JsonAccessorType::SCALAR;
+
+                gltf.accessors->emplace_back(indicesAccessor);
+            }
+        }
+
+        static void FillBufferData(const XModelCommon& xmodel, std::vector<uint8_t>& bufferData)
+        {
+            const auto expectedBufferSize = GetExpectedBufferSize(xmodel);
+            bufferData.resize(expectedBufferSize);
+
+            auto currentBufferOffset = 0u;
+
+            for (const auto& commonVertex : xmodel.m_vertices)
+            {
+                auto* vertex = reinterpret_cast<GltfVertex*>(&bufferData[currentBufferOffset]);
+
+                vertex->coordinates[0] = commonVertex.coordinates[0];
+                vertex->coordinates[1] = commonVertex.coordinates[2];
+                vertex->coordinates[2] = -commonVertex.coordinates[1];
+
+                vertex->normal[0] = commonVertex.normal[0];
+                vertex->normal[1] = commonVertex.normal[2];
+                vertex->normal[2] = -commonVertex.normal[1];
+
+                vertex->uv[0] = commonVertex.uv[0];
+                vertex->uv[1] = commonVertex.uv[1];
+
+                currentBufferOffset += sizeof(GltfVertex);
+            }
+
+            for (const auto& object : xmodel.m_objects)
+            {
+                for (const auto& face : object.m_faces)
+                {
+                    auto* faceIndices = reinterpret_cast<unsigned short*>(&bufferData[currentBufferOffset]);
+                    faceIndices[0] = static_cast<unsigned short>(face.vertexIndex[2]);
+                    faceIndices[1] = static_cast<unsigned short>(face.vertexIndex[1]);
+                    faceIndices[2] = static_cast<unsigned short>(face.vertexIndex[0]);
+
+                    currentBufferOffset += sizeof(unsigned short) * 3u;
+                }
+            }
+
+            assert(expectedBufferSize == currentBufferOffset);
+        }
+
+        static size_t GetExpectedBufferSize(const XModelCommon& xmodel)
+        {
+            auto result = 0u;
+
+            result += xmodel.m_vertices.size() * sizeof(GltfVertex);
+
+            for (const auto& object : xmodel.m_objects)
+            {
+                result += object.m_faces.size() * sizeof(unsigned short) * 3u;
+            }
+
+            return result;
+        }
+
+        void CreateBuffer(JsonRoot& gltf, const XModelCommon& xmodel, const std::vector<uint8_t>& bufferData) const
+        {
+            if (!gltf.buffers.has_value())
+                gltf.buffers.emplace();
+
+            JsonBuffer jsonBuffer;
+            jsonBuffer.byteLength = bufferData.size();
+
+            if (!bufferData.empty())
+                jsonBuffer.uri = m_output->CreateBufferUri(bufferData.data(), bufferData.size());
+
+            gltf.buffers->emplace_back(std::move(jsonBuffer));
+        }
+
         unsigned m_skeleton_node = 0u;
+        unsigned m_position_accessor = 0u;
+        unsigned m_normal_accessor = 0u;
+        unsigned m_uv_accessor = 0u;
+        unsigned m_vertex_buffer_view = 0u;
+        unsigned m_first_index_buffer_view = 0u;
+        unsigned m_first_index_accessor = 0u;
 
         const Output* m_output;
         std::string m_game_name;

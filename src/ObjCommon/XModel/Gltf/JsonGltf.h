@@ -102,16 +102,29 @@ namespace gltf
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonAccessor, bufferView, byteOffset, componentType, count, type, min, max);
 
+    enum class JsonBufferViewTarget
+    {
+        ARRAY_BUFFER = 34962,
+        ELEMENT_ARRAY_BUFFER = 34963
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(JsonBufferViewTarget,
+                                 {
+                                     {JsonBufferViewTarget::ARRAY_BUFFER,         static_cast<unsigned>(JsonBufferViewTarget::ARRAY_BUFFER)        },
+                                     {JsonBufferViewTarget::ELEMENT_ARRAY_BUFFER, static_cast<unsigned>(JsonBufferViewTarget::ELEMENT_ARRAY_BUFFER)},
+    });
+
     class JsonBufferView
     {
     public:
         unsigned buffer;
         unsigned byteLength;
-        unsigned byteOffset;
-        unsigned target;
+        std::optional<unsigned> byteOffset;
+        std::optional<unsigned> byteStride;
+        std::optional<JsonBufferViewTarget> target;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonBufferView, buffer, byteLength, byteOffset, target);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonBufferView, buffer, byteLength, byteOffset, byteStride, target);
 
     enum class JsonAnimationChannelTargetPath
     {
@@ -211,10 +224,23 @@ namespace gltf
                                      {JsonMeshPrimitivesMode::TRIANGLE_FAN,    static_cast<unsigned>(JsonMeshPrimitivesMode::TRIANGLE_FAN)   },
     });
 
+    // This should probably be a map, but the supported models do not have arbitrary primitives anyway
+    class JsonMeshPrimitivesAttributes
+    {
+    public:
+        std::optional<unsigned> POSITION;
+        std::optional<unsigned> NORMAL;
+        std::optional<unsigned> TEXCOORD_0;
+        std::optional<unsigned> JOINTS_0;
+        std::optional<unsigned> WEIGHTS_0;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonMeshPrimitivesAttributes, POSITION, NORMAL, TEXCOORD_0, JOINTS_0, WEIGHTS_0);
+
     class JsonMeshPrimitives
     {
     public:
-        std::unordered_map<std::string, unsigned> attributes;
+        JsonMeshPrimitivesAttributes attributes;
         std::optional<unsigned> indices;
         std::optional<unsigned> material;
         std::optional<JsonMeshPrimitivesMode> mode;
