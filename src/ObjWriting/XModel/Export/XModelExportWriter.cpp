@@ -110,8 +110,6 @@ class XModelExportWriter6 final : public XModelExportWriterBase
     {
         m_stream << "VERT " << index << "\n";
         m_stream << std::format("NORMAL {:.6f} {:.6f} {:.6f}\n", vertex.normal[0], vertex.normal[1], vertex.normal[2]);
-        m_stream << "NORMAL " << std::setprecision(6) << std::fixed << vertex.normal[0] << " " << std::setprecision(6) << std::fixed << vertex.normal[1] << " "
-                 << std::setprecision(6) << std::fixed << vertex.normal[2] << "\n";
         m_stream << std::format("COLOR {:.6f} {:.6f} {:.6f} {:.6f}\n", vertex.color[0], vertex.color[1], vertex.color[2], vertex.color[3]);
         m_stream << std::format("UV 1 {:.6f} {:.6f}\n", vertex.uv[0], vertex.uv[1]);
     }
