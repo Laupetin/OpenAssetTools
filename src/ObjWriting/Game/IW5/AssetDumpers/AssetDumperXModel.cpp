@@ -389,8 +389,9 @@ namespace
         weightCollection.weights.resize(totalWeightCount);
     }
 
-    void AddXModelVertexBoneWeights(XModelCommon& out, const XModelSurfs* modelSurfs, XModelVertexBoneWeightCollection& weightCollection)
+    void AddXModelVertexBoneWeights(XModelCommon& out, const XModelSurfs* modelSurfs)
     {
+        auto& weightCollection = out.m_bone_weight_data;
         size_t weightOffset = 0u;
 
         for (auto surfIndex = 0u; surfIndex < modelSurfs->numsurfs; surfIndex++)
@@ -525,14 +526,13 @@ namespace
         const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
 
         DistinctMapper<Material*> materialMapper(model->numsurfs);
-        XModelVertexBoneWeightCollection boneWeightCollection;
-        AllocateXModelBoneWeights(modelSurfs, boneWeightCollection);
+        AllocateXModelBoneWeights(modelSurfs, out.m_bone_weight_data);
 
         AddXModelBones(out, context, model);
         AddXModelMaterials(out, materialMapper, model);
         AddXModelObjects(out, modelSurfs, materialMapper, model->lodInfo[lod].surfIndex);
         AddXModelVertices(out, modelSurfs);
-        AddXModelVertexBoneWeights(out, modelSurfs, boneWeightCollection);
+        AddXModelVertexBoneWeights(out, modelSurfs);
         AddXModelFaces(out, modelSurfs);
     }
 

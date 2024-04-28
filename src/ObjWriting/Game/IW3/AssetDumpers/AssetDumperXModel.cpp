@@ -393,10 +393,11 @@ namespace
         weightCollection.weights.resize(totalWeightCount);
     }
 
-    void AddXModelVertexBoneWeights(XModelCommon& out, const XModel* model, const unsigned lod, XModelVertexBoneWeightCollection& weightCollection)
+    void AddXModelVertexBoneWeights(XModelCommon& out, const XModel* model, const unsigned lod)
     {
         const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
         const auto surfCount = model->lodInfo[lod].numsurfs;
+        auto& weightCollection = out.m_bone_weight_data;
 
         size_t weightOffset = 0u;
 
@@ -533,14 +534,13 @@ namespace
     void PopulateXModelWriter(XModelCommon& out, const AssetDumpingContext& context, const unsigned lod, const XModel* model)
     {
         DistinctMapper<Material*> materialMapper(model->numsurfs);
-        XModelVertexBoneWeightCollection boneWeightCollection;
-        AllocateXModelBoneWeights(model, lod, boneWeightCollection);
+        AllocateXModelBoneWeights(model, lod, out.m_bone_weight_data);
 
         AddXModelBones(out, context, model);
         AddXModelMaterials(out, materialMapper, model);
         AddXModelObjects(out, model, lod, materialMapper);
         AddXModelVertices(out, model, lod);
-        AddXModelVertexBoneWeights(out, model, lod, boneWeightCollection);
+        AddXModelVertexBoneWeights(out, model, lod);
         AddXModelFaces(out, model, lod);
     }
 
