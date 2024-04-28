@@ -115,148 +115,6 @@ namespace
         return potentialTextureDefs[0]->image;
     }
 
-    void AddObjMaterials(ObjWriter& writer, DistinctMapper<Material*>& materialMapper, const XModel* model)
-    {
-        if (!model->materialHandles)
-            return;
-
-        for (auto surfIndex = 0u; surfIndex < model->numsurfs; surfIndex++)
-        {
-            Material* material = model->materialHandles[surfIndex];
-            if (!materialMapper.Add(material))
-                continue;
-
-            MtlMaterial mtl;
-            mtl.materialName = std::string(material->info.name);
-
-            GfxImage* colorMap = GetMaterialColorMap(material);
-            GfxImage* normalMap = GetMaterialNormalMap(material);
-            GfxImage* specularMap = GetMaterialSpecularMap(material);
-
-            if (colorMap != nullptr)
-                mtl.colorMapName = colorMap->name;
-            if (normalMap != nullptr)
-                mtl.normalMapName = normalMap->name;
-            if (specularMap != nullptr)
-                mtl.specularMapName = specularMap->name;
-
-            writer.AddMaterial(std::move(mtl));
-        }
-    }
-
-    void AddObjObjects(ObjWriter& writer, const DistinctMapper<Material*>& materialMapper, const XModel* model, const unsigned lod)
-    {
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-        const auto baseSurfIndex = model->lodInfo[lod].surfIndex;
-
-        for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
-        {
-            ObjObject object;
-            object.name = std::format("surf{}", surfIndex);
-            object.materialIndex = static_cast<int>(materialMapper.GetDistinctPositionByInputPosition(surfIndex + baseSurfIndex));
-
-            writer.AddObject(std::move(object));
-        }
-    }
-
-    void AddObjVertices(ObjWriter& writer, const XModel* model, const unsigned lod)
-    {
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-
-        for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
-        {
-            const auto& surface = surfs[surfIndex];
-
-            for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
-            {
-                const auto& v = surface.verts0[vertexIndex];
-                vec2_t uv{};
-                vec3_t normalVec{};
-
-                Common::Vec2UnpackTexCoords(v.texCoord, &uv);
-                Common::Vec3UnpackUnitVec(v.normal, &normalVec);
-
-                ObjVertex objVertex{};
-                ObjNormal objNormal{};
-                ObjUv objUv{};
-                objVertex.coordinates[0] = v.xyz.x;
-                objVertex.coordinates[1] = v.xyz.z;
-                objVertex.coordinates[2] = -v.xyz.y;
-                objNormal.normal[0] = normalVec.x;
-                objNormal.normal[1] = normalVec.z;
-                objNormal.normal[2] = -normalVec.y;
-                objUv.uv[0] = uv.x;
-                objUv.uv[1] = 1.0f - uv.y;
-
-                writer.AddVertex(static_cast<int>(surfIndex), objVertex);
-                writer.AddNormal(static_cast<int>(surfIndex), objNormal);
-                writer.AddUv(static_cast<int>(surfIndex), objUv);
-            }
-        }
-    }
-
-    void AddObjFaces(ObjWriter& writer, const XModel* model, const unsigned lod)
-    {
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-
-        for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
-        {
-            const auto& surface = surfs[surfIndex];
-            for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
-            {
-                const auto& tri = surface.triIndices[triIndex];
-
-                ObjFace face{};
-                face.vertexIndex[0] = tri[2] + surface.baseVertIndex;
-                face.vertexIndex[1] = tri[1] + surface.baseVertIndex;
-                face.vertexIndex[2] = tri[0] + surface.baseVertIndex;
-                face.normalIndex[0] = face.vertexIndex[0];
-                face.normalIndex[1] = face.vertexIndex[1];
-                face.normalIndex[2] = face.vertexIndex[2];
-                face.uvIndex[0] = face.vertexIndex[0];
-                face.uvIndex[1] = face.vertexIndex[1];
-                face.uvIndex[2] = face.vertexIndex[2];
-                writer.AddFace(static_cast<int>(surfIndex), face);
-            }
-        }
-    }
-
-    void DumpObjMat(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
-    {
-        const auto* model = asset->Asset();
-        const auto matFile = context.OpenAssetFile(std::format("model_export/{}.mtl", model->name));
-
-        if (!matFile)
-            return;
-
-        ObjWriter writer(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
-        DistinctMapper<Material*> materialMapper(model->numsurfs);
-
-        AddObjMaterials(writer, materialMapper, model);
-        writer.WriteMtl(*matFile);
-    }
-
-    void DumpObjLod(const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
-    {
-        const auto* model = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".obj"));
-
-        if (!assetFile)
-            return;
-
-        ObjWriter writer(context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
-        DistinctMapper<Material*> materialMapper(model->numsurfs);
-
-        AddObjMaterials(writer, materialMapper, model);
-        AddObjObjects(writer, materialMapper, model, lod);
-        AddObjVertices(writer, model, lod);
-        AddObjFaces(writer, model, lod);
-
-        writer.WriteObj(*assetFile, std::format("{}.mtl", model->name));
-    }
-
     void AddXModelBones(XModelCommon& out, const AssetDumpingContext& context, const XModel* model)
     {
         for (auto boneNum = 0u; boneNum < model->numBones; boneNum++)
@@ -318,6 +176,14 @@ namespace
                 const auto* colorMap = GetMaterialColorMap(material);
                 if (colorMap)
                     xMaterial.colorMapName = std::string(colorMap->name);
+
+                const auto* normalMap = GetMaterialNormalMap(material);
+                if (normalMap)
+                    xMaterial.normalMapName = std::string(normalMap->name);
+
+                const auto* specularMap = GetMaterialSpecularMap(material);
+                if (specularMap)
+                    xMaterial.specularMapName = std::string(specularMap->name);
 
                 out.m_materials.emplace_back(std::move(xMaterial));
             }
@@ -541,6 +407,9 @@ namespace
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {
             const auto& surface = surfs[surfIndex];
+            auto& object = out.m_objects[surfIndex];
+            object.m_faces.reserve(surface.triCount);
+
             for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
             {
                 const auto& tri = surface.triIndices[triIndex];
@@ -549,8 +418,7 @@ namespace
                 face.vertexIndex[0] = tri[0] + surface.baseVertIndex;
                 face.vertexIndex[1] = tri[1] + surface.baseVertIndex;
                 face.vertexIndex[2] = tri[2] + surface.baseVertIndex;
-                face.objectIndex = static_cast<int>(surfIndex);
-                out.m_faces.emplace_back(face);
+                object.m_faces.emplace_back(face);
             }
         }
     }
@@ -566,6 +434,35 @@ namespace
         AddXModelVertices(out, model, lod);
         AddXModelVertexBoneWeights(out, model, lod);
         AddXModelFaces(out, model, lod);
+    }
+
+    void DumpObjMtl(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
+    {
+        const auto* model = asset->Asset();
+        const auto mtlFile = context.OpenAssetFile(std::format("model_export/{}.mtl", model->name));
+
+        if (!mtlFile)
+            return;
+
+        const auto writer = obj::CreateMtlWriter(*mtlFile, context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        DistinctMapper<Material*> materialMapper(model->numsurfs);
+
+        writer->Write(common);
+    }
+
+    void DumpObjLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
+    {
+        const auto* model = asset->Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".obj"));
+
+        if (!assetFile)
+            return;
+
+        const auto writer =
+            obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model->name), context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        DistinctMapper<Material*> materialMapper(model->numsurfs);
+
+        writer->Write(common);
     }
 
     void DumpXModelExportLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
@@ -600,9 +497,6 @@ namespace
     {
         const auto* model = asset->Asset();
 
-        if (ObjWriting::Configuration.ModelOutputFormat == ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ)
-            DumpObjMat(context, asset);
-
         for (auto currentLod = 0u; currentLod < model->numLods; currentLod++)
         {
             XModelCommon common;
@@ -611,7 +505,9 @@ namespace
             switch (ObjWriting::Configuration.ModelOutputFormat)
             {
             case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
-                DumpObjLod(context, asset, currentLod);
+                DumpObjLod(common, context, asset, currentLod);
+                if (currentLod == 0u)
+                    DumpObjMtl(common, context, asset);
                 break;
 
             case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:

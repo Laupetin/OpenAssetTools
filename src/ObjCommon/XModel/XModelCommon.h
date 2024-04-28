@@ -6,12 +6,6 @@
 #include <string>
 #include <vector>
 
-struct XModelObject
-{
-    std::string name;
-    int materialIndex;
-};
-
 struct XModelBone
 {
     std::string name;
@@ -51,7 +45,6 @@ struct XModelVertex
 struct XModelFace
 {
     int vertexIndex[3];
-    int objectIndex;
 };
 
 struct XModelMaterial
@@ -88,8 +81,17 @@ struct XModelMaterial
     float blinn[2];
     float phong;
     std::string colorMapName;
+    std::string normalMapName;
+    std::string specularMapName;
 
     void ApplyDefaults();
+};
+
+struct XModelObject
+{
+    std::string name;
+    int materialIndex;
+    std::vector<XModelFace> m_faces;
 };
 
 struct XModelCommon
@@ -99,7 +101,6 @@ struct XModelCommon
     std::vector<XModelMaterial> m_materials;
     std::vector<XModelVertex> m_vertices;
     std::vector<XModelVertexBoneWeights> m_vertex_bone_weights;
-    std::vector<XModelFace> m_faces;
     XModelVertexBoneWeightCollection m_bone_weight_data;
 };
 

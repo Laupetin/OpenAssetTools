@@ -116,24 +116,35 @@ class XModelExportWriter6 final : public XModelExportWriterBase
 
     void WriteFaces(const XModelCommon& xmodel) const
     {
-        m_stream << "NUMFACES " << xmodel.m_faces.size() << "\n";
-        for (const auto& face : xmodel.m_faces)
+        auto totalFaceCount = 0u;
+        for (const auto& object : xmodel.m_objects)
+            totalFaceCount += object.m_faces.size();
+
+        m_stream << "NUMFACES " << totalFaceCount << "\n";
+
+        auto objectIndex = 0u;
+        for (const auto& object : xmodel.m_objects)
         {
-            const size_t distinctPositions[3]{
-                m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[0]),
-                m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[1]),
-                m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[2]),
-            };
+            for (const auto& face : object.m_faces)
+            {
+                const size_t distinctPositions[3]{
+                    m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[0]),
+                    m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[1]),
+                    m_vertex_merger.GetDistinctPositionByInputPosition(face.vertexIndex[2]),
+                };
 
-            const XModelVertex& v0 = xmodel.m_vertices[face.vertexIndex[0]];
-            const XModelVertex& v1 = xmodel.m_vertices[face.vertexIndex[1]];
-            const XModelVertex& v2 = xmodel.m_vertices[face.vertexIndex[2]];
+                const XModelVertex& v0 = xmodel.m_vertices[face.vertexIndex[0]];
+                const XModelVertex& v1 = xmodel.m_vertices[face.vertexIndex[1]];
+                const XModelVertex& v2 = xmodel.m_vertices[face.vertexIndex[2]];
 
-            m_stream << "TRI " << face.objectIndex << " " << xmodel.m_objects[face.objectIndex].materialIndex << " 0 0\n";
-            WriteFaceVertex(distinctPositions[0], v0);
-            WriteFaceVertex(distinctPositions[1], v1);
-            WriteFaceVertex(distinctPositions[2], v2);
-            m_stream << "\n";
+                m_stream << "TRI " << objectIndex << " " << object.materialIndex << " 0 0\n";
+                WriteFaceVertex(distinctPositions[0], v0);
+                WriteFaceVertex(distinctPositions[1], v1);
+                WriteFaceVertex(distinctPositions[2], v2);
+                m_stream << "\n";
+            }
+
+            objectIndex++;
         }
     }
 
