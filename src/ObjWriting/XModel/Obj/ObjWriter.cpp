@@ -3,6 +3,8 @@
 #include "Utils/DistinctMapper.h"
 #include "XModel/Obj/ObjCommon.h"
 
+#include <format>
+
 namespace
 {
     struct ObjObjectData

@@ -2,6 +2,7 @@
 
 #include "XModel/XModelWriter.h"
 
+#include <memory>
 #include <ostream>
 
 namespace obj
