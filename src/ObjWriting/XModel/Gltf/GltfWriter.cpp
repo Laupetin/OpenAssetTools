@@ -4,6 +4,8 @@
 #include "XModel/Gltf/GltfConstants.h"
 #include "XModel/Gltf/JsonGltf.h"
 
+#include <format>
+
 using namespace gltf;
 using namespace nlohmann;
 
@@ -124,8 +126,48 @@ namespace
 
                 material.name = modelMaterial.name;
 
+                if (!modelMaterial.colorMapName.empty())
+                    material.pbrMetallicRoughness.emplace().baseColorTexture.emplace().index = CreateTexture(gltf, modelMaterial.colorMapName);
+
+                if (!modelMaterial.normalMapName.empty())
+                    material.normalTexture.emplace().index = CreateTexture(gltf, modelMaterial.colorMapName);
+
+                material.doubleSided = true;
                 gltf.materials->emplace_back(material);
             }
+        }
+
+        static unsigned CreateTexture(JsonRoot& gltf, const std::string& textureName)
+        {
+            if (!gltf.textures.has_value())
+                gltf.textures.emplace();
+            if (!gltf.images.has_value())
+                gltf.images.emplace();
+
+            auto uri = std::format("../images/{}.dds", textureName);
+
+            auto existingTexIndex = 0u;
+            for (const auto& existingTex : gltf.textures.value())
+            {
+                const auto& existingImage = gltf.images.value()[existingTex.source];
+
+                if (existingImage.uri == uri)
+                    return existingTexIndex;
+
+                existingTexIndex++;
+            }
+
+            JsonImage image;
+            image.uri = std::move(uri);
+            const auto imageIndex = gltf.images->size();
+            gltf.images->emplace_back(std::move(image));
+
+            JsonTexture texture;
+            texture.source = imageIndex;
+            const auto textureIndex = gltf.textures->size();
+            gltf.textures->emplace_back(texture);
+
+            return textureIndex;
         }
 
         static void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
