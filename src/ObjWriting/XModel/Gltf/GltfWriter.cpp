@@ -45,7 +45,7 @@ namespace
             CreateAccessors(gltf, xmodel);
             CreateMesh(gltf, xmodel);
             CreateScene(gltf, xmodel);
-            FillBufferData(xmodel, bufferData);
+            FillBufferData(gltf, xmodel, bufferData);
             CreateBuffer(gltf, xmodel, bufferData);
 
             const json jRoot = gltf;
@@ -274,12 +274,23 @@ namespace
             }
         }
 
-        static void FillBufferData(const XModelCommon& xmodel, std::vector<uint8_t>& bufferData)
+        void FillBufferData(JsonRoot& gltf, const XModelCommon& xmodel, std::vector<uint8_t>& bufferData) const
         {
             const auto expectedBufferSize = GetExpectedBufferSize(xmodel);
             bufferData.resize(expectedBufferSize);
 
             auto currentBufferOffset = 0u;
+
+            float minPosition[3]{
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+            };
+            float maxPosition[3]{
+                -std::numeric_limits<float>::max(),
+                -std::numeric_limits<float>::max(),
+                -std::numeric_limits<float>::max(),
+            };
 
             for (const auto& commonVertex : xmodel.m_vertices)
             {
@@ -289,6 +300,19 @@ namespace
                 vertex->coordinates[1] = commonVertex.coordinates[2];
                 vertex->coordinates[2] = -commonVertex.coordinates[1];
 
+                if (minPosition[0] > vertex->coordinates[0])
+                    minPosition[0] = vertex->coordinates[0];
+                if (minPosition[1] > vertex->coordinates[1])
+                    minPosition[1] = vertex->coordinates[1];
+                if (minPosition[2] > vertex->coordinates[2])
+                    minPosition[2] = vertex->coordinates[2];
+                if (maxPosition[0] < vertex->coordinates[0])
+                    maxPosition[0] = vertex->coordinates[0];
+                if (maxPosition[1] < vertex->coordinates[1])
+                    maxPosition[1] = vertex->coordinates[1];
+                if (maxPosition[2] < vertex->coordinates[2])
+                    maxPosition[2] = vertex->coordinates[2];
+
                 vertex->normal[0] = commonVertex.normal[0];
                 vertex->normal[1] = commonVertex.normal[2];
                 vertex->normal[2] = -commonVertex.normal[1];
@@ -297,6 +321,12 @@ namespace
                 vertex->uv[1] = commonVertex.uv[1];
 
                 currentBufferOffset += sizeof(GltfVertex);
+            }
+
+            if (gltf.accessors.has_value())
+            {
+                gltf.accessors.value()[m_position_accessor].min = std::vector({minPosition[0], minPosition[1], minPosition[2]});
+                gltf.accessors.value()[m_position_accessor].max = std::vector({maxPosition[0], maxPosition[1], maxPosition[2]});
             }
 
             for (const auto& object : xmodel.m_objects)
