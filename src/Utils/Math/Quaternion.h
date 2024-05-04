@@ -51,6 +51,96 @@ public:
 
         return Matrix<T>(m00, m01, m02, 0, m10, m11, m12, 0, m20, m21, m22, 0, 0, 0, 0, T(1.0));
     }
+
+    static T dot(const Quaternion& q1, const Quaternion& q2)
+    {
+        return static_cast<T>((q1.m_x * q2.m_x) + (q1.m_y * q2.m_y) + (q1.m_z * q2.m_z) + (q1.m_w * q2.m_w));
+    }
+
+    T lengthSquared()
+    {
+        return Quaternion::dot(*this, *this);
+    }
+
+    T length()
+    {
+        return sqrt(lengthSquared());
+    }
+
+    void Normalize()
+    {
+        const auto l = length();
+
+        // return if no magnitude (already as normalized as possible)
+        if (l < static_cast<T>(0.0001))
+            return;
+
+        T inverseLength = static_cast<T>(1.0) / l;
+        m_x *= inverseLength;
+        m_y *= inverseLength;
+        m_z *= inverseLength;
+        m_w *= inverseLength;
+    }
+
+    friend Quaternion operator+(const Quaternion& lhs, const Quaternion& rhs)
+    {
+        return Quaternion(lhs.m_x + rhs.m_x, lhs.m_y + rhs.m_y, lhs.m_z + rhs.m_z, lhs.m_w + rhs.m_w);
+    }
+
+    friend Quaternion operator-(const Quaternion& lhs, const Quaternion& rhs)
+    {
+        return Quaternion(lhs.m_x - rhs.m_x, lhs.m_y - rhs.m_y, lhs.m_z - rhs.m_z, lhs.m_w - rhs.m_w);
+    }
+
+    friend Quaternion& operator+=(Quaternion& lhs, const Quaternion& rhs)
+    {
+        lhs.m_x += rhs.m_x;
+        lhs.m_y += rhs.m_y;
+        lhs.m_z += rhs.m_z;
+        lhs.m_w += rhs.m_w;
+
+        return lhs;
+    }
+
+    friend Quaternion& operator-=(Quaternion& lhs, const Quaternion& rhs)
+    {
+        lhs.m_x -= rhs.m_x;
+        lhs.m_y -= rhs.m_y;
+        lhs.m_z -= rhs.m_z;
+        lhs.m_w -= rhs.m_w;
+
+        return lhs;
+    }
+
+    friend Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs)
+    {
+        return Quaternion(lhs.m_x + rhs.m_x, lhs.m_y + rhs.m_y, lhs.m_z + rhs.m_z, lhs.m_w + rhs.m_w);
+    }
+
+    friend Quaternion operator/(const Quaternion& lhs, const Quaternion& rhs)
+    {
+        return Quaternion(lhs.m_x - rhs.m_x, lhs.m_y - rhs.m_y, lhs.m_z - rhs.m_z, lhs.m_w - rhs.m_w);
+    }
+
+    friend Quaternion& operator*=(Quaternion& lhs, const Quaternion& rhs)
+    {
+        lhs.m_x += rhs.m_x;
+        lhs.m_y += rhs.m_y;
+        lhs.m_z += rhs.m_z;
+        lhs.m_w += rhs.m_w;
+
+        return lhs;
+    }
+
+    friend Quaternion& operator/=(Quaternion& lhs, const Quaternion& rhs)
+    {
+        lhs.m_x -= rhs.m_x;
+        lhs.m_y -= rhs.m_y;
+        lhs.m_z -= rhs.m_z;
+        lhs.m_w -= rhs.m_w;
+
+        return lhs;
+    }
 };
 
 typedef Quaternion<float> Quaternion32;

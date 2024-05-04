@@ -1,6 +1,7 @@
 #include "GltfWriter.h"
 
 #include "GitVersion.h"
+#include "Math/Vector.h"
 #include "XModel/Gltf/GltfConstants.h"
 #include "XModel/Gltf/JsonGltf.h"
 
@@ -22,9 +23,6 @@ namespace
 
     class GltfWriterImpl final : public gltf::Writer
     {
-        static constexpr auto NODE_INDEX_MESH = 0u;
-        static constexpr auto NODE_FIRST_INDEX_BONES = 1u;
-
     public:
         GltfWriterImpl(const Output* output, std::string gameName, std::string zoneName)
             : m_output(output),
@@ -40,8 +38,8 @@ namespace
 
             CreateJsonAsset(gltf.asset);
             CreateMeshNode(gltf, xmodel);
-            CreateMaterials(gltf, xmodel);
             CreateSkeletonNodes(gltf, xmodel);
+            CreateMaterials(gltf, xmodel);
             CreateSkin(gltf, xmodel);
             CreateBufferViews(gltf, xmodel);
             CreateAccessors(gltf, xmodel);
@@ -66,7 +64,7 @@ namespace
             asset.generator = GLTF_GENERATOR;
         }
 
-        static void CreateMeshNode(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateMeshNode(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             JsonNode meshNode;
 
@@ -83,6 +81,7 @@ namespace
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
+            m_mesh_node = gltf.nodes->size();
             gltf.nodes->emplace_back(std::move(meshNode));
         }
 
@@ -92,6 +91,8 @@ namespace
                 gltf.meshes.emplace();
 
             JsonMesh mesh;
+
+            const auto hasBoneWeightData = !xmodel.m_vertex_bone_weights.empty();
 
             auto objectIndex = 0u;
             for (const auto& object : xmodel.m_objects)
@@ -104,6 +105,12 @@ namespace
                 primitives.attributes.POSITION = m_position_accessor;
                 primitives.attributes.NORMAL = m_normal_accessor;
                 primitives.attributes.TEXCOORD_0 = m_uv_accessor;
+
+                if (hasBoneWeightData)
+                {
+                    primitives.attributes.JOINTS_0 = m_joints_accessor;
+                    primitives.attributes.WEIGHTS_0 = m_weights_accessor;
+                }
 
                 primitives.mode = JsonMeshPrimitivesMode::TRIANGLES;
                 primitives.indices = m_first_index_accessor + objectIndex;
@@ -136,7 +143,7 @@ namespace
                 }
 
                 if (!modelMaterial.normalMapName.empty())
-                    material.normalTexture.emplace().index = CreateTexture(gltf, modelMaterial.colorMapName);
+                    material.normalTexture.emplace().index = CreateTexture(gltf, modelMaterial.normalMapName);
 
                 material.doubleSided = true;
                 gltf.materials->emplace_back(material);
@@ -176,7 +183,7 @@ namespace
             return textureIndex;
         }
 
-        static void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             if (xmodel.m_bones.empty())
                 return;
@@ -185,20 +192,32 @@ namespace
                 gltf.nodes.emplace();
 
             const auto boneCount = xmodel.m_bones.size();
+            m_first_bone_node = gltf.nodes->size();
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
                 const auto& bone = xmodel.m_bones[boneIndex];
 
+                Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
+                Quaternion32 rotation(bone.globalRotation.m_x, bone.globalRotation.m_z, -bone.globalRotation.m_y, bone.globalRotation.m_w);
+                if (bone.parentIndex >= 0)
+                {
+                    const auto& parentBone = xmodel.m_bones[bone.parentIndex];
+                    translation -= Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[2], -parentBone.globalOffset[1]);
+                    rotation -= Quaternion32(
+                        parentBone.globalRotation.m_x, parentBone.globalRotation.m_z, -parentBone.globalRotation.m_y, parentBone.globalRotation.m_w);
+                }
+                rotation.Normalize();
+
                 boneNode.name = bone.name;
-                boneNode.translation = std::to_array(bone.globalOffset);
-                boneNode.rotation = std::to_array({bone.globalRotation.m_x, bone.globalRotation.m_y, bone.globalRotation.m_z, bone.globalRotation.m_w});
+                boneNode.translation = std::to_array({translation.x(), translation.y(), translation.z()});
+                boneNode.rotation = std::to_array({rotation.m_x, rotation.m_y, rotation.m_z, rotation.m_w});
 
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
                     if (xmodel.m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
-                        children.emplace_back(maybeChildIndex + NODE_FIRST_INDEX_BONES);
+                        children.emplace_back(maybeChildIndex + m_first_bone_node);
                 }
                 if (!children.empty())
                     boneNode.children = std::move(children);
@@ -207,7 +226,7 @@ namespace
             }
         }
 
-        static void CreateSkin(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateSkin(JsonRoot& gltf, const XModelCommon& xmodel) const
         {
             if (xmodel.m_bones.empty())
                 return;
@@ -221,7 +240,7 @@ namespace
 
             skin.joints.reserve(boneCount);
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
-                skin.joints.emplace_back(boneIndex + NODE_FIRST_INDEX_BONES);
+                skin.joints.emplace_back(boneIndex + m_first_bone_node);
 
             gltf.skins->emplace_back(std::move(skin));
         }
@@ -231,10 +250,7 @@ namespace
             JsonScene scene;
 
             // Only add skin if the model has bones
-            if (xmodel.m_bones.empty())
-                scene.nodes.emplace_back(NODE_INDEX_MESH);
-            else
-                scene.nodes.emplace_back(m_skeleton_node);
+            scene.nodes.emplace_back(m_mesh_node);
 
             if (!gltf.scenes.has_value())
                 gltf.scenes.emplace();
@@ -260,6 +276,29 @@ namespace
 
             m_vertex_buffer_view = gltf.bufferViews->size();
             gltf.bufferViews->emplace_back(vertexBufferView);
+
+            if (!xmodel.m_vertex_bone_weights.empty())
+            {
+                JsonBufferView jointsBufferView;
+                jointsBufferView.buffer = 0u;
+                jointsBufferView.byteOffset = bufferOffset;
+                jointsBufferView.byteLength = sizeof(uint8_t) * xmodel.m_vertices.size() * 4u;
+                jointsBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
+                bufferOffset += jointsBufferView.byteLength;
+
+                m_joints_buffer_view = gltf.bufferViews->size();
+                gltf.bufferViews->emplace_back(jointsBufferView);
+
+                JsonBufferView weightsBufferView;
+                weightsBufferView.buffer = 0u;
+                weightsBufferView.byteOffset = bufferOffset;
+                weightsBufferView.byteLength = sizeof(float) * xmodel.m_vertices.size() * 4u;
+                weightsBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
+                bufferOffset += weightsBufferView.byteLength;
+
+                m_weights_buffer_view = gltf.bufferViews->size();
+                gltf.bufferViews->emplace_back(weightsBufferView);
+            }
 
             m_first_index_buffer_view = gltf.bufferViews->size();
             for (const auto& object : xmodel.m_objects)
@@ -306,6 +345,25 @@ namespace
             uvAccessor.type = JsonAccessorType::VEC2;
             m_uv_accessor = gltf.accessors->size();
             gltf.accessors->emplace_back(uvAccessor);
+
+            if (!xmodel.m_vertex_bone_weights.empty())
+            {
+                JsonAccessor jointsAccessor;
+                jointsAccessor.bufferView = m_joints_buffer_view;
+                jointsAccessor.componentType = JsonAccessorComponentType::UNSIGNED_BYTE;
+                jointsAccessor.count = xmodel.m_vertices.size();
+                jointsAccessor.type = JsonAccessorType::VEC4;
+                m_joints_accessor = gltf.accessors->size();
+                gltf.accessors->emplace_back(jointsAccessor);
+
+                JsonAccessor weightsAccessor;
+                weightsAccessor.bufferView = m_weights_buffer_view;
+                weightsAccessor.componentType = JsonAccessorComponentType::FLOAT;
+                weightsAccessor.count = xmodel.m_vertices.size();
+                weightsAccessor.type = JsonAccessorType::VEC4;
+                m_weights_accessor = gltf.accessors->size();
+                gltf.accessors->emplace_back(weightsAccessor);
+            }
 
             m_first_index_accessor = gltf.accessors->size();
             for (auto i = 0u; i < xmodel.m_objects.size(); i++)
@@ -377,6 +435,37 @@ namespace
                 gltf.accessors.value()[m_position_accessor].max = std::vector({maxPosition[0], maxPosition[1], maxPosition[2]});
             }
 
+            if (!xmodel.m_vertex_bone_weights.empty())
+            {
+                assert(xmodel.m_vertex_bone_weights.size() == xmodel.m_vertices.size());
+
+                auto* joints = reinterpret_cast<uint8_t*>(&bufferData[currentBufferOffset]);
+                auto* weights = reinterpret_cast<float*>(&bufferData[currentBufferOffset + sizeof(uint8_t) * 4u * xmodel.m_vertex_bone_weights.size()]);
+                for (const auto& commonVertexWeights : xmodel.m_vertex_bone_weights)
+                {
+                    assert(commonVertexWeights.weights != nullptr);
+                    assert(commonVertexWeights.weightCount <= 4u);
+
+                    const auto commonVertexWeightCount = std::min(commonVertexWeights.weightCount, 4u);
+                    for (auto i = 0u; i < commonVertexWeightCount; i++)
+                    {
+                        joints[i] = static_cast<unsigned char>(commonVertexWeights.weights[i].boneIndex);
+                        weights[i] = commonVertexWeights.weights[i].weight;
+                    }
+
+                    for (auto i = commonVertexWeightCount; i < 4u; i++)
+                    {
+                        joints[i] = 0u;
+                        weights[i] = 0.0f;
+                    }
+
+                    joints += 4u;
+                    weights += 4u;
+                }
+
+                currentBufferOffset += (sizeof(uint8_t) + sizeof(float)) * 4u * xmodel.m_vertex_bone_weights.size();
+            }
+
             for (const auto& object : xmodel.m_objects)
             {
                 for (const auto& face : object.m_faces)
@@ -398,6 +487,11 @@ namespace
             auto result = 0u;
 
             result += xmodel.m_vertices.size() * sizeof(GltfVertex);
+
+            if (!xmodel.m_vertex_bone_weights.empty())
+            {
+                result += xmodel.m_vertices.size() * 4u * (sizeof(uint8_t) + sizeof(float));
+            }
 
             for (const auto& object : xmodel.m_objects)
             {
@@ -421,11 +515,16 @@ namespace
             gltf.buffers->emplace_back(std::move(jsonBuffer));
         }
 
-        unsigned m_skeleton_node = 0u;
+        unsigned m_mesh_node = 0u;
+        unsigned m_first_bone_node = 0u;
         unsigned m_position_accessor = 0u;
         unsigned m_normal_accessor = 0u;
         unsigned m_uv_accessor = 0u;
+        unsigned m_joints_accessor = 0u;
+        unsigned m_weights_accessor = 0u;
         unsigned m_vertex_buffer_view = 0u;
+        unsigned m_joints_buffer_view = 0u;
+        unsigned m_weights_buffer_view = 0u;
         unsigned m_first_index_buffer_view = 0u;
         unsigned m_first_index_accessor = 0u;
 
