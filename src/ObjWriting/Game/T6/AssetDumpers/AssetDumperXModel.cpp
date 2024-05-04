@@ -162,6 +162,14 @@ namespace
         }
     }
 
+    const char* AssetName(const char* input)
+    {
+        if (input && input[0] == ',')
+            return &input[1];
+
+        return input;
+    }
+
     void AddXModelMaterials(XModelCommon& out, DistinctMapper<Material*>& materialMapper, const XModel* model)
     {
         for (auto surfaceMaterialNum = 0; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
@@ -172,18 +180,18 @@ namespace
                 XModelMaterial xMaterial;
                 xMaterial.ApplyDefaults();
 
-                xMaterial.name = material->info.name;
+                xMaterial.name = AssetName(material->info.name);
                 const auto* colorMap = GetMaterialColorMap(material);
                 if (colorMap)
-                    xMaterial.colorMapName = std::string(colorMap->name);
+                    xMaterial.colorMapName = AssetName(colorMap->name);
 
                 const auto* normalMap = GetMaterialNormalMap(material);
                 if (normalMap)
-                    xMaterial.normalMapName = std::string(normalMap->name);
+                    xMaterial.normalMapName = AssetName(normalMap->name);
 
                 const auto* specularMap = GetMaterialSpecularMap(material);
                 if (specularMap)
-                    xMaterial.specularMapName = std::string(specularMap->name);
+                    xMaterial.specularMapName = AssetName(specularMap->name);
 
                 out.m_materials.emplace_back(std::move(xMaterial));
             }
