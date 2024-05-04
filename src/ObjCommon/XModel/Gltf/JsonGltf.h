@@ -206,9 +206,10 @@ namespace gltf
     {
     public:
         std::optional<JsonTextureInfo> baseColorTexture;
+        std::optional<float> metallicFactor;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPbrMetallicRoughness, baseColorTexture);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonPbrMetallicRoughness, baseColorTexture, metallicFactor);
 
     class JsonNormalTextureInfo
     {

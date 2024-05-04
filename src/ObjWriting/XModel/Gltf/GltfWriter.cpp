@@ -127,7 +127,13 @@ namespace
                 material.name = modelMaterial.name;
 
                 if (!modelMaterial.colorMapName.empty())
-                    material.pbrMetallicRoughness.emplace().baseColorTexture.emplace().index = CreateTexture(gltf, modelMaterial.colorMapName);
+                {
+                    material.pbrMetallicRoughness.emplace();
+                    material.pbrMetallicRoughness->baseColorTexture.emplace();
+
+                    material.pbrMetallicRoughness->baseColorTexture->index = CreateTexture(gltf, modelMaterial.colorMapName);
+                    material.pbrMetallicRoughness->metallicFactor = 0.0f;
+                }
 
                 if (!modelMaterial.normalMapName.empty())
                     material.normalTexture.emplace().index = CreateTexture(gltf, modelMaterial.colorMapName);
