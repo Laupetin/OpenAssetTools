@@ -110,7 +110,7 @@ protected:
     bool ConvertFloat(const std::string& value, size_t offset);
     bool ConvertMilliseconds(const std::string& value, size_t offset);
     bool ConvertScriptString(const std::string& value, size_t offset);
-    bool ConvertEnumInt(const std::string& value, size_t offset, const char** enumValues, size_t enumSize);
+    bool ConvertEnumInt(const std::string& fieldName, const std::string& value, size_t offset, const char** enumValues, size_t enumSize);
 
 public:
     InfoStringToStructConverterBase(const InfoString& infoString, void* structure, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory);

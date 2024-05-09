@@ -23,13 +23,13 @@ namespace T6
             switch (static_cast<VehicleFieldType>(field.iFieldType))
             {
             case VFT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_vehicleClassNames, std::extent_v<decltype(s_vehicleClassNames)>);
 
             case VFT_CAMERAMODE:
-                return ConvertEnumInt(value, field.iOffset, s_vehicleCameraModes, std::extent_v<decltype(s_vehicleCameraModes)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_vehicleCameraModes, std::extent_v<decltype(s_vehicleCameraModes)>);
 
             case VFT_TRACTION_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_tractionTypeNames, std::extent_v<decltype(s_tractionTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_tractionTypeNames, std::extent_v<decltype(s_tractionTypeNames)>);
 
             case VFT_MPH_TO_INCHES_PER_SECOND:
             {
