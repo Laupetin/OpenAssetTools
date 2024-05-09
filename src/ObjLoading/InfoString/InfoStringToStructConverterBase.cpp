@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <sstream>
 
 InfoStringToStructConverterBase::InfoStringToStructConverterBase(const InfoString& infoString,
                                                                  void* structure,
@@ -148,7 +149,8 @@ bool InfoStringToStructConverterBase::ConvertScriptString(const std::string& val
     return true;
 }
 
-bool InfoStringToStructConverterBase::ConvertEnumInt(const std::string& value, const size_t offset, const char** enumValues, const size_t enumSize)
+bool InfoStringToStructConverterBase::ConvertEnumInt(
+    const std::string& fieldName, const std::string& value, const size_t offset, const char** enumValues, const size_t enumSize)
 {
     for (auto i = 0u; i < enumSize; i++)
     {
@@ -158,6 +160,19 @@ bool InfoStringToStructConverterBase::ConvertEnumInt(const std::string& value, c
             return true;
         }
     }
+
+    std::ostringstream ss;
+    ss << "Not a valid value for field \"" << fieldName << "\": \"" << value << "\". Valid values are:\n    ";
+
+    for (auto i = 0u; i < enumSize; i++)
+    {
+        if (i > 0)
+            ss << ", ";
+        ss << '"' << enumValues[i] << '"';
+    }
+
+    ss << '\n';
+    std::cerr << ss.str();
 
     return false;
 }

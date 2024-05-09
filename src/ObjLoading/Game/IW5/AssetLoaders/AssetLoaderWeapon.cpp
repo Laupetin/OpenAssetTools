@@ -556,62 +556,62 @@ namespace
             switch (static_cast<weapFieldType_t>(field.iFieldType))
             {
             case WFT_WEAPONTYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapTypeNames, std::extent_v<decltype(szWeapTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapTypeNames, std::extent_v<decltype(szWeapTypeNames)>);
 
             case WFT_WEAPONCLASS:
-                return ConvertEnumInt(value, field.iOffset, szWeapClassNames, std::extent_v<decltype(szWeapClassNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapClassNames, std::extent_v<decltype(szWeapClassNames)>);
 
             case WFT_OVERLAYRETICLE:
-                return ConvertEnumInt(value, field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
 
             case WFT_PENETRATE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
 
             case WFT_IMPACT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, impactTypeNames, std::extent_v<decltype(impactTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, impactTypeNames, std::extent_v<decltype(impactTypeNames)>);
 
             case WFT_STANCE:
-                return ConvertEnumInt(value, field.iOffset, szWeapStanceNames, std::extent_v<decltype(szWeapStanceNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapStanceNames, std::extent_v<decltype(szWeapStanceNames)>);
 
             case WFT_PROJ_EXPLOSION:
-                return ConvertEnumInt(value, field.iOffset, szProjectileExplosionNames, std::extent_v<decltype(szProjectileExplosionNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szProjectileExplosionNames, std::extent_v<decltype(szProjectileExplosionNames)>);
 
             case WFT_OFFHAND_CLASS:
-                return ConvertEnumInt(value, field.iOffset, offhandClassNames, std::extent_v<decltype(offhandClassNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, offhandClassNames, std::extent_v<decltype(offhandClassNames)>);
 
             case WFT_ANIMTYPE:
-                return ConvertEnumInt(value, field.iOffset, playerAnimTypeNames, std::extent_v<decltype(playerAnimTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, playerAnimTypeNames, std::extent_v<decltype(playerAnimTypeNames)>);
 
             case WFT_ACTIVE_RETICLE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, activeReticleNames, std::extent_v<decltype(activeReticleNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, activeReticleNames, std::extent_v<decltype(activeReticleNames)>);
 
             case WFT_GUIDED_MISSILE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, guidedMissileNames, std::extent_v<decltype(guidedMissileNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, guidedMissileNames, std::extent_v<decltype(guidedMissileNames)>);
 
             case WFT_PER_SURFACE_TYPE_SOUND:
                 return ConvertPerSurfaceTypeSound(field, value);
 
             case WFT_STICKINESS:
-                return ConvertEnumInt(value, field.iOffset, stickinessNames, std::extent_v<decltype(stickinessNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, stickinessNames, std::extent_v<decltype(stickinessNames)>);
 
             case WFT_OVERLAYINTERFACE:
-                return ConvertEnumInt(value, field.iOffset, overlayInterfaceNames, std::extent_v<decltype(overlayInterfaceNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, overlayInterfaceNames, std::extent_v<decltype(overlayInterfaceNames)>);
 
             case WFT_INVENTORYTYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapInventoryTypeNames, std::extent_v<decltype(szWeapInventoryTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapInventoryTypeNames, std::extent_v<decltype(szWeapInventoryTypeNames)>);
 
             case WFT_FIRETYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
 
             case WFT_AMMOCOUNTER_CLIPTYPE:
-                return ConvertEnumInt(value, field.iOffset, ammoCounterClipNames, std::extent_v<decltype(ammoCounterClipNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, ammoCounterClipNames, std::extent_v<decltype(ammoCounterClipNames)>);
 
             case WFT_ICONRATIO_HUD:
             case WFT_ICONRATIO_PICKUP:
             case WFT_ICONRATIO_AMMOCOUNTER:
             case WFT_ICONRATIO_KILL:
             case WFT_ICONRATIO_DPAD:
-                return ConvertEnumInt(value, field.iOffset, weapIconRatioNames, std::extent_v<decltype(weapIconRatioNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, weapIconRatioNames, std::extent_v<decltype(weapIconRatioNames)>);
 
             case WFT_HIDETAGS:
                 return ConvertHideTags(field, value);

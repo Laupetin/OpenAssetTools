@@ -23,7 +23,7 @@ namespace T6
             switch (static_cast<tracerFieldType_t>(field.iFieldType))
             {
             case TFT_TRACERTYPE:
-                return ConvertEnumInt(value, field.iOffset, tracerTypeNames, std::extent_v<decltype(tracerTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, tracerTypeNames, std::extent_v<decltype(tracerTypeNames)>);
 
             case TFT_NUM_FIELD_TYPES:
             default:

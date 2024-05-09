@@ -23,7 +23,7 @@ namespace T6
             switch (static_cast<constraintsFieldType_t>(field.iFieldType))
             {
             case CFT_TYPE:
-                return ConvertEnumInt(value, field.iOffset, s_constraintTypeNames, std::extent_v<decltype(s_constraintTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, s_constraintTypeNames, std::extent_v<decltype(s_constraintTypeNames)>);
 
             default:
                 assert(false);

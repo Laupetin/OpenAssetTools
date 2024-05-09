@@ -58,13 +58,13 @@ namespace T6
             switch (static_cast<attachmentFieldType_t>(field.iFieldType))
             {
             case AFT_ATTACHMENTTYPE:
-                return ConvertEnumInt(value, field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
 
             case AFT_PENETRATE_TYPE:
-                return ConvertEnumInt(value, field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, penetrateTypeNames, std::extent_v<decltype(penetrateTypeNames)>);
 
             case AFT_FIRETYPE:
-                return ConvertEnumInt(value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapFireTypeNames, std::extent_v<decltype(szWeapFireTypeNames)>);
 
             default:
                 assert(false);

@@ -99,13 +99,13 @@ namespace T6
             switch (static_cast<attachmentUniqueFieldType_t>(field.iFieldType))
             {
             case AUFT_ATTACHMENTTYPE:
-                return ConvertEnumInt(value, field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szAttachmentTypeNames, std::extent_v<decltype(szAttachmentTypeNames)>);
 
             case AUFT_HIDETAGS:
                 return ConvertHideTags(field, value);
 
             case AUFT_OVERLAYRETICLE:
-                return ConvertEnumInt(value, field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
+                return ConvertEnumInt(field.szName, value, field.iOffset, szWeapOverlayReticleNames, std::extent_v<decltype(szWeapOverlayReticleNames)>);
 
             case AUFT_CAMO:
                 return ConvertWeaponCamo(field, value);
