@@ -41,9 +41,9 @@ namespace
             CreateMeshNode(gltf, xmodel);
             CreateRootNode(gltf, xmodel);
             CreateMaterials(gltf, xmodel);
-            CreateSkin(gltf, xmodel);
             CreateBufferViews(gltf, xmodel);
             CreateAccessors(gltf, xmodel);
+            CreateSkin(gltf, xmodel);
             CreateMesh(gltf, xmodel);
             CreateScene(gltf, xmodel);
             FillBufferData(gltf, xmodel, bufferData);
@@ -260,6 +260,8 @@ namespace
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
                 skin.joints.emplace_back(boneIndex + m_first_bone_node);
 
+            skin.inverseBindMatrices = m_inverse_bind_matrices_accessor;
+
             gltf.skins->emplace_back(std::move(skin));
         }
 
@@ -316,6 +318,15 @@ namespace
 
                 m_weights_buffer_view = gltf.bufferViews->size();
                 gltf.bufferViews->emplace_back(weightsBufferView);
+
+                JsonBufferView inverseBindMatricesBufferView;
+                inverseBindMatricesBufferView.buffer = 0u;
+                inverseBindMatricesBufferView.byteOffset = bufferOffset;
+                inverseBindMatricesBufferView.byteLength = sizeof(float) * xmodel.m_bones.size() * 16u;
+                bufferOffset += inverseBindMatricesBufferView.byteLength;
+
+                m_inverse_bind_matrices_buffer_view = gltf.bufferViews->size();
+                gltf.bufferViews->emplace_back(inverseBindMatricesBufferView);
             }
 
             m_first_index_buffer_view = gltf.bufferViews->size();
@@ -381,6 +392,14 @@ namespace
                 weightsAccessor.type = JsonAccessorType::VEC4;
                 m_weights_accessor = gltf.accessors->size();
                 gltf.accessors->emplace_back(weightsAccessor);
+
+                JsonAccessor inverseBindMatricesAccessor;
+                inverseBindMatricesAccessor.bufferView = m_inverse_bind_matrices_buffer_view;
+                inverseBindMatricesAccessor.componentType = JsonAccessorComponentType::FLOAT;
+                inverseBindMatricesAccessor.count = xmodel.m_bones.size();
+                inverseBindMatricesAccessor.type = JsonAccessorType::MAT4;
+                m_inverse_bind_matrices_accessor = gltf.accessors->size();
+                gltf.accessors->emplace_back(inverseBindMatricesAccessor);
             }
 
             m_first_index_accessor = gltf.accessors->size();
@@ -482,6 +501,37 @@ namespace
                 }
 
                 currentBufferOffset += (sizeof(uint8_t) + sizeof(float)) * 4u * xmodel.m_vertex_bone_weights.size();
+
+                auto* inverseBindMatrixData = reinterpret_cast<float*>(&bufferData[currentBufferOffset]);
+                for (const auto& bone : xmodel.m_bones)
+                {
+                    Matrix32 inverseBindMatrix;
+                    inverseBindMatrix.m_data[0][3] = -bone.globalOffset[0];
+                    inverseBindMatrix.m_data[1][3] = -bone.globalOffset[2];
+                    inverseBindMatrix.m_data[2][3] = bone.globalOffset[1];
+
+                    // In-memory = row major
+                    // gltf = column major
+                    inverseBindMatrixData[0] = inverseBindMatrix.m_data[0][0];
+                    inverseBindMatrixData[1] = inverseBindMatrix.m_data[1][0];
+                    inverseBindMatrixData[2] = inverseBindMatrix.m_data[2][0];
+                    inverseBindMatrixData[3] = inverseBindMatrix.m_data[3][0];
+                    inverseBindMatrixData[4] = inverseBindMatrix.m_data[0][1];
+                    inverseBindMatrixData[5] = inverseBindMatrix.m_data[1][1];
+                    inverseBindMatrixData[6] = inverseBindMatrix.m_data[2][1];
+                    inverseBindMatrixData[7] = inverseBindMatrix.m_data[3][1];
+                    inverseBindMatrixData[8] = inverseBindMatrix.m_data[0][2];
+                    inverseBindMatrixData[9] = inverseBindMatrix.m_data[1][2];
+                    inverseBindMatrixData[10] = inverseBindMatrix.m_data[2][2];
+                    inverseBindMatrixData[11] = inverseBindMatrix.m_data[3][2];
+                    inverseBindMatrixData[12] = inverseBindMatrix.m_data[0][3];
+                    inverseBindMatrixData[13] = inverseBindMatrix.m_data[1][3];
+                    inverseBindMatrixData[14] = inverseBindMatrix.m_data[2][3];
+                    inverseBindMatrixData[15] = inverseBindMatrix.m_data[3][3];
+
+                    inverseBindMatrixData += 16u;
+                }
+                currentBufferOffset += sizeof(float) * 16u * xmodel.m_bones.size();
             }
 
             for (const auto& object : xmodel.m_objects)
@@ -508,7 +558,11 @@ namespace
 
             if (!xmodel.m_vertex_bone_weights.empty())
             {
+                // Joints and weights
                 result += xmodel.m_vertices.size() * 4u * (sizeof(uint8_t) + sizeof(float));
+
+                // Inverse bind matrices
+                result += xmodel.m_bones.size() * 16u * sizeof(float);
             }
 
             for (const auto& object : xmodel.m_objects)
@@ -541,9 +595,11 @@ namespace
         unsigned m_uv_accessor = 0u;
         unsigned m_joints_accessor = 0u;
         unsigned m_weights_accessor = 0u;
+        unsigned m_inverse_bind_matrices_accessor = 0u;
         unsigned m_vertex_buffer_view = 0u;
         unsigned m_joints_buffer_view = 0u;
         unsigned m_weights_buffer_view = 0u;
+        unsigned m_inverse_bind_matrices_buffer_view = 0u;
         unsigned m_first_index_buffer_view = 0u;
         unsigned m_first_index_accessor = 0u;
 
