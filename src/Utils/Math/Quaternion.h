@@ -57,12 +57,41 @@ public:
         return static_cast<T>((q1.m_x * q2.m_x) + (q1.m_y * q2.m_y) + (q1.m_z * q2.m_z) + (q1.m_w * q2.m_w));
     }
 
-    T lengthSquared()
+    static Quaternion& conj(Quaternion& result)
+    {
+        result.m_x = -result.m_x;
+        result.m_y = -result.m_y;
+        result.m_z = -result.m_z;
+        return result;
+    }
+
+    static Quaternion& invert(Quaternion& result)
+    {
+        // from game programming gems p198
+        // do result = conj( q ) / norm( q )
+        Quaternion::conj(result);
+
+        // return if norm() is near 0 (divide by 0 would result in NaN)
+        T l = result.lengthSquared();
+        if (l < static_cast<T>(0.0001))
+        {
+            return result;
+        }
+
+        T l_inv = static_cast<T>(1.0) / l;
+        result.m_x *= l_inv;
+        result.m_y *= l_inv;
+        result.m_z *= l_inv;
+        result.m_w *= l_inv;
+        return result;
+    }
+
+    T lengthSquared() const
     {
         return Quaternion::dot(*this, *this);
     }
 
-    T length()
+    T length() const
     {
         return sqrt(lengthSquared());
     }
@@ -114,31 +143,41 @@ public:
 
     friend Quaternion operator*(const Quaternion& lhs, const Quaternion& rhs)
     {
-        return Quaternion(lhs.m_x + rhs.m_x, lhs.m_y + rhs.m_y, lhs.m_z + rhs.m_z, lhs.m_w + rhs.m_w);
+        const T x2 = lhs.m_w * rhs.m_x + lhs.m_x * rhs.m_w + lhs.m_y * rhs.m_z - lhs.m_z * rhs.m_y;
+        const T y2 = lhs.m_w * rhs.m_y + lhs.m_y * rhs.m_w + lhs.m_z * rhs.m_x - lhs.m_x * rhs.m_z;
+        const T z2 = lhs.m_w * rhs.m_z + lhs.m_z * rhs.m_w + lhs.m_x * rhs.m_y - lhs.m_y * rhs.m_x;
+        const T w2 = lhs.m_w * rhs.m_w - lhs.m_x * rhs.m_x - lhs.m_y * rhs.m_y - lhs.m_z * rhs.m_z;
+
+        return Quaternion(x2, y2, z2, w2);
     }
 
     friend Quaternion operator/(const Quaternion& lhs, const Quaternion& rhs)
     {
-        return Quaternion(lhs.m_x - rhs.m_x, lhs.m_y - rhs.m_y, lhs.m_z - rhs.m_z, lhs.m_w - rhs.m_w);
+        Quaternion rhsInv = rhs;
+        Quaternion::invert(rhsInv);
+        return lhs * rhsInv;
     }
 
     friend Quaternion& operator*=(Quaternion& lhs, const Quaternion& rhs)
     {
-        lhs.m_x += rhs.m_x;
-        lhs.m_y += rhs.m_y;
-        lhs.m_z += rhs.m_z;
-        lhs.m_w += rhs.m_w;
+        const T x2 = lhs.m_w * rhs.m_x + lhs.m_x * rhs.m_w + lhs.m_y * rhs.m_z - lhs.m_z * rhs.m_y;
+        const T y2 = lhs.m_w * rhs.m_y + lhs.m_y * rhs.m_w + lhs.m_z * rhs.m_x - lhs.m_x * rhs.m_z;
+        const T z2 = lhs.m_w * rhs.m_z + lhs.m_z * rhs.m_w + lhs.m_x * rhs.m_y - lhs.m_y * rhs.m_x;
+        const T w2 = lhs.m_w * rhs.m_w - lhs.m_x * rhs.m_x - lhs.m_y * rhs.m_y - lhs.m_z * rhs.m_z;
+
+        lhs.m_x = x2;
+        lhs.m_y = y2;
+        lhs.m_z = z2;
+        lhs.m_w = w2;
 
         return lhs;
     }
 
     friend Quaternion& operator/=(Quaternion& lhs, const Quaternion& rhs)
     {
-        lhs.m_x -= rhs.m_x;
-        lhs.m_y -= rhs.m_y;
-        lhs.m_z -= rhs.m_z;
-        lhs.m_w -= rhs.m_w;
-
+        Quaternion rhsInv = rhs;
+        Quaternion::invert(rhsInv);
+        lhs *= rhsInv;
         return lhs;
     }
 };

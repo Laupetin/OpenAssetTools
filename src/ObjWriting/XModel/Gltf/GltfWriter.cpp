@@ -204,7 +204,7 @@ namespace
                 {
                     const auto& parentBone = xmodel.m_bones[bone.parentIndex];
                     translation -= Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[2], -parentBone.globalOffset[1]);
-                    rotation -= Quaternion32(
+                    rotation /= Quaternion32(
                         parentBone.globalRotation.m_x, parentBone.globalRotation.m_z, -parentBone.globalRotation.m_y, parentBone.globalRotation.m_w);
                 }
                 rotation.Normalize();
