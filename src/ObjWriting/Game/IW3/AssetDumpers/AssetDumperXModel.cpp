@@ -412,6 +412,7 @@ namespace
         DistinctMapper<Material*> materialMapper(model->numsurfs);
         AllocateXModelBoneWeights(model, lod, out.m_bone_weight_data);
 
+        out.m_name = std::format("{}_lod{}", model->name, lod);
         AddXModelBones(out, context, model);
         AddXModelMaterials(out, materialMapper, model);
         AddXModelObjects(out, model, lod, materialMapper);

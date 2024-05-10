@@ -96,6 +96,7 @@ struct XModelObject
 
 struct XModelCommon
 {
+    std::string m_name;
     std::vector<XModelObject> m_objects;
     std::vector<XModelBone> m_bones;
     std::vector<XModelMaterial> m_materials;

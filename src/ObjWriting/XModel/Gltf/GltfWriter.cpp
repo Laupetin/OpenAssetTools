@@ -69,6 +69,9 @@ namespace
         {
             JsonNode meshNode;
 
+            if (!xmodel.m_name.empty())
+                meshNode.name = xmodel.m_name;
+
             // We only have one mesh
             meshNode.mesh = 0u;
 
@@ -89,6 +92,9 @@ namespace
         void CreateRootNode(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             JsonNode rootNode;
+
+            if (!xmodel.m_name.empty())
+                rootNode.name = std::format("{}_skel", xmodel.m_name);
 
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
