@@ -37,8 +37,9 @@ namespace
             std::vector<uint8_t> bufferData;
 
             CreateJsonAsset(gltf.asset);
-            CreateMeshNode(gltf, xmodel);
             CreateSkeletonNodes(gltf, xmodel);
+            CreateMeshNode(gltf, xmodel);
+            CreateRootNode(gltf, xmodel);
             CreateMaterials(gltf, xmodel);
             CreateSkin(gltf, xmodel);
             CreateBufferViews(gltf, xmodel);
@@ -83,6 +84,23 @@ namespace
 
             m_mesh_node = gltf.nodes->size();
             gltf.nodes->emplace_back(std::move(meshNode));
+        }
+
+        void CreateRootNode(JsonRoot& gltf, const XModelCommon& xmodel)
+        {
+            JsonNode rootNode;
+
+            if (!gltf.nodes.has_value())
+                gltf.nodes.emplace();
+
+            rootNode.children.emplace();
+            rootNode.children->push_back(m_mesh_node);
+
+            if (!xmodel.m_bones.empty())
+                rootNode.children->push_back(m_first_bone_node);
+
+            m_root_node = gltf.nodes->size();
+            gltf.nodes->emplace_back(std::move(rootNode));
         }
 
         void CreateMesh(JsonRoot& gltf, const XModelCommon& xmodel)
@@ -250,7 +268,7 @@ namespace
             JsonScene scene;
 
             // Only add skin if the model has bones
-            scene.nodes.emplace_back(m_mesh_node);
+            scene.nodes.emplace_back(m_root_node);
 
             if (!gltf.scenes.has_value())
                 gltf.scenes.emplace();
@@ -516,6 +534,7 @@ namespace
         }
 
         unsigned m_mesh_node = 0u;
+        unsigned m_root_node = 0u;
         unsigned m_first_bone_node = 0u;
         unsigned m_position_accessor = 0u;
         unsigned m_normal_accessor = 0u;
