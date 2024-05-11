@@ -3,13 +3,8 @@
 #include "Math/Quaternion.h"
 #include "Utils/DistinctMapper.h"
 
-#include <memory>
 #include <string>
-
-struct XModelObject
-{
-    std::string name;
-};
+#include <vector>
 
 struct XModelBone
 {
@@ -30,8 +25,7 @@ struct XModelBoneWeight
 
 struct XModelVertexBoneWeightCollection
 {
-    std::unique_ptr<XModelBoneWeight[]> weights;
-    size_t totalWeightCount;
+    std::vector<XModelBoneWeight> weights;
 };
 
 struct XModelVertexBoneWeights
@@ -51,8 +45,6 @@ struct XModelVertex
 struct XModelFace
 {
     int vertexIndex[3];
-    int objectIndex;
-    int materialIndex;
 };
 
 struct XModelMaterial
@@ -89,8 +81,28 @@ struct XModelMaterial
     float blinn[2];
     float phong;
     std::string colorMapName;
+    std::string normalMapName;
+    std::string specularMapName;
 
     void ApplyDefaults();
+};
+
+struct XModelObject
+{
+    std::string name;
+    int materialIndex;
+    std::vector<XModelFace> m_faces;
+};
+
+struct XModelCommon
+{
+    std::string m_name;
+    std::vector<XModelObject> m_objects;
+    std::vector<XModelBone> m_bones;
+    std::vector<XModelMaterial> m_materials;
+    std::vector<XModelVertex> m_vertices;
+    std::vector<XModelVertexBoneWeights> m_vertex_bone_weights;
+    XModelVertexBoneWeightCollection m_bone_weight_data;
 };
 
 struct VertexMergerPos

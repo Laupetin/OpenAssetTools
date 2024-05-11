@@ -20,14 +20,16 @@ public:
         enum class ModelOutputFormat_e
         {
             XMODEL_EXPORT,
-            OBJ
+            OBJ,
+            GLTF,
+            GLB
         };
 
         bool Verbose = false;
         std::vector<bool> AssetTypesToHandleBitfield;
 
         ImageOutputFormat_e ImageOutputFormat = ImageOutputFormat_e::DDS;
-        ModelOutputFormat_e ModelOutputFormat = ModelOutputFormat_e::XMODEL_EXPORT;
+        ModelOutputFormat_e ModelOutputFormat = ModelOutputFormat_e::GLB;
         bool MenuLegacyMode = false;
 
     } Configuration;
