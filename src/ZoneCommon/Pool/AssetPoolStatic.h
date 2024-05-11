@@ -84,6 +84,8 @@ public:
         if (m_free == nullptr)
             throw std::runtime_error("Could not add asset to static asset pool: capacity exhausted.");
 
+        const auto normalizedName = XAssetInfo<T>::NormalizeAssetName(xAssetInfo->m_name);
+
         AssetPoolEntry* poolSlot = m_free;
         m_free = m_free->m_next;
 
@@ -93,9 +95,9 @@ public:
 
         *poolSlot->m_info = std::move(*xAssetInfo);
 
-        m_asset_lookup[poolSlot->m_info->m_name] = poolSlot->m_info;
+        m_asset_lookup[normalizedName] = poolSlot->m_info;
 
-        GlobalAssetPool<T>::LinkAsset(this, poolSlot->m_info);
+        GlobalAssetPool<T>::LinkAsset(this, normalizedName, poolSlot->m_info);
 
         return poolSlot->m_info;
     }

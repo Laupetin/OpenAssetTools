@@ -30,14 +30,6 @@ template<> struct std::hash<IndirectAssetReference>
 class XAssetInfoGeneric
 {
 public:
-    asset_type_t m_type;
-    std::string m_name;
-    void* m_ptr;
-    std::vector<XAssetInfoGeneric*> m_dependencies;
-    std::vector<scr_string_t> m_used_script_strings;
-    std::vector<IndirectAssetReference> m_indirect_asset_references;
-    Zone* m_zone;
-
     XAssetInfoGeneric();
     XAssetInfoGeneric(asset_type_t type, std::string name, void* ptr);
     XAssetInfoGeneric(
@@ -61,6 +53,16 @@ public:
     XAssetInfoGeneric(XAssetInfoGeneric&& other) noexcept = default;
     XAssetInfoGeneric& operator=(const XAssetInfoGeneric& other) = default;
     XAssetInfoGeneric& operator=(XAssetInfoGeneric&& other) noexcept = default;
+
+    static std::string NormalizeAssetName(std::string input);
+
+    asset_type_t m_type;
+    std::string m_name;
+    void* m_ptr;
+    std::vector<XAssetInfoGeneric*> m_dependencies;
+    std::vector<scr_string_t> m_used_script_strings;
+    std::vector<IndirectAssetReference> m_indirect_asset_references;
+    Zone* m_zone;
 };
 
 template<typename T> class XAssetInfo : public XAssetInfoGeneric

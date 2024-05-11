@@ -64,11 +64,9 @@ template<typename T> class GlobalAssetPool
         return occurrences > 0;
     }
 
-    static void LinkAsset(LinkedAssetPool* link, XAssetInfo<T>* asset)
+    static void LinkAsset(LinkedAssetPool* link, const std::string& normalizedAssetName, XAssetInfo<T>* asset)
     {
-        std::string assetName = std::string(asset->m_name);
-
-        auto existingAsset = m_assets.find(assetName);
+        auto existingAsset = m_assets.find(normalizedAssetName);
 
         if (existingAsset == m_assets.end())
         {
@@ -77,7 +75,7 @@ template<typename T> class GlobalAssetPool
             entry.m_asset_pool = link;
             entry.m_duplicate = false;
 
-            m_assets[assetName] = entry;
+            m_assets[normalizedAssetName] = entry;
         }
         else
         {
@@ -106,11 +104,12 @@ public:
 
         for (auto asset : *assetPool)
         {
-            LinkAsset(newLinkPtr, asset);
+            const auto normalizedAssetName = XAssetInfo<T>::NormalizeAssetName(asset->m_name);
+            LinkAsset(newLinkPtr, normalizedAssetName, asset);
         }
     }
 
-    static void LinkAsset(AssetPool<T>* assetPool, XAssetInfo<T>* asset)
+    static void LinkAsset(AssetPool<T>* assetPool, const std::string& normalizedAssetName, XAssetInfo<T>* asset)
     {
         LinkedAssetPool* link = nullptr;
 
@@ -127,7 +126,7 @@ public:
         if (link == nullptr)
             return;
 
-        LinkAsset(link, asset);
+        LinkAsset(link, normalizedAssetName, asset);
     }
 
     static void UnlinkAssetPool(AssetPool<T>* assetPool)
