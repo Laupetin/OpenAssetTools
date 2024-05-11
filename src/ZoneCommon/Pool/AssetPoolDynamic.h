@@ -40,15 +40,17 @@ public:
 
     XAssetInfo<T>* AddAsset(std::unique_ptr<XAssetInfo<T>> xAssetInfo) override
     {
+        const auto normalizedName = XAssetInfo<T>::NormalizeAssetName(xAssetInfo->m_name);
+
         T* newAsset = new T();
         memcpy(newAsset, xAssetInfo->Asset(), sizeof(T));
         xAssetInfo->m_ptr = newAsset;
 
         auto* pAssetInfo = xAssetInfo.get();
-        m_asset_lookup[xAssetInfo->m_name] = pAssetInfo;
+        m_asset_lookup[normalizedName] = pAssetInfo;
         m_assets.emplace_back(std::move(xAssetInfo));
 
-        GlobalAssetPool<T>::LinkAsset(this, pAssetInfo);
+        GlobalAssetPool<T>::LinkAsset(this, normalizedName, pAssetInfo);
 
         return pAssetInfo;
     }

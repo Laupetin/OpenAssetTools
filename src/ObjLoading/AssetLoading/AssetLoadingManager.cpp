@@ -131,7 +131,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
 
 XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetType, const std::string& assetName)
 {
-    const auto normalizedAssetName = NormalizeAssetName(assetName);
+    const auto normalizedAssetName = XAssetInfoGeneric::NormalizeAssetName(assetName);
 
     auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, normalizedAssetName);
     if (alreadyLoadedAsset)
@@ -157,7 +157,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetT
 
 IndirectAssetReference AssetLoadingManager::LoadIndirectAssetReference(const asset_type_t assetType, const std::string& assetName)
 {
-    const auto normalizedAssetName = NormalizeAssetName(assetName);
+    const auto normalizedAssetName = XAssetInfoGeneric::NormalizeAssetName(assetName);
 
     const auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, normalizedAssetName);
     if (alreadyLoadedAsset)
@@ -176,14 +176,4 @@ IndirectAssetReference AssetLoadingManager::LoadIndirectAssetReference(const ass
 
     std::cerr << "Failed to find loader for asset type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\"\n";
     return IndirectAssetReference(assetType, normalizedAssetName);
-}
-
-std::string AssetLoadingManager::NormalizeAssetName(const std::string& assetName)
-{
-    std::string result(assetName);
-    utils::MakeStringLowerCase(result);
-
-    std::ranges::replace(result, '\\', '/');
-
-    return result;
 }

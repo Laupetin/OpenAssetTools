@@ -52,7 +52,8 @@ public:
 
     XAssetInfo<T>* GetAsset(const std::string& name)
     {
-        auto foundAsset = m_asset_lookup.find(name);
+        const auto normalizedName = XAssetInfo<T>::NormalizeAssetName(name);
+        auto foundAsset = m_asset_lookup.find(normalizedName);
 
         if (foundAsset == m_asset_lookup.end())
             return nullptr;

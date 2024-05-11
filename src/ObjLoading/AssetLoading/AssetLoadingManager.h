@@ -25,8 +25,6 @@ private:
 
     XAssetInfoGeneric* AddAssetInternal(std::unique_ptr<XAssetInfoGeneric> xAssetInfo);
 
-    static std::string NormalizeAssetName(const std::string& assetName);
-
     const std::map<asset_type_t, std::unique_ptr<IAssetLoader>>& m_asset_loaders_by_type;
     AssetLoadingContext& m_context;
     XAssetInfoGeneric* m_last_dependency_loaded;

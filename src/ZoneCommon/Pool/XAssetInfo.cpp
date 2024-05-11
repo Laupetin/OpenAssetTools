@@ -2,6 +2,8 @@
 
 #include "Utils/StringUtils.h"
 
+#include <algorithm>
+
 IndirectAssetReference::IndirectAssetReference()
     : m_type(-1)
 {
@@ -89,4 +91,13 @@ XAssetInfoGeneric::XAssetInfoGeneric(const asset_type_t type,
       m_indirect_asset_references(std::move(indirectAssetReferences)),
       m_zone(zone)
 {
+}
+
+std::string XAssetInfoGeneric::NormalizeAssetName(std::string input)
+{
+    utils::MakeStringLowerCase(input);
+
+    std::ranges::replace(input, '\\', '/');
+
+    return input;
 }
