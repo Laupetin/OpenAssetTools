@@ -126,7 +126,7 @@ bool AssetLoaderPhysPreset::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
     {
-        std::cout << "Failed to read phys preset raw file: \"" << fileName << "\"\n";
+        std::cerr << "Could not parse as info string file: \"" << fileName << "\"\n";
         return true;
     }
 

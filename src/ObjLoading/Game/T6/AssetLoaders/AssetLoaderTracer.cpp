@@ -112,7 +112,7 @@ bool AssetLoaderTracer::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_TRACER, *file.m_stream))
     {
-        std::cout << "Failed to read tracer raw file: \"" << fileName << "\"\n";
+        std::cerr << "Could not parse as info string file: \"" << fileName << "\"\n";
         return true;
     }
 

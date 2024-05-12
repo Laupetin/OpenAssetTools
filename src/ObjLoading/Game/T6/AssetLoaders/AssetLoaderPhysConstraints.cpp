@@ -146,7 +146,7 @@ bool AssetLoaderPhysConstraints::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_CONSTRAINTS, *file.m_stream))
     {
-        std::cout << "Failed to read phys constraints raw file: \"" << fileName << "\"\n";
+        std::cerr << "Could not parse as info string file: \"" << fileName << "\"\n";
         return true;
     }
 

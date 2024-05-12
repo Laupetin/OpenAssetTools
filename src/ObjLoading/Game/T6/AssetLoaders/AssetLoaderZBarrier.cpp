@@ -126,7 +126,7 @@ bool AssetLoaderZBarrier::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_ZBARRIER, *file.m_stream))
     {
-        std::cout << "Failed to read zbarrier raw file: \"" << fileName << "\"\n";
+        std::cerr << "Could not parse as info string file: \"" << fileName << "\"\n";
         return true;
     }
 

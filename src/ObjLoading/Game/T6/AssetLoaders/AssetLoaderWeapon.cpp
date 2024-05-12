@@ -621,7 +621,7 @@ bool AssetLoaderWeapon::LoadFromRaw(
     InfoString infoString;
     if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_WEAPON, *file.m_stream))
     {
-        std::cerr << "Failed to read weapon raw file: \"" << fileName << "\"\n";
+        std::cerr << "Could not parse as info string file: \"" << fileName << "\"\n";
         return true;
     }
 
