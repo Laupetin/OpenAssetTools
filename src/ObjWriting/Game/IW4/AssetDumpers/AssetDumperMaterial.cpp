@@ -3,9 +3,9 @@
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
-#include "Math/Vector.h"
 #include "Utils/ClassUtils.h"
 
+#include <Eigen>
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include <sstream>
@@ -450,7 +450,7 @@ namespace IW4
     class ConstantsInfo
     {
     public:
-        Vector4f m_color_tint = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        Eigen::Vector4f m_color_tint = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
         float m_env_map_min = 0.2f;
         float m_env_map_max = 1.0f;
         float m_env_map_exponent = 2.5f;
@@ -460,13 +460,13 @@ namespace IW4
         float m_falloff_end_angle = 65.0f;
         float m_dist_falloff_begin_distance = 200.0f;
         float m_dist_falloff_end_distance = 10.0f;
-        Vector4f m_falloff_begin_color = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-        Vector4f m_falloff_end_color = Vector4f(0.5f, 0.5f, 0.5f, 0.5f);
-        Vector2f m_detail_scale = Vector2f(8.0f, 8.0f);
-        Vector2f m_distortion_scale = Vector2f(0.5f, 0.5f);
-        Vector4f m_color_obj_min = Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
-        Vector4f m_color_obj_max = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-        Vector4f m_water_color = Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        Eigen::Vector4f m_falloff_begin_color = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        Eigen::Vector4f m_falloff_end_color = Eigen::Vector4f(0.5f, 0.5f, 0.5f, 0.5f);
+        Eigen::Vector2f m_detail_scale = Eigen::Vector2f(8.0f, 8.0f);
+        Eigen::Vector2f m_distortion_scale = Eigen::Vector2f(0.5f, 0.5f);
+        Eigen::Vector4f m_color_obj_min = Eigen::Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
+        Eigen::Vector4f m_color_obj_max = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        Eigen::Vector4f m_water_color = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         // Speed in which the wave animation is played
         float m_flag_speed = 1.0f;
@@ -497,7 +497,7 @@ namespace IW4
             m_entry.m_properties.emplace(std::make_pair(key, std::move(value)));
         }
 
-        void SetValue(const std::string& key, const Vector4f& v)
+        void SetValue(const std::string& key, const Eigen::Vector4f& v)
         {
             std::ostringstream ss;
             ss << v.x() << " " << v.y() << " " << v.z() << " " << v.w();
@@ -1183,7 +1183,7 @@ namespace IW4
 
                 if (constant.nameHash == Common::R_HashString("colorTint"))
                 {
-                    m_constants_info.m_color_tint = Vector4f(constant.literal);
+                    m_constants_info.m_color_tint = Eigen::Vector4f(constant.literal);
                 }
                 else if (constant.nameHash == Common::R_HashString("envMapParms"))
                 {
@@ -1198,11 +1198,11 @@ namespace IW4
                 }
                 else if (constant.nameHash == Common::R_HashString("falloffBeginColor"))
                 {
-                    m_constants_info.m_falloff_begin_color = Vector4f(constant.literal);
+                    m_constants_info.m_falloff_begin_color = Eigen::Vector4f(constant.literal);
                 }
                 else if (constant.nameHash == Common::R_HashString("falloffEndColor"))
                 {
-                    m_constants_info.m_falloff_end_color = Vector4f(constant.literal);
+                    m_constants_info.m_falloff_end_color = Eigen::Vector4f(constant.literal);
                 }
                 else if (constant.nameHash == Common::R_HashString("eyeOffsetParms"))
                 {
@@ -1227,14 +1227,15 @@ namespace IW4
                         {
                             const auto detailScaleFactorX = static_cast<float>(colorMapTexture->width) / static_cast<float>(detailMapTexture->width);
                             const auto detailScaleFactorY = static_cast<float>(colorMapTexture->height) / static_cast<float>(detailMapTexture->height);
-                            m_constants_info.m_detail_scale = Vector2f(constant.literal[0] / detailScaleFactorX, constant.literal[1] / detailScaleFactorY);
+                            m_constants_info.m_detail_scale =
+                                Eigen::Vector2f(constant.literal[0] / detailScaleFactorX, constant.literal[1] / detailScaleFactorY);
                         }
                         else
-                            m_constants_info.m_detail_scale = Vector2f(constant.literal[0], constant.literal[1]);
+                            m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal[0], constant.literal[1]);
                     }
                     else
                     {
-                        m_constants_info.m_detail_scale = Vector2f(constant.literal[0], constant.literal[1]);
+                        m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal[0], constant.literal[1]);
                     }
                 }
                 else if (constant.nameHash == Common::R_HashString("flagParms"))
@@ -1252,7 +1253,7 @@ namespace IW4
                 }
                 else if (constant.nameHash == Common::R_HashString("distortionScale"))
                 {
-                    m_constants_info.m_distortion_scale = Vector2f(constant.literal[0], constant.literal[1]);
+                    m_constants_info.m_distortion_scale = Eigen::Vector2f(constant.literal[0], constant.literal[1]);
                 }
                 else if (constant.nameHash == Common::R_HashString("uvAnimParms"))
                 {
@@ -1262,15 +1263,15 @@ namespace IW4
                 }
                 else if (constant.nameHash == Common::R_HashString("colorObjMin"))
                 {
-                    m_constants_info.m_color_obj_min = Vector4f(constant.literal);
+                    m_constants_info.m_color_obj_min = Eigen::Vector4f(constant.literal);
                 }
                 else if (constant.nameHash == Common::R_HashString("colorObjMax"))
                 {
-                    m_constants_info.m_color_obj_max = Vector4f(constant.literal);
+                    m_constants_info.m_color_obj_max = Eigen::Vector4f(constant.literal);
                 }
                 else if (constant.nameHash == Common::R_HashString("waterColor"))
                 {
-                    m_constants_info.m_water_color = Vector4f(constant.literal);
+                    m_constants_info.m_water_color = Eigen::Vector4f(constant.literal);
                 }
                 else
                 {

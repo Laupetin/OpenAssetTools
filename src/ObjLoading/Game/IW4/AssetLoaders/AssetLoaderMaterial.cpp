@@ -7,7 +7,6 @@
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
-#include "Math/Vector.h"
 #include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
 #include "StateMap/StateMapFromTechniqueExtractor.h"
@@ -198,14 +197,14 @@ namespace IW4
 
             const auto distortionScaleX = ReadFloatProperty("distortionScaleX");
             const auto distortionScaleY = ReadFloatProperty("distortionScaleY");
-            AddConstant("distortionScale", Vector4f(distortionScaleX, distortionScaleY, 0, 0));
+            AddConstant("distortionScale", {distortionScaleX, distortionScaleY, 0, 0});
 
             if (uvAnim)
             {
                 const auto uvScrollX = ReadFloatProperty("uvScrollX");
                 const auto uvScrollY = ReadFloatProperty("uvScrollY");
                 const auto uvScrollRotate = ReadFloatProperty("uvScrollRotate");
-                AddConstant("uvAnimParms", Vector4f(uvScrollX, uvScrollY, uvScrollRotate, 0));
+                AddConstant("uvAnimParms", {uvScrollX, uvScrollY, uvScrollRotate, 0});
             }
         }
 
@@ -504,11 +503,11 @@ namespace IW4
                 const auto zFeatherDepth = ReadFloatProperty("zFeatherDepth");
                 if (std::fpclassify(zFeatherDepth) == FP_ZERO)
                     throw GdtReadingException("zFeatherDepth may not be zero");
-                AddConstant("featherParms", Vector4f(1.0f / zFeatherDepth, zFeatherDepth, 0, 0));
+                AddConstant("featherParms", {1.0f / zFeatherDepth, zFeatherDepth, 0, 0});
             }
 
             if (std::fpclassify(eyeOffsetDepth) != FP_ZERO)
-                AddConstant("eyeOffsetParms", Vector4f(eyeOffsetDepth, 0, 0, 0));
+                AddConstant("eyeOffsetParms", {eyeOffsetDepth, 0, 0, 0});
 
             const auto colorTint = ReadVec4Property("colorTint", {1.0f, 1.0f, 1.0f, 1.0f});
             AddConstant("colorTint", colorTint);
@@ -1009,13 +1008,13 @@ namespace IW4
             m_textures.push_back(textureDef);
         }
 
-        void AddConstant(const std::string& constantName, Vector4f literalData)
+        void AddConstant(const std::string& constantName, const GdtVec4& literalData)
         {
             MaterialConstantDef constantDef{};
-            constantDef.literal[0] = literalData(0);
-            constantDef.literal[1] = literalData(1);
-            constantDef.literal[2] = literalData(2);
-            constantDef.literal[3] = literalData(3);
+            constantDef.literal[0] = literalData.x;
+            constantDef.literal[1] = literalData.y;
+            constantDef.literal[2] = literalData.z;
+            constantDef.literal[3] = literalData.w;
             strncpy(constantDef.name, constantName.c_str(), std::extent_v<decltype(MaterialConstantDef::name)>);
             constantDef.nameHash = Common::R_HashString(constantName.c_str());
 

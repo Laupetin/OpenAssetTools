@@ -80,16 +80,16 @@ float AbstractGdtEntryReader::ReadFloatProperty(const std::string& propertyName,
     return result;
 }
 
-Vector2f AbstractGdtEntryReader::ReadVec2Property(const std::string& propertyName, const Vector2f defaultValue) const
+GdtVec2 AbstractGdtEntryReader::ReadVec2Property(const std::string& propertyName, const GdtVec2 defaultValue) const
 {
     const auto foundProperty = m_entry.m_properties.find(propertyName);
     if (foundProperty == m_entry.m_properties.end())
         return defaultValue;
 
     std::istringstream iss(foundProperty->second);
-    Vector2f result;
+    GdtVec2 result;
 
-    iss >> result(0) >> result(1);
+    iss >> result.x >> result.y;
 
     if (iss.fail())
     {
@@ -101,16 +101,16 @@ Vector2f AbstractGdtEntryReader::ReadVec2Property(const std::string& propertyNam
     return result;
 }
 
-Vector3f AbstractGdtEntryReader::ReadVec3Property(const std::string& propertyName, const Vector3f defaultValue) const
+GdtVec3 AbstractGdtEntryReader::ReadVec3Property(const std::string& propertyName, const GdtVec3 defaultValue) const
 {
     const auto foundProperty = m_entry.m_properties.find(propertyName);
     if (foundProperty == m_entry.m_properties.end())
         return defaultValue;
 
     std::istringstream iss(foundProperty->second);
-    Vector3f result;
+    GdtVec3 result;
 
-    iss >> result(0) >> result(1) >> result(2);
+    iss >> result.x >> result.y >> result.z;
 
     if (iss.fail())
     {
@@ -122,16 +122,16 @@ Vector3f AbstractGdtEntryReader::ReadVec3Property(const std::string& propertyNam
     return result;
 }
 
-Vector4f AbstractGdtEntryReader::ReadVec4Property(const std::string& propertyName, const Vector4f defaultValue) const
+GdtVec4 AbstractGdtEntryReader::ReadVec4Property(const std::string& propertyName, const GdtVec4 defaultValue) const
 {
     const auto foundProperty = m_entry.m_properties.find(propertyName);
     if (foundProperty == m_entry.m_properties.end())
         return defaultValue;
 
     std::istringstream iss(foundProperty->second);
-    Vector4f result;
+    GdtVec4 result;
 
-    iss >> result(0) >> result(1) >> result(2) >> result(3);
+    iss >> result.x >> result.y >> result.z >> result.w;
 
     if (iss.fail())
     {

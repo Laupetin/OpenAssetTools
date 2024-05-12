@@ -1,7 +1,6 @@
 #include "GltfWriter.h"
 
 #include "GitVersion.h"
-#include "Math/Vector.h"
 #include "XModel/Gltf/GltfConstants.h"
 #include "XModel/Gltf/JsonGltf.h"
 
@@ -224,13 +223,12 @@ namespace
                 const auto& bone = xmodel.m_bones[boneIndex];
 
                 Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
-                Eigen::Quaternionf rotation(bone.globalRotation.m_w, bone.globalRotation.m_x, bone.globalRotation.m_z, -bone.globalRotation.m_y);
+                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
                 if (bone.parentIndex >= 0)
                 {
                     const auto& parentBone = xmodel.m_bones[bone.parentIndex];
                     const auto inverseParentRotation =
-                        Eigen::Quaternionf(
-                            parentBone.globalRotation.m_w, parentBone.globalRotation.m_x, parentBone.globalRotation.m_z, -parentBone.globalRotation.m_y)
+                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.z, -parentBone.globalRotation.y)
                             .normalized()
                             .inverse()
                             .normalized();
@@ -521,8 +519,7 @@ namespace
                 for (const auto& bone : xmodel.m_bones)
                 {
                     const auto translation = Eigen::Translation3f(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
-                    const auto rotation =
-                        Eigen::Quaternionf(bone.globalRotation.m_w, bone.globalRotation.m_x, bone.globalRotation.m_z, -bone.globalRotation.m_y);
+                    const auto rotation = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
 
                     const auto inverseBindMatrix = (translation * rotation).matrix().inverse();
 

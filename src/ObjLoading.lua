@@ -56,4 +56,5 @@ function ObjLoading:project()
 		minizip:include(includes)
 		zlib:include(includes)
 		json:include(includes)
+		eigen:include(includes)
 end
