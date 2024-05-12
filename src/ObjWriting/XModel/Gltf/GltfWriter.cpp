@@ -5,6 +5,7 @@
 #include "XModel/Gltf/GltfConstants.h"
 #include "XModel/Gltf/JsonGltf.h"
 
+#include <Eigen>
 #include <format>
 
 using namespace gltf;
@@ -222,20 +223,27 @@ namespace
                 JsonNode boneNode;
                 const auto& bone = xmodel.m_bones[boneIndex];
 
-                Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
-                Quaternion32 rotation(bone.globalRotation.m_x, bone.globalRotation.m_z, -bone.globalRotation.m_y, bone.globalRotation.m_w);
+                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
+                Eigen::Quaternionf rotation(bone.globalRotation.m_w, bone.globalRotation.m_x, bone.globalRotation.m_z, -bone.globalRotation.m_y);
                 if (bone.parentIndex >= 0)
                 {
                     const auto& parentBone = xmodel.m_bones[bone.parentIndex];
-                    translation -= Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[2], -parentBone.globalOffset[1]);
-                    rotation /= Quaternion32(
-                        parentBone.globalRotation.m_x, parentBone.globalRotation.m_z, -parentBone.globalRotation.m_y, parentBone.globalRotation.m_w);
+                    const auto inverseParentRotation =
+                        Eigen::Quaternionf(
+                            parentBone.globalRotation.m_w, parentBone.globalRotation.m_x, parentBone.globalRotation.m_z, -parentBone.globalRotation.m_y)
+                            .normalized()
+                            .inverse()
+                            .normalized();
+
+                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[2], -parentBone.globalOffset[1]);
+                    translation = inverseParentRotation * translation;
+                    rotation = inverseParentRotation * rotation;
                 }
-                rotation.Normalize();
+                rotation.normalize();
 
                 boneNode.name = bone.name;
                 boneNode.translation = std::to_array({translation.x(), translation.y(), translation.z()});
-                boneNode.rotation = std::to_array({rotation.m_x, rotation.m_y, rotation.m_z, rotation.m_w});
+                boneNode.rotation = std::to_array({rotation.x(), rotation.y(), rotation.z(), rotation.w()});
 
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
@@ -267,6 +275,7 @@ namespace
                 skin.joints.emplace_back(boneIndex + m_first_bone_node);
 
             skin.inverseBindMatrices = m_inverse_bind_matrices_accessor;
+            skin.skeleton = m_first_bone_node;
 
             gltf.skins->emplace_back(std::move(skin));
         }
@@ -511,29 +520,29 @@ namespace
                 auto* inverseBindMatrixData = reinterpret_cast<float*>(&bufferData[currentBufferOffset]);
                 for (const auto& bone : xmodel.m_bones)
                 {
-                    Matrix32 inverseBindMatrix;
-                    inverseBindMatrix.m_data[0][3] = -bone.globalOffset[0];
-                    inverseBindMatrix.m_data[1][3] = -bone.globalOffset[2];
-                    inverseBindMatrix.m_data[2][3] = bone.globalOffset[1];
+                    const auto translation = Eigen::Translation3f(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
+                    const auto rotation =
+                        Eigen::Quaternionf(bone.globalRotation.m_w, bone.globalRotation.m_x, bone.globalRotation.m_z, -bone.globalRotation.m_y);
 
-                    // In-memory = row major
-                    // gltf = column major
-                    inverseBindMatrixData[0] = inverseBindMatrix.m_data[0][0];
-                    inverseBindMatrixData[1] = inverseBindMatrix.m_data[1][0];
-                    inverseBindMatrixData[2] = inverseBindMatrix.m_data[2][0];
-                    inverseBindMatrixData[3] = inverseBindMatrix.m_data[3][0];
-                    inverseBindMatrixData[4] = inverseBindMatrix.m_data[0][1];
-                    inverseBindMatrixData[5] = inverseBindMatrix.m_data[1][1];
-                    inverseBindMatrixData[6] = inverseBindMatrix.m_data[2][1];
-                    inverseBindMatrixData[7] = inverseBindMatrix.m_data[3][1];
-                    inverseBindMatrixData[8] = inverseBindMatrix.m_data[0][2];
-                    inverseBindMatrixData[9] = inverseBindMatrix.m_data[1][2];
-                    inverseBindMatrixData[10] = inverseBindMatrix.m_data[2][2];
-                    inverseBindMatrixData[11] = inverseBindMatrix.m_data[3][2];
-                    inverseBindMatrixData[12] = inverseBindMatrix.m_data[0][3];
-                    inverseBindMatrixData[13] = inverseBindMatrix.m_data[1][3];
-                    inverseBindMatrixData[14] = inverseBindMatrix.m_data[2][3];
-                    inverseBindMatrixData[15] = inverseBindMatrix.m_data[3][3];
+                    const auto inverseBindMatrix = (translation * rotation).matrix().inverse();
+
+                    // GLTF matrix is column major
+                    inverseBindMatrixData[0] = inverseBindMatrix(0, 0);
+                    inverseBindMatrixData[1] = inverseBindMatrix(1, 0);
+                    inverseBindMatrixData[2] = inverseBindMatrix(2, 0);
+                    inverseBindMatrixData[3] = inverseBindMatrix(3, 0);
+                    inverseBindMatrixData[4] = inverseBindMatrix(0, 1);
+                    inverseBindMatrixData[5] = inverseBindMatrix(1, 1);
+                    inverseBindMatrixData[6] = inverseBindMatrix(2, 1);
+                    inverseBindMatrixData[7] = inverseBindMatrix(3, 1);
+                    inverseBindMatrixData[8] = inverseBindMatrix(0, 2);
+                    inverseBindMatrixData[9] = inverseBindMatrix(1, 2);
+                    inverseBindMatrixData[10] = inverseBindMatrix(2, 2);
+                    inverseBindMatrixData[11] = inverseBindMatrix(3, 2);
+                    inverseBindMatrixData[12] = inverseBindMatrix(0, 3);
+                    inverseBindMatrixData[13] = inverseBindMatrix(1, 3);
+                    inverseBindMatrixData[14] = inverseBindMatrix(2, 3);
+                    inverseBindMatrixData[15] = inverseBindMatrix(3, 3);
 
                     inverseBindMatrixData += 16u;
                 }
