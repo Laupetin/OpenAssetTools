@@ -1,10 +1,17 @@
 #pragma once
 
-#include "Math/Quaternion.h"
 #include "Utils/DistinctMapper.h"
 
 #include <string>
 #include <vector>
+
+struct XModelQuaternion
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
 
 struct XModelBone
 {
@@ -13,8 +20,8 @@ struct XModelBone
     float scale[3];
     float globalOffset[3];
     float localOffset[3];
-    Quaternion32 globalRotation;
-    Quaternion32 localRotation;
+    XModelQuaternion globalRotation;
+    XModelQuaternion localRotation;
 };
 
 struct XModelBoneWeight

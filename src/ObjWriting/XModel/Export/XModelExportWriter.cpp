@@ -1,7 +1,6 @@
 #include "XModelExportWriter.h"
 
-#include "Math/Quaternion.h"
-
+#include <Eigen>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
@@ -61,10 +60,10 @@ protected:
             m_stream << std::format("OFFSET {:.6f}, {:.6f}, {:.6f}\n", bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
             m_stream << std::format("SCALE {:.6f}, {:.6f}, {:.6f}\n", bone.scale[0], bone.scale[1], bone.scale[2]);
 
-            const Matrix32 mat = bone.globalRotation.ToMatrix();
-            m_stream << std::format("X {:.6f}, {:.6f}, {:.6f}\n", mat.m_data[0][0], mat.m_data[1][0], mat.m_data[2][0]);
-            m_stream << std::format("Y {:.6f}, {:.6f}, {:.6f}\n", mat.m_data[0][1], mat.m_data[1][1], mat.m_data[2][1]);
-            m_stream << std::format("Z {:.6f}, {:.6f}, {:.6f}\n", mat.m_data[0][2], mat.m_data[1][2], mat.m_data[2][2]);
+            const auto mat = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z).matrix();
+            m_stream << std::format("X {:.6f}, {:.6f}, {:.6f}\n", mat(0, 0), mat(1, 0), mat(2, 0));
+            m_stream << std::format("Y {:.6f}, {:.6f}, {:.6f}\n", mat(0, 1), mat(1, 1), mat(2, 1));
+            m_stream << std::format("Z {:.6f}, {:.6f}, {:.6f}\n", mat(0, 2), mat(1, 2), mat(2, 2));
             m_stream << '\n';
             boneNum++;
         }

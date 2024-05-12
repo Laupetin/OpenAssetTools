@@ -55,6 +55,7 @@ function ObjWriting:project()
 		Utils:include(includes)
 		minilzo:include(includes)
 		minizip:include(includes)
+		eigen:include(includes)
 		json:include(includes)
 		libtomcrypt:include(includes)
 

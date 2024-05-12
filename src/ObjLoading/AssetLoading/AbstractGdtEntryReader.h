@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Math/Vector.h"
 #include "Obj/Gdt/GdtEntry.h"
 #include "Utils/ClassUtils.h"
 
@@ -16,6 +15,27 @@ private:
     std::string m_message;
 };
 
+struct GdtVec2
+{
+    float x;
+    float y;
+};
+
+struct GdtVec3
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct GdtVec4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
 class AbstractGdtEntryReader
 {
 protected:
@@ -25,9 +45,9 @@ protected:
     _NODISCARD bool ReadBoolProperty(const std::string& propertyName, bool defaultValue = false) const;
     _NODISCARD int ReadIntegerProperty(const std::string& propertyName, int defaultValue = 0) const;
     _NODISCARD float ReadFloatProperty(const std::string& propertyName, float defaultValue = 0.0f) const;
-    _NODISCARD Vector2f ReadVec2Property(const std::string& propertyName, Vector2f defaultValue = {}) const;
-    _NODISCARD Vector3f ReadVec3Property(const std::string& propertyName, Vector3f defaultValue = {}) const;
-    _NODISCARD Vector4f ReadVec4Property(const std::string& propertyName, Vector4f defaultValue = {}) const;
+    _NODISCARD GdtVec2 ReadVec2Property(const std::string& propertyName, GdtVec2 defaultValue = {}) const;
+    _NODISCARD GdtVec3 ReadVec3Property(const std::string& propertyName, GdtVec3 defaultValue = {}) const;
+    _NODISCARD GdtVec4 ReadVec4Property(const std::string& propertyName, GdtVec4 defaultValue = {}) const;
 
     const GdtEntry& m_entry;
 };

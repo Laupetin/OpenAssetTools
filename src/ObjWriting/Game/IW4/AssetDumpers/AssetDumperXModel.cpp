@@ -1,7 +1,6 @@
 #include "AssetDumperXModel.h"
 
 #include "Game/IW4/CommonIW4.h"
-#include "Math/Quaternion.h"
 #include "ObjWriting.h"
 #include "Utils/DistinctMapper.h"
 #include "Utils/HalfFloat.h"
@@ -120,25 +119,31 @@ namespace
             bone.globalOffset[0] = model->baseMat[boneNum].trans[0];
             bone.globalOffset[1] = model->baseMat[boneNum].trans[1];
             bone.globalOffset[2] = model->baseMat[boneNum].trans[2];
-            bone.globalRotation = Quaternion32(
-                model->baseMat[boneNum].quat[0], model->baseMat[boneNum].quat[1], model->baseMat[boneNum].quat[2], model->baseMat[boneNum].quat[3]);
+            bone.globalRotation = {
+                model->baseMat[boneNum].quat[0],
+                model->baseMat[boneNum].quat[1],
+                model->baseMat[boneNum].quat[2],
+                model->baseMat[boneNum].quat[3],
+            };
 
             if (boneNum < model->numRootBones)
             {
                 bone.localOffset[0] = 0;
                 bone.localOffset[1] = 0;
                 bone.localOffset[2] = 0;
-                bone.localRotation = Quaternion32(0, 0, 0, 1);
+                bone.localRotation = {0, 0, 0, 1};
             }
             else
             {
                 bone.localOffset[0] = model->trans[boneNum - model->numRootBones][0];
                 bone.localOffset[1] = model->trans[boneNum - model->numRootBones][1];
                 bone.localOffset[2] = model->trans[boneNum - model->numRootBones][2];
-                bone.localRotation = Quaternion32(QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][0]),
-                                                  QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][1]),
-                                                  QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][2]),
-                                                  QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][3]));
+                bone.localRotation = {
+                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][0]),
+                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][1]),
+                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][2]),
+                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][3]),
+                };
             }
 
             out.m_bones.emplace_back(std::move(bone));
@@ -253,6 +258,11 @@ namespace
         weightCollection.weights.resize(totalWeightCount);
     }
 
+    float BoneWeight16(const uint16_t value)
+    {
+        return static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
+    }
+
     void AddXModelVertexBoneWeights(XModelCommon& out, const XModelSurfs* modelSurfs)
     {
         auto& weightCollection = out.m_bone_weight_data;
@@ -301,7 +311,7 @@ namespace
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
                     const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
                     const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
-                    const auto boneWeight1 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
+                    const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
                     const auto boneWeight0 = 1.0f - boneWeight1;
 
                     weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, boneWeight0};
@@ -318,9 +328,9 @@ namespace
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
                     const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
                     const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
-                    const auto boneWeight1 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
+                    const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
                     const auto boneIndex2 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat));
-                    const auto boneWeight2 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
+                    const auto boneWeight2 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
                     const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2;
 
                     weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, boneWeight0};
@@ -338,11 +348,11 @@ namespace
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
                     const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
                     const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
-                    const auto boneWeight1 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
+                    const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
                     const auto boneIndex2 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat));
-                    const auto boneWeight2 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
+                    const auto boneWeight2 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
                     const auto boneIndex3 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 5] / sizeof(DObjSkelMat));
-                    const auto boneWeight3 = HalfFloat::ToFloat(surface.vertInfo.vertsBlend[vertsBlendOffset + 6]);
+                    const auto boneWeight3 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 6]);
                     const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2 - boneWeight3;
 
                     weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, boneWeight0};
