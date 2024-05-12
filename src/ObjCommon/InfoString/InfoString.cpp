@@ -1,6 +1,7 @@
 #include "InfoString.h"
 
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <stack>
 
@@ -170,17 +171,26 @@ bool InfoString::FromStream(const std::string& prefix, std::istream& stream)
 
     std::string readPrefix;
     if (!infoStream.NextField(readPrefix))
+    {
+        std::cerr << "Invalid info string: Empty\n";
         return false;
+    }
 
     if (prefix != readPrefix)
+    {
+        std::cerr << "Invalid info string: Prefix \"" << readPrefix << "\" did not match expected prefix \"" << prefix << "\"\n";
         return false;
+    }
 
     std::string key;
     while (infoStream.NextField(key))
     {
         std::string value;
         if (!infoStream.NextField(value))
+        {
+            std::cerr << "Invalid info string: Unexpected eof, no value for key \"" << key << "\"\n";
             return false;
+        }
 
         const auto existingEntry = m_values.find(key);
         if (existingEntry == m_values.end())
