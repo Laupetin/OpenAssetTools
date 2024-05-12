@@ -9,33 +9,33 @@ The following section specify which assets are supported to be dumped to disk (u
 
 ## IW3 (Call of Duty 4: Modern Warfare)
 
-| Asset Type           | Dumping Support | Loading Support | Notes                                                    |
-| -------------------- | --------------- | --------------- | -------------------------------------------------------- |
-| PhysPreset           | ❌              | ❌              |                                                          |
-| XAnimParts           | ❌              | ❌              |                                                          |
-| XModel               | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT` and `OBJ`. |
-| Material             | ❌              | ❌              |                                                          |
-| MaterialTechniqueSet | ❌              | ❌              |                                                          |
-| GfxImage             | ✅              | ✅              |                                                          |
-| snd_alias_list_t     | ❌              | ❌              |                                                          |
-| SndCurve             | ❌              | ❌              |                                                          |
-| LoadedSound          | ✅              | ❌              |                                                          |
-| clipMap_t            | ❌              | ❌              |                                                          |
-| ComWorld             | ❌              | ❌              |                                                          |
-| GameWorldSp          | ❌              | ❌              |                                                          |
-| GameWorldMp          | ❌              | ❌              |                                                          |
-| MapEnts              | ✅              | ❌              |                                                          |
-| GfxWorld             | ❌              | ❌              |                                                          |
-| GfxLightDef          | ❌              | ❌              |                                                          |
-| Font_s               | ❌              | ❌              |                                                          |
-| MenuList             | ❌              | ❌              |                                                          |
-| menuDef_t            | ❌              | ❌              |                                                          |
-| LocalizeEntry        | ✅              | ✅              |                                                          |
-| WeaponDef            | ❌              | ❌              |                                                          |
-| FxEffectDef          | ❌              | ❌              |                                                          |
-| FxImpactTable        | ❌              | ❌              |                                                          |
-| RawFile              | ✅              | ✅              |                                                          |
-| StringTable          | ✅              | ✅              |                                                          |
+| Asset Type           | Dumping Support | Loading Support | Notes                                                             |
+| -------------------- | --------------- | --------------- | ----------------------------------------------------------------- |
+| PhysPreset           | ❌              | ❌              |                                                                   |
+| XAnimParts           | ❌              | ❌              |                                                                   |
+| XModel               | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT`, `OBJ`, `GLB/GLTF`. |
+| Material             | ❌              | ❌              |                                                                   |
+| MaterialTechniqueSet | ❌              | ❌              |                                                                   |
+| GfxImage             | ✅              | ✅              |                                                                   |
+| snd_alias_list_t     | ❌              | ❌              |                                                                   |
+| SndCurve             | ❌              | ❌              |                                                                   |
+| LoadedSound          | ✅              | ❌              |                                                                   |
+| clipMap_t            | ❌              | ❌              |                                                                   |
+| ComWorld             | ❌              | ❌              |                                                                   |
+| GameWorldSp          | ❌              | ❌              |                                                                   |
+| GameWorldMp          | ❌              | ❌              |                                                                   |
+| MapEnts              | ✅              | ❌              |                                                                   |
+| GfxWorld             | ❌              | ❌              |                                                                   |
+| GfxLightDef          | ❌              | ❌              |                                                                   |
+| Font_s               | ❌              | ❌              |                                                                   |
+| MenuList             | ❌              | ❌              |                                                                   |
+| menuDef_t            | ❌              | ❌              |                                                                   |
+| LocalizeEntry        | ✅              | ✅              |                                                                   |
+| WeaponDef            | ❌              | ❌              |                                                                   |
+| FxEffectDef          | ❌              | ❌              |                                                                   |
+| FxImpactTable        | ❌              | ❌              |                                                                   |
+| RawFile              | ✅              | ✅              |                                                                   |
+| StringTable          | ✅              | ✅              |                                                                   |
 
 ## IW4 (Call of Duty: Modern Warfare 2)
 
@@ -44,7 +44,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | PhysPreset                | ✅              | ✅              |                                                                         |
 | PhysCollmap               | ❌              | ❌              |                                                                         |
 | XAnimParts                | ❌              | ❌              |                                                                         |
-| XModel                    | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT` and `OBJ`.                |
+| XModel                    | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT`, `OBJ`, `GLB/GLTF`.       |
 | Material                  | ❌              | ❌              |                                                                         |
 | MaterialPixelShader       | ✅              | ✅              | Shaders are compiled. Only dumps/loads shader bytecode.                 |
 | MaterialVertexShader      | ✅              | ✅              | Shaders are compiled. Only dumps/loads shader bytecode.                 |
@@ -85,7 +85,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | PhysCollmap               | ❌              | ❌              |                                                                                                               |
 | XAnimParts                | ❌              | ❌              |                                                                                                               |
 | XModelSurfs               | ❌              | ❌              |                                                                                                               |
-| XModel                    | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT` and `OBJ`.                                                      |
+| XModel                    | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT`, `OBJ`, `GLB/GLTF`.                                             |
 | Material                  | ❌              | ❌              |                                                                                                               |
 | MaterialPixelShader       | ❌              | ❌              |                                                                                                               |
 | MaterialVertexShader      | ❌              | ❌              |                                                                                                               |
@@ -124,40 +124,40 @@ The following section specify which assets are supported to be dumped to disk (u
 
 ## T5 (Call of Duty: Black Ops)
 
-| Asset Type           | Dumping Support | Loading Support | Notes                                                    |
-| -------------------- | --------------- | --------------- | -------------------------------------------------------- |
-| PhysPreset           | ❌              | ❌              |                                                          |
-| PhysConstraints      | ❌              | ❌              |                                                          |
-| DestructibleDef      | ❌              | ❌              |                                                          |
-| XAnimParts           | ❌              | ❌              |                                                          |
-| XModel               | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT` and `OBJ`. |
-| Material             | ❌              | ❌              |                                                          |
-| MaterialTechniqueSet | ❌              | ❌              |                                                          |
-| GfxImage             | ✅              | ❌              | A few special image encodings are not yet supported.     |
-| SndBank              | ❌              | ❌              |                                                          |
-| SndPatch             | ❌              | ❌              |                                                          |
-| clipMap_t            | ❌              | ❌              |                                                          |
-| ComWorld             | ❌              | ❌              |                                                          |
-| GameWorldSp          | ❌              | ❌              |                                                          |
-| GameWorldMp          | ❌              | ❌              |                                                          |
-| MapEnts              | ❌              | ❌              |                                                          |
-| GfxWorld             | ❌              | ❌              |                                                          |
-| GfxLightDef          | ❌              | ❌              |                                                          |
-| Font_s               | ❌              | ❌              |                                                          |
-| MenuList             | ❌              | ❌              |                                                          |
-| menuDef_t            | ❌              | ❌              |                                                          |
-| LocalizeEntry        | ✅              | ✅              |                                                          |
-| WeaponVariantDef     | ❌              | ❌              |                                                          |
-| SndDriverGlobals     | ❌              | ❌              |                                                          |
-| FxEffectDef          | ❌              | ❌              |                                                          |
-| FxImpactTable        | ❌              | ❌              |                                                          |
-| RawFile              | ✅              | ✅              |                                                          |
-| StringTable          | ✅              | ✅              |                                                          |
-| PackIndex            | ❌              | ❌              |                                                          |
-| XGlobals             | ❌              | ❌              |                                                          |
-| ddlRoot_t            | ❌              | ❌              |                                                          |
-| Glasses              | ❌              | ❌              |                                                          |
-| EmblemSet            | ❌              | ❌              |                                                          |
+| Asset Type           | Dumping Support | Loading Support | Notes                                                             |
+| -------------------- | --------------- | --------------- | ----------------------------------------------------------------- |
+| PhysPreset           | ❌              | ❌              |                                                                   |
+| PhysConstraints      | ❌              | ❌              |                                                                   |
+| DestructibleDef      | ❌              | ❌              |                                                                   |
+| XAnimParts           | ❌              | ❌              |                                                                   |
+| XModel               | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT`, `OBJ`, `GLB/GLTF`. |
+| Material             | ❌              | ❌              |                                                                   |
+| MaterialTechniqueSet | ❌              | ❌              |                                                                   |
+| GfxImage             | ✅              | ❌              | A few special image encodings are not yet supported.              |
+| SndBank              | ❌              | ❌              |                                                                   |
+| SndPatch             | ❌              | ❌              |                                                                   |
+| clipMap_t            | ❌              | ❌              |                                                                   |
+| ComWorld             | ❌              | ❌              |                                                                   |
+| GameWorldSp          | ❌              | ❌              |                                                                   |
+| GameWorldMp          | ❌              | ❌              |                                                                   |
+| MapEnts              | ❌              | ❌              |                                                                   |
+| GfxWorld             | ❌              | ❌              |                                                                   |
+| GfxLightDef          | ❌              | ❌              |                                                                   |
+| Font_s               | ❌              | ❌              |                                                                   |
+| MenuList             | ❌              | ❌              |                                                                   |
+| menuDef_t            | ❌              | ❌              |                                                                   |
+| LocalizeEntry        | ✅              | ✅              |                                                                   |
+| WeaponVariantDef     | ❌              | ❌              |                                                                   |
+| SndDriverGlobals     | ❌              | ❌              |                                                                   |
+| FxEffectDef          | ❌              | ❌              |                                                                   |
+| FxImpactTable        | ❌              | ❌              |                                                                   |
+| RawFile              | ✅              | ✅              |                                                                   |
+| StringTable          | ✅              | ✅              |                                                                   |
+| PackIndex            | ❌              | ❌              |                                                                   |
+| XGlobals             | ❌              | ❌              |                                                                   |
+| ddlRoot_t            | ❌              | ❌              |                                                                   |
+| Glasses              | ❌              | ❌              |                                                                   |
+| EmblemSet            | ❌              | ❌              |                                                                   |
 
 ## T6 (Call of Duty: Black Ops II)
 
@@ -167,7 +167,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | PhysConstraints        | ✅              | ✅              |                                                                                                                                                                |
 | DestructibleDef        | ❌              | ❌              |                                                                                                                                                                |
 | XAnimParts             | ❌              | ❌              |                                                                                                                                                                |
-| XModel                 | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT` and `OBJ`.                                                                                                       |
+| XModel                 | ⁉️              | ❌              | Model data can be exported to `XMODEL_EXPORT`, `OBJ`, `GLB/GLTF`.                                                                                              |
 | Material               | ⁉️              | ⁉️              | Dumping/Loading is currently possible for materials in their compiled form. There is currently no material pipeline.                                           |
 | MaterialTechniqueSet   | ⁉️              | ❌              | Only dumps compiled shaders.                                                                                                                                   |
 | GfxImage               | ✅              | ✅              | A few special image encodings are not yet supported.                                                                                                           |
