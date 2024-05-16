@@ -81,8 +81,13 @@ void AssetDumperMenuList::DumpMenus(MenuDumper& menuDumper, const MenuList* menu
     {
         const auto* menu = menuList->menus[menuNum];
         const auto* menuAssetName = menu->window.name;
+
+        bool isReference = false;
         if (menuAssetName && menuAssetName[0] == ',')
+        {
             menuAssetName = &menuAssetName[1];
+            isReference = true;
+        }
 
         std::ostringstream ss;
         ss << parentPath << menuAssetName << ".menu";
@@ -90,7 +95,7 @@ void AssetDumperMenuList::DumpMenus(MenuDumper& menuDumper, const MenuList* menu
         const auto menuName = ss.str();
 
         // If the menu was embedded directly as menu list write its data in the menu list file
-        if (menuName == menuList->name)
+        if (!isReference && menuName == menuList->name)
             menuDumper.WriteMenu(menu);
         else
             menuDumper.IncludeMenu(ss.str());
