@@ -10,6 +10,7 @@ namespace T6
     {
         static void CopyToFullDef(const WeaponVariantDef* weapon, WeaponFullDef* fullDef);
         static InfoString CreateInfoString(XAssetInfo<WeaponVariantDef>* asset);
+        static void DumpAccuracyGraphs(AssetDumpingContext& context, XAssetInfo<WeaponVariantDef>* asset);
 
     protected:
         bool ShouldDump(XAssetInfo<WeaponVariantDef>* asset) override;
