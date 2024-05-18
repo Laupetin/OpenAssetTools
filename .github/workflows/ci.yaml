@@ -16,23 +16,21 @@ jobs:
     env:
       PREMAKE_CONFIG: gmake2
     runs-on: ubuntu-latest
+    container: ubuntu:24.04
     steps:
+      - name: Install g++ and multilib
+        run: |
+          apt-get update
+          apt-get install -y git make gcc-13 g++-13 gcc-13-multilib g++-13-multilib
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
+          update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
+          update-alternatives --set gcc /usr/bin/gcc-13
+          update-alternatives --set g++ /usr/bin/g++-13
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Install g++ and multilib
-        run: |
-          sudo apt-get update
-          sudo apt-get install gcc-13 g++-13 gcc-13-multilib g++-13-multilib
-
-      - name: Set gcc/g++ to version 13
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
-          sudo update-alternatives --set gcc /usr/bin/gcc-13
-          sudo update-alternatives --set g++ /usr/bin/g++-13
 
       - name: Setup premake
         uses: abel0b/setup-premake@v2.4
