@@ -10,6 +10,7 @@ namespace IW4
     {
         static void CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFullDef* fullDef);
         static InfoString CreateInfoString(XAssetInfo<WeaponCompleteDef>* asset);
+        static void DumpAccuracyGraphs(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset);
 
     protected:
         bool ShouldDump(XAssetInfo<WeaponCompleteDef>* asset) override;
