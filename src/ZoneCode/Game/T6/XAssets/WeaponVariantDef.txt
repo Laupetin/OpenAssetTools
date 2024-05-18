@@ -147,16 +147,16 @@ set reusable parallelBounce;
 set count perpendicularBounce SURF_TYPE_NUM;
 set reusable perpendicularBounce;
 set string projIgnitionSound;
-set string accuracyGraphName0;
-set string accuracyGraphName1;
-set reusable accuracyGraphKnots0;
-set reusable accuracyGraphKnots1;
-set count accuracyGraphKnots0 accuracyGraphKnotCount[0];
-set count accuracyGraphKnots1 accuracyGraphKnotCount[1];
-set reusable originalAccuracyGraphKnots0;
-set reusable originalAccuracyGraphKnots1;
-set count originalAccuracyGraphKnots0 accuracyGraphKnotCount[0];
-set count originalAccuracyGraphKnots1 accuracyGraphKnotCount[1];
+set string aiVsAiAccuracyGraphName;
+set string aiVsPlayerAccuracyGraphName;
+set reusable aiVsAiAccuracyGraphKnots;
+set count aiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
+set reusable aiVsPlayerAccuracyGraphKnots;
+set count aiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
+set reusable originalAiVsAiAccuracyGraphKnots;
+set count originalAiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount; // yeah it does not use original count
+set reusable originalAiVsPlayerAccuracyGraphKnots;
+set count originalAiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount; // yeah it does not use original count
 set string szUseHintString;
 set string dropHintString;
 set string szScript;
@@ -174,12 +174,12 @@ set string throwBackType;
 
 reorder:
 ...
-accuracyGraphName0
-accuracyGraphKnots0
-originalAccuracyGraphKnots0
-accuracyGraphName1
-accuracyGraphKnots1
-originalAccuracyGraphKnots1;
+aiVsAiAccuracyGraphName
+aiVsAiAccuracyGraphKnots
+originalAiVsAiAccuracyGraphKnots
+aiVsPlayerAccuracyGraphName
+aiVsPlayerAccuracyGraphKnots
+originalAiVsPlayerAccuracyGraphKnots;
 
 reorder:
 ...

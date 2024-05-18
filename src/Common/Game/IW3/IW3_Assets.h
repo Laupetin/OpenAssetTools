@@ -3091,20 +3091,16 @@ namespace IW3
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        // TODO: Order is accuracyGraphName[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
-        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
-        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
-        // const char* accuracyGraphName[2];
-        const char* accuracyGraphName0;
-        const char* accuracyGraphName1;
-        // float(*accuracyGraphKnots[2])[2];
-        vec2_t* accuracyGraphKnots0;
-        vec2_t* accuracyGraphKnots1;
-        // float(*originalAccuracyGraphKnots[2])[2];
-        vec2_t* originalAccuracyGraphKnots0;
-        vec2_t* originalAccuracyGraphKnots1;
-        int accuracyGraphKnotCount[2];
-        int originalAccuracyGraphKnotCount[2];
+        const char* aiVsAiAccuracyGraphName;
+        const char* aiVsPlayerAccuracyGraphName;
+        vec2_t* aiVsAiAccuracyGraphKnots;
+        vec2_t* aiVsPlayerAccuracyGraphKnots;
+        vec2_t* originalAiVsAiAccuracyGraphKnots;
+        vec2_t* originalAiVsPlayerAccuracyGraphKnots;
+        int aiVsAiAccuracyGraphKnotCount;
+        int aiVsPlayerAccuracyGraphKnotCount;
+        int originalAiVsAiAccuracyGraphKnotCount;
+        int originalAiVsPlayerAccuracyGraphKnotCount;
         int iPositionReloadTransTime;
         float leftArc;
         float rightArc;

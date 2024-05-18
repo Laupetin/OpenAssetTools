@@ -15,9 +15,10 @@ set assetref szXAnims ASSET_TYPE_XANIMPARTS;
 set reusable szXAnims;
 set count szXAnims 37;
 set string szAltWeaponName;
-set reusable accuracyGraphKnots;
-set count accuracyGraphKnots[0] accuracyGraphKnotCount[0];
-set count accuracyGraphKnots[1] accuracyGraphKnotCount[1];
+set reusable aiVsAiAccuracyGraphKnots;
+set count aiVsAiAccuracyGraphKnots aiVsAiAccuracyGraphKnotCount;
+set reusable aiVsPlayerAccuracyGraphKnots;
+set count aiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
 
 // WeaponDef
 use WeaponDef;
@@ -56,12 +57,12 @@ set reusable parallelBounce;
 set count parallelBounce SURF_TYPE_NUM;
 set reusable perpendicularBounce;
 set count perpendicularBounce SURF_TYPE_NUM;
-set string accuracyGraphName0;
-set string accuracyGraphName1;
-set reusable originalAccuracyGraphKnots0;
-set reusable originalAccuracyGraphKnots1;
-set count originalAccuracyGraphKnots0 WeaponCompleteDef::accuracyGraphKnotCount[0];
-set count originalAccuracyGraphKnots1 WeaponCompleteDef::accuracyGraphKnotCount[1];
+set string aiVsAiAccuracyGraphName;
+set string aiVsPlayerAccuracyGraphName;
+set reusable originalAiVsAiAccuracyGraphKnots;
+set count originalAiVsAiAccuracyGraphKnots WeaponCompleteDef::aiVsAiAccuracyGraphKnotCount;
+set reusable originalAiVsPlayerAccuracyGraphKnots;
+set count originalAiVsPlayerAccuracyGraphKnots WeaponCompleteDef::aiVsPlayerAccuracyGraphKnotCount;
 set string szUseHintString;
 set string dropHintString;
 set string szScript;
@@ -72,10 +73,10 @@ set string meleeImpactRumble;
 set string turretBarrelSpinRumble;
 reorder:
     ...
-    accuracyGraphName0
-    originalAccuracyGraphKnots0
-    accuracyGraphName1
-    originalAccuracyGraphKnots1;
+    aiVsAiAccuracyGraphName
+    originalAiVsAiAccuracyGraphKnots
+    aiVsPlayerAccuracyGraphName
+    originalAiVsPlayerAccuracyGraphKnots;
 
 // SndAliasCustom
 use SndAliasCustom;
