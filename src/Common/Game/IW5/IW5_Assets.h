@@ -4346,7 +4346,8 @@ namespace IW5
         LBCOL_TYPE_BIGNUMBER = 0x4,
         LBCOL_TYPE_PERCENT = 0x5,
         LBCOL_TYPE_TIME_FULL = 0x6,
-        LBCOL_TYPE_COUNT = 0x7
+
+        LBCOL_TYPE_COUNT
     };
 
     enum LbAggType
@@ -4355,7 +4356,8 @@ namespace IW5
         LBAGG_TYPE_MAX = 0x1,
         LBAGG_TYPE_SUM = 0x2,
         LBAGG_TYPE_LAST = 0x3,
-        LBAGG_TYPE_COUNT = 0x4
+
+        LBAGG_TYPE_COUNT
     };
 
     struct LbColumnDef
@@ -4377,7 +4379,8 @@ namespace IW5
         LBUPDATE_TYPE_NORMAL = 0x0,
         LBUPDATE_TYPE_RANK = 0x1,
         LBUPDATE_TYPE_COMBINE = 0x2,
-        LBUPDATE_TYPE_COUNT = 0x3
+
+        LBUPDATE_TYPE_COUNT
     };
 
     enum LbTrackType
@@ -4390,6 +4393,7 @@ namespace IW5
         TRK_PRESTIGE_MONTHLY = 0x5,
         TRK_DAILY = 0x6,
         TRK_PRESTIGE_DAILY = 0x7,
+
         TRK_COUNT
     };
 
@@ -4430,7 +4434,8 @@ namespace IW5
         DATA_ENUM_ARRAY = 0x7,
         DATA_FLOAT = 0x8,
         DATA_SHORT = 0x9,
-        DATA_COUNT = 0xA
+
+        DATA_COUNT
     };
 
     union StructuredDataTypeUnion
@@ -4457,7 +4462,8 @@ namespace IW5
         VALIDATION_DELTACLAMP = 0x4,
         VALIDATION_DELTASTRICT = 0x5,
         VALIDATION_XP = 0x6,
-        VALIDATION_COUNT = 0x7
+
+        VALIDATION_COUNT
     };
 
     struct StructuredDataStructProperty
