@@ -1,7 +1,7 @@
 #include "JsonLeaderboardDefWriter.h"
 
 #include "Game/IW5/CommonIW5.h"
-#include "Game/IW5/Json/JsonLeaderboardDef.h"
+#include "Game/IW5/Leaderboard/JsonLeaderboardDef.h"
 
 #include <iomanip>
 #include <nlohmann/json.hpp>
