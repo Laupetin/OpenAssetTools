@@ -1946,7 +1946,8 @@ namespace T6
         LBUPDATE_TYPE_NORMAL = 0x0,
         LBUPDATE_TYPE_RANK = 0x1,
         LBUPDATE_TYPE_COMBINE = 0x2,
-        LBUPDATE_TYPE_COUNT = 0x3,
+
+        LBUPDATE_TYPE_COUNT
     };
 
     enum LbTrackType
@@ -1959,6 +1960,7 @@ namespace T6
         TRK_PRESTIGE_MONTHLY = 0x5,
         TRK_DAILY = 0x6,
         TRK_PRESTIGE_DAILY = 0x7,
+
         TRK_COUNT
     };
 

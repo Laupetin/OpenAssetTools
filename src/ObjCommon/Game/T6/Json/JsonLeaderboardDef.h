@@ -55,18 +55,19 @@ namespace T6
     public:
         std::string name;
         int colId;
-        int dwColIndex;
-        bool hidden;
-        std::string statName;
+        std::optional<int> dwColIndex;
+        std::optional<bool> hidden;
+        std::optional<std::string> statName;
         LbColType type;
-        int precision;
-        LbAggType agg;
-        std::string localization;
-        int uiCalColX;
-        int uiCalColY;
+        std::optional<int> precision;
+        LbAggType aggregationFunction;
+        std::optional<std::string> localization;
+        std::optional<int> uiCalColX;
+        std::optional<int> uiCalColY;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, colId, dwColIndex, hidden, statName, type, precision, agg, localization, uiCalColX, uiCalColY);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(
+        JsonColumnDef, name, colId, dwColIndex, hidden, statName, type, precision, aggregationFunction, localization, uiCalColX, uiCalColY);
 
     class JsonLeaderboardDef
     {

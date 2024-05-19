@@ -9,7 +9,6 @@ using namespace T6;
 
 std::string AssetDumperLeaderboardDef::GetFileNameForAsset(const std::string& assetName)
 {
-
     return std::format("leaderboards/{}.json", assetName);
 }
 
