@@ -1,7 +1,7 @@
 #include "JsonLeaderboardDefWriter.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/Json/JsonLeaderboardDef.h"
+#include "Game/T6/Leaderboard/JsonLeaderboardDef.h"
 
 #include <iomanip>
 #include <nlohmann/json.hpp>

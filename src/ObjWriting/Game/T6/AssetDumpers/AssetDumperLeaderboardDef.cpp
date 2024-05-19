@@ -1,6 +1,6 @@
 #include "AssetDumperLeaderboardDef.h"
 
-#include "Game/T6/LeaderboardDef/JsonLeaderboardDefWriter.h"
+#include "Game/T6/Leaderboard/JsonLeaderboardDefWriter.h"
 
 #include <format>
 #include <ranges>
