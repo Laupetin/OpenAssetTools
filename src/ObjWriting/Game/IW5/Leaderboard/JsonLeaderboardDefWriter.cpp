@@ -36,7 +36,7 @@ namespace
         static void CreateJsonColumnDef(JsonColumnDef& jColumnDef, const LbColumnDef& lbColumnDef)
         {
             jColumnDef.name = lbColumnDef.name;
-            jColumnDef.id = lbColumnDef.id;
+            jColumnDef.colId = lbColumnDef.id;
 
             if (lbColumnDef.propertyId != 0)
                 jColumnDef.propertyId = lbColumnDef.propertyId;
@@ -65,9 +65,9 @@ namespace
         {
             jLeaderboardDef.id = leaderboardDef.id;
 
-            if (leaderboardDef.xpColId != 0)
+            if (leaderboardDef.xpColId >= 0)
                 jLeaderboardDef.xpColId = leaderboardDef.xpColId;
-            if (leaderboardDef.prestigeColId != 0)
+            if (leaderboardDef.prestigeColId >= 0)
                 jLeaderboardDef.prestigeColId = leaderboardDef.prestigeColId;
 
             jLeaderboardDef.columns.resize(leaderboardDef.columnCount);
