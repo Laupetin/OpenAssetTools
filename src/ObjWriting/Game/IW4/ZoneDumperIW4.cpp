@@ -3,6 +3,7 @@
 #include "AssetDumpers/AssetDumperAddonMapEnts.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperGfxLightDef.h"
+#include "AssetDumpers/AssetDumperLeaderboardDef.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperMaterial.h"
@@ -73,7 +74,7 @@ bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
-    // DUMP_ASSET_POOL(AssetDumperLeaderboardDef, m_leaderboard, ASSET_TYPE_LEADERBOARD)
+    DUMP_ASSET_POOL(AssetDumperLeaderboardDef, m_leaderboard, ASSET_TYPE_LEADERBOARD)
     DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
     DUMP_ASSET_POOL(AssetDumperTracer, m_tracer, ASSET_TYPE_TRACER)
     DUMP_ASSET_POOL(AssetDumperVehicle, m_vehicle, ASSET_TYPE_VEHICLE)

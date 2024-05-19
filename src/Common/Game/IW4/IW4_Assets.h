@@ -2549,7 +2549,8 @@ namespace IW4
         LBCOL_TYPE_PRESTIGE = 0x3,
         LBCOL_TYPE_BIGNUMBER = 0x4,
         LBCOL_TYPE_PERCENT = 0x5,
-        LBCOL_TYPE_COUNT = 0x6,
+
+        LBCOL_TYPE_COUNT
     };
 
     enum LbAggType
@@ -2558,7 +2559,8 @@ namespace IW4
         LBAGG_TYPE_MAX = 0x1,
         LBAGG_TYPE_SUM = 0x2,
         LBAGG_TYPE_LAST = 0x3,
-        LBAGG_TYPE_COUNT = 0x4,
+
+        LBAGG_TYPE_COUNT
     };
 
     struct LbColumnDef
