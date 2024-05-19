@@ -4,7 +4,10 @@
 #include "XModel/Gltf/GltfConstants.h"
 #include "XModel/Gltf/JsonGltf.h"
 
+#pragma warning(push, 0)
 #include <Eigen>
+#pragma warning(pop)
+
 #include <format>
 
 using namespace gltf;

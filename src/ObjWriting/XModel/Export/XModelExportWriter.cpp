@@ -1,6 +1,9 @@
 #include "XModelExportWriter.h"
 
+#pragma warning(push, 0)
 #include <Eigen>
+#pragma warning(pop)
+
 #include <chrono>
 #include <iomanip>
 #include <iostream>

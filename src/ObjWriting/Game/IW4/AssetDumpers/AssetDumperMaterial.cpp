@@ -5,7 +5,10 @@
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Utils/ClassUtils.h"
 
+#pragma warning(push, 0)
 #include <Eigen>
+#pragma warning(pop)
+
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include <sstream>
