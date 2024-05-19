@@ -55,17 +55,17 @@ namespace IW5
     public:
         std::string name;
         int id;
-        int propertyId;
-        bool hidden;
-        std::string statName;
+        std::optional<int> propertyId;
+        std::optional<bool> hidden;
+        std::optional<std::string> statName;
         LbColType type;
-        int precision;
-        LbAggType agg;
-        int uiCalColX;
-        int uiCalColY;
+        std::optional<int> precision;
+        LbAggType aggregationFunction;
+        std::optional<int> uiCalColX;
+        std::optional<int> uiCalColY;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, id, propertyId, hidden, statName, type, precision, agg, uiCalColX, uiCalColY);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, id, propertyId, hidden, statName, type, precision, aggregationFunction, uiCalColX, uiCalColY);
 
     class JsonLeaderboardDef
     {

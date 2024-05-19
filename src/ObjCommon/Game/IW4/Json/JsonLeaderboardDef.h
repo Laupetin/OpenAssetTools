@@ -40,10 +40,10 @@ namespace IW4
         std::string statName;
         LbColType type;
         int precision;
-        LbAggType agg;
+        LbAggType aggregationFunction;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, id, propertyId, hidden, statName, type, precision, agg);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, id, propertyId, hidden, statName, type, precision, aggregationFunction);
 
     class JsonLeaderboardDef
     {
