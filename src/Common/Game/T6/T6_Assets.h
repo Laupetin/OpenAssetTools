@@ -1946,7 +1946,22 @@ namespace T6
         LBUPDATE_TYPE_NORMAL = 0x0,
         LBUPDATE_TYPE_RANK = 0x1,
         LBUPDATE_TYPE_COMBINE = 0x2,
-        LBUPDATE_TYPE_COUNT = 0x3,
+
+        LBUPDATE_TYPE_COUNT
+    };
+
+    enum LbTrackType
+    {
+        TRK_ALLTIME = 0x0,
+        TRK_WEEKLY = 0x1,
+        TRK_MONTHLY = 0x2,
+        TRK_PRESTIGE_ALLTIME = 0x3,
+        TRK_PRESTIGE_WEEKLY = 0x4,
+        TRK_PRESTIGE_MONTHLY = 0x5,
+        TRK_DAILY = 0x6,
+        TRK_PRESTIGE_DAILY = 0x7,
+
+        TRK_COUNT
     };
 
     struct LeaderboardDef
