@@ -34,7 +34,7 @@ namespace IW4
     {
     public:
         std::string name;
-        int id;
+        int colId;
         int propertyId;
         bool hidden;
         std::string statName;
@@ -43,7 +43,7 @@ namespace IW4
         LbAggType aggregationFunction;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, id, propertyId, hidden, statName, type, precision, aggregationFunction);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, colId, propertyId, hidden, statName, type, precision, aggregationFunction);
 
     class JsonLeaderboardDef
     {

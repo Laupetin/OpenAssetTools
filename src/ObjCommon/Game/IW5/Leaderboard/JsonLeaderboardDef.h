@@ -54,7 +54,7 @@ namespace IW5
     {
     public:
         std::string name;
-        int id;
+        int colId;
         std::optional<int> propertyId;
         std::optional<bool> hidden;
         std::optional<std::string> statName;
@@ -65,7 +65,7 @@ namespace IW5
         std::optional<int> uiCalColY;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, id, propertyId, hidden, statName, type, precision, aggregationFunction, uiCalColX, uiCalColY);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonColumnDef, name, colId, propertyId, hidden, statName, type, precision, aggregationFunction, uiCalColX, uiCalColY);
 
     class JsonLeaderboardDef
     {

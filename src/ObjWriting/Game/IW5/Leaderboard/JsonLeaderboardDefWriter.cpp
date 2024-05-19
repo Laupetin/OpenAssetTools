@@ -36,7 +36,7 @@ namespace
         static void CreateJsonColumnDef(JsonColumnDef& jColumnDef, const LbColumnDef& lbColumnDef)
         {
             jColumnDef.name = lbColumnDef.name;
-            jColumnDef.id = lbColumnDef.id;
+            jColumnDef.colId = lbColumnDef.id;
 
             if (lbColumnDef.propertyId != 0)
                 jColumnDef.propertyId = lbColumnDef.propertyId;
