@@ -5,6 +5,7 @@
 #include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
 #include "Game/IW4/InfoString/WeaponFields.h"
 #include "Game/IW4/ObjConstantsIW4.h"
+#include "Weapon/AccuracyGraphWriter.h"
 
 #include <cassert>
 #include <cstring>
@@ -219,6 +220,23 @@ namespace IW4
         {
         }
     };
+
+    GenericGraph2D ConvertAccuracyGraph(const char* graphName, const vec2_t* originalKnots, const unsigned originalKnotCount)
+    {
+        GenericGraph2D graph;
+
+        graph.name = graphName;
+        graph.knots.resize(originalKnotCount);
+
+        for (auto i = 0u; i < originalKnotCount; i++)
+        {
+            auto& knot = graph.knots[i];
+            knot.x = originalKnots[i][0];
+            knot.y = originalKnots[i][1];
+        }
+
+        return graph;
+    }
 } // namespace IW4
 
 void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFullDef* fullDef)
@@ -354,6 +372,33 @@ InfoString AssetDumperWeapon::CreateInfoString(XAssetInfo<WeaponCompleteDef>* as
     return converter.Convert();
 }
 
+void AssetDumperWeapon::DumpAccuracyGraphs(AssetDumpingContext& context, XAssetInfo<WeaponCompleteDef>* asset)
+{
+    auto* accuracyGraphWriter = context.GetZoneAssetDumperState<AccuracyGraphWriter>();
+    const auto weapon = asset->Asset();
+    const auto* weapDef = weapon->weapDef;
+
+    if (!weapDef)
+        return;
+
+    if (weapDef->aiVsAiAccuracyGraphName && weapDef->originalAiVsAiAccuracyGraphKnots
+        && accuracyGraphWriter->ShouldDumpAiVsAiGraph(weapDef->aiVsAiAccuracyGraphName))
+    {
+        AccuracyGraphWriter::DumpAiVsAiGraph(
+            context,
+            ConvertAccuracyGraph(weapDef->aiVsAiAccuracyGraphName, weapDef->originalAiVsAiAccuracyGraphKnots, weapDef->originalAiVsAiAccuracyGraphKnotCount));
+    }
+
+    if (weapDef->aiVsPlayerAccuracyGraphName && weapDef->originalAiVsPlayerAccuracyGraphKnots
+        && accuracyGraphWriter->ShouldDumpAiVsPlayerGraph(weapDef->aiVsPlayerAccuracyGraphName))
+    {
+        AccuracyGraphWriter::DumpAiVsPlayerGraph(context,
+                                                 ConvertAccuracyGraph(weapDef->aiVsPlayerAccuracyGraphName,
+                                                                      weapDef->originalAiVsPlayerAccuracyGraphKnots,
+                                                                      weapDef->originalAiVsPlayerAccuracyGraphKnotCount));
+    }
+}
+
 bool AssetDumperWeapon::ShouldDump(XAssetInfo<WeaponCompleteDef>* asset)
 {
     return true;
@@ -381,4 +426,6 @@ void AssetDumperWeapon::DumpAsset(AssetDumpingContext& context, XAssetInfo<Weapo
         const auto stringValue = infoString.ToString(ObjConstants::INFO_STRING_PREFIX_WEAPON);
         stream.write(stringValue.c_str(), stringValue.size());
     }
+
+    DumpAccuracyGraphs(context, asset);
 }

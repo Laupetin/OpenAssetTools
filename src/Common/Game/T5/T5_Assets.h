@@ -3861,20 +3861,16 @@ namespace T5
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        // const char *accuracyGraphName[2];   // TODO: Order is accuracyGraphName[0] -> accuracyGraphKnots[0] -> originalAccuracyGraphKnots[0] ->
-        // accuracyGraphName[1] -> ...
-        //  Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
-        //  So might be something to fix but on the other hand it might be too much work for this little inconvenience.
-        const char* accuracyGraphName0;
-        const char* accuracyGraphName1;
-        // vec2_t *accuracyGraphKnots[2];
-        vec2_t* accuracyGraphKnots0;
-        vec2_t* accuracyGraphKnots1;
-        // vec2_t *originalAccuracyGraphKnots[2];
-        vec2_t* originalAccuracyGraphKnots0;
-        vec2_t* originalAccuracyGraphKnots1;
-        int accuracyGraphKnotCount[2];
-        int originalAccuracyGraphKnotCount[2];
+        const char* aiVsAiAccuracyGraphName;
+        const char* aiVsPlayerAccuracyGraphName;
+        vec2_t* aiVsAiAccuracyGraphKnots;
+        vec2_t* aiVsPlayerAccuracyGraphKnots;
+        vec2_t* originalAiVsAiAccuracyGraphKnots;
+        vec2_t* originalAiVsPlayerAccuracyGraphKnots;
+        int aiVsAiAccuracyGraphKnotCount;
+        int aiVsPlayerAccuracyGraphKnotCount;
+        int originalAiVsAiAccuracyGraphKnotCount;
+        int originalAiVsPlayerAccuracyGraphKnotCount;
         int iPositionReloadTransTime;
         float leftArc;
         float rightArc;

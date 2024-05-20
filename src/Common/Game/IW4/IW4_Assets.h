@@ -4399,15 +4399,12 @@ namespace IW4
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        // const char* accuracyGraphName[2];// TODO: Order is accuracyGraphName[0] -> originalAccuracyGraphKnots[0] -> accuracyGraphName[1] -> ...
-        // Which is currently not possible to do in code generation. Afaik this is the only place where this is the case.
-        // So might be something to fix but on the other hand it might be too much work for this little inconvenience.
-        // vec2_t* originalAccuracyGraphKnots[2];
-        const char* accuracyGraphName0;
-        const char* accuracyGraphName1;
-        vec2_t* originalAccuracyGraphKnots0;
-        vec2_t* originalAccuracyGraphKnots1;
-        uint16_t originalAccuracyGraphKnotCount[2];
+        const char* aiVsAiAccuracyGraphName;
+        const char* aiVsPlayerAccuracyGraphName;
+        vec2_t* originalAiVsAiAccuracyGraphKnots;
+        vec2_t* originalAiVsPlayerAccuracyGraphKnots;
+        uint16_t originalAiVsAiAccuracyGraphKnotCount;
+        uint16_t originalAiVsPlayerAccuracyGraphKnotCount;
         int iPositionReloadTransTime;
         float leftArc;
         float rightArc;
@@ -4551,8 +4548,10 @@ namespace IW4
         int ammoDropStockMax;
         float adsDofStart;
         float adsDofEnd;
-        uint16_t accuracyGraphKnotCount[2];
-        vec2_t* accuracyGraphKnots[2];
+        uint16_t aiVsAiAccuracyGraphKnotCount;
+        uint16_t aiVsPlayerAccuracyGraphKnotCount;
+        vec2_t* aiVsAiAccuracyGraphKnots;
+        vec2_t* aiVsPlayerAccuracyGraphKnots;
         bool motionTracker;
         bool enhanced;
         bool dpadIconShowsAmmo;

@@ -1,24 +1,15 @@
 #include "AssetLoaderSndCurve.h"
 
-#include "AssetLoading/SndCurve/SndCurveReader.h"
 #include "Game/IW4/IW4.h"
 #include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Sound/SoundCurveLoader.h"
 
 #include <cstring>
 #include <iostream>
 #include <sstream>
 
 using namespace IW4;
-
-std::string AssetLoaderSndCurve::GetAssetFilename(const std::string& assetName)
-{
-    std::ostringstream ss;
-
-    ss << "soundaliases/" << assetName << ".vfcurve";
-
-    return ss.str();
-}
 
 void* AssetLoaderSndCurve::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
@@ -36,33 +27,26 @@ bool AssetLoaderSndCurve::CanLoadFromRaw() const
 bool AssetLoaderSndCurve::LoadFromRaw(
     const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    const auto filename = GetAssetFilename(assetName);
-    const auto file = searchPath->Open(filename);
-    if (!file.IsOpen())
-        return false;
-
-    const SndCurveReader reader(*file.m_stream, filename);
-
-    const auto sndCurveData = reader.Read();
+    const auto sndCurveData = sound_curve::LoadSoundCurve(manager, assetName);
 
     if (!sndCurveData)
         return false;
 
-    if (sndCurveData->m_knots.size() > std::extent_v<decltype(SndCurve::knots)>)
+    if (sndCurveData->knots.size() > std::extent_v<decltype(SndCurve::knots)>)
     {
-        std::cerr << "Failed to load SndCurve \"" << assetName << "\": Too many knots (" << sndCurveData->m_knots.size() << ")\n";
+        std::cerr << "Failed to load SndCurve \"" << assetName << "\": Too many knots (" << sndCurveData->knots.size() << ")\n";
         return false;
     }
 
     auto* sndCurve = memory->Create<SndCurve>();
     sndCurve->filename = memory->Dup(assetName.c_str());
-    sndCurve->knotCount = static_cast<uint16_t>(sndCurveData->m_knots.size());
+    sndCurve->knotCount = static_cast<uint16_t>(sndCurveData->knots.size());
 
     for (auto i = 0u; i < std::extent_v<decltype(SndCurve::knots)>; i++)
     {
-        if (i < sndCurveData->m_knots.size())
+        if (i < sndCurveData->knots.size())
         {
-            const auto& [x, y] = sndCurveData->m_knots[i];
+            const auto& [x, y] = sndCurveData->knots[i];
             sndCurve->knots[i][0] = static_cast<float>(x);
             sndCurve->knots[i][1] = static_cast<float>(y);
         }
