@@ -8,6 +8,7 @@
 #include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
 #include "Utils/StringUtils.h"
+#include "Weapon/AccuracyGraphLoader.h"
 
 #include <cstring>
 #include <format>
@@ -800,6 +801,62 @@ namespace
         }
     }
 
+    void ConvertAccuracyGraph(const GenericGraph2D& graph,
+                              vec2_t*& originalGraphKnots,
+                              uint16_t& originalGraphKnotCount,
+                              vec2_t*& graphKnots,
+                              uint16_t& graphKnotCount,
+                              MemoryManager* memory)
+    {
+        originalGraphKnotCount = static_cast<uint16_t>(graph.knots.size());
+        originalGraphKnots = memory->Alloc<vec2_t>(originalGraphKnotCount);
+
+        for (auto i = 0u; i < originalGraphKnotCount; i++)
+        {
+            const auto& commonKnot = graph.knots[i];
+            originalGraphKnots[i][0] = static_cast<float>(commonKnot.x);
+            originalGraphKnots[i][1] = static_cast<float>(commonKnot.y);
+        }
+
+        graphKnots = originalGraphKnots;
+        graphKnotCount = originalGraphKnotCount;
+    }
+
+    bool LoadAccuracyGraphs(WeaponFullDef* weaponFullDef, MemoryManager* memory, const IAssetLoadingManager* manager)
+    {
+        auto* accuracyGraphLoader = manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<AccuracyGraphLoader>();
+
+        if (weaponFullDef->weapDef.aiVsAiAccuracyGraphName && weaponFullDef->weapDef.aiVsAiAccuracyGraphName[0])
+        {
+            const auto* graph = accuracyGraphLoader->LoadAiVsAiGraph(manager, weaponFullDef->weapDef.aiVsAiAccuracyGraphName);
+            if (!graph)
+                return false;
+
+            ConvertAccuracyGraph(*graph,
+                                 weaponFullDef->weapDef.originalAiVsAiAccuracyGraphKnots,
+                                 weaponFullDef->weapDef.originalAiVsAiAccuracyGraphKnotCount,
+                                 weaponFullDef->weapCompleteDef.aiVsAiAccuracyGraphKnots,
+                                 weaponFullDef->weapCompleteDef.aiVsAiAccuracyGraphKnotCount,
+                                 memory);
+        }
+
+        if (weaponFullDef->weapDef.aiVsPlayerAccuracyGraphName && weaponFullDef->weapDef.aiVsPlayerAccuracyGraphName[0])
+        {
+            const auto* graph = accuracyGraphLoader->LoadAiVsPlayerGraph(manager, weaponFullDef->weapDef.aiVsPlayerAccuracyGraphName);
+            if (!graph)
+                return false;
+
+            ConvertAccuracyGraph(*graph,
+                                 weaponFullDef->weapDef.originalAiVsPlayerAccuracyGraphKnots,
+                                 weaponFullDef->weapDef.originalAiVsPlayerAccuracyGraphKnotCount,
+                                 weaponFullDef->weapCompleteDef.aiVsPlayerAccuracyGraphKnots,
+                                 weaponFullDef->weapCompleteDef.aiVsPlayerAccuracyGraphKnotCount,
+                                 memory);
+        }
+
+        return true;
+    }
+
     bool LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone)
     {
         auto* weaponFullDef = memory->Create<WeaponFullDef>();
@@ -816,6 +873,8 @@ namespace
         }
 
         CalculateWeaponFields(weaponFullDef, memory);
+
+        LoadAccuracyGraphs(weaponFullDef, memory, manager);
 
         manager->AddAsset<AssetWeapon>(
             assetName, &weaponFullDef->weapCompleteDef, converter.GetDependencies(), converter.GetUsedScriptStrings(), converter.GetIndirectAssetReferences());

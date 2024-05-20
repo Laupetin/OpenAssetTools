@@ -19,7 +19,7 @@ namespace
         return false;
     }
 
-    void DumpAccuracyGraph(const AssetDumpingContext& context, const GenericAccuracyGraph& graph, const std::string& subFolder)
+    void DumpAccuracyGraph(const AssetDumpingContext& context, const GenericGraph2D& graph, const std::string& subFolder)
     {
         const auto file = context.OpenAssetFile(std::format("accuracy/{}/{}", subFolder, graph.name));
         if (!file)
@@ -46,12 +46,12 @@ bool AccuracyGraphWriter::ShouldDumpAiVsPlayerGraph(const std::string& graphName
     return ShouldDumpAccuracyGraph(m_dumped_ai_vs_player_graphs, graphName);
 }
 
-void AccuracyGraphWriter::DumpAiVsAiGraph(const AssetDumpingContext& context, const GenericAccuracyGraph& aiVsAiGraph)
+void AccuracyGraphWriter::DumpAiVsAiGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsAiGraph)
 {
     DumpAccuracyGraph(context, aiVsAiGraph, "aivsai");
 }
 
-void AccuracyGraphWriter::DumpAiVsPlayerGraph(const AssetDumpingContext& context, const GenericAccuracyGraph& aiVsPlayerGraph)
+void AccuracyGraphWriter::DumpAiVsPlayerGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsPlayerGraph)
 {
     DumpAccuracyGraph(context, aiVsPlayerGraph, "aivsplayer");
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "Dumping/AssetDumpingContext.h"
 #include "Dumping/IZoneAssetDumperState.h"
-#include "Weapon/GenericAccuracyGraph.h"
+#include "Parsing/GenericGraph2D.h"
 
 #include <string>
 #include <unordered_set>
@@ -12,8 +12,8 @@ public:
     bool ShouldDumpAiVsAiGraph(const std::string& graphName);
     bool ShouldDumpAiVsPlayerGraph(const std::string& graphName);
 
-    static void DumpAiVsAiGraph(const AssetDumpingContext& context, const GenericAccuracyGraph& aiVsAiGraph);
-    static void DumpAiVsPlayerGraph(const AssetDumpingContext& context, const GenericAccuracyGraph& aiVsPlayerGraph);
+    static void DumpAiVsAiGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsAiGraph);
+    static void DumpAiVsPlayerGraph(const AssetDumpingContext& context, const GenericGraph2D& aiVsPlayerGraph);
 
 private:
     std::unordered_set<std::string> m_dumped_ai_vs_ai_graphs;

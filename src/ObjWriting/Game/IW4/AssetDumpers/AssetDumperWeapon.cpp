@@ -221,9 +221,9 @@ namespace IW4
         }
     };
 
-    GenericAccuracyGraph ConvertAccuracyGraph(const char* graphName, const vec2_t* originalKnots, const unsigned originalKnotCount)
+    GenericGraph2D ConvertAccuracyGraph(const char* graphName, const vec2_t* originalKnots, const unsigned originalKnotCount)
     {
-        GenericAccuracyGraph graph;
+        GenericGraph2D graph;
 
         graph.name = graphName;
         graph.knots.resize(originalKnotCount);
