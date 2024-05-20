@@ -44,6 +44,8 @@ In fact, I recommend against it to be able to better distinguish OAT files from 
 For more information, check out the ["Getting started" guide in the OAT documentation](https://openassettools.dev/guide/getting-started.html).
 You can find other useful guides and reference documentation there as well.
 
+![German Shepherd Model in Blender](./repo/german_shepherd.png)
+
 ## Building OAT
 
 You need to clone this repository using Git.
