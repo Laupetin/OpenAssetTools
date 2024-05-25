@@ -108,9 +108,49 @@ namespace T5
         MAX_XFILE_COUNT
     };
 
-    typedef float vec2_t[2];
-    typedef float vec3_t[3];
-    typedef float vec4_t[4];
+    union vec2_t
+    {
+        float v[2];
+
+        struct
+        {
+            float x;
+            float y;
+        };
+    };
+
+    union vec3_t
+    {
+        struct
+        {
+            float x;
+            float y;
+            float z;
+        };
+
+        float v[3];
+    };
+
+    union vec4_t
+    {
+        float v[4];
+
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        struct
+        {
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+    };
 
     union XAssetHeader
     {
@@ -166,8 +206,6 @@ namespace T5
     typedef tdef_align(128) float float_align128;
 
     typedef char cbrushedge_t;
-    typedef float vec2_t[2];
-    typedef float vec3_t[3];
     typedef tdef_align(128) unsigned int raw_uint128;
 
     struct PhysPreset
@@ -619,6 +657,11 @@ namespace T5
         PhysGeomList* geomList;
     };
 
+    struct XModelQuat
+    {
+        int16_t v[4];
+    };
+
     struct XModel
     {
         const char* name;
@@ -628,8 +671,8 @@ namespace T5
         char lodRampType;
         uint16_t* boneNames;
         char* parentList;
-        int16_t (*quats)[4];
-        float (*trans)[4];
+        XModelQuat* quats;
+        vec4_t* trans;
         char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
@@ -3288,7 +3331,7 @@ namespace T5
         HITLOC_L_FOOT = 0x11,
         HITLOC_GUN = 0x12,
 
-        HITLOC_NUM
+        HITLOC_COUNT
     };
 
     struct flameTable

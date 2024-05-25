@@ -101,7 +101,7 @@ set string szUseHintString;
 set string dropHintString;
 set string szScript;
 set reusable locationDamageMultipliers;
-set count locationDamageMultipliers HITLOC_NUM;
+set count locationDamageMultipliers HITLOC_COUNT;
 set string fireRumble;
 set string meleeImpactRumble;
 set string turretBarrelSpinRumble;

@@ -1,6 +1,7 @@
 #include "AssetDumperXModel.h"
 
 #include "Game/T6/CommonT6.h"
+#include "Game/T6/XModel/JsonXModelWriter.h"
 #include "ObjWriting.h"
 #include "Utils/DistinctMapper.h"
 #include "Utils/QuatInt16.h"
@@ -132,14 +133,24 @@ namespace
             bone.scale[1] = 1.0f;
             bone.scale[2] = 1.0f;
 
-            bone.globalOffset[0] = model->baseMat[boneNum].trans.x;
-            bone.globalOffset[1] = model->baseMat[boneNum].trans.y;
-            bone.globalOffset[2] = model->baseMat[boneNum].trans.z;
+            if (model->partClassification[boneNum])
+            {
+                if (boneNum < model->numRootBones
+                    || model->partClassification[model->parentList[boneNum - model->numRootBones]] != model->partClassification[boneNum])
+                {
+                    std::cerr << std::format("Part: {:02} = {}\n", model->partClassification[boneNum], bone.name);
+                }
+            }
+
+            const auto& baseMat = model->baseMat[boneNum];
+            bone.globalOffset[0] = baseMat.trans.x;
+            bone.globalOffset[1] = baseMat.trans.y;
+            bone.globalOffset[2] = baseMat.trans.z;
             bone.globalRotation = {
-                model->baseMat[boneNum].quat.x,
-                model->baseMat[boneNum].quat.y,
-                model->baseMat[boneNum].quat.z,
-                model->baseMat[boneNum].quat.w,
+                baseMat.quat.x,
+                baseMat.quat.y,
+                baseMat.quat.z,
+                baseMat.quat.w,
             };
 
             if (boneNum < model->numRootBones)
@@ -151,14 +162,17 @@ namespace
             }
             else
             {
-                bone.localOffset[0] = model->trans[boneNum - model->numRootBones][0];
-                bone.localOffset[1] = model->trans[boneNum - model->numRootBones][1];
-                bone.localOffset[2] = model->trans[boneNum - model->numRootBones][2];
+                const auto& trans = model->trans[boneNum - model->numRootBones];
+                bone.localOffset[0] = trans.x;
+                bone.localOffset[1] = trans.y;
+                bone.localOffset[2] = trans.z;
+
+                const auto& quat = model->quats[boneNum - model->numRootBones];
                 bone.localRotation = {
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][0]),
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][1]),
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][2]),
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][3]),
+                    QuatInt16::ToFloat(quat.v[0]),
+                    QuatInt16::ToFloat(quat.v[1]),
+                    QuatInt16::ToFloat(quat.v[2]),
+                    QuatInt16::ToFloat(quat.v[3]),
                 };
             }
 
@@ -234,10 +248,12 @@ namespace
                 const auto& v = surface.verts0[vertexIndex];
                 vec2_t uv{};
                 vec3_t normalVec{};
+                vec3_t tangentVec{};
                 vec4_t color{};
 
                 Common::Vec2UnpackTexCoords(v.texCoord, &uv);
                 Common::Vec3UnpackUnitVec(v.normal, &normalVec);
+                Common::Vec3UnpackUnitVec(v.tangent, &tangentVec);
                 Common::Vec4UnpackGfxColor(v.color, &color);
 
                 XModelVertex vertex{};
@@ -546,6 +562,15 @@ namespace
             }
         }
     }
+
+    void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(std::format("xmodel/{}.json", asset->m_name));
+        if (!assetFile)
+            return;
+
+        DumpXModelAsJson(*assetFile, asset->Asset(), context);
+    }
 } // namespace
 
 bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
@@ -556,4 +581,5 @@ bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
 void AssetDumperXModel::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
     DumpXModelSurfs(context, asset);
+    DumpXModel(context, asset);
 }
