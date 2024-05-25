@@ -192,7 +192,7 @@ namespace T6
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
-    using AssetLeaderBoard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
+    using AssetLeaderboard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
     using AssetXGlobals = Asset<ASSET_TYPE_XGLOBALS, XGlobals>;
     using AssetDDL = Asset<ASSET_TYPE_DDL, ddlRoot_t>;
     using AssetGlasses = Asset<ASSET_TYPE_GLASSES, Glasses>;

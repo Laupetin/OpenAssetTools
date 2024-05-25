@@ -163,7 +163,7 @@ namespace IW4
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
-    using AssetLeaderBoard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
+    using AssetLeaderboard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
     using AssetStructuredDataDef = Asset<ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet>;
     using AssetTracer = Asset<ASSET_TYPE_TRACER, TracerDef>;
     using AssetVehicle = Asset<ASSET_TYPE_VEHICLE, VehicleDef>;

@@ -174,7 +174,7 @@ namespace IW5
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetScript = Asset<ASSET_TYPE_SCRIPTFILE, ScriptFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
-    using AssetLeaderBoard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
+    using AssetLeaderboard = Asset<ASSET_TYPE_LEADERBOARD, LeaderboardDef>;
     using AssetStructuredDataDef = Asset<ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet>;
     using AssetTracer = Asset<ASSET_TYPE_TRACER, TracerDef>;
     using AssetVehicle = Asset<ASSET_TYPE_VEHICLE, VehicleDef>;

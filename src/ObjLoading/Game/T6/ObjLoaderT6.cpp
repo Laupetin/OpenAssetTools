@@ -77,7 +77,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetImpactFx>)
         REGISTER_ASSET_LOADER(AssetLoaderRawFile)
         REGISTER_ASSET_LOADER(AssetLoaderStringTable)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetLeaderBoard>)
+        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetLeaderboard>)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXGlobals>)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetDDL>)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetGlasses>)
