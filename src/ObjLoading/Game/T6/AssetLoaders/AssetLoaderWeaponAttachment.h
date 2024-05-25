@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderWeaponAttachment final : public BasicAssetLoader<ASSET_TYPE_ATTACHMENT, WeaponAttachment>
+    class AssetLoaderWeaponAttachment final : public BasicAssetLoader<AssetAttachment>
     {
         static void CalculateAttachmentFields(WeaponAttachment* attachment);
 

@@ -7,7 +7,7 @@
 
 namespace IW4
 {
-    class AssetLoaderPhysPreset final : public BasicAssetLoader<ASSET_TYPE_PHYSPRESET, PhysPreset>
+    class AssetLoaderPhysPreset final : public BasicAssetLoader<AssetPhysPreset>
     {
         static void CopyFromPhysPresetInfo(const PhysPresetInfo* physPresetInfo, PhysPreset* physPreset);
 

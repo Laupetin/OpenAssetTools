@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderVertexShader final : public BasicAssetLoader<ASSET_TYPE_VERTEXSHADER, MaterialVertexShader>
+    class AssetLoaderVertexShader final : public BasicAssetLoader<AssetVertexShader>
     {
     public:
         _NODISCARD static std::string GetFileNameForAsset(const std::string& assetName);

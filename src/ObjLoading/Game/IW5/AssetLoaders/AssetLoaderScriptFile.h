@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderScriptFile final : public BasicAssetLoader<ASSET_TYPE_SCRIPTFILE, ScriptFile>
+    class AssetLoaderScriptFile final : public BasicAssetLoader<AssetScript>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

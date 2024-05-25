@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderFont final : public BasicAssetLoader<ASSET_TYPE_FONT, Font_s>
+    class AssetLoaderFont final : public BasicAssetLoader<AssetFont>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

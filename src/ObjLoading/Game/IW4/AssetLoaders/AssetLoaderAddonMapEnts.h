@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderAddonMapEnts final : public BasicAssetLoader<ASSET_TYPE_ADDON_MAP_ENTS, AddonMapEnts>
+    class AssetLoaderAddonMapEnts final : public BasicAssetLoader<AssetAddonMapEnts>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

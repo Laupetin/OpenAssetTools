@@ -6,7 +6,7 @@
 
 namespace IW3
 {
-    class AssetLoaderRawFile final : public BasicAssetLoader<ASSET_TYPE_RAWFILE, RawFile>
+    class AssetLoaderRawFile final : public BasicAssetLoader<AssetRawFile>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

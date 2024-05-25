@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderPathData final : public BasicAssetLoader<ASSET_TYPE_PATHDATA, PathData>
+    class AssetLoaderPathData final : public BasicAssetLoader<AssetPathData>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

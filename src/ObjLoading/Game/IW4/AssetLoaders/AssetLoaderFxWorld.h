@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderFxWorld final : public BasicAssetLoader<ASSET_TYPE_FXWORLD, FxWorld>
+    class AssetLoaderFxWorld final : public BasicAssetLoader<AssetFxWorld>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

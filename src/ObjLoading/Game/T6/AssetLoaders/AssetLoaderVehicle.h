@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderVehicle final : public BasicAssetLoader<ASSET_TYPE_VEHICLEDEF, VehicleDef>
+    class AssetLoaderVehicle final : public BasicAssetLoader<AssetVehicle>
     {
         static bool
             LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone);

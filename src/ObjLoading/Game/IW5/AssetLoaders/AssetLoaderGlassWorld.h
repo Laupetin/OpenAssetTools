@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderGlassWorld final : public BasicAssetLoader<ASSET_TYPE_GLASSWORLD, GlassWorld>
+    class AssetLoaderGlassWorld final : public BasicAssetLoader<AssetGlassWorld>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

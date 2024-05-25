@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderComWorld final : public BasicAssetLoader<ASSET_TYPE_COMWORLD, ComWorld>
+    class AssetLoaderComWorld final : public BasicAssetLoader<AssetComWorld>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

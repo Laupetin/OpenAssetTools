@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderSndCurve final : public BasicAssetLoader<ASSET_TYPE_SOUND_CURVE, SndCurve>
+    class AssetLoaderSndCurve final : public BasicAssetLoader<AssetSoundCurve>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

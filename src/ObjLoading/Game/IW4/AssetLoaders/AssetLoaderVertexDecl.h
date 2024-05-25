@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderVertexDecl final : public BasicAssetLoader<ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration>
+    class AssetLoaderVertexDecl final : public BasicAssetLoader<AssetVertexDecl>
     {
         static bool NextAbbreviation(const std::string& assetName, std::string& abbreviation, size_t& offset);
 

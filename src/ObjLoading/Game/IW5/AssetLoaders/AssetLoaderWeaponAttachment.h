@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderWeaponAttachment final : public BasicAssetLoader<ASSET_TYPE_ATTACHMENT, WeaponAttachment>
+    class AssetLoaderWeaponAttachment final : public BasicAssetLoader<AssetAttachment>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

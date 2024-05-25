@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderLoadedSound final : public BasicAssetLoader<ASSET_TYPE_LOADED_SOUND, LoadedSound>
+    class AssetLoaderLoadedSound final : public BasicAssetLoader<AssetLoadedSound>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

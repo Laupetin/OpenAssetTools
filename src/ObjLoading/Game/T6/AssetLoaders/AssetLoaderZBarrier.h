@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderZBarrier final : public BasicAssetLoader<ASSET_TYPE_ZBARRIER, ZBarrierDef>
+    class AssetLoaderZBarrier final : public BasicAssetLoader<AssetZBarrier>
     {
         static void CalculateZBarrierFields(ZBarrierDef* zbarrier);
 

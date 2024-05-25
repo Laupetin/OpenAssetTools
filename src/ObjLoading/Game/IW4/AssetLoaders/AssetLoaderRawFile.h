@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderRawFile final : public BasicAssetLoader<ASSET_TYPE_RAWFILE, RawFile>
+    class AssetLoaderRawFile final : public BasicAssetLoader<AssetRawFile>
     {
         static constexpr size_t COMPRESSED_BUFFER_SIZE_PADDING = 64;
 

@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderTracerDef final : public BasicAssetLoader<ASSET_TYPE_TRACER, TracerDef>
+    class AssetLoaderTracerDef final : public BasicAssetLoader<AssetTracer>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

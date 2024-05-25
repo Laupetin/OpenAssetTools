@@ -7,7 +7,7 @@
 
 namespace IW5
 {
-    class AssetLoaderLocalizeEntry final : public BasicAssetLoader<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>
+    class AssetLoaderLocalizeEntry final : public BasicAssetLoader<AssetLocalize>
     {
     public:
         _NODISCARD XAssetInfoGeneric* LoadFromGlobalAssetPools(const std::string& assetName) const override;

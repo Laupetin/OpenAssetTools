@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderVehicle final : public BasicAssetLoader<ASSET_TYPE_VEHICLE, VehicleDef>
+    class AssetLoaderVehicle final : public BasicAssetLoader<AssetVehicle>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

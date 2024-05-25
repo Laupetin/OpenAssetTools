@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderSurfaceFxTable final : public BasicAssetLoader<ASSET_TYPE_SURFACE_FX, SurfaceFxTable>
+    class AssetLoaderSurfaceFxTable final : public BasicAssetLoader<AssetSurfaceFx>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

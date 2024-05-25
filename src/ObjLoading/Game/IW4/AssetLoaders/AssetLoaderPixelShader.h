@@ -8,7 +8,7 @@
 
 namespace IW4
 {
-    class AssetLoaderPixelShader final : public BasicAssetLoader<ASSET_TYPE_PIXELSHADER, MaterialPixelShader>
+    class AssetLoaderPixelShader final : public BasicAssetLoader<AssetPixelShader>
     {
     public:
         _NODISCARD static std::string GetFileNameForAsset(const std::string& assetName);

@@ -6,7 +6,7 @@
 
 namespace T6
 {
-    class AssetLoaderSlug final : public BasicAssetLoader<ASSET_TYPE_SLUG, Slug>
+    class AssetLoaderSlug final : public BasicAssetLoader<AssetSlug>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

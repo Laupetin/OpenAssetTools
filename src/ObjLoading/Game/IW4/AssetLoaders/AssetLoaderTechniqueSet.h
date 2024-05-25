@@ -10,7 +10,7 @@
 
 namespace IW4
 {
-    class AssetLoaderTechniqueSet final : public BasicAssetLoader<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>
+    class AssetLoaderTechniqueSet final : public BasicAssetLoader<AssetTechniqueSet>
     {
         static bool CreateTechsetFromDefinition(const std::string& assetName,
                                                 const techset::TechsetDefinition& definition,

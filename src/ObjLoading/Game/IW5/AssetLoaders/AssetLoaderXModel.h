@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderXModel final : public BasicAssetLoader<ASSET_TYPE_XMODEL, XModel>
+    class AssetLoaderXModel final : public BasicAssetLoader<AssetXModel>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

@@ -7,7 +7,7 @@
 
 namespace IW4
 {
-    class AssetLoaderStructuredDataDefSet final : public BasicAssetLoader<ASSET_TYPE_STRUCTURED_DATA_DEF, StructuredDataDefSet>
+    class AssetLoaderStructuredDataDefSet final : public BasicAssetLoader<AssetStructuredDataDef>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
