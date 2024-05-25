@@ -1,6 +1,7 @@
 #include "AssetDumperXModel.h"
 
 #include "Game/T6/CommonT6.h"
+#include "Game/T6/XModel/JsonXModelWriter.h"
 #include "ObjWriting.h"
 #include "Utils/DistinctMapper.h"
 #include "Utils/QuatInt16.h"
@@ -546,6 +547,15 @@ namespace
             }
         }
     }
+
+    void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(std::format("xmodel/{}.json", asset->m_name));
+        if (!assetFile)
+            return;
+
+        DumpXModelAsJson(*assetFile, asset->Asset(), context);
+    }
 } // namespace
 
 bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
@@ -556,4 +566,5 @@ bool AssetDumperXModel::ShouldDump(XAssetInfo<XModel>* asset)
 void AssetDumperXModel::DumpAsset(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
 {
     DumpXModelSurfs(context, asset);
+    DumpXModel(context, asset);
 }

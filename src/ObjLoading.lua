@@ -18,6 +18,7 @@ function ObjLoading:link(links)
 	links:linkto(minilzo)
 	links:linkto(minizip)
 	links:linkto(zlib)
+	links:linkto(libtomcrypt)
 end
 
 function ObjLoading:use()
@@ -55,6 +56,7 @@ function ObjLoading:project()
 		minilzo:include(includes)
 		minizip:include(includes)
 		zlib:include(includes)
-		json:include(includes)
 		eigen:include(includes)
+		json:include(includes)
+		libtomcrypt:include(includes)
 end

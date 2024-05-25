@@ -625,7 +625,7 @@ namespace T6
         vec3_t mins;
         vec3_t maxs;
         uint16_t numLods;
-        uint16_t collLod;
+        int16_t collLod;
         float* himipInvSqRadii;
         int memUsage;
         unsigned int flags;

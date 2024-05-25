@@ -2,7 +2,13 @@
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/Json/JsonXModel.h"
+#include "Utils/StringUtils.h"
+#include "XModel/Gltf/GltfBinInput.h"
+#include "XModel/Gltf/GltfLoader.h"
+#include "XModel/Gltf/GltfTextInput.h"
+#include "XModel/XModelCommon.h"
 
+#include <filesystem>
 #include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -10,6 +16,8 @@
 
 using namespace nlohmann;
 using namespace T6;
+
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -36,7 +44,7 @@ namespace
 
             if (type != "xmodel" || version != 1u)
             {
-                std::cerr << "Tried to load xmodel \"" << xmodel.name << "\" but did not find expected type material of version 1\n";
+                std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1\n", xmodel.name);
                 return false;
             }
 
@@ -47,12 +55,128 @@ namespace
     private:
         static void PrintError(const XModel& xmodel, const std::string& message)
         {
-            std::cerr << "Cannot load xmodel \"" << xmodel.name << "\": " << message << "\n";
+            std::cerr << std::format("Cannot load xmodel \"{}\": {}\n", xmodel.name, message);
+        }
+
+        static std::unique_ptr<XModelCommon> LoadModelByExtension(std::istream& stream, const std::string& extension)
+        {
+            if (extension == ".glb")
+            {
+                gltf::BinInput input;
+                if (!input.ReadGltfData(stream))
+                    return nullptr;
+
+                const auto loader = gltf::Loader::CreateLoader(&input);
+                return loader->Load();
+            }
+
+            if (extension == ".gltf")
+            {
+                gltf::TextInput input;
+                if (!input.ReadGltfData(stream))
+                    return nullptr;
+
+                const auto loader = gltf::Loader::CreateLoader(&input);
+                return loader->Load();
+            }
+
+            return nullptr;
+        }
+
+        bool ApplyCommonBonesToXModel(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common) const
+        {
+            if (common.m_bones.empty())
+                return true;
+
+            const auto boneCount = common.m_bones.size();
+            constexpr auto maxBones = std::numeric_limits<decltype(XModel::numBones)>::max();
+            if (boneCount > maxBones)
+            {
+                PrintError(xmodel, std::format("Model \"{}\" for lod {} contains too many bones ({} -> max={})", jLod.file, lodNumber, boneCount, maxBones));
+                return false;
+            }
+
+            xmodel.numRootBones = 0u;
+            xmodel.numBones = 0u;
+            for (const auto& bone : common.m_bones)
+            {
+                if (!bone.parentIndex)
+                {
+                    // Make sure root bones are at the beginning
+                    assert(xmodel.numRootBones == xmodel.numBones);
+                    xmodel.numRootBones++;
+                }
+
+                xmodel.numBones++;
+            }
+
+            xmodel.boneNames = m_memory.Alloc<ScriptString>(xmodel.numBones);
+            xmodel.partClassification = m_memory.Alloc<char>(xmodel.numBones);
+            xmodel.baseMat = m_memory.Alloc<DObjAnimMat>(xmodel.numBones);
+            xmodel.boneInfo = m_memory.Alloc<XBoneInfo>(xmodel.numBones);
+
+            if (xmodel.numBones > xmodel.numRootBones)
+            {
+                xmodel.parentList = m_memory.Alloc<unsigned char>(xmodel.numBones - xmodel.numRootBones);
+                xmodel.trans = m_memory.Alloc<float[4]>(xmodel.numBones - xmodel.numRootBones);
+                xmodel.quats = m_memory.Alloc<uint16_t[4]>(xmodel.numBones - xmodel.numRootBones);
+            }
+            else
+            {
+                xmodel.parentList = nullptr;
+                xmodel.trans = nullptr;
+                xmodel.quats = nullptr;
+            }
+        }
+
+        bool LoadLod(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber) const
+        {
+            const auto file = m_manager.GetAssetLoadingContext()->m_raw_search_path->Open(jLod.file);
+            if (!file.IsOpen())
+            {
+                PrintError(xmodel, std::format("Failed to open file for lod {}: \"{}\"", lodNumber, jLod.file));
+                return false;
+            }
+
+            auto extension = fs::path(jLod.file).extension().string();
+            utils::MakeStringLowerCase(extension);
+
+            const auto common = LoadModelByExtension(*file.m_stream, extension);
+            if (!common)
+            {
+                PrintError(xmodel, std::format("Failure while trying to load model for lod {}: \"{}\"", lodNumber, jLod.file));
+                return false;
+            }
+
+            if (lodNumber == 0u)
+            {
+                if (!ApplyCommonBonesToXModel(jLod, xmodel, lodNumber, *common))
+                    return false;
+            }
+            // TODO: Verify bones if not lod 0
+
+            // TODO: Apply common XModel vertex data
+
+            return true;
         }
 
         bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel) const
         {
-            xmodel.collLod = static_cast<uint16_t>(jXModel.collLod);
+            auto lodNumber = 0u;
+            for (const auto& jLod : jXModel.lods)
+                LoadLod(jLod, xmodel, lodNumber++);
+
+            if (jXModel.collLod && jXModel.collLod.value() >= 0)
+            {
+                if (static_cast<unsigned>(jXModel.collLod.value()) >= jXModel.lods.size())
+                {
+                    PrintError(xmodel, "Collision lod is not a valid lod");
+                    return false;
+                }
+                xmodel.collLod = static_cast<int16_t>(jXModel.collLod.value());
+            }
+            else
+                xmodel.collLod = -1;
 
             if (jXModel.physPreset)
             {
