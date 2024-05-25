@@ -35,11 +35,11 @@ namespace IW4
     public:
         std::string name;
         int colId;
-        int propertyId;
-        bool hidden;
-        std::string statName;
+        std::optional<int> propertyId;
+        std::optional<bool> hidden;
+        std::optional<std::string> statName;
         LbColType type;
-        int precision;
+        std::optional<int> precision;
         LbAggType aggregationFunction;
     };
 
