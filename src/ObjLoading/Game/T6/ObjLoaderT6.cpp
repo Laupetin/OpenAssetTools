@@ -19,6 +19,7 @@
 #include "AssetLoaders/AssetLoaderWeaponAttachment.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
 #include "AssetLoaders/AssetLoaderWeaponCamo.h"
+#include "AssetLoaders/AssetLoaderXModel.h"
 #include "AssetLoaders/AssetLoaderZBarrier.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Game/T6/CommonT6.h"
@@ -50,7 +51,7 @@ namespace T6
         REGISTER_ASSET_LOADER(AssetLoaderPhysConstraints)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetDestructibleDef>)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXAnim>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXModel>)
+        REGISTER_ASSET_LOADER(AssetLoaderXModel)
         REGISTER_ASSET_LOADER(AssetLoaderMaterial)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetTechniqueSet>)
         REGISTER_ASSET_LOADER(AssetLoaderGfxImage)

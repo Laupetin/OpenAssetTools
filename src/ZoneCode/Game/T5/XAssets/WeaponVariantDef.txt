@@ -139,7 +139,7 @@ set count originalAiVsPlayerAccuracyGraphKnots aiVsPlayerAccuracyGraphKnotCount;
 set string szUseHintString;
 set string dropHintString;
 set string szScript;
-set count locationDamageMultipliers HITLOC_NUM;
+set count locationDamageMultipliers HITLOC_COUNT;
 set reusable locationDamageMultipliers;
 set string fireRumble;
 set string meleeImpactRumble;

@@ -139,14 +139,17 @@ namespace
             }
             else
             {
-                bone.localOffset[0] = model->trans[boneNum - model->numRootBones][0];
-                bone.localOffset[1] = model->trans[boneNum - model->numRootBones][1];
-                bone.localOffset[2] = model->trans[boneNum - model->numRootBones][2];
+                const auto& trans = model->trans[boneNum - model->numRootBones];
+                bone.localOffset[0] = trans.x;
+                bone.localOffset[1] = trans.y;
+                bone.localOffset[2] = trans.z;
+
+                const auto& quat = model->quats[boneNum - model->numRootBones];
                 bone.localRotation = {
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][0]),
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][1]),
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][2]),
-                    QuatInt16::ToFloat(model->quats[boneNum - model->numRootBones][3]),
+                    QuatInt16::ToFloat(quat.v[0]),
+                    QuatInt16::ToFloat(quat.v[1]),
+                    QuatInt16::ToFloat(quat.v[2]),
+                    QuatInt16::ToFloat(quat.v[3]),
                 };
             }
 
@@ -229,15 +232,15 @@ namespace
                 vertex.coordinates[0] = v.xyz[0];
                 vertex.coordinates[1] = v.xyz[1];
                 vertex.coordinates[2] = v.xyz[2];
-                vertex.normal[0] = normalVec[0];
-                vertex.normal[1] = normalVec[1];
-                vertex.normal[2] = normalVec[2];
-                vertex.color[0] = color[0];
-                vertex.color[1] = color[1];
-                vertex.color[2] = color[2];
-                vertex.color[3] = color[3];
-                vertex.uv[0] = uv[0];
-                vertex.uv[1] = uv[1];
+                vertex.normal[0] = normalVec.x;
+                vertex.normal[1] = normalVec.y;
+                vertex.normal[2] = normalVec.z;
+                vertex.color[0] = color.r;
+                vertex.color[1] = color.g;
+                vertex.color[2] = color.b;
+                vertex.color[3] = color.a;
+                vertex.uv[0] = uv.x;
+                vertex.uv[1] = uv.y;
 
                 out.m_vertices.emplace_back(vertex);
             }

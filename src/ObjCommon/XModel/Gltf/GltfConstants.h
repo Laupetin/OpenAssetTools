@@ -3,6 +3,7 @@
 #include "Utils/FileUtils.h"
 
 #include <cstdint>
+#include <string>
 
 namespace gltf
 {
@@ -18,6 +19,7 @@ namespace gltf
     constexpr auto GLTF_JSON_CHUNK_DATA_OFFSET = 20u;
 
     constexpr auto GLTF_DATA_URI_PREFIX = "data:application/octet-stream;base64,";
+    constexpr auto URI_PREFIX_LENGTH = std::char_traits<char>::length(GLTF_DATA_URI_PREFIX);
 
     constexpr auto GLTF_ATTRIBUTE_POSITION = "POSITION";
     constexpr auto GLTF_ATTRIBUTE_NORMAL = "NORMAL";

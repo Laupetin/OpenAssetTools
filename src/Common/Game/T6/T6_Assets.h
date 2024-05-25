@@ -601,6 +601,11 @@ namespace T6
         XMODEL_LOD_RAMP_COUNT
     };
 
+    struct XModelQuat
+    {
+        int16_t v[4];
+    };
+
     struct XModel
     {
         const char* name;
@@ -610,9 +615,9 @@ namespace T6
         XModelLodRampType lodRampType;
         ScriptString* boneNames;
         unsigned char* parentList;
-        uint16_t (*quats)[4];
-        float (*trans)[4];
-        char* partClassification;
+        XModelQuat* quats;
+        vec4_t* trans;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
         Material** materialHandles;
@@ -625,7 +630,7 @@ namespace T6
         vec3_t mins;
         vec3_t maxs;
         uint16_t numLods;
-        uint16_t collLod;
+        int16_t collLod;
         float* himipInvSqRadii;
         int memUsage;
         unsigned int flags;
@@ -4324,7 +4329,8 @@ namespace T6
         MISSILE_GUIDANCE_TVGUIDED = 0x6,
         MISSILE_GUIDANCE_DRONE = 0x7,
         MISSILE_GUIDANCE_HEATSEEKING = 0x8,
-        MISSILE_GUIDANCE_COUNT = 0x9,
+
+        MISSILE_GUIDANCE_COUNT
     };
 
     enum hitLocation_t
@@ -4351,7 +4357,7 @@ namespace T6
         HITLOC_GUN = 0x13,
         HITLOC_SHIELD = 0x14,
 
-        HITLOC_NUM,
+        HITLOC_COUNT,
     };
 
     struct WeaponDef

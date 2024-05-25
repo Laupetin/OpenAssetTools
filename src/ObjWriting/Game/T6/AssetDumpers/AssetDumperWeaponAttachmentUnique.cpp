@@ -101,8 +101,8 @@ void AssetDumperWeaponAttachmentUnique::CopyToFullDef(const WeaponAttachmentUniq
 
     if (attachment->locationDamageMultipliers)
     {
-        assert(sizeof(WeaponAttachmentUniqueFull::locationDamageMultipliers) >= sizeof(float) * HITLOC_NUM);
-        memcpy(fullDef->locationDamageMultipliers, attachment->locationDamageMultipliers, sizeof(float) * HITLOC_NUM);
+        assert(sizeof(WeaponAttachmentUniqueFull::locationDamageMultipliers) >= sizeof(float) * HITLOC_COUNT);
+        memcpy(fullDef->locationDamageMultipliers, attachment->locationDamageMultipliers, sizeof(float) * HITLOC_COUNT);
         fullDef->attachment.locationDamageMultipliers = fullDef->locationDamageMultipliers;
     }
 }

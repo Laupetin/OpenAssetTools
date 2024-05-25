@@ -1,6 +1,5 @@
 #include "GltfTextOutput.h"
 
-#include "Utils/Alignment.h"
 #include "XModel/Gltf/GltfConstants.h"
 
 #include <iomanip>
@@ -18,7 +17,6 @@ TextOutput::TextOutput(std::ostream& stream)
 
 std::optional<std::string> TextOutput::CreateBufferUri(const void* buffer, const size_t bufferSize) const
 {
-    static constexpr auto URI_PREFIX_LENGTH = std::char_traits<char>::length(GLTF_DATA_URI_PREFIX);
     const auto base64Length = 4u * ((bufferSize + 2u) / 3u);
     const auto base64BufferSize = URI_PREFIX_LENGTH + base64Length;
 

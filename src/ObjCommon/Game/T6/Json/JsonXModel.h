@@ -24,7 +24,7 @@ namespace T6
     {
     public:
         std::vector<JsonXModelLod> lods;
-        unsigned collLod;
+        std::optional<int> collLod;
         std::optional<std::string> physPreset;
         std::optional<std::string> physConstraints;
         unsigned flags;

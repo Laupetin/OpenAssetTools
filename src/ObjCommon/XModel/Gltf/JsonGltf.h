@@ -258,6 +258,7 @@ namespace gltf
     public:
         std::optional<unsigned> POSITION;
         std::optional<unsigned> NORMAL;
+        std::optional<unsigned> COLOR_0;
         std::optional<unsigned> TEXCOORD_0;
         std::optional<unsigned> JOINTS_0;
         std::optional<unsigned> WEIGHTS_0;
