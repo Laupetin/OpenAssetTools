@@ -6,7 +6,7 @@
 
 namespace T6
 {
-    class AssetLoaderSoundBank final : public BasicAssetLoader<ASSET_TYPE_SOUND, SndBank>
+    class AssetLoaderSoundBank final : public BasicAssetLoader<AssetSoundBank>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

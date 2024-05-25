@@ -59,7 +59,6 @@ ObjLoader::ObjLoader()
         auto l = std::make_unique<t>();                                                                                                                        \
         m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);                                                                                     \
     }
-#define BASIC_LOADER(assetType, assetClass) BasicAssetLoader<assetType, assetClass>
 
     REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
     REGISTER_ASSET_LOADER(AssetLoaderPhysCollmap)
@@ -102,7 +101,6 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(AssetLoaderVehicleDef)
     REGISTER_ASSET_LOADER(AssetLoaderAddonMapEnts)
 
-#undef BASIC_LOADER
 #undef REGISTER_ASSET_LOADER
 }
 

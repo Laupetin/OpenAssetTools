@@ -6,7 +6,7 @@
 
 namespace T6
 {
-    class AssetLoaderScriptParseTree final : public BasicAssetLoader<ASSET_TYPE_SCRIPTPARSETREE, ScriptParseTree>
+    class AssetLoaderScriptParseTree final : public BasicAssetLoader<AssetScript>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderSoundAliasList final : public BasicAssetLoader<ASSET_TYPE_SOUND, snd_alias_list_t>
+    class AssetLoaderSoundAliasList final : public BasicAssetLoader<AssetSound>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

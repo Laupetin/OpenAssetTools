@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderGfxLightDef final : public BasicAssetLoader<ASSET_TYPE_LIGHT_DEF, GfxLightDef>
+    class AssetLoaderGfxLightDef final : public BasicAssetLoader<AssetLightDef>
     {
         static constexpr auto MAX_IMAGE_NAME_SIZE = 0x800;
 

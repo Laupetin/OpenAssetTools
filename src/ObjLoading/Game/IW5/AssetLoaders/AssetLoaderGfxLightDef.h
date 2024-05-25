@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderGfxLightDef final : public BasicAssetLoader<ASSET_TYPE_LIGHT_DEF, GfxLightDef>
+    class AssetLoaderGfxLightDef final : public BasicAssetLoader<AssetLightDef>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

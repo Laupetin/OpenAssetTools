@@ -170,7 +170,8 @@ namespace T6
     using AssetImage = Asset<ASSET_TYPE_IMAGE, GfxImage>;
     using AssetSoundBank = Asset<ASSET_TYPE_SOUND, SndBank>;
     using AssetSoundPatch = Asset<ASSET_TYPE_SOUND_PATCH, SndPatch>;
-    using AssetClipMap = Asset<ASSET_TYPE_CLIPMAP_PVS, clipMap_t>;
+    using AssetClipMap = Asset<ASSET_TYPE_CLIPMAP, clipMap_t>;
+    using AssetClipMapPvs = Asset<ASSET_TYPE_CLIPMAP_PVS, clipMap_t>;
     using AssetComWorld = Asset<ASSET_TYPE_COMWORLD, ComWorld>;
     using AssetGameWorldSp = Asset<ASSET_TYPE_GAMEWORLD_SP, GameWorldSp>;
     using AssetGameWorldMp = Asset<ASSET_TYPE_GAMEWORLD_MP, GameWorldMp>;

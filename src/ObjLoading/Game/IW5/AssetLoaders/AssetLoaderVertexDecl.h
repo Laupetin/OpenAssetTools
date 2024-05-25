@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderVertexDecl final : public BasicAssetLoader<ASSET_TYPE_VERTEXDECL, MaterialVertexDeclaration>
+    class AssetLoaderVertexDecl final : public BasicAssetLoader<AssetVertexDecl>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

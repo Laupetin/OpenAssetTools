@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderTracer final : public BasicAssetLoader<ASSET_TYPE_TRACER, TracerDef>
+    class AssetLoaderTracer final : public BasicAssetLoader<AssetTracer>
     {
         static bool
             LoadFromInfoString(const InfoString& infoString, const std::string& assetName, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone);

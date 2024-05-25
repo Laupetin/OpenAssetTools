@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderFx final : public BasicAssetLoader<ASSET_TYPE_FX, FxEffectDef>
+    class AssetLoaderFx final : public BasicAssetLoader<AssetFx>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

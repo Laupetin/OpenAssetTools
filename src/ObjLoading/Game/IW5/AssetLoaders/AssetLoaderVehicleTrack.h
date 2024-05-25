@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderVehicleTrack final : public BasicAssetLoader<ASSET_TYPE_VEHICLE_TRACK, VehicleTrack>
+    class AssetLoaderVehicleTrack final : public BasicAssetLoader<AssetVehicleTrack>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

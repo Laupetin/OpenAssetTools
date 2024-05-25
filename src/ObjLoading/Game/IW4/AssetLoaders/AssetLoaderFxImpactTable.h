@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderFxImpactTable final : public BasicAssetLoader<ASSET_TYPE_IMPACT_FX, FxImpactTable>
+    class AssetLoaderFxImpactTable final : public BasicAssetLoader<AssetImpactFx>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

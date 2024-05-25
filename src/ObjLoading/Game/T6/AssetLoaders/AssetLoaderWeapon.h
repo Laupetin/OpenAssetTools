@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderWeapon final : public BasicAssetLoader<ASSET_TYPE_WEAPON, WeaponVariantDef>
+    class AssetLoaderWeapon final : public BasicAssetLoader<AssetWeapon>
     {
         static void LinkWeaponFullDefSubStructs(WeaponFullDef* weapon);
 

@@ -7,7 +7,7 @@
 
 namespace IW4
 {
-    class AssetLoaderMenuList final : public BasicAssetLoader<ASSET_TYPE_MENULIST, MenuList>
+    class AssetLoaderMenuList final : public BasicAssetLoader<AssetMenuList>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

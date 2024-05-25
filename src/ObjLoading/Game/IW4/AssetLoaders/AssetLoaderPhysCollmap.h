@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderPhysCollmap final : public BasicAssetLoader<ASSET_TYPE_PHYSCOLLMAP, PhysCollmap>
+    class AssetLoaderPhysCollmap final : public BasicAssetLoader<AssetPhysCollMap>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

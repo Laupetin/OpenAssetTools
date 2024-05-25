@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderClipMap : public BasicAssetLoader<ASSET_TYPE_CLIPMAP, clipMap_t>
+    class AssetLoaderClipMap : public BasicAssetLoader<AssetClipMap>
     {
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
     };

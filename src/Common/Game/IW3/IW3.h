@@ -96,6 +96,7 @@ namespace IW3
     using AssetSoundCurve = Asset<ASSET_TYPE_SOUND_CURVE, SndCurve>;
     using AssetLoadedSound = Asset<ASSET_TYPE_LOADED_SOUND, LoadedSound>;
     using AssetClipMap = Asset<ASSET_TYPE_CLIPMAP, clipMap_t>;
+    using AssetClipMapPvs = Asset<ASSET_TYPE_CLIPMAP_PVS, clipMap_t>;
     using AssetComWorld = Asset<ASSET_TYPE_COMWORLD, ComWorld>;
     using AssetGameWorldSp = Asset<ASSET_TYPE_GAMEWORLD_SP, GameWorldSp>;
     using AssetGameWorldMp = Asset<ASSET_TYPE_GAMEWORLD_MP, GameWorldMp>;
@@ -107,7 +108,7 @@ namespace IW3
     using AssetMenu = Asset<ASSET_TYPE_MENU, menuDef_t>;
     using AssetLocalize = Asset<ASSET_TYPE_LOCALIZE_ENTRY, LocalizeEntry>;
     using AssetWeapon = Asset<ASSET_TYPE_WEAPON, WeaponDef>;
-    using AssetSndDriverGlobals = Asset<ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals>;
+    using AssetSoundDriverGlobals = Asset<ASSET_TYPE_SNDDRIVER_GLOBALS, SndDriverGlobals>;
     using AssetFx = Asset<ASSET_TYPE_FX, FxEffectDef>;
     using AssetImpactFx = Asset<ASSET_TYPE_IMPACT_FX, FxImpactTable>;
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;

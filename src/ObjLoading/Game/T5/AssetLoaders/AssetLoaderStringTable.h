@@ -6,7 +6,7 @@
 
 namespace T5
 {
-    class AssetLoaderStringTable final : public BasicAssetLoader<ASSET_TYPE_STRINGTABLE, StringTable>
+    class AssetLoaderStringTable final : public BasicAssetLoader<AssetStringTable>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

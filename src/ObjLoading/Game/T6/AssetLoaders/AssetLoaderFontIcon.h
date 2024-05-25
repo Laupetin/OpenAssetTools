@@ -11,7 +11,7 @@
 
 namespace T6
 {
-    class AssetLoaderFontIcon final : public BasicAssetLoader<ASSET_TYPE_FONTICON, FontIcon>
+    class AssetLoaderFontIcon final : public BasicAssetLoader<AssetFontIcon>
     {
         static constexpr unsigned ROW_INDEX = 0;
         static constexpr unsigned ROW_TYPE = 1;

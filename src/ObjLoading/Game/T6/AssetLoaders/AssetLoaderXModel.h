@@ -6,7 +6,7 @@
 
 namespace T6
 {
-    class AssetLoaderXModel final : public BasicAssetLoader<ASSET_TYPE_XMODEL, XModel>
+    class AssetLoaderXModel final : public BasicAssetLoader<AssetXModel>
     {
         static std::string GetFileNameForAsset(const std::string& assetName);
 

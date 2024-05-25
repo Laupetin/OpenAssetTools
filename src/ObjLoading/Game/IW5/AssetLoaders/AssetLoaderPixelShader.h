@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderPixelShader final : public BasicAssetLoader<ASSET_TYPE_PIXELSHADER, MaterialPixelShader>
+    class AssetLoaderPixelShader final : public BasicAssetLoader<AssetPixelShader>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderLeaderboard final : public BasicAssetLoader<ASSET_TYPE_LEADERBOARD, LeaderboardDef>
+    class AssetLoaderLeaderboard final : public BasicAssetLoader<AssetLeaderBoard>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

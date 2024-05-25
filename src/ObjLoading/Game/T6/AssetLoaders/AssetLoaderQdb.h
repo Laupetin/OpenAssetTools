@@ -6,7 +6,7 @@
 
 namespace T6
 {
-    class AssetLoaderQdb final : public BasicAssetLoader<ASSET_TYPE_QDB, Qdb>
+    class AssetLoaderQdb final : public BasicAssetLoader<AssetQdb>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

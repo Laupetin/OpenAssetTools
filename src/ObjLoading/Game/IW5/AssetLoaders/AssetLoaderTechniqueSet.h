@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderTechniqueSet final : public BasicAssetLoader<ASSET_TYPE_TECHNIQUE_SET, MaterialTechniqueSet>
+    class AssetLoaderTechniqueSet final : public BasicAssetLoader<AssetTechniqueSet>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

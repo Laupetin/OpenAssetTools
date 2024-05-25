@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderPhysConstraints final : public BasicAssetLoader<ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints>
+    class AssetLoaderPhysConstraints final : public BasicAssetLoader<AssetPhysConstraints>
     {
         static void CalculatePhysConstraintsFields(PhysConstraints* physConstraints, Zone* zone);
 

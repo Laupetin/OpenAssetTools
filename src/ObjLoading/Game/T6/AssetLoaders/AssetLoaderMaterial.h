@@ -6,7 +6,7 @@
 
 namespace T6
 {
-    class AssetLoaderMaterial final : public BasicAssetLoader<ASSET_TYPE_MATERIAL, Material>
+    class AssetLoaderMaterial final : public BasicAssetLoader<AssetMaterial>
     {
         static std::string GetFileNameForAsset(const std::string& assetName);
 

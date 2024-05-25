@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderXAnim final : public BasicAssetLoader<ASSET_TYPE_XANIMPARTS, XAnimParts>
+    class AssetLoaderXAnim final : public BasicAssetLoader<AssetXAnim>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

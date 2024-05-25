@@ -6,7 +6,7 @@
 
 namespace IW5
 {
-    class AssetLoaderMenuDef final : public BasicAssetLoader<ASSET_TYPE_MENU, menuDef_t>
+    class AssetLoaderMenuDef final : public BasicAssetLoader<AssetMenu>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

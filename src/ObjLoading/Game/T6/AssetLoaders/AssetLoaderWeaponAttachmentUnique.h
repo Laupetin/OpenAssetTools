@@ -7,7 +7,7 @@
 
 namespace T6
 {
-    class AssetLoaderWeaponAttachmentUnique final : public BasicAssetLoader<ASSET_TYPE_ATTACHMENT_UNIQUE, WeaponAttachmentUnique>
+    class AssetLoaderWeaponAttachmentUnique final : public BasicAssetLoader<AssetAttachmentUnique>
     {
         static void LinkAttachmentUniqueFullSubStructs(WeaponAttachmentUniqueFull* attachmentUnique);
         static bool CalculateAttachmentUniqueFields(const std::string& assetName, WeaponAttachmentUniqueFull* attachmentUnique);

@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderXModelSurfs final : public BasicAssetLoader<ASSET_TYPE_XMODEL_SURFS, XModelSurfs>
+    class AssetLoaderXModelSurfs final : public BasicAssetLoader<AssetXModelSurfs>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;

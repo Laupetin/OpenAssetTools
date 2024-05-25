@@ -11,11 +11,13 @@ public:
     }
 };
 
-template<asset_type_t AssetType, typename T> class BasicAssetLoader : public BasicAssetLoaderWithoutType<T>
+template<typename AssetType> class BasicAssetLoader : public BasicAssetLoaderWithoutType<typename AssetType::Type>
 {
 public:
+    static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
     _NODISCARD asset_type_t GetHandlingAssetType() const override
     {
-        return AssetType;
+        return AssetType::EnumEntry;
     }
 };

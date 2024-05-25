@@ -6,7 +6,7 @@
 
 namespace IW4
 {
-    class AssetLoaderGameWorldMp final : public BasicAssetLoader<ASSET_TYPE_GAMEWORLD_MP, GameWorldMp>
+    class AssetLoaderGameWorldMp final : public BasicAssetLoader<AssetGameWorldMp>
     {
     public:
         _NODISCARD void* CreateEmptyAsset(const std::string& assetName, MemoryManager* memory) override;
