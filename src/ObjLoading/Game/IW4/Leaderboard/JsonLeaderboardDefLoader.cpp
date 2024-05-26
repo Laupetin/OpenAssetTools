@@ -31,7 +31,7 @@ namespace
 
             if (type != "leaderboard" || version != 1u)
             {
-                std::cerr << "Tried to load leaderboard \"" << leaderboardDef.name << "\" but did not find expected type leaderboard of version 1\n";
+                std::cerr << std::format("Tried to load leaderboard \"{}\" but did not find expected type leaderboard of version 1\n", leaderboardDef.name);
                 return false;
             }
 
