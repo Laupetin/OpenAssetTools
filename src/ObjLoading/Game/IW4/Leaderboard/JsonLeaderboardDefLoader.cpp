@@ -3,6 +3,7 @@
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/Leaderboard/JsonLeaderboardDef.h"
 
+#include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
