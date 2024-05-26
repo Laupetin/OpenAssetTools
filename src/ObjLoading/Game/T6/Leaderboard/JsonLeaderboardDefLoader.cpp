@@ -58,7 +58,7 @@ namespace
             if (jColumn.dwColIndex)
                 lbColumnDef.dwColIndex = jColumn.dwColIndex.value();
             else
-                lbColumnDef.dwColIndex = 0;
+                lbColumnDef.dwColIndex = -1;
 
             if (jColumn.hidden)
                 lbColumnDef.hidden = jColumn.hidden.value();
