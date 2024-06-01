@@ -71,7 +71,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | FxImpactTable             | ❌              | ❌              |                                                                         |
 | RawFile                   | ✅              | ✅              |                                                                         |
 | StringTable               | ✅              | ✅              |                                                                         |
-| LeaderboardDef            | ✅              | ❌              |                                                                         |
+| LeaderboardDef            | ✅              | ✅              |                                                                         |
 | StructuredDataDefSet      | ✅              | ✅              | The format is custom due to lacking information about original format.  |
 | TracerDef                 | ✅              | ❌              |                                                                         |
 | VehicleDef                | ✅              | ❌              |                                                                         |
@@ -116,7 +116,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | RawFile                   | ✅              | ✅              |                                                                                                               |
 | ScriptFile                | ⁉️              | ⁉️              | Can only be dumped/loaded as binary. Editing is possible with [GSC-Tool](https://github.com/xensik/gsc-tool). |
 | StringTable               | ✅              | ✅              |                                                                                                               |
-| LeaderboardDef            | ✅              | ❌              |                                                                                                               |
+| LeaderboardDef            | ✅              | ✅              |                                                                                                               |
 | StructuredDataDefSet      | ❌              | ❌              |                                                                                                               |
 | TracerDef                 | ❌              | ❌              |                                                                                                               |
 | VehicleDef                | ❌              | ❌              |                                                                                                               |
@@ -194,7 +194,7 @@ The following section specify which assets are supported to be dumped to disk (u
 | FxImpactTable          | ❌              | ❌              |                                                                                                                                                                |
 | RawFile                | ✅              | ✅              |                                                                                                                                                                |
 | StringTable            | ✅              | ✅              |                                                                                                                                                                |
-| LeaderboardDef         | ✅              | ❌              |                                                                                                                                                                |
+| LeaderboardDef         | ✅              | ✅              |                                                                                                                                                                |
 | XGlobals               | ❌              | ❌              |                                                                                                                                                                |
 | ddlRoot_t              | ❌              | ❌              |                                                                                                                                                                |
 | Glasses                | ❌              | ❌              |                                                                                                                                                                |
