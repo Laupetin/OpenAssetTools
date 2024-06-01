@@ -7,8 +7,6 @@ namespace IW5
 {
     class AssetDumperLeaderboardDef final : public AbstractAssetDumper<LeaderboardDef>
     {
-        static std::string GetFileNameForAsset(const std::string& assetName);
-
     protected:
         _NODISCARD bool ShouldDump(XAssetInfo<LeaderboardDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset) override;
