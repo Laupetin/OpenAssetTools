@@ -42,10 +42,10 @@ namespace
         }
 
     private:
-        static bool CreateTrackTypeFlagsFromJson(const JsonLeaderboardDef& jLeaderboardDef, int& gameFlags)
+        static bool CreateTrackTypeFlagsFromJson(const JsonLeaderboardDef& jLeaderboardDef, int& trackTypeFlags)
         {
-            for (const auto gameFlag : jLeaderboardDef.trackTypes)
-                gameFlags |= gameFlag;
+            for (const auto trackType : jLeaderboardDef.trackTypes)
+                trackTypeFlags |= 1 << trackType;
 
             return true;
         }
