@@ -2,6 +2,7 @@
 
 #include "AssetLoaders/AssetLoaderFontIcon.h"
 #include "AssetLoaders/AssetLoaderGfxImage.h"
+#include "AssetLoaders/AssetLoaderLeaderboard.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderMaterial.h"
 #include "AssetLoaders/AssetLoaderPhysConstraints.h"
@@ -77,7 +78,7 @@ namespace T6
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetImpactFx>)
         REGISTER_ASSET_LOADER(AssetLoaderRawFile)
         REGISTER_ASSET_LOADER(AssetLoaderStringTable)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetLeaderboard>)
+        REGISTER_ASSET_LOADER(AssetLoaderLeaderboard)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXGlobals>)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetDDL>)
         REGISTER_ASSET_LOADER(BasicAssetLoader<AssetGlasses>)
