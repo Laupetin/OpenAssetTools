@@ -45,6 +45,7 @@ namespace
         {
             lbColumnDef.name = m_memory.Dup(jColumn.name.c_str());
 
+            lbColumnDef.id = jColumn.colId;
             lbColumnDef.propertyId = jColumn.propertyId.value_or(0);
             lbColumnDef.hidden = jColumn.hidden.value_or(false);
 
