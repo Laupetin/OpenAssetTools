@@ -53,15 +53,8 @@ namespace
         {
             lbColumnDef.name = m_memory.Dup(jColumn.name.c_str());
 
-            if (jColumn.propertyId)
-                lbColumnDef.propertyId = jColumn.propertyId.value();
-            else
-                lbColumnDef.propertyId = 0;
-
-            if (jColumn.hidden)
-                lbColumnDef.hidden = jColumn.hidden.value();
-            else
-                lbColumnDef.hidden = false;
+            lbColumnDef.propertyId = jColumn.propertyId.value_or(0);
+            lbColumnDef.hidden = jColumn.hidden.value_or(false);
 
             if (jColumn.statName)
                 lbColumnDef.statName = m_memory.Dup(jColumn.statName->c_str());
@@ -70,22 +63,12 @@ namespace
 
             lbColumnDef.type = jColumn.type;
 
-            if (jColumn.precision)
-                lbColumnDef.precision = jColumn.precision.value();
-            else
-                lbColumnDef.precision = 0;
+            lbColumnDef.precision = jColumn.precision.value_or(0);
 
             lbColumnDef.agg = jColumn.aggregationFunction;
 
-            if (jColumn.uiCalColX)
-                lbColumnDef.uiCalColX = jColumn.uiCalColX.value();
-            else
-                lbColumnDef.uiCalColX = 0;
-
-            if (jColumn.uiCalColY)
-                lbColumnDef.uiCalColY = jColumn.uiCalColY.value();
-            else
-                lbColumnDef.uiCalColY = 0;
+            lbColumnDef.uiCalColX = jColumn.uiCalColX.value_or(0);
+            lbColumnDef.uiCalColY = jColumn.uiCalColY.value_or(0);
 
             return true;
         }
@@ -94,15 +77,8 @@ namespace
         {
             leaderboardDef.id = jLeaderboardDef.id;
 
-            if (jLeaderboardDef.xpColId)
-                leaderboardDef.xpColId = jLeaderboardDef.xpColId.value();
-            else
-                leaderboardDef.xpColId = -1;
-
-            if (jLeaderboardDef.prestigeColId)
-                leaderboardDef.prestigeColId = jLeaderboardDef.prestigeColId.value();
-            else
-                leaderboardDef.prestigeColId = -1;
+            leaderboardDef.xpColId = jLeaderboardDef.xpColId.value_or(-1);
+            leaderboardDef.prestigeColId = jLeaderboardDef.prestigeColId.value_or(-1);
 
             if (!jLeaderboardDef.columns.empty())
             {
