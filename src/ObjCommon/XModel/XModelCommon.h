@@ -2,6 +2,7 @@
 
 #include "Utils/DistinctMapper.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ struct XModelQuaternion
 struct XModelBone
 {
     std::string name;
-    int parentIndex;
+    std::optional<unsigned> parentIndex;
     float scale[3];
     float globalOffset[3];
     float localOffset[3];
@@ -26,7 +27,7 @@ struct XModelBone
 
 struct XModelBoneWeight
 {
-    int boneIndex;
+    unsigned boneIndex;
     float weight;
 };
 
@@ -38,7 +39,7 @@ struct XModelVertexBoneWeightCollection
 struct XModelVertexBoneWeights
 {
     const XModelBoneWeight* weights;
-    size_t weightCount;
+    unsigned weightCount;
 };
 
 struct XModelVertex
@@ -51,7 +52,7 @@ struct XModelVertex
 
 struct XModelFace
 {
-    int vertexIndex[3];
+    unsigned vertexIndex[3];
 };
 
 struct XModelMaterial
@@ -97,7 +98,7 @@ struct XModelMaterial
 struct XModelObject
 {
     std::string name;
-    int materialIndex;
+    unsigned materialIndex;
     std::vector<XModelFace> m_faces;
 };
 

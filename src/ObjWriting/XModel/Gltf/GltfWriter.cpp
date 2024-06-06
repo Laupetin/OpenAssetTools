@@ -227,9 +227,9 @@ namespace
 
                 Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
                 Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
-                if (bone.parentIndex >= 0)
+                if (bone.parentIndex)
                 {
-                    const auto& parentBone = xmodel.m_bones[bone.parentIndex];
+                    const auto& parentBone = xmodel.m_bones[*bone.parentIndex];
                     const auto inverseParentRotation =
                         Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.z, -parentBone.globalRotation.y)
                             .normalized()
@@ -249,7 +249,7 @@ namespace
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
-                    if (xmodel.m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
+                    if (xmodel.m_bones[maybeChildIndex].parentIndex && *xmodel.m_bones[maybeChildIndex].parentIndex == boneIndex)
                         children.emplace_back(maybeChildIndex + m_first_bone_node);
                 }
                 if (!children.empty())
