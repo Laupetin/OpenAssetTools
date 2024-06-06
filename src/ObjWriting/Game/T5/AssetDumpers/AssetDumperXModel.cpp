@@ -111,10 +111,10 @@ namespace
             else
                 bone.name = "INVALID_BONE_NAME";
 
-            if (boneNum < model->numRootBones)
-                bone.parentIndex = -1;
+            if (boneNum >= model->numRootBones)
+                bone.parentIndex = boneNum - static_cast<unsigned int>(model->parentList[boneNum - model->numRootBones]);
             else
-                bone.parentIndex = static_cast<int>(boneNum - static_cast<unsigned int>(model->parentList[boneNum - model->numRootBones]));
+                bone.parentIndex = std::nullopt;
 
             bone.scale[0] = 1.0f;
             bone.scale[1] = 1.0f;
@@ -296,7 +296,7 @@ namespace
                     const auto& vertList = surface.vertList[vertListIndex];
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
 
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{static_cast<int>(vertList.boneOffset / sizeof(DObjSkelMat)), 1.0f};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{vertList.boneOffset / sizeof(DObjSkelMat), 1.0f};
 
                     for (auto vertListVertexOffset = 0u; vertListVertexOffset < vertList.vertCount; vertListVertexOffset++)
                     {
@@ -313,7 +313,7 @@ namespace
                 for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[0]; vertIndex++)
                 {
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
-                    const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
+                    const auto boneIndex0 = surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat);
                     weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, 1.0f};
 
                     vertsBlendOffset += 1;
@@ -325,8 +325,8 @@ namespace
                 for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[1]; vertIndex++)
                 {
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
-                    const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
-                    const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
+                    const auto boneIndex0 = surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat);
+                    const auto boneIndex1 = surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat);
                     const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
                     const auto boneWeight0 = 1.0f - boneWeight1;
 
@@ -342,10 +342,10 @@ namespace
                 for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[2]; vertIndex++)
                 {
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
-                    const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
-                    const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
+                    const auto boneIndex0 = surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat);
+                    const auto boneIndex1 = surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat);
                     const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
-                    const auto boneIndex2 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat));
+                    const auto boneIndex2 = surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat);
                     const auto boneWeight2 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
                     const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2;
 
@@ -362,12 +362,12 @@ namespace
                 for (auto vertIndex = 0; vertIndex < surface.vertInfo.vertCount[3]; vertIndex++)
                 {
                     const auto* boneWeightOffset = &weightCollection.weights[weightOffset];
-                    const auto boneIndex0 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat));
-                    const auto boneIndex1 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat));
+                    const auto boneIndex0 = surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat);
+                    const auto boneIndex1 = surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat);
                     const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
-                    const auto boneIndex2 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat));
+                    const auto boneIndex2 = surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat);
                     const auto boneWeight2 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
-                    const auto boneIndex3 = static_cast<int>(surface.vertInfo.vertsBlend[vertsBlendOffset + 5] / sizeof(DObjSkelMat));
+                    const auto boneIndex3 = surface.vertInfo.vertsBlend[vertsBlendOffset + 5] / sizeof(DObjSkelMat);
                     const auto boneWeight3 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 6]);
                     const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2 - boneWeight3;
 
