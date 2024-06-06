@@ -46,10 +46,10 @@ protected:
         for (const auto& bone : xmodel.m_bones)
         {
             m_stream << "BONE " << boneNum << " ";
-            if (bone.parentIndex < 0)
-                m_stream << "-1";
+            if (bone.parentIndex)
+                m_stream << *bone.parentIndex;
             else
-                m_stream << bone.parentIndex;
+                m_stream << "-1";
 
             m_stream << " \"" << bone.name << "\"\n";
             boneNum++;
