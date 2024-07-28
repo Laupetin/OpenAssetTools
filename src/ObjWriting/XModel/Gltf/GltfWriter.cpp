@@ -496,14 +496,15 @@ namespace
                 auto* weights = reinterpret_cast<float*>(&bufferData[currentBufferOffset + sizeof(uint8_t) * 4u * xmodel.m_vertex_bone_weights.size()]);
                 for (const auto& commonVertexWeights : xmodel.m_vertex_bone_weights)
                 {
-                    assert(commonVertexWeights.weights != nullptr);
+                    assert(commonVertexWeights.weightOffset < xmodel.m_bone_weight_data.weights.size());
                     assert(commonVertexWeights.weightCount <= 4u);
 
                     const auto commonVertexWeightCount = std::min(commonVertexWeights.weightCount, 4u);
+                    const auto* commonVertexWeightData = &xmodel.m_bone_weight_data.weights[commonVertexWeights.weightOffset];
                     for (auto i = 0u; i < commonVertexWeightCount; i++)
                     {
-                        joints[i] = static_cast<unsigned char>(commonVertexWeights.weights[i].boneIndex);
-                        weights[i] = commonVertexWeights.weights[i].weight;
+                        joints[i] = static_cast<unsigned char>(commonVertexWeightData[i].boneIndex);
+                        weights[i] = commonVertexWeightData[i].weight;
                     }
 
                     for (auto i = commonVertexWeightCount; i < 4u; i++)
