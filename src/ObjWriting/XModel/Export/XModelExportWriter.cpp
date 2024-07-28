@@ -18,12 +18,16 @@ protected:
         auto vertexOffset = 0u;
         for (const auto& vertex : xmodel.m_vertices)
         {
-            XModelVertexBoneWeights weights{nullptr, 0};
+            XModelVertexBoneWeights weights{0, 0};
 
             if (vertexOffset < xmodel.m_vertex_bone_weights.size())
                 weights = xmodel.m_vertex_bone_weights[vertexOffset];
 
-            m_vertex_merger.Add(VertexMergerPos{vertex.coordinates[0], vertex.coordinates[1], vertex.coordinates[2], weights.weights, weights.weightCount});
+            m_vertex_merger.Add(VertexMergerPos{vertex.coordinates[0],
+                                                vertex.coordinates[1],
+                                                vertex.coordinates[2],
+                                                &xmodel.m_bone_weight_data.weights[weights.weightOffset],
+                                                weights.weightCount});
 
             vertexOffset++;
         }

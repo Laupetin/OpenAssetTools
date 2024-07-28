@@ -38,7 +38,7 @@ struct XModelVertexBoneWeightCollection
 
 struct XModelVertexBoneWeights
 {
-    const XModelBoneWeight* weights;
+    unsigned weightOffset;
     unsigned weightCount;
 };
 
