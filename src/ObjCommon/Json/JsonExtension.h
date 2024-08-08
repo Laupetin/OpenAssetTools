@@ -18,7 +18,7 @@ namespace nlohmann
     template<class T> void optional_from_json(const nlohmann::json& j, const char* name, std::optional<T>& value)
     {
         const auto it = j.find(name);
-        if (it != j.end())
+        if (it != j.end() && !it->is_null())
             value = it->get<T>();
         else
             value = std::nullopt;
