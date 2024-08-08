@@ -44,8 +44,17 @@ namespace
                 return false;
             }
 
-            const auto jAttachment = jRoot.get<JsonWeaponAttachment>();
-            return CreateWeaponAttachmentFromJson(jAttachment, attachment);
+            try
+            {
+                const auto jAttachment = jRoot.get<JsonWeaponAttachment>();
+                return CreateWeaponAttachmentFromJson(jAttachment, attachment);
+            }
+            catch (const json::exception& e)
+            {
+                std::cerr << std::format("Failed to parse json of attachment: {}\n", e.what());
+            }
+
+            return false;
         }
 
     private:
