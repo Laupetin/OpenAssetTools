@@ -39,8 +39,17 @@ namespace
                 return false;
             }
 
-            const auto jWeaponCamo = jRoot.get<JsonWeaponCamo>();
-            return CreateWeaponCamoFromJson(jWeaponCamo, weaponCamo);
+            try
+            {
+                const auto jWeaponCamo = jRoot.get<JsonWeaponCamo>();
+                return CreateWeaponCamoFromJson(jWeaponCamo, weaponCamo);
+            }
+            catch (const json::exception& e)
+            {
+                std::cerr << std::format("Failed to parse json of weapon camo: {}\n", e.what());
+            }
+
+            return false;
         }
 
     private:
