@@ -39,8 +39,17 @@ namespace
                 return false;
             }
 
-            const auto jMaterial = jRoot.get<JsonMaterial>();
-            return CreateMaterialFromJson(jMaterial, material);
+            try
+            {
+                const auto jMaterial = jRoot.get<JsonMaterial>();
+                return CreateMaterialFromJson(jMaterial, material);
+            }
+            catch (const json::exception& e)
+            {
+                std::cerr << std::format("Failed to parse json of material: {}\n", e.what());
+            }
+
+            return false;
         }
 
     private:
