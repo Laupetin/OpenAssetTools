@@ -40,8 +40,17 @@ namespace
                 return false;
             }
 
-            const auto jXModel = jRoot.get<JsonXModel>();
-            return CreateXModelFromJson(jXModel, xmodel);
+            try
+            {
+                const auto jXModel = jRoot.get<JsonXModel>();
+                return CreateXModelFromJson(jXModel, xmodel);
+            }
+            catch (const json::exception& e)
+            {
+                std::cerr << std::format("Failed to parse json of xmodel: {}\n", e.what());
+            }
+
+            return false;
         }
 
     private:
