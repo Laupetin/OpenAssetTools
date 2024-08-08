@@ -36,8 +36,17 @@ namespace
                 return false;
             }
 
-            const auto jLeaderboard = jRoot.get<JsonLeaderboardDef>();
-            return CreateLeaderboardFromJson(jLeaderboard, leaderboardDef);
+            try
+            {
+                const auto jLeaderboard = jRoot.get<JsonLeaderboardDef>();
+                return CreateLeaderboardFromJson(jLeaderboard, leaderboardDef);
+            }
+            catch (const json::exception& e)
+            {
+                std::cerr << std::format("Failed to parse json of leaderboard: {}\n", e.what());
+            }
+
+            return false;
         }
 
     private:
