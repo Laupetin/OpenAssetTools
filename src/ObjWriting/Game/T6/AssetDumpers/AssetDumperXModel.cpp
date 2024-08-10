@@ -246,29 +246,14 @@ namespace
             for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
             {
                 const auto& v = surface.verts0[vertexIndex];
-                vec2_t uv{};
-                vec3_t normalVec{};
-                vec3_t tangentVec{};
-                vec4_t color{};
-
-                Common::Vec2UnpackTexCoords(v.texCoord, &uv);
-                Common::Vec3UnpackUnitVec(v.normal, &normalVec);
-                Common::Vec3UnpackUnitVec(v.tangent, &tangentVec);
-                Common::Vec4UnpackGfxColor(v.color, &color);
 
                 XModelVertex vertex{};
                 vertex.coordinates[0] = v.xyz.x;
                 vertex.coordinates[1] = v.xyz.y;
                 vertex.coordinates[2] = v.xyz.z;
-                vertex.normal[0] = normalVec.x;
-                vertex.normal[1] = normalVec.y;
-                vertex.normal[2] = normalVec.z;
-                vertex.color[0] = color.x;
-                vertex.color[1] = color.y;
-                vertex.color[2] = color.z;
-                vertex.color[3] = color.w;
-                vertex.uv[0] = uv.x;
-                vertex.uv[1] = uv.y;
+                Common::Vec3UnpackUnitVec(v.normal, vertex.normal);
+                Common::Vec4UnpackGfxColor(v.color, vertex.color);
+                Common::Vec2UnpackTexCoords(v.texCoord, vertex.uv);
 
                 out.m_vertices.emplace_back(vertex);
             }
