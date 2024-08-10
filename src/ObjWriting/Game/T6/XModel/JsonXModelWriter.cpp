@@ -61,7 +61,7 @@ namespace
             }
         }
 
-        void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel) const
+        static void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel)
         {
             if (xmodel.collLod >= 0)
                 jXModel.collLod = xmodel.collLod;
@@ -70,6 +70,7 @@ namespace
             {
                 JsonXModelLod lod;
                 lod.file = std::format("model_export/{}_lod{}{}", xmodel.name, lodNumber, GetExtensionForModelByConfig());
+                lod.distance = xmodel.lodInfo[lodNumber].dist;
 
                 jXModel.lods.emplace_back(std::move(lod));
             }

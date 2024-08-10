@@ -464,8 +464,10 @@ namespace
                     return false;
             }
 
-            xmodel.lodInfo[lodNumber].surfIndex = static_cast<uint16_t>(m_surfaces.size());
-            xmodel.lodInfo[lodNumber].numsurfs = static_cast<uint16_t>(common->m_objects.size());
+            auto& lodInfo = xmodel.lodInfo[lodNumber];
+            lodInfo.dist = jLod.distance;
+            lodInfo.surfIndex = static_cast<uint16_t>(m_surfaces.size());
+            lodInfo.numsurfs = static_cast<uint16_t>(common->m_objects.size());
 
             return std::ranges::all_of(common->m_objects,
                                        [this, &common](const XModelObject& commonObject)

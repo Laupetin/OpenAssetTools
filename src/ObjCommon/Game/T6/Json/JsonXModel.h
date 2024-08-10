@@ -16,9 +16,10 @@ namespace T6
     {
     public:
         std::string file;
+        float distance;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModelLod, file);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModelLod, file, distance);
 
     class JsonXModel
     {
