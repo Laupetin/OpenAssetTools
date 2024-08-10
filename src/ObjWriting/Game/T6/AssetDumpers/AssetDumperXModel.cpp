@@ -133,15 +133,6 @@ namespace
             bone.scale[1] = 1.0f;
             bone.scale[2] = 1.0f;
 
-            if (model->partClassification[boneNum])
-            {
-                if (boneNum < model->numRootBones
-                    || model->partClassification[boneNum - model->parentList[boneNum - model->numRootBones]] != model->partClassification[boneNum])
-                {
-                    std::cerr << std::format("Part: {:02} = {}\n", model->partClassification[boneNum], bone.name);
-                }
-            }
-
             const auto& baseMat = model->baseMat[boneNum];
             bone.globalOffset[0] = baseMat.trans.x;
             bone.globalOffset[1] = baseMat.trans.y;
