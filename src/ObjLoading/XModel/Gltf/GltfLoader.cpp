@@ -267,12 +267,21 @@ namespace
                 unsigned joints[4];
                 float weights[4];
 
-                if (!positionAccessor->GetFloatVec3(vertexIndex, vertex.coordinates) || !normalAccessor->GetFloatVec3(vertexIndex, vertex.normal)
+                float coordinates[3];
+                float normal[3];
+                if (!positionAccessor->GetFloatVec3(vertexIndex, coordinates) || !normalAccessor->GetFloatVec3(vertexIndex, normal)
                     || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color) || !colorAccessor->GetFloatVec2(vertexIndex, vertex.uv)
                     || !jointsAccessor->GetUnsignedVec4(vertexIndex, joints) || !weightsAccessor->GetFloatVec4(vertexIndex, weights))
                 {
                     return false;
                 }
+
+                vertex.coordinates[0] = coordinates[0];
+                vertex.coordinates[1] = -coordinates[2];
+                vertex.coordinates[2] = coordinates[1];
+                vertex.normal[0] = normal[0];
+                vertex.normal[1] = -normal[2];
+                vertex.normal[2] = normal[1];
 
                 common.m_vertices.emplace_back(vertex);
 

@@ -479,15 +479,49 @@ namespace
                                        });
         }
 
+        static void CalculateModelBounds(XModel& xmodel)
+        {
+            if (!xmodel.surfs)
+                return;
+
+            for (auto surfaceIndex = 0u; surfaceIndex < xmodel.lodInfo[0].numsurfs; surfaceIndex++)
+            {
+                const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
+
+                if (!surface.verts0)
+                    continue;
+
+                for (auto vertIndex = 0u; vertIndex < surface.vertCount; vertIndex++)
+                {
+                    const auto& vertex = surface.verts0[vertIndex];
+
+                    xmodel.mins.x = std::min(xmodel.mins.x, vertex.xyz.v[0]);
+                    xmodel.mins.y = std::min(xmodel.mins.y, vertex.xyz.v[1]);
+                    xmodel.mins.z = std::min(xmodel.mins.z, vertex.xyz.v[2]);
+                    xmodel.maxs.x = std::max(xmodel.maxs.x, vertex.xyz.v[0]);
+                    xmodel.maxs.y = std::max(xmodel.maxs.y, vertex.xyz.v[1]);
+                    xmodel.maxs.z = std::max(xmodel.maxs.z, vertex.xyz.v[2]);
+                }
+            }
+
+            const auto maxX = std::max(std::abs(xmodel.mins.x), std::abs(xmodel.maxs.x));
+            const auto maxY = std::max(std::abs(xmodel.mins.y), std::abs(xmodel.maxs.y));
+            const auto maxZ = std::max(std::abs(xmodel.mins.z), std::abs(xmodel.maxs.z));
+            xmodel.radius = Eigen::Vector3f(maxX, maxY, maxZ).norm();
+        }
+
         bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel)
         {
             auto lodNumber = 0u;
             for (const auto& jLod : jXModel.lods)
                 LoadLod(jLod, xmodel, lodNumber++);
+            xmodel.numLods = static_cast<uint16_t>(jXModel.lods.size());
 
             xmodel.numsurfs = static_cast<unsigned char>(m_surfaces.size());
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
             memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
+
+            CalculateModelBounds(xmodel);
 
             if (jXModel.collLod && jXModel.collLod.value() >= 0)
             {
