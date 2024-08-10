@@ -469,14 +469,27 @@ namespace
             lodInfo.surfIndex = static_cast<uint16_t>(m_surfaces.size());
             lodInfo.numsurfs = static_cast<uint16_t>(common->m_objects.size());
 
+            std::vector<Material*> materialAssets;
+            materialAssets.reserve(common->m_materials.size());
+            for (const auto& commonMaterial : common->m_materials)
+            {
+                auto* assetInfo = m_manager.LoadDependency<AssetMaterial>(commonMaterial.name);
+                if (!assetInfo)
+                    return false;
+
+                m_dependencies.emplace(assetInfo);
+                materialAssets.push_back(assetInfo->Asset());
+            }
+
             return std::ranges::all_of(common->m_objects,
-                                       [this, &common](const XModelObject& commonObject)
+                                       [this, &common, &materialAssets](const XModelObject& commonObject)
                                        {
                                            XSurface surface{};
                                            if (!CreateXSurface(surface, commonObject, *common))
                                                return false;
 
                                            m_surfaces.emplace_back(surface);
+                                           m_materials.push_back(materialAssets[commonObject.materialIndex]);
                                            return true;
                                        });
         }
@@ -521,7 +534,9 @@ namespace
 
             xmodel.numsurfs = static_cast<unsigned char>(m_surfaces.size());
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
+            xmodel.materialHandles = m_memory.Alloc<Material*>(xmodel.numsurfs);
             memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
+            memcpy(xmodel.materialHandles, m_materials.data(), sizeof(Material*) * xmodel.numsurfs);
 
             CalculateModelBounds(xmodel);
 
@@ -579,6 +594,7 @@ namespace
         }
 
         std::vector<XSurface> m_surfaces;
+        std::vector<Material*> m_materials;
 
         std::istream& m_stream;
         MemoryManager& m_memory;
