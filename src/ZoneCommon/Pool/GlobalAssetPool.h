@@ -171,7 +171,8 @@ public:
 
     static XAssetInfo<T>* GetAssetByName(const std::string& name)
     {
-        const auto foundEntry = m_assets.find(name);
+        const auto normalizedName = XAssetInfo<T>::NormalizeAssetName(name);
+        const auto foundEntry = m_assets.find(normalizedName);
         if (foundEntry == m_assets.end())
             return nullptr;
 
