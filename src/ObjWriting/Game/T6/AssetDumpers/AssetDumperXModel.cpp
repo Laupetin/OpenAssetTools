@@ -136,7 +136,7 @@ namespace
             if (model->partClassification[boneNum])
             {
                 if (boneNum < model->numRootBones
-                    || model->partClassification[model->parentList[boneNum - model->numRootBones]] != model->partClassification[boneNum])
+                    || model->partClassification[boneNum - model->parentList[boneNum - model->numRootBones]] != model->partClassification[boneNum])
                 {
                     std::cerr << std::format("Part: {:02} = {}\n", model->partClassification[boneNum], bone.name);
                 }

@@ -314,10 +314,13 @@ namespace
                 // Other boneInfo data is filled when calculating bone bounds
                 xmodel.boneInfo[boneIndex].collmap = -1;
 
-                if (xmodel.numRootBones < boneIndex)
+                if (xmodel.numRootBones <= boneIndex)
                 {
                     const auto nonRootIndex = boneIndex - xmodel.numRootBones;
-                    xmodel.parentList[nonRootIndex] = static_cast<unsigned char>(bone.parentIndex.value_or(0u));
+                    const auto parentBoneIndex = static_cast<unsigned char>(bone.parentIndex.value_or(0u));
+                    assert(parentBoneIndex < boneIndex);
+
+                    xmodel.parentList[nonRootIndex] = static_cast<unsigned char>(boneIndex - parentBoneIndex);
 
                     auto& trans = xmodel.trans[nonRootIndex];
                     trans.x = bone.localOffset[0];
