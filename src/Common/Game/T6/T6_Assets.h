@@ -2749,7 +2749,12 @@ namespace T6
         float* tensionData;
     };
 
-    typedef tdef_align(16) unsigned short r_index16_t;
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align(16) XSurfaceTri XSurfaceTri16;
 
     struct type_align(16) XSurface
     {
@@ -2759,13 +2764,13 @@ namespace T6
         uint16_t vertCount;
         uint16_t triCount;
         uint16_t baseVertIndex;
-        r_index16_t(*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         void /*ID3D11Buffer*/* vb0;
         XRigidVertList* vertList;
         void /*ID3D11Buffer*/* indexBuffer;
-        int partBits[5];
+        unsigned int partBits[5];
     };
 
     struct XModelCollSurf_s

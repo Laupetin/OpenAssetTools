@@ -424,9 +424,9 @@ namespace
                 const auto& tri = surface.triIndices[triIndex];
 
                 XModelFace face{};
-                face.vertexIndex[0] = tri[0] + surface.baseVertIndex;
-                face.vertexIndex[1] = tri[1] + surface.baseVertIndex;
-                face.vertexIndex[2] = tri[2] + surface.baseVertIndex;
+                face.vertexIndex[0] = tri.i[0] + surface.baseVertIndex;
+                face.vertexIndex[1] = tri.i[1] + surface.baseVertIndex;
+                face.vertexIndex[2] = tri.i[2] + surface.baseVertIndex;
                 object.m_faces.emplace_back(face);
             }
         }

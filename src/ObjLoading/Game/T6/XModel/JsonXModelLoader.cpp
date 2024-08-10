@@ -20,6 +20,7 @@
 #include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <numeric>
 #include <vector>
 
 using namespace nlohmann;
@@ -412,13 +413,166 @@ namespace
             vertex.tangent = Common::Vec3PackUnitVec(wrongTangent); // TODO: Fill with actual value
         }
 
+        static size_t GetRigidBoneForVertex(const size_t vertexIndex, const XModelCommon& common)
+        {
+            return common.m_bone_weight_data.weights[common.m_vertex_bone_weights[vertexIndex].weightOffset].boneIndex;
+        }
+
+        static std::vector<std::optional<size_t>>
+            GetRigidBoneIndicesForTris(const std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        {
+            std::vector<std::optional<size_t>> rigidBoneIndexForTri;
+            rigidBoneIndexForTri.reserve(surface.triCount);
+            for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
+            {
+                const auto& tri = surface.triIndices[triIndex];
+                const auto vert0Bone = GetRigidBoneForVertex(vertexIndices[tri.i[0]], common);
+                const auto vert1Bone = GetRigidBoneForVertex(vertexIndices[tri.i[1]], common);
+                const auto vert2Bone = GetRigidBoneForVertex(vertexIndices[tri.i[2]], common);
+
+                const auto hasSameBone = vert0Bone == vert1Bone && vert1Bone == vert2Bone;
+                if (hasSameBone)
+                    rigidBoneIndexForTri.emplace_back(vert0Bone);
+                else
+                    rigidBoneIndexForTri.emplace_back(std::nullopt);
+            }
+
+            return rigidBoneIndexForTri;
+        }
+
+        static void ReorderRigidTrisByBoneIndex(const std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        {
+            const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
+
+            std::vector<size_t> triSortList(surface.triCount);
+            std::ranges::iota(triSortList, 0);
+
+            std::ranges::sort(triSortList,
+                              [&rigidBoneIndexForTri](const size_t triIndex0, const size_t triIndex1)
+                              {
+                                  const auto rigidBone0 = rigidBoneIndexForTri[triIndex0];
+                                  const auto rigidBone1 = rigidBoneIndexForTri[triIndex1];
+
+                                  if (rigidBone0.has_value() != rigidBone1.has_value())
+                                      return rigidBone0.has_value();
+                                  if (!rigidBone0.has_value())
+                                      return true;
+
+                                  return *rigidBone0 < *rigidBone1;
+                              });
+
+            std::vector<std::remove_pointer_t<decltype(XSurface::triIndices)>> sortedTris(surface.triCount);
+            for (auto i = 0u; i < surface.triCount; i++)
+                memcpy(&sortedTris[i], &surface.triIndices[triSortList[i]], sizeof(std::remove_pointer_t<decltype(XSurface::triIndices)>));
+            memcpy(surface.triIndices, sortedTris.data(), sizeof(std::remove_pointer_t<decltype(XSurface::triIndices)>) * surface.triCount);
+        }
+
+        void CreateVertListData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
+        {
+            ReorderRigidTrisByBoneIndex(vertexIndices, surface, common);
+            const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
+
+            std::vector<XRigidVertList> vertLists;
+
+            auto currentVertexTail = 0u;
+            auto currentTriTail = 0u;
+
+            const auto vertexCount = vertexIndices.size();
+            const auto triCount = static_cast<size_t>(surface.triCount);
+            const auto boneCount = common.m_bones.size();
+            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
+            {
+                XRigidVertList boneVertList{};
+                boneVertList.boneOffset = static_cast<uint16_t>(boneIndex * sizeof(DObjSkelMat));
+
+                auto currentVertexHead = currentVertexTail;
+                while (currentVertexHead < vertexCount && GetRigidBoneForVertex(currentVertexHead, common) == boneIndex)
+                    currentVertexHead++;
+
+                auto currentTriHead = currentTriTail;
+                while (currentTriHead < triCount && rigidBoneIndexForTri[currentTriHead] && *rigidBoneIndexForTri[currentTriHead] == boneIndex)
+                    currentTriHead++;
+
+                boneVertList.vertCount = static_cast<uint16_t>(currentVertexHead - currentVertexTail);
+                boneVertList.triOffset = static_cast<uint16_t>(currentTriTail);
+                boneVertList.triCount = static_cast<uint16_t>(currentTriHead - currentTriTail);
+
+                if (boneVertList.triCount > 0 || boneVertList.vertCount > 0)
+                {
+                    boneVertList.collisionTree = nullptr; // TODO
+                    vertLists.emplace_back(boneVertList);
+
+                    currentVertexTail = currentVertexHead;
+                    currentTriTail = currentTriHead;
+                }
+            }
+
+            if (!vertLists.empty())
+            {
+                surface.vertListCount = static_cast<unsigned char>(vertLists.size());
+                surface.vertList = m_memory.Alloc<XRigidVertList>(surface.vertListCount);
+
+                memcpy(surface.vertList, vertLists.data(), sizeof(XRigidVertList) * surface.vertListCount);
+            }
+        }
+
+        void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
+        {
+            // TODO
+            assert(false);
+        }
+
+        static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        {
+            if (common.m_vertex_bone_weights.empty())
+                return;
+
+            const auto vertexCount = vertexIndices.size();
+            std::vector<size_t> reorderLookup(vertexCount);
+            std::ranges::iota(reorderLookup, 0);
+
+            std::ranges::sort(reorderLookup,
+                              [&common, &vertexIndices](const size_t& i0, const size_t& i1)
+                              {
+                                  const auto& weights0 = common.m_vertex_bone_weights[vertexIndices[i0]];
+                                  const auto& weights1 = common.m_vertex_bone_weights[vertexIndices[i1]];
+
+                                  if (weights0.weightCount < weights1.weightCount)
+                                      return true;
+
+                                  // If there is only one weight, make sure all vertices of the same bone follow another
+                                  if (weights0.weightCount == 1)
+                                  {
+                                      const auto bone0 = common.m_bone_weight_data.weights[weights0.weightOffset].boneIndex;
+                                      const auto bone1 = common.m_bone_weight_data.weights[weights1.weightOffset].boneIndex;
+                                      return bone0 < bone1;
+                                  }
+
+                                  return false;
+                              });
+
+            for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
+            {
+                auto& triIndices = surface.triIndices[triIndex];
+
+                triIndices.i[0] = static_cast<uint16_t>(reorderLookup[triIndices.i[0]]);
+                triIndices.i[1] = static_cast<uint16_t>(reorderLookup[triIndices.i[1]]);
+                triIndices.i[2] = static_cast<uint16_t>(reorderLookup[triIndices.i[2]]);
+            }
+
+            for (auto& entry : reorderLookup)
+                entry = vertexIndices[entry];
+
+            vertexIndices = std::move(reorderLookup);
+        }
+
         bool CreateXSurface(XSurface& surface, const XModelObject& commonObject, const XModelCommon& common)
         {
-            std::vector<GfxPackedVertex> verts;
+            std::vector<size_t> vertexIndices;
             std::unordered_map<size_t, size_t> usedVertices;
 
             surface.triCount = static_cast<uint16_t>(commonObject.m_faces.size());
-            surface.triIndices = m_memory.Alloc<r_index16_t[3]>(commonObject.m_faces.size());
+            surface.triIndices = m_memory.Alloc<XSurfaceTri>(commonObject.m_faces.size());
 
             const auto faceCount = commonObject.m_faces.size();
             for (auto faceIndex = 0u; faceIndex < faceCount; faceIndex++)
@@ -432,25 +586,46 @@ namespace
                     const auto existingVertex = usedVertices.find(vertexIndex);
                     if (existingVertex == usedVertices.end())
                     {
-                        const auto newVertexIndex = verts.size();
-                        tris[faceVertexIndex] = static_cast<r_index16_t>(newVertexIndex);
+                        const auto newVertexIndex = vertexIndices.size();
+                        tris.i[faceVertexIndex] = static_cast<uint16_t>(newVertexIndex);
 
-                        const auto& commonVertex = common.m_vertices[vertexIndex];
-                        GfxPackedVertex vertex{};
-
-                        CreateVertex(vertex, commonVertex);
-
-                        verts.emplace_back(vertex);
+                        vertexIndices.emplace_back(vertexIndex);
                         usedVertices.emplace(vertexIndex, newVertexIndex);
                     }
                     else
-                        tris[faceVertexIndex] = static_cast<r_index16_t>(existingVertex->second);
+                        tris.i[faceVertexIndex] = static_cast<uint16_t>(existingVertex->second);
                 }
             }
 
-            surface.vertCount = static_cast<uint16_t>(verts.size());
-            surface.verts0 = m_memory.Alloc<GfxPackedVertex>(verts.size());
-            memcpy(surface.verts0, verts.data(), sizeof(GfxPackedVertex) * verts.size());
+            ReorderVerticesByWeightCount(vertexIndices, surface, common);
+
+            const auto vertexCount = vertexIndices.size();
+            surface.vertCount = static_cast<uint16_t>(vertexCount);
+            surface.verts0 = m_memory.Alloc<GfxPackedVertex>(vertexCount);
+
+            for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
+            {
+                const auto& commonVertex = common.m_vertices[vertexIndex];
+                CreateVertex(surface.verts0[vertexIndex], commonVertex);
+            }
+
+            if (!common.m_vertex_bone_weights.empty())
+            {
+                // Since bone weights are sorted by weight count, the last must have the highest weight count
+                const auto hasVertsBlend = common.m_vertex_bone_weights[vertexIndices[vertexIndices.size() - 1]].weightCount > 1;
+                if (!hasVertsBlend)
+                    CreateVertListData(surface, vertexIndices, common);
+                else
+                    CreateVertsBlendData(surface, vertexIndices, common);
+            }
+
+            const auto boneCount = common.m_bones.size();
+            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
+            {
+                const auto partBitsIndex = boneIndex / 32u;
+                const auto shiftValue = 31u - (boneIndex % 32u);
+                surface.partBits[partBitsIndex] = 1 << (31u - shiftValue);
+            }
 
             return true;
         }
