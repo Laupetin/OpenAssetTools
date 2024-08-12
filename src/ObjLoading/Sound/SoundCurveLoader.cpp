@@ -3,7 +3,6 @@
 #include "Parsing/Graph2D/Graph2DReader.h"
 
 #include <format>
-#include <iostream>
 
 namespace sound_curve
 {
@@ -14,7 +13,6 @@ namespace sound_curve
         const auto file = searchPath->Open(fileName);
         if (!file.IsOpen())
         {
-            std::cerr << std::format("Failed to open file for sound curve \"{}\"\n", soundCurveName);
             return nullptr;
         }
 
