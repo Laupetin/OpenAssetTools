@@ -377,6 +377,7 @@ class LinkerImpl final : public Linker
             return nullptr;
         if (!GetGameNameFromZoneDefinition(context->m_game_name, targetName, zoneDefinition))
             return nullptr;
+        utils::MakeStringLowerCase(context->m_game_name);
         if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneDefinition, gdtSearchPath))
             return nullptr;
 
