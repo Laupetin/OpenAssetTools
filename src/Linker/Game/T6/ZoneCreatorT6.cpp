@@ -5,6 +5,7 @@
 #include "Game/T6/GameT6.h"
 #include "Game/T6/T6.h"
 #include "ObjLoading.h"
+#include "Utils/StringUtils.h"
 
 #include <iostream>
 
@@ -108,7 +109,10 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
 
 bool ZoneCreator::SupportsGame(const std::string& gameName) const
 {
-    return gameName == g_GameT6.GetShortName();
+    auto shortName = g_GameT6.GetShortName();
+    utils::MakeStringLowerCase(shortName);
+
+    return gameName == shortName;
 }
 
 std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& context) const
