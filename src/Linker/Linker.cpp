@@ -27,6 +27,7 @@
 
 #include <deque>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <regex>
 #include <set>
@@ -379,12 +380,13 @@ class LinkerImpl final : public Linker
         if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneDefinition, gdtSearchPath))
             return nullptr;
 
-        for (const auto* assetLoader : ZONE_CREATORS)
+        for (const auto* zoneCreator : ZONE_CREATORS)
         {
-            if (assetLoader->SupportsGame(context->m_game_name))
-                return assetLoader->CreateZoneForDefinition(*context);
+            if (zoneCreator->SupportsGame(context->m_game_name))
+                return zoneCreator->CreateZoneForDefinition(*context);
         }
 
+        std::cerr << std::format("Unsupported game: {}\n", context->m_game_name);
         return nullptr;
     }
 
