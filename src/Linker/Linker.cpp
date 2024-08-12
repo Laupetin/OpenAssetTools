@@ -90,7 +90,7 @@ class LinkerImpl final : public Linker
                     const auto definitionStream = sourceSearchPath->Open(definitionFileName);
                     if (!definitionStream.IsOpen())
                     {
-                        std::cout << "Could not find zone definition file for project \"" << source << "\".\n";
+                        std::cerr << "Could not find zone definition file for project \"" << source << "\".\n";
                         return false;
                     }
 
@@ -100,7 +100,7 @@ class LinkerImpl final : public Linker
 
                 if (!includeDefinition)
                 {
-                    std::cout << "Failed to read zone definition file for project \"" << source << "\".\n";
+                    std::cerr << "Failed to read zone definition file for project \"" << source << "\".\n";
                     return false;
                 }
 
@@ -183,7 +183,7 @@ class LinkerImpl final : public Linker
             {
                 if (name != i->second->m_value)
                 {
-                    std::cout << "Conflicting names in target \"" << targetName << "\": " << name << " != " << i->second << "\n";
+                    std::cerr << "Conflicting names in target \"" << targetName << "\": " << name << " != " << i->second << "\n";
                     return false;
                 }
             }
@@ -203,7 +203,7 @@ class LinkerImpl final : public Linker
             const auto definitionStream = sourceSearchPath->Open(definitionFileName);
             if (!definitionStream.IsOpen())
             {
-                std::cout << "Could not find zone definition file for target \"" << targetName << "\".\n";
+                std::cerr << "Could not find zone definition file for target \"" << targetName << "\".\n";
                 return nullptr;
             }
 
@@ -213,7 +213,7 @@ class LinkerImpl final : public Linker
 
         if (!zoneDefinition)
         {
-            std::cout << "Failed to read zone definition file for target \"" << targetName << "\".\n";
+            std::cerr << "Failed to read zone definition file for target \"" << targetName << "\".\n";
             return nullptr;
         }
 
@@ -248,7 +248,7 @@ class LinkerImpl final : public Linker
             std::vector<AssetListEntry> assetList;
             if (!ReadAssetList(ignore, context.m_ignored_assets, sourceSearchPath))
             {
-                std::cout << "Failed to read asset listing for ignoring assets of project \"" << ignore << "\".\n";
+                std::cerr << "Failed to read asset listing for ignoring assets of project \"" << ignore << "\".\n";
                 return false;
             }
         }
@@ -324,7 +324,7 @@ class LinkerImpl final : public Linker
             {
                 if (gameName != i->second->m_value)
                 {
-                    std::cout << "Conflicting game names in target \"" << targetName << "\": " << gameName << " != " << i->second << "\n";
+                    std::cerr << "Conflicting game names in target \"" << targetName << "\": " << gameName << " != " << i->second << "\n";
                     return false;
                 }
             }
@@ -332,7 +332,7 @@ class LinkerImpl final : public Linker
 
         if (firstGameEntry)
         {
-            std::cout << "No game name was specified for target \"" << targetName << "\"\n";
+            std::cerr << "No game name was specified for target \"" << targetName << "\"\n";
             return false;
         }
 
@@ -347,7 +347,7 @@ class LinkerImpl final : public Linker
             const auto gdtFile = gdtSearchPath->Open(i->second->m_value + ".gdt");
             if (!gdtFile.IsOpen())
             {
-                std::cout << "Failed to open file for gdt \"" << i->second->m_value << "\"\n";
+                std::cerr << "Failed to open file for gdt \"" << i->second->m_value << "\"\n";
                 return false;
             }
 
@@ -355,7 +355,7 @@ class LinkerImpl final : public Linker
             auto gdt = std::make_unique<Gdt>();
             if (!gdtReader.Read(*gdt))
             {
-                std::cout << "Failed to read gdt file \"" << i->second << "\"\n";
+                std::cerr << "Failed to read gdt file \"" << i->second << "\"\n";
                 return false;
             }
 
@@ -402,7 +402,7 @@ class LinkerImpl final : public Linker
 
         if (!ZoneWriting::WriteZone(stream, zone))
         {
-            std::cout << "Writing zone failed.\n";
+            std::cerr << "Writing zone failed.\n";
             stream.close();
             return false;
         }
@@ -454,7 +454,7 @@ class LinkerImpl final : public Linker
 
         if (!ipakWriter->Write())
         {
-            std::cout << "Writing ipak failed.\n";
+            std::cerr << "Writing ipak failed.\n";
             stream.close();
             return false;
         }
@@ -534,7 +534,7 @@ class LinkerImpl final : public Linker
         {
             if (!fs::is_regular_file(zonePath))
             {
-                std::cout << "Could not find zone file to load \"" << zonePath << "\".\n";
+                std::cerr << "Could not find zone file to load \"" << zonePath << "\".\n";
                 return false;
             }
 
@@ -543,7 +543,7 @@ class LinkerImpl final : public Linker
             auto zone = std::unique_ptr<Zone>(ZoneLoading::LoadZone(zonePath));
             if (zone == nullptr)
             {
-                std::cout << "Failed to load zone \"" << zonePath << "\".\n";
+                std::cerr << "Failed to load zone \"" << zonePath << "\".\n";
                 return false;
             }
 
