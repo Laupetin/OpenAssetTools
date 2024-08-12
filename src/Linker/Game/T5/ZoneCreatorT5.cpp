@@ -4,6 +4,7 @@
 #include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/GameT5.h"
 #include "ObjLoading.h"
+#include "Utils/StringUtils.h"
 
 #include <iostream>
 
@@ -59,7 +60,10 @@ void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
 
 bool ZoneCreator::SupportsGame(const std::string& gameName) const
 {
-    return gameName == g_GameT5.GetShortName();
+    auto shortName = g_GameT5.GetShortName();
+    utils::MakeStringLowerCase(shortName);
+
+    return gameName == shortName;
 }
 
 std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& context) const

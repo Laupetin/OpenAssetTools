@@ -3,6 +3,7 @@
 #include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/GameIW5.h"
 #include "ObjLoading.h"
+#include "Utils/StringUtils.h"
 
 #include <iostream>
 
@@ -58,7 +59,10 @@ void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
 
 bool ZoneCreator::SupportsGame(const std::string& gameName) const
 {
-    return gameName == g_GameIW5.GetShortName();
+    auto shortName = g_GameIW5.GetShortName();
+    utils::MakeStringLowerCase(shortName);
+
+    return gameName == shortName;
 }
 
 std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& context) const
