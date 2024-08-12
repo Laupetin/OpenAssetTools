@@ -43,6 +43,12 @@ function zlib:project()
 			"_CRT_SECURE_NO_WARNINGS",
 			"_CRT_NONSTDC_NO_DEPRECATE"
 		}
+
+		filter "system:linux"
+			defines {
+				"Z_HAVE_UNISTD_H"
+			}
+		filter {}
 		
 		self:include(includes)
 
