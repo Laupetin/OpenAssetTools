@@ -4,6 +4,7 @@
 #include "Generic/GenericStringPropertySequence.h"
 #include "Parsing/Menu/Matcher/MenuMatcherFactory.h"
 
+#include <algorithm>
 #include <sstream>
 
 using namespace menu;
