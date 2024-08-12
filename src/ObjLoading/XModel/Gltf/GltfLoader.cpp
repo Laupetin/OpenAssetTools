@@ -72,7 +72,7 @@ namespace
             return m_message;
         }
 
-        [[nodiscard]] const char* what() const override
+        [[nodiscard]] const char* what() const noexcept override
         {
             return m_message.c_str();
         }

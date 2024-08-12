@@ -3,6 +3,7 @@
 #include "XModel/Gltf/GltfConstants.h"
 
 #include <exception>
+#include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
