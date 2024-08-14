@@ -257,6 +257,7 @@ end
 
 function ZoneCode:include(includes)
 	if includes:handle(self:name()) then
+		Common:include(includes)
         includedirs {
             path.join(ProjectFolder(), "ZoneCode"),
             "%{wks.location}/src/ZoneCode"
@@ -278,6 +279,7 @@ end
 
 function ZoneCode:project()
 	local folder = ProjectFolder()
+	local includes = Includes:create()
 
 	project(self:name())
         targetdir(TargetDirectoryLib)
@@ -296,13 +298,14 @@ function ZoneCode:project()
 			}
 		}
 
+        self:include(includes)
         ZoneCodeGenerator:use()
 
         filter "files:**.gen"
             buildmessage "Generating ZoneCode for game %{file.basename}"
             buildcommands {
                 '"' .. TargetDirectoryBuildTools .. '/' .. ExecutableByOs('ZoneCodeGenerator') .. '"' 
-                    .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}.h') .. '"'
+                    .. ' -h "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h') .. '"'
                     .. ' -c "' .. path.join(path.getabsolute(ProjectFolder()), 'ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt') .. '"'
                     .. ' -o "%{wks.location}/src/ZoneCode/Game/%{file.basename}/XAssets"'
                     .. ' -g "*" ZoneLoad'
@@ -311,7 +314,7 @@ function ZoneCode:project()
                     .. ' -g "*" AssetStructTests'
             }
             buildinputs {
-                path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}.h"),
+                path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_ZoneCode.h"),
                 path.join(ProjectFolder(), "ZoneCode/Game/%{file.basename}/%{file.basename}_Commands.txt"),
                 path.join(ProjectFolder(), "Common/Game/%{file.basename}/%{file.basename}_Assets.h"),
                 TargetDirectoryBuildTools .. "/" .. ExecutableByOs('ZoneCodeGenerator')
