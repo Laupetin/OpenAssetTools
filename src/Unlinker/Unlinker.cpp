@@ -381,7 +381,10 @@ class Unlinker::Impl
                 continue;
             }
 
-            auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+            auto zoneDirectory = fs::path(zonePath).remove_filename();
+            if (zoneDirectory.empty())
+                zoneDirectory = fs::current_path();
+            auto absoluteZoneDirectory = absolute(zoneDirectory).string();
 
             auto searchPathsForZone = GetSearchPathsForZone(absoluteZoneDirectory);
             searchPathsForZone.IncludeSearchPath(&m_search_paths);

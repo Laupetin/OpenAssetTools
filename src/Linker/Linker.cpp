@@ -543,7 +543,10 @@ class LinkerImpl final : public Linker
                 return false;
             }
 
-            auto absoluteZoneDirectory = absolute(std::filesystem::path(zonePath).remove_filename()).string();
+            auto zoneDirectory = fs::path(zonePath).remove_filename();
+            if (zoneDirectory.empty())
+                zoneDirectory = fs::current_path();
+            auto absoluteZoneDirectory = absolute(zoneDirectory).string();
 
             auto zone = std::unique_ptr<Zone>(ZoneLoading::LoadZone(zonePath));
             if (zone == nullptr)
