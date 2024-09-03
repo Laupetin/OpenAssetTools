@@ -467,6 +467,13 @@ namespace
             memcpy(surface.triIndices, sortedTris.data(), sizeof(std::remove_pointer_t<decltype(XSurface::triIndices)>) * surface.triCount);
         }
 
+        static void AddBoneToXSurfacePartBits(XSurface& surface, const size_t boneIndex)
+        {
+            const auto partBitsIndex = boneIndex / 32u;
+            const auto shiftValue = 31u - (boneIndex % 32u);
+            surface.partBits[partBitsIndex] |= 1 << shiftValue;
+        }
+
         void CreateVertListData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
         {
             ReorderRigidTrisByBoneIndex(vertexIndices, surface, common);
@@ -504,6 +511,8 @@ namespace
 
                     currentVertexTail = currentVertexHead;
                     currentTriTail = currentTriHead;
+
+                    AddBoneToXSurfacePartBits(surface, boneIndex);
                 }
             }
 
