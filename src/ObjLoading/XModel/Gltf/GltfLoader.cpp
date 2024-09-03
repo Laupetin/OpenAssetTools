@@ -467,8 +467,8 @@ namespace
             if (node.rotation)
             {
                 bone.localRotation.x = (*node.rotation)[0];
-                bone.localRotation.y = (*node.rotation)[2];
-                bone.localRotation.z = -(*node.rotation)[1];
+                bone.localRotation.y = -(*node.rotation)[2];
+                bone.localRotation.z = (*node.rotation)[1];
                 bone.localRotation.w = (*node.rotation)[3];
             }
             else

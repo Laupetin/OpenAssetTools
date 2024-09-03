@@ -210,46 +210,46 @@ namespace
             return textureIndex;
         }
 
-        void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& common)
         {
-            if (xmodel.m_bones.empty())
+            if (common.m_bones.empty())
                 return;
 
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
-            const auto boneCount = xmodel.m_bones.size();
+            const auto boneCount = common.m_bones.size();
             m_first_bone_node = gltf.nodes->size();
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
-                const auto& bone = xmodel.m_bones[boneIndex];
+                const auto& bone = common.m_bones[boneIndex];
 
-                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
-                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
+                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
+                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z);
                 if (bone.parentIndex)
                 {
-                    const auto& parentBone = xmodel.m_bones[*bone.parentIndex];
+                    const auto& parentBone = common.m_bones[*bone.parentIndex];
                     const auto inverseParentRotation =
-                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.z, -parentBone.globalRotation.y)
+                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z)
                             .normalized()
                             .inverse()
                             .normalized();
 
-                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[2], -parentBone.globalOffset[1]);
+                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]);
                     translation = inverseParentRotation * translation;
                     rotation = inverseParentRotation * rotation;
                 }
                 rotation.normalize();
 
                 boneNode.name = bone.name;
-                boneNode.translation = std::to_array({translation.x(), translation.y(), translation.z()});
-                boneNode.rotation = std::to_array({rotation.x(), rotation.y(), rotation.z(), rotation.w()});
+                boneNode.translation = std::to_array({translation.x(), translation.z(), -translation.y()});
+                boneNode.rotation = std::to_array({rotation.x(), rotation.z(), -rotation.y(), rotation.w()});
 
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
-                    if (xmodel.m_bones[maybeChildIndex].parentIndex && *xmodel.m_bones[maybeChildIndex].parentIndex == boneIndex)
+                    if (common.m_bones[maybeChildIndex].parentIndex && *common.m_bones[maybeChildIndex].parentIndex == boneIndex)
                         children.emplace_back(maybeChildIndex + m_first_bone_node);
                 }
                 if (!children.empty())
