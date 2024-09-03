@@ -351,9 +351,9 @@ namespace
                 }
 
                 object.m_faces.emplace_back(XModelFace{
-                    vertexOffset + indices[0],
-                    vertexOffset + indices[1],
                     vertexOffset + indices[2],
+                    vertexOffset + indices[1],
+                    vertexOffset + indices[0],
                 });
             }
 
