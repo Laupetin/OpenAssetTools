@@ -411,7 +411,9 @@ namespace
         }
 
         static bool ConvertJoint(const JsonRoot& jRoot,
+                                 const JsonSkin& skin,
                                  XModelCommon& common,
+                                 const unsigned skinBoneOffset,
                                  const unsigned nodeIndex,
                                  const std::optional<unsigned> parentIndex,
                                  const float (&parentOffset)[3],
@@ -422,8 +424,13 @@ namespace
                 return false;
 
             const auto& node = jRoot.nodes.value()[nodeIndex];
+            const auto boneInSkin = std::ranges::find(skin.joints, nodeIndex);
+            if (boneInSkin == skin.joints.end())
+                throw GltfLoadException("Bone node is not part of skin");
+            const auto boneIndexInSkin = std::distance(skin.joints.begin(), boneInSkin);
 
-            XModelBone bone;
+            const auto commonBoneOffset = skinBoneOffset + boneIndexInSkin;
+            auto& bone = common.m_bones[commonBoneOffset];
             bone.name = node.name.value_or(std::string());
             bone.parentIndex = parentIndex;
 
@@ -481,14 +488,11 @@ namespace
             bone.globalRotation.z = globalRotationEigen.z();
             bone.globalRotation.w = globalRotationEigen.w();
 
-            const auto commonIndex = common.m_bones.size();
-            common.m_bones.emplace_back(std::move(bone));
-
             if (node.children)
             {
                 for (const auto childIndex : *node.children)
                 {
-                    if (!ConvertJoint(jRoot, common, childIndex, commonIndex, bone.globalOffset, bone.globalRotation, bone.scale))
+                    if (!ConvertJoint(jRoot, skin, common, skinBoneOffset, childIndex, commonBoneOffset, bone.globalOffset, bone.globalRotation, bone.scale))
                         return false;
                 }
             }
@@ -507,12 +511,14 @@ namespace
                 throw GltfLoadException("Only scenes with at most one skin are supported");
 
             const auto rootNode = GetRootNodeForSkin(jRoot, skin).value_or(skin.joints[0]);
+            const auto skinBoneOffset = common.m_bones.size();
+            common.m_bones.resize(skinBoneOffset + skin.joints.size());
 
             constexpr float defaultTranslation[3]{0.0f, 0.0f, 0.0f};
             constexpr XModelQuaternion defaultRotation{0.0f, 0.0f, 0.0f, 1.0f};
             constexpr float defaultScale[3]{1.0f, 1.0f, 1.0f};
 
-            return ConvertJoint(jRoot, common, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale);
+            return ConvertJoint(jRoot, skin, common, skinBoneOffset, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale);
         }
 
         void ConvertObjects(const JsonRoot& jRoot, XModelCommon& common)
