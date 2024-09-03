@@ -233,7 +233,7 @@ namespace
 
         static void CalculateBoneBounds(XBoneInfo& info, const unsigned boneIndex, const XModelCommon& common)
         {
-            if (common.m_vertex_bone_weights.empty())
+            if (common.m_bone_weight_data.weights.empty())
                 return;
 
             info.bounds[0].x = 0.0f;
@@ -524,7 +524,7 @@ namespace
 
         static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
         {
-            if (common.m_vertex_bone_weights.empty())
+            if (common.m_bone_weight_data.weights.empty())
                 return;
 
             const auto vertexCount = vertexIndices.size();
@@ -609,7 +609,7 @@ namespace
                 CreateVertex(surface.verts0[vertexIndex], commonVertex);
             }
 
-            if (!common.m_vertex_bone_weights.empty())
+            if (!common.m_bone_weight_data.weights.empty())
             {
                 // Since bone weights are sorted by weight count, the last must have the highest weight count
                 const auto hasVertsBlend = common.m_vertex_bone_weights[vertexIndices[vertexIndices.size() - 1]].weightCount > 1;

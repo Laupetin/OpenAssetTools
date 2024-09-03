@@ -119,7 +119,7 @@ namespace
 
             JsonMesh mesh;
 
-            const auto hasBoneWeightData = !xmodel.m_vertex_bone_weights.empty();
+            const auto hasBoneWeightData = !xmodel.m_bone_weight_data.weights.empty();
 
             auto objectIndex = 0u;
             for (const auto& object : xmodel.m_objects)
@@ -275,7 +275,9 @@ namespace
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
                 skin.joints.emplace_back(boneIndex + m_first_bone_node);
 
-            skin.inverseBindMatrices = m_inverse_bind_matrices_accessor;
+            if (!xmodel.m_bone_weight_data.weights.empty())
+                skin.inverseBindMatrices = m_inverse_bind_matrices_accessor;
+
             skin.skeleton = m_first_bone_node;
 
             gltf.skins->emplace_back(std::move(skin));
@@ -313,7 +315,7 @@ namespace
             m_vertex_buffer_view = gltf.bufferViews->size();
             gltf.bufferViews->emplace_back(vertexBufferView);
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 JsonBufferView jointsBufferView;
                 jointsBufferView.buffer = 0u;
@@ -391,7 +393,7 @@ namespace
             m_uv_accessor = gltf.accessors->size();
             gltf.accessors->emplace_back(uvAccessor);
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 JsonAccessor jointsAccessor;
                 jointsAccessor.bufferView = m_joints_buffer_view;
@@ -488,7 +490,7 @@ namespace
                 gltf.accessors.value()[m_position_accessor].max = std::vector({maxPosition[0], maxPosition[1], maxPosition[2]});
             }
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 assert(xmodel.m_vertex_bone_weights.size() == xmodel.m_vertices.size());
 
@@ -572,7 +574,7 @@ namespace
 
             result += xmodel.m_vertices.size() * sizeof(GltfVertex);
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 // Joints and weights
                 result += xmodel.m_vertices.size() * 4u * (sizeof(uint8_t) + sizeof(float));
