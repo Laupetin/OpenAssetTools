@@ -605,7 +605,7 @@ namespace
 
             for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
             {
-                const auto& commonVertex = common.m_vertices[vertexIndex];
+                const auto& commonVertex = common.m_vertices[vertexIndices[vertexIndex]];
                 CreateVertex(surface.verts0[vertexIndex], commonVertex);
             }
 
