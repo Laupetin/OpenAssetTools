@@ -81,9 +81,10 @@ size_t NullAccessor::GetCount() const
     return m_count;
 }
 
-FloatAccessor::FloatAccessor(const BufferView* bufferView, const JsonAccessorType type, const size_t count)
+FloatAccessor::FloatAccessor(const BufferView* bufferView, const JsonAccessorType type, size_t byteOffset, const size_t count)
     : m_buffer_view(bufferView),
       m_type(type),
+      m_byte_offset(byteOffset),
       m_count(count)
 {
 }
@@ -109,7 +110,7 @@ bool FloatAccessor::GetFloatVec2(const size_t index, float (&out)[2]) const
     if (index >= m_count)
         return false;
 
-    return m_buffer_view->ReadElement(&out, index, sizeof(float[2]));
+    return m_buffer_view->ReadElement(&out, index, sizeof(float[2]), m_byte_offset);
 }
 
 bool FloatAccessor::GetFloatVec3(const size_t index, float (&out)[3]) const
@@ -118,7 +119,7 @@ bool FloatAccessor::GetFloatVec3(const size_t index, float (&out)[3]) const
     if (index >= m_count)
         return false;
 
-    return m_buffer_view->ReadElement(&out, index, sizeof(float[3]));
+    return m_buffer_view->ReadElement(&out, index, sizeof(float[3]), m_byte_offset);
 }
 
 bool FloatAccessor::GetFloatVec4(const size_t index, float (&out)[4]) const
@@ -127,7 +128,7 @@ bool FloatAccessor::GetFloatVec4(const size_t index, float (&out)[4]) const
     if (index >= m_count)
         return false;
 
-    return m_buffer_view->ReadElement(&out, index, sizeof(float[4]));
+    return m_buffer_view->ReadElement(&out, index, sizeof(float[4]), m_byte_offset);
 }
 
 bool FloatAccessor::GetUnsigned(size_t index, unsigned& out) const
@@ -140,9 +141,10 @@ bool FloatAccessor::GetUnsignedVec4(size_t index, unsigned (&out)[4]) const
     return false;
 }
 
-UnsignedByteAccessor::UnsignedByteAccessor(const BufferView* bufferView, const JsonAccessorType type, const size_t count)
+UnsignedByteAccessor::UnsignedByteAccessor(const BufferView* bufferView, const JsonAccessorType type, size_t byteOffset, const size_t count)
     : m_buffer_view(bufferView),
       m_type(type),
+      m_byte_offset(byteOffset),
       m_count(count)
 {
 }
@@ -169,7 +171,7 @@ bool UnsignedByteAccessor::GetFloatVec2(const size_t index, float (&out)[2]) con
         return false;
 
     uint8_t temp[2];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[2])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[2]), m_byte_offset))
         return false;
 
     // Return as normalized value between 0 and 1
@@ -186,7 +188,7 @@ bool UnsignedByteAccessor::GetFloatVec3(const size_t index, float (&out)[3]) con
         return false;
 
     uint8_t temp[3];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[3])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[3]), m_byte_offset))
         return false;
 
     // Return as normalized value between 0 and 1
@@ -204,7 +206,7 @@ bool UnsignedByteAccessor::GetFloatVec4(const size_t index, float (&out)[4]) con
         return false;
 
     uint8_t temp[4];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4]), m_byte_offset))
         return false;
 
     // Return as normalized value between 0 and 1
@@ -222,7 +224,7 @@ bool UnsignedByteAccessor::GetUnsigned(const size_t index, unsigned& out) const
         return false;
 
     uint8_t temp;
-    if (!m_buffer_view->ReadElement(&temp, index, sizeof(uint8_t)))
+    if (!m_buffer_view->ReadElement(&temp, index, sizeof(uint8_t), m_byte_offset))
         return false;
 
     out = temp;
@@ -236,7 +238,7 @@ bool UnsignedByteAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[4
         return false;
 
     uint8_t temp[4];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4]), m_byte_offset))
         return false;
 
     out[0] = static_cast<unsigned>(temp[0]);
@@ -247,9 +249,10 @@ bool UnsignedByteAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[4
     return true;
 }
 
-UnsignedShortAccessor::UnsignedShortAccessor(const BufferView* bufferView, const JsonAccessorType type, const size_t count)
+UnsignedShortAccessor::UnsignedShortAccessor(const BufferView* bufferView, const JsonAccessorType type, size_t byteOffset, const size_t count)
     : m_buffer_view(bufferView),
       m_type(type),
+      m_byte_offset(byteOffset),
       m_count(count)
 {
 }
@@ -276,7 +279,7 @@ bool UnsignedShortAccessor::GetFloatVec2(const size_t index, float (&out)[2]) co
         return false;
 
     uint16_t temp[2];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint16_t[2])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint16_t[2]), m_byte_offset))
         return false;
 
     // Return as normalized value between 0 and 1
@@ -293,7 +296,7 @@ bool UnsignedShortAccessor::GetFloatVec3(const size_t index, float (&out)[3]) co
         return false;
 
     uint16_t temp[3];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint16_t[3])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint16_t[3]), m_byte_offset))
         return false;
 
     // Return as normalized value between 0 and 1
@@ -311,7 +314,7 @@ bool UnsignedShortAccessor::GetFloatVec4(const size_t index, float (&out)[4]) co
         return false;
 
     uint16_t temp[4];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint16_t[4])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint16_t[4]), m_byte_offset))
         return false;
 
     // Return as normalized value between 0 and 1
@@ -329,7 +332,7 @@ bool UnsignedShortAccessor::GetUnsigned(const size_t index, unsigned& out) const
         return false;
 
     uint16_t temp;
-    if (!m_buffer_view->ReadElement(&temp, index, sizeof(uint16_t)))
+    if (!m_buffer_view->ReadElement(&temp, index, sizeof(uint16_t), m_byte_offset))
         return false;
 
     out = temp;
@@ -343,7 +346,7 @@ bool UnsignedShortAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[
         return false;
 
     uint16_t temp[4];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4])))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4]), m_byte_offset))
         return false;
 
     out[0] = static_cast<unsigned>(temp[0]);

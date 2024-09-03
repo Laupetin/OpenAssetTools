@@ -636,12 +636,13 @@ namespace
                     throw GltfLoadException("Accessor references invalid buffer view");
 
                 const auto* bufferView = m_buffer_views[*jAccessor.bufferView].get();
+                const auto byteOffset = jAccessor.byteOffset.value_or(0u);
                 if (jAccessor.componentType == JsonAccessorComponentType::FLOAT)
-                    m_accessors.emplace_back(std::make_unique<FloatAccessor>(bufferView, jAccessor.type, jAccessor.count));
+                    m_accessors.emplace_back(std::make_unique<FloatAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
                 else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_BYTE)
-                    m_accessors.emplace_back(std::make_unique<UnsignedByteAccessor>(bufferView, jAccessor.type, jAccessor.count));
+                    m_accessors.emplace_back(std::make_unique<UnsignedByteAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
                 else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_SHORT)
-                    m_accessors.emplace_back(std::make_unique<UnsignedShortAccessor>(bufferView, jAccessor.type, jAccessor.count));
+                    m_accessors.emplace_back(std::make_unique<UnsignedShortAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
                 else
                     throw GltfLoadException(std::format("Accessor has unsupported component type {}", static_cast<unsigned>(jAccessor.componentType)));
             }

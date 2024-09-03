@@ -49,7 +49,7 @@ namespace gltf
     class FloatAccessor final : public Accessor
     {
     public:
-        FloatAccessor(const BufferView* bufferView, JsonAccessorType type, size_t count);
+        FloatAccessor(const BufferView* bufferView, JsonAccessorType type, size_t byteOffset, size_t count);
 
         [[nodiscard]] std::optional<JsonAccessorType> GetType() const override;
         [[nodiscard]] std::optional<JsonAccessorComponentType> GetComponentType() const override;
@@ -64,13 +64,14 @@ namespace gltf
     private:
         const BufferView* m_buffer_view;
         JsonAccessorType m_type;
+        size_t m_byte_offset;
         size_t m_count;
     };
 
     class UnsignedByteAccessor final : public Accessor
     {
     public:
-        UnsignedByteAccessor(const BufferView* bufferView, JsonAccessorType type, size_t count);
+        UnsignedByteAccessor(const BufferView* bufferView, JsonAccessorType type, size_t byteOffset, size_t count);
 
         [[nodiscard]] std::optional<JsonAccessorType> GetType() const override;
         [[nodiscard]] std::optional<JsonAccessorComponentType> GetComponentType() const override;
@@ -85,13 +86,14 @@ namespace gltf
     private:
         const BufferView* m_buffer_view;
         JsonAccessorType m_type;
+        size_t m_byte_offset;
         size_t m_count;
     };
 
     class UnsignedShortAccessor final : public Accessor
     {
     public:
-        UnsignedShortAccessor(const BufferView* bufferView, JsonAccessorType type, size_t count);
+        UnsignedShortAccessor(const BufferView* bufferView, JsonAccessorType type, size_t byteOffset, size_t count);
 
         [[nodiscard]] std::optional<JsonAccessorType> GetType() const override;
         [[nodiscard]] std::optional<JsonAccessorComponentType> GetComponentType() const override;
@@ -106,6 +108,7 @@ namespace gltf
     private:
         const BufferView* m_buffer_view;
         JsonAccessorType m_type;
+        size_t m_byte_offset;
         size_t m_count;
     };
 } // namespace gltf

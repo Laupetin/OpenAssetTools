@@ -8,7 +8,7 @@ namespace gltf
     public:
         BufferView(const Buffer* buffer, size_t offset, size_t length, size_t stride);
 
-        bool ReadElement(void* dest, size_t elementIndex, size_t elementSize) const;
+        bool ReadElement(void* dest, size_t elementIndex, size_t elementSize, size_t elementOffset) const;
 
     private:
         const Buffer* m_buffer;
