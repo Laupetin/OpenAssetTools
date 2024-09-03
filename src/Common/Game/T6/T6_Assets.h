@@ -590,7 +590,7 @@ namespace T6
         float dist;
         uint16_t numsurfs;
         uint16_t surfIndex;
-        int partBits[5];
+        unsigned int partBits[5];
     };
 
     enum XModelLodRampType : unsigned char

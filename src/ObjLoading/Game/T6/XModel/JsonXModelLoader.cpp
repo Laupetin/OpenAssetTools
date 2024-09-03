@@ -566,65 +566,58 @@ namespace
             vertexIndices = std::move(reorderLookup);
         }
 
-        bool CreateXSurface(XSurface& surface, const XModelObject& commonObject, const XModelCommon& common)
+        bool CreateXSurface(XSurface& surface, const XModelObject& commonObject, const XModelCommon& common, unsigned& vertexOffset)
         {
-            std::vector<size_t> vertexIndices;
+            std::vector<size_t> xmodelToCommonVertexIndexLookup;
             std::unordered_map<size_t, size_t> usedVertices;
 
             surface.triCount = static_cast<uint16_t>(commonObject.m_faces.size());
-            surface.triIndices = m_memory.Alloc<XSurfaceTri>(commonObject.m_faces.size());
+            surface.triIndices = m_memory.Alloc<XSurfaceTri>(surface.triCount);
 
-            const auto faceCount = commonObject.m_faces.size();
-            for (auto faceIndex = 0u; faceIndex < faceCount; faceIndex++)
+            for (auto faceIndex = 0u; faceIndex < surface.triCount; faceIndex++)
             {
                 const auto& face = commonObject.m_faces[faceIndex];
                 auto& tris = surface.triIndices[faceIndex];
 
-                for (auto faceVertexIndex = 0u; faceVertexIndex < std::extent_v<decltype(XModelFace::vertexIndex)>; faceVertexIndex++)
+                for (auto triVertIndex = 0u; triVertIndex < std::extent_v<decltype(XModelFace::vertexIndex)>; triVertIndex++)
                 {
-                    const auto vertexIndex = face.vertexIndex[faceVertexIndex];
-                    const auto existingVertex = usedVertices.find(vertexIndex);
+                    const auto commonVertexIndex = face.vertexIndex[triVertIndex];
+                    const auto existingVertex = usedVertices.find(commonVertexIndex);
                     if (existingVertex == usedVertices.end())
                     {
-                        const auto newVertexIndex = vertexIndices.size();
-                        tris.i[faceVertexIndex] = static_cast<uint16_t>(newVertexIndex);
+                        const auto xmodelVertexIndex = xmodelToCommonVertexIndexLookup.size();
+                        tris.i[triVertIndex] = static_cast<uint16_t>(xmodelVertexIndex);
 
-                        vertexIndices.emplace_back(vertexIndex);
-                        usedVertices.emplace(vertexIndex, newVertexIndex);
+                        xmodelToCommonVertexIndexLookup.emplace_back(commonVertexIndex);
+                        usedVertices.emplace(commonVertexIndex, xmodelVertexIndex);
                     }
                     else
-                        tris.i[faceVertexIndex] = static_cast<uint16_t>(existingVertex->second);
+                        tris.i[triVertIndex] = static_cast<uint16_t>(existingVertex->second);
                 }
             }
 
-            ReorderVerticesByWeightCount(vertexIndices, surface, common);
+            ReorderVerticesByWeightCount(xmodelToCommonVertexIndexLookup, surface, common);
 
-            const auto vertexCount = vertexIndices.size();
-            surface.vertCount = static_cast<uint16_t>(vertexCount);
-            surface.verts0 = m_memory.Alloc<GfxPackedVertex>(vertexCount);
+            surface.baseVertIndex = static_cast<uint16_t>(vertexOffset);
+            surface.vertCount = static_cast<uint16_t>(xmodelToCommonVertexIndexLookup.size());
+            surface.verts0 = m_memory.Alloc<GfxPackedVertex>(surface.vertCount);
+            vertexOffset += surface.vertCount;
 
-            for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
+            for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
             {
-                const auto& commonVertex = common.m_vertices[vertexIndices[vertexIndex]];
+                const auto& commonVertex = common.m_vertices[xmodelToCommonVertexIndexLookup[vertexIndex]];
                 CreateVertex(surface.verts0[vertexIndex], commonVertex);
             }
 
             if (!common.m_bone_weight_data.weights.empty())
             {
                 // Since bone weights are sorted by weight count, the last must have the highest weight count
-                const auto hasVertsBlend = common.m_vertex_bone_weights[vertexIndices[vertexIndices.size() - 1]].weightCount > 1;
+                const auto hasVertsBlend =
+                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount > 1;
                 if (!hasVertsBlend)
-                    CreateVertListData(surface, vertexIndices, common);
+                    CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
                 else
-                    CreateVertsBlendData(surface, vertexIndices, common);
-            }
-
-            const auto boneCount = common.m_bones.size();
-            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
-            {
-                const auto partBitsIndex = boneIndex / 32u;
-                const auto shiftValue = 31u - (boneIndex % 32u);
-                surface.partBits[partBitsIndex] = 1 << (31u - shiftValue);
+                    CreateVertsBlendData(surface, xmodelToCommonVertexIndexLookup, common);
             }
 
             return true;
@@ -677,17 +670,32 @@ namespace
                 materialAssets.push_back(assetInfo->Asset());
             }
 
-            return std::ranges::all_of(common->m_objects,
-                                       [this, &common, &materialAssets](const XModelObject& commonObject)
-                                       {
-                                           XSurface surface{};
-                                           if (!CreateXSurface(surface, commonObject, *common))
-                                               return false;
+            auto vertexOffset = 0u;
+            const auto surfaceCreationSuccessful = std::ranges::all_of(common->m_objects,
+                                                                       [this, &common, &materialAssets, &vertexOffset](const XModelObject& commonObject)
+                                                                       {
+                                                                           XSurface surface{};
+                                                                           if (!CreateXSurface(surface, commonObject, *common, vertexOffset))
+                                                                               return false;
 
-                                           m_surfaces.emplace_back(surface);
-                                           m_materials.push_back(materialAssets[commonObject.materialIndex]);
-                                           return true;
-                                       });
+                                                                           m_surfaces.emplace_back(surface);
+                                                                           m_materials.push_back(materialAssets[commonObject.materialIndex]);
+                                                                           return true;
+                                                                       });
+
+            if (!surfaceCreationSuccessful)
+                return false;
+
+            // Lod part bits are the sum of part bits of all of its surfaces
+            static_assert(std::extent_v<decltype(XModelLodInfo::partBits)> == std::extent_v<decltype(XSurface::partBits)>);
+            for (auto surfaceOffset = 0u; surfaceOffset < lodInfo.numsurfs; surfaceOffset++)
+            {
+                const auto& surface = m_surfaces[lodInfo.surfIndex + surfaceOffset];
+                for (auto i = 0u; i < std::extent_v<decltype(XModelLodInfo::partBits)>; i++)
+                    lodInfo.partBits[i] |= surface.partBits[i];
+            }
+
+            return true;
         }
 
         static void CalculateModelBounds(XModel& xmodel)
