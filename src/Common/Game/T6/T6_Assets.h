@@ -616,7 +616,7 @@ namespace T6
         ScriptString* boneNames;
         unsigned char* parentList;
         XModelQuat* quats;
-        vec4_t* trans;
+        float* trans;
         unsigned char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;

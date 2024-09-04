@@ -13,7 +13,8 @@ set count parentList numBones - numRootBones;
 set reusable quats;
 set count quats numBones - numRootBones;
 set reusable trans;
-set count trans numBones - numRootBones;
+// This is actually the count but it looks like a bug? It is used like a vec3, but it takes as much memory as vec4
+set count trans (numBones - numRootBones) * 4;
 set reusable partClassification;
 set count partClassification numBones;
 set reusable baseMat;

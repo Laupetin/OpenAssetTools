@@ -139,10 +139,10 @@ namespace
             }
             else
             {
-                const auto& trans = model->trans[boneNum - model->numRootBones];
-                bone.localOffset[0] = trans.x;
-                bone.localOffset[1] = trans.y;
-                bone.localOffset[2] = trans.z;
+                const auto* trans = &model->trans[(boneNum - model->numRootBones) * 3];
+                bone.localOffset[0] = trans[0];
+                bone.localOffset[1] = trans[1];
+                bone.localOffset[2] = trans[2];
 
                 const auto& quat = model->quats[boneNum - model->numRootBones];
                 bone.localRotation = {

@@ -672,7 +672,7 @@ namespace T5
         uint16_t* boneNames;
         char* parentList;
         XModelQuat* quats;
-        vec4_t* trans;
+        float* trans;
         char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;

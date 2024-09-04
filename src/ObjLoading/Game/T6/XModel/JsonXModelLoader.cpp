@@ -314,7 +314,9 @@ namespace
             if (xmodel.numBones > xmodel.numRootBones)
             {
                 xmodel.parentList = m_memory.Alloc<unsigned char>(xmodel.numBones - xmodel.numRootBones);
-                xmodel.trans = m_memory.Alloc<vec4_t>(xmodel.numBones - xmodel.numRootBones);
+
+                // For some reason Treyarch games allocate for a vec4 here. it is treated as a vec3 though?
+                xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 4u);
                 xmodel.quats = m_memory.Alloc<XModelQuat>(xmodel.numBones - xmodel.numRootBones);
             }
             else
@@ -344,10 +346,10 @@ namespace
 
                     xmodel.parentList[nonRootIndex] = static_cast<unsigned char>(boneIndex - parentBoneIndex);
 
-                    auto& trans = xmodel.trans[nonRootIndex];
-                    trans.x = bone.localOffset[0];
-                    trans.y = bone.localOffset[1];
-                    trans.z = bone.localOffset[2];
+                    auto* trans = &xmodel.trans[nonRootIndex * 3];
+                    trans[0] = bone.localOffset[0];
+                    trans[1] = bone.localOffset[1];
+                    trans[2] = bone.localOffset[2];
 
                     auto& quats = xmodel.quats[nonRootIndex];
                     quats.v[0] = QuatInt16::ToInt16(bone.localRotation.x);
