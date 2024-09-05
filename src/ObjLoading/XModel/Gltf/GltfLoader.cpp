@@ -214,6 +214,7 @@ namespace
 
             const auto vertexCount = positionAccessor->GetCount();
             NullAccessor nullAccessor(vertexCount);
+            OnesAccessor onesAccessor(vertexCount);
 
             // clang-format off
             auto* normalAccessor = GetAccessorForIndex(
@@ -237,7 +238,7 @@ namespace
                 accessorsForVertex.colorAccessor,
                 {JsonAccessorType::VEC3, JsonAccessorType::VEC4},
                 {JsonAccessorComponentType::FLOAT, JsonAccessorComponentType::UNSIGNED_BYTE, JsonAccessorComponentType::UNSIGNED_SHORT}
-            ).value_or(&nullAccessor);
+            ).value_or(&onesAccessor);
             VerifyAccessorVertexCount("COLOR_0", colorAccessor, vertexCount);
 
             auto* jointsAccessor = GetAccessorForIndex(

@@ -81,6 +81,85 @@ size_t NullAccessor::GetCount() const
     return m_count;
 }
 
+OnesAccessor::OnesAccessor(const size_t count)
+    : m_count(count)
+{
+}
+
+bool OnesAccessor::GetFloatVec2(const size_t index, float (&out)[2]) const
+{
+    if (index >= m_count)
+        return false;
+
+    out[0] = 1.0f;
+    out[1] = 1.0f;
+
+    return true;
+}
+
+bool OnesAccessor::GetFloatVec3(const size_t index, float (&out)[3]) const
+{
+    if (index >= m_count)
+        return false;
+
+    out[0] = 1.0f;
+    out[1] = 1.0f;
+    out[2] = 1.0f;
+
+    return true;
+}
+
+bool OnesAccessor::GetFloatVec4(const size_t index, float (&out)[4]) const
+{
+    if (index >= m_count)
+        return false;
+
+    out[0] = 1.0f;
+    out[1] = 1.0f;
+    out[2] = 1.0f;
+    out[3] = 1.0f;
+
+    return true;
+}
+
+bool OnesAccessor::GetUnsigned(const size_t index, unsigned& out) const
+{
+    if (index >= m_count)
+        return false;
+
+    out = 0xFFFFFFFFu;
+
+    return true;
+}
+
+bool OnesAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[4]) const
+{
+    if (index >= m_count)
+        return false;
+
+    out[0] = 0xFFFFFFFFu;
+    out[1] = 0xFFFFFFFFu;
+    out[2] = 0xFFFFFFFFu;
+    out[3] = 0xFFFFFFFFu;
+
+    return true;
+}
+
+std::optional<JsonAccessorComponentType> OnesAccessor::GetComponentType() const
+{
+    return std::nullopt;
+}
+
+std::optional<JsonAccessorType> OnesAccessor::GetType() const
+{
+    return std::nullopt;
+}
+
+size_t OnesAccessor::GetCount() const
+{
+    return m_count;
+}
+
 FloatAccessor::FloatAccessor(const BufferView* bufferView, const JsonAccessorType type, size_t byteOffset, const size_t count)
     : m_buffer_view(bufferView),
       m_type(type),
