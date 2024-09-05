@@ -584,7 +584,6 @@ namespace
         void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
         {
             // TODO
-            assert(false);
         }
 
         static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
@@ -684,7 +683,12 @@ namespace
                 if (!hasVertsBlend)
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
                 else
+                {
                     CreateVertsBlendData(surface, xmodelToCommonVertexIndexLookup, common);
+
+                    std::cerr << "Only rigid models are supported at the moment\n";
+                    return false;
+                }
             }
 
             return true;
