@@ -501,7 +501,7 @@ namespace
             const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
 
             std::vector<size_t> triSortList(surface.triCount);
-            std::ranges::iota(triSortList, 0);
+            std::iota(triSortList.begin(), triSortList.end(), 0);
 
             std::ranges::sort(triSortList,
                               [&rigidBoneIndexForTri](const size_t triIndex0, const size_t triIndex1)
@@ -593,7 +593,7 @@ namespace
 
             const auto vertexCount = vertexIndices.size();
             std::vector<size_t> reorderLookup(vertexCount);
-            std::ranges::iota(reorderLookup, 0);
+            std::iota(reorderLookup.begin(), reorderLookup.end(), 0);
 
             std::ranges::sort(reorderLookup,
                               [&common, &vertexIndices](const size_t& i0, const size_t& i1)
