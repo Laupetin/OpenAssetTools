@@ -3452,7 +3452,7 @@ namespace IW5
         HITLOC_GUN = 0x12,
         HITLOC_SHIELD = 0x13,
 
-        HITLOC_NUM
+        HITLOC_COUNT
     };
 
     enum materialSurfType_t

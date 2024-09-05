@@ -590,7 +590,7 @@ namespace T6
         float dist;
         uint16_t numsurfs;
         uint16_t surfIndex;
-        int partBits[5];
+        unsigned int partBits[5];
     };
 
     enum XModelLodRampType : unsigned char
@@ -599,6 +599,11 @@ namespace T6
         XMODEL_LOD_RAMP_SKINNED = 0x1,
 
         XMODEL_LOD_RAMP_COUNT
+    };
+
+    struct XModelQuat
+    {
+        int16_t v[4];
     };
 
     struct XModel
@@ -610,9 +615,9 @@ namespace T6
         XModelLodRampType lodRampType;
         ScriptString* boneNames;
         unsigned char* parentList;
-        uint16_t (*quats)[4];
-        float (*trans)[4];
-        char* partClassification;
+        XModelQuat* quats;
+        float* trans;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
         Material** materialHandles;
@@ -625,7 +630,7 @@ namespace T6
         vec3_t mins;
         vec3_t maxs;
         uint16_t numLods;
-        uint16_t collLod;
+        int16_t collLod;
         float* himipInvSqRadii;
         int memUsage;
         unsigned int flags;
@@ -2744,7 +2749,12 @@ namespace T6
         float* tensionData;
     };
 
-    typedef tdef_align(16) unsigned short r_index16_t;
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align(16) XSurfaceTri XSurfaceTri16;
 
     struct type_align(16) XSurface
     {
@@ -2754,13 +2764,13 @@ namespace T6
         uint16_t vertCount;
         uint16_t triCount;
         uint16_t baseVertIndex;
-        r_index16_t(*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         void /*ID3D11Buffer*/* vb0;
         XRigidVertList* vertList;
         void /*ID3D11Buffer*/* indexBuffer;
-        int partBits[5];
+        unsigned int partBits[5];
     };
 
     struct XModelCollSurf_s
@@ -4324,7 +4334,8 @@ namespace T6
         MISSILE_GUIDANCE_TVGUIDED = 0x6,
         MISSILE_GUIDANCE_DRONE = 0x7,
         MISSILE_GUIDANCE_HEATSEEKING = 0x8,
-        MISSILE_GUIDANCE_COUNT = 0x9,
+
+        MISSILE_GUIDANCE_COUNT
     };
 
     enum hitLocation_t
@@ -4351,7 +4362,7 @@ namespace T6
         HITLOC_GUN = 0x13,
         HITLOC_SHIELD = 0x14,
 
-        HITLOC_NUM,
+        HITLOC_COUNT,
     };
 
     struct WeaponDef

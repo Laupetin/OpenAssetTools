@@ -2,7 +2,10 @@
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/Json/JsonXModel.h"
+#include "ObjWriting.h"
 
+#include <cassert>
+#include <format>
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
@@ -40,9 +43,37 @@ namespace
             return input;
         }
 
-        void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel) const
+        static const char* GetExtensionForModelByConfig()
         {
-            jXModel.collLod = xmodel.collLod;
+            switch (ObjWriting::Configuration.ModelOutputFormat)
+            {
+            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
+                return ".XMODEL_EXPORT";
+            case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
+                return ".OBJ";
+            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
+                return ".GLTF";
+            case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
+                return ".GLB";
+            default:
+                assert(false);
+                return "";
+            }
+        }
+
+        static void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel)
+        {
+            if (xmodel.collLod >= 0)
+                jXModel.collLod = xmodel.collLod;
+
+            for (auto lodNumber = 0u; lodNumber < xmodel.numLods; lodNumber++)
+            {
+                JsonXModelLod lod;
+                lod.file = std::format("model_export/{}_lod{}{}", xmodel.name, lodNumber, GetExtensionForModelByConfig());
+                lod.distance = xmodel.lodInfo[lodNumber].dist;
+
+                jXModel.lods.emplace_back(std::move(lod));
+            }
 
             if (xmodel.physPreset && xmodel.physPreset->name)
                 jXModel.physPreset = AssetName(xmodel.physPreset->name);

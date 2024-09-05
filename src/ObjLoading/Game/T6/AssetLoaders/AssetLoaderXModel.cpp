@@ -38,7 +38,7 @@ bool AssetLoaderXModel::LoadFromRaw(
     if (LoadXModelAsJson(*file.m_stream, *xmodel, memory, manager, dependencies))
         manager->AddAsset<AssetXModel>(assetName, xmodel, std::move(dependencies));
     else
-        std::cerr << "Failed to load xmodel \"" << assetName << "\"\n";
+        std::cerr << std::format("Failed to load xmodel \"{}\"\n", assetName);
 
     return true;
 }

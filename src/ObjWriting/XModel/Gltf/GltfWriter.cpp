@@ -119,7 +119,7 @@ namespace
 
             JsonMesh mesh;
 
-            const auto hasBoneWeightData = !xmodel.m_vertex_bone_weights.empty();
+            const auto hasBoneWeightData = !xmodel.m_bone_weight_data.weights.empty();
 
             auto objectIndex = 0u;
             for (const auto& object : xmodel.m_objects)
@@ -210,46 +210,46 @@ namespace
             return textureIndex;
         }
 
-        void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateSkeletonNodes(JsonRoot& gltf, const XModelCommon& common)
         {
-            if (xmodel.m_bones.empty())
+            if (common.m_bones.empty())
                 return;
 
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
-            const auto boneCount = xmodel.m_bones.size();
+            const auto boneCount = common.m_bones.size();
             m_first_bone_node = gltf.nodes->size();
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
-                const auto& bone = xmodel.m_bones[boneIndex];
+                const auto& bone = common.m_bones[boneIndex];
 
-                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
-                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
-                if (bone.parentIndex >= 0)
+                Eigen::Vector3f translation(bone.globalOffset[0], bone.globalOffset[1], bone.globalOffset[2]);
+                Eigen::Quaternionf rotation(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z);
+                if (bone.parentIndex)
                 {
-                    const auto& parentBone = xmodel.m_bones[bone.parentIndex];
+                    const auto& parentBone = common.m_bones[*bone.parentIndex];
                     const auto inverseParentRotation =
-                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.z, -parentBone.globalRotation.y)
+                        Eigen::Quaternionf(parentBone.globalRotation.w, parentBone.globalRotation.x, parentBone.globalRotation.y, parentBone.globalRotation.z)
                             .normalized()
                             .inverse()
                             .normalized();
 
-                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[2], -parentBone.globalOffset[1]);
+                    translation -= Eigen::Vector3f(parentBone.globalOffset[0], parentBone.globalOffset[1], parentBone.globalOffset[2]);
                     translation = inverseParentRotation * translation;
                     rotation = inverseParentRotation * rotation;
                 }
                 rotation.normalize();
 
                 boneNode.name = bone.name;
-                boneNode.translation = std::to_array({translation.x(), translation.y(), translation.z()});
-                boneNode.rotation = std::to_array({rotation.x(), rotation.y(), rotation.z(), rotation.w()});
+                boneNode.translation = std::to_array({translation.x(), translation.z(), -translation.y()});
+                boneNode.rotation = std::to_array({rotation.x(), rotation.z(), -rotation.y(), rotation.w()});
 
                 std::vector<unsigned> children;
                 for (auto maybeChildIndex = 0u; maybeChildIndex < boneCount; maybeChildIndex++)
                 {
-                    if (xmodel.m_bones[maybeChildIndex].parentIndex == static_cast<int>(boneIndex))
+                    if (common.m_bones[maybeChildIndex].parentIndex && *common.m_bones[maybeChildIndex].parentIndex == boneIndex)
                         children.emplace_back(maybeChildIndex + m_first_bone_node);
                 }
                 if (!children.empty())
@@ -275,7 +275,9 @@ namespace
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
                 skin.joints.emplace_back(boneIndex + m_first_bone_node);
 
-            skin.inverseBindMatrices = m_inverse_bind_matrices_accessor;
+            if (!xmodel.m_bone_weight_data.weights.empty())
+                skin.inverseBindMatrices = m_inverse_bind_matrices_accessor;
+
             skin.skeleton = m_first_bone_node;
 
             gltf.skins->emplace_back(std::move(skin));
@@ -313,7 +315,7 @@ namespace
             m_vertex_buffer_view = gltf.bufferViews->size();
             gltf.bufferViews->emplace_back(vertexBufferView);
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 JsonBufferView jointsBufferView;
                 jointsBufferView.buffer = 0u;
@@ -391,7 +393,7 @@ namespace
             m_uv_accessor = gltf.accessors->size();
             gltf.accessors->emplace_back(uvAccessor);
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 JsonAccessor jointsAccessor;
                 jointsAccessor.bufferView = m_joints_buffer_view;
@@ -488,7 +490,7 @@ namespace
                 gltf.accessors.value()[m_position_accessor].max = std::vector({maxPosition[0], maxPosition[1], maxPosition[2]});
             }
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 assert(xmodel.m_vertex_bone_weights.size() == xmodel.m_vertices.size());
 
@@ -496,14 +498,15 @@ namespace
                 auto* weights = reinterpret_cast<float*>(&bufferData[currentBufferOffset + sizeof(uint8_t) * 4u * xmodel.m_vertex_bone_weights.size()]);
                 for (const auto& commonVertexWeights : xmodel.m_vertex_bone_weights)
                 {
-                    assert(commonVertexWeights.weights != nullptr);
+                    assert(commonVertexWeights.weightOffset < xmodel.m_bone_weight_data.weights.size());
                     assert(commonVertexWeights.weightCount <= 4u);
 
                     const auto commonVertexWeightCount = std::min(commonVertexWeights.weightCount, 4u);
+                    const auto* commonVertexWeightData = &xmodel.m_bone_weight_data.weights[commonVertexWeights.weightOffset];
                     for (auto i = 0u; i < commonVertexWeightCount; i++)
                     {
-                        joints[i] = static_cast<unsigned char>(commonVertexWeights.weights[i].boneIndex);
-                        weights[i] = commonVertexWeights.weights[i].weight;
+                        joints[i] = static_cast<unsigned char>(commonVertexWeightData[i].boneIndex);
+                        weights[i] = commonVertexWeightData[i].weight;
                     }
 
                     for (auto i = commonVertexWeightCount; i < 4u; i++)
@@ -571,7 +574,7 @@ namespace
 
             result += xmodel.m_vertices.size() * sizeof(GltfVertex);
 
-            if (!xmodel.m_vertex_bone_weights.empty())
+            if (!xmodel.m_bone_weight_data.weights.empty())
             {
                 // Joints and weights
                 result += xmodel.m_vertices.size() * 4u * (sizeof(uint8_t) + sizeof(float));

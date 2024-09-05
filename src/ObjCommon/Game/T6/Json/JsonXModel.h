@@ -16,15 +16,16 @@ namespace T6
     {
     public:
         std::string file;
+        float distance;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModelLod, file);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModelLod, file, distance);
 
     class JsonXModel
     {
     public:
         std::vector<JsonXModelLod> lods;
-        unsigned collLod;
+        std::optional<int> collLod;
         std::optional<std::string> physPreset;
         std::optional<std::string> physConstraints;
         unsigned flags;

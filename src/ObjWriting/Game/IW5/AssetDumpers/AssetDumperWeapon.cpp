@@ -652,7 +652,7 @@ void AssetDumperWeapon::CopyToFullDef(const WeaponCompleteDef* weapon, WeaponFul
 
     if (fullDef->weapDef.locationDamageMultipliers)
     {
-        static_assert(std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)> == HITLOC_NUM);
+        static_assert(std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)> == HITLOC_COUNT);
         assert(sizeof(WeaponFullDef::locationDamageMultipliers) >= sizeof(float) * std::extent_v<decltype(WeaponFullDef::locationDamageMultipliers)>);
         memcpy(fullDef->locationDamageMultipliers,
                fullDef->weapDef.locationDamageMultipliers,

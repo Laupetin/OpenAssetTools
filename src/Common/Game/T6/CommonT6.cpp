@@ -58,32 +58,32 @@ int Common::Com_HashString(const char* str, const int len)
     return result;
 }
 
-PackedTexCoords Common::Vec2PackTexCoords(const vec2_t* in)
+PackedTexCoords Common::Vec2PackTexCoords(const float (&in)[2])
 {
-    return PackedTexCoords{Pack32::Vec2PackTexCoords(in->v)};
+    return PackedTexCoords{pack32::Vec2PackTexCoordsUV(in)};
 }
 
-PackedUnitVec Common::Vec3PackUnitVec(const vec3_t* in)
+PackedUnitVec Common::Vec3PackUnitVec(const float (&in)[3])
 {
-    return PackedUnitVec{Pack32::Vec3PackUnitVec(in->v)};
+    return PackedUnitVec{pack32::Vec3PackUnitVecThirdBased(in)};
 }
 
-GfxColor Common::Vec4PackGfxColor(const vec4_t* in)
+GfxColor Common::Vec4PackGfxColor(const float (&in)[4])
 {
-    return GfxColor{Pack32::Vec4PackGfxColor(in->v)};
+    return GfxColor{pack32::Vec4PackGfxColor(in)};
 }
 
-void Common::Vec2UnpackTexCoords(const PackedTexCoords& in, vec2_t* out)
+void Common::Vec2UnpackTexCoords(const PackedTexCoords& in, float (&out)[2])
 {
-    Pack32::Vec2UnpackTexCoordsUV(in.packed, out->v);
+    pack32::Vec2UnpackTexCoordsUV(in.packed, out);
 }
 
-void Common::Vec3UnpackUnitVec(const PackedUnitVec& in, vec3_t* out)
+void Common::Vec3UnpackUnitVec(const PackedUnitVec& in, float (&out)[3])
 {
-    Pack32::Vec3UnpackUnitVecThirdBased(in.packed, out->v);
+    pack32::Vec3UnpackUnitVecThirdBased(in.packed, out);
 }
 
-void Common::Vec4UnpackGfxColor(const GfxColor& in, vec4_t* out)
+void Common::Vec4UnpackGfxColor(const GfxColor& in, float (&out)[4])
 {
-    Pack32::Vec4UnpackGfxColor(in.packed, out->v);
+    pack32::Vec4UnpackGfxColor(in.packed, out);
 }

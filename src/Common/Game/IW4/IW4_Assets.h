@@ -4082,7 +4082,7 @@ namespace IW4
         HITLOC_GUN = 0x12,
         HITLOC_SHIELD = 0x13,
 
-        HITLOC_NUM,
+        HITLOC_COUNT,
     };
 
     struct snd_alias_list_name
