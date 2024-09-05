@@ -270,7 +270,7 @@ namespace
                 float coordinates[3];
                 float normal[3];
                 if (!positionAccessor->GetFloatVec3(vertexIndex, coordinates) || !normalAccessor->GetFloatVec3(vertexIndex, normal)
-                    || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color) || !colorAccessor->GetFloatVec2(vertexIndex, vertex.uv)
+                    || !colorAccessor->GetFloatVec4(vertexIndex, vertex.color) || !uvAccessor->GetFloatVec2(vertexIndex, vertex.uv)
                     || !jointsAccessor->GetUnsignedVec4(vertexIndex, joints) || !weightsAccessor->GetFloatVec4(vertexIndex, weights))
                 {
                     return false;
