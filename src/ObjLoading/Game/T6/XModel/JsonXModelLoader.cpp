@@ -803,7 +803,10 @@ namespace
         {
             auto lodNumber = 0u;
             for (const auto& jLod : jXModel.lods)
-                LoadLod(jLod, xmodel, lodNumber++);
+            {
+                if (!LoadLod(jLod, xmodel, lodNumber++))
+                    return false;
+            }
             xmodel.numLods = static_cast<uint16_t>(jXModel.lods.size());
 
             xmodel.numsurfs = static_cast<unsigned char>(m_surfaces.size());
