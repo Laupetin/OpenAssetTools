@@ -15,6 +15,8 @@
 #include <Eigen>
 #pragma warning(pop)
 
+#include "XModel/Tangentspace.h"
+
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -134,6 +136,57 @@ namespace
 
         bool m_loaded;
         std::unordered_map<std::string, unsigned> m_part_classifications;
+    };
+
+    class TangentData
+    {
+    public:
+        void CreateTangentData(const XModelCommon& common)
+        {
+            if (common.m_vertices.empty())
+                return;
+
+            const auto vertexCount = common.m_vertices.size();
+            m_tangents.resize(vertexCount);
+            m_binormals.resize(vertexCount);
+
+            auto triCount = 0u;
+            for (const auto& object : common.m_objects)
+                triCount += object.m_faces.size();
+
+            std::vector<uint16_t> indices(triCount * 3u);
+            auto triOffset = 0u;
+            for (const auto& object : common.m_objects)
+            {
+                for (const auto& face : object.m_faces)
+                {
+                    indices[triOffset++] = static_cast<uint16_t>(face.vertexIndex[0]);
+                    indices[triOffset++] = static_cast<uint16_t>(face.vertexIndex[1]);
+                    indices[triOffset++] = static_cast<uint16_t>(face.vertexIndex[2]);
+                }
+            }
+
+            const auto& firstVertex = common.m_vertices[0];
+
+            tangent_space::VertexData vertexData{
+                firstVertex.coordinates,
+                sizeof(XModelVertex),
+                firstVertex.normal,
+                sizeof(XModelVertex),
+                firstVertex.uv,
+                sizeof(XModelVertex),
+                m_tangents.data(),
+                sizeof(float) * 3,
+                m_binormals.data(),
+                sizeof(float) * 3,
+                indices.data(),
+            };
+
+            tangent_space::CalculateTangentSpace(vertexData, triCount, vertexCount);
+        }
+
+        std::vector<std::array<float, 3>> m_tangents;
+        std::vector<std::array<float, 3>> m_binormals;
     };
 
     class JsonLoader
@@ -401,18 +454,19 @@ namespace
             return true;
         }
 
-        static void CreateVertex(GfxPackedVertex& vertex, const XModelVertex& commonVertex)
+        static void
+            CreateVertex(GfxPackedVertex& vertex, const XModelVertex& commonVertex, const std::array<float, 3>& tangent, const std::array<float, 3>& binormal)
         {
-            constexpr float wrongTangent[]{1, 0, 0};
+            float tangent_[]{tangent[0], tangent[1], tangent[2]};
 
             vertex.xyz.x = commonVertex.coordinates[0];
             vertex.xyz.y = commonVertex.coordinates[1];
             vertex.xyz.z = commonVertex.coordinates[2];
-            vertex.binormalSign = 1.0f; // TODO: Fill with actual value
+            vertex.binormalSign = binormal[0] > 0.0f ? 1.0f : -1.0f;
             vertex.color = Common::Vec4PackGfxColor(commonVertex.color);
             vertex.texCoord = Common::Vec2PackTexCoords(commonVertex.uv);
             vertex.normal = Common::Vec3PackUnitVec(commonVertex.normal);
-            vertex.tangent = Common::Vec3PackUnitVec(wrongTangent); // TODO: Fill with actual value
+            vertex.tangent = Common::Vec3PackUnitVec(tangent_);
         }
 
         static size_t GetRigidBoneForVertex(const size_t vertexIndex, const XModelCommon& common)
@@ -577,7 +631,8 @@ namespace
             vertexIndices = std::move(reorderLookup);
         }
 
-        bool CreateXSurface(XSurface& surface, const XModelObject& commonObject, const XModelCommon& common, unsigned& vertexOffset)
+        bool CreateXSurface(
+            XSurface& surface, const XModelObject& commonObject, const XModelCommon& common, const TangentData& tangentData, unsigned& vertexOffset)
         {
             std::vector<size_t> xmodelToCommonVertexIndexLookup;
             std::unordered_map<size_t, size_t> usedVertices;
@@ -616,8 +671,9 @@ namespace
 
             for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
             {
-                const auto& commonVertex = common.m_vertices[xmodelToCommonVertexIndexLookup[vertexIndex]];
-                CreateVertex(surface.verts0[vertexIndex], commonVertex);
+                const auto commonVertexIndex = xmodelToCommonVertexIndexLookup[vertexIndex];
+                const auto& commonVertex = common.m_vertices[commonVertexIndex];
+                CreateVertex(surface.verts0[vertexIndex], commonVertex, tangentData.m_binormals[commonVertexIndex], tangentData.m_binormals[commonVertexIndex]);
             }
 
             if (!common.m_bone_weight_data.weights.empty())
@@ -682,17 +738,20 @@ namespace
             }
 
             auto vertexOffset = 0u;
-            const auto surfaceCreationSuccessful = std::ranges::all_of(common->m_objects,
-                                                                       [this, &common, &materialAssets, &vertexOffset](const XModelObject& commonObject)
-                                                                       {
-                                                                           XSurface surface{};
-                                                                           if (!CreateXSurface(surface, commonObject, *common, vertexOffset))
-                                                                               return false;
+            TangentData tangentData;
+            tangentData.CreateTangentData(*common);
+            const auto surfaceCreationSuccessful =
+                std::ranges::all_of(common->m_objects,
+                                    [this, &common, &materialAssets, &tangentData, &vertexOffset](const XModelObject& commonObject)
+                                    {
+                                        XSurface surface{};
+                                        if (!CreateXSurface(surface, commonObject, *common, tangentData, vertexOffset))
+                                            return false;
 
-                                                                           m_surfaces.emplace_back(surface);
-                                                                           m_materials.push_back(materialAssets[commonObject.materialIndex]);
-                                                                           return true;
-                                                                       });
+                                        m_surfaces.emplace_back(surface);
+                                        m_materials.push_back(materialAssets[commonObject.materialIndex]);
+                                        return true;
+                                    });
 
             if (!surfaceCreationSuccessful)
                 return false;
