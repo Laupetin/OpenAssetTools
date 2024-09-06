@@ -650,6 +650,8 @@ namespace
                     m_accessors.emplace_back(std::make_unique<UnsignedByteAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
                 else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_SHORT)
                     m_accessors.emplace_back(std::make_unique<UnsignedShortAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
+                else if (jAccessor.componentType == JsonAccessorComponentType::UNSIGNED_INT)
+                    m_accessors.emplace_back(std::make_unique<UnsignedIntAccessor>(bufferView, jAccessor.type, byteOffset, jAccessor.count));
                 else
                     throw GltfLoadException(std::format("Accessor has unsupported component type {}", static_cast<unsigned>(jAccessor.componentType)));
             }
