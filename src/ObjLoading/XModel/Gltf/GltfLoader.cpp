@@ -411,6 +411,77 @@ namespace
             return std::nullopt;
         }
 
+        static void ApplyNodeMatrixTRS(XModelBone& bone, const JsonNode& node)
+        {
+            const auto matrix = Eigen::Matrix4f({
+                {(*node.matrix)[0], (*node.matrix)[4], (*node.matrix)[8],  (*node.matrix)[12]},
+                {(*node.matrix)[1], (*node.matrix)[5], (*node.matrix)[9],  (*node.matrix)[13]},
+                {(*node.matrix)[2], (*node.matrix)[6], (*node.matrix)[10], (*node.matrix)[14]},
+                {(*node.matrix)[3], (*node.matrix)[7], (*node.matrix)[11], (*node.matrix)[15]}
+            });
+            Eigen::Affine3f transform(matrix);
+
+            const auto translation = transform.translation();
+            bone.localOffset[0] = translation.x();
+            bone.localOffset[1] = -translation.z();
+            bone.localOffset[2] = translation.y();
+
+            const auto rotation = transform.rotation();
+            const auto rotationQuat = Eigen::Quaternionf(rotation);
+            bone.localRotation.x = rotationQuat.x();
+            bone.localRotation.y = -rotationQuat.z();
+            bone.localRotation.z = rotationQuat.y();
+            bone.localRotation.w = rotationQuat.w();
+
+            bone.scale[0] = matrix.block<3, 1>(0, 0).norm();
+            bone.scale[1] = matrix.block<3, 1>(0, 1).norm();
+            bone.scale[2] = matrix.block<3, 1>(0, 2).norm();
+        }
+
+        static void ApplyNodeSeparateTRS(XModelBone& bone, const JsonNode& node)
+        {
+            if (node.translation)
+            {
+                bone.localOffset[0] = (*node.translation)[0];
+                bone.localOffset[1] = -(*node.translation)[2];
+                bone.localOffset[2] = (*node.translation)[1];
+            }
+            else
+            {
+                bone.localOffset[0] = 0.0f;
+                bone.localOffset[1] = 0.0f;
+                bone.localOffset[2] = 0.0f;
+            }
+
+            if (node.rotation)
+            {
+                bone.localRotation.x = (*node.rotation)[0];
+                bone.localRotation.y = -(*node.rotation)[2];
+                bone.localRotation.z = (*node.rotation)[1];
+                bone.localRotation.w = (*node.rotation)[3];
+            }
+            else
+            {
+                bone.localRotation.x = 0.0f;
+                bone.localRotation.y = 0.0f;
+                bone.localRotation.z = 0.0f;
+                bone.localRotation.w = 1.0f;
+            }
+
+            if (node.scale)
+            {
+                bone.scale[0] = (*node.scale)[0];
+                bone.scale[1] = (*node.scale)[1];
+                bone.scale[2] = (*node.scale)[2];
+            }
+            else
+            {
+                bone.scale[0] = 1.0f;
+                bone.scale[1] = 1.0f;
+                bone.scale[2] = 1.0f;
+            }
+        }
+
         static bool ConvertJoint(const JsonRoot& jRoot,
                                  const JsonSkin& skin,
                                  XModelCommon& common,
@@ -435,50 +506,18 @@ namespace
             bone.name = node.name.value_or(std::string());
             bone.parentIndex = parentIndex;
 
-            if (node.scale)
-            {
-                bone.scale[0] = parentScale[0] * (*node.scale)[0];
-                bone.scale[1] = parentScale[1] * (*node.scale)[1];
-                bone.scale[2] = parentScale[2] * (*node.scale)[2];
-            }
+            if (node.matrix)
+                ApplyNodeMatrixTRS(bone, node);
             else
-            {
-                bone.scale[0] = parentScale[0];
-                bone.scale[1] = parentScale[1];
-                bone.scale[2] = parentScale[2];
-            }
+                ApplyNodeSeparateTRS(bone, node);
 
-            if (node.translation)
-            {
-                bone.localOffset[0] = (*node.translation)[0];
-                bone.localOffset[1] = -(*node.translation)[2];
-                bone.localOffset[2] = (*node.translation)[1];
-            }
-            else
-            {
-                bone.localOffset[0] = 0.0f;
-                bone.localOffset[1] = 0.0f;
-                bone.localOffset[2] = 0.0f;
-            }
+            bone.scale[0] *= parentScale[0];
+            bone.scale[1] *= parentScale[1];
+            bone.scale[2] *= parentScale[2];
 
             bone.globalOffset[0] = bone.localOffset[0] + parentOffset[0];
             bone.globalOffset[1] = bone.localOffset[1] + parentOffset[1];
             bone.globalOffset[2] = bone.localOffset[2] + parentOffset[2];
-
-            if (node.rotation)
-            {
-                bone.localRotation.x = (*node.rotation)[0];
-                bone.localRotation.y = -(*node.rotation)[2];
-                bone.localRotation.z = (*node.rotation)[1];
-                bone.localRotation.w = (*node.rotation)[3];
-            }
-            else
-            {
-                bone.localRotation.x = 0.0f;
-                bone.localRotation.y = 0.0f;
-                bone.localRotation.z = 0.0f;
-                bone.localRotation.w = 1.0f;
-            }
 
             const auto localRotationEigen = Eigen::Quaternionf(bone.localRotation.w, bone.localRotation.x, bone.localRotation.y, bone.localRotation.z);
             const auto parentRotationEigen = Eigen::Quaternionf(parentRotation.w, parentRotation.x, parentRotation.y, parentRotation.z);
