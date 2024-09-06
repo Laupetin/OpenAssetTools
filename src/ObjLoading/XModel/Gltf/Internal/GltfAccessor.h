@@ -130,4 +130,26 @@ namespace gltf
         size_t m_byte_offset;
         size_t m_count;
     };
+
+    class UnsignedIntAccessor final : public Accessor
+    {
+    public:
+        UnsignedIntAccessor(const BufferView* bufferView, JsonAccessorType type, size_t byteOffset, size_t count);
+
+        [[nodiscard]] std::optional<JsonAccessorType> GetType() const override;
+        [[nodiscard]] std::optional<JsonAccessorComponentType> GetComponentType() const override;
+        [[nodiscard]] size_t GetCount() const override;
+
+        [[nodiscard]] bool GetFloatVec2(size_t index, float (&out)[2]) const override;
+        [[nodiscard]] bool GetFloatVec3(size_t index, float (&out)[3]) const override;
+        [[nodiscard]] bool GetFloatVec4(size_t index, float (&out)[4]) const override;
+        [[nodiscard]] bool GetUnsigned(size_t index, unsigned& out) const override;
+        [[nodiscard]] bool GetUnsignedVec4(size_t index, unsigned (&out)[4]) const override;
+
+    private:
+        const BufferView* m_buffer_view;
+        JsonAccessorType m_type;
+        size_t m_byte_offset;
+        size_t m_count;
+    };
 } // namespace gltf
