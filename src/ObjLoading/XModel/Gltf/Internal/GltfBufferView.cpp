@@ -12,7 +12,7 @@ BufferView::BufferView(const Buffer* buffer, const size_t offset, const size_t l
 
 bool BufferView::ReadElement(void* dest, const size_t elementIndex, const size_t elementSize, const size_t elementOffset) const
 {
-    const auto stride = std::max(elementOffset + elementSize, m_stride);
+    const auto stride = std::max(elementSize, m_stride);
     const auto bufferViewOffset = elementOffset + elementIndex * stride;
     if (bufferViewOffset + elementSize > m_length)
         return false;
