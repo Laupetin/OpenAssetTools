@@ -533,7 +533,7 @@ bool UnsignedIntAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[4]
         return false;
 
     uint32_t temp[4];
-    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4]), m_byte_offset))
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint32_t[4]), m_byte_offset))
         return false;
 
     out[0] = static_cast<unsigned>(temp[0]);
