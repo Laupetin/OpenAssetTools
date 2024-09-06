@@ -435,3 +435,111 @@ bool UnsignedShortAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[
 
     return true;
 }
+
+UnsignedIntAccessor::UnsignedIntAccessor(const BufferView* bufferView, const JsonAccessorType type, size_t byteOffset, const size_t count)
+    : m_buffer_view(bufferView),
+      m_type(type),
+      m_byte_offset(byteOffset),
+      m_count(count)
+{
+}
+
+std::optional<JsonAccessorType> UnsignedIntAccessor::GetType() const
+{
+    return m_type;
+}
+
+std::optional<JsonAccessorComponentType> UnsignedIntAccessor::GetComponentType() const
+{
+    return JsonAccessorComponentType::UNSIGNED_INT;
+}
+
+size_t UnsignedIntAccessor::GetCount() const
+{
+    return m_count;
+}
+
+bool UnsignedIntAccessor::GetFloatVec2(const size_t index, float (&out)[2]) const
+{
+    assert(m_type == JsonAccessorType::VEC2 || m_type == JsonAccessorType::VEC3 || m_type == JsonAccessorType::VEC4);
+    if (index >= m_count)
+        return false;
+
+    uint32_t temp[2];
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint32_t[2]), m_byte_offset))
+        return false;
+
+    // Return as normalized value between 0 and 1
+    out[0] = static_cast<float>(temp[0]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    out[1] = static_cast<float>(temp[1]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+
+    return true;
+}
+
+bool UnsignedIntAccessor::GetFloatVec3(const size_t index, float (&out)[3]) const
+{
+    assert(m_type == JsonAccessorType::VEC3 || m_type == JsonAccessorType::VEC4);
+    if (index >= m_count)
+        return false;
+
+    uint32_t temp[3];
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint32_t[3]), m_byte_offset))
+        return false;
+
+    // Return as normalized value between 0 and 1
+    out[0] = static_cast<float>(temp[0]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    out[1] = static_cast<float>(temp[1]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    out[2] = static_cast<float>(temp[2]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+
+    return true;
+}
+
+bool UnsignedIntAccessor::GetFloatVec4(const size_t index, float (&out)[4]) const
+{
+    assert(m_type == JsonAccessorType::VEC4);
+    if (index >= m_count)
+        return false;
+
+    uint32_t temp[4];
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint32_t[4]), m_byte_offset))
+        return false;
+
+    // Return as normalized value between 0 and 1
+    out[0] = static_cast<float>(temp[0]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    out[1] = static_cast<float>(temp[1]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    out[2] = static_cast<float>(temp[2]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+    out[3] = static_cast<float>(temp[3]) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+
+    return true;
+}
+
+bool UnsignedIntAccessor::GetUnsigned(const size_t index, unsigned& out) const
+{
+    if (index >= m_count)
+        return false;
+
+    uint32_t temp;
+    if (!m_buffer_view->ReadElement(&temp, index, sizeof(uint32_t), m_byte_offset))
+        return false;
+
+    out = temp;
+    return true;
+}
+
+bool UnsignedIntAccessor::GetUnsignedVec4(const size_t index, unsigned (&out)[4]) const
+{
+    assert(m_type == JsonAccessorType::VEC4);
+    if (index >= m_count)
+        return false;
+
+    uint32_t temp[4];
+    if (!m_buffer_view->ReadElement(temp, index, sizeof(uint8_t[4]), m_byte_offset))
+        return false;
+
+    out[0] = static_cast<unsigned>(temp[0]);
+    out[1] = static_cast<unsigned>(temp[1]);
+    out[2] = static_cast<unsigned>(temp[2]);
+    out[3] = static_cast<unsigned>(temp[3]);
+
+    return true;
+}
