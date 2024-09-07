@@ -44,7 +44,7 @@ namespace pack32
         PackUtil32 z;
         z.f = (in[2] - -24624.0939334638f) * 0.0001218318939208984f;
 
-        return x.u | y.u << 10u | z.u << 20u;
+        return (x.u & 0x3FF) | (y.u & 0x3FF) << 10u | (z.u & 0x3FF) << 20u;
     }
 
     uint32_t Vec4PackGfxColor(const float (&in)[4])
