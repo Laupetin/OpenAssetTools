@@ -131,10 +131,9 @@ bool AssetLoaderVehicle::LoadFromInfoString(
 
 void* AssetLoaderVehicle::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* vehicleDef = memory->Create<VehicleDef>();
-    memset(vehicleDef, 0, sizeof(VehicleDef));
-    vehicleDef->name = memory->Dup(assetName.c_str());
-    return vehicleDef;
+    auto* asset = memory->Alloc<AssetVehicle::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderVehicle::CanLoadFromGdt() const

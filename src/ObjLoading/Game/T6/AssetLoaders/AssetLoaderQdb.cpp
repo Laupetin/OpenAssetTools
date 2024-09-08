@@ -9,10 +9,9 @@ using namespace T6;
 
 void* AssetLoaderQdb::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* qdb = memory->Create<Qdb>();
-    memset(qdb, 0, sizeof(Qdb));
-    qdb->name = memory->Dup(assetName.c_str());
-    return qdb;
+    auto* asset = memory->Alloc<AssetQdb::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderQdb::CanLoadFromRaw() const

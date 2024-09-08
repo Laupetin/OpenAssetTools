@@ -68,10 +68,9 @@ bool AssetLoaderTracer::LoadFromInfoString(
 
 void* AssetLoaderTracer::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* tracer = memory->Create<TracerDef>();
-    memset(tracer, 0, sizeof(TracerDef));
-    tracer->name = memory->Dup(assetName.c_str());
-    return tracer;
+    auto* asset = memory->Alloc<AssetTracer::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderTracer::CanLoadFromGdt() const

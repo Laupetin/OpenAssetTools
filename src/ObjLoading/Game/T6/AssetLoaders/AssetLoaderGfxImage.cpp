@@ -14,10 +14,9 @@ using namespace T6;
 
 void* AssetLoaderGfxImage::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* image = memory->Create<GfxImage>();
-    memset(image, 0, sizeof(GfxImage));
-    image->name = memory->Dup(assetName.c_str());
-    return image;
+    auto* asset = memory->Alloc<AssetImage::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderGfxImage::CanLoadFromRaw() const

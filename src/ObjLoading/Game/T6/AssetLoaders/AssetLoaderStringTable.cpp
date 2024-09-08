@@ -12,10 +12,9 @@ using namespace T6;
 
 void* AssetLoaderStringTable::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* stringTable = memory->Create<StringTable>();
-    memset(stringTable, 0, sizeof(StringTable));
-    stringTable->name = memory->Dup(assetName.c_str());
-    return stringTable;
+    auto* asset = memory->Alloc<AssetStringTable::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderStringTable::CanLoadFromRaw() const

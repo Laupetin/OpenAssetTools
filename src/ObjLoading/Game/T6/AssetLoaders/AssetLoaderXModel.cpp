@@ -12,11 +12,9 @@ using namespace T6;
 
 void* AssetLoaderXModel::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* xmodel = memory->Create<XModel>();
-    memset(xmodel, 0, sizeof(XModel));
-    xmodel->name = memory->Dup(assetName.c_str());
-
-    return xmodel;
+    auto* asset = memory->Alloc<AssetXModel::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderXModel::CanLoadFromRaw() const

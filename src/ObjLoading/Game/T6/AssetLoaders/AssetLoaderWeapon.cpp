@@ -630,8 +630,7 @@ bool AssetLoaderWeapon::LoadFromInfoString(
 
 void* AssetLoaderWeapon::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* weaponFullDef = memory->Create<WeaponFullDef>();
-    memset(weaponFullDef, 0, sizeof(WeaponFullDef));
+    auto* weaponFullDef = memory->Alloc<WeaponFullDef>();
     LinkWeaponFullDefSubStructs(weaponFullDef);
     CalculateWeaponFields(weaponFullDef);
     weaponFullDef->weapVariantDef.szInternalName = memory->Dup(assetName.c_str());

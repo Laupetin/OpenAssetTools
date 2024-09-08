@@ -9,10 +9,9 @@ using namespace T6;
 
 void* AssetLoaderScriptParseTree::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* scriptParseTree = memory->Create<ScriptParseTree>();
-    memset(scriptParseTree, 0, sizeof(ScriptParseTree));
-    scriptParseTree->name = memory->Dup(assetName.c_str());
-    return scriptParseTree;
+    auto* asset = memory->Alloc<AssetScript::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderScriptParseTree::CanLoadFromRaw() const

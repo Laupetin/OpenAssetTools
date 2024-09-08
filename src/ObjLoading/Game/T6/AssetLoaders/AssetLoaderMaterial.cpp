@@ -12,11 +12,9 @@ using namespace T6;
 
 void* AssetLoaderMaterial::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* material = memory->Create<Material>();
-    memset(material, 0, sizeof(Material));
-    material->info.name = memory->Dup(assetName.c_str());
-
-    return material;
+    auto* asset = memory->Alloc<AssetMaterial::Type>();
+    asset->info.name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderMaterial::CanLoadFromRaw() const

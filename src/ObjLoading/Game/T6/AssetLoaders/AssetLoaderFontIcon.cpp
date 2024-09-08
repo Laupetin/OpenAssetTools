@@ -13,10 +13,9 @@ using namespace T6;
 
 void* AssetLoaderFontIcon::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* fontIcon = memory->Create<FontIcon>();
-    memset(fontIcon, 0, sizeof(FontIcon));
-    fontIcon->name = memory->Dup(assetName.c_str());
-    return fontIcon;
+    auto* asset = memory->Alloc<AssetFontIcon::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderFontIcon::CanLoadFromRaw() const

@@ -120,8 +120,7 @@ bool AssetLoaderWeaponAttachment::LoadFromInfoString(
 
 void* AssetLoaderWeaponAttachment::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* attachment = memory->Create<WeaponAttachment>();
-    memset(attachment, 0, sizeof(WeaponAttachment));
+    auto* attachment = memory->Alloc<WeaponAttachment>();
     CalculateAttachmentFields(attachment);
     attachment->szInternalName = memory->Dup(assetName.c_str());
     return attachment;

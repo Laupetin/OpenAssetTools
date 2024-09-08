@@ -239,8 +239,7 @@ bool AssetLoaderWeaponAttachmentUnique::LoadFromInfoString(
 
 void* AssetLoaderWeaponAttachmentUnique::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* attachmentUniqueFull = memory->Create<WeaponAttachmentUniqueFull>();
-    memset(attachmentUniqueFull, 0, sizeof(WeaponAttachmentUniqueFull));
+    auto* attachmentUniqueFull = memory->Alloc<WeaponAttachmentUniqueFull>();
     LinkAttachmentUniqueFullSubStructs(attachmentUniqueFull);
     CalculateAttachmentUniqueFields(assetName, attachmentUniqueFull);
     attachmentUniqueFull->attachment.szInternalName = memory->Dup(assetName.c_str());

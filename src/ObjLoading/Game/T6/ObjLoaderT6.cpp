@@ -1,24 +1,50 @@
 #include "ObjLoaderT6.h"
 
+#include "AssetLoaders/AssetLoaderAddonMapEnts.h"
+#include "AssetLoaders/AssetLoaderClipMap.h"
+#include "AssetLoaders/AssetLoaderComWorld.h"
+#include "AssetLoaders/AssetLoaderDDL.h"
+#include "AssetLoaders/AssetLoaderDestructibleDef.h"
+#include "AssetLoaders/AssetLoaderEmblemSet.h"
+#include "AssetLoaders/AssetLoaderFont.h"
 #include "AssetLoaders/AssetLoaderFontIcon.h"
+#include "AssetLoaders/AssetLoaderFootstepFxTable.h"
+#include "AssetLoaders/AssetLoaderFootstepTable.h"
+#include "AssetLoaders/AssetLoaderFx.h"
+#include "AssetLoaders/AssetLoaderGameWorldMp.h"
+#include "AssetLoaders/AssetLoaderGameWorldSp.h"
 #include "AssetLoaders/AssetLoaderGfxImage.h"
+#include "AssetLoaders/AssetLoaderGfxLightDef.h"
+#include "AssetLoaders/AssetLoaderGfxWorld.h"
+#include "AssetLoaders/AssetLoaderGlasses.h"
+#include "AssetLoaders/AssetLoaderImpactFx.h"
 #include "AssetLoaders/AssetLoaderLeaderboard.h"
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
+#include "AssetLoaders/AssetLoaderMapEnts.h"
 #include "AssetLoaders/AssetLoaderMaterial.h"
+#include "AssetLoaders/AssetLoaderMemoryBlock.h"
+#include "AssetLoaders/AssetLoaderMenu.h"
+#include "AssetLoaders/AssetLoaderMenuList.h"
 #include "AssetLoaders/AssetLoaderPhysConstraints.h"
 #include "AssetLoaders/AssetLoaderPhysPreset.h"
 #include "AssetLoaders/AssetLoaderQdb.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderScriptParseTree.h"
+#include "AssetLoaders/AssetLoaderSkinnedVerts.h"
 #include "AssetLoaders/AssetLoaderSlug.h"
 #include "AssetLoaders/AssetLoaderSoundBank.h"
+#include "AssetLoaders/AssetLoaderSoundDriverGlobals.h"
+#include "AssetLoaders/AssetLoaderSoundPatch.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
+#include "AssetLoaders/AssetLoaderTechniqueSet.h"
 #include "AssetLoaders/AssetLoaderTracer.h"
 #include "AssetLoaders/AssetLoaderVehicle.h"
 #include "AssetLoaders/AssetLoaderWeapon.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachment.h"
 #include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
 #include "AssetLoaders/AssetLoaderWeaponCamo.h"
+#include "AssetLoaders/AssetLoaderXAnim.h"
+#include "AssetLoaders/AssetLoaderXGlobals.h"
 #include "AssetLoaders/AssetLoaderXModel.h"
 #include "AssetLoaders/AssetLoaderZBarrier.h"
 #include "AssetLoading/AssetLoadingManager.h"
@@ -49,51 +75,51 @@ namespace T6
 
         REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
         REGISTER_ASSET_LOADER(AssetLoaderPhysConstraints)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetDestructibleDef>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXAnim>)
+        REGISTER_ASSET_LOADER(AssetLoaderDestructibleDef)
+        REGISTER_ASSET_LOADER(AssetLoaderXAnim)
         REGISTER_ASSET_LOADER(AssetLoaderXModel)
         REGISTER_ASSET_LOADER(AssetLoaderMaterial)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetTechniqueSet>)
+        REGISTER_ASSET_LOADER(AssetLoaderTechniqueSet)
         REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
         REGISTER_ASSET_LOADER(AssetLoaderSoundBank)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetSoundPatch>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetClipMap>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetClipMapPvs>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetComWorld>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetGameWorldSp>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetGameWorldMp>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetMapEnts>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetGfxWorld>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetLightDef>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetFont>)
+        REGISTER_ASSET_LOADER(AssetLoaderSoundPatch)
+        REGISTER_ASSET_LOADER(AssetLoaderClipMap)
+        REGISTER_ASSET_LOADER(AssetLoaderClipMapPvs)
+        REGISTER_ASSET_LOADER(AssetLoaderComWorld)
+        REGISTER_ASSET_LOADER(AssetLoaderGameWorldSp)
+        REGISTER_ASSET_LOADER(AssetLoaderGameWorldMp)
+        REGISTER_ASSET_LOADER(AssetLoaderMapEnts)
+        REGISTER_ASSET_LOADER(AssetLoaderGfxWorld)
+        REGISTER_ASSET_LOADER(AssetLoaderGfxLightDef)
+        REGISTER_ASSET_LOADER(AssetLoaderFont)
         REGISTER_ASSET_LOADER(AssetLoaderFontIcon)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetMenuList>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetMenu>)
+        REGISTER_ASSET_LOADER(AssetLoaderMenuList)
+        REGISTER_ASSET_LOADER(AssetLoaderMenu)
         REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
         REGISTER_ASSET_LOADER(AssetLoaderWeapon)
         REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachment)
         REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachmentUnique)
         REGISTER_ASSET_LOADER(AssetLoaderWeaponCamo)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetSoundDriverGlobals>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetFx>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetImpactFx>)
+        REGISTER_ASSET_LOADER(AssetLoaderSoundDriverGlobals)
+        REGISTER_ASSET_LOADER(AssetLoaderFx)
+        REGISTER_ASSET_LOADER(AssetLoaderImpactFx)
         REGISTER_ASSET_LOADER(AssetLoaderRawFile)
         REGISTER_ASSET_LOADER(AssetLoaderStringTable)
         REGISTER_ASSET_LOADER(AssetLoaderLeaderboard)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXGlobals>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetDDL>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetGlasses>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetEmblemSet>)
+        REGISTER_ASSET_LOADER(AssetLoaderXGlobals)
+        REGISTER_ASSET_LOADER(AssetLoaderDDL)
+        REGISTER_ASSET_LOADER(AssetLoaderGlasses)
+        REGISTER_ASSET_LOADER(AssetLoaderEmblemSet)
         REGISTER_ASSET_LOADER(AssetLoaderScriptParseTree)
         REGISTER_ASSET_LOADER(AssetLoaderVehicle)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetMemoryBlock>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetAddonMapEnts>)
+        REGISTER_ASSET_LOADER(AssetLoaderMemoryBlock)
+        REGISTER_ASSET_LOADER(AssetLoaderAddonMapEnts)
         REGISTER_ASSET_LOADER(AssetLoaderTracer)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetSkinnedVerts>)
+        REGISTER_ASSET_LOADER(AssetLoaderSkinnedVerts)
         REGISTER_ASSET_LOADER(AssetLoaderQdb)
         REGISTER_ASSET_LOADER(AssetLoaderSlug)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetFootstepTable>)
-        REGISTER_ASSET_LOADER(BasicAssetLoader<AssetFootstepFxTable>)
+        REGISTER_ASSET_LOADER(AssetLoaderFootstepTable)
+        REGISTER_ASSET_LOADER(AssetLoaderFootstepFxTable)
         REGISTER_ASSET_LOADER(AssetLoaderZBarrier)
 
 #undef REGISTER_ASSET_LOADER

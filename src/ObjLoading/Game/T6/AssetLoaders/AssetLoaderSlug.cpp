@@ -9,10 +9,9 @@ using namespace T6;
 
 void* AssetLoaderSlug::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* slug = memory->Create<Slug>();
-    memset(slug, 0, sizeof(Slug));
-    slug->name = memory->Dup(assetName.c_str());
-    return slug;
+    auto* asset = memory->Alloc<AssetSlug::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderSlug::CanLoadFromRaw() const
