@@ -484,7 +484,7 @@ namespace
         static void
             CreateVertex(GfxPackedVertex& vertex, const XModelVertex& commonVertex, const std::array<float, 3>& tangent, const std::array<float, 3>& binormal)
         {
-            float tangent_[]{tangent[0], tangent[1], tangent[2]};
+            const float tangentPlainArray[]{tangent[0], tangent[1], tangent[2]};
 
             vertex.xyz.x = commonVertex.coordinates[0];
             vertex.xyz.y = commonVertex.coordinates[1];
@@ -493,7 +493,7 @@ namespace
             vertex.color = Common::Vec4PackGfxColor(commonVertex.color);
             vertex.texCoord = Common::Vec2PackTexCoords(commonVertex.uv);
             vertex.normal = Common::Vec3PackUnitVec(commonVertex.normal);
-            vertex.tangent = Common::Vec3PackUnitVec(tangent_);
+            vertex.tangent = Common::Vec3PackUnitVec(tangentPlainArray);
         }
 
         static size_t GetRigidBoneForVertex(const size_t vertexIndex, const XModelCommon& common)
@@ -557,7 +557,7 @@ namespace
             surface.partBits[partBitsIndex] |= 1 << shiftValue;
         }
 
-        void CreateVertListData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
+        void CreateVertListData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common) const
         {
             ReorderRigidTrisByBoneIndex(vertexIndices, surface, common);
             const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
@@ -663,6 +663,13 @@ namespace
             std::vector<size_t> xmodelToCommonVertexIndexLookup;
             std::unordered_map<size_t, size_t> usedVertices;
 
+            constexpr auto maxTriCount = std::numeric_limits<decltype(XSurface::triCount)>::max();
+            if (commonObject.m_faces.size() > maxTriCount)
+            {
+                std::cerr << std::format("Surface cannot have more than {} faces\n", maxTriCount);
+                return false;
+            }
+
             surface.triCount = static_cast<uint16_t>(commonObject.m_faces.size());
             surface.triIndices = m_memory.Alloc<XSurfaceTri>(surface.triCount);
 
@@ -689,6 +696,13 @@ namespace
             }
 
             ReorderVerticesByWeightCount(xmodelToCommonVertexIndexLookup, surface, common);
+
+            constexpr auto maxVertices = std::numeric_limits<decltype(XSurface::vertCount)>::max();
+            if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVertices)
+            {
+                std::cerr << std::format("Lod exceeds limit of {} vertices\n", maxVertices);
+                return false;
+            }
 
             surface.baseVertIndex = static_cast<uint16_t>(vertexOffset);
             surface.vertCount = static_cast<uint16_t>(xmodelToCommonVertexIndexLookup.size());
@@ -756,6 +770,14 @@ namespace
 
             auto& lodInfo = xmodel.lodInfo[lodNumber];
             lodInfo.dist = jLod.distance;
+
+            constexpr auto maxSurfaces = std::numeric_limits<decltype(XModelLodInfo::numsurfs)>::max();
+            if (common->m_objects.size() > maxSurfaces)
+            {
+                PrintError(xmodel, std::format("Lod {} cannot have more than {} surfaces", lodNumber, maxSurfaces));
+                return false;
+            }
+
             lodInfo.surfIndex = static_cast<uint16_t>(m_surfaces.size());
             lodInfo.numsurfs = static_cast<uint16_t>(common->m_objects.size());
 
@@ -835,13 +857,27 @@ namespace
 
         bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel)
         {
+            constexpr auto maxLods = std::extent_v<decltype(XModel::lodInfo)>;
+            if (jXModel.lods.size() > maxLods)
+            {
+                PrintError(xmodel, std::format("Model cannot have more than {} lods", maxLods));
+                return false;
+            }
+
             auto lodNumber = 0u;
+            xmodel.numLods = static_cast<uint16_t>(jXModel.lods.size());
             for (const auto& jLod : jXModel.lods)
             {
                 if (!LoadLod(jLod, xmodel, lodNumber++))
                     return false;
             }
-            xmodel.numLods = static_cast<uint16_t>(jXModel.lods.size());
+
+            constexpr auto maxSurfaces = std::numeric_limits<decltype(XModel::numsurfs)>::max();
+            if (m_surfaces.size() > maxSurfaces)
+            {
+                PrintError(xmodel, std::format("Model cannot have more than {} surfaces across all lods", maxSurfaces));
+                return false;
+            }
 
             xmodel.numsurfs = static_cast<unsigned char>(m_surfaces.size());
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
