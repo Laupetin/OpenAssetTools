@@ -262,6 +262,33 @@ namespace
             return nullptr;
         }
 
+        static void AutoGenerateArmature(XModelCommon& common)
+        {
+            assert(common.m_bones.empty());
+            assert(common.m_bone_weight_data.weights.empty());
+            assert(common.m_vertex_bone_weights.size() == common.m_vertices.size());
+
+            XModelBone rootBone{
+                "root",
+                std::nullopt,
+                {1.0f, 1.0f, 1.0f},
+                {0.0f, 0.0f, 0.0f},
+                {0.0f, 0.0f, 0.0f},
+                {0.0f, 0.0f, 0.0f, 1.0f},
+                {0.0f, 0.0f, 0.0f, 1.0f},
+            };
+            common.m_bones.emplace_back(rootBone);
+
+            XModelBoneWeight rootWeight{0, 1.0f};
+            common.m_bone_weight_data.weights.emplace_back(rootWeight);
+
+            for (auto& vertexBoneWeights : common.m_vertex_bone_weights)
+            {
+                vertexBoneWeights.weightOffset = 0u;
+                vertexBoneWeights.weightCount = 1u;
+            }
+        }
+
         static void ApplyBasePose(DObjAnimMat& baseMat, const XModelBone& bone)
         {
             baseMat.trans.x = bone.globalOffset[0];
@@ -712,6 +739,9 @@ namespace
                 PrintError(xmodel, std::format("Failure while trying to load model for lod {}: \"{}\"", lodNumber, jLod.file));
                 return false;
             }
+
+            if (common->m_bones.empty())
+                AutoGenerateArmature(*common);
 
             if (lodNumber == 0u)
             {
