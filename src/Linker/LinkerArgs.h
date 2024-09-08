@@ -20,7 +20,7 @@ public:
     static constexpr auto DEFAULT_OUTPUT_FOLDER = "?base?/zone_out/?project?";
     static constexpr auto DEFAULT_ASSET_SEARCH_PATH = "?bin?/raw/?game?;?base?/raw;?base?/raw/?game?;?base?/zone_raw/?project?";
     static constexpr auto DEFAULT_GDT_SEARCH_PATH = "?base?/source_data;?base?/zone_raw/?project?/source_data";
-    static constexpr auto DEFAULT_SOURCE_SEARCH_PATH = "?base?/zone_source;?base?/zone_raw/?project?/zone_source";
+    static constexpr auto DEFAULT_SOURCE_SEARCH_PATH = "?base?/zone_source;?base?/zone_raw/?project?;?base?/zone_raw/?project?/zone_source";
 
     LinkerArgs();
     bool ParseArgs(int argc, const char** argv, bool& shouldContinue);

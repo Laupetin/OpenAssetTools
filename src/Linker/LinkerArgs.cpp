@@ -49,6 +49,14 @@ const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     .WithParameter("outputFolderPath")
     .Build();
 
+const CommandLineOption* const OPTION_ADD_ASSET_SEARCH_PATH =
+    CommandLineOption::Builder::Create()
+    .WithLongName("add-asset-search-path")
+    .WithDescription("Adds a search paths used for assets. This does not override the default search paths.")
+    .WithParameter("assetSearchPathString")
+    .Reusable()
+    .Build();
+
 const CommandLineOption* const OPTION_ASSET_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("asset-search-path")
@@ -59,14 +67,22 @@ const CommandLineOption* const OPTION_ASSET_SEARCH_PATH =
 const CommandLineOption* const OPTION_GDT_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("gdt-search-path")
-    .WithDescription("Specifies the search paths used for assets. Defaults to \"" + std::string(LinkerArgs::DEFAULT_GDT_SEARCH_PATH) + "\".")
+    .WithDescription("Specifies the search paths used for gdt files. Defaults to \"" + std::string(LinkerArgs::DEFAULT_GDT_SEARCH_PATH) + "\".")
     .WithParameter("gdtSearchPathString")
+    .Build();
+
+const CommandLineOption* const OPTION_ADD_SOURCE_SEARCH_PATH =
+    CommandLineOption::Builder::Create()
+    .WithLongName("add-source-search-path")
+    .WithDescription("Adds a search paths used for source files. This does not override the default search paths.")
+    .WithParameter("sourceSearchPathString")
+    .Reusable()
     .Build();
 
 const CommandLineOption* const OPTION_SOURCE_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("source-search-path")
-    .WithDescription("Specifies the search paths used for assets. Defaults to \"" + std::string(LinkerArgs::DEFAULT_SOURCE_SEARCH_PATH) + "\".")
+    .WithDescription("Specifies the search paths used for source files. Defaults to \"" + std::string(LinkerArgs::DEFAULT_SOURCE_SEARCH_PATH) + "\".")
     .WithParameter("sourceSearchPathString")
     .Build();
 
@@ -100,8 +116,10 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_VERBOSE,
     OPTION_BASE_FOLDER,
     OPTION_OUTPUT_FOLDER,
+    OPTION_ADD_ASSET_SEARCH_PATH,
     OPTION_ASSET_SEARCH_PATH,
     OPTION_GDT_SEARCH_PATH,
+    OPTION_ADD_SOURCE_SEARCH_PATH,
     OPTION_SOURCE_SEARCH_PATH,
     OPTION_LOAD,
     OPTION_MENU_PERMISSIVE,
@@ -287,6 +305,13 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
             return false;
     }
 
+    // --add-assets-search-path
+    for (const auto& specifiedValue : m_argument_parser.GetParametersForOption(OPTION_ADD_ASSET_SEARCH_PATH))
+    {
+        if (!FileUtils::ParsePathsString(specifiedValue, m_asset_search_paths))
+            return false;
+    }
+
     // --gdt-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_GDT_SEARCH_PATH))
     {
@@ -308,6 +333,13 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
     else
     {
         if (!FileUtils::ParsePathsString(DEFAULT_SOURCE_SEARCH_PATH, m_source_search_paths))
+            return false;
+    }
+
+    // --add-source-search-path
+    for (const auto& specifiedValue : m_argument_parser.GetParametersForOption(OPTION_ADD_SOURCE_SEARCH_PATH))
+    {
+        if (!FileUtils::ParsePathsString(specifiedValue, m_source_search_paths))
             return false;
     }
 
