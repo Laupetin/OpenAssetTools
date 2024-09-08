@@ -89,12 +89,19 @@ namespace
                 gltf.nodes.emplace();
 
             m_mesh_node = gltf.nodes->size();
+
+            if (xmodel.m_bones.empty())
+                m_root_node = m_mesh_node;
+
             gltf.nodes->emplace_back(std::move(meshNode));
         }
 
         void CreateRootNode(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             JsonNode rootNode;
+
+            if (xmodel.m_bones.empty())
+                return;
 
             if (!xmodel.m_name.empty())
                 rootNode.name = std::format("{}_skel", xmodel.m_name);
@@ -104,9 +111,7 @@ namespace
 
             rootNode.children.emplace();
             rootNode.children->push_back(m_mesh_node);
-
-            if (!xmodel.m_bones.empty())
-                rootNode.children->push_back(m_first_bone_node);
+            rootNode.children->push_back(m_first_bone_node);
 
             m_root_node = gltf.nodes->size();
             gltf.nodes->emplace_back(std::move(rootNode));
