@@ -64,6 +64,7 @@ It is hosted on Github Pages and its source can be found in the [OAT Docs Reposi
 For examples of mods that can be built with OAT, you can either look into the [docs folder](docs/example) for some (currently very barebones) examples
 or check out one of the following projects that are using OAT:
 
+* [OpenAssetTools/Examples](https://github.com/OpenAssetTools/Examples)
 * [JezuzLizard/t6-fastfile-mods](https://github.com/JezuzLizard/t6-fastfile-mods)
 * [Jbleezy/BO2-Reimagined](https://github.com/Jbleezy/BO2-Reimagined)
 * [diamante0018/PlutoIW5Arena](https://github.com/diamante0018/PlutoIW5Arena) (Includes a GitHub action pipeline for building the mod)
