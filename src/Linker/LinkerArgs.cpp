@@ -109,13 +109,14 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 };
 
 LinkerArgs::LinkerArgs()
-    : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
-      m_base_pattern(R"(\?base\?)"),
-      m_game_pattern(R"(\?game\?)"),
-      m_project_pattern(R"(\?project\?)"),
+    : m_verbose(false),
       m_base_folder_depends_on_project(false),
       m_out_folder_depends_on_project(false),
-      m_verbose(false)
+      m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
+      m_bin_pattern(R"(\?bin\?)"),
+      m_base_pattern(R"(\?base\?)"),
+      m_game_pattern(R"(\?game\?)"),
+      m_project_pattern(R"(\?project\?)")
 {
 }
 
@@ -137,6 +138,12 @@ void LinkerArgs::PrintUsage()
 void LinkerArgs::PrintVersion()
 {
     std::cout << "OpenAssetTools Linker " << std::string(GIT_VERSION) << "\n";
+}
+
+void LinkerArgs::SetBinFolder(const char* argv0)
+{
+    const fs::path path(argv0);
+    m_bin_folder = path.parent_path().string();
 }
 
 void LinkerArgs::SetVerbose(const bool isVerbose)
@@ -205,8 +212,12 @@ std::set<std::string> LinkerArgs::GetSearchPathsForProject(const std::set<std::s
             continue;
         }
 
-        out.emplace(std::regex_replace(
-            std::regex_replace(std::regex_replace(path, m_project_pattern, projectName), m_game_pattern, gameName), m_base_pattern, basePath));
+        fs::path p(std::regex_replace(std::regex_replace(std::regex_replace(std::regex_replace(path, m_project_pattern, projectName), m_game_pattern, gameName),
+                                                         m_base_pattern,
+                                                         basePath),
+                                      m_bin_pattern,
+                                      m_bin_folder));
+        out.emplace(p.make_preferred().string());
     }
 
     return out;
@@ -236,6 +247,8 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
         shouldContinue = false;
         return true;
     }
+
+    SetBinFolder(argv[0]);
 
     m_project_specifiers_to_build = m_argument_parser.GetArguments();
     if (m_project_specifiers_to_build.empty())
