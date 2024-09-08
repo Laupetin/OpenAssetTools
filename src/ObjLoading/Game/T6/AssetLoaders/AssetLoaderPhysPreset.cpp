@@ -85,10 +85,9 @@ bool AssetLoaderPhysPreset::LoadFromInfoString(
 
 void* AssetLoaderPhysPreset::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* physPreset = memory->Create<PhysPreset>();
-    memset(physPreset, 0, sizeof(PhysPreset));
-    physPreset->name = memory->Dup(assetName.c_str());
-    return physPreset;
+    auto* asset = memory->Alloc<AssetPhysPreset::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderPhysPreset::CanLoadFromGdt() const

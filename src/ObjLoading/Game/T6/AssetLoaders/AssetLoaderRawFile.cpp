@@ -15,10 +15,9 @@ namespace fs = std::filesystem;
 
 void* AssetLoaderRawFile::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* rawFile = memory->Create<RawFile>();
-    memset(rawFile, 0, sizeof(RawFile));
-    rawFile->name = memory->Dup(assetName.c_str());
-    return rawFile;
+    auto* asset = memory->Alloc<AssetRawFile::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderRawFile::CanLoadFromRaw() const

@@ -81,8 +81,7 @@ bool AssetLoaderZBarrier::LoadFromInfoString(
 
 void* AssetLoaderZBarrier::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* zbarrier = memory->Create<ZBarrierDef>();
-    memset(zbarrier, 0, sizeof(ZBarrierDef));
+    auto* zbarrier = memory->Alloc<ZBarrierDef>();
     CalculateZBarrierFields(zbarrier);
     zbarrier->name = memory->Dup(assetName.c_str());
     return zbarrier;

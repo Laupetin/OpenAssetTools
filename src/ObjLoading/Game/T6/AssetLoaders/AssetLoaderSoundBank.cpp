@@ -62,10 +62,9 @@ namespace
 
 void* AssetLoaderSoundBank::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* soundBank = memory->Create<SndBank>();
-    memset(soundBank, 0, sizeof(SndBank));
-    soundBank->name = memory->Dup(assetName.c_str());
-    return soundBank;
+    auto* asset = memory->Alloc<AssetSoundBank::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderSoundBank::CanLoadFromRaw() const

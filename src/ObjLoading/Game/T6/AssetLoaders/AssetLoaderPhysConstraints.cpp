@@ -102,10 +102,9 @@ bool AssetLoaderPhysConstraints::LoadFromInfoString(
 
 void* AssetLoaderPhysConstraints::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* physConstraints = memory->Create<PhysConstraints>();
-    memset(physConstraints, 0, sizeof(PhysConstraints));
-    physConstraints->name = memory->Dup(assetName.c_str());
-    return physConstraints;
+    auto* asset = memory->Alloc<AssetPhysConstraints::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderPhysConstraints::CanLoadFromGdt() const

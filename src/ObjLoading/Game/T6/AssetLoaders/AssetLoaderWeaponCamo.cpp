@@ -12,11 +12,9 @@ using namespace T6;
 
 void* AssetLoaderWeaponCamo::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
 {
-    auto* weaponCamo = memory->Create<WeaponCamo>();
-    memset(weaponCamo, 0, sizeof(WeaponCamo));
-    weaponCamo->name = memory->Dup(assetName.c_str());
-
-    return weaponCamo;
+    auto* asset = memory->Alloc<AssetWeaponCamo::Type>();
+    asset->name = memory->Dup(assetName.c_str());
+    return asset;
 }
 
 bool AssetLoaderWeaponCamo::CanLoadFromRaw() const
