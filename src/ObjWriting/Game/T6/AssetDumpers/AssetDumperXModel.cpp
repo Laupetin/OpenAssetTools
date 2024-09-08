@@ -114,6 +114,44 @@ namespace
         return potentialTextureDefs[0]->image;
     }
 
+    bool HasDefaultArmature(const XModel* model, const unsigned lod)
+    {
+        if (model->numRootBones != 1 || model->numBones != 1)
+            return false;
+
+        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
+        const auto surfCount = model->lodInfo[lod].numsurfs;
+
+        if (!surfs)
+            return true;
+
+        for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
+        {
+            const auto& surface = surfs[surfIndex];
+
+            if (surface.vertListCount != 1 || surface.vertInfo.vertsBlend)
+                return false;
+
+            const auto& vertList = surface.vertList[0];
+            if (vertList.boneOffset != 0 || vertList.triOffset != 0 || vertList.triCount != surface.triCount || vertList.vertCount != surface.vertCount)
+                return false;
+        }
+
+        return true;
+    }
+
+    void OmitDefaultArmature(XModelCommon& common)
+    {
+        common.m_bones.clear();
+        common.m_bone_weight_data.weights.clear();
+        common.m_vertex_bone_weights.resize(common.m_vertices.size());
+        for (auto& vertexWeights : common.m_vertex_bone_weights)
+        {
+            vertexWeights.weightOffset = 0u;
+            vertexWeights.weightCount = 0u;
+        }
+    }
+
     void AddXModelBones(XModelCommon& out, const AssetDumpingContext& context, const XModel* model)
     {
         for (auto boneNum = 0u; boneNum < model->numBones; boneNum++)
@@ -438,12 +476,20 @@ namespace
         AllocateXModelBoneWeights(model, lod, out.m_bone_weight_data);
 
         out.m_name = std::format("{}_lod{}", model->name, lod);
-        AddXModelBones(out, context, model);
         AddXModelMaterials(out, materialMapper, model);
         AddXModelObjects(out, model, lod, materialMapper);
         AddXModelVertices(out, model, lod);
-        AddXModelVertexBoneWeights(out, model, lod);
         AddXModelFaces(out, model, lod);
+
+        if (!HasDefaultArmature(model, lod))
+        {
+            AddXModelBones(out, context, model);
+            AddXModelVertexBoneWeights(out, model, lod);
+        }
+        else
+        {
+            OmitDefaultArmature(out);
+        }
     }
 
     void DumpObjMtl(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset)
