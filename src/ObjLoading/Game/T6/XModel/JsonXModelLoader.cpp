@@ -15,6 +15,7 @@
 #include <Eigen>
 #pragma warning(pop)
 
+#include "XModel/PartClassificationState.h"
 #include "XModel/Tangentspace.h"
 
 #include <algorithm>
@@ -58,85 +59,6 @@ namespace
         // clang-format on
     };
     static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);
-
-    class PartClassificationState final : public IZoneAssetLoaderState
-    {
-        // TODO: Use MP part classifications when building an mp fastfile
-        static constexpr auto PART_CLASSIFICATION_FILE = "partclassification.csv";
-
-    public:
-        PartClassificationState()
-            : m_loaded(false)
-        {
-        }
-
-        bool Load(const IAssetLoadingManager& manager)
-        {
-            if (m_loaded)
-                return true;
-
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << "Loading part classification...\n";
-
-            const auto file = manager.GetAssetLoadingContext()->m_raw_search_path->Open(PART_CLASSIFICATION_FILE);
-            if (!file.IsOpen())
-            {
-                std::cerr << std::format("Could not load part classification: Failed to open {}\n", PART_CLASSIFICATION_FILE);
-                return false;
-            }
-
-            CsvInputStream csvStream(*file.m_stream);
-            std::vector<std::string> row;
-            auto rowIndex = 0u;
-            while (csvStream.NextRow(row))
-            {
-                if (!LoadRow(rowIndex++, row))
-                    return false;
-            }
-
-            m_loaded = true;
-
-            return false;
-        }
-
-        [[nodiscard]] unsigned GetPartClassificationForBoneName(const std::string& boneName) const
-        {
-            const auto entry = m_part_classifications.find(boneName);
-
-            return entry != m_part_classifications.end() ? entry->second : HITLOC_NONE;
-        }
-
-    private:
-        bool LoadRow(const unsigned rowIndex, std::vector<std::string>& row)
-        {
-            if (row.empty())
-                return true;
-
-            if (row.size() != 2)
-            {
-                std::cerr << "Could not load part classification: Invalid row\n";
-                return false;
-            }
-
-            utils::MakeStringLowerCase(row[0]);
-            utils::MakeStringLowerCase(row[1]);
-
-            const auto foundHitLoc = std::ranges::find(HITLOC_NAMES, row[1]);
-            if (foundHitLoc == std::end(HITLOC_NAMES))
-            {
-                std::cerr << std::format("Invalid hitloc name in row {}: {}\n", rowIndex + 1, row[1]);
-                return false;
-            }
-
-            const auto hitLocNum = std::distance(std::begin(HITLOC_NAMES), foundHitLoc);
-
-            m_part_classifications.emplace(row[0], hitLocNum);
-            return true;
-        }
-
-        bool m_loaded;
-        std::unordered_map<std::string, unsigned> m_part_classifications;
-    };
 
     class TangentData
     {
@@ -362,7 +284,7 @@ namespace
             if (common.m_bones.empty())
                 return true;
 
-            m_part_classification_state.Load(m_manager);
+            m_part_classification_state.Load(HITLOC_NAMES, std::extent_v<decltype(HITLOC_NAMES)>, m_manager);
 
             const auto boneCount = common.m_bones.size();
             constexpr auto maxBones = std::numeric_limits<decltype(XModel::numBones)>::max();
