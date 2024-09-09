@@ -1,8 +1,9 @@
-#include "JsonXModelLoader.h"
+#pragma once
 
-#include "Csv/CsvStream.h"
-#include "Game/T6/CommonT6.h"
-#include "Game/T6/Json/JsonXModel.h"
+#ifndef GAME_NAMESPACE
+#error Must define GAME_NAMESPACE
+#endif
+
 #include "ObjLoading.h"
 #include "Utils/QuatInt16.h"
 #include "Utils/StringUtils.h"
@@ -13,6 +14,7 @@
 
 #pragma warning(push, 0)
 #include <Eigen>
+#include <nlohmann/json.hpp>
 #pragma warning(pop)
 
 #include "XModel/PartClassificationState.h"
@@ -23,48 +25,15 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <numeric>
 #include <vector>
 
-using namespace nlohmann;
-using namespace T6;
-
-namespace fs = std::filesystem;
-
-namespace
+namespace GAME_NAMESPACE
 {
-    const char* HITLOC_NAMES[]{
-        // clang-format off
-        "none",
-        "helmet",
-        "head",
-        "neck",
-        "torso_upper",
-        "torso_middle",
-        "torso_lower",
-        "right_arm_upper",
-        "left_arm_upper",
-        "right_arm_lower",
-        "left_arm_lower",
-        "right_hand",
-        "left_hand",
-        "right_leg_upper",
-        "left_leg_upper",
-        "right_leg_lower",
-        "left_leg_lower",
-        "right_foot",
-        "left_foot",
-        "gun",
-        "shield",
-        // clang-format on
-    };
-    static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);
-
-    class JsonLoader
+    class XModelLoader
     {
     public:
-        JsonLoader(std::istream& stream, MemoryManager& memory, IAssetLoadingManager& manager, std::set<XAssetInfoGeneric*>& dependencies)
+        XModelLoader(std::istream& stream, MemoryManager& memory, IAssetLoadingManager& manager, std::set<XAssetInfoGeneric*>& dependencies)
             : m_stream(stream),
               m_memory(memory),
               m_script_strings(manager.GetAssetLoadingContext()->m_zone->m_script_strings),
@@ -77,7 +46,7 @@ namespace
 
         bool Load(XModel& xmodel)
         {
-            const auto jRoot = json::parse(m_stream);
+            const auto jRoot = nlohmann::json::parse(m_stream);
             std::string type;
             unsigned version;
 
@@ -95,7 +64,7 @@ namespace
                 const auto jXModel = jRoot.get<JsonXModel>();
                 return CreateXModelFromJson(jXModel, xmodel);
             }
-            catch (const json::exception& e)
+            catch (const nlohmann::json::exception& e)
             {
                 std::cerr << std::format("Failed to parse json of xmodel: {}\n", e.what());
             }
@@ -616,7 +585,7 @@ namespace
                 return false;
             }
 
-            auto extension = fs::path(jLod.file).extension().string();
+            auto extension = std::filesystem::path(jLod.file).extension().string();
             utils::MakeStringLowerCase(extension);
 
             const auto common = LoadModelByExtension(*file.m_stream, extension);
@@ -822,18 +791,4 @@ namespace
         PartClassificationState& m_part_classification_state;
         std::set<XAssetInfoGeneric*>& m_dependencies;
     };
-} // namespace
-
-namespace T6
-{
-    bool LoadXModelAsJson(
-        std::istream& stream, XModel& xmodel, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
-    {
-        std::set<XAssetInfoGeneric*> dependenciesSet;
-        JsonLoader loader(stream, *memory, *manager, dependenciesSet);
-
-        dependencies.assign(dependenciesSet.cbegin(), dependenciesSet.cend());
-
-        return loader.Load(xmodel);
-    }
-} // namespace T6
+} // namespace GAME_NAMESPACE

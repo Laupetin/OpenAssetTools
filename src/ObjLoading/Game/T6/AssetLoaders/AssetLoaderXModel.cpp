@@ -1,7 +1,7 @@
 #include "AssetLoaderXModel.h"
 
 #include "Game/T6/T6.h"
-#include "Game/T6/XModel/JsonXModelLoader.h"
+#include "Game/T6/XModel/XModelLoaderT6.h"
 #include "Pool/GlobalAssetPool.h"
 
 #include <cstring>
@@ -33,7 +33,7 @@ bool AssetLoaderXModel::LoadFromRaw(
     xmodel->name = memory->Dup(assetName.c_str());
 
     std::vector<XAssetInfoGeneric*> dependencies;
-    if (LoadXModelAsJson(*file.m_stream, *xmodel, memory, manager, dependencies))
+    if (LoadXModel(*file.m_stream, *xmodel, memory, manager, dependencies))
         manager->AddAsset<AssetXModel>(assetName, xmodel, std::move(dependencies));
     else
         std::cerr << std::format("Failed to load xmodel \"{}\"\n", assetName);
