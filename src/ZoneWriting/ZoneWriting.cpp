@@ -7,6 +7,9 @@
 #include "Game/T6/ZoneWriterFactoryT6.h"
 #include "Writing/IZoneWriterFactory.h"
 
+#include <chrono>
+#include <iostream>
+
 IZoneWriterFactory* ZoneWriterFactories[]{
     new IW3::ZoneWriterFactory(),
     new IW4::ZoneWriterFactory(),
@@ -17,6 +20,8 @@ IZoneWriterFactory* ZoneWriterFactories[]{
 
 bool ZoneWriting::WriteZone(std::ostream& stream, Zone* zone)
 {
+    const auto start = std::chrono::high_resolution_clock::now();
+
     std::unique_ptr<ZoneWriter> zoneWriter;
     for (auto* factory : ZoneWriterFactories)
     {
@@ -29,9 +34,15 @@ bool ZoneWriting::WriteZone(std::ostream& stream, Zone* zone)
 
     if (zoneWriter == nullptr)
     {
-        printf("Could not create ZoneWriter for zone '%s'.\n", zone->m_name.c_str());
+        std::cerr << std::format("Could not create ZoneWriter for zone \"{}\".\n", zone->m_name);
         return false;
     }
 
-    return zoneWriter->WriteZone(stream);
+    const auto result = zoneWriter->WriteZone(stream);
+
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    std::cout << std::format("Writing zone \"{}\" took {} msec.\n", zone->m_name, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+
+    return result;
 }
