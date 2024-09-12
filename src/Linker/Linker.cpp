@@ -405,6 +405,11 @@ class LinkerImpl final : public Linker
         if (!stream.is_open())
             return false;
 
+        if (m_args.m_verbose)
+        {
+            std::cout << std::format("Building zone \"{}\"\n", zoneFilePath.string());
+        }
+
         if (!ZoneWriting::WriteZone(stream, zone))
         {
             std::cerr << "Writing zone failed.\n";
