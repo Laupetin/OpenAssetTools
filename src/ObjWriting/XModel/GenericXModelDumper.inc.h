@@ -25,6 +25,15 @@ namespace GAME_NAMESPACE
         return std::format("model_export/{}_lod{}{}", modelName, lod, extension);
     }
 
+    inline GfxImage* GetImageFromTextureDef(const MaterialTextureDef& textureDef)
+    {
+#ifdef FEATURE_T6
+        return textureDef.image;
+#else
+        return textureDef.u.image;
+#endif
+    }
+
     inline GfxImage* GetMaterialColorMap(const Material* material)
     {
         std::vector<MaterialTextureDef*> potentialTextureDefs;
@@ -40,27 +49,27 @@ namespace GAME_NAMESPACE
         if (potentialTextureDefs.empty())
             return nullptr;
         if (potentialTextureDefs.size() == 1)
-            return potentialTextureDefs[0]->image;
+            return GetImageFromTextureDef(*potentialTextureDefs[0]);
 
         for (const auto* def : potentialTextureDefs)
         {
             if (tolower(def->nameStart) == 'c' && tolower(def->nameEnd) == 'p')
-                return def->image;
+                return GetImageFromTextureDef(*def);
         }
 
         for (const auto* def : potentialTextureDefs)
         {
             if (tolower(def->nameStart) == 'r' && tolower(def->nameEnd) == 'k')
-                return def->image;
+                return GetImageFromTextureDef(*def);
         }
 
         for (const auto* def : potentialTextureDefs)
         {
             if (tolower(def->nameStart) == 'd' && tolower(def->nameEnd) == 'p')
-                return def->image;
+                return GetImageFromTextureDef(*def);
         }
 
-        return potentialTextureDefs[0]->image;
+        return GetImageFromTextureDef(*potentialTextureDefs[0]);
     }
 
     inline GfxImage* GetMaterialNormalMap(const Material* material)
@@ -78,15 +87,15 @@ namespace GAME_NAMESPACE
         if (potentialTextureDefs.empty())
             return nullptr;
         if (potentialTextureDefs.size() == 1)
-            return potentialTextureDefs[0]->image;
+            return GetImageFromTextureDef(*potentialTextureDefs[0]);
 
         for (const auto* def : potentialTextureDefs)
         {
             if (def->nameStart == 'n' && def->nameEnd == 'p')
-                return def->image;
+                return GetImageFromTextureDef(*def);
         }
 
-        return potentialTextureDefs[0]->image;
+        return GetImageFromTextureDef(*potentialTextureDefs[0]);
     }
 
     inline GfxImage* GetMaterialSpecularMap(const Material* material)
@@ -104,15 +113,15 @@ namespace GAME_NAMESPACE
         if (potentialTextureDefs.empty())
             return nullptr;
         if (potentialTextureDefs.size() == 1)
-            return potentialTextureDefs[0]->image;
+            return GetImageFromTextureDef(*potentialTextureDefs[0]);
 
         for (const auto* def : potentialTextureDefs)
         {
             if (def->nameStart == 's' && def->nameEnd == 'p')
-                return def->image;
+                return GetImageFromTextureDef(*def);
         }
 
-        return potentialTextureDefs[0]->image;
+        return GetImageFromTextureDef(*potentialTextureDefs[0]);
     }
 
     inline bool HasDefaultArmature(const XModel* model, const unsigned lod)
@@ -654,10 +663,13 @@ namespace GAME_NAMESPACE
                 jXModel.physConstraints = AssetName(xmodel.physConstraints->name);
 
             jXModel.flags = xmodel.flags;
+
+#ifdef FEATURE_T6
             jXModel.lightingOriginOffset.x = xmodel.lightingOriginOffset.x;
             jXModel.lightingOriginOffset.y = xmodel.lightingOriginOffset.y;
             jXModel.lightingOriginOffset.z = xmodel.lightingOriginOffset.z;
             jXModel.lightingOriginRange = xmodel.lightingOriginRange;
+#endif
         }
 
         std::ostream& m_stream;

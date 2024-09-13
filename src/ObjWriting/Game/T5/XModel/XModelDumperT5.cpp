@@ -1,18 +1,17 @@
-#include "XModelDumperT6.h"
+#include "XModelDumperT5.h"
 
-#include "Game/T6/CommonT6.h"
-#include "Game/T6/XModel/JsonXModel.h"
+#include "Game/T5/CommonT5.h"
+#include "Game/T5/XModel/JsonXModel.h"
 
-#define GAME_NAMESPACE T6
-#define FEATURE_T6
+#define GAME_NAMESPACE T5
 
 #include "XModel/GenericXModelDumper.inc.h"
 
-namespace T6
+namespace T5
 {
     void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
         DumpXModelJson(context, asset);
         DumpXModelSurfs(context, asset);
     }
-} // namespace T6
+} // namespace T5

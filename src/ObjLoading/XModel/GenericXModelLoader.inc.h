@@ -773,10 +773,13 @@ namespace GAME_NAMESPACE
             }
 
             xmodel.flags = jXModel.flags;
+
+#ifdef FEATURE_T6
             xmodel.lightingOriginOffset.x = jXModel.lightingOriginOffset.x;
             xmodel.lightingOriginOffset.y = jXModel.lightingOriginOffset.y;
             xmodel.lightingOriginOffset.z = jXModel.lightingOriginOffset.z;
             xmodel.lightingOriginRange = jXModel.lightingOriginRange;
+#endif
 
             return true;
         }
