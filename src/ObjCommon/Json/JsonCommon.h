@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Json/JsonExtension.h"
+
+#pragma warning(push, 0)
 #include <nlohmann/json.hpp>
+#pragma warning(pop)
 
 class JsonVec2
 {
