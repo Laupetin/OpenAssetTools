@@ -49,6 +49,8 @@ function ObjLoading:project()
 				path.join(folder, "ObjLoading")
 			}
 		}
+
+		useSourceTemplating("ObjLoading")
 		
 		self:include(includes)
 		Crypto:include(includes)

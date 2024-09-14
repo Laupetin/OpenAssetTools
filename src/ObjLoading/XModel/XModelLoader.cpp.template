@@ -1,8 +1,23 @@
-#pragma once
+#options GAME (T5, T6)
 
-#ifndef GAME_NAMESPACE
-#error Must define GAME_NAMESPACE
+#filename "Game/" + GAME + "/XModel/XModelLoader" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"XModelLoader" + GAME + ".h\""
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#set CONSTANTS_HEADER "\"Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h\""
+#set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
+
+#if GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
 #endif
+
+#include LOADER_HEADER
+
+#include COMMON_HEADER
+#include CONSTANTS_HEADER
+#include JSON_HEADER
 
 #include "ObjLoading.h"
 #include "Utils/QuatInt16.h"
@@ -26,9 +41,10 @@
 #include <format>
 #include <iostream>
 #include <numeric>
+#include <set>
 #include <vector>
 
-namespace GAME_NAMESPACE
+namespace GAME
 {
     class XModelLoader
     {
@@ -794,4 +810,14 @@ namespace GAME_NAMESPACE
         PartClassificationState& m_part_classification_state;
         std::set<XAssetInfoGeneric*>& m_dependencies;
     };
-} // namespace GAME_NAMESPACE
+
+    bool LoadXModel(std::istream& stream, XModel& xmodel, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
+    {
+        std::set<XAssetInfoGeneric*> dependenciesSet;
+        XModelLoader loader(stream, *memory, *manager, dependenciesSet);
+
+        dependencies.assign(dependenciesSet.cbegin(), dependenciesSet.cend());
+
+        return loader.Load(xmodel);
+    }
+} // namespace GAME

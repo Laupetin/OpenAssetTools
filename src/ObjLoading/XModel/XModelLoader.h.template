@@ -1,13 +1,19 @@
+#options GAME (T5, T6)
+
+#filename "Game/" + GAME + "/XModel/XModelLoader" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
 #pragma once
 
 #include "AssetLoading/IAssetLoadingManager.h"
-#include "Game/T5/T5.h"
+#include GAME_HEADER
 #include "Utils/MemoryManager.h"
 
 #include <istream>
 #include <vector>
 
-namespace T5
+namespace GAME
 {
     bool LoadXModel(std::istream& stream, XModel& xmodel, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies);
 }

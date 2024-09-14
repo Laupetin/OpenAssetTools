@@ -1,7 +1,7 @@
 #include "XModelDumperT6.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/XModel/JsonXModel.h"
+#include "Game/T6/XModel/JsonXModelT6.h"
 
 #define GAME_NAMESPACE T6
 #define FEATURE_T6

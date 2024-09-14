@@ -2,14 +2,14 @@
 
 #include "GltfInput.h"
 #include "XModel/Gltf/JsonGltf.h"
-#include "XModel/XModelLoader.h"
+#include "XModel/XModelFileLoader.h"
 
 #include <memory>
 #include <ostream>
 
 namespace gltf
 {
-    class Loader : public XModelLoader
+    class Loader : public XModelFileLoader
     {
     public:
         Loader() = default;
