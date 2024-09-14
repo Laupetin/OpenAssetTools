@@ -1,0 +1,15 @@
+#options GAME (T5, T6)
+
+#filename "Game/" + GAME + "/XModel/XModelDumper" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#pragma once
+
+#include "Dumping/AssetDumpingContext.h"
+#include GAME_HEADER
+
+namespace GAME
+{
+    void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset);
+}

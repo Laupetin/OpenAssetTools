@@ -50,6 +50,8 @@ function ObjWriting:project()
 				path.join(folder, "ObjWriting")
 			}
 		}
+
+		useSourceTemplating("ObjWriting")
 		
         self:include(includes)
 		Utils:include(includes)
