@@ -60,5 +60,7 @@ function useSourceTemplating(projectName)
         files {
             createdFiles
         }
+        
+        RawTemplater:use()
     end
 end
