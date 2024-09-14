@@ -177,11 +177,50 @@ namespace IW5
         void* data;
     };
 
-    typedef float vec2_t[2];
-    typedef float vec3_t[3];
-    typedef float vec4_t[4];
+    union vec2_t
+    {
+        float v[2];
 
-    typedef tdef_align(16) uint16_t r_index16_t;
+        struct
+        {
+            float x;
+            float y;
+        };
+    };
+
+    union vec3_t
+    {
+        struct
+        {
+            float x;
+            float y;
+            float z;
+        };
+
+        float v[3];
+    };
+
+    union vec4_t
+    {
+        float v[4];
+
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        struct
+        {
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+    };
+
     typedef tdef_align(16) char raw_byte16;
     typedef tdef_align(16) float raw_float16;
     typedef tdef_align(128) unsigned int raw_uint128;
@@ -220,8 +259,8 @@ namespace IW5
 
     struct Bounds
     {
-        float midPoint[3];
-        float halfSize[3];
+        vec3_t midPoint;
+        vec3_t halfSize;
     };
 
     struct cplane_s
@@ -446,47 +485,20 @@ namespace IW5
         unsigned int packed;
     };
 
-    struct GfxQuantizedNoColorVertex
-    {
-        short xyz[3];
-        short binormalSign;
-        PackedUnitVec normal;
-        PackedUnitVec tangent;
-        PackedTexCoords texCoord;
-    };
-
     union GfxColor
     {
         unsigned int packed;
         unsigned char array[4];
     };
 
-    struct GfxQuantizedVertex
-    {
-        short xyz[3];
-        short binormalSign;
-        PackedUnitVec normal;
-        PackedUnitVec tangent;
-        PackedTexCoords texCoord;
-        GfxColor color;
-    };
-
     struct type_align(16) GfxPackedVertex
     {
-        float xyz[3];
+        vec3_t xyz;
         float binormalSign;
         GfxColor color;
         PackedTexCoords texCoord;
         PackedUnitVec normal;
         PackedUnitVec tangent;
-    };
-
-    union GfxVertexUnion0
-    {
-        GfxQuantizedNoColorVertex* quantizedNoColorVerts0;
-        GfxQuantizedVertex* quantizedVerts0;
-        GfxPackedVertex* packedVerts0;
-        void* verts0;
     };
 
     struct XSurfaceCollisionAabb
@@ -526,6 +538,13 @@ namespace IW5
         XSurfaceCollisionTree* collisionTree;
     };
 
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align(16) XSurfaceTri XSurfaceTri16;
+
     struct XSurface
     {
         unsigned char tileMode;
@@ -536,9 +555,9 @@ namespace IW5
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
         float quantizeScale;
-        r_index16_t (*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
-        GfxVertexUnion0 verts0;
+        GfxPackedVertex* verts0;
         unsigned int vertListCount;
         XRigidVertList* vertList;
         int partBits[6];
@@ -554,8 +573,8 @@ namespace IW5
 
     struct DObjAnimMat
     {
-        float quat[4];
-        float trans[3];
+        vec4_t quat;
+        vec3_t trans;
         float transWeight;
     };
 
@@ -567,7 +586,7 @@ namespace IW5
         XModelSurfs* modelSurfs;
         int partBits[6];
         XSurface* surfs;
-        char lod;
+        unsigned char lod;
         char smcBaseIndexPlusOne;
         char smcSubIndexMask;
         char smcBucket;
@@ -596,6 +615,11 @@ namespace IW5
         float radiusSquared;
     };
 
+    struct XModelQuat
+    {
+        int16_t v[4];
+    };
+
     struct XModel
     {
         const char* name;
@@ -606,15 +630,15 @@ namespace IW5
         unsigned int noScalePartBits[6];
         ScriptString* boneNames;
         unsigned char* parentList;
-        short (*quats)[4];
-        float (*trans)[3];
+        XModelQuat* quats;
+        float* trans;
         unsigned char* partClassification;
         DObjAnimMat* baseMat;
         Material** materialHandles;
         XModelLodInfo lodInfo[4];
         char maxLoadedLod;
         unsigned char numLods;
-        unsigned char collLod;
+        char collLod;
         unsigned char flags;
         XModelCollSurf_s* collSurfs;
         int numCollSurfs;

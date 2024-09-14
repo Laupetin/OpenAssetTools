@@ -13,7 +13,7 @@ set count parentList numBones - numRootBones;
 set reusable quats;
 set count quats numBones - numRootBones;
 set reusable trans;
-set count trans numBones - numRootBones;
+set count trans (numBones - numRootBones) * 3;
 set reusable partClassification;
 set count partClassification numBones;
 set reusable baseMat;

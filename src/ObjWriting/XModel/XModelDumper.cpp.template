@@ -1,4 +1,4 @@
-#options GAME (T5, T6)
+#options GAME (IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelDumper" + GAME + ".cpp"
 
@@ -6,7 +6,9 @@
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
 
-#if GAME == "T5"
+#if GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
@@ -54,8 +56,13 @@ namespace GAME
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
+#ifdef FEATURE_IW5            
+            if (def->semantic == TS_COLOR_MAP)
+                potentialTextureDefs.push_back(def);
+#else
             if (def->semantic == TS_COLOR_MAP || def->semantic >= TS_COLOR0_MAP && def->semantic <= TS_COLOR15_MAP)
                 potentialTextureDefs.push_back(def);
+#endif
         }
 
         if (potentialTextureDefs.empty())
@@ -136,15 +143,33 @@ namespace GAME
         return GetImageFromTextureDef(*potentialTextureDefs[0]);
     }
 
+    bool GetSurfaces(const XModel* model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
+    {
+#ifdef FEATURE_IW5
+        if (!model->lodInfo[lod].modelSurfs || !model->lodInfo[lod].modelSurfs->surfs)
+            return false;
+
+        surfs = model->lodInfo[lod].modelSurfs->surfs;
+        surfCount = model->lodInfo[lod].modelSurfs->numsurfs;
+#else
+        if (!model->surfs)
+            return false;
+
+        surfs = &model->surfs[model->lodInfo[lod].surfIndex];
+        surfCount = model->lodInfo[lod].numsurfs;
+#endif
+
+        return true;
+    }
+
     bool HasDefaultArmature(const XModel* model, const unsigned lod)
     {
         if (model->numRootBones != 1 || model->numBones != 1)
             return false;
 
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-
-        if (!surfs)
+        XSurface* surfs;
+        unsigned surfCount;
+        if (!GetSurfaces(model, lod, surfs, surfCount))
             return true;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
@@ -284,10 +309,9 @@ namespace GAME
 
     void AddXModelVertices(XModelCommon& out, const XModel* model, const unsigned lod)
     {
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-
-        if (!surfs)
+        XSurface* surfs;
+        unsigned surfCount;
+        if (!GetSurfaces(model, lod, surfs, surfCount))
             return;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
@@ -313,10 +337,9 @@ namespace GAME
 
     void AllocateXModelBoneWeights(const XModel* model, const unsigned lod, XModelVertexBoneWeightCollection& weightCollection)
     {
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-
-        if (!surfs)
+        XSurface* surfs;
+        unsigned surfCount;
+        if (!GetSurfaces(model, lod, surfs, surfCount))
             return;
 
         auto totalWeightCount = 0u;
@@ -348,13 +371,12 @@ namespace GAME
 
     void AddXModelVertexBoneWeights(XModelCommon& out, const XModel* model, const unsigned lod)
     {
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-        auto& weightCollection = out.m_bone_weight_data;
-
-        if (!surfs)
+        XSurface* surfs;
+        unsigned surfCount;
+        if (!GetSurfaces(model, lod, surfs, surfCount))
             return;
 
+        auto& weightCollection = out.m_bone_weight_data;
         size_t weightOffset = 0u;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
@@ -467,10 +489,9 @@ namespace GAME
 
     void AddXModelFaces(XModelCommon& out, const XModel* model, const unsigned lod)
     {
-        const auto* surfs = &model->surfs[model->lodInfo[lod].surfIndex];
-        const auto surfCount = model->lodInfo[lod].numsurfs;
-
-        if (!surfs)
+        XSurface* surfs;
+        unsigned surfCount;
+        if (!GetSurfaces(model, lod, surfs, surfCount))
             return;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
@@ -671,8 +692,15 @@ namespace GAME
             if (xmodel.physPreset && xmodel.physPreset->name)
                 jXModel.physPreset = AssetName(xmodel.physPreset->name);
 
+#ifdef FEATURE_IW5
+            if (xmodel.physCollmap && xmodel.physCollmap->name)
+                jXModel.physCollmap = AssetName(xmodel.physCollmap->name);
+#endif
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             if (xmodel.physConstraints && xmodel.physConstraints->name)
                 jXModel.physConstraints = AssetName(xmodel.physConstraints->name);
+#endif
 
             jXModel.flags = xmodel.flags;
 

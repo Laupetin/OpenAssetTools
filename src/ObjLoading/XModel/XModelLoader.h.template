@@ -1,4 +1,4 @@
-#options GAME (T5, T6)
+#options GAME (IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelLoader" + GAME + ".h"
 

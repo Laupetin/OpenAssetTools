@@ -1,4 +1,4 @@
-#options GAME (T5, T6)
+#options GAME(IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelLoader" + GAME + ".cpp"
 
@@ -7,7 +7,9 @@
 #set CONSTANTS_HEADER "\"Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
 
-#if GAME == "T5"
+#if GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
 #define FEATURE_T5
 #elif GAME == "T6"
 #define FEATURE_T6
@@ -173,15 +175,24 @@ namespace GAME
             if (common.m_bone_weight_data.weights.empty())
                 return;
 
-            info.bounds[0].x = 0.0f;
-            info.bounds[0].y = 0.0f;
-            info.bounds[0].z = 0.0f;
-            info.bounds[1].x = 0.0f;
-            info.bounds[1].y = 0.0f;
-            info.bounds[1].z = 0.0f;
-            info.offset.x = 0.0f;
-            info.offset.y = 0.0f;
-            info.offset.z = 0.0f;
+#ifdef FEATURE_IW5
+            vec3_t minCoordinate, maxCoordinate;
+            auto& offset = info.bounds.midPoint;
+#else
+            auto& offset = info.offset;
+            auto& minCoordinate = info.bounds[0];
+            auto& maxCoordinate = info.bounds[1];
+#endif
+
+            minCoordinate.x = 0.0f;
+            minCoordinate.y = 0.0f;
+            minCoordinate.z = 0.0f;
+            maxCoordinate.x = 0.0f;
+            maxCoordinate.y = 0.0f;
+            maxCoordinate.z = 0.0f;
+            offset.x = 0.0f;
+            offset.y = 0.0f;
+            offset.z = 0.0f;
             info.radiusSquared = 0.0f;
 
             const auto vertexCount = common.m_vertex_bone_weights.size();
@@ -196,22 +207,31 @@ namespace GAME
                     if (weight.boneIndex != boneIndex)
                         continue;
 
-                    info.bounds[0].x = std::min(info.bounds[0].x, vertex.coordinates[0]);
-                    info.bounds[0].y = std::min(info.bounds[0].y, vertex.coordinates[1]);
-                    info.bounds[0].z = std::min(info.bounds[0].z, vertex.coordinates[2]);
-                    info.bounds[1].x = std::max(info.bounds[1].x, vertex.coordinates[0]);
-                    info.bounds[1].y = std::max(info.bounds[1].y, vertex.coordinates[1]);
-                    info.bounds[1].z = std::max(info.bounds[1].z, vertex.coordinates[2]);
+                    minCoordinate.x = std::min(minCoordinate.x, vertex.coordinates[0]);
+                    minCoordinate.y = std::min(minCoordinate.y, vertex.coordinates[1]);
+                    minCoordinate.z = std::min(minCoordinate.z, vertex.coordinates[2]);
+                    maxCoordinate.x = std::max(maxCoordinate.x, vertex.coordinates[0]);
+                    maxCoordinate.y = std::max(maxCoordinate.y, vertex.coordinates[1]);
+                    maxCoordinate.z = std::max(maxCoordinate.z, vertex.coordinates[2]);
                 }
             }
 
-            const Eigen::Vector3f minEigen(info.bounds[0].x, info.bounds[0].y, info.bounds[0].z);
-            const Eigen::Vector3f maxEigen(info.bounds[1].x, info.bounds[1].y, info.bounds[1].z);
+            const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
+            const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
             const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
-            info.offset.x = boundsCenter.x();
-            info.offset.y = boundsCenter.y();
-            info.offset.z = boundsCenter.z();
-            info.radiusSquared = Eigen::Vector3f(maxEigen - boundsCenter).squaredNorm();
+            const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
+#ifdef FEATURE_IW5
+
+            info.bounds.halfSize.x = halfSizeEigen.x();
+            info.bounds.halfSize.y = halfSizeEigen.y();
+            info.bounds.halfSize.z = halfSizeEigen.z();
+#endif
+
+            offset.x = boundsCenter.x();
+            offset.y = boundsCenter.y();
+            offset.z = boundsCenter.z();
+
+            info.radiusSquared = halfSizeEigen.squaredNorm();
         }
 
         bool ApplyCommonBonesToXModel(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common) const
@@ -272,8 +292,10 @@ namespace GAME
                 ApplyBasePose(xmodel.baseMat[boneIndex], bone);
                 CalculateBoneBounds(xmodel.boneInfo[boneIndex], boneIndex, common);
 
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
                 // Other boneInfo data is filled when calculating bone bounds
                 xmodel.boneInfo[boneIndex].collmap = -1;
+#endif
 
                 if (xmodel.numRootBones <= boneIndex)
                 {
@@ -678,17 +700,52 @@ namespace GAME
                     lodInfo.partBits[i] |= surface.partBits[i];
             }
 
+#ifdef FEATURE_IW5
+            auto* modelSurfs = m_memory.Alloc<XModelSurfs>();
+            const auto modelSurfsName = std::format("{}_lod{}", xmodel.name, lodNumber);
+            modelSurfs->name = m_memory.Dup(modelSurfsName.c_str());
+
+            static_assert(std::extent_v<decltype(XModelLodInfo::partBits)> == std::extent_v<decltype(XModelSurfs::partBits)>);
+            memcpy(modelSurfs->partBits, lodInfo.partBits, sizeof(XModelLodInfo::partBits));
+
+            modelSurfs->numsurfs = lodInfo.numsurfs;
+            modelSurfs->surfs = m_memory.Alloc<XSurface>(modelSurfs->numsurfs);
+            memcpy(modelSurfs->surfs, &m_surfaces[lodInfo.surfIndex], sizeof(XSurface) * modelSurfs->numsurfs);
+
+            m_manager.AddAsset<AssetXModelSurfs>(modelSurfsName, modelSurfs);
+
+            lodInfo.modelSurfs = modelSurfs;
+            lodInfo.surfs = modelSurfs->surfs;
+
+            lodInfo.lod = static_cast<decltype(XModelLodInfo::lod)>(lodNumber);
+#endif
+
             return true;
         }
 
         static void CalculateModelBounds(XModel& xmodel)
         {
+#ifdef FEATURE_IW5
+            if (!xmodel.lodInfo[0].modelSurfs || !xmodel.lodInfo[0].modelSurfs->surfs)
+                return;
+
+            const auto* surfs = xmodel.lodInfo[0].modelSurfs->surfs;
+            vec3_t minCoordinate, maxCoordinate;
+#else
             if (!xmodel.surfs)
                 return;
 
+            auto& minCoordinate = xmodel.mins;
+            auto& maxCoordinate = xmodel.maxs;
+#endif
+
             for (auto surfaceIndex = 0u; surfaceIndex < xmodel.lodInfo[0].numsurfs; surfaceIndex++)
             {
+#ifdef FEATURE_IW5
+                const auto& surface = surfs[surfaceIndex];
+#else
                 const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
+#endif
 
                 if (!surface.verts0)
                     continue;
@@ -697,19 +754,35 @@ namespace GAME
                 {
                     const auto& vertex = surface.verts0[vertIndex];
 
-                    xmodel.mins.x = std::min(xmodel.mins.x, vertex.xyz.v[0]);
-                    xmodel.mins.y = std::min(xmodel.mins.y, vertex.xyz.v[1]);
-                    xmodel.mins.z = std::min(xmodel.mins.z, vertex.xyz.v[2]);
-                    xmodel.maxs.x = std::max(xmodel.maxs.x, vertex.xyz.v[0]);
-                    xmodel.maxs.y = std::max(xmodel.maxs.y, vertex.xyz.v[1]);
-                    xmodel.maxs.z = std::max(xmodel.maxs.z, vertex.xyz.v[2]);
+                    minCoordinate.x = std::min(minCoordinate.x, vertex.xyz.v[0]);
+                    minCoordinate.y = std::min(minCoordinate.y, vertex.xyz.v[1]);
+                    minCoordinate.z = std::min(minCoordinate.z, vertex.xyz.v[2]);
+                    maxCoordinate.x = std::max(maxCoordinate.x, vertex.xyz.v[0]);
+                    maxCoordinate.y = std::max(maxCoordinate.y, vertex.xyz.v[1]);
+                    maxCoordinate.z = std::max(maxCoordinate.z, vertex.xyz.v[2]);
                 }
             }
 
-            const auto maxX = std::max(std::abs(xmodel.mins.x), std::abs(xmodel.maxs.x));
-            const auto maxY = std::max(std::abs(xmodel.mins.y), std::abs(xmodel.maxs.y));
-            const auto maxZ = std::max(std::abs(xmodel.mins.z), std::abs(xmodel.maxs.z));
+#ifdef FEATURE_IW5
+            const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
+            const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
+            const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
+            const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
+
+            xmodel.bounds.halfSize.x = halfSizeEigen.x();
+            xmodel.bounds.halfSize.y = halfSizeEigen.y();
+            xmodel.bounds.halfSize.z = halfSizeEigen.z();
+
+            xmodel.bounds.midPoint.x = boundsCenter.x();
+            xmodel.bounds.midPoint.y = boundsCenter.y();
+            xmodel.bounds.midPoint.z = boundsCenter.z();
+            xmodel.radius = halfSizeEigen.norm();
+#else
+            const auto maxX = std::max(std::abs(minCoordinate.x), std::abs(maxCoordinate.x));
+            const auto maxY = std::max(std::abs(minCoordinate.y), std::abs(maxCoordinate.y));
+            const auto maxZ = std::max(std::abs(minCoordinate.z), std::abs(maxCoordinate.z));
             xmodel.radius = Eigen::Vector3f(maxX, maxY, maxZ).norm();
+#endif
         }
 
         bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel)
@@ -722,7 +795,7 @@ namespace GAME
             }
 
             auto lodNumber = 0u;
-            xmodel.numLods = static_cast<uint16_t>(jXModel.lods.size());
+            xmodel.numLods = static_cast<decltype(XModel::numLods)>(jXModel.lods.size());
             for (const auto& jLod : jXModel.lods)
             {
                 if (!LoadLod(jLod, xmodel, lodNumber++))
@@ -736,10 +809,14 @@ namespace GAME
                 return false;
             }
 
-            xmodel.numsurfs = static_cast<unsigned char>(m_surfaces.size());
+            xmodel.numsurfs = static_cast<decltype(XModel::numsurfs)>(m_surfaces.size());
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
-            xmodel.materialHandles = m_memory.Alloc<Material*>(xmodel.numsurfs);
             memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
+#endif
+
+            xmodel.materialHandles = m_memory.Alloc<Material*>(xmodel.numsurfs);
             memcpy(xmodel.materialHandles, m_materials.data(), sizeof(Material*) * xmodel.numsurfs);
 
             CalculateModelBounds(xmodel);
@@ -751,7 +828,7 @@ namespace GAME
                     PrintError(xmodel, "Collision lod is not a valid lod");
                     return false;
                 }
-                xmodel.collLod = static_cast<int16_t>(jXModel.collLod.value());
+                xmodel.collLod = static_cast<decltype(XModel::collLod)>(jXModel.collLod.value());
             }
             else
                 xmodel.collLod = -1;
@@ -772,6 +849,25 @@ namespace GAME
                 xmodel.physPreset = nullptr;
             }
 
+#if defined(FEATURE_IW5)
+            if (jXModel.physCollmap)
+            {
+                auto* physCollmap = m_manager.LoadDependency<AssetPhysCollMap>(jXModel.physCollmap.value());
+                if (!physCollmap)
+                {
+                    PrintError(xmodel, "Could not find phys collmap");
+                    return false;
+                }
+                m_dependencies.emplace(physCollmap);
+                xmodel.physCollmap = physCollmap->Asset();
+            }
+            else
+            {
+                xmodel.physCollmap = nullptr;
+            }
+#endif
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             if (jXModel.physConstraints)
             {
                 auto* physConstraints = m_manager.LoadDependency<AssetPhysConstraints>(jXModel.physConstraints.value());
@@ -787,6 +883,7 @@ namespace GAME
             {
                 xmodel.physConstraints = nullptr;
             }
+#endif
 
             xmodel.flags = jXModel.flags;
 
