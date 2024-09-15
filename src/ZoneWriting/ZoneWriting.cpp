@@ -8,6 +8,7 @@
 #include "Writing/IZoneWriterFactory.h"
 
 #include <chrono>
+#include <format>
 #include <iostream>
 
 IZoneWriterFactory* ZoneWriterFactories[]{
@@ -42,7 +43,7 @@ bool ZoneWriting::WriteZone(std::ostream& stream, Zone* zone)
 
     const auto end = std::chrono::high_resolution_clock::now();
 
-    std::cout << std::format("Writing zone \"{}\" took {} msec.\n", zone->m_name, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    std::cout << std::format("Writing zone \"{}\" took {} ms.\n", zone->m_name, std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     return result;
 }
