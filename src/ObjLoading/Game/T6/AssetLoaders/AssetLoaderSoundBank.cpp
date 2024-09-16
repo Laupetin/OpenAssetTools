@@ -75,7 +75,7 @@ bool AssetLoaderSoundBank::CanLoadFromRaw() const
 size_t GetValueIndex(const std::string& value, const std::string* lookupTable, size_t len)
 {
     if (value.empty())
-        return 0;
+        return 0;   
 
     for (auto i = 0u; i < len; i++)
     {
@@ -140,34 +140,34 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
         alias->subtitle = memory->Dup(subtitle.data());
 
     alias->duck = Common::SND_HashName(row.GetValue("duck").data());
-
-    alias->volMin = row.GetValueInt<uint16_t>("vol_min");
-    alias->volMax = row.GetValueInt<uint16_t>("vol_max");
-    alias->distMin = row.GetValueInt<uint16_t>("dist_min");
-    alias->distMax = row.GetValueInt<uint16_t>("dist_max");
-    alias->distReverbMax = row.GetValueInt<uint16_t>("dist_reverb_max");
-    alias->limitCount = row.GetValueInt<uint8_t>("limit_count");
-    alias->entityLimitCount = row.GetValueInt<uint8_t>("entity_limit_count");
-    alias->pitchMin = row.GetValueInt<uint16_t>("pitch_min");
-    alias->pitchMax = row.GetValueInt<uint16_t>("pitch_max");
-    alias->minPriority = row.GetValueInt<uint8_t>("min_priority");
-    alias->maxPriority = row.GetValueInt<uint8_t>("max_priority");
-    alias->minPriorityThreshold = row.GetValueInt<uint8_t>("min_priority_threshold");
-    alias->maxPriorityThreshold = row.GetValueInt<uint8_t>("max_priority_threshold");
-    alias->probability = row.GetValueInt<uint8_t>("probability");
-    alias->startDelay = row.GetValueInt<uint16_t>("start_delay");
-    alias->reverbSend = row.GetValueInt<uint16_t>("reverb_send");
-    alias->centerSend = row.GetValueInt<uint16_t>("center_send");
-    alias->envelopMin = row.GetValueInt<uint16_t>("envelop_min");
-    alias->envelopMax = row.GetValueInt<uint16_t>("envelop_max");
-    alias->envelopPercentage = row.GetValueInt<uint16_t>("envelop_percentage");
-    alias->occlusionLevel = row.GetValueInt<uint8_t>("occlusion_level");
-    alias->fluxTime = row.GetValueInt<uint16_t>("move_time");
-    alias->futzPatch = row.GetValueInt<unsigned int>("futz");
-    alias->contextType = row.GetValueInt<unsigned int>("context_type");
-    alias->contextValue = row.GetValueInt<unsigned int>("context_value");
-    alias->fadeIn = row.GetValueInt<int16_t>("fade_in");
-    alias->fadeOut = row.GetValueInt<int16_t>("fade_out");
+    
+    alias->volMin = row.GetValueInt<decltype(alias->volMin)>("vol_min");
+    alias->volMax = row.GetValueInt<decltype(alias->volMax)>("vol_max");
+    alias->distMin = row.GetValueInt<decltype(alias->distMin)>("dist_min");
+    alias->distMax = row.GetValueInt<decltype(alias->distMax)>("dist_max");
+    alias->distReverbMax = row.GetValueInt<decltype(alias->distReverbMax)>("dist_reverb_max");
+    alias->limitCount = row.GetValueInt<decltype(alias->limitCount)>("limit_count");
+    alias->entityLimitCount = row.GetValueInt<decltype(alias->entityLimitCount)>("entity_limit_count");
+    alias->pitchMin = row.GetValueInt<decltype(alias->pitchMin)>("pitch_min");
+    alias->pitchMax = row.GetValueInt<decltype(alias->pitchMax)>("pitch_max");
+    alias->minPriority = row.GetValueInt<decltype(alias->minPriority)>("min_priority");
+    alias->maxPriority = row.GetValueInt<decltype(alias->maxPriority)>("max_priority");
+    alias->minPriorityThreshold = row.GetValueInt<decltype(alias->minPriorityThreshold)>("min_priority_threshold");
+    alias->maxPriorityThreshold = row.GetValueInt<decltype(alias->maxPriorityThreshold)>("max_priority_threshold");
+    alias->probability = row.GetValueInt<decltype(alias->probability)>("probability");
+    alias->startDelay = row.GetValueInt<decltype(alias->startDelay)>("start_delay");
+    alias->reverbSend = row.GetValueInt<decltype(alias->reverbSend)>("reverb_send");
+    alias->centerSend = row.GetValueInt<decltype(alias->centerSend)>("center_send");
+    alias->envelopMin = row.GetValueInt<decltype(alias->envelopMin)>("envelop_min");
+    alias->envelopMax = row.GetValueInt<decltype(alias->envelopMax)>("envelop_max");
+    alias->envelopPercentage = row.GetValueInt<decltype(alias->envelopPercentage)>("envelop_percentage");
+    alias->occlusionLevel = row.GetValueInt<decltype(alias->occlusionLevel)>("occlusion_level");
+    alias->fluxTime = row.GetValueInt<decltype(alias->fluxTime)>("move_time");
+    alias->futzPatch = row.GetValueInt<decltype(alias->futzPatch)>("futz");
+    alias->contextType = row.GetValueInt<decltype(alias->contextType)>("context_type");
+    alias->contextValue = row.GetValueInt<decltype(alias->contextValue)>("context_value");
+    alias->fadeIn = row.GetValueInt<decltype(alias->fadeIn)>("fade_in");
+    alias->fadeOut = row.GetValueInt<decltype(alias->fadeOut)>("fade_out");
 
     alias->flags.looping = row.GetValue("loop") == "looping";
     alias->flags.panType = row.GetValue("pan") == "3d";
@@ -179,7 +179,7 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
     alias->flags.pauseable = row.GetValue("pause") == "yes";
     alias->flags.stopOnDeath = row.GetValue("stop_on_death") == "yes";
 
-    alias->duckGroup = static_cast<char>(GetValueIndex(row.GetValue("duck_group"), SOUND_DUCK_GROUPS, std::extent_v<decltype(SOUND_DUCK_GROUPS)>));
+    alias->duckGroup = static_cast<decltype(alias->duckGroup)>(GetValueIndex(row.GetValue("duck_group"), SOUND_DUCK_GROUPS, std::extent_v<decltype(SOUND_DUCK_GROUPS)>));
     alias->flags.volumeGroup = GetValueIndex(row.GetValue("group"), SOUND_GROUPS, std::extent_v<decltype(SOUND_GROUPS)>);
     alias->flags.fluxType = GetValueIndex(row.GetValue("move_type"), SOUND_MOVE_TYPES, std::extent_v<decltype(SOUND_MOVE_TYPES)>);
     alias->flags.loadType = GetValueIndex(row.GetValue("type"), SOUND_LOAD_TYPES, std::extent_v<decltype(SOUND_LOAD_TYPES)>);
