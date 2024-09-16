@@ -130,14 +130,22 @@ public:
             size_t soundSize;
             std::unique_ptr<char[]> soundData;
 
-            // try to find a wav file for the sound path
-            const auto wavFile = m_asset_search_path->Open(soundFilePath + ".wav");
-            if (wavFile.IsOpen())
+            // try to find a file for the sound path
+            const auto file = m_asset_search_path->Open(soundFilePath);
+            if (!file.IsOpen())
+            {
+                std::cerr << "Unable to find a compatible file for sound " << soundFilePath << "\n";
+                return false;
+            }
+
+            // check if sound path ends in .wav
+            const std::string extension = ".wav";
+            if (soundFilePath.size() >= extension.size() && soundFilePath.compare(soundFilePath.size() - extension.size(), extension.size(), extension) == 0)
             {
                 WavHeader header{};
-                wavFile.m_stream->read(reinterpret_cast<char*>(&header), sizeof(WavHeader));
+                file.m_stream->read(reinterpret_cast<char*>(&header), sizeof(WavHeader));
 
-                soundSize = static_cast<size_t>(wavFile.m_length - sizeof(WavHeader));
+                soundSize = static_cast<size_t>(file.m_length - sizeof(WavHeader));
                 const auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
                 const auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
 
@@ -155,45 +163,35 @@ public:
                 m_entries.push_back(entry);
 
                 soundData = std::make_unique<char[]>(soundSize);
-                wavFile.m_stream->read(soundData.get(), soundSize);
+                file.m_stream->read(soundData.get(), soundSize);
             }
             else
             {
-                // if there is no wav file, try flac file
-                const auto flacFile = m_asset_search_path->Open(soundFilePath + ".flac");
-                if (flacFile.IsOpen())
+                soundSize = static_cast<size_t>(file.m_length);
+
+                soundData = std::make_unique<char[]>(soundSize);
+                file.m_stream->read(soundData.get(), soundSize);
+
+                flac::FlacMetaData metaData;
+                if (flac::GetFlacMetaData(soundData.get(), soundSize, metaData))
                 {
-                    soundSize = static_cast<size_t>(flacFile.m_length);
+                    const auto frameRateIndex = INDEX_FOR_FRAMERATE[metaData.m_sample_rate];
+                    SoundAssetBankEntry entry{
+                        soundId,
+                        soundSize,
+                        static_cast<size_t>(m_current_offset),
+                        static_cast<unsigned>(metaData.m_total_samples),
+                        frameRateIndex,
+                        metaData.m_number_of_channels,
+                        sound.m_looping,
+                        8,
+                    };
 
-                    soundData = std::make_unique<char[]>(soundSize);
-                    flacFile.m_stream->read(soundData.get(), soundSize);
-
-                    flac::FlacMetaData metaData;
-                    if (flac::GetFlacMetaData(soundData.get(), soundSize, metaData))
-                    {
-                        const auto frameRateIndex = INDEX_FOR_FRAMERATE[metaData.m_sample_rate];
-                        SoundAssetBankEntry entry{
-                            soundId,
-                            soundSize,
-                            static_cast<size_t>(m_current_offset),
-                            static_cast<unsigned>(metaData.m_total_samples),
-                            frameRateIndex,
-                            metaData.m_number_of_channels,
-                            sound.m_looping,
-                            8,
-                        };
-
-                        m_entries.push_back(entry);
-                    }
-                    else
-                    {
-                        std::cerr << "Unable to decode .flac file for sound " << soundFilePath << "\n";
-                        return false;
-                    }
+                    m_entries.push_back(entry);
                 }
                 else
                 {
-                    std::cerr << "Unable to find a compatible file for sound " << soundFilePath << "\n";
+                    std::cerr << "Unable to decode .flac file for sound " << soundFilePath << "\n";
                     return false;
                 }
             }
