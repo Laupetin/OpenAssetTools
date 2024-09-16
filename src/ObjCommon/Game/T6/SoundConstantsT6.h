@@ -4,6 +4,7 @@
 namespace T6
 {
     inline const std::string SOUND_GROUPS[]{
+        // clang-format off
         "grp_reference",
         "grp_master",
         "grp_wpn_lfe",
@@ -30,6 +31,7 @@ namespace T6
         "grp_air",
         "grp_bink",
         "grp_announcer",
+        // clang-format on
     };
 
     inline const std::string SOUND_CURVES[]{
