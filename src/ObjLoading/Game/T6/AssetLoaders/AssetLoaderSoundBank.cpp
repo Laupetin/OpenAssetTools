@@ -75,7 +75,7 @@ bool AssetLoaderSoundBank::CanLoadFromRaw() const
 size_t GetValueIndex(const std::string& value, const std::string* lookupTable, size_t len)
 {
     if (value.empty())
-        return 0;   
+        return 0;
 
     for (auto i = 0u; i < len; i++)
     {
@@ -140,7 +140,7 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
         alias->subtitle = memory->Dup(subtitle.data());
 
     alias->duck = Common::SND_HashName(row.GetValue("duck").data());
-    
+
     alias->volMin = row.GetValueInt<decltype(alias->volMin)>("vol_min");
     alias->volMax = row.GetValueInt<decltype(alias->volMax)>("vol_max");
     alias->distMin = row.GetValueInt<decltype(alias->distMin)>("dist_min");

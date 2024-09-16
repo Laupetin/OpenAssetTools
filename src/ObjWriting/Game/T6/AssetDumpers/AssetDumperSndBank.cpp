@@ -227,7 +227,7 @@ class AssetDumperSndBank::Internal
     {
         // name
         stream.WriteColumn(alias->name);
-        
+
         // file
         stream.WriteColumn(alias->assetFileName ? alias->assetFileName + extension : "");
 
