@@ -179,7 +179,8 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
     alias->flags.pauseable = row.GetValue("pause") == "yes";
     alias->flags.stopOnDeath = row.GetValue("stop_on_death") == "yes";
 
-    alias->duckGroup = static_cast<decltype(alias->duckGroup)>(GetValueIndex(row.GetValue("duck_group"), SOUND_DUCK_GROUPS, std::extent_v<decltype(SOUND_DUCK_GROUPS)>));
+    alias->duckGroup =
+        static_cast<decltype(alias->duckGroup)>(GetValueIndex(row.GetValue("duck_group"), SOUND_DUCK_GROUPS, std::extent_v<decltype(SOUND_DUCK_GROUPS)>));
     alias->flags.volumeGroup = GetValueIndex(row.GetValue("group"), SOUND_GROUPS, std::extent_v<decltype(SOUND_GROUPS)>);
     alias->flags.fluxType = GetValueIndex(row.GetValue("move_type"), SOUND_MOVE_TYPES, std::extent_v<decltype(SOUND_MOVE_TYPES)>);
     alias->flags.loadType = GetValueIndex(row.GetValue("type"), SOUND_LOAD_TYPES, std::extent_v<decltype(SOUND_LOAD_TYPES)>);

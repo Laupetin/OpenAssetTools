@@ -540,13 +540,13 @@ class AssetDumperSndBank::Internal
             {
                 const auto& alias = aliasList.head[j];
                 std::string extension = "";
-                
+
                 if (alias.assetId && alias.assetFileName)
                 {
                     if (dumpedAssets.find(alias.assetId) == dumpedAssets.end())
                     {
                         std::optional<snd_asset_format> format = DumpSndAlias(alias);
-                        
+
                         if (format.has_value())
                         {
                             extension = ConvertSndFormatToExtension(format.value());
