@@ -30,7 +30,6 @@ namespace T6
         "grp_air",
         "grp_bink",
         "grp_announcer",
-        "",
     };
 
     inline const std::string SOUND_CURVES[]{
@@ -51,7 +50,6 @@ namespace T6
         "cos",
         "rev60",
         "rev65",
-        "",
     };
 
     inline const std::string SOUND_DUCK_GROUPS[]{
@@ -121,17 +119,15 @@ namespace T6
         "bus_pfutz",
         "bus_hdrfx",
         "bus_ui",
-        "bus_reference",
         "bus_music",
         "bus_movie",
         "bus_reference",
-        "",
     };
 
     inline const std::string SOUND_RANDOMIZE_TYPES[]{
+        "",
         "volume",
         "pitch",
         "variant",
-        "",
     };
 } // namespace T6
