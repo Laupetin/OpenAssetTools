@@ -72,7 +72,7 @@ bool AssetLoaderSoundBank::CanLoadFromRaw() const
     return true;
 }
 
-size_t GetValueIndex(const std::string& value, const std::string* lookupTable, size_t len)
+size_t GetValueIndex(const std::string& value, const char* const* lookupTable, const size_t len)
 {
     if (value.empty())
         return 0;

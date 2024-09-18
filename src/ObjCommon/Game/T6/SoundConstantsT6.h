@@ -1,9 +1,13 @@
 #pragma once
-#include <string>
+
+#include "Game/T6/T6.h"
+
+#include <type_traits>
 
 namespace T6
 {
-    inline const std::string SOUND_GROUPS[]{
+    // From SndDriverGlobals
+    inline constexpr const char* SOUND_GROUPS[]{
         // clang-format off
         "grp_reference",
         "grp_master",
@@ -34,7 +38,8 @@ namespace T6
         // clang-format on
     };
 
-    inline const std::string SOUND_CURVES[]{
+    // From SndDriverGlobals
+    inline constexpr const char* SOUND_CURVES[]{
         "default",
         "defaultmin",
         "allon",
@@ -54,7 +59,8 @@ namespace T6
         "rev65",
     };
 
-    inline const std::string SOUND_DUCK_GROUPS[]{
+    // From SndDriverGlobals
+    inline constexpr const char* SOUND_DUCK_GROUPS[]{
         "snp_alerts_gameplay",
         "snp_ambience",
         "snp_claw",
@@ -89,14 +95,16 @@ namespace T6
         "snp_x3",
     };
 
-    inline const std::string SOUND_LIMIT_TYPES[]{
+    inline constexpr const char* SOUND_LIMIT_TYPES[]{
         "none",
         "oldest",
         "reject",
         "priority",
     };
+    static_assert(std::extent_v<decltype(SOUND_LIMIT_TYPES)> == SND_LIMIT_COUNT);
 
-    inline const std::string SOUND_MOVE_TYPES[]{
+    // From executable
+    inline constexpr const char* SOUND_MOVE_TYPES[]{
         "none",
         "left_player",
         "center_player",
@@ -107,14 +115,15 @@ namespace T6
         "right_shot",
     };
 
-    inline const std::string SOUND_LOAD_TYPES[]{
+    inline constexpr const char* SOUND_LOAD_TYPES[]{
         "unknown",
         "loaded",
         "streamed",
         "primed",
     };
+    static_assert(std::extent_v<decltype(SOUND_LOAD_TYPES)> == SA_COUNT);
 
-    inline const std::string SOUND_BUS_IDS[]{
+    inline constexpr const char* SOUND_BUS_IDS[]{
         "bus_reverb",
         "bus_fx",
         "bus_voice",
@@ -125,8 +134,10 @@ namespace T6
         "bus_movie",
         "bus_reference",
     };
+    static_assert(std::extent_v<decltype(SOUND_BUS_IDS)> == SND_BUS_COUNT);
 
-    inline const std::string SOUND_RANDOMIZE_TYPES[]{
+    // From executable
+    inline constexpr const char* SOUND_RANDOMIZE_TYPES[]{
         "",
         "volume",
         "pitch",
