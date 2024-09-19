@@ -5,11 +5,15 @@
 #include "Sound/FlacDecoder.h"
 #include "Sound/WavTypes.h"
 #include "Utils/FileUtils.h"
+#include "Utils/StringUtils.h"
 
 #include <cstring>
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <unordered_map>
+
+namespace fs = std::filesystem;
 
 std::unordered_map<unsigned int, unsigned char> INDEX_FOR_FRAMERATE{
     {8000,   0},
@@ -31,6 +35,30 @@ class SoundBankWriterImpl : public SoundBankWriter
     static constexpr uint32_t VERSION = 14u;
 
     inline static const std::string PAD_DATA = std::string(16, '\x00');
+
+    class SoundBankEntryInfo
+    {
+    public:
+        SoundBankEntryInfo()
+            : m_sound_id(0u),
+              m_looping(false),
+              m_streamed(false)
+        {
+        }
+
+        SoundBankEntryInfo(std::string filePath, const unsigned int soundId, const bool looping, const bool streamed)
+            : m_file_path(std::move(filePath)),
+              m_sound_id(soundId),
+              m_looping(looping),
+              m_streamed(streamed)
+        {
+        }
+
+        std::string m_file_path;
+        unsigned int m_sound_id;
+        bool m_looping;
+        bool m_streamed;
+    };
 
 public:
     explicit SoundBankWriterImpl(std::string fileName, std::ostream& stream, ISearchPath* assetSearchPath)
@@ -118,6 +146,100 @@ public:
         Write(&header, sizeof(header));
     }
 
+    bool LoadWavFile(const SearchPathOpenFile& file, const SoundBankEntryInfo& sound, std::unique_ptr<char[]>& soundData, size_t& soundSize)
+    {
+        WavHeader header{};
+        file.m_stream->read(reinterpret_cast<char*>(&header), sizeof(WavHeader));
+
+        soundSize = static_cast<size_t>(file.m_length - sizeof(WavHeader));
+        const auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
+        const auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
+
+        SoundAssetBankEntry entry{
+            sound.m_sound_id,
+            soundSize,
+            static_cast<size_t>(m_current_offset),
+            frameCount,
+            frameRateIndex,
+            static_cast<unsigned char>(header.formatChunk.nChannels),
+            sound.m_looping,
+            0,
+        };
+
+        m_entries.push_back(entry);
+
+        soundData = std::make_unique<char[]>(soundSize);
+        file.m_stream->read(soundData.get(), soundSize);
+
+        return true;
+    }
+
+    bool LoadFlacFile(
+        const SearchPathOpenFile& file, const std::string& filePath, const SoundBankEntryInfo& sound, std::unique_ptr<char[]>& soundData, size_t& soundSize)
+    {
+        soundSize = static_cast<size_t>(file.m_length);
+
+        soundData = std::make_unique<char[]>(soundSize);
+        file.m_stream->read(soundData.get(), soundSize);
+
+        flac::FlacMetaData metaData;
+        if (flac::GetFlacMetaData(soundData.get(), soundSize, metaData))
+        {
+            const auto frameRateIndex = INDEX_FOR_FRAMERATE[metaData.m_sample_rate];
+            SoundAssetBankEntry entry{
+                sound.m_sound_id,
+                soundSize,
+                static_cast<size_t>(m_current_offset),
+                static_cast<unsigned>(metaData.m_total_samples),
+                frameRateIndex,
+                metaData.m_number_of_channels,
+                sound.m_looping,
+                8,
+            };
+
+            m_entries.push_back(entry);
+            return true;
+        }
+
+        std::cerr << std::format("Unable to decode .flac file for sound {}\n", filePath);
+        return false;
+    }
+
+    bool LoadFileByExtension(const std::string& filePath, const SoundBankEntryInfo& sound, std::unique_ptr<char[]>& soundData, size_t& soundSize)
+    {
+        auto extension = fs::path(filePath).extension().string();
+        utils::MakeStringLowerCase(extension);
+        if (extension.empty())
+            return false;
+
+        const auto file = m_asset_search_path->Open(filePath);
+        if (!file.IsOpen())
+            return false;
+
+        if (extension == ".wav")
+            return LoadWavFile(file, sound, soundData, soundSize);
+
+        if (extension == ".flac")
+            return LoadFlacFile(file, filePath, sound, soundData, soundSize);
+
+        return false;
+    }
+
+    bool GuessFilenameAndLoadFile(const std::string& filePath, const SoundBankEntryInfo& sound, std::unique_ptr<char[]>& soundData, size_t& soundSize)
+    {
+        fs::path pathWithExtension = fs::path(filePath).replace_extension(".wav");
+        auto file = m_asset_search_path->Open(pathWithExtension.string());
+        if (file.IsOpen())
+            return LoadWavFile(file, sound, soundData, soundSize);
+
+        pathWithExtension = fs::path(filePath).replace_extension(".flac");
+        file = m_asset_search_path->Open(pathWithExtension.string());
+        if (file.IsOpen())
+            return LoadFlacFile(file, pathWithExtension.string(), sound, soundData, soundSize);
+
+        return false;
+    }
+
     bool WriteEntries()
     {
         GoTo(DATA_OFFSET);
@@ -125,87 +247,23 @@ public:
         for (auto& sound : m_sounds)
         {
             const auto& soundFilePath = sound.m_file_path;
-            const auto soundId = sound.m_sound_id;
 
             size_t soundSize;
             std::unique_ptr<char[]> soundData;
 
-            // try to find a wav file for the sound path
-            const auto wavFile = m_asset_search_path->Open(soundFilePath + ".wav");
-            if (wavFile.IsOpen())
+            if (!LoadFileByExtension(soundFilePath, sound, soundData, soundSize) && !GuessFilenameAndLoadFile(soundFilePath, sound, soundData, soundSize))
             {
-                WavHeader header{};
-                wavFile.m_stream->read(reinterpret_cast<char*>(&header), sizeof(WavHeader));
-
-                soundSize = static_cast<size_t>(wavFile.m_length - sizeof(WavHeader));
-                const auto frameCount = soundSize / (header.formatChunk.nChannels * (header.formatChunk.wBitsPerSample / 8));
-                const auto frameRateIndex = INDEX_FOR_FRAMERATE[header.formatChunk.nSamplesPerSec];
-
-                SoundAssetBankEntry entry{
-                    soundId,
-                    soundSize,
-                    static_cast<size_t>(m_current_offset),
-                    frameCount,
-                    frameRateIndex,
-                    static_cast<unsigned char>(header.formatChunk.nChannels),
-                    sound.m_looping,
-                    0,
-                };
-
-                m_entries.push_back(entry);
-
-                soundData = std::make_unique<char[]>(soundSize);
-                wavFile.m_stream->read(soundData.get(), soundSize);
-            }
-            else
-            {
-                // if there is no wav file, try flac file
-                const auto flacFile = m_asset_search_path->Open(soundFilePath + ".flac");
-                if (flacFile.IsOpen())
-                {
-                    soundSize = static_cast<size_t>(flacFile.m_length);
-
-                    soundData = std::make_unique<char[]>(soundSize);
-                    flacFile.m_stream->read(soundData.get(), soundSize);
-
-                    flac::FlacMetaData metaData;
-                    if (flac::GetFlacMetaData(soundData.get(), soundSize, metaData))
-                    {
-                        const auto frameRateIndex = INDEX_FOR_FRAMERATE[metaData.m_sample_rate];
-                        SoundAssetBankEntry entry{
-                            soundId,
-                            soundSize,
-                            static_cast<size_t>(m_current_offset),
-                            static_cast<unsigned>(metaData.m_total_samples),
-                            frameRateIndex,
-                            metaData.m_number_of_channels,
-                            sound.m_looping,
-                            8,
-                        };
-
-                        m_entries.push_back(entry);
-                    }
-                    else
-                    {
-                        std::cerr << "Unable to decode .flac file for sound " << soundFilePath << "\n";
-                        return false;
-                    }
-                }
-                else
-                {
-                    std::cerr << "Unable to find a compatible file for sound " << soundFilePath << "\n";
-                    return false;
-                }
+                std::cerr << std::format("Unable to find a compatible file for sound {}\n", soundFilePath);
+                return false;
             }
 
             const auto lastEntry = m_entries.rbegin();
             if (!sound.m_streamed && lastEntry->frameRateIndex != 6)
             {
-                std::cout << "WARNING: Loaded sound \"" << soundFilePath
-                          << "\" should have a framerate of 48000 but doesn't. This sound may not work on all games!\n";
+                std::cout << std::format("WARNING: Loaded sound \"{}\" should have a framerate of 48000 but doesn't. This sound may not work on all games!\n",
+                                         soundFilePath);
             }
 
-            // calculate checksum
             SoundAssetBankChecksum checksum{};
 
             const auto md5Crypt = Crypto::CreateMD5();
@@ -278,30 +336,6 @@ public:
     }
 
 private:
-    class SoundBankEntryInfo
-    {
-    public:
-        SoundBankEntryInfo()
-            : m_sound_id(0u),
-              m_looping(false),
-              m_streamed(false)
-        {
-        }
-
-        SoundBankEntryInfo(std::string filePath, const unsigned int soundId, const bool looping, const bool streamed)
-            : m_file_path(std::move(filePath)),
-              m_sound_id(soundId),
-              m_looping(looping),
-              m_streamed(streamed)
-        {
-        }
-
-        std::string m_file_path;
-        unsigned int m_sound_id;
-        bool m_looping;
-        bool m_streamed;
-    };
-
     std::string m_file_name;
     std::ostream& m_stream;
     ISearchPath* m_asset_search_path;

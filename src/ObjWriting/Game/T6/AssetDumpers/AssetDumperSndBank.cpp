@@ -8,6 +8,7 @@
 #include "nlohmann/json.hpp"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <unordered_set>
 
@@ -124,7 +125,7 @@ namespace
     {
         std::unordered_map<unsigned int, std::string> result;
         for (auto i = 0u; i < std::extent_v<decltype(SOUND_CURVES)>; i++)
-            result.emplace(T6::Common::SND_HashName(SOUND_CURVES[i].data()), SOUND_CURVES[i]);
+            result.emplace(T6::Common::SND_HashName(SOUND_CURVES[i]), SOUND_CURVES[i]);
         return result;
     }
 
@@ -195,7 +196,7 @@ class AssetDumperSndBank::Internal
         stream.NextRow();
     }
 
-    static const char* FindNameForDuck(unsigned int id, const SndBank* bank)
+    static const char* FindNameForDuck(const unsigned int id, const SndBank* bank)
     {
         for (auto i = 0u; i < bank->duckCount; i++)
         {
@@ -208,13 +209,30 @@ class AssetDumperSndBank::Internal
         return "";
     }
 
-    static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const SndBank* bank)
+    static const char* ExtensionForSndFormat(const snd_asset_format format)
+    {
+        switch (format)
+        {
+        case SND_ASSET_FORMAT_PCMS16:
+            return ".wav";
+
+        case SND_ASSET_FORMAT_FLAC:
+            return ".flac";
+
+        default:
+            assert(false);
+            return "";
+        }
+    }
+
+    static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const std::optional<snd_asset_format> maybeFormat, const SndBank* bank)
     {
         // name
         stream.WriteColumn(alias->name);
 
         // file
-        stream.WriteColumn(alias->assetFileName ? alias->assetFileName : "");
+        const auto* extension = maybeFormat ? ExtensionForSndFormat(*maybeFormat) : "";
+        stream.WriteColumn(alias->assetFileName ? std::format("{}{}", alias->assetFileName, extension) : "");
 
         // template
         stream.WriteColumn("");
@@ -255,7 +273,7 @@ class AssetDumperSndBank::Internal
         // volume_min_falloff_curve
         stream.WriteColumn(SOUND_CURVES[alias->flags.volumeMinFalloffCurve]);
 
-        // reverb_min_falloff_curve"
+        // reverb_min_falloff_curve
         stream.WriteColumn(SOUND_CURVES[alias->flags.reverbMinFalloffCurve]);
 
         // limit_count
@@ -303,103 +321,103 @@ class AssetDumperSndBank::Internal
         // randomize_type
         stream.WriteColumn(SOUND_RANDOMIZE_TYPES[std::min(alias->flags.randomizeType, 3u)]);
 
-        // probability",
+        // probability
         stream.WriteColumn(std::to_string(alias->probability));
 
-        // start_delay",
+        // start_delay
         stream.WriteColumn(std::to_string(alias->startDelay));
 
-        // reverb_send",
+        // reverb_send
         stream.WriteColumn(std::to_string(alias->reverbSend));
 
-        // duck",
+        // duck
         stream.WriteColumn(FindNameForDuck(alias->duck, bank));
 
-        // duck_group",
+        // duck_group
         stream.WriteColumn(SOUND_DUCK_GROUPS[alias->duckGroup]);
 
-        // pan",
+        // pan
         stream.WriteColumn(alias->flags.panType == SA_PAN_2D ? "2d" : "3d");
 
-        // center_send",
+        // center_send
         stream.WriteColumn(std::to_string(alias->centerSend));
 
-        // envelop_min",
+        // envelop_min
         stream.WriteColumn(std::to_string(alias->envelopMin));
 
-        // envelop_max",
+        // envelop_max
         stream.WriteColumn(std::to_string(alias->envelopMax));
 
-        // envelop_percentage",
+        // envelop_percentage
         stream.WriteColumn(std::to_string(alias->envelopPercentage));
 
-        // occlusion_level",
+        // occlusion_level
         stream.WriteColumn(std::to_string(alias->occlusionLevel));
 
-        // occlusion_wet_dry",
+        // occlusion_wet_dry
         stream.WriteColumn("");
 
-        // is_big",
+        // is_big
         stream.WriteColumn(alias->flags.isBig ? "yes" : "no");
 
-        // distance_lpf"
+        // distance_lpf
         stream.WriteColumn(alias->flags.distanceLpf ? "yes" : "no");
 
-        // move_type",
+        // move_type
         stream.WriteColumn(SOUND_MOVE_TYPES[alias->flags.fluxType]);
 
-        // move_time",
+        // move_time
         stream.WriteColumn(std::to_string(alias->fluxTime));
 
-        // real_delay",
+        // real_delay
         stream.WriteColumn("");
 
-        // subtitle",
+        // subtitle
         stream.WriteColumn((alias->subtitle && *alias->subtitle) ? alias->subtitle : "");
 
-        // mature",
+        // mature
         stream.WriteColumn("");
 
-        // doppler",
+        // doppler
         stream.WriteColumn(alias->flags.doppler ? "yes" : "no");
 
-        // futz",
+        // futz
         stream.WriteColumn(std::to_string(alias->futzPatch));
 
-        // context_type",
+        // context_type
         stream.WriteColumn(std::to_string(alias->contextType));
 
-        // context_value",
+        // context_value
         stream.WriteColumn(std::to_string(alias->contextValue));
 
-        // compression",
+        // compression
         stream.WriteColumn("");
 
-        // timescale",
+        // timescale
         stream.WriteColumn(alias->flags.timescale ? "yes" : "no");
 
-        // music",
+        // music
         stream.WriteColumn(alias->flags.isMusic ? "yes" : "no");
 
-        // fade_in",
+        // fade_in
         stream.WriteColumn(std::to_string(alias->fadeIn));
 
-        // fade_out",
+        // fade_out
         stream.WriteColumn(std::to_string(alias->fadeOut));
 
-        // pc_format",
+        // pc_format
         stream.WriteColumn("");
 
-        // pause",
+        // pause
         stream.WriteColumn(alias->flags.pauseable ? "yes" : "no");
 
-        // stop_on_death",
+        // stop_on_death
         stream.WriteColumn(alias->flags.stopOnDeath ? "yes" : "no");
 
-        // bus",
+        // bus
         stream.WriteColumn(SOUND_BUS_IDS[alias->flags.busType]);
 
-        // snapshot",
+        // snapshot
         stream.WriteColumn("");
     }
 
@@ -420,7 +438,7 @@ class AssetDumperSndBank::Internal
         const auto outFile = OpenAssetOutputFile(assetFileName, ".wav");
         if (!outFile)
         {
-            std::cerr << "Failed to open sound output file: \"" << assetFileName << "\"\n";
+            std::cerr << std::format("Failed to open sound output file: \"{}\"\n", assetFileName);
             return;
         }
 
@@ -447,7 +465,7 @@ class AssetDumperSndBank::Internal
         const auto outFile = OpenAssetOutputFile(assetFileName, extension);
         if (!outFile)
         {
-            std::cerr << "Failed to open sound output file: \"" << assetFileName << "\"\n";
+            std::cerr << std::format("Failed to open sound output file: \"{}\"\n", assetFileName);
             return;
         }
 
@@ -460,7 +478,7 @@ class AssetDumperSndBank::Internal
         }
     }
 
-    void DumpSndAlias(const SndAlias& alias) const
+    std::optional<snd_asset_format> DumpSndAlias(const SndAlias& alias) const
     {
         const auto soundFile = FindSoundDataInSoundBanks(alias.assetId);
         if (soundFile.IsOpen())
@@ -484,29 +502,30 @@ class AssetDumperSndBank::Internal
             case SND_ASSET_FORMAT_WMA:
             case SND_ASSET_FORMAT_WIIUADPCM:
             case SND_ASSET_FORMAT_MPC:
-                std::cerr << "Cannot dump sound (Unsupported sound format " << format << "): \"" << alias.assetFileName << "\"\n";
+                std::cerr << std::format("Cannot dump sound (Unknown sound format {}): \"{}\"\n", static_cast<unsigned>(format), alias.assetFileName);
                 break;
 
             default:
                 assert(false);
-                std::cerr << "Cannot dump sound (Unknown sound format " << format << "): \"" << alias.assetFileName << "\"\n";
+                std::cerr << std::format("Cannot dump sound (Unknown sound format {}): \"{}\"\n", static_cast<unsigned>(format), alias.assetFileName);
                 break;
             }
+
+            return format;
         }
-        else
-        {
-            std::cerr << "Could not find data for sound \"" << alias.assetFileName << "\"\n";
-        }
+
+        std::cerr << std::format("Could not find data for sound \"{}\"\n", alias.assetFileName);
+        return {};
     }
 
     void DumpSndBankAliases(const SndBank* sndBank) const
     {
-        std::unordered_set<unsigned> dumpedAssets;
+        std::unordered_map<unsigned int, std::optional<snd_asset_format>> dumpedAssets;
 
-        const auto outFile = OpenAssetOutputFile("soundbank/" + std::string(sndBank->name) + ".aliases", ".csv");
+        const auto outFile = OpenAssetOutputFile(std::format("soundbank/{}.aliases", sndBank->name), ".csv");
         if (!outFile)
         {
-            std::cerr << "Failed to open sound alias output file: \"" << sndBank->name << "\"\n";
+            std::cerr << std::format("Failed to open sound alias output file: \"\"\n", sndBank->name);
             return;
         }
 
@@ -520,15 +539,24 @@ class AssetDumperSndBank::Internal
             for (auto j = 0; j < aliasList.count; j++)
             {
                 const auto& alias = aliasList.head[j];
+                std::optional<snd_asset_format> maybeFormat;
 
-                WriteAliasToFile(csvStream, &alias, sndBank);
-                csvStream.NextRow();
-
-                if (alias.assetId && alias.assetFileName && dumpedAssets.find(alias.assetId) == dumpedAssets.end())
+                if (alias.assetId && alias.assetFileName)
                 {
-                    DumpSndAlias(alias);
-                    dumpedAssets.emplace(alias.assetId);
+                    const auto previouslyDeterminedFormat = dumpedAssets.find(alias.assetId);
+                    if (previouslyDeterminedFormat == dumpedAssets.end())
+                    {
+                        maybeFormat = DumpSndAlias(alias);
+                        dumpedAssets[alias.assetId] = maybeFormat;
+                    }
+                    else
+                    {
+                        maybeFormat = previouslyDeterminedFormat->second;
+                    }
                 }
+
+                WriteAliasToFile(csvStream, &alias, maybeFormat, sndBank);
+                csvStream.NextRow();
             }
         }
     }
@@ -536,14 +564,12 @@ class AssetDumperSndBank::Internal
     void DumpSoundRadverb(const SndBank* sndBank) const
     {
         if (sndBank->radverbCount <= 0)
-        {
             return;
-        }
 
-        const auto outFile = OpenAssetOutputFile("soundbank/" + std::string(sndBank->name) + ".reverbs", ".csv");
+        const auto outFile = OpenAssetOutputFile(std::format("soundbank/{}.reverbs", sndBank->name), ".csv");
         if (!outFile)
         {
-            std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
+            std::cerr << std::format("Failed to open sound reverb output file: \"{}\"\n", sndBank->name);
             return;
         }
 
@@ -577,14 +603,12 @@ class AssetDumperSndBank::Internal
     void DumpSoundDucks(const SndBank* sndBank) const
     {
         if (sndBank->duckCount <= 0)
-        {
             return;
-        }
 
-        const auto outFile = OpenAssetOutputFile("soundbank/" + std::string(sndBank->name) + ".ducklist", ".csv");
+        const auto outFile = OpenAssetOutputFile(std::format("soundbank/{}.ducklist", sndBank->name), ".csv");
         if (!outFile)
         {
-            std::cerr << "Failed to open sound reverb output file: \"" << sndBank->name << "\"\n";
+            std::cerr << std::format("Failed to open sound reverb output file: \"{}\"\n", sndBank->name);
             return;
         }
 
@@ -598,10 +622,10 @@ class AssetDumperSndBank::Internal
             csvStream.WriteColumn(duck.name);
             csvStream.NextRow();
 
-            const auto duckFile = OpenAssetOutputFile("soundbank/ducks/" + std::string(duck.name), ".duk");
+            const auto duckFile = OpenAssetOutputFile(std::format("soundbank/ducks/{}", duck.name), ".duk");
             if (!outFile)
             {
-                std::cerr << "Failed to open sound duck output file: \"" << duck.name << "\"\n";
+                std::cerr << std::format("Failed to open sound duck output file: \"{}\"\n", duck.name);
                 return;
             }
 
@@ -628,12 +652,12 @@ class AssetDumperSndBank::Internal
             }
 
             auto values = std::vector<nlohmann::json>{};
-            for (auto i = 0u; i < 32u; i++)
+            for (auto j = 0u; j < 32u; j++)
             {
                 values.push_back({
-                    {"duckGroup",   SOUND_DUCK_GROUPS[i]},
-                    {"attenuation", duck.attenuation[i] },
-                    {"filter",      duck.filter[i]      }
+                    {"duckGroup",   SOUND_DUCK_GROUPS[j]},
+                    {"attenuation", duck.attenuation[j] },
+                    {"filter",      duck.filter[j]      }
                 });
             }
 

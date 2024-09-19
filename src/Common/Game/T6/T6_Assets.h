@@ -6182,7 +6182,43 @@ namespace T6
         SA_LOADED = 0x1,
         SA_STREAMED = 0x2,
         SA_PRIMED = 0x3,
-        SA_COUNT = 0x4,
+
+        SA_COUNT
+    };
+
+    enum SndLimitType
+    {
+        SND_LIMIT_NONE = 0x0,
+        SND_LIMIT_OLDEST = 0x1,
+        SND_LIMIT_REJECT = 0x2,
+        SND_LIMIT_PRIORITY = 0x3,
+
+        SND_LIMIT_COUNT
+    };
+
+    enum SndBus
+    {
+        SND_BUS_REVERB = 0x0,
+        SND_BUS_FX = 0x1,
+        SND_BUS_VOICE = 0x2,
+        SND_BUS_PFUTZ = 0x3,
+        SND_BUS_HDRFX = 0x4,
+        SND_BUS_UI = 0x5,
+        SND_BUS_MUSIC = 0x6,
+        SND_BUS_MOVIE = 0x7,
+        SND_BUS_REFERENCE = 0x8,
+
+        SND_BUS_COUNT
+    };
+
+    enum SndRandomizeType
+    {
+        SND_RANDOMIZE_INSTANCE = 0x0,
+        SND_RANDOMIZE_ENTITY_VOLUME = 0x1,
+        SND_RANDOMIZE_ENTITY_PITCH = 0x2,
+        SND_RANDOMIZE_ENTITY_VARIANT = 0x4,
+
+        SND_RANDOMIZE_ENTITY_COUNT
     };
 
     struct SndAliasFlags
@@ -6248,16 +6284,16 @@ namespace T6
         int16_t fadeIn;
         int16_t fadeOut;
         int16_t dopplerScale;
-        char minPriorityThreshold;
-        char maxPriorityThreshold;
-        char probability;
-        char occlusionLevel;
-        char minPriority;
-        char maxPriority;
-        char pan;
-        char limitCount;
-        char entityLimitCount;
-        char duckGroup;
+        uint8_t minPriorityThreshold;
+        uint8_t maxPriorityThreshold;
+        uint8_t probability;
+        uint8_t occlusionLevel;
+        uint8_t minPriority;
+        uint8_t maxPriority;
+        uint8_t pan;
+        uint8_t limitCount;
+        uint8_t entityLimitCount;
+        uint8_t duckGroup;
     };
 
 #ifndef __zonecodegenerator
