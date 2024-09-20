@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <limits>
 
 union PackUtil32
@@ -17,6 +18,8 @@ union PackUtil32
 
 namespace pack32
 {
+    typedef float pvec3[3];
+
     uint32_t Vec2PackTexCoordsUV(const float (&in)[2])
     {
         return static_cast<uint32_t>(HalfFloat::ToHalf(in[1])) << 16 | HalfFloat::ToHalf(in[0]);
@@ -27,11 +30,57 @@ namespace pack32
         return static_cast<uint32_t>(HalfFloat::ToHalf(in[0])) << 16 | HalfFloat::ToHalf(in[1]);
     }
 
+    float Vec3_Normalize(pvec3& vector)
+    {
+        float length = std::sqrt(vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
+        if (-length >= 0.0f)
+            length = 1.0f;
+        const auto lengthInv = 1.0f / length;
+        vector[0] = lengthInv * vector[0];
+        vector[1] = lengthInv * vector[1];
+        vector[2] = lengthInv * vector[2];
+        return length;
+    }
+
     uint32_t Vec3PackUnitVecScaleBased(const float (&in)[3])
     {
-        // TODO: Implement
-        assert(false);
-        return 0;
+        PackUtil32 testEncoding{};
+        float normalized[3]{in[0], in[1], in[2]};
+        float decoded[3];
+
+        Vec3_Normalize(normalized);
+        uint32_t out = 0u;
+        auto bestDirError = 3.4028235e38f;
+        auto bestLenError = 3.4028235e38f;
+        testEncoding.uc[3] = 0u;
+        do
+        {
+            const auto encodeScale = 32385.0f / (static_cast<float>(testEncoding.uc[3]) - -192.0f);
+            testEncoding.c[0] = static_cast<int8_t>(normalized[0] * encodeScale + 127.5f);
+            testEncoding.c[1] = static_cast<int8_t>(normalized[1] * encodeScale + 127.5f);
+            testEncoding.c[2] = static_cast<int8_t>(normalized[2] * encodeScale + 127.5f);
+            const auto decodeScale = (static_cast<float>(testEncoding.uc[3]) - -192.0f) / 32385.0f;
+            decoded[0] = (static_cast<float>(testEncoding.uc[0]) - 127.0f) * decodeScale;
+            decoded[1] = (static_cast<float>(testEncoding.uc[1]) - 127.0f) * decodeScale;
+            decoded[2] = (static_cast<float>(testEncoding.uc[2]) - 127.0f) * decodeScale;
+            const auto v2 = Vec3_Normalize(decoded) - 1.0f;
+            const auto lenError = std::abs(v2);
+            if (lenError < 0.001f)
+            {
+                const auto dirError = std::abs(decoded[0] * normalized[0] + decoded[1] * normalized[1] + decoded[2] * normalized[2] - 1.0f);
+                if (bestDirError > dirError || bestDirError <= dirError && bestLenError > lenError)
+                {
+                    bestDirError = dirError;
+                    bestLenError = lenError;
+                    out = testEncoding.u;
+                    if (lenError + dirError == 0.0f)
+                        return out;
+                }
+            }
+            ++testEncoding.c[3];
+        } while (testEncoding.c[3]);
+
+        return out;
     }
 
     uint32_t Vec3PackUnitVecThirdBased(const float (&in)[3])
