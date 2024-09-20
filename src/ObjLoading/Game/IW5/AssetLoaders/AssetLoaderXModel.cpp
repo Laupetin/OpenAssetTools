@@ -34,9 +34,14 @@ bool AssetLoaderXModel::LoadFromRaw(
 
     std::vector<XAssetInfoGeneric*> dependencies;
     if (LoadXModel(*file.m_stream, *xmodel, memory, manager, dependencies))
+    {
         manager->AddAsset<AssetXModel>(assetName, xmodel, std::move(dependencies));
+    }
     else
+    {
         std::cerr << std::format("Failed to load xmodel \"{}\"\n", assetName);
+        return false;
+    }
 
     return true;
 }
