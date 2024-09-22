@@ -21,6 +21,11 @@ namespace T6
             return hash;
         }
 
+        static constexpr uint32_t R_HashString(const char* string)
+        {
+            return R_HashString(string, 0u);
+        }
+
         static constexpr uint32_t SND_HashName(const char* str)
         {
             if (!str || !*str)

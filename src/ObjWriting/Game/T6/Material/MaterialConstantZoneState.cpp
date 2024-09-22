@@ -4,16 +4,9 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "ObjWriting.h"
-#include "Shader/D3D11ShaderAnalyser.h"
-
-#include <chrono>
 
 namespace T6
 {
-    static constexpr const char* SAMPLER_STR = "Sampler";
-    static constexpr const char* GLOBALS_CBUFFER_NAME = "$Globals";
-    static constexpr const char* PER_OBJECT_CONSTS_CBUFFER_NAME = "PerObjectConsts";
-
     const char* KNOWN_CONSTANT_NAMES[]{
         "AngularVelocityScale",
         "AnimSpeed",
@@ -478,15 +471,8 @@ namespace T6
         "ui3dSampler",
     };
 
-    void MaterialConstantZoneState::ExtractNamesFromZone()
+    void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        if (ObjWriting::Configuration.Verbose)
-            std::cout << "Building material constant name lookup...\n";
-
-        const auto begin = std::chrono::high_resolution_clock::now();
-
-        AddStaticKnownNames();
-
         for (const auto* zone : g_GameT6.GetZones())
         {
             const auto* t6AssetPools = dynamic_cast<const GameAssetPoolT6*>(zone->m_pools.get());
@@ -504,48 +490,17 @@ namespace T6
                 }
             }
         }
-
-        const auto end = std::chrono::high_resolution_clock::now();
-
-        if (ObjWriting::Configuration.Verbose)
-        {
-            const auto durationInMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-            std::cout << "Built material constant name lookup in " << durationInMs.count() << "ms: " << m_constant_names_from_shaders.size()
-                      << " constant names; " << m_texture_def_names_from_shaders.size() << " texture def names\n";
-        }
     }
 
-    bool MaterialConstantZoneState::GetConstantName(const unsigned hash, std::string& constantName) const
+    unsigned MaterialConstantZoneState::HashString(const std::string& str)
     {
-        const auto existingConstantName = m_constant_names_from_shaders.find(hash);
-        if (existingConstantName != m_constant_names_from_shaders.end())
-        {
-            constantName = existingConstantName->second;
-            return true;
-        }
-
-        return false;
-    }
-
-    bool MaterialConstantZoneState::GetTextureDefName(const unsigned hash, std::string& textureDefName) const
-    {
-        const auto existingTextureDefName = m_texture_def_names_from_shaders.find(hash);
-        if (existingTextureDefName != m_texture_def_names_from_shaders.end())
-        {
-            textureDefName = existingTextureDefName->second;
-            return true;
-        }
-
-        return false;
+        return Common::R_HashString(str.c_str());
     }
 
     void MaterialConstantZoneState::ExtractNamesFromTechnique(const MaterialTechnique* technique)
     {
-        const auto existingTechnique = m_dumped_techniques.find(technique);
-        if (existingTechnique != m_dumped_techniques.end())
+        if (!ShouldDumpFromStruct(technique))
             return;
-
-        m_dumped_techniques.emplace(technique);
 
         for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
         {
@@ -559,78 +514,11 @@ namespace T6
         }
     }
 
-    void MaterialConstantZoneState::ExtractNamesFromShader(const char* shader, const size_t shaderSize)
-    {
-        const auto shaderInfo = d3d11::ShaderAnalyser::GetShaderInfo(reinterpret_cast<const uint8_t*>(shader), shaderSize);
-        if (!shaderInfo)
-            return;
-
-        const auto globalsConstantBuffer = std::ranges::find_if(std::as_const(shaderInfo->m_constant_buffers),
-                                                                [](const d3d11::ConstantBuffer& constantBuffer)
-                                                                {
-                                                                    return constantBuffer.m_name == GLOBALS_CBUFFER_NAME;
-                                                                });
-
-        const auto perObjectConsts = std::ranges::find_if(std::as_const(shaderInfo->m_constant_buffers),
-                                                          [](const d3d11::ConstantBuffer& constantBuffer)
-                                                          {
-                                                              return constantBuffer.m_name == PER_OBJECT_CONSTS_CBUFFER_NAME;
-                                                          });
-
-        if (globalsConstantBuffer != shaderInfo->m_constant_buffers.end())
-        {
-            for (const auto& variable : globalsConstantBuffer->m_variables)
-                AddConstantName(variable.m_name);
-        }
-
-        if (perObjectConsts != shaderInfo->m_constant_buffers.end())
-        {
-            for (const auto& variable : perObjectConsts->m_variables)
-                AddConstantName(variable.m_name);
-        }
-
-        for (const auto& boundResource : shaderInfo->m_bound_resources)
-        {
-            if (boundResource.m_type == d3d11::BoundResourceType::SAMPLER || boundResource.m_type == d3d11::BoundResourceType::TEXTURE)
-            {
-                if (AddTextureDefName(boundResource.m_name))
-                {
-                    const auto samplerPos = boundResource.m_name.rfind(SAMPLER_STR);
-                    if (samplerPos != std::string::npos)
-                    {
-                        auto nameWithoutSamplerStr = boundResource.m_name;
-                        nameWithoutSamplerStr.erase(samplerPos, std::char_traits<char>::length(SAMPLER_STR));
-                        AddTextureDefName(std::move(nameWithoutSamplerStr));
-                    }
-                }
-            }
-        }
-    }
-
     void MaterialConstantZoneState::AddStaticKnownNames()
     {
         for (const auto* knownConstantName : KNOWN_CONSTANT_NAMES)
             AddConstantName(knownConstantName);
         for (const auto* knownTextureDefName : KNOWN_TEXTURE_DEF_NAMES)
             AddTextureDefName(knownTextureDefName);
-    }
-
-    void MaterialConstantZoneState::AddConstantName(std::string constantName)
-    {
-        const auto hash = Common::R_HashString(constantName.c_str(), 0);
-        if (m_constant_names_from_shaders.contains(hash))
-            return;
-
-        m_constant_names_from_shaders.emplace(hash, std::move(constantName));
-    }
-
-    bool MaterialConstantZoneState::AddTextureDefName(std::string textureDefName)
-    {
-        const auto hash = Common::R_HashString(textureDefName.c_str(), 0);
-        if (m_texture_def_names_from_shaders.contains(hash))
-            return false;
-
-        m_texture_def_names_from_shaders.emplace(hash, std::move(textureDefName));
-        return true;
     }
 } // namespace T6

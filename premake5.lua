@@ -4,6 +4,7 @@ include "tools/scripts/linking.lua"
 include "tools/scripts/options.lua"
 include "tools/scripts/platform.lua"
 include "tools/scripts/version.lua"
+include "tools/scripts/source_templating.lua"
 
 -- ==================
 -- Workspace

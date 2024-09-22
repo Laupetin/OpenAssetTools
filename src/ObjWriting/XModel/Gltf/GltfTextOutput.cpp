@@ -6,6 +6,8 @@
 #include <nlohmann/json.hpp>
 
 #define LTC_NO_PROTOTYPES
+#include "Impl/Base64.h"
+
 #include <tomcrypt.h>
 
 using namespace gltf;
@@ -17,18 +19,15 @@ TextOutput::TextOutput(std::ostream& stream)
 
 std::optional<std::string> TextOutput::CreateBufferUri(const void* buffer, const size_t bufferSize) const
 {
-    const auto base64Length = 4u * ((bufferSize + 2u) / 3u);
+    const auto base64Length = base64::GetBase64EncodeOutputLength(bufferSize);
     const auto base64BufferSize = URI_PREFIX_LENGTH + base64Length;
 
     std::string output(base64BufferSize, '\0');
 
     std::memcpy(output.data(), GLTF_DATA_URI_PREFIX, URI_PREFIX_LENGTH);
 
-    unsigned long outLength = base64Length + 1u;
-    const auto result = base64_encode(static_cast<const unsigned char*>(buffer), bufferSize, &output[URI_PREFIX_LENGTH], &outLength);
-
-    assert(result == CRYPT_OK);
-    assert(outLength == base64Length);
+    auto result = base64::EncodeBase64(buffer, bufferSize, &output[URI_PREFIX_LENGTH], base64Length + 1u);
+    assert(result);
 
     return output;
 }

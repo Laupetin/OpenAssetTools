@@ -3,6 +3,7 @@
 #include "AssetLoaders/AssetLoaderLocalizeEntry.h"
 #include "AssetLoaders/AssetLoaderRawFile.h"
 #include "AssetLoaders/AssetLoaderStringTable.h"
+#include "AssetLoaders/AssetLoaderXModel.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/GameT5.h"
@@ -27,7 +28,7 @@ ObjLoader::ObjLoader()
     REGISTER_ASSET_LOADER(BasicAssetLoader<AssetPhysConstraints>)
     REGISTER_ASSET_LOADER(BasicAssetLoader<AssetDestructibleDef>)
     REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXAnim>)
-    REGISTER_ASSET_LOADER(BasicAssetLoader<AssetXModel>)
+    REGISTER_ASSET_LOADER(AssetLoaderXModel)
     REGISTER_ASSET_LOADER(BasicAssetLoader<AssetMaterial>)
     REGISTER_ASSET_LOADER(BasicAssetLoader<AssetTechniqueSet>)
     REGISTER_ASSET_LOADER(BasicAssetLoader<AssetImage>)

@@ -208,6 +208,8 @@ namespace T5
     typedef char cbrushedge_t;
     typedef tdef_align(128) unsigned int raw_uint128;
 
+    typedef uint16_t ScriptString;
+
     struct PhysPreset
     {
         const char* name;
@@ -459,8 +461,8 @@ namespace T5
 
     struct DObjAnimMat
     {
-        float quat[4];
-        float trans[3];
+        vec4_t quat;
+        vec3_t trans;
         float transWeight;
     };
 
@@ -490,7 +492,7 @@ namespace T5
 
     struct type_align(16) GfxPackedVertex
     {
-        float xyz[3];
+        vec3_t xyz;
         float binormalSign;
         GfxColor color;
         PackedTexCoords texCoord;
@@ -535,7 +537,12 @@ namespace T5
         XSurfaceCollisionTree* collisionTree;
     };
 
-    typedef tdef_align(16) uint16_t r_index16_t;
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align(16) XSurfaceTri XSurfaceTri16;
 
     struct XSurface
     {
@@ -546,7 +553,7 @@ namespace T5
         uint16_t triCount;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        r_index16_t (*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         void /*IDirect3DVertexBuffer9*/* vb0;
@@ -587,8 +594,8 @@ namespace T5
 
     struct XBoneInfo
     {
-        float bounds[2][3];
-        float offset[3];
+        vec3_t bounds[2];
+        vec3_t offset;
         float radiusSquared;
         char collmap;
     };
@@ -657,6 +664,14 @@ namespace T5
         PhysGeomList* geomList;
     };
 
+    enum XModelLodRampType : unsigned char
+    {
+        XMODEL_LOD_RAMP_RIGID = 0x0,
+        XMODEL_LOD_RAMP_SKINNED = 0x1,
+
+        XMODEL_LOD_RAMP_COUNT
+    };
+
     struct XModelQuat
     {
         int16_t v[4];
@@ -668,12 +683,12 @@ namespace T5
         unsigned char numBones;
         unsigned char numRootBones;
         unsigned char numsurfs;
-        char lodRampType;
-        uint16_t* boneNames;
-        char* parentList;
+        XModelLodRampType lodRampType;
+        ScriptString* boneNames;
+        unsigned char* parentList;
         XModelQuat* quats;
         float* trans;
-        char* partClassification;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
         Material** materialHandles;
@@ -684,13 +699,13 @@ namespace T5
         int contents;
         XBoneInfo* boneInfo;
         float radius;
-        float mins[3];
-        float maxs[3];
+        vec3_t mins;
+        vec3_t maxs;
         uint16_t numLods;
-        uint16_t collLod;
+        int16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
-        int flags;
+        unsigned int flags;
         bool bad;
         PhysPreset* physPreset;
         unsigned char numCollmaps;
@@ -775,7 +790,7 @@ namespace T5
         char nameStart;
         char nameEnd;
         char samplerState;
-        char semantic;
+        unsigned char semantic; // TextureSemantic
         char isMatureContent;
         char pad[3];
         MaterialTextureDefInfo u;

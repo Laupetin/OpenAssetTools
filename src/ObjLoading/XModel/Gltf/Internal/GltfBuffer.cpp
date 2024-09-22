@@ -1,13 +1,11 @@
 #include "GltfBuffer.h"
 
+#include "Impl/Base64.h"
 #include "XModel/Gltf/GltfConstants.h"
 
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-
-#define LTC_NO_PROTOTYPES
-#include <tomcrypt.h>
 
 using namespace gltf;
 
@@ -51,15 +49,12 @@ bool DataUriBuffer::ReadDataFromUri(const std::string& uri)
         return false;
 
     const auto base64DataLength = uri.size() - URI_PREFIX_LENGTH;
+    m_data_size = base64::GetBase64DecodeOutputLength(base64DataLength);
+    m_data = std::make_unique<uint8_t[]>(m_data_size);
 
-    unsigned long outLength = base64DataLength / 4u;
-    m_data = std::make_unique<uint8_t[]>(outLength);
-    const auto result = base64_decode(&uri[URI_PREFIX_LENGTH], base64DataLength, m_data.get(), &outLength);
-    m_data_size = static_cast<size_t>(outLength);
+    m_data_size = base64::DecodeBase64(&uri[URI_PREFIX_LENGTH], base64DataLength, m_data.get(), m_data_size);
 
-    assert(result == CRYPT_OK);
-
-    return false;
+    return m_data_size > 0;
 }
 
 bool DataUriBuffer::ReadData(void* dest, const size_t offset, const size_t count) const

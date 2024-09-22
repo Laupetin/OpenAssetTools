@@ -1,8 +1,26 @@
-#include "JsonXModelLoader.h"
+#options GAME(IW5, T5, T6)
 
-#include "Csv/CsvStream.h"
-#include "Game/T6/CommonT6.h"
-#include "Game/T6/Json/JsonXModel.h"
+#filename "Game/" + GAME + "/XModel/XModelLoader" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"XModelLoader" + GAME + ".h\""
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#set CONSTANTS_HEADER "\"Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h\""
+#set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+#include LOADER_HEADER
+
+#include COMMON_HEADER
+#include CONSTANTS_HEADER
+#include JSON_HEADER
+
 #include "ObjLoading.h"
 #include "Utils/QuatInt16.h"
 #include "Utils/StringUtils.h"
@@ -13,186 +31,27 @@
 
 #pragma warning(push, 0)
 #include <Eigen>
+#include <nlohmann/json.hpp>
 #pragma warning(pop)
 
+#include "XModel/PartClassificationState.h"
+#include "XModel/TangentData.h"
 #include "XModel/Tangentspace.h"
 
 #include <algorithm>
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <numeric>
+#include <set>
 #include <vector>
 
-using namespace nlohmann;
-using namespace T6;
-
-namespace fs = std::filesystem;
-
-namespace
+namespace GAME
 {
-    const char* HITLOC_NAMES[]{
-        // clang-format off
-        "none",
-        "helmet",
-        "head",
-        "neck",
-        "torso_upper",
-        "torso_middle",
-        "torso_lower",
-        "right_arm_upper",
-        "left_arm_upper",
-        "right_arm_lower",
-        "left_arm_lower",
-        "right_hand",
-        "left_hand",
-        "right_leg_upper",
-        "left_leg_upper",
-        "right_leg_lower",
-        "left_leg_lower",
-        "right_foot",
-        "left_foot",
-        "gun",
-        "shield",
-        // clang-format on
-    };
-    static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);
-
-    class PartClassificationState final : public IZoneAssetLoaderState
-    {
-        // TODO: Use MP part classifications when building an mp fastfile
-        static constexpr auto PART_CLASSIFICATION_FILE = "partclassification.csv";
-
-    public:
-        PartClassificationState()
-            : m_loaded(false)
-        {
-        }
-
-        bool Load(const IAssetLoadingManager& manager)
-        {
-            if (m_loaded)
-                return true;
-
-            if (ObjLoading::Configuration.Verbose)
-                std::cout << "Loading part classification...\n";
-
-            const auto file = manager.GetAssetLoadingContext()->m_raw_search_path->Open(PART_CLASSIFICATION_FILE);
-            if (!file.IsOpen())
-            {
-                std::cerr << std::format("Could not load part classification: Failed to open {}\n", PART_CLASSIFICATION_FILE);
-                return false;
-            }
-
-            CsvInputStream csvStream(*file.m_stream);
-            std::vector<std::string> row;
-            auto rowIndex = 0u;
-            while (csvStream.NextRow(row))
-            {
-                if (!LoadRow(rowIndex++, row))
-                    return false;
-            }
-
-            m_loaded = true;
-
-            return false;
-        }
-
-        [[nodiscard]] unsigned GetPartClassificationForBoneName(const std::string& boneName) const
-        {
-            const auto entry = m_part_classifications.find(boneName);
-
-            return entry != m_part_classifications.end() ? entry->second : HITLOC_NONE;
-        }
-
-    private:
-        bool LoadRow(const unsigned rowIndex, std::vector<std::string>& row)
-        {
-            if (row.empty())
-                return true;
-
-            if (row.size() != 2)
-            {
-                std::cerr << "Could not load part classification: Invalid row\n";
-                return false;
-            }
-
-            utils::MakeStringLowerCase(row[0]);
-            utils::MakeStringLowerCase(row[1]);
-
-            const auto foundHitLoc = std::ranges::find(HITLOC_NAMES, row[1]);
-            if (foundHitLoc == std::end(HITLOC_NAMES))
-            {
-                std::cerr << std::format("Invalid hitloc name in row {}: {}\n", rowIndex + 1, row[1]);
-                return false;
-            }
-
-            const auto hitLocNum = std::distance(std::begin(HITLOC_NAMES), foundHitLoc);
-
-            m_part_classifications.emplace(row[0], hitLocNum);
-            return true;
-        }
-
-        bool m_loaded;
-        std::unordered_map<std::string, unsigned> m_part_classifications;
-    };
-
-    class TangentData
+    class XModelLoader
     {
     public:
-        void CreateTangentData(const XModelCommon& common)
-        {
-            if (common.m_vertices.empty())
-                return;
-
-            const auto vertexCount = common.m_vertices.size();
-            m_tangents.resize(vertexCount);
-            m_binormals.resize(vertexCount);
-
-            auto triCount = 0u;
-            for (const auto& object : common.m_objects)
-                triCount += object.m_faces.size();
-
-            std::vector<uint16_t> indices(triCount * 3u);
-            auto triOffset = 0u;
-            for (const auto& object : common.m_objects)
-            {
-                for (const auto& face : object.m_faces)
-                {
-                    indices[triOffset++] = static_cast<uint16_t>(face.vertexIndex[0]);
-                    indices[triOffset++] = static_cast<uint16_t>(face.vertexIndex[1]);
-                    indices[triOffset++] = static_cast<uint16_t>(face.vertexIndex[2]);
-                }
-            }
-
-            const auto& firstVertex = common.m_vertices[0];
-
-            tangent_space::VertexData vertexData{
-                firstVertex.coordinates,
-                sizeof(XModelVertex),
-                firstVertex.normal,
-                sizeof(XModelVertex),
-                firstVertex.uv,
-                sizeof(XModelVertex),
-                m_tangents.data(),
-                sizeof(float) * 3,
-                m_binormals.data(),
-                sizeof(float) * 3,
-                indices.data(),
-            };
-
-            tangent_space::CalculateTangentSpace(vertexData, triCount, vertexCount);
-        }
-
-        std::vector<std::array<float, 3>> m_tangents;
-        std::vector<std::array<float, 3>> m_binormals;
-    };
-
-    class JsonLoader
-    {
-    public:
-        JsonLoader(std::istream& stream, MemoryManager& memory, IAssetLoadingManager& manager, std::set<XAssetInfoGeneric*>& dependencies)
+        XModelLoader(std::istream& stream, MemoryManager& memory, IAssetLoadingManager& manager, std::set<XAssetInfoGeneric*>& dependencies)
             : m_stream(stream),
               m_memory(memory),
               m_script_strings(manager.GetAssetLoadingContext()->m_zone->m_script_strings),
@@ -205,7 +64,7 @@ namespace
 
         bool Load(XModel& xmodel)
         {
-            const auto jRoot = json::parse(m_stream);
+            const auto jRoot = nlohmann::json::parse(m_stream);
             std::string type;
             unsigned version;
 
@@ -223,7 +82,7 @@ namespace
                 const auto jXModel = jRoot.get<JsonXModel>();
                 return CreateXModelFromJson(jXModel, xmodel);
             }
-            catch (const json::exception& e)
+            catch (const nlohmann::json::exception& e)
             {
                 std::cerr << std::format("Failed to parse json of xmodel: {}\n", e.what());
             }
@@ -316,15 +175,24 @@ namespace
             if (common.m_bone_weight_data.weights.empty())
                 return;
 
-            info.bounds[0].x = 0.0f;
-            info.bounds[0].y = 0.0f;
-            info.bounds[0].z = 0.0f;
-            info.bounds[1].x = 0.0f;
-            info.bounds[1].y = 0.0f;
-            info.bounds[1].z = 0.0f;
-            info.offset.x = 0.0f;
-            info.offset.y = 0.0f;
-            info.offset.z = 0.0f;
+#ifdef FEATURE_IW5
+            vec3_t minCoordinate, maxCoordinate;
+            auto& offset = info.bounds.midPoint;
+#else
+            auto& offset = info.offset;
+            auto& minCoordinate = info.bounds[0];
+            auto& maxCoordinate = info.bounds[1];
+#endif
+
+            minCoordinate.x = 0.0f;
+            minCoordinate.y = 0.0f;
+            minCoordinate.z = 0.0f;
+            maxCoordinate.x = 0.0f;
+            maxCoordinate.y = 0.0f;
+            maxCoordinate.z = 0.0f;
+            offset.x = 0.0f;
+            offset.y = 0.0f;
+            offset.z = 0.0f;
             info.radiusSquared = 0.0f;
 
             const auto vertexCount = common.m_vertex_bone_weights.size();
@@ -339,22 +207,31 @@ namespace
                     if (weight.boneIndex != boneIndex)
                         continue;
 
-                    info.bounds[0].x = std::min(info.bounds[0].x, vertex.coordinates[0]);
-                    info.bounds[0].y = std::min(info.bounds[0].y, vertex.coordinates[1]);
-                    info.bounds[0].z = std::min(info.bounds[0].z, vertex.coordinates[2]);
-                    info.bounds[1].x = std::max(info.bounds[1].x, vertex.coordinates[0]);
-                    info.bounds[1].y = std::max(info.bounds[1].y, vertex.coordinates[1]);
-                    info.bounds[1].z = std::max(info.bounds[1].z, vertex.coordinates[2]);
+                    minCoordinate.x = std::min(minCoordinate.x, vertex.coordinates[0]);
+                    minCoordinate.y = std::min(minCoordinate.y, vertex.coordinates[1]);
+                    minCoordinate.z = std::min(minCoordinate.z, vertex.coordinates[2]);
+                    maxCoordinate.x = std::max(maxCoordinate.x, vertex.coordinates[0]);
+                    maxCoordinate.y = std::max(maxCoordinate.y, vertex.coordinates[1]);
+                    maxCoordinate.z = std::max(maxCoordinate.z, vertex.coordinates[2]);
                 }
             }
 
-            const Eigen::Vector3f minEigen(info.bounds[0].x, info.bounds[0].y, info.bounds[0].z);
-            const Eigen::Vector3f maxEigen(info.bounds[1].x, info.bounds[1].y, info.bounds[1].z);
+            const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
+            const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
             const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
-            info.offset.x = boundsCenter.x();
-            info.offset.y = boundsCenter.y();
-            info.offset.z = boundsCenter.z();
-            info.radiusSquared = Eigen::Vector3f(maxEigen - boundsCenter).squaredNorm();
+            const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
+#ifdef FEATURE_IW5
+
+            info.bounds.halfSize.x = halfSizeEigen.x();
+            info.bounds.halfSize.y = halfSizeEigen.y();
+            info.bounds.halfSize.z = halfSizeEigen.z();
+#endif
+
+            offset.x = boundsCenter.x();
+            offset.y = boundsCenter.y();
+            offset.z = boundsCenter.z();
+
+            info.radiusSquared = halfSizeEigen.squaredNorm();
         }
 
         bool ApplyCommonBonesToXModel(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common) const
@@ -362,7 +239,7 @@ namespace
             if (common.m_bones.empty())
                 return true;
 
-            m_part_classification_state.Load(m_manager);
+            m_part_classification_state.Load(HITLOC_NAMES, std::extent_v<decltype(HITLOC_NAMES)>, m_manager);
 
             const auto boneCount = common.m_bones.size();
             constexpr auto maxBones = std::numeric_limits<decltype(XModel::numBones)>::max();
@@ -415,8 +292,10 @@ namespace
                 ApplyBasePose(xmodel.baseMat[boneIndex], bone);
                 CalculateBoneBounds(xmodel.boneInfo[boneIndex], boneIndex, common);
 
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
                 // Other boneInfo data is filled when calculating bone bounds
                 xmodel.boneInfo[boneIndex].collmap = -1;
+#endif
 
                 if (xmodel.numRootBones <= boneIndex)
                 {
@@ -744,7 +623,7 @@ namespace
                 return false;
             }
 
-            auto extension = fs::path(jLod.file).extension().string();
+            auto extension = std::filesystem::path(jLod.file).extension().string();
             utils::MakeStringLowerCase(extension);
 
             const auto common = LoadModelByExtension(*file.m_stream, extension);
@@ -821,17 +700,52 @@ namespace
                     lodInfo.partBits[i] |= surface.partBits[i];
             }
 
+#ifdef FEATURE_IW5
+            auto* modelSurfs = m_memory.Alloc<XModelSurfs>();
+            const auto modelSurfsName = std::format("{}_lod{}", xmodel.name, lodNumber);
+            modelSurfs->name = m_memory.Dup(modelSurfsName.c_str());
+
+            static_assert(std::extent_v<decltype(XModelLodInfo::partBits)> == std::extent_v<decltype(XModelSurfs::partBits)>);
+            memcpy(modelSurfs->partBits, lodInfo.partBits, sizeof(XModelLodInfo::partBits));
+
+            modelSurfs->numsurfs = lodInfo.numsurfs;
+            modelSurfs->surfs = m_memory.Alloc<XSurface>(modelSurfs->numsurfs);
+            memcpy(modelSurfs->surfs, &m_surfaces[lodInfo.surfIndex], sizeof(XSurface) * modelSurfs->numsurfs);
+
+            m_manager.AddAsset<AssetXModelSurfs>(modelSurfsName, modelSurfs);
+
+            lodInfo.modelSurfs = modelSurfs;
+            lodInfo.surfs = modelSurfs->surfs;
+
+            lodInfo.lod = static_cast<decltype(XModelLodInfo::lod)>(lodNumber);
+#endif
+
             return true;
         }
 
         static void CalculateModelBounds(XModel& xmodel)
         {
+#ifdef FEATURE_IW5
+            if (!xmodel.lodInfo[0].modelSurfs || !xmodel.lodInfo[0].modelSurfs->surfs)
+                return;
+
+            const auto* surfs = xmodel.lodInfo[0].modelSurfs->surfs;
+            vec3_t minCoordinate, maxCoordinate;
+#else
             if (!xmodel.surfs)
                 return;
 
+            auto& minCoordinate = xmodel.mins;
+            auto& maxCoordinate = xmodel.maxs;
+#endif
+
             for (auto surfaceIndex = 0u; surfaceIndex < xmodel.lodInfo[0].numsurfs; surfaceIndex++)
             {
+#ifdef FEATURE_IW5
+                const auto& surface = surfs[surfaceIndex];
+#else
                 const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
+#endif
 
                 if (!surface.verts0)
                     continue;
@@ -840,19 +754,35 @@ namespace
                 {
                     const auto& vertex = surface.verts0[vertIndex];
 
-                    xmodel.mins.x = std::min(xmodel.mins.x, vertex.xyz.v[0]);
-                    xmodel.mins.y = std::min(xmodel.mins.y, vertex.xyz.v[1]);
-                    xmodel.mins.z = std::min(xmodel.mins.z, vertex.xyz.v[2]);
-                    xmodel.maxs.x = std::max(xmodel.maxs.x, vertex.xyz.v[0]);
-                    xmodel.maxs.y = std::max(xmodel.maxs.y, vertex.xyz.v[1]);
-                    xmodel.maxs.z = std::max(xmodel.maxs.z, vertex.xyz.v[2]);
+                    minCoordinate.x = std::min(minCoordinate.x, vertex.xyz.v[0]);
+                    minCoordinate.y = std::min(minCoordinate.y, vertex.xyz.v[1]);
+                    minCoordinate.z = std::min(minCoordinate.z, vertex.xyz.v[2]);
+                    maxCoordinate.x = std::max(maxCoordinate.x, vertex.xyz.v[0]);
+                    maxCoordinate.y = std::max(maxCoordinate.y, vertex.xyz.v[1]);
+                    maxCoordinate.z = std::max(maxCoordinate.z, vertex.xyz.v[2]);
                 }
             }
 
-            const auto maxX = std::max(std::abs(xmodel.mins.x), std::abs(xmodel.maxs.x));
-            const auto maxY = std::max(std::abs(xmodel.mins.y), std::abs(xmodel.maxs.y));
-            const auto maxZ = std::max(std::abs(xmodel.mins.z), std::abs(xmodel.maxs.z));
+#ifdef FEATURE_IW5
+            const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
+            const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
+            const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
+            const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
+
+            xmodel.bounds.halfSize.x = halfSizeEigen.x();
+            xmodel.bounds.halfSize.y = halfSizeEigen.y();
+            xmodel.bounds.halfSize.z = halfSizeEigen.z();
+
+            xmodel.bounds.midPoint.x = boundsCenter.x();
+            xmodel.bounds.midPoint.y = boundsCenter.y();
+            xmodel.bounds.midPoint.z = boundsCenter.z();
+            xmodel.radius = halfSizeEigen.norm();
+#else
+            const auto maxX = std::max(std::abs(minCoordinate.x), std::abs(maxCoordinate.x));
+            const auto maxY = std::max(std::abs(minCoordinate.y), std::abs(maxCoordinate.y));
+            const auto maxZ = std::max(std::abs(minCoordinate.z), std::abs(maxCoordinate.z));
             xmodel.radius = Eigen::Vector3f(maxX, maxY, maxZ).norm();
+#endif
         }
 
         bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel)
@@ -865,7 +795,7 @@ namespace
             }
 
             auto lodNumber = 0u;
-            xmodel.numLods = static_cast<uint16_t>(jXModel.lods.size());
+            xmodel.numLods = static_cast<decltype(XModel::numLods)>(jXModel.lods.size());
             for (const auto& jLod : jXModel.lods)
             {
                 if (!LoadLod(jLod, xmodel, lodNumber++))
@@ -879,10 +809,14 @@ namespace
                 return false;
             }
 
-            xmodel.numsurfs = static_cast<unsigned char>(m_surfaces.size());
+            xmodel.numsurfs = static_cast<decltype(XModel::numsurfs)>(m_surfaces.size());
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
-            xmodel.materialHandles = m_memory.Alloc<Material*>(xmodel.numsurfs);
             memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
+#endif
+
+            xmodel.materialHandles = m_memory.Alloc<Material*>(xmodel.numsurfs);
             memcpy(xmodel.materialHandles, m_materials.data(), sizeof(Material*) * xmodel.numsurfs);
 
             CalculateModelBounds(xmodel);
@@ -894,7 +828,7 @@ namespace
                     PrintError(xmodel, "Collision lod is not a valid lod");
                     return false;
                 }
-                xmodel.collLod = static_cast<int16_t>(jXModel.collLod.value());
+                xmodel.collLod = static_cast<decltype(XModel::collLod)>(jXModel.collLod.value());
             }
             else
                 xmodel.collLod = -1;
@@ -915,6 +849,25 @@ namespace
                 xmodel.physPreset = nullptr;
             }
 
+#if defined(FEATURE_IW5)
+            if (jXModel.physCollmap)
+            {
+                auto* physCollmap = m_manager.LoadDependency<AssetPhysCollMap>(jXModel.physCollmap.value());
+                if (!physCollmap)
+                {
+                    PrintError(xmodel, "Could not find phys collmap");
+                    return false;
+                }
+                m_dependencies.emplace(physCollmap);
+                xmodel.physCollmap = physCollmap->Asset();
+            }
+            else
+            {
+                xmodel.physCollmap = nullptr;
+            }
+#endif
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             if (jXModel.physConstraints)
             {
                 auto* physConstraints = m_manager.LoadDependency<AssetPhysConstraints>(jXModel.physConstraints.value());
@@ -930,12 +883,16 @@ namespace
             {
                 xmodel.physConstraints = nullptr;
             }
+#endif
 
             xmodel.flags = jXModel.flags;
+
+#ifdef FEATURE_T6
             xmodel.lightingOriginOffset.x = jXModel.lightingOriginOffset.x;
             xmodel.lightingOriginOffset.y = jXModel.lightingOriginOffset.y;
             xmodel.lightingOriginOffset.z = jXModel.lightingOriginOffset.z;
             xmodel.lightingOriginRange = jXModel.lightingOriginRange;
+#endif
 
             return true;
         }
@@ -950,18 +907,14 @@ namespace
         PartClassificationState& m_part_classification_state;
         std::set<XAssetInfoGeneric*>& m_dependencies;
     };
-} // namespace
 
-namespace T6
-{
-    bool LoadXModelAsJson(
-        std::istream& stream, XModel& xmodel, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
+    bool LoadXModel(std::istream& stream, XModel& xmodel, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
     {
         std::set<XAssetInfoGeneric*> dependenciesSet;
-        JsonLoader loader(stream, *memory, *manager, dependenciesSet);
+        XModelLoader loader(stream, *memory, *manager, dependenciesSet);
 
         dependencies.assign(dependenciesSet.cbegin(), dependenciesSet.cend());
 
         return loader.Load(xmodel);
     }
-} // namespace T6
+} // namespace GAME

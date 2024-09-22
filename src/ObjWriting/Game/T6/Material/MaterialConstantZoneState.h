@@ -1,30 +1,18 @@
 #pragma once
 
-#include "Dumping/IZoneAssetDumperState.h"
 #include "Game/T6/T6.h"
+#include "Material/AbstractMaterialConstantZoneState.h"
 
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 
 namespace T6
 {
-    class MaterialConstantZoneState final : public IZoneAssetDumperState
+    class MaterialConstantZoneState final : public AbstractMaterialConstantZoneStateDx11
     {
-    public:
-        void ExtractNamesFromZone();
-        bool GetConstantName(unsigned hash, std::string& constantName) const;
-        bool GetTextureDefName(unsigned hash, std::string& textureDefName) const;
-
-    private:
+    protected:
+        void ExtractNamesFromZoneInternal() override;
         void ExtractNamesFromTechnique(const MaterialTechnique* technique);
-        void ExtractNamesFromShader(const char* shader, size_t shaderSize);
-        void AddStaticKnownNames();
-        void AddConstantName(std::string constantName);
-        bool AddTextureDefName(std::string textureDefName);
-
-        std::unordered_set<const MaterialTechnique*> m_dumped_techniques;
-        std::unordered_map<unsigned, std::string> m_constant_names_from_shaders;
-        std::unordered_map<unsigned, std::string> m_texture_def_names_from_shaders;
+        void AddStaticKnownNames() override;
+        unsigned HashString(const std::string& str) override;
     };
 } // namespace T6

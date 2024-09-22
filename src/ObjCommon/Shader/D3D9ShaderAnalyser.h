@@ -95,6 +95,6 @@ namespace d3d9
     class ShaderAnalyser
     {
     public:
-        static std::unique_ptr<ShaderInfo> GetShaderInfo(const uint32_t* shaderByteCode, size_t shaderByteCodeSize);
+        static std::unique_ptr<ShaderInfo> GetShaderInfo(const void* shaderByteCode, size_t shaderByteCodeSize);
     };
 } // namespace d3d9

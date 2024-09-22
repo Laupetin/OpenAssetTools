@@ -1,16 +1,12 @@
 #pragma once
 
-#include "Game/T6/T6.h"
-
 #include "Json/JsonCommon.h"
-#include "Json/JsonExtension.h"
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <vector>
 
-namespace T6
+namespace T5
 {
     class JsonXModelLod
     {
@@ -29,9 +25,7 @@ namespace T6
         std::optional<std::string> physPreset;
         std::optional<std::string> physConstraints;
         unsigned flags;
-        JsonVec3 lightingOriginOffset;
-        float lightingOriginRange;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModel, lods, collLod, physPreset, physConstraints, flags, lightingOriginOffset, lightingOriginRange);
-} // namespace T6
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModel, lods, collLod, physPreset, physConstraints, flags);
+} // namespace T5
