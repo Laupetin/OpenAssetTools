@@ -61,12 +61,12 @@ namespace d3d9
         uint32_t TypeInfo;
     };
 
-    bool PopulateVersionInfo(ShaderInfo& shaderInfo, const uint32_t* shaderByteCode, const size_t shaderByteCodeSize)
+    bool PopulateVersionInfo(ShaderInfo& shaderInfo, const void* shaderByteCode, const size_t shaderByteCodeSize)
     {
         if (shaderByteCodeSize < sizeof(uint32_t))
             return false;
 
-        const auto version = *shaderByteCode;
+        const auto version = *static_cast<const uint32_t*>(shaderByteCode);
         shaderInfo.m_version_minor = version & 0xFF;
         shaderInfo.m_version_major = (version & 0xFF00) >> 8;
 
@@ -91,10 +91,10 @@ namespace d3d9
         return false;
     }
 
-    bool FindComment(const uint32_t* shaderByteCode, const size_t shaderByteCodeSize, const uint32_t magic, const char*& commentStart, size_t& commentSize)
+    bool FindComment(const uint8_t* shaderByteCode, const size_t shaderByteCodeSize, const uint32_t magic, const char*& commentStart, size_t& commentSize)
     {
-        const uint32_t* currentPos = shaderByteCode + 1;
-        size_t currentOffset = sizeof(uint32_t);
+        const auto* currentPos = reinterpret_cast<const uint32_t*>(shaderByteCode + sizeof(uint32_t));
+        auto currentOffset = sizeof(uint32_t);
         while (*currentPos != OPCODE_END && (currentOffset + sizeof(uint32_t) - 1) < shaderByteCodeSize)
         {
             const auto currentValue = *currentPos;
@@ -215,7 +215,7 @@ namespace d3d9
         return true;
     }
 
-    bool PopulateShaderInfoFromShaderByteCode(ShaderInfo& shaderInfo, const uint32_t* shaderByteCode, const size_t shaderByteCodeSize)
+    bool PopulateShaderInfoFromShaderByteCode(ShaderInfo& shaderInfo, const uint8_t* shaderByteCode, const size_t shaderByteCodeSize)
     {
         if (!PopulateVersionInfo(shaderInfo, shaderByteCode, shaderByteCodeSize))
             return false;
@@ -236,14 +236,14 @@ namespace d3d9
     }
 } // namespace d3d9
 
-std::unique_ptr<ShaderInfo> ShaderAnalyser::GetShaderInfo(const uint32_t* shaderByteCode, const size_t shaderByteCodeSize)
+std::unique_ptr<ShaderInfo> ShaderAnalyser::GetShaderInfo(const void* shaderByteCode, const size_t shaderByteCodeSize)
 {
     if (shaderByteCode == nullptr || shaderByteCodeSize == 0)
         return nullptr;
 
     auto shaderInfo = std::make_unique<ShaderInfo>();
 
-    if (!PopulateShaderInfoFromShaderByteCode(*shaderInfo, shaderByteCode, shaderByteCodeSize))
+    if (!PopulateShaderInfoFromShaderByteCode(*shaderInfo, static_cast<const uint8_t*>(shaderByteCode), shaderByteCodeSize))
         return nullptr;
 
     return shaderInfo;
