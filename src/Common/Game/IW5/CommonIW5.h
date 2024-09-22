@@ -9,6 +9,21 @@ namespace IW5
     public:
         static int StringTable_HashString(const char* str);
 
+        static constexpr uint32_t R_HashString(const char* str, uint32_t hash)
+        {
+            for (const auto* pos = str; *pos; pos++)
+            {
+                hash = 33 * hash ^ (*pos | 0x20);
+            }
+
+            return hash;
+        }
+
+        static constexpr uint32_t R_HashString(const char* string)
+        {
+            return R_HashString(string, 0u);
+        }
+
         static PackedTexCoords Vec2PackTexCoords(const float (&in)[2]);
         static PackedUnitVec Vec3PackUnitVec(const float (&in)[3]);
         static GfxColor Vec4PackGfxColor(const float (&in)[4]);

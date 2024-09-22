@@ -675,6 +675,23 @@ namespace IW5
         gcc_align(8) uint64_t packed;
     };
 
+    enum MaterialGameFlags
+    {
+        MTL_GAMEFLAG_1 = 0x1,
+        MTL_GAMEFLAG_2 = 0x2,
+        MTL_GAMEFLAG_4 = 0x4,
+        MTL_GAMEFLAG_8 = 0x8,
+        MTL_GAMEFLAG_10 = 0x10,
+        MTL_GAMEFLAG_20 = 0x20,
+        MTL_GAMEFLAG_40 = 0x40,
+        MTL_GAMEFLAG_80 = 0x80,
+        MTL_GAMEFLAG_100 = 0x100,
+        MTL_GAMEFLAG_200 = 0x200,
+        MTL_GAMEFLAG_400 = 0x400,
+        MTL_GAMEFLAG_800 = 0x800,
+        MTL_GAMEFLAG_1000 = 0x1000,
+    };
+
     struct MaterialInfo
     {
         const char* name;
@@ -737,13 +754,71 @@ namespace IW5
         water_t* water;
     };
 
+    enum TextureFilter
+    {
+        TEXTURE_FILTER_DISABLED = 0x0,
+        TEXTURE_FILTER_NEAREST = 0x1,
+        TEXTURE_FILTER_LINEAR = 0x2,
+        TEXTURE_FILTER_ANISO2X = 0x3,
+        TEXTURE_FILTER_ANISO4X = 0x4,
+
+        TEXTURE_FILTER_COUNT
+    };
+
+    enum SamplerStateBitsMipMap_e
+    {
+        SAMPLER_MIPMAP_ENUM_DISABLED,
+        SAMPLER_MIPMAP_ENUM_NEAREST,
+        SAMPLER_MIPMAP_ENUM_LINEAR,
+
+        SAMPLER_MIPMAP_ENUM_COUNT
+    };
+
+    enum SamplerStateBits_e
+    {
+        SAMPLER_FILTER_SHIFT = 0x0,
+        SAMPLER_FILTER_NEAREST = 0x1,
+        SAMPLER_FILTER_LINEAR = 0x2,
+        SAMPLER_FILTER_ANISO2X = 0x3,
+        SAMPLER_FILTER_ANISO4X = 0x4,
+        SAMPLER_FILTER_MASK = 0x7,
+
+        SAMPLER_MIPMAP_SHIFT = 0x3,
+        SAMPLER_MIPMAP_DISABLED = 0x0,
+        SAMPLER_MIPMAP_NEAREST = 0x8,
+        SAMPLER_MIPMAP_LINEAR = 0x10,
+        SAMPLER_MIPMAP_COUNT = 0x3,
+        SAMPLER_MIPMAP_MASK = 0x18,
+
+        SAMPLER_CLAMP_U_SHIFT = 0x5,
+        SAMPLER_CLAMP_V_SHIFT = 0x6,
+        SAMPLER_CLAMP_W_SHIFT = 0x7,
+        SAMPLER_CLAMP_U = 0x20,
+        SAMPLER_CLAMP_V = 0x40,
+        SAMPLER_CLAMP_W = 0x80,
+        SAMPLER_CLAMP_MASK = 0xE0,
+    };
+
+    struct MaterialTextureDefSamplerState
+    {
+        unsigned char filter : 3;
+        unsigned char mipMap : 2;
+        unsigned char clampU : 1;
+        unsigned char clampV : 1;
+        unsigned char clampW : 1;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(MaterialTextureDefSamplerState) == 1u);
+#endif
+
     struct MaterialTextureDef
     {
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        unsigned char samplerState;
-        unsigned char semantic;
+        MaterialTextureDefSamplerState samplerState;
+        unsigned char semantic; // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -751,18 +826,161 @@ namespace IW5
     {
         unsigned int nameHash;
         char name[12];
-        float literal[4];
+        vec4_t literal;
     };
+
+    enum GfxBlend
+    {
+        GFXS_BLEND_DISABLED = 0x0,
+        GFXS_BLEND_ZERO = 0x1,
+        GFXS_BLEND_ONE = 0x2,
+        GFXS_BLEND_SRCCOLOR = 0x3,
+        GFXS_BLEND_INVSRCCOLOR = 0x4,
+        GFXS_BLEND_SRCALPHA = 0x5,
+        GFXS_BLEND_INVSRCALPHA = 0x6,
+        GFXS_BLEND_DESTALPHA = 0x7,
+        GFXS_BLEND_INVDESTALPHA = 0x8,
+        GFXS_BLEND_DESTCOLOR = 0x9,
+        GFXS_BLEND_INVDESTCOLOR = 0xA,
+
+        GFXS_BLEND_COUNT
+    };
+
+    enum GfxBlendOp
+    {
+        GFXS_BLENDOP_DISABLED = 0x0,
+        GFXS_BLENDOP_ADD = 0x1,
+        GFXS_BLENDOP_SUBTRACT = 0x2,
+        GFXS_BLENDOP_REVSUBTRACT = 0x3,
+        GFXS_BLENDOP_MIN = 0x4,
+        GFXS_BLENDOP_MAX = 0x5,
+
+        GFXS_BLENDOP_COUNT
+    };
+
+    enum GfxAlphaTest_e
+    {
+        GFXS_ALPHA_TEST_GT_0 = 1,
+        GFXS_ALPHA_TEST_LT_128 = 2,
+        GFXS_ALPHA_TEST_GE_128 = 3,
+
+        GFXS_ALPHA_TEST_COUNT
+    };
+
+    enum GfxCullFace_e
+    {
+        GFXS_CULL_NONE = 1,
+        GFXS_CULL_BACK = 2,
+        GFXS_CULL_FRONT = 3,
+    };
+
+    enum GfxDepthTest_e
+    {
+        GFXS_DEPTHTEST_ALWAYS = 0,
+        GFXS_DEPTHTEST_LESS = 1,
+        GFXS_DEPTHTEST_EQUAL = 2,
+        GFXS_DEPTHTEST_LESSEQUAL = 3
+    };
+
+    enum GfxPolygonOffset_e
+    {
+        GFXS_POLYGON_OFFSET_0 = 0,
+        GFXS_POLYGON_OFFSET_1 = 1,
+        GFXS_POLYGON_OFFSET_2 = 2,
+        GFXS_POLYGON_OFFSET_SHADOWMAP = 3
+    };
+
+    enum GfxStencilOp
+    {
+        GFXS_STENCILOP_KEEP = 0x0,
+        GFXS_STENCILOP_ZERO = 0x1,
+        GFXS_STENCILOP_REPLACE = 0x2,
+        GFXS_STENCILOP_INCRSAT = 0x3,
+        GFXS_STENCILOP_DECRSAT = 0x4,
+        GFXS_STENCILOP_INVERT = 0x5,
+        GFXS_STENCILOP_INCR = 0x6,
+        GFXS_STENCILOP_DECR = 0x7
+    };
+
+    enum GfxStencilFunc
+    {
+        GFXS_STENCILFUNC_NEVER = 0x0,
+        GFXS_STENCILFUNC_LESS = 0x1,
+        GFXS_STENCILFUNC_EQUAL = 0x2,
+        GFXS_STENCILFUNC_LESSEQUAL = 0x3,
+        GFXS_STENCILFUNC_GREATER = 0x4,
+        GFXS_STENCILFUNC_NOTEQUAL = 0x5,
+        GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
+        GFXS_STENCILFUNC_ALWAYS = 0x7
+    };
+
+    struct GfxStateBitsLoadBitsStructured
+    {
+        // Byte 0
+        unsigned int srcBlendRgb : 4;       // 0-3
+        unsigned int dstBlendRgb : 4;       // 4-7
+        unsigned int blendOpRgb : 3;        // 8-10
+        unsigned int alphaTestDisabled : 1; // 11
+        unsigned int alphaTest : 2;         // 12-13
+        unsigned int cullFace : 2;          // 14-15
+        unsigned int srcBlendAlpha : 4;     // 16-19
+        unsigned int dstBlendAlpha : 4;     // 20-23
+        unsigned int blendOpAlpha : 3;      // 24-26
+        unsigned int colorWriteRgb : 1;     // 27
+        unsigned int colorWriteAlpha : 1;   // 28
+        unsigned int unused0 : 1;           // 29
+        unsigned int gammaWrite : 1;        // 30
+        unsigned int polymodeLine : 1;      // 31
+
+        // Byte 1
+        unsigned int depthWrite : 1;          // 0
+        unsigned int depthTestDisabled : 1;   // 1
+        unsigned int depthTest : 2;           // 2-3
+        unsigned int polygonOffset : 2;       // 4-5
+        unsigned int stencilFrontEnabled : 1; // 6
+        unsigned int stencilBackEnabled : 1;  // 7
+        unsigned int stencilFrontPass : 3;    // 8-10
+        unsigned int stencilFrontFail : 3;    // 11-13
+        unsigned int stencilFrontZFail : 3;   // 14-16
+        unsigned int stencilFrontFunc : 3;    // 17-19
+        unsigned int stencilBackPass : 3;     // 20-22
+        unsigned int stencilBackFail : 3;     // 23-25
+        unsigned int stencilBackZFail : 3;    // 26-28
+        unsigned int stencilBackFunc : 3;     // 29-31
+    };
+
+    union GfxStateBitsLoadBits
+    {
+        unsigned int raw[2];
+        GfxStateBitsLoadBitsStructured structured;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(GfxStateBitsLoadBits) == 8);
+    static_assert(sizeof(GfxStateBitsLoadBitsStructured) == 8);
+#endif
 
     struct GfxStateBits
     {
-        unsigned int loadBits[2];
+        GfxStateBitsLoadBits loadBits;
+    };
+
+    enum GfxCameraRegionType
+    {
+        CAMERA_REGION_LIT_OPAQUE = 0x0,
+        CAMERA_REGION_LIT_TRANS = 0x1,
+        CAMERA_REGION_EMISSIVE = 0x2,
+        CAMERA_REGION_DEPTH_HACK = 0x3,
+        CAMERA_REGION_LIGHT_MAP_OPAQUE = 0x4,
+
+        CAMERA_REGION_COUNT,
+        CAMERA_REGION_NONE = CAMERA_REGION_COUNT,
     };
 
     struct Material
     {
         MaterialInfo info;
-        unsigned char stateBitsEntry[54];
+        char stateBitsEntry[54];
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
