@@ -227,12 +227,12 @@ public:
 
     bool GuessFilenameAndLoadFile(const std::string& filePath, const SoundBankEntryInfo& sound, std::unique_ptr<char[]>& soundData, size_t& soundSize)
     {
-        fs::path pathWithExtension = fs::path(filePath).replace_extension(".wav");
+        fs::path pathWithExtension = fs::path(filePath).concat(".wav");
         auto file = m_asset_search_path->Open(pathWithExtension.string());
         if (file.IsOpen())
             return LoadWavFile(file, sound, soundData, soundSize);
 
-        pathWithExtension = fs::path(filePath).replace_extension(".flac");
+        pathWithExtension = fs::path(filePath).concat(".flac");
         file = m_asset_search_path->Open(pathWithExtension.string());
         if (file.IsOpen())
             return LoadFlacFile(file, pathWithExtension.string(), sound, soundData, soundSize);
