@@ -33,8 +33,13 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
     m_matched_arguments.clear();
     m_matched_options.clear();
 
+    if (args.empty())
+        return false;
+
+    m_path = args[0];
+
     const auto argCount = args.size();
-    for (unsigned argIndex = 0; argIndex < argCount; argIndex++)
+    for (unsigned argIndex = 1u; argIndex < argCount; argIndex++)
     {
         auto& arg = args[argIndex];
 

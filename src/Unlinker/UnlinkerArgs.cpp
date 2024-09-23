@@ -265,7 +265,7 @@ void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
 bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
 {
     shouldContinue = true;
-    if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
+    if (!m_argument_parser.ParseArguments(argc, argv))
     {
         PrintUsage();
         return false;

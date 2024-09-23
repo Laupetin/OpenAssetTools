@@ -23,4 +23,5 @@ private:
     std::vector<const CommandLineOption*> m_command_line_options;
     std::map<const CommandLineOption*, std::vector<std::string>> m_matched_options;
     std::vector<std::string> m_matched_arguments;
+    std::string m_path;
 };
