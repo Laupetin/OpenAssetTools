@@ -112,6 +112,7 @@ group ""
 -- ========================
 include "src/Common.lua"
 include "src/Crypto.lua"
+include "src/ImageConverter.lua"
 include "src/Linker.lua"
 include "src/Parser.lua"
 include "src/RawTemplater.lua"
@@ -155,6 +156,7 @@ group ""
 group "Tools"
     Linker:project()
     Unlinker:project()
+    ImageConverter:project()
 group ""
 
 group "Raw"
