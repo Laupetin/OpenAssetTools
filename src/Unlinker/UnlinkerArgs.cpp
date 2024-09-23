@@ -7,6 +7,7 @@
 #include "Utils/FileUtils.h"
 #include "Utils/StringUtils.h"
 
+#include <format>
 #include <iostream>
 #include <regex>
 #include <type_traits>
@@ -167,7 +168,7 @@ void UnlinkerArgs::PrintUsage()
 
 void UnlinkerArgs::PrintVersion()
 {
-    std::cout << "OpenAssetTools Unlinker " << std::string(GIT_VERSION) << "\n";
+    std::cout << std::format("OpenAssetTools Unlinker {}\n", GIT_VERSION);
 }
 
 void UnlinkerArgs::SetVerbose(const bool isVerbose)

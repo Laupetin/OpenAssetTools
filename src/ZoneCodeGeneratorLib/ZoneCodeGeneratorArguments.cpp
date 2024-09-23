@@ -4,74 +4,83 @@
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
+#include <format>
 #include <iostream>
 #include <type_traits>
 
+// clang-format off
 const CommandLineOption* const OPTION_HELP =
-    CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
+    CommandLineOption::Builder::Create()
+    .WithShortName("?")
+    .WithLongName("help")
+    .WithDescription("Displays usage information.")
+    .Build();
 
 const CommandLineOption* const OPTION_VERSION =
-    CommandLineOption::Builder::Create().WithLongName("version").WithDescription("Prints the application version.").Build();
+    CommandLineOption::Builder::Create()
+    .WithLongName("version")
+    .WithDescription("Prints the application version.")
+    .Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
-    CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
+    CommandLineOption::Builder::Create()
+    .WithShortName("v")
+    .WithLongName("verbose")
+    .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
 
-// ------
-// INPUT
-// ------
+constexpr auto CATEGORY_INPUT = "Input";
 
-constexpr const char* CATEGORY_INPUT = "Input";
+const CommandLineOption* const OPTION_HEADER =
+    CommandLineOption::Builder::Create()
+    .WithShortName("h")
+    .WithLongName("header")
+    .WithDescription("Reads from the specified header file.")
+    .WithCategory(CATEGORY_INPUT)
+    .WithParameter("headerFile")
+    .Reusable()
+    .Build();
 
-const CommandLineOption* const OPTION_HEADER = CommandLineOption::Builder::Create()
-                                                   .WithShortName("h")
-                                                   .WithLongName("header")
-                                                   .WithDescription("Reads from the specified header file.")
-                                                   .WithCategory(CATEGORY_INPUT)
-                                                   .WithParameter("headerFile")
-                                                   .Reusable()
-                                                   .Build();
+const CommandLineOption* const OPTION_COMMANDS_FILE =
+    CommandLineOption::Builder::Create()
+    .WithShortName("c")
+    .WithLongName("commands-file")
+    .WithDescription("Specifies the commands file. Defaults to stdin.")
+    .WithCategory(CATEGORY_INPUT)
+    .WithParameter("commandFile")
+    .Reusable()
+    .Build();
 
-const CommandLineOption* const OPTION_COMMANDS_FILE = CommandLineOption::Builder::Create()
-                                                          .WithShortName("c")
-                                                          .WithLongName("commands-file")
-                                                          .WithDescription("Specifies the commands file. Defaults to stdin.")
-                                                          .WithCategory(CATEGORY_INPUT)
-                                                          .WithParameter("commandFile")
-                                                          .Reusable()
-                                                          .Build();
-
-// ------
-// OUTPUT
-// ------
-constexpr const char* CATEGORY_OUTPUT = "Output";
+constexpr auto CATEGORY_OUTPUT = "Output";
 
 const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
-        .WithShortName("o")
-        .WithLongName("output")
-        .WithDescription("Specify the folder to save the generate code files to. Defaults to the current directory.")
-        .WithCategory(CATEGORY_OUTPUT)
-        .WithParameter("outputPath")
-        .Build();
+    .WithShortName("o")
+    .WithLongName("output")
+    .WithDescription("Specify the folder to save the generate code files to. Defaults to the current directory.")
+    .WithCategory(CATEGORY_OUTPUT)
+    .WithParameter("outputPath")
+    .Build();
 
-const CommandLineOption* const OPTION_PRINT = CommandLineOption::Builder::Create()
-                                                  .WithShortName("p")
-                                                  .WithLongName("print")
-                                                  .WithDescription("Print the loaded data.")
-                                                  .WithCategory(CATEGORY_OUTPUT)
-                                                  .Build();
+const CommandLineOption* const OPTION_PRINT =
+    CommandLineOption::Builder::Create()
+    .WithShortName("p")
+    .WithLongName("print")
+    .WithDescription("Print the loaded data.")
+    .WithCategory(CATEGORY_OUTPUT)
+    .Build();
 
 const CommandLineOption* const OPTION_GENERATE =
     CommandLineOption::Builder::Create()
-        .WithShortName("g")
-        .WithLongName("generate")
-        .WithDescription("Generates a specified asset/preset combination. Can be used multiple times. Available presets: "
-                         "ZoneLoad, ZoneWrite, AssetStructTests")
-        .WithCategory(CATEGORY_OUTPUT)
-        .WithParameter("assetName")
-        .WithParameter("preset")
-        .Reusable()
-        .Build();
+    .WithShortName("g")
+    .WithLongName("generate")
+    .WithDescription("Generates a specified asset/preset combination. Can be used multiple times. Available presets: ZoneLoad, ZoneWrite, AssetStructTests")
+    .WithCategory(CATEGORY_OUTPUT)
+    .WithParameter("assetName")
+    .WithParameter("preset")
+    .Reusable()
+    .Build();
+// clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
@@ -123,7 +132,7 @@ void ZoneCodeGeneratorArguments::PrintUsage()
 
 void ZoneCodeGeneratorArguments::PrintVersion()
 {
-    std::cout << "OpenAssetTools ZoneCodeGenerator " << std::string(GIT_VERSION) << "\n";
+    std::cout << std::format("OpenAssetTools ZoneCodeGenerator {}\n", GIT_VERSION);
 }
 
 bool ZoneCodeGeneratorArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)

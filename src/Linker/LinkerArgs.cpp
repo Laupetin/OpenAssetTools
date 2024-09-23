@@ -7,6 +7,7 @@
 #include "Utils/FileUtils.h"
 
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <regex>
 #include <type_traits>
@@ -155,7 +156,7 @@ void LinkerArgs::PrintUsage()
 
 void LinkerArgs::PrintVersion()
 {
-    std::cout << "OpenAssetTools Linker " << std::string(GIT_VERSION) << "\n";
+    std::cout << std::format("OpenAssetTools Linker {}\n", GIT_VERSION);
 }
 
 void LinkerArgs::SetBinFolder(const char* argv0)
