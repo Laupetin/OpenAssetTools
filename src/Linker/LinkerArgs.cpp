@@ -139,9 +139,9 @@ LinkerArgs::LinkerArgs()
 {
 }
 
-void LinkerArgs::PrintUsage()
+void LinkerArgs::PrintUsage() const
 {
-    UsageInformation usage("Linker.exe");
+    UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
     {

@@ -151,9 +151,9 @@ UnlinkerArgs::UnlinkerArgs()
 {
 }
 
-void UnlinkerArgs::PrintUsage()
+void UnlinkerArgs::PrintUsage() const
 {
-    UsageInformation usage("Unlinker.exe");
+    UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
     {

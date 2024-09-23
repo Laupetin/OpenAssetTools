@@ -118,9 +118,9 @@ ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
     m_verbose = false;
 }
 
-void ZoneCodeGeneratorArguments::PrintUsage()
+void ZoneCodeGeneratorArguments::PrintUsage() const
 {
-    UsageInformation usage("ZoneCodeGenerator.exe");
+    UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
     {

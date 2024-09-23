@@ -19,6 +19,8 @@ public:
     std::string GetValueForOption(const CommandLineOption* option) const;
     std::vector<std::string> GetParametersForOption(const CommandLineOption* option) const;
 
+    [[nodiscard]] std::string GetExecutableName() const;
+
 private:
     std::vector<const CommandLineOption*> m_command_line_options;
     std::map<const CommandLineOption*, std::vector<std::string>> m_matched_options;

@@ -20,7 +20,7 @@ private:
     /**
      * \brief Prints a command line usage help text for the Unlinker tool to stdout.
      */
-    static void PrintUsage();
+    void PrintUsage() const;
     static void PrintVersion();
 
     void SetVerbose(bool isVerbose);

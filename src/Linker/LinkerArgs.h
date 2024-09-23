@@ -59,7 +59,7 @@ private:
     /**
      * \brief Prints a command line usage help text for the Linker tool to stdout.
      */
-    static void PrintUsage();
+    void PrintUsage() const;
     static void PrintVersion();
 
     void SetBinFolder(const char* argv0);

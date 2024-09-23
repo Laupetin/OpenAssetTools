@@ -2,10 +2,13 @@
 
 #include "Utils/StringUtils.h"
 
+#include <filesystem>
 #include <format>
 #include <iostream>
 #include <sstream>
 #include <string>
+
+namespace fs = std::filesystem;
 
 constexpr auto PREFIX_LONG = "--";
 constexpr auto PREFIX_SHORT = "-";
@@ -168,4 +171,9 @@ std::vector<std::string> ArgumentParser::GetParametersForOption(const CommandLin
 bool ArgumentParser::IsOptionSpecified(const CommandLineOption* option) const
 {
     return m_matched_options.find(option) != m_matched_options.end();
+}
+
+std::string ArgumentParser::GetExecutableName() const
+{
+    return fs::path(m_path).filename().string();
 }
