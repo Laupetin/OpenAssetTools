@@ -1009,7 +1009,6 @@ namespace IW4
         // IDirect3DTexture9* map;
         // IDirect3DVolumeTexture9* volmap;
         // IDirect3DCubeTexture9* cubemap;
-        Texture* texture;
         GfxImageLoadDef* loadDef;
     };
 

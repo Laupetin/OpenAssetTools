@@ -16,7 +16,6 @@ use GfxTexture;
 set reusable loadDef;
 set block loadDef XFILE_BLOCK_TEMP;
 set condition basemap never;
-set condition texture never;
 
 // GfxImageLoadDef
 use GfxImageLoadDef;

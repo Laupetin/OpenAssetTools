@@ -21,7 +21,7 @@ namespace
                                "lorem,ipsum");
 
         Zone zone("MockZone", 0, &g_GameT5);
-        MockAssetLoadingManager assetLoadingManager(&zone, &searchPath);
+        MockAssetLoadingManager assetLoadingManager(zone, searchPath);
 
         AssetLoaderStringTable assetLoader;
         MemoryManager memory;

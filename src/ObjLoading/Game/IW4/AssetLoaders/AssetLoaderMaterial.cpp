@@ -820,10 +820,10 @@ namespace IW4
             m_material->techniqueSet = techset->Asset();
 
             auto* loadingContext = m_manager->GetAssetLoadingContext();
-            auto* searchPath = loadingContext->m_raw_search_path;
+            auto& searchPath = loadingContext->m_raw_search_path;
             auto* definitionCache = loadingContext->GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
 
-            const auto* techsetDefinition = AssetLoaderTechniqueSet::LoadTechsetDefinition(techsetName, searchPath, definitionCache);
+            const auto* techsetDefinition = AssetLoaderTechniqueSet::LoadTechsetDefinition(techsetName, &searchPath, definitionCache);
             if (techsetDefinition == nullptr)
             {
                 std::ostringstream ss;
@@ -1375,7 +1375,7 @@ bool AssetLoaderMaterial::LoadFromGdt(
     if (!entry)
         return false;
 
-    MaterialGdtLoader loader(*entry, memory, manager->GetAssetLoadingContext()->m_raw_search_path, manager);
+    MaterialGdtLoader loader(*entry, memory, &manager->GetAssetLoadingContext()->m_raw_search_path, manager);
 
     try
     {

@@ -35,10 +35,8 @@ bool AssetLoaderGfxImage::LoadFromRaw(
     const auto fileData = std::make_unique<char[]>(fileSize);
     file.m_stream->read(fileData.get(), fileSize);
 
-    MemoryManager tempMemory;
-    IwiLoader iwiLoader(&tempMemory);
     std::istringstream ss(std::string(fileData.get(), fileSize));
-    const auto texture = iwiLoader.LoadIwi(ss);
+    const auto texture = iwi::LoadIwi(ss);
     if (!texture)
     {
         std::cerr << std::format("Failed to load texture from: {}\n", fileName);

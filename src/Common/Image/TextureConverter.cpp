@@ -104,7 +104,7 @@ void TextureConverter::SetPixelFunctions(const unsigned inBitCount, const unsign
     }
 }
 
-TextureConverter::TextureConverter(Texture* inputTexture, const ImageFormat* targetFormat)
+TextureConverter::TextureConverter(const Texture* inputTexture, const ImageFormat* targetFormat)
     : m_input_texture(inputTexture),
       m_output_texture(nullptr),
       m_input_format(inputTexture->GetFormat()),
@@ -117,15 +117,17 @@ void TextureConverter::CreateOutputTexture()
     switch (m_input_texture->GetTextureType())
     {
     case TextureType::T_2D:
-        m_output_texture = new Texture2D(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->HasMipMaps());
+        m_output_texture =
+            std::make_unique<Texture2D>(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->HasMipMaps());
         break;
 
     case TextureType::T_CUBE:
-        m_output_texture = new TextureCube(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->HasMipMaps());
+        m_output_texture =
+            std::make_unique<TextureCube>(m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->HasMipMaps());
         break;
 
     case TextureType::T_3D:
-        m_output_texture = new Texture3D(
+        m_output_texture = std::make_unique<Texture3D>(
             m_output_format, m_input_texture->GetWidth(), m_input_texture->GetHeight(), m_input_texture->GetDepth(), m_input_texture->HasMipMaps());
         break;
     default:
@@ -202,7 +204,7 @@ void TextureConverter::ConvertUnsignedToUnsigned()
     }
 }
 
-Texture* TextureConverter::Convert()
+std::unique_ptr<Texture> TextureConverter::Convert()
 {
     CreateOutputTexture();
 
@@ -216,5 +218,5 @@ Texture* TextureConverter::Convert()
         assert(false);
     }
 
-    return m_output_texture;
+    return std::move(m_output_texture);
 }

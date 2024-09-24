@@ -3,7 +3,7 @@
 #include "IImageWriter.h"
 #include "Image/IwiTypes.h"
 
-namespace iwi8
+namespace iwi13
 {
     class IwiWriter final : public IImageWriter
     {
@@ -27,4 +27,4 @@ namespace iwi8
         std::string GetFileExtension() override;
         void DumpImage(std::ostream& stream, const Texture* texture) override;
     };
-} // namespace iwi8
+} // namespace iwi13

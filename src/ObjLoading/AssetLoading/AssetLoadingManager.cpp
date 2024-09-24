@@ -6,7 +6,8 @@
 #include <format>
 #include <iostream>
 
-AssetLoadingManager::AssetLoadingManager(const std::map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType, AssetLoadingContext& context)
+AssetLoadingManager::AssetLoadingManager(const std::unordered_map<asset_type_t, std::unique_ptr<IAssetLoader>>& assetLoadersByType,
+                                         AssetLoadingContext& context)
     : m_asset_loaders_by_type(assetLoadersByType),
       m_context(context),
       m_last_dependency_loaded(nullptr)
@@ -28,26 +29,26 @@ XAssetInfoGeneric* AssetLoadingManager::AddAssetInternal(std::unique_ptr<XAssetI
     const auto assetType = xAssetInfo->m_type;
     const auto* pAssetName = xAssetInfo->m_name.c_str();
 
-    m_last_dependency_loaded = m_context.m_zone->m_pools->AddAsset(std::move(xAssetInfo));
+    m_last_dependency_loaded = m_context.m_zone.m_pools->AddAsset(std::move(xAssetInfo));
     if (m_last_dependency_loaded == nullptr)
-        std::cerr << "Failed to add asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\" to pool: \"" << pAssetName << "\"\n";
+        std::cerr << std::format("Failed to add asset of type \"{}\" to pool: \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType), pAssetName);
 
     return m_last_dependency_loaded;
 }
 
 XAssetInfoGeneric* AssetLoadingManager::AddAsset(std::unique_ptr<XAssetInfoGeneric> xAssetInfo)
 {
-    xAssetInfo->m_zone = m_context.m_zone;
+    xAssetInfo->m_zone = &m_context.m_zone;
     return AddAssetInternal(std::move(xAssetInfo));
 }
 
 XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t assetType, const std::string& assetName, IAssetLoader* loader)
 {
-    auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
+    auto* alreadyLoadedAsset = m_context.m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return alreadyLoadedAsset;
 
-    auto* linkAsset = loader->CreateEmptyAsset(assetName, m_context.m_zone->GetMemory());
+    auto* linkAsset = loader->CreateEmptyAsset(assetName, m_context.m_zone.GetMemory());
     if (linkAsset)
     {
         AddAsset(std::make_unique<XAssetInfoGeneric>(assetType, assetName, linkAsset));
@@ -65,21 +66,21 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
         return lastDependency;
     }
 
-    std::cerr << "Failed to create empty asset \"" << assetName << "\" for type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\"\n";
+    std::cerr << std::format("Failed to create empty asset \"{}\" for type \"{}\"\n", assetName, m_context.m_zone.m_pools->GetAssetTypeName(assetType));
     return nullptr;
 }
 
 XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t assetType, const std::string& assetName, const IAssetLoader* loader)
 {
     if (loader->CanLoadFromGdt() && !m_context.m_gdt_files.empty()
-        && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone->GetMemory(), this, m_context.m_zone))
+        && loader->LoadFromGdt(assetName, &m_context, m_context.m_zone.GetMemory(), this, &m_context.m_zone))
     {
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
         return lastDependency;
     }
 
-    if (loader->CanLoadFromRaw() && loader->LoadFromRaw(assetName, m_context.m_raw_search_path, m_context.m_zone->GetMemory(), this, m_context.m_zone))
+    if (loader->CanLoadFromRaw() && loader->LoadFromRaw(assetName, &m_context.m_raw_search_path, m_context.m_zone.GetMemory(), this, &m_context.m_zone))
     {
         auto* lastDependency = m_last_dependency_loaded;
         m_last_dependency_loaded = nullptr;
@@ -110,7 +111,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
         // Make sure any used script string is available in the created zone
         // The replacement of the scr_string_t values will be done upon writing
         for (const auto scrString : existingAsset->m_used_script_strings)
-            m_context.m_zone->m_script_strings.AddOrGetScriptString(existingAsset->m_zone->m_script_strings.CValue(scrString));
+            m_context.m_zone.m_script_strings.AddOrGetScriptString(existingAsset->m_zone->m_script_strings.CValue(scrString));
 
         AddAssetInternal(std::make_unique<XAssetInfoGeneric>(existingAsset->m_type,
                                                              existingAsset->m_name,
@@ -125,13 +126,13 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
         return lastDependency;
     }
 
-    std::cerr << "Failed to load asset of type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\": \"" << assetName << "\"\n";
+    std::cerr << std::format("Failed to load asset of type \"{}\": \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType), assetName);
     return nullptr;
 }
 
 XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetType, const std::string& assetName)
 {
-    auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
+    auto* alreadyLoadedAsset = m_context.m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return alreadyLoadedAsset;
 
@@ -149,13 +150,13 @@ XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetT
         return LoadAssetDependency(assetType, assetName, loader->second.get());
     }
 
-    std::cerr << "Failed to find loader for asset type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\"\n";
+    std::cerr << std::format("Failed to find loader for asset type \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType));
     return nullptr;
 }
 
 IndirectAssetReference AssetLoadingManager::LoadIndirectAssetReference(const asset_type_t assetType, const std::string& assetName)
 {
-    const auto* alreadyLoadedAsset = m_context.m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
+    const auto* alreadyLoadedAsset = m_context.m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return IndirectAssetReference(assetType, assetName);
 
@@ -170,6 +171,6 @@ IndirectAssetReference AssetLoadingManager::LoadIndirectAssetReference(const ass
         return IndirectAssetReference(assetType, assetName);
     }
 
-    std::cerr << "Failed to find loader for asset type \"" << m_context.m_zone->m_pools->GetAssetTypeName(assetType) << "\"\n";
+    std::cerr << std::format("Failed to find loader for asset type \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType));
     return IndirectAssetReference(assetType, assetName);
 }

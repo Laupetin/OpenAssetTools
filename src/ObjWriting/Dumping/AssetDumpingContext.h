@@ -2,6 +2,7 @@
 
 #include "IZoneAssetDumperState.h"
 #include "Obj/Gdt/GdtStream.h"
+#include "SearchPath/ISearchPath.h"
 #include "Utils/ClassUtils.h"
 #include "Zone/Zone.h"
 
@@ -18,6 +19,7 @@ public:
     Zone* m_zone;
     std::string m_base_path;
     std::unique_ptr<GdtOutputStream> m_gdt;
+    ISearchPath* m_obj_search_path;
 
     AssetDumpingContext();
 

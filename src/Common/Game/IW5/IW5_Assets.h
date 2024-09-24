@@ -1143,9 +1143,6 @@ namespace IW5
         // IDirect3DTexture9* map;
         // IDirect3DVolumeTexture9* volmap;
         // IDirect3DCubeTexture9* cubemap;
-#ifndef __ida
-        Texture* texture;
-#endif
         GfxImageLoadDef* loadDef;
     };
 

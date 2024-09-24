@@ -79,7 +79,7 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
         context.m_ignored_assets.m_entries.emplace_back(assetEntry.m_asset_type, assetEntry.m_asset_name, assetEntry.m_is_reference);
     }
 
-    const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(zone.get(), context.m_asset_search_path, CreateGdtList(context));
+    const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(*zone, *context.m_asset_search_path, CreateGdtList(context));
     if (!CreateIgnoredAssetMap(context, assetLoadingContext->m_ignored_asset_map))
         return nullptr;
 
@@ -92,11 +92,11 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
             return nullptr;
         }
 
-        if (!ObjLoading::LoadAssetForZone(assetLoadingContext.get(), foundAssetTypeEntry->second, assetEntry.m_asset_name))
+        if (!ObjLoading::LoadAssetForZone(*assetLoadingContext, foundAssetTypeEntry->second, assetEntry.m_asset_name))
             return nullptr;
     }
 
-    ObjLoading::FinalizeAssetsForZone(assetLoadingContext.get());
+    ObjLoading::FinalizeAssetsForZone(*assetLoadingContext);
 
     return zone;
 }

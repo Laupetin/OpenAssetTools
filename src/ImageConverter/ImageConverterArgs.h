@@ -1,10 +1,23 @@
 #pragma once
 
 #include "Utils/Arguments/ArgumentParser.h"
-#include "Utils/ClassUtils.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
+
+namespace image_converter
+{
+    enum class Game : std::uint8_t
+    {
+        UNKNOWN,
+        IW3,
+        IW4,
+        IW5,
+        T5,
+        T6
+    };
+} // namespace image_converter
 
 class ImageConverterArgs
 {
@@ -14,6 +27,7 @@ public:
 
     bool m_verbose;
     std::vector<std::string> m_files_to_convert;
+    image_converter::Game m_game_to_convert_to;
 
 private:
     /**

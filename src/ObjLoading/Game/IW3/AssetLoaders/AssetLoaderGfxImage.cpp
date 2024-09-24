@@ -5,7 +5,9 @@
 #include "Image/IwiTypes.h"
 #include "Pool/GlobalAssetPool.h"
 
+#include <algorithm>
 #include <cstring>
+#include <format>
 #include <iostream>
 
 using namespace IW3;
@@ -32,20 +34,9 @@ bool AssetLoaderGfxImage::LoadFromRaw(
         return false;
 
     std::string safeAssetName = assetName;
-    for (auto& c : safeAssetName)
-    {
-        switch (c)
-        {
-        case '*':
-            c = '_';
-            break;
+    std::ranges::replace(safeAssetName, '*', '_');
 
-        default:
-            break;
-        }
-    }
-
-    const auto file = searchPath->Open("images/" + safeAssetName + ".dds");
+    const auto file = searchPath->Open(std::format("images/{}.dds", safeAssetName));
     if (!file.IsOpen())
         return false;
 
@@ -54,7 +45,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(
 
     if (texture == nullptr)
     {
-        std::cout << "Failed to load dds file for image asset \"" << assetName << "\"\n";
+        std::cout << std::format("Failed to load dds file for image asset \"{}\"\n", assetName);
         return false;
     }
 

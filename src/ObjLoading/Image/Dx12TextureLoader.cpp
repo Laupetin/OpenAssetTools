@@ -2,9 +2,8 @@
 
 #include <cstring>
 
-Dx12TextureLoader::Dx12TextureLoader(MemoryManager* memoryManager)
-    : m_memory_manager(memoryManager),
-      m_format(oat::DXGI_FORMAT_UNKNOWN),
+Dx12TextureLoader::Dx12TextureLoader()
+    : m_format(oat::DXGI_FORMAT_UNKNOWN),
       m_type(TextureType::T_2D),
       m_has_mip_maps(false),
       m_width(1u),
@@ -60,26 +59,26 @@ Dx12TextureLoader& Dx12TextureLoader::Depth(const size_t depth)
     return *this;
 }
 
-Texture* Dx12TextureLoader::LoadTexture(const void* data)
+std::unique_ptr<Texture> Dx12TextureLoader::LoadTexture(const void* data)
 {
     const auto* format = GetFormatForDx12Format();
 
     if (format == nullptr)
         return nullptr;
 
-    Texture* texture;
+    std::unique_ptr<Texture> texture;
     switch (m_type)
     {
     case TextureType::T_2D:
-        texture = m_memory_manager->Create<Texture2D>(format, m_width, m_height, m_has_mip_maps);
+        texture = std::make_unique<Texture2D>(format, m_width, m_height, m_has_mip_maps);
         break;
 
     case TextureType::T_3D:
-        texture = m_memory_manager->Create<Texture3D>(format, m_width, m_height, m_depth, m_has_mip_maps);
+        texture = std::make_unique<Texture3D>(format, m_width, m_height, m_depth, m_has_mip_maps);
         break;
 
     case TextureType::T_CUBE:
-        texture = m_memory_manager->Create<TextureCube>(format, m_width, m_width, m_has_mip_maps);
+        texture = std::make_unique<TextureCube>(format, m_width, m_width, m_has_mip_maps);
         break;
 
     default:

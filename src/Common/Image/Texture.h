@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-enum class TextureType
+enum class TextureType : std::uint8_t
 {
     T_2D,
     T_CUBE,
@@ -28,23 +28,25 @@ public:
 
     Texture& operator=(const Texture& other) = delete;
 
-    virtual TextureType GetTextureType() const = 0;
-    const ImageFormat* GetFormat() const;
+    [[nodiscard]] virtual TextureType GetTextureType() const = 0;
+    [[nodiscard]] const ImageFormat* GetFormat() const;
 
-    virtual unsigned GetWidth() const = 0;
-    virtual unsigned GetHeight() const = 0;
-    virtual unsigned GetDepth() const = 0;
-    virtual int GetFaceCount() const = 0;
+    [[nodiscard]] virtual unsigned GetWidth() const = 0;
+    [[nodiscard]] virtual unsigned GetHeight() const = 0;
+    [[nodiscard]] virtual unsigned GetDepth() const = 0;
+    [[nodiscard]] virtual int GetFaceCount() const = 0;
 
     void Allocate();
-    bool Empty() const;
+    [[nodiscard]] bool Empty() const;
 
-    virtual size_t GetSizeOfMipLevel(int mipLevel) const = 0;
-    virtual uint8_t* GetBufferForMipLevel(int mipLevel, int face) = 0;
-    uint8_t* GetBufferForMipLevel(int mipLevel);
+    [[nodiscard]] virtual size_t GetSizeOfMipLevel(int mipLevel) const = 0;
+    [[nodiscard]] virtual uint8_t* GetBufferForMipLevel(int mipLevel, int face) = 0;
+    [[nodiscard]] virtual const uint8_t* GetBufferForMipLevel(int mipLevel, int face) const = 0;
+    [[nodiscard]] uint8_t* GetBufferForMipLevel(int mipLevel);
+    [[nodiscard]] const uint8_t* GetBufferForMipLevel(int mipLevel) const;
 
-    bool HasMipMaps() const;
-    virtual int GetMipMapCount() const = 0;
+    [[nodiscard]] bool HasMipMaps() const;
+    [[nodiscard]] virtual int GetMipMapCount() const = 0;
 };
 
 class Texture2D : public Texture
@@ -63,17 +65,18 @@ public:
     Texture2D& operator=(const Texture2D& other) = delete;
     Texture2D& operator=(Texture2D&& other) noexcept;
 
-    TextureType GetTextureType() const override;
+    [[nodiscard]] TextureType GetTextureType() const override;
 
-    unsigned GetWidth() const override;
-    unsigned GetHeight() const override;
-    unsigned GetDepth() const override;
-    int GetFaceCount() const override;
+    [[nodiscard]] unsigned GetWidth() const override;
+    [[nodiscard]] unsigned GetHeight() const override;
+    [[nodiscard]] unsigned GetDepth() const override;
+    [[nodiscard]] int GetFaceCount() const override;
 
-    size_t GetSizeOfMipLevel(int mipLevel) const override;
-    uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
+    [[nodiscard]] size_t GetSizeOfMipLevel(int mipLevel) const override;
+    [[nodiscard]] uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
+    [[nodiscard]] const uint8_t* GetBufferForMipLevel(int mipLevel, int face) const override;
 
-    int GetMipMapCount() const override;
+    [[nodiscard]] int GetMipMapCount() const override;
 };
 
 class TextureCube final : public Texture2D
@@ -90,11 +93,12 @@ public:
     TextureCube& operator=(const TextureCube& other) = delete;
     TextureCube& operator=(TextureCube&& other) noexcept;
 
-    TextureType GetTextureType() const override;
+    [[nodiscard]] TextureType GetTextureType() const override;
 
-    int GetFaceCount() const override;
+    [[nodiscard]] int GetFaceCount() const override;
 
-    uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
+    [[nodiscard]] uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
+    [[nodiscard]] const uint8_t* GetBufferForMipLevel(int mipLevel, int face) const override;
 };
 
 class Texture3D final : public Texture
@@ -113,15 +117,16 @@ public:
     Texture3D& operator=(const Texture3D& other) = delete;
     Texture3D& operator=(Texture3D&& other) noexcept;
 
-    TextureType GetTextureType() const override;
+    [[nodiscard]] TextureType GetTextureType() const override;
 
-    unsigned GetWidth() const override;
-    unsigned GetHeight() const override;
-    unsigned GetDepth() const override;
-    int GetFaceCount() const override;
+    [[nodiscard]] unsigned GetWidth() const override;
+    [[nodiscard]] unsigned GetHeight() const override;
+    [[nodiscard]] unsigned GetDepth() const override;
+    [[nodiscard]] int GetFaceCount() const override;
 
-    size_t GetSizeOfMipLevel(int mipLevel) const override;
-    uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
+    [[nodiscard]] size_t GetSizeOfMipLevel(int mipLevel) const override;
+    [[nodiscard]] uint8_t* GetBufferForMipLevel(int mipLevel, int face) override;
+    [[nodiscard]] const uint8_t* GetBufferForMipLevel(int mipLevel, int face) const override;
 
-    int GetMipMapCount() const override;
+    [[nodiscard]] int GetMipMapCount() const override;
 };

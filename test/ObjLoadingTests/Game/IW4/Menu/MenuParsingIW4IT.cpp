@@ -29,7 +29,7 @@ namespace test::game::iw4::menu::parsing::it
     public:
         MenuParsingItHelper()
             : m_zone("MockZone", 0, &g_GameIW4),
-              m_manager(&m_zone, &m_search_path)
+              m_manager(m_zone, m_search_path)
         {
         }
 

@@ -1,12 +1,62 @@
 #include "AssetDumperGfxImage.h"
 
 #include "Image/DdsWriter.h"
+#include "Image/Dx9TextureLoader.h"
+#include "Image/IwiLoader.h"
+#include "Image/IwiTypes.h"
 #include "Image/IwiWriter6.h"
+#include "Image/Texture.h"
 #include "ObjWriting.h"
+#include "SearchPath/ISearchPath.h"
 
+#include <algorithm>
 #include <cassert>
+#include <format>
 
 using namespace IW3;
+
+namespace
+{
+    std::unique_ptr<Texture> LoadImageFromLoadDef(const GfxImage* image)
+    {
+        Dx9TextureLoader textureLoader;
+
+        const auto& loadDef = *image->texture.loadDef;
+        textureLoader.Width(loadDef.dimensions[0]).Height(loadDef.dimensions[1]).Depth(loadDef.dimensions[2]);
+
+        if (loadDef.flags & iwi6::IMG_FLAG_VOLMAP)
+            textureLoader.Type(TextureType::T_3D);
+        else if (loadDef.flags & iwi6::IMG_FLAG_CUBEMAP)
+            textureLoader.Type(TextureType::T_CUBE);
+        else
+            textureLoader.Type(TextureType::T_2D);
+
+        textureLoader.Format(static_cast<oat::D3DFORMAT>(loadDef.format));
+        textureLoader.HasMipMaps(!(loadDef.flags & iwi6::IMG_FLAG_NOMIPMAPS));
+        return textureLoader.LoadTexture(loadDef.data);
+    }
+
+    std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage* image, ISearchPath* searchPath)
+    {
+        const auto imageFileName = std::format("images/{}.iwi", image->name);
+        const auto filePathImage = searchPath->Open(imageFileName);
+        if (!filePathImage.IsOpen())
+        {
+            std::cerr << std::format("Could not find data for image \"{}\"\n", image->name);
+            return nullptr;
+        }
+
+        return iwi::LoadIwi(*filePathImage.m_stream);
+    }
+
+    std::unique_ptr<Texture> LoadImageData(ISearchPath* searchPath, const GfxImage* image)
+    {
+        if (image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
+            return LoadImageFromLoadDef(image);
+
+        return LoadImageFromIwi(image, searchPath);
+    }
+} // namespace
 
 AssetDumperGfxImage::AssetDumperGfxImage()
 {
@@ -27,37 +77,29 @@ AssetDumperGfxImage::AssetDumperGfxImage()
 
 bool AssetDumperGfxImage::ShouldDump(XAssetInfo<GfxImage>* asset)
 {
-    const auto* image = asset->Asset();
-    return image->cardMemory.platform[0] > 0;
+    return true;
 }
 
-std::string AssetDumperGfxImage::GetAssetFileName(XAssetInfo<GfxImage>* asset) const
+std::string AssetDumperGfxImage::GetAssetFileName(const XAssetInfo<GfxImage>& asset) const
 {
-    std::string cleanAssetName = asset->m_name;
-    for (auto& c : cleanAssetName)
-    {
-        switch (c)
-        {
-        case '*':
-            c = '_';
-            break;
+    auto cleanAssetName = asset.m_name;
+    std::ranges::replace(cleanAssetName, '*', '_');
 
-        default:
-            break;
-        }
-    }
-
-    return "images/" + cleanAssetName + m_writer->GetFileExtension();
+    return std::format("images/{}{}", cleanAssetName, m_writer->GetFileExtension());
 }
 
 void AssetDumperGfxImage::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
 {
     const auto* image = asset->Asset();
-    const auto assetFile = context.OpenAssetFile(GetAssetFileName(asset));
+    const auto texture = LoadImageData(context.m_obj_search_path, image);
+    if (!texture)
+        return;
+
+    const auto assetFile = context.OpenAssetFile(GetAssetFileName(*asset));
 
     if (!assetFile)
         return;
 
     auto& stream = *assetFile;
-    m_writer->DumpImage(stream, image->texture.texture);
+    m_writer->DumpImage(stream, texture.get());
 }

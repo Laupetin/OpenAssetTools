@@ -1,9 +1,9 @@
-#include "IwiWriter27.h"
+#include "IwiWriter13.h"
 
 #include <cassert>
 #include <ostream>
 
-using namespace iwi27;
+using namespace iwi13;
 
 IwiWriter::IwiWriter() = default;
 
@@ -58,7 +58,7 @@ void IwiWriter::WriteVersion(std::ostream& stream)
     version.tag[0] = 'I';
     version.tag[1] = 'W';
     version.tag[2] = 'i';
-    version.version = 27;
+    version.version = 13;
 
     stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
 }
@@ -101,9 +101,6 @@ void IwiWriter::DumpImage(std::ostream& stream, const Texture* texture)
     if (!texture->HasMipMaps())
         header.flags |= IMG_FLAG_NOMIPMAPS;
 
-    for (auto& i : header.maxGlossForMip)
-        i = 0;
-
     auto currentFileSize = sizeof(IwiVersion) + sizeof(IwiHeader);
 
     const auto textureMipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
@@ -112,7 +109,7 @@ void IwiWriter::DumpImage(std::ostream& stream, const Texture* texture)
         const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
-        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi27::IwiHeader::fileSizeForPicmip)>))
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(IwiHeader::fileSizeForPicmip)>))
             header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
     }
 

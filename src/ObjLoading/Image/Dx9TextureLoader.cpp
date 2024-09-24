@@ -2,9 +2,8 @@
 
 #include <cstring>
 
-Dx9TextureLoader::Dx9TextureLoader(MemoryManager* memoryManager)
-    : m_memory_manager(memoryManager),
-      m_format(oat::D3DFMT_UNKNOWN),
+Dx9TextureLoader::Dx9TextureLoader()
+    : m_format(oat::D3DFMT_UNKNOWN),
       m_type(TextureType::T_2D),
       m_has_mip_maps(false),
       m_width(1u),
@@ -15,7 +14,7 @@ Dx9TextureLoader::Dx9TextureLoader(MemoryManager* memoryManager)
 
 const ImageFormat* Dx9TextureLoader::GetFormatForDx9Format() const
 {
-    for (auto i : ImageFormat::ALL_FORMATS)
+    for (const auto* i : ImageFormat::ALL_FORMATS)
     {
         if (i->GetD3DFormat() == m_format)
             return i;
@@ -60,26 +59,26 @@ Dx9TextureLoader& Dx9TextureLoader::Depth(const size_t depth)
     return *this;
 }
 
-Texture* Dx9TextureLoader::LoadTexture(const void* data)
+std::unique_ptr<Texture> Dx9TextureLoader::LoadTexture(const void* data)
 {
     const auto* format = GetFormatForDx9Format();
 
     if (format == nullptr)
         return nullptr;
 
-    Texture* texture;
+    std::unique_ptr<Texture> texture;
     switch (m_type)
     {
     case TextureType::T_2D:
-        texture = m_memory_manager->Create<Texture2D>(format, m_width, m_height, m_has_mip_maps);
+        texture = std::make_unique<Texture2D>(format, m_width, m_height, m_has_mip_maps);
         break;
 
     case TextureType::T_3D:
-        texture = m_memory_manager->Create<Texture3D>(format, m_width, m_height, m_depth, m_has_mip_maps);
+        texture = std::make_unique<Texture3D>(format, m_width, m_height, m_depth, m_has_mip_maps);
         break;
 
     case TextureType::T_CUBE:
-        texture = m_memory_manager->Create<TextureCube>(format, m_width, m_width, m_has_mip_maps);
+        texture = std::make_unique<TextureCube>(format, m_width, m_width, m_has_mip_maps);
         break;
 
     default:

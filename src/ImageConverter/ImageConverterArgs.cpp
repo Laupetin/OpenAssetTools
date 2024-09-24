@@ -29,16 +29,59 @@ const CommandLineOption* const OPTION_VERBOSE =
     .WithLongName("verbose")
     .WithDescription("Outputs a lot more and more detailed messages.")
     .Build();
+
+constexpr auto CATEGORY_GAME = "Game";
+
+const CommandLineOption* const OPTION_GAME_IW3 =
+    CommandLineOption::Builder::Create()
+    .WithLongName("iw3")
+    .WithCategory(CATEGORY_GAME)
+    .WithDescription("Converts images for IW3.")
+    .Build();
+
+const CommandLineOption* const OPTION_GAME_IW4 =
+    CommandLineOption::Builder::Create()
+    .WithLongName("iw4")
+    .WithCategory(CATEGORY_GAME)
+    .WithDescription("Converts images for IW4.")
+    .Build();
+
+const CommandLineOption* const OPTION_GAME_IW5 =
+    CommandLineOption::Builder::Create()
+    .WithLongName("iw5")
+    .WithCategory(CATEGORY_GAME)
+    .WithDescription("Converts images for IW5.")
+    .Build();
+
+const CommandLineOption* const OPTION_GAME_T5 =
+    CommandLineOption::Builder::Create()
+    .WithLongName("t5")
+    .WithCategory(CATEGORY_GAME)
+    .WithDescription("Converts images for T5.")
+    .Build();
+
+const CommandLineOption* const OPTION_GAME_T6 =
+    CommandLineOption::Builder::Create()
+    .WithLongName("t6")
+    .WithCategory(CATEGORY_GAME)
+    .WithDescription("Converts images for T6.")
+    .Build();
 // clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
     OPTION_VERSION,
     OPTION_VERBOSE,
+    OPTION_GAME_IW3,
+    OPTION_GAME_IW4,
+    OPTION_GAME_IW5,
+    OPTION_GAME_T5,
+    OPTION_GAME_T6,
 };
 
 ImageConverterArgs::ImageConverterArgs()
     : m_verbose(false),
+      m_game_to_convert_to(image_converter::Game::UNKNOWN),
       m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }

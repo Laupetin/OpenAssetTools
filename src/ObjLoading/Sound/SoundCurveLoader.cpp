@@ -8,9 +8,9 @@ namespace sound_curve
 {
     std::unique_ptr<GenericGraph2D> LoadSoundCurve(const IAssetLoadingManager* manager, const std::string& soundCurveName)
     {
-        auto* searchPath = manager->GetAssetLoadingContext()->m_raw_search_path;
+        auto& searchPath = manager->GetAssetLoadingContext()->m_raw_search_path;
         const auto fileName = std::format("soundaliases/{}.vfcurve", soundCurveName);
-        const auto file = searchPath->Open(fileName);
+        const auto file = searchPath.Open(fileName);
         if (!file.IsOpen())
         {
             return nullptr;

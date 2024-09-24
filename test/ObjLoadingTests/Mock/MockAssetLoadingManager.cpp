@@ -1,6 +1,6 @@
 #include "MockAssetLoadingManager.h"
 
-MockAssetLoadingManager::MockAssetLoadingManager(Zone* zone, ISearchPath* searchPath)
+MockAssetLoadingManager::MockAssetLoadingManager(Zone& zone, ISearchPath& searchPath)
     : m_zone(zone),
       m_mock_gdt(std::make_unique<Gdt>()),
       m_context(std::make_unique<AssetLoadingContext>(zone, searchPath, std::vector({m_mock_gdt.get()})))

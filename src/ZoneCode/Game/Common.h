@@ -44,9 +44,6 @@ typedef void ID3D11VertexShader;
 typedef void ID3D11InputLayout;
 typedef void ID3D11Buffer;
 
-// OAT Types
-typedef void Texture;
-
 // Unimportant cpp keywords
 #define __unaligned
 #define volatile

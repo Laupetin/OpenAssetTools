@@ -9,9 +9,9 @@ namespace
 {
     std::unique_ptr<GenericGraph2D> LoadAccuracyGraph(const IAssetLoadingManager* manager, const std::string& graphName, const std::string& subFolder)
     {
-        auto* searchPath = manager->GetAssetLoadingContext()->m_raw_search_path;
+        auto& searchPath = manager->GetAssetLoadingContext()->m_raw_search_path;
         const auto fileName = std::format("accuracy/{}/{}", subFolder, graphName);
-        const auto file = searchPath->Open(fileName);
+        const auto file = searchPath.Open(fileName);
         if (!file.IsOpen())
         {
             std::cerr << std::format("Failed to open file for accuracy graph: {}/{}\n", subFolder, graphName);

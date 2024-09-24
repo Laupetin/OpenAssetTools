@@ -29,8 +29,6 @@ template<typename ContainerType, typename ReferencerType> class ObjContainerRepo
         ObjContainerEntry& operator=(ObjContainerEntry&& other) noexcept = default;
     };
 
-    std::vector<ObjContainerEntry> m_containers;
-
 public:
     ObjContainerRepository() = default;
     ~ObjContainerRepository() = default;
@@ -120,4 +118,7 @@ public:
                                                                                                                             return entry.m_container.get();
                                                                                                                         });
     }
+
+private:
+    std::vector<ObjContainerEntry> m_containers;
 };

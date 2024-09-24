@@ -1,5 +1,6 @@
 #include "SearchPaths.h"
 
+#include <cassert>
 #include <filesystem>
 
 SearchPathOpenFile SearchPaths::Open(const std::string& fileName)
@@ -38,11 +39,13 @@ void SearchPaths::CommitSearchPath(std::unique_ptr<ISearchPath> searchPath)
 
 void SearchPaths::IncludeSearchPath(ISearchPath* searchPath)
 {
+    assert(searchPath);
     m_search_paths.push_back(searchPath);
 }
 
-void SearchPaths::RemoveSearchPath(ISearchPath* searchPath)
+void SearchPaths::RemoveSearchPath(const ISearchPath* searchPath)
 {
+    assert(searchPath);
     for (auto i = m_search_paths.begin(); i != m_search_paths.end(); ++i)
     {
         if (*i == searchPath)
