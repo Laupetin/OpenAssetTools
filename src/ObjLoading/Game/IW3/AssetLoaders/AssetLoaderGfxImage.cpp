@@ -40,12 +40,10 @@ bool AssetLoaderGfxImage::LoadFromRaw(
     if (!file.IsOpen())
         return false;
 
-    const DdsLoader ddsLoader(zone->GetMemory());
-    auto* texture = ddsLoader.LoadDds(*file.m_stream);
-
-    if (texture == nullptr)
+    const auto texture = dds::LoadDds(*file.m_stream);
+    if (!texture)
     {
-        std::cout << std::format("Failed to load dds file for image asset \"{}\"\n", assetName);
+        std::cerr << std::format("Failed to load dds file for image asset \"{}\"\n", assetName);
         return false;
     }
 

@@ -1,16 +1,10 @@
 #pragma once
 
 #include "Image/Texture.h"
-#include "Utils/MemoryManager.h"
 
 #include <istream>
 
-class DdsLoader
+namespace dds
 {
-    MemoryManager* m_memory_manager;
-
-public:
-    explicit DdsLoader(MemoryManager* memoryManager);
-
-    Texture* LoadDds(std::istream& stream) const;
-};
+    std::unique_ptr<Texture> LoadDds(std::istream& stream);
+}
