@@ -38,13 +38,11 @@ function ImageConverter:project()
 		
 		self:include(includes)
 		Utils:include(includes)
-        ObjLoading:include(includes)
-        ObjWriting:include(includes)
+        ObjImage:include(includes)
 
 		Raw:use()
 
 		links:linkto(Utils)
-		links:linkto(ObjLoading)
-		links:linkto(ObjWriting)
+		links:linkto(ObjImage)
 		links:linkall()
 end

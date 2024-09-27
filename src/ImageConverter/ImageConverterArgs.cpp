@@ -1,8 +1,6 @@
 #include "ImageConverterArgs.h"
 
 #include "GitVersion.h"
-#include "ObjLoading.h"
-#include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 
 #include <format>
@@ -109,8 +107,6 @@ void ImageConverterArgs::PrintVersion()
 void ImageConverterArgs::SetVerbose(const bool isVerbose)
 {
     m_verbose = isVerbose;
-    ObjLoading::Configuration.Verbose = isVerbose;
-    ObjWriting::Configuration.Verbose = isVerbose;
 }
 
 bool ImageConverterArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
