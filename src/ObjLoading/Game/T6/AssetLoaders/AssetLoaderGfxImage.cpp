@@ -6,6 +6,7 @@
 #include "Pool/GlobalAssetPool.h"
 
 #include <cstring>
+#include <format>
 #include <iostream>
 #include <sstream>
 #include <zlib.h>
@@ -27,7 +28,7 @@ bool AssetLoaderGfxImage::CanLoadFromRaw() const
 bool AssetLoaderGfxImage::LoadFromRaw(
     const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
 {
-    const auto fileName = "images/" + assetName + ".iwi";
+    const auto fileName = std::format("images/{}.iwi", assetName);
     const auto file = searchPath->Open(fileName);
     if (!file.IsOpen())
         return false;
@@ -37,13 +38,11 @@ bool AssetLoaderGfxImage::LoadFromRaw(
     file.m_stream->read(fileData.get(), fileSize);
     const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(fileData.get()), fileSize));
 
-    MemoryManager tempMemory;
-    IwiLoader iwiLoader(&tempMemory);
     std::istringstream ss(std::string(fileData.get(), fileSize));
-    const auto texture = iwiLoader.LoadIwi(ss);
+    const auto texture = iwi::LoadIwi(ss);
     if (!texture)
     {
-        std::cerr << "Failed to load texture from: " << fileName << "\n";
+        std::cerr << std::format("Failed to load texture from: {}\n", fileName);
         return false;
     }
 

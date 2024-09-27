@@ -77,6 +77,11 @@ uint8_t* Texture::GetBufferForMipLevel(const int mipLevel)
     return GetBufferForMipLevel(mipLevel, 0);
 }
 
+const uint8_t* Texture::GetBufferForMipLevel(const int mipLevel) const
+{
+    return GetBufferForMipLevel(mipLevel, 0);
+}
+
 // ==============================================
 // ================ Texture2D ===================
 // ==============================================
@@ -183,6 +188,31 @@ uint8_t* Texture2D::GetBufferForMipLevel(const int mipLevel, const int face)
     return &m_data[bufferOffset];
 }
 
+const uint8_t* Texture2D::GetBufferForMipLevel(const int mipLevel, const int face) const
+{
+    assert(mipLevel >= 0);
+    assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
+    assert(face == 0);
+    assert(m_data);
+
+    if (mipLevel < 0 || mipLevel >= (m_has_mip_maps ? GetMipMapCount() : 1))
+        return nullptr;
+
+    if (face != 0)
+        return nullptr;
+
+    if (!m_data)
+        return nullptr;
+
+    size_t bufferOffset = 0;
+    for (int previousMipLevel = 0; previousMipLevel < mipLevel; previousMipLevel++)
+    {
+        bufferOffset += GetSizeOfMipLevel(previousMipLevel);
+    }
+
+    return &m_data[bufferOffset];
+}
+
 // ==============================================
 // =============== TextureCube ==================
 // ==============================================
@@ -226,6 +256,32 @@ int TextureCube::GetFaceCount() const
 }
 
 uint8_t* TextureCube::GetBufferForMipLevel(const int mipLevel, const int face)
+{
+    assert(mipLevel >= 0);
+    assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
+    assert(face >= 0);
+    assert(face < FACE_COUNT);
+    assert(m_data);
+
+    if (mipLevel < 0 || mipLevel >= (m_has_mip_maps ? GetMipMapCount() : 1))
+        return nullptr;
+
+    if (face < 0 || face >= FACE_COUNT)
+        return nullptr;
+
+    if (!m_data)
+        return nullptr;
+
+    size_t bufferOffset = 0;
+    for (int previousMipLevel = 0; previousMipLevel < mipLevel; previousMipLevel++)
+    {
+        bufferOffset += GetSizeOfMipLevel(previousMipLevel) * FACE_COUNT;
+    }
+
+    return &m_data[bufferOffset + GetSizeOfMipLevel(mipLevel) * face];
+}
+
+const uint8_t* TextureCube::GetBufferForMipLevel(const int mipLevel, const int face) const
 {
     assert(mipLevel >= 0);
     assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
@@ -337,6 +393,31 @@ int Texture3D::GetMipMapCount() const
 }
 
 uint8_t* Texture3D::GetBufferForMipLevel(const int mipLevel, const int face)
+{
+    assert(mipLevel >= 0);
+    assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));
+    assert(face == 0);
+    assert(m_data);
+
+    if (mipLevel < 0 || mipLevel >= (m_has_mip_maps ? GetMipMapCount() : 1))
+        return nullptr;
+
+    if (face != 0)
+        return nullptr;
+
+    if (!m_data)
+        return nullptr;
+
+    size_t bufferOffset = 0;
+    for (int previousMipLevel = 0; previousMipLevel < mipLevel; previousMipLevel++)
+    {
+        bufferOffset += GetSizeOfMipLevel(previousMipLevel);
+    }
+
+    return &m_data[bufferOffset];
+}
+
+const uint8_t* Texture3D::GetBufferForMipLevel(const int mipLevel, const int face) const
 {
     assert(mipLevel >= 0);
     assert(mipLevel < (m_has_mip_maps ? GetMipMapCount() : 1));

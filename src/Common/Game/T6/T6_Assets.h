@@ -848,7 +848,6 @@ namespace T6
     union GfxTexture
     {
         void /*ID3D11ShaderResourceView*/* basemap;
-        Texture* texture;
         GfxImageLoadDef* loadDef;
     };
 

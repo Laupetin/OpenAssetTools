@@ -20,7 +20,7 @@ bool PartClassificationState::Load(const char** hitLocNames, const size_t hitLoc
     if (ObjLoading::Configuration.Verbose)
         std::cout << "Loading part classification...\n";
 
-    const auto file = manager.GetAssetLoadingContext()->m_raw_search_path->Open(PART_CLASSIFICATION_FILE);
+    const auto file = manager.GetAssetLoadingContext()->m_raw_search_path.Open(PART_CLASSIFICATION_FILE);
     if (!file.IsOpen())
     {
         std::cerr << std::format("Could not load part classification: Failed to open {}\n", PART_CLASSIFICATION_FILE);

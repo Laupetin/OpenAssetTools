@@ -40,7 +40,7 @@ public:
      * \brief Removes a search path from the \c SearchPaths object. If the search path was committed then it will \b NOT be deleted when destructing the \c
      * SearchPaths object. \param searchPath  The search path to remove.
      */
-    void RemoveSearchPath(ISearchPath* searchPath);
+    void RemoveSearchPath(const ISearchPath* searchPath);
 
     iterator begin();
     iterator end();

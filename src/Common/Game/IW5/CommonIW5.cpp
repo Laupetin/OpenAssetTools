@@ -2,6 +2,8 @@
 
 #include "Utils/Pack.h"
 
+#include <cctype>
+
 using namespace IW5;
 
 int Common::StringTable_HashString(const char* str)

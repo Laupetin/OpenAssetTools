@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <set>
 #include <sstream>
 #include <type_traits>
 

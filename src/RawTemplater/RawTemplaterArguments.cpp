@@ -4,38 +4,55 @@
 #include "Utils/Arguments/CommandLineOption.h"
 #include "Utils/Arguments/UsageInformation.h"
 
+#include <format>
 #include <iostream>
 #include <type_traits>
 
+// clang-format off
 const CommandLineOption* const OPTION_HELP =
-    CommandLineOption::Builder::Create().WithShortName("?").WithLongName("help").WithDescription("Displays usage information.").Build();
+    CommandLineOption::Builder::Create()
+    .WithShortName("?")
+    .WithLongName("help")
+    .WithDescription("Displays usage information.")
+    .Build();
 
 const CommandLineOption* const OPTION_VERSION =
-    CommandLineOption::Builder::Create().WithLongName("version").WithDescription("Prints the application version.").Build();
+    CommandLineOption::Builder::Create()
+    .WithLongName("version")
+    .WithDescription("Prints the application version.")
+    .Build();
 
 const CommandLineOption* const OPTION_VERBOSE =
-    CommandLineOption::Builder::Create().WithShortName("v").WithLongName("verbose").WithDescription("Outputs a lot more and more detailed messages.").Build();
+    CommandLineOption::Builder::Create()
+    .WithShortName("v")
+    .WithLongName("verbose")
+    .WithDescription("Outputs a lot more and more detailed messages.")
+    .Build();
 
-const CommandLineOption* const OPTION_OUTPUT_FOLDER = CommandLineOption::Builder::Create()
-                                                          .WithShortName("o")
-                                                          .WithLongName("output")
-                                                          .WithDescription("Specify the folder to save the generated files. Defaults to the current directory.")
-                                                          .WithParameter("outputPath")
-                                                          .Build();
+const CommandLineOption* const OPTION_OUTPUT_FOLDER =
+    CommandLineOption::Builder::Create()
+    .WithShortName("o")
+    .WithLongName("output")
+    .WithDescription("Specify the folder to save the generated files. Defaults to the current directory.")
+    .WithParameter("outputPath")
+    .Build();
 
-const CommandLineOption* const OPTION_BUILD_LOG = CommandLineOption::Builder::Create()
-                                                      .WithLongName("build-log")
-                                                      .WithDescription("Specify a file to write a build log to.")
-                                                      .WithParameter("logFilePath")
-                                                      .Build();
+const CommandLineOption* const OPTION_BUILD_LOG =
+    CommandLineOption::Builder::Create()
+    .WithLongName("build-log")
+    .WithDescription("Specify a file to write a build log to.")
+    .WithParameter("logFilePath")
+    .Build();
 
-const CommandLineOption* const OPTION_DEFINE = CommandLineOption::Builder::Create()
-                                                   .WithShortName("d")
-                                                   .WithLongName("define")
-                                                   .WithDescription("Adds a define for the templating process. Can be of format define or define=value.")
-                                                   .WithParameter("defineValue")
-                                                   .Reusable()
-                                                   .Build();
+const CommandLineOption* const OPTION_DEFINE =
+    CommandLineOption::Builder::Create()
+    .WithShortName("d")
+    .WithLongName("define")
+    .WithDescription("Adds a define for the templating process. Can be of format define or define=value.")
+    .WithParameter("defineValue")
+    .Reusable()
+    .Build();
+// clang-format on
 
 const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_HELP,
@@ -52,9 +69,9 @@ RawTemplaterArguments::RawTemplaterArguments()
 {
 }
 
-void RawTemplaterArguments::PrintUsage()
+void RawTemplaterArguments::PrintUsage() const
 {
-    UsageInformation usage("RawTemplater.exe");
+    UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
     {
@@ -66,13 +83,13 @@ void RawTemplaterArguments::PrintUsage()
 
 void RawTemplaterArguments::PrintVersion()
 {
-    std::cout << "OpenAssetTools RawTemplater " << std::string(GIT_VERSION) << "\n";
+    std::cout << std::format("OpenAssetTools RawTemplater {}\n", GIT_VERSION);
 }
 
 bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
 {
     shouldContinue = true;
-    if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
+    if (!m_argument_parser.ParseArguments(argc, argv))
     {
         PrintUsage();
         return false;
@@ -122,9 +139,9 @@ bool RawTemplaterArguments::ParseArgs(const int argc, const char** argv, bool& s
             const auto separator = arg.find('=');
 
             if (separator != std::string::npos)
-                m_defines.emplace_back(std::make_pair(arg.substr(0, separator), arg.substr(separator + 1)));
+                m_defines.emplace_back(arg.substr(0, separator), arg.substr(separator + 1));
             else
-                m_defines.emplace_back(std::make_pair(arg, std::string()));
+                m_defines.emplace_back(arg, std::string());
         }
     }
 

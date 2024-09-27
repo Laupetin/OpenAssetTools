@@ -58,12 +58,12 @@
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 
-#include <sstream>
+#include <format>
 
 namespace T6
 {
-    const int ObjLoader::IPAK_READ_HASH = Common::Com_HashKey("ipak_read", 64);
-    const int ObjLoader::GLOBAL_HASH = Common::Com_HashKey("GLOBAL", 64);
+    constexpr auto IPAK_READ_HASH = Common::Com_HashKey("ipak_read", 64);
+    constexpr auto GLOBAL_HASH = Common::Com_HashKey("GLOBAL", 64);
 
     ObjLoader::ObjLoader()
     {
@@ -125,37 +125,37 @@ namespace T6
 #undef REGISTER_ASSET_LOADER
     }
 
-    bool ObjLoader::SupportsZone(Zone* zone) const
+    bool ObjLoader::SupportsZone(const Zone& zone) const
     {
-        return zone->m_game == &g_GameT6;
+        return zone.m_game == &g_GameT6;
     }
 
-    bool ObjLoader::VerifySoundBankChecksum(const SoundBank* soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank)
+    bool ObjLoader::VerifySoundBankChecksum(const SoundBank& soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank)
     {
         SoundAssetBankChecksum checksum{};
         static_assert(sizeof(SoundAssetBankChecksum::checksumBytes) == sizeof(SndRuntimeAssetBank::linkTimeChecksum));
         for (auto i = 0u; i < sizeof(SoundAssetBankChecksum::checksumBytes); i++)
             checksum.checksumBytes[i] = sndRuntimeAssetBank.linkTimeChecksum[i];
 
-        return soundBank->VerifyChecksum(checksum);
+        return soundBank.VerifyChecksum(checksum);
     }
 
-    SoundBank* ObjLoader::LoadSoundBankForZone(ISearchPath* searchPath, const std::string& soundBankFileName, Zone* zone)
+    SoundBank* ObjLoader::LoadSoundBankForZone(ISearchPath& searchPath, const std::string& soundBankFileName, Zone& zone)
     {
         if (ObjLoading::Configuration.Verbose)
-            std::cout << "Trying to load sound bank '" << soundBankFileName << "' for zone '" << zone->m_name << "'\n";
+            std::cout << std::format("Trying to load sound bank '{}' for zone '{}'\n", soundBankFileName, zone.m_name);
 
         auto* existingSoundBank = SoundBank::Repository.GetContainerByName(soundBankFileName);
         if (existingSoundBank != nullptr)
         {
             if (ObjLoading::Configuration.Verbose)
-                std::cout << "Referencing loaded sound bank '" << soundBankFileName << "'.\n";
+                std::cout << std::format("Referencing loaded sound bank '{}'.\n", soundBankFileName);
 
-            SoundBank::Repository.AddContainerReference(existingSoundBank, zone);
+            SoundBank::Repository.AddContainerReference(existingSoundBank, &zone);
             return existingSoundBank;
         }
 
-        auto file = searchPath->Open(soundBankFileName);
+        auto file = searchPath.Open(soundBankFileName);
         if (file.IsOpen())
         {
             auto sndBank = std::make_unique<SoundBank>(soundBankFileName, std::move(file.m_stream), file.m_length);
@@ -163,26 +163,26 @@ namespace T6
 
             if (!sndBank->Initialize())
             {
-                std::cout << "Failed to load sound bank '" << soundBankFileName << "'\n";
+                std::cerr << std::format("Failed to load sound bank '{}'\n", soundBankFileName);
                 return nullptr;
             }
 
-            SoundBank::Repository.AddContainer(std::move(sndBank), zone);
+            SoundBank::Repository.AddContainer(std::move(sndBank), &zone);
 
             if (ObjLoading::Configuration.Verbose)
-                std::cout << "Found and loaded sound bank '" << soundBankFileName << "'\n";
+                std::cout << std::format("Found and loaded sound bank '{}'\n", soundBankFileName);
 
             return sndBankPtr;
         }
 
-        std::cout << "Failed to load sound bank '" << soundBankFileName << "'\n";
+        std::cerr << std::format("Failed to load sound bank '{}'\n", soundBankFileName);
         return nullptr;
     }
 
-    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath* searchPath,
+    void ObjLoader::LoadSoundBankFromLinkedInfo(ISearchPath& searchPath,
                                                 const std::string& soundBankFileName,
-                                                const SndRuntimeAssetBank* sndBankLinkedInfo,
-                                                Zone* zone,
+                                                const SndRuntimeAssetBank& sndBankLinkedInfo,
+                                                Zone& zone,
                                                 std::set<std::string>& loadedBanksForZone,
                                                 std::stack<std::string>& dependenciesToLoad)
     {
@@ -192,10 +192,9 @@ namespace T6
 
             if (soundBank)
             {
-                if (!VerifySoundBankChecksum(soundBank, *sndBankLinkedInfo))
-                {
-                    std::cout << "Checksum of sound bank does not match link time checksum for '" << soundBankFileName << "'\n";
-                }
+                if (!VerifySoundBankChecksum(*soundBank, sndBankLinkedInfo))
+                    std::cout << std::format("Checksum of sound bank does not match link time checksum for '{}'\n", soundBankFileName);
+
                 loadedBanksForZone.emplace(soundBankFileName);
 
                 for (const auto& dependency : soundBank->GetDependencies())
@@ -206,20 +205,20 @@ namespace T6
         }
     }
 
-    void ObjLoader::LoadSoundBanksFromAsset(ISearchPath* searchPath, const SndBank* sndBank, Zone* zone, std::set<std::string>& loadedBanksForZone)
+    void ObjLoader::LoadSoundBanksFromAsset(ISearchPath& searchPath, const SndBank& sndBank, Zone& zone, std::set<std::string>& loadedBanksForZone)
     {
         std::stack<std::string> dependenciesToLoad;
 
-        if (sndBank->streamAssetBank.zone)
+        if (sndBank.streamAssetBank.zone)
         {
-            const auto soundBankFileName = SoundBank::GetFileNameForDefinition(true, sndBank->streamAssetBank.zone, sndBank->streamAssetBank.language);
-            LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, &sndBank->streamAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
+            const auto soundBankFileName = SoundBank::GetFileNameForDefinition(true, sndBank.streamAssetBank.zone, sndBank.streamAssetBank.language);
+            LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, sndBank.streamAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
         }
 
-        if (sndBank->runtimeAssetLoad && sndBank->loadAssetBank.zone)
+        if (sndBank.runtimeAssetLoad && sndBank.loadAssetBank.zone)
         {
-            const auto soundBankFileName = SoundBank::GetFileNameForDefinition(false, sndBank->loadAssetBank.zone, sndBank->loadAssetBank.language);
-            LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, &sndBank->loadAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
+            const auto soundBankFileName = SoundBank::GetFileNameForDefinition(false, sndBank.loadAssetBank.zone, sndBank.loadAssetBank.language);
+            LoadSoundBankFromLinkedInfo(searchPath, soundBankFileName, sndBank.loadAssetBank, zone, loadedBanksForZone, dependenciesToLoad);
         }
 
         while (!dependenciesToLoad.empty())
@@ -236,76 +235,72 @@ namespace T6
                     loadedBanksForZone.emplace(dependencyFileName);
 
                     for (const auto& dependency : soundBank->GetDependencies())
-                    {
                         dependenciesToLoad.emplace(dependency);
-                    }
                 }
             }
         }
     }
 
-    void ObjLoader::LoadIPakForZone(ISearchPath* searchPath, const std::string& ipakName, Zone* zone)
+    void ObjLoader::LoadIPakForZone(ISearchPath& searchPath, const std::string& ipakName, Zone& zone)
     {
         if (ObjLoading::Configuration.Verbose)
-            printf("Trying to load ipak '%s' for zone '%s'\n", ipakName.c_str(), zone->m_name.c_str());
+            std::cout << std::format("Trying to load ipak '{}' for zone '{}'\n", ipakName, zone.m_name);
 
         auto* existingIPak = IPak::Repository.GetContainerByName(ipakName);
         if (existingIPak != nullptr)
         {
             if (ObjLoading::Configuration.Verbose)
-                printf("Referencing loaded ipak '%s'.\n", ipakName.c_str());
+                std::cout << std::format("Referencing loaded ipak '{}'.\n", ipakName);
 
-            IPak::Repository.AddContainerReference(existingIPak, zone);
+            IPak::Repository.AddContainerReference(existingIPak, &zone);
             return;
         }
 
-        const auto ipakFilename = ipakName + ".ipak";
+        const auto ipakFilename = std::format("{}.ipak", ipakName);
 
-        auto file = searchPath->Open(ipakFilename);
+        auto file = searchPath.Open(ipakFilename);
         if (file.IsOpen())
         {
             auto ipak = std::make_unique<IPak>(ipakFilename, std::move(file.m_stream));
 
             if (ipak->Initialize())
             {
-                IPak::Repository.AddContainer(std::move(ipak), zone);
+                IPak::Repository.AddContainer(std::move(ipak), &zone);
 
                 if (ObjLoading::Configuration.Verbose)
-                    printf("Found and loaded ipak '%s'.\n", ipakFilename.c_str());
+                    std::cout << std::format("Found and loaded ipak '{}'.\n", ipakFilename);
             }
             else
             {
-                printf("Failed to load ipak '%s'!\n", ipakFilename.c_str());
+                std::cerr << std::format("Failed to load ipak '{}'!\n", ipakFilename);
             }
         }
     }
 
-    bool ObjLoader::IsMpZone(Zone* zone)
+    bool ObjLoader::IsMpZone(const Zone& zone)
     {
-        return zone->m_name.compare(0, 3, "mp_") == 0 || zone->m_name.compare(zone->m_name.length() - 3, 3, "_mp") == 0;
+        return zone.m_name.compare(0, 3, "mp_") == 0 || zone.m_name.compare(zone.m_name.length() - 3, 3, "_mp") == 0;
     }
 
-    bool ObjLoader::IsZmZone(Zone* zone)
+    bool ObjLoader::IsZmZone(const Zone& zone)
     {
-        return zone->m_name.compare(0, 3, "zm_") == 0 || zone->m_name.compare(zone->m_name.length() - 3, 3, "_zm") == 0;
+        return zone.m_name.compare(0, 3, "zm_") == 0 || zone.m_name.compare(zone.m_name.length() - 3, 3, "_zm") == 0;
     }
 
-    void ObjLoader::LoadCommonIPaks(ISearchPath* searchPath, Zone* zone)
+    void ObjLoader::LoadCommonIPaks(ISearchPath& searchPath, Zone& zone)
     {
         if (ObjLoading::Configuration.Verbose)
-            printf("Loading common ipaks for zone \"%s\"\n", zone->m_name.c_str());
+            std::cout << std::format("Loading common ipaks for zone \"{}\"\n", zone.m_name);
 
         LoadIPakForZone(searchPath, "base", zone);
-        auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
+        const auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
         for (const auto& languagePrefix : languagePrefixes)
-        {
-            LoadIPakForZone(searchPath, languagePrefix.m_prefix + "base", zone);
-        }
+            LoadIPakForZone(searchPath, std::format("{}base", languagePrefix.m_prefix), zone);
 
         if (IsMpZone(zone))
         {
             if (ObjLoading::Configuration.Verbose)
-                printf("Loading multiplayer ipaks for zone \"%s\"\n", zone->m_name.c_str());
+                std::cout << std::format("Loading multiplayer ipaks for zone \"{}\"\n", zone.m_name);
 
             LoadIPakForZone(searchPath, "mp", zone);
             LoadIPakForZone(searchPath, "so", zone);
@@ -313,23 +308,23 @@ namespace T6
         else if (IsZmZone(zone))
         {
             if (ObjLoading::Configuration.Verbose)
-                printf("Loading zombie ipak for zone \"%s\"\n", zone->m_name.c_str());
+                std::cout << std::format("Loading zombie ipak for zone \"{}\"\n", zone.m_name);
 
             LoadIPakForZone(searchPath, "zm", zone);
         }
         else
         {
             if (ObjLoading::Configuration.Verbose)
-                printf("Loading singleplayer ipak for zone \"%s\"\n", zone->m_name.c_str());
+                std::cout << std::format("Loading singleplayer ipak for zone \"{}\"\n", zone.m_name);
 
             LoadIPakForZone(searchPath, "sp", zone);
         }
     }
 
-    void ObjLoader::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone) const
+    void ObjLoader::LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone) const
     {
-        auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
-        const auto zoneNameHash = Common::Com_HashKey(zone->m_name.c_str(), 64);
+        const auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
+        const auto zoneNameHash = Common::Com_HashKey(zone.m_name.c_str(), 64);
 
         LoadCommonIPaks(searchPath, zone);
 
@@ -337,7 +332,7 @@ namespace T6
         {
             for (auto* keyValuePairsEntry : *assetPoolT6->m_key_value_pairs)
             {
-                auto* keyValuePairs = keyValuePairsEntry->Asset();
+                const auto* keyValuePairs = keyValuePairsEntry->Asset();
                 for (auto variableIndex = 0; variableIndex < keyValuePairs->numVariables; variableIndex++)
                 {
                     auto* variable = &keyValuePairs->keyValuePairs[variableIndex];
@@ -356,143 +351,23 @@ namespace T6
 
             for (auto* sndBankAssetInfo : *assetPoolT6->m_sound_bank)
             {
-                LoadSoundBanksFromAsset(searchPath, sndBankAssetInfo->Asset(), zone, loadedSoundBanksForZone);
+                LoadSoundBanksFromAsset(searchPath, *sndBankAssetInfo->Asset(), zone, loadedSoundBanksForZone);
             }
         }
     }
 
-    void ObjLoader::UnloadContainersOfZone(Zone* zone) const
+    void ObjLoader::UnloadContainersOfZone(Zone& zone) const
     {
-        IPak::Repository.RemoveContainerReferences(zone);
+        IPak::Repository.RemoveContainerReferences(&zone);
     }
 
-    void ObjLoader::LoadImageFromLoadDef(GfxImage* image, Zone* zone)
+    bool ObjLoader::LoadAssetForZone(AssetLoadingContext& context, const asset_type_t assetType, const std::string& assetName) const
     {
-        const auto* loadDef = image->texture.loadDef;
-        Dx12TextureLoader textureLoader(zone->GetMemory());
-
-        textureLoader.Width(image->width).Height(image->height).Depth(image->depth);
-
-        if (loadDef->flags & iwi27::IMG_FLAG_VOLMAP)
-            textureLoader.Type(TextureType::T_3D);
-        else if (loadDef->flags & iwi27::IMG_FLAG_CUBEMAP)
-            textureLoader.Type(TextureType::T_CUBE);
-        else
-            textureLoader.Type(TextureType::T_2D);
-
-        textureLoader.Format(static_cast<oat::DXGI_FORMAT>(loadDef->format));
-        textureLoader.HasMipMaps(!(loadDef->flags & iwi27::IMG_FLAG_NOMIPMAPS));
-        Texture* loadedTexture = textureLoader.LoadTexture(image->texture.loadDef->data);
-
-        if (loadedTexture != nullptr)
-        {
-            image->texture.texture = loadedTexture;
-            image->loadedSize = 0;
-
-            const auto textureMipCount = loadedTexture->GetMipMapCount();
-            for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
-                image->loadedSize += static_cast<int>(loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount());
-        }
-    }
-
-    void ObjLoader::LoadImageFromIwi(GfxImage* image, ISearchPath* searchPath, Zone* zone)
-    {
-        Texture* loadedTexture = nullptr;
-        IwiLoader loader(zone->GetMemory());
-
-        if (image->streamedPartCount > 0)
-        {
-            for (auto* ipak : IPak::Repository)
-            {
-                auto ipakStream = ipak->GetEntryStream(image->hash, image->streamedParts[0].hash);
-
-                if (ipakStream)
-                {
-                    loadedTexture = loader.LoadIwi(*ipakStream);
-
-                    ipakStream->close();
-
-                    if (loadedTexture != nullptr)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (loadedTexture == nullptr)
-        {
-            const auto imageFileName = "images/" + std::string(image->name) + ".iwi";
-
-            {
-                const auto filePathImage = searchPath->Open(imageFileName);
-                if (filePathImage.IsOpen())
-                {
-                    loadedTexture = loader.LoadIwi(*filePathImage.m_stream);
-                }
-            }
-        }
-
-        if (loadedTexture != nullptr)
-        {
-            image->texture.texture = loadedTexture;
-            image->loadedSize = 0;
-
-            const auto textureMipCount = loadedTexture->GetMipMapCount();
-            for (auto mipLevel = 0; mipLevel < textureMipCount; mipLevel++)
-                image->loadedSize += loadedTexture->GetSizeOfMipLevel(mipLevel) * loadedTexture->GetFaceCount();
-        }
-        else
-        {
-            printf("Could not find data for image \"%s\"\n", image->name);
-        }
-    }
-
-    void ObjLoader::LoadImageData(ISearchPath* searchPath, Zone* zone)
-    {
-        auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
-
-        if (assetPoolT6 && assetPoolT6->m_image != nullptr)
-        {
-            for (auto* imageEntry : *assetPoolT6->m_image)
-            {
-                auto* image = imageEntry->Asset();
-
-                if (image->loadedSize > 0)
-                {
-                    continue;
-                }
-
-                // Do not load linked assets
-                if (image->name && image->name[0] == ',')
-                {
-                    continue;
-                }
-
-                if (image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
-                {
-                    LoadImageFromLoadDef(image, zone);
-                }
-                else
-                {
-                    LoadImageFromIwi(image, searchPath, zone);
-                }
-            }
-        }
-    }
-
-    void ObjLoader::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone) const
-    {
-        LoadImageData(searchPath, zone);
-    }
-
-    bool ObjLoader::LoadAssetForZone(AssetLoadingContext* context, const asset_type_t assetType, const std::string& assetName) const
-    {
-        AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, *context);
+        AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, context);
         return assetLoadingManager.LoadAssetFromLoader(assetType, assetName);
     }
 
-    void ObjLoader::FinalizeAssetsForZone(AssetLoadingContext* context) const
+    void ObjLoader::FinalizeAssetsForZone(AssetLoadingContext& context) const
     {
         for (const auto& [type, loader] : m_asset_loaders_by_type)
             loader->FinalizeAssetsForZone(context);

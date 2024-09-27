@@ -1,6 +1,6 @@
 #include "AssetLoadingContext.h"
 
-AssetLoadingContext::AssetLoadingContext(Zone* zone, ISearchPath* rawSearchPath, std::vector<Gdt*> gdtFiles)
+AssetLoadingContext::AssetLoadingContext(Zone& zone, ISearchPath& rawSearchPath, std::vector<Gdt*> gdtFiles)
     : m_zone(zone),
       m_raw_search_path(rawSearchPath),
       m_gdt_files(std::move(gdtFiles))
@@ -10,7 +10,7 @@ AssetLoadingContext::AssetLoadingContext(Zone* zone, ISearchPath* rawSearchPath,
 
 void AssetLoadingContext::BuildGdtEntryCache()
 {
-    for (auto* gdt : m_gdt_files)
+    for (const auto* gdt : m_gdt_files)
     {
         for (const auto& entry : gdt->m_entries)
         {

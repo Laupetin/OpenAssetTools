@@ -46,7 +46,7 @@ public:
         return false;
     }
 
-    virtual void FinalizeAssetsForZone(AssetLoadingContext* context) const
+    virtual void FinalizeAssetsForZone(AssetLoadingContext& context) const
     {
         // Do nothing by default
     }

@@ -1,9 +1,8 @@
-#include "IwiWriter27.h"
+#include "IwiWriter6.h"
 
 #include <cassert>
-#include <ostream>
 
-using namespace iwi27;
+using namespace iwi6;
 
 IwiWriter::IwiWriter() = default;
 
@@ -22,9 +21,6 @@ IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
     case ImageFormatId::A8:
         return IwiFormat::IMG_FORMAT_BITMAP_ALPHA;
 
-    case ImageFormatId::R16_G16_B16_A16_FLOAT:
-        return IwiFormat::IMG_FORMAT_A16B16G16R16F;
-
     case ImageFormatId::BC1:
         return IwiFormat::IMG_FORMAT_DXT1;
 
@@ -42,6 +38,40 @@ IwiFormat IwiWriter::GetIwiFormatForImageFormat(const ImageFormat* imageFormat)
     }
 }
 
+void IwiWriter::WriteVersion(std::ostream& stream)
+{
+    IwiVersion version{};
+    version.tag[0] = 'I';
+    version.tag[1] = 'W';
+    version.tag[2] = 'i';
+    version.version = 6;
+
+    stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
+}
+
+void IwiWriter::FillHeader2D(IwiHeader& header, const Texture2D& texture)
+{
+    header.dimensions[0] = static_cast<uint16_t>(texture.GetWidth());
+    header.dimensions[1] = static_cast<uint16_t>(texture.GetHeight());
+    header.dimensions[2] = 1u;
+}
+
+void IwiWriter::FillHeaderCube(IwiHeader& header, const TextureCube& texture)
+{
+    header.dimensions[0] = static_cast<uint16_t>(texture.GetWidth());
+    header.dimensions[1] = static_cast<uint16_t>(texture.GetHeight());
+    header.dimensions[2] = 1u;
+    header.flags |= IMG_FLAG_CUBEMAP;
+}
+
+void IwiWriter::FillHeader3D(IwiHeader& header, const Texture3D& texture)
+{
+    header.dimensions[0] = static_cast<uint16_t>(texture.GetWidth());
+    header.dimensions[1] = static_cast<uint16_t>(texture.GetHeight());
+    header.dimensions[2] = static_cast<uint16_t>(texture.GetDepth());
+    header.flags |= IMG_FLAG_VOLMAP;
+}
+
 bool IwiWriter::SupportsImageFormat(const ImageFormat* imageFormat)
 {
     return GetIwiFormatForImageFormat(imageFormat) != IwiFormat::IMG_FORMAT_INVALID;
@@ -52,41 +82,7 @@ std::string IwiWriter::GetFileExtension()
     return ".iwi";
 }
 
-void IwiWriter::WriteVersion(std::ostream& stream)
-{
-    IwiVersion version{};
-    version.tag[0] = 'I';
-    version.tag[1] = 'W';
-    version.tag[2] = 'i';
-    version.version = 27;
-
-    stream.write(reinterpret_cast<char*>(&version), sizeof(IwiVersion));
-}
-
-void IwiWriter::FillHeader2D(IwiHeader* header, Texture2D* texture)
-{
-    header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
-    header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
-    header->dimensions[2] = 1;
-}
-
-void IwiWriter::FillHeaderCube(IwiHeader* header, TextureCube* texture)
-{
-    header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
-    header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
-    header->dimensions[2] = 1;
-    header->flags |= IMG_FLAG_CUBEMAP;
-}
-
-void IwiWriter::FillHeader3D(IwiHeader* header, Texture3D* texture)
-{
-    header->dimensions[0] = static_cast<uint16_t>(texture->GetWidth());
-    header->dimensions[1] = static_cast<uint16_t>(texture->GetHeight());
-    header->dimensions[2] = static_cast<uint16_t>(texture->GetDepth());
-    header->flags |= IMG_FLAG_VOLMAP;
-}
-
-void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
+void IwiWriter::DumpImage(std::ostream& stream, const Texture* texture)
 {
     assert(texture != nullptr);
 
@@ -94,15 +90,11 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
 
     IwiHeader header{};
     header.flags = 0;
-    header.gamma = 0.0f;
 
     header.format = static_cast<int8_t>(GetIwiFormatForImageFormat(texture->GetFormat()));
 
     if (!texture->HasMipMaps())
         header.flags |= IMG_FLAG_NOMIPMAPS;
-
-    for (auto& i : header.maxGlossForMip)
-        i = 0;
 
     auto currentFileSize = sizeof(IwiVersion) + sizeof(IwiHeader);
 
@@ -112,21 +104,21 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
         const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
         currentFileSize += mipLevelSize;
 
-        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi27::IwiHeader::fileSizeForPicmip)>))
+        if (currentMipLevel < static_cast<int>(std::extent_v<decltype(IwiHeader::fileSizeForPicmip)>))
             header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
     }
 
-    if (auto* texture2D = dynamic_cast<Texture2D*>(texture))
+    if (const auto* texture2D = dynamic_cast<const Texture2D*>(texture))
     {
-        FillHeader2D(&header, texture2D);
+        FillHeader2D(header, *texture2D);
     }
-    else if (auto* textureCube = dynamic_cast<TextureCube*>(texture))
+    else if (const auto* textureCube = dynamic_cast<const TextureCube*>(texture))
     {
-        FillHeaderCube(&header, textureCube);
+        FillHeaderCube(header, *textureCube);
     }
-    else if (auto* texture3D = dynamic_cast<Texture3D*>(texture))
+    else if (const auto* texture3D = dynamic_cast<const Texture3D*>(texture))
     {
-        FillHeader3D(&header, texture3D);
+        FillHeader3D(header, *texture3D);
     }
     else
     {
@@ -139,6 +131,6 @@ void IwiWriter::DumpImage(std::ostream& stream, Texture* texture)
     for (auto currentMipLevel = textureMipCount - 1; currentMipLevel >= 0; currentMipLevel--)
     {
         const auto mipLevelSize = texture->GetSizeOfMipLevel(currentMipLevel) * texture->GetFaceCount();
-        stream.write(reinterpret_cast<char*>(texture->GetBufferForMipLevel(currentMipLevel)), mipLevelSize);
+        stream.write(reinterpret_cast<const char*>(texture->GetBufferForMipLevel(currentMipLevel)), mipLevelSize);
     }
 }

@@ -22,7 +22,7 @@ const IObjLoader* const OBJ_LOADERS[]{
     new T6::ObjLoader(),
 };
 
-void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* zone)
+void ObjLoading::LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone)
 {
     for (const auto* loader : OBJ_LOADERS)
     {
@@ -34,19 +34,7 @@ void ObjLoading::LoadReferencedContainersForZone(ISearchPath* searchPath, Zone* 
     }
 }
 
-void ObjLoading::LoadObjDataForZone(ISearchPath* searchPath, Zone* zone)
-{
-    for (const auto* loader : OBJ_LOADERS)
-    {
-        if (loader->SupportsZone(zone))
-        {
-            loader->LoadObjDataForZone(searchPath, zone);
-            return;
-        }
-    }
-}
-
-void ObjLoading::UnloadContainersOfZone(Zone* zone)
+void ObjLoading::UnloadContainersOfZone(Zone& zone)
 {
     for (const auto* loader : OBJ_LOADERS)
     {
@@ -58,28 +46,28 @@ void ObjLoading::UnloadContainersOfZone(Zone* zone)
     }
 }
 
-void ObjLoading::LoadIWDsInSearchPath(ISearchPath* searchPath)
+void ObjLoading::LoadIWDsInSearchPath(ISearchPath& searchPath)
 {
-    searchPath->Find(SearchPathSearchOptions().IncludeSubdirectories(false).FilterExtensions("iwd"),
-                     [searchPath](const std::string& path)
-                     {
-                         auto file = std::make_unique<std::ifstream>(path, std::fstream::in | std::fstream::binary);
+    searchPath.Find(SearchPathSearchOptions().IncludeSubdirectories(false).FilterExtensions("iwd"),
+                    [&searchPath](const std::string& path)
+                    {
+                        auto file = std::make_unique<std::ifstream>(path, std::fstream::in | std::fstream::binary);
 
-                         if (file->is_open())
-                         {
-                             auto iwd = std::make_unique<IWD>(path, std::move(file));
+                        if (file->is_open())
+                        {
+                            auto iwd = std::make_unique<IWD>(path, std::move(file));
 
-                             if (iwd->Initialize())
-                             {
-                                 IWD::Repository.AddContainer(std::move(iwd), searchPath);
-                             }
-                         }
-                     });
+                            if (iwd->Initialize())
+                            {
+                                IWD::Repository.AddContainer(std::move(iwd), &searchPath);
+                            }
+                        }
+                    });
 }
 
-void ObjLoading::UnloadIWDsInSearchPath(ISearchPath* searchPath)
+void ObjLoading::UnloadIWDsInSearchPath(ISearchPath& searchPath)
 {
-    IWD::Repository.RemoveContainerReferences(searchPath);
+    IWD::Repository.RemoveContainerReferences(&searchPath);
 }
 
 SearchPaths ObjLoading::GetIWDSearchPaths()
@@ -94,11 +82,11 @@ SearchPaths ObjLoading::GetIWDSearchPaths()
     return iwdPaths;
 }
 
-bool ObjLoading::LoadAssetForZone(AssetLoadingContext* context, const asset_type_t assetType, const std::string& assetName)
+bool ObjLoading::LoadAssetForZone(AssetLoadingContext& context, const asset_type_t assetType, const std::string& assetName)
 {
     for (const auto* loader : OBJ_LOADERS)
     {
-        if (loader->SupportsZone(context->m_zone))
+        if (loader->SupportsZone(context.m_zone))
         {
             return loader->LoadAssetForZone(context, assetType, assetName);
         }
@@ -107,11 +95,11 @@ bool ObjLoading::LoadAssetForZone(AssetLoadingContext* context, const asset_type
     return false;
 }
 
-void ObjLoading::FinalizeAssetsForZone(AssetLoadingContext* context)
+void ObjLoading::FinalizeAssetsForZone(AssetLoadingContext& context)
 {
     for (const auto* loader : OBJ_LOADERS)
     {
-        if (loader->SupportsZone(context->m_zone))
+        if (loader->SupportsZone(context.m_zone))
         {
             loader->FinalizeAssetsForZone(context);
             return;

@@ -8,5 +8,5 @@ public:
 
     bool SupportsImageFormat(const ImageFormat* imageFormat) override;
     std::string GetFileExtension() override;
-    void DumpImage(std::ostream& stream, Texture* texture) override;
+    void DumpImage(std::ostream& stream, const Texture* texture) override;
 };

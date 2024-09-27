@@ -13,12 +13,12 @@
 #include "SearchPath/SearchPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
 #include "UnlinkerArgs.h"
-#include "Utils/Arguments/ArgumentParser.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/ObjFileStream.h"
 #include "ZoneLoading.h"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <regex>
 #include <set>
@@ -35,13 +35,32 @@ const IZoneDefWriter* const ZONE_DEF_WRITERS[]{
 
 class Unlinker::Impl
 {
-    UnlinkerArgs m_args;
-    SearchPaths m_search_paths;
-    SearchPathFilesystem* m_last_zone_search_path;
-    std::set<std::string> m_absolute_search_paths;
+public:
+    /**
+     * \copydoc Unlinker::Start
+     */
+    bool Start(const int argc, const char** argv)
+    {
+        auto shouldContinue = true;
+        if (!m_args.ParseArgs(argc, argv, shouldContinue))
+            return false;
 
-    std::vector<std::unique_ptr<Zone>> m_loaded_zones;
+        if (!shouldContinue)
+            return true;
 
+        if (!BuildSearchPaths())
+            return false;
+
+        if (!LoadZones())
+            return false;
+
+        const auto result = UnlinkZones();
+
+        UnloadZones();
+        return result;
+    }
+
+private:
     _NODISCARD bool ShouldLoadObj() const
     {
         return m_args.m_task != UnlinkerArgs::ProcessingTask::LIST && !m_args.m_skip_obj;
@@ -51,14 +70,12 @@ class Unlinker::Impl
      * \brief Loads a search path.
      * \param searchPath The search path to load.
      */
-    void LoadSearchPath(ISearchPath* searchPath) const
+    void LoadSearchPath(ISearchPath& searchPath) const
     {
         if (ShouldLoadObj())
         {
             if (m_args.m_verbose)
-            {
-                printf("Loading search path: \"%s\"\n", searchPath->GetPath().c_str());
-            }
+                std::cout << std::format("Loading search path: \"{}\"\n", searchPath.GetPath());
 
             ObjLoading::LoadIWDsInSearchPath(searchPath);
         }
@@ -68,14 +85,12 @@ class Unlinker::Impl
      * \brief Unloads a search path.
      * \param searchPath The search path to unload.
      */
-    void UnloadSearchPath(ISearchPath* searchPath) const
+    void UnloadSearchPath(ISearchPath& searchPath) const
     {
         if (ShouldLoadObj())
         {
             if (m_args.m_verbose)
-            {
-                printf("Unloading search path: \"%s\"\n", searchPath->GetPath().c_str());
-            }
+                std::cout << std::format("Unloading search path: \"{}\"\n", searchPath.GetPath());
 
             ObjLoading::UnloadIWDsInSearchPath(searchPath);
         }
@@ -93,19 +108,18 @@ class Unlinker::Impl
 
         if (m_last_zone_search_path != nullptr && m_last_zone_search_path->GetPath() == absoluteZoneDirectory)
         {
-            searchPathsForZone.IncludeSearchPath(m_last_zone_search_path);
+            searchPathsForZone.IncludeSearchPath(m_last_zone_search_path.get());
         }
         else if (m_absolute_search_paths.find(absoluteZoneDirectory) == m_absolute_search_paths.end())
         {
-            if (m_last_zone_search_path != nullptr)
+            if (m_last_zone_search_path)
             {
-                UnloadSearchPath(m_last_zone_search_path);
-                delete m_last_zone_search_path;
+                UnloadSearchPath(*m_last_zone_search_path);
             }
 
-            m_last_zone_search_path = new SearchPathFilesystem(absoluteZoneDirectory);
-            searchPathsForZone.IncludeSearchPath(m_last_zone_search_path);
-            LoadSearchPath(m_last_zone_search_path);
+            m_last_zone_search_path = std::make_unique<SearchPathFilesystem>(absoluteZoneDirectory);
+            searchPathsForZone.IncludeSearchPath(m_last_zone_search_path.get());
+            LoadSearchPath(*m_last_zone_search_path);
         }
 
         for (auto* iwd : IWD::Repository)
@@ -128,12 +142,12 @@ class Unlinker::Impl
 
             if (!fs::is_directory(absolutePath))
             {
-                printf("Could not find directory of search path: \"%s\"\n", path.c_str());
+                std::cerr << std::format("Could not find directory of search path: \"{}\"\n", path);
                 return false;
             }
 
             auto searchPath = std::make_unique<SearchPathFilesystem>(absolutePath.string());
-            LoadSearchPath(searchPath.get());
+            LoadSearchPath(*searchPath);
             m_search_paths.CommitSearchPath(std::move(searchPath));
 
             m_absolute_search_paths.insert(absolutePath.string());
@@ -141,16 +155,12 @@ class Unlinker::Impl
 
         if (m_args.m_verbose)
         {
-            printf("%u SearchPaths%s\n", m_absolute_search_paths.size(), !m_absolute_search_paths.empty() ? ":" : "");
+            std::cout << std::format("{} SearchPaths{}\n", m_absolute_search_paths.size(), !m_absolute_search_paths.empty() ? ":" : "");
             for (const auto& absoluteSearchPath : m_absolute_search_paths)
-            {
-                printf("  \"%s\"\n", absoluteSearchPath.c_str());
-            }
+                std::cout << std::format("  \"{}\"\n", absoluteSearchPath);
 
             if (!m_absolute_search_paths.empty())
-            {
-                puts("");
-            }
+                std::cerr << "\n";
         }
 
         return true;
@@ -165,7 +175,7 @@ class Unlinker::Impl
         std::ofstream zoneDefinitionFile(zoneDefinitionFilePath, std::fstream::out | std::fstream::binary);
         if (!zoneDefinitionFile.is_open())
         {
-            printf("Failed to open file for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
+            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone->m_name);
             return false;
         }
 
@@ -181,9 +191,7 @@ class Unlinker::Impl
         }
 
         if (!result)
-        {
-            printf("Failed to find writer for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
-        }
+            std::cerr << std::format("Failed to find writer for zone definition file of zone \"{}\".\n", zone->m_name);
 
         zoneDefinitionFile.close();
         return result;
@@ -202,7 +210,7 @@ class Unlinker::Impl
         stream = std::ofstream(gdtFilePath, std::fstream::out | std::fstream::binary);
         if (!stream.is_open())
         {
-            printf("Failed to open file for zone definition file of zone \"%s\".\n", zone->m_name.c_str());
+            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone->m_name);
             return false;
         }
 
@@ -236,7 +244,7 @@ class Unlinker::Impl
         {
             if (!handledSpecifiedAssets[i])
             {
-                std::cerr << "Unknown asset type \"" << m_args.m_specified_asset_types[i] << "\"\n";
+                std::cerr << std::format("Unknown asset type \"{}\"\n", m_args.m_specified_asset_types[i]);
                 anySpecifiedValueInvalid = true;
             }
         }
@@ -262,10 +270,11 @@ class Unlinker::Impl
 
     /**
      * \brief Performs the tasks specified by the command line arguments on the specified zone.
+     * \param searchPath The search path for obj data.
      * \param zone The zone to handle.
      * \return \c true if handling the zone was successful, otherwise \c false.
      */
-    bool HandleZone(Zone* zone) const
+    bool HandleZone(ISearchPath& searchPath, Zone* zone) const
     {
         if (m_args.m_task == UnlinkerArgs::ProcessingTask::LIST)
         {
@@ -288,6 +297,7 @@ class Unlinker::Impl
             AssetDumpingContext context;
             context.m_zone = zone;
             context.m_base_path = outputFolderPath;
+            context.m_obj_search_path = &searchPath;
 
             if (m_args.m_use_gdt)
             {
@@ -318,7 +328,7 @@ class Unlinker::Impl
         {
             if (!fs::is_regular_file(zonePath))
             {
-                printf("Could not find file \"%s\".\n", zonePath.c_str());
+                std::cerr << std::format("Could not find file \"{}\".\n", zonePath);
                 continue;
             }
 
@@ -330,20 +340,15 @@ class Unlinker::Impl
             auto zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
             {
-                printf("Failed to load zone \"%s\".\n", zonePath.c_str());
+                std::cerr << std::format("Failed to load zone \"{}\".\n", zonePath);
                 return false;
             }
 
             if (m_args.m_verbose)
-            {
-                printf("Loaded zone \"%s\"\n", zone->m_name.c_str());
-            }
+                std::cout << std::format("Loaded zone \"{}\"\n", zone->m_name);
 
             if (ShouldLoadObj())
-            {
-                ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
-                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
-            }
+                ObjLoading::LoadReferencedContainersForZone(searchPathsForZone, *zone);
 
             m_loaded_zones.emplace_back(std::move(zone));
         }
@@ -356,17 +361,17 @@ class Unlinker::Impl
         for (auto i = m_loaded_zones.rbegin(); i != m_loaded_zones.rend(); ++i)
         {
             auto& loadedZone = *i;
-            std::string zoneName = loadedZone->m_name;
+
+            // Copy zone name since we deallocate before logging
+            const auto zoneName = loadedZone->m_name;
 
             if (ShouldLoadObj())
-            {
-                ObjLoading::UnloadContainersOfZone(loadedZone.get());
-            }
+                ObjLoading::UnloadContainersOfZone(*loadedZone);
 
             loadedZone.reset();
 
             if (m_args.m_verbose)
-                std::cout << "Unloaded zone \"" << zoneName << "\"\n";
+                std::cout << std::format("Unloaded zone \"{}\"\n", zoneName);
         }
         m_loaded_zones.clear();
     }
@@ -377,7 +382,7 @@ class Unlinker::Impl
         {
             if (!fs::is_regular_file(zonePath))
             {
-                printf("Could not find file \"%s\".\n", zonePath.c_str());
+                std::cerr << std::format("Could not find file \"{}\".\n", zonePath);
                 continue;
             }
 
@@ -393,63 +398,37 @@ class Unlinker::Impl
             auto zone = ZoneLoading::LoadZone(zonePath);
             if (zone == nullptr)
             {
-                printf("Failed to load zone \"%s\".\n", zonePath.c_str());
+                std::cerr << std::format("Failed to load zone \"{}\".\n", zonePath);
                 return false;
             }
 
             zoneName = zone->m_name;
             if (m_args.m_verbose)
-                std::cout << "Loaded zone \"" << zoneName << "\"\n";
+                std::cout << std::format("Loaded zone \"{}\"\n", zoneName);
 
             if (ShouldLoadObj())
-            {
-                ObjLoading::LoadReferencedContainersForZone(&searchPathsForZone, zone.get());
-                ObjLoading::LoadObjDataForZone(&searchPathsForZone, zone.get());
-            }
+                ObjLoading::LoadReferencedContainersForZone(searchPathsForZone, *zone);
 
-            if (!HandleZone(zone.get()))
+            if (!HandleZone(searchPathsForZone, zone.get()))
                 return false;
 
             if (ShouldLoadObj())
-                ObjLoading::UnloadContainersOfZone(zone.get());
+                ObjLoading::UnloadContainersOfZone(*zone);
 
             zone.reset();
             if (m_args.m_verbose)
-                std::cout << "Unloaded zone \"" << zoneName << "\"\n";
+                std::cout << std::format("Unloaded zone \"{}\"\n", zoneName);
         }
 
         return true;
     }
 
-public:
-    Impl()
-    {
-        m_last_zone_search_path = nullptr;
-    }
+    UnlinkerArgs m_args;
+    SearchPaths m_search_paths;
+    std::unique_ptr<SearchPathFilesystem> m_last_zone_search_path;
+    std::set<std::string> m_absolute_search_paths;
 
-    /**
-     * \copydoc Unlinker::Start
-     */
-    bool Start(const int argc, const char** argv)
-    {
-        auto shouldContinue = true;
-        if (!m_args.ParseArgs(argc, argv, shouldContinue))
-            return false;
-
-        if (!shouldContinue)
-            return true;
-
-        if (!BuildSearchPaths())
-            return false;
-
-        if (!LoadZones())
-            return false;
-
-        const auto result = UnlinkZones();
-
-        UnloadZones();
-        return result;
-    }
+    std::vector<std::unique_ptr<Zone>> m_loaded_zones;
 };
 
 Unlinker::Unlinker()

@@ -14,13 +14,13 @@ public:
      * \brief Loads a search path.
      * \param searchPath The search path to load.
      */
-    void LoadSearchPath(ISearchPath* searchPath) const;
+    void LoadSearchPath(ISearchPath& searchPath) const;
 
     /**
      * \brief Unloads a search path.
      * \param searchPath The search path to unload.
      */
-    void UnloadSearchPath(ISearchPath* searchPath) const;
+    void UnloadSearchPath(ISearchPath& searchPath) const;
 
     SearchPaths GetAssetSearchPathsForProject(const std::string& gameName, const std::string& projectName);
 

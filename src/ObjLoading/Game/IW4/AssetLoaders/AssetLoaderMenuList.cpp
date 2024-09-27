@@ -227,7 +227,7 @@ bool AssetLoaderMenuList::LoadFromRaw(
     return true;
 }
 
-void AssetLoaderMenuList::FinalizeAssetsForZone(AssetLoadingContext* context) const
+void AssetLoaderMenuList::FinalizeAssetsForZone(AssetLoadingContext& context) const
 {
-    context->GetZoneAssetLoaderState<MenuConversionZoneState>()->FinalizeSupportingData();
+    context.GetZoneAssetLoaderState<MenuConversionZoneState>()->FinalizeSupportingData();
 }

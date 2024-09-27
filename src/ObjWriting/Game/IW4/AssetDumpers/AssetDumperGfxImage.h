@@ -12,7 +12,7 @@ namespace IW4
     {
         std::unique_ptr<IImageWriter> m_writer;
 
-        std::string GetAssetFileName(XAssetInfo<GfxImage>* asset) const;
+        [[nodiscard]] std::string GetAssetFileName(const XAssetInfo<GfxImage>& asset) const;
 
     protected:
         bool ShouldDump(XAssetInfo<GfxImage>* asset) override;

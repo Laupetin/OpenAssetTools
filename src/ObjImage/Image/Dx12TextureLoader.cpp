@@ -1,10 +1,9 @@
-#include "Dx9TextureLoader.h"
+#include "Dx12TextureLoader.h"
 
 #include <cstring>
 
-Dx9TextureLoader::Dx9TextureLoader(MemoryManager* memoryManager)
-    : m_memory_manager(memoryManager),
-      m_format(oat::D3DFMT_UNKNOWN),
+Dx12TextureLoader::Dx12TextureLoader()
+    : m_format(oat::DXGI_FORMAT_UNKNOWN),
       m_type(TextureType::T_2D),
       m_has_mip_maps(false),
       m_width(1u),
@@ -13,73 +12,73 @@ Dx9TextureLoader::Dx9TextureLoader(MemoryManager* memoryManager)
 {
 }
 
-const ImageFormat* Dx9TextureLoader::GetFormatForDx9Format() const
+const ImageFormat* Dx12TextureLoader::GetFormatForDx12Format() const
 {
     for (auto i : ImageFormat::ALL_FORMATS)
     {
-        if (i->GetD3DFormat() == m_format)
+        if (i->GetDxgiFormat() == m_format)
             return i;
     }
 
     return nullptr;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Format(const oat::D3DFORMAT format)
+Dx12TextureLoader& Dx12TextureLoader::Format(const oat::DXGI_FORMAT format)
 {
     m_format = format;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Type(const TextureType textureType)
+Dx12TextureLoader& Dx12TextureLoader::Type(const TextureType textureType)
 {
     m_type = textureType;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::HasMipMaps(const bool hasMipMaps)
+Dx12TextureLoader& Dx12TextureLoader::HasMipMaps(const bool hasMipMaps)
 {
     m_has_mip_maps = hasMipMaps;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Width(const size_t width)
+Dx12TextureLoader& Dx12TextureLoader::Width(const size_t width)
 {
     m_width = width;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Height(const size_t height)
+Dx12TextureLoader& Dx12TextureLoader::Height(const size_t height)
 {
     m_height = height;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Depth(const size_t depth)
+Dx12TextureLoader& Dx12TextureLoader::Depth(const size_t depth)
 {
     m_depth = depth;
     return *this;
 }
 
-Texture* Dx9TextureLoader::LoadTexture(const void* data)
+std::unique_ptr<Texture> Dx12TextureLoader::LoadTexture(const void* data)
 {
-    const auto* format = GetFormatForDx9Format();
+    const auto* format = GetFormatForDx12Format();
 
     if (format == nullptr)
         return nullptr;
 
-    Texture* texture;
+    std::unique_ptr<Texture> texture;
     switch (m_type)
     {
     case TextureType::T_2D:
-        texture = m_memory_manager->Create<Texture2D>(format, m_width, m_height, m_has_mip_maps);
+        texture = std::make_unique<Texture2D>(format, m_width, m_height, m_has_mip_maps);
         break;
 
     case TextureType::T_3D:
-        texture = m_memory_manager->Create<Texture3D>(format, m_width, m_height, m_depth, m_has_mip_maps);
+        texture = std::make_unique<Texture3D>(format, m_width, m_height, m_depth, m_has_mip_maps);
         break;
 
     case TextureType::T_CUBE:
-        texture = m_memory_manager->Create<TextureCube>(format, m_width, m_width, m_has_mip_maps);
+        texture = std::make_unique<TextureCube>(format, m_width, m_width, m_has_mip_maps);
         break;
 
     default:

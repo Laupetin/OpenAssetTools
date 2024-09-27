@@ -12,18 +12,8 @@
 
 class AssetLoadingContext final : public IGdtQueryable
 {
-    std::unordered_map<std::string, std::unordered_map<std::string, GdtEntry*>> m_entries_by_gdf_and_by_name;
-    std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetLoaderState>> m_zone_asset_loader_states;
-
-    void BuildGdtEntryCache();
-
 public:
-    Zone* const m_zone;
-    ISearchPath* const m_raw_search_path;
-    const std::vector<Gdt*> m_gdt_files;
-    std::unordered_map<std::string, asset_type_t> m_ignored_asset_map;
-
-    AssetLoadingContext(Zone* zone, ISearchPath* rawSearchPath, std::vector<Gdt*> gdtFiles);
+    AssetLoadingContext(Zone& zone, ISearchPath& rawSearchPath, std::vector<Gdt*> gdtFiles);
     GdtEntry* GetGdtEntryByGdfAndName(const std::string& gdfName, const std::string& entryName) override;
 
     template<typename T> T* GetZoneAssetLoaderState()
@@ -36,9 +26,21 @@ public:
             return dynamic_cast<T*>(foundEntry->second.get());
 
         auto newState = std::make_unique<T>();
-        newState->SetZone(m_zone);
+        newState->SetZone(&m_zone);
         auto* newStatePtr = newState.get();
         m_zone_asset_loader_states.emplace(std::make_pair<std::type_index, std::unique_ptr<IZoneAssetLoaderState>>(typeid(T), std::move(newState)));
         return newStatePtr;
     }
+
+private:
+    void BuildGdtEntryCache();
+
+public:
+    Zone& m_zone;
+    ISearchPath& m_raw_search_path;
+    const std::vector<Gdt*> m_gdt_files;
+    std::unordered_map<std::string, asset_type_t> m_ignored_asset_map;
+
+    std::unordered_map<std::string, std::unordered_map<std::string, GdtEntry*>> m_entries_by_gdf_and_by_name;
+    std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetLoaderState>> m_zone_asset_loader_states;
 };

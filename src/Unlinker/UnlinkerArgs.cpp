@@ -7,6 +7,7 @@
 #include "Utils/FileUtils.h"
 #include "Utils/StringUtils.h"
 
+#include <format>
 #include <iostream>
 #include <regex>
 #include <type_traits>
@@ -150,9 +151,9 @@ UnlinkerArgs::UnlinkerArgs()
 {
 }
 
-void UnlinkerArgs::PrintUsage()
+void UnlinkerArgs::PrintUsage() const
 {
-    UsageInformation usage("Unlinker.exe");
+    UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
     {
@@ -167,7 +168,7 @@ void UnlinkerArgs::PrintUsage()
 
 void UnlinkerArgs::PrintVersion()
 {
-    std::cout << "OpenAssetTools Unlinker " << std::string(GIT_VERSION) << "\n";
+    std::cout << std::format("OpenAssetTools Unlinker {}\n", GIT_VERSION);
 }
 
 void UnlinkerArgs::SetVerbose(const bool isVerbose)
@@ -264,7 +265,7 @@ void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
 bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
 {
     shouldContinue = true;
-    if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
+    if (!m_argument_parser.ParseArguments(argc, argv))
     {
         PrintUsage();
         return false;

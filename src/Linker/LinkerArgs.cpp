@@ -7,6 +7,7 @@
 #include "Utils/FileUtils.h"
 
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <regex>
 #include <type_traits>
@@ -138,9 +139,9 @@ LinkerArgs::LinkerArgs()
 {
 }
 
-void LinkerArgs::PrintUsage()
+void LinkerArgs::PrintUsage() const
 {
-    UsageInformation usage("Linker.exe");
+    UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
     {
@@ -155,7 +156,7 @@ void LinkerArgs::PrintUsage()
 
 void LinkerArgs::PrintVersion()
 {
-    std::cout << "OpenAssetTools Linker " << std::string(GIT_VERSION) << "\n";
+    std::cout << std::format("OpenAssetTools Linker {}\n", GIT_VERSION);
 }
 
 void LinkerArgs::SetBinFolder(const char* argv0)
@@ -244,7 +245,7 @@ std::set<std::string> LinkerArgs::GetSearchPathsForProject(const std::set<std::s
 bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
 {
     shouldContinue = true;
-    if (!m_argument_parser.ParseArguments(argc - 1, &argv[1]))
+    if (!m_argument_parser.ParseArguments(argc, argv))
     {
         PrintUsage();
         return false;

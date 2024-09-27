@@ -54,7 +54,7 @@ namespace GAME
         XModelLoader(std::istream& stream, MemoryManager& memory, IAssetLoadingManager& manager, std::set<XAssetInfoGeneric*>& dependencies)
             : m_stream(stream),
               m_memory(memory),
-              m_script_strings(manager.GetAssetLoadingContext()->m_zone->m_script_strings),
+              m_script_strings(manager.GetAssetLoadingContext()->m_zone.m_script_strings),
               m_manager(manager),
               m_part_classification_state(*m_manager.GetAssetLoadingContext()->GetZoneAssetLoaderState<PartClassificationState>()),
               m_dependencies(dependencies)
@@ -616,7 +616,7 @@ namespace GAME
 
         bool LoadLod(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber)
         {
-            const auto file = m_manager.GetAssetLoadingContext()->m_raw_search_path->Open(jLod.file);
+            const auto file = m_manager.GetAssetLoadingContext()->m_raw_search_path.Open(jLod.file);
             if (!file.IsOpen())
             {
                 PrintError(xmodel, std::format("Failed to open file for lod {}: \"{}\"", lodNumber, jLod.file));

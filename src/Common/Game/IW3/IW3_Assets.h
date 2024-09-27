@@ -1326,7 +1326,6 @@ namespace IW3
         // void/*IDirect3DTexture9*/* map;
         // void/*IDirect3DVolumeTexture9*/* volmap;
         // void/*IDirect3DCubeTexture9*/* cubemap;
-        Texture* texture;
         GfxImageLoadDef* loadDef;
     };
 

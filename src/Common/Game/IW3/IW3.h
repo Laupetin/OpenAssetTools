@@ -4,7 +4,6 @@
 
 // #include <d3d9.h>
 #include "Game/IAsset.h"
-#include "Image/Texture.h"
 
 #include "IW3_Assets.h"
 
