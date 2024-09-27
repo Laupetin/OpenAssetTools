@@ -1,10 +1,15 @@
 #include "ImageConverter.h"
 
+#include "Image/DdsWriter.h"
+#include "Image/IwiLoader.h"
 #include "Image/Texture.h"
 #include "ImageConverterArgs.h"
 #include "Utils/StringUtils.h"
 
 #include <filesystem>
+#include <format>
+#include <fstream>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
@@ -53,17 +58,50 @@ namespace image_converter
     private:
         void Convert(const std::string& file)
         {
-            fs::path filePath(file);
+            const fs::path filePath(file);
             auto extension = filePath.extension().string();
             utils::MakeStringLowerCase(extension);
 
             if (extension == EXTENSION_IWI)
             {
+                ConvertIwi(filePath);
             }
+            else
+            {
+                std::cerr << std::format("Unsupported extension {}\n", extension);
+            }
+        }
+
+        bool ConvertIwi(const fs::path& iwiPath)
+        {
+            std::ifstream file(iwiPath, std::ios::in | std::ios::binary);
+            if (!file.is_open())
+            {
+                std::cerr << std::format("Failed to open input file {}\n", iwiPath.string());
+                return false;
+            }
+
+            const auto texture = iwi::LoadIwi(file);
+            if (!texture)
+                return false;
+
+            auto outPath = iwiPath;
+            outPath.replace_extension(".dds");
+
+            std::ofstream outFile(outPath, std::ios::out | std::ios::binary);
+            if (!outFile.is_open())
+            {
+                std::cerr << std::format("Failed to open output file {}\n", outPath.string());
+                return false;
+            }
+
+            m_dds_writer.DumpImage(outFile, texture.get());
+            return true;
         }
 
         ImageConverterArgs m_args;
         image_converter::Game m_game_to_convert_to;
+        DdsWriter m_dds_writer;
     };
 } // namespace image_converter
 
