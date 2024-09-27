@@ -3,6 +3,7 @@
 #include "Image/Texture.h"
 
 #include <istream>
+#include <memory>
 
 namespace dds
 {
