@@ -316,15 +316,15 @@ XAssetInfoGeneric* GameAssetPoolIW5::GetAsset(const asset_type_t type, const std
 #undef CASE_GET_ASSET
 }
 
-const char* GameAssetPoolIW5::AssetTypeNameByType(const asset_type_t assetType)
+std::optional<const char*> GameAssetPoolIW5::AssetTypeNameByType(const asset_type_t assetType)
 {
     if (assetType >= 0 && assetType < static_cast<int>(std::extent_v<decltype(ASSET_TYPE_NAMES)>))
         return ASSET_TYPE_NAMES[assetType];
 
-    return ASSET_TYPE_INVALID;
+    return std::nullopt;
 }
 
-const char* GameAssetPoolIW5::GetAssetTypeName(const asset_type_t assetType) const
+std::optional<const char*> GameAssetPoolIW5::GetAssetTypeName(const asset_type_t assetType) const
 {
     return AssetTypeNameByType(assetType);
 }

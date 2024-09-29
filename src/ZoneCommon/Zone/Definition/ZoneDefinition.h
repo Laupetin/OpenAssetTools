@@ -1,46 +1,66 @@
 #pragma once
 
+#include "Game/IGame.h"
 #include "Zone/AssetList/AssetList.h"
+#include "Zone/ZoneTypes.h"
 
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-class ZoneDefinitionEntry
+enum class ProjectType
 {
-public:
-    std::string m_asset_type;
-    std::string m_asset_name;
-    bool m_is_reference;
+    NONE,
+    FASTFILE,
+    IPAK,
 
-    ZoneDefinitionEntry();
-    ZoneDefinitionEntry(std::string type, std::string name, bool isReference);
+    COUNT
 };
 
-class ZoneMetaDataEntry
+static constexpr const char* ProjectType_Names[]{
+    "none",
+    "fastfile",
+    "ipak",
+};
+static_assert(std::extent_v<decltype(ProjectType_Names)> == static_cast<unsigned>(ProjectType::COUNT));
+
+class ZoneDefinitionAsset
 {
 public:
-    std::string m_key;
-    std::string m_value;
+    ZoneDefinitionAsset(asset_type_t type, std::string name, bool isReference);
 
-    ZoneMetaDataEntry();
-    ZoneMetaDataEntry(std::string key, std::string value);
+    asset_type_t m_asset_type;
+    std::string m_asset_name;
+    bool m_is_reference;
+};
+
+class ZoneDefinitionProperties
+{
+public:
+    ZoneDefinitionProperties();
+
+    void AddProperty(std::string key, std::string value);
+    void Include(const ZoneDefinitionProperties& otherProperties);
+
+    std::unordered_map<std::string, std::string> m_properties;
 };
 
 class ZoneDefinition
 {
 public:
+    ZoneDefinition();
+
+    void Include(const AssetList& assetListToInclude);
+    void Include(const ZoneDefinition& definitionToInclude);
+
     std::string m_name;
-    std::vector<std::unique_ptr<ZoneMetaDataEntry>> m_metadata;
-    std::unordered_multimap<std::string, ZoneMetaDataEntry*> m_metadata_lookup;
+    ProjectType m_type;
+    GameId m_game;
+    ZoneDefinitionProperties m_properties;
     std::vector<std::string> m_includes;
     std::vector<std::string> m_asset_lists;
     std::vector<std::string> m_ignores;
     std::vector<std::string> m_targets_to_build;
-    std::vector<ZoneDefinitionEntry> m_assets;
-
-    void AddMetaData(std::string key, std::string value);
-    void Include(const AssetList& assetListToInclude);
-    void Include(const ZoneDefinition& definitionToInclude);
+    std::vector<std::string> m_gdts;
+    std::vector<ZoneDefinitionAsset> m_assets;
 };

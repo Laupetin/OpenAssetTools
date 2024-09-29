@@ -19,19 +19,23 @@ SequenceZoneDefinitionEntry::SequenceZoneDefinitionEntry()
     });
 }
 
-void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const
+void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinitionParserState* state, SequenceResult<ZoneDefinitionParserValue>& result) const
 {
-    const auto& assetNameCapture = result.NextCapture(CAPTURE_ASSET_NAME);
+    const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE_NAME);
 
+    if (!state->m_asset_name_resolver)
+        throw ParsingException(typeNameToken.GetPos(), "Must define game before first asset");
+
+    const auto maybeAssetType = state->m_asset_name_resolver->GetAssetTypeByName(typeNameToken.FieldValue());
+    if (!maybeAssetType)
+        throw ParsingException(typeNameToken.GetPos(), "Unknown asset type");
+
+    const auto& assetNameToken = result.NextCapture(CAPTURE_ASSET_NAME);
     std::string assetName;
-    if (assetNameCapture.m_type == ZoneDefinitionParserValueType::STRING)
-    {
-        assetName = assetNameCapture.StringValue();
-    }
+    if (typeNameToken.m_type == ZoneDefinitionParserValueType::STRING)
+        assetName = typeNameToken.StringValue();
     else
-    {
-        assetName = assetNameCapture.FieldValue();
-    }
+        assetName = typeNameToken.FieldValue();
 
-    state->m_assets.emplace_back(result.NextCapture(CAPTURE_TYPE_NAME).FieldValue(), assetName, result.NextTag() == TAG_REFERENCE);
+    state->m_definition->m_assets.emplace_back(*maybeAssetType, assetName, result.NextTag() == TAG_REFERENCE);
 }

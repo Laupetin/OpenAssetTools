@@ -1,25 +1,31 @@
 #pragma once
 #include "AssetList.h"
 #include "Csv/CsvStream.h"
+#include "Game/IGame.h"
 
+#include <Zone/AssetNameResolver.h>
 #include <iostream>
 
 class AssetListInputStream
 {
-    CsvInputStream m_stream;
-
 public:
-    explicit AssetListInputStream(std::istream& stream);
+    AssetListInputStream(std::istream& stream, GameId game);
 
-    bool NextEntry(AssetListEntry& entry) const;
+    bool NextEntry(AssetListEntry& entry, bool* failure) const;
+
+private:
+    CsvInputStream m_stream;
+    const IAssetNameResolver* m_asset_name_resolver;
 };
 
 class AssetListOutputStream
 {
-    CsvOutputStream m_stream;
-
 public:
-    explicit AssetListOutputStream(std::ostream& stream);
+    AssetListOutputStream(std::ostream& stream, GameId game);
 
     void WriteEntry(const AssetListEntry& entry);
+
+private:
+    CsvOutputStream m_stream;
+    const IAssetNameResolver* m_asset_name_resolver;
 };

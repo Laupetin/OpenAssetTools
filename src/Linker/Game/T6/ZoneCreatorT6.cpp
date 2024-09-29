@@ -11,19 +11,6 @@
 
 using namespace T6;
 
-ZoneCreator::ZoneCreator()
-{
-    for (auto assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
-    {
-        AddAssetTypeName(assetType, GameAssetPoolT6::AssetTypeNameByType(assetType));
-    }
-}
-
-void ZoneCreator::AddAssetTypeName(asset_type_t assetType, std::string name)
-{
-    m_asset_types_by_name.emplace(std::make_pair(std::move(name), assetType));
-}
-
 std::vector<Gdt*> ZoneCreator::CreateGdtList(const ZoneCreationContext& context)
 {
     std::vector<Gdt*> gdtList;
@@ -34,21 +21,10 @@ std::vector<Gdt*> ZoneCreator::CreateGdtList(const ZoneCreationContext& context)
     return gdtList;
 }
 
-bool ZoneCreator::CreateIgnoredAssetMap(const ZoneCreationContext& context, std::unordered_map<std::string, asset_type_t>& ignoredAssetMap) const
+void ZoneCreator::ApplyIgnoredAssets(const ZoneCreationContext& creationContext, AssetLoadingContext& loadingContext)
 {
-    for (const auto& ignoreEntry : context.m_ignored_assets.m_entries)
-    {
-        const auto foundAssetTypeEntry = m_asset_types_by_name.find(ignoreEntry.m_type);
-        if (foundAssetTypeEntry == m_asset_types_by_name.end())
-        {
-            std::cout << "Unknown asset type \"" << ignoreEntry.m_type << "\" for ignore \"" << ignoreEntry.m_name << "\"\n";
-            return false;
-        }
-
-        ignoredAssetMap[ignoreEntry.m_name] = foundAssetTypeEntry->second;
-    }
-
-    return true;
+    for (const auto& ignoreEntry : creationContext.m_ignored_assets.m_entries)
+        loadingContext.m_ignored_asset_map[ignoreEntry.m_name] = ignoreEntry.m_type;
 }
 
 void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
@@ -63,11 +39,11 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
 {
     std::vector<KeyValuePair> kvpList;
 
-    for (const auto& metaData : context.m_definition->m_metadata)
+    for (const auto& metaData : context.m_definition->m_properties.m_properties)
     {
-        if (metaData->m_key.rfind("level.", 0) == 0)
+        if (metaData.first.rfind("level.", 0) == 0)
         {
-            const std::string strValue = metaData->m_key.substr(std::char_traits<char>::length("level."));
+            const std::string strValue = metaData.first.substr(std::char_traits<char>::length("level."));
             if (strValue.empty())
                 continue;
 
@@ -79,7 +55,7 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
 
                 if (endPtr != &strValue[strValue.size()])
                 {
-                    std::cout << "Could not parse metadata key \"" << metaData->m_key << "\" as hash\n";
+                    std::cout << "Could not parse metadata key \"" << metaData.first << "\" as hash\n";
                     continue;
                 }
             }
@@ -88,7 +64,7 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
                 keyHash = Common::Com_HashKey(strValue.c_str(), 64);
             }
 
-            KeyValuePair kvp{keyHash, Common::Com_HashKey(zone->m_name.c_str(), 64), zone->GetMemory()->Dup(metaData->m_value.c_str())};
+            KeyValuePair kvp{keyHash, Common::Com_HashKey(zone->m_name.c_str(), 64), zone->GetMemory()->Dup(metaData.second.c_str())};
             kvpList.push_back(kvp);
         }
     }
@@ -107,12 +83,9 @@ void ZoneCreator::HandleMetadata(Zone* zone, const ZoneCreationContext& context)
     }
 }
 
-bool ZoneCreator::SupportsGame(const std::string& gameName) const
+GameId ZoneCreator::GetGameId() const
 {
-    auto shortName = g_GameT6.GetShortName();
-    utils::MakeStringLowerCase(shortName);
-
-    return gameName == shortName;
+    return GameId::T6;
 }
 
 std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& context) const
@@ -129,25 +102,22 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
     }
 
     const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(*zone, *context.m_asset_search_path, CreateGdtList(context));
-    if (!CreateIgnoredAssetMap(context, assetLoadingContext->m_ignored_asset_map))
-        return nullptr;
+    ApplyIgnoredAssets(context, *assetLoadingContext);
 
     HandleMetadata(zone.get(), context);
 
     for (const auto& assetEntry : context.m_definition->m_assets)
     {
-        const auto foundAssetTypeEntry = m_asset_types_by_name.find(assetEntry.m_asset_type);
-        if (foundAssetTypeEntry == m_asset_types_by_name.end())
-        {
-            std::cout << "Unknown asset type \"" << assetEntry.m_asset_type << "\"\n";
-            return nullptr;
-        }
-
-        if (!ObjLoading::LoadAssetForZone(*assetLoadingContext, foundAssetTypeEntry->second, assetEntry.m_asset_name))
+        if (!ObjLoading::LoadAssetForZone(*assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name))
             return nullptr;
     }
 
     ObjLoading::FinalizeAssetsForZone(*assetLoadingContext);
 
     return zone;
+}
+
+asset_type_t ZoneCreator::GetImageAssetType() const
+{
+    return ASSET_TYPE_IMAGE;
 }

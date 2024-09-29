@@ -31,7 +31,7 @@ XAssetInfoGeneric* AssetLoadingManager::AddAssetInternal(std::unique_ptr<XAssetI
 
     m_last_dependency_loaded = m_context.m_zone.m_pools->AddAsset(std::move(xAssetInfo));
     if (m_last_dependency_loaded == nullptr)
-        std::cerr << std::format("Failed to add asset of type \"{}\" to pool: \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType), pAssetName);
+        std::cerr << std::format("Failed to add asset of type \"{}\" to pool: \"{}\"\n", *m_context.m_zone.m_pools->GetAssetTypeName(assetType), pAssetName);
 
     return m_last_dependency_loaded;
 }
@@ -66,7 +66,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadIgnoredDependency(const asset_type_t
         return lastDependency;
     }
 
-    std::cerr << std::format("Failed to create empty asset \"{}\" for type \"{}\"\n", assetName, m_context.m_zone.m_pools->GetAssetTypeName(assetType));
+    std::cerr << std::format("Failed to create empty asset \"{}\" for type \"{}\"\n", assetName, *m_context.m_zone.m_pools->GetAssetTypeName(assetType));
     return nullptr;
 }
 
@@ -126,7 +126,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadAssetDependency(const asset_type_t a
         return lastDependency;
     }
 
-    std::cerr << std::format("Failed to load asset of type \"{}\": \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType), assetName);
+    std::cerr << std::format("Failed to load asset of type \"{}\": \"{}\"\n", *m_context.m_zone.m_pools->GetAssetTypeName(assetType), assetName);
     return nullptr;
 }
 
@@ -150,7 +150,7 @@ XAssetInfoGeneric* AssetLoadingManager::LoadDependency(const asset_type_t assetT
         return LoadAssetDependency(assetType, assetName, loader->second.get());
     }
 
-    std::cerr << std::format("Failed to find loader for asset type \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType));
+    std::cerr << std::format("Failed to find loader for asset type \"{}\"\n", *m_context.m_zone.m_pools->GetAssetTypeName(assetType));
     return nullptr;
 }
 
@@ -171,6 +171,6 @@ IndirectAssetReference AssetLoadingManager::LoadIndirectAssetReference(const ass
         return IndirectAssetReference(assetType, assetName);
     }
 
-    std::cerr << std::format("Failed to find loader for asset type \"{}\"\n", m_context.m_zone.m_pools->GetAssetTypeName(assetType));
+    std::cerr << std::format("Failed to find loader for asset type \"{}\"\n", *m_context.m_zone.m_pools->GetAssetTypeName(assetType));
     return IndirectAssetReference(assetType, assetName);
 }

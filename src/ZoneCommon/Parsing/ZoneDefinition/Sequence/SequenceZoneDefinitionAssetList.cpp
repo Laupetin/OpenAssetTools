@@ -13,7 +13,7 @@ SequenceZoneDefinitionAssetList::SequenceZoneDefinitionAssetList()
     });
 }
 
-void SequenceZoneDefinitionAssetList::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const
+void SequenceZoneDefinitionAssetList::ProcessMatch(ZoneDefinitionParserState* state, SequenceResult<ZoneDefinitionParserValue>& result) const
 {
-    state->m_asset_lists.emplace_back(result.NextCapture(CAPTURE_ASSET_LIST_NAME).FieldValue());
+    state->m_definition->m_asset_lists.emplace_back(result.NextCapture(CAPTURE_ASSET_LIST_NAME).FieldValue());
 }

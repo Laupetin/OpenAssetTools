@@ -7,7 +7,7 @@ class SequenceZoneDefinitionBuild final : public ZoneDefinitionParser::sequence_
     static constexpr auto CAPTURE_BUILD_TARGET_NAME = 1;
 
 protected:
-    void ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const override;
+    void ProcessMatch(ZoneDefinitionParserState* state, SequenceResult<ZoneDefinitionParserValue>& result) const override;
 
 public:
     SequenceZoneDefinitionBuild();
