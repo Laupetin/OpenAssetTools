@@ -7,6 +7,7 @@
 #include "Sound/WavWriter.h"
 #include "nlohmann/json.hpp"
 
+#include <cmath>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -225,6 +226,21 @@ class AssetDumperSndBank::Internal
         }
     }
 
+    static double AmpToDecibels(double amp)
+    {
+        if (amp == 0.0)
+        {
+            return 0.0;
+        }
+
+        return 20.0 * std::log10(amp);
+    }
+
+    static double HertzToCents(double hertz)
+    {
+        return 1200.0 * std::log2(hertz / std::numeric_limits<int16_t>::max());
+    }
+
     static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const std::optional<snd_asset_format> maybeFormat, const SndBank* bank)
     {
         // name
@@ -247,10 +263,14 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(SOUND_GROUPS[alias->flags.volumeGroup]);
 
         // vol_min
-        stream.WriteColumn(std::to_string(alias->volMin));
+        const auto volMinAmp = alias->volMin * T6::Common::AMP_RATIO;
+        const auto volMinDecibels = static_cast<int>(std::round(AmpToDecibels(volMinAmp)));
+        stream.WriteColumn(std::to_string(volMinDecibels));
 
         // vol_max
-        stream.WriteColumn(std::to_string(alias->volMax));
+        const auto volMaxAmp = alias->volMax * T6::Common::AMP_RATIO;
+        const auto volMaxDecibels = static_cast<int>(std::round(AmpToDecibels(volMaxAmp)));
+        stream.WriteColumn(std::to_string(volMaxDecibels));
 
         // team_vol_mod
         stream.WriteColumn("");
@@ -289,10 +309,14 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(SOUND_LIMIT_TYPES[alias->flags.entityLimitType]);
 
         // pitch_min
-        stream.WriteColumn(std::to_string(alias->pitchMin));
+        const auto pitchMinHertz = alias->pitchMin;
+        const auto pitchMinCents = static_cast<int>(std::round(HertzToCents(pitchMinHertz)));
+        stream.WriteColumn(std::to_string(pitchMinCents));
 
         // pitch_max
-        stream.WriteColumn(std::to_string(alias->pitchMax));
+        const auto pitchMaxHertz = alias->pitchMax;
+        const auto pitchMaxCents = static_cast<int>(std::round(HertzToCents(pitchMaxHertz)));
+        stream.WriteColumn(std::to_string(pitchMaxCents));
 
         // team_pitch_mod
         stream.WriteColumn("");

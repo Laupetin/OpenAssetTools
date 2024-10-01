@@ -8,6 +8,7 @@
 #include "Pool/GlobalAssetPool.h"
 #include "Utils/StringUtils.h"
 
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -113,7 +114,17 @@ unsigned int GetAliasSubListCount(const unsigned int startRow, const ParsedCsv& 
     return count;
 }
 
-bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& row)
+double DecibelsToAmp(double decibels)
+{
+    return std::pow(10.0, decibels / 20.0);
+}
+
+double CentsToHertz(double cents)
+{
+    return std::numeric_limits<int16_t>::max() * std::pow(2, cents / 1200.0);
+}
+
+bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& row, const unsigned int rowNum)
 {
     memset(alias, 0, sizeof(SndAlias));
 
@@ -141,15 +152,55 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
 
     alias->duck = Common::SND_HashName(row.GetValue("duck").data());
 
-    alias->volMin = row.GetValueInt<decltype(alias->volMin)>("vol_min");
-    alias->volMax = row.GetValueInt<decltype(alias->volMax)>("vol_max");
+    const auto volMinDecibels = row.GetValueFloat("vol_min");
+
+    if (volMinDecibels < 0.0f || volMinDecibels > 100.0f)
+    {
+        std::cerr << std::format("Invalid value for row {} col 'vol_min' - {} [0.0, 100.0]\n", rowNum + 1, volMinDecibels);
+        return false;
+    }
+
+    const auto volMinAmp = static_cast<int>(std::round(DecibelsToAmp(volMinDecibels) / T6::Common::AMP_RATIO));
+    alias->volMin = volMinAmp;
+
+    const auto volMaxDecibels = row.GetValueFloat("vol_max");
+
+    if (volMaxDecibels < 0.0f || volMaxDecibels > 100.0f)
+    {
+        std::cerr << std::format("Invalid value for row {} col 'vol_max' - {} [0.0, 100.0]\n", rowNum + 1, volMaxDecibels);
+        return false;
+    }
+
+    const auto volMaxAmp = static_cast<int>(std::round(DecibelsToAmp(volMaxDecibels) / T6::Common::AMP_RATIO));
+    alias->volMax = volMaxAmp;
+
+    const auto pitchMinCents = row.GetValueFloat("pitch_min");
+
+    if (pitchMinCents < -2400.0f || pitchMinCents > 1200.0f)
+    {
+        std::cerr << std::format("Invalid value for row {} col 'pitch_min' - {} [-2400.0, 1200.0]\n", rowNum + 1, pitchMinCents);
+        return false;
+    }
+
+    const auto pitchMinHertz = static_cast<int>(std::round(CentsToHertz(pitchMinCents)));
+    alias->pitchMin = pitchMinHertz;
+
+    const auto pitchMaxCents = row.GetValueFloat("pitch_max");
+
+    if (pitchMaxCents < -2400.0f || pitchMaxCents > 1200.0f)
+    {
+        std::cerr << std::format("Invalid value for row {} col 'pitch_max' - {} [-2400.0, 1200.0]\n", rowNum + 1, pitchMaxCents);
+        return false;
+    }
+
+    const auto pitchMaxHertz = static_cast<int>(std::round(CentsToHertz(pitchMaxCents)));
+    alias->pitchMax = pitchMaxHertz;
+
     alias->distMin = row.GetValueInt<decltype(alias->distMin)>("dist_min");
     alias->distMax = row.GetValueInt<decltype(alias->distMax)>("dist_max");
     alias->distReverbMax = row.GetValueInt<decltype(alias->distReverbMax)>("dist_reverb_max");
     alias->limitCount = row.GetValueInt<decltype(alias->limitCount)>("limit_count");
     alias->entityLimitCount = row.GetValueInt<decltype(alias->entityLimitCount)>("entity_limit_count");
-    alias->pitchMin = row.GetValueInt<decltype(alias->pitchMin)>("pitch_min");
-    alias->pitchMax = row.GetValueInt<decltype(alias->pitchMax)>("pitch_max");
     alias->minPriority = row.GetValueInt<decltype(alias->minPriority)>("min_priority");
     alias->maxPriority = row.GetValueInt<decltype(alias->maxPriority)>("max_priority");
     alias->minPriorityThreshold = row.GetValueInt<decltype(alias->minPriorityThreshold)>("min_priority_threshold");
@@ -292,7 +343,7 @@ bool LoadSoundAliasList(
             // list are next to each other in the file
             for (auto i = 0u; i < subListCount; i++)
             {
-                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasCsv[row]))
+                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasCsv[row], row))
                     return false;
 
                 // if this asset is loaded instead of stream, increment the loaded count for later
