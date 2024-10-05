@@ -1,18 +1,19 @@
 #include "ZoneDefinitionStream.h"
 
+#include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/DefinesStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
-#include "Parsing/Simple/SimpleLexer.h"
 #include "Parsing/ZoneDefinition/ZoneDefinitionLexer.h"
 #include "Parsing/ZoneDefinition/ZoneDefinitionParser.h"
 
-#include <Parsing/Impl/CommentRemovingStreamProxy.h>
 #include <chrono>
+#include <format>
 
 ZoneDefinitionInputStream::ZoneDefinitionInputStream(std::istream& stream, std::string fileName, bool verbose)
     : m_file_name(std::move(fileName)),
       m_verbose(verbose),
-      m_stream(nullptr)
+      m_stream(nullptr),
+      m_previously_set_game(std::nullopt)
 {
     OpenBaseStream(stream);
     SetupStreamProxies();
@@ -29,21 +30,23 @@ void ZoneDefinitionInputStream::SetupStreamProxies()
 {
     m_open_streams.emplace_back(std::make_unique<CommentRemovingStreamProxy>(m_open_streams.back().get()));
     auto definesProxy = std::make_unique<DefinesStreamProxy>(m_open_streams.back().get());
-    definesProxy->AddDefine(DefinesStreamProxy::Define(ZONE_CODE_GENERATOR_DEFINE_NAME, ZONE_CODE_GENERATOR_DEFINE_VALUE));
     m_open_streams.emplace_back(std::move(definesProxy));
 
     m_stream = m_open_streams.back().get();
 }
 
+void ZoneDefinitionInputStream::SetPreviouslySetGame(GameId game)
+{
+    m_previously_set_game = game;
+}
+
 std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
 {
     if (m_verbose)
-    {
-        std::cout << "Reading zone definition file: " << m_file_name << "\n";
-    }
+        std::cout << std::format("Reading zone definition file: {}\n", m_file_name);
 
     const auto lexer = std::make_unique<ZoneDefinitionLexer>(m_stream);
-    const auto parser = std::make_unique<ZoneDefinitionParser>(lexer.get());
+    const auto parser = std::make_unique<ZoneDefinitionParser>(lexer.get(), m_previously_set_game);
 
     const auto start = std::chrono::steady_clock::now();
     std::unique_ptr<ZoneDefinition> definition;
@@ -52,9 +55,7 @@ std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
     const auto end = std::chrono::steady_clock::now();
 
     if (m_verbose)
-    {
-        std::cout << "Processing zone definition took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
-    }
+        std::cout << std::format("Processing zone definition took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     return std::move(definition);
 }

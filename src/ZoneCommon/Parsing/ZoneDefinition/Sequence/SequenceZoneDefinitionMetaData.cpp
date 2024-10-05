@@ -1,10 +1,5 @@
 #include "SequenceZoneDefinitionMetaData.h"
 
-#include "Game/IW3/AssetNameResolverIW3.h"
-#include "Game/IW4/AssetNameResolverIW4.h"
-#include "Game/IW5/AssetNameResolverIW5.h"
-#include "Game/T5/AssetNameResolverT5.h"
-#include "Game/T6/AssetNameResolverT6.h"
 #include "Parsing/ZoneDefinition/Matcher/ZoneDefinitionMatcherFactory.h"
 #include "Utils/StringUtils.h"
 
@@ -64,7 +59,7 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
     const auto& keyToken = result.NextCapture(CAPTURE_KEY);
     auto key = keyToken.FieldValue();
     const auto& valueToken = result.NextCapture(CAPTURE_VALUE);
-    const auto& value = result.NextCapture(CAPTURE_VALUE).FieldValue();
+    const auto& value = valueToken.FieldValue();
 
     utils::MakeStringLowerCase(key);
 
@@ -78,8 +73,7 @@ void SequenceZoneDefinitionMetaData::ProcessMatch(ZoneDefinitionParserState* sta
         if (previousGame != GameId::COUNT && previousGame != *game)
             throw ParsingException(valueToken.GetPos(), std::format("Game was previously defined as: {}", GameId_Names[static_cast<unsigned>(previousGame)]));
 
-        state->m_definition->m_game = *game;
-        state->m_asset_name_resolver = IAssetNameResolver::GetResolverForGame(*game);
+        state->SetGame(*game);
     }
     else if (key == METADATA_GDT)
     {

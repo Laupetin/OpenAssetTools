@@ -59,6 +59,7 @@ class LinkerImpl final : public Linker
                     }
 
                     ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream.m_stream, definitionFileName, m_args.m_verbose);
+                    zoneDefinitionInputStream.SetPreviouslySetGame(zoneDefinition.m_game);
                     includeDefinition = zoneDefinitionInputStream.ReadDefinition();
                 }
 
