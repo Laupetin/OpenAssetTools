@@ -13,7 +13,7 @@ SequenceZoneDefinitionInclude::SequenceZoneDefinitionInclude()
     });
 }
 
-void SequenceZoneDefinitionInclude::ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const
+void SequenceZoneDefinitionInclude::ProcessMatch(ZoneDefinitionParserState* state, SequenceResult<ZoneDefinitionParserValue>& result) const
 {
-    state->m_includes.emplace_back(result.NextCapture(CAPTURE_INCLUDE_NAME).FieldValue());
+    state->m_definition->m_includes.emplace_back(result.NextCapture(CAPTURE_INCLUDE_NAME).FieldValue());
 }

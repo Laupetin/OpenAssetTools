@@ -1,13 +1,13 @@
 #include "ZoneCreationContext.h"
 
 ZoneCreationContext::ZoneCreationContext()
-    : m_asset_search_path(nullptr),
-      m_definition(nullptr)
+    : m_definition(nullptr),
+      m_asset_search_path(nullptr)
 {
 }
 
-ZoneCreationContext::ZoneCreationContext(ISearchPath* assetSearchPath, ZoneDefinition* definition)
-    : m_asset_search_path(assetSearchPath),
-      m_definition(definition)
+ZoneCreationContext::ZoneCreationContext(ZoneDefinition* definition, ISearchPath* assetSearchPath)
+    : m_definition(definition),
+      m_asset_search_path(assetSearchPath)
 {
 }

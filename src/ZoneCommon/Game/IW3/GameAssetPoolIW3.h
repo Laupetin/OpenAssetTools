@@ -5,12 +5,12 @@
 #include "Pool/ZoneAssetPools.h"
 
 #include <memory>
+#include <optional>
 
 class GameAssetPoolIW3 final : public ZoneAssetPools
 {
     int m_priority;
 
-    static constexpr const char* ASSET_TYPE_INVALID = "invalid_asset_type";
     static const char* ASSET_TYPE_NAMES[];
 
 protected:
@@ -54,8 +54,8 @@ public:
 
     _NODISCARD XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const override;
 
-    static const char* AssetTypeNameByType(asset_type_t assetType);
-    _NODISCARD const char* GetAssetTypeName(asset_type_t assetType) const override;
+    static std::optional<const char*> AssetTypeNameByType(asset_type_t assetType);
+    _NODISCARD std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
 
     static asset_type_t AssetTypeCount();
     _NODISCARD asset_type_t GetAssetTypeCount() const override;

@@ -226,7 +226,7 @@ private:
         std::vector<bool> handledSpecifiedAssets(m_args.m_specified_asset_types.size());
         for (auto i = 0; i < assetTypeCount; i++)
         {
-            const auto assetTypeName = std::string(context.m_zone->m_pools->GetAssetTypeName(i));
+            const auto assetTypeName = std::string(*context.m_zone->m_pools->GetAssetTypeName(i));
 
             const auto foundSpecifiedEntry = m_args.m_specified_asset_type_map.find(assetTypeName);
             if (foundSpecifiedEntry != m_args.m_specified_asset_type_map.end())
@@ -256,7 +256,7 @@ private:
             auto first = true;
             for (auto i = 0; i < assetTypeCount; i++)
             {
-                const auto assetTypeName = std::string(context.m_zone->m_pools->GetAssetTypeName(i));
+                const auto assetTypeName = std::string(*context.m_zone->m_pools->GetAssetTypeName(i));
 
                 if (first)
                     first = false;

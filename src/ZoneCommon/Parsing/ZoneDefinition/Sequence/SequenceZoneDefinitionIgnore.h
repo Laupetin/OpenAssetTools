@@ -7,7 +7,7 @@ class SequenceZoneDefinitionIgnore final : public ZoneDefinitionParser::sequence
     static constexpr auto CAPTURE_IGNORE_NAME = 1;
 
 protected:
-    void ProcessMatch(ZoneDefinition* state, SequenceResult<ZoneDefinitionParserValue>& result) const override;
+    void ProcessMatch(ZoneDefinitionParserState* state, SequenceResult<ZoneDefinitionParserValue>& result) const override;
 
 public:
     SequenceZoneDefinitionIgnore();

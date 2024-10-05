@@ -7,12 +7,14 @@
 #include "Sequence/SequenceZoneDefinitionInclude.h"
 #include "Sequence/SequenceZoneDefinitionMetaData.h"
 
-ZoneDefinitionParser::ZoneDefinitionParser(ZoneDefinitionLexer* lexer)
-    : AbstractParser(lexer, std::make_unique<ZoneDefinition>())
+ZoneDefinitionParser::ZoneDefinitionParser(ZoneDefinitionLexer* lexer, const std::optional<GameId> maybeGame)
+    : AbstractParser(lexer, std::make_unique<ZoneDefinitionParserState>())
 {
+    if (maybeGame)
+        m_state->SetGame(*maybeGame);
 }
 
-const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>::sequence_t*>& ZoneDefinitionParser::GetTestsForState()
+const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinitionParserState>::sequence_t*>& ZoneDefinitionParser::GetTestsForState()
 {
     static std::vector<sequence_t*> tests({
         new SequenceZoneDefinitionMetaData(),
@@ -28,5 +30,5 @@ const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinition>::seq
 
 std::unique_ptr<ZoneDefinition> ZoneDefinitionParser::GetParsedValue()
 {
-    return std::move(m_state);
+    return std::move(m_state->m_definition);
 }

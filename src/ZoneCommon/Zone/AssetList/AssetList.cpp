@@ -1,12 +1,13 @@
 #include "AssetList.h"
 
 AssetListEntry::AssetListEntry()
-    : m_is_reference(false)
+    : m_type(0u),
+      m_is_reference(false)
 {
 }
 
-AssetListEntry::AssetListEntry(std::string type, std::string name, const bool isReference)
-    : m_type(std::move(type)),
+AssetListEntry::AssetListEntry(const asset_type_t type, std::string name, const bool isReference)
+    : m_type(type),
       m_name(std::move(name)),
       m_is_reference(isReference)
 {

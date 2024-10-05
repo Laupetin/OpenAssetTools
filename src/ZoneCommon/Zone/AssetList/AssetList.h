@@ -1,16 +1,19 @@
 #pragma once
+
+#include "Zone/ZoneTypes.h"
+
 #include <string>
 #include <vector>
 
 class AssetListEntry
 {
 public:
-    std::string m_type;
+    asset_type_t m_type;
     std::string m_name;
     bool m_is_reference;
 
     AssetListEntry();
-    AssetListEntry(std::string type, std::string name, bool isReference);
+    AssetListEntry(asset_type_t type, std::string name, bool isReference);
 };
 
 class AssetList

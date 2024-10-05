@@ -1,5 +1,8 @@
 #include "ContentPrinter.h"
 
+#include <format>
+#include <iostream>
+
 ContentPrinter::ContentPrinter(Zone* zone)
 {
     m_zone = zone;
@@ -8,13 +11,11 @@ ContentPrinter::ContentPrinter(Zone* zone)
 void ContentPrinter::PrintContent() const
 {
     const auto* pools = m_zone->m_pools.get();
-    printf("Zone '%s' (%s)\n", m_zone->m_name.c_str(), m_zone->m_game->GetShortName().c_str());
-    puts("Content:");
+    std::cout << std::format("Zone '{}' ({})\n", m_zone->m_name, m_zone->m_game->GetShortName());
+    std::cout << "Content:\n";
 
     for (const auto& asset : *pools)
-    {
-        printf("%s, %s\n", pools->GetAssetTypeName(asset->m_type), asset->m_name.c_str());
-    }
+        std::cout << std::format("{}, {}\n", *pools->GetAssetTypeName(asset->m_type), asset->m_name);
 
-    puts("");
+    std::cout << "\n";
 }

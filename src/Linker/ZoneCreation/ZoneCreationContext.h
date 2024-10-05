@@ -5,18 +5,16 @@
 #include "Zone/Definition/ZoneDefinition.h"
 
 #include <memory>
-#include <string>
 #include <vector>
 
 class ZoneCreationContext
 {
 public:
-    std::string m_game_name;
-    ISearchPath* m_asset_search_path;
     ZoneDefinition* m_definition;
+    ISearchPath* m_asset_search_path;
     std::vector<std::unique_ptr<Gdt>> m_gdt_files;
     AssetList m_ignored_assets;
 
     ZoneCreationContext();
-    ZoneCreationContext(ISearchPath* assetSearchPath, ZoneDefinition* definition);
+    ZoneCreationContext(ZoneDefinition* definition, ISearchPath* assetSearchPath);
 };

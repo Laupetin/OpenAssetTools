@@ -5,22 +5,7 @@
 #include "ObjLoading.h"
 #include "Utils/StringUtils.h"
 
-#include <iostream>
-
 using namespace IW5;
-
-ZoneCreator::ZoneCreator()
-{
-    for (auto assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
-    {
-        AddAssetTypeName(assetType, GameAssetPoolIW5::AssetTypeNameByType(assetType));
-    }
-}
-
-void ZoneCreator::AddAssetTypeName(asset_type_t assetType, std::string name)
-{
-    m_asset_types_by_name.emplace(std::make_pair(std::move(name), assetType));
-}
 
 std::vector<Gdt*> ZoneCreator::CreateGdtList(const ZoneCreationContext& context)
 {
@@ -32,21 +17,10 @@ std::vector<Gdt*> ZoneCreator::CreateGdtList(const ZoneCreationContext& context)
     return gdtList;
 }
 
-bool ZoneCreator::CreateIgnoredAssetMap(const ZoneCreationContext& context, std::unordered_map<std::string, asset_type_t>& ignoredAssetMap) const
+void ZoneCreator::ApplyIgnoredAssets(const ZoneCreationContext& creationContext, AssetLoadingContext& loadingContext)
 {
-    for (const auto& ignoreEntry : context.m_ignored_assets.m_entries)
-    {
-        const auto foundAssetTypeEntry = m_asset_types_by_name.find(ignoreEntry.m_type);
-        if (foundAssetTypeEntry == m_asset_types_by_name.end())
-        {
-            std::cout << "Unknown asset type \"" << ignoreEntry.m_type << "\" for ignore \"" << ignoreEntry.m_name << "\"\n";
-            return false;
-        }
-
-        ignoredAssetMap[ignoreEntry.m_name] = foundAssetTypeEntry->second;
-    }
-
-    return true;
+    for (const auto& ignoreEntry : creationContext.m_ignored_assets.m_entries)
+        loadingContext.m_ignored_asset_map[ignoreEntry.m_name] = ignoreEntry.m_type;
 }
 
 void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
@@ -57,12 +31,9 @@ void ZoneCreator::CreateZoneAssetPools(Zone* zone) const
         zone->m_pools->InitPoolDynamic(assetType);
 }
 
-bool ZoneCreator::SupportsGame(const std::string& gameName) const
+GameId ZoneCreator::GetGameId() const
 {
-    auto shortName = g_GameIW5.GetShortName();
-    utils::MakeStringLowerCase(shortName);
-
-    return gameName == shortName;
+    return GameId::IW5;
 }
 
 std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& context) const
@@ -79,23 +50,20 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
     }
 
     const auto assetLoadingContext = std::make_unique<AssetLoadingContext>(*zone, *context.m_asset_search_path, CreateGdtList(context));
-    if (!CreateIgnoredAssetMap(context, assetLoadingContext->m_ignored_asset_map))
-        return nullptr;
+    ApplyIgnoredAssets(context, *assetLoadingContext);
 
     for (const auto& assetEntry : context.m_definition->m_assets)
     {
-        const auto foundAssetTypeEntry = m_asset_types_by_name.find(assetEntry.m_asset_type);
-        if (foundAssetTypeEntry == m_asset_types_by_name.end())
-        {
-            std::cout << "Unknown asset type \"" << assetEntry.m_asset_type << "\"\n";
-            return nullptr;
-        }
-
-        if (!ObjLoading::LoadAssetForZone(*assetLoadingContext, foundAssetTypeEntry->second, assetEntry.m_asset_name))
+        if (!ObjLoading::LoadAssetForZone(*assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name))
             return nullptr;
     }
 
     ObjLoading::FinalizeAssetsForZone(*assetLoadingContext);
 
     return zone;
+}
+
+asset_type_t ZoneCreator::GetImageAssetType() const
+{
+    return ASSET_TYPE_IMAGE;
 }

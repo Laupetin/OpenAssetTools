@@ -1,9 +1,30 @@
 #pragma once
 #include "GameLanguage.h"
 
+#include <type_traits>
 #include <vector>
 
 class Zone;
+
+enum class GameId
+{
+    IW3,
+    IW4,
+    IW5,
+    T5,
+    T6,
+
+    COUNT
+};
+
+static constexpr const char* GameId_Names[]{
+    "IW3",
+    "IW4",
+    "IW5",
+    "T5",
+    "T6",
+};
+static_assert(std::extent_v<decltype(GameId_Names)> == static_cast<unsigned>(GameId::COUNT));
 
 class IGame
 {

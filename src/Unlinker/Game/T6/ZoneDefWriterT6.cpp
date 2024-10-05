@@ -83,7 +83,7 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Unlin
     // Localized strings are all collected in one string file. So only add this to the zone file.
     if (!pools->m_localize->m_asset_lookup.empty())
     {
-        stream.WriteEntry(pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone->m_name);
+        stream.WriteEntry(*pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone->m_name);
     }
 
     for (const auto& asset : *pools)
@@ -95,7 +95,7 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Unlin
             break;
 
         default:
-            stream.WriteEntry(pools->GetAssetTypeName(asset->m_type), asset->m_name);
+            stream.WriteEntry(*pools->GetAssetTypeName(asset->m_type), asset->m_name);
             break;
         }
     }
