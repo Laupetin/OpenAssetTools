@@ -95,6 +95,43 @@ namespace T6
         "snp_x3",
     };
 
+    // From SndDriverGlobals
+    inline constexpr const char* SOUND_PANS[]{
+        "default",
+        "music",
+        "wpn_all",
+        "wpn_fnt",
+        "wpn_rear",
+        "wpn_left",
+        "wpn_right",
+        "music_all",
+        "fly_foot_all",
+        "front",
+        "back",
+        "front_mostly",
+        "back_mostly",
+        "all",
+        "center",
+        "front_and_center",
+        "lfe",
+        "quad",
+        "front_mostly_some_center",
+        "front_halfback",
+        "halffront_back",
+        "test",
+        "brass_right",
+        "brass_left",
+        "veh_back",
+        "tst_left",
+        "tst_center",
+        "tst_right",
+        "tst_surround_left",
+        "tst_surround_right",
+        "tst_lfe",
+        "pip",
+        "movie_vo",
+    };
+
     inline constexpr const char* SOUND_LIMIT_TYPES[]{
         "none",
         "oldest",
@@ -138,9 +175,23 @@ namespace T6
 
     // From executable
     inline constexpr const char* SOUND_RANDOMIZE_TYPES[]{
-        "",
         "volume",
         "pitch",
         "variant",
+    };
+
+    inline constexpr const char* SOUND_NO_YES[]{
+        "no",
+        "yes",
+    };
+
+    inline constexpr const char* SOUND_LOOP_TYPES[]{
+        "nonlooping",
+        "looping",
+    };
+
+    inline constexpr const char* SOUND_PAN_TYPES[]{
+        "2d",
+        "3d",
     };
 } // namespace T6
