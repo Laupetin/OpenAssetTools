@@ -6228,9 +6228,9 @@ namespace T6
         unsigned int distanceLpf : 1;     // 2
         unsigned int doppler : 1;         // 3
         unsigned int isBig : 1;           // 4
-        unsigned int pauseable : 1;       // 5
+        unsigned int pausable : 1;        // 5
         unsigned int isMusic : 1;         // 6
-        unsigned int stopOnDeath : 1;     // 7
+        unsigned int stopOnEntDeath : 1;  // 7
         unsigned int timescale : 1;       // 8
         unsigned int voiceLimit : 1;      // 9
         unsigned int ignoreMaxDist : 1;   // 10
@@ -6249,7 +6249,9 @@ namespace T6
         unsigned int reverbFalloffCurve : 6;    // 8-13
         unsigned int volumeMinFalloffCurve : 6; // 14-19
         unsigned int reverbMinFalloffCurve : 6; // 20-25
-        unsigned int unknown1_1 : 6;            // 26-31
+        unsigned int unknown1_1 : 1;            // 26
+        unsigned int isCinematic : 1;           // 27
+        unsigned int unknown1_2 : 4;            // 28-31
     };
 
     struct SndAlias
@@ -6257,7 +6259,7 @@ namespace T6
         const char* name;
         unsigned int id;
         const char* subtitle;
-        const char* secondaryname;
+        const char* secondaryName;
         unsigned int assetId;
         const char* assetFileName;
         SndAliasFlags flags;

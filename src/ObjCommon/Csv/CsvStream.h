@@ -1,16 +1,30 @@
 #pragma once
 #include "Utils/MemoryManager.h"
 
+#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
+
+class CsvCell
+{
+public:
+    explicit CsvCell(std::string value);
+
+    bool AsFloat(float& out) const;
+    bool AsInt32(int32_t& out) const;
+    bool AsUInt32(uint32_t& out) const;
+
+    std::string m_value;
+};
 
 class CsvInputStream
 {
 public:
     explicit CsvInputStream(std::istream& stream);
 
+    bool NextRow(std::vector<CsvCell>& out) const;
     bool NextRow(std::vector<std::string>& out) const;
     bool NextRow(std::vector<const char*>& out, MemoryManager& memory) const;
 

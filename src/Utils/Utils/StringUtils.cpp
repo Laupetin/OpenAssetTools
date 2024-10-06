@@ -1,6 +1,7 @@
 #include "StringUtils.h"
 
-#include <iostream>
+#include <algorithm>
+#include <cctype>
 #include <sstream>
 
 namespace utils
@@ -102,13 +103,41 @@ namespace utils
             c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
     }
 
-    std::vector<std::string> StringSplit(const std::string& str, const char delim)
+    void StringTrimL(std::string& str)
+    {
+        str.erase(str.begin(),
+                  std::ranges::find_if(str,
+                                       [](const unsigned char ch)
+                                       {
+                                           return !std::isspace(ch);
+                                       }));
+    }
+
+    void StringTrimR(std::string& str)
+    {
+        str.erase(std::find_if(str.rbegin(),
+                               str.rend(),
+                               [](const unsigned char ch)
+                               {
+                                   return !std::isspace(ch);
+                               })
+                      .base(),
+                  str.end());
+    }
+
+    void StringTrim(std::string& str)
+    {
+        StringTrimR(str);
+        StringTrimL(str);
+    }
+
+    std::vector<std::string> StringSplit(const std::string& str, const char delimiter)
     {
         std::vector<std::string> strings;
         std::istringstream stream(str);
 
         std::string s;
-        while (std::getline(stream, s, delim))
+        while (std::getline(stream, s, delimiter))
         {
             strings.emplace_back(std::move(s));
         }
