@@ -404,7 +404,7 @@ namespace
 
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
     {
-        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
+        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
         const auto cents = std::clamp(HertzToCents(hertz), -2400.0f, 1200.0f);
         stream.WriteColumn(std::format("{:.4g}", cents));
     }
@@ -605,8 +605,8 @@ namespace
         // Timescale
         WriteColumnEnum(stream, alias.flags.timescale, SOUND_NO_YES);
 
-        // Pauseable
-        WriteColumnEnum(stream, alias.flags.pauseable, SOUND_NO_YES);
+        // Pausable
+        WriteColumnEnum(stream, alias.flags.pausable, SOUND_NO_YES);
 
         // StopOnEntDeath
         WriteColumnEnum(stream, alias.flags.stopOnEntDeath, SOUND_NO_YES);
