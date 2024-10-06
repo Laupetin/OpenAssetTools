@@ -16,5 +16,9 @@ namespace utils
     void MakeStringLowerCase(std::string& str);
     void MakeStringUpperCase(std::string& str);
 
-    std::vector<std::string> StringSplit(const std::string& str, const char delim);
+    void StringTrimL(std::string& str);
+    void StringTrimR(std::string& str);
+    void StringTrim(std::string& str);
+
+    std::vector<std::string> StringSplit(const std::string& str, char delimiter);
 } // namespace utils

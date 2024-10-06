@@ -1,5 +1,7 @@
 #include "CsvStream.h"
 
+#include "Utils/StringUtils.h"
+
 #include <cstdlib>
 #include <sstream>
 
@@ -110,13 +112,17 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
     auto c = m_stream.get();
     const auto isEof = c == EOF;
     std::ostringstream col;
+    auto content = false;
     while (c != EOF)
     {
         if (c == CSV_SEPARATOR)
         {
-            cb(col.str());
+            auto value = col.str();
+            utils::StringTrimR(value);
+            cb(std::move(value));
             col.clear();
             col.str(std::string());
+            content = false;
         }
         else if (c == '\r')
         {
@@ -129,8 +135,14 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
         {
             break;
         }
+        else if (isspace(c))
+        {
+            if (content)
+                col << static_cast<char>(c);
+        }
         else
         {
+            content = true;
             col << static_cast<char>(c);
         }
 
@@ -139,7 +151,9 @@ bool CsvInputStream::EmitNextRow(const std::function<void(std::string)>& cb) con
 
     if (!isEof)
     {
-        cb(col.str());
+        auto value = col.str();
+        utils::StringTrimR(value);
+        cb(std::move(value));
     }
 
     return !isEof;
