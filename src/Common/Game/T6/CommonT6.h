@@ -3,15 +3,12 @@
 #include "T6.h"
 
 #include <cctype>
-#include <limits>
 
 namespace T6
 {
     class Common
     {
     public:
-        static constexpr double AMP_RATIO = 100000.0 / std::numeric_limits<uint16_t>::max();
-
         static constexpr int Com_HashKey(const char* str, const int maxLen)
         {
             if (str == nullptr)
