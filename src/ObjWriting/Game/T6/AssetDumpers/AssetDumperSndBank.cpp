@@ -372,7 +372,7 @@ namespace
     {
         assert(enumValueCount <= 32u);
         std::ostringstream ss;
-        auto first = false;
+        auto first = true;
         for (auto i = 0u; i < enumValueCount; i++)
         {
             const auto flagValue = 1u << i;
