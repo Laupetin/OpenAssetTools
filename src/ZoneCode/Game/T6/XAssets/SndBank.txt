@@ -21,7 +21,7 @@ set count head count;
 use SndAlias;
 set string name;
 set string subtitle;
-set string secondaryname;
+set string secondaryName;
 set string assetFileName;
 
 // SndDuck
