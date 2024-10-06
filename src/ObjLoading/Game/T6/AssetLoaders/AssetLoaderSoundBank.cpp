@@ -417,7 +417,7 @@ namespace
                 && headerRow.RequireIndexForHeader("StartDelay", m_start_delay)
                 && headerRow.RequireIndexForHeader("EnvelopMin", m_envelop_min)
                 && headerRow.RequireIndexForHeader("EnvelopMax", m_envelop_max)
-                && headerRow.RequireIndexForHeader("EnvelopPercentage", m_envelop_percentage)
+                && headerRow.RequireIndexForHeader("EnvelopPercent", m_envelop_percentage)
                 && headerRow.RequireIndexForHeader("OcclusionLevel", m_occlusion_level)
                 && headerRow.RequireIndexForHeader("IsBig", m_is_big)
                 && headerRow.RequireIndexForHeader("DistanceLpf", m_distance_lpf)

@@ -60,7 +60,7 @@ namespace
         "StartDelay",
         "EnvelopMin",
         "EnvelopMax",
-        "EnvelopPercentage",
+        "EnvelopPercent",
         "OcclusionLevel",
         "IsBig",
         "DistanceLpf",
@@ -557,7 +557,7 @@ namespace
         // EnvelopMax
         WriteColumnIntegral(stream, alias.envelopMax);
 
-        // EnvelopPercentage
+        // EnvelopPercent
         WriteColumnVolumeLinear(stream, alias.envelopPercentage);
 
         // OcclusionLevel
