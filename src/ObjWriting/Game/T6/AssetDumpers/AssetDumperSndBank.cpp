@@ -7,6 +7,7 @@
 #include "Sound/WavWriter.h"
 #include "nlohmann/json.hpp"
 
+#include <cmath>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -225,6 +226,36 @@ class AssetDumperSndBank::Internal
         }
     }
 
+    static float LinearToDbspl(float linear)
+    {
+        linear = std::max(linear, 0.0000152879f);
+
+        const auto db = 20.0f * std::log10(linear);
+        if (db > -95.0f)
+            return db + 100.0f;
+
+        return 0;
+    }
+
+    static float HertzToCents(const float hertz)
+    {
+        return 1200.0f * std::log2(hertz);
+    }
+
+    static void WriteColumnVolumeLinear(CsvOutputStream& stream, const uint16_t value)
+    {
+        const auto linear = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
+        const auto dbSpl = std::clamp(LinearToDbspl(linear), 0.0f, 100.0f);
+        stream.WriteColumn(std::format("{:.3g}", dbSpl));
+    }
+
+    static void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
+    {
+        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
+        const auto cents = std::clamp(HertzToCents(hertz), -2400.0f, 1200.0f);
+        stream.WriteColumn(std::format("{:.4g}", cents));
+    }
+
     static void WriteAliasToFile(CsvOutputStream& stream, const SndAlias* alias, const std::optional<snd_asset_format> maybeFormat, const SndBank* bank)
     {
         // name
@@ -247,10 +278,10 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(SOUND_GROUPS[alias->flags.volumeGroup]);
 
         // vol_min
-        stream.WriteColumn(std::to_string(alias->volMin));
+        WriteColumnVolumeLinear(stream, alias->volMin);
 
         // vol_max
-        stream.WriteColumn(std::to_string(alias->volMax));
+        WriteColumnVolumeLinear(stream, alias->volMax);
 
         // team_vol_mod
         stream.WriteColumn("");
@@ -289,10 +320,10 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(SOUND_LIMIT_TYPES[alias->flags.entityLimitType]);
 
         // pitch_min
-        stream.WriteColumn(std::to_string(alias->pitchMin));
+        WriteColumnPitchHertz(stream, alias->pitchMin);
 
         // pitch_max
-        stream.WriteColumn(std::to_string(alias->pitchMax));
+        WriteColumnPitchHertz(stream, alias->pitchMax);
 
         // team_pitch_mod
         stream.WriteColumn("");
@@ -328,7 +359,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->startDelay));
 
         // reverb_send
-        stream.WriteColumn(std::to_string(alias->reverbSend));
+        WriteColumnVolumeLinear(stream, alias->reverbSend);
 
         // duck
         stream.WriteColumn(FindNameForDuck(alias->duck, bank));
@@ -340,7 +371,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(alias->flags.panType == SA_PAN_2D ? "2d" : "3d");
 
         // center_send
-        stream.WriteColumn(std::to_string(alias->centerSend));
+        WriteColumnVolumeLinear(stream, alias->centerSend);
 
         // envelop_min
         stream.WriteColumn(std::to_string(alias->envelopMin));
@@ -349,7 +380,7 @@ class AssetDumperSndBank::Internal
         stream.WriteColumn(std::to_string(alias->envelopMax));
 
         // envelop_percentage
-        stream.WriteColumn(std::to_string(alias->envelopPercentage));
+        WriteColumnVolumeLinear(stream, alias->envelopPercentage);
 
         // occlusion_level
         stream.WriteColumn(std::to_string(alias->occlusionLevel));

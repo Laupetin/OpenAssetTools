@@ -8,7 +8,9 @@
 #include "Pool/GlobalAssetPool.h"
 #include "Utils/StringUtils.h"
 
+#include <cmath>
 #include <cstring>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -113,7 +115,43 @@ unsigned int GetAliasSubListCount(const unsigned int startRow, const ParsedCsv& 
     return count;
 }
 
-bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& row)
+float DbsplToLinear(const float dbsplValue)
+{
+    return std::pow(10.0f, (dbsplValue - 100.0f) / 20.0f);
+}
+
+float CentToHertz(const float cents)
+{
+    return std::pow(2.0f, cents / 1200.0f);
+}
+
+bool ReadColumnVolumeDbspl(const float dbsplValue, const char* colName, const unsigned rowIndex, uint16_t& value)
+{
+    if (dbsplValue < 0.0f || dbsplValue > 100.0f)
+    {
+        std::cerr << std::format("Invalid value for row {} col '{}' - {} [0.0, 100.0]\n", rowIndex + 1, colName, dbsplValue);
+        return false;
+    }
+
+    value = static_cast<uint16_t>(DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+
+    return true;
+}
+
+bool ReadColumnPitchCents(const float centValue, const char* colName, const unsigned rowIndex, uint16_t& value)
+{
+    if (centValue < -2400.0f || centValue > 1200.0f)
+    {
+        std::cerr << std::format("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]\n", rowIndex + 1, colName, centValue);
+        return false;
+    }
+
+    value = static_cast<uint16_t>(CentToHertz(centValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+
+    return true;
+}
+
+bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& row, const unsigned int rowNum)
 {
     memset(alias, 0, sizeof(SndAlias));
 
@@ -141,26 +179,42 @@ bool LoadSoundAlias(MemoryManager* memory, SndAlias* alias, const ParsedCsvRow& 
 
     alias->duck = Common::SND_HashName(row.GetValue("duck").data());
 
-    alias->volMin = row.GetValueInt<decltype(alias->volMin)>("vol_min");
-    alias->volMax = row.GetValueInt<decltype(alias->volMax)>("vol_max");
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("vol_min"), "vol_min", rowNum, alias->volMin))
+        return false;
+
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("vol_max"), "vol_max", rowNum, alias->volMax))
+        return false;
+
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("pitch_min"), "pitch_min", rowNum, alias->pitchMin))
+        return false;
+
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("pitch_max"), "pitch_max", rowNum, alias->pitchMax))
+        return false;
+
     alias->distMin = row.GetValueInt<decltype(alias->distMin)>("dist_min");
     alias->distMax = row.GetValueInt<decltype(alias->distMax)>("dist_max");
     alias->distReverbMax = row.GetValueInt<decltype(alias->distReverbMax)>("dist_reverb_max");
     alias->limitCount = row.GetValueInt<decltype(alias->limitCount)>("limit_count");
     alias->entityLimitCount = row.GetValueInt<decltype(alias->entityLimitCount)>("entity_limit_count");
-    alias->pitchMin = row.GetValueInt<decltype(alias->pitchMin)>("pitch_min");
-    alias->pitchMax = row.GetValueInt<decltype(alias->pitchMax)>("pitch_max");
     alias->minPriority = row.GetValueInt<decltype(alias->minPriority)>("min_priority");
     alias->maxPriority = row.GetValueInt<decltype(alias->maxPriority)>("max_priority");
     alias->minPriorityThreshold = row.GetValueInt<decltype(alias->minPriorityThreshold)>("min_priority_threshold");
     alias->maxPriorityThreshold = row.GetValueInt<decltype(alias->maxPriorityThreshold)>("max_priority_threshold");
     alias->probability = row.GetValueInt<decltype(alias->probability)>("probability");
     alias->startDelay = row.GetValueInt<decltype(alias->startDelay)>("start_delay");
-    alias->reverbSend = row.GetValueInt<decltype(alias->reverbSend)>("reverb_send");
-    alias->centerSend = row.GetValueInt<decltype(alias->centerSend)>("center_send");
+
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("reverb_send"), "reverb_send", rowNum, alias->reverbSend))
+        return false;
+
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("center_send"), "center_send", rowNum, alias->centerSend))
+        return false;
+
     alias->envelopMin = row.GetValueInt<decltype(alias->envelopMin)>("envelop_min");
     alias->envelopMax = row.GetValueInt<decltype(alias->envelopMax)>("envelop_max");
-    alias->envelopPercentage = row.GetValueInt<decltype(alias->envelopPercentage)>("envelop_percentage");
+
+    if (!ReadColumnVolumeDbspl(row.GetValueFloat("envelop_percentage"), "envelop_percentage", rowNum, alias->envelopPercentage))
+        return false;
+
     alias->occlusionLevel = row.GetValueInt<decltype(alias->occlusionLevel)>("occlusion_level");
     alias->fluxTime = row.GetValueInt<decltype(alias->fluxTime)>("move_time");
     alias->futzPatch = row.GetValueInt<decltype(alias->futzPatch)>("futz");
@@ -292,7 +346,7 @@ bool LoadSoundAliasList(
             // list are next to each other in the file
             for (auto i = 0u; i < subListCount; i++)
             {
-                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasCsv[row]))
+                if (!LoadSoundAlias(memory, &sndBank->alias[listIndex].head[i], aliasCsv[row], row))
                     return false;
 
                 // if this asset is loaded instead of stream, increment the loaded count for later
