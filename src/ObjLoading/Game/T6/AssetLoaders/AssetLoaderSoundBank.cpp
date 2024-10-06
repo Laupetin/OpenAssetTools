@@ -142,7 +142,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(CentToHertz(centValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        value = static_cast<uint16_t>(CentToHertz(centValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
         return true;
     }

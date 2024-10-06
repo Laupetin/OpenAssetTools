@@ -404,7 +404,7 @@ namespace
 
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
     {
-        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
+        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
         const auto cents = std::clamp(HertzToCents(hertz), -2400.0f, 1200.0f);
         stream.WriteColumn(std::format("{:.4g}", cents));
     }
