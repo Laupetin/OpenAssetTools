@@ -1,12 +1,84 @@
 #include "CsvStream.h"
 
+#include <cstdlib>
 #include <sstream>
 
 constexpr char CSV_SEPARATOR = ',';
 
+CsvCell::CsvCell(std::string value)
+    : m_value(std::move(value))
+{
+}
+
+bool CsvCell::AsFloat(float& out) const
+{
+    const char* startPtr = m_value.c_str();
+    char* endPtr;
+    out = std::strtof(startPtr, &endPtr);
+
+    if (endPtr == startPtr)
+        return false;
+
+    for (const auto* c = endPtr; *c; c++)
+    {
+        if (!isspace(*c))
+            return false;
+    }
+
+    return true;
+}
+
+bool CsvCell::AsInt32(int32_t& out) const
+{
+    const char* startPtr = m_value.c_str();
+    char* endPtr;
+    out = std::strtol(startPtr, &endPtr, 0);
+
+    if (endPtr == startPtr)
+        return false;
+
+    for (const auto* c = endPtr; *c; c++)
+    {
+        if (!isspace(*c))
+            return false;
+    }
+
+    return true;
+}
+
+bool CsvCell::AsUInt32(uint32_t& out) const
+{
+    const char* startPtr = m_value.c_str();
+    char* endPtr;
+    out = std::strtoul(startPtr, &endPtr, 0);
+
+    if (endPtr == startPtr)
+        return false;
+
+    for (const auto* c = endPtr; *c; c++)
+    {
+        if (!isspace(*c))
+            return false;
+    }
+
+    return true;
+}
+
 CsvInputStream::CsvInputStream(std::istream& stream)
     : m_stream(stream)
 {
+}
+
+bool CsvInputStream::NextRow(std::vector<CsvCell>& out) const
+{
+    if (!out.empty())
+        out.clear();
+
+    return EmitNextRow(
+        [&out](std::string value)
+        {
+            out.emplace_back(std::move(value));
+        });
 }
 
 bool CsvInputStream::NextRow(std::vector<std::string>& out) const
