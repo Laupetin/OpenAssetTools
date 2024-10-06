@@ -602,8 +602,8 @@ namespace
         // FadeOut
         WriteColumnIntegral(stream, alias.fadeOut);
 
-        // Pausable
-        WriteColumnEnum(stream, alias.flags.pausable, SOUND_NO_YES);
+        // Pauseable
+        WriteColumnEnum(stream, alias.flags.pauseable, SOUND_NO_YES);
 
         // StopOnEntDeath
         WriteColumnEnum(stream, alias.flags.stopOnEntDeath, SOUND_NO_YES);

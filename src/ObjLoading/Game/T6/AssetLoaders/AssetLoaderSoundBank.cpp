@@ -533,7 +533,7 @@ namespace
 
         uint8_t dryMinCurve = 0u, dryMaxCurve = 0u, wetMinCurve = 0u, wetMaxCurve = 0u, limitType = 0u, entityLimitType = 0u, randomizeType = 0u, fluxType = 0u,
                 storage = 0u, volumeGroup = 0u, distanceLpf = 0u, doppler = 0u, isBig = 0u, looping = 0u, panType = 0u, isMusic = 0u, timescale = 0u,
-                pausable = 0u, stopOnEntDeath = 0u, busType = 0u, voiceLimit = 0u, ignoreMaxDist = 0u, neverPlayTwice = 0u, isCinematic = 0u;
+                pauseable = 0u, stopOnEntDeath = 0u, busType = 0u, voiceLimit = 0u, ignoreMaxDist = 0u, neverPlayTwice = 0u, isCinematic = 0u;
         // clang-format off
         const auto couldReadSoundAlias = 
                ReadColumnString(row, headers.m_secondary, alias.secondaryName, memory)
@@ -586,7 +586,7 @@ namespace
             && ReadColumnEnum(headerRow, row, headers.m_is_cinematic, rowIndex, isCinematic, SOUND_NO_YES)
             && ReadColumnInt16(headerRow, row, headers.m_fade_in, rowIndex, alias.fadeIn, 0)
             && ReadColumnInt16(headerRow, row, headers.m_fade_out, rowIndex, alias.fadeOut, 0)
-            && ReadColumnEnum(headerRow, row, headers.m_pauseable, rowIndex, pausable, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_pauseable, rowIndex, pauseable, SOUND_NO_YES)
             && ReadColumnEnum(headerRow, row, headers.m_stop_on_ent_death, rowIndex, stopOnEntDeath, SOUND_NO_YES)
             && ReadColumnHash(row, headers.m_stop_on_play, alias.stopOnPlay)
             && ReadColumnInt16(headerRow, row, headers.m_doppler_scale, rowIndex, alias.dopplerScale, -100, 100)
@@ -617,7 +617,7 @@ namespace
         alias.flags.panType = panType;
         alias.flags.isMusic = isMusic;
         alias.flags.timescale = timescale;
-        alias.flags.pausable = pausable;
+        alias.flags.pauseable = pauseable;
         alias.flags.stopOnEntDeath = stopOnEntDeath;
         alias.flags.busType = busType;
         alias.flags.voiceLimit = voiceLimit;
