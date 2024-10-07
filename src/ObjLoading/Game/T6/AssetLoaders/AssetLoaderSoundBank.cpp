@@ -81,7 +81,7 @@ namespace
         return std::pow(10.0f, (dbsplValue - 100.0f) / 20.0f);
     }
 
-    float CentToHertz(const float cents)
+    float CentsToHertz(const float cents)
     {
         return std::pow(2.0f, cents / 1200.0f);
     }
@@ -142,7 +142,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(CentToHertz(centValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
+        value = static_cast<uint16_t>(CentsToHertz(centValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
         return true;
     }
