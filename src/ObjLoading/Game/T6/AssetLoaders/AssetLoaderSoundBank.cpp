@@ -371,7 +371,7 @@ namespace
         {
             // clang-format off
             return headerRow.RequireIndexForHeader("Name", m_name)
-                && headerRow.RequireIndexForHeader("File", m_file_source)
+                && headerRow.RequireIndexForHeader("FileSource", m_file_source)
                 && headerRow.RequireIndexForHeader("Secondary", m_secondary)
                 && headerRow.RequireIndexForHeader("Storage", m_storage)
                 && headerRow.RequireIndexForHeader("Bus", m_bus)

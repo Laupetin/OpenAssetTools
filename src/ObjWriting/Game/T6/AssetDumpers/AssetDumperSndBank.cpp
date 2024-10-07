@@ -24,7 +24,7 @@ namespace
 {
     const std::string ALIAS_HEADERS[]{
         "Name",
-        "File",
+        "FileSource",
         "Secondary",
         "Storage",
         "Bus",
@@ -473,7 +473,7 @@ namespace
         // Name
         WriteColumnString(stream, alias.name);
 
-        // File
+        // FileSource
         const auto* extension = maybeFormat ? ExtensionForSndFormat(*maybeFormat) : "";
         WriteColumnString(stream, alias.assetFileName ? std::format("{}{}", alias.assetFileName, extension) : "");
 
