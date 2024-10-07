@@ -399,20 +399,20 @@ namespace
     {
         const auto linear = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
         const auto dbSpl = std::clamp(LinearToDbspl(linear), 0.0f, 100.0f);
-        stream.WriteColumn(std::format("{:.3g}", dbSpl));
+        stream.WriteColumn(std::format("{}", std::stof(std::format("{:.0f}", dbSpl))));
     }
 
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
     {
         const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
         const auto cents = std::clamp(HertzToCents(hertz), -2400.0f, 1200.0f);
-        stream.WriteColumn(std::format("{:.4g}", cents));
+        stream.WriteColumn(std::format("{}", std::stof(std::format("{:.0f}", cents))));
     }
 
     void WriteColumnNormByte(CsvOutputStream& stream, const uint8_t value)
     {
         const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
-        stream.WriteColumn(std::format("{:.3g}", normValue));
+        stream.WriteColumn(std::format("{}", std::stof(std::format("{:.2f}", normValue))));
     }
 
     void WriteColumnWithKnownHashes(CsvOutputStream& stream, const std::unordered_map<unsigned, std::string>& knownValues, const unsigned value)
