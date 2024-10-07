@@ -76,16 +76,6 @@ namespace
         return 0;
     }
 
-    float DbsplToLinear(const float dbsplValue)
-    {
-        return std::pow(10.0f, (dbsplValue - 100.0f) / 20.0f);
-    }
-
-    float CentsToHertz(const float cents)
-    {
-        return std::pow(2.0f, cents / 1200.0f);
-    }
-
     bool ReadColumnString(const std::vector<CsvCell>& row, const unsigned columnIndex, const char*& value, MemoryManager& memory)
     {
         const auto& cell = row[columnIndex];
@@ -117,7 +107,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        value = static_cast<uint16_t>(T6::Common::DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
 
         return true;
     }
@@ -142,7 +132,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(CentsToHertz(centValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
+        value = static_cast<uint16_t>(T6::Common::CentsToHertz(centValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
         return true;
     }
