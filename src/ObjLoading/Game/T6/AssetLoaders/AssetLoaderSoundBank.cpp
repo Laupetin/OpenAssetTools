@@ -117,22 +117,22 @@ namespace
     {
         const auto& cell = row[columnIndex];
 
-        float centValue;
-        if (!cell.AsFloat(centValue))
+        float centsValue;
+        if (!cell.AsFloat(centsValue))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
             std::cerr << std::format("Invalid value for row {} col '{}' - Must be a float\n", rowIndex + 1, colName);
             return false;
         }
 
-        if (centValue < -2400.0f || centValue > 1200.0f)
+        if (centsValue < -2400.0f || centsValue > 1200.0f)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]\n", rowIndex + 1, colName, centValue);
+            std::cerr << std::format("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]\n", rowIndex + 1, colName, centsValue);
             return false;
         }
 
-        value = static_cast<uint16_t>(T6::Common::CentsToHertz(centValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
+        value = static_cast<uint16_t>(T6::Common::CentsToHertz(centsValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
         return true;
     }
