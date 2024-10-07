@@ -2,6 +2,7 @@
 
 #include "Utils/Pack.h"
 
+#include <algorithm>
 #include <cmath>
 
 using namespace T6;
