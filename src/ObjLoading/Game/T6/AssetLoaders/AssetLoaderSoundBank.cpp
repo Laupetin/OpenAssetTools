@@ -76,16 +76,6 @@ namespace
         return 0;
     }
 
-    float DbsplToLinear(const float dbsplValue)
-    {
-        return std::pow(10.0f, (dbsplValue - 100.0f) / 20.0f);
-    }
-
-    float CentToHertz(const float cents)
-    {
-        return std::pow(2.0f, cents / 1200.0f);
-    }
-
     bool ReadColumnString(const std::vector<CsvCell>& row, const unsigned columnIndex, const char*& value, MemoryManager& memory)
     {
         const auto& cell = row[columnIndex];
@@ -117,7 +107,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        value = static_cast<uint16_t>(Common::DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
 
         return true;
     }
@@ -127,22 +117,22 @@ namespace
     {
         const auto& cell = row[columnIndex];
 
-        float centValue;
-        if (!cell.AsFloat(centValue))
+        float centsValue;
+        if (!cell.AsFloat(centsValue))
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
             std::cerr << std::format("Invalid value for row {} col '{}' - Must be a float\n", rowIndex + 1, colName);
             return false;
         }
 
-        if (centValue < -2400.0f || centValue > 1200.0f)
+        if (centsValue < -2400.0f || centsValue > 1200.0f)
         {
             const auto& colName = headerRow.HeaderNameForColumn(columnIndex);
-            std::cerr << std::format("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]\n", rowIndex + 1, colName, centValue);
+            std::cerr << std::format("Invalid value for row {} col '{}' - {} [-2400.0, 1200.0]\n", rowIndex + 1, colName, centsValue);
             return false;
         }
 
-        value = static_cast<uint16_t>(CentToHertz(centValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        value = static_cast<uint16_t>(Common::CentsToHertz(centsValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
         return true;
     }
@@ -383,126 +373,126 @@ namespace
             return headerRow.RequireIndexForHeader("Name", m_name)
                 && headerRow.RequireIndexForHeader("FileSource", m_file_source)
                 && headerRow.RequireIndexForHeader("Secondary", m_secondary)
-                && headerRow.RequireIndexForHeader("Subtitle", m_subtitle)
+                && headerRow.RequireIndexForHeader("Storage", m_storage)
+                && headerRow.RequireIndexForHeader("Bus", m_bus)
+                && headerRow.RequireIndexForHeader("VolumeGroup", m_volume_group)
+                && headerRow.RequireIndexForHeader("DuckGroup", m_duck_group)
+                && headerRow.RequireIndexForHeader("Duck", m_duck)
+                && headerRow.RequireIndexForHeader("ReverbSend", m_reverb_send)
+                && headerRow.RequireIndexForHeader("CenterSend", m_center_send)
                 && headerRow.RequireIndexForHeader("VolMin", m_vol_min)
                 && headerRow.RequireIndexForHeader("VolMax", m_vol_max)
-                && headerRow.RequireIndexForHeader("PitchMin", m_pitch_min)
-                && headerRow.RequireIndexForHeader("PitchMax", m_pitch_max)
                 && headerRow.RequireIndexForHeader("DistMin", m_dist_min)
                 && headerRow.RequireIndexForHeader("DistMaxDry", m_dist_max_dry)
                 && headerRow.RequireIndexForHeader("DistMaxWet", m_dist_max_wet)
-                && headerRow.RequireIndexForHeader("Probability", m_probability)
-                && headerRow.RequireIndexForHeader("EnvelopMin", m_envelop_min)
-                && headerRow.RequireIndexForHeader("EnvelopMax", m_envelop_max)
-                && headerRow.RequireIndexForHeader("EnvelopPercentage", m_envelop_percentage)
-                && headerRow.RequireIndexForHeader("CenterSend", m_center_send)
-                && headerRow.RequireIndexForHeader("ReverbSend", m_reverb_send)
-                && headerRow.RequireIndexForHeader("StartDelay", m_start_delay)
-                && headerRow.RequireIndexForHeader("PriorityThresholdMin", m_priority_threshold_min)
-                && headerRow.RequireIndexForHeader("PriorityThresholdMax", m_priority_threshold_max)
-                && headerRow.RequireIndexForHeader("OcclusionLevel", m_occlusion_level)
-                && headerRow.RequireIndexForHeader("FluxTime", m_flux_time)
-                && headerRow.RequireIndexForHeader("Duck", m_duck)
-                && headerRow.RequireIndexForHeader("PriorityMin", m_priority_min)
-                && headerRow.RequireIndexForHeader("PriorityMax", m_priority_max)
-                && headerRow.RequireIndexForHeader("LimitCount", m_limit_count)
-                && headerRow.RequireIndexForHeader("EntityLimitCount", m_entity_limit_count)
                 && headerRow.RequireIndexForHeader("DryMinCurve", m_dry_min_curve)
                 && headerRow.RequireIndexForHeader("DryMaxCurve", m_dry_max_curve)
                 && headerRow.RequireIndexForHeader("WetMinCurve", m_wet_min_curve)
                 && headerRow.RequireIndexForHeader("WetMaxCurve", m_wet_max_curve)
+                && headerRow.RequireIndexForHeader("LimitCount", m_limit_count)
+                && headerRow.RequireIndexForHeader("EntityLimitCount", m_entity_limit_count)
+                && headerRow.RequireIndexForHeader("LimitType", m_limit_type)
+                && headerRow.RequireIndexForHeader("EntityLimitType", m_entity_limit_type)
+                && headerRow.RequireIndexForHeader("PitchMin", m_pitch_min)
+                && headerRow.RequireIndexForHeader("PitchMax", m_pitch_max)
+                && headerRow.RequireIndexForHeader("PriorityMin", m_priority_min)
+                && headerRow.RequireIndexForHeader("PriorityMax", m_priority_max)
+                && headerRow.RequireIndexForHeader("PriorityThresholdMin", m_priority_threshold_min)
+                && headerRow.RequireIndexForHeader("PriorityThresholdMax", m_priority_threshold_max)
+                && headerRow.RequireIndexForHeader("PanType", m_pan_type)
                 && headerRow.RequireIndexForHeader("Pan", m_pan)
-                && headerRow.RequireIndexForHeader("DuckGroup", m_duck_group)
+                && headerRow.RequireIndexForHeader("Looping", m_looping)
+                && headerRow.RequireIndexForHeader("RandomizeType", m_randomize_type)
+                && headerRow.RequireIndexForHeader("Probability", m_probability)
+                && headerRow.RequireIndexForHeader("StartDelay", m_start_delay)
+                && headerRow.RequireIndexForHeader("EnvelopMin", m_envelop_min)
+                && headerRow.RequireIndexForHeader("EnvelopMax", m_envelop_max)
+                && headerRow.RequireIndexForHeader("EnvelopPercent", m_envelop_percentage)
+                && headerRow.RequireIndexForHeader("OcclusionLevel", m_occlusion_level)
+                && headerRow.RequireIndexForHeader("IsBig", m_is_big)
+                && headerRow.RequireIndexForHeader("DistanceLpf", m_distance_lpf)
+                && headerRow.RequireIndexForHeader("FluxType", m_flux_type)
+                && headerRow.RequireIndexForHeader("FluxTime", m_flux_time)
+                && headerRow.RequireIndexForHeader("Subtitle", m_subtitle)
+                && headerRow.RequireIndexForHeader("Doppler", m_doppler)
                 && headerRow.RequireIndexForHeader("ContextType", m_context_type)
                 && headerRow.RequireIndexForHeader("ContextValue", m_context_value)
+                && headerRow.RequireIndexForHeader("Timescale", m_timescale)
+                && headerRow.RequireIndexForHeader("IsMusic", m_is_music)
+                && headerRow.RequireIndexForHeader("IsCinematic", m_is_cinematic)
                 && headerRow.RequireIndexForHeader("FadeIn", m_fade_in)
                 && headerRow.RequireIndexForHeader("FadeOut", m_fade_out)
+                && headerRow.RequireIndexForHeader("Pauseable", m_pauseable)
+                && headerRow.RequireIndexForHeader("StopOnEntDeath", m_stop_on_ent_death)
                 && headerRow.RequireIndexForHeader("StopOnPlay", m_stop_on_play)
                 && headerRow.RequireIndexForHeader("DopplerScale", m_doppler_scale)
                 && headerRow.RequireIndexForHeader("FutzPatch", m_futz_patch)
-                && headerRow.RequireIndexForHeader("LimitType", m_limit_type)
-                && headerRow.RequireIndexForHeader("EntityLimitType", m_entity_limit_type)
-                && headerRow.RequireIndexForHeader("RandomizeType", m_randomize_type)
-                && headerRow.RequireIndexForHeader("FluxType", m_flux_type)
-                && headerRow.RequireIndexForHeader("Storage", m_storage)
-                && headerRow.RequireIndexForHeader("VolumeGroup", m_volume_group)
-                && headerRow.RequireIndexForHeader("DistanceLpf", m_distance_lpf)
-                && headerRow.RequireIndexForHeader("Doppler", m_doppler)
-                && headerRow.RequireIndexForHeader("IsBig", m_is_big)
-                && headerRow.RequireIndexForHeader("Looping", m_looping)
-                && headerRow.RequireIndexForHeader("PanType", m_pan_type)
-                && headerRow.RequireIndexForHeader("IsMusic", m_is_music)
-                && headerRow.RequireIndexForHeader("Timescale", m_timescale)
-                && headerRow.RequireIndexForHeader("Pauseable", m_pauseable)
-                && headerRow.RequireIndexForHeader("StopOnEntDeath", m_stop_on_ent_death)
-                && headerRow.RequireIndexForHeader("Bus", m_bus)
                 && headerRow.RequireIndexForHeader("VoiceLimit", m_voice_limit)
                 && headerRow.RequireIndexForHeader("IgnoreMaxDist", m_ignore_max_dist)
-                && headerRow.RequireIndexForHeader("NeverPlayTwice", m_never_play_twice)
-                && headerRow.RequireIndexForHeader("IsCinematic", m_is_cinematic);
+                && headerRow.RequireIndexForHeader("NeverPlayTwice", m_never_play_twice);
             // clang-format on
         }
 
         unsigned m_name;
         unsigned m_file_source;
         unsigned m_secondary;
-        unsigned m_subtitle;
+        unsigned m_storage;
+        unsigned m_bus;
+        unsigned m_volume_group;
+        unsigned m_duck_group;
+        unsigned m_duck;
+        unsigned m_reverb_send;
+        unsigned m_center_send;
         unsigned m_vol_min;
         unsigned m_vol_max;
-        unsigned m_pitch_min;
-        unsigned m_pitch_max;
         unsigned m_dist_min;
         unsigned m_dist_max_dry;
         unsigned m_dist_max_wet;
-        unsigned m_probability;
-        unsigned m_envelop_min;
-        unsigned m_envelop_max;
-        unsigned m_envelop_percentage;
-        unsigned m_center_send;
-        unsigned m_reverb_send;
-        unsigned m_start_delay;
-        unsigned m_priority_threshold_min;
-        unsigned m_priority_threshold_max;
-        unsigned m_occlusion_level;
-        unsigned m_flux_time;
-        unsigned m_duck;
-        unsigned m_priority_min;
-        unsigned m_priority_max;
-        unsigned m_limit_count;
-        unsigned m_entity_limit_count;
         unsigned m_dry_min_curve;
         unsigned m_dry_max_curve;
         unsigned m_wet_min_curve;
         unsigned m_wet_max_curve;
+        unsigned m_limit_count;
+        unsigned m_entity_limit_count;
+        unsigned m_limit_type;
+        unsigned m_entity_limit_type;
+        unsigned m_pitch_min;
+        unsigned m_pitch_max;
+        unsigned m_priority_min;
+        unsigned m_priority_max;
+        unsigned m_priority_threshold_min;
+        unsigned m_priority_threshold_max;
+        unsigned m_pan_type;
         unsigned m_pan;
-        unsigned m_duck_group;
+        unsigned m_looping;
+        unsigned m_randomize_type;
+        unsigned m_probability;
+        unsigned m_start_delay;
+        unsigned m_envelop_min;
+        unsigned m_envelop_max;
+        unsigned m_envelop_percentage;
+        unsigned m_occlusion_level;
+        unsigned m_is_big;
+        unsigned m_distance_lpf;
+        unsigned m_flux_type;
+        unsigned m_flux_time;
+        unsigned m_subtitle;
+        unsigned m_doppler;
         unsigned m_context_type;
         unsigned m_context_value;
+        unsigned m_timescale;
+        unsigned m_is_music;
+        unsigned m_is_cinematic;
         unsigned m_fade_in;
         unsigned m_fade_out;
+        unsigned m_pauseable;
+        unsigned m_stop_on_ent_death;
         unsigned m_stop_on_play;
         unsigned m_doppler_scale;
         unsigned m_futz_patch;
-        unsigned m_limit_type;
-        unsigned m_entity_limit_type;
-        unsigned m_randomize_type;
-        unsigned m_flux_type;
-        unsigned m_storage;
-        unsigned m_volume_group;
-        unsigned m_distance_lpf;
-        unsigned m_doppler;
-        unsigned m_is_big;
-        unsigned m_looping;
-        unsigned m_pan_type;
-        unsigned m_is_music;
-        unsigned m_timescale;
-        unsigned m_pauseable;
-        unsigned m_stop_on_ent_death;
-        unsigned m_bus;
         unsigned m_voice_limit;
         unsigned m_ignore_max_dist;
         unsigned m_never_play_twice;
-        unsigned m_is_cinematic;
     };
 
     bool LoadSoundAlias(SndAlias& alias,
@@ -533,67 +523,67 @@ namespace
 
         uint8_t dryMinCurve = 0u, dryMaxCurve = 0u, wetMinCurve = 0u, wetMaxCurve = 0u, limitType = 0u, entityLimitType = 0u, randomizeType = 0u, fluxType = 0u,
                 storage = 0u, volumeGroup = 0u, distanceLpf = 0u, doppler = 0u, isBig = 0u, looping = 0u, panType = 0u, isMusic = 0u, timescale = 0u,
-                pausable = 0u, stopOnEntDeath = 0u, busType = 0u, voiceLimit = 0u, ignoreMaxDist = 0u, neverPlayTwice = 0u, isCinematic = 0u;
+                pauseable = 0u, stopOnEntDeath = 0u, busType = 0u, voiceLimit = 0u, ignoreMaxDist = 0u, neverPlayTwice = 0u, isCinematic = 0u;
         // clang-format off
         const auto couldReadSoundAlias = 
                ReadColumnString(row, headers.m_secondary, alias.secondaryName, memory)
-            && ReadColumnString(row, headers.m_subtitle, alias.subtitle, memory)
+            && ReadColumnEnum(headerRow, row, headers.m_storage, rowIndex, storage, SOUND_LOAD_TYPES)
+            && ReadColumnEnum(headerRow, row, headers.m_bus, rowIndex, busType, SOUND_BUS_IDS)
+            && ReadColumnEnum(headerRow, row, headers.m_volume_group, rowIndex, volumeGroup, SOUND_GROUPS)
+            && ReadColumnEnum(headerRow, row, headers.m_duck_group, rowIndex, alias.duckGroup, SOUND_DUCK_GROUPS)
+            && ReadColumnHash(row, headers.m_duck, alias.duck)
+            && ReadColumnVolumeDbspl(headerRow, row, headers.m_reverb_send, rowIndex, alias.reverbSend)
+            && ReadColumnVolumeDbspl(headerRow, row, headers.m_center_send, rowIndex, alias.centerSend)
             && ReadColumnVolumeDbspl(headerRow, row, headers.m_vol_min, rowIndex, alias.volMin)
             && ReadColumnVolumeDbspl(headerRow, row, headers.m_vol_max, rowIndex, alias.volMax)
-            && ReadColumnPitchCents(headerRow, row, headers.m_pitch_min, rowIndex, alias.pitchMin)
-            && ReadColumnPitchCents(headerRow, row, headers.m_pitch_max, rowIndex, alias.pitchMax)
             && ReadColumnUInt16(headerRow, row, headers.m_dist_min, rowIndex, alias.distMin)
             && ReadColumnUInt16(headerRow, row, headers.m_dist_max_dry, rowIndex, alias.distMax)
             && ReadColumnUInt16(headerRow, row, headers.m_dist_max_wet, rowIndex, alias.distReverbMax)
-            && ReadColumnNormByte(headerRow, row, headers.m_probability, rowIndex, alias.probability)
-            && ReadColumnUInt16(headerRow, row, headers.m_envelop_min, rowIndex, alias.envelopMin)
-            && ReadColumnUInt16(headerRow, row, headers.m_envelop_max, rowIndex, alias.envelopMax)
-            && ReadColumnVolumeDbspl(headerRow, row, headers.m_envelop_percentage, rowIndex, alias.envelopPercentage)
-            && ReadColumnVolumeDbspl(headerRow, row, headers.m_center_send, rowIndex, alias.centerSend)
-            && ReadColumnVolumeDbspl(headerRow, row, headers.m_reverb_send, rowIndex, alias.reverbSend)
-            && ReadColumnUInt16(headerRow, row, headers.m_start_delay, rowIndex, alias.startDelay)
-            && ReadColumnNormByte(headerRow, row, headers.m_priority_threshold_min, rowIndex, alias.minPriorityThreshold)
-            && ReadColumnNormByte(headerRow, row, headers.m_priority_threshold_max, rowIndex, alias.maxPriorityThreshold)
-            && ReadColumnNormByte(headerRow, row, headers.m_occlusion_level, rowIndex, alias.occlusionLevel)
-            && ReadColumnUInt16(headerRow, row, headers.m_flux_time, rowIndex, alias.fluxTime)
-            && ReadColumnHash(row, headers.m_duck, alias.duck)
-            && ReadColumnUInt8(headerRow, row, headers.m_priority_min, rowIndex, alias.minPriority, 0u, 128u)
-            && ReadColumnUInt8(headerRow, row, headers.m_priority_max, rowIndex, alias.maxPriority, 0u, 128u)
-            && ReadColumnUInt8(headerRow, row, headers.m_limit_count, rowIndex, alias.limitCount, 0u, 128u)
-            && ReadColumnUInt8(headerRow, row, headers.m_entity_limit_count, rowIndex, alias.entityLimitCount, 0u, 128u)
             && ReadColumnEnum(headerRow, row, headers.m_dry_min_curve, rowIndex, dryMinCurve, SOUND_CURVES)
             && ReadColumnEnum(headerRow, row, headers.m_dry_max_curve, rowIndex, dryMaxCurve, SOUND_CURVES)
             && ReadColumnEnum(headerRow, row, headers.m_wet_min_curve, rowIndex, wetMinCurve, SOUND_CURVES)
             && ReadColumnEnum(headerRow, row, headers.m_wet_max_curve, rowIndex, wetMaxCurve, SOUND_CURVES)
+            && ReadColumnUInt8(headerRow, row, headers.m_limit_count, rowIndex, alias.limitCount, 0u, 128u)
+            && ReadColumnUInt8(headerRow, row, headers.m_entity_limit_count, rowIndex, alias.entityLimitCount, 0u, 128u)
+            && ReadColumnEnum(headerRow, row, headers.m_limit_type, rowIndex, limitType, SOUND_LIMIT_TYPES)
+            && ReadColumnEnum(headerRow, row, headers.m_entity_limit_type, rowIndex, entityLimitType, SOUND_LIMIT_TYPES)
+            && ReadColumnPitchCents(headerRow, row, headers.m_pitch_min, rowIndex, alias.pitchMin)
+            && ReadColumnPitchCents(headerRow, row, headers.m_pitch_max, rowIndex, alias.pitchMax)
+            && ReadColumnUInt8(headerRow, row, headers.m_priority_min, rowIndex, alias.minPriority, 0u, 128u)
+            && ReadColumnUInt8(headerRow, row, headers.m_priority_max, rowIndex, alias.maxPriority, 0u, 128u)
+            && ReadColumnNormByte(headerRow, row, headers.m_priority_threshold_min, rowIndex, alias.minPriorityThreshold)
+            && ReadColumnNormByte(headerRow, row, headers.m_priority_threshold_max, rowIndex, alias.maxPriorityThreshold)
+            && ReadColumnEnum(headerRow, row, headers.m_pan_type, rowIndex, panType, SOUND_PAN_TYPES)
             && ReadColumnEnum(headerRow, row, headers.m_pan, rowIndex, alias.pan, SOUND_PANS)
-            && ReadColumnEnum(headerRow, row, headers.m_duck_group, rowIndex, alias.duckGroup, SOUND_DUCK_GROUPS)
+            && ReadColumnEnum(headerRow, row, headers.m_looping, rowIndex, looping, SOUND_LOOP_TYPES)
+            && ReadColumnEnumFlags(headerRow, row, headers.m_randomize_type, rowIndex, randomizeType, SOUND_RANDOMIZE_TYPES)
+            && ReadColumnNormByte(headerRow, row, headers.m_probability, rowIndex, alias.probability)
+            && ReadColumnUInt16(headerRow, row, headers.m_start_delay, rowIndex, alias.startDelay)
+            && ReadColumnUInt16(headerRow, row, headers.m_envelop_min, rowIndex, alias.envelopMin)
+            && ReadColumnUInt16(headerRow, row, headers.m_envelop_max, rowIndex, alias.envelopMax)
+            && ReadColumnVolumeDbspl(headerRow, row, headers.m_envelop_percentage, rowIndex, alias.envelopPercentage)
+            && ReadColumnNormByte(headerRow, row, headers.m_occlusion_level, rowIndex, alias.occlusionLevel)
+            && ReadColumnEnum(headerRow, row, headers.m_is_big, rowIndex, isBig, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_distance_lpf, rowIndex, distanceLpf, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_flux_type, rowIndex, fluxType, SOUND_MOVE_TYPES)
+            && ReadColumnUInt16(headerRow, row, headers.m_flux_time, rowIndex, alias.fluxTime)
+            && ReadColumnString(row, headers.m_subtitle, alias.subtitle, memory)
+            && ReadColumnEnum(headerRow, row, headers.m_doppler, rowIndex, doppler, SOUND_NO_YES)
             && ReadColumnHash(row, headers.m_context_type, alias.contextType)
             && ReadColumnHash(row, headers.m_context_value, alias.contextValue)
+            && ReadColumnEnum(headerRow, row, headers.m_timescale, rowIndex, timescale, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_is_music, rowIndex, isMusic, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_is_cinematic, rowIndex, isCinematic, SOUND_NO_YES)
             && ReadColumnInt16(headerRow, row, headers.m_fade_in, rowIndex, alias.fadeIn, 0)
             && ReadColumnInt16(headerRow, row, headers.m_fade_out, rowIndex, alias.fadeOut, 0)
+            && ReadColumnEnum(headerRow, row, headers.m_pauseable, rowIndex, pauseable, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_stop_on_ent_death, rowIndex, stopOnEntDeath, SOUND_NO_YES)
             && ReadColumnHash(row, headers.m_stop_on_play, alias.stopOnPlay)
             && ReadColumnInt16(headerRow, row, headers.m_doppler_scale, rowIndex, alias.dopplerScale, -100, 100)
             && ReadColumnHash(row, headers.m_futz_patch, alias.futzPatch)
-            && ReadColumnEnum(headerRow, row, headers.m_limit_type, rowIndex, limitType, SOUND_LIMIT_TYPES)
-            && ReadColumnEnum(headerRow, row, headers.m_entity_limit_type, rowIndex, entityLimitType, SOUND_LIMIT_TYPES)
-            && ReadColumnEnumFlags(headerRow, row, headers.m_randomize_type, rowIndex, randomizeType, SOUND_RANDOMIZE_TYPES)
-            && ReadColumnEnum(headerRow, row, headers.m_flux_type, rowIndex, fluxType, SOUND_MOVE_TYPES)
-            && ReadColumnEnum(headerRow, row, headers.m_storage, rowIndex, storage, SOUND_LOAD_TYPES)
-            && ReadColumnEnum(headerRow, row, headers.m_volume_group, rowIndex, volumeGroup, SOUND_GROUPS)
-            && ReadColumnEnum(headerRow, row, headers.m_distance_lpf, rowIndex, distanceLpf, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_doppler, rowIndex, doppler, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_is_big, rowIndex, isBig, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_looping, rowIndex, looping, SOUND_LOOP_TYPES)
-            && ReadColumnEnum(headerRow, row, headers.m_pan_type, rowIndex, panType, SOUND_PAN_TYPES)
-            && ReadColumnEnum(headerRow, row, headers.m_is_music, rowIndex, isMusic, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_timescale, rowIndex, timescale, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_pauseable, rowIndex, pausable, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_stop_on_ent_death, rowIndex, stopOnEntDeath, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_bus, rowIndex, busType, SOUND_BUS_IDS)
             && ReadColumnEnum(headerRow, row, headers.m_voice_limit, rowIndex, voiceLimit, SOUND_NO_YES)
             && ReadColumnEnum(headerRow, row, headers.m_ignore_max_dist, rowIndex, ignoreMaxDist, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_never_play_twice, rowIndex, neverPlayTwice, SOUND_NO_YES)
-            && ReadColumnEnum(headerRow, row, headers.m_is_cinematic, rowIndex, isCinematic, SOUND_NO_YES)
+            && ReadColumnEnum(headerRow, row, headers.m_never_play_twice, rowIndex, neverPlayTwice, SOUND_NO_YES)  
         ;
         // clang-format on
 
@@ -617,7 +607,7 @@ namespace
         alias.flags.panType = panType;
         alias.flags.isMusic = isMusic;
         alias.flags.timescale = timescale;
-        alias.flags.pausable = pausable;
+        alias.flags.pauseable = pauseable;
         alias.flags.stopOnEntDeath = stopOnEntDeath;
         alias.flags.busType = busType;
         alias.flags.voiceLimit = voiceLimit;

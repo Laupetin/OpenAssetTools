@@ -6228,7 +6228,7 @@ namespace T6
         unsigned int distanceLpf : 1;     // 2
         unsigned int doppler : 1;         // 3
         unsigned int isBig : 1;           // 4
-        unsigned int pausable : 1;        // 5
+        unsigned int pauseable : 1;       // 5
         unsigned int isMusic : 1;         // 6
         unsigned int stopOnEntDeath : 1;  // 7
         unsigned int timescale : 1;       // 8

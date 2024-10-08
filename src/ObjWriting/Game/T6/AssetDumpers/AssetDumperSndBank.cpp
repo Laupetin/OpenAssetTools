@@ -26,63 +26,63 @@ namespace
         "Name",
         "FileSource",
         "Secondary",
-        "Subtitle",
+        "Storage",
+        "Bus",
+        "VolumeGroup",
+        "DuckGroup",
+        "Duck",
+        "ReverbSend",
+        "CenterSend",
         "VolMin",
         "VolMax",
-        "PitchMin",
-        "PitchMax",
         "DistMin",
         "DistMaxDry",
         "DistMaxWet",
-        "Probability",
-        "EnvelopMin",
-        "EnvelopMax",
-        "EnvelopPercentage",
-        "CenterSend",
-        "ReverbSend",
-        "StartDelay",
-        "PriorityThresholdMin",
-        "PriorityThresholdMax",
-        "OcclusionLevel",
-        "FluxTime",
-        "Duck",
-        "PriorityMin",
-        "PriorityMax",
-        "LimitCount",
-        "EntityLimitCount",
         "DryMinCurve",
         "DryMaxCurve",
         "WetMinCurve",
         "WetMaxCurve",
+        "LimitCount",
+        "EntityLimitCount",
+        "LimitType",
+        "EntityLimitType",
+        "PitchMin",
+        "PitchMax",
+        "PriorityMin",
+        "PriorityMax",
+        "PriorityThresholdMin",
+        "PriorityThresholdMax",
+        "PanType",
         "Pan",
-        "DuckGroup",
+        "Looping",
+        "RandomizeType",
+        "Probability",
+        "StartDelay",
+        "EnvelopMin",
+        "EnvelopMax",
+        "EnvelopPercent",
+        "OcclusionLevel",
+        "IsBig",
+        "DistanceLpf",
+        "FluxType",
+        "FluxTime",
+        "Subtitle",
+        "Doppler",
         "ContextType",
         "ContextValue",
+        "Timescale",
+        "IsMusic",
+        "IsCinematic",
         "FadeIn",
         "FadeOut",
+        "Pauseable",
+        "StopOnEntDeath",
         "StopOnPlay",
         "DopplerScale",
         "FutzPatch",
-        "LimitType",
-        "EntityLimitType",
-        "RandomizeType",
-        "FluxType",
-        "Storage",
-        "VolumeGroup",
-        "DistanceLpf",
-        "Doppler",
-        "IsBig",
-        "Looping",
-        "PanType",
-        "IsMusic",
-        "Timescale",
-        "Pauseable",
-        "StopOnEntDeath",
-        "Bus",
         "VoiceLimit",
         "IgnoreMaxDist",
         "NeverPlayTwice",
-        "IsCinematic",
     };
 
     const std::string REVERB_HEADERS[]{
@@ -193,6 +193,8 @@ namespace
     const auto CONTEXT_TYPES_MAP = CreateSoundHashMap(KNOWN_CONTEXT_TYPES, std::extent_v<decltype(KNOWN_CONTEXT_TYPES)>);
     const auto CONTEXT_VALUES_MAP = CreateSoundHashMap(KNOWN_CONTEXT_VALUES, std::extent_v<decltype(KNOWN_CONTEXT_VALUES)>);
     const auto FUTZ_IDS_MAP = CreateSoundHashMap(KNOWN_FUTZ_IDS, std::extent_v<decltype(KNOWN_FUTZ_IDS)>);
+
+    constexpr auto FORMATTING_RETRIES = 5;
 
     class LoadedSoundBankHashes
     {
@@ -326,22 +328,6 @@ namespace
         }
     }
 
-    float LinearToDbspl(float linear)
-    {
-        linear = std::max(linear, 0.0000152879f);
-
-        const auto db = 20.0f * std::log10(linear);
-        if (db > -95.0f)
-            return db + 100.0f;
-
-        return 0;
-    }
-
-    float HertzToCents(const float hertz)
-    {
-        return 1200.0f * std::log2(hertz);
-    }
-
     void WriteColumnString(CsvOutputStream& stream, const std::string& stringValue)
     {
         stream.WriteColumn(stringValue);
@@ -372,7 +358,7 @@ namespace
     {
         assert(enumValueCount <= 32u);
         std::ostringstream ss;
-        auto first = false;
+        auto first = true;
         for (auto i = 0u; i < enumValueCount; i++)
         {
             const auto flagValue = 1u << i;
@@ -398,21 +384,57 @@ namespace
     void WriteColumnVolumeLinear(CsvOutputStream& stream, const uint16_t value)
     {
         const auto linear = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
-        const auto dbSpl = std::clamp(LinearToDbspl(linear), 0.0f, 100.0f);
-        stream.WriteColumn(std::format("{:.3g}", dbSpl));
+        const auto dbSpl = std::clamp(Common::LinearToDbspl(linear), 0.0f, 100.0f);
+
+        std::string dbSplFormat;
+        for (auto i = 0; i < FORMATTING_RETRIES; i++)
+        {
+            dbSplFormat = std::format("{:.{}f}", dbSpl, i);
+            const auto dbSplRound = std::stof(dbSplFormat);
+            const auto dbSplRoundToValue = static_cast<uint16_t>(Common::DbsplToLinear(dbSplRound) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+
+            if (dbSplRoundToValue == value)
+                break;
+        }
+
+        stream.WriteColumn(dbSplFormat);
     }
 
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
     {
-        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
-        const auto cents = std::clamp(HertzToCents(hertz), -2400.0f, 1200.0f);
-        stream.WriteColumn(std::format("{:.4g}", cents));
+        const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
+        const auto cents = std::clamp(Common::HertzToCents(hertz), -2400.0f, 1200.0f);
+
+        std::string centsFormat;
+        for (auto i = 0; i < FORMATTING_RETRIES; i++)
+        {
+            centsFormat = std::format("{:.{}f}", cents, i);
+            const auto centsRound = std::stof(centsFormat);
+            const auto centsRoundToValue = static_cast<uint16_t>(Common::CentsToHertz(centsRound) * static_cast<float>(std::numeric_limits<int16_t>::max()));
+
+            if (centsRoundToValue == value)
+                break;
+        }
+
+        stream.WriteColumn(centsFormat);
     }
 
     void WriteColumnNormByte(CsvOutputStream& stream, const uint8_t value)
     {
         const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
-        stream.WriteColumn(std::format("{:.3g}", normValue));
+
+        std::string normValueFormat;
+        for (auto i = 0; i < FORMATTING_RETRIES; i++)
+        {
+            normValueFormat = std::format("{:.{}f}", normValue, i);
+            const auto normValueRound = std::stof(normValueFormat);
+            const auto normValueRoundToValue = static_cast<uint8_t>(normValueRound * static_cast<float>(std::numeric_limits<uint8_t>::max()));
+
+            if (normValueRoundToValue == value)
+                break;
+        }
+
+        stream.WriteColumn(normValueFormat);
     }
 
     void WriteColumnWithKnownHashes(CsvOutputStream& stream, const std::unordered_map<unsigned, std::string>& knownValues, const unsigned value)
@@ -455,20 +477,32 @@ namespace
         // Secondary
         WriteColumnString(stream, alias.secondaryName);
 
-        // Subtitle
-        WriteColumnString(stream, alias.subtitle);
+        // Storage
+        WriteColumnEnum(stream, alias.flags.loadType, SOUND_LOAD_TYPES);
+
+        // Bus
+        WriteColumnEnum(stream, alias.flags.busType, SOUND_BUS_IDS);
+
+        // VolumeGroup
+        WriteColumnEnum(stream, alias.flags.volumeGroup, SOUND_GROUPS);
+
+        // DuckGroup
+        WriteColumnEnum(stream, alias.duckGroup, SOUND_DUCK_GROUPS);
+
+        // Duck
+        WriteColumnWithDuckHash(stream, hashes, alias.duck);
+
+        // ReverbSend
+        WriteColumnVolumeLinear(stream, alias.reverbSend);
+
+        // CenterSend
+        WriteColumnVolumeLinear(stream, alias.centerSend);
 
         // VolMin
         WriteColumnVolumeLinear(stream, alias.volMin);
 
         // VolMax
         WriteColumnVolumeLinear(stream, alias.volMax);
-
-        // PitchMin
-        WriteColumnPitchHertz(stream, alias.pitchMin);
-
-        // PitchMax
-        WriteColumnPitchHertz(stream, alias.pitchMax);
 
         // DistMin
         WriteColumnIntegral(stream, alias.distMin);
@@ -478,54 +512,6 @@ namespace
 
         // DistMaxWet
         WriteColumnIntegral(stream, alias.distReverbMax);
-
-        // Probability
-        WriteColumnNormByte(stream, alias.probability);
-
-        // EnvelopMin
-        WriteColumnIntegral(stream, alias.envelopMin);
-
-        // EnvelopMax
-        WriteColumnIntegral(stream, alias.envelopMax);
-
-        // EnvelopPercentage
-        WriteColumnVolumeLinear(stream, alias.envelopPercentage);
-
-        // CenterSend
-        WriteColumnVolumeLinear(stream, alias.centerSend);
-
-        // ReverbSend
-        WriteColumnVolumeLinear(stream, alias.reverbSend);
-
-        // StartDelay
-        WriteColumnIntegral(stream, alias.startDelay);
-
-        // PriorityThresholdMin
-        WriteColumnNormByte(stream, alias.minPriorityThreshold);
-
-        // PriorityThresholdMax
-        WriteColumnNormByte(stream, alias.maxPriorityThreshold);
-
-        // OcclusionLevel
-        WriteColumnNormByte(stream, alias.occlusionLevel);
-
-        // FluxTime
-        WriteColumnIntegral(stream, alias.fluxTime);
-
-        // Duck
-        WriteColumnWithDuckHash(stream, hashes, alias.duck);
-
-        // PriorityMin
-        WriteColumnIntegral(stream, alias.minPriority);
-
-        // PriorityMax
-        WriteColumnIntegral(stream, alias.maxPriority);
-
-        // LimitCount
-        WriteColumnIntegral(stream, alias.limitCount);
-
-        // EntityLimitCount
-        WriteColumnIntegral(stream, alias.entityLimitCount);
 
         // DryMinCurve
         WriteColumnEnum(stream, alias.flags.volumeMinFalloffCurve, SOUND_CURVES);
@@ -539,11 +525,83 @@ namespace
         // WetMaxCurve
         WriteColumnEnum(stream, alias.flags.reverbFalloffCurve, SOUND_CURVES);
 
+        // LimitCount
+        WriteColumnIntegral(stream, alias.limitCount);
+
+        // EntityLimitCount
+        WriteColumnIntegral(stream, alias.entityLimitCount);
+
+        // LimitType
+        WriteColumnEnum(stream, alias.flags.limitType, SOUND_LIMIT_TYPES);
+
+        // EntityLimitType
+        WriteColumnEnum(stream, alias.flags.entityLimitType, SOUND_LIMIT_TYPES);
+
+        // PitchMin
+        WriteColumnPitchHertz(stream, alias.pitchMin);
+
+        // PitchMax
+        WriteColumnPitchHertz(stream, alias.pitchMax);
+
+        // PriorityMin
+        WriteColumnIntegral(stream, alias.minPriority);
+
+        // PriorityMax
+        WriteColumnIntegral(stream, alias.maxPriority);
+
+        // PriorityThresholdMin
+        WriteColumnNormByte(stream, alias.minPriorityThreshold);
+
+        // PriorityThresholdMax
+        WriteColumnNormByte(stream, alias.maxPriorityThreshold);
+
+        // PanType
+        WriteColumnEnum(stream, alias.flags.panType, SOUND_PAN_TYPES);
+
         // Pan
         WriteColumnEnum(stream, alias.pan, SOUND_PANS);
 
-        // DuckGroup
-        WriteColumnEnum(stream, alias.duckGroup, SOUND_DUCK_GROUPS);
+        // Looping
+        WriteColumnEnum(stream, alias.flags.looping, SOUND_LOOP_TYPES);
+
+        // RandomizeType
+        WriteColumnEnumFlags(stream, alias.flags.randomizeType, SOUND_RANDOMIZE_TYPES);
+
+        // Probability
+        WriteColumnNormByte(stream, alias.probability);
+
+        // StartDelay
+        WriteColumnIntegral(stream, alias.startDelay);
+
+        // EnvelopMin
+        WriteColumnIntegral(stream, alias.envelopMin);
+
+        // EnvelopMax
+        WriteColumnIntegral(stream, alias.envelopMax);
+
+        // EnvelopPercent
+        WriteColumnVolumeLinear(stream, alias.envelopPercentage);
+
+        // OcclusionLevel
+        WriteColumnNormByte(stream, alias.occlusionLevel);
+
+        // IsBig
+        WriteColumnEnum(stream, alias.flags.isBig, SOUND_NO_YES);
+
+        // DistanceLpf
+        WriteColumnEnum(stream, alias.flags.distanceLpf, SOUND_NO_YES);
+
+        // FluxType
+        WriteColumnEnum(stream, alias.flags.fluxType, SOUND_MOVE_TYPES);
+
+        // FluxTime
+        WriteColumnIntegral(stream, alias.fluxTime);
+
+        // Subtitle
+        WriteColumnString(stream, alias.subtitle);
+
+        // Doppler
+        WriteColumnEnum(stream, alias.flags.doppler, SOUND_NO_YES);
 
         // ContextType
         WriteColumnWithKnownHashes(stream, CONTEXT_TYPES_MAP, alias.contextType);
@@ -551,11 +609,26 @@ namespace
         // ContextValue
         WriteColumnWithKnownHashes(stream, CONTEXT_VALUES_MAP, alias.contextValue);
 
+        // Timescale
+        WriteColumnEnum(stream, alias.flags.timescale, SOUND_NO_YES);
+
+        // IsMusic
+        WriteColumnEnum(stream, alias.flags.isMusic, SOUND_NO_YES);
+
+        // IsCinematic
+        WriteColumnEnum(stream, alias.flags.isCinematic, SOUND_NO_YES);
+
         // FadeIn
         WriteColumnIntegral(stream, alias.fadeIn);
 
         // FadeOut
         WriteColumnIntegral(stream, alias.fadeOut);
+
+        // Pauseable
+        WriteColumnEnum(stream, alias.flags.pauseable, SOUND_NO_YES);
+
+        // StopOnEntDeath
+        WriteColumnEnum(stream, alias.flags.stopOnEntDeath, SOUND_NO_YES);
 
         // StopOnPlay
         WriteColumnWithAliasHash(stream, hashes, alias.stopOnPlay);
@@ -566,54 +639,6 @@ namespace
         // FutzPatch
         WriteColumnWithKnownHashes(stream, FUTZ_IDS_MAP, alias.futzPatch);
 
-        // LimitType
-        WriteColumnEnum(stream, alias.flags.limitType, SOUND_LIMIT_TYPES);
-
-        // EntityLimitType
-        WriteColumnEnum(stream, alias.flags.entityLimitType, SOUND_LIMIT_TYPES);
-
-        // RandomizeType
-        WriteColumnEnumFlags(stream, alias.flags.randomizeType, SOUND_RANDOMIZE_TYPES);
-
-        // FluxType
-        WriteColumnEnum(stream, alias.flags.fluxType, SOUND_MOVE_TYPES);
-
-        // Storage
-        WriteColumnEnum(stream, alias.flags.loadType, SOUND_LOAD_TYPES);
-
-        // VolumeGroup
-        WriteColumnEnum(stream, alias.flags.volumeGroup, SOUND_GROUPS);
-
-        // DistanceLpf
-        WriteColumnEnum(stream, alias.flags.distanceLpf, SOUND_NO_YES);
-
-        // Doppler
-        WriteColumnEnum(stream, alias.flags.doppler, SOUND_NO_YES);
-
-        // IsBig
-        WriteColumnEnum(stream, alias.flags.isBig, SOUND_NO_YES);
-
-        // Looping
-        WriteColumnEnum(stream, alias.flags.looping, SOUND_LOOP_TYPES);
-
-        // PanType
-        WriteColumnEnum(stream, alias.flags.panType, SOUND_PAN_TYPES);
-
-        // IsMusic
-        WriteColumnEnum(stream, alias.flags.isMusic, SOUND_NO_YES);
-
-        // Timescale
-        WriteColumnEnum(stream, alias.flags.timescale, SOUND_NO_YES);
-
-        // Pausable
-        WriteColumnEnum(stream, alias.flags.pausable, SOUND_NO_YES);
-
-        // StopOnEntDeath
-        WriteColumnEnum(stream, alias.flags.stopOnEntDeath, SOUND_NO_YES);
-
-        // Bus
-        WriteColumnEnum(stream, alias.flags.busType, SOUND_BUS_IDS);
-
         // VoiceLimit
         WriteColumnEnum(stream, alias.flags.voiceLimit, SOUND_NO_YES);
 
@@ -622,9 +647,6 @@ namespace
 
         // NeverPlayTwice
         WriteColumnEnum(stream, alias.flags.neverPlayTwice, SOUND_NO_YES);
-
-        // IsCinematic
-        WriteColumnEnum(stream, alias.flags.isCinematic, SOUND_NO_YES);
     }
 
     SoundBankEntryInputStream FindSoundDataInSoundBanks(const unsigned assetId)

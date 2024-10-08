@@ -102,5 +102,9 @@ namespace T6
         static void Vec2UnpackTexCoords(const PackedTexCoords& in, float (&out)[2]);
         static void Vec3UnpackUnitVec(const PackedUnitVec& in, float (&out)[3]);
         static void Vec4UnpackGfxColor(const GfxColor& in, float (&out)[4]);
+        static float LinearToDbspl(const float linear);
+        static float DbsplToLinear(const float dbsplValue);
+        static float HertzToCents(const float hertz);
+        static float CentsToHertz(const float cents);
     };
 } // namespace T6
