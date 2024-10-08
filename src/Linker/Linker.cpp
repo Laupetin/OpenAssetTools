@@ -157,6 +157,10 @@ class LinkerImpl final : public Linker
             return nullptr;
         }
 
+        // If no type was defined explicitly make it fastfile
+        if (zoneDefinition->m_type == ProjectType::NONE)
+            zoneDefinition->m_type = ProjectType::FASTFILE;
+
         if (!IncludeAdditionalZoneDefinitions(targetName, *zoneDefinition, sourceSearchPath))
             return nullptr;
 
