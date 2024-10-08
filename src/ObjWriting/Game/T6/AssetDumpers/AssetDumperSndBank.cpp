@@ -194,6 +194,8 @@ namespace
     const auto CONTEXT_VALUES_MAP = CreateSoundHashMap(KNOWN_CONTEXT_VALUES, std::extent_v<decltype(KNOWN_CONTEXT_VALUES)>);
     const auto FUTZ_IDS_MAP = CreateSoundHashMap(KNOWN_FUTZ_IDS, std::extent_v<decltype(KNOWN_FUTZ_IDS)>);
 
+    constexpr auto FORMATTING_RETRIES = 5;
+
     class LoadedSoundBankHashes
     {
     public:
@@ -385,7 +387,7 @@ namespace
         const auto dbSpl = std::clamp(Common::LinearToDbspl(linear), 0.0f, 100.0f);
 
         std::string dbSplFormat;
-        for (auto i = 0; i <= 4; i++)
+        for (auto i = 0; i < FORMATTING_RETRIES; i++)
         {
             dbSplFormat = std::format("{:.{}f}", dbSpl, i);
             const auto dbSplRound = std::stof(dbSplFormat);
@@ -404,7 +406,7 @@ namespace
         const auto cents = std::clamp(Common::HertzToCents(hertz), -2400.0f, 1200.0f);
 
         std::string centsFormat;
-        for (auto i = 0; i <= 4; i++)
+        for (auto i = 0; i < FORMATTING_RETRIES; i++)
         {
             centsFormat = std::format("{:.{}f}", cents, i);
             const auto centsRound = std::stof(centsFormat);
@@ -422,7 +424,7 @@ namespace
         const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
 
         std::string normValueFormat;
-        for (auto i = 0; i <= 4; i++)
+        for (auto i = 0; i < FORMATTING_RETRIES; i++)
         {
             normValueFormat = std::format("{:.{}f}", normValue, i);
             const auto normValueRound = std::stof(normValueFormat);
