@@ -32,10 +32,10 @@ void SequenceZoneDefinitionEntry::ProcessMatch(ZoneDefinitionParserState* state,
 
     const auto& assetNameToken = result.NextCapture(CAPTURE_ASSET_NAME);
     std::string assetName;
-    if (typeNameToken.m_type == ZoneDefinitionParserValueType::STRING)
-        assetName = typeNameToken.StringValue();
+    if (assetNameToken.m_type == ZoneDefinitionParserValueType::STRING)
+        assetName = assetNameToken.StringValue();
     else
-        assetName = typeNameToken.FieldValue();
+        assetName = assetNameToken.FieldValue();
 
     state->m_definition->m_assets.emplace_back(*maybeAssetType, assetName, result.NextTag() == TAG_REFERENCE);
 }
