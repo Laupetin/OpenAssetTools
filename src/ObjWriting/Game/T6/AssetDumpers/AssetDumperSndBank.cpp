@@ -384,17 +384,18 @@ namespace
         const auto linear = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
         const auto dbSpl = std::clamp(Common::LinearToDbspl(linear), 0.0f, 100.0f);
 
-        float dbSplRound;
+        std::string dbSplFormat;
         for (auto i = 0; i <= 4; i++)
         {
-            dbSplRound = std::stof(std::format("{:.{}f}", dbSpl, i));
+            dbSplFormat = std::format("{:.{}f}", dbSpl, i);
+            const auto dbSplRound = std::stof(dbSplFormat);
             const auto dbSplRoundToValue = static_cast<uint16_t>(Common::DbsplToLinear(dbSplRound) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
 
             if (dbSplRoundToValue == value)
                 break;
         }
 
-        stream.WriteColumn(std::format("{}", dbSplRound));
+        stream.WriteColumn(dbSplFormat);
     }
 
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
@@ -402,34 +403,36 @@ namespace
         const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
         const auto cents = std::clamp(Common::HertzToCents(hertz), -2400.0f, 1200.0f);
 
-        float centsRound;
+        std::string centsFormat;
         for (auto i = 0; i <= 4; i++)
         {
-            centsRound = std::stof(std::format("{:.{}f}", cents, i));
+            centsFormat = std::format("{:.{}f}", cents, i);
+            const auto centsRound = std::stof(centsFormat);
             const auto centsRoundToValue = static_cast<uint16_t>(Common::CentsToHertz(centsRound) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
             if (centsRoundToValue == value)
                 break;
         }
 
-        stream.WriteColumn(std::format("{}", centsRound));
+        stream.WriteColumn(centsFormat);
     }
 
     void WriteColumnNormByte(CsvOutputStream& stream, const uint8_t value)
     {
         const auto normValue = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint8_t>::max());
 
-        float normValueRound;
+        std::string normValueFormat;
         for (auto i = 0; i <= 4; i++)
         {
-            normValueRound = std::stof(std::format("{:.{}f}", normValue, i));
+            normValueFormat = std::format("{:.{}f}", normValue, i);
+            const auto normValueRound = std::stof(normValueFormat);
             const auto normValueRoundToValue = static_cast<uint8_t>(normValueRound * static_cast<float>(std::numeric_limits<uint8_t>::max()));
 
             if (normValueRoundToValue == value)
                 break;
         }
 
-        stream.WriteColumn(std::format("{}", normValueRound));
+        stream.WriteColumn(normValueFormat);
     }
 
     void WriteColumnWithKnownHashes(CsvOutputStream& stream, const std::unordered_map<unsigned, std::string>& knownValues, const unsigned value)
