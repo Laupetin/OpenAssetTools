@@ -382,14 +382,13 @@ namespace
     void WriteColumnVolumeLinear(CsvOutputStream& stream, const uint16_t value)
     {
         const auto linear = static_cast<float>(value) / static_cast<float>(std::numeric_limits<uint16_t>::max());
-        const auto dbSpl = std::clamp(T6::Common::LinearToDbspl(linear), 0.0f, 100.0f);
+        const auto dbSpl = std::clamp(Common::LinearToDbspl(linear), 0.0f, 100.0f);
 
         float dbSplRound;
         for (auto i = 0; i <= 4; i++)
         {
             dbSplRound = std::stof(std::format("{:.{}f}", dbSpl, i));
-            const auto dbSplRoundToValue =
-                static_cast<uint16_t>(T6::Common::DbsplToLinear(dbSplRound) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+            const auto dbSplRoundToValue = static_cast<uint16_t>(Common::DbsplToLinear(dbSplRound) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
 
             if (dbSplRoundToValue == value)
             {
@@ -403,14 +402,13 @@ namespace
     void WriteColumnPitchHertz(CsvOutputStream& stream, const uint16_t value)
     {
         const auto hertz = static_cast<float>(value) / static_cast<float>(std::numeric_limits<int16_t>::max());
-        const auto cents = std::clamp(T6::Common::HertzToCents(hertz), -2400.0f, 1200.0f);
+        const auto cents = std::clamp(Common::HertzToCents(hertz), -2400.0f, 1200.0f);
 
         float centsRound;
         for (auto i = 0; i <= 4; i++)
         {
             centsRound = std::stof(std::format("{:.{}f}", cents, i));
-            const auto centsRoundToValue =
-                static_cast<uint16_t>(T6::Common::CentsToHertz(centsRound) * static_cast<float>(std::numeric_limits<int16_t>::max()));
+            const auto centsRoundToValue = static_cast<uint16_t>(Common::CentsToHertz(centsRound) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
             if (centsRoundToValue == value)
             {
