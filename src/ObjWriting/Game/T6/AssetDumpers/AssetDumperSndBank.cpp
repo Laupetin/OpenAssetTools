@@ -391,9 +391,7 @@ namespace
             const auto dbSplRoundToValue = static_cast<uint16_t>(Common::DbsplToLinear(dbSplRound) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
 
             if (dbSplRoundToValue == value)
-            {
                 break;
-            }
         }
 
         stream.WriteColumn(std::format("{}", dbSplRound));
@@ -411,9 +409,7 @@ namespace
             const auto centsRoundToValue = static_cast<uint16_t>(Common::CentsToHertz(centsRound) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
             if (centsRoundToValue == value)
-            {
                 break;
-            }
         }
 
         stream.WriteColumn(std::format("{}", centsRound));
@@ -430,9 +426,7 @@ namespace
             const auto normValueRoundToValue = static_cast<uint8_t>(normValueRound * static_cast<float>(std::numeric_limits<uint8_t>::max()));
 
             if (normValueRoundToValue == value)
-            {
                 break;
-            }
         }
 
         stream.WriteColumn(std::format("{}", normValueRound));
