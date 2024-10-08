@@ -107,7 +107,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(T6::Common::DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        value = static_cast<uint16_t>(Common::DbsplToLinear(dbsplValue) * static_cast<float>(std::numeric_limits<uint16_t>::max()));
 
         return true;
     }
@@ -132,7 +132,7 @@ namespace
             return false;
         }
 
-        value = static_cast<uint16_t>(T6::Common::CentsToHertz(centsValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
+        value = static_cast<uint16_t>(Common::CentsToHertz(centsValue) * static_cast<float>(std::numeric_limits<int16_t>::max()));
 
         return true;
     }
