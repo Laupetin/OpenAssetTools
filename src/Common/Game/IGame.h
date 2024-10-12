@@ -36,6 +36,7 @@ public:
     IGame& operator=(const IGame& other) = default;
     IGame& operator=(IGame&& other) noexcept = default;
 
+    virtual GameId GetId() = 0;
     virtual std::string GetFullName() = 0;
     virtual std::string GetShortName() = 0;
     virtual void AddZone(Zone* zone) = 0;

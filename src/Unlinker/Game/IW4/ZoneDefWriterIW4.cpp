@@ -1,22 +1,16 @@
 #include "ZoneDefWriterIW4.h"
 
 #include "Game/IW4/GameAssetPoolIW4.h"
-#include "Game/IW4/GameIW4.h"
 
 #include <cassert>
 
 using namespace IW4;
 
-bool ZoneDefWriter::CanHandleZone(Zone* zone) const
-{
-    return zone->m_game == &g_GameIW4;
-}
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const {}
 
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const {}
-
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const
 {
-    const auto* pools = dynamic_cast<GameAssetPoolIW4*>(zone->m_pools.get());
+    const auto* pools = dynamic_cast<GameAssetPoolIW4*>(zone.m_pools.get());
 
     assert(pools);
     if (!pools)
@@ -24,9 +18,7 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Unlin
 
     // Localized strings are all collected in one string file. So only add this to the zone file.
     if (!pools->m_localize->m_asset_lookup.empty())
-    {
-        stream.WriteEntry(*pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone->m_name);
-    }
+        stream.WriteEntry(*pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone.m_name);
 
     for (const auto& asset : *pools)
     {

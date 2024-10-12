@@ -2,7 +2,6 @@
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
-#include "Game/T6/GameT6.h"
 
 #include <cassert>
 #include <iomanip>
@@ -10,7 +9,7 @@
 
 using namespace T6;
 
-namespace T6
+namespace
 {
     class KeyValuePairKnownKey
     {
@@ -31,50 +30,43 @@ namespace T6
         KeyValuePairKnownKey("initial_xmodels"),
         KeyValuePairKnownKey("initial_materials"),
     };
-} // namespace T6
 
-bool ZoneDefWriter::CanHandleZone(Zone* zone) const
-{
-    return zone->m_game == &g_GameT6;
-}
-
-void ZoneDefWriter::WriteKeyValuePair(ZoneDefinitionOutputStream& stream, KeyValuePair* kvp)
-{
-    for (const auto& knownKey : KEY_VALUE_PAIR_KNOWN_KEYS)
+    void WriteKeyValuePair(ZoneDefinitionOutputStream& stream, const KeyValuePair& kvp)
     {
-        if (knownKey.m_hash == kvp->keyHash)
+        for (const auto& knownKey : KEY_VALUE_PAIR_KNOWN_KEYS)
         {
-            stream.WriteMetaData("level." + knownKey.m_key, kvp->value);
-            return;
+            if (knownKey.m_hash == kvp.keyHash)
+            {
+                stream.WriteMetaData("level." + knownKey.m_key, kvp.value);
+                return;
+            }
         }
+
+        std::ostringstream str;
+        str << "level.@" << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << kvp.keyHash;
+        stream.WriteMetaData(str.str(), kvp.value);
     }
+} // namespace
 
-    std::ostringstream str;
-    str << "level.@" << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << kvp->keyHash;
-    stream.WriteMetaData(str.str(), kvp->value);
-}
-
-void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
+void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const
 {
-    auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
+    const auto* assetPoolT6 = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
     if (assetPoolT6 && !assetPoolT6->m_key_value_pairs->m_asset_lookup.empty())
     {
         for (const auto* kvpAsset : *assetPoolT6->m_key_value_pairs)
         {
             const auto* keyValuePairs = kvpAsset->Asset();
             for (auto varIndex = 0; varIndex < keyValuePairs->numVariables; varIndex++)
-            {
-                WriteKeyValuePair(stream, &keyValuePairs->keyValuePairs[varIndex]);
-            }
+                WriteKeyValuePair(stream, keyValuePairs->keyValuePairs[varIndex]);
         }
 
         stream.EmptyLine();
     }
 }
 
-void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs* args, Zone* zone) const
+void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const UnlinkerArgs& args, const Zone& zone) const
 {
-    const auto* pools = dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get());
+    const auto* pools = dynamic_cast<GameAssetPoolT6*>(zone.m_pools.get());
 
     assert(pools);
     if (!pools)
@@ -82,9 +74,7 @@ void ZoneDefWriter::WriteContent(ZoneDefinitionOutputStream& stream, const Unlin
 
     // Localized strings are all collected in one string file. So only add this to the zone file.
     if (!pools->m_localize->m_asset_lookup.empty())
-    {
-        stream.WriteEntry(*pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone->m_name);
-    }
+        stream.WriteEntry(*pools->GetAssetTypeName(ASSET_TYPE_LOCALIZE_ENTRY), zone.m_name);
 
     for (const auto& asset : *pools)
     {

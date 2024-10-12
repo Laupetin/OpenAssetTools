@@ -68,5 +68,5 @@ public:
      * \param zone The zone to resolve the path input for.
      * \return An output path for the zone based on the user input.
      */
-    std::string GetOutputFolderPathForZone(const Zone* zone) const;
+    std::string GetOutputFolderPathForZone(const Zone& zone) const;
 };
