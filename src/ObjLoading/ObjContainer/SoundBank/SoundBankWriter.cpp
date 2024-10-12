@@ -225,21 +225,6 @@ public:
         return false;
     }
 
-    bool GuessFilenameAndLoadFile(const std::string& filePath, const SoundBankEntryInfo& sound, std::unique_ptr<char[]>& soundData, size_t& soundSize)
-    {
-        fs::path pathWithExtension = fs::path(filePath).concat(".wav");
-        auto file = m_asset_search_path->Open(pathWithExtension.string());
-        if (file.IsOpen())
-            return LoadWavFile(file, sound, soundData, soundSize);
-
-        pathWithExtension = fs::path(filePath).concat(".flac");
-        file = m_asset_search_path->Open(pathWithExtension.string());
-        if (file.IsOpen())
-            return LoadFlacFile(file, pathWithExtension.string(), sound, soundData, soundSize);
-
-        return false;
-    }
-
     bool WriteEntries()
     {
         GoTo(DATA_OFFSET);
@@ -251,7 +236,7 @@ public:
             size_t soundSize;
             std::unique_ptr<char[]> soundData;
 
-            if (!LoadFileByExtension(soundFilePath, sound, soundData, soundSize) && !GuessFilenameAndLoadFile(soundFilePath, sound, soundData, soundSize))
+            if (!LoadFileByExtension(soundFilePath, sound, soundData, soundSize))
             {
                 std::cerr << std::format("Unable to find a compatible file for sound {}\n", soundFilePath);
                 return false;
