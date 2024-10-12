@@ -515,9 +515,7 @@ namespace
         if (!aliasFileName.m_value.empty())
         {
 
-            fs::path p(aliasFileName.m_value);
-            p.replace_extension();
-            alias.assetFileName = memory.Dup(p.string().c_str());
+            alias.assetFileName = memory.Dup(aliasFileName.m_value.c_str());
             alias.assetId = Common::SND_HashName(alias.assetFileName);
         }
 
