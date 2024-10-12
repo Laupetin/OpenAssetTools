@@ -42,7 +42,7 @@ public:
     void AddProperty(std::string key, std::string value);
     void Include(const ZoneDefinitionProperties& otherProperties);
 
-    std::unordered_map<std::string, std::string> m_properties;
+    std::unordered_multimap<std::string, std::string> m_properties;
 };
 
 class ZoneDefinition
