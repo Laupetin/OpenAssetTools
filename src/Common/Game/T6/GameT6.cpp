@@ -8,6 +8,11 @@ using namespace T6;
 
 GameT6 g_GameT6;
 
+GameId GameT6::GetId()
+{
+    return GameId::T6;
+}
+
 std::string GameT6::GetFullName()
 {
     return "Call Of Duty: Black Ops II";

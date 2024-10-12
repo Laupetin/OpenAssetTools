@@ -8,6 +8,11 @@ using namespace IW3;
 
 GameIW3 g_GameIW3;
 
+GameId GameIW3::GetId()
+{
+    return GameId::IW3;
+}
+
 std::string GameIW3::GetFullName()
 {
     return "Call Of Duty 4: Modern Warfare";
