@@ -157,10 +157,6 @@ class LinkerImpl final : public Linker
             return nullptr;
         }
 
-        // If no type was defined explicitly make it fastfile
-        if (zoneDefinition->m_type == ProjectType::NONE)
-            zoneDefinition->m_type = ProjectType::FASTFILE;
-
         if (!IncludeAdditionalZoneDefinitions(targetName, *zoneDefinition, sourceSearchPath))
             return nullptr;
 
@@ -338,29 +334,11 @@ class LinkerImpl final : public Linker
         if (!zoneDefinition)
             return false;
 
-        auto result = true;
-        if (zoneDefinition->m_type != ProjectType::NONE)
-        {
-            const auto& gameName = GameId_Names[static_cast<unsigned>(zoneDefinition->m_game)];
-            auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
-            auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
+        const auto& gameName = GameId_Names[static_cast<unsigned>(zoneDefinition->m_game)];
+        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
+        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
 
-            switch (zoneDefinition->m_type)
-            {
-            case ProjectType::FASTFILE:
-                result = BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
-                break;
-
-            case ProjectType::IPAK:
-                result = BuildIPak(projectName, *zoneDefinition, assetSearchPaths);
-                break;
-
-            default:
-                assert(false);
-                result = false;
-                break;
-            }
-        }
+        auto result = BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
 
         m_search_paths.UnloadProjectSpecificSearchPaths();
 
