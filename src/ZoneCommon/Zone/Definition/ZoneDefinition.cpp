@@ -1,5 +1,13 @@
 #include "ZoneDefinition.h"
 
+ZoneDefinitionObjContainer::ZoneDefinitionObjContainer(std::string name, const ZoneDefinitionObjContainerType type, const unsigned start)
+    : m_name(std::move(name)),
+      m_type(type),
+      m_asset_start(start),
+      m_asset_end(0u)
+{
+}
+
 ZoneDefinitionAsset::ZoneDefinitionAsset(const asset_type_t type, std::string name, const bool isReference)
     : m_asset_type(type),
       m_asset_name(std::move(name)),
@@ -21,8 +29,7 @@ void ZoneDefinitionProperties::Include(const ZoneDefinitionProperties& otherProp
 }
 
 ZoneDefinition::ZoneDefinition()
-    : m_type(ProjectType::NONE),
-      m_game(GameId::COUNT)
+    : m_game(GameId::COUNT)
 {
 }
 
