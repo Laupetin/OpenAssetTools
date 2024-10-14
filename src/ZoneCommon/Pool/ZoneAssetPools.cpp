@@ -1,5 +1,13 @@
 #include "ZoneAssetPools.h"
 
+#include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW5/GameAssetPoolIW5.h"
+#include "Game/T5/GameAssetPoolT5.h"
+#include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/ZoneConstantsT6.h"
+
+#include <cassert>
 #include <format>
 
 ZoneAssetPools::ZoneAssetPools(Zone* zone)
@@ -51,4 +59,24 @@ ZoneAssetPools::iterator ZoneAssetPools::begin() const
 ZoneAssetPools::iterator ZoneAssetPools::end() const
 {
     return m_assets_in_order.end();
+}
+
+std::unique_ptr<ZoneAssetPools> ZoneAssetPools::CreateForGame(const GameId game, Zone* zone, const zone_priority_t priority)
+{
+    switch (game)
+    {
+    case GameId::IW3:
+        return std::make_unique<GameAssetPoolIW3>(zone, priority);
+    case GameId::IW4:
+        return std::make_unique<GameAssetPoolIW4>(zone, priority);
+    case GameId::IW5:
+        return std::make_unique<GameAssetPoolIW5>(zone, priority);
+    case GameId::T5:
+        return std::make_unique<GameAssetPoolT5>(zone, priority);
+    case GameId::T6:
+        return std::make_unique<GameAssetPoolT6>(zone, priority);
+    default:
+        assert(false);
+        return nullptr;
+    }
 }

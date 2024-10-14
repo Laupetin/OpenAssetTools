@@ -217,14 +217,14 @@ class LinkerImpl final : public Linker
                                                   ISearchPath* gdtSearchPath,
                                                   ISearchPath* sourceSearchPath) const
     {
-        const auto context = std::make_unique<ZoneCreationContext>(&zoneDefinition, assetSearchPath);
-        if (!ProcessZoneDefinitionIgnores(targetName, *context, sourceSearchPath))
+        ZoneCreationContext context(&zoneDefinition, assetSearchPath);
+        if (!ProcessZoneDefinitionIgnores(targetName, context, sourceSearchPath))
             return nullptr;
-        if (!LoadGdtFilesFromZoneDefinition(context->m_gdt_files, zoneDefinition, gdtSearchPath))
+        if (!LoadGdtFilesFromZoneDefinition(context.m_gdt_files, zoneDefinition, gdtSearchPath))
             return nullptr;
 
         const auto* creator = IZoneCreator::GetCreatorForGame(zoneDefinition.m_game);
-        return creator->CreateZoneForDefinition(*context);
+        return creator->CreateZoneForDefinition(context);
     }
 
     bool WriteZoneToFile(const std::string& projectName, Zone* zone) const
@@ -334,11 +334,16 @@ class LinkerImpl final : public Linker
         if (!zoneDefinition)
             return false;
 
-        const auto& gameName = GameId_Names[static_cast<unsigned>(zoneDefinition->m_game)];
-        auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
-        auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
+        auto result = true;
 
-        auto result = BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
+        if (!zoneDefinition->m_assets.empty())
+        {
+            const auto& gameName = GameId_Names[static_cast<unsigned>(zoneDefinition->m_game)];
+            auto assetSearchPaths = m_search_paths.GetAssetSearchPathsForProject(gameName, projectName);
+            auto gdtSearchPaths = m_search_paths.GetGdtSearchPathsForProject(gameName, projectName);
+
+            result = result && BuildFastFile(projectName, targetName, *zoneDefinition, assetSearchPaths, gdtSearchPaths, sourceSearchPaths);
+        }
 
         m_search_paths.UnloadProjectSpecificSearchPaths();
 
@@ -362,8 +367,8 @@ class LinkerImpl final : public Linker
                 zoneDirectory = fs::current_path();
             auto absoluteZoneDirectory = absolute(zoneDirectory).string();
 
-            auto zone = std::unique_ptr<Zone>(ZoneLoading::LoadZone(zonePath));
-            if (zone == nullptr)
+            auto zone = ZoneLoading::LoadZone(zonePath);
+            if (!zone)
             {
                 std::cerr << std::format("Failed to load zone \"{}\".\n", zonePath);
                 return false;
