@@ -52,4 +52,6 @@ public:
 
     _NODISCARD iterator begin() const;
     _NODISCARD iterator end() const;
+
+    static std::unique_ptr<ZoneAssetPools> CreateForGame(GameId game, Zone* zone, zone_priority_t priority);
 };
