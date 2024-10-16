@@ -8,6 +8,11 @@ using namespace IW5;
 
 GameIW5 g_GameIW5;
 
+GameId GameIW5::GetId()
+{
+    return GameId::IW5;
+}
+
 std::string GameIW5::GetFullName()
 {
     return "Call Of Duty: Modern Warfare 3";

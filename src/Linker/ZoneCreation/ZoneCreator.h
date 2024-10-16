@@ -14,8 +14,12 @@ public:
     IZoneCreator& operator=(IZoneCreator&& other) noexcept = default;
 
     [[nodiscard]] virtual GameId GetGameId() const = 0;
-    [[nodiscard]] virtual std::unique_ptr<Zone> CreateZoneForDefinition(ZoneCreationContext& context) const = 0;
     [[nodiscard]] virtual asset_type_t GetImageAssetType() const = 0;
 
+    [[nodiscard]] std::unique_ptr<Zone> CreateZoneForDefinition(ZoneCreationContext& context) const;
+
     static const IZoneCreator* GetCreatorForGame(GameId game);
+
+protected:
+    virtual void HandleMetadata(Zone& zone, const ZoneCreationContext& context) const {}
 };
