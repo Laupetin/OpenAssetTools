@@ -139,7 +139,7 @@ class LinkerImpl final : public Linker
     {
         std::unique_ptr<ZoneDefinition> zoneDefinition;
         {
-            const auto definitionFileName = targetName + ".zone";
+            const auto definitionFileName = std::format("{}.zone", targetName);
             const auto definitionStream = sourceSearchPath->Open(definitionFileName);
             if (!definitionStream.IsOpen())
             {

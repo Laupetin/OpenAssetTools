@@ -125,11 +125,6 @@ namespace T6
 #undef REGISTER_ASSET_LOADER
     }
 
-    bool ObjLoader::SupportsZone(const Zone& zone) const
-    {
-        return zone.m_game == &g_GameT6;
-    }
-
     bool ObjLoader::VerifySoundBankChecksum(const SoundBank& soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank)
     {
         SoundAssetBankChecksum checksum{};

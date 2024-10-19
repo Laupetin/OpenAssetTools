@@ -56,11 +56,6 @@ ObjLoader::ObjLoader()
 #undef REGISTER_ASSET_LOADER
 }
 
-bool ObjLoader::SupportsZone(const Zone& zone) const
-{
-    return zone.m_game == &g_GameT5;
-}
-
 bool ObjLoader::IsMpZone(const Zone& zone)
 {
     return zone.m_name.compare(0, 3, "mp_") == 0 || zone.m_name.compare(zone.m_name.length() - 3, 3, "_mp") == 0;

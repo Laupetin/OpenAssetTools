@@ -1,5 +1,6 @@
 #include "ZoneCreator.h"
 
+#include "AssetLoading/AssetLoadingContext.h"
 #include "Game/IW3/ZoneCreatorIW3.h"
 #include "Game/IW4/ZoneCreatorIW4.h"
 #include "Game/IW5/ZoneCreatorIW5.h"

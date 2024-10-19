@@ -2,11 +2,8 @@
 
 #include "ContentLister/ContentPrinter.h"
 #include "ContentLister/ZoneDefWriter.h"
-#include "Game/IW3/ZoneDefWriterIW3.h"
-#include "Game/IW4/ZoneDefWriterIW4.h"
-#include "Game/IW5/ZoneDefWriterIW5.h"
-#include "Game/T5/ZoneDefWriterT5.h"
-#include "Game/T6/ZoneDefWriterT6.h"
+#include "IObjLoader.h"
+#include "IObjWriter.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
@@ -24,14 +21,6 @@
 #include <set>
 
 namespace fs = std::filesystem;
-
-const IZoneDefWriter* const ZONE_DEF_WRITERS[]{
-    new IW3::ZoneDefWriter(),
-    new IW4::ZoneDefWriter(),
-    new IW5::ZoneDefWriter(),
-    new T5::ZoneDefWriter(),
-    new T6::ZoneDefWriter(),
-};
 
 class Unlinker::Impl
 {
@@ -166,51 +155,41 @@ private:
         return true;
     }
 
-    bool WriteZoneDefinitionFile(Zone* zone, const fs::path& zoneDefinitionFileFolder) const
+    bool WriteZoneDefinitionFile(const Zone& zone, const fs::path& zoneDefinitionFileFolder) const
     {
         auto zoneDefinitionFilePath(zoneDefinitionFileFolder);
-        zoneDefinitionFilePath.append(zone->m_name);
+        zoneDefinitionFilePath.append(zone.m_name);
         zoneDefinitionFilePath.replace_extension(".zone");
 
         std::ofstream zoneDefinitionFile(zoneDefinitionFilePath, std::fstream::out | std::fstream::binary);
         if (!zoneDefinitionFile.is_open())
         {
-            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone->m_name);
+            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone.m_name);
             return false;
         }
 
-        auto result = false;
-        for (const auto* zoneDefWriter : ZONE_DEF_WRITERS)
-        {
-            if (zoneDefWriter->CanHandleZone(zone))
-            {
-                zoneDefWriter->WriteZoneDef(zoneDefinitionFile, &m_args, zone);
-                result = true;
-                break;
-            }
-        }
-
-        if (!result)
-            std::cerr << std::format("Failed to find writer for zone definition file of zone \"{}\".\n", zone->m_name);
+        const auto* zoneDefWriter = IZoneDefWriter::GetZoneDefWriterForGame(zone.m_game->GetId());
+        zoneDefWriter->WriteZoneDef(zoneDefinitionFile, m_args, zone);
 
         zoneDefinitionFile.close();
-        return result;
+
+        return true;
     }
 
-    static bool OpenGdtFile(Zone* zone, const fs::path& outputFolder, std::ofstream& stream)
+    static bool OpenGdtFile(const Zone& zone, const fs::path& outputFolder, std::ofstream& stream)
     {
         auto gdtFilePath(outputFolder);
         gdtFilePath.append("source_data");
 
         fs::create_directories(gdtFilePath);
 
-        gdtFilePath.append(zone->m_name);
+        gdtFilePath.append(zone.m_name);
         gdtFilePath.replace_extension(".gdt");
 
         stream = std::ofstream(gdtFilePath, std::fstream::out | std::fstream::binary);
         if (!stream.is_open())
         {
-            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone->m_name);
+            std::cerr << std::format("Failed to open file for zone definition file of zone \"{}\".\n", zone.m_name);
             return false;
         }
 
@@ -274,7 +253,7 @@ private:
      * \param zone The zone to handle.
      * \return \c true if handling the zone was successful, otherwise \c false.
      */
-    bool HandleZone(ISearchPath& searchPath, Zone* zone) const
+    bool HandleZone(ISearchPath& searchPath, Zone& zone) const
     {
         if (m_args.m_task == UnlinkerArgs::ProcessingTask::LIST)
         {
@@ -295,7 +274,7 @@ private:
 
             std::ofstream gdtStream;
             AssetDumpingContext context;
-            context.m_zone = zone;
+            context.m_zone = &zone;
             context.m_base_path = outputFolderPath;
             context.m_obj_search_path = &searchPath;
 
@@ -305,17 +284,26 @@ private:
                     return false;
                 auto gdt = std::make_unique<GdtOutputStream>(gdtStream);
                 gdt->BeginStream();
-                gdt->WriteVersion(GdtVersion(zone->m_game->GetShortName(), 1));
+                gdt->WriteVersion(GdtVersion(zone.m_game->GetShortName(), 1));
                 context.m_gdt = std::move(gdt);
             }
 
             UpdateAssetIncludesAndExcludes(context);
-            ObjWriting::DumpZone(context);
+
+            const auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game->GetId());
+
+            auto result = objWriter->DumpZone(context);
 
             if (m_args.m_use_gdt)
             {
                 context.m_gdt->EndStream();
                 gdtStream.close();
+            }
+
+            if (!result)
+            {
+                std::cerr << "Dumping zone failed!\n";
+                return false;
             }
         }
 
@@ -348,7 +336,10 @@ private:
                 std::cout << std::format("Loaded zone \"{}\"\n", zone->m_name);
 
             if (ShouldLoadObj())
-                ObjLoading::LoadReferencedContainersForZone(searchPathsForZone, *zone);
+            {
+                const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game->GetId());
+                objLoader->LoadReferencedContainersForZone(searchPathsForZone, *zone);
+            }
 
             m_loaded_zones.emplace_back(std::move(zone));
         }
@@ -366,7 +357,10 @@ private:
             const auto zoneName = loadedZone->m_name;
 
             if (ShouldLoadObj())
-                ObjLoading::UnloadContainersOfZone(*loadedZone);
+            {
+                const auto* objLoader = IObjLoader::GetObjLoaderForGame(loadedZone->m_game->GetId());
+                objLoader->UnloadContainersOfZone(*loadedZone);
+            }
 
             loadedZone.reset();
 
@@ -406,14 +400,15 @@ private:
             if (m_args.m_verbose)
                 std::cout << std::format("Loaded zone \"{}\"\n", zoneName);
 
+            const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game->GetId());
             if (ShouldLoadObj())
-                ObjLoading::LoadReferencedContainersForZone(searchPathsForZone, *zone);
+                objLoader->LoadReferencedContainersForZone(searchPathsForZone, *zone);
 
-            if (!HandleZone(searchPathsForZone, zone.get()))
+            if (!HandleZone(searchPathsForZone, *zone))
                 return false;
 
             if (ShouldLoadObj())
-                ObjLoading::UnloadContainersOfZone(*zone);
+                objLoader->UnloadContainersOfZone(*zone);
 
             zone.reset();
             if (m_args.m_verbose)

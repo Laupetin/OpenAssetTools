@@ -377,7 +377,7 @@ bool UnlinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldCont
     return true;
 }
 
-std::string UnlinkerArgs::GetOutputFolderPathForZone(const Zone* zone) const
+std::string UnlinkerArgs::GetOutputFolderPathForZone(const Zone& zone) const
 {
-    return std::regex_replace(m_output_folder, m_zone_pattern, zone->m_name);
+    return std::regex_replace(m_output_folder, m_zone_pattern, zone.m_name);
 }
