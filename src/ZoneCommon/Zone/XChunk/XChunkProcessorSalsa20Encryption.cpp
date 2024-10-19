@@ -3,7 +3,7 @@
 #include <cassert>
 
 XChunkProcessorSalsa20Encryption::XChunkProcessorSalsa20Encryption(const int streamCount,
-                                                                   std::string& zoneName,
+                                                                   const std::string& zoneName,
                                                                    const uint8_t* salsa20Key,
                                                                    const size_t keySize)
     : AbstractSalsa20Processor(streamCount, zoneName, salsa20Key, keySize)

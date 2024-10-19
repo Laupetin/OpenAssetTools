@@ -27,7 +27,7 @@ public:
     void AddWritingStep(std::unique_ptr<IWritingStep> step);
     void AddStreamProcessor(std::unique_ptr<OutputStreamProcessor> streamProcessor);
 
-    void RemoveStreamProcessor(OutputStreamProcessor* streamProcessor);
+    void RemoveStreamProcessor(const OutputStreamProcessor* streamProcessor);
 
     bool WriteZone(std::ostream& stream);
 };

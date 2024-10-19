@@ -28,11 +28,11 @@ protected:
     std::unique_ptr<uint8_t[]> m_block_hashes;
     std::unique_ptr<unsigned int[]> m_stream_block_indices;
 
-    AbstractSalsa20Processor(int streamCount, std::string& zoneName, const uint8_t* salsa20Key, size_t keySize);
+    AbstractSalsa20Processor(int streamCount, const std::string& zoneName, const uint8_t* salsa20Key, size_t keySize);
 
     _NODISCARD uint8_t* GetHashBlock(int streamNumber) const;
 
-    void InitStreams(std::string& zoneName, const uint8_t* salsa20Key, size_t keySize) const;
+    void InitStreams(const std::string& zoneName, const uint8_t* salsa20Key, size_t keySize) const;
 
 public:
     virtual ~AbstractSalsa20Processor() = default;
