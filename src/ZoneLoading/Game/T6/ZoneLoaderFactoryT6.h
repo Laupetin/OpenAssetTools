@@ -8,9 +8,7 @@ namespace T6
 {
     class ZoneLoaderFactory final : public IZoneLoaderFactory
     {
-        class Impl;
-
     public:
-        ZoneLoader* CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) override;
+        std::unique_ptr<ZoneLoader> CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) const override;
     };
 } // namespace T6

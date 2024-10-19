@@ -3,6 +3,8 @@
 #include "Zone/ZoneTypes.h"
 #include "ZoneLoader.h"
 
+#include <memory>
+
 class IZoneLoaderFactory
 {
 public:
@@ -13,5 +15,7 @@ public:
     IZoneLoaderFactory& operator=(const IZoneLoaderFactory& other) = default;
     IZoneLoaderFactory& operator=(IZoneLoaderFactory&& other) noexcept = default;
 
-    virtual ZoneLoader* CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) = 0;
+    virtual std::unique_ptr<ZoneLoader> CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) const = 0;
+
+    static const IZoneLoaderFactory* GetZoneLoaderFactoryForGame(GameId game);
 };
