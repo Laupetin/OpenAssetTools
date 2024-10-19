@@ -41,26 +41,26 @@ std::vector<Zone*> GameT6::GetZones()
     return m_zones;
 }
 
-std::vector<GameLanguagePrefix> GameT6::GetLanguagePrefixes()
+const std::vector<GameLanguagePrefix>& GameT6::GetLanguagePrefixes()
 {
-    std::vector<GameLanguagePrefix> prefixes;
-
-    prefixes.emplace_back(GameLanguage::LANGUAGE_ENGLISH, "en_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_FRENCH, "fr_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_FRENCH_CAN, "fc_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_GERMAN, "ge_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_AUSTRIAN, "as_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_ITALIAN, "it_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_SPANISH, "sp_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_BRITISH, "br_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_RUSSIAN, "ru_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_POLISH, "po_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_KOREAN, "ko_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_JAPANESE, "ja_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_CZECH, "cz_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_FULL_JAPANESE, "fj_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_PORTUGUESE, "bp_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_MEXICAN_SPANISH, "ms_");
+    static std::vector<GameLanguagePrefix> prefixes{
+        {GameLanguage::LANGUAGE_ENGLISH,         "en_"},
+        {GameLanguage::LANGUAGE_FRENCH,          "fr_"},
+        {GameLanguage::LANGUAGE_FRENCH_CAN,      "fc_"},
+        {GameLanguage::LANGUAGE_GERMAN,          "ge_"},
+        {GameLanguage::LANGUAGE_AUSTRIAN,        "as_"},
+        {GameLanguage::LANGUAGE_ITALIAN,         "it_"},
+        {GameLanguage::LANGUAGE_SPANISH,         "sp_"},
+        {GameLanguage::LANGUAGE_BRITISH,         "br_"},
+        {GameLanguage::LANGUAGE_RUSSIAN,         "ru_"},
+        {GameLanguage::LANGUAGE_POLISH,          "po_"},
+        {GameLanguage::LANGUAGE_KOREAN,          "ko_"},
+        {GameLanguage::LANGUAGE_JAPANESE,        "ja_"},
+        {GameLanguage::LANGUAGE_CZECH,           "cz_"},
+        {GameLanguage::LANGUAGE_FULL_JAPANESE,   "fj_"},
+        {GameLanguage::LANGUAGE_PORTUGUESE,      "bp_"},
+        {GameLanguage::LANGUAGE_MEXICAN_SPANISH, "ms_"},
+    };
 
     return prefixes;
 }

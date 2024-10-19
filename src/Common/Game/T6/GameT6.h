@@ -10,7 +10,7 @@ public:
     void AddZone(Zone* zone) override;
     void RemoveZone(Zone* zone) override;
     std::vector<Zone*> GetZones() override;
-    std::vector<GameLanguagePrefix> GetLanguagePrefixes() override;
+    const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() override;
 
 private:
     std::vector<Zone*> m_zones;

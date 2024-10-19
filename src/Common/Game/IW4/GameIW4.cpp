@@ -41,8 +41,8 @@ std::vector<Zone*> GameIW4::GetZones()
     return m_zones;
 }
 
-std::vector<GameLanguagePrefix> GameIW4::GetLanguagePrefixes()
+const std::vector<GameLanguagePrefix>& GameIW4::GetLanguagePrefixes()
 {
-    std::vector<GameLanguagePrefix> prefixes;
+    static std::vector<GameLanguagePrefix> prefixes;
     return prefixes;
 }

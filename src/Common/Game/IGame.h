@@ -42,5 +42,7 @@ public:
     virtual void AddZone(Zone* zone) = 0;
     virtual void RemoveZone(Zone* zone) = 0;
     virtual std::vector<Zone*> GetZones() = 0;
-    virtual std::vector<GameLanguagePrefix> GetLanguagePrefixes() = 0;
+    virtual const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() = 0;
+
+    static IGame* GetGameById(GameId gameId);
 };
