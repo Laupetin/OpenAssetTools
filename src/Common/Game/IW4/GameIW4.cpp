@@ -1,34 +1,32 @@
 #include "GameIW4.h"
 
-#include "IW4.h"
-
 #include <algorithm>
 
 using namespace IW4;
 
-GameIW4 g_GameIW4;
-
-GameId GameIW4::GetId()
+GameId Game::GetId() const
 {
     return GameId::IW4;
 }
 
-std::string GameIW4::GetFullName()
+const std::string& Game::GetFullName() const
 {
-    return "Call Of Duty: Modern Warfare 2";
+    static std::string fullName = "Call Of Duty: Modern Warfare 2";
+    return fullName;
 }
 
-std::string GameIW4::GetShortName()
+const std::string& Game::GetShortName() const
 {
-    return "IW4";
+    static std::string shortName = "IW4";
+    return shortName;
 }
 
-void GameIW4::AddZone(Zone* zone)
+void Game::AddZone(Zone* zone)
 {
     m_zones.push_back(zone);
 }
 
-void GameIW4::RemoveZone(Zone* zone)
+void Game::RemoveZone(Zone* zone)
 {
     const auto foundEntry = std::ranges::find(m_zones, zone);
 
@@ -36,12 +34,12 @@ void GameIW4::RemoveZone(Zone* zone)
         m_zones.erase(foundEntry);
 }
 
-std::vector<Zone*> GameIW4::GetZones()
+const std::vector<Zone*>& Game::GetZones() const
 {
     return m_zones;
 }
 
-const std::vector<GameLanguagePrefix>& GameIW4::GetLanguagePrefixes()
+const std::vector<GameLanguagePrefix>& Game::GetLanguagePrefixes() const
 {
     static std::vector<GameLanguagePrefix> prefixes;
     return prefixes;

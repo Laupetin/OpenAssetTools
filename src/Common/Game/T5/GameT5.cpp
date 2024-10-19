@@ -1,34 +1,32 @@
 #include "GameT5.h"
 
-#include "T5.h"
-
 #include <algorithm>
 
 using namespace T5;
 
-GameT5 g_GameT5;
-
-GameId GameT5::GetId()
+GameId Game::GetId() const
 {
     return GameId::T5;
 }
 
-std::string GameT5::GetFullName()
+const std::string& Game::GetFullName() const
 {
-    return "Call Of Duty: Black Ops";
+    static std::string fullName = "Call Of Duty: Black Ops";
+    return fullName;
 }
 
-std::string GameT5::GetShortName()
+const std::string& Game::GetShortName() const
 {
-    return "T5";
+    static std::string shortName = "T5";
+    return shortName;
 }
 
-void GameT5::AddZone(Zone* zone)
+void Game::AddZone(Zone* zone)
 {
     m_zones.push_back(zone);
 }
 
-void GameT5::RemoveZone(Zone* zone)
+void Game::RemoveZone(Zone* zone)
 {
     const auto foundEntry = std::ranges::find(m_zones, zone);
 
@@ -36,12 +34,12 @@ void GameT5::RemoveZone(Zone* zone)
         m_zones.erase(foundEntry);
 }
 
-std::vector<Zone*> GameT5::GetZones()
+const std::vector<Zone*>& Game::GetZones() const
 {
     return m_zones;
 }
 
-const std::vector<GameLanguagePrefix>& GameT5::GetLanguagePrefixes()
+const std::vector<GameLanguagePrefix>& Game::GetLanguagePrefixes() const
 {
     static std::vector<GameLanguagePrefix> prefixes{
         {GameLanguage::LANGUAGE_ENGLISH,    "en_"},

@@ -288,7 +288,7 @@ namespace T6
             std::cout << std::format("Loading common ipaks for zone \"{}\"\n", zone.m_name);
 
         LoadIPakForZone(searchPath, "base", zone);
-        const auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
+        const auto& languagePrefixes = IGame::GetGameById(GameId::T6)->GetLanguagePrefixes();
         for (const auto& languagePrefix : languagePrefixes)
             LoadIPakForZone(searchPath, std::format("{}base", languagePrefix.m_prefix), zone);
 

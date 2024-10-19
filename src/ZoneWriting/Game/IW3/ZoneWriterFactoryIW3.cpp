@@ -47,7 +47,7 @@ namespace
 
 std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(Zone* zone) const
 {
-    std::unique_ptr<ZoneWriter> writer;
+    auto writer = std::make_unique<ZoneWriter>();
 
     SetupBlocks(*writer);
 
