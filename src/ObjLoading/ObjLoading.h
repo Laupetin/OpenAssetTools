@@ -1,9 +1,7 @@
 #pragma once
 
-#include "AssetLoading/AssetLoadingContext.h"
 #include "SearchPath/ISearchPath.h"
 #include "SearchPath/SearchPaths.h"
-#include "Zone/Zone.h"
 
 class ObjLoading
 {
@@ -15,19 +13,6 @@ public:
         bool MenuPermissiveParsing = false;
         bool MenuNoOptimization = false;
     } Configuration;
-
-    /**
-     * \brief Loads all containers that are being referenced by the specified zone.
-     * \param searchPath The search path to use to find the referenced containers.
-     * \param zone The zone to load all referenced containers of.
-     */
-    static void LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone);
-
-    /**
-     * \brief Unloads all containers that were referenced by a specified zone. If referenced by more than one zone a container will only be unloaded once all
-     * referencing zones were unloaded the container. \param zone The zone to unload all referenced containers for.
-     */
-    static void UnloadContainersOfZone(Zone& zone);
 
     /**
      * \brief Loads all IWDs that can be found in a specified search path.
@@ -46,7 +31,4 @@ public:
      * \return A \c SearchPaths object containing all IWDs that are currently loaded.
      */
     static SearchPaths GetIWDSearchPaths();
-
-    static bool LoadAssetForZone(AssetLoadingContext& context, asset_type_t assetType, const std::string& assetName);
-    static void FinalizeAssetsForZone(AssetLoadingContext& context);
 };

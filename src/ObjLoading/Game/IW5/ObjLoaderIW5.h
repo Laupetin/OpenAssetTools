@@ -14,8 +14,6 @@ namespace IW5
     public:
         ObjLoader();
 
-        [[nodiscard]] bool SupportsZone(const Zone& zone) const override;
-
         void LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone) const override;
         void UnloadContainersOfZone(Zone& zone) const override;
 

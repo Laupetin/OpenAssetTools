@@ -2,6 +2,7 @@
 
 #include "ContentLister/ContentPrinter.h"
 #include "ContentLister/ZoneDefWriter.h"
+#include "IObjLoader.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
@@ -325,7 +326,10 @@ private:
                 std::cout << std::format("Loaded zone \"{}\"\n", zone->m_name);
 
             if (ShouldLoadObj())
-                ObjLoading::LoadReferencedContainersForZone(searchPathsForZone, *zone);
+            {
+                const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game->GetId());
+                objLoader->LoadReferencedContainersForZone(searchPathsForZone, *zone);
+            }
 
             m_loaded_zones.emplace_back(std::move(zone));
         }
@@ -343,7 +347,10 @@ private:
             const auto zoneName = loadedZone->m_name;
 
             if (ShouldLoadObj())
-                ObjLoading::UnloadContainersOfZone(*loadedZone);
+            {
+                const auto* objLoader = IObjLoader::GetObjLoaderForGame(loadedZone->m_game->GetId());
+                objLoader->UnloadContainersOfZone(*loadedZone);
+            }
 
             loadedZone.reset();
 
@@ -383,14 +390,15 @@ private:
             if (m_args.m_verbose)
                 std::cout << std::format("Loaded zone \"{}\"\n", zoneName);
 
+            const auto* objLoader = IObjLoader::GetObjLoaderForGame(zone->m_game->GetId());
             if (ShouldLoadObj())
-                ObjLoading::LoadReferencedContainersForZone(searchPathsForZone, *zone);
+                objLoader->LoadReferencedContainersForZone(searchPathsForZone, *zone);
 
             if (!HandleZone(searchPathsForZone, *zone))
                 return false;
 
             if (ShouldLoadObj())
-                ObjLoading::UnloadContainersOfZone(*zone);
+                objLoader->UnloadContainersOfZone(*zone);
 
             zone.reset();
             if (m_args.m_verbose)

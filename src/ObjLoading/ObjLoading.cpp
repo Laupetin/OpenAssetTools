@@ -1,10 +1,5 @@
 #include "ObjLoading.h"
 
-#include "Game/IW3/ObjLoaderIW3.h"
-#include "Game/IW4/ObjLoaderIW4.h"
-#include "Game/IW5/ObjLoaderIW5.h"
-#include "Game/T5/ObjLoaderT5.h"
-#include "Game/T6/ObjLoaderT6.h"
 #include "IObjLoader.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "SearchPath/SearchPaths.h"
@@ -13,38 +8,6 @@
 #include <fstream>
 
 ObjLoading::Configuration_t ObjLoading::Configuration;
-
-const IObjLoader* const OBJ_LOADERS[]{
-    new IW3::ObjLoader(),
-    new IW4::ObjLoader(),
-    new IW5::ObjLoader(),
-    new T5::ObjLoader(),
-    new T6::ObjLoader(),
-};
-
-void ObjLoading::LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone)
-{
-    for (const auto* loader : OBJ_LOADERS)
-    {
-        if (loader->SupportsZone(zone))
-        {
-            loader->LoadReferencedContainersForZone(searchPath, zone);
-            return;
-        }
-    }
-}
-
-void ObjLoading::UnloadContainersOfZone(Zone& zone)
-{
-    for (const auto* loader : OBJ_LOADERS)
-    {
-        if (loader->SupportsZone(zone))
-        {
-            loader->UnloadContainersOfZone(zone);
-            return;
-        }
-    }
-}
 
 void ObjLoading::LoadIWDsInSearchPath(ISearchPath& searchPath)
 {
@@ -80,29 +43,4 @@ SearchPaths ObjLoading::GetIWDSearchPaths()
     }
 
     return iwdPaths;
-}
-
-bool ObjLoading::LoadAssetForZone(AssetLoadingContext& context, const asset_type_t assetType, const std::string& assetName)
-{
-    for (const auto* loader : OBJ_LOADERS)
-    {
-        if (loader->SupportsZone(context.m_zone))
-        {
-            return loader->LoadAssetForZone(context, assetType, assetName);
-        }
-    }
-
-    return false;
-}
-
-void ObjLoading::FinalizeAssetsForZone(AssetLoadingContext& context)
-{
-    for (const auto* loader : OBJ_LOADERS)
-    {
-        if (loader->SupportsZone(context.m_zone))
-        {
-            loader->FinalizeAssetsForZone(context);
-            return;
-        }
-    }
 }

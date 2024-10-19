@@ -14,8 +14,6 @@ namespace T5
     public:
         ObjLoader();
 
-        bool SupportsZone(const Zone& zone) const override;
-
         void LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone) const override;
         void UnloadContainersOfZone(Zone& zone) const override;
 

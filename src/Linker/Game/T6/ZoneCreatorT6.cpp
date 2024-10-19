@@ -4,6 +4,7 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/T6.h"
+#include "IObjLoader.h"
 #include "ObjLoading.h"
 #include "Utils/StringUtils.h"
 
@@ -106,13 +107,14 @@ std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& 
 
     HandleMetadata(zone.get(), context);
 
+    const auto* objLoader = IObjLoader::GetObjLoaderForGame(GameId::T6);
     for (const auto& assetEntry : context.m_definition->m_assets)
     {
-        if (!ObjLoading::LoadAssetForZone(*assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name))
+        if (!objLoader->LoadAssetForZone(*assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name))
             return nullptr;
     }
 
-    ObjLoading::FinalizeAssetsForZone(*assetLoadingContext);
+    objLoader->FinalizeAssetsForZone(*assetLoadingContext);
 
     return zone;
 }
