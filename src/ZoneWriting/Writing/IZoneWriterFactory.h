@@ -14,6 +14,7 @@ public:
     IZoneWriterFactory& operator=(const IZoneWriterFactory& other) = default;
     IZoneWriterFactory& operator=(IZoneWriterFactory&& other) noexcept = default;
 
-    _NODISCARD virtual bool SupportsZone(Zone* zone) const = 0;
     _NODISCARD virtual std::unique_ptr<ZoneWriter> CreateWriter(Zone* zone) const = 0;
+
+    static const IZoneWriterFactory* GetZoneWriterFactoryForGame(GameId game);
 };

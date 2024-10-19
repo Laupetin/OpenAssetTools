@@ -16,36 +16,26 @@
 
 using namespace IW3;
 
-class ZoneWriterFactory::Impl
+namespace
 {
-    Zone* m_zone;
-    std::unique_ptr<ZoneWriter> m_writer;
-
-public:
-    explicit Impl(Zone* zone)
-        : m_zone(zone),
-          m_writer(std::make_unique<ZoneWriter>())
-    {
-    }
-
-    void SetupBlocks() const
+    void SetupBlocks(ZoneWriter& writer)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE, XBlock::Type::BLOCK_TYPE_NORMAL));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VERTEX, XBlock::Type::BLOCK_TYPE_NORMAL));
-        m_writer->AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_INDEX, XBlock::Type::BLOCK_TYPE_NORMAL));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL_RUNTIME, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_LARGE, XBlock::Type::BLOCK_TYPE_NORMAL));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_VERTEX, XBlock::Type::BLOCK_TYPE_NORMAL));
+        writer.AddXBlock(XBLOCK_DEF(IW3::XFILE_BLOCK_INDEX, XBlock::Type::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
 
-    static ZoneHeader CreateHeaderForParams()
+    ZoneHeader CreateHeaderForParams()
     {
         ZoneHeader header{};
         header.m_version = ZoneConstants::ZONE_VERSION;
@@ -53,40 +43,30 @@ public:
 
         return header;
     }
-
-    std::unique_ptr<ZoneWriter> CreateWriter()
-    {
-        SetupBlocks();
-
-        auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
-            std::make_unique<ContentWriter>(), m_zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
-        auto* contentInMemoryPtr = contentInMemory.get();
-        m_writer->AddWritingStep(std::move(contentInMemory));
-
-        // Write zone header
-        m_writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams()));
-
-        m_writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::make_unique<OutputProcessorDeflate>()));
-
-        // Start of the XFile struct
-        m_writer->AddWritingStep(std::make_unique<StepWriteZoneSizes>(contentInMemoryPtr));
-        m_writer->AddWritingStep(std::make_unique<StepWriteXBlockSizes>(m_zone));
-
-        // Start of the zone content
-        m_writer->AddWritingStep(std::make_unique<StepWriteZoneContentToFile>(contentInMemoryPtr));
-
-        // Return the fully setup zoneloader
-        return std::move(m_writer);
-    }
-};
-
-bool ZoneWriterFactory::SupportsZone(Zone* zone) const
-{
-    return zone->m_game == &g_GameIW3;
-}
+} // namespace
 
 std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(Zone* zone) const
 {
-    Impl impl(zone);
-    return impl.CreateWriter();
+    std::unique_ptr<ZoneWriter> writer;
+
+    SetupBlocks(*writer);
+
+    auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
+        std::make_unique<ContentWriter>(), zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+    auto* contentInMemoryPtr = contentInMemory.get();
+    writer->AddWritingStep(std::move(contentInMemory));
+
+    // Write zone header
+    writer->AddWritingStep(std::make_unique<StepWriteZoneHeader>(CreateHeaderForParams()));
+
+    writer->AddWritingStep(std::make_unique<StepAddOutputProcessor>(std::make_unique<OutputProcessorDeflate>()));
+
+    // Start of the XFile struct
+    writer->AddWritingStep(std::make_unique<StepWriteZoneSizes>(contentInMemoryPtr));
+    writer->AddWritingStep(std::make_unique<StepWriteXBlockSizes>(zone));
+
+    // Start of the zone content
+    writer->AddWritingStep(std::make_unique<StepWriteZoneContentToFile>(contentInMemoryPtr));
+
+    return std::move(writer);
 }
