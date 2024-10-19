@@ -1,4 +1,4 @@
-#include "ZoneDumperIW3.h"
+#include "ObjWriterIW3.h"
 
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
@@ -10,17 +10,11 @@
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
-#include "Game/IW3/GameIW3.h"
 #include "ObjWriting.h"
 
 using namespace IW3;
 
-bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
-{
-    return context.m_zone->m_game == &g_GameIW3;
-}
-
-bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
+bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 {
 #define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
     if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \

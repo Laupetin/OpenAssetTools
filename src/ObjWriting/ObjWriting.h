@@ -34,6 +34,5 @@ public:
 
     } Configuration;
 
-    static bool DumpZone(AssetDumpingContext& context);
     static bool ShouldHandleAssetType(asset_type_t assetType);
 };

@@ -3,6 +3,7 @@
 #include "ContentLister/ContentPrinter.h"
 #include "ContentLister/ZoneDefWriter.h"
 #include "IObjLoader.h"
+#include "IObjWriter.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "ObjLoading.h"
 #include "ObjWriting.h"
@@ -288,12 +289,21 @@ private:
             }
 
             UpdateAssetIncludesAndExcludes(context);
-            ObjWriting::DumpZone(context);
+
+            const auto* objWriter = IObjWriter::GetObjWriterForGame(zone.m_game->GetId());
+
+            auto result = objWriter->DumpZone(context);
 
             if (m_args.m_use_gdt)
             {
                 context.m_gdt->EndStream();
                 gdtStream.close();
+            }
+
+            if (!result)
+            {
+                std::cerr << "Dumping zone failed!\n";
+                return false;
             }
         }
 

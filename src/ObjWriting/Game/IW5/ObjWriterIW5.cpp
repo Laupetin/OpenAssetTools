@@ -1,4 +1,4 @@
-#include "ZoneDumperIW5.h"
+#include "ObjWriterIW5.h"
 
 #include "AssetDumpers/AssetDumperAddonMapEnts.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
@@ -15,17 +15,11 @@
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
-#include "Game/IW5/GameIW5.h"
 #include "ObjWriting.h"
 
 using namespace IW5;
 
-bool ZoneDumper::CanHandleZone(AssetDumpingContext& context) const
-{
-    return context.m_zone->m_game == &g_GameIW5;
-}
-
-bool ZoneDumper::DumpZone(AssetDumpingContext& context) const
+bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 {
 #define DUMP_ASSET_POOL(dumperType, poolName, assetType)                                                                                                       \
     if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
