@@ -199,7 +199,7 @@ namespace IW5
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : g_GameIW5.GetZones())
+        for (const auto* zone : IGame::GetGameById(GameId::IW5)->GetZones())
         {
             const auto* iw5AssetPools = dynamic_cast<const GameAssetPoolIW5*>(zone->m_pools.get());
             if (!iw5AssetPools)

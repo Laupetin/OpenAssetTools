@@ -473,7 +473,7 @@ namespace T6
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : g_GameT6.GetZones())
+        for (const auto* zone : IGame::GetGameById(GameId::T6)->GetZones())
         {
             const auto* t6AssetPools = dynamic_cast<const GameAssetPoolT6*>(zone->m_pools.get());
             if (!t6AssetPools)

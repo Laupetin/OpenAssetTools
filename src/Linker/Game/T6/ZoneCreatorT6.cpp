@@ -91,7 +91,7 @@ GameId ZoneCreator::GetGameId() const
 
 std::unique_ptr<Zone> ZoneCreator::CreateZoneForDefinition(ZoneCreationContext& context) const
 {
-    auto zone = std::make_unique<Zone>(context.m_definition->m_name, 0, &g_GameT6);
+    auto zone = std::make_unique<Zone>(context.m_definition->m_name, 0, IGame::GetGameById(GameId::T6));
     CreateZoneAssetPools(zone.get());
 
     for (const auto& assetEntry : context.m_definition->m_assets)

@@ -1,38 +1,18 @@
 #include "ZoneWriting.h"
 
-#include "Game/IW3/ZoneWriterFactoryIW3.h"
-#include "Game/IW4/ZoneWriterFactoryIW4.h"
-#include "Game/IW5/ZoneWriterFactoryIW5.h"
-#include "Game/T5/ZoneWriterFactoryT5.h"
-#include "Game/T6/ZoneWriterFactoryT6.h"
 #include "Writing/IZoneWriterFactory.h"
 
 #include <chrono>
 #include <format>
 #include <iostream>
 
-IZoneWriterFactory* ZoneWriterFactories[]{
-    new IW3::ZoneWriterFactory(),
-    new IW4::ZoneWriterFactory(),
-    new IW5::ZoneWriterFactory(),
-    new T5::ZoneWriterFactory(),
-    new T6::ZoneWriterFactory(),
-};
-
 bool ZoneWriting::WriteZone(std::ostream& stream, Zone* zone)
 {
     const auto start = std::chrono::high_resolution_clock::now();
 
-    std::unique_ptr<ZoneWriter> zoneWriter;
-    for (auto* factory : ZoneWriterFactories)
-    {
-        if (factory->SupportsZone(zone))
-        {
-            zoneWriter = factory->CreateWriter(zone);
-            break;
-        }
-    }
+    const auto factory = IZoneWriterFactory::GetZoneWriterFactoryForGame(zone->m_game->GetId());
 
+    const auto zoneWriter = factory->CreateWriter(zone);
     if (zoneWriter == nullptr)
     {
         std::cerr << std::format("Could not create ZoneWriter for zone \"{}\".\n", zone->m_name);

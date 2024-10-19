@@ -3,6 +3,7 @@
 #include "WritingException.h"
 #include "WritingFileStream.h"
 
+#include <format>
 #include <iostream>
 #include <stdexcept>
 
@@ -42,7 +43,7 @@ void ZoneWriter::AddStreamProcessor(std::unique_ptr<OutputStreamProcessor> strea
     m_processor_chain_dirty = true;
 }
 
-void ZoneWriter::RemoveStreamProcessor(OutputStreamProcessor* streamProcessor)
+void ZoneWriter::RemoveStreamProcessor(const OutputStreamProcessor* streamProcessor)
 {
     for (auto i = m_processors.begin(); i < m_processors.end(); ++i)
     {
@@ -72,12 +73,12 @@ bool ZoneWriter::WriteZone(std::ostream& stream)
     }
     catch (WritingException& e)
     {
-        std::cout << "Writing fastfile failed: " << e.Message() << "\n";
+        std::cout << std::format("Writing fastfile failed: {}\n", e.Message());
         return false;
     }
     catch (std::runtime_error& e)
     {
-        std::cout << "Writing fastfile failed: " << e.what() << "\n";
+        std::cout << std::format("Writing fastfile failed: {}\n", e.what());
         return false;
     }
 

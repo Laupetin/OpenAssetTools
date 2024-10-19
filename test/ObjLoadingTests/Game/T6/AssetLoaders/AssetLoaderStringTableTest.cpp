@@ -20,7 +20,7 @@ namespace
                                "test,data,lol\n"
                                "lorem,ipsum");
 
-        Zone zone("MockZone", 0, &g_GameT6);
+        Zone zone("MockZone", 0, IGame::GetGameById(GameId::T6));
         MockAssetLoadingManager assetLoadingManager(zone, searchPath);
 
         AssetLoaderStringTable assetLoader;

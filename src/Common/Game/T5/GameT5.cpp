@@ -1,34 +1,32 @@
 #include "GameT5.h"
 
-#include "T5.h"
-
 #include <algorithm>
 
 using namespace T5;
 
-GameT5 g_GameT5;
-
-GameId GameT5::GetId()
+GameId Game::GetId() const
 {
     return GameId::T5;
 }
 
-std::string GameT5::GetFullName()
+const std::string& Game::GetFullName() const
 {
-    return "Call Of Duty: Black Ops";
+    static std::string fullName = "Call Of Duty: Black Ops";
+    return fullName;
 }
 
-std::string GameT5::GetShortName()
+const std::string& Game::GetShortName() const
 {
-    return "T5";
+    static std::string shortName = "T5";
+    return shortName;
 }
 
-void GameT5::AddZone(Zone* zone)
+void Game::AddZone(Zone* zone)
 {
     m_zones.push_back(zone);
 }
 
-void GameT5::RemoveZone(Zone* zone)
+void Game::RemoveZone(Zone* zone)
 {
     const auto foundEntry = std::ranges::find(m_zones, zone);
 
@@ -36,28 +34,28 @@ void GameT5::RemoveZone(Zone* zone)
         m_zones.erase(foundEntry);
 }
 
-std::vector<Zone*> GameT5::GetZones()
+const std::vector<Zone*>& Game::GetZones() const
 {
     return m_zones;
 }
 
-std::vector<GameLanguagePrefix> GameT5::GetLanguagePrefixes()
+const std::vector<GameLanguagePrefix>& Game::GetLanguagePrefixes() const
 {
-    std::vector<GameLanguagePrefix> prefixes;
-
-    prefixes.emplace_back(GameLanguage::LANGUAGE_ENGLISH, "en_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_FRENCH, "fr_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_FRENCH_CAN, "fc_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_GERMAN, "ge_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_AUSTRIAN, "ge_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_ITALIAN, "it_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_SPANISH, "sp_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_BRITISH, "br_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_RUSSIAN, "ru_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_POLISH, "po_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_KOREAN, "ko_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_JAPANESE, "ja_");
-    prefixes.emplace_back(GameLanguage::LANGUAGE_CZECH, "cz_");
+    static std::vector<GameLanguagePrefix> prefixes{
+        {GameLanguage::LANGUAGE_ENGLISH,    "en_"},
+        {GameLanguage::LANGUAGE_FRENCH,     "fr_"},
+        {GameLanguage::LANGUAGE_FRENCH_CAN, "fc_"},
+        {GameLanguage::LANGUAGE_GERMAN,     "ge_"},
+        {GameLanguage::LANGUAGE_AUSTRIAN,   "ge_"},
+        {GameLanguage::LANGUAGE_ITALIAN,    "it_"},
+        {GameLanguage::LANGUAGE_SPANISH,    "sp_"},
+        {GameLanguage::LANGUAGE_BRITISH,    "br_"},
+        {GameLanguage::LANGUAGE_RUSSIAN,    "ru_"},
+        {GameLanguage::LANGUAGE_POLISH,     "po_"},
+        {GameLanguage::LANGUAGE_KOREAN,     "ko_"},
+        {GameLanguage::LANGUAGE_JAPANESE,   "ja_"},
+        {GameLanguage::LANGUAGE_CZECH,      "cz_"},
+    };
 
     return prefixes;
 }

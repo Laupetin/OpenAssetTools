@@ -22,15 +22,16 @@
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 #include <memory>
 
 using namespace T6;
 
-class ZoneLoaderFactory::Impl
+namespace
 {
-    static GameLanguage GetZoneLanguage(std::string& zoneName)
+    GameLanguage GetZoneLanguage(const std::string& zoneName)
     {
-        auto languagePrefixes = g_GameT6.GetLanguagePrefixes();
+        const auto& languagePrefixes = IGame::GetGameById(GameId::T6)->GetLanguagePrefixes();
 
         for (const auto& languagePrefix : languagePrefixes)
         {
@@ -43,7 +44,7 @@ class ZoneLoaderFactory::Impl
         return GameLanguage::LANGUAGE_NONE;
     }
 
-    static bool CanLoad(ZoneHeader& header, bool* isSecure, bool* isOfficial, bool* isEncrypted)
+    bool CanLoad(const ZoneHeader& header, bool* isSecure, bool* isOfficial, bool* isEncrypted)
     {
         assert(isSecure != nullptr);
         assert(isOfficial != nullptr);
@@ -88,23 +89,23 @@ class ZoneLoaderFactory::Impl
         return false;
     }
 
-    static void SetupBlock(ZoneLoader* zoneLoader)
+    void SetupBlock(ZoneLoader& zoneLoader)
     {
 #define XBLOCK_DEF(name, type) std::make_unique<XBlock>(STR(name), name, type)
 
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_PHYSICAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_VIRTUAL, XBlock::Type::BLOCK_TYPE_DELAY));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_PHYSICAL, XBlock::Type::BLOCK_TYPE_DELAY));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
-        zoneLoader->AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_STREAMER_RESERVE, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_TEMP, XBlock::Type::BLOCK_TYPE_TEMP));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_VIRTUAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_RUNTIME_PHYSICAL, XBlock::Type::BLOCK_TYPE_RUNTIME));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_VIRTUAL, XBlock::Type::BLOCK_TYPE_DELAY));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_DELAY_PHYSICAL, XBlock::Type::BLOCK_TYPE_DELAY));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_VIRTUAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_PHYSICAL, XBlock::Type::BLOCK_TYPE_NORMAL));
+        zoneLoader.AddXBlock(XBLOCK_DEF(T6::XFILE_BLOCK_STREAMER_RESERVE, XBlock::Type::BLOCK_TYPE_NORMAL));
 
 #undef XBLOCK_DEF
     }
 
-    static std::unique_ptr<IPublicKeyAlgorithm> SetupRSA(const bool isOfficial)
+    std::unique_ptr<IPublicKeyAlgorithm> SetupRSA(const bool isOfficial)
     {
         if (isOfficial)
         {
@@ -112,7 +113,7 @@ class ZoneLoaderFactory::Impl
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH, sizeof(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH)))
             {
-                printf("Invalid public key for signature checking\n");
+                std::cerr << "Invalid public key for signature checking\n";
                 return nullptr;
             }
 
@@ -127,24 +128,24 @@ class ZoneLoaderFactory::Impl
         }
     }
 
-    static ISignatureProvider* AddAuthHeaderSteps(const bool isSecure, ZoneLoader* zoneLoader, std::string& fileName)
+    ISignatureProvider* AddAuthHeaderSteps(const bool isSecure, ZoneLoader& zoneLoader, std::string& fileName)
     {
         // Unsigned zones do not have an auth header
         if (!isSecure)
             return nullptr;
 
-        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
-        zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Loading Flags which are always zero
-        zoneLoader->AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, 32));
+        zoneLoader.AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
+        zoneLoader.AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Loading Flags which are always zero
+        zoneLoader.AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, 32));
 
         auto signatureLoadStep = std::make_unique<StepLoadSignature>(256);
         auto* signatureLoadStepPtr = signatureLoadStep.get();
-        zoneLoader->AddLoadingStep(std::move(signatureLoadStep));
+        zoneLoader.AddLoadingStep(std::move(signatureLoadStep));
 
         return signatureLoadStepPtr;
     }
 
-    static ICapturedDataProvider* AddXChunkProcessor(bool isEncrypted, ZoneLoader* zoneLoader, std::string& fileName)
+    ICapturedDataProvider* AddXChunkProcessor(const bool isEncrypted, ZoneLoader& zoneLoader, std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
         auto xChunkProcessor = std::make_unique<ProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
@@ -160,62 +161,55 @@ class ZoneLoaderFactory::Impl
 
         // Decompress the chunks using zlib
         xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorInflate>());
-        zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(xChunkProcessor)));
+        zoneLoader.AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
         return result;
     }
+} // namespace
 
-public:
-    static ZoneLoader* CreateLoaderForHeader(ZoneHeader& header, std::string& fileName)
-    {
-        bool isSecure;
-        bool isOfficial;
-        bool isEncrypted;
-
-        // Check if this file is a supported T6 zone.
-        if (!CanLoad(header, &isSecure, &isOfficial, &isEncrypted))
-            return nullptr;
-
-        // Create new zone
-        auto zone = std::make_unique<Zone>(fileName, 0, &g_GameT6);
-        auto* zonePtr = zone.get();
-        zone->m_pools = std::make_unique<GameAssetPoolT6>(zonePtr, 0);
-        zone->m_language = GetZoneLanguage(fileName);
-
-        // File is supported. Now setup all required steps for loading this file.
-        auto* zoneLoader = new ZoneLoader(std::move(zone));
-
-        SetupBlock(zoneLoader);
-
-        // If file is signed setup a RSA instance.
-        auto rsa = isSecure ? SetupRSA(isOfficial) : nullptr;
-
-        // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
-        ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, zoneLoader, fileName);
-
-        // Setup loading XChunks from the zone from this point on.
-        ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, zoneLoader, fileName);
-
-        // Start of the XFile struct
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneSizes>());
-        zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
-
-        // Start of the zone content
-        zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
-            std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
-
-        if (isSecure)
-        {
-            zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(std::move(rsa), signatureProvider, signatureDataProvider));
-        }
-
-        // Return the fully setup zoneloader
-        return zoneLoader;
-    }
-};
-
-ZoneLoader* ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName)
+std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader& header, std::string& fileName) const
 {
-    return Impl::CreateLoaderForHeader(header, fileName);
+    bool isSecure;
+    bool isOfficial;
+    bool isEncrypted;
+
+    // Check if this file is a supported T6 zone.
+    if (!CanLoad(header, &isSecure, &isOfficial, &isEncrypted))
+        return nullptr;
+
+    // Create new zone
+    auto zone = std::make_unique<Zone>(fileName, 0, IGame::GetGameById(GameId::T6));
+    auto* zonePtr = zone.get();
+    zone->m_pools = std::make_unique<GameAssetPoolT6>(zonePtr, 0);
+    zone->m_language = GetZoneLanguage(fileName);
+
+    // File is supported. Now setup all required steps for loading this file.
+    auto zoneLoader = std::make_unique<ZoneLoader>(std::move(zone));
+
+    SetupBlock(*zoneLoader);
+
+    // If file is signed setup a RSA instance.
+    auto rsa = isSecure ? SetupRSA(isOfficial) : nullptr;
+
+    // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
+    ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, *zoneLoader, fileName);
+
+    // Setup loading XChunks from the zone from this point on.
+    ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, *zoneLoader, fileName);
+
+    // Start of the XFile struct
+    zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneSizes>());
+    zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
+
+    // Start of the zone content
+    zoneLoader->AddLoadingStep(
+        std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+
+    if (isSecure)
+    {
+        zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(std::move(rsa), signatureProvider, signatureDataProvider));
+    }
+
+    return zoneLoader;
 }

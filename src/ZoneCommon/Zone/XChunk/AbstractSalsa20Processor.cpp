@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-AbstractSalsa20Processor::AbstractSalsa20Processor(const int streamCount, std::string& zoneName, const uint8_t* salsa20Key, size_t keySize)
+AbstractSalsa20Processor::AbstractSalsa20Processor(const int streamCount, const std::string& zoneName, const uint8_t* salsa20Key, const size_t keySize)
     : m_stream_count(streamCount),
       m_stream_contexts(std::make_unique<StreamContext[]>(streamCount)),
       m_stream_block_indices(std::make_unique<unsigned int[]>(streamCount))
@@ -19,9 +19,9 @@ uint8_t* AbstractSalsa20Processor::GetHashBlock(const int streamNumber) const
     return &m_block_hashes[blockIndexOffset + streamOffset];
 }
 
-void AbstractSalsa20Processor::InitStreams(std::string& zoneName, const uint8_t* salsa20Key, size_t keySize) const
+void AbstractSalsa20Processor::InitStreams(const std::string& zoneName, const uint8_t* salsa20Key, const size_t keySize) const
 {
-    const int zoneNameLength = zoneName.length();
+    const auto zoneNameLength = zoneName.length();
     const size_t blockHashBufferSize = BLOCK_HASHES_COUNT * m_stream_count * SHA1_HASH_SIZE;
 
     assert(blockHashBufferSize % 4 == 0);

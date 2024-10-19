@@ -36,11 +36,13 @@ public:
     IGame& operator=(const IGame& other) = default;
     IGame& operator=(IGame&& other) noexcept = default;
 
-    virtual GameId GetId() = 0;
-    virtual std::string GetFullName() = 0;
-    virtual std::string GetShortName() = 0;
+    [[nodiscard]] virtual GameId GetId() const = 0;
+    [[nodiscard]] virtual const std::string& GetFullName() const = 0;
+    [[nodiscard]] virtual const std::string& GetShortName() const = 0;
     virtual void AddZone(Zone* zone) = 0;
     virtual void RemoveZone(Zone* zone) = 0;
-    virtual std::vector<Zone*> GetZones() = 0;
-    virtual std::vector<GameLanguagePrefix> GetLanguagePrefixes() = 0;
+    [[nodiscard]] virtual const std::vector<Zone*>& GetZones() const = 0;
+    [[nodiscard]] virtual const std::vector<GameLanguagePrefix>& GetLanguagePrefixes() const = 0;
+
+    static IGame* GetGameById(GameId gameId);
 };

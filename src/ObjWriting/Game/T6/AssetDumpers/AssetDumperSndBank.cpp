@@ -201,7 +201,7 @@ namespace
     public:
         void Initialize()
         {
-            for (const auto& zone : g_GameT6.GetZones())
+            for (const auto& zone : IGame::GetGameById(GameId::T6)->GetZones())
             {
                 auto& sndBankPool = *dynamic_cast<GameAssetPoolT6*>(zone->m_pools.get())->m_sound_bank;
                 for (auto* entry : sndBankPool)
