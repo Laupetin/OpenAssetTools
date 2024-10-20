@@ -59,8 +59,7 @@ const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
     .WithShortName("o")
     .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the contents of the unlinked zones. Defaults to \""
-                     + std::string(UnlinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\"")
+    .WithDescription(std::format("Specifies the output folder containing the contents of the unlinked zones. Defaults to \"{}\"", UnlinkerArgs::DEFAULT_OUTPUT_FOLDER))
     .WithParameter("outputFolderPath")
     .Build();
 
@@ -178,7 +177,7 @@ void UnlinkerArgs::SetVerbose(const bool isVerbose)
     ObjWriting::Configuration.Verbose = isVerbose;
 }
 
-bool UnlinkerArgs::SetImageDumpingMode()
+bool UnlinkerArgs::SetImageDumpingMode() const
 {
     auto specifiedValue = m_argument_parser.GetValueForOption(OPTION_IMAGE_FORMAT);
     utils::MakeStringLowerCase(specifiedValue);
@@ -196,11 +195,11 @@ bool UnlinkerArgs::SetImageDumpingMode()
     }
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_IMAGE_FORMAT);
-    printf("Illegal value: \"%s\" is not a valid image output format. Use -? to see usage information.\n", originalValue.c_str());
+    std::cerr << std::format("Illegal value: \"{}\" is not a valid image output format. Use -? to see usage information.\n", originalValue);
     return false;
 }
 
-bool UnlinkerArgs::SetModelDumpingMode()
+bool UnlinkerArgs::SetModelDumpingMode() const
 {
     auto specifiedValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
     utils::MakeStringLowerCase(specifiedValue);
@@ -230,7 +229,7 @@ bool UnlinkerArgs::SetModelDumpingMode()
     }
 
     const std::string originalValue = m_argument_parser.GetValueForOption(OPTION_MODEL_FORMAT);
-    printf("Illegal value: \"%s\" is not a valid model output format. Use -? to see usage information.\n", originalValue.c_str());
+    std::cerr << std::format("Illegal value: \"{}\" is not a valid model output format. Use -? to see usage information.\n", originalValue);
     return false;
 }
 

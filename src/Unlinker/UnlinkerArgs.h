@@ -24,8 +24,8 @@ private:
     static void PrintVersion();
 
     void SetVerbose(bool isVerbose);
-    bool SetImageDumpingMode();
-    bool SetModelDumpingMode();
+    bool SetImageDumpingMode() const;
+    bool SetModelDumpingMode() const;
 
     void AddSpecifiedAssetType(std::string value);
     void ParseCommaSeparatedAssetTypeString(const std::string& input);
