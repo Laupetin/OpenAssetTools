@@ -46,7 +46,7 @@ const CommandLineOption* const OPTION_BASE_FOLDER =
 const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
     .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the build artifacts. Defaults to \"" + std::string(LinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\".")
+    .WithDescription(std::format("Specifies the output folder containing the build artifacts. Defaults to \"{}\".", LinkerArgs::DEFAULT_OUTPUT_FOLDER))
     .WithParameter("outputFolderPath")
     .Build();
 
@@ -61,14 +61,14 @@ const CommandLineOption* const OPTION_ADD_ASSET_SEARCH_PATH =
 const CommandLineOption* const OPTION_ASSET_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("asset-search-path")
-    .WithDescription("Specifies the search paths used for assets. Defaults to \"" + std::string(LinkerArgs::DEFAULT_ASSET_SEARCH_PATH) + "\".")
+    .WithDescription(std::format("Specifies the search paths used for assets. Defaults to \"{}\".", LinkerArgs::DEFAULT_ASSET_SEARCH_PATH))
     .WithParameter("assetSearchPathString")
     .Build();
 
 const CommandLineOption* const OPTION_GDT_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("gdt-search-path")
-    .WithDescription("Specifies the search paths used for gdt files. Defaults to \"" + std::string(LinkerArgs::DEFAULT_GDT_SEARCH_PATH) + "\".")
+    .WithDescription(std::format("Specifies the search paths used for gdt files. Defaults to \"{}\".", LinkerArgs::DEFAULT_GDT_SEARCH_PATH))
     .WithParameter("gdtSearchPathString")
     .Build();
 
@@ -83,7 +83,7 @@ const CommandLineOption* const OPTION_ADD_SOURCE_SEARCH_PATH =
 const CommandLineOption* const OPTION_SOURCE_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("source-search-path")
-    .WithDescription("Specifies the search paths used for source files. Defaults to \"" + std::string(LinkerArgs::DEFAULT_SOURCE_SEARCH_PATH) + "\".")
+    .WithDescription(std::format("Specifies the search paths used for source files. Defaults to \"{}\".", LinkerArgs::DEFAULT_SOURCE_SEARCH_PATH))
     .WithParameter("sourceSearchPathString")
     .Build();
 
