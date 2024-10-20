@@ -6,6 +6,7 @@
 #include "Game/IW5/ZoneCreatorIW5.h"
 #include "Game/T5/ZoneCreatorT5.h"
 #include "Game/T6/ZoneCreatorT6.h"
+#include "IObjCompiler.h"
 #include "IObjLoader.h"
 
 #include <cassert>
@@ -84,11 +85,19 @@ std::unique_ptr<Zone> IZoneCreator::CreateZoneForDefinition(ZoneCreationContext&
 
     HandleMetadata(*zone, context);
 
+    const auto* objCompiler = IObjCompiler::GetObjCompilerForGame(gameId);
     const auto* objLoader = IObjLoader::GetObjLoaderForGame(gameId);
     for (const auto& assetEntry : context.m_definition->m_assets)
     {
-        if (!objLoader->LoadAssetForZone(assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name))
+        const auto compilerResult = objCompiler->CompileAssetForZone(assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name);
+        if (compilerResult == ObjCompilerResult::FAILURE)
             return nullptr;
+
+        if (compilerResult == ObjCompilerResult::NO_COMPILATION_DONE)
+        {
+            if (!objLoader->LoadAssetForZone(assetLoadingContext, assetEntry.m_asset_type, assetEntry.m_asset_name))
+                return nullptr;
+        }
     }
 
     objLoader->FinalizeAssetsForZone(assetLoadingContext);
