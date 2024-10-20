@@ -5,7 +5,6 @@
 #include "ObjContainer/IPak/IPakWriter.h"
 #include "ObjContainer/IWD/IWD.h"
 #include "ObjContainer/SoundBank/SoundBankWriter.h"
-#include "ObjLoading.h"
 #include "ObjWriting.h"
 #include "SearchPath/SearchPaths.h"
 #include "Utils/ObjFileStream.h"
