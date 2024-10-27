@@ -17,9 +17,10 @@ SearchPathOpenFile MockSearchPath::Open(const std::string& fileName)
     return {std::make_unique<std::istringstream>(foundFileData->second), foundFileData->second.size()};
 }
 
-std::string MockSearchPath::GetPath()
+const std::string& MockSearchPath::GetPath()
 {
-    return "MockFiles";
+    const static std::string NAME = "MockFiles";
+    return NAME;
 }
 
 void MockSearchPath::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) {}

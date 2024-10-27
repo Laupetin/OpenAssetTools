@@ -1,7 +1,9 @@
 #pragma once
+
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Zone/Zone.h"
 
+#include <cstdint>
 #include <regex>
 #include <set>
 #include <string>
@@ -37,7 +39,7 @@ public:
         LIST
     };
 
-    enum class AssetTypeHandling
+    enum class AssetTypeHandling : std::uint8_t
     {
         EXCLUDE,
         INCLUDE

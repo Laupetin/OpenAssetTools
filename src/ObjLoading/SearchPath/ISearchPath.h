@@ -7,6 +7,7 @@
 #include <functional>
 #include <istream>
 #include <memory>
+#include <string>
 
 class SearchPathOpenFile
 {
@@ -42,7 +43,7 @@ public:
      * \brief Returns the path to the search path.
      * \return The path to the search path.
      */
-    virtual std::string GetPath() = 0;
+    virtual const std::string& GetPath() = 0;
 
     /**
      * \brief Iterates through all files of the search path.

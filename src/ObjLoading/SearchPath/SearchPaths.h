@@ -2,6 +2,7 @@
 
 #include "ISearchPath.h"
 
+#include <string>
 #include <vector>
 
 class SearchPaths final : public ISearchPath
@@ -16,7 +17,7 @@ public:
     ~SearchPaths() override = default;
 
     SearchPathOpenFile Open(const std::string& fileName) override;
-    std::string GetPath() override;
+    const std::string& GetPath() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;
 
     SearchPaths(const SearchPaths& other) = delete;
