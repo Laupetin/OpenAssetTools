@@ -3,16 +3,18 @@
 #include "Utils/ObjFileStream.h"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
+#include <iostream>
 
 namespace fs = std::filesystem;
 
 SearchPathFilesystem::SearchPathFilesystem(std::string path)
+    : m_path(std::move(path))
 {
-    m_path = std::move(path);
 }
 
-std::string SearchPathFilesystem::GetPath()
+const std::string& SearchPathFilesystem::GetPath()
 {
     return m_path;
 }
@@ -23,9 +25,7 @@ SearchPathOpenFile SearchPathFilesystem::Open(const std::string& fileName)
     std::ifstream file(filePath.string(), std::fstream::in | std::fstream::binary);
 
     if (file.is_open())
-    {
         return SearchPathOpenFile(std::make_unique<std::ifstream>(std::move(file)), static_cast<int64_t>(file_size(filePath)));
-    }
 
     return SearchPathOpenFile();
 }
@@ -59,6 +59,6 @@ void SearchPathFilesystem::Find(const SearchPathSearchOptions& options, const st
     }
     catch (std::filesystem::filesystem_error& e)
     {
-        printf("Directory Iterator threw error when trying to find files: \"%s\"\n", e.what());
+        std::cerr << std::format("Directory Iterator threw error when trying to find files: \"{}\"\n", e.what());
     }
 }

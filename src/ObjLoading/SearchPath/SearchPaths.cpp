@@ -18,9 +18,10 @@ SearchPathOpenFile SearchPaths::Open(const std::string& fileName)
     return SearchPathOpenFile();
 }
 
-std::string SearchPaths::GetPath()
+const std::string& SearchPaths::GetPath()
 {
-    return "SearchPaths: " + std::to_string(m_search_paths.size()) + " entries";
+    static const std::string STATIC_NAME = "SearchPaths";
+    return STATIC_NAME;
 }
 
 void SearchPaths::Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback)
