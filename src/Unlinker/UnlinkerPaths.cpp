@@ -5,6 +5,7 @@
 #include "Utils/StringUtils.h"
 
 #include <filesystem>
+#include <format>
 #include <iostream>
 
 namespace fs = std::filesystem;
