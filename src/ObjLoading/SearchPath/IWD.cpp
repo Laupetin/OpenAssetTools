@@ -3,8 +3,10 @@
 #include "ObjLoading.h"
 #include "Utils/FileToZlibWrapper.h"
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <map>
 #include <memory>
