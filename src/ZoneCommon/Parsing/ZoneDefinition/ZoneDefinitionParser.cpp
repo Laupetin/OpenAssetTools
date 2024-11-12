@@ -7,8 +7,8 @@
 #include "Sequence/SequenceZoneDefinitionInclude.h"
 #include "Sequence/SequenceZoneDefinitionMetaData.h"
 
-ZoneDefinitionParser::ZoneDefinitionParser(ZoneDefinitionLexer* lexer, const std::optional<GameId> maybeGame)
-    : AbstractParser(lexer, std::make_unique<ZoneDefinitionParserState>())
+ZoneDefinitionParser::ZoneDefinitionParser(ZoneDefinitionLexer* lexer, std::string targetName, const std::optional<GameId> maybeGame)
+    : AbstractParser(lexer, std::make_unique<ZoneDefinitionParserState>(std::move(targetName)))
 {
     if (maybeGame)
         m_state->SetGame(*maybeGame);

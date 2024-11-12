@@ -11,7 +11,7 @@
 class ZoneDefinitionInputStream
 {
 public:
-    ZoneDefinitionInputStream(std::istream& stream, std::string fileName, bool verbose);
+    ZoneDefinitionInputStream(std::istream& stream, std::string targetName, std::string fileName, bool verbose);
 
     void SetPreviouslySetGame(GameId game);
     std::unique_ptr<ZoneDefinition> ReadDefinition();
@@ -20,6 +20,7 @@ private:
     bool OpenBaseStream(std::istream& stream);
     void SetupStreamProxies();
 
+    std::string m_target_name;
     std::string m_file_name;
     bool m_verbose;
     IParserLineStream* m_stream;
