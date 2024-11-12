@@ -15,6 +15,6 @@ protected:
     const std::vector<sequence_t*>& GetTestsForState() override;
 
 public:
-    explicit ZoneDefinitionParser(ZoneDefinitionLexer* lexer, std::optional<GameId> maybeGame = std::nullopt);
+    ZoneDefinitionParser(ZoneDefinitionLexer* lexer, std::string targetName, std::optional<GameId> maybeGame = std::nullopt);
     std::unique_ptr<ZoneDefinition> GetParsedValue();
 };

@@ -8,7 +8,7 @@
 class ZoneDefinitionParserState
 {
 public:
-    ZoneDefinitionParserState();
+    explicit ZoneDefinitionParserState(std::string targetName);
 
     void SetGame(GameId game);
 

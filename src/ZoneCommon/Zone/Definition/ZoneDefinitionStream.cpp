@@ -9,8 +9,9 @@
 #include <chrono>
 #include <format>
 
-ZoneDefinitionInputStream::ZoneDefinitionInputStream(std::istream& stream, std::string fileName, bool verbose)
-    : m_file_name(std::move(fileName)),
+ZoneDefinitionInputStream::ZoneDefinitionInputStream(std::istream& stream, std::string targetName, std::string fileName, const bool verbose)
+    : m_target_name(std::move(targetName)),
+      m_file_name(std::move(fileName)),
       m_verbose(verbose),
       m_stream(nullptr),
       m_previously_set_game(std::nullopt)
@@ -46,7 +47,7 @@ std::unique_ptr<ZoneDefinition> ZoneDefinitionInputStream::ReadDefinition()
         std::cout << std::format("Reading zone definition file: {}\n", m_file_name);
 
     const auto lexer = std::make_unique<ZoneDefinitionLexer>(m_stream);
-    const auto parser = std::make_unique<ZoneDefinitionParser>(lexer.get(), m_previously_set_game);
+    const auto parser = std::make_unique<ZoneDefinitionParser>(lexer.get(), m_target_name, m_previously_set_game);
 
     const auto start = std::chrono::steady_clock::now();
     std::unique_ptr<ZoneDefinition> definition;
