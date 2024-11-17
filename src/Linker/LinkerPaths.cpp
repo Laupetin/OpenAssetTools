@@ -119,7 +119,7 @@ namespace
                     ss << m_parts[parameterIndex + 1];
             }
 
-            return ss.str();
+            return fs::path(ss.str()).make_preferred().string();
         }
 
         [[nodiscard]] bool CanRender(const std::underlying_type_t<PathTemplateParameterType> availableParameters) const
@@ -142,10 +142,10 @@ namespace
                                           | static_cast<unsigned>(PathTemplateParameterType::PROJECT) | static_cast<unsigned>(PathTemplateParameterType::GAME);
 
     public:
-        LinkerSearchPathBuilder(const char* typeName, const std::string& binDir, const std::string& baseDir)
+        LinkerSearchPathBuilder(const char* typeName, std::string binDir, std::string baseDir)
             : m_type_name(typeName),
-              m_bin_dir(binDir),
-              m_base_dir(baseDir)
+              m_bin_dir(std::move(binDir)),
+              m_base_dir(std::move(baseDir))
         {
         }
 
@@ -239,8 +239,8 @@ namespace
 
         const char* m_type_name;
         std::vector<LinkerPathTemplate> m_templates;
-        const std::string& m_bin_dir;
-        const std::string& m_base_dir;
+        std::string m_bin_dir;
+        std::string m_base_dir;
     };
 
     class LinkerPaths final : public ILinkerPaths
@@ -301,23 +301,26 @@ namespace
 
 std::unique_ptr<ILinkerPaths> ILinkerPaths::FromArgs(const LinkerArgs& args)
 {
-    LinkerSearchPathBuilder assetSearchPaths("asset", args.m_bin_folder, args.m_base_folder);
+    std::string normalizedBinPath = fs::canonical(args.m_bin_folder).make_preferred().string();
+    std::string normalizedBasePath = fs::canonical(args.m_base_folder).make_preferred().string();
+
+    LinkerSearchPathBuilder assetSearchPaths("asset", normalizedBinPath, normalizedBasePath);
     assetSearchPaths.BuildFromArgs(args.m_asset_search_paths);
 
-    LinkerSearchPathBuilder gdtSearchPaths("gdt", args.m_bin_folder, args.m_base_folder);
+    LinkerSearchPathBuilder gdtSearchPaths("gdt", normalizedBinPath, normalizedBasePath);
     gdtSearchPaths.BuildFromArgs(args.m_gdt_search_paths);
 
-    LinkerSearchPathBuilder sourceSearchPaths("source", args.m_bin_folder, args.m_base_folder);
+    LinkerSearchPathBuilder sourceSearchPaths("source", normalizedBinPath, normalizedBasePath);
     sourceSearchPaths.BuildFromArgs(args.m_source_search_paths);
 
     LinkerPathTemplate cacheTemplate;
-    cacheTemplate.CreateFromString(args.DEFAULT_CACHE_FOLDER);
+    cacheTemplate.CreateFromString(LinkerArgs::DEFAULT_CACHE_FOLDER);
 
     LinkerPathTemplate outTemplate;
     outTemplate.CreateFromString(args.m_out_folder);
 
-    return std::make_unique<LinkerPaths>(args.m_bin_folder,
-                                         args.m_base_folder,
+    return std::make_unique<LinkerPaths>(std::move(normalizedBinPath),
+                                         std::move(normalizedBasePath),
                                          std::move(assetSearchPaths),
                                          std::move(gdtSearchPaths),
                                          std::move(sourceSearchPaths),
