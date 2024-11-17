@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <type_traits>
+#include <unordered_set>
 
 namespace fs = std::filesystem;
 
@@ -163,6 +164,7 @@ namespace
         [[nodiscard]] std::unique_ptr<ISearchPath> BuildIndependentSearchPaths() const override
         {
             SearchPaths searchPaths;
+            std::unordered_set<std::string> addedSearchPaths;
             auto hasSearchPath = false;
 
             for (const auto& curTemplate : m_templates)
@@ -170,7 +172,7 @@ namespace
                 if (curTemplate.CanRender(INDEPENDENT_MASK))
                 {
                     auto renderedTemplate = curTemplate.Render(m_bin_dir, m_base_dir, std::string(), std::string());
-                    if (AddSearchPath(searchPaths, renderedTemplate))
+                    if (AddSearchPath(addedSearchPaths, searchPaths, renderedTemplate))
                         hasSearchPath = true;
                 }
             }
@@ -184,6 +186,7 @@ namespace
         [[nodiscard]] std::unique_ptr<ISearchPath> BuildSearchPathsSpecificToProject(const std::string& projectName) const override
         {
             SearchPaths searchPaths;
+            std::unordered_set<std::string> addedSearchPaths;
             auto hasSearchPath = false;
 
             for (const auto& curTemplate : m_templates)
@@ -191,7 +194,7 @@ namespace
                 if (!curTemplate.CanRender(INDEPENDENT_MASK) && curTemplate.CanRender(PROJECT_MASK))
                 {
                     auto renderedTemplate = curTemplate.Render(m_bin_dir, m_base_dir, projectName, std::string());
-                    if (AddSearchPath(searchPaths, renderedTemplate))
+                    if (AddSearchPath(addedSearchPaths, searchPaths, renderedTemplate))
                         hasSearchPath = true;
                 }
             }
@@ -205,6 +208,7 @@ namespace
         [[nodiscard]] std::unique_ptr<ISearchPath> BuildSearchPathsSpecificToProjectAndGame(const std::string& projectName, GameId game) const override
         {
             SearchPaths searchPaths;
+            std::unordered_set<std::string> addedSearchPaths;
             auto hasSearchPath = false;
 
             for (const auto& curTemplate : m_templates)
@@ -212,7 +216,7 @@ namespace
                 if (!curTemplate.CanRender(PROJECT_MASK) && curTemplate.CanRender(GAME_MASK))
                 {
                     auto renderedTemplate = curTemplate.Render(m_bin_dir, m_base_dir, projectName, GameId_Names[static_cast<unsigned>(game)]);
-                    if (AddSearchPath(searchPaths, renderedTemplate))
+                    if (AddSearchPath(addedSearchPaths, searchPaths, renderedTemplate))
                         hasSearchPath = true;
                 }
             }
@@ -224,8 +228,13 @@ namespace
         }
 
     private:
-        bool AddSearchPath(SearchPaths& searchPaths, const std::string& path) const
+        bool AddSearchPath(std::unordered_set<std::string>& existingSearchPaths, SearchPaths& searchPaths, const std::string& path) const
         {
+            const auto existingSearchPath = existingSearchPaths.find(path);
+            if (existingSearchPath != existingSearchPaths.end())
+                return false;
+            existingSearchPaths.emplace(path);
+
             if (!fs::is_directory(path))
             {
                 std::cout << std::format("Adding {} search path (Not found): {}\n", m_type_name, path);
