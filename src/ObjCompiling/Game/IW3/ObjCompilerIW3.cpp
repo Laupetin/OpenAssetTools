@@ -2,7 +2,4 @@
 
 using namespace IW3;
 
-ObjCompilerResult ObjCompiler::CompileAssetForZone(AssetLoadingContext& context, asset_type_t assetType, const std::string& assetName) const
-{
-    return ObjCompilerResult::NO_COMPILATION_DONE;
-}
+void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, const ZoneDefinition& zoneDefinition) const {}

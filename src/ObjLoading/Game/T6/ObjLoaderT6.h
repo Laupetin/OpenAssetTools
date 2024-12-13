@@ -22,6 +22,8 @@ namespace T6
         void LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone) const override;
         void UnloadContainersOfZone(Zone& zone) const override;
 
+        void ConfigureCreatorCollection(AssetCreatorCollection& collection) const override;
+
         bool LoadAssetForZone(AssetLoadingContext& context, asset_type_t assetType, const std::string& assetName) const override;
         void FinalizeAssetsForZone(AssetLoadingContext& context) const override;
 

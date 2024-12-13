@@ -356,6 +356,8 @@ namespace T6
         IPak::Repository.RemoveContainerReferences(&zone);
     }
 
+    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection) const {}
+
     bool ObjLoader::LoadAssetForZone(AssetLoadingContext& context, const asset_type_t assetType, const std::string& assetName) const
     {
         AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, context);
