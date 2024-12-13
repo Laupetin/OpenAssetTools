@@ -1,30 +1,30 @@
-#include "ZoneCreatorT6.h"
+#include "KeyValuePairsCreator.h"
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
-#include "IObjLoader.h"
-#include "ObjLoading.h"
 
 #include <format>
 #include <iostream>
 
 using namespace T6;
 
-GameId ZoneCreator::GetGameId() const
+KeyValuePairsCreator::KeyValuePairsCreator(const Zone& zone, const ZoneDefinition& zoneDefinition)
+    : m_zone(zone),
+      m_zone_definition(zoneDefinition)
 {
-    return GameId::T6;
 }
 
-asset_type_t ZoneCreator::GetImageAssetType() const
+AssetCreationResult KeyValuePairsCreator::CreateAsset(const std::string& assetName, AssetCreationContext& context)
 {
-    return ASSET_TYPE_IMAGE;
+    return AssetCreationResult::NoAction();
 }
 
-void ZoneCreator::HandleMetadata(Zone& zone, const ZoneCreationContext& context) const
+void KeyValuePairsCreator::FinalizeZone(AssetCreationContext& context)
 {
     std::vector<KeyValuePair> kvpList;
+    auto& memory = *m_zone.GetMemory();
 
-    for (const auto& metaData : context.m_definition->m_properties.m_properties)
+    for (const auto& metaData : m_zone_definition.m_properties.m_properties)
     {
         if (metaData.first.rfind("level.", 0) == 0)
         {
@@ -49,21 +49,21 @@ void ZoneCreator::HandleMetadata(Zone& zone, const ZoneCreationContext& context)
                 keyHash = Common::Com_HashKey(strValue.c_str(), 64);
             }
 
-            KeyValuePair kvp{keyHash, Common::Com_HashKey(zone.m_name.c_str(), 64), zone.GetMemory()->Dup(metaData.second.c_str())};
+            KeyValuePair kvp{keyHash, Common::Com_HashKey(m_zone.m_name.c_str(), 64), memory.Dup(metaData.second.c_str())};
             kvpList.push_back(kvp);
         }
     }
 
     if (!kvpList.empty())
     {
-        auto* kvps = zone.GetMemory()->Create<KeyValuePairs>();
-        kvps->name = zone.GetMemory()->Dup(zone.m_name.c_str());
+        auto* kvps = memory.Create<KeyValuePairs>();
+        kvps->name = memory.Dup(m_zone.m_name.c_str());
         kvps->numVariables = static_cast<int>(kvpList.size());
-        kvps->keyValuePairs = zone.GetMemory()->Alloc<KeyValuePair>(kvpList.size());
+        kvps->keyValuePairs = m_zone.GetMemory()->Alloc<KeyValuePair>(kvpList.size());
 
         for (auto i = 0u; i < kvpList.size(); i++)
             kvps->keyValuePairs[i] = kvpList[i];
 
-        zone.m_pools->AddAsset(std::make_unique<XAssetInfo<KeyValuePairs>>(ASSET_TYPE_KEYVALUEPAIRS, zone.m_name, kvps));
+        context.AddAsset(AssetRegistration<AssetKeyValuePairs>(m_zone.m_name, kvps));
     }
 }

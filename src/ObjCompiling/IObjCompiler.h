@@ -1,18 +1,13 @@
 #pragma once
 
+#include "Asset/AssetCreatorCollection.h"
 #include "AssetLoading/AssetLoadingContext.h"
 #include "SearchPath/ISearchPath.h"
+#include "Zone/Definition/ZoneDefinition.h"
 #include "Zone/Zone.h"
 
 #include <cstdint>
 #include <string>
-
-enum class ObjCompilerResult : std::uint8_t
-{
-    COMPILED,
-    NO_COMPILATION_DONE,
-    FAILURE
-};
 
 class IObjCompiler
 {
@@ -24,7 +19,7 @@ public:
     IObjCompiler& operator=(const IObjCompiler& other) = default;
     IObjCompiler& operator=(IObjCompiler&& other) noexcept = default;
 
-    virtual ObjCompilerResult CompileAssetForZone(AssetLoadingContext& context, asset_type_t assetType, const std::string& assetName) const = 0;
+    virtual void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, const ZoneDefinition& zoneDefinition) const = 0;
 
     static const IObjCompiler* GetObjCompilerForGame(GameId game);
 };

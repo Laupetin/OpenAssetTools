@@ -113,6 +113,8 @@ void ObjLoader::LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& z
 
 void ObjLoader::UnloadContainersOfZone(Zone& zone) const {}
 
+void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection) const {}
+
 bool ObjLoader::LoadAssetForZone(AssetLoadingContext& context, const asset_type_t assetType, const std::string& assetName) const
 {
     AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, context);

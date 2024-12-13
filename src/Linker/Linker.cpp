@@ -344,8 +344,7 @@ class LinkerImpl final : public Linker
         if (!LoadGdtFilesFromZoneDefinition(context.m_gdt_files, zoneDefinition, &paths.m_gdt_paths.GetSearchPaths()))
             return nullptr;
 
-        const auto* creator = IZoneCreator::GetCreatorForGame(zoneDefinition.m_game);
-        return creator->CreateZoneForDefinition(context);
+        return zone_creator::CreateZoneForDefinition(zoneDefinition.m_game, context);
     }
 
     bool WriteZoneToFile(const LinkerPathManager& paths, const std::string& projectName, Zone* zone) const
@@ -390,41 +389,41 @@ class LinkerImpl final : public Linker
         return result;
     }
 
-    bool BuildIPak(const LinkerPathManager& paths, const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths) const
-    {
-        const fs::path ipakFolderPath(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.m_game));
-        auto ipakFilePath(ipakFolderPath);
-        ipakFilePath.append(std::format("{}.ipak", zoneDefinition.m_name));
+    // bool BuildIPak(const LinkerPathManager& paths, const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths) const
+    // {
+    //     const fs::path ipakFolderPath(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.m_game));
+    //     auto ipakFilePath(ipakFolderPath);
+    //     ipakFilePath.append(std::format("{}.ipak", zoneDefinition.m_name));
 
-        fs::create_directories(ipakFolderPath);
+    //     fs::create_directories(ipakFolderPath);
 
-        std::ofstream stream(ipakFilePath, std::fstream::out | std::fstream::binary);
-        if (!stream.is_open())
-            return false;
+    //     std::ofstream stream(ipakFilePath, std::fstream::out | std::fstream::binary);
+    //     if (!stream.is_open())
+    //         return false;
 
-        const auto ipakWriter = IPakWriter::Create(stream, &assetSearchPaths);
-        const auto imageAssetType = IZoneCreator::GetCreatorForGame(zoneDefinition.m_game)->GetImageAssetType();
-        for (const auto& assetEntry : zoneDefinition.m_assets)
-        {
-            if (assetEntry.m_is_reference)
-                continue;
+    //     const auto ipakWriter = IPakWriter::Create(stream, &assetSearchPaths);
+    //     const auto imageAssetType = IZoneCreator::GetCreatorForGame(zoneDefinition.m_game)->GetImageAssetType();
+    //     for (const auto& assetEntry : zoneDefinition.m_assets)
+    //     {
+    //         if (assetEntry.m_is_reference)
+    //             continue;
 
-            if (assetEntry.m_asset_type == imageAssetType)
-                ipakWriter->AddImage(assetEntry.m_asset_name);
-        }
+    //         if (assetEntry.m_asset_type == imageAssetType)
+    //             ipakWriter->AddImage(assetEntry.m_asset_name);
+    //     }
 
-        if (!ipakWriter->Write())
-        {
-            std::cerr << "Writing ipak failed.\n";
-            stream.close();
-            return false;
-        }
+    //     if (!ipakWriter->Write())
+    //     {
+    //         std::cerr << "Writing ipak failed.\n";
+    //         stream.close();
+    //         return false;
+    //     }
 
-        std::cout << std::format("Created ipak \"{}\"\n", ipakFilePath.string());
+    //     std::cout << std::format("Created ipak \"{}\"\n", ipakFilePath.string());
 
-        stream.close();
-        return true;
-    }
+    //     stream.close();
+    //     return true;
+    // }
 
     bool BuildProject(LinkerPathManager& paths, const std::string& projectName, const std::string& targetName) const
     {

@@ -7,6 +7,6 @@ namespace IW3
     class ObjCompiler final : public IObjCompiler
     {
     public:
-        ObjCompilerResult CompileAssetForZone(AssetLoadingContext& context, asset_type_t assetType, const std::string& assetName) const override;
+        void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, const ZoneDefinition& zoneDefinition) const override;
     };
 } // namespace IW3
