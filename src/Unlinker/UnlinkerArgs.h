@@ -1,7 +1,9 @@
 #pragma once
+
 #include "Utils/Arguments/ArgumentParser.h"
 #include "Zone/Zone.h"
 
+#include <cstdint>
 #include <regex>
 #include <set>
 #include <string>
@@ -24,8 +26,8 @@ private:
     static void PrintVersion();
 
     void SetVerbose(bool isVerbose);
-    bool SetImageDumpingMode();
-    bool SetModelDumpingMode();
+    bool SetImageDumpingMode() const;
+    bool SetModelDumpingMode() const;
 
     void AddSpecifiedAssetType(std::string value);
     void ParseCommaSeparatedAssetTypeString(const std::string& input);
@@ -37,7 +39,7 @@ public:
         LIST
     };
 
-    enum class AssetTypeHandling
+    enum class AssetTypeHandling : std::uint8_t
     {
         EXCLUDE,
         INCLUDE
