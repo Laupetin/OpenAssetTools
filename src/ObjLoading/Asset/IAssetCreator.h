@@ -42,7 +42,7 @@ public:
 
     [[nodiscard]] virtual std::optional<asset_type_t> GetHandlingAssetType() const = 0;
     virtual AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) = 0;
-    virtual void FinalizeZone(AssetCreationContext& context) {};
+    virtual void FinalizeZone(AssetCreationContext& context){};
 };
 
 template<typename AssetType> class AssetCreator : public IAssetCreator
