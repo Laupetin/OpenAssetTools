@@ -22,7 +22,7 @@ public:
     void AddDefaultAssetCreator(std::unique_ptr<IDefaultAssetCreator> defaultAssetCreator);
 
     AssetCreationResult CreateAsset(asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const;
-    AssetCreationResult CreateDefaultAsset(asset_type_t assetType, const std::string& assetName, const AssetCreationContext& context) const;
+    AssetCreationResult CreateDefaultAsset(asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const;
     void FinalizeZone(AssetCreationContext& context) const;
 
 private:

@@ -79,7 +79,7 @@ XAssetInfoGeneric* AssetCreationContext::AddAssetGeneric(GenericAssetRegistratio
     return addedAsset;
 }
 
-XAssetInfoGeneric* AssetCreationContext::LoadDefaultAssetDependency(const asset_type_t assetType, const std::string& assetName) const
+XAssetInfoGeneric* AssetCreationContext::LoadDefaultAssetDependency(const asset_type_t assetType, const std::string& assetName)
 {
     const auto result = m_creators->CreateDefaultAsset(assetType, assetName, *this);
     if (result.HasTakenAction() && !result.HasFailed())

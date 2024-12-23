@@ -15,6 +15,11 @@ AssetCreationResult AssetCreationResult::NoAction()
     return AssetCreationResult(false, nullptr);
 }
 
+bool AssetCreationResult::HasBeenSuccessful() const
+{
+    return m_taken_action && m_asset_info != nullptr;
+}
+
 bool AssetCreationResult::HasTakenAction() const
 {
     return m_taken_action;

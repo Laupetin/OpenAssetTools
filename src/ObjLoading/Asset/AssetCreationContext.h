@@ -39,6 +39,13 @@ public:
         return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAssetGeneric(std::move(registration)));
     }
 
+    template<typename AssetType> XAssetInfo<typename AssetType::Type>* AddAsset(std::string assetName, typename AssetType::Type* asset)
+    {
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(AddAssetGeneric(AssetRegistration<AssetType>(std::move(assetName), asset)));
+    }
+
     XAssetInfoGeneric* AddAssetGeneric(GenericAssetRegistration registration) const;
 
     template<typename AssetType> XAssetInfo<typename AssetType::Type>* LoadDependency(const std::string& assetName)
@@ -76,7 +83,7 @@ public:
     }
 
 private:
-    [[nodiscard]] XAssetInfoGeneric* LoadDefaultAssetDependency(asset_type_t assetType, const std::string& assetName) const;
+    [[nodiscard]] XAssetInfoGeneric* LoadDefaultAssetDependency(asset_type_t assetType, const std::string& assetName);
 
     Zone* m_zone;
     const AssetCreatorCollection* m_creators;
