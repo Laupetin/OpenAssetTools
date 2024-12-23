@@ -3,6 +3,8 @@
 #include <format>
 #include <iostream>
 
+IgnoredAssetLookup::IgnoredAssetLookup() = default;
+
 IgnoredAssetLookup::IgnoredAssetLookup(const AssetList& assetList)
 {
     m_ignored_asset_lookup.reserve(assetList.m_entries.size());

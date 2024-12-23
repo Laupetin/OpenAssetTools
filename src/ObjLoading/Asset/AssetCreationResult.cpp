@@ -1,4 +1,4 @@
-#include "IAssetCreator.h"
+#include "AssetCreationResult.h"
 
 AssetCreationResult AssetCreationResult::Success(XAssetInfoGeneric* assetInfo)
 {
