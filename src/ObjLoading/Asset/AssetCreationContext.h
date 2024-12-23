@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AssetCreatorCollection.h"
 #include "AssetLoading/IZoneAssetLoaderState.h"
 #include "AssetRegistration.h"
 #include "Game/IAsset.h"
@@ -20,6 +19,7 @@ class AssetCreatorCollection;
 class IgnoredAssetLookup
 {
 public:
+    IgnoredAssetLookup();
     explicit IgnoredAssetLookup(const AssetList& assetList);
 
     [[nodiscard]] bool IsAssetIgnored(asset_type_t assetType, const std::string& name) const;
@@ -90,3 +90,5 @@ private:
     const IgnoredAssetLookup* m_ignored_asset_lookup;
     std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetLoaderState>> m_zone_asset_loader_states;
 };
+
+#include "AssetCreatorCollection.h"

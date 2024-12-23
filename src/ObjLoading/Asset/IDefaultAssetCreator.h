@@ -1,15 +1,14 @@
 #pragma once
 
 #include "AssetCreationContext.h"
+#include "AssetCreationResult.h"
 #include "Game/IAsset.h"
 #include "IAssetCreator.h"
+#include "Utils/MemoryManager.h"
 #include "Zone/ZoneTypes.h"
 
 #include <string>
 #include <type_traits>
-
-class AssetCreationResult;
-class AssetCreationContext;
 
 class IDefaultAssetCreator
 {
@@ -30,8 +29,24 @@ template<typename AssetType> class DefaultAssetCreator : public IDefaultAssetCre
 public:
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
+    DefaultAssetCreator(MemoryManager& memory)
+        : m_memory(memory)
+    {
+    }
+
     [[nodiscard]] asset_type_t GetHandlingAssetType() const override
     {
         return AssetType::EnumEntry;
     }
+
+    AssetCreationResult CreateDefaultAsset(const std::string& assetName, AssetCreationContext& context) const override
+    {
+        auto* asset = m_memory.Alloc<typename AssetType::Type>();
+        AssetNameAccessor<AssetType>{}(*asset) = m_memory.Dup(assetName.c_str());
+
+        return AssetCreationResult::Success(context.AddAsset<AssetType>(assetName, asset));
+    }
+
+private:
+    MemoryManager& m_memory;
 };

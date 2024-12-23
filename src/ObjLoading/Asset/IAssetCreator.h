@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AssetCreationContext.h"
+#include "AssetCreationResult.h"
 #include "Game/IAsset.h"
 #include "Pool/XAssetInfo.h"
 #include "SearchPath/ISearchPath.h"
@@ -9,25 +10,6 @@
 
 #include <optional>
 #include <string>
-
-class AssetCreationResult
-{
-public:
-    static AssetCreationResult Success(XAssetInfoGeneric* assetInfo);
-    static AssetCreationResult Failure();
-    static AssetCreationResult NoAction();
-
-    [[nodiscard]] bool HasBeenSuccessful() const;
-    [[nodiscard]] bool HasTakenAction() const;
-    [[nodiscard]] bool HasFailed() const;
-    [[nodiscard]] XAssetInfoGeneric* GetAssetInfo() const;
-
-private:
-    AssetCreationResult(bool takenAction, XAssetInfoGeneric* assetInfo);
-
-    bool m_taken_action;
-    XAssetInfoGeneric* m_asset_info;
-};
 
 class AssetCreationContext;
 
