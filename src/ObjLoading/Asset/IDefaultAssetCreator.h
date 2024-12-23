@@ -1,16 +1,15 @@
 #pragma once
 
 #include "AssetCreationContext.h"
-#include "AssetRegistration.h"
 #include "Game/IAsset.h"
-#include "Utils/MemoryManager.h"
+#include "IAssetCreator.h"
 #include "Zone/ZoneTypes.h"
 
 #include <string>
 #include <type_traits>
 
-class GenericAssetRegistration;
-template<typename AssetType> class AssetRegistration;
+class AssetCreationResult;
+class AssetCreationContext;
 
 class IDefaultAssetCreator
 {
@@ -23,7 +22,7 @@ public:
     IDefaultAssetCreator& operator=(IDefaultAssetCreator&& other) noexcept = default;
 
     [[nodiscard]] virtual asset_type_t GetHandlingAssetType() const = 0;
-    virtual GenericAssetRegistration CreateDefaultAsset(const std::string& assetName) const = 0;
+    virtual AssetCreationResult CreateDefaultAsset(const std::string& assetName, AssetCreationContext& context) const = 0;
 };
 
 template<typename AssetType> class DefaultAssetCreator : public IDefaultAssetCreator
@@ -35,12 +34,4 @@ public:
     {
         return AssetType::EnumEntry;
     }
-
-    GenericAssetRegistration CreateDefaultAsset(const std::string& assetName) const override
-    {
-        return CreateDefaultAssetInternal(assetName);
-    }
-
-protected:
-    virtual AssetRegistration<typename AssetType::Type> CreateDefaultAssetInternal(const std::string& assetName) const = 0;
 };

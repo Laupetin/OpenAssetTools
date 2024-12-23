@@ -44,15 +44,13 @@ AssetCreationResult AssetCreatorCollection::CreateAsset(const asset_type_t asset
     return AssetCreationResult::NoAction();
 }
 
-AssetCreationResult
-    AssetCreatorCollection::CreateDefaultAsset(const asset_type_t assetType, const std::string& assetName, const AssetCreationContext& context) const
+AssetCreationResult AssetCreatorCollection::CreateDefaultAsset(const asset_type_t assetType, const std::string& assetName, AssetCreationContext& context) const
 {
     assert(assetType >= 0 && static_cast<unsigned>(assetType) < m_default_asset_creators_by_type.size());
 
     if (assetType >= 0 && static_cast<unsigned>(assetType) < m_default_asset_creators_by_type.size() && m_default_asset_creators_by_type[assetType])
     {
-        auto defaultAsset = m_default_asset_creators_by_type[assetType]->CreateDefaultAsset(assetName);
-        return AssetCreationResult::Success(context.AddAssetGeneric(std::move(defaultAsset)));
+        return m_default_asset_creators_by_type[assetType]->CreateDefaultAsset(assetName, context);
     }
 
     return AssetCreationResult::NoAction();

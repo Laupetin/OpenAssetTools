@@ -17,6 +17,7 @@ public:
     static AssetCreationResult Failure();
     static AssetCreationResult NoAction();
 
+    [[nodiscard]] bool HasBeenSuccessful() const;
     [[nodiscard]] bool HasTakenAction() const;
     [[nodiscard]] bool HasFailed() const;
     [[nodiscard]] XAssetInfoGeneric* GetAssetInfo() const;

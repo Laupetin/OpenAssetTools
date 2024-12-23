@@ -1,129 +1,26 @@
 #include "ObjLoaderT6.h"
 
-#include "AssetLoaders/AssetLoaderAddonMapEnts.h"
-#include "AssetLoaders/AssetLoaderClipMap.h"
-#include "AssetLoaders/AssetLoaderComWorld.h"
-#include "AssetLoaders/AssetLoaderDDL.h"
-#include "AssetLoaders/AssetLoaderDestructibleDef.h"
-#include "AssetLoaders/AssetLoaderEmblemSet.h"
-#include "AssetLoaders/AssetLoaderFont.h"
-#include "AssetLoaders/AssetLoaderFontIcon.h"
-#include "AssetLoaders/AssetLoaderFootstepFxTable.h"
-#include "AssetLoaders/AssetLoaderFootstepTable.h"
-#include "AssetLoaders/AssetLoaderFx.h"
-#include "AssetLoaders/AssetLoaderGameWorldMp.h"
-#include "AssetLoaders/AssetLoaderGameWorldSp.h"
-#include "AssetLoaders/AssetLoaderGfxImage.h"
-#include "AssetLoaders/AssetLoaderGfxLightDef.h"
-#include "AssetLoaders/AssetLoaderGfxWorld.h"
-#include "AssetLoaders/AssetLoaderGlasses.h"
-#include "AssetLoaders/AssetLoaderImpactFx.h"
-#include "AssetLoaders/AssetLoaderLeaderboard.h"
-#include "AssetLoaders/AssetLoaderLocalizeEntry.h"
-#include "AssetLoaders/AssetLoaderMapEnts.h"
-#include "AssetLoaders/AssetLoaderMaterial.h"
-#include "AssetLoaders/AssetLoaderMemoryBlock.h"
-#include "AssetLoaders/AssetLoaderMenu.h"
-#include "AssetLoaders/AssetLoaderMenuList.h"
-#include "AssetLoaders/AssetLoaderPhysConstraints.h"
-#include "AssetLoaders/AssetLoaderPhysPreset.h"
-#include "AssetLoaders/AssetLoaderQdb.h"
-#include "AssetLoaders/AssetLoaderRawFile.h"
-#include "AssetLoaders/AssetLoaderScriptParseTree.h"
-#include "AssetLoaders/AssetLoaderSkinnedVerts.h"
-#include "AssetLoaders/AssetLoaderSlug.h"
-#include "AssetLoaders/AssetLoaderSoundBank.h"
-#include "AssetLoaders/AssetLoaderSoundDriverGlobals.h"
-#include "AssetLoaders/AssetLoaderSoundPatch.h"
-#include "AssetLoaders/AssetLoaderStringTable.h"
-#include "AssetLoaders/AssetLoaderTechniqueSet.h"
-#include "AssetLoaders/AssetLoaderTracer.h"
-#include "AssetLoaders/AssetLoaderVehicle.h"
-#include "AssetLoaders/AssetLoaderWeapon.h"
-#include "AssetLoaders/AssetLoaderWeaponAttachment.h"
-#include "AssetLoaders/AssetLoaderWeaponAttachmentUnique.h"
-#include "AssetLoaders/AssetLoaderWeaponCamo.h"
-#include "AssetLoaders/AssetLoaderXAnim.h"
-#include "AssetLoaders/AssetLoaderXGlobals.h"
-#include "AssetLoaders/AssetLoaderXModel.h"
-#include "AssetLoaders/AssetLoaderZBarrier.h"
+#include "Asset/GlobalAssetPoolsLoader.h"
 #include "AssetLoading/AssetLoadingManager.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
+#include "Game/T6/T6.h"
 #include "Image/Dx12TextureLoader.h"
 #include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
 #include "Image/Texture.h"
+#include "Localize/AssetLoaderLocalizeT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
 
 #include <format>
+#include <memory>
 
 namespace T6
 {
     constexpr auto IPAK_READ_HASH = Common::Com_HashKey("ipak_read", 64);
     constexpr auto GLOBAL_HASH = Common::Com_HashKey("GLOBAL", 64);
-
-    ObjLoader::ObjLoader()
-    {
-#define REGISTER_ASSET_LOADER(t)                                                                                                                               \
-    {                                                                                                                                                          \
-        auto l = std::make_unique<t>();                                                                                                                        \
-        m_asset_loaders_by_type[l->GetHandlingAssetType()] = std::move(l);                                                                                     \
-    }
-
-        REGISTER_ASSET_LOADER(AssetLoaderPhysPreset)
-        REGISTER_ASSET_LOADER(AssetLoaderPhysConstraints)
-        REGISTER_ASSET_LOADER(AssetLoaderDestructibleDef)
-        REGISTER_ASSET_LOADER(AssetLoaderXAnim)
-        REGISTER_ASSET_LOADER(AssetLoaderXModel)
-        REGISTER_ASSET_LOADER(AssetLoaderMaterial)
-        REGISTER_ASSET_LOADER(AssetLoaderTechniqueSet)
-        REGISTER_ASSET_LOADER(AssetLoaderGfxImage)
-        REGISTER_ASSET_LOADER(AssetLoaderSoundBank)
-        REGISTER_ASSET_LOADER(AssetLoaderSoundPatch)
-        REGISTER_ASSET_LOADER(AssetLoaderClipMap)
-        REGISTER_ASSET_LOADER(AssetLoaderClipMapPvs)
-        REGISTER_ASSET_LOADER(AssetLoaderComWorld)
-        REGISTER_ASSET_LOADER(AssetLoaderGameWorldSp)
-        REGISTER_ASSET_LOADER(AssetLoaderGameWorldMp)
-        REGISTER_ASSET_LOADER(AssetLoaderMapEnts)
-        REGISTER_ASSET_LOADER(AssetLoaderGfxWorld)
-        REGISTER_ASSET_LOADER(AssetLoaderGfxLightDef)
-        REGISTER_ASSET_LOADER(AssetLoaderFont)
-        REGISTER_ASSET_LOADER(AssetLoaderFontIcon)
-        REGISTER_ASSET_LOADER(AssetLoaderMenuList)
-        REGISTER_ASSET_LOADER(AssetLoaderMenu)
-        REGISTER_ASSET_LOADER(AssetLoaderLocalizeEntry)
-        REGISTER_ASSET_LOADER(AssetLoaderWeapon)
-        REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachment)
-        REGISTER_ASSET_LOADER(AssetLoaderWeaponAttachmentUnique)
-        REGISTER_ASSET_LOADER(AssetLoaderWeaponCamo)
-        REGISTER_ASSET_LOADER(AssetLoaderSoundDriverGlobals)
-        REGISTER_ASSET_LOADER(AssetLoaderFx)
-        REGISTER_ASSET_LOADER(AssetLoaderImpactFx)
-        REGISTER_ASSET_LOADER(AssetLoaderRawFile)
-        REGISTER_ASSET_LOADER(AssetLoaderStringTable)
-        REGISTER_ASSET_LOADER(AssetLoaderLeaderboard)
-        REGISTER_ASSET_LOADER(AssetLoaderXGlobals)
-        REGISTER_ASSET_LOADER(AssetLoaderDDL)
-        REGISTER_ASSET_LOADER(AssetLoaderGlasses)
-        REGISTER_ASSET_LOADER(AssetLoaderEmblemSet)
-        REGISTER_ASSET_LOADER(AssetLoaderScriptParseTree)
-        REGISTER_ASSET_LOADER(AssetLoaderVehicle)
-        REGISTER_ASSET_LOADER(AssetLoaderMemoryBlock)
-        REGISTER_ASSET_LOADER(AssetLoaderAddonMapEnts)
-        REGISTER_ASSET_LOADER(AssetLoaderTracer)
-        REGISTER_ASSET_LOADER(AssetLoaderSkinnedVerts)
-        REGISTER_ASSET_LOADER(AssetLoaderQdb)
-        REGISTER_ASSET_LOADER(AssetLoaderSlug)
-        REGISTER_ASSET_LOADER(AssetLoaderFootstepTable)
-        REGISTER_ASSET_LOADER(AssetLoaderFootstepFxTable)
-        REGISTER_ASSET_LOADER(AssetLoaderZBarrier)
-
-#undef REGISTER_ASSET_LOADER
-    }
 
     bool ObjLoader::VerifySoundBankChecksum(const SoundBank& soundBank, const SndRuntimeAssetBank& sndRuntimeAssetBank)
     {
@@ -356,17 +253,155 @@ namespace T6
         IPak::Repository.RemoveContainerReferences(&zone);
     }
 
-    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection) const {}
-
-    bool ObjLoader::LoadAssetForZone(AssetLoadingContext& context, const asset_type_t assetType, const std::string& assetName) const
+    namespace
     {
-        AssetLoadingManager assetLoadingManager(m_asset_loaders_by_type, context);
-        return assetLoadingManager.LoadAssetFromLoader(assetType, assetName);
-    }
+        void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone)
+        {
+            auto& memory = *zone.GetMemory();
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPhysPreset>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPhysConstraints>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorDestructibleDef>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXAnim>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXModel>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMaterial>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorTechniqueSet>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorImage>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundBank>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundPatch>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorClipMap>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorClipMapPvs>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorComWorld>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGameWorldSp>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGameWorldMp>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMapEnts>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGfxWorld>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLightDef>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFont>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMenuList>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMenu>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLocalize>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorWeapon>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundDriverGlobals>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFx>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorImpactFx>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorRawFile>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorStringTable>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPackIndex>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXGlobals>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorDDL>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGlasses>(memory));
+            // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorEmblemSet>(memory));
+        }
 
-    void ObjLoader::FinalizeAssetsForZone(AssetLoadingContext& context) const
+        void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
+        {
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetPhysPreset>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetPhysConstraints>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetDestructibleDef>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetXAnim>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetXModel>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMaterial>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetTechniqueSet>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetImage>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSoundBank>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSoundPatch>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetClipMap>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetClipMapPvs>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetComWorld>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetGameWorldSp>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetGameWorldMp>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMapEnts>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetGfxWorld>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLightDef>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFont>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFontIcon>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMenuList>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMenu>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLocalize>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetWeapon>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAttachment>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAttachmentUnique>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetWeaponCamo>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSoundDriverGlobals>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFx>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetImpactFx>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetRawFile>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetStringTable>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetLeaderboard>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetXGlobals>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetDDL>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetGlasses>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetEmblemSet>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetScript>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetVehicle>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetMemoryBlock>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAddonMapEnts>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetTracer>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSkinnedVerts>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetQdb>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetSlug>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepTable>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepFxTable>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
+        }
+
+        void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
+        {
+            auto& memory = *zone.GetMemory();
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundBank>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldSp>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldMp>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderMapEnts>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderFontIcon>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderLocalize>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderAttachment>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderAttachmentUnique>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderWeaponCamo>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderRawFile>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderStringTable>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderLeaderboard>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderXGlobals>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderDDL>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderGlasses>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderEmblemSet>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderScript>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderMemoryBlock>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderSkinnedVerts>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderQdb>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderSlug>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepTable>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
+            // collection.AddAssetCreator(std::make_unique<AssetLoaderZBarrier>(memory));
+        }
+    } // namespace
+
+    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
     {
-        for (const auto& [type, loader] : m_asset_loaders_by_type)
-            loader->FinalizeAssetsForZone(context);
+        ConfigureDefaultCreators(collection, zone, searchPath);
+        ConfigureGlobalAssetPoolsLoaders(collection, zone);
     }
 } // namespace T6

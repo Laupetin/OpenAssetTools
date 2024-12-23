@@ -1,13 +1,12 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
-
 #include <string>
-#include <unordered_set>
 
-class LocalizeReadingZoneState final : public IZoneAssetLoaderState
+class ILocalizeFileDuplicationChecker
 {
 public:
+    virtual ~ILocalizeFileDuplicationChecker() = default;
+
     /**
      * Checks whether a localize key was already added.
      * Inserts key if it was not added yet.
@@ -15,8 +14,5 @@ public:
      * \param key The key to check
      * \returns \c true if key was not duplicated yet, \c false otherwise
      */
-    bool DoLocalizeEntryDuplicateCheck(const std::string& key);
-
-private:
-    std::unordered_set<std::string> m_keys;
+    virtual bool CheckLocalizeEntryForDuplicates(const std::string& key) = 0;
 };

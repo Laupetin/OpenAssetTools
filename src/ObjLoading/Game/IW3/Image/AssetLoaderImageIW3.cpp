@@ -1,4 +1,4 @@
-#include "AssetLoaderGfxImage.h"
+#include "AssetLoaderImageIW3.h"
 
 #include "Game/IW3/IW3.h"
 #include "Image/DdsLoader.h"
@@ -12,43 +12,35 @@
 
 using namespace IW3;
 
-void* AssetLoaderGfxImage::CreateEmptyAsset(const std::string& assetName, MemoryManager* memory)
+AssetLoaderImage::AssetLoaderImage(MemoryManager& memory, ISearchPath& searchPath)
+    : m_memory(memory),
+      m_search_path(searchPath)
 {
-    auto* image = memory->Create<GfxImage>();
-    memset(image, 0, sizeof(GfxImage));
-    image->name = memory->Dup(assetName.c_str());
-    return image;
 }
 
-bool AssetLoaderGfxImage::CanLoadFromRaw() const
-{
-    return true;
-}
-
-bool AssetLoaderGfxImage::LoadFromRaw(
-    const std::string& assetName, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager, Zone* zone) const
+AssetCreationResult AssetLoaderImage::CreateAsset(const std::string& assetName, AssetCreationContext& context)
 {
     // Do not load any GfxImages from raw for now that are not loaded
     // TODO: Load iwis and add streaming info to asset
     if (assetName.empty() || assetName[0] != '*')
-        return false;
+        return AssetCreationResult::NoAction();
 
     std::string safeAssetName = assetName;
     std::ranges::replace(safeAssetName, '*', '_');
 
-    const auto file = searchPath->Open(std::format("images/{}.dds", safeAssetName));
+    const auto file = m_search_path.Open(std::format("images/{}.dds", safeAssetName));
     if (!file.IsOpen())
-        return false;
+        return AssetCreationResult::NoAction();
 
     const auto texture = dds::LoadDds(*file.m_stream);
     if (!texture)
     {
         std::cerr << std::format("Failed to load dds file for image asset \"{}\"\n", assetName);
-        return false;
+        return AssetCreationResult::Failure();
     }
 
-    auto* image = memory->Create<GfxImage>();
-    image->name = memory->Dup(assetName.c_str());
+    auto* image = m_memory.Alloc<GfxImage>();
+    image->name = m_memory.Dup(assetName.c_str());
     image->picmip.platform[0] = 0;
     image->picmip.platform[1] = 0;
     image->noPicmip = !texture->HasMipMaps();
@@ -88,7 +80,7 @@ bool AssetLoaderGfxImage::LoadFromRaw(
     for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
         dataSize += texture->GetSizeOfMipLevel(mipLevel) * faceCount;
 
-    auto* loadDef = static_cast<GfxImageLoadDef*>(zone->GetMemory()->AllocRaw(offsetof(GfxImageLoadDef, data) + dataSize));
+    auto* loadDef = static_cast<GfxImageLoadDef*>(m_memory.AllocRaw(offsetof(GfxImageLoadDef, data) + dataSize));
     image->texture.loadDef = loadDef;
     loadDef->levelCount = static_cast<char>(mipCount);
     loadDef->flags = 0;
@@ -116,7 +108,5 @@ bool AssetLoaderGfxImage::LoadFromRaw(
         }
     }
 
-    manager->AddAsset<AssetImage>(assetName, image);
-
-    return true;
+    return AssetCreationResult::Success(context.AddAsset<AssetImage>(assetName, image));
 }
