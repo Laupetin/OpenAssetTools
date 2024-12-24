@@ -6,6 +6,8 @@
 #include "Image/AssetLoaderImageIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
 #include "ObjLoading.h"
+#include "RawFile/AssetLoaderRawFileIW3.h"
+#include "StringTable/AssetLoaderStringTableIW3.h"
 
 #include <memory>
 
@@ -110,8 +112,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderRawFile>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderStringTable>(memory));
+        collection.AddAssetCreator(std::make_unique<AssetLoaderRawFile>(memory, searchPath));
+        collection.AddAssetCreator(std::make_unique<AssetLoaderStringTable>(memory, searchPath));
     }
 } // namespace
 
