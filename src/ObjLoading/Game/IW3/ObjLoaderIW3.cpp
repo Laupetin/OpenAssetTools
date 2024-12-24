@@ -81,7 +81,7 @@ namespace
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetStringTable>>(zone));
     }
 
-    void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
+    void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
     {
         auto& memory = *zone.GetMemory();
 
@@ -117,6 +117,7 @@ namespace
 
 void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
 {
-    ConfigureDefaultCreators(collection, zone, searchPath);
+    ConfigureDefaultCreators(collection, zone);
+    ConfigureLoaders(collection, zone, searchPath);
     ConfigureGlobalAssetPoolsLoaders(collection, zone);
 }
