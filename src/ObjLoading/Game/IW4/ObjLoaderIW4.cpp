@@ -19,43 +19,44 @@ namespace
     void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone)
     {
         auto& memory = *zone.GetMemory();
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPhysPreset>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPhysCollMap>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXAnim>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXModelSurfs>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXModel>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMaterial>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPixelShader>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorVertexShader>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorVertexDecl>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorTechniqueSet>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorImage>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSound>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundCurve>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLoadedSound>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorClipMapSp>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorClipMapMp>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorComWorld>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGameWorldSp>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGameWorldMp>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMapEnts>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFxWorld>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGfxWorld>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLightDef>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFont>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMenuList>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMenu>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLocalize>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorWeapon>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFx>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorImpactFx>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorRawFile>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorStringTable>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLeaderboard>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorStructuredDataDef>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorTracer>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorVehicle>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorAddonMapEnts>(memory));
+
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysPreset>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysCollMap>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXAnim>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXModelSurfs>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXModel>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMaterial>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPixelShader>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVertexShader>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVertexDecl>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetTechniqueSet>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetImage>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSound>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSoundCurve>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLoadedSound>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetClipMapSp>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetClipMapMp>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetComWorld>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGameWorldSp>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGameWorldMp>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMapEnts>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFxWorld>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGfxWorld>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLightDef>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFont>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMenuList>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMenu>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLocalize>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetWeapon>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFx>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetImpactFx>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetRawFile>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetStringTable>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLeaderboard>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetStructuredDataDef>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetTracer>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetVehicle>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetAddonMapEnts>>(memory));
     }
 
     void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
@@ -99,7 +100,7 @@ namespace
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetAddonMapEnts>>(zone));
     }
 
-    void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
+    void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
     {
         auto& memory = *zone.GetMemory();
 
@@ -145,6 +146,7 @@ namespace
 
 void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
 {
-    ConfigureDefaultCreators(collection, zone, searchPath);
+    ConfigureDefaultCreators(collection, zone);
+    ConfigureLoaders(collection, zone, searchPath);
     ConfigureGlobalAssetPoolsLoaders(collection, zone);
 }

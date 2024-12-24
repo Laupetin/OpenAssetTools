@@ -19,39 +19,40 @@ namespace
     void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone)
     {
         auto& memory = *zone.GetMemory();
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPhysPreset>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPhysConstraints>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorDestructibleDef>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXAnim>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXModel>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMaterial>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorTechniqueSet>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorImage>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundBank>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundPatch>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorClipMap>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorClipMapPvs>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorComWorld>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGameWorldSp>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGameWorldMp>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMapEnts>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGfxWorld>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLightDef>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFont>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMenuList>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorMenu>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorLocalize>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorWeapon>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorSoundDriverGlobals>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorFx>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorImpactFx>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorRawFile>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorStringTable>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorPackIndex>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorXGlobals>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorDDL>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorGlasses>(memory));
-        // collection.AddDefaultAssetCreator(std::make_unique<DefaultCreatorEmblemSet>(memory));
+
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysPreset>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysConstraints>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetDestructibleDef>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXAnim>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXModel>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMaterial>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetTechniqueSet>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetImage>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSoundBank>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSoundPatch>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetClipMap>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetClipMapPvs>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetComWorld>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGameWorldSp>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGameWorldMp>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMapEnts>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGfxWorld>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLightDef>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFont>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMenuList>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetMenu>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetLocalize>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetWeapon>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetSoundDriverGlobals>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFx>>(memory));
+        // AssetImpactFx has no name and cannot be default constructed
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetRawFile>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetStringTable>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPackIndex>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetXGlobals>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetDDL>>(memory));
+        collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetGlasses>>(memory));
+        // AssetEmblemSet has no name and cannot be default constructed
     }
 
     void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
@@ -91,9 +92,10 @@ namespace
         collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetEmblemSet>>(zone));
     }
 
-    void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
+    void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
     {
         auto& memory = *zone.GetMemory();
+
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
@@ -132,6 +134,7 @@ namespace
 
 void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
 {
-    ConfigureDefaultCreators(collection, zone, searchPath);
+    ConfigureDefaultCreators(collection, zone);
+    ConfigureLoaders(collection, zone, searchPath);
     ConfigureGlobalAssetPoolsLoaders(collection, zone);
 }

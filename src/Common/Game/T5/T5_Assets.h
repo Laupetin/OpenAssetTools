@@ -1311,7 +1311,7 @@ namespace T5
 
     struct SndPatch
     {
-        char* name;
+        const char* name;
         unsigned int elementCount;
         unsigned int* elements;
         unsigned int fileCount;
