@@ -4,11 +4,11 @@
 #include "Parsing/Impl/CommentRemovingStreamProxy.h"
 #include "Parsing/Impl/ParserSingleInputStream.h"
 
-LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, LocalizeReadingZoneState* zoneState)
+LocalizeFileReader::LocalizeFileReader(std::istream& stream, std::string fileName, GameLanguage language, ILocalizeFileDuplicationChecker& duplicationChecker)
     : m_file_name(std::move(fileName)),
       m_stream(nullptr),
       m_language(language),
-      m_zone_state(zoneState)
+      m_duplication_checker(duplicationChecker)
 {
     OpenBaseStream(stream);
     SetupStreamProxies();
@@ -38,7 +38,7 @@ bool LocalizeFileReader::ReadLocalizeFile(std::vector<CommonLocalizeEntry>& entr
     lexerConfig.m_read_floating_point_numbers = false;
     const auto lexer = std::make_unique<SimpleLexer>(m_stream, std::move(lexerConfig));
 
-    const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language, m_zone_state);
+    const auto parser = std::make_unique<LocalizeFileParser>(lexer.get(), m_language, m_duplication_checker);
 
     if (parser->Parse())
     {

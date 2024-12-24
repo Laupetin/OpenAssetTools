@@ -11,6 +11,6 @@ public:
     void AddFileData(std::string fileName, std::string fileData);
 
     SearchPathOpenFile Open(const std::string& fileName) override;
-    std::string GetPath() override;
+    const std::string& GetPath() override;
     void Find(const SearchPathSearchOptions& options, const std::function<void(const std::string&)>& callback) override;
 };

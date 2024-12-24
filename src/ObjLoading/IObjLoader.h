@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Asset/AssetCreatorCollection.h"
 #include "AssetLoading/AssetLoadingContext.h"
 #include "SearchPath/ISearchPath.h"
 #include "Zone/Zone.h"
@@ -27,8 +28,7 @@ public:
      */
     virtual void UnloadContainersOfZone(Zone& zone) const = 0;
 
-    virtual bool LoadAssetForZone(AssetLoadingContext& context, asset_type_t assetType, const std::string& assetName) const = 0;
-    virtual void FinalizeAssetsForZone(AssetLoadingContext& context) const = 0;
+    virtual void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const = 0;
 
     static const IObjLoader* GetObjLoaderForGame(GameId game);
 };
