@@ -4,6 +4,7 @@
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "Parsing/TechsetFileParser.h"
 
+#include <format>
 #include <iostream>
 
 using namespace techset;
@@ -33,6 +34,6 @@ std::unique_ptr<techset::TechsetDefinition> TechsetFileReader::ReadTechsetDefini
     if (success)
         return parser->GetTechsetDefinition();
 
-    std::cout << "Parsing techset file \"" << m_file_name << "\" failed!\n";
-    return {};
+    std::cerr << std::format("Parsing techset file \"{}\" failed!\n", m_file_name);
+    return nullptr;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IGdtQueryable.h"
+#include "Gdt/IGdtQueryable.h"
 #include "IZoneAssetLoaderState.h"
 #include "Obj/Gdt/Gdt.h"
 #include "SearchPath/ISearchPath.h"
@@ -32,15 +32,10 @@ public:
         return newStatePtr;
     }
 
-private:
-    void BuildGdtEntryCache();
-
 public:
     Zone& m_zone;
     ISearchPath& m_raw_search_path;
-    const std::vector<Gdt*> m_gdt_files;
     std::unordered_map<std::string, asset_type_t> m_ignored_asset_map;
 
-    std::unordered_map<std::string, std::unordered_map<std::string, GdtEntry*>> m_entries_by_gdf_and_by_name;
     std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetLoaderState>> m_zone_asset_loader_states;
 };

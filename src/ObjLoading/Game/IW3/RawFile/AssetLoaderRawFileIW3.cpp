@@ -1,7 +1,6 @@
 #include "AssetLoaderRawFileIW3.h"
 
 #include "Game/IW3/IW3.h"
-#include "Pool/GlobalAssetPool.h"
 
 #include <cstring>
 

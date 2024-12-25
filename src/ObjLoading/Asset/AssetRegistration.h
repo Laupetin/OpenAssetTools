@@ -25,7 +25,7 @@ public:
 
     std::unique_ptr<XAssetInfoGeneric> CreateXAssetInfo();
 
-private:
+protected:
     asset_type_t m_type;
     std::string m_name;
     void* m_asset;
@@ -39,6 +39,11 @@ template<typename AssetType> class AssetRegistration : public GenericAssetRegist
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
 public:
+    AssetRegistration(std::string assetName)
+        : GenericAssetRegistration(AssetType::EnumEntry, std::move(assetName), nullptr)
+    {
+    }
+
     AssetRegistration(std::string assetName, typename AssetType::Type* asset)
         : GenericAssetRegistration(AssetType::EnumEntry, std::move(assetName), asset)
     {
@@ -48,4 +53,9 @@ public:
     AssetRegistration(AssetRegistration&& other) = default;
     AssetRegistration& operator=(const AssetRegistration& other) = delete;
     AssetRegistration& operator=(AssetRegistration&& other) noexcept = default;
+
+    void SetAsset(typename AssetType::Type* asset)
+    {
+        m_asset = asset;
+    }
 };

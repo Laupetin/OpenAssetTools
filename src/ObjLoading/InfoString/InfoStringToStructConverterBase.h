@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Asset/AssetCreationContext.h"
+#include "Asset/AssetRegistration.h"
 #include "InfoString/InfoString.h"
 #include "Pool/XAssetInfo.h"
 #include "Utils/ClassUtils.h"
@@ -7,6 +9,7 @@
 #include "Zone/ZoneScriptStrings.h"
 
 #include <array>
+#include <format>
 #include <iostream>
 #include <string>
 #include <unordered_set>
@@ -14,15 +17,22 @@
 
 class InfoStringToStructConverterBase
 {
-protected:
-    const InfoString& m_info_string;
-    ZoneScriptStrings& m_zone_script_strings;
-    std::unordered_set<scr_string_t> m_used_script_string_list;
-    std::unordered_set<XAssetInfoGeneric*> m_dependencies;
-    std::unordered_set<IndirectAssetReference> m_indirect_asset_references;
-    MemoryManager* m_memory;
-    void* m_structure;
+public:
+    InfoStringToStructConverterBase(const InfoString& infoString,
+                                    void* structure,
+                                    ZoneScriptStrings& zoneScriptStrings,
+                                    MemoryManager& memory,
+                                    AssetCreationContext& context,
+                                    GenericAssetRegistration& registration);
+    virtual ~InfoStringToStructConverterBase() = default;
+    InfoStringToStructConverterBase(const InfoStringToStructConverterBase& other) = delete;
+    InfoStringToStructConverterBase(InfoStringToStructConverterBase&& other) noexcept = delete;
+    InfoStringToStructConverterBase& operator=(const InfoStringToStructConverterBase& other) = delete;
+    InfoStringToStructConverterBase& operator=(InfoStringToStructConverterBase&& other) noexcept = delete;
 
+    virtual bool Convert() = 0;
+
+protected:
     static bool ParseAsArray(const std::string& value, std::vector<std::string>& valueArray);
 
     template<size_t ARRAY_SIZE> static bool ParseAsArray(const std::string& value, std::vector<std::array<std::string, ARRAY_SIZE>>& valueArray)
@@ -79,7 +89,7 @@ protected:
             const auto isLastEntry = currentEntryOffset >= (ARRAY_SIZE - 1);
             if (isNextEntrySeparator != isLastEntry)
             {
-                std::cout << "Expected " << ARRAY_SIZE << " values but got new line\n";
+                std::cerr << std::format("Expected {} values but got new line\n", ARRAY_SIZE);
                 return false;
             }
 
@@ -94,7 +104,7 @@ protected:
 
         if (currentEntryOffset > 0)
         {
-            std::cout << "Expected " << ARRAY_SIZE << " values but got new line\n";
+            std::cerr << std::format("Expected {} values but got new line\n", ARRAY_SIZE);
             return false;
         }
 
@@ -112,16 +122,10 @@ protected:
     bool ConvertScriptString(const std::string& value, size_t offset);
     bool ConvertEnumInt(const std::string& fieldName, const std::string& value, size_t offset, const char** enumValues, size_t enumSize);
 
-public:
-    InfoStringToStructConverterBase(const InfoString& infoString, void* structure, ZoneScriptStrings& zoneScriptStrings, MemoryManager* memory);
-    virtual ~InfoStringToStructConverterBase() = default;
-    InfoStringToStructConverterBase(const InfoStringToStructConverterBase& other) = delete;
-    InfoStringToStructConverterBase(InfoStringToStructConverterBase&& other) noexcept = delete;
-    InfoStringToStructConverterBase& operator=(const InfoStringToStructConverterBase& other) = delete;
-    InfoStringToStructConverterBase& operator=(InfoStringToStructConverterBase&& other) noexcept = delete;
-
-    virtual bool Convert() = 0;
-    _NODISCARD std::vector<scr_string_t> GetUsedScriptStrings() const;
-    _NODISCARD std::vector<XAssetInfoGeneric*> GetDependencies() const;
-    _NODISCARD std::vector<IndirectAssetReference> GetIndirectAssetReferences() const;
+    const InfoString& m_info_string;
+    void* m_structure;
+    ZoneScriptStrings& m_zone_script_strings;
+    MemoryManager& m_memory;
+    AssetCreationContext& m_context;
+    GenericAssetRegistration& m_registration;
 };

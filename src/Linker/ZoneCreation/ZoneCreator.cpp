@@ -1,6 +1,7 @@
 #include "ZoneCreator.h"
 
 #include "AssetLoading/AssetLoadingContext.h"
+#include "Gdt/GdtLookup.h"
 #include "IObjCompiler.h"
 #include "IObjLoader.h"
 
@@ -45,6 +46,19 @@ namespace
 
 namespace zone_creator
 {
+    void InitLookup(const ZoneCreationContext& context, GdtLookup& lookup)
+    {
+        std::vector<const Gdt*> gdtFiles;
+        gdtFiles.reserve(context.m_gdt_files.size());
+
+        for (const auto& gdt : context.m_gdt_files)
+        {
+            gdtFiles.emplace_back(gdt.get());
+        }
+
+        lookup.Initialize(gdtFiles);
+    }
+
     std::unique_ptr<Zone> CreateZoneForDefinition(GameId gameId, ZoneCreationContext& context)
     {
         auto zone = CreateZone(context, gameId);
@@ -53,12 +67,15 @@ namespace zone_creator
         IgnoreReferencesFromAssets(context);
         IgnoredAssetLookup ignoredAssetLookup(context.m_ignored_assets);
 
+        GdtLookup lookup;
+        InitLookup(context, lookup);
+
         const auto* objCompiler = IObjCompiler::GetObjCompilerForGame(gameId);
         const auto* objLoader = IObjLoader::GetObjLoaderForGame(gameId);
 
         AssetCreatorCollection creatorCollection(*zone);
         objCompiler->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_definition);
-        objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path);
+        objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, gdtLookup);
 
         AssetCreationContext creationContext(zone.get(), &creatorCollection, &ignoredAssetLookup);
 

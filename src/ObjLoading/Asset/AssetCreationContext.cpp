@@ -1,5 +1,6 @@
 #include "AssetCreationContext.h"
 
+#include <cassert>
 #include <format>
 #include <iostream>
 
@@ -51,6 +52,8 @@ void GenericAssetRegistration::AddIndirectAssetReference(IndirectAssetReference 
 
 std::unique_ptr<XAssetInfoGeneric> GenericAssetRegistration::CreateXAssetInfo()
 {
+    assert(m_asset);
+
     std::vector<XAssetInfoGeneric*> dependencies(m_dependencies.begin(), m_dependencies.end());
     std::vector<scr_string_t> scriptStrings(m_used_script_strings.begin(), m_used_script_strings.end());
     std::vector<IndirectAssetReference> indirectAssetReferences(m_indirect_asset_references.begin(), m_indirect_asset_references.end());

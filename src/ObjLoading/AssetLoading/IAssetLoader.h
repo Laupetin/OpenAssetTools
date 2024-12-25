@@ -1,6 +1,7 @@
 #pragma once
+
+#include "Gdt/IGdtQueryable.h"
 #include "IAssetLoadingManager.h"
-#include "IGdtQueryable.h"
 #include "SearchPath/ISearchPath.h"
 #include "Utils/ClassUtils.h"
 #include "Zone/ZoneTypes.h"
