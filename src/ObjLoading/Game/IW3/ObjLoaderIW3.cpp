@@ -92,7 +92,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
-        collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory, searchPath));
+        collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
@@ -107,17 +107,17 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-        collection.AddAssetCreator(std::make_unique<AssetLoaderLocalize>(memory, searchPath, zone));
+        collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-        collection.AddAssetCreator(std::make_unique<AssetLoaderRawFile>(memory, searchPath));
-        collection.AddAssetCreator(std::make_unique<AssetLoaderStringTable>(memory, searchPath));
+        collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
+        collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
     }
 } // namespace
 
-void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
+void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const
 {
     ConfigureDefaultCreators(collection, zone);
     ConfigureLoaders(collection, zone, searchPath);

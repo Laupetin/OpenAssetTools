@@ -5,17 +5,9 @@
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
+#include <memory>
+
 namespace IW3
 {
-    class AssetLoaderStringTable final : public AssetCreator<AssetRawFile>
-    {
-    public:
-        AssetLoaderStringTable(MemoryManager& memory, ISearchPath& searchPath);
-
-        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override;
-
-    private:
-        MemoryManager& m_memory;
-        ISearchPath& m_search_path;
-    };
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath);
 } // namespace IW3

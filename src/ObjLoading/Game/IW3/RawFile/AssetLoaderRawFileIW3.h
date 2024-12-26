@@ -5,17 +5,9 @@
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
+#include <memory>
+
 namespace IW3
 {
-    class AssetLoaderRawFile final : public AssetCreator<AssetRawFile>
-    {
-    public:
-        AssetLoaderRawFile(MemoryManager& memory, ISearchPath& searchPath);
-
-        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override;
-
-    private:
-        MemoryManager& m_memory;
-        ISearchPath& m_search_path;
-    };
+    std::unique_ptr<AssetCreator<AssetRawFile>> CreateRawFileLoader(MemoryManager& memory, ISearchPath& searchPath);
 } // namespace IW3
