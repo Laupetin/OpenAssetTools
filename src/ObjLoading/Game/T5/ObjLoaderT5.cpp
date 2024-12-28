@@ -3,8 +3,11 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/T5/GameT5.h"
 #include "Game/T5/T5.h"
-#include "Localize/AssetLoaderLocalizeT5.h"
+#include "Game/T5/XModel/LoaderXModelT5.h"
+#include "Localize/LoaderLocalizeT5.h"
 #include "ObjLoading.h"
+#include "RawFile/LoaderRawFileT5.h"
+#include "StringTable/LoaderStringTableT5.h"
 
 #include <memory>
 
@@ -100,7 +103,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
+        collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
@@ -117,13 +120,13 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderLocalize>(memory));
+        collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderRawFile>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderStringTable>(memory));
+        collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
+        collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPackIndex>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXGlobals>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDDL>(memory));
@@ -132,7 +135,7 @@ namespace
     }
 } // namespace
 
-void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
+void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const
 {
     ConfigureDefaultCreators(collection, zone);
     ConfigureLoaders(collection, zone, searchPath);

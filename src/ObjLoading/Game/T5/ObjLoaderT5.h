@@ -12,6 +12,6 @@ namespace T5
         void LoadReferencedContainersForZone(ISearchPath& searchPath, Zone& zone) const override;
         void UnloadContainersOfZone(Zone& zone) const override;
 
-        void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const override;
+        void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const override;
     };
 } // namespace T5
