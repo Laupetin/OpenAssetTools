@@ -16,18 +16,16 @@
 
 #include <cassert>
 #include <cstring>
+#include <format>
 #include <sstream>
 
 using namespace IW5;
 using namespace menu;
 
-namespace IW5
+namespace
 {
-    class MenuConverterImpl : public AbstractMenuConverter
+    class MenuConverter final : public AbstractMenuConverter, public IMenuConverter
     {
-        MenuConversionZoneState* m_conversion_zone_state;
-        MenuAssetZoneState* m_parsing_zone_state;
-
         _NODISCARD static rectDef_s ConvertRectDef(const CommonRect& rect)
         {
             return rectDef_s{
@@ -78,26 +76,26 @@ namespace IW5
             return input;
         }
 
-        _NODISCARD Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Material* ConvertMaterial(const std::string& materialName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (materialName.empty())
                 return nullptr;
 
-            auto* materialDependency = m_manager->LoadDependency<AssetMaterial>(materialName);
+            auto* materialDependency = m_context.LoadDependency<AssetMaterial>(materialName);
             if (!materialDependency)
-                throw MenuConversionException("Failed to load material \"" + materialName + "\"", menu, item);
+                throw MenuConversionException(std::format("Failed to load material \"{}\"", materialName), menu, item);
 
             return materialDependency->Asset();
         }
 
-        _NODISCARD snd_alias_list_t* ConvertSound(const std::string& soundName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
+        [[nodiscard]] snd_alias_list_t* ConvertSound(const std::string& soundName, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (soundName.empty())
                 return nullptr;
 
-            auto* soundDependency = m_manager->LoadDependency<AssetSound>(soundName);
+            auto* soundDependency = m_context.LoadDependency<AssetSound>(soundName);
             if (!soundDependency)
-                throw MenuConversionException("Failed to load sound \"" + soundName + "\"", menu, item);
+                throw MenuConversionException(std::format("Failed to load sound \"{}\"", soundName), menu, item);
 
             return soundDependency->Asset();
         }
@@ -416,7 +414,7 @@ namespace IW5
             if (!expression)
                 return nullptr;
 
-            auto* statement = m_memory->Create<Statement_s>();
+            auto* statement = m_memory.Alloc<Statement_s>();
             for (auto& result : statement->persistentState.lastResult)
                 result = Operand{};
             for (auto& lastExecutionTime : statement->persistentState.lastExecuteTime)
@@ -426,8 +424,8 @@ namespace IW5
             std::vector<expressionEntry> expressionEntries;
             ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
 
-            auto* outputExpressionEntries = m_memory->Alloc<expressionEntry>(expressionEntries.size());
-            memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
+            auto* outputExpressionEntries = m_memory.Alloc<expressionEntry>(expressionEntries.size());
+            std::memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
 
             statement->entries = outputExpressionEntries;
             statement->numEntries = static_cast<int>(expressionEntries.size());
@@ -435,10 +433,10 @@ namespace IW5
             return statement;
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(float& staticValue,
-                                                        const ISimpleExpression* expression,
-                                                        const CommonMenuDef* menu,
-                                                        const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertOrApplyStatement(float& staticValue,
+                                                           const ISimpleExpression* expression,
+                                                           const CommonMenuDef* menu,
+                                                           const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -466,10 +464,10 @@ namespace IW5
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(const char*& staticValue,
-                                                        const ISimpleExpression* expression,
-                                                        const CommonMenuDef* menu,
-                                                        const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertOrApplyStatement(const char*& staticValue,
+                                                           const ISimpleExpression* expression,
+                                                           const CommonMenuDef* menu,
+                                                           const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -483,7 +481,7 @@ namespace IW5
                 switch (value.m_type)
                 {
                 case SimpleExpressionValue::Type::STRING:
-                    staticValue = m_memory->Dup(value.m_string_value->c_str());
+                    staticValue = m_memory.Dup(value.m_string_value->c_str());
                     break;
 
                 case SimpleExpressionValue::Type::DOUBLE:
@@ -496,10 +494,10 @@ namespace IW5
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue,
-                                                        const ISimpleExpression* expression,
-                                                        const CommonMenuDef* menu,
-                                                        const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertOrApplyStatement(Material*& staticValue,
+                                                           const ISimpleExpression* expression,
+                                                           const CommonMenuDef* menu,
+                                                           const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -526,10 +524,10 @@ namespace IW5
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertVisibleExpression(windowDef_t* window,
-                                                         const ISimpleExpression* expression,
-                                                         const CommonMenuDef* commonMenu,
-                                                         const CommonItemDef* commonItem = nullptr) const
+        [[nodiscard]] Statement_s* ConvertVisibleExpression(windowDef_t* window,
+                                                            const ISimpleExpression* expression,
+                                                            const CommonMenuDef* commonMenu,
+                                                            const CommonItemDef* commonItem = nullptr) const
         {
             if (expression == nullptr)
                 return nullptr;
@@ -560,7 +558,7 @@ namespace IW5
             return ConvertExpression(expression, commonMenu, commonItem);
         }
 
-        _NODISCARD static EventType SetLocalVarTypeToEventType(const SetLocalVarType setLocalVarType)
+        [[nodiscard]] static EventType SetLocalVarTypeToEventType(const SetLocalVarType setLocalVarType)
         {
             switch (setLocalVarType)
             {
@@ -588,16 +586,16 @@ namespace IW5
             if (!setLocalVar)
                 return;
 
-            auto* outputHandler = m_memory->Alloc<MenuEventHandler>();
-            auto* outputSetLocalVar = m_memory->Alloc<SetLocalVarData>();
+            auto* outputHandler = m_memory.Alloc<MenuEventHandler>();
+            auto* outputSetLocalVar = m_memory.Alloc<SetLocalVarData>();
 
             outputHandler->eventType = SetLocalVarTypeToEventType(setLocalVar->m_type);
             outputHandler->eventData.setLocalVarData = outputSetLocalVar;
 
-            outputSetLocalVar->localVarName = m_memory->Dup(setLocalVar->m_var_name.c_str());
+            outputSetLocalVar->localVarName = m_memory.Dup(setLocalVar->m_var_name.c_str());
             outputSetLocalVar->expression = ConvertExpression(setLocalVar->m_value.get(), menu, item);
 
-            elements.push_back(outputHandler);
+            elements.emplace_back(outputHandler);
         }
 
         void ConvertEventHandlerScript(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerScript* script) const
@@ -606,11 +604,11 @@ namespace IW5
             if (!script)
                 return;
 
-            auto* outputHandler = m_memory->Create<MenuEventHandler>();
+            auto* outputHandler = m_memory.Alloc<MenuEventHandler>();
             outputHandler->eventType = EVENT_UNCONDITIONAL;
-            outputHandler->eventData.unconditionalScript = m_memory->Dup(script->m_script.c_str());
+            outputHandler->eventData.unconditionalScript = m_memory.Dup(script->m_script.c_str());
 
-            elements.push_back(outputHandler);
+            elements.emplace_back(outputHandler);
         }
 
         void ConvertEventHandlerCondition(std::vector<MenuEventHandler*>& elements,
@@ -633,8 +631,8 @@ namespace IW5
             }
             else
             {
-                auto* outputHandler = m_memory->Alloc<MenuEventHandler>();
-                auto* outputCondition = m_memory->Alloc<ConditionalScript>();
+                auto* outputHandler = m_memory.Alloc<MenuEventHandler>();
+                auto* outputCondition = m_memory.Alloc<ConditionalScript>();
 
                 outputHandler->eventType = EVENT_IF;
                 outputHandler->eventData.conditionalScript = outputCondition;
@@ -646,7 +644,7 @@ namespace IW5
 
                 if (condition->m_else_elements)
                 {
-                    auto* outputElseHandler = m_memory->Create<MenuEventHandler>();
+                    auto* outputElseHandler = m_memory.Alloc<MenuEventHandler>();
                     outputElseHandler->eventType = EVENT_ELSE;
                     outputElseHandler->eventData.elseScript = ConvertEventHandlerSet(condition->m_else_elements.get(), menu, item);
 
@@ -689,7 +687,7 @@ namespace IW5
                 ConvertEventHandler(elements, element.get(), menu, item);
         }
 
-        _NODISCARD MenuEventHandlerSet*
+        [[nodiscard]] MenuEventHandlerSet*
             ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (!eventHandlerSet)
@@ -701,9 +699,9 @@ namespace IW5
             if (elements.empty())
                 return nullptr;
 
-            auto* outputSet = m_memory->Alloc<MenuEventHandlerSet>();
-            auto* outputElements = m_memory->Alloc<MenuEventHandler*>(elements.size());
-            memcpy(outputElements, elements.data(), sizeof(void*) * elements.size());
+            auto* outputSet = m_memory.Alloc<MenuEventHandlerSet>();
+            auto* outputElements = m_memory.Alloc<MenuEventHandler*>(elements.size());
+            std::memcpy(outputElements, elements.data(), sizeof(void*) * elements.size());
 
             outputSet->eventHandlerCount = static_cast<int>(elements.size());
             outputSet->eventHandlers = outputElements;
@@ -711,15 +709,15 @@ namespace IW5
             return outputSet;
         }
 
-        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers,
-                                                     const CommonMenuDef* menu,
-                                                     const CommonItemDef* item = nullptr) const
+        [[nodiscard]] ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers,
+                                                        const CommonMenuDef* menu,
+                                                        const CommonItemDef* item = nullptr) const
         {
             if (keyHandlers.empty())
                 return nullptr;
 
             const auto keyHandlerCount = keyHandlers.size();
-            auto* output = m_memory->Alloc<ItemKeyHandler>(keyHandlerCount);
+            auto* output = m_memory.Alloc<ItemKeyHandler>(keyHandlerCount);
             auto currentKeyHandler = keyHandlers.cbegin();
             for (auto i = 0u; i < keyHandlerCount; i++)
             {
@@ -831,7 +829,7 @@ namespace IW5
             if (floatExpressionCount <= 0)
                 return nullptr;
 
-            auto* floatExpressions = m_memory->Alloc<ItemFloatExpression>(floatExpressionCount);
+            auto* floatExpressions = m_memory.Alloc<ItemFloatExpression>(floatExpressionCount);
             auto floatExpressionIndex = 0;
             for (const auto& [expression, expressionIsStatic, target, staticValue, staticValueArraySize, dynamicFlagsToSet] : locations)
             {
@@ -848,7 +846,7 @@ namespace IW5
             return floatExpressions;
         }
 
-        _NODISCARD const char* CreateEnableDvarString(const std::vector<std::string>& stringElements) const
+        [[nodiscard]] const char* CreateEnableDvarString(const std::vector<std::string>& stringElements) const
         {
             std::ostringstream ss;
 
@@ -857,10 +855,10 @@ namespace IW5
                 ss << "\"" << element << "\" ";
             }
 
-            return m_memory->Dup(ss.str().c_str());
+            return m_memory.Dup(ss.str().c_str());
         }
 
-        _NODISCARD const char* ConvertEnableDvar(const CommonItemDef& commonItem, int& dvarFlags) const
+        [[nodiscard]] const char* ConvertEnableDvar(const CommonItemDef& commonItem, int& dvarFlags) const
         {
             dvarFlags = 0;
 
@@ -897,15 +895,15 @@ namespace IW5
             return nullptr;
         }
 
-        _NODISCARD listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
-                                                        CommonItemFeaturesListBox* commonListBox,
-                                                        const CommonMenuDef& parentMenu,
-                                                        const CommonItemDef& commonItem) const
+        [[nodiscard]] listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
+                                                           CommonItemFeaturesListBox* commonListBox,
+                                                           const CommonMenuDef& parentMenu,
+                                                           const CommonItemDef& commonItem) const
         {
             if (commonListBox == nullptr)
                 return nullptr;
 
-            auto* listBox = m_memory->Alloc<listBoxDef_s>();
+            auto* listBox = m_memory.Alloc<listBoxDef_s>();
             listBox->notselectable = commonListBox->m_not_selectable ? 1 : 0;
             listBox->noScrollBars = commonListBox->m_no_scrollbars ? 1 : 0;
             listBox->usePaging = commonListBox->m_use_paging ? 1 : 0;
@@ -935,15 +933,15 @@ namespace IW5
             return listBox;
         }
 
-        _NODISCARD editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item,
-                                                            CommonItemFeaturesEditField* commonEditField,
-                                                            const CommonMenuDef& parentMenu,
-                                                            const CommonItemDef& commonItem) const
+        [[nodiscard]] editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item,
+                                                               CommonItemFeaturesEditField* commonEditField,
+                                                               const CommonMenuDef& parentMenu,
+                                                               const CommonItemDef& commonItem) const
         {
             if (commonEditField == nullptr)
                 return nullptr;
 
-            auto* editField = m_memory->Alloc<editFieldDef_s>();
+            auto* editField = m_memory.Alloc<editFieldDef_s>();
             editField->stepVal = static_cast<float>(commonEditField->m_def_val);
             editField->minVal = static_cast<float>(commonEditField->m_min_val);
             editField->maxVal = static_cast<float>(commonEditField->m_max_val);
@@ -955,15 +953,15 @@ namespace IW5
             return editField;
         }
 
-        _NODISCARD multiDef_s* ConvertMultiValueFeatures(itemDef_s* item,
-                                                         CommonItemFeaturesMultiValue* commonMultiValue,
-                                                         const CommonMenuDef& parentMenu,
-                                                         const CommonItemDef& commonItem) const
+        [[nodiscard]] multiDef_s* ConvertMultiValueFeatures(itemDef_s* item,
+                                                            CommonItemFeaturesMultiValue* commonMultiValue,
+                                                            const CommonMenuDef& parentMenu,
+                                                            const CommonItemDef& commonItem) const
         {
             if (commonMultiValue == nullptr)
                 return nullptr;
 
-            auto* multiValue = m_memory->Alloc<multiDef_s>();
+            auto* multiValue = m_memory.Alloc<multiDef_s>();
             multiValue->count = static_cast<int>(std::min(std::extent_v<decltype(multiDef_s::dvarList)>, commonMultiValue->m_step_names.size()));
             multiValue->strDef = !commonMultiValue->m_string_values.empty() ? 1 : 0;
 
@@ -986,15 +984,15 @@ namespace IW5
             return multiValue;
         }
 
-        _NODISCARD newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item,
-                                                              CommonItemFeaturesNewsTicker* commonNewsTicker,
-                                                              const CommonMenuDef& parentMenu,
-                                                              const CommonItemDef& commonItem) const
+        [[nodiscard]] newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item,
+                                                                 CommonItemFeaturesNewsTicker* commonNewsTicker,
+                                                                 const CommonMenuDef& parentMenu,
+                                                                 const CommonItemDef& commonItem) const
         {
             if (commonNewsTicker == nullptr)
                 return nullptr;
 
-            auto* newsTicker = m_memory->Alloc<newsTickerDef_s>();
+            auto* newsTicker = m_memory.Alloc<newsTickerDef_s>();
             newsTicker->spacing = commonNewsTicker->m_spacing;
             newsTicker->speed = commonNewsTicker->m_speed;
             newsTicker->feedId = commonNewsTicker->m_news_feed_id;
@@ -1002,9 +1000,9 @@ namespace IW5
             return newsTicker;
         }
 
-        _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
         {
-            auto* item = m_memory->Create<itemDef_s>();
+            auto* item = m_memory.Alloc<itemDef_s>();
             memset(item, 0, sizeof(itemDef_s));
 
             item->window.name = ConvertString(commonItem.m_name);
@@ -1094,7 +1092,7 @@ namespace IW5
             case CommonItemFeatureType::NONE:
             default:
                 if (item->type == ITEM_TYPE_TEXT_SCROLL)
-                    item->typeData.scroll = m_memory->Alloc<textScrollDef_s>();
+                    item->typeData.scroll = m_memory.Alloc<textScrollDef_s>();
 
                 break;
             }
@@ -1110,7 +1108,7 @@ namespace IW5
                 return nullptr;
             }
 
-            auto* items = m_memory->Alloc<itemDef_s*>(commonMenu.m_items.size());
+            auto* items = m_memory.Alloc<itemDef_s*>(commonMenu.m_items.size());
             for (auto i = 0u; i < commonMenu.m_items.size(); i++)
                 items[i] = ConvertItem(commonMenu, *commonMenu.m_items[i]);
 
@@ -1120,101 +1118,79 @@ namespace IW5
         }
 
     public:
-        MenuConverterImpl(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
-            : AbstractMenuConverter(disableOptimizations, searchPath, memory, manager),
-              m_conversion_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<MenuConversionZoneState>()),
-              m_parsing_zone_state(manager->GetAssetLoadingContext()->GetZoneAssetLoaderState<MenuAssetZoneState>())
+        MenuConverter(const bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context)
+            : AbstractMenuConverter(disableOptimizations, searchPath, memory, context),
+              m_conversion_zone_state(context.GetZoneAssetLoaderState<MenuConversionZoneState>()),
+              m_parsing_zone_state(context.GetZoneAssetLoaderState<MenuAssetZoneState>())
         {
             assert(m_conversion_zone_state);
             assert(m_parsing_zone_state);
         }
 
-        _NODISCARD menuDef_t* ConvertMenu(const CommonMenuDef& commonMenu) const
+        void ConvertMenu(const menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) override
         {
-            auto* menu = m_memory->Create<menuDef_t>();
-            auto* menuData = m_memory->Create<menuData_t>();
-            memset(menu, 0, sizeof(menuDef_t));
+            try
+            {
+                auto* menuData = m_memory.Alloc<menuData_t>();
 
-            menu->data = menuData;
-            menu->window.name = m_memory->Dup(commonMenu.m_name.c_str());
-            menuData->fullScreen = commonMenu.m_full_screen;
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_screen_space, WINDOW_FLAG_SCREEN_SPACE);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_decoration, WINDOW_FLAG_DECORATION);
-            menu->window.rect = ConvertRectDef(commonMenu.m_rect);
-            menu->window.style = commonMenu.m_style;
-            menu->window.border = commonMenu.m_border;
-            menu->window.borderSize = static_cast<float>(commonMenu.m_border_size);
-            ConvertColor(menu->window.backColor, commonMenu.m_back_color);
-            ConvertColor(menu->window.foreColor, commonMenu.m_fore_color);
-            ConvertColor(menu->window.borderColor, commonMenu.m_border_color);
-            ConvertColor(menuData->focusColor, commonMenu.m_focus_color);
-            menu->window.background = ConvertMaterial(commonMenu.m_background, &commonMenu);
-            menu->window.ownerDraw = commonMenu.m_owner_draw;
-            menu->window.ownerDrawFlags = commonMenu.m_owner_draw_flags;
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_out_of_bounds_click, WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
-            menuData->soundName = ConvertString(commonMenu.m_sound_loop);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_popup, WINDOW_FLAG_POPUP);
-            menuData->fadeClamp = static_cast<float>(commonMenu.m_fade_clamp);
-            menuData->fadeCycle = commonMenu.m_fade_cycle;
-            menuData->fadeAmount = static_cast<float>(commonMenu.m_fade_amount);
-            menuData->fadeInAmount = static_cast<float>(commonMenu.m_fade_in_amount);
-            menuData->blurRadius = static_cast<float>(commonMenu.m_blur_radius);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_legacy_split_screen_scale, WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_scope, WINDOW_FLAG_HIDDEN_DURING_SCOPE);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_flashbang, WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
-            menuData->allowedBinding = ConvertString(commonMenu.m_allowed_binding);
-            ApplyFlag(menu->window.staticFlags, commonMenu.m_text_only_focus, WINDOW_FLAG_TEXT_ONLY_FOCUS);
-            menuData->visibleExp = ConvertVisibleExpression(&menu->window, commonMenu.m_visible_expression.get(), &commonMenu);
-            menuData->rectXExp = ConvertOrApplyStatement(menu->window.rect.x, commonMenu.m_rect_x_exp.get(), &commonMenu);
-            menuData->rectYExp = ConvertOrApplyStatement(menu->window.rect.y, commonMenu.m_rect_y_exp.get(), &commonMenu);
-            menuData->rectWExp = ConvertOrApplyStatement(menu->window.rect.w, commonMenu.m_rect_w_exp.get(), &commonMenu);
-            menuData->rectHExp = ConvertOrApplyStatement(menu->window.rect.h, commonMenu.m_rect_h_exp.get(), &commonMenu);
-            menuData->openSoundExp = ConvertExpression(commonMenu.m_open_sound_exp.get(), &commonMenu);
-            menuData->closeSoundExp = ConvertExpression(commonMenu.m_close_sound_exp.get(), &commonMenu);
-            menuData->onOpen = ConvertEventHandlerSet(commonMenu.m_on_open.get(), &commonMenu);
-            menuData->onClose = ConvertEventHandlerSet(commonMenu.m_on_close.get(), &commonMenu);
-            menuData->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
-            menuData->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
-            menuData->onFocusDueToClose = ConvertEventHandlerSet(commonMenu.m_on_focus_due_to_close.get(), &commonMenu);
-            menuData->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
-            menu->items = ConvertMenuItems(commonMenu, menu->itemCount);
-            menuData->expressionData = m_conversion_zone_state->m_supporting_data;
-
-            return menu;
+                menu.data = menuData;
+                menu.window.name = m_memory.Dup(commonMenu.m_name.c_str());
+                menuData->fullScreen = commonMenu.m_full_screen;
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_screen_space, WINDOW_FLAG_SCREEN_SPACE);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_decoration, WINDOW_FLAG_DECORATION);
+                menu.window.rect = ConvertRectDef(commonMenu.m_rect);
+                menu.window.style = commonMenu.m_style;
+                menu.window.border = commonMenu.m_border;
+                menu.window.borderSize = static_cast<float>(commonMenu.m_border_size);
+                ConvertColor(menu.window.backColor, commonMenu.m_back_color);
+                ConvertColor(menu.window.foreColor, commonMenu.m_fore_color);
+                ConvertColor(menu.window.borderColor, commonMenu.m_border_color);
+                ConvertColor(menuData->focusColor, commonMenu.m_focus_color);
+                menu.window.background = ConvertMaterial(commonMenu.m_background, &commonMenu);
+                menu.window.ownerDraw = commonMenu.m_owner_draw;
+                menu.window.ownerDrawFlags = commonMenu.m_owner_draw_flags;
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_out_of_bounds_click, WINDOW_FLAG_OUT_OF_BOUNDS_CLICK);
+                menuData->soundName = ConvertString(commonMenu.m_sound_loop);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_popup, WINDOW_FLAG_POPUP);
+                menuData->fadeClamp = static_cast<float>(commonMenu.m_fade_clamp);
+                menuData->fadeCycle = commonMenu.m_fade_cycle;
+                menuData->fadeAmount = static_cast<float>(commonMenu.m_fade_amount);
+                menuData->fadeInAmount = static_cast<float>(commonMenu.m_fade_in_amount);
+                menuData->blurRadius = static_cast<float>(commonMenu.m_blur_radius);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_legacy_split_screen_scale, WINDOW_FLAG_LEGACY_SPLIT_SCREEN_SCALE);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_scope, WINDOW_FLAG_HIDDEN_DURING_SCOPE);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_flashbang, WINDOW_FLAG_HIDDEN_DURING_FLASH_BANG);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_hidden_during_ui, WINDOW_FLAG_HIDDEN_DURING_UI);
+                menuData->allowedBinding = ConvertString(commonMenu.m_allowed_binding);
+                ApplyFlag(menu.window.staticFlags, commonMenu.m_text_only_focus, WINDOW_FLAG_TEXT_ONLY_FOCUS);
+                menuData->visibleExp = ConvertVisibleExpression(&menu.window, commonMenu.m_visible_expression.get(), &commonMenu);
+                menuData->rectXExp = ConvertOrApplyStatement(menu.window.rect.x, commonMenu.m_rect_x_exp.get(), &commonMenu);
+                menuData->rectYExp = ConvertOrApplyStatement(menu.window.rect.y, commonMenu.m_rect_y_exp.get(), &commonMenu);
+                menuData->rectWExp = ConvertOrApplyStatement(menu.window.rect.w, commonMenu.m_rect_w_exp.get(), &commonMenu);
+                menuData->rectHExp = ConvertOrApplyStatement(menu.window.rect.h, commonMenu.m_rect_h_exp.get(), &commonMenu);
+                menuData->openSoundExp = ConvertExpression(commonMenu.m_open_sound_exp.get(), &commonMenu);
+                menuData->closeSoundExp = ConvertExpression(commonMenu.m_close_sound_exp.get(), &commonMenu);
+                menuData->onOpen = ConvertEventHandlerSet(commonMenu.m_on_open.get(), &commonMenu);
+                menuData->onClose = ConvertEventHandlerSet(commonMenu.m_on_close.get(), &commonMenu);
+                menuData->onCloseRequest = ConvertEventHandlerSet(commonMenu.m_on_request_close.get(), &commonMenu);
+                menuData->onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
+                menuData->onFocusDueToClose = ConvertEventHandlerSet(commonMenu.m_on_focus_due_to_close.get(), &commonMenu);
+                menuData->onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
+                menu.items = ConvertMenuItems(commonMenu, menu.itemCount);
+                menuData->expressionData = m_conversion_zone_state->m_supporting_data;
+            }
+            catch (const MenuConversionException& e)
+            {
+                PrintConversionExceptionDetails(e);
+            }
         }
 
-        std::vector<XAssetInfoGeneric*> m_dependencies;
+        MenuConversionZoneState* m_conversion_zone_state;
+        MenuAssetZoneState* m_parsing_zone_state;
     };
-} // namespace IW5
+} // namespace
 
-MenuConverter::MenuConverter(const bool disableOptimizations, ISearchPath* searchPath, MemoryManager* memory, IAssetLoadingManager* manager)
-    : m_disable_optimizations(disableOptimizations),
-      m_search_path(searchPath),
-      m_memory(memory),
-      m_manager(manager)
+std::unique_ptr<IMenuConverter> IMenuConverter::Create(bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context)
 {
-}
-
-std::vector<XAssetInfoGeneric*>& MenuConverter::GetDependencies()
-{
-    return m_dependencies;
-}
-
-menuDef_t* MenuConverter::ConvertMenu(const CommonMenuDef& commonMenu)
-{
-    MenuConverterImpl impl(m_disable_optimizations, m_search_path, m_memory, m_manager);
-
-    try
-    {
-        auto* result = impl.ConvertMenu(commonMenu);
-        m_dependencies = std::move(impl.m_dependencies);
-        return result;
-    }
-    catch (const MenuConversionException& e)
-    {
-        MenuConverterImpl::PrintConversionExceptionDetails(e);
-    }
-
-    return nullptr;
+    return std::make_unique<MenuConverter>(disableOptimizations, searchPath, memory, context);
 }

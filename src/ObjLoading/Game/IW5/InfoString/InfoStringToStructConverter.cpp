@@ -1,6 +1,7 @@
 #include "InfoStringToStructConverter.h"
 
 #include <cassert>
+#include <format>
 #include <iostream>
 
 using namespace IW5;
@@ -8,12 +9,12 @@ using namespace IW5;
 InfoStringToStructConverter::InfoStringToStructConverter(const InfoString& infoString,
                                                          void* structure,
                                                          ZoneScriptStrings& zoneScriptStrings,
-                                                         MemoryManager* memory,
-                                                         IAssetLoadingManager* manager,
+                                                         MemoryManager& memory,
+                                                         AssetCreationContext& context,
+                                                         GenericAssetRegistration& registration,
                                                          const cspField_t* fields,
                                                          const size_t fieldCount)
-    : InfoStringToStructConverterBase(infoString, structure, zoneScriptStrings, memory),
-      m_loading_manager(manager),
+    : InfoStringToStructConverterBase(infoString, structure, zoneScriptStrings, memory, context, registration),
       m_fields(fields),
       m_field_count(fieldCount)
 {
@@ -58,15 +59,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* fx = m_loading_manager->LoadDependency<AssetFx>(value);
+        auto* fx = m_context.LoadDependency<AssetFx>(value);
 
         if (fx == nullptr)
         {
-            std::cout << "Failed to load fx asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load fx asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(fx);
+        m_registration.AddDependency(fx);
         *reinterpret_cast<FxEffectDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = fx->Asset();
 
         return true;
@@ -80,15 +81,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* xmodel = m_loading_manager->LoadDependency<AssetXModel>(value);
+        auto* xmodel = m_context.LoadDependency<AssetXModel>(value);
 
         if (xmodel == nullptr)
         {
-            std::cout << "Failed to load xmodel asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load xmodel asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(xmodel);
+        m_registration.AddDependency(xmodel);
         *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = xmodel->Asset();
 
         return true;
@@ -102,15 +103,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* material = m_loading_manager->LoadDependency<AssetMaterial>(value);
+        auto* material = m_context.LoadDependency<AssetMaterial>(value);
 
         if (material == nullptr)
         {
-            std::cout << "Failed to load material asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load material asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(material);
+        m_registration.AddDependency(material);
         *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = material->Asset();
 
         return true;
@@ -124,15 +125,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* tracer = m_loading_manager->LoadDependency<AssetTracer>(value);
+        auto* tracer = m_context.LoadDependency<AssetTracer>(value);
 
         if (tracer == nullptr)
         {
-            std::cout << "Failed to load tracer asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load tracer asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(tracer);
+        m_registration.AddDependency(tracer);
         *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = tracer->Asset();
 
         return true;
@@ -160,15 +161,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* collmap = m_loading_manager->LoadDependency<AssetPhysCollMap>(value);
+        auto* collmap = m_context.LoadDependency<AssetPhysCollMap>(value);
 
         if (collmap == nullptr)
         {
-            std::cout << "Failed to load collmap asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load collmap asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(collmap);
+        m_registration.AddDependency(collmap);
         *reinterpret_cast<PhysCollmap**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = collmap->Asset();
 
         return true;
@@ -182,12 +183,12 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* name = m_memory->Alloc<snd_alias_list_name>();
-        name->soundName = m_memory->Dup(value.c_str());
+        auto* name = m_memory.Alloc<snd_alias_list_name>();
+        name->soundName = m_memory.Dup(value.c_str());
 
         reinterpret_cast<SndAliasCustom*>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset)->name = name;
 
-        m_indirect_asset_references.emplace(ASSET_TYPE_SOUND, value);
+        m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(value));
         return true;
     }
 

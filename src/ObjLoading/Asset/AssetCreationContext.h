@@ -61,7 +61,7 @@ public:
     {
         static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-        return LoadIndirectAssetReferenceInternal(AssetType::EnumEntry, assetName);
+        return LoadIndirectAssetReferenceGeneric(AssetType::EnumEntry, assetName);
     }
 
     IndirectAssetReference LoadIndirectAssetReferenceGeneric(asset_type_t assetType, const std::string& assetName);

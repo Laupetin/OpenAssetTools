@@ -1,8 +1,13 @@
 #pragma once
-#include "AssetLoading/IAssetLoadingManager.h"
-#include "AssetLoading/IZoneAssetLoaderState.h"
 
-class PartClassificationState final : public IZoneAssetLoaderState
+#include "SearchPath/ISearchPath.h"
+
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+class PartClassificationState
 {
     // TODO: Use MP part classifications when building an mp fastfile
     static constexpr auto PART_CLASSIFICATION_FILE = "partclassification.csv";
@@ -12,7 +17,7 @@ class PartClassificationState final : public IZoneAssetLoaderState
 public:
     PartClassificationState();
 
-    bool Load(const char** hitLocNames, size_t hitLocNameCount, const IAssetLoadingManager& manager);
+    bool Load(const char** hitLocNames, size_t hitLocNameCount, ISearchPath& searchPath);
 
     [[nodiscard]] unsigned GetPartClassificationForBoneName(const std::string& boneName) const;
 

@@ -1,7 +1,10 @@
 #include "AssetCreationResult.h"
 
+#include <cassert>
+
 AssetCreationResult AssetCreationResult::Success(XAssetInfoGeneric* assetInfo)
 {
+    assert(assetInfo);
     return AssetCreationResult(true, assetInfo);
 }
 

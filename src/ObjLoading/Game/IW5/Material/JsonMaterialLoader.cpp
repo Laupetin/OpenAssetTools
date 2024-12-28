@@ -16,12 +16,11 @@ namespace
     class JsonLoader
     {
     public:
-        JsonLoader(std::istream& stream, MemoryManager& memory, IAssetLoadingManager& manager, std::vector<XAssetInfoGeneric*>& dependencies)
+        JsonLoader(std::istream& stream, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
             : m_stream(stream),
               m_memory(memory),
-              m_manager(manager),
-              m_dependencies(dependencies)
-
+              m_context(context),
+              m_registration(registration)
         {
         }
 
@@ -159,13 +158,13 @@ namespace
 
             textureDef.semantic = jTexture.semantic;
 
-            auto* imageAsset = m_manager.LoadDependency<AssetImage>(jTexture.image);
+            auto* imageAsset = m_context.LoadDependency<AssetImage>(jTexture.image);
             if (!imageAsset)
             {
                 PrintError(material, std::format("Could not find textureDef image: {}", jTexture.image));
                 return false;
             }
-            m_dependencies.push_back(imageAsset);
+            m_registration.AddDependency(imageAsset);
 
             if (jTexture.water)
             {
@@ -365,13 +364,13 @@ namespace
             material.stateFlags = static_cast<unsigned char>(jMaterial.stateFlags);
             material.cameraRegion = jMaterial.cameraRegion;
 
-            auto* techniqueSet = m_manager.LoadDependency<AssetTechniqueSet>(jMaterial.techniqueSet);
+            auto* techniqueSet = m_context.LoadDependency<AssetTechniqueSet>(jMaterial.techniqueSet);
             if (!techniqueSet)
             {
                 PrintError(material, "Could not find technique set");
                 return false;
             }
-            m_dependencies.push_back(techniqueSet);
+            m_registration.AddDependency(techniqueSet);
             material.techniqueSet = techniqueSet->Asset();
 
             if (!jMaterial.textures.empty())
@@ -430,17 +429,17 @@ namespace
 
         std::istream& m_stream;
         MemoryManager& m_memory;
-        IAssetLoadingManager& m_manager;
-        std::vector<XAssetInfoGeneric*>& m_dependencies;
+        AssetCreationContext& m_context;
+        AssetRegistration<AssetMaterial>& m_registration;
     };
 } // namespace
 
 namespace IW5
 {
     bool LoadMaterialAsJson(
-        std::istream& stream, Material& material, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies)
+        std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
     {
-        const JsonLoader loader(stream, *memory, *manager, dependencies);
+        const JsonLoader loader(stream, memory, context, registration);
 
         return loader.Load(material);
     }
