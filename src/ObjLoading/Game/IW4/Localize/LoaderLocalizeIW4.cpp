@@ -1,4 +1,5 @@
-#include "AssetLoaderLocalizeIW4.h"
+#include "LoaderLocalizeIW4.h"
+
 #include "Localize/CommonLocalizeLoader.h"
 
 using namespace IW4;

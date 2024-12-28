@@ -1,4 +1,5 @@
-#include "AssetLoaderLeaderboardIW4.h"
+#include "LoaderLeaderboardIW4.h"
+
 #include "Game/IW4/IW4.h"
 #include "JsonLeaderboardDefLoader.h"
 

@@ -1,4 +1,5 @@
-#include "AssetLoaderRawFileIW4.h"
+#include "LoaderRawFileIW4.h"
+
 #include "Game/IW4/IW4.h"
 
 #include <cstring>

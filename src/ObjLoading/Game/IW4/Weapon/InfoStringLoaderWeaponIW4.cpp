@@ -238,29 +238,29 @@ namespace
         }
     };
 
-    void InitWeaponFullDef(WeaponFullDef* weapon)
+    void InitWeaponFullDef(WeaponFullDef& weapon)
     {
-        weapon->weapCompleteDef.weapDef = &weapon->weapDef;
-        weapon->weapCompleteDef.hideTags = weapon->hideTags;
-        weapon->weapCompleteDef.szXAnims = weapon->szXAnims;
-        weapon->weapDef.gunXModel = weapon->gunXModel;
-        weapon->weapDef.szXAnimsRightHanded = weapon->szXAnimsRightHanded;
-        weapon->weapDef.szXAnimsLeftHanded = weapon->szXAnimsLeftHanded;
-        weapon->weapDef.notetrackSoundMapKeys = weapon->notetrackSoundMapKeys;
-        weapon->weapDef.notetrackSoundMapValues = weapon->notetrackSoundMapValues;
-        weapon->weapDef.notetrackRumbleMapKeys = weapon->notetrackRumbleMapKeys;
-        weapon->weapDef.notetrackRumbleMapValues = weapon->notetrackRumbleMapValues;
-        weapon->weapDef.worldModel = weapon->worldModel;
-        weapon->weapDef.parallelBounce = weapon->parallelBounce;
-        weapon->weapDef.perpendicularBounce = weapon->perpendicularBounce;
-        weapon->weapDef.locationDamageMultipliers = weapon->locationDamageMultipliers;
+        weapon.weapCompleteDef.weapDef = &weapon.weapDef;
+        weapon.weapCompleteDef.hideTags = weapon.hideTags;
+        weapon.weapCompleteDef.szXAnims = weapon.szXAnims;
+        weapon.weapDef.gunXModel = weapon.gunXModel;
+        weapon.weapDef.szXAnimsRightHanded = weapon.szXAnimsRightHanded;
+        weapon.weapDef.szXAnimsLeftHanded = weapon.szXAnimsLeftHanded;
+        weapon.weapDef.notetrackSoundMapKeys = weapon.notetrackSoundMapKeys;
+        weapon.weapDef.notetrackSoundMapValues = weapon.notetrackSoundMapValues;
+        weapon.weapDef.notetrackRumbleMapKeys = weapon.notetrackRumbleMapKeys;
+        weapon.weapDef.notetrackRumbleMapValues = weapon.notetrackRumbleMapValues;
+        weapon.weapDef.worldModel = weapon.worldModel;
+        weapon.weapDef.parallelBounce = weapon.parallelBounce;
+        weapon.weapDef.perpendicularBounce = weapon.perpendicularBounce;
+        weapon.weapDef.locationDamageMultipliers = weapon.locationDamageMultipliers;
 
         for (const auto& field : weapon_fields)
         {
             if (field.iFieldType != CSPFT_STRING)
                 continue;
 
-            *reinterpret_cast<const char**>(reinterpret_cast<char*>(weapon) + field.iOffset) = "";
+            *reinterpret_cast<const char**>(reinterpret_cast<char*>(&weapon) + field.iOffset) = "";
         }
     }
 
@@ -437,7 +437,7 @@ AssetCreationResult InfoStringLoaderWeapon::CreateAsset(const std::string& asset
 {
     auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
 
-    InitWeaponFullDef(weaponFullDef);
+    InitWeaponFullDef(*weaponFullDef);
     weaponFullDef->weapCompleteDef.szInternalName = m_memory.Dup(assetName.c_str());
 
     AssetRegistration<AssetWeapon> registration(assetName, &weaponFullDef->weapCompleteDef);

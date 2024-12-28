@@ -1,6 +1,5 @@
 #include "LoaderMaterialIW4.h"
 
-#include "AssetLoaderTechniqueSet.h"
 #include "AssetLoading/AbstractGdtEntryReader.h"
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
@@ -1321,7 +1320,12 @@ namespace
     class MaterialLoader final : public AssetCreator<AssetMaterial>
     {
     public:
-        MaterialLoader(MemoryManager& memory, ISearchPath& searchPath);
+        MaterialLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
+            : m_memory(memory),
+              m_search_path(m_search_path),
+              m_gdt(gdt)
+        {
+        }
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {

@@ -3,8 +3,8 @@
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/InfoString/EnumStrings.h"
 #include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/InfoString/WeaponFields.h"
 #include "Game/IW4/ObjConstantsIW4.h"
+#include "Game/IW4/Weapon/WeaponFields.h"
 #include "Weapon/AccuracyGraphWriter.h"
 
 #include <cassert>

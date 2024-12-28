@@ -423,7 +423,7 @@ namespace
             ConvertExpressionEntry(statement, expressionEntries, expression, menu, item);
 
             auto* outputExpressionEntries = m_memory.Alloc<expressionEntry>(expressionEntries.size());
-            memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
+            std::memcpy(outputExpressionEntries, expressionEntries.data(), sizeof(expressionEntry) * expressionEntries.size());
 
             statement->entries = outputExpressionEntries;
             statement->numEntries = static_cast<int>(expressionEntries.size());
@@ -431,10 +431,10 @@ namespace
             return statement;
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(float& staticValue,
-                                                        const ISimpleExpression* expression,
-                                                        const CommonMenuDef* menu,
-                                                        const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertOrApplyStatement(float& staticValue,
+                                                           const ISimpleExpression* expression,
+                                                           const CommonMenuDef* menu,
+                                                           const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -462,10 +462,10 @@ namespace
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(const char*& staticValue,
-                                                        const ISimpleExpression* expression,
-                                                        const CommonMenuDef* menu,
-                                                        const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertOrApplyStatement(const char*& staticValue,
+                                                           const ISimpleExpression* expression,
+                                                           const CommonMenuDef* menu,
+                                                           const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -492,10 +492,10 @@ namespace
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertOrApplyStatement(Material*& staticValue,
-                                                        const ISimpleExpression* expression,
-                                                        const CommonMenuDef* menu,
-                                                        const CommonItemDef* item = nullptr) const
+        [[nodiscard]] Statement_s* ConvertOrApplyStatement(Material*& staticValue,
+                                                           const ISimpleExpression* expression,
+                                                           const CommonMenuDef* menu,
+                                                           const CommonItemDef* item = nullptr) const
         {
             if (m_disable_optimizations)
                 return ConvertExpression(expression, menu, item);
@@ -522,10 +522,10 @@ namespace
             return ConvertExpression(expression, menu, item);
         }
 
-        _NODISCARD Statement_s* ConvertVisibleExpression(windowDef_t* window,
-                                                         const ISimpleExpression* expression,
-                                                         const CommonMenuDef* commonMenu,
-                                                         const CommonItemDef* commonItem = nullptr) const
+        [[nodiscard]] Statement_s* ConvertVisibleExpression(windowDef_t* window,
+                                                            const ISimpleExpression* expression,
+                                                            const CommonMenuDef* commonMenu,
+                                                            const CommonItemDef* commonItem = nullptr) const
         {
             if (expression == nullptr)
                 return nullptr;
@@ -556,7 +556,7 @@ namespace
             return ConvertExpression(expression, commonMenu, commonItem);
         }
 
-        _NODISCARD static EventType SetLocalVarTypeToEventType(const SetLocalVarType setLocalVarType)
+        [[nodiscard]] static EventType SetLocalVarTypeToEventType(const SetLocalVarType setLocalVarType)
         {
             switch (setLocalVarType)
             {
@@ -593,7 +593,7 @@ namespace
             outputSetLocalVar->localVarName = m_memory.Dup(setLocalVar->m_var_name.c_str());
             outputSetLocalVar->expression = ConvertExpression(setLocalVar->m_value.get(), menu, item);
 
-            elements.push_back(outputHandler);
+            elements.emplace_back(outputHandler);
         }
 
         void ConvertEventHandlerScript(std::vector<MenuEventHandler*>& elements, const CommonEventHandlerScript* script) const
@@ -606,7 +606,7 @@ namespace
             outputHandler->eventType = EVENT_UNCONDITIONAL;
             outputHandler->eventData.unconditionalScript = m_memory.Dup(script->m_script.c_str());
 
-            elements.push_back(outputHandler);
+            elements.emplace_back(outputHandler);
         }
 
         void ConvertEventHandlerCondition(std::vector<MenuEventHandler*>& elements,
@@ -685,7 +685,7 @@ namespace
                 ConvertEventHandler(elements, element.get(), menu, item);
         }
 
-        _NODISCARD MenuEventHandlerSet*
+        [[nodiscard]] MenuEventHandlerSet*
             ConvertEventHandlerSet(const CommonEventHandlerSet* eventHandlerSet, const CommonMenuDef* menu, const CommonItemDef* item = nullptr) const
         {
             if (!eventHandlerSet)
@@ -707,9 +707,9 @@ namespace
             return outputSet;
         }
 
-        _NODISCARD ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers,
-                                                     const CommonMenuDef* menu,
-                                                     const CommonItemDef* item = nullptr) const
+        [[nodiscard]] ItemKeyHandler* ConvertKeyHandler(const std::multimap<int, std::unique_ptr<CommonEventHandlerSet>>& keyHandlers,
+                                                        const CommonMenuDef* menu,
+                                                        const CommonItemDef* item = nullptr) const
         {
             if (keyHandlers.empty())
                 return nullptr;
@@ -844,7 +844,7 @@ namespace
             return floatExpressions;
         }
 
-        _NODISCARD const char* CreateEnableDvarString(const std::vector<std::string>& stringElements) const
+        [[nodiscard]] const char* CreateEnableDvarString(const std::vector<std::string>& stringElements) const
         {
             std::ostringstream ss;
 
@@ -856,7 +856,7 @@ namespace
             return m_memory.Dup(ss.str().c_str());
         }
 
-        _NODISCARD const char* ConvertEnableDvar(const CommonItemDef& commonItem, int& dvarFlags) const
+        [[nodiscard]] const char* ConvertEnableDvar(const CommonItemDef& commonItem, int& dvarFlags) const
         {
             dvarFlags = 0;
 
@@ -893,10 +893,10 @@ namespace
             return nullptr;
         }
 
-        _NODISCARD listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
-                                                        CommonItemFeaturesListBox* commonListBox,
-                                                        const CommonMenuDef& parentMenu,
-                                                        const CommonItemDef& commonItem) const
+        [[nodiscard]] listBoxDef_s* ConvertListBoxFeatures(itemDef_s* item,
+                                                           CommonItemFeaturesListBox* commonListBox,
+                                                           const CommonMenuDef& parentMenu,
+                                                           const CommonItemDef& commonItem) const
         {
             if (commonListBox == nullptr)
                 return nullptr;
@@ -928,10 +928,10 @@ namespace
             return listBox;
         }
 
-        _NODISCARD editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item,
-                                                            CommonItemFeaturesEditField* commonEditField,
-                                                            const CommonMenuDef& parentMenu,
-                                                            const CommonItemDef& commonItem) const
+        [[nodiscard]] editFieldDef_s* ConvertEditFieldFeatures(itemDef_s* item,
+                                                               CommonItemFeaturesEditField* commonEditField,
+                                                               const CommonMenuDef& parentMenu,
+                                                               const CommonItemDef& commonItem) const
         {
             if (commonEditField == nullptr)
                 return nullptr;
@@ -948,10 +948,10 @@ namespace
             return editField;
         }
 
-        _NODISCARD multiDef_s* ConvertMultiValueFeatures(itemDef_s* item,
-                                                         CommonItemFeaturesMultiValue* commonMultiValue,
-                                                         const CommonMenuDef& parentMenu,
-                                                         const CommonItemDef& commonItem) const
+        [[nodiscard]] multiDef_s* ConvertMultiValueFeatures(itemDef_s* item,
+                                                            CommonItemFeaturesMultiValue* commonMultiValue,
+                                                            const CommonMenuDef& parentMenu,
+                                                            const CommonItemDef& commonItem) const
         {
             if (commonMultiValue == nullptr)
                 return nullptr;
@@ -979,10 +979,10 @@ namespace
             return multiValue;
         }
 
-        _NODISCARD newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item,
-                                                              CommonItemFeaturesNewsTicker* commonNewsTicker,
-                                                              const CommonMenuDef& parentMenu,
-                                                              const CommonItemDef& commonItem) const
+        [[nodiscard]] newsTickerDef_s* ConvertNewsTickerFeatures(itemDef_s* item,
+                                                                 CommonItemFeaturesNewsTicker* commonNewsTicker,
+                                                                 const CommonMenuDef& parentMenu,
+                                                                 const CommonItemDef& commonItem) const
         {
             if (commonNewsTicker == nullptr)
                 return nullptr;
@@ -995,7 +995,7 @@ namespace
             return newsTicker;
         }
 
-        _NODISCARD itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
+        [[nodiscard]] itemDef_s* ConvertItem(const CommonMenuDef& parentMenu, const CommonItemDef& commonItem) const
         {
             auto* item = m_memory.Alloc<itemDef_s>();
 
