@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetLoaderState.h"
 #include "StateMap/StateMapDefinition.h"
 #include "Utils/ClassUtils.h"
 

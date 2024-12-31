@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetLoaderState.h"
 #include "Game/IW4/IW4.h"
 
 #include <map>

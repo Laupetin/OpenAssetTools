@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetLoaderState.h"
 #include "AssetRegistration.h"
 #include "Game/IAsset.h"
 #include "Pool/XAssetInfo.h"

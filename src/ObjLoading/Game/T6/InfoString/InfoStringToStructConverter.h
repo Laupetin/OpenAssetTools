@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AssetLoading/IAssetLoadingManager.h"
 #include "Game/T6/T6.h"
 #include "InfoString/InfoStringToStructConverterBase.h"
 

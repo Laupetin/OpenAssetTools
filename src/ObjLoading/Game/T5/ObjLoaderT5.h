@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AssetLoading/IAssetLoader.h"
 #include "IObjLoader.h"
 #include "SearchPath/ISearchPath.h"
 

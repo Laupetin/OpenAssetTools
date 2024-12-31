@@ -1,6 +1,5 @@
 #include "ZoneCreator.h"
 
-#include "AssetLoading/AssetLoadingContext.h"
 #include "Gdt/GdtLookup.h"
 #include "IObjCompiler.h"
 #include "IObjLoader.h"

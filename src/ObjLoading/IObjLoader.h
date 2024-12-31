@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Asset/AssetCreatorCollection.h"
-#include "AssetLoading/AssetLoadingContext.h"
 #include "Gdt/IGdtQueryable.h"
 #include "SearchPath/ISearchPath.h"
 #include "Zone/Zone.h"

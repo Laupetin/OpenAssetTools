@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Asset/IAssetCreator.h"
-#include "AssetLoading/IAssetLoadingManager.h"
 #include "Localize/CommonLocalizeEntry.h"
 #include "Localize/Parsing/ILocalizeFileDuplicationChecker.h"
 #include "SearchPath/ISearchPath.h"

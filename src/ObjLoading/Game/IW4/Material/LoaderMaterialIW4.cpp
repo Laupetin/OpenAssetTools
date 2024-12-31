@@ -1,12 +1,12 @@
 #include "LoaderMaterialIW4.h"
 
-#include "AssetLoading/AbstractGdtEntryReader.h"
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "Game/IW4/Techset/LoaderTechsetIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
+#include "Gdt/AbstractGdtEntryReader.h"
 #include "ObjLoading.h"
 #include "Pool/GlobalAssetPool.h"
 #include "StateMap/StateMapFromTechniqueExtractor.h"

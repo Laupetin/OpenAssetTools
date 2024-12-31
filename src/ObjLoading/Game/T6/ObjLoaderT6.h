@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AssetLoading/IAssetLoader.h"
 #include "Game/T6/T6.h"
 #include "IObjLoader.h"
 #include "ObjContainer/SoundBank/SoundBank.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetLoaderState.h"
 #include "Parsing/GenericGraph2D.h"
 #include "SearchPath/ISearchPath.h"
 
