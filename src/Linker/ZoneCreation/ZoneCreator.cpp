@@ -75,7 +75,7 @@ namespace zone_creator
 
         AssetCreatorCollection creatorCollection(*zone);
         objCompiler->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_definition);
-        objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, gdtLookup);
+        objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup);
 
         AssetCreationContext creationContext(zone.get(), &creatorCollection, &ignoredAssetLookup);
 
