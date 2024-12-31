@@ -1,6 +1,6 @@
-#include "Game/IW4/AssetLoaders/AssetLoaderMenuList.h"
+#include "Game/IW4/Menu/LoaderMenuListIW4.h"
+
 #include "Game/IW4/GameIW4.h"
-#include "Mock/MockAssetLoadingManager.h"
 #include "Mock/MockSearchPath.h"
 #include "Parsing/Menu/MenuFileReader.h"
 #include "Utils/MemoryManager.h"
@@ -8,6 +8,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <iostream>
 #include <string>
 
 using namespace menu;
@@ -23,14 +24,19 @@ namespace test::game::iw4::menu::parsing::it
 
         Zone m_zone;
         MockSearchPath m_search_path;
-        MockAssetLoadingManager m_manager;
-        AssetLoaderMenuList m_asset_loader;
+        std::unique_ptr<IAssetCreator> m_asset_creator;
+        AssetCreatorCollection m_creator_collection;
+        IgnoredAssetLookup m_ignored_asset_lookup;
+        AssetCreationContext m_context;
 
     public:
         MenuParsingItHelper()
             : m_zone("MockZone", 0, IGame::GetGameById(GameId::IW4)),
-              m_manager(m_zone, m_search_path)
+              m_creator_collection(m_zone),
+              m_ignored_asset_lookup(),
+              m_context(&m_zone, &m_creator_collection, &m_ignored_asset_lookup)
         {
+            m_asset_creator = CreateMenuListLoader(*m_zone.GetMemory(), m_search_path);
         }
 
         void AddFile(std::string fileName, std::string data)
@@ -48,28 +54,19 @@ namespace test::game::iw4::menu::parsing::it
             auto* material = m_zone.GetMemory()->Create<Material>();
             material->info.name = m_zone.GetMemory()->Dup(name.c_str());
 
-            m_manager.MockAddAvailableDependency(ASSET_TYPE_MATERIAL, name, material);
+            m_context.AddAsset<AssetMaterial>(name, material);
 
             return material;
         }
 
-        bool RunIntegrationTest()
+        AssetCreationResult RunIntegrationTest()
         {
-            return m_asset_loader.LoadFromRaw(DEFAULT_ASSET_NAME, &m_search_path, m_zone.GetMemory(), &m_manager, &m_zone);
-        }
-
-        MenuList* GetMenuListAsset()
-        {
-            const auto addedAsset = m_manager.MockGetAddedAsset(DEFAULT_ASSET_NAME);
-            REQUIRE(addedAsset);
-            REQUIRE(addedAsset->m_type == ASSET_TYPE_MENULIST);
-
-            return static_cast<MenuList*>(addedAsset->m_ptr);
+            return m_asset_creator->CreateAsset(DEFAULT_ASSET_NAME, m_context);
         }
 
         menuDef_t* GetMenuAsset(const std::string& menuName)
         {
-            const auto addedAsset = m_manager.MockGetAddedAsset(menuName);
+            const auto addedAsset = m_zone.m_pools->GetAsset(ASSET_TYPE_MENU, menuName);
             REQUIRE(addedAsset);
             REQUIRE(addedAsset->m_type == ASSET_TYPE_MENU);
 
@@ -91,9 +88,9 @@ namespace test::game::iw4::menu::parsing::it
 			)testmenu");
 
         const auto result = helper.RunIntegrationTest();
-        REQUIRE(result);
+        REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = helper.GetMenuListAsset();
+        const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
         const auto* menu = helper.GetMenuAsset("Hello");
 
         REQUIRE(menuList->menuCount == 1);
@@ -172,9 +169,9 @@ namespace test::game::iw4::menu::parsing::it
         const auto* funnyDogMaterial = helper.AddMaterial("funny_dog.png");
 
         const auto result = helper.RunIntegrationTest();
-        REQUIRE(result);
+        REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = helper.GetMenuListAsset();
+        const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
         const auto* menu = helper.GetMenuAsset("Bla");
 
         REQUIRE(menuList->menuCount == 1);
@@ -343,9 +340,9 @@ namespace test::game::iw4::menu::parsing::it
 			)testmenu");
 
         const auto result = helper.RunIntegrationTest();
-        REQUIRE(result);
+        REQUIRE(result.HasBeenSuccessful());
 
-        const auto* menuList = helper.GetMenuListAsset();
+        const auto* menuList = (MenuList*)result.GetAssetInfo()->m_ptr;
         const auto* menu = helper.GetMenuAsset("Blab");
 
         REQUIRE(menuList->menuCount == 1);

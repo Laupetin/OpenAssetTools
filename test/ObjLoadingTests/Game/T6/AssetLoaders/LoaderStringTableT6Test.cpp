@@ -1,7 +1,6 @@
-#include "Game/T6/AssetLoaders/AssetLoaderStringTable.h"
+#include "Game/T6/StringTable/LoaderStringTableT6.h"
 
 #include "Game/T6/GameT6.h"
-#include "Mock/MockAssetLoadingManager.h"
 #include "Mock/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
@@ -21,17 +20,19 @@ namespace
                                "lorem,ipsum");
 
         Zone zone("MockZone", 0, IGame::GetGameById(GameId::T6));
-        MockAssetLoadingManager assetLoadingManager(zone, searchPath);
 
-        AssetLoaderStringTable assetLoader;
         MemoryManager memory;
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(&zone, &creatorCollection, &ignoredAssetLookup);
 
-        assetLoader.LoadFromRaw("mp/cooltable.csv", &searchPath, &memory, &assetLoadingManager, &zone);
+        auto loader = CreateStringTableLoader(memory, searchPath);
+        auto result = loader->CreateAsset("mp/cooltable.csv", context);
+        REQUIRE(result.HasBeenSuccessful());
 
-        auto* assetInfo = reinterpret_cast<XAssetInfo<StringTable>*>(assetLoadingManager.MockGetAddedAsset("mp/cooltable.csv"));
-        REQUIRE(assetInfo != nullptr);
-
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<StringTable>*>(result.GetAssetInfo());
         const auto* stringTable = assetInfo->Asset();
+
         REQUIRE(stringTable->name == "mp/cooltable.csv"s);
         REQUIRE(stringTable->columnCount == 3);
         REQUIRE(stringTable->rowCount == 2);

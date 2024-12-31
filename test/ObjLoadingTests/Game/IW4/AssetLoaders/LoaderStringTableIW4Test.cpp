@@ -1,37 +1,39 @@
-#include "Game/IW5/AssetLoaders/AssetLoaderStringTable.h"
+#include "Game/IW4/StringTable/LoaderStringTableIW4.h"
 
-#include "Game/IW5/GameIW5.h"
-#include "Mock/MockAssetLoadingManager.h"
+#include "Game/IW4/CommonIW4.h"
+#include "Game/IW4/GameIW4.h"
 #include "Mock/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-using namespace IW5;
+using namespace IW4;
 using namespace std::literals;
 
 namespace
 {
-    TEST_CASE("AssetLoaderStringTable(IW5): Can parse string table", "[iw5][stringtable][assetloader]")
+    TEST_CASE("AssetLoaderStringTable(IW4): Can parse string table", "[iw4][stringtable][assetloader]")
     {
         MockSearchPath searchPath;
         searchPath.AddFileData("mp/cooltable.csv",
                                "test,data,lol\n"
                                "lorem,ipsum");
 
-        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW5));
-        MockAssetLoadingManager assetLoadingManager(zone, searchPath);
+        Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW4));
 
-        AssetLoaderStringTable assetLoader;
         MemoryManager memory;
+        AssetCreatorCollection creatorCollection(zone);
+        IgnoredAssetLookup ignoredAssetLookup;
+        AssetCreationContext context(&zone, &creatorCollection, &ignoredAssetLookup);
 
-        assetLoader.LoadFromRaw("mp/cooltable.csv", &searchPath, &memory, &assetLoadingManager, &zone);
+        auto loader = CreateStringTableLoader(memory, searchPath);
+        auto result = loader->CreateAsset("mp/cooltable.csv", context);
+        REQUIRE(result.HasBeenSuccessful());
 
-        auto* assetInfo = reinterpret_cast<XAssetInfo<StringTable>*>(assetLoadingManager.MockGetAddedAsset("mp/cooltable.csv"));
-        REQUIRE(assetInfo != nullptr);
-
+        const auto* assetInfo = reinterpret_cast<XAssetInfo<StringTable>*>(result.GetAssetInfo());
         const auto* stringTable = assetInfo->Asset();
+
         REQUIRE(stringTable->name == "mp/cooltable.csv"s);
         REQUIRE(stringTable->columnCount == 3);
         REQUIRE(stringTable->rowCount == 2);

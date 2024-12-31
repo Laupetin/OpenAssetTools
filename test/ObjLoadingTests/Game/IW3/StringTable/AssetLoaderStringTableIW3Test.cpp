@@ -1,7 +1,6 @@
 #include "Game/IW3/StringTable/AssetLoaderStringTableIW3.h"
 
 #include "Game/IW3/GameIW3.h"
-#include "Mock/MockAssetLoadingManager.h"
 #include "Mock/MockSearchPath.h"
 #include "Pool/ZoneAssetPools.h"
 #include "Utils/MemoryManager.h"
@@ -22,24 +21,19 @@ namespace
                                "lorem,ipsum");
 
         Zone zone("MockZone", 0, IGame::GetGameById(GameId::IW3));
-        zone.m_pools = ZoneAssetPools::CreateForGame(GameId::IW3, &zone, 1);
-
-        const auto assetTypeCount = zone.m_pools->GetAssetTypeCount();
-        for (auto i = 0; i < assetTypeCount; i++)
-            zone.m_pools->InitPoolDynamic(i);
 
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);
-        AssetLoaderStringTable assetLoader(memory, searchPath);
         IgnoredAssetLookup ignoredAssetLookup;
-
         AssetCreationContext context(&zone, &creatorCollection, &ignoredAssetLookup);
 
-        const auto result = assetLoader.CreateAsset("mp/cooltable.csv", context);
+        auto loader = CreateStringTableLoader(memory, searchPath);
+        auto result = loader->CreateAsset("mp/cooltable.csv", context);
         REQUIRE(result.HasBeenSuccessful());
 
         const auto* assetInfo = reinterpret_cast<XAssetInfo<StringTable>*>(result.GetAssetInfo());
         const auto* stringTable = assetInfo->Asset();
+
         REQUIRE(stringTable->name == "mp/cooltable.csv"s);
         REQUIRE(stringTable->columnCount == 3);
         REQUIRE(stringTable->rowCount == 2);
