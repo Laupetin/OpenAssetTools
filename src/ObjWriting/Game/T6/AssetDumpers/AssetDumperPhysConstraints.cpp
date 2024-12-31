@@ -1,9 +1,8 @@
 #include "AssetDumperPhysConstraints.h"
 
-#include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/PhysConstraintsFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/PhysConstraints/PhysConstraintsFields.h"
 
 #include <cassert>
 #include <type_traits>

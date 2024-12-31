@@ -19,7 +19,7 @@ public:
     virtual void AddSound(const std::string& soundFilePath, unsigned int soundId, bool looping = false, bool streamed = false) = 0;
     virtual bool Write(size_t& dataSize) = 0;
 
-    static std::unique_ptr<SoundBankWriter> Create(const std::string& fileName, std::ostream& stream, ISearchPath* assetSearchPath);
+    static std::unique_ptr<SoundBankWriter> Create(const std::string& fileName, std::ostream& stream, ISearchPath& assetSearchPath);
 
     static std::filesystem::path OutputPath;
 };

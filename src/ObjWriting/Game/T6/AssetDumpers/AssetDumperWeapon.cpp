@@ -1,9 +1,9 @@
 #include "AssetDumperWeapon.h"
 
-#include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/WeaponFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/Weapon/WeaponFields.h"
+#include "Game/T6/Weapon/WeaponStrings.h"
 #include "Weapon/AccuracyGraphWriter.h"
 
 #include <cassert>

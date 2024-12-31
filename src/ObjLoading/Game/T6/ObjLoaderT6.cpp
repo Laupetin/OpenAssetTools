@@ -1,18 +1,45 @@
 #include "ObjLoaderT6.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
-#include "AssetLoading/AssetLoadingManager.h"
+#include "FontIcon/LoaderFontIconT6.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
 #include "Game/T6/T6.h"
+#include "Game/T6/XModel/LoaderXModelT6.h"
 #include "Image/Dx12TextureLoader.h"
 #include "Image/IwiLoader.h"
 #include "Image/IwiTypes.h"
+#include "Image/LoaderImageT6.h"
 #include "Image/Texture.h"
-#include "Localize/AssetLoaderLocalizeT6.h"
+#include "Leaderboard/LoaderLeaderboardT6.h"
+#include "Localize/LoaderLocalizeT6.h"
+#include "Material/LoaderMaterialT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
+#include "PhysConstraints/GdtLoaderPhysConstraintsT6.h"
+#include "PhysConstraints/RawLoaderPhysConstraintsT6.h"
+#include "PhysPreset/GdtLoaderPhysPresetT6.h"
+#include "PhysPreset/RawLoaderPhysPresetT6.h"
+#include "Qdb/LoaderQdbT6.h"
+#include "RawFile/LoaderRawFileT6.h"
+#include "Script/LoaderScriptT6.h"
+#include "Slug/LoaderSlugT6.h"
+#include "Sound/LoaderSoundBankT6.h"
+#include "StringTable/LoaderStringTableT6.h"
+#include "Tracer/GdtLoaderTracerT6.h"
+#include "Tracer/RawLoaderTracerT6.h"
+#include "Vehicle/GdtLoaderVehicleT6.h"
+#include "Vehicle/RawLoaderVehicleT6.h"
+#include "Weapon/GdtLoaderAttachmentT6.h"
+#include "Weapon/GdtLoaderAttachmentUniqueT6.h"
+#include "Weapon/GdtLoaderWeaponT6.h"
+#include "Weapon/LoaderWeaponCamoT6.h"
+#include "Weapon/RawLoaderAttachmentT6.h"
+#include "Weapon/RawLoaderAttachmentUniqueT6.h"
+#include "Weapon/RawLoaderWeaponT6.h"
+#include "ZBarrier/GdtLoaderZBarrierT6.h"
+#include "ZBarrier/RawLoaderZBarrierT6.h"
 
 #include <format>
 #include <memory>
@@ -361,19 +388,21 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
         }
 
-        void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
+        void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
         {
             auto& memory = *zone.GetMemory();
 
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
+            collection.AddAssetCreator(CreateRawPhysPresetLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtPhysPresetLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(CreateRawPhysConstraintsLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtPhysConstraintsLoader(memory, searchPath, gdt, zone));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
+            collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundBank>(memory));
+            collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateSoundBankLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
@@ -384,42 +413,47 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderFontIcon>(memory));
+            collection.AddAssetCreator(CreateFontIconLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderLocalize>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderWeapon>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderAttachment>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderAttachmentUnique>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderWeaponCamo>(memory));
+            collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateRawWeaponLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtWeaponLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(CreateRawAttachmentLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtAttachmentLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(CreateRawAttachmentUniqueLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtAttachmentUniqueLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(CreateWeaponCamoLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderRawFile>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderStringTable>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderLeaderboard>(memory));
+            collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateLeaderboardLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXGlobals>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderDDL>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGlasses>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderEmblemSet>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderScript>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderVehicle>(memory));
+            collection.AddAssetCreator(CreateScriptLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateRawVehicleLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtVehicleLoader(memory, searchPath, gdt, zone));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMemoryBlock>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSkinnedVerts>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderQdb>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderSlug>(memory));
+            collection.AddAssetCreator(CreateQdbLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateSlugLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepTable>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderZBarrier>(memory));
+            collection.AddAssetCreator(CreateRawZBarrierLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(CreateGdtZBarrierLoader(memory, searchPath, gdt, zone));
         }
     } // namespace
 
-    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath) const
+    void ObjLoader::ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt) const
     {
         ConfigureDefaultCreators(collection, zone);
-        ConfigureLoaders(collection, zone, searchPath);
+        ConfigureLoaders(collection, zone, searchPath, gdt);
         ConfigureGlobalAssetPoolsLoaders(collection, zone);
     }
 } // namespace T6

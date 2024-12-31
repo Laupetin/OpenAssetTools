@@ -61,7 +61,7 @@ class SoundBankWriterImpl : public SoundBankWriter
     };
 
 public:
-    explicit SoundBankWriterImpl(std::string fileName, std::ostream& stream, ISearchPath* assetSearchPath)
+    explicit SoundBankWriterImpl(std::string fileName, std::ostream& stream, ISearchPath& assetSearchPath)
         : m_file_name(std::move(fileName)),
           m_stream(stream),
           m_asset_search_path(assetSearchPath),
@@ -212,7 +212,7 @@ public:
         if (extension.empty())
             return false;
 
-        const auto file = m_asset_search_path->Open(filePath);
+        const auto file = m_asset_search_path.Open(filePath);
         if (!file.IsOpen())
             return false;
 
@@ -323,7 +323,7 @@ public:
 private:
     std::string m_file_name;
     std::ostream& m_stream;
-    ISearchPath* m_asset_search_path;
+    ISearchPath& m_asset_search_path;
     std::vector<SoundBankEntryInfo> m_sounds;
 
     int64_t m_current_offset;
@@ -336,7 +336,7 @@ private:
 
 std::filesystem::path SoundBankWriter::OutputPath;
 
-std::unique_ptr<SoundBankWriter> SoundBankWriter::Create(const std::string& fileName, std::ostream& stream, ISearchPath* assetSearchPath)
+std::unique_ptr<SoundBankWriter> SoundBankWriter::Create(const std::string& fileName, std::ostream& stream, ISearchPath& assetSearchPath)
 {
     return std::make_unique<SoundBankWriterImpl>(fileName, stream, assetSearchPath);
 }

@@ -1,9 +1,8 @@
 #include "AssetDumperTracer.h"
 
-#include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/TracerFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/Tracer/TracerFields.h"
 
 #include <cassert>
 #include <type_traits>

@@ -1,8 +1,8 @@
 #include "AssetDumperPhysPreset.h"
 
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/PhysPresetFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/PhysPreset/PhysPresetFields.h"
 
 #include <algorithm>
 #include <cassert>

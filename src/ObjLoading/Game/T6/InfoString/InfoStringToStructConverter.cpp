@@ -7,31 +7,34 @@
 
 using namespace T6;
 
+namespace
+{
+    bool GetHashValue(const std::string& value, unsigned& hash)
+    {
+        if (!value.empty() && value[0] == '@')
+        {
+            char* endPtr;
+            hash = strtoul(&value[1], &endPtr, 16);
+            return endPtr == &value[value.size()];
+        }
+
+        hash = Common::Com_HashString(value.c_str());
+        return true;
+    }
+} // namespace
+
 InfoStringToStructConverter::InfoStringToStructConverter(const InfoString& infoString,
                                                          void* structure,
                                                          ZoneScriptStrings& zoneScriptStrings,
-                                                         MemoryManager* memory,
-                                                         IAssetLoadingManager* manager,
+                                                         MemoryManager& memory,
+                                                         AssetCreationContext& context,
+                                                         GenericAssetRegistration& registration,
                                                          const cspField_t* fields,
                                                          const size_t fieldCount)
-    : InfoStringToStructConverterBase(infoString, structure, zoneScriptStrings, memory),
-      m_loading_manager(manager),
+    : InfoStringToStructConverterBase(infoString, structure, zoneScriptStrings, memory, context, registration),
       m_fields(fields),
       m_field_count(fieldCount)
 {
-}
-
-bool InfoStringToStructConverter::GetHashValue(const std::string& value, unsigned& hash)
-{
-    if (!value.empty() && value[0] == '@')
-    {
-        char* endPtr;
-        hash = strtoul(&value[1], &endPtr, 16);
-        return endPtr == &value[value.size()];
-    }
-
-    hash = Common::Com_HashString(value.c_str());
-    return true;
 }
 
 bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, const std::string& value)
@@ -76,15 +79,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* fx = m_loading_manager->LoadDependency<AssetFx>(value);
+        auto* fx = m_context.LoadDependency<AssetFx>(value);
 
         if (fx == nullptr)
         {
-            std::cout << "Failed to load fx asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load fx asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(fx);
+        m_registration.AddDependency(fx);
         *reinterpret_cast<FxEffectDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = fx->Asset();
 
         return true;
@@ -98,15 +101,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* xmodel = m_loading_manager->LoadDependency<AssetXModel>(value);
+        auto* xmodel = m_context.LoadDependency<AssetXModel>(value);
 
         if (xmodel == nullptr)
         {
-            std::cout << "Failed to load xmodel asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load xmodel asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(xmodel);
+        m_registration.AddDependency(xmodel);
         *reinterpret_cast<XModel**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = xmodel->Asset();
 
         return true;
@@ -121,15 +124,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* material = m_loading_manager->LoadDependency<AssetMaterial>(value);
+        auto* material = m_context.LoadDependency<AssetMaterial>(value);
 
         if (material == nullptr)
         {
-            std::cout << "Failed to load material asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load material asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(material);
+        m_registration.AddDependency(material);
         *reinterpret_cast<Material**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = material->Asset();
 
         return true;
@@ -143,15 +146,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* physPreset = m_loading_manager->LoadDependency<AssetPhysPreset>(value);
+        auto* physPreset = m_context.LoadDependency<AssetPhysPreset>(value);
 
         if (physPreset == nullptr)
         {
-            std::cout << "Failed to load physpreset asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load physpreset asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(physPreset);
+        m_registration.AddDependency(physPreset);
         *reinterpret_cast<PhysPreset**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = physPreset->Asset();
 
         return true;
@@ -168,15 +171,15 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
             return true;
         }
 
-        auto* tracer = m_loading_manager->LoadDependency<AssetTracer>(value);
+        auto* tracer = m_context.LoadDependency<AssetTracer>(value);
 
         if (tracer == nullptr)
         {
-            std::cout << "Failed to load tracer asset \"" << value << "\"\n";
+            std::cerr << std::format("Failed to load tracer asset \"{}\"\n", value);
             return false;
         }
 
-        m_dependencies.emplace(tracer);
+        m_registration.AddDependency(tracer);
         *reinterpret_cast<TracerDef**>(reinterpret_cast<uintptr_t>(m_structure) + field.iOffset) = tracer->Asset();
 
         return true;
@@ -187,7 +190,7 @@ bool InfoStringToStructConverter::ConvertBaseField(const cspField_t& field, cons
         unsigned int soundAliasHash;
         if (!GetHashValue(value, soundAliasHash))
         {
-            std::cout << "Failed to parse value \"" << value << "\" as hash\n";
+            std::cerr << std::format("Failed to parse value \"{}\" as hash\n", value);
             return false;
         }
 

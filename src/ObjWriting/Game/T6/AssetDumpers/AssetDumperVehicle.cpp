@@ -1,9 +1,8 @@
 #include "AssetDumperVehicle.h"
 
-#include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/VehicleFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/Vehicle/VehicleFields.h"
 
 #include <cassert>
 #include <type_traits>

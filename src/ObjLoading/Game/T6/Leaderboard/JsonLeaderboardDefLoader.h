@@ -7,5 +7,5 @@
 
 namespace T6
 {
-    bool LoadLeaderboardAsJson(std::istream& stream, LeaderboardDef& leaderboard, MemoryManager* memory);
+    bool LoadLeaderboardAsJson(std::istream& stream, LeaderboardDef& leaderboard, MemoryManager& memory);
 } // namespace T6
