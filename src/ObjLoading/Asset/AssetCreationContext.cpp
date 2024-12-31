@@ -110,8 +110,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         if (!result.HasFailed())
             return result.GetAssetInfo();
 
-        std::cerr << std::format(
-            "Could not load indirectly referenced asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
+        std::cerr << std::format("Could not load asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
     }
     else
     {

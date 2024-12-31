@@ -5,6 +5,7 @@
 AssetCreatorCollection::AssetCreatorCollection(const Zone& zone)
 {
     m_asset_creators_by_type.resize(zone.m_pools->GetAssetTypeCount());
+    m_default_asset_creators_by_type.resize(zone.m_pools->GetAssetTypeCount());
 }
 
 void AssetCreatorCollection::AddAssetCreator(std::unique_ptr<IAssetCreator> creator)
