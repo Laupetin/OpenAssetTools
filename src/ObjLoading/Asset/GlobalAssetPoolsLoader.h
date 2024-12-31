@@ -17,7 +17,7 @@ public:
         auto* existingAsset = GlobalAssetPool<typename AssetType::Type>::GetAssetByName(assetName);
 
         if (!existingAsset)
-            return AssetCreationResult::Failure();
+            return AssetCreationResult::NoAction();
 
         AssetRegistration<AssetType> registration(assetName, existingAsset->Asset());
 
