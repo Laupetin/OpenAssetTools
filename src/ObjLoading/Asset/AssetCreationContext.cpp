@@ -114,7 +114,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
     }
     else
     {
-        std::cerr << std::format("Could not find creator for asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
+        std::cerr << std::format("Missing asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
     }
 
     return nullptr;
