@@ -14,14 +14,6 @@ namespace
         return std::make_unique<Zone>(context.m_definition->m_name, 0, IGame::GetGameById(gameId));
     }
 
-    void InitializeAssetPools(Zone& zone, const GameId gameId)
-    {
-        zone.m_pools = ZoneAssetPools::CreateForGame(gameId, &zone, zone.m_priority);
-        const auto assetTypeCount = zone.m_pools->GetAssetTypeCount();
-        for (auto assetType = 0; assetType < assetTypeCount; assetType++)
-            zone.m_pools->InitPoolDynamic(assetType);
-    }
-
     std::vector<Gdt*> CreateGdtList(const ZoneCreationContext& context)
     {
         std::vector<Gdt*> gdtList;
@@ -62,7 +54,6 @@ namespace zone_creator
     std::unique_ptr<Zone> CreateZoneForDefinition(GameId gameId, ZoneCreationContext& context)
     {
         auto zone = CreateZone(context, gameId);
-        InitializeAssetPools(*zone, gameId);
 
         IgnoreReferencesFromAssets(context);
         IgnoredAssetLookup ignoredAssetLookup(context.m_ignored_assets);
