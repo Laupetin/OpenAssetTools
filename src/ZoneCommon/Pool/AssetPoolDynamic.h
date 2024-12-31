@@ -29,11 +29,6 @@ public:
     {
         GlobalAssetPool<T>::UnlinkAssetPool(this);
 
-        for (auto& entry : m_assets)
-        {
-            delete entry->Asset();
-        }
-
         m_assets.clear();
         m_asset_lookup.clear();
     }
@@ -41,10 +36,6 @@ public:
     XAssetInfo<T>* AddAsset(std::unique_ptr<XAssetInfo<T>> xAssetInfo) override
     {
         const auto normalizedName = XAssetInfo<T>::NormalizeAssetName(xAssetInfo->m_name);
-
-        T* newAsset = new T();
-        memcpy(newAsset, xAssetInfo->Asset(), sizeof(T));
-        xAssetInfo->m_ptr = newAsset;
 
         auto* pAssetInfo = xAssetInfo.get();
         m_asset_lookup[normalizedName] = pAssetInfo;
