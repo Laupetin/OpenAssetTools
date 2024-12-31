@@ -4,6 +4,7 @@
 #include "Game/IW4/InfoString/InfoStringToStructConverter.h"
 #include "Game/IW4/PhysPreset/PhysPresetFields.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <format>

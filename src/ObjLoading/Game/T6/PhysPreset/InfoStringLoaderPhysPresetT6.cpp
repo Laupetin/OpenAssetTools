@@ -4,6 +4,7 @@
 #include "Game/T6/PhysPreset/PhysPresetFields.h"
 #include "Game/T6/T6.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <format>
