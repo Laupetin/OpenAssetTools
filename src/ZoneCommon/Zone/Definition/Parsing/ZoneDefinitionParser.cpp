@@ -31,5 +31,6 @@ const std::vector<AbstractParser<ZoneDefinitionParserValue, ZoneDefinitionParser
 
 std::unique_ptr<ZoneDefinition> ZoneDefinitionParser::GetParsedValue()
 {
+    m_state->Finalize();
     return std::move(m_state->m_definition);
 }

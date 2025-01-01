@@ -78,6 +78,9 @@ include,demo_scripts
         MockSearchPath mockSearchPath;
 
         mockSearchPath.AddFileData("demo_gun.zone", R"sampledata(
+>linker.gunPhysics,true
+build,other_zone_to_build
+ignore,ignored_zone
 material,demo_gun_material
 )sampledata");
 
@@ -99,6 +102,17 @@ rawfile,demo_gun_script.gsc
 
         REQUIRE(result->m_assets[2].m_asset_name == "demo_gun_script.gsc");
         REQUIRE(result->m_assets[2].m_asset_type == T6::ASSET_TYPE_RAWFILE);
+
+        REQUIRE(!result->m_properties.m_properties.empty());
+        const auto includedProperty = result->m_properties.m_properties.find("linker.gunphysics");
+        REQUIRE(includedProperty != result->m_properties.m_properties.end());
+        REQUIRE(includedProperty->second == "true");
+
+        REQUIRE(!result->m_ignores.empty());
+        REQUIRE(result->m_ignores[0] == "ignored_zone");
+
+        REQUIRE(!result->m_targets_to_build.empty());
+        REQUIRE(result->m_targets_to_build[0] == "other_zone_to_build");
     }
 
     TEST_CASE("ZoneDefinitionInputStream: Ensure can include assetlists", "[zonedefinition]")
@@ -266,5 +280,179 @@ material,test_material
         REQUIRE(iterator->second == "code_post_gfx");
         ++iterator;
         REQUIRE(iterator == ipakReadResults.second);
+    }
+
+    TEST_CASE("ZoneDefinitionInputStream: Ensure can define IWD", "[zonedefinition]")
+    {
+        std::istringstream inputData(R"sampledata(
+// Call Of Duty: Black Ops II
+>game,T6
+>name,test_mod
+
+>iwd,funnyIwd
+
+material,test_material
+material,otherMaterial
+material,lastMaterial
+
+)sampledata");
+
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
+
+        const auto result = inputStream.ReadDefinition();
+        REQUIRE(result);
+
+        REQUIRE(result->m_assets.size() == 3);
+        REQUIRE(result->m_obj_containers.size() == 1);
+
+        REQUIRE(result->m_obj_containers[0].m_type == ZoneDefinitionObjContainerType::IWD);
+        REQUIRE(result->m_obj_containers[0].m_name == "funnyIwd");
+        REQUIRE(result->m_obj_containers[0].m_asset_start == 0u);
+        REQUIRE(result->m_obj_containers[0].m_asset_end == 3u);
+    }
+
+    TEST_CASE("ZoneDefinitionInputStream: Defining another IWD stops current one", "[zonedefinition]")
+    {
+        std::istringstream inputData(R"sampledata(
+// Call Of Duty: Black Ops II
+>game,T6
+>name,test_mod
+
+>iwd,funnyIwd
+
+material,test_material
+material,otherMaterial
+
+>iwd,otherIwd
+
+material,lastMaterial
+
+)sampledata");
+
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
+
+        const auto result = inputStream.ReadDefinition();
+        REQUIRE(result);
+
+        REQUIRE(result->m_assets.size() == 3);
+        REQUIRE(result->m_obj_containers.size() == 2);
+
+        REQUIRE(result->m_obj_containers[0].m_type == ZoneDefinitionObjContainerType::IWD);
+        REQUIRE(result->m_obj_containers[0].m_name == "funnyIwd");
+        REQUIRE(result->m_obj_containers[0].m_asset_start == 0u);
+        REQUIRE(result->m_obj_containers[0].m_asset_end == 2u);
+
+        REQUIRE(result->m_obj_containers[1].m_type == ZoneDefinitionObjContainerType::IWD);
+        REQUIRE(result->m_obj_containers[1].m_name == "otherIwd");
+        REQUIRE(result->m_obj_containers[1].m_asset_start == 2u);
+        REQUIRE(result->m_obj_containers[1].m_asset_end == 3u);
+    }
+
+    TEST_CASE("ZoneDefinitionInputStream: Ensure can define IPak", "[zonedefinition]")
+    {
+        std::istringstream inputData(R"sampledata(
+// Call Of Duty: Black Ops II
+>game,T6
+>name,test_mod
+
+>ipak,funnyIPak
+
+material,test_material
+material,otherMaterial
+material,lastMaterial
+
+)sampledata");
+
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
+
+        const auto result = inputStream.ReadDefinition();
+        REQUIRE(result);
+
+        REQUIRE(result->m_assets.size() == 3);
+        REQUIRE(result->m_obj_containers.size() == 1);
+
+        REQUIRE(result->m_obj_containers[0].m_type == ZoneDefinitionObjContainerType::IPAK);
+        REQUIRE(result->m_obj_containers[0].m_name == "funnyIPak");
+        REQUIRE(result->m_obj_containers[0].m_asset_start == 0u);
+        REQUIRE(result->m_obj_containers[0].m_asset_end == 3u);
+    }
+
+    TEST_CASE("ZoneDefinitionInputStream: Defining another IPak stops current one", "[zonedefinition]")
+    {
+        std::istringstream inputData(R"sampledata(
+// Call Of Duty: Black Ops II
+>game,T6
+>name,test_mod
+
+>ipak,funnyIPak
+
+material,test_material
+material,otherMaterial
+
+>ipak,otherIPak
+
+material,lastMaterial
+
+)sampledata");
+
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
+
+        const auto result = inputStream.ReadDefinition();
+        REQUIRE(result);
+
+        REQUIRE(result->m_assets.size() == 3);
+        REQUIRE(result->m_obj_containers.size() == 2);
+
+        REQUIRE(result->m_obj_containers[0].m_type == ZoneDefinitionObjContainerType::IPAK);
+        REQUIRE(result->m_obj_containers[0].m_name == "funnyIPak");
+        REQUIRE(result->m_obj_containers[0].m_asset_start == 0u);
+        REQUIRE(result->m_obj_containers[0].m_asset_end == 2u);
+
+        REQUIRE(result->m_obj_containers[1].m_type == ZoneDefinitionObjContainerType::IPAK);
+        REQUIRE(result->m_obj_containers[1].m_name == "otherIPak");
+        REQUIRE(result->m_obj_containers[1].m_asset_start == 2u);
+        REQUIRE(result->m_obj_containers[1].m_asset_end == 3u);
+    }
+
+    TEST_CASE("ZoneDefinitionInputStream: Ensure can define IWD and IPak at the same time", "[zonedefinition]")
+    {
+        std::istringstream inputData(R"sampledata(
+// Call Of Duty: Black Ops II
+>game,T6
+>name,test_mod
+
+>iwd,funnyIwd
+
+material,test_material
+
+>ipak,funnyIPak
+
+material,otherMaterial
+material,lastMaterial
+
+)sampledata");
+
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
+
+        const auto result = inputStream.ReadDefinition();
+        REQUIRE(result);
+
+        REQUIRE(result->m_assets.size() == 3);
+        REQUIRE(result->m_obj_containers.size() == 2);
+
+        REQUIRE(result->m_obj_containers[0].m_type == ZoneDefinitionObjContainerType::IWD);
+        REQUIRE(result->m_obj_containers[0].m_name == "funnyIwd");
+        REQUIRE(result->m_obj_containers[0].m_asset_start == 0u);
+        REQUIRE(result->m_obj_containers[0].m_asset_end == 3u);
+
+        REQUIRE(result->m_obj_containers[1].m_type == ZoneDefinitionObjContainerType::IPAK);
+        REQUIRE(result->m_obj_containers[1].m_name == "funnyIPak");
+        REQUIRE(result->m_obj_containers[1].m_asset_start == 1u);
+        REQUIRE(result->m_obj_containers[1].m_asset_end == 3u);
     }
 } // namespace test::zone::definition::zone_definition_stream
