@@ -1,7 +1,7 @@
 #include "Game/T5/StringTable/LoaderStringTableT5.h"
 
 #include "Game/T5/GameT5.h"
-#include "Mock/MockSearchPath.h"
+#include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>

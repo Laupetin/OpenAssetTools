@@ -1,15 +1,19 @@
 #pragma once
 
+#include "Parsing/IParserLineStream.h"
+#include "SearchPath/ISearchPath.h"
 #include "Zone/AssetNameResolver.h"
 #include "Zone/Definition/ZoneDefinition.h"
 
 #include <memory>
 #include <optional>
+#include <string>
+#include <unordered_set>
 
 class ZoneDefinitionParserState
 {
 public:
-    explicit ZoneDefinitionParserState(std::string targetName);
+    ZoneDefinitionParserState(std::string targetName, ISearchPath& searchPath, IParserLineStream& underlyingStream);
 
     void SetGame(GameId game);
 
@@ -17,6 +21,10 @@ public:
     void StartIwd(std::string iwdName);
 
     void Finalize();
+
+    ISearchPath& m_search_path;
+    IParserLineStream& m_underlying_stream;
+    std::unordered_set<std::string> m_inclusions;
 
     const IAssetNameResolver* m_asset_name_resolver;
 

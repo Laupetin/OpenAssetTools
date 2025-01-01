@@ -2,10 +2,14 @@
 
 #include <algorithm>
 
-ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName)
-    : m_asset_name_resolver(nullptr),
+ZoneDefinitionParserState::ZoneDefinitionParserState(std::string targetName, ISearchPath& searchPath, IParserLineStream& underlyingStream)
+    : m_search_path(searchPath),
+      m_underlying_stream(underlyingStream),
+      m_asset_name_resolver(nullptr),
       m_definition(std::make_unique<ZoneDefinition>())
+
 {
+    m_inclusions.emplace(targetName);
     m_definition->m_name = std::move(targetName);
 }
 

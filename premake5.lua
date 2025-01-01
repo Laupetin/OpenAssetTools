@@ -170,6 +170,7 @@ group ""
 -- ========================
 -- Tests
 -- ========================
+include "test/ObjCommonTestUtils.lua"
 include "test/ObjCommonTests.lua"
 include "test/ObjLoadingTests.lua"
 include "test/ParserTestUtils.lua"
@@ -179,6 +180,7 @@ include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
+    ObjCommonTestUtils:project()
     ObjCommonTests:project()
     ObjLoadingTests:project()
     ParserTestUtils:project()

@@ -26,16 +26,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            StructuredDataDefReader reader(*file.m_stream,
-                                           assetName,
-                                           [this](const std::string& filename, const std::string& sourceFile) -> std::unique_ptr<std::istream>
-                                           {
-                                               auto foundFileToInclude = m_search_path.Open(filename);
-                                               if (!foundFileToInclude.IsOpen() || !foundFileToInclude.m_stream)
-                                                   return nullptr;
-
-                                               return std::move(foundFileToInclude.m_stream);
-                                           });
+            StructuredDataDefReader reader(*file.m_stream, assetName, m_search_path);
 
             bool readingDefsSuccessful;
             const auto defs = reader.ReadStructureDataDefs(readingDefsSuccessful);

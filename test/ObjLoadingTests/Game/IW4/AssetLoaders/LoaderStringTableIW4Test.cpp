@@ -2,7 +2,7 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/GameIW4.h"
-#include "Mock/MockSearchPath.h"
+#include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>

@@ -60,14 +60,9 @@ class ZoneDefinition
 public:
     ZoneDefinition();
 
-    void Include(const AssetList& assetListToInclude);
-    void Include(const ZoneDefinition& definitionToInclude);
-
     std::string m_name;
     GameId m_game;
     ZoneDefinitionProperties m_properties;
-    std::vector<std::string> m_includes;
-    std::vector<std::string> m_asset_lists;
     std::vector<std::string> m_ignores;
     std::vector<std::string> m_targets_to_build;
     std::vector<std::string> m_gdts;

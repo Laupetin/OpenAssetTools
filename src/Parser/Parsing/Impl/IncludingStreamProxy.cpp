@@ -3,7 +3,7 @@
 #include "Parsing/ParsingException.h"
 
 #include <filesystem>
-#include <sstream>
+#include <format>
 
 namespace fs = std::filesystem;
 
@@ -81,11 +81,7 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const u
     const auto filename = line.m_line.substr(filenameStart, filenameEnd - filenameStart);
 
     if (!m_stream->IncludeFile(filename))
-    {
-        std::ostringstream errorStr;
-        errorStr << "Could not include file \"" << filename << "\"";
-        throw ParsingException(CreatePos(line, currentPos), errorStr.str());
-    }
+        throw ParsingException(CreatePos(line, currentPos), std::format("Could not include file \"{}\"", filename));
 
     return true;
 }

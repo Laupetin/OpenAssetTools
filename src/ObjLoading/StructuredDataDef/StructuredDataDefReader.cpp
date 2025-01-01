@@ -7,28 +7,24 @@
 #include "Parsing/Impl/ParserSingleInputStream.h"
 #include "StructuredDataDef/Parsing/StructuredDataDefParser.h"
 
+#include <format>
+#include <iostream>
+
 using namespace sdd;
 
-StructuredDataDefReader::StructuredDataDefReader(std::istream& stream, std::string fileName)
-    : StructuredDataDefReader(stream, std::move(fileName), nullptr)
-{
-}
-
-StructuredDataDefReader::StructuredDataDefReader(std::istream& stream, std::string fileName, include_callback_t includeCallback)
-    : m_file_name(std::move(fileName)),
+StructuredDataDefReader::StructuredDataDefReader(std::istream& stream, std::string fileName, ISearchPath& searchPath)
+    : SearchPathMultiInputStream(searchPath),
+      m_file_name(std::move(fileName)),
       m_stream(nullptr)
 {
-    OpenBaseStream(stream, std::move(includeCallback));
+    OpenBaseStream(stream);
     SetupStreamProxies();
     m_stream = m_open_streams.back().get();
 }
 
-bool StructuredDataDefReader::OpenBaseStream(std::istream& stream, include_callback_t includeCallback)
+bool StructuredDataDefReader::OpenBaseStream(std::istream& stream)
 {
-    if (includeCallback)
-        m_open_streams.emplace_back(std::make_unique<ParserMultiInputStream>(stream, m_file_name, std::move(includeCallback)));
-    else
-        m_open_streams.emplace_back(std::make_unique<ParserSingleInputStream>(stream, m_file_name));
+    m_open_streams.emplace_back(std::make_unique<ParserMultiInputStream>(stream, m_file_name, *this));
 
     return true;
 }
@@ -58,6 +54,7 @@ std::vector<std::unique_ptr<CommonStructuredDataDef>> StructuredDataDefReader::R
     if (success)
         return parser->GetDefs();
 
-    std::cout << "Parsing structured data def file \"" << m_file_name << "\" failed!\n";
+    std::cerr << std::format("Parsing structured data def file \"{}\" failed!\n", m_file_name);
+
     return {};
 }

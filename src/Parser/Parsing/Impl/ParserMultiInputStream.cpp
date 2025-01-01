@@ -17,14 +17,14 @@ ParserMultiInputStream::FileInfo::FileInfo(std::istream& stream, std::string fil
 {
 }
 
-ParserMultiInputStream::ParserMultiInputStream(std::unique_ptr<std::istream> stream, std::string fileName, include_callback_t includeCallback)
-    : m_include_callback(std::move(includeCallback))
+ParserMultiInputStream::ParserMultiInputStream(std::unique_ptr<std::istream> stream, std::string fileName, IInclusionCallback& includeCallback)
+    : m_include_callback(includeCallback)
 {
     m_files.emplace(std::move(stream), std::move(fileName));
 }
 
-ParserMultiInputStream::ParserMultiInputStream(std::istream& stream, std::string fileName, include_callback_t includeCallback)
-    : m_include_callback(std::move(includeCallback))
+ParserMultiInputStream::ParserMultiInputStream(std::istream& stream, std::string fileName, IInclusionCallback& includeCallback)
+    : m_include_callback(includeCallback)
 {
     m_files.emplace(stream, std::move(fileName));
 }
@@ -76,10 +76,7 @@ ParserLine ParserMultiInputStream::NextLine()
 
 bool ParserMultiInputStream::IncludeFile(const std::string& filename)
 {
-    if (!m_include_callback)
-        return false;
-
-    auto newFile = m_include_callback(filename, m_files.empty() ? "" : *m_files.top().m_file_path);
+    auto newFile = m_include_callback.OpenIncludedFile(filename, m_files.empty() ? "" : *m_files.top().m_file_path);
     if (!newFile)
         return false;
 

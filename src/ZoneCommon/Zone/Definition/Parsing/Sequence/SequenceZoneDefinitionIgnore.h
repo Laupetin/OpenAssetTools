@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Parsing/ZoneDefinition/ZoneDefinitionParser.h"
+#include "Zone/Definition/Parsing/ZoneDefinitionParser.h"
 
 class SequenceZoneDefinitionIgnore final : public ZoneDefinitionParser::sequence_t
 {

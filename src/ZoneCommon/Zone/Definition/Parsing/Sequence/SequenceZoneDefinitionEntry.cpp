@@ -1,6 +1,6 @@
 #include "SequenceZoneDefinitionEntry.h"
 
-#include "Parsing/ZoneDefinition/Matcher/ZoneDefinitionMatcherFactory.h"
+#include "Zone/Definition/Parsing/Matcher/ZoneDefinitionMatcherFactory.h"
 
 SequenceZoneDefinitionEntry::SequenceZoneDefinitionEntry()
 {

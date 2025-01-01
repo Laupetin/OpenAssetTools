@@ -198,17 +198,7 @@ namespace
 
         std::unique_ptr<menu::ParsingResult> ParseMenuFile(std::istream& stream, const std::string& menuFileName, const menu::MenuAssetZoneState* zoneState)
         {
-            menu::MenuFileReader reader(stream,
-                                        menuFileName,
-                                        menu::FeatureLevel::IW4,
-                                        [this](const std::string& filename, const std::string& sourceFile) -> std::unique_ptr<std::istream>
-                                        {
-                                            auto foundFileToInclude = m_search_path.Open(filename);
-                                            if (!foundFileToInclude.IsOpen() || !foundFileToInclude.m_stream)
-                                                return nullptr;
-
-                                            return std::move(foundFileToInclude.m_stream);
-                                        });
+            menu::MenuFileReader reader(stream, menuFileName, menu::FeatureLevel::IW4, m_search_path);
 
             reader.IncludeZoneState(zoneState);
             reader.SetPermissiveMode(ObjLoading::Configuration.MenuPermissiveParsing);

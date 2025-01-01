@@ -8,7 +8,7 @@
 #include "SearchPath/SearchPaths.h"
 #include "Utils/ObjFileStream.h"
 #include "Zone/AssetList/AssetList.h"
-#include "Zone/AssetList/AssetListStream.h"
+#include "Zone/AssetList/AssetListReader.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
 #include "ZoneCreation/ZoneCreationContext.h"
 #include "ZoneCreation/ZoneCreator.h"
@@ -155,111 +155,7 @@ namespace
 
 class LinkerImpl final : public Linker
 {
-    bool IncludeAdditionalZoneDefinitions(const std::string& initialFileName, ZoneDefinition& zoneDefinition, ISearchPath& sourceSearchPath) const
-    {
-        std::set<std::string> sourceNames;
-        sourceNames.emplace(initialFileName);
-
-        std::deque<std::string> toIncludeQueue;
-        for (const auto& include : zoneDefinition.m_includes)
-            toIncludeQueue.emplace_back(include);
-
-        while (!toIncludeQueue.empty())
-        {
-            const auto& source = toIncludeQueue.front();
-
-            if (sourceNames.find(source) == sourceNames.end())
-            {
-                sourceNames.emplace(source);
-
-                std::unique_ptr<ZoneDefinition> includeDefinition;
-                {
-                    const auto definitionFileName = std::format("{}.zone", source);
-                    const auto definitionStream = sourceSearchPath.Open(definitionFileName);
-                    if (!definitionStream.IsOpen())
-                    {
-                        std::cerr << std::format("Could not find zone definition file for project \"{}\".\n", source);
-                        return false;
-                    }
-
-                    ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream.m_stream, source, definitionFileName, m_args.m_verbose);
-                    zoneDefinitionInputStream.SetPreviouslySetGame(zoneDefinition.m_game);
-                    includeDefinition = zoneDefinitionInputStream.ReadDefinition();
-                }
-
-                if (!includeDefinition)
-                {
-                    std::cerr << std::format("Failed to read zone definition file for project \"{}\".\n", source);
-                    return false;
-                }
-
-                for (const auto& include : includeDefinition->m_includes)
-                    toIncludeQueue.emplace_back(include);
-
-                zoneDefinition.Include(*includeDefinition);
-            }
-
-            toIncludeQueue.pop_front();
-        }
-
-        return true;
-    }
-
-    bool ReadAssetList(LinkerPathManager& paths, const std::string& zoneName, const GameId game, AssetList& assetList) const
-    {
-        {
-            const auto assetListFileName = std::format("assetlist/{}.csv", zoneName);
-            const auto assetListStream = paths.m_source_paths.GetSearchPaths().Open(assetListFileName);
-
-            if (assetListStream.IsOpen())
-            {
-                const AssetListInputStream stream(*assetListStream.m_stream, game);
-                AssetListEntry entry;
-
-                bool failure;
-                while (stream.NextEntry(entry, &failure))
-                {
-                    assetList.m_entries.emplace_back(std::move(entry));
-                }
-
-                return !failure;
-            }
-        }
-
-        {
-            const auto zoneDefinition = ReadZoneDefinition(paths, zoneName);
-
-            if (zoneDefinition)
-            {
-                for (const auto& entry : zoneDefinition->m_assets)
-                {
-                    assetList.m_entries.emplace_back(entry.m_asset_type, entry.m_asset_name, entry.m_is_reference);
-                }
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool IncludeAssetLists(LinkerPathManager& paths, ZoneDefinition& zoneDefinition) const
-    {
-        for (const auto& assetListName : zoneDefinition.m_asset_lists)
-        {
-            AssetList assetList;
-            if (!ReadAssetList(paths, assetListName, zoneDefinition.m_game, assetList))
-            {
-                std::cerr << std::format("Failed to read asset list \"{}\"\n", assetListName);
-                return false;
-            }
-
-            zoneDefinition.Include(assetList);
-        }
-
-        return true;
-    }
-
-    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(LinkerPathManager& paths, const std::string& targetName) const
+    std::unique_ptr<ZoneDefinition> ReadZoneDefinition(LinkerPathManager& paths, const std::string& targetName, bool logMissing = true) const
     {
         auto& sourceSearchPath = paths.m_source_paths.GetSearchPaths();
         std::unique_ptr<ZoneDefinition> zoneDefinition;
@@ -268,11 +164,12 @@ class LinkerImpl final : public Linker
             const auto definitionStream = sourceSearchPath.Open(definitionFileName);
             if (!definitionStream.IsOpen())
             {
-                std::cerr << std::format("Could not find zone definition file for target \"{}\".\n", targetName);
+                if (logMissing)
+                    std::cerr << std::format("Could not find zone definition file for target \"{}\".\n", targetName);
                 return nullptr;
             }
 
-            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream.m_stream, targetName, definitionFileName, m_args.m_verbose);
+            ZoneDefinitionInputStream zoneDefinitionInputStream(*definitionStream.m_stream, targetName, definitionFileName, sourceSearchPath);
             zoneDefinition = zoneDefinitionInputStream.ReadDefinition();
         }
 
@@ -282,13 +179,38 @@ class LinkerImpl final : public Linker
             return nullptr;
         }
 
-        if (!IncludeAdditionalZoneDefinitions(targetName, *zoneDefinition, sourceSearchPath))
-            return nullptr;
-
-        if (!IncludeAssetLists(paths, *zoneDefinition))
-            return nullptr;
-
         return zoneDefinition;
+    }
+
+    bool ReadIgnoreEntries(LinkerPathManager& paths, const std::string& zoneName, const GameId game, AssetList& assetList) const
+    {
+        {
+            AssetListReader assetListReader(paths.m_source_paths.GetSearchPaths(), game);
+            const auto maybeReadAssetList = assetListReader.ReadAssetList(zoneName, false);
+            if (maybeReadAssetList)
+            {
+                assetList.m_entries.reserve(assetList.m_entries.size() + maybeReadAssetList->m_entries.size());
+                for (auto& entry : maybeReadAssetList->m_entries)
+                    assetList.m_entries.emplace_back(std::move(entry));
+
+                return true;
+            }
+        }
+
+        {
+            const auto zoneDefinition = ReadZoneDefinition(paths, zoneName, false);
+
+            if (zoneDefinition)
+            {
+                assetList.m_entries.reserve(assetList.m_entries.size() + zoneDefinition->m_assets.size());
+                for (const auto& entry : zoneDefinition->m_assets)
+                    assetList.m_entries.emplace_back(entry.m_asset_type, entry.m_asset_name, entry.m_is_reference);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool ProcessZoneDefinitionIgnores(LinkerPathManager& paths, const std::string& targetName, ZoneCreationContext& context) const
@@ -301,8 +223,7 @@ class LinkerImpl final : public Linker
             if (ignore == targetName)
                 continue;
 
-            std::vector<AssetListEntry> assetList;
-            if (!ReadAssetList(paths, ignore, context.m_definition->m_game, context.m_ignored_assets))
+            if (!ReadIgnoreEntries(paths, ignore, context.m_definition->m_game, context.m_ignored_assets))
             {
                 std::cerr << std::format("Failed to read asset listing for ignoring assets of project \"{}\".\n", ignore);
                 return false;

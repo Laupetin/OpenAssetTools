@@ -1,8 +1,8 @@
 #include "Game/IW3/StringTable/AssetLoaderStringTableIW3.h"
 
 #include "Game/IW3/GameIW3.h"
-#include "Mock/MockSearchPath.h"
 #include "Pool/ZoneAssetPools.h"
+#include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>

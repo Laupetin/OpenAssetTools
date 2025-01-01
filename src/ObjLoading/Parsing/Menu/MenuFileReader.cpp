@@ -11,36 +11,22 @@
 
 using namespace menu;
 
-MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel, include_callback_t includeCallback)
-    : m_feature_level(featureLevel),
+MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel, ISearchPath& searchPath)
+    : SearchPathMultiInputStream(searchPath),
+      m_feature_level(featureLevel),
       m_file_name(std::move(fileName)),
       m_stream(nullptr),
       m_zone_state(nullptr),
       m_permissive_mode(false)
 {
-    OpenBaseStream(stream, std::move(includeCallback));
+    OpenBaseStream(stream);
     SetupStreamProxies();
     m_stream = m_open_streams.back().get();
 }
 
-MenuFileReader::MenuFileReader(std::istream& stream, std::string fileName, const FeatureLevel featureLevel)
-    : m_feature_level(featureLevel),
-      m_file_name(std::move(fileName)),
-      m_stream(nullptr),
-      m_zone_state(nullptr),
-      m_permissive_mode(false)
+bool MenuFileReader::OpenBaseStream(std::istream& stream)
 {
-    OpenBaseStream(stream, nullptr);
-    SetupStreamProxies();
-    m_stream = m_open_streams.back().get();
-}
-
-bool MenuFileReader::OpenBaseStream(std::istream& stream, include_callback_t includeCallback)
-{
-    if (includeCallback)
-        m_open_streams.emplace_back(std::make_unique<ParserMultiInputStream>(stream, m_file_name, std::move(includeCallback)));
-    else
-        m_open_streams.emplace_back(std::make_unique<ParserSingleInputStream>(stream, m_file_name));
+    m_open_streams.emplace_back(std::make_unique<ParserMultiInputStream>(stream, m_file_name, *this));
 
     return true;
 }

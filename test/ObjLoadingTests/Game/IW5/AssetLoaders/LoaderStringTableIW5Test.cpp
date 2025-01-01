@@ -1,7 +1,7 @@
 #include "Game/IW5/StringTable/LoaderStringTableIW5.h"
 
 #include "Game/IW5/GameIW5.h"
-#include "Mock/MockSearchPath.h"
+#include "SearchPath/MockSearchPath.h"
 #include "Utils/MemoryManager.h"
 
 #include <catch2/catch_test_macros.hpp>

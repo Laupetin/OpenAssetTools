@@ -1,4 +1,5 @@
 ﻿#include "Game/T6/T6.h"
+#include "SearchPath/MockSearchPath.h"
 #include "Zone/Definition/ZoneDefinitionStream.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -19,7 +20,8 @@ material,gradient_top
 menu,demo_ingame
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
@@ -50,7 +52,8 @@ menu,demo_ingame
 material,demo_material
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
@@ -68,19 +71,34 @@ material,demo_material
 >name,test_mod
 
 include,demo_gun
+material,asdf
 include,demo_scripts
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+
+        mockSearchPath.AddFileData("demo_gun.zone", R"sampledata(
+material,demo_gun_material
+)sampledata");
+
+        mockSearchPath.AddFileData("demo_scripts.zone", R"sampledata(
+rawfile,demo_gun_script.gsc
+)sampledata");
+
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
+        REQUIRE(result->m_assets.size() == 3);
 
-        REQUIRE(result->m_assets.empty());
-        REQUIRE(result->m_includes.size() == 2);
+        REQUIRE(result->m_assets[0].m_asset_name == "demo_gun_material");
+        REQUIRE(result->m_assets[0].m_asset_type == T6::ASSET_TYPE_MATERIAL);
 
-        REQUIRE(result->m_includes[0] == "demo_gun");
-        REQUIRE(result->m_includes[1] == "demo_scripts");
+        REQUIRE(result->m_assets[1].m_asset_name == "asdf");
+        REQUIRE(result->m_assets[1].m_asset_type == T6::ASSET_TYPE_MATERIAL);
+
+        REQUIRE(result->m_assets[2].m_asset_name == "demo_gun_script.gsc");
+        REQUIRE(result->m_assets[2].m_asset_type == T6::ASSET_TYPE_RAWFILE);
     }
 
     TEST_CASE("ZoneDefinitionInputStream: Ensure can include assetlists", "[zonedefinition]")
@@ -91,21 +109,47 @@ include,demo_scripts
 >name,test_mod
 
 assetlist,code_post_gfx_mp
+material,asdf
 assetlist,common_mp
 
 material,test_material
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+
+        mockSearchPath.AddFileData("assetlist/code_post_gfx_mp.csv", R"sampledata(
+material,post_fx_mat
+rawfile,code_post_gfx_mp
+)sampledata");
+
+        mockSearchPath.AddFileData("assetlist/common_mp.csv", R"sampledata(
+material,common_mat
+rawfile,common_mp
+)sampledata");
+
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
+        REQUIRE(result->m_assets.size() == 6);
 
-        REQUIRE(result->m_assets.size() == 1);
-        REQUIRE(result->m_asset_lists.size() == 2);
+        REQUIRE(result->m_assets[0].m_asset_name == "post_fx_mat");
+        REQUIRE(result->m_assets[0].m_asset_type == T6::ASSET_TYPE_MATERIAL);
 
-        REQUIRE(result->m_asset_lists[0] == "code_post_gfx_mp");
-        REQUIRE(result->m_asset_lists[1] == "common_mp");
+        REQUIRE(result->m_assets[1].m_asset_name == "code_post_gfx_mp");
+        REQUIRE(result->m_assets[1].m_asset_type == T6::ASSET_TYPE_RAWFILE);
+
+        REQUIRE(result->m_assets[2].m_asset_name == "asdf");
+        REQUIRE(result->m_assets[2].m_asset_type == T6::ASSET_TYPE_MATERIAL);
+
+        REQUIRE(result->m_assets[3].m_asset_name == "common_mat");
+        REQUIRE(result->m_assets[3].m_asset_type == T6::ASSET_TYPE_MATERIAL);
+
+        REQUIRE(result->m_assets[4].m_asset_name == "common_mp");
+        REQUIRE(result->m_assets[4].m_asset_type == T6::ASSET_TYPE_RAWFILE);
+
+        REQUIRE(result->m_assets[5].m_asset_name == "test_material");
+        REQUIRE(result->m_assets[5].m_asset_type == T6::ASSET_TYPE_MATERIAL);
     }
 
     TEST_CASE("ZoneDefinitionInputStream: Ensure can define other build targets", "[zonedefinition]")
@@ -122,7 +166,8 @@ material,test_material
 build,more_mods
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
@@ -147,7 +192,8 @@ ignore,common_mp
 material,test_material
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
@@ -171,7 +217,8 @@ material,test_material
 material,test_material
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
@@ -197,7 +244,8 @@ material,test_material
 >level.ipak_read,code_post_gfx
 )sampledata");
 
-        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", true);
+        MockSearchPath mockSearchPath;
+        ZoneDefinitionInputStream inputStream(inputData, "test", "test.zone", mockSearchPath);
 
         const auto result = inputStream.ReadDefinition();
         REQUIRE(result);
