@@ -2,7 +2,6 @@
 
 #include "LinkerArgs.h"
 #include "LinkerPaths.h"
-#include "ObjContainer/IPak/IPakWriter.h"
 #include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "ObjWriting.h"
 #include "SearchPath/SearchPaths.h"
