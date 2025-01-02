@@ -308,42 +308,6 @@ class LinkerImpl final : public Linker
         return result;
     }
 
-    // bool BuildIPak(const LinkerPathManager& paths, const std::string& projectName, const ZoneDefinition& zoneDefinition, SearchPaths& assetSearchPaths) const
-    // {
-    //     const fs::path ipakFolderPath(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.m_game));
-    //     auto ipakFilePath(ipakFolderPath);
-    //     ipakFilePath.append(std::format("{}.ipak", zoneDefinition.m_name));
-
-    //     fs::create_directories(ipakFolderPath);
-
-    //     std::ofstream stream(ipakFilePath, std::fstream::out | std::fstream::binary);
-    //     if (!stream.is_open())
-    //         return false;
-
-    //     const auto ipakWriter = IPakWriter::Create(stream, &assetSearchPaths);
-    //     const auto imageAssetType = IZoneCreator::GetCreatorForGame(zoneDefinition.m_game)->GetImageAssetType();
-    //     for (const auto& assetEntry : zoneDefinition.m_assets)
-    //     {
-    //         if (assetEntry.m_is_reference)
-    //             continue;
-
-    //         if (assetEntry.m_asset_type == imageAssetType)
-    //             ipakWriter->AddImage(assetEntry.m_asset_name);
-    //     }
-
-    //     if (!ipakWriter->Write())
-    //     {
-    //         std::cerr << "Writing ipak failed.\n";
-    //         stream.close();
-    //         return false;
-    //     }
-
-    //     std::cout << std::format("Created ipak \"{}\"\n", ipakFilePath.string());
-
-    //     stream.close();
-    //     return true;
-    // }
-
     bool BuildProject(LinkerPathManager& paths, const std::string& projectName, const std::string& targetName) const
     {
         std::deque<std::string> targetsToBuild;
