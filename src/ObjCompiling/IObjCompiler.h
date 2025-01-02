@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Asset/AssetCreatorCollection.h"
+#include "Gdt/IGdtQueryable.h"
 #include "SearchPath/ISearchPath.h"
 #include "Zone/Definition/ZoneDefinition.h"
 #include "Zone/Zone.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 class IObjCompiler
@@ -18,7 +20,13 @@ public:
     IObjCompiler& operator=(const IObjCompiler& other) = default;
     IObjCompiler& operator=(IObjCompiler&& other) noexcept = default;
 
-    virtual void ConfigureCreatorCollection(AssetCreatorCollection& collection, Zone& zone, const ZoneDefinition& zoneDefinition) const = 0;
+    virtual void ConfigureCreatorCollection(AssetCreatorCollection& collection,
+                                            Zone& zone,
+                                            const ZoneDefinition& zoneDefinition,
+                                            ISearchPath& searchPath,
+                                            IGdtQueryable& gdt,
+                                            const std::filesystem::path& outDir,
+                                            const std::filesystem::path& cacheDir) const = 0;
 
     static const IObjCompiler* GetObjCompilerForGame(GameId game);
 };
