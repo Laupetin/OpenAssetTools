@@ -9,7 +9,7 @@ namespace T6
     public:
         void ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                         Zone& zone,
-                                        const ZoneDefinition& zoneDefinition,
+                                        const ZoneDefinitionContext& zoneDefinition,
                                         ISearchPath& searchPath,
                                         IGdtQueryable& gdt,
                                         const std::filesystem::path& outDir,

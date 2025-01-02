@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Asset/AssetCreatorCollection.h"
+#include "Asset/ZoneDefinitionContext.h"
 #include "Gdt/IGdtQueryable.h"
 #include "SearchPath/ISearchPath.h"
 #include "Zone/Definition/ZoneDefinition.h"
@@ -22,7 +23,7 @@ public:
 
     virtual void ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                             Zone& zone,
-                                            const ZoneDefinition& zoneDefinition,
+                                            const ZoneDefinitionContext& zoneDefinition,
                                             ISearchPath& searchPath,
                                             IGdtQueryable& gdt,
                                             const std::filesystem::path& outDir,

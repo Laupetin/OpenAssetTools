@@ -64,8 +64,9 @@ namespace zone_creator
         const auto* objLoader = IObjLoader::GetObjLoaderForGame(gameId);
 
         AssetCreatorCollection creatorCollection(*zone);
+        ZoneDefinitionContext zoneDefinitionContext(*context.m_definition);
         objCompiler->ConfigureCreatorCollection(
-            creatorCollection, *zone, *context.m_definition, *context.m_asset_search_path, lookup, context.m_out_dir, context.m_cache_dir);
+            creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, context.m_out_dir, context.m_cache_dir);
         objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup);
 
         AssetCreationContext creationContext(zone.get(), &creatorCollection, &ignoredAssetLookup);
@@ -76,6 +77,8 @@ namespace zone_creator
 
             if (!createdAsset)
                 return nullptr;
+
+            ++zoneDefinitionContext.m_asset_index_in_definition;
         }
 
         creatorCollection.FinalizeZone(creationContext);
