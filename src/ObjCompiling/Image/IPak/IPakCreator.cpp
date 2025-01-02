@@ -50,9 +50,7 @@ namespace
             GoTo(sizeof(IPakHeader) + sizeof(IPakSection) * SECTION_COUNT);
             AlignToChunk();
 
-            if (!WriteDataSection())
-                return false;
-
+            WriteDataSection();
             WriteIndexSection();
             WriteBrandingSection();
             WriteFileEnding();
@@ -142,7 +140,7 @@ namespace
             const auto openFile = m_search_path.Open(fileName);
             if (!openFile.IsOpen())
             {
-                std::cerr << std::format("Could not open image for writing to IPak \"{}\"\n", fileName);
+                std::cerr << std::format("Failed to open file for ipak: {}\n", fileName);
                 return nullptr;
             }
 
@@ -274,12 +272,12 @@ namespace
             m_chunk_buffer_window_start = utils::AlignToPrevious(m_current_offset, static_cast<int64_t>(ipak_consts::IPAK_CHUNK_SIZE));
         }
 
-        bool WriteImageData(const std::string& imageName)
+        void WriteImageData(const std::string& imageName)
         {
             size_t imageSize;
             const auto imageData = ReadImageDataFromSearchPath(imageName, imageSize);
             if (!imageData)
-                return false;
+                return;
 
             const auto nameHash = T6::Common::R_HashString(imageName.c_str(), 0);
             const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(imageData.get()), imageSize));
@@ -297,11 +295,9 @@ namespace
 
             indexEntry.size = writtenImageSize;
             m_index_entries.emplace_back(indexEntry);
-
-            return true;
         }
 
-        bool WriteDataSection()
+        void WriteDataSection()
         {
             AlignToChunk();
             m_data_section_offset = m_current_offset;
@@ -309,16 +305,11 @@ namespace
 
             m_index_entries.reserve(m_images.size());
 
-            const auto result = std::ranges::all_of(m_images,
-                                                    [this](const std::string& imageName)
-                                                    {
-                                                        return WriteImageData(imageName);
-                                                    });
+            for (const auto& imageName : m_images)
+                WriteImageData(imageName);
 
             FlushBlock();
             m_data_section_size = static_cast<size_t>(m_current_offset - m_data_section_offset);
-
-            return result;
         }
 
         static bool CompareIndices(const IPakIndexEntry& entry1, const IPakIndexEntry& entry2)
