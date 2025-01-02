@@ -30,7 +30,7 @@ void IwdToCreate::Build(ISearchPath& searchPath, const std::filesystem::path& ou
 
     auto functions = FileToZlibWrapper::CreateFunctions32ForFile(&file);
 
-    auto zipFile = zipOpen2(filePath.c_str(), APPEND_STATUS_CREATE, nullptr, &functions);
+    auto zipFile = zipOpen2(filePath.string().c_str(), APPEND_STATUS_CREATE, nullptr, &functions);
     if (!zipFile)
     {
         std::cerr << std::format("Failed to open file as zip for iwd {}\n", m_name);
@@ -68,7 +68,7 @@ void IwdToCreate::Build(ISearchPath& searchPath, const std::filesystem::path& ou
             readFile.m_stream->read(tempBuffer, sizeof(tempBuffer));
             const auto readCount = readFile.m_stream->gcount();
             if (readCount > 0)
-                zipWriteInFileInZip(zipFile, tempBuffer, readCount);
+                zipWriteInFileInZip(zipFile, tempBuffer, static_cast<unsigned>(readCount));
         } while (!readFile.m_stream->eof());
 
         zipCloseFileInZip(zipFile);
