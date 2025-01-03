@@ -6,11 +6,12 @@
 
 namespace T6
 {
-    class KeyValuePairsCreator : public AssetCreator<AssetKeyValuePairs>
+    class KeyValuePairsCompiler final : public IAssetCreator
     {
     public:
-        KeyValuePairsCreator(const Zone& zone, const ZoneDefinition& zoneDefinition);
+        KeyValuePairsCompiler(const Zone& zone, const ZoneDefinition& zoneDefinition);
 
+        [[nodiscard]] std::optional<asset_type_t> GetHandlingAssetType() const override;
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override;
         void FinalizeZone(AssetCreationContext& context) override;
 

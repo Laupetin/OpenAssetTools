@@ -1,4 +1,4 @@
-#include "KeyValuePairsCreator.h"
+#include "KeyValuePairsCompiler.h"
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/T6.h"
@@ -8,18 +8,23 @@
 
 using namespace T6;
 
-KeyValuePairsCreator::KeyValuePairsCreator(const Zone& zone, const ZoneDefinition& zoneDefinition)
+KeyValuePairsCompiler::KeyValuePairsCompiler(const Zone& zone, const ZoneDefinition& zoneDefinition)
     : m_zone(zone),
       m_zone_definition(zoneDefinition)
 {
 }
 
-AssetCreationResult KeyValuePairsCreator::CreateAsset(const std::string& assetName, AssetCreationContext& context)
+std::optional<asset_type_t> KeyValuePairsCompiler::GetHandlingAssetType() const
+{
+    return std::nullopt;
+}
+
+AssetCreationResult KeyValuePairsCompiler::CreateAsset(const std::string& assetName, AssetCreationContext& context)
 {
     return AssetCreationResult::NoAction();
 }
 
-void KeyValuePairsCreator::FinalizeZone(AssetCreationContext& context)
+void KeyValuePairsCompiler::FinalizeZone(AssetCreationContext& context)
 {
     std::vector<KeyValuePair> kvpList;
     auto& memory = *m_zone.GetMemory();
