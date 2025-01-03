@@ -392,7 +392,7 @@ namespace
 
     bool LoadAccuracyGraphs(WeaponFullDef& weaponFullDef, MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
     {
-        auto& accuracyGraphLoader = context.GetZoneAssetLoaderState<AccuracyGraphLoader>();
+        auto& accuracyGraphLoader = context.GetZoneAssetCreationState<AccuracyGraphLoader>();
 
         if (weaponFullDef.weapDef.aiVsAiAccuracyGraphName && weaponFullDef.weapDef.aiVsAiAccuracyGraphName[0])
         {

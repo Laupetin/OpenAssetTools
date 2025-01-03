@@ -44,7 +44,7 @@ namespace
               m_search_path(searchPath),
               m_context(context),
               m_registration(registration),
-              m_state_map_cache(context.GetZoneAssetLoaderState<techset::TechniqueStateMapCache>()),
+              m_state_map_cache(context.GetZoneAssetCreationState<techset::TechniqueStateMapCache>()),
               m_base_state_bits{},
               m_techset_creator(CreateTechsetLoader(memory, searchPath))
         {
@@ -792,7 +792,7 @@ namespace
             m_registration.AddDependency(techset);
             m_material.techniqueSet = techset->Asset();
 
-            auto& definitionCache = m_context.GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
+            auto& definitionCache = m_context.GetZoneAssetCreationState<techset::TechsetDefinitionCache>();
 
             bool failure = false;
             const auto* techsetDefinition = m_techset_creator->LoadTechsetDefinition(techsetName, m_context, failure);

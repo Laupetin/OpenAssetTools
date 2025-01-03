@@ -41,7 +41,7 @@ namespace
         }
     };
 
-    class TechniqueZoneLoadingState final : public IZoneAssetLoaderState
+    class TechniqueZoneLoadingState final : public IZoneAssetCreationState
     {
     public:
         typedef const float (*literal_t)[4];
@@ -84,7 +84,7 @@ namespace
         std::map<techset::ShaderArgumentLiteralSource, literal_t> m_allocated_literals;
     };
 
-    class ShaderInfoFromFileSystemCacheState final : public IZoneAssetLoaderState
+    class ShaderInfoFromFileSystemCacheState final : public IZoneAssetCreationState
     {
         std::unordered_map<std::string, std::unique_ptr<d3d9::ShaderInfo>> m_cached_shader_info;
 
@@ -205,9 +205,9 @@ namespace
               m_search_path(searchPath),
               m_memory(memory),
               m_context(context),
-              m_zone_state(context.GetZoneAssetLoaderState<TechniqueZoneLoadingState>()),
-              m_state_map_cache(context.GetZoneAssetLoaderState<techset::TechniqueStateMapCache>()),
-              m_shader_info_cache(context.GetZoneAssetLoaderState<ShaderInfoFromFileSystemCacheState>()),
+              m_zone_state(context.GetZoneAssetCreationState<TechniqueZoneLoadingState>()),
+              m_state_map_cache(context.GetZoneAssetCreationState<techset::TechniqueStateMapCache>()),
+              m_shader_info_cache(context.GetZoneAssetCreationState<ShaderInfoFromFileSystemCacheState>()),
               m_techset_creator(techsetCreator)
         {
         }
@@ -1034,7 +1034,7 @@ namespace
             : m_search_path(searchPath),
               m_memory(memory),
               m_context(context),
-              m_zone_state(context.GetZoneAssetLoaderState<TechniqueZoneLoadingState>()),
+              m_zone_state(context.GetZoneAssetCreationState<TechniqueZoneLoadingState>()),
               m_techset_creator(techsetCreator)
         {
         }
@@ -1313,7 +1313,7 @@ namespace
         techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) override
         {
             failure = false;
-            auto& definitionCache = context.GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
+            auto& definitionCache = context.GetZoneAssetCreationState<techset::TechsetDefinitionCache>();
             auto* cachedTechsetDefinition = definitionCache.GetCachedTechsetDefinition(assetName);
             if (cachedTechsetDefinition)
                 return cachedTechsetDefinition;
@@ -1340,7 +1340,7 @@ namespace
 
         const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, AssetCreationContext& context) override
         {
-            auto& stateMapCache = context.GetZoneAssetLoaderState<techset::TechniqueStateMapCache>();
+            auto& stateMapCache = context.GetZoneAssetCreationState<techset::TechniqueStateMapCache>();
             auto* cachedStateMap = stateMapCache.GetCachedStateMap(stateMapName);
             if (cachedStateMap)
                 return cachedStateMap;

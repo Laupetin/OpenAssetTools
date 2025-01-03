@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "SearchPath/ISearchPath.h"
 
 #include <filesystem>
@@ -21,7 +21,7 @@ private:
     std::vector<std::string> m_image_names;
 };
 
-class IPakCreator : public IZoneAssetLoaderState
+class IPakCreator : public IZoneAssetCreationState
 {
 public:
     IPakToCreate* GetOrAddIPak(const std::string& ipakName);

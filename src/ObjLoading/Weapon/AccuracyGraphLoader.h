@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "Parsing/GenericGraph2D.h"
 #include "SearchPath/ISearchPath.h"
 
@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-class AccuracyGraphLoader final : public IZoneAssetLoaderState
+class AccuracyGraphLoader final : public IZoneAssetCreationState
 {
 public:
     const GenericGraph2D* LoadAiVsAiGraph(ISearchPath& searchPath, const std::string& graphName);

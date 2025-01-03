@@ -1112,8 +1112,8 @@ namespace
     public:
         MenuConverter(const bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context)
             : AbstractMenuConverter(disableOptimizations, searchPath, memory, context),
-              m_conversion_zone_state(context.GetZoneAssetLoaderState<MenuConversionZoneState>()),
-              m_parsing_zone_state(context.GetZoneAssetLoaderState<MenuAssetZoneState>())
+              m_conversion_zone_state(context.GetZoneAssetCreationState<MenuConversionZoneState>()),
+              m_parsing_zone_state(context.GetZoneAssetCreationState<MenuAssetZoneState>())
         {
         }
 

@@ -28,8 +28,8 @@ namespace
             std::vector<menuDef_t*> menus;
             AssetRegistration<AssetMenuList> registration(assetName);
 
-            auto& zoneState = context.GetZoneAssetLoaderState<menu::MenuAssetZoneState>();
-            auto& conversionState = context.GetZoneAssetLoaderState<MenuConversionZoneState>();
+            auto& zoneState = context.GetZoneAssetCreationState<menu::MenuAssetZoneState>();
+            auto& conversionState = context.GetZoneAssetCreationState<MenuConversionZoneState>();
 
             std::deque<std::string> menuLoadQueue;
             const auto alreadyLoadedMenuListFileMenus = conversionState.m_menus_by_filename.find(assetName);
@@ -74,7 +74,7 @@ namespace
 
         void FinalizeZone(AssetCreationContext& context) override
         {
-            context.GetZoneAssetLoaderState<MenuConversionZoneState>().FinalizeSupportingData();
+            context.GetZoneAssetCreationState<MenuConversionZoneState>().FinalizeSupportingData();
         }
 
     private:

@@ -40,7 +40,7 @@ void AbstractImageIwdPostProcessor::FindNextObjContainer(AssetCreationContext& c
         if (objContainer.m_type != ZoneDefinitionObjContainerType::IWD)
             continue;
 
-        auto& iwdCreator = context.GetZoneAssetLoaderState<IwdCreator>();
+        auto& iwdCreator = context.GetZoneAssetCreationState<IwdCreator>();
         m_current_iwd = iwdCreator.GetOrAddIwd(objContainer.m_name);
         m_current_iwd_start_index = objContainer.m_asset_start;
         m_current_iwd_end_index = objContainer.m_asset_end;
@@ -71,5 +71,5 @@ void AbstractImageIwdPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetInf
 
 void AbstractImageIwdPostProcessor::FinalizeZone(AssetCreationContext& context)
 {
-    context.GetZoneAssetLoaderState<IwdCreator>().Finalize(m_search_path, m_out_dir);
+    context.GetZoneAssetCreationState<IwdCreator>().Finalize(m_search_path, m_out_dir);
 }

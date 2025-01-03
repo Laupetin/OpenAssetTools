@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "SearchPath/ISearchPath.h"
 
 #include <filesystem>
@@ -21,7 +21,7 @@ private:
     std::vector<std::string> m_file_paths;
 };
 
-class IwdCreator : public IZoneAssetLoaderState
+class IwdCreator : public IZoneAssetCreationState
 {
 public:
     IwdToCreate* GetOrAddIwd(const std::string& iwdName);

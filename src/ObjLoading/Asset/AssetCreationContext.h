@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Asset/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "AssetRegistration.h"
 #include "Game/IAsset.h"
 #include "Pool/XAssetInfo.h"
@@ -26,7 +26,7 @@ public:
     std::unordered_multimap<std::string, asset_type_t> m_ignored_asset_lookup;
 };
 
-class AssetCreationContext : public ZoneAssetLoaderContainer
+class AssetCreationContext : public ZoneAssetCreationStateContainer
 {
 public:
     AssetCreationContext(Zone& zone, const AssetCreatorCollection* creators, const IgnoredAssetLookup* ignoredAssetLookup);
