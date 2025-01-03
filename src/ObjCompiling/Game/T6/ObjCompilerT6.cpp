@@ -20,7 +20,7 @@ namespace
     {
         auto& memory = *zone.GetMemory();
 
-        collection.AddAssetCreator(std::make_unique<KeyValuePairsCompiler>(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
+        collection.AddAssetCreator(CreateKeyValuePairsCompiler(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
