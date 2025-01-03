@@ -3,7 +3,9 @@
 #include "Asset/IZoneAssetCreationState.h"
 #include "Zone/Definition/ZoneDefinition.h"
 
+#include <optional>
 #include <string>
+#include <vector>
 
 class CommonKeyValuePair
 {
