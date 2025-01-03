@@ -25,7 +25,7 @@ namespace
         MemoryManager memory;
         AssetCreatorCollection creatorCollection(zone);
         IgnoredAssetLookup ignoredAssetLookup;
-        AssetCreationContext context(&zone, &creatorCollection, &ignoredAssetLookup);
+        AssetCreationContext context(zone, &creatorCollection, &ignoredAssetLookup);
 
         auto loader = CreateStringTableLoader(memory, searchPath);
         auto result = loader->CreateAsset("mp/cooltable.csv", context);

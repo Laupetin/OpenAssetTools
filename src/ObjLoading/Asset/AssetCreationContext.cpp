@@ -62,8 +62,8 @@ std::unique_ptr<XAssetInfoGeneric> GenericAssetRegistration::CreateXAssetInfo()
         m_type, std::move(m_name), m_asset, std::move(dependencies), std::move(scriptStrings), std::move(indirectAssetReferences));
 }
 
-AssetCreationContext::AssetCreationContext(Zone* zone, const AssetCreatorCollection* creators, const IgnoredAssetLookup* ignoredAssetLookup)
-    : m_zone(zone),
+AssetCreationContext::AssetCreationContext(Zone& zone, const AssetCreatorCollection* creators, const IgnoredAssetLookup* ignoredAssetLookup)
+    : ZoneAssetLoaderContainer(zone),
       m_creators(creators),
       m_ignored_asset_lookup(ignoredAssetLookup)
 {
@@ -72,14 +72,14 @@ AssetCreationContext::AssetCreationContext(Zone* zone, const AssetCreatorCollect
 XAssetInfoGeneric* AssetCreationContext::AddAssetGeneric(GenericAssetRegistration registration) const
 {
     auto xAssetInfo = registration.CreateXAssetInfo();
-    xAssetInfo->m_zone = m_zone;
+    xAssetInfo->m_zone = &m_zone;
 
     const auto assetType = xAssetInfo->m_type;
     const auto* pAssetName = xAssetInfo->m_name.c_str();
 
-    auto* addedAsset = m_zone->m_pools->AddAsset(std::move(xAssetInfo));
+    auto* addedAsset = m_zone.m_pools->AddAsset(std::move(xAssetInfo));
     if (addedAsset == nullptr)
-        std::cerr << std::format("Failed to add asset of type \"{}\" to pool: \"{}\"\n", *m_zone->m_pools->GetAssetTypeName(assetType), pAssetName);
+        std::cerr << std::format("Failed to add asset of type \"{}\" to pool: \"{}\"\n", *m_zone.m_pools->GetAssetTypeName(assetType), pAssetName);
 
     return addedAsset;
 }
@@ -90,14 +90,14 @@ XAssetInfoGeneric* AssetCreationContext::LoadDefaultAssetDependency(const asset_
     if (result.HasTakenAction() && !result.HasFailed())
         return result.GetAssetInfo();
 
-    std::cerr << std::format("Failed to create default asset of type {}\n", *m_zone->m_pools->GetAssetTypeName(assetType));
+    std::cerr << std::format("Failed to create default asset of type {}\n", *m_zone.m_pools->GetAssetTypeName(assetType));
 
     return nullptr;
 }
 
 XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_t assetType, const std::string& assetName)
 {
-    auto* alreadyLoadedAsset = m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
+    auto* alreadyLoadedAsset = m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return alreadyLoadedAsset;
 
@@ -110,11 +110,11 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
         if (!result.HasFailed())
             return result.GetAssetInfo();
 
-        std::cerr << std::format("Could not load asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
+        std::cerr << std::format("Could not load asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
     else
     {
-        std::cerr << std::format("Missing asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
+        std::cerr << std::format("Missing asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
 
     return nullptr;
@@ -122,7 +122,7 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
 
 IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(asset_type_t assetType, const std::string& assetName)
 {
-    auto* alreadyLoadedAsset = m_zone->m_pools->GetAssetOrAssetReference(assetType, assetName);
+    auto* alreadyLoadedAsset = m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return IndirectAssetReference(assetType, assetName);
 
@@ -132,8 +132,7 @@ IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(a
     const auto result = m_creators->CreateAsset(assetType, assetName, *this);
     if (!result.HasTakenAction() && !result.HasFailed())
     {
-        std::cerr << std::format(
-            "Could not load indirectly referenced asset \"{}\" of type \"{}\"\n", assetName, *m_zone->m_pools->GetAssetTypeName(assetType));
+        std::cerr << std::format("Could not load indirectly referenced asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
     return IndirectAssetReference(assetType, assetName);
 }

@@ -34,7 +34,7 @@ namespace test::game::iw4::menu::parsing::it
             : m_zone("MockZone", 0, IGame::GetGameById(GameId::IW4)),
               m_creator_collection(m_zone),
               m_ignored_asset_lookup(),
-              m_context(&m_zone, &m_creator_collection, &m_ignored_asset_lookup)
+              m_context(m_zone, &m_creator_collection, &m_ignored_asset_lookup)
         {
             m_asset_creator = CreateMenuListLoader(*m_zone.GetMemory(), m_search_path);
         }

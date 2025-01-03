@@ -65,11 +65,11 @@ namespace zone_creator
 
         AssetCreatorCollection creatorCollection(*zone);
         ZoneDefinitionContext zoneDefinitionContext(*context.m_definition);
+        AssetCreationContext creationContext(*zone, &creatorCollection, &ignoredAssetLookup);
+
         objCompiler->ConfigureCreatorCollection(
             creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, context.m_out_dir, context.m_cache_dir);
         objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup);
-
-        AssetCreationContext creationContext(zone.get(), &creatorCollection, &ignoredAssetLookup);
 
         for (const auto& assetEntry : context.m_definition->m_assets)
         {
