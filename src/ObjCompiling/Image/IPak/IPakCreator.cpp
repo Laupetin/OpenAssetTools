@@ -7,6 +7,7 @@
 #include "Utils/Alignment.h"
 
 #include <algorithm>
+#include <cassert>
 #include <format>
 #include <fstream>
 #include <iostream>
@@ -394,6 +395,16 @@ void IPakToCreate::Build(ISearchPath& searchPath, const std::filesystem::path& o
     std::cout << std::format("Created ipak {} with {} entries\n", m_name, m_image_names.size());
 }
 
+IPakCreator::IPakCreator()
+    : m_kvp_creator(nullptr)
+{
+}
+
+void IPakCreator::Inject(ZoneAssetCreationInjection& inject)
+{
+    m_kvp_creator = &inject.m_zone_states.GetZoneAssetCreationState<KeyValuePairsCreator>();
+}
+
 IPakToCreate* IPakCreator::GetOrAddIPak(const std::string& ipakName)
 {
     const auto existingIPak = m_ipak_lookup.find(ipakName);
@@ -403,6 +414,9 @@ IPakToCreate* IPakCreator::GetOrAddIPak(const std::string& ipakName)
     auto newIPak = std::make_unique<IPakToCreate>(ipakName);
     auto* result = newIPak.get();
     m_ipaks.emplace_back(std::move(newIPak));
+
+    assert(m_kvp_creator);
+    m_kvp_creator->AddKeyValuePair(CommonKeyValuePair("ipak_read", ipakName));
 
     return result;
 }

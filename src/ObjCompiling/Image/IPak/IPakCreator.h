@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Asset/IZoneAssetCreationState.h"
+#include "KeyValuePairs/KeyValuePairsCreator.h"
 #include "SearchPath/ISearchPath.h"
 
 #include <filesystem>
@@ -24,10 +25,15 @@ private:
 class IPakCreator : public IZoneAssetCreationState
 {
 public:
+    IPakCreator();
+
+    void Inject(ZoneAssetCreationInjection& inject) override;
+
     IPakToCreate* GetOrAddIPak(const std::string& ipakName);
     void Finalize(ISearchPath& searchPath, const std::filesystem::path& outPath);
 
 private:
+    KeyValuePairsCreator* m_kvp_creator;
     std::unordered_map<std::string, IPakToCreate*> m_ipak_lookup;
     std::vector<std::unique_ptr<IPakToCreate>> m_ipaks;
 };
