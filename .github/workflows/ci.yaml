@@ -49,6 +49,7 @@ jobs:
         working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
         run: |
           ./ObjCommonTests
+          ./ObjCompilingTests
           ./ObjLoadingTests
           ./ParserTests
           ./ZoneCodeGeneratorLibTests
