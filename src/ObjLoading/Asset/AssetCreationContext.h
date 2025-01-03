@@ -68,6 +68,7 @@ public:
 private:
     [[nodiscard]] XAssetInfoGeneric* LoadDefaultAssetDependency(asset_type_t assetType, const std::string& assetName);
 
+    Zone& m_zone;
     const AssetCreatorCollection* m_creators;
     const IgnoredAssetLookup* m_ignored_asset_lookup;
 };

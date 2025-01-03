@@ -24,7 +24,7 @@ namespace IW5
         ExpressionSupportingData* m_supporting_data;
 
         MenuConversionZoneState();
-        void SetZone(Zone* zone) override;
+        void Inject(ZoneAssetCreationInjection& inject) override;
 
         Statement_s* FindFunction(const std::string& functionName);
 

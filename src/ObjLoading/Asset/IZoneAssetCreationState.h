@@ -6,6 +6,21 @@
 #include <typeindex>
 #include <unordered_map>
 
+class ZoneAssetCreationStateContainer;
+
+class ZoneAssetCreationInjection
+{
+public:
+    ZoneAssetCreationInjection(ZoneAssetCreationStateContainer& zoneStates, Zone& zone)
+        : m_zone_states(zoneStates),
+          m_zone(zone)
+    {
+    }
+
+    ZoneAssetCreationStateContainer& m_zone_states;
+    Zone& m_zone;
+};
+
 class IZoneAssetCreationState
 {
 protected:
@@ -18,7 +33,7 @@ public:
     IZoneAssetCreationState& operator=(const IZoneAssetCreationState& other) = default;
     IZoneAssetCreationState& operator=(IZoneAssetCreationState&& other) noexcept = default;
 
-    virtual void SetZone(Zone* zone)
+    virtual void Inject(ZoneAssetCreationInjection& inject)
     {
         // Do nothing by default
     }
@@ -28,7 +43,7 @@ class ZoneAssetCreationStateContainer
 {
 public:
     ZoneAssetCreationStateContainer(Zone& zone)
-        : m_zone(zone)
+        : m_injection(*this, zone)
     {
     }
 
@@ -42,16 +57,14 @@ public:
             return *dynamic_cast<T*>(foundEntry->second.get());
 
         auto newState = std::make_unique<T>();
-        newState->SetZone(&m_zone);
+        newState->Inject(m_injection);
         auto* newStatePtr = newState.get();
         m_zone_asset_creation_states.emplace(std::make_pair<std::type_index, std::unique_ptr<IZoneAssetCreationState>>(typeid(T), std::move(newState)));
 
         return *newStatePtr;
     }
 
-protected:
-    Zone& m_zone;
-
 private:
+    ZoneAssetCreationInjection m_injection;
     std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetCreationState>> m_zone_asset_creation_states;
 };

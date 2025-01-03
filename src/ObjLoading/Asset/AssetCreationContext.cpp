@@ -64,6 +64,7 @@ std::unique_ptr<XAssetInfoGeneric> GenericAssetRegistration::CreateXAssetInfo()
 
 AssetCreationContext::AssetCreationContext(Zone& zone, const AssetCreatorCollection* creators, const IgnoredAssetLookup* ignoredAssetLookup)
     : ZoneAssetCreationStateContainer(zone),
+      m_zone(zone),
       m_creators(creators),
       m_ignored_asset_lookup(ignoredAssetLookup)
 {
