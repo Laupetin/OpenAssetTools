@@ -39,8 +39,8 @@ void AbstractImageIPakPostProcessor::FindNextObjContainer(AssetCreationContext& 
         if (objContainer.m_type != ZoneDefinitionObjContainerType::IPAK)
             continue;
 
-        auto* ipakCreator = context.GetZoneAssetLoaderState<IPakCreator>();
-        m_current_ipak = ipakCreator->GetOrAddIPak(objContainer.m_name);
+        auto& ipakCreator = context.GetZoneAssetLoaderState<IPakCreator>();
+        m_current_ipak = ipakCreator.GetOrAddIPak(objContainer.m_name);
         m_current_ipak_start_index = objContainer.m_asset_start;
         m_current_ipak_end_index = objContainer.m_asset_end;
         return;
@@ -70,5 +70,5 @@ void AbstractImageIPakPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetIn
 
 void AbstractImageIPakPostProcessor::FinalizeZone(AssetCreationContext& context)
 {
-    context.GetZoneAssetLoaderState<IPakCreator>()->Finalize(m_search_path, m_out_dir);
+    context.GetZoneAssetLoaderState<IPakCreator>().Finalize(m_search_path, m_out_dir);
 }

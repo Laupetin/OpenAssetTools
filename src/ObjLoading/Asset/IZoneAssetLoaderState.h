@@ -32,20 +32,21 @@ public:
     {
     }
 
-    template<typename T> T* GetZoneAssetLoaderState()
+    template<typename T> T& GetZoneAssetLoaderState()
     {
         static_assert(std::is_base_of_v<IZoneAssetLoaderState, T>, "T must inherit IZoneAssetLoaderState");
         // T must also have a public default constructor
 
         const auto foundEntry = m_zone_asset_loader_states.find(typeid(T));
         if (foundEntry != m_zone_asset_loader_states.end())
-            return dynamic_cast<T*>(foundEntry->second.get());
+            return *dynamic_cast<T*>(foundEntry->second.get());
 
         auto newState = std::make_unique<T>();
         newState->SetZone(&m_zone);
         auto* newStatePtr = newState.get();
         m_zone_asset_loader_states.emplace(std::make_pair<std::type_index, std::unique_ptr<IZoneAssetLoaderState>>(typeid(T), std::move(newState)));
-        return newStatePtr;
+
+        return *newStatePtr;
     }
 
 protected:

@@ -19,7 +19,7 @@ namespace menu
     public:
         MenuFileReader(std::istream& stream, std::string fileName, FeatureLevel featureLevel, ISearchPath& searchPath);
 
-        void IncludeZoneState(const MenuAssetZoneState* zoneState);
+        void IncludeZoneState(const MenuAssetZoneState& zoneState);
         void SetPermissiveMode(bool usePermissiveMode);
 
         std::unique_ptr<ParsingResult> ReadMenuFile();

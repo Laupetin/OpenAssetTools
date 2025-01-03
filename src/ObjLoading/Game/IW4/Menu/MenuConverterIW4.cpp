@@ -125,7 +125,7 @@ namespace
             staticDvarIndexEntry.type = EET_OPERAND;
             staticDvarIndexEntry.data.operand.dataType = VAL_INT;
             staticDvarIndexEntry.data.operand.internals.intVal =
-                static_cast<int>(m_conversion_zone_state->AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
+                static_cast<int>(m_conversion_zone_state.AddStaticDvar(*staticDvarNameExpressionValue.m_string_value));
             entries.emplace_back(staticDvarIndexEntry);
 
             expressionEntry parenRight{};
@@ -133,7 +133,7 @@ namespace
             parenRight.data.op = OP_RIGHTPAREN;
             entries.emplace_back(parenRight);
 
-            gameStatement->supportingData = m_conversion_zone_state->m_supporting_data;
+            gameStatement->supportingData = m_conversion_zone_state.m_supporting_data;
 
             return true;
         }
@@ -206,18 +206,18 @@ namespace
             std::string lowerCaseFunctionName(functionCall->m_function_name);
             utils::MakeStringLowerCase(lowerCaseFunctionName);
 
-            Statement_s* functionStatement = m_conversion_zone_state->FindFunction(lowerCaseFunctionName);
+            Statement_s* functionStatement = m_conversion_zone_state.FindFunction(lowerCaseFunctionName);
 
             if (functionStatement == nullptr)
             {
                 // Function was not converted yet: Convert it now
-                const auto foundCommonFunction = m_parsing_zone_state->m_functions_by_name.find(lowerCaseFunctionName);
+                const auto foundCommonFunction = m_parsing_zone_state.m_functions_by_name.find(lowerCaseFunctionName);
 
-                if (foundCommonFunction == m_parsing_zone_state->m_functions_by_name.end())
+                if (foundCommonFunction == m_parsing_zone_state.m_functions_by_name.end())
                     throw MenuConversionException("Failed to find definition for custom function \"" + functionCall->m_function_name + "\"", menu, item);
 
                 functionStatement = ConvertExpression(foundCommonFunction->second->m_value.get(), menu, item);
-                functionStatement = m_conversion_zone_state->AddFunction(foundCommonFunction->second->m_name, functionStatement);
+                functionStatement = m_conversion_zone_state.AddFunction(foundCommonFunction->second->m_name, functionStatement);
             }
 
             expressionEntry functionEntry{};
@@ -227,7 +227,7 @@ namespace
             entries.emplace_back(functionEntry);
 
             // Statement uses custom function so it needs supporting data
-            gameStatement->supportingData = m_conversion_zone_state->m_supporting_data;
+            gameStatement->supportingData = m_conversion_zone_state.m_supporting_data;
         }
 
         constexpr static expressionOperatorType_e UNARY_OPERATION_MAPPING[static_cast<unsigned>(SimpleUnaryOperationId::COUNT)]{
@@ -361,7 +361,7 @@ namespace
             else if (expressionValue->m_type == SimpleExpressionValue::Type::STRING)
             {
                 entry.data.operand.dataType = VAL_STRING;
-                entry.data.operand.internals.stringVal.string = m_conversion_zone_state->AddString(*expressionValue->m_string_value);
+                entry.data.operand.internals.stringVal.string = m_conversion_zone_state.AddString(*expressionValue->m_string_value);
             }
 
             entries.emplace_back(entry);
@@ -1115,8 +1115,6 @@ namespace
               m_conversion_zone_state(context.GetZoneAssetLoaderState<MenuConversionZoneState>()),
               m_parsing_zone_state(context.GetZoneAssetLoaderState<MenuAssetZoneState>())
         {
-            assert(m_conversion_zone_state);
-            assert(m_parsing_zone_state);
         }
 
         void ConvertMenu(const menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) override
@@ -1165,7 +1163,7 @@ namespace
                 menu.onESC = ConvertEventHandlerSet(commonMenu.m_on_esc.get(), &commonMenu);
                 menu.onKey = ConvertKeyHandler(commonMenu.m_key_handlers, &commonMenu);
                 menu.items = ConvertMenuItems(commonMenu, menu.itemCount);
-                menu.expressionData = m_conversion_zone_state->m_supporting_data;
+                menu.expressionData = m_conversion_zone_state.m_supporting_data;
             }
             catch (const MenuConversionException& e)
             {
@@ -1173,8 +1171,8 @@ namespace
             }
         }
 
-        MenuConversionZoneState* m_conversion_zone_state;
-        MenuAssetZoneState* m_parsing_zone_state;
+        MenuConversionZoneState& m_conversion_zone_state;
+        MenuAssetZoneState& m_parsing_zone_state;
     };
 } // namespace
 

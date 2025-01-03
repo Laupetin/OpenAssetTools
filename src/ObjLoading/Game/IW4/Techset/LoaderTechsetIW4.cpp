@@ -425,7 +425,7 @@ namespace
                 return false;
             }
 
-            m_state_map_cache->SetTechniqueUsesStateMap(m_technique_name, stateMap);
+            m_state_map_cache.SetTechniqueUsesStateMap(m_technique_name, stateMap);
             return true;
         }
 
@@ -463,7 +463,7 @@ namespace
 
             if (pass.m_vertex_shader->Asset()->name && pass.m_vertex_shader->Asset()->name[0] == ',')
             {
-                pass.m_vertex_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, GetVertexShaderFileName(vertexShaderName));
+                pass.m_vertex_shader_info = m_shader_info_cache.LoadShaderInfoFromDisk(m_search_path, GetVertexShaderFileName(vertexShaderName));
             }
             else
             {
@@ -498,7 +498,7 @@ namespace
 
             if (pass.m_pixel_shader->Asset()->name && pass.m_pixel_shader->Asset()->name[0] == ',')
             {
-                pass.m_pixel_shader_info = m_shader_info_cache->LoadShaderInfoFromDisk(m_search_path, GetPixelShaderFileName(pixelShaderName));
+                pass.m_pixel_shader_info = m_shader_info_cache.LoadShaderInfoFromDisk(m_search_path, GetPixelShaderFileName(pixelShaderName));
             }
             else
             {
@@ -901,7 +901,7 @@ namespace
             }
 
             argument.dest = static_cast<uint16_t>(shaderConstant.m_register_index + registerOffset);
-            argument.u.literalConst = m_zone_state->GetAllocatedLiteral(m_memory, source);
+            argument.u.literalConst = m_zone_state.GetAllocatedLiteral(m_memory, source);
             pass.m_arguments.emplace_back(argument);
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
@@ -1021,9 +1021,9 @@ namespace
         ISearchPath& m_search_path;
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
-        TechniqueZoneLoadingState* m_zone_state;
-        techset::TechniqueStateMapCache* m_state_map_cache;
-        ShaderInfoFromFileSystemCacheState* m_shader_info_cache;
+        TechniqueZoneLoadingState& m_zone_state;
+        techset::TechniqueStateMapCache& m_state_map_cache;
+        ShaderInfoFromFileSystemCacheState& m_shader_info_cache;
         ITechsetCreator* m_techset_creator;
     };
 
@@ -1041,7 +1041,7 @@ namespace
 
         _NODISCARD const LoadedTechnique* LoadMaterialTechnique(const std::string& techniqueName) const
         {
-            auto* technique = m_zone_state->FindLoadedTechnique(techniqueName);
+            auto* technique = m_zone_state.FindLoadedTechnique(techniqueName);
             if (technique)
                 return technique;
 
@@ -1050,7 +1050,7 @@ namespace
             if (techniqueFromRaw == nullptr)
                 return nullptr;
 
-            return m_zone_state->AddLoadedTechnique(techniqueName, techniqueFromRaw, dependencies);
+            return m_zone_state.AddLoadedTechnique(techniqueName, techniqueFromRaw, dependencies);
         }
 
     private:
@@ -1257,7 +1257,7 @@ namespace
         ISearchPath& m_search_path;
         MemoryManager& m_memory;
         AssetCreationContext& m_context;
-        TechniqueZoneLoadingState* m_zone_state;
+        TechniqueZoneLoadingState& m_zone_state;
         ITechsetCreator* m_techset_creator;
     };
 
@@ -1313,8 +1313,8 @@ namespace
         techset::TechsetDefinition* LoadTechsetDefinition(const std::string& assetName, AssetCreationContext& context, bool& failure) override
         {
             failure = false;
-            auto* definitionCache = context.GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
-            auto* cachedTechsetDefinition = definitionCache->GetCachedTechsetDefinition(assetName);
+            auto& definitionCache = context.GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
+            auto* cachedTechsetDefinition = definitionCache.GetCachedTechsetDefinition(assetName);
             if (cachedTechsetDefinition)
                 return cachedTechsetDefinition;
 
@@ -1333,15 +1333,15 @@ namespace
 
             auto* techsetDefinitionPtr = techsetDefinition.get();
 
-            definitionCache->AddTechsetDefinitionToCache(assetName, std::move(techsetDefinition));
+            definitionCache.AddTechsetDefinitionToCache(assetName, std::move(techsetDefinition));
 
             return techsetDefinitionPtr;
         }
 
         const state_map::StateMapDefinition* LoadStateMapDefinition(const std::string& stateMapName, AssetCreationContext& context) override
         {
-            auto* stateMapCache = context.GetZoneAssetLoaderState<techset::TechniqueStateMapCache>();
-            auto* cachedStateMap = stateMapCache->GetCachedStateMap(stateMapName);
+            auto& stateMapCache = context.GetZoneAssetLoaderState<techset::TechniqueStateMapCache>();
+            auto* cachedStateMap = stateMapCache.GetCachedStateMap(stateMapName);
             if (cachedStateMap)
                 return cachedStateMap;
 
@@ -1357,7 +1357,7 @@ namespace
 
             const auto* stateMapDefinitionPtr = stateMapDefinition.get();
 
-            stateMapCache->AddStateMapToCache(std::move(stateMapDefinition));
+            stateMapCache.AddStateMapToCache(std::move(stateMapDefinition));
 
             return stateMapDefinitionPtr;
         }

@@ -100,9 +100,9 @@ std::unique_ptr<ParsingResult> MenuFileReader::CreateParsingResult(MenuFileParse
     return result;
 }
 
-void MenuFileReader::IncludeZoneState(const MenuAssetZoneState* zoneState)
+void MenuFileReader::IncludeZoneState(const MenuAssetZoneState& zoneState)
 {
-    m_zone_state = zoneState;
+    m_zone_state = &zoneState;
 }
 
 void MenuFileReader::SetPermissiveMode(const bool usePermissiveMode)

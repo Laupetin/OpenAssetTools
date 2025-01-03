@@ -822,11 +822,11 @@ namespace
 
     bool LoadAccuracyGraphs(WeaponFullDef& weaponFullDef, MemoryManager& memory, ISearchPath& searchPath, AssetCreationContext& context)
     {
-        auto* accuracyGraphLoader = context.GetZoneAssetLoaderState<AccuracyGraphLoader>();
+        auto& accuracyGraphLoader = context.GetZoneAssetLoaderState<AccuracyGraphLoader>();
 
         if (weaponFullDef.weapDef.aiVsAiAccuracyGraphName && weaponFullDef.weapDef.aiVsAiAccuracyGraphName[0])
         {
-            const auto* graph = accuracyGraphLoader->LoadAiVsAiGraph(searchPath, weaponFullDef.weapDef.aiVsAiAccuracyGraphName);
+            const auto* graph = accuracyGraphLoader.LoadAiVsAiGraph(searchPath, weaponFullDef.weapDef.aiVsAiAccuracyGraphName);
             if (!graph)
                 return false;
 
@@ -840,7 +840,7 @@ namespace
 
         if (weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName && weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName[0])
         {
-            const auto* graph = accuracyGraphLoader->LoadAiVsPlayerGraph(searchPath, weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName);
+            const auto* graph = accuracyGraphLoader.LoadAiVsPlayerGraph(searchPath, weaponFullDef.weapDef.aiVsPlayerAccuracyGraphName);
             if (!graph)
                 return false;
 

@@ -792,7 +792,7 @@ namespace
             m_registration.AddDependency(techset);
             m_material.techniqueSet = techset->Asset();
 
-            auto* definitionCache = m_context.GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
+            auto& definitionCache = m_context.GetZoneAssetLoaderState<techset::TechsetDefinitionCache>();
 
             bool failure = false;
             const auto* techsetDefinition = m_techset_creator->LoadTechsetDefinition(techsetName, m_context, failure);
@@ -855,7 +855,7 @@ namespace
 
         _NODISCARD const state_map::StateMapDefinition* GetStateMapForTechnique(const std::string& techniqueName) const
         {
-            const auto* preloadedStateMap = m_state_map_cache->GetStateMapForTechnique(techniqueName);
+            const auto* preloadedStateMap = m_state_map_cache.GetStateMapForTechnique(techniqueName);
             if (preloadedStateMap)
                 return preloadedStateMap;
 
@@ -868,13 +868,13 @@ namespace
             const techset::TechniqueFileReader reader(*file.m_stream, techniqueFileName, &extractor);
             if (!reader.ReadTechniqueDefinition())
             {
-                m_state_map_cache->SetTechniqueUsesStateMap(techniqueName, nullptr);
+                m_state_map_cache.SetTechniqueUsesStateMap(techniqueName, nullptr);
                 return nullptr;
             }
 
             const auto stateMapName = extractor.RetrieveStateMap();
             const auto* loadedStateMap = m_techset_creator->LoadStateMapDefinition(stateMapName, m_context);
-            m_state_map_cache->SetTechniqueUsesStateMap(techniqueName, loadedStateMap);
+            m_state_map_cache.SetTechniqueUsesStateMap(techniqueName, loadedStateMap);
 
             return loadedStateMap;
         }
@@ -1306,7 +1306,7 @@ namespace
         AssetCreationContext& m_context;
         AssetRegistration<AssetMaterial>& m_registration;
 
-        techset::TechniqueStateMapCache* m_state_map_cache;
+        techset::TechniqueStateMapCache& m_state_map_cache;
         std::unordered_map<const state_map::StateMapDefinition*, GfxStateBits> m_state_bits_per_state_map;
 
         GfxStateBits m_base_state_bits;
