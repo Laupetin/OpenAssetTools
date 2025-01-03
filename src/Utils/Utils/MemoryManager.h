@@ -6,6 +6,33 @@
 
 class MemoryManager
 {
+public:
+    MemoryManager();
+    virtual ~MemoryManager();
+    MemoryManager(const MemoryManager& other) = delete;
+    MemoryManager(MemoryManager&& other) noexcept = default;
+    MemoryManager& operator=(const MemoryManager& other) = delete;
+    MemoryManager& operator=(MemoryManager&& other) noexcept = default;
+
+    void* AllocRaw(size_t size);
+    char* Dup(const char* str);
+
+    template<typename T> std::add_pointer_t<T> Alloc(const size_t count = 1u)
+    {
+        return static_cast<std::add_pointer_t<T>>(AllocRaw(sizeof(T) * count));
+    }
+
+    template<class T, class... ValType> std::add_pointer_t<T> Create(ValType&&... val)
+    {
+        Allocation<T>* allocation = new Allocation<T>(std::forward<ValType>(val)...);
+        m_destructible.emplace_back(allocation, &allocation->m_entry);
+        return &allocation->m_entry;
+    }
+
+    void Free(const void* data);
+    void Delete(const void* data);
+
+protected:
     class IDestructible
     {
     public:
@@ -47,30 +74,4 @@ class MemoryManager
 
     std::vector<void*> m_allocations;
     std::vector<AllocationInfo> m_destructible;
-
-public:
-    MemoryManager();
-    virtual ~MemoryManager();
-    MemoryManager(const MemoryManager& other) = delete;
-    MemoryManager(MemoryManager&& other) noexcept = default;
-    MemoryManager& operator=(const MemoryManager& other) = delete;
-    MemoryManager& operator=(MemoryManager&& other) noexcept = default;
-
-    void* AllocRaw(size_t size);
-    char* Dup(const char* str);
-
-    template<typename T> std::add_pointer_t<T> Alloc(const size_t count = 1u)
-    {
-        return static_cast<std::add_pointer_t<T>>(AllocRaw(sizeof(T) * count));
-    }
-
-    template<class T, class... ValType> std::add_pointer_t<T> Create(ValType&&... val)
-    {
-        Allocation<T>* allocation = new Allocation<T>(std::forward<ValType>(val)...);
-        m_destructible.emplace_back(allocation, &allocation->m_entry);
-        return &allocation->m_entry;
-    }
-
-    void Free(const void* data);
-    void Delete(const void* data);
 };
