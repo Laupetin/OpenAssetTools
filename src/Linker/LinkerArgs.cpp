@@ -9,7 +9,6 @@
 #include <filesystem>
 #include <format>
 #include <iostream>
-#include <regex>
 #include <type_traits>
 
 namespace fs = std::filesystem;
@@ -46,7 +45,7 @@ const CommandLineOption* const OPTION_BASE_FOLDER =
 const CommandLineOption* const OPTION_OUTPUT_FOLDER =
     CommandLineOption::Builder::Create()
     .WithLongName("output-folder")
-    .WithDescription("Specifies the output folder containing the build artifacts. Defaults to \"" + std::string(LinkerArgs::DEFAULT_OUTPUT_FOLDER) + "\".")
+    .WithDescription(std::format("Specifies the output folder containing the build artifacts. Defaults to \"{}\".", LinkerArgs::DEFAULT_OUTPUT_FOLDER))
     .WithParameter("outputFolderPath")
     .Build();
 
@@ -61,14 +60,14 @@ const CommandLineOption* const OPTION_ADD_ASSET_SEARCH_PATH =
 const CommandLineOption* const OPTION_ASSET_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("asset-search-path")
-    .WithDescription("Specifies the search paths used for assets. Defaults to \"" + std::string(LinkerArgs::DEFAULT_ASSET_SEARCH_PATH) + "\".")
+    .WithDescription(std::format("Specifies the search paths used for assets. Defaults to \"{}\".", LinkerArgs::DEFAULT_ASSET_SEARCH_PATH))
     .WithParameter("assetSearchPathString")
     .Build();
 
 const CommandLineOption* const OPTION_GDT_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("gdt-search-path")
-    .WithDescription("Specifies the search paths used for gdt files. Defaults to \"" + std::string(LinkerArgs::DEFAULT_GDT_SEARCH_PATH) + "\".")
+    .WithDescription(std::format("Specifies the search paths used for gdt files. Defaults to \"{}\".", LinkerArgs::DEFAULT_GDT_SEARCH_PATH))
     .WithParameter("gdtSearchPathString")
     .Build();
 
@@ -83,7 +82,7 @@ const CommandLineOption* const OPTION_ADD_SOURCE_SEARCH_PATH =
 const CommandLineOption* const OPTION_SOURCE_SEARCH_PATH =
     CommandLineOption::Builder::Create()
     .WithLongName("source-search-path")
-    .WithDescription("Specifies the search paths used for source files. Defaults to \"" + std::string(LinkerArgs::DEFAULT_SOURCE_SEARCH_PATH) + "\".")
+    .WithDescription(std::format("Specifies the search paths used for source files. Defaults to \"{}\".", LinkerArgs::DEFAULT_SOURCE_SEARCH_PATH))
     .WithParameter("sourceSearchPathString")
     .Build();
 
@@ -129,13 +128,7 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
 
 LinkerArgs::LinkerArgs()
     : m_verbose(false),
-      m_base_folder_depends_on_project(false),
-      m_out_folder_depends_on_project(false),
-      m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
-      m_bin_pattern(R"(\?bin\?)"),
-      m_base_pattern(R"(\?base\?)"),
-      m_game_pattern(R"(\?game\?)"),
-      m_project_pattern(R"(\?project\?)")
+      m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>)
 {
 }
 
@@ -170,76 +163,6 @@ void LinkerArgs::SetVerbose(const bool isVerbose)
     m_verbose = isVerbose;
     ObjLoading::Configuration.Verbose = isVerbose;
     ObjWriting::Configuration.Verbose = isVerbose;
-}
-
-std::string LinkerArgs::GetBasePathForProject(const std::string& projectName) const
-{
-    return std::regex_replace(m_base_folder, m_project_pattern, projectName);
-}
-
-void LinkerArgs::SetDefaultBasePath()
-{
-    const auto currentDir = fs::absolute(fs::current_path());
-
-    if (currentDir.filename() == "bin")
-    {
-        m_base_folder = currentDir.parent_path().string();
-    }
-    else
-    {
-        m_base_folder = currentDir.string();
-    }
-}
-
-std::set<std::string> LinkerArgs::GetProjectIndependentSearchPaths(const std::set<std::string>& set) const
-{
-    std::set<std::string> out;
-
-    for (const auto& path : set)
-    {
-        if (path.find(PATTERN_GAME) != std::string::npos)
-            continue;
-        if (path.find(PATTERN_PROJECT) != std::string::npos)
-            continue;
-
-        if (path.find(PATTERN_BASE) != std::string::npos)
-        {
-            if (m_base_folder_depends_on_project)
-                continue;
-
-            out.emplace(std::regex_replace(path, m_base_pattern, m_base_folder));
-        }
-        else
-        {
-            out.emplace(path);
-        }
-    }
-
-    return out;
-}
-
-std::set<std::string> LinkerArgs::GetSearchPathsForProject(const std::set<std::string>& set, const std::string& gameName, const std::string& projectName) const
-{
-    std::set<std::string> out;
-    const auto basePath = GetBasePathForProject(projectName);
-
-    for (const auto& path : set)
-    {
-        if (path.find(PATTERN_GAME) == std::string::npos && path.find(PATTERN_PROJECT) == std::string::npos
-            && (!m_base_folder_depends_on_project || path.find(PATTERN_BASE) == std::string::npos))
-        {
-            continue;
-        }
-
-        fs::path p(std::regex_replace(std::regex_replace(std::regex_replace(std::regex_replace(path, m_project_pattern, projectName), m_game_pattern, gameName),
-                                                         m_base_pattern,
-                                                         basePath),
-                                      m_bin_pattern,
-                                      m_bin_folder));
-        out.emplace(p.make_preferred().string());
-    }
-
-    return out;
 }
 
 bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContinue)
@@ -284,15 +207,13 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
     if (m_argument_parser.IsOptionSpecified(OPTION_BASE_FOLDER))
         m_base_folder = m_argument_parser.GetValueForOption(OPTION_BASE_FOLDER);
     else
-        SetDefaultBasePath();
-    m_base_folder_depends_on_project = m_base_folder.find(PATTERN_GAME) != std::string::npos || m_base_folder.find(PATTERN_PROJECT) != std::string::npos;
+        m_base_folder = DEFAULT_BASE_FOLDER;
 
     // --output-folder
     if (m_argument_parser.IsOptionSpecified(OPTION_OUTPUT_FOLDER))
         m_out_folder = m_argument_parser.GetValueForOption(OPTION_OUTPUT_FOLDER);
     else
         m_out_folder = DEFAULT_OUTPUT_FOLDER;
-    m_out_folder_depends_on_project = m_out_folder.find(PATTERN_PROJECT) != std::string::npos;
 
     // --asset-search-path
     if (m_argument_parser.IsOptionSpecified(OPTION_ASSET_SEARCH_PATH))
@@ -357,39 +278,4 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
         ObjLoading::Configuration.MenuNoOptimization = true;
 
     return true;
-}
-
-std::string LinkerArgs::GetOutputFolderPathForProject(const std::string& projectName) const
-{
-    return std::regex_replace(std::regex_replace(m_out_folder, m_project_pattern, projectName), m_base_pattern, GetBasePathForProject(projectName));
-}
-
-std::set<std::string> LinkerArgs::GetProjectIndependentAssetSearchPaths() const
-{
-    return GetProjectIndependentSearchPaths(m_asset_search_paths);
-}
-
-std::set<std::string> LinkerArgs::GetProjectIndependentGdtSearchPaths() const
-{
-    return GetProjectIndependentSearchPaths(m_gdt_search_paths);
-}
-
-std::set<std::string> LinkerArgs::GetProjectIndependentSourceSearchPaths() const
-{
-    return GetProjectIndependentSearchPaths(m_source_search_paths);
-}
-
-std::set<std::string> LinkerArgs::GetAssetSearchPathsForProject(const std::string& gameName, const std::string& projectName) const
-{
-    return GetSearchPathsForProject(m_asset_search_paths, gameName, projectName);
-}
-
-std::set<std::string> LinkerArgs::GetGdtSearchPathsForProject(const std::string& gameName, const std::string& projectName) const
-{
-    return GetSearchPathsForProject(m_gdt_search_paths, gameName, projectName);
-}
-
-std::set<std::string> LinkerArgs::GetSourceSearchPathsForProject(const std::string& projectName) const
-{
-    return GetSearchPathsForProject(m_source_search_paths, "", projectName);
 }

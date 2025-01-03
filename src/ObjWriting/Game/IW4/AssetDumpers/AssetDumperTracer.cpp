@@ -2,8 +2,8 @@
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW4/InfoString/TracerFields.h"
 #include "Game/IW4/ObjConstantsIW4.h"
+#include "Game/IW4/Tracer/TracerFields.h"
 
 #include <cassert>
 #include <sstream>

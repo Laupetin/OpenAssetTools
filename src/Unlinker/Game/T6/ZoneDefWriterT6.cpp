@@ -56,7 +56,7 @@ void ZoneDefWriter::WriteMetaData(ZoneDefinitionOutputStream& stream, const Unli
         for (const auto* kvpAsset : *assetPoolT6->m_key_value_pairs)
         {
             const auto* keyValuePairs = kvpAsset->Asset();
-            for (auto varIndex = 0; varIndex < keyValuePairs->numVariables; varIndex++)
+            for (auto varIndex = 0u; varIndex < keyValuePairs->numVariables; varIndex++)
                 WriteKeyValuePair(stream, keyValuePairs->keyValuePairs[varIndex]);
         }
 

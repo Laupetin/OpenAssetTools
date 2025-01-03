@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AssetLoading/IAssetLoadingManager.h"
+#include "Asset/AssetCreationContext.h"
+#include "Asset/AssetRegistration.h"
 #include "Game/IW5/IW5.h"
 #include "Utils/MemoryManager.h"
 
@@ -10,8 +11,7 @@ namespace IW5
 {
     bool LoadWeaponAttachmentAsJson(std::istream& stream,
                                     WeaponAttachment& attachment,
-                                    MemoryManager* memory,
-                                    IAssetLoadingManager* manager,
-                                    std::vector<XAssetInfoGeneric*>& dependencies,
-                                    std::vector<IndirectAssetReference>& indirectAssetReferences);
+                                    MemoryManager& memory,
+                                    AssetCreationContext& context,
+                                    AssetRegistration<AssetAttachment>& registration);
 } // namespace IW5

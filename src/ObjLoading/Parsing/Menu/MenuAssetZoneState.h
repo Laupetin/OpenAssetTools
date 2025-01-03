@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "Domain/CommonFunctionDef.h"
 #include "Domain/CommonMenuDef.h"
 
@@ -8,7 +8,7 @@
 
 namespace menu
 {
-    class MenuAssetZoneState final : public IZoneAssetLoaderState
+    class MenuAssetZoneState final : public IZoneAssetCreationState
     {
     public:
         std::vector<std::unique_ptr<CommonFunctionDef>> m_functions;

@@ -5,6 +5,7 @@ function ObjCommon:include(includes)
 		Common:include(includes)
 		json:include(includes)
 		minizip:include(includes)
+		Parser:include(includes)
 		includedirs {
 			path.join(ProjectFolder(), "ObjCommon")
 		}
@@ -16,6 +17,7 @@ function ObjCommon:link(links)
 	links:linkto(Utils)
 	links:linkto(Common)
 	links:linkto(minizip)
+	links:linkto(Parser)
 end
 
 function ObjCommon:use()

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AssetLoading/IAssetLoadingManager.h"
+#include "Asset/AssetCreationContext.h"
+#include "Asset/AssetRegistration.h"
 #include "Game/T6/T6.h"
 #include "Utils/MemoryManager.h"
 
@@ -9,5 +10,5 @@
 namespace T6
 {
     bool LoadMaterialAsJson(
-        std::istream& stream, Material& material, MemoryManager* memory, IAssetLoadingManager* manager, std::vector<XAssetInfoGeneric*>& dependencies);
+        std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration);
 } // namespace T6

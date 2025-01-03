@@ -2,16 +2,18 @@
 
 #include "Game/IGame.h"
 #include "Parsing/IParserLineStream.h"
+#include "SearchPath/ISearchPath.h"
+#include "SearchPath/SearchPathMultiInputStream.h"
 #include "ZoneDefinition.h"
 
 #include <iostream>
 #include <memory>
 #include <optional>
 
-class ZoneDefinitionInputStream
+class ZoneDefinitionInputStream : public SearchPathMultiInputStream
 {
 public:
-    ZoneDefinitionInputStream(std::istream& stream, std::string targetName, std::string fileName, bool verbose);
+    ZoneDefinitionInputStream(std::istream& stream, std::string targetName, std::string fileName, ISearchPath& searchPath);
 
     void SetPreviouslySetGame(GameId game);
     std::unique_ptr<ZoneDefinition> ReadDefinition();
@@ -22,7 +24,6 @@ private:
 
     std::string m_target_name;
     std::string m_file_name;
-    bool m_verbose;
     IParserLineStream* m_stream;
     std::vector<std::unique_ptr<IParserLineStream>> m_open_streams;
     std::optional<GameId> m_previously_set_game;

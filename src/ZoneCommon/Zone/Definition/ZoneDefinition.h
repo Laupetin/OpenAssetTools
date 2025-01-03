@@ -4,25 +4,35 @@
 #include "Zone/AssetList/AssetList.h"
 #include "Zone/ZoneTypes.h"
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-enum class ProjectType
+enum class ZoneDefinitionObjContainerType : uint8_t
 {
-    NONE,
-    FASTFILE,
-    IPAK,
-
-    COUNT
+    IWD,
+    IPAK
 };
 
-static constexpr const char* ProjectType_Names[]{
-    "none",
-    "fastfile",
-    "ipak",
+class ZoneDefinitionObjContainer
+{
+public:
+    std::string m_name;
+    ZoneDefinitionObjContainerType m_type;
+
+    /**
+     * \brief The first asset (inclusive) to include in the obj container.
+     */
+    unsigned m_asset_start;
+
+    /**
+     * \brief The last asset (exclusive) to include in the obj container.
+     */
+    unsigned m_asset_end;
+
+    ZoneDefinitionObjContainer(std::string name, ZoneDefinitionObjContainerType type, unsigned start);
 };
-static_assert(std::extent_v<decltype(ProjectType_Names)> == static_cast<unsigned>(ProjectType::COUNT));
 
 class ZoneDefinitionAsset
 {
@@ -50,17 +60,12 @@ class ZoneDefinition
 public:
     ZoneDefinition();
 
-    void Include(const AssetList& assetListToInclude);
-    void Include(const ZoneDefinition& definitionToInclude);
-
     std::string m_name;
-    ProjectType m_type;
     GameId m_game;
     ZoneDefinitionProperties m_properties;
-    std::vector<std::string> m_includes;
-    std::vector<std::string> m_asset_lists;
     std::vector<std::string> m_ignores;
     std::vector<std::string> m_targets_to_build;
     std::vector<std::string> m_gdts;
     std::vector<ZoneDefinitionAsset> m_assets;
+    std::vector<ZoneDefinitionObjContainer> m_obj_containers;
 };

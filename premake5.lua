@@ -126,6 +126,7 @@ include "src/ZoneLoading.lua"
 include "src/ZoneWriting.lua"
 include "src/ZoneCommon.lua"
 include "src/ObjCommon.lua"
+include "src/ObjCompiling.lua"
 include "src/ObjImage.lua"
 include "src/ObjLoading.lua"
 include "src/ObjWriting.lua"
@@ -143,6 +144,7 @@ group "Components"
     ZoneLoading:project()
     ZoneWriting:project()
     ObjCommon:project()
+    ObjCompiling:project()
     ObjImage:project()
     ObjLoading:project()
     ObjWriting:project()
@@ -168,6 +170,7 @@ group ""
 -- ========================
 -- Tests
 -- ========================
+include "test/ObjCommonTestUtils.lua"
 include "test/ObjCommonTests.lua"
 include "test/ObjLoadingTests.lua"
 include "test/ParserTestUtils.lua"
@@ -177,6 +180,7 @@ include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
+    ObjCommonTestUtils:project()
     ObjCommonTests:project()
     ObjLoadingTests:project()
     ParserTestUtils:project()

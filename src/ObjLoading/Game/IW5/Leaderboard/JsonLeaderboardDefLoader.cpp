@@ -122,9 +122,9 @@ namespace
 
 namespace IW5
 {
-    bool LoadLeaderboardAsJson(std::istream& stream, LeaderboardDef& leaderboard, MemoryManager* memory)
+    bool LoadLeaderboardAsJson(std::istream& stream, LeaderboardDef& leaderboard, MemoryManager& memory)
     {
-        const JsonLoader loader(stream, *memory);
+        const JsonLoader loader(stream, memory);
 
         return loader.Load(leaderboard);
     }

@@ -1,8 +1,8 @@
 #include "AssetDumperZBarrier.h"
 
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/ZBarrierFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/ZBarrier/ZBarrierFields.h"
 
 #include <cassert>
 #include <type_traits>

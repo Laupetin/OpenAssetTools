@@ -1,9 +1,9 @@
 #include "AssetDumperWeaponAttachmentUnique.h"
 
-#include "Game/T6/InfoString/EnumStrings.h"
 #include "Game/T6/InfoString/InfoStringFromStructConverter.h"
-#include "Game/T6/InfoString/WeaponAttachmentUniqueFields.h"
 #include "Game/T6/ObjConstantsT6.h"
+#include "Game/T6/Weapon/AttachmentUniqueFields.h"
+#include "Game/T6/Weapon/WeaponStrings.h"
 
 #include <cassert>
 #include <cstring>

@@ -10,11 +10,11 @@ MenuConversionZoneState::MenuConversionZoneState()
 {
 }
 
-void MenuConversionZoneState::SetZone(Zone* zone)
+void MenuConversionZoneState::Inject(ZoneAssetCreationInjection& inject)
 {
-    auto* memory = zone->GetMemory();
+    auto* memory = inject.m_zone.GetMemory();
 
-    m_zone = zone;
+    m_zone = &inject.m_zone;
     m_supporting_data = memory->Create<ExpressionSupportingData>();
     memset(m_supporting_data, 0, sizeof(ExpressionSupportingData));
 }

@@ -15,16 +15,11 @@ namespace
     class JsonLoader
     {
     public:
-        JsonLoader(std::istream& stream,
-                   MemoryManager& memory,
-                   IAssetLoadingManager& manager,
-                   std::vector<XAssetInfoGeneric*>& dependencies,
-                   std::vector<IndirectAssetReference>& indirectAssetReferences)
+        JsonLoader(std::istream& stream, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetAttachment>& registration)
             : m_stream(stream),
               m_memory(memory),
-              m_manager(manager),
-              m_dependencies(dependencies),
-              m_indirect_asset_references(indirectAssetReferences)
+              m_context(context),
+              m_registration(registration)
 
         {
         }
@@ -129,13 +124,13 @@ namespace
 
         bool CreateTracerFromJson(const std::string& assetName, TracerDef*& tracerPtr, const WeaponAttachment& attachment) const
         {
-            auto* tracer = m_manager.LoadDependency<AssetTracer>(assetName);
+            auto* tracer = m_context.LoadDependency<AssetTracer>(assetName);
             if (!tracer)
             {
                 PrintError(attachment, std::format("Could not find tracer {}", assetName));
                 return false;
             }
-            m_dependencies.push_back(tracer);
+            m_registration.AddDependency(tracer);
             tracerPtr = tracer->Asset();
 
             return true;
@@ -143,13 +138,13 @@ namespace
 
         bool CreateMaterialFromJson(const std::string& assetName, Material*& materialPtr, const WeaponAttachment& attachment) const
         {
-            auto* material = m_manager.LoadDependency<AssetMaterial>(assetName);
+            auto* material = m_context.LoadDependency<AssetMaterial>(assetName);
             if (!material)
             {
                 PrintError(attachment, std::format("Could not find material {}", assetName));
                 return false;
             }
-            m_dependencies.push_back(material);
+            m_registration.AddDependency(material);
             materialPtr = material->Asset();
 
             return true;
@@ -157,13 +152,13 @@ namespace
 
         bool CreateFxFromJson(const std::string& assetName, FxEffectDef*& fxPtr, const WeaponAttachment& attachment) const
         {
-            auto* fx = m_manager.LoadDependency<AssetFx>(assetName);
+            auto* fx = m_context.LoadDependency<AssetFx>(assetName);
             if (!fx)
             {
                 PrintError(attachment, std::format("Could not find fx {}", assetName));
                 return false;
             }
-            m_dependencies.push_back(fx);
+            m_registration.AddDependency(fx);
             fxPtr = fx->Asset();
 
             return true;
@@ -171,8 +166,7 @@ namespace
 
         bool CreateSoundFromJson(const std::string& assetName, SndAliasCustom& sndAliasCustom, const WeaponAttachment& attachment) const
         {
-            auto sound = m_manager.LoadIndirectAssetReference<AssetSound>(assetName);
-            m_indirect_asset_references.push_back(std::move(sound));
+            m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(assetName));
             sndAliasCustom.name = m_memory.Alloc<snd_alias_list_name>();
             sndAliasCustom.name->soundName = m_memory.Dup(assetName.c_str());
 
@@ -181,13 +175,13 @@ namespace
 
         bool CreateXModelFromJson(const std::string& assetName, XModel*& xmodelPtr, const WeaponAttachment& attachment) const
         {
-            auto* xmodel = m_manager.LoadDependency<AssetXModel>(assetName);
+            auto* xmodel = m_context.LoadDependency<AssetXModel>(assetName);
             if (!xmodel)
             {
                 PrintError(attachment, std::format("Could not find xmodel {}", assetName));
                 return false;
             }
-            m_dependencies.push_back(xmodel);
+            m_registration.AddDependency(xmodel);
             xmodelPtr = xmodel->Asset();
 
             return true;
@@ -631,9 +625,8 @@ namespace
 
         std::istream& m_stream;
         MemoryManager& m_memory;
-        IAssetLoadingManager& m_manager;
-        std::vector<XAssetInfoGeneric*>& m_dependencies;
-        std::vector<IndirectAssetReference>& m_indirect_asset_references;
+        AssetCreationContext& m_context;
+        AssetRegistration<AssetAttachment>& m_registration;
     };
 } // namespace
 
@@ -641,12 +634,11 @@ namespace IW5
 {
     bool LoadWeaponAttachmentAsJson(std::istream& stream,
                                     WeaponAttachment& attachment,
-                                    MemoryManager* memory,
-                                    IAssetLoadingManager* manager,
-                                    std::vector<XAssetInfoGeneric*>& dependencies,
-                                    std::vector<IndirectAssetReference>& indirectAssetReferences)
+                                    MemoryManager& memory,
+                                    AssetCreationContext& context,
+                                    AssetRegistration<AssetAttachment>& registration)
     {
-        const JsonLoader loader(stream, *memory, *manager, dependencies, indirectAssetReferences);
+        const JsonLoader loader(stream, memory, context, registration);
 
         return loader.Load(attachment);
     }

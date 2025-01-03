@@ -113,3 +113,32 @@ namespace IW3
     using AssetRawFile = Asset<ASSET_TYPE_RAWFILE, RawFile>;
     using AssetStringTable = Asset<ASSET_TYPE_STRINGTABLE, StringTable>;
 } // namespace IW3
+
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXModelPieces, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetPhysPreset, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXAnim, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetXModel, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetMaterial, info.name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetTechniqueSet, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetImage, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetSound, aliasName);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetSoundCurve, filename);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetLoadedSound, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetClipMap, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetClipMapPvs, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetComWorld, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetGameWorldSp, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetGameWorldMp, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetMapEnts, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetGfxWorld, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetLightDef, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetFont, fontName);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetMenuList, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetMenu, window.name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetLocalize, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetWeapon, szInternalName);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetSoundDriverGlobals, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetFx, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetImpactFx, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetRawFile, name);
+DEFINE_ASSET_NAME_ACCESSOR(IW3::AssetStringTable, name);

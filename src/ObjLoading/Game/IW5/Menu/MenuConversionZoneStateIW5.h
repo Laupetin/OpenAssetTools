@@ -1,13 +1,13 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "Game/IW5/IW5.h"
 
 #include <map>
 
 namespace IW5
 {
-    class MenuConversionZoneState final : public IZoneAssetLoaderState
+    class MenuConversionZoneState final : public IZoneAssetCreationState
     {
         Zone* m_zone;
         std::vector<Statement_s*> m_functions;
@@ -24,7 +24,7 @@ namespace IW5
         ExpressionSupportingData* m_supporting_data;
 
         MenuConversionZoneState();
-        void SetZone(Zone* zone) override;
+        void Inject(ZoneAssetCreationInjection& inject) override;
 
         Statement_s* FindFunction(const std::string& functionName);
 

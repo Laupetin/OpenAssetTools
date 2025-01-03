@@ -1,0 +1,934 @@
+#options GAME(IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XModel/LoaderXModel" + GAME + ".cpp"
+
+#set LOADER_HEADER "\"LoaderXModel" + GAME + ".h\""
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#set CONSTANTS_HEADER "\"Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h\""
+#set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+#include LOADER_HEADER
+
+#include COMMON_HEADER
+#include CONSTANTS_HEADER
+#include JSON_HEADER
+
+#include "Asset/AssetRegistration.h"
+#include "ObjLoading.h"
+#include "Utils/QuatInt16.h"
+#include "Utils/StringUtils.h"
+#include "XModel/Gltf/GltfBinInput.h"
+#include "XModel/Gltf/GltfLoader.h"
+#include "XModel/Gltf/GltfTextInput.h"
+#include "XModel/XModelCommon.h"
+
+#pragma warning(push, 0)
+#include <Eigen>
+#include <nlohmann/json.hpp>
+#pragma warning(pop)
+
+#include "XModel/PartClassificationState.h"
+#include "XModel/TangentData.h"
+#include "XModel/Tangentspace.h"
+
+#include <algorithm>
+#include <filesystem>
+#include <format>
+#include <iostream>
+#include <numeric>
+#include <set>
+#include <vector>
+
+using namespace GAME;
+
+namespace
+{
+    class XModelLoader final : public AssetCreator<AssetXModel>
+    {
+    public:
+        XModelLoader(MemoryManager& memory, ISearchPath& searchPath, ZoneScriptStrings& scriptStrings)
+            : m_memory(memory),
+              m_search_path(searchPath),
+              m_script_strings(scriptStrings)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto file = m_search_path.Open(std::format("xmodel/{}.json", assetName));
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            auto* xmodel = m_memory.Alloc<XModel>();
+            xmodel->name = m_memory.Dup(assetName.c_str());
+
+            AssetRegistration<AssetXModel> registration(assetName, xmodel);
+            if (!LoadFromFile(*file.m_stream, *xmodel, context, registration))
+            {
+                std::cerr << std::format("Failed to load xmodel \"{}\"\n", assetName);
+                return AssetCreationResult::Failure();
+            }
+
+            return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+        }
+
+    private:
+        bool LoadFromFile(std::istream& jsonStream, XModel& xmodel, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
+        {
+            const auto jRoot = nlohmann::json::parse(jsonStream);
+            std::string type;
+            unsigned version;
+
+            jRoot.at("_type").get_to(type);
+            jRoot.at("_version").get_to(version);
+
+            if (type != "xmodel" || version != 1u)
+            {
+                std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1\n", xmodel.name);
+                return false;
+            }
+
+            try
+            {
+                const auto jXModel = jRoot.get<JsonXModel>();
+                return CreateXModelFromJson(jXModel, xmodel, context, registration);
+            }
+            catch (const nlohmann::json::exception& e)
+            {
+                std::cerr << std::format("Failed to parse json of xmodel: {}\n", e.what());
+            }
+
+            return false;
+        }
+
+        static void PrintError(const XModel& xmodel, const std::string& message)
+        {
+            std::cerr << std::format("Cannot load xmodel \"{}\": {}\n", xmodel.name, message);
+        }
+
+        static std::unique_ptr<XModelCommon> LoadModelByExtension(std::istream& stream, const std::string& extension)
+        {
+            if (extension == ".glb")
+            {
+                gltf::BinInput input;
+                if (!input.ReadGltfData(stream))
+                    return nullptr;
+
+                const auto loader = gltf::Loader::CreateLoader(&input);
+                return loader->Load();
+            }
+
+            if (extension == ".gltf")
+            {
+                gltf::TextInput input;
+                if (!input.ReadGltfData(stream))
+                    return nullptr;
+
+                const auto loader = gltf::Loader::CreateLoader(&input);
+                return loader->Load();
+            }
+
+            return nullptr;
+        }
+
+        static void AutoGenerateArmature(XModelCommon& common)
+        {
+            assert(common.m_bones.empty());
+            assert(common.m_bone_weight_data.weights.empty());
+            assert(common.m_vertex_bone_weights.size() == common.m_vertices.size());
+
+            XModelBone rootBone{
+                "root",
+                std::nullopt,
+                {1.0f, 1.0f, 1.0f},
+                {0.0f, 0.0f, 0.0f},
+                {0.0f, 0.0f, 0.0f},
+                {0.0f, 0.0f, 0.0f, 1.0f},
+                {0.0f, 0.0f, 0.0f, 1.0f},
+            };
+            common.m_bones.emplace_back(rootBone);
+
+            XModelBoneWeight rootWeight{0, 1.0f};
+            common.m_bone_weight_data.weights.emplace_back(rootWeight);
+
+            for (auto& vertexBoneWeights : common.m_vertex_bone_weights)
+            {
+                vertexBoneWeights.weightOffset = 0u;
+                vertexBoneWeights.weightCount = 1u;
+            }
+        }
+
+        static void ApplyBasePose(DObjAnimMat& baseMat, const XModelBone& bone)
+        {
+            baseMat.trans.x = bone.globalOffset[0];
+            baseMat.trans.y = bone.globalOffset[1];
+            baseMat.trans.z = bone.globalOffset[2];
+            baseMat.quat.x = bone.globalRotation.x;
+            baseMat.quat.y = bone.globalRotation.y;
+            baseMat.quat.z = bone.globalRotation.z;
+            baseMat.quat.w = bone.globalRotation.w;
+
+            const auto quatNormSquared = Eigen::Quaternionf(baseMat.quat.w, baseMat.quat.x, baseMat.quat.y, baseMat.quat.z).squaredNorm();
+            if (std::abs(quatNormSquared) < std::numeric_limits<float>::epsilon())
+            {
+                baseMat.quat.w = 1.0f;
+                baseMat.transWeight = 2.0f;
+            }
+            else
+            {
+                baseMat.transWeight = 2.0f / quatNormSquared;
+            }
+        }
+
+        static void CalculateBoneBounds(XBoneInfo& info, const unsigned boneIndex, const XModelCommon& common)
+        {
+            if (common.m_bone_weight_data.weights.empty())
+                return;
+
+#ifdef FEATURE_IW5
+            vec3_t minCoordinate, maxCoordinate;
+            auto& offset = info.bounds.midPoint;
+#else
+            auto& offset = info.offset;
+            auto& minCoordinate = info.bounds[0];
+            auto& maxCoordinate = info.bounds[1];
+#endif
+
+            minCoordinate.x = 0.0f;
+            minCoordinate.y = 0.0f;
+            minCoordinate.z = 0.0f;
+            maxCoordinate.x = 0.0f;
+            maxCoordinate.y = 0.0f;
+            maxCoordinate.z = 0.0f;
+            offset.x = 0.0f;
+            offset.y = 0.0f;
+            offset.z = 0.0f;
+            info.radiusSquared = 0.0f;
+
+            const auto vertexCount = common.m_vertex_bone_weights.size();
+            for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
+            {
+                const auto& vertex = common.m_vertices[vertexIndex];
+                const auto& vertexWeights = common.m_vertex_bone_weights[vertexIndex];
+                const auto* weights = &common.m_bone_weight_data.weights[vertexWeights.weightOffset];
+                for (auto weightIndex = 0u; weightIndex < vertexWeights.weightCount; weightIndex++)
+                {
+                    const auto& weight = weights[weightIndex];
+                    if (weight.boneIndex != boneIndex)
+                        continue;
+
+                    minCoordinate.x = std::min(minCoordinate.x, vertex.coordinates[0]);
+                    minCoordinate.y = std::min(minCoordinate.y, vertex.coordinates[1]);
+                    minCoordinate.z = std::min(minCoordinate.z, vertex.coordinates[2]);
+                    maxCoordinate.x = std::max(maxCoordinate.x, vertex.coordinates[0]);
+                    maxCoordinate.y = std::max(maxCoordinate.y, vertex.coordinates[1]);
+                    maxCoordinate.z = std::max(maxCoordinate.z, vertex.coordinates[2]);
+                }
+            }
+
+            const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
+            const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
+            const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
+            const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
+#ifdef FEATURE_IW5
+
+            info.bounds.halfSize.x = halfSizeEigen.x();
+            info.bounds.halfSize.y = halfSizeEigen.y();
+            info.bounds.halfSize.z = halfSizeEigen.z();
+#endif
+
+            offset.x = boundsCenter.x();
+            offset.y = boundsCenter.y();
+            offset.z = boundsCenter.z();
+
+            info.radiusSquared = halfSizeEigen.squaredNorm();
+        }
+
+        bool ApplyCommonBonesToXModel(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common)
+        {
+            if (common.m_bones.empty())
+                return true;
+
+            m_part_classification_state.Load(HITLOC_NAMES, std::extent_v<decltype(HITLOC_NAMES)>, m_search_path);
+
+            const auto boneCount = common.m_bones.size();
+            constexpr auto maxBones = std::numeric_limits<decltype(XModel::numBones)>::max();
+            if (boneCount > maxBones)
+            {
+                PrintError(xmodel, std::format("Model \"{}\" for lod {} contains too many bones ({} -> max={})", jLod.file, lodNumber, boneCount, maxBones));
+                return false;
+            }
+
+            xmodel.numRootBones = 0u;
+            xmodel.numBones = 0u;
+            for (const auto& bone : common.m_bones)
+            {
+                if (!bone.parentIndex)
+                {
+                    // Make sure root bones are at the beginning
+                    assert(xmodel.numRootBones == xmodel.numBones);
+                    xmodel.numRootBones++;
+                }
+
+                xmodel.numBones++;
+            }
+
+            xmodel.boneNames = m_memory.Alloc<ScriptString>(xmodel.numBones);
+            xmodel.partClassification = m_memory.Alloc<unsigned char>(xmodel.numBones);
+            xmodel.baseMat = m_memory.Alloc<DObjAnimMat>(xmodel.numBones);
+            xmodel.boneInfo = m_memory.Alloc<XBoneInfo>(xmodel.numBones);
+
+            if (xmodel.numBones > xmodel.numRootBones)
+            {
+                xmodel.parentList = m_memory.Alloc<unsigned char>(xmodel.numBones - xmodel.numRootBones);
+
+                // For some reason Treyarch games allocate for a vec4 here. it is treated as a vec3 though?
+                xmodel.trans = m_memory.Alloc<float>((xmodel.numBones - xmodel.numRootBones) * 4u);
+                xmodel.quats = m_memory.Alloc<XModelQuat>(xmodel.numBones - xmodel.numRootBones);
+            }
+            else
+            {
+                xmodel.parentList = nullptr;
+                xmodel.trans = nullptr;
+                xmodel.quats = nullptr;
+            }
+
+            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
+            {
+                const auto& bone = common.m_bones[boneIndex];
+                xmodel.boneNames[boneIndex] = m_script_strings.AddOrGetScriptString(bone.name);
+                xmodel.partClassification[boneIndex] = static_cast<unsigned char>(m_part_classification_state.GetPartClassificationForBoneName(bone.name));
+
+                ApplyBasePose(xmodel.baseMat[boneIndex], bone);
+                CalculateBoneBounds(xmodel.boneInfo[boneIndex], boneIndex, common);
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+                // Other boneInfo data is filled when calculating bone bounds
+                xmodel.boneInfo[boneIndex].collmap = -1;
+#endif
+
+                if (xmodel.numRootBones <= boneIndex)
+                {
+                    const auto nonRootIndex = boneIndex - xmodel.numRootBones;
+                    const auto parentBoneIndex = static_cast<unsigned char>(bone.parentIndex.value_or(0u));
+                    assert(parentBoneIndex < boneIndex);
+
+                    xmodel.parentList[nonRootIndex] = static_cast<unsigned char>(boneIndex - parentBoneIndex);
+
+                    auto* trans = &xmodel.trans[nonRootIndex * 3];
+                    trans[0] = bone.localOffset[0];
+                    trans[1] = bone.localOffset[1];
+                    trans[2] = bone.localOffset[2];
+
+                    auto& quats = xmodel.quats[nonRootIndex];
+                    quats.v[0] = QuatInt16::ToInt16(bone.localRotation.x);
+                    quats.v[1] = QuatInt16::ToInt16(bone.localRotation.y);
+                    quats.v[2] = QuatInt16::ToInt16(bone.localRotation.z);
+                    quats.v[3] = QuatInt16::ToInt16(bone.localRotation.w);
+                }
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] bool VerifyBones(const JsonXModelLod& jLod, const XModel& xmodel, unsigned lodNumber, const XModelCommon& common) const
+        {
+            // This method currently only checks names
+            // This does not necessarily verify correctness entirely.
+            // It is most likely enough to catch accidental errors, however.
+
+            const auto commonBoneCount = common.m_bones.size();
+            if (xmodel.numBones != commonBoneCount)
+            {
+                PrintError(xmodel,
+                           std::format(R"(Model "{}" for lod "{}" has different bone count compared to lod 0 ({} != {}))",
+                                       jLod.file,
+                                       lodNumber,
+                                       xmodel.numBones,
+                                       commonBoneCount));
+                return false;
+            }
+
+            for (auto boneIndex = 0u; boneIndex < commonBoneCount; boneIndex++)
+            {
+                const auto& commonBone = common.m_bones[boneIndex];
+
+                const auto& boneName = m_script_strings[xmodel.boneNames[boneIndex]];
+                if (commonBone.name != boneName)
+                {
+                    PrintError(xmodel,
+                               std::format(R"(Model "{}" for lod "{}" has different bone names compared to lod 0 (Index {}: {} != {}))",
+                                           jLod.file,
+                                           lodNumber,
+                                           boneIndex,
+                                           boneName,
+                                           commonBone.name));
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        static void
+            CreateVertex(GfxPackedVertex& vertex, const XModelVertex& commonVertex, const std::array<float, 3>& tangent, const std::array<float, 3>& binormal)
+        {
+            const float tangentPlainArray[]{tangent[0], tangent[1], tangent[2]};
+
+            vertex.xyz.x = commonVertex.coordinates[0];
+            vertex.xyz.y = commonVertex.coordinates[1];
+            vertex.xyz.z = commonVertex.coordinates[2];
+            vertex.binormalSign = binormal[0] > 0.0f ? 1.0f : -1.0f;
+            vertex.color = Common::Vec4PackGfxColor(commonVertex.color);
+            vertex.texCoord = Common::Vec2PackTexCoords(commonVertex.uv);
+            vertex.normal = Common::Vec3PackUnitVec(commonVertex.normal);
+            vertex.tangent = Common::Vec3PackUnitVec(tangentPlainArray);
+        }
+
+        static size_t GetRigidBoneForVertex(const size_t vertexIndex, const XModelCommon& common)
+        {
+            return common.m_bone_weight_data.weights[common.m_vertex_bone_weights[vertexIndex].weightOffset].boneIndex;
+        }
+
+        static std::vector<std::optional<size_t>>
+            GetRigidBoneIndicesForTris(const std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        {
+            std::vector<std::optional<size_t>> rigidBoneIndexForTri;
+            rigidBoneIndexForTri.reserve(surface.triCount);
+            for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
+            {
+                const auto& tri = surface.triIndices[triIndex];
+                const auto vert0Bone = GetRigidBoneForVertex(vertexIndices[tri.i[0]], common);
+                const auto vert1Bone = GetRigidBoneForVertex(vertexIndices[tri.i[1]], common);
+                const auto vert2Bone = GetRigidBoneForVertex(vertexIndices[tri.i[2]], common);
+
+                const auto hasSameBone = vert0Bone == vert1Bone && vert1Bone == vert2Bone;
+                if (hasSameBone)
+                    rigidBoneIndexForTri.emplace_back(vert0Bone);
+                else
+                    rigidBoneIndexForTri.emplace_back(std::nullopt);
+            }
+
+            return rigidBoneIndexForTri;
+        }
+
+        static void ReorderRigidTrisByBoneIndex(const std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        {
+            const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
+
+            std::vector<size_t> triSortList(surface.triCount);
+            std::iota(triSortList.begin(), triSortList.end(), 0);
+
+            std::ranges::sort(triSortList,
+                              [&rigidBoneIndexForTri](const size_t triIndex0, const size_t triIndex1)
+                              {
+                                  const auto rigidBone0 = rigidBoneIndexForTri[triIndex0];
+                                  const auto rigidBone1 = rigidBoneIndexForTri[triIndex1];
+
+                                  if (rigidBone0.has_value() != rigidBone1.has_value())
+                                      return rigidBone0.has_value();
+                                  if (!rigidBone0.has_value())
+                                      return true;
+
+                                  return *rigidBone0 < *rigidBone1;
+                              });
+
+            std::vector<std::remove_pointer_t<decltype(XSurface::triIndices)>> sortedTris(surface.triCount);
+            for (auto i = 0u; i < surface.triCount; i++)
+                memcpy(&sortedTris[i], &surface.triIndices[triSortList[i]], sizeof(std::remove_pointer_t<decltype(XSurface::triIndices)>));
+            memcpy(surface.triIndices, sortedTris.data(), sizeof(std::remove_pointer_t<decltype(XSurface::triIndices)>) * surface.triCount);
+        }
+
+        static void AddBoneToXSurfacePartBits(XSurface& surface, const size_t boneIndex)
+        {
+            const auto partBitsIndex = boneIndex / 32u;
+            const auto shiftValue = 31u - (boneIndex % 32u);
+            surface.partBits[partBitsIndex] |= 1 << shiftValue;
+        }
+
+        void CreateVertListData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common) const
+        {
+            ReorderRigidTrisByBoneIndex(vertexIndices, surface, common);
+            const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
+
+            std::vector<XRigidVertList> vertLists;
+
+            auto currentVertexTail = 0u;
+            auto currentTriTail = 0u;
+
+            const auto vertexCount = vertexIndices.size();
+            const auto triCount = static_cast<size_t>(surface.triCount);
+            const auto boneCount = common.m_bones.size();
+            for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
+            {
+                XRigidVertList boneVertList{};
+                boneVertList.boneOffset = static_cast<uint16_t>(boneIndex * sizeof(DObjSkelMat));
+
+                auto currentVertexHead = currentVertexTail;
+                while (currentVertexHead < vertexCount && GetRigidBoneForVertex(currentVertexHead, common) == boneIndex)
+                    currentVertexHead++;
+
+                auto currentTriHead = currentTriTail;
+                while (currentTriHead < triCount && rigidBoneIndexForTri[currentTriHead] && *rigidBoneIndexForTri[currentTriHead] == boneIndex)
+                    currentTriHead++;
+
+                boneVertList.vertCount = static_cast<uint16_t>(currentVertexHead - currentVertexTail);
+                boneVertList.triOffset = static_cast<uint16_t>(currentTriTail);
+                boneVertList.triCount = static_cast<uint16_t>(currentTriHead - currentTriTail);
+
+                if (boneVertList.triCount > 0 || boneVertList.vertCount > 0)
+                {
+                    boneVertList.collisionTree = nullptr; // TODO
+                    vertLists.emplace_back(boneVertList);
+
+                    currentVertexTail = currentVertexHead;
+                    currentTriTail = currentTriHead;
+
+                    AddBoneToXSurfacePartBits(surface, boneIndex);
+                }
+            }
+
+            if (!vertLists.empty())
+            {
+                surface.vertListCount = static_cast<unsigned char>(vertLists.size());
+                surface.vertList = m_memory.Alloc<XRigidVertList>(surface.vertListCount);
+
+                memcpy(surface.vertList, vertLists.data(), sizeof(XRigidVertList) * surface.vertListCount);
+            }
+        }
+
+        void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
+        {
+            // TODO
+        }
+
+        static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        {
+            if (common.m_bone_weight_data.weights.empty())
+                return;
+
+            const auto vertexCount = vertexIndices.size();
+            std::vector<size_t> reorderLookup(vertexCount);
+            std::iota(reorderLookup.begin(), reorderLookup.end(), 0);
+
+            std::ranges::sort(reorderLookup,
+                              [&common, &vertexIndices](const size_t& i0, const size_t& i1)
+                              {
+                                  const auto& weights0 = common.m_vertex_bone_weights[vertexIndices[i0]];
+                                  const auto& weights1 = common.m_vertex_bone_weights[vertexIndices[i1]];
+
+                                  if (weights0.weightCount < weights1.weightCount)
+                                      return true;
+
+                                  // If there is only one weight, make sure all vertices of the same bone follow another
+                                  if (weights0.weightCount == 1)
+                                  {
+                                      const auto bone0 = common.m_bone_weight_data.weights[weights0.weightOffset].boneIndex;
+                                      const auto bone1 = common.m_bone_weight_data.weights[weights1.weightOffset].boneIndex;
+                                      return bone0 < bone1;
+                                  }
+
+                                  return false;
+                              });
+
+            for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
+            {
+                auto& triIndices = surface.triIndices[triIndex];
+
+                triIndices.i[0] = static_cast<uint16_t>(reorderLookup[triIndices.i[0]]);
+                triIndices.i[1] = static_cast<uint16_t>(reorderLookup[triIndices.i[1]]);
+                triIndices.i[2] = static_cast<uint16_t>(reorderLookup[triIndices.i[2]]);
+            }
+
+            for (auto& entry : reorderLookup)
+                entry = vertexIndices[entry];
+
+            vertexIndices = std::move(reorderLookup);
+        }
+
+        bool CreateXSurface(
+            XSurface& surface, const XModelObject& commonObject, const XModelCommon& common, const TangentData& tangentData, unsigned& vertexOffset)
+        {
+            std::vector<size_t> xmodelToCommonVertexIndexLookup;
+            std::unordered_map<size_t, size_t> usedVertices;
+
+            constexpr auto maxTriCount = std::numeric_limits<decltype(XSurface::triCount)>::max();
+            if (commonObject.m_faces.size() > maxTriCount)
+            {
+                std::cerr << std::format("Surface cannot have more than {} faces\n", maxTriCount);
+                return false;
+            }
+
+            surface.triCount = static_cast<uint16_t>(commonObject.m_faces.size());
+            surface.triIndices = m_memory.Alloc<XSurfaceTri>(surface.triCount);
+
+            for (auto faceIndex = 0u; faceIndex < surface.triCount; faceIndex++)
+            {
+                const auto& face = commonObject.m_faces[faceIndex];
+                auto& tris = surface.triIndices[faceIndex];
+
+                for (auto triVertIndex = 0u; triVertIndex < std::extent_v<decltype(XModelFace::vertexIndex)>; triVertIndex++)
+                {
+                    const auto commonVertexIndex = face.vertexIndex[triVertIndex];
+                    const auto existingVertex = usedVertices.find(commonVertexIndex);
+                    if (existingVertex == usedVertices.end())
+                    {
+                        const auto xmodelVertexIndex = xmodelToCommonVertexIndexLookup.size();
+                        tris.i[triVertIndex] = static_cast<uint16_t>(xmodelVertexIndex);
+
+                        xmodelToCommonVertexIndexLookup.emplace_back(commonVertexIndex);
+                        usedVertices.emplace(commonVertexIndex, xmodelVertexIndex);
+                    }
+                    else
+                        tris.i[triVertIndex] = static_cast<uint16_t>(existingVertex->second);
+                }
+            }
+
+            ReorderVerticesByWeightCount(xmodelToCommonVertexIndexLookup, surface, common);
+
+            constexpr auto maxVertices = std::numeric_limits<decltype(XSurface::vertCount)>::max();
+            if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVertices)
+            {
+                std::cerr << std::format("Lod exceeds limit of {} vertices\n", maxVertices);
+                return false;
+            }
+
+            surface.baseVertIndex = static_cast<uint16_t>(vertexOffset);
+            surface.vertCount = static_cast<uint16_t>(xmodelToCommonVertexIndexLookup.size());
+            surface.verts0 = m_memory.Alloc<GfxPackedVertex>(surface.vertCount);
+            vertexOffset += surface.vertCount;
+
+            for (auto vertexIndex = 0u; vertexIndex < surface.vertCount; vertexIndex++)
+            {
+                const auto commonVertexIndex = xmodelToCommonVertexIndexLookup[vertexIndex];
+                const auto& commonVertex = common.m_vertices[commonVertexIndex];
+                CreateVertex(surface.verts0[vertexIndex], commonVertex, tangentData.m_binormals[commonVertexIndex], tangentData.m_binormals[commonVertexIndex]);
+            }
+
+            if (!common.m_bone_weight_data.weights.empty())
+            {
+                // Since bone weights are sorted by weight count, the last must have the highest weight count
+                const auto hasVertsBlend =
+                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount > 1;
+                if (!hasVertsBlend)
+                    CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
+                else
+                {
+                    CreateVertsBlendData(surface, xmodelToCommonVertexIndexLookup, common);
+
+                    std::cerr << "Only rigid models are supported at the moment\n";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool LoadLod(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
+        {
+            const auto file = m_search_path.Open(jLod.file);
+            if (!file.IsOpen())
+            {
+                PrintError(xmodel, std::format("Failed to open file for lod {}: \"{}\"", lodNumber, jLod.file));
+                return false;
+            }
+
+            auto extension = std::filesystem::path(jLod.file).extension().string();
+            utils::MakeStringLowerCase(extension);
+
+            const auto common = LoadModelByExtension(*file.m_stream, extension);
+            if (!common)
+            {
+                PrintError(xmodel, std::format("Failure while trying to load model for lod {}: \"{}\"", lodNumber, jLod.file));
+                return false;
+            }
+
+            if (common->m_bones.empty())
+                AutoGenerateArmature(*common);
+
+            if (lodNumber == 0u)
+            {
+                if (!ApplyCommonBonesToXModel(jLod, xmodel, lodNumber, *common))
+                    return false;
+            }
+            else
+            {
+                if (!VerifyBones(jLod, xmodel, lodNumber, *common))
+                    return false;
+            }
+
+            auto& lodInfo = xmodel.lodInfo[lodNumber];
+            lodInfo.dist = jLod.distance;
+
+            constexpr auto maxSurfaces = std::numeric_limits<decltype(XModelLodInfo::numsurfs)>::max();
+            if (common->m_objects.size() > maxSurfaces)
+            {
+                PrintError(xmodel, std::format("Lod {} cannot have more than {} surfaces", lodNumber, maxSurfaces));
+                return false;
+            }
+
+            lodInfo.surfIndex = static_cast<uint16_t>(m_surfaces.size());
+            lodInfo.numsurfs = static_cast<uint16_t>(common->m_objects.size());
+
+            std::vector<Material*> materialAssets;
+            materialAssets.reserve(common->m_materials.size());
+            for (const auto& commonMaterial : common->m_materials)
+            {
+                auto* assetInfo = context.LoadDependency<AssetMaterial>(commonMaterial.name);
+                if (!assetInfo)
+                    return false;
+
+                registration.AddDependency(assetInfo);
+                materialAssets.push_back(assetInfo->Asset());
+            }
+
+            auto vertexOffset = 0u;
+            TangentData tangentData;
+            tangentData.CreateTangentData(*common);
+            const auto surfaceCreationSuccessful =
+                std::ranges::all_of(common->m_objects,
+                                    [this, &common, &materialAssets, &tangentData, &vertexOffset](const XModelObject& commonObject)
+                                    {
+                                        XSurface surface{};
+                                        if (!CreateXSurface(surface, commonObject, *common, tangentData, vertexOffset))
+                                            return false;
+
+                                        m_surfaces.emplace_back(surface);
+                                        m_materials.push_back(materialAssets[commonObject.materialIndex]);
+                                        return true;
+                                    });
+
+            if (!surfaceCreationSuccessful)
+                return false;
+
+            // Lod part bits are the sum of part bits of all of its surfaces
+            static_assert(std::extent_v<decltype(XModelLodInfo::partBits)> == std::extent_v<decltype(XSurface::partBits)>);
+            for (auto surfaceOffset = 0u; surfaceOffset < lodInfo.numsurfs; surfaceOffset++)
+            {
+                const auto& surface = m_surfaces[lodInfo.surfIndex + surfaceOffset];
+                for (auto i = 0u; i < std::extent_v<decltype(XModelLodInfo::partBits)>; i++)
+                    lodInfo.partBits[i] |= surface.partBits[i];
+            }
+
+#ifdef FEATURE_IW5
+            auto* modelSurfs = m_memory.Alloc<XModelSurfs>();
+            const auto modelSurfsName = std::format("{}_lod{}", xmodel.name, lodNumber);
+            modelSurfs->name = m_memory.Dup(modelSurfsName.c_str());
+
+            static_assert(std::extent_v<decltype(XModelLodInfo::partBits)> == std::extent_v<decltype(XModelSurfs::partBits)>);
+            memcpy(modelSurfs->partBits, lodInfo.partBits, sizeof(XModelLodInfo::partBits));
+
+            modelSurfs->numsurfs = lodInfo.numsurfs;
+            modelSurfs->surfs = m_memory.Alloc<XSurface>(modelSurfs->numsurfs);
+            memcpy(modelSurfs->surfs, &m_surfaces[lodInfo.surfIndex], sizeof(XSurface) * modelSurfs->numsurfs);
+
+            registration.AddDependency(context.AddAsset<AssetXModelSurfs>(modelSurfsName, modelSurfs));
+
+            lodInfo.modelSurfs = modelSurfs;
+            lodInfo.surfs = modelSurfs->surfs;
+
+            lodInfo.lod = static_cast<decltype(XModelLodInfo::lod)>(lodNumber);
+#endif
+
+            return true;
+        }
+
+        static void CalculateModelBounds(XModel& xmodel)
+        {
+#ifdef FEATURE_IW5
+            if (!xmodel.lodInfo[0].modelSurfs || !xmodel.lodInfo[0].modelSurfs->surfs)
+                return;
+
+            const auto* surfs = xmodel.lodInfo[0].modelSurfs->surfs;
+            vec3_t minCoordinate, maxCoordinate;
+#else
+            if (!xmodel.surfs)
+                return;
+
+            auto& minCoordinate = xmodel.mins;
+            auto& maxCoordinate = xmodel.maxs;
+#endif
+
+            for (auto surfaceIndex = 0u; surfaceIndex < xmodel.lodInfo[0].numsurfs; surfaceIndex++)
+            {
+#ifdef FEATURE_IW5
+                const auto& surface = surfs[surfaceIndex];
+#else
+                const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
+#endif
+
+                if (!surface.verts0)
+                    continue;
+
+                for (auto vertIndex = 0u; vertIndex < surface.vertCount; vertIndex++)
+                {
+                    const auto& vertex = surface.verts0[vertIndex];
+
+                    minCoordinate.x = std::min(minCoordinate.x, vertex.xyz.v[0]);
+                    minCoordinate.y = std::min(minCoordinate.y, vertex.xyz.v[1]);
+                    minCoordinate.z = std::min(minCoordinate.z, vertex.xyz.v[2]);
+                    maxCoordinate.x = std::max(maxCoordinate.x, vertex.xyz.v[0]);
+                    maxCoordinate.y = std::max(maxCoordinate.y, vertex.xyz.v[1]);
+                    maxCoordinate.z = std::max(maxCoordinate.z, vertex.xyz.v[2]);
+                }
+            }
+
+#ifdef FEATURE_IW5
+            const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
+            const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
+            const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
+            const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
+
+            xmodel.bounds.halfSize.x = halfSizeEigen.x();
+            xmodel.bounds.halfSize.y = halfSizeEigen.y();
+            xmodel.bounds.halfSize.z = halfSizeEigen.z();
+
+            xmodel.bounds.midPoint.x = boundsCenter.x();
+            xmodel.bounds.midPoint.y = boundsCenter.y();
+            xmodel.bounds.midPoint.z = boundsCenter.z();
+            xmodel.radius = halfSizeEigen.norm();
+#else
+            const auto maxX = std::max(std::abs(minCoordinate.x), std::abs(maxCoordinate.x));
+            const auto maxY = std::max(std::abs(minCoordinate.y), std::abs(maxCoordinate.y));
+            const auto maxZ = std::max(std::abs(minCoordinate.z), std::abs(maxCoordinate.z));
+            xmodel.radius = Eigen::Vector3f(maxX, maxY, maxZ).norm();
+#endif
+        }
+
+        bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
+        {
+            constexpr auto maxLods = std::extent_v<decltype(XModel::lodInfo)>;
+            if (jXModel.lods.size() > maxLods)
+            {
+                PrintError(xmodel, std::format("Model cannot have more than {} lods", maxLods));
+                return false;
+            }
+
+            auto lodNumber = 0u;
+            xmodel.numLods = static_cast<decltype(XModel::numLods)>(jXModel.lods.size());
+            for (const auto& jLod : jXModel.lods)
+            {
+                if (!LoadLod(jLod, xmodel, lodNumber++, context, registration))
+                    return false;
+            }
+
+            constexpr auto maxSurfaces = std::numeric_limits<decltype(XModel::numsurfs)>::max();
+            if (m_surfaces.size() > maxSurfaces)
+            {
+                PrintError(xmodel, std::format("Model cannot have more than {} surfaces across all lods", maxSurfaces));
+                return false;
+            }
+
+            xmodel.numsurfs = static_cast<decltype(XModel::numsurfs)>(m_surfaces.size());
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+            xmodel.surfs = m_memory.Alloc<XSurface>(xmodel.numsurfs);
+            memcpy(xmodel.surfs, m_surfaces.data(), sizeof(XSurface) * xmodel.numsurfs);
+#endif
+
+            xmodel.materialHandles = m_memory.Alloc<Material*>(xmodel.numsurfs);
+            memcpy(xmodel.materialHandles, m_materials.data(), sizeof(Material*) * xmodel.numsurfs);
+
+            CalculateModelBounds(xmodel);
+
+            if (jXModel.collLod && jXModel.collLod.value() >= 0)
+            {
+                if (static_cast<unsigned>(jXModel.collLod.value()) >= jXModel.lods.size())
+                {
+                    PrintError(xmodel, "Collision lod is not a valid lod");
+                    return false;
+                }
+                xmodel.collLod = static_cast<decltype(XModel::collLod)>(jXModel.collLod.value());
+            }
+            else
+                xmodel.collLod = -1;
+
+            if (jXModel.physPreset)
+            {
+                auto* physPreset = context.LoadDependency<AssetPhysPreset>(jXModel.physPreset.value());
+                if (!physPreset)
+                {
+                    PrintError(xmodel, "Could not find phys preset");
+                    return false;
+                }
+                registration.AddDependency(physPreset);
+                xmodel.physPreset = physPreset->Asset();
+            }
+            else
+            {
+                xmodel.physPreset = nullptr;
+            }
+
+#if defined(FEATURE_IW5)
+            if (jXModel.physCollmap)
+            {
+                auto* physCollmap = context.LoadDependency<AssetPhysCollMap>(jXModel.physCollmap.value());
+                if (!physCollmap)
+                {
+                    PrintError(xmodel, "Could not find phys collmap");
+                    return false;
+                }
+                registration.AddDependency(physCollmap);
+                xmodel.physCollmap = physCollmap->Asset();
+            }
+            else
+            {
+                xmodel.physCollmap = nullptr;
+            }
+#endif
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+            if (jXModel.physConstraints)
+            {
+                auto* physConstraints = context.LoadDependency<AssetPhysConstraints>(jXModel.physConstraints.value());
+                if (!physConstraints)
+                {
+                    PrintError(xmodel, "Could not find phys constraints");
+                    return false;
+                }
+                registration.AddDependency(physConstraints);
+                xmodel.physConstraints = physConstraints->Asset();
+            }
+            else
+            {
+                xmodel.physConstraints = nullptr;
+            }
+#endif
+
+            xmodel.flags = jXModel.flags;
+
+#ifdef FEATURE_T6
+            xmodel.lightingOriginOffset.x = jXModel.lightingOriginOffset.x;
+            xmodel.lightingOriginOffset.y = jXModel.lightingOriginOffset.y;
+            xmodel.lightingOriginOffset.z = jXModel.lightingOriginOffset.z;
+            xmodel.lightingOriginRange = jXModel.lightingOriginRange;
+#endif
+
+            return true;
+        }
+
+        std::vector<XSurface> m_surfaces;
+        std::vector<Material*> m_materials;
+
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+        ZoneScriptStrings& m_script_strings;
+        PartClassificationState m_part_classification_state;
+    };
+} // namespace GAME
+
+namespace GAME
+{
+    std::unique_ptr<AssetCreator<AssetXModel>> CreateXModelLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    {
+        return std::make_unique<XModelLoader>(memory, searchPath, zone.m_script_strings);
+    }
+} // namespace GAME

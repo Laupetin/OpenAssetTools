@@ -1,17 +1,22 @@
 #include "InfoStringToStructConverterBase.h"
 
 #include <cstring>
+#include <format>
 #include <iostream>
 #include <sstream>
 
 InfoStringToStructConverterBase::InfoStringToStructConverterBase(const InfoString& infoString,
                                                                  void* structure,
                                                                  ZoneScriptStrings& zoneScriptStrings,
-                                                                 MemoryManager* memory)
+                                                                 MemoryManager& memory,
+                                                                 AssetCreationContext& context,
+                                                                 GenericAssetRegistration& registration)
     : m_info_string(infoString),
+      m_structure(structure),
       m_zone_script_strings(zoneScriptStrings),
       m_memory(memory),
-      m_structure(structure)
+      m_context(context),
+      m_registration(registration)
 {
 }
 
@@ -44,7 +49,7 @@ bool InfoStringToStructConverterBase::ParseAsArray(const std::string& value, std
 
 bool InfoStringToStructConverterBase::ConvertString(const std::string& value, const size_t offset)
 {
-    *reinterpret_cast<const char**>(reinterpret_cast<uintptr_t>(m_structure) + offset) = m_memory->Dup(value.c_str());
+    *reinterpret_cast<const char**>(reinterpret_cast<uintptr_t>(m_structure) + offset) = m_memory.Dup(value.c_str());
     return true;
 }
 
@@ -61,7 +66,7 @@ bool InfoStringToStructConverterBase::ConvertInt(const std::string& value, const
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as int\n";
+        std::cerr << std::format("Failed to parse value \"{}\" as int\n", value);
         return false;
     }
 
@@ -75,7 +80,7 @@ bool InfoStringToStructConverterBase::ConvertUint(const std::string& value, cons
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as uint\n";
+        std::cerr << std::format("Failed to parse value \"{}\" as uint\n", value);
         return false;
     }
 
@@ -90,7 +95,7 @@ bool InfoStringToStructConverterBase::ConvertBool(const std::string& value, cons
     *reinterpret_cast<bool*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = intValue != 0;
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as bool\n";
+        std::cerr << std::format("Failed to parse value \"{}\" as bool\n", value);
         return false;
     }
 
@@ -105,7 +110,7 @@ bool InfoStringToStructConverterBase::ConvertQBoolean(const std::string& value, 
     *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = intValue != 0 ? 1 : 0;
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as qboolean\n";
+        std::cerr << std::format("Failed to parse value \"{}\" as qboolean\n", value);
         return false;
     }
 
@@ -119,7 +124,7 @@ bool InfoStringToStructConverterBase::ConvertFloat(const std::string& value, con
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as float\n";
+        std::cerr << std::format("Failed to parse value \"{}\" as float\n", value);
         return false;
     }
 
@@ -133,7 +138,7 @@ bool InfoStringToStructConverterBase::ConvertMilliseconds(const std::string& val
 
     if (endPtr != &value[value.size()])
     {
-        std::cout << "Failed to parse value \"" << value << "\" as milliseconds\n";
+        std::cerr << std::format("Failed to parse value \"{}\" as milliseconds\n", value);
         return false;
     }
 
@@ -143,7 +148,7 @@ bool InfoStringToStructConverterBase::ConvertMilliseconds(const std::string& val
 bool InfoStringToStructConverterBase::ConvertScriptString(const std::string& value, const size_t offset)
 {
     auto scrStrValue = m_zone_script_strings.AddOrGetScriptString(value);
-    m_used_script_string_list.emplace(scrStrValue);
+    m_registration.AddScriptString(scrStrValue);
     *reinterpret_cast<scr_string_t*>(reinterpret_cast<uintptr_t>(m_structure) + offset) = scrStrValue;
 
     return true;
@@ -175,40 +180,4 @@ bool InfoStringToStructConverterBase::ConvertEnumInt(
     std::cerr << ss.str();
 
     return false;
-}
-
-std::vector<scr_string_t> InfoStringToStructConverterBase::GetUsedScriptStrings() const
-{
-    std::vector<scr_string_t> scrStringList;
-    scrStringList.reserve(m_used_script_string_list.size());
-    for (auto scrStr : m_used_script_string_list)
-    {
-        scrStringList.push_back(scrStr);
-    }
-
-    return scrStringList;
-}
-
-std::vector<XAssetInfoGeneric*> InfoStringToStructConverterBase::GetDependencies() const
-{
-    std::vector<XAssetInfoGeneric*> dependencyList;
-    dependencyList.reserve(m_dependencies.size());
-    for (auto* dependency : m_dependencies)
-    {
-        dependencyList.push_back(dependency);
-    }
-
-    return dependencyList;
-}
-
-std::vector<IndirectAssetReference> InfoStringToStructConverterBase::GetIndirectAssetReferences() const
-{
-    std::vector<IndirectAssetReference> indirectAssetReferences;
-    indirectAssetReferences.reserve(m_indirect_asset_references.size());
-    for (auto& assetReference : m_indirect_asset_references)
-    {
-        indirectAssetReferences.emplace_back(assetReference);
-    }
-
-    return indirectAssetReferences;
 }

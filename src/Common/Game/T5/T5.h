@@ -148,5 +148,38 @@ namespace T5
     using AssetDDL = Asset<ASSET_TYPE_DDL, ddlRoot_t>;
     using AssetGlasses = Asset<ASSET_TYPE_GLASSES, Glasses>;
     using AssetEmblemSet = Asset<ASSET_TYPE_EMBLEMSET, EmblemSet>;
-
 } // namespace T5
+
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetPhysPreset, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetPhysConstraints, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetDestructibleDef, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetXAnim, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetXModel, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetMaterial, info.name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetTechniqueSet, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetImage, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetSoundBank, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetSoundPatch, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetClipMap, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetClipMapPvs, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetComWorld, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetGameWorldSp, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetGameWorldMp, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetMapEnts, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetGfxWorld, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetLightDef, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetFont, fontName);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetMenuList, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetMenu, window.name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetLocalize, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetWeapon, szInternalName);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetSoundDriverGlobals, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetFx, name);
+DEFINE_ASSET_NAME_ACCESSOR_SINGLETON(T5::AssetImpactFx, "ImpactFx");
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetRawFile, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetStringTable, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetPackIndex, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetXGlobals, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetDDL, name);
+DEFINE_ASSET_NAME_ACCESSOR(T5::AssetGlasses, name);
+DEFINE_ASSET_NAME_ACCESSOR_SINGLETON(T5::AssetEmblemSet, "EmblemSet");

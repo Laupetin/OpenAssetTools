@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "TechsetDefinition.h"
 #include "Utils/ClassUtils.h"
 
@@ -10,7 +10,7 @@
 
 namespace techset
 {
-    class TechsetDefinitionCache final : public IZoneAssetLoaderState
+    class TechsetDefinitionCache final : public IZoneAssetCreationState
     {
     public:
         _NODISCARD TechsetDefinition* GetCachedTechsetDefinition(const std::string& techsetName) const;

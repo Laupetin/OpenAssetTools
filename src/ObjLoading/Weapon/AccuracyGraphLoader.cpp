@@ -7,9 +7,8 @@
 
 namespace
 {
-    std::unique_ptr<GenericGraph2D> LoadAccuracyGraph(const IAssetLoadingManager* manager, const std::string& graphName, const std::string& subFolder)
+    std::unique_ptr<GenericGraph2D> LoadAccuracyGraph(ISearchPath& searchPath, const std::string& graphName, const std::string& subFolder)
     {
-        auto& searchPath = manager->GetAssetLoadingContext()->m_raw_search_path;
         const auto fileName = std::format("accuracy/{}/{}", subFolder, graphName);
         const auto file = searchPath.Open(fileName);
         if (!file.IsOpen())
@@ -22,13 +21,13 @@ namespace
     }
 } // namespace
 
-const GenericGraph2D* AccuracyGraphLoader::LoadAiVsAiGraph(const IAssetLoadingManager* manager, const std::string& graphName)
+const GenericGraph2D* AccuracyGraphLoader::LoadAiVsAiGraph(ISearchPath& searchPath, const std::string& graphName)
 {
     const auto alreadyLoadedGraph = m_loaded_ai_vs_ai_graphs.find(graphName);
     if (alreadyLoadedGraph != m_loaded_ai_vs_ai_graphs.end())
         return alreadyLoadedGraph->second.get();
 
-    auto graph = LoadAccuracyGraph(manager, graphName, "aivsai");
+    auto graph = LoadAccuracyGraph(searchPath, graphName, "aivsai");
     if (!graph)
         return nullptr;
 
@@ -38,13 +37,13 @@ const GenericGraph2D* AccuracyGraphLoader::LoadAiVsAiGraph(const IAssetLoadingMa
     return graphPtr;
 }
 
-const GenericGraph2D* AccuracyGraphLoader::LoadAiVsPlayerGraph(const IAssetLoadingManager* manager, const std::string& graphName)
+const GenericGraph2D* AccuracyGraphLoader::LoadAiVsPlayerGraph(ISearchPath& searchPath, const std::string& graphName)
 {
     const auto alreadyLoadedGraph = m_loaded_ai_vs_player_graphs.find(graphName);
     if (alreadyLoadedGraph != m_loaded_ai_vs_player_graphs.end())
         return alreadyLoadedGraph->second.get();
 
-    auto graph = LoadAccuracyGraph(manager, graphName, "aivsplayer");
+    auto graph = LoadAccuracyGraph(searchPath, graphName, "aivsplayer");
     if (!graph)
         return nullptr;
 

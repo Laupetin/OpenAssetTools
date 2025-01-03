@@ -2,8 +2,8 @@
 
 #include "Game/IW5/CommonIW5.h"
 #include "Game/IW5/InfoString/InfoStringFromStructConverter.h"
-#include "Game/IW5/InfoString/WeaponFields.h"
 #include "Game/IW5/ObjConstantsIW5.h"
+#include "Game/IW5/Weapon/WeaponFields.h"
 #include "Weapon/AccuracyGraphWriter.h"
 
 #include <bit>

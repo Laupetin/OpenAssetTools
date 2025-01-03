@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AssetLoading/IZoneAssetLoaderState.h"
+#include "Asset/IZoneAssetCreationState.h"
 #include "StateMap/StateMapDefinition.h"
 #include "Utils/ClassUtils.h"
 
@@ -10,7 +10,7 @@
 
 namespace techset
 {
-    class TechniqueStateMapCache final : public IZoneAssetLoaderState
+    class TechniqueStateMapCache final : public IZoneAssetCreationState
     {
     public:
         _NODISCARD const state_map::StateMapDefinition* GetCachedStateMap(const std::string& name) const;

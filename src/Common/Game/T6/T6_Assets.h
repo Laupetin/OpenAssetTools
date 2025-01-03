@@ -2114,7 +2114,7 @@ namespace T6
     struct KeyValuePairs
     {
         const char* name;
-        int numVariables;
+        unsigned int numVariables;
         KeyValuePair* keyValuePairs;
     };
 
@@ -5569,8 +5569,8 @@ namespace T6
 
     struct KeyValuePair
     {
-        int keyHash;
-        int namespaceHash;
+        unsigned int keyHash;
+        unsigned int namespaceHash;
         const char* value;
     };
 

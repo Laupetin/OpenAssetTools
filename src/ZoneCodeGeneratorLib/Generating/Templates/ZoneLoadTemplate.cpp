@@ -1098,9 +1098,12 @@ class ZoneLoadTemplate::Internal final : BaseTemplate
         LINE(MarkerClassName(m_env.m_asset) << " marker(m_zone);")
         LINE("marker.Mark(*pAsset);")
         LINE("")
-        LINE("m_asset_info = reinterpret_cast<XAssetInfo<"
-             << info->m_definition->GetFullName()
-             << ">*>(LinkAsset(GetAssetName(*pAsset), *pAsset, marker.GetDependencies(), marker.GetUsedScriptStrings(), marker.GetIndirectAssetReferences()));")
+        LINE("auto* reallocatedAsset = m_zone->GetMemory()->Alloc<" << info->m_definition->GetFullName() << ">();")
+        LINE("std::memcpy(reallocatedAsset, *pAsset, sizeof(" << info->m_definition->GetFullName() << "));")
+        LINE("")
+        LINE("m_asset_info = reinterpret_cast<XAssetInfo<" << info->m_definition->GetFullName()
+                                                           << ">*>(LinkAsset(GetAssetName(*pAsset), reallocatedAsset, marker.GetDependencies(), "
+                                                              "marker.GetUsedScriptStrings(), marker.GetIndirectAssetReferences()));")
         LINE("*pAsset = m_asset_info->Asset();")
 
         m_intendation--;
@@ -1275,6 +1278,7 @@ public:
         LINE("#include \"" << Lower(m_env.m_asset->m_definition->m_name) << "_load_db.h\"")
         LINE("#include \"" << Lower(m_env.m_asset->m_definition->m_name) << "_mark_db.h\"")
         LINE("#include <cassert>")
+        LINE("#include <cstring>")
         LINE("")
 
         if (!m_env.m_referenced_assets.empty())
