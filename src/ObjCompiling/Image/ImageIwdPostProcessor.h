@@ -9,7 +9,10 @@
 class AbstractImageIwdPostProcessor : public IAssetPostProcessor
 {
 public:
-    AbstractImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath, const std::filesystem::path& outDir);
+    AbstractImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
+                                  ISearchPath& searchPath,
+                                  ZoneAssetCreationStateContainer& zoneStates,
+                                  const std::filesystem::path& outDir);
 
     static bool AppliesToZoneDefinition(const ZoneDefinitionContext& zoneDefinition);
 
@@ -21,6 +24,7 @@ private:
 
     const ZoneDefinitionContext& m_zone_definition;
     ISearchPath& m_search_path;
+    IwdCreator& m_iwd_creator;
     const std::filesystem::path& m_out_dir;
 
     bool m_initialized;
@@ -35,8 +39,11 @@ template<typename AssetType> class ImageIwdPostProcessor final : public Abstract
 public:
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-    ImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath, const std::filesystem::path& outDir)
-        : AbstractImageIwdPostProcessor(zoneDefinition, searchPath, outDir)
+    ImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
+                          ISearchPath& searchPath,
+                          ZoneAssetCreationStateContainer& zoneStates,
+                          const std::filesystem::path& outDir)
+        : AbstractImageIwdPostProcessor(zoneDefinition, searchPath, zoneStates, outDir)
     {
     }
 

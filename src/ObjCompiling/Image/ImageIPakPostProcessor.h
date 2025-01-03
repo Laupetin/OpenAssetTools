@@ -9,7 +9,10 @@
 class AbstractImageIPakPostProcessor : public IAssetPostProcessor
 {
 public:
-    AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath, const std::filesystem::path& outDir);
+    AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
+                                   ISearchPath& searchPath,
+                                   ZoneAssetCreationStateContainer& zoneStates,
+                                   const std::filesystem::path& outDir);
 
     static bool AppliesToZoneDefinition(const ZoneDefinitionContext& zoneDefinition);
 
@@ -21,6 +24,7 @@ private:
 
     const ZoneDefinitionContext& m_zone_definition;
     ISearchPath& m_search_path;
+    IPakCreator& m_ipak_creator;
     const std::filesystem::path& m_out_dir;
 
     bool m_initialized;
@@ -35,8 +39,11 @@ template<typename AssetType> class ImageIPakPostProcessor final : public Abstrac
 public:
     static_assert(std::is_base_of_v<IAssetBase, AssetType>);
 
-    ImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath, const std::filesystem::path& outDir)
-        : AbstractImageIPakPostProcessor(zoneDefinition, searchPath, outDir)
+    ImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
+                           ISearchPath& searchPath,
+                           ZoneAssetCreationStateContainer& zoneStates,
+                           const std::filesystem::path& outDir)
+        : AbstractImageIPakPostProcessor(zoneDefinition, searchPath, zoneStates, outDir)
     {
     }
 

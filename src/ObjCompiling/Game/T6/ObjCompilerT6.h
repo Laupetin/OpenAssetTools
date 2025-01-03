@@ -12,6 +12,7 @@ namespace T6
                                         const ZoneDefinitionContext& zoneDefinition,
                                         ISearchPath& searchPath,
                                         IGdtQueryable& gdt,
+                                        ZoneAssetCreationStateContainer& zoneStates,
                                         const std::filesystem::path& outDir,
                                         const std::filesystem::path& cacheDir) const override;
     };

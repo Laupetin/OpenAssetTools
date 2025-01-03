@@ -7,9 +7,11 @@
 
 AbstractImageIwdPostProcessor::AbstractImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                              ISearchPath& searchPath,
+                                                             ZoneAssetCreationStateContainer& zoneStates,
                                                              const std::filesystem::path& outDir)
     : m_zone_definition(zoneDefinition),
       m_search_path(searchPath),
+      m_iwd_creator(zoneStates.GetZoneAssetCreationState<IwdCreator>()),
       m_out_dir(outDir),
       m_initialized(false),
       m_obj_container_index(0u),
@@ -40,8 +42,7 @@ void AbstractImageIwdPostProcessor::FindNextObjContainer(AssetCreationContext& c
         if (objContainer.m_type != ZoneDefinitionObjContainerType::IWD)
             continue;
 
-        auto& iwdCreator = context.GetZoneAssetCreationState<IwdCreator>();
-        m_current_iwd = iwdCreator.GetOrAddIwd(objContainer.m_name);
+        m_current_iwd = m_iwd_creator.GetOrAddIwd(objContainer.m_name);
         m_current_iwd_start_index = objContainer.m_asset_start;
         m_current_iwd_end_index = objContainer.m_asset_end;
         return;
@@ -71,5 +72,5 @@ void AbstractImageIwdPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetInf
 
 void AbstractImageIwdPostProcessor::FinalizeZone(AssetCreationContext& context)
 {
-    context.GetZoneAssetCreationState<IwdCreator>().Finalize(m_search_path, m_out_dir);
+    m_iwd_creator.Finalize(m_search_path, m_out_dir);
 }

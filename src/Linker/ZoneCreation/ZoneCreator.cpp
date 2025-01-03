@@ -68,7 +68,7 @@ namespace zone_creator
         AssetCreationContext creationContext(*zone, &creatorCollection, &ignoredAssetLookup);
 
         objCompiler->ConfigureCreatorCollection(
-            creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, context.m_out_dir, context.m_cache_dir);
+            creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, creationContext, context.m_out_dir, context.m_cache_dir);
         objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup);
 
         for (const auto& assetEntry : context.m_definition->m_assets)

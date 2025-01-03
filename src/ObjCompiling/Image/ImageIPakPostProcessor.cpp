@@ -6,9 +6,11 @@
 
 AbstractImageIPakPostProcessor::AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                                ISearchPath& searchPath,
+                                                               ZoneAssetCreationStateContainer& zoneStates,
                                                                const std::filesystem::path& outDir)
     : m_zone_definition(zoneDefinition),
       m_search_path(searchPath),
+      m_ipak_creator(zoneStates.GetZoneAssetCreationState<IPakCreator>()),
       m_out_dir(outDir),
       m_initialized(false),
       m_obj_container_index(0u),
@@ -39,8 +41,7 @@ void AbstractImageIPakPostProcessor::FindNextObjContainer(AssetCreationContext& 
         if (objContainer.m_type != ZoneDefinitionObjContainerType::IPAK)
             continue;
 
-        auto& ipakCreator = context.GetZoneAssetCreationState<IPakCreator>();
-        m_current_ipak = ipakCreator.GetOrAddIPak(objContainer.m_name);
+        m_current_ipak = m_ipak_creator.GetOrAddIPak(objContainer.m_name);
         m_current_ipak_start_index = objContainer.m_asset_start;
         m_current_ipak_end_index = objContainer.m_asset_end;
         return;
@@ -70,5 +71,5 @@ void AbstractImageIPakPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetIn
 
 void AbstractImageIPakPostProcessor::FinalizeZone(AssetCreationContext& context)
 {
-    context.GetZoneAssetCreationState<IPakCreator>().Finalize(m_search_path, m_out_dir);
+    m_ipak_creator.Finalize(m_search_path, m_out_dir);
 }

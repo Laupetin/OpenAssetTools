@@ -17,13 +17,17 @@ namespace
         // No compilers yet
     }
 
-    void ConfigurePostProcessors(
-        AssetCreatorCollection& collection, Zone& zone, const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath, const fs::path& outDir)
+    void ConfigurePostProcessors(AssetCreatorCollection& collection,
+                                 Zone& zone,
+                                 const ZoneDefinitionContext& zoneDefinition,
+                                 ISearchPath& searchPath,
+                                 ZoneAssetCreationStateContainer& zoneStates,
+                                 const fs::path& outDir)
     {
         auto& memory = *zone.GetMemory();
 
         if (ImageIwdPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
-            collection.AddAssetPostProcessor(std::make_unique<ImageIwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, outDir));
+            collection.AddAssetPostProcessor(std::make_unique<ImageIwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));
     }
 } // namespace
 
@@ -32,8 +36,9 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              const ZoneDefinitionContext& zoneDefinition,
                                              ISearchPath& searchPath,
                                              IGdtQueryable& gdt,
+                                             ZoneAssetCreationStateContainer& zoneStates,
                                              const fs::path& outDir,
                                              const fs::path& cacheDir) const
 {
-    ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, outDir);
+    ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }
