@@ -3,7 +3,7 @@
 #include "Game/T6/T6.h"
 #include "Image/ImageIPakPostProcessor.h"
 #include "Image/ImageIwdPostProcessor.h"
-#include "KeyValuePairs/KeyValuePairsCompiler.h"
+#include "KeyValuePairs/KeyValuePairsCompilerT6.h"
 
 #include <memory>
 
@@ -12,11 +12,15 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    void ConfigureCompilers(AssetCreatorCollection& collection, Zone& zone, const ZoneDefinitionContext& zoneDefinition, ISearchPath& searchPath)
+    void ConfigureCompilers(AssetCreatorCollection& collection,
+                            Zone& zone,
+                            const ZoneDefinitionContext& zoneDefinition,
+                            ISearchPath& searchPath,
+                            ZoneAssetCreationStateContainer& zoneStates)
     {
         auto& memory = *zone.GetMemory();
 
-        collection.AddAssetCreator(std::make_unique<KeyValuePairsCompiler>(zone, zoneDefinition.m_zone_definition));
+        collection.AddAssetCreator(std::make_unique<KeyValuePairsCompiler>(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
@@ -45,6 +49,6 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              const fs::path& outDir,
                                              const fs::path& cacheDir) const
 {
-    ConfigureCompilers(collection, zone, zoneDefinition, searchPath);
+    ConfigureCompilers(collection, zone, zoneDefinition, searchPath, zoneStates);
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }

@@ -252,7 +252,7 @@ namespace T6
             for (auto* keyValuePairsEntry : *assetPoolT6->m_key_value_pairs)
             {
                 const auto* keyValuePairs = keyValuePairsEntry->Asset();
-                for (auto variableIndex = 0; variableIndex < keyValuePairs->numVariables; variableIndex++)
+                for (auto variableIndex = 0u; variableIndex < keyValuePairs->numVariables; variableIndex++)
                 {
                     auto* variable = &keyValuePairs->keyValuePairs[variableIndex];
 
