@@ -20,14 +20,13 @@ public:
     void FinalizeZone(AssetCreationContext& context) override;
 
 private:
-    void FindNextObjContainer(AssetCreationContext& context);
+    void FindNextObjContainer();
 
     const ZoneDefinitionContext& m_zone_definition;
     ISearchPath& m_search_path;
     IwdCreator& m_iwd_creator;
     const std::filesystem::path& m_out_dir;
 
-    bool m_initialized;
     unsigned m_obj_container_index;
     IwdToCreate* m_current_iwd;
     unsigned m_current_iwd_start_index;
