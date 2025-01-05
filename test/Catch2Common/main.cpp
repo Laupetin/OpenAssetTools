@@ -7,7 +7,7 @@ namespace fs = std::filesystem;
 
 int main(const int argc, char* argv[])
 {
-    const fs::path absoluteBinDir(fs::absolute(argv[0]).parent_path());
+    const fs::path absoluteBinDir(fs::canonical(argv[0]).parent_path());
 
     const auto expectedLibDir = absoluteBinDir.parent_path().parent_path();
     const auto expectedBuildDir = expectedLibDir.parent_path();
