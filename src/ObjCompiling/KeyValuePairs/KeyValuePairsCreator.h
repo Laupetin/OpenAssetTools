@@ -18,7 +18,7 @@ public:
     std::string m_value;
 };
 
-class KeyValuePairsCreator : public IZoneAssetCreationState
+class KeyValuePairsCreator final : public IZoneAssetCreationState
 {
 public:
     void AddKeyValuePair(CommonKeyValuePair keyValuePair);
