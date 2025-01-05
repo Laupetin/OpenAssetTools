@@ -43,6 +43,7 @@ function ObjLoadingTests:project()
 		}
 		
 		self:include(includes)
+		Catch2Common:include(includes)
 		ObjCommonTestUtils:include(includes)
 		ParserTestUtils:include(includes)
 		ObjLoading:include(includes)
@@ -52,5 +53,6 @@ function ObjLoadingTests:project()
 		links:linkto(ParserTestUtils)
 		links:linkto(ObjLoading)
 		links:linkto(catch2)
+		links:linkto(Catch2Common)
 		links:linkall()
 end

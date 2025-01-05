@@ -44,6 +44,7 @@ function ObjCommonTests:project()
 		}
 		
 		self:include(includes)
+		Catch2Common:include(includes)
 		ObjCommon:include(includes)
 		ObjImage:include(includes)
 		catch2:include(includes)
@@ -51,5 +52,6 @@ function ObjCommonTests:project()
 		links:linkto(ObjCommon)
 		links:linkto(ObjImage)
 		links:linkto(catch2)
+		links:linkto(Catch2Common)
 		links:linkall()
 end

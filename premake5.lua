@@ -170,6 +170,7 @@ group ""
 -- ========================
 -- Tests
 -- ========================
+include "test/Catch2Common.lua"
 include "test/ObjCommonTestUtils.lua"
 include "test/ObjCommonTests.lua"
 include "test/ObjCompilingTests.lua"
@@ -181,6 +182,7 @@ include "test/ZoneCommonTests.lua"
 
 -- Tests group: Unit test and other tests projects
 group "Tests"
+    Catch2Common:project()
     ObjCommonTestUtils:project()
     ObjCommonTests:project()
     ObjCompilingTests:project()

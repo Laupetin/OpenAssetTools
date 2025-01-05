@@ -45,6 +45,7 @@ function ZoneCommonTests:project()
 		}
 		
 		self:include(includes)
+		Catch2Common:include(includes)
 		ObjCommonTestUtils:include(includes)
 		ZoneCommon:include(includes)
 		catch2:include(includes)
@@ -52,6 +53,7 @@ function ZoneCommonTests:project()
 		links:linkto(ObjCommonTestUtils)
 		links:linkto(ZoneCommon)
 		links:linkto(catch2)
+		links:linkto(Catch2Common)
 		links:linkall()
 
 		ZoneCode:use()

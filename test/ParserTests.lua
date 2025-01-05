@@ -43,6 +43,7 @@ function ParserTests:project()
 		}
 		
 		self:include(includes)
+		Catch2Common:include(includes)
 		ParserTestUtils:include(includes)
 		Parser:include(includes)
 		catch2:include(includes)
@@ -50,5 +51,6 @@ function ParserTests:project()
 		links:linkto(ParserTestUtils)
 		links:linkto(Parser)
 		links:linkto(catch2)
+		links:linkto(Catch2Common)
 		links:linkall()
 end
