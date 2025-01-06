@@ -3,6 +3,7 @@
 #include "Gdt/GdtLookup.h"
 #include "IObjCompiler.h"
 #include "IObjLoader.h"
+#include "SearchPath/OutputPathFilesystem.h"
 
 #include <cassert>
 
@@ -67,8 +68,10 @@ namespace zone_creator
         ZoneDefinitionContext zoneDefinitionContext(*context.m_definition);
         AssetCreationContext creationContext(*zone, &creatorCollection, &ignoredAssetLookup);
 
+        OutputPathFilesystem outDir(context.m_out_dir);
+        OutputPathFilesystem cacheDir(context.m_cache_dir);
         objCompiler->ConfigureCreatorCollection(
-            creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, creationContext, context.m_out_dir, context.m_cache_dir);
+            creatorCollection, *zone, zoneDefinitionContext, *context.m_asset_search_path, lookup, creationContext, outDir, cacheDir);
         objLoader->ConfigureCreatorCollection(creatorCollection, *zone, *context.m_asset_search_path, lookup);
 
         for (const auto& assetEntry : context.m_definition->m_assets)

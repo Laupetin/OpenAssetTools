@@ -9,7 +9,7 @@
 AbstractImageIwdPostProcessor::AbstractImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                              ISearchPath& searchPath,
                                                              ZoneAssetCreationStateContainer& zoneStates,
-                                                             const std::filesystem::path& outDir)
+                                                             IOutputPath& outDir)
     : m_zone_definition(zoneDefinition),
       m_search_path(searchPath),
       m_iwd_creator(zoneStates.GetZoneAssetCreationState<IwdCreator>()),

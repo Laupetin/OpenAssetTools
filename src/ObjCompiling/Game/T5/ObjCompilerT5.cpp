@@ -22,7 +22,7 @@ namespace
                                  const ZoneDefinitionContext& zoneDefinition,
                                  ISearchPath& searchPath,
                                  ZoneAssetCreationStateContainer& zoneStates,
-                                 const fs::path& outDir)
+                                 IOutputPath& outDir)
     {
         auto& memory = *zone.GetMemory();
 
@@ -37,8 +37,8 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              ISearchPath& searchPath,
                                              IGdtQueryable& gdt,
                                              ZoneAssetCreationStateContainer& zoneStates,
-                                             const fs::path& outDir,
-                                             const fs::path& cacheDir) const
+                                             IOutputPath& outDir,
+                                             IOutputPath& cacheDir) const
 {
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);
 }

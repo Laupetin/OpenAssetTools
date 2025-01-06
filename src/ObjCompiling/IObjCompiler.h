@@ -4,13 +4,9 @@
 #include "Asset/IZoneAssetCreationState.h"
 #include "Asset/ZoneDefinitionContext.h"
 #include "Gdt/IGdtQueryable.h"
+#include "SearchPath/IOutputPath.h"
 #include "SearchPath/ISearchPath.h"
-#include "Zone/Definition/ZoneDefinition.h"
 #include "Zone/Zone.h"
-
-#include <cstdint>
-#include <filesystem>
-#include <string>
 
 class IObjCompiler
 {
@@ -28,8 +24,8 @@ public:
                                             ISearchPath& searchPath,
                                             IGdtQueryable& gdt,
                                             ZoneAssetCreationStateContainer& zoneStates,
-                                            const std::filesystem::path& outDir,
-                                            const std::filesystem::path& cacheDir) const = 0;
+                                            IOutputPath& outDir,
+                                            IOutputPath& cacheDir) const = 0;
 
     static const IObjCompiler* GetObjCompilerForGame(GameId game);
 };

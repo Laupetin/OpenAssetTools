@@ -8,7 +8,7 @@
 AbstractImageIPakPostProcessor::AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                                ISearchPath& searchPath,
                                                                ZoneAssetCreationStateContainer& zoneStates,
-                                                               const std::filesystem::path& outDir)
+                                                               IOutputPath& outDir)
     : m_zone_definition(zoneDefinition),
       m_search_path(searchPath),
       m_ipak_creator(zoneStates.GetZoneAssetCreationState<IPakCreator>()),

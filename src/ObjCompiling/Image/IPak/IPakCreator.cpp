@@ -379,17 +379,16 @@ void IPakToCreate::AddImage(std::string imageName)
     m_image_names.emplace_back(std::move(imageName));
 }
 
-void IPakToCreate::Build(ISearchPath& searchPath, const std::filesystem::path& outPath)
+void IPakToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
 {
-    auto filePath = outPath / std::format("{}.ipak", m_name);
-    std::ofstream file(filePath, std::ios::out | std::ios::binary);
-    if (!file.is_open())
+    const auto file = outPath.Open(std::format("{}.ipak", m_name));
+    if (!file)
     {
         std::cerr << std::format("Failed to open file for ipak {}\n", m_name);
         return;
     }
 
-    IPakWriter writer(file, searchPath, m_image_names);
+    IPakWriter writer(*file, searchPath, m_image_names);
     writer.Write();
 
     std::cout << std::format("Created ipak {} with {} entries\n", m_name, m_image_names.size());
@@ -421,7 +420,7 @@ IPakToCreate* IPakCreator::GetOrAddIPak(const std::string& ipakName)
     return result;
 }
 
-void IPakCreator::Finalize(ISearchPath& searchPath, const std::filesystem::path& outPath)
+void IPakCreator::Finalize(ISearchPath& searchPath, IOutputPath& outPath)
 {
     for (const auto& ipakToCreate : m_ipaks)
         ipakToCreate->Build(searchPath, outPath);
