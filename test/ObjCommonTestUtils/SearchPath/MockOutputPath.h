@@ -2,6 +2,7 @@
 
 #include "SearchPath/IOutputPath.h"
 
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -10,10 +11,10 @@ class MockOutputFile
 {
 public:
     std::string m_name;
-    std::string m_data;
+    std::vector<std::uint8_t> m_data;
 
     MockOutputFile();
-    MockOutputFile(std::string name, std::string data);
+    MockOutputFile(std::string name, std::vector<std::uint8_t> data);
 };
 
 class MockOutputPath final : public IOutputPath

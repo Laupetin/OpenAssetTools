@@ -32,6 +32,7 @@ public:
     unsigned m_asset_end;
 
     ZoneDefinitionObjContainer(std::string name, ZoneDefinitionObjContainerType type, unsigned start);
+    ZoneDefinitionObjContainer(std::string name, ZoneDefinitionObjContainerType type, unsigned start, unsigned end);
 };
 
 class ZoneDefinitionAsset

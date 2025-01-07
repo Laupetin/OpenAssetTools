@@ -394,6 +394,11 @@ void IPakToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
     std::cout << std::format("Created ipak {} with {} entries\n", m_name, m_image_names.size());
 }
 
+const std::vector<std::string>& IPakToCreate::GetImageNames() const
+{
+    return m_image_names;
+}
+
 IPakCreator::IPakCreator()
     : m_kvp_creator(nullptr)
 {
@@ -412,6 +417,7 @@ IPakToCreate* IPakCreator::GetOrAddIPak(const std::string& ipakName)
 
     auto newIPak = std::make_unique<IPakToCreate>(ipakName);
     auto* result = newIPak.get();
+    m_ipak_lookup.emplace(ipakName, result);
     m_ipaks.emplace_back(std::move(newIPak));
 
     assert(m_kvp_creator);

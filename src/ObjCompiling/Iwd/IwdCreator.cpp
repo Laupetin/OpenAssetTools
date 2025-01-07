@@ -87,6 +87,7 @@ IwdToCreate* IwdCreator::GetOrAddIwd(const std::string& iwdName)
 
     auto newIwd = std::make_unique<IwdToCreate>(iwdName);
     auto* result = newIwd.get();
+    m_iwd_lookup.emplace(iwdName, result);
     m_iwds.emplace_back(std::move(newIwd));
 
     return result;

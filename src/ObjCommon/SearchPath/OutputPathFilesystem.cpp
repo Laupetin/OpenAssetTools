@@ -5,13 +5,13 @@
 namespace fs = std::filesystem;
 
 OutputPathFilesystem::OutputPathFilesystem(const fs::path& path)
-    : m_path(fs::canonical(path))
+    : m_path(fs::weakly_canonical(path))
 {
 }
 
 std::unique_ptr<std::ostream> OutputPathFilesystem::Open(const std::string& fileName)
 {
-    const auto fullNewPath = fs::canonical(m_path / fileName);
+    const auto fullNewPath = fs::weakly_canonical(m_path / fileName);
 
     if (!fullNewPath.string().starts_with(m_path.string()))
         return nullptr;

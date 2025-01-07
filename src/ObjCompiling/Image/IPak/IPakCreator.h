@@ -16,6 +16,7 @@ public:
 
     void AddImage(std::string imageName);
     void Build(ISearchPath& searchPath, IOutputPath& outPath);
+    [[nodiscard]] const std::vector<std::string>& GetImageNames() const;
 
 private:
     std::string m_name;

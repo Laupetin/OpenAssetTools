@@ -1,10 +1,15 @@
 #include "ZoneDefinition.h"
 
 ZoneDefinitionObjContainer::ZoneDefinitionObjContainer(std::string name, const ZoneDefinitionObjContainerType type, const unsigned start)
+    : ZoneDefinitionObjContainer(std::move(name), type, start, 0u)
+{
+}
+
+ZoneDefinitionObjContainer::ZoneDefinitionObjContainer(std::string name, const ZoneDefinitionObjContainerType type, const unsigned start, const unsigned end)
     : m_name(std::move(name)),
       m_type(type),
       m_asset_start(start),
-      m_asset_end(0u)
+      m_asset_end(end)
 {
 }
 

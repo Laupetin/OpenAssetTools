@@ -3,7 +3,6 @@
 #include "IPak/IPakCreator.h"
 
 #include <algorithm>
-#include <ranges>
 
 AbstractImageIPakPostProcessor::AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                                ISearchPath& searchPath,
@@ -57,7 +56,7 @@ void AbstractImageIPakPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetIn
     while (m_current_ipak && m_zone_definition.m_asset_index_in_definition >= m_current_ipak_end_index)
         FindNextObjContainer();
 
-    if (m_current_ipak && m_zone_definition.m_asset_index_in_definition <= m_current_ipak_start_index)
+    if (m_current_ipak && m_zone_definition.m_asset_index_in_definition >= m_current_ipak_start_index)
         m_current_ipak->AddImage(assetInfo.m_name);
 }
 
