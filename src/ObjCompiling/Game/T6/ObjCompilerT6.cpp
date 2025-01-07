@@ -8,7 +8,6 @@
 #include <memory>
 
 using namespace T6;
-namespace fs = std::filesystem;
 
 namespace
 {

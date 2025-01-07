@@ -6,7 +6,6 @@
 #include <memory>
 
 using namespace T5;
-namespace fs = std::filesystem;
 
 namespace
 {

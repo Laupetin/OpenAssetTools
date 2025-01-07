@@ -2,6 +2,8 @@
 
 #include "Utils/ObjStream.h"
 
+#include <cstring>
+
 namespace
 {
     class MockFileBuffer final : public std::streambuf
@@ -37,7 +39,7 @@ namespace
 
             if (overrideCount > 0)
             {
-                memcpy(&m_data[m_pos], ptr, overrideCount);
+                std::memcpy(&m_data[m_pos], ptr, overrideCount);
                 m_pos += overrideCount;
                 ptr += overrideCount;
             }

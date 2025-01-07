@@ -6,7 +6,6 @@
 #include <memory>
 
 using namespace IW3;
-namespace fs = std::filesystem;
 
 namespace
 {
