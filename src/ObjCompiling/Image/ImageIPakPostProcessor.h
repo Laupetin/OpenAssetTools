@@ -3,8 +3,7 @@
 #include "Asset/IAssetPostProcessor.h"
 #include "Asset/ZoneDefinitionContext.h"
 #include "Image/IPak/IPakCreator.h"
-
-#include <filesystem>
+#include "SearchPath/IOutputPath.h"
 
 class AbstractImageIPakPostProcessor : public IAssetPostProcessor
 {
@@ -12,7 +11,7 @@ public:
     AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                    ISearchPath& searchPath,
                                    ZoneAssetCreationStateContainer& zoneStates,
-                                   const std::filesystem::path& outDir);
+                                   IOutputPath& outDir);
 
     static bool AppliesToZoneDefinition(const ZoneDefinitionContext& zoneDefinition);
 
@@ -20,14 +19,13 @@ public:
     void FinalizeZone(AssetCreationContext& context) override;
 
 private:
-    void FindNextObjContainer(AssetCreationContext& context);
+    void FindNextObjContainer();
 
     const ZoneDefinitionContext& m_zone_definition;
     ISearchPath& m_search_path;
     IPakCreator& m_ipak_creator;
-    const std::filesystem::path& m_out_dir;
+    IOutputPath& m_out_dir;
 
-    bool m_initialized;
     unsigned m_obj_container_index;
     IPakToCreate* m_current_ipak;
     unsigned m_current_ipak_start_index;
@@ -42,7 +40,7 @@ public:
     ImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                            ISearchPath& searchPath,
                            ZoneAssetCreationStateContainer& zoneStates,
-                           const std::filesystem::path& outDir)
+                           IOutputPath& outDir)
         : AbstractImageIPakPostProcessor(zoneDefinition, searchPath, zoneStates, outDir)
     {
     }
@@ -50,5 +48,5 @@ public:
     [[nodiscard]] asset_type_t GetHandlingAssetType() const override
     {
         return AssetType::EnumEntry;
-    };
+    }
 };

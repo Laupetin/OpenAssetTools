@@ -49,6 +49,7 @@ function catch2:project()
         
         defines {
             "DO_NOT_USE_WMAIN",
+			"CATCH_AMALGAMATED_CUSTOM_MAIN",
             "_CRT_SECURE_NO_WARNINGS"
         }
 		

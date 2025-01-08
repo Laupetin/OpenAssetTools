@@ -18,19 +18,19 @@ void IwdToCreate::AddFile(std::string filePath)
     m_file_paths.emplace_back(std::move(filePath));
 }
 
-void IwdToCreate::Build(ISearchPath& searchPath, const std::filesystem::path& outPath)
+void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
 {
-    auto filePath = outPath / std::format("{}.iwd", m_name);
-    std::ofstream file(filePath, std::ios::out | std::ios::binary);
-    if (!file.is_open())
+    const auto fileName = std::format("{}.iwd", m_name);
+    const auto file = outPath.Open(fileName);
+    if (!file)
     {
         std::cerr << std::format("Failed to open file for iwd {}\n", m_name);
         return;
     }
 
-    auto functions = FileToZlibWrapper::CreateFunctions32ForFile(&file);
+    auto functions = FileToZlibWrapper::CreateFunctions32ForFile(file.get());
 
-    auto zipFile = zipOpen2(filePath.string().c_str(), APPEND_STATUS_CREATE, nullptr, &functions);
+    const auto zipFile = zipOpen2(fileName.c_str(), APPEND_STATUS_CREATE, nullptr, &functions);
     if (!zipFile)
     {
         std::cerr << std::format("Failed to open file as zip for iwd {}\n", m_name);
@@ -79,6 +79,11 @@ void IwdToCreate::Build(ISearchPath& searchPath, const std::filesystem::path& ou
     std::cout << std::format("Created iwd {} with {} entries\n", m_name, m_file_paths.size());
 }
 
+const std::vector<std::string>& IwdToCreate::GetFilePaths() const
+{
+    return m_file_paths;
+}
+
 IwdToCreate* IwdCreator::GetOrAddIwd(const std::string& iwdName)
 {
     const auto existingIwd = m_iwd_lookup.find(iwdName);
@@ -87,12 +92,13 @@ IwdToCreate* IwdCreator::GetOrAddIwd(const std::string& iwdName)
 
     auto newIwd = std::make_unique<IwdToCreate>(iwdName);
     auto* result = newIwd.get();
+    m_iwd_lookup.emplace(iwdName, result);
     m_iwds.emplace_back(std::move(newIwd));
 
     return result;
 }
 
-void IwdCreator::Finalize(ISearchPath& searchPath, const std::filesystem::path& outPath)
+void IwdCreator::Finalize(ISearchPath& searchPath, IOutputPath& outPath)
 {
     std::cout << std::format("Writing {} iwd files to disk\n", m_iwds.size());
     for (const auto& iwdToCreate : m_iwds)

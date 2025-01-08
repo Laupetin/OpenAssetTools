@@ -8,7 +8,6 @@
 #include <memory>
 
 using namespace T6;
-namespace fs = std::filesystem;
 
 namespace
 {
@@ -20,7 +19,7 @@ namespace
     {
         auto& memory = *zone.GetMemory();
 
-        collection.AddAssetCreator(std::make_unique<KeyValuePairsCompiler>(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
+        collection.AddAssetCreator(CreateKeyValuePairsCompiler(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,
@@ -28,7 +27,7 @@ namespace
                                  const ZoneDefinitionContext& zoneDefinition,
                                  ISearchPath& searchPath,
                                  ZoneAssetCreationStateContainer& zoneStates,
-                                 const fs::path& outDir)
+                                 IOutputPath& outDir)
     {
         auto& memory = *zone.GetMemory();
 
@@ -46,8 +45,8 @@ void ObjCompiler::ConfigureCreatorCollection(AssetCreatorCollection& collection,
                                              ISearchPath& searchPath,
                                              IGdtQueryable& gdt,
                                              ZoneAssetCreationStateContainer& zoneStates,
-                                             const fs::path& outDir,
-                                             const fs::path& cacheDir) const
+                                             IOutputPath& outDir,
+                                             IOutputPath& cacheDir) const
 {
     ConfigureCompilers(collection, zone, zoneDefinition, searchPath, zoneStates);
     ConfigurePostProcessors(collection, zone, zoneDefinition, searchPath, zoneStates, outDir);

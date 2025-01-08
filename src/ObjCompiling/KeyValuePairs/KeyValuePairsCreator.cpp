@@ -1,7 +1,9 @@
 #include "KeyValuePairsCreator.h"
 
+#include <algorithm>
 #include <format>
 #include <iostream>
+#include <ranges>
 
 CommonKeyValuePair::CommonKeyValuePair(std::string keyStr, std::string value)
     : m_key_str(std::move(keyStr)),
@@ -49,6 +51,23 @@ void KeyValuePairsCreator::Finalize(const ZoneDefinition& zoneDefinition)
             }
         }
     }
+
+    std::ranges::sort(m_key_value_pairs,
+                      [](const CommonKeyValuePair& v0, const CommonKeyValuePair& v1)
+                      {
+                          if (v0.m_key_str.has_value())
+                          {
+                              if (!v1.m_key_str.has_value())
+                                  return true;
+
+                              return *v0.m_key_str < *v1.m_key_str;
+                          }
+
+                          if (!v1.m_key_hash.has_value())
+                              return false;
+
+                          return *v0.m_key_hash < *v1.m_key_hash;
+                      });
 }
 
 std::vector<CommonKeyValuePair> KeyValuePairsCreator::GetFinalKeyValuePairs()

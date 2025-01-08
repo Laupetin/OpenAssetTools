@@ -13,7 +13,7 @@ namespace T5
                                         ISearchPath& searchPath,
                                         IGdtQueryable& gdt,
                                         ZoneAssetCreationStateContainer& zoneStates,
-                                        const std::filesystem::path& outDir,
-                                        const std::filesystem::path& cacheDir) const override;
+                                        IOutputPath& outDir,
+                                        IOutputPath& cacheDir) const override;
     };
 } // namespace T5

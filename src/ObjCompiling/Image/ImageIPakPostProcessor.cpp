@@ -2,36 +2,34 @@
 
 #include "IPak/IPakCreator.h"
 
-#include <format>
+#include <algorithm>
 
 AbstractImageIPakPostProcessor::AbstractImageIPakPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                                ISearchPath& searchPath,
                                                                ZoneAssetCreationStateContainer& zoneStates,
-                                                               const std::filesystem::path& outDir)
+                                                               IOutputPath& outDir)
     : m_zone_definition(zoneDefinition),
       m_search_path(searchPath),
       m_ipak_creator(zoneStates.GetZoneAssetCreationState<IPakCreator>()),
       m_out_dir(outDir),
-      m_initialized(false),
       m_obj_container_index(0u),
       m_current_ipak(nullptr),
       m_current_ipak_start_index(0u),
       m_current_ipak_end_index(0u)
 {
+    FindNextObjContainer();
 }
 
 bool AbstractImageIPakPostProcessor::AppliesToZoneDefinition(const ZoneDefinitionContext& zoneDefinition)
 {
-    for (const auto& objContainer : zoneDefinition.m_zone_definition.m_obj_containers)
-    {
-        if (objContainer.m_type == ZoneDefinitionObjContainerType::IPAK)
-            return true;
-    }
-
-    return false;
+    return std::ranges::any_of(zoneDefinition.m_zone_definition.m_obj_containers,
+                               [](const ZoneDefinitionObjContainer& objContainer)
+                               {
+                                   return objContainer.m_type == ZoneDefinitionObjContainerType::IPAK;
+                               });
 }
 
-void AbstractImageIPakPostProcessor::FindNextObjContainer(AssetCreationContext& context)
+void AbstractImageIPakPostProcessor::FindNextObjContainer()
 {
     const auto objContainerCount = m_zone_definition.m_zone_definition.m_obj_containers.size();
     while (m_obj_container_index < objContainerCount)
@@ -55,17 +53,10 @@ void AbstractImageIPakPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetIn
     if (assetInfo.m_name.empty() || assetInfo.m_name[0] == ',')
         return;
 
-    // Initialize on first image occurance
-    if (!m_initialized)
-    {
-        FindNextObjContainer(context);
-        m_initialized = true;
-    }
-
     while (m_current_ipak && m_zone_definition.m_asset_index_in_definition >= m_current_ipak_end_index)
-        FindNextObjContainer(context);
+        FindNextObjContainer();
 
-    if (m_current_ipak && m_zone_definition.m_asset_index_in_definition <= m_current_ipak_start_index)
+    if (m_current_ipak && m_zone_definition.m_asset_index_in_definition >= m_current_ipak_start_index)
         m_current_ipak->AddImage(assetInfo.m_name);
 }
 

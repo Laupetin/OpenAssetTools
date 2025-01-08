@@ -3,8 +3,7 @@
 #include "Asset/IAssetPostProcessor.h"
 #include "Asset/ZoneDefinitionContext.h"
 #include "Iwd/IwdCreator.h"
-
-#include <filesystem>
+#include "SearchPath/IOutputPath.h"
 
 class AbstractImageIwdPostProcessor : public IAssetPostProcessor
 {
@@ -12,7 +11,7 @@ public:
     AbstractImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                   ISearchPath& searchPath,
                                   ZoneAssetCreationStateContainer& zoneStates,
-                                  const std::filesystem::path& outDir);
+                                  IOutputPath& outDir);
 
     static bool AppliesToZoneDefinition(const ZoneDefinitionContext& zoneDefinition);
 
@@ -20,14 +19,13 @@ public:
     void FinalizeZone(AssetCreationContext& context) override;
 
 private:
-    void FindNextObjContainer(AssetCreationContext& context);
+    void FindNextObjContainer();
 
     const ZoneDefinitionContext& m_zone_definition;
     ISearchPath& m_search_path;
     IwdCreator& m_iwd_creator;
-    const std::filesystem::path& m_out_dir;
+    IOutputPath& m_out_dir;
 
-    bool m_initialized;
     unsigned m_obj_container_index;
     IwdToCreate* m_current_iwd;
     unsigned m_current_iwd_start_index;
@@ -42,7 +40,7 @@ public:
     ImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                           ISearchPath& searchPath,
                           ZoneAssetCreationStateContainer& zoneStates,
-                          const std::filesystem::path& outDir)
+                          IOutputPath& outDir)
         : AbstractImageIwdPostProcessor(zoneDefinition, searchPath, zoneStates, outDir)
     {
     }
@@ -50,5 +48,5 @@ public:
     [[nodiscard]] asset_type_t GetHandlingAssetType() const override
     {
         return AssetType::EnumEntry;
-    };
+    }
 };

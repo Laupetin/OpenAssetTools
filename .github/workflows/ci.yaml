@@ -49,6 +49,7 @@ jobs:
         working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
         run: |
           ./ObjCommonTests
+          ./ObjCompilingTests
           ./ObjLoadingTests
           ./ParserTests
           ./ZoneCodeGeneratorLibTests
@@ -85,6 +86,8 @@ jobs:
         run: |
           $combinedExitCode = 0
           ./ObjCommonTests
+          $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
+          ./ObjCompilingTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
           ./ObjLoadingTests
           $combinedExitCode = [System.Math]::max($combinedExitCode, $LASTEXITCODE)
