@@ -108,6 +108,11 @@ MockOutputFile::MockOutputFile(std::string name, std::vector<std::uint8_t> data)
 {
 }
 
+std::string MockOutputFile::AsString() const
+{
+    return std::string(reinterpret_cast<const char*>(m_data.data()), m_data.size());
+}
+
 std::unique_ptr<std::ostream> MockOutputPath::Open(const std::string& fileName)
 {
     return std::make_unique<MockFileWrapper>(fileName, m_files);
@@ -122,4 +127,9 @@ const MockOutputFile* MockOutputPath::GetMockedFile(const std::string& name) con
     }
 
     return nullptr;
+}
+
+const std::vector<MockOutputFile>& MockOutputPath::GetMockedFileList() const
+{
+    return m_files;
 }

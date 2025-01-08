@@ -38,7 +38,7 @@ namespace
     {
         if (image->streamedPartCount > 0)
         {
-            for (auto* ipak : IPak::Repository)
+            for (auto* ipak : IIPak::Repository)
             {
                 auto ipakStream = ipak->GetEntryStream(image->hash, image->streamedParts[0].hash);
 

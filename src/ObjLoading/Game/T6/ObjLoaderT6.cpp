@@ -165,13 +165,13 @@ namespace T6
         if (ObjLoading::Configuration.Verbose)
             std::cout << std::format("Trying to load ipak '{}' for zone '{}'\n", ipakName, zone.m_name);
 
-        auto* existingIPak = IPak::Repository.GetContainerByName(ipakName);
+        auto* existingIPak = IIPak::Repository.GetContainerByName(ipakName);
         if (existingIPak != nullptr)
         {
             if (ObjLoading::Configuration.Verbose)
                 std::cout << std::format("Referencing loaded ipak '{}'.\n", ipakName);
 
-            IPak::Repository.AddContainerReference(existingIPak, &zone);
+            IIPak::Repository.AddContainerReference(existingIPak, &zone);
             return;
         }
 
@@ -180,11 +180,11 @@ namespace T6
         auto file = searchPath.Open(ipakFilename);
         if (file.IsOpen())
         {
-            auto ipak = std::make_unique<IPak>(ipakFilename, std::move(file.m_stream));
+            auto ipak = IIPak::Create(ipakFilename, std::move(file.m_stream));
 
             if (ipak->Initialize())
             {
-                IPak::Repository.AddContainer(std::move(ipak), &zone);
+                IIPak::Repository.AddContainer(std::move(ipak), &zone);
 
                 if (ObjLoading::Configuration.Verbose)
                     std::cout << std::format("Found and loaded ipak '{}'.\n", ipakFilename);
@@ -277,7 +277,7 @@ namespace T6
 
     void ObjLoader::UnloadContainersOfZone(Zone& zone) const
     {
-        IPak::Repository.RemoveContainerReferences(&zone);
+        IIPak::Repository.RemoveContainerReferences(&zone);
     }
 
     namespace
