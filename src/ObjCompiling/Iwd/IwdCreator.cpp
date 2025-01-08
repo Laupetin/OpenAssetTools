@@ -79,6 +79,11 @@ void IwdToCreate::Build(ISearchPath& searchPath, IOutputPath& outPath)
     std::cout << std::format("Created iwd {} with {} entries\n", m_name, m_file_paths.size());
 }
 
+const std::vector<std::string>& IwdToCreate::GetFilePaths() const
+{
+    return m_file_paths;
+}
+
 IwdToCreate* IwdCreator::GetOrAddIwd(const std::string& iwdName)
 {
     const auto existingIwd = m_iwd_lookup.find(iwdName);

@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <format>
-#include <ranges>
 
 AbstractImageIwdPostProcessor::AbstractImageIwdPostProcessor(const ZoneDefinitionContext& zoneDefinition,
                                                              ISearchPath& searchPath,
@@ -58,7 +57,7 @@ void AbstractImageIwdPostProcessor::PostProcessAsset(XAssetInfoGeneric& assetInf
     while (m_current_iwd && m_zone_definition.m_asset_index_in_definition >= m_current_iwd_end_index)
         FindNextObjContainer();
 
-    if (m_current_iwd && m_zone_definition.m_asset_index_in_definition <= m_current_iwd_start_index)
+    if (m_current_iwd && m_zone_definition.m_asset_index_in_definition >= m_current_iwd_start_index)
         m_current_iwd->AddFile(std::format("images/{}.iwi", assetInfo.m_name));
 }
 

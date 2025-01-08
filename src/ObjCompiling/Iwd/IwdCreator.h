@@ -15,6 +15,7 @@ public:
 
     void AddFile(std::string filePath);
     void Build(ISearchPath& searchPath, IOutputPath& outPath);
+    [[nodiscard]] const std::vector<std::string>& GetFilePaths() const;
 
 private:
     std::string m_name;
