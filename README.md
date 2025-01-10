@@ -93,7 +93,7 @@ Since you are most likely on a 64-bit machine you will also need multilib for co
 
 Use `generate.sh` to generate make files.
 When this is done you will have a `build` folder with a `Makefile`.
-You now run `make` manually or use `./scripts/make_release.sh` or `./scripts/make_debug.sh` to build.
+You now run `make` manually or use `./scripts/make-release.sh` or `./scripts/make-debug.sh` to build.
 
 The resulting binaries can be found in `build/bin/<Debug_x86|Release_x86>`.
 
