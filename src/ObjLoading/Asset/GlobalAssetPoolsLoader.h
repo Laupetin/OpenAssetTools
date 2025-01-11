@@ -38,7 +38,12 @@ public:
         for (const auto scrString : existingAsset->m_used_script_strings)
             m_zone.m_script_strings.AddOrGetScriptString(existingAsset->m_zone->m_script_strings.CValue(scrString));
 
-        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+        auto* newAsset = context.AddAsset(std::move(registration));
+
+        // Make sure we remember this asset came from another zone
+        newAsset->m_zone = existingAsset->m_zone;
+
+        return AssetCreationResult::Success(newAsset);
     }
 
 private:

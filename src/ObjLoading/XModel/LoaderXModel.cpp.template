@@ -251,8 +251,9 @@ namespace
 
             info.radiusSquared = halfSizeEigen.squaredNorm();
         }
-
-        bool ApplyCommonBonesToXModel(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common)
+        
+        bool ApplyCommonBonesToXModel(
+            const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common, AssetRegistration<AssetXModel>& registration)
         {
             if (common.m_bones.empty())
                 return true;
@@ -305,6 +306,7 @@ namespace
             {
                 const auto& bone = common.m_bones[boneIndex];
                 xmodel.boneNames[boneIndex] = m_script_strings.AddOrGetScriptString(bone.name);
+                registration.AddScriptString(xmodel.boneNames[boneIndex]);
                 xmodel.partClassification[boneIndex] = static_cast<unsigned char>(m_part_classification_state.GetPartClassificationForBoneName(bone.name));
 
                 ApplyBasePose(xmodel.baseMat[boneIndex], bone);
@@ -656,7 +658,7 @@ namespace
 
             if (lodNumber == 0u)
             {
-                if (!ApplyCommonBonesToXModel(jLod, xmodel, lodNumber, *common))
+                if (!ApplyCommonBonesToXModel(jLod, xmodel, lodNumber, *common, registration))
                     return false;
             }
             else
