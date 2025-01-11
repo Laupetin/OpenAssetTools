@@ -1,6 +1,7 @@
 #include "AssetDumpingContext.h"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 
 AssetDumpingContext::AssetDumpingContext()
@@ -15,13 +16,21 @@ std::unique_ptr<std::ostream> AssetDumpingContext::OpenAssetFile(const std::stri
 
     auto assetFileFolder(assetFilePath);
     assetFileFolder.replace_filename("");
-    create_directories(assetFileFolder);
+
+    std::error_code ec;
+    std::filesystem::create_directories(assetFileFolder, ec);
+
+    if (ec)
+    {
+        std::cerr << std::format("Failed to create folder '{}'. Asset '{}' won't be dumped\n", assetFilePath.string(), fileName);
+        return nullptr;
+    }
 
     auto file = std::make_unique<std::ofstream>(assetFilePath, std::fstream::out | std::fstream::binary);
 
     if (!file->is_open())
     {
-        std::cout << "Failed to open file '" << assetFilePath.string() << "' to dump asset '" << fileName << "'\n";
+        std::cerr << std::format("Failed to open file '{}' to dump asset '{}'\n", assetFilePath.string(), fileName);
         return nullptr;
     }
 

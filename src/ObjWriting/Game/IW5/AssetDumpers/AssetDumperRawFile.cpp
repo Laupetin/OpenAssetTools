@@ -1,5 +1,6 @@
 #include "AssetDumperRawFile.h"
 
+#include <format>
 #include <stdexcept>
 #include <zlib.h>
 
@@ -49,7 +50,7 @@ void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawF
 
         if (ret < 0)
         {
-            std::cerr << "Inflate failed when attempting to dump rawfile " << rawFile->name << "\n";
+            std::cerr << std::format("Inflate failed when attempting to dump rawfile '{}'\n", rawFile->name);
             inflateEnd(&zs);
             return;
         }
