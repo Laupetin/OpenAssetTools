@@ -14,13 +14,13 @@ using namespace IW5;
 
 namespace
 {
-    std::unique_ptr<Texture> LoadImageFromLoadDef(const GfxImage* image)
+    std::unique_ptr<Texture> LoadImageFromLoadDef(const GfxImage& image)
     {
         Dx9TextureLoader textureLoader;
 
-        const auto& loadDef = *image->texture.loadDef;
+        const auto& loadDef = *image.texture.loadDef;
 
-        textureLoader.Width(image->width).Height(image->height).Depth(image->depth);
+        textureLoader.Width(image.width).Height(image.height).Depth(image.depth);
 
         if ((loadDef.flags & iwi8::IMG_FLAG_MAPTYPE_MASK) == iwi8::IMG_FLAG_MAPTYPE_3D)
             textureLoader.Type(TextureType::T_3D);
@@ -34,22 +34,22 @@ namespace
         return textureLoader.LoadTexture(loadDef.data);
     }
 
-    std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage* image, ISearchPath* searchPath)
+    std::unique_ptr<Texture> LoadImageFromIwi(const GfxImage& image, ISearchPath& searchPath)
     {
-        const auto imageFileName = std::format("images/{}.iwi", image->name);
-        const auto filePathImage = searchPath->Open(imageFileName);
+        const auto imageFileName = std::format("images/{}.iwi", image.name);
+        const auto filePathImage = searchPath.Open(imageFileName);
         if (!filePathImage.IsOpen())
         {
-            std::cerr << std::format("Could not find data for image \"{}\"\n", image->name);
+            std::cerr << std::format("Could not find data for image \"{}\"\n", image.name);
             return nullptr;
         }
 
         return iwi::LoadIwi(*filePathImage.m_stream);
     }
 
-    std::unique_ptr<Texture> LoadImageData(ISearchPath* searchPath, const GfxImage* image)
+    std::unique_ptr<Texture> LoadImageData(ISearchPath& searchPath, const GfxImage& image)
     {
-        if (image->texture.loadDef && image->texture.loadDef->resourceSize > 0)
+        if (image.texture.loadDef && image.texture.loadDef->resourceSize > 0)
             return LoadImageFromLoadDef(image);
 
         return LoadImageFromIwi(image, searchPath);
@@ -89,7 +89,7 @@ std::string AssetDumperGfxImage::GetAssetFileName(const XAssetInfo<GfxImage>& as
 void AssetDumperGfxImage::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
 {
     const auto* image = asset->Asset();
-    const auto texture = LoadImageData(context.m_obj_search_path, image);
+    const auto texture = LoadImageData(context.m_obj_search_path, *image);
     if (!texture)
         return;
 

@@ -107,8 +107,8 @@ namespace
         for (auto boneNum = 0u; boneNum < model->numBones; boneNum++)
         {
             XModelBone bone;
-            if (model->boneNames[boneNum] < context.m_zone->m_script_strings.Count())
-                bone.name = context.m_zone->m_script_strings[model->boneNames[boneNum]];
+            if (model->boneNames[boneNum] < context.m_zone.m_script_strings.Count())
+                bone.name = context.m_zone.m_script_strings[model->boneNames[boneNum]];
             else
                 bone.name = "INVALID_BONE_NAME";
 
@@ -426,7 +426,7 @@ namespace
         if (!mtlFile)
             return;
 
-        const auto writer = obj::CreateMtlWriter(*mtlFile, context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        const auto writer = obj::CreateMtlWriter(*mtlFile, context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
         DistinctMapper<Material*> materialMapper(model->numsurfs);
 
         writer->Write(common);
@@ -440,8 +440,7 @@ namespace
         if (!assetFile)
             return;
 
-        const auto writer =
-            obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model->name), context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        const auto writer = obj::CreateObjWriter(*assetFile, std::format("{}.mtl", model->name), context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
         DistinctMapper<Material*> materialMapper(model->numsurfs);
 
         writer->Write(common);
@@ -455,7 +454,7 @@ namespace
         if (!assetFile)
             return;
 
-        const auto writer = xmodel_export::CreateWriterForVersion6(*assetFile, context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        const auto writer = xmodel_export::CreateWriterForVersion6(*assetFile, context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
         writer->Write(common);
     }
 
@@ -470,7 +469,7 @@ namespace
             return;
 
         const auto output = std::make_unique<T>(*assetFile);
-        const auto writer = gltf::Writer::CreateWriter(output.get(), context.m_zone->m_game->GetShortName(), context.m_zone->m_name);
+        const auto writer = gltf::Writer::CreateWriter(output.get(), context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
 
         writer->Write(common);
     }

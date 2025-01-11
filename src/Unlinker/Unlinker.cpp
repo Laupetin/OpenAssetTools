@@ -6,6 +6,7 @@
 #include "IObjWriter.h"
 #include "ObjWriting.h"
 #include "SearchPath/IWD.h"
+#include "SearchPath/OutputPathFilesystem.h"
 #include "SearchPath/SearchPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
 #include "UnlinkerArgs.h"
@@ -100,14 +101,14 @@ private:
 
     void UpdateAssetIncludesAndExcludes(const AssetDumpingContext& context) const
     {
-        const auto assetTypeCount = context.m_zone->m_pools->GetAssetTypeCount();
+        const auto assetTypeCount = context.m_zone.m_pools->GetAssetTypeCount();
 
         ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector<bool>(assetTypeCount);
 
         std::vector<bool> handledSpecifiedAssets(m_args.m_specified_asset_types.size());
         for (auto i = 0; i < assetTypeCount; i++)
         {
-            const auto assetTypeName = std::string(*context.m_zone->m_pools->GetAssetTypeName(i));
+            const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
 
             const auto foundSpecifiedEntry = m_args.m_specified_asset_type_map.find(assetTypeName);
             if (foundSpecifiedEntry != m_args.m_specified_asset_type_map.end())
@@ -137,7 +138,7 @@ private:
             auto first = true;
             for (auto i = 0; i < assetTypeCount; i++)
             {
-                const auto assetTypeName = std::string(*context.m_zone->m_pools->GetAssetTypeName(i));
+                const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
 
                 if (first)
                     first = false;
@@ -164,7 +165,8 @@ private:
         }
         else if (m_args.m_task == UnlinkerArgs::ProcessingTask::DUMP)
         {
-            const auto outputFolderPath = m_args.GetOutputFolderPathForZone(zone);
+            const auto outputFolderPathStr = m_args.GetOutputFolderPathForZone(zone);
+            const fs::path outputFolderPath(outputFolderPathStr);
             fs::create_directories(outputFolderPath);
 
             fs::path zoneDefinitionFileFolder(outputFolderPath);
@@ -174,12 +176,10 @@ private:
             if (!WriteZoneDefinitionFile(zone, zoneDefinitionFileFolder))
                 return false;
 
-            std::ofstream gdtStream;
-            AssetDumpingContext context;
-            context.m_zone = &zone;
-            context.m_base_path = outputFolderPath;
-            context.m_obj_search_path = &searchPath;
+            OutputPathFilesystem outputFolderOutputPath(outputFolderPath);
+            AssetDumpingContext context(zone, outputFolderPathStr, outputFolderOutputPath, searchPath);
 
+            std::ofstream gdtStream;
             if (m_args.m_use_gdt)
             {
                 if (!OpenGdtFile(zone, outputFolderPath, gdtStream))
