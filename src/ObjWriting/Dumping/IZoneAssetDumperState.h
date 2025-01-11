@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Zone/Zone.h"
 
 class IZoneAssetDumperState
@@ -13,7 +14,7 @@ public:
     IZoneAssetDumperState& operator=(const IZoneAssetDumperState& other) = default;
     IZoneAssetDumperState& operator=(IZoneAssetDumperState&& other) noexcept = default;
 
-    virtual void SetZone(Zone* zone)
+    virtual void SetZone(const Zone& zone)
     {
         // Do nothing by default
     }

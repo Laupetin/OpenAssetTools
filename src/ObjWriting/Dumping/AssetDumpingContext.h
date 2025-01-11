@@ -2,8 +2,8 @@
 
 #include "IZoneAssetDumperState.h"
 #include "Obj/Gdt/GdtStream.h"
+#include "SearchPath/IOutputPath.h"
 #include "SearchPath/ISearchPath.h"
-#include "Utils/ClassUtils.h"
 #include "Zone/Zone.h"
 
 #include <memory>
@@ -13,17 +13,10 @@
 
 class AssetDumpingContext
 {
-    std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetDumperState>> m_zone_asset_dumper_states;
-
 public:
-    Zone* m_zone;
-    std::string m_base_path;
-    std::unique_ptr<GdtOutputStream> m_gdt;
-    ISearchPath* m_obj_search_path;
+    AssetDumpingContext(const Zone& zone, const std::string& basePath, IOutputPath& outputPath, ISearchPath& objSearchPath);
 
-    AssetDumpingContext();
-
-    _NODISCARD std::unique_ptr<std::ostream> OpenAssetFile(const std::string& fileName) const;
+    [[nodiscard]] std::unique_ptr<std::ostream> OpenAssetFile(const std::string& fileName) const;
 
     template<typename T> T* GetZoneAssetDumperState()
     {
@@ -40,4 +33,13 @@ public:
         m_zone_asset_dumper_states.emplace(std::make_pair<std::type_index, std::unique_ptr<IZoneAssetDumperState>>(typeid(T), std::move(newState)));
         return newStatePtr;
     }
+
+    const Zone& m_zone;
+    const std::string& m_base_path;
+    IOutputPath& m_output_path;
+    ISearchPath& m_obj_search_path;
+    std::unique_ptr<GdtOutputStream> m_gdt;
+
+private:
+    std::unordered_map<std::type_index, std::unique_ptr<IZoneAssetDumperState>> m_zone_asset_dumper_states;
 };

@@ -28,7 +28,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
         dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
     }
 
-    const auto* assetPools = dynamic_cast<GameAssetPoolIW5*>(context.m_zone->m_pools.get());
+    const auto* assetPools = dynamic_cast<GameAssetPoolIW5*>(context.m_zone.m_pools.get());
     // DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset, ASSET_TYPE_PHYSPRESET)
     // DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)

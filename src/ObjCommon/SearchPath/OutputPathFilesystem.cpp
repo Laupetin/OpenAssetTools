@@ -24,7 +24,7 @@ std::unique_ptr<std::ostream> OutputPathFilesystem::Open(const std::string& file
     fs::create_directories(containingDirectory, ec);
     if (ec)
     {
-        std::cerr << std::format("Failed to create folder '{}' when try to open file '{}'\n", containingDirectory, fileName);
+        std::cerr << std::format("Failed to create folder '{}' when try to open file '{}'\n", containingDirectory.string(), fileName);
         return nullptr;
     }
 

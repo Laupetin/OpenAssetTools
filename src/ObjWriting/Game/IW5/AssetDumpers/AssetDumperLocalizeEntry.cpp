@@ -3,7 +3,8 @@
 #include "Dumping/Localize/StringFileDumper.h"
 #include "Localize/LocalizeCommon.h"
 
-#include <sstream>
+#include <format>
+#include <iostream>
 
 using namespace IW5;
 
@@ -12,11 +13,8 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
     if (pool->m_asset_lookup.empty())
         return;
 
-    const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone->m_language);
-
-    std::ostringstream ss;
-    ss << language << "/localizedstrings/" << context.m_zone->m_name << ".str";
-    const auto assetFile = context.OpenAssetFile(ss.str());
+    const auto language = LocalizeCommon::GetNameOfLanguage(context.m_zone.m_language);
+    const auto assetFile = context.OpenAssetFile(std::format("{}/localizedstrings/{}.str", language, context.m_zone.m_name));
 
     if (assetFile)
     {
@@ -38,6 +36,6 @@ void AssetDumperLocalizeEntry::DumpPool(AssetDumpingContext& context, AssetPool<
     }
     else
     {
-        printf("Could not create string file for dumping localized strings of zone '%s'\n", context.m_zone->m_name.c_str());
+        std::cerr << std::format("Could not create string file for dumping localized strings of zone '{}'\n", context.m_zone.m_name);
     }
 }
