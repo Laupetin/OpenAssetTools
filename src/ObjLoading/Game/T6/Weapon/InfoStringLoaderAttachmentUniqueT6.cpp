@@ -238,5 +238,7 @@ AssetCreationResult InfoStringLoaderAttachmentUnique::CreateAsset(const std::str
         return AssetCreationResult::Failure();
     }
 
+    CalculateAttachmentUniqueFields(assetName, *attachmentUniqueFull);
+
     return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
 }
