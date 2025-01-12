@@ -58,9 +58,7 @@ workspace "OpenAssetTools"
         defines "NDEBUG"
         optimize "Full"
         symbols "Off"
-        flags {
-            "FatalWarnings"
-        }
+        fatalwarnings { "All" }
     filter {}
 
     defines {
