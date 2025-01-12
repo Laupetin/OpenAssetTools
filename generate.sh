@@ -57,7 +57,7 @@ elif [[ -x "$(command -v build/premake5)" ]]; then
     PREMAKE_BIN='build/premake5'
 else
     echo "Could not find premake5. You can either install it yourself or this script download it for you."
-    if [[ "$(read -e -p 'Do you wish to download it automatically? [y/N]> '; echo $REPLY)" == [Yy]* ]]; then
+    if [[ ! -z "$OAT_CI_NO_PROMPT" ]] || [[ "$(read -e -p 'Do you wish to download it automatically? [y/N]> '; echo $REPLY)" == [Yy]* ]]; then
         echo "Installing premake"
         install_premake
         PREMAKE_BIN='build/premake5'

@@ -9,13 +9,22 @@ goto start
 
 if not exist "build" mkdir "build"
 
-powershell -Command "Invoke-WebRequest %PREMAKE_URL% -OutFile build/premake.zip"
+where /q "pwsh"
+IF %ERRORLEVEL% EQU 0 (
+    set POWERSHELL_BIN="pwsh"
+) else (
+    set POWERSHELL_BIN="powershell"
+)
+
+echo Downloading...
+%POWERSHELL_BIN% -Command "Invoke-WebRequest %PREMAKE_URL% -OutFile build/premake.zip"
 IF %ERRORLEVEL% NEQ 0 (
     echo Download failed >&2
     exit 2
 )
 
-powershell -Command "Expand-Archive -LiteralPath build/premake.zip -DestinationPath build"
+echo Extracting...
+%POWERSHELL_BIN% -Command "Expand-Archive -LiteralPath build/premake.zip -DestinationPath build"
 IF %ERRORLEVEL% NEQ 0 (
     echo Extraction failed >&2
     exit 2
@@ -23,7 +32,8 @@ IF %ERRORLEVEL% NEQ 0 (
 
 rm build/premake.zip
 
-powershell -Command "if ((Get-FileHash -LiteralPath build/premake5.exe -Algorithm SHA256).Hash -eq \"%PREMAKE_HASH%\") { exit 0 } else { exit 1 }"
+echo Verifying hash...
+%POWERSHELL_BIN% -Command "if ((Get-FileHash -LiteralPath build/premake5.exe -Algorithm SHA256).Hash -eq \"%PREMAKE_HASH%\") { exit 0 } else { exit 1 }"
 IF %ERRORLEVEL% NEQ 0 (
     echo Hash verification failed >&2
     rm build/premake5.exe
@@ -46,9 +56,15 @@ IF EXIST build/premake5.exe (
     goto runpremake
 )
 
+if "%OAT_CI_NO_PROMPT%" NEQ "" (
+    call:downloadpremake
+    set PREMAKE_BIN="build/premake5.exe"
+    goto runpremake
+)
+
 echo Could not find premake5. You can either install it yourself or this script download it for you.
 set /p choice="Do you wish to download it automatically? [y/N]> "
-if /i "%choice%"=="y" (
+if /i "%choice%" == "y" (
     call:downloadpremake
     set PREMAKE_BIN="build/premake5.exe"
     goto runpremake
