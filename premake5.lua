@@ -1,3 +1,5 @@
+require("premake", ">=5.0.0-beta4")
+
 include "tools/scripts/folders.lua"
 include "tools/scripts/including.lua"
 include "tools/scripts/linking.lua"
