@@ -3,27 +3,14 @@
 #include <cstdlib>
 #include <cstring>
 
-MemoryManager::AllocationInfo::AllocationInfo(IDestructible* data, void* dataPtr)
-{
-    m_data = data;
-    m_data_ptr = dataPtr;
-}
-
 MemoryManager::MemoryManager() = default;
 
 MemoryManager::~MemoryManager()
 {
-    for (auto allocation : m_allocations)
-    {
+    for (auto* allocation : m_allocations)
         free(allocation);
-    }
-    m_allocations.clear();
 
-    for (auto destructible : m_destructible)
-    {
-        delete destructible.m_data;
-    }
-    m_destructible.clear();
+    m_allocations.clear();
 }
 
 void* MemoryManager::AllocRaw(const size_t size)
@@ -54,19 +41,6 @@ void MemoryManager::Free(const void* data)
         {
             free(*iAlloc);
             m_allocations.erase(iAlloc);
-            return;
-        }
-    }
-}
-
-void MemoryManager::Delete(const void* data)
-{
-    for (auto iAlloc = m_destructible.begin(); iAlloc != m_destructible.end(); ++iAlloc)
-    {
-        if (iAlloc->m_data_ptr == data)
-        {
-            delete iAlloc->m_data;
-            m_destructible.erase(iAlloc);
             return;
         }
     }
