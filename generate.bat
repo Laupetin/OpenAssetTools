@@ -53,7 +53,6 @@ cd %~dp0
 IF "%PREMAKE_NO_GLOBAL%" EQU "" (
     where /Q "premake5.exe"
     IF NOT ERRORLEVEL 1 (
-        echo success
         set PREMAKE_BIN="premake5.exe"
         goto runpremake
     )
