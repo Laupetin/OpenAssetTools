@@ -1,3 +1,5 @@
+require("premake", ">=5.0.0-beta4")
+
 include "tools/scripts/folders.lua"
 include "tools/scripts/including.lua"
 include "tools/scripts/linking.lua"
@@ -56,9 +58,7 @@ workspace "OpenAssetTools"
         defines "NDEBUG"
         optimize "Full"
         symbols "Off"
-        flags {
-            "FatalWarnings"
-        }
+        fatalwarnings { "All" }
     filter {}
 
     defines {

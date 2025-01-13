@@ -5,20 +5,15 @@ on:
     tags:
       - "v*.*.*"
 
-env:
-  PREMAKE_VERSION: "5.0.0-beta2"
-
 jobs:
   build-release-linux:
-    env:
-      PREMAKE_CONFIG: gmake2
     runs-on: ubuntu-latest
     container: ubuntu:24.04
     steps:
       - name: Install g++ and multilib
         run: |
           apt-get update
-          apt-get install -y git make gcc-13 g++-13 gcc-13-multilib g++-13-multilib
+          apt-get install -y wget tar git make gcc-13 g++-13 gcc-13-multilib g++-13-multilib
           update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
           update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
           update-alternatives --set gcc /usr/bin/gcc-13
@@ -29,14 +24,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup premake
-        uses: abel0b/setup-premake@v2.4
-        with:
-          version: ${{ env.PREMAKE_VERSION }}
-
       - name: Premake generate
         working-directory: ${{ github.workspace }}
-        run: premake5 ${{ env.PREMAKE_CONFIG }}
+        env:
+          PREMAKE_NO_PROMPT: 1
+        run: ./generate.sh
 
       - name: Build
         working-directory: ${{ github.workspace }}
@@ -50,8 +42,6 @@ jobs:
             ${{ github.workspace }}/build/bin/Release_x86
 
   build-release-windows:
-    env:
-      PREMAKE_CONFIG: vs2022
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -62,28 +52,25 @@ jobs:
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2.0.0
 
-      - name: Setup premake
-        uses: abel0b/setup-premake@v2.4
-        with:
-          version: ${{ env.PREMAKE_VERSION }}
-
       - name: Premake generate
         working-directory: ${{ github.workspace }}
-        run: premake5 ${{ env.PREMAKE_CONFIG }}
+        env:
+          PREMAKE_NO_PROMPT: 1
+        run: ./generate.bat
 
       - name: Build
         working-directory: ${{ github.workspace }}
         run: msbuild /m /p:Configuration=Release /p:Platform=Win32 build
-        
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: oat-windows
           path: |
             ${{ github.workspace }}/build/bin/Release_x86
-  
+
   release:
-    needs: 
+    needs:
       - build-release-linux
       - build-release-windows
     runs-on: ubuntu-latest
