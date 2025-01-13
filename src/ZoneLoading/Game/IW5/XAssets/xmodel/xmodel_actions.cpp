@@ -13,7 +13,7 @@ void Actions_XModel::SetModelSurfs(XModelLodInfo* lodInfo, XModelSurfs* modelSur
 {
     if (modelSurfs)
     {
-        lodInfo->modelSurfs = m_zone->GetMemory()->Create<XModelSurfs>();
+        lodInfo->modelSurfs = m_zone->GetMemory()->Alloc<XModelSurfs>();
         memcpy(lodInfo->modelSurfs, modelSurfs, sizeof(XModelSurfs));
     }
 }

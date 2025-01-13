@@ -63,7 +63,7 @@ namespace
                 menuLoadQueue.pop_front();
             }
 
-            auto* menuListAsset = m_memory.Create<MenuList>();
+            auto* menuListAsset = m_memory.Alloc<MenuList>();
             menuListAsset->name = m_memory.Dup(assetName.c_str());
             registration.SetAsset(menuListAsset);
 

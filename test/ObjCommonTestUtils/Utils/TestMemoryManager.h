@@ -9,6 +9,6 @@ class TestMemoryManager : public MemoryManager
 public:
     [[nodiscard]] size_t GetAllocationCount() const
     {
-        return m_allocations.size() + m_destructible.size();
+        return m_allocations.size();
     }
 };

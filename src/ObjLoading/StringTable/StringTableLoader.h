@@ -26,7 +26,7 @@ namespace string_table
     public:
         StringTableType* LoadFromStream(const std::string& assetName, MemoryManager& memory, std::istream& stream)
         {
-            auto* stringTable = memory.Create<StringTableType>();
+            auto* stringTable = memory.Alloc<StringTableType>();
             stringTable->name = memory.Dup(assetName.c_str());
 
             std::vector<std::vector<std::string>> csvLines;

@@ -51,7 +51,7 @@ namespace test::game::iw4::menu::parsing::it
 
         Material* AddMaterial(const std::string& name)
         {
-            auto* material = m_zone.GetMemory()->Create<Material>();
+            auto* material = m_zone.GetMemory()->Alloc<Material>();
             material->info.name = m_zone.GetMemory()->Dup(name.c_str());
 
             m_context.AddAsset<AssetMaterial>(name, material);
