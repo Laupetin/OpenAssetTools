@@ -3,9 +3,9 @@
 set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-beta4/premake-5.0.0-beta4-windows.zip"
 set PREMAKE_HASH="12d741d3b70445b025c03e26148e2d129801041fa5ddde61b4ac888a76017395"
 
-REM The following variables can be set:
-REM     PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
-REM     PREMAKE_NO_PROMPT - Download premake5 without prompting
+@REM The following variables can be set:
+@REM    PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
+@REM    PREMAKE_NO_PROMPT - Download premake5 without prompting
 
 goto start
 
@@ -14,22 +14,22 @@ goto start
 if not exist "build" mkdir "build"
 
 where /q "pwsh"
-IF %ERRORLEVEL% EQU 0 (
+IF NOT ERRORLEVEL 1 (
     set POWERSHELL_BIN="pwsh"
 ) else (
     set POWERSHELL_BIN="powershell"
 )
 
 echo Downloading...
-%POWERSHELL_BIN% -Command "Invoke-WebRequest %PREMAKE_URL% -OutFile build/premake.zip"
-IF %ERRORLEVEL% NEQ 0 (
+%POWERSHELL_BIN% -NoProfile -NonInteractive -Command "Invoke-WebRequest %PREMAKE_URL% -OutFile build/premake.zip"
+IF ERRORLEVEL 1 (
     echo Download failed >&2
     exit 2
 )
 
 echo Extracting...
-%POWERSHELL_BIN% -Command "Expand-Archive -LiteralPath build/premake.zip -DestinationPath build"
-IF %ERRORLEVEL% NEQ 0 (
+%POWERSHELL_BIN% -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath build/premake.zip -DestinationPath build"
+IF ERRORLEVEL 1 (
     echo Extraction failed >&2
     exit 2
 )
@@ -37,8 +37,8 @@ IF %ERRORLEVEL% NEQ 0 (
 rm build/premake.zip
 
 echo Verifying hash...
-%POWERSHELL_BIN% -Command "if ((Get-FileHash -LiteralPath build/premake5.exe -Algorithm SHA256).Hash -eq \"%PREMAKE_HASH%\") { exit 0 } else { exit 1 }"
-IF %ERRORLEVEL% NEQ 0 (
+%POWERSHELL_BIN% -NoProfile -NonInteractive -Command "if ((Get-FileHash -LiteralPath build/premake5.exe -Algorithm SHA256).Hash -eq \"%PREMAKE_HASH%\") { exit 0 } else { exit 1 }"
+IF ERRORLEVEL 1 (
     echo Hash verification failed >&2
     rm build/premake5.exe
     exit 2
@@ -50,9 +50,10 @@ cd %~dp0
 
 :start
 
-IF /i "%PREMAKE_NO_GLOBAL%" EQU "" (
-    where /q "premake5.exe"
-    IF %ERRORLEVEL% EQU 0 (
+IF "%PREMAKE_NO_GLOBAL%" EQU "" (
+    where /Q "premake5.exe"
+    IF NOT ERRORLEVEL 1 (
+        echo success
         set PREMAKE_BIN="premake5.exe"
         goto runpremake
     )
