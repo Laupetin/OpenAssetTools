@@ -27,7 +27,7 @@ jobs:
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
-          OAT_CI_NO_PROMPT: 1
+          PREMAKE_NO_PROMPT: 1
         run: ./generate.sh
 
       - name: Build
@@ -55,22 +55,22 @@ jobs:
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
-          OAT_CI_NO_PROMPT: 1
+          PREMAKE_NO_PROMPT: 1
         run: ./generate.bat
 
       - name: Build
         working-directory: ${{ github.workspace }}
         run: msbuild /m /p:Configuration=Release /p:Platform=Win32 build
-        
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: oat-windows
           path: |
             ${{ github.workspace }}/build/bin/Release_x86
-  
+
   release:
-    needs: 
+    needs:
       - build-release-linux
       - build-release-windows
     runs-on: ubuntu-latest

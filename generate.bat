@@ -3,6 +3,10 @@
 set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-beta4/premake-5.0.0-beta4-windows.zip"
 set PREMAKE_HASH="12d741d3b70445b025c03e26148e2d129801041fa5ddde61b4ac888a76017395"
 
+REM The following variables can be set:
+REM     PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
+REM     PREMAKE_NO_PROMPT - Download premake5 without prompting
+
 goto start
 
 :downloadpremake
@@ -45,10 +49,13 @@ exit /B 0
 cd %~dp0
 
 :start
-where /q "premake5.exe"
-IF %ERRORLEVEL% EQU 0 (
-    set PREMAKE_BIN="premake5.exe"
-    goto runpremake
+
+IF /i "%PREMAKE_NO_GLOBAL%" EQU "" (
+    where /q "premake5.exe"
+    IF %ERRORLEVEL% EQU 0 (
+        set PREMAKE_BIN="premake5.exe"
+        goto runpremake
+    )
 )
 
 IF EXIST build/premake5.exe (
@@ -56,7 +63,7 @@ IF EXIST build/premake5.exe (
     goto runpremake
 )
 
-if "%OAT_CI_NO_PROMPT%" NEQ "" (
+if "%PREMAKE_NO_PROMPT%" NEQ "" (
     call:downloadpremake
     set PREMAKE_BIN="build/premake5.exe"
     goto runpremake

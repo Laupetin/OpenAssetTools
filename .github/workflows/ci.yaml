@@ -30,7 +30,7 @@ jobs:
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
-          OAT_CI_NO_PROMPT: 1
+          PREMAKE_NO_PROMPT: 1
         run: ./generate.sh
 
       - name: Build
@@ -61,7 +61,7 @@ jobs:
       - name: Premake generate
         working-directory: ${{ github.workspace }}
         env:
-          OAT_CI_NO_PROMPT: 1
+          PREMAKE_NO_PROMPT: 1
         run: ./generate.bat
 
       - name: Build

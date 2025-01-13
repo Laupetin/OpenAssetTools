@@ -3,6 +3,10 @@
 PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta4/premake-5.0.0-beta4-linux.tar.gz'
 PREMAKE_HASH='4356ab7cdec6085183d68fb240089376eacdc2fb751ffbd8063d797ae43abeb3'
 
+# The following variables can be set:
+#     PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
+#     PREMAKE_NO_PROMPT - Download premake5 without prompting
+
 function install_premake {
     if [[ ! -x "$(command -v wget)" ]]; then
         echo "Failed: Installation requires wget" >&2
@@ -51,13 +55,13 @@ if [[ ! -d ".git" ]]; then
 fi
 
 PREMAKE_BIN=''
-if [[ -x "$(command -v premake5)" ]]; then
+if [[ -z "$PREMAKE_NO_GLOBAL" ]] && [[ -x "$(command -v premake5)" ]]; then
     PREMAKE_BIN='premake5'
 elif [[ -x "$(command -v build/premake5)" ]]; then
     PREMAKE_BIN='build/premake5'
 else
     echo "Could not find premake5. You can either install it yourself or this script download it for you."
-    if [[ ! -z "$OAT_CI_NO_PROMPT" ]] || [[ "$(read -e -p 'Do you wish to download it automatically? [y/N]> '; echo $REPLY)" == [Yy]* ]]; then
+    if [[ ! -z "$PREMAKE_NO_PROMPT" ]] || [[ "$(read -e -p 'Do you wish to download it automatically? [y/N]> '; echo $REPLY)" == [Yy]* ]]; then
         echo "Installing premake"
         install_premake
         PREMAKE_BIN='build/premake5'
