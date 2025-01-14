@@ -4,7 +4,7 @@
 
 class StepVerifyFileName final : public ILoadingStep
 {
-    std::string m_file_name;
+    std::string m_expected_file_name;
     size_t m_file_name_buffer_size;
 
 public:

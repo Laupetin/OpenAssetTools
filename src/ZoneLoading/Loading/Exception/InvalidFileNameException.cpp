@@ -1,6 +1,8 @@
 #include "InvalidFileNameException.h"
 
-InvalidFileNameException::InvalidFileNameException(std::string& actualFileName, std::string& expectedFileName)
+#include <format>
+
+InvalidFileNameException::InvalidFileNameException(const std::string& actualFileName, const std::string& expectedFileName)
 {
     m_actual_file_name = actualFileName;
     m_expected_file_name = expectedFileName;
@@ -8,7 +10,7 @@ InvalidFileNameException::InvalidFileNameException(std::string& actualFileName, 
 
 std::string InvalidFileNameException::DetailedMessage()
 {
-    return "Name verification failed: The fastfile was created as '" + m_expected_file_name + "' but loaded as '" + m_actual_file_name + "'";
+    return std::format("Name verification failed: The fastfile was created as '{}' but loaded as '{}'", m_expected_file_name, m_actual_file_name);
 }
 
 char const* InvalidFileNameException::what() const noexcept
