@@ -4,12 +4,13 @@
 #include "Internal/BaseTemplate.h"
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 
 class ZoneWriteTemplate::Internal final : BaseTemplate
 {
-    enum class MemberWriteType
+    enum class MemberWriteType : std::uint8_t
     {
         ARRAY_POINTER,
         DYNAMIC_ARRAY,
@@ -86,7 +87,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
     void PrintHeaderConstructor() const
     {
-        LINE(WriterClassName(m_env.m_asset) << "(" << m_env.m_asset->m_definition->GetFullName() << "* asset, Zone* zone, IZoneOutputStream* stream);")
+        LINE(WriterClassName(m_env.m_asset) << "(" << m_env.m_asset->m_definition->GetFullName() << "* asset, const Zone& zone, IZoneOutputStream& stream);")
     }
 
     void PrintVariableInitialization(const DataDefinition* def) const
@@ -112,11 +113,11 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     void PrintConstructorMethod()
     {
         LINE(WriterClassName(m_env.m_asset) << "::" << WriterClassName(m_env.m_asset) << "(" << m_env.m_asset->m_definition->GetFullName()
-                                            << "* asset, Zone* zone, IZoneOutputStream* stream)")
+                                            << "* asset, const Zone& zone, IZoneOutputStream& stream)")
 
         m_intendation++;
-        LINE_START(": AssetWriter(zone->m_pools->GetAssetOrAssetReference(" << m_env.m_asset->m_asset_enum_entry->m_name << ", GetAssetName(asset))"
-                                                                            << ", zone, stream)")
+        LINE_START(": AssetWriter(zone.m_pools->GetAssetOrAssetReference(" << m_env.m_asset->m_asset_enum_entry->m_name << ", GetAssetName(asset))"
+                                                                           << ", zone, stream)")
         LINE_END("")
         m_intendation--;
 
@@ -184,7 +185,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
     {
         if (writeType == MemberWriteType::SINGLE_POINTER)
         {
-            LINE(WriterClassName(member->m_type) << " writer(" << MakeMemberAccess(info, member, modifier) << ", m_zone, m_stream);")
+            LINE(WriterClassName(member->m_type) << " writer(" << MakeMemberAccess(info, member, modifier) << ", m_zone, *m_stream);")
             LINE("writer.Write(&" << MakeWrittenMemberAccess(info, member, modifier) << ");")
         }
         else if (writeType == MemberWriteType::POINTER_ARRAY)
@@ -1005,7 +1006,7 @@ class ZoneWriteTemplate::Internal final : BaseTemplate
 
         if (info && StructureComputations(info).IsAsset())
         {
-            LINE(WriterClassName(info) << " writer(*" << MakeTypePtrVarName(def) << ", m_zone, m_stream);")
+            LINE(WriterClassName(info) << " writer(*" << MakeTypePtrVarName(def) << ", m_zone, *m_stream);")
             LINE("writer.Write(" << MakeTypeWrittenPtrVarName(def) << ");")
         }
         else

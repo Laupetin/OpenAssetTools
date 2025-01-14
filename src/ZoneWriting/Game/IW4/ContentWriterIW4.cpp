@@ -38,12 +38,13 @@
 #include "Writing/WritingException.h"
 
 #include <cassert>
-#include <sstream>
+#include <format>
 
 using namespace IW4;
 
-ContentWriter::ContentWriter()
-    : varXAssetList(nullptr),
+ContentWriter::ContentWriter(const Zone& zone)
+    : ContentWriterBase(zone),
+      varXAssetList(nullptr),
       varXAsset(nullptr),
       varScriptStringList(nullptr)
 {
@@ -51,14 +52,14 @@ ContentWriter::ContentWriter()
 
 void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const
 {
-    if (!m_zone->m_script_strings.Empty())
+    if (!m_zone.m_script_strings.Empty())
     {
-        assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
-        xAssetList.stringList.count = static_cast<int>(m_zone->m_script_strings.Count());
-        xAssetList.stringList.strings = memory.Alloc<const char*>(m_zone->m_script_strings.Count());
+        assert(m_zone.m_script_strings.Count() <= SCR_STRING_MAX + 1);
+        xAssetList.stringList.count = static_cast<int>(m_zone.m_script_strings.Count());
+        xAssetList.stringList.strings = memory.Alloc<const char*>(m_zone.m_script_strings.Count());
 
-        for (auto i = 0u; i < m_zone->m_script_strings.Count(); i++)
-            xAssetList.stringList.strings[i] = m_zone->m_script_strings.CValue(i);
+        for (auto i = 0u; i < m_zone.m_script_strings.Count(); i++)
+            xAssetList.stringList.strings[i] = m_zone.m_script_strings.CValue(i);
     }
     else
     {
@@ -66,15 +67,15 @@ void ContentWriter::CreateXAssetList(XAssetList& xAssetList, MemoryManager& memo
         xAssetList.stringList.strings = nullptr;
     }
 
-    const auto assetCount = m_zone->m_pools->GetTotalAssetCount();
+    const auto assetCount = m_zone.m_pools->GetTotalAssetCount();
     if (assetCount > 0)
     {
         xAssetList.assetCount = static_cast<int>(assetCount);
         xAssetList.assets = memory.Alloc<XAsset>(assetCount);
 
-        const auto end = m_zone->m_pools->end();
+        const auto end = m_zone.m_pools->end();
         auto index = 0u;
-        for (auto i = m_zone->m_pools->begin(); i != end; ++i)
+        for (auto i = m_zone.m_pools->begin(); i != end; ++i)
         {
             auto& asset = xAssetList.assets[index++];
             asset.type = static_cast<XAssetType>((*i)->m_type);
@@ -112,7 +113,7 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 #define WRITE_ASSET(type_index, typeName, headerEntry)                                                                                                         \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, m_stream);                                                                             \
+        Writer_##typeName writer(varXAsset->header.headerEntry, m_zone, *m_stream);                                                                            \
         writer.Write(&varXAsset->header.headerEntry);                                                                                                          \
         break;                                                                                                                                                 \
     }
@@ -167,9 +168,7 @@ void ContentWriter::WriteXAsset(const bool atStreamStart)
 
     default:
     {
-        std::ostringstream str;
-        str << "Unsupported asset type: " << varXAsset->type << ".";
-        throw WritingException(str.str());
+        throw WritingException(std::format("Unsupported asset type: {}.", static_cast<unsigned>(varXAsset->type)));
     }
     }
 
@@ -191,10 +190,9 @@ void ContentWriter::WriteXAssetArray(const bool atStreamStart, const size_t coun
     }
 }
 
-void ContentWriter::WriteContent(Zone* zone, IZoneOutputStream* stream)
+void ContentWriter::WriteContent(IZoneOutputStream& stream)
 {
-    m_zone = zone;
-    m_stream = stream;
+    m_stream = &stream;
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 

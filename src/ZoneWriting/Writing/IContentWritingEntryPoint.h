@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Zone/Stream/IZoneOutputStream.h"
-#include "Zone/Zone.h"
 
 class IContentWritingEntryPoint
 {
@@ -13,5 +12,5 @@ public:
     IContentWritingEntryPoint& operator=(const IContentWritingEntryPoint& other) = default;
     IContentWritingEntryPoint& operator=(IContentWritingEntryPoint&& other) noexcept = default;
 
-    virtual void WriteContent(Zone* zone, IZoneOutputStream* stream) = 0;
+    virtual void WriteContent(IZoneOutputStream& stream) = 0;
 };

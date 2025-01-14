@@ -2,19 +2,19 @@
 
 #include <cassert>
 
-ContentWriterBase::ContentWriterBase()
-    : varXString(nullptr),
-      varXStringWritten(nullptr),
-      m_zone(nullptr),
-      m_stream(nullptr)
+ContentWriterBase::ContentWriterBase(const Zone& zone)
+    : m_zone(zone),
+      m_stream(nullptr),
+      varXString(nullptr),
+      varXStringWritten(nullptr)
 {
 }
 
-ContentWriterBase::ContentWriterBase(Zone* zone, IZoneOutputStream* stream)
-    : varXString(nullptr),
-      varXStringWritten(nullptr),
-      m_zone(zone),
-      m_stream(stream)
+ContentWriterBase::ContentWriterBase(const Zone& zone, IZoneOutputStream& stream)
+    : m_zone(zone),
+      m_stream(&stream),
+      varXString(nullptr),
+      varXStringWritten(nullptr)
 {
 }
 

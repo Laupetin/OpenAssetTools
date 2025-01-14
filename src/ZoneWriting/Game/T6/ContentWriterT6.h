@@ -7,10 +7,12 @@ namespace T6
 {
     class ContentWriter final : public ContentWriterBase, public IContentWritingEntryPoint
     {
-        XAssetList* varXAssetList;
-        XAsset* varXAsset;
-        ScriptStringList* varScriptStringList;
+    public:
+        explicit ContentWriter(const Zone& zone);
 
+        void WriteContent(IZoneOutputStream& stream) override;
+
+    private:
         void CreateXAssetList(XAssetList& xAssetList, MemoryManager& memory) const;
 
         void WriteScriptStringList(bool atStreamStart);
@@ -18,9 +20,8 @@ namespace T6
         void WriteXAsset(bool atStreamStart);
         void WriteXAssetArray(bool atStreamStart, size_t count);
 
-    public:
-        ContentWriter();
-
-        void WriteContent(Zone* zone, IZoneOutputStream* stream) override;
+        XAssetList* varXAssetList;
+        XAsset* varXAsset;
+        ScriptStringList* varScriptStringList;
     };
 } // namespace T6

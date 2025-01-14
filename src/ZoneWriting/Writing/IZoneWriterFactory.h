@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
 #include "Zone/Zone.h"
 #include "ZoneWriter.h"
 
@@ -14,7 +13,7 @@ public:
     IZoneWriterFactory& operator=(const IZoneWriterFactory& other) = default;
     IZoneWriterFactory& operator=(IZoneWriterFactory&& other) noexcept = default;
 
-    _NODISCARD virtual std::unique_ptr<ZoneWriter> CreateWriter(Zone* zone) const = 0;
+    [[nodiscard]] virtual std::unique_ptr<ZoneWriter> CreateWriter(const Zone& zone) const = 0;
 
     static const IZoneWriterFactory* GetZoneWriterFactoryForGame(GameId game);
 };
