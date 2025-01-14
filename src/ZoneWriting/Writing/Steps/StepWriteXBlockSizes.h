@@ -4,10 +4,11 @@
 
 class StepWriteXBlockSizes final : public IWritingStep
 {
-    Zone* m_zone;
-
 public:
-    explicit StepWriteXBlockSizes(Zone* zone);
+    explicit StepWriteXBlockSizes(const Zone& zone);
 
     void PerformStep(ZoneWriter* zoneWriter, IWritingStream* stream) override;
+
+private:
+    const Zone& m_zone;
 };

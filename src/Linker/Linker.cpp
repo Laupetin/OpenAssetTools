@@ -4,6 +4,7 @@
 #include "LinkerPaths.h"
 #include "ObjContainer/SoundBank/SoundBankWriter.h"
 #include "ObjWriting.h"
+#include "SearchPath/OutputPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
 #include "Utils/ObjFileStream.h"
 #include "Zone/AssetList/AssetList.h"
@@ -268,42 +269,41 @@ class LinkerImpl final : public Linker
         return zone_creator::CreateZoneForDefinition(zoneDefinition.m_game, context);
     }
 
-    bool WriteZoneToFile(const LinkerPathManager& paths, const fs::path& outDir, const std::string& projectName, Zone* zone) const
+    static bool WriteZoneToFile(IOutputPath& outPath, const Zone& zone)
     {
-        auto zoneFilePath(outDir);
-        zoneFilePath.append(std::format("{}.ff", zone->m_name));
-
-        fs::create_directories(outDir);
-
-        std::ofstream stream(zoneFilePath, std::fstream::out | std::fstream::binary);
-        if (!stream.is_open())
-            return false;
-
-        std::cout << std::format("Building zone \"{}\"\n", zoneFilePath.string());
-
-        if (!ZoneWriting::WriteZone(stream, zone))
+        const auto stream = outPath.Open(std::format("{}.ff", zone.m_name));
+        if (!stream)
         {
-            std::cerr << "Writing zone failed.\n";
-            stream.close();
+            std::cerr << std::format("Failed to open file for zone: {}\n", zone.m_name);
             return false;
         }
 
-        std::cout << std::format("Created zone \"{}\"\n", zoneFilePath.string());
+        std::cout << std::format("Building zone \"{}\"\n", zone.m_name);
 
-        stream.close();
+        if (!ZoneWriting::WriteZone(*stream, zone))
+        {
+            std::cerr << "Writing zone failed.\n";
+            return false;
+        }
+
+        std::cout << std::format("Created zone \"{}\"\n", zone.m_name);
+
         return true;
     }
 
     bool BuildFastFile(LinkerPathManager& paths, const std::string& projectName, const std::string& targetName, ZoneDefinition& zoneDefinition) const
     {
         const fs::path outDir(paths.m_linker_paths->BuildOutputFolderPath(projectName, zoneDefinition.m_game));
+
+        OutputPathFilesystem outputPath(outDir);
+
         const fs::path cacheDir(paths.m_linker_paths->BuildCacheFolderPath(projectName, zoneDefinition.m_game));
         SoundBankWriter::OutputPath = outDir;
 
         const auto zone = CreateZoneForDefinition(paths, outDir, cacheDir, targetName, zoneDefinition);
         auto result = zone != nullptr;
         if (zone)
-            result = WriteZoneToFile(paths, outDir, projectName, zone.get());
+            result = WriteZoneToFile(outputPath, *zone);
 
         return result;
     }

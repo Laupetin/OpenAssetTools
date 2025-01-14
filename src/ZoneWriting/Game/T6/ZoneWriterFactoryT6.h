@@ -8,9 +8,7 @@ namespace T6
 {
     class ZoneWriterFactory final : public IZoneWriterFactory
     {
-        class Impl;
-
     public:
-        _NODISCARD std::unique_ptr<ZoneWriter> CreateWriter(Zone* zone) const override;
+        [[nodiscard]] std::unique_ptr<ZoneWriter> CreateWriter(const Zone& zone) const override;
     };
 } // namespace T6

@@ -95,7 +95,7 @@ namespace
     }
 }; // namespace
 
-std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(Zone* zone) const
+std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(const Zone& zone) const
 {
     auto writer = std::make_unique<ZoneWriter>();
 
@@ -106,7 +106,7 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(Zone* zone) const
     SetupBlocks(*writer);
 
     auto contentInMemory = std::make_unique<StepWriteZoneContentToMemory>(
-        std::make_unique<ContentWriter>(), zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
+        std::make_unique<ContentWriter>(zone), zone, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK);
     auto* contentInMemoryPtr = contentInMemory.get();
     writer->AddWritingStep(std::move(contentInMemory));
 
@@ -116,7 +116,7 @@ std::unique_ptr<ZoneWriter> ZoneWriterFactory::CreateWriter(Zone* zone) const
     // Setup loading XChunks from the zone from this point on.
     ICapturedDataProvider* dataToSignProvider;
     OutputProcessorXChunks* xChunksProcessor;
-    AddXChunkProcessor(*writer, *zone, isEncrypted, &dataToSignProvider, &xChunksProcessor);
+    AddXChunkProcessor(*writer, zone, isEncrypted, &dataToSignProvider, &xChunksProcessor);
 
     // Start of the XFile struct
     // m_writer->AddWritingStep(std::make_unique<StepSkipBytes>(8)); // Skip size and externalSize fields since they are not interesting for us

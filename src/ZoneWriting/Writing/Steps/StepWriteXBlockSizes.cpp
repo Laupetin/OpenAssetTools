@@ -1,6 +1,6 @@
 #include "StepWriteXBlockSizes.h"
 
-StepWriteXBlockSizes::StepWriteXBlockSizes(Zone* zone)
+StepWriteXBlockSizes::StepWriteXBlockSizes(const Zone& zone)
     : m_zone(zone)
 {
 }

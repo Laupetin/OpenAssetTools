@@ -3,9 +3,9 @@
 #include "Zone/Stream/Impl/InMemoryZoneOutputStream.h"
 
 StepWriteZoneContentToMemory::StepWriteZoneContentToMemory(std::unique_ptr<IContentWritingEntryPoint> entryPoint,
-                                                           Zone* zone,
-                                                           int offsetBlockBitCount,
-                                                           block_t insertBlock)
+                                                           const Zone& zone,
+                                                           const int offsetBlockBitCount,
+                                                           const block_t insertBlock)
     : m_content_loader(std::move(entryPoint)),
       m_zone_data(std::make_unique<InMemoryZoneData>()),
       m_zone(zone),
@@ -17,11 +17,12 @@ StepWriteZoneContentToMemory::StepWriteZoneContentToMemory(std::unique_ptr<ICont
 void StepWriteZoneContentToMemory::PerformStep(ZoneWriter* zoneWriter, IWritingStream* stream)
 {
     std::vector<XBlock*> blocks;
+    blocks.reserve(zoneWriter->m_blocks.size());
     for (const auto& block : zoneWriter->m_blocks)
-        blocks.push_back(block.get());
+        blocks.emplace_back(block.get());
 
     const auto zoneOutputStream = std::make_unique<InMemoryZoneOutputStream>(m_zone_data.get(), std::move(blocks), m_offset_block_bit_count, m_insert_block);
-    m_content_loader->WriteContent(m_zone, zoneOutputStream.get());
+    m_content_loader->WriteContent(*zoneOutputStream);
 }
 
 InMemoryZoneData* StepWriteZoneContentToMemory::GetData() const
