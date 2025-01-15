@@ -184,7 +184,11 @@ namespace dds
             m_width = header.dwWidth;
             m_height = header.dwHeight;
             m_depth = header.dwDepth;
-            m_has_mip_maps = (header.dwCaps & DDSCAPS_MIPMAP) != 0 || header.dwMipMapCount > 1;
+
+            // Best thing to do here would be to check (header.dwCaps & DDSCAPS_MIPMAP) != 0 but some tools just create bad files
+            // I encountered both files that have the flag without them actually having mipmaps (mipMapCount == 1)
+            // and also files that have mipMapCount > 1 but not the flag
+            m_has_mip_maps = header.dwMipMapCount > 1;
 
             if (header.dwCaps2 & DDSCAPS2_CUBEMAP)
                 m_texture_type = TextureType::T_CUBE;
