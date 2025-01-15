@@ -21,7 +21,9 @@ uint8_t* AbstractSalsa20Processor::GetHashBlock(const int streamNumber) const
 
 void AbstractSalsa20Processor::InitStreams(const std::string& zoneName, const uint8_t* salsa20Key, const size_t keySize) const
 {
-    const auto zoneNameLength = zoneName.length();
+    // Original buffer must have been 32 bytes because the zoneName can at most be 31 characters be long before being cut off
+    const auto zoneNameLength = std::min(zoneName.length(), 31u);
+
     const size_t blockHashBufferSize = BLOCK_HASHES_COUNT * m_stream_count * SHA1_HASH_SIZE;
 
     assert(blockHashBufferSize % 4 == 0);

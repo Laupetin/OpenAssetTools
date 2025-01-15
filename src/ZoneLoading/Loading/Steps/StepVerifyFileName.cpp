@@ -5,12 +5,11 @@
 #include <sstream>
 
 StepVerifyFileName::StepVerifyFileName(std::string fileName, const size_t fileNameBufferSize)
+    : m_expected_file_name(std::move(fileName)),
+      m_file_name_buffer_size(fileNameBufferSize)
 {
-    m_file_name = std::move(fileName);
-    m_file_name_buffer_size = fileNameBufferSize;
-
-    if (m_file_name.length() > m_file_name_buffer_size)
-        m_file_name.erase(m_file_name_buffer_size);
+    if (m_expected_file_name.length() > (m_file_name_buffer_size - 1))
+        m_expected_file_name.erase(m_file_name_buffer_size - 1);
 }
 
 void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
@@ -42,6 +41,6 @@ void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* str
 
     std::string originalFileName = originalFilenameStream.str();
 
-    if (originalFileName != m_file_name)
-        throw InvalidFileNameException(m_file_name, originalFileName);
+    if (originalFileName != m_expected_file_name)
+        throw InvalidFileNameException(m_expected_file_name, originalFileName);
 }
