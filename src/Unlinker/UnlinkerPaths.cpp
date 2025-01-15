@@ -25,6 +25,23 @@ bool UnlinkerPaths::LoadUserPaths(const UnlinkerArgs& args)
         auto searchPathName = absolutePath.string();
         m_user_paths.CommitSearchPath(std::make_unique<SearchPathFilesystem>(searchPathName));
         m_specified_user_paths.emplace(std::move(searchPathName));
+
+        std::filesystem::directory_iterator iterator(absolutePath);
+        const auto end = fs::end(iterator);
+        for (auto i = fs::begin(iterator); i != end; ++i)
+        {
+            if (!i->is_regular_file())
+                continue;
+
+            auto extension = i->path().extension().string();
+            utils::MakeStringLowerCase(extension);
+            if (extension == ".iwd")
+            {
+                auto iwd = iwd::LoadFromFile(i->path().string());
+                if (iwd)
+                    m_user_paths.CommitSearchPath(std::move(iwd));
+            }
+        }
     }
 
     std::cout << std::format("{} SearchPaths{}\n", m_specified_user_paths.size(), !m_specified_user_paths.empty() ? ":" : "");
