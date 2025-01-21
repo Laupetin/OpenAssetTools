@@ -54,6 +54,8 @@ public:
     XAssetInfoGeneric& operator=(const XAssetInfoGeneric& other) = default;
     XAssetInfoGeneric& operator=(XAssetInfoGeneric&& other) noexcept = default;
 
+    [[nodiscard]] bool IsReference() const;
+
     static std::string NormalizeAssetName(std::string input);
 
     asset_type_t m_type;

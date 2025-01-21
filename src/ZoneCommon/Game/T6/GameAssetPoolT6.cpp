@@ -1,225 +1,136 @@
 #include "GameAssetPoolT6.h"
 
 #include "Pool/AssetPoolDynamic.h"
-#include "Pool/AssetPoolStatic.h"
 
 #include <cassert>
 #include <type_traits>
 
 using namespace T6;
 
-const char* GameAssetPoolT6::ASSET_TYPE_NAMES[]{
-    "xmodelpieces",
-    "physpreset",
-    "physconstraints",
-    "destructibledef",
-    "xanim",
-    "xmodel",
-    "material",
-    "techniqueset",
-    "image",
-    "soundbank",
-    "soundpatch",
-    "clipmap",
-    "clipmap",
-    "comworld",
-    "gameworldsp",
-    "gameworldmp",
-    "mapents",
-    "gfxworld",
-    "gfxlightdef",
-    "uimap",
-    "font",
-    "fonticon",
-    "menulist",
-    "menu",
-    "localize",
-    "weapon",
-    "weapondef",
-    "weaponvariant",
-    "weaponfull",
-    "attachment",
-    "attachmentunique",
-    "camo",
-    "snddriverglobals",
-    "fx",
-    "fximpacttable",
-    "aitype",
-    "mptype",
-    "mpbody",
-    "mphead",
-    "character",
-    "xmodelalias",
-    "rawfile",
-    "stringtable",
-    "leaderboard",
-    "xglobals",
-    "ddl",
-    "glasses",
-    "emblemset",
-    "script",
-    "keyvaluepairs",
-    "vehicle",
-    "memoryblock",
-    "addonmapents",
-    "tracer",
-    "skinnedverts",
-    "qdb",
-    "slug",
-    "footsteptable",
-    "footstepfxtable",
-    "zbarrier",
-};
+namespace
+{
+    constexpr const char* ASSET_TYPE_NAMES[]{
+        "xmodelpieces",
+        "physpreset",
+        "physconstraints",
+        "destructibledef",
+        "xanim",
+        "xmodel",
+        "material",
+        "techniqueset",
+        "image",
+        "soundbank",
+        "soundpatch",
+        "clipmap",
+        "clipmap",
+        "comworld",
+        "gameworldsp",
+        "gameworldmp",
+        "mapents",
+        "gfxworld",
+        "gfxlightdef",
+        "uimap",
+        "font",
+        "fonticon",
+        "menulist",
+        "menu",
+        "localize",
+        "weapon",
+        "weapondef",
+        "weaponvariant",
+        "weaponfull",
+        "attachment",
+        "attachmentunique",
+        "camo",
+        "snddriverglobals",
+        "fx",
+        "fximpacttable",
+        "aitype",
+        "mptype",
+        "mpbody",
+        "mphead",
+        "character",
+        "xmodelalias",
+        "rawfile",
+        "stringtable",
+        "leaderboard",
+        "xglobals",
+        "ddl",
+        "glasses",
+        "emblemset",
+        "script",
+        "keyvaluepairs",
+        "vehicle",
+        "memoryblock",
+        "addonmapents",
+        "tracer",
+        "skinnedverts",
+        "qdb",
+        "slug",
+        "footsteptable",
+        "footstepfxtable",
+        "zbarrier",
+    };
+} // namespace
 
-GameAssetPoolT6::GameAssetPoolT6(Zone* zone, const int priority)
+GameAssetPoolT6::GameAssetPoolT6(Zone* zone, const zone_priority_t priority)
     : ZoneAssetPools(zone),
       m_priority(priority)
 {
-    assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
-}
+    static_assert(std::extent_v<decltype(ASSET_TYPE_NAMES)> == ASSET_TYPE_COUNT);
 
-void GameAssetPoolT6::InitPoolStatic(const asset_type_t type, const size_t capacity)
-{
-#define CASE_INIT_POOL_STATIC(assetType, poolName)                                                                                                             \
-    case assetType:                                                                                                                                            \
-    {                                                                                                                                                          \
-        if ((poolName) == nullptr && capacity > 0)                                                                                                             \
-        {                                                                                                                                                      \
-            (poolName) = std::make_unique<AssetPoolStatic<decltype(poolName)::element_type::type>>(capacity, m_priority, (assetType));                         \
-        }                                                                                                                                                      \
-        break;                                                                                                                                                 \
-    }
+#define INIT_POOL(poolName) (poolName) = std::make_unique<AssetPoolDynamic<decltype(poolName)::element_type::type>>(m_priority)
 
-    switch (type)
-    {
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_PHYSPRESET, m_phys_preset)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_PHYSCONSTRAINTS, m_phys_constraints)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_DESTRUCTIBLEDEF, m_destructible_def)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_XANIMPARTS, m_xanim_parts)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_XMODEL, m_xmodel)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_MATERIAL, m_material)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_TECHNIQUE_SET, m_technique_set)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_IMAGE, m_image)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_SOUND, m_sound_bank)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_SOUND_PATCH, m_sound_patch)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_CLIPMAP, m_clip_map)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_CLIPMAP_PVS, m_clip_map)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_COMWORLD, m_com_world)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_GAMEWORLD_SP, m_game_world_sp)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_GAMEWORLD_MP, m_game_world_mp)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_MAP_ENTS, m_map_ents)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_GFXWORLD, m_gfx_world)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_LIGHT_DEF, m_gfx_light_def)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_FONT, m_font)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_FONTICON, m_font_icon)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_MENULIST, m_menu_list)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_MENU, m_menu_def)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_LOCALIZE_ENTRY, m_localize)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_WEAPON, m_weapon)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_ATTACHMENT, m_attachment)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_ATTACHMENT_UNIQUE, m_attachment_unique)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_WEAPON_CAMO, m_camo)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_FX, m_fx)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_RAWFILE, m_raw_file)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_STRINGTABLE, m_string_table)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_LEADERBOARD, m_leaderboard)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_XGLOBALS, m_xglobals)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_DDL, m_ddl)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_GLASSES, m_glasses)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_EMBLEMSET, m_emblem_set)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_SCRIPTPARSETREE, m_script)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_KEYVALUEPAIRS, m_key_value_pairs)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_VEHICLEDEF, m_vehicle)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_MEMORYBLOCK, m_memory_block)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_TRACER, m_tracer)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_SKINNEDVERTS, m_skinned_verts)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_QDB, m_qdb)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_SLUG, m_slug)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_FOOTSTEP_TABLE, m_footstep_table)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_FOOTSTEPFX_TABLE, m_footstep_fx_table)
-        CASE_INIT_POOL_STATIC(ASSET_TYPE_ZBARRIER, m_zbarrier)
+    INIT_POOL(m_phys_preset);
+    INIT_POOL(m_phys_constraints);
+    INIT_POOL(m_destructible_def);
+    INIT_POOL(m_xanim_parts);
+    INIT_POOL(m_xmodel);
+    INIT_POOL(m_material);
+    INIT_POOL(m_technique_set);
+    INIT_POOL(m_image);
+    INIT_POOL(m_sound_bank);
+    INIT_POOL(m_sound_patch);
+    INIT_POOL(m_clip_map);
+    INIT_POOL(m_com_world);
+    INIT_POOL(m_game_world_sp);
+    INIT_POOL(m_game_world_mp);
+    INIT_POOL(m_map_ents);
+    INIT_POOL(m_gfx_world);
+    INIT_POOL(m_gfx_light_def);
+    INIT_POOL(m_font);
+    INIT_POOL(m_font_icon);
+    INIT_POOL(m_menu_list);
+    INIT_POOL(m_menu_def);
+    INIT_POOL(m_localize);
+    INIT_POOL(m_weapon);
+    INIT_POOL(m_attachment);
+    INIT_POOL(m_attachment_unique);
+    INIT_POOL(m_camo);
+    INIT_POOL(m_snd_driver_globals);
+    INIT_POOL(m_fx);
+    INIT_POOL(m_fx_impact_table);
+    INIT_POOL(m_raw_file);
+    INIT_POOL(m_string_table);
+    INIT_POOL(m_leaderboard);
+    INIT_POOL(m_xglobals);
+    INIT_POOL(m_ddl);
+    INIT_POOL(m_glasses);
+    INIT_POOL(m_emblem_set);
+    INIT_POOL(m_script);
+    INIT_POOL(m_key_value_pairs);
+    INIT_POOL(m_vehicle);
+    INIT_POOL(m_memory_block);
+    INIT_POOL(m_addon_map_ents);
+    INIT_POOL(m_tracer);
+    INIT_POOL(m_skinned_verts);
+    INIT_POOL(m_qdb);
+    INIT_POOL(m_slug);
+    INIT_POOL(m_footstep_table);
+    INIT_POOL(m_footstep_fx_table);
+    INIT_POOL(m_zbarrier);
 
-    default:
-        assert(type >= 0 && type < ASSET_TYPE_COUNT);
-        break;
-    }
-
-#undef CASE_INIT_POOL_STATIC
-}
-
-void GameAssetPoolT6::InitPoolDynamic(const asset_type_t type)
-{
-#define CASE_INIT_POOL_DYNAMIC(assetType, poolName)                                                                                                            \
-    case assetType:                                                                                                                                            \
-    {                                                                                                                                                          \
-        if ((poolName) == nullptr)                                                                                                                             \
-        {                                                                                                                                                      \
-            (poolName) = std::make_unique<AssetPoolDynamic<decltype(poolName)::element_type::type>>(m_priority, (assetType));                                  \
-        }                                                                                                                                                      \
-        break;                                                                                                                                                 \
-    }
-
-    switch (type)
-    {
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PHYSPRESET, m_phys_preset)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_PHYSCONSTRAINTS, m_phys_constraints)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_DESTRUCTIBLEDEF, m_destructible_def)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XANIMPARTS, m_xanim_parts)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XMODEL, m_xmodel)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MATERIAL, m_material)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TECHNIQUE_SET, m_technique_set)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMAGE, m_image)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SOUND, m_sound_bank)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SOUND_PATCH, m_sound_patch)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_CLIPMAP, m_clip_map)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_CLIPMAP_PVS, m_clip_map)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_COMWORLD, m_com_world)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_GAMEWORLD_SP, m_game_world_sp)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_GAMEWORLD_MP, m_game_world_mp)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MAP_ENTS, m_map_ents)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_GFXWORLD, m_gfx_world)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LIGHT_DEF, m_gfx_light_def)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FONT, m_font)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FONTICON, m_font_icon)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MENULIST, m_menu_list)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MENU, m_menu_def)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LOCALIZE_ENTRY, m_localize)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_WEAPON, m_weapon)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_ATTACHMENT, m_attachment)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_ATTACHMENT_UNIQUE, m_attachment_unique)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_WEAPON_CAMO, m_camo)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SNDDRIVER_GLOBALS, m_snd_driver_globals)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FX, m_fx)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_IMPACT_FX, m_fx_impact_table)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_RAWFILE, m_raw_file)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_STRINGTABLE, m_string_table)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_LEADERBOARD, m_leaderboard)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_XGLOBALS, m_xglobals)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_DDL, m_ddl)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_GLASSES, m_glasses)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_EMBLEMSET, m_emblem_set)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SCRIPTPARSETREE, m_script)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_KEYVALUEPAIRS, m_key_value_pairs)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_VEHICLEDEF, m_vehicle)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_MEMORYBLOCK, m_memory_block)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_ADDON_MAP_ENTS, m_addon_map_ents)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_TRACER, m_tracer)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SKINNEDVERTS, m_skinned_verts)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_QDB, m_qdb)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_SLUG, m_slug)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FOOTSTEP_TABLE, m_footstep_table)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_FOOTSTEPFX_TABLE, m_footstep_fx_table)
-        CASE_INIT_POOL_DYNAMIC(ASSET_TYPE_ZBARRIER, m_zbarrier)
-
-    default:
-        assert(type >= 0 && type < ASSET_TYPE_COUNT);
-        break;
-    }
-
-#undef CASE_INIT_POOL_DYNAMIC
+#undef INIT_POOL
 }
 
 XAssetInfoGeneric* GameAssetPoolT6::AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo)
@@ -227,7 +138,7 @@ XAssetInfoGeneric* GameAssetPoolT6::AddAssetToPool(std::unique_ptr<XAssetInfoGen
 #define CASE_ADD_TO_POOL(assetType, poolName)                                                                                                                  \
     case assetType:                                                                                                                                            \
     {                                                                                                                                                          \
-        assert((poolName) != nullptr);                                                                                                                         \
+        assert(poolName);                                                                                                                                      \
         return (poolName)->AddAsset(std::unique_ptr<XAssetInfo<decltype(poolName)::element_type::type>>(                                                       \
             static_cast<XAssetInfo<decltype(poolName)::element_type::type>*>(xAssetInfo.release())));                                                          \
     }
@@ -299,7 +210,7 @@ XAssetInfoGeneric* GameAssetPoolT6::GetAsset(const asset_type_t type, const std:
 #define CASE_GET_ASSET(assetType, poolName)                                                                                                                    \
     case assetType:                                                                                                                                            \
     {                                                                                                                                                          \
-        if ((poolName) != nullptr)                                                                                                                             \
+        if (poolName)                                                                                                                                          \
             return (poolName)->GetAsset(name);                                                                                                                 \
         break;                                                                                                                                                 \
     }

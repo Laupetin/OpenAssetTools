@@ -9,13 +9,6 @@
 
 class GameAssetPoolIW3 final : public ZoneAssetPools
 {
-    int m_priority;
-
-    static const char* ASSET_TYPE_NAMES[];
-
-protected:
-    XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
-
 public:
     std::unique_ptr<AssetPool<IW3::PhysPreset>> m_phys_preset;
     std::unique_ptr<AssetPool<IW3::XAnimParts>> m_xanim_parts;
@@ -46,17 +39,20 @@ public:
     std::unique_ptr<AssetPool<IW3::RawFile>> m_raw_file;
     std::unique_ptr<AssetPool<IW3::StringTable>> m_string_table;
 
-    GameAssetPoolIW3(Zone* zone, int priority);
+    GameAssetPoolIW3(Zone* zone, zone_priority_t priority);
     ~GameAssetPoolIW3() override = default;
 
-    void InitPoolStatic(asset_type_t type, size_t capacity) override;
-    void InitPoolDynamic(asset_type_t type) override;
-
-    _NODISCARD XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const override;
+    [[nodiscard]] XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const override;
 
     static std::optional<const char*> AssetTypeNameByType(asset_type_t assetType);
-    _NODISCARD std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
+    [[nodiscard]] std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
 
     static asset_type_t AssetTypeCount();
-    _NODISCARD asset_type_t GetAssetTypeCount() const override;
+    [[nodiscard]] asset_type_t GetAssetTypeCount() const override;
+
+protected:
+    XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
+
+private:
+    zone_priority_t m_priority;
 };

@@ -93,6 +93,11 @@ XAssetInfoGeneric::XAssetInfoGeneric(const asset_type_t type,
 {
 }
 
+bool XAssetInfoGeneric::IsReference() const
+{
+    return !m_name.empty() && m_name[0] == ',';
+}
+
 std::string XAssetInfoGeneric::NormalizeAssetName(std::string input)
 {
     utils::MakeStringLowerCase(input);
