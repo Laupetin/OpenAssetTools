@@ -89,7 +89,7 @@ public:
                std::vector<scr_string_t> usedScriptStrings,
                std::vector<IndirectAssetReference> indirectAssetReferences)
         : XAssetInfoGeneric(
-              type, std::move(name), static_cast<void*>(ptr), std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences))
+            type, std::move(name), static_cast<void*>(ptr), std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences))
     {
     }
 
@@ -101,7 +101,7 @@ public:
                std::vector<IndirectAssetReference> indirectAssetReferences,
                Zone* zone)
         : XAssetInfoGeneric(
-              type, std::move(name), static_cast<void*>(ptr), std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences), zone)
+            type, std::move(name), static_cast<void*>(ptr), std::move(dependencies), std::move(usedScriptStrings), std::move(indirectAssetReferences), zone)
     {
     }
 
