@@ -9,9 +9,6 @@ Zone::Zone(std::string name, const zone_priority_t priority, IGame* game)
       m_game(game),
       m_pools(ZoneAssetPools::CreateForGame(game->GetId(), this, priority))
 {
-    const auto assetTypeCount = m_pools->GetAssetTypeCount();
-    for (auto i = 0; i < assetTypeCount; i++)
-        m_pools->InitPoolDynamic(i);
 }
 
 Zone::~Zone()

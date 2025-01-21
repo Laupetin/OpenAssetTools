@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AssetPool.h"
+#include "Zone/ZoneTypes.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,7 +15,7 @@ template<typename T> class GlobalAssetPool
     struct LinkedAssetPool
     {
         AssetPool<T>* m_asset_pool;
-        int m_priority;
+        zone_priority_t m_priority;
     };
 
     struct GameAssetPoolEntry
@@ -92,7 +93,7 @@ template<typename T> class GlobalAssetPool
     }
 
 public:
-    static void LinkAssetPool(AssetPool<T>* assetPool, const int priority)
+    static void LinkAssetPool(AssetPool<T>* assetPool, const zone_priority_t priority)
     {
         auto newLink = std::make_unique<LinkedAssetPool>();
         newLink->m_asset_pool = assetPool;

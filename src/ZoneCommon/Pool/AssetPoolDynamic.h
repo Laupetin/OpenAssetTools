@@ -4,20 +4,18 @@
 #include "GlobalAssetPool.h"
 #include "XAssetInfo.h"
 
-#include <cstring>
+#include <vector>
 
 template<typename T> class AssetPoolDynamic final : public AssetPool<T>
 {
     using AssetPool<T>::m_asset_lookup;
 
     std::vector<std::unique_ptr<XAssetInfo<T>>> m_assets;
-    asset_type_t m_type;
 
 public:
-    AssetPoolDynamic(const int priority, const asset_type_t type)
+    explicit AssetPoolDynamic(const zone_priority_t priority)
     {
         GlobalAssetPool<T>::LinkAssetPool(this, priority);
-        m_type = type;
     }
 
     AssetPoolDynamic(AssetPoolDynamic<T>&) = delete;

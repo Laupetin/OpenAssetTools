@@ -8,14 +8,6 @@
 
 class GameAssetPoolT6 final : public ZoneAssetPools
 {
-    int m_priority;
-
-    static constexpr const char* ASSET_TYPE_INVALID = "invalid_asset_type";
-    static const char* ASSET_TYPE_NAMES[];
-
-protected:
-    XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
-
 public:
     std::unique_ptr<AssetPool<T6::PhysPreset>> m_phys_preset;
     std::unique_ptr<AssetPool<T6::PhysConstraints>> m_phys_constraints;
@@ -66,17 +58,20 @@ public:
     std::unique_ptr<AssetPool<T6::FootstepFXTableDef>> m_footstep_fx_table;
     std::unique_ptr<AssetPool<T6::ZBarrierDef>> m_zbarrier;
 
-    GameAssetPoolT6(Zone* zone, int priority);
+    GameAssetPoolT6(Zone* zone, zone_priority_t priority);
     ~GameAssetPoolT6() override = default;
 
-    void InitPoolStatic(asset_type_t type, size_t capacity) override;
-    void InitPoolDynamic(asset_type_t type) override;
-
-    _NODISCARD XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const override;
+    [[nodiscard]] XAssetInfoGeneric* GetAsset(asset_type_t type, const std::string& name) const override;
 
     static std::optional<const char*> AssetTypeNameByType(asset_type_t assetType);
-    _NODISCARD std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
+    [[nodiscard]] std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const override;
 
     static asset_type_t AssetTypeCount();
-    _NODISCARD asset_type_t GetAssetTypeCount() const override;
+    [[nodiscard]] asset_type_t GetAssetTypeCount() const override;
+
+protected:
+    XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) override;
+
+private:
+    zone_priority_t m_priority;
 };

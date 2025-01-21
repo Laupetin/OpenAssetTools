@@ -126,11 +126,6 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     if (atStreamStart)
         m_stream->Load<XAsset>(varXAsset, count);
 
-    for (asset_type_t assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
-    {
-        m_zone->m_pools->InitPoolDynamic(assetType);
-    }
-
     for (size_t index = 0; index < count; index++)
     {
         LoadXAsset(false);

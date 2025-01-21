@@ -16,12 +16,6 @@ class XAssetInfoGeneric;
 
 class ZoneAssetPools
 {
-protected:
-    Zone* m_zone;
-    std::vector<XAssetInfoGeneric*> m_assets_in_order;
-
-    virtual XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) = 0;
-
 public:
     using iterator = std::vector<XAssetInfoGeneric*>::const_iterator;
 
@@ -45,13 +39,16 @@ public:
     _NODISCARD virtual asset_type_t GetAssetTypeCount() const = 0;
     _NODISCARD virtual std::optional<const char*> GetAssetTypeName(asset_type_t assetType) const = 0;
 
-    virtual void InitPoolStatic(asset_type_t type, size_t capacity) = 0;
-    virtual void InitPoolDynamic(asset_type_t type) = 0;
-
     _NODISCARD size_t GetTotalAssetCount() const;
 
     _NODISCARD iterator begin() const;
     _NODISCARD iterator end() const;
 
     static std::unique_ptr<ZoneAssetPools> CreateForGame(GameId game, Zone* zone, zone_priority_t priority);
+
+protected:
+    virtual XAssetInfoGeneric* AddAssetToPool(std::unique_ptr<XAssetInfoGeneric> xAssetInfo) = 0;
+
+    Zone* m_zone;
+    std::vector<XAssetInfoGeneric*> m_assets_in_order;
 };
