@@ -262,7 +262,7 @@ namespace
 
             for (const auto& attachmentName : valueArray)
             {
-                auto* attachmentAssetInfo = m_context.LoadDependency<AssetAttachment>(attachmentName);
+                auto* attachmentAssetInfo = m_context.ForceLoadDependency<AssetAttachment>(attachmentName);
                 if (attachmentAssetInfo == nullptr)
                 {
                     std::cerr << std::format("Failed to load attachment asset \"{}\"\n", attachmentName);
@@ -314,7 +314,7 @@ namespace
 
             for (const auto& attachmentUniqueName : valueArray)
             {
-                auto* attachmentUniqueAssetInfo = m_context.LoadDependency<AssetAttachmentUnique>(attachmentUniqueName);
+                auto* attachmentUniqueAssetInfo = m_context.ForceLoadDependency<AssetAttachmentUnique>(attachmentUniqueName);
                 if (attachmentUniqueAssetInfo == nullptr)
                 {
                     std::cerr << std::format("Failed to load attachment unique asset \"{}\"\n", attachmentUniqueName);
