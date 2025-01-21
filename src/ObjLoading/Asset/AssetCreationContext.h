@@ -65,12 +65,31 @@ public:
 
     IndirectAssetReference LoadIndirectAssetReferenceGeneric(asset_type_t assetType, const std::string& assetName);
 
+    /**
+     * \brief Loads an asset dependency like \c LoadDependency but guarantees that the returned asset is not a reference.
+     * If normally a reference would be created, the actual asset is loaded but a reference is added to the zone.
+     * \tparam AssetType The type of the asset
+     * \param assetName The name of the asset
+     * \return XAssetInfo of the asset that is guaranteed to not be a reference or \c nullptr
+     */
+    template<typename AssetType> XAssetInfo<typename AssetType::Type>* ForceLoadDependency(const std::string& assetName)
+    {
+        static_assert(std::is_base_of_v<IAssetBase, AssetType>);
+
+        return static_cast<XAssetInfo<typename AssetType::Type>*>(ForceLoadDependencyGeneric(AssetType::EnumEntry, assetName));
+    }
+
+    XAssetInfoGeneric* ForceLoadDependencyGeneric(asset_type_t assetType, const std::string& assetName);
+
 private:
     [[nodiscard]] XAssetInfoGeneric* LoadDefaultAssetDependency(asset_type_t assetType, const std::string& assetName);
 
     Zone& m_zone;
+    std::unique_ptr<ZoneAssetPools> m_forced_asset_pools;
     const AssetCreatorCollection* m_creators;
     const IgnoredAssetLookup* m_ignored_asset_lookup;
+
+    unsigned m_forced_load_depth;
 };
 
 #include "AssetCreatorCollection.h"

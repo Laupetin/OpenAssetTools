@@ -65,8 +65,10 @@ std::unique_ptr<XAssetInfoGeneric> GenericAssetRegistration::CreateXAssetInfo()
 AssetCreationContext::AssetCreationContext(Zone& zone, const AssetCreatorCollection* creators, const IgnoredAssetLookup* ignoredAssetLookup)
     : ZoneAssetCreationStateContainer(zone),
       m_zone(zone),
+      m_forced_asset_pools(ZoneAssetPools::CreateForGame(zone.m_game->GetId(), &zone, zone.m_priority)),
       m_creators(creators),
-      m_ignored_asset_lookup(ignoredAssetLookup)
+      m_ignored_asset_lookup(ignoredAssetLookup),
+      m_forced_load_depth(0u)
 {
 }
 
@@ -78,10 +80,14 @@ XAssetInfoGeneric* AssetCreationContext::AddAssetGeneric(GenericAssetRegistratio
     const auto assetType = xAssetInfo->m_type;
     const auto* pAssetName = xAssetInfo->m_name.c_str();
 
-    auto* addedAsset = m_zone.m_pools->AddAsset(std::move(xAssetInfo));
+    XAssetInfoGeneric* addedAsset;
+    if (m_forced_load_depth > 0)
+        addedAsset = m_forced_asset_pools->AddAsset(std::move(xAssetInfo));
+    else
+        addedAsset = m_zone.m_pools->AddAsset(std::move(xAssetInfo));
+
     if (addedAsset == nullptr)
         std::cerr << std::format("Failed to add asset of type \"{}\" to pool: \"{}\"\n", *m_zone.m_pools->GetAssetTypeName(assetType), pAssetName);
-
     return addedAsset;
 }
 
@@ -102,6 +108,16 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
     if (alreadyLoadedAsset)
         return alreadyLoadedAsset;
 
+    if (m_forced_load_depth > 0)
+    {
+        alreadyLoadedAsset = m_forced_asset_pools->GetAssetOrAssetReference(assetType, assetName);
+        if (alreadyLoadedAsset)
+            return alreadyLoadedAsset;
+
+        // If we are already force loading an asset we should not load its dependencies
+        return LoadDefaultAssetDependency(assetType, std::format(",{}", assetName));
+    }
+
     if (m_ignored_asset_lookup->IsAssetIgnored(assetType, assetName))
         return LoadDefaultAssetDependency(assetType, std::format(",{}", assetName));
 
@@ -121,9 +137,9 @@ XAssetInfoGeneric* AssetCreationContext::LoadDependencyGeneric(const asset_type_
     return nullptr;
 }
 
-IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(asset_type_t assetType, const std::string& assetName)
+IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(const asset_type_t assetType, const std::string& assetName)
 {
-    auto* alreadyLoadedAsset = m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
+    const auto* alreadyLoadedAsset = m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
     if (alreadyLoadedAsset)
         return IndirectAssetReference(assetType, assetName);
 
@@ -136,4 +152,45 @@ IndirectAssetReference AssetCreationContext::LoadIndirectAssetReferenceGeneric(a
         std::cerr << std::format("Could not load indirectly referenced asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
     }
     return IndirectAssetReference(assetType, assetName);
+}
+
+XAssetInfoGeneric* AssetCreationContext::ForceLoadDependencyGeneric(const asset_type_t assetType, const std::string& assetName)
+{
+    auto* alreadyLoadedAsset = m_zone.m_pools->GetAssetOrAssetReference(assetType, assetName);
+    if (alreadyLoadedAsset && !alreadyLoadedAsset->IsReference())
+        return alreadyLoadedAsset;
+    alreadyLoadedAsset = m_forced_asset_pools->GetAssetOrAssetReference(assetType, assetName);
+    if (alreadyLoadedAsset && !alreadyLoadedAsset->IsReference())
+        return alreadyLoadedAsset;
+
+    auto result = AssetCreationResult::NoAction();
+    if (m_ignored_asset_lookup->IsAssetIgnored(assetType, assetName))
+    {
+        // Load default asset to zone
+        if (!LoadDefaultAssetDependency(assetType, std::format(",{}", assetName)))
+            return nullptr;
+
+        ++m_forced_load_depth;
+
+        result = m_creators->CreateAsset(assetType, assetName, *this);
+
+        assert(m_forced_load_depth > 0);
+        m_forced_load_depth = std::min(m_forced_load_depth - 1u, 0u);
+    }
+    else
+        result = m_creators->CreateAsset(assetType, assetName, *this);
+
+    if (result.HasTakenAction())
+    {
+        if (!result.HasFailed())
+            return result.GetAssetInfo();
+
+        std::cerr << std::format("Could not load asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+    }
+    else
+    {
+        std::cerr << std::format("Missing asset \"{}\" of type \"{}\"\n", assetName, *m_zone.m_pools->GetAssetTypeName(assetType));
+    }
+
+    return nullptr;
 }
