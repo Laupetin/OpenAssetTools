@@ -32,7 +32,9 @@
 #include <cassert>
 #include <format>
 
-namespace GAME
+using namespace GAME;
+
+namespace
 {
     std::string GetFileNameForLod(const std::string& modelName, const unsigned lod, const std::string& extension)
     {
@@ -223,10 +225,10 @@ namespace GAME
             bone.globalOffset[1] = baseMat.trans.y;
             bone.globalOffset[2] = baseMat.trans.z;
             bone.globalRotation = {
-                baseMat.quat.x,
-                baseMat.quat.y,
-                baseMat.quat.z,
-                baseMat.quat.w,
+                .x = baseMat.quat.x,
+                .y = baseMat.quat.y,
+                .z = baseMat.quat.z,
+                .w = baseMat.quat.w,
             };
 
             if (boneNum < model->numRootBones)
@@ -234,7 +236,7 @@ namespace GAME
                 bone.localOffset[0] = 0;
                 bone.localOffset[1] = 0;
                 bone.localOffset[2] = 0;
-                bone.localRotation = {0, 0, 0, 1};
+                bone.localRotation = {.x = 0, .y = 0, .z = 0, .w = 1};
             }
             else
             {
@@ -245,10 +247,10 @@ namespace GAME
 
                 const auto& quat = model->quats[boneNum - model->numRootBones];
                 bone.localRotation = {
-                    QuatInt16::ToFloat(quat.v[0]),
-                    QuatInt16::ToFloat(quat.v[1]),
-                    QuatInt16::ToFloat(quat.v[2]),
-                    QuatInt16::ToFloat(quat.v[3]),
+                    .x = QuatInt16::ToFloat(quat.v[0]),
+                    .y = QuatInt16::ToFloat(quat.v[1]),
+                    .z = QuatInt16::ToFloat(quat.v[2]),
+                    .w = QuatInt16::ToFloat(quat.v[3]),
                 };
             }
 
@@ -390,8 +392,8 @@ namespace GAME
                 {
                     const auto& vertList = surface.vertList[vertListIndex];
                     const auto boneWeightOffset = weightOffset;
-
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{vertList.boneOffset / sizeof(DObjSkelMat), 1.0f};
+                    
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = vertList.boneOffset / sizeof(DObjSkelMat), .weight = 1.0f};
 
                     for (auto vertListVertexOffset = 0u; vertListVertexOffset < vertList.vertCount; vertListVertexOffset++)
                     {
@@ -409,7 +411,7 @@ namespace GAME
                 {
                     const auto boneWeightOffset = weightOffset;
                     const auto boneIndex0 = surface.vertInfo.vertsBlend[vertsBlendOffset + 0] / sizeof(DObjSkelMat);
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, 1.0f};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex0, .weight = 1.0f};
 
                     vertsBlendOffset += 1;
 
@@ -424,9 +426,9 @@ namespace GAME
                     const auto boneIndex1 = surface.vertInfo.vertsBlend[vertsBlendOffset + 1] / sizeof(DObjSkelMat);
                     const auto boneWeight1 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 2]);
                     const auto boneWeight0 = 1.0f - boneWeight1;
-
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, boneWeight0};
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex1, boneWeight1};
+                    
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex0, .weight = boneWeight0};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex1, .weight = boneWeight1};
 
                     vertsBlendOffset += 3;
 
@@ -443,10 +445,10 @@ namespace GAME
                     const auto boneIndex2 = surface.vertInfo.vertsBlend[vertsBlendOffset + 3] / sizeof(DObjSkelMat);
                     const auto boneWeight2 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 4]);
                     const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2;
-
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, boneWeight0};
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex1, boneWeight1};
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex2, boneWeight2};
+                    
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex0, .weight = boneWeight0};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex1, .weight = boneWeight1};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex2, .weight = boneWeight2};
 
                     vertsBlendOffset += 5;
 
@@ -465,11 +467,11 @@ namespace GAME
                     const auto boneIndex3 = surface.vertInfo.vertsBlend[vertsBlendOffset + 5] / sizeof(DObjSkelMat);
                     const auto boneWeight3 = BoneWeight16(surface.vertInfo.vertsBlend[vertsBlendOffset + 6]);
                     const auto boneWeight0 = 1.0f - boneWeight1 - boneWeight2 - boneWeight3;
-
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex0, boneWeight0};
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex1, boneWeight1};
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex2, boneWeight2};
-                    weightCollection.weights[weightOffset++] = XModelBoneWeight{boneIndex3, boneWeight3};
+                    
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex0, .weight = boneWeight0};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex1, .weight = boneWeight1};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex2, .weight = boneWeight2};
+                    weightCollection.weights[weightOffset++] = XModelBoneWeight{.boneIndex = boneIndex3, .weight = boneWeight3};
 
                     vertsBlendOffset += 7;
 
@@ -724,7 +726,10 @@ namespace GAME
         const JsonDumper dumper(context, *assetFile);
         dumper.Dump(asset->Asset());
     }
+} // namespace
 
+namespace GAME
+{
     void DumpXModel(AssetDumpingContext& context, XAssetInfo<XModel>* asset)
     {
         DumpXModelJson(context, asset);

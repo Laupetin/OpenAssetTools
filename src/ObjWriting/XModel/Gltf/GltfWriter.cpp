@@ -8,6 +8,7 @@
 #include <Eigen>
 #pragma warning(pop)
 
+#include <algorithm>
 #include <format>
 
 using namespace gltf;
@@ -41,13 +42,13 @@ namespace
 
             CreateJsonAsset(gltf.asset);
             CreateSkeletonNodes(gltf, xmodel);
-            CreateMeshNode(gltf, xmodel);
+            CreateMeshNodes(gltf, xmodel);
             CreateRootNode(gltf, xmodel);
             CreateMaterials(gltf, xmodel);
             CreateBufferViews(gltf, xmodel);
             CreateAccessors(gltf, xmodel);
             CreateSkin(gltf, xmodel);
-            CreateMesh(gltf, xmodel);
+            CreateMeshes(gltf, xmodel);
             CreateScene(gltf, xmodel);
             FillBufferData(gltf, xmodel, bufferData);
             CreateBuffer(gltf, xmodel, bufferData);
@@ -68,39 +69,44 @@ namespace
             asset.generator = GLTF_GENERATOR;
         }
 
-        void CreateMeshNode(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateMeshNodes(JsonRoot& gltf, const XModelCommon& xmodel)
         {
-            JsonNode meshNode;
-
-            if (!xmodel.m_name.empty())
-                meshNode.name = xmodel.m_name;
-
-            // We only have one mesh
-            meshNode.mesh = 0u;
-
-            // Only add skin if the model has bones
-            if (!xmodel.m_bones.empty())
-            {
-                // We only have one skin
-                meshNode.skin = 0u;
-            }
-
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
-            m_mesh_node = gltf.nodes->size();
+            m_first_mesh_node = gltf.nodes->size();
 
-            if (xmodel.m_bones.empty())
-                m_root_node = m_mesh_node;
+            auto meshIndex = 0u;
+            for (const auto& object : xmodel.m_objects)
+            {
+                JsonNode meshNode;
 
-            gltf.nodes->emplace_back(std::move(meshNode));
+                if (!object.name.empty())
+                    meshNode.name = object.name;
+
+                meshNode.mesh = meshIndex++;
+
+                // Only add skin if the model has bones
+                if (!xmodel.m_bones.empty())
+                {
+                    // We only have one skin
+                    meshNode.skin = 0u;
+                }
+
+                gltf.nodes->emplace_back(std::move(meshNode));
+            }
+
+            // If we only have one mesh and no bones we don't need a dedicated root node
+            if (xmodel.m_bones.empty() && xmodel.m_objects.size() == 1)
+                m_root_node = m_first_mesh_node;
         }
 
         void CreateRootNode(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             JsonNode rootNode;
 
-            if (xmodel.m_bones.empty())
+            // If we have at most one mesh and no bones we don't need a dedicated root node
+            if (xmodel.m_bones.empty() && xmodel.m_objects.size() <= 1)
                 return;
 
             if (!xmodel.m_name.empty())
@@ -110,29 +116,31 @@ namespace
                 gltf.nodes.emplace();
 
             rootNode.children.emplace();
-            rootNode.children->push_back(m_mesh_node);
+
+            const auto meshCount = xmodel.m_objects.size();
+            for (auto meshIndex = 0u; meshIndex < meshCount; meshIndex++)
+                rootNode.children->push_back(m_first_mesh_node + meshIndex);
+
             rootNode.children->push_back(m_first_bone_node);
 
             m_root_node = gltf.nodes->size();
             gltf.nodes->emplace_back(std::move(rootNode));
         }
 
-        void CreateMesh(JsonRoot& gltf, const XModelCommon& xmodel)
+        void CreateMeshes(JsonRoot& gltf, const XModelCommon& xmodel)
         {
             if (!gltf.meshes.has_value())
                 gltf.meshes.emplace();
-
-            JsonMesh mesh;
 
             const auto hasBoneWeightData = !xmodel.m_bone_weight_data.weights.empty();
 
             auto objectIndex = 0u;
             for (const auto& object : xmodel.m_objects)
             {
+                JsonMesh mesh;
                 JsonMeshPrimitives primitives;
 
-                if (object.materialIndex >= 0)
-                    primitives.material = static_cast<unsigned>(object.materialIndex);
+                primitives.material = object.materialIndex;
 
                 primitives.attributes.POSITION = m_position_accessor;
                 primitives.attributes.NORMAL = m_normal_accessor;
@@ -149,9 +157,8 @@ namespace
 
                 mesh.primitives.emplace_back(primitives);
                 objectIndex++;
+                gltf.meshes->emplace_back(std::move(mesh));
             }
-
-            gltf.meshes->emplace_back(std::move(mesh));
         }
 
         static void CreateMaterials(JsonRoot& gltf, const XModelCommon& xmodel)
@@ -466,18 +473,12 @@ namespace
                 vertex->coordinates[1] = commonVertex.coordinates[2];
                 vertex->coordinates[2] = -commonVertex.coordinates[1];
 
-                if (minPosition[0] > vertex->coordinates[0])
-                    minPosition[0] = vertex->coordinates[0];
-                if (minPosition[1] > vertex->coordinates[1])
-                    minPosition[1] = vertex->coordinates[1];
-                if (minPosition[2] > vertex->coordinates[2])
-                    minPosition[2] = vertex->coordinates[2];
-                if (maxPosition[0] < vertex->coordinates[0])
-                    maxPosition[0] = vertex->coordinates[0];
-                if (maxPosition[1] < vertex->coordinates[1])
-                    maxPosition[1] = vertex->coordinates[1];
-                if (maxPosition[2] < vertex->coordinates[2])
-                    maxPosition[2] = vertex->coordinates[2];
+                minPosition[0] = std::min(minPosition[0], vertex->coordinates[0]);
+                minPosition[1] = std::min(minPosition[1], vertex->coordinates[1]);
+                minPosition[2] = std::min(minPosition[2], vertex->coordinates[2]);
+                maxPosition[0] = std::max(maxPosition[0], vertex->coordinates[0]);
+                maxPosition[1] = std::max(maxPosition[1], vertex->coordinates[1]);
+                maxPosition[2] = std::max(maxPosition[2], vertex->coordinates[2]);
 
                 vertex->normal[0] = commonVertex.normal[0];
                 vertex->normal[1] = commonVertex.normal[2];
@@ -499,7 +500,7 @@ namespace
             {
                 assert(xmodel.m_vertex_bone_weights.size() == xmodel.m_vertices.size());
 
-                auto* joints = reinterpret_cast<uint8_t*>(&bufferData[currentBufferOffset]);
+                auto* joints = &bufferData[currentBufferOffset];
                 auto* weights = reinterpret_cast<float*>(&bufferData[currentBufferOffset + sizeof(uint8_t) * 4u * xmodel.m_vertex_bone_weights.size()]);
                 for (const auto& commonVertexWeights : xmodel.m_vertex_bone_weights)
                 {
@@ -610,7 +611,7 @@ namespace
             gltf.buffers->emplace_back(std::move(jsonBuffer));
         }
 
-        unsigned m_mesh_node = 0u;
+        unsigned m_first_mesh_node = 0u;
         unsigned m_root_node = 0u;
         unsigned m_first_bone_node = 0u;
         unsigned m_position_accessor = 0u;
