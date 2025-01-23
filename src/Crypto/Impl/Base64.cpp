@@ -32,7 +32,8 @@ namespace base64
 
     size_t DecodeBase64(const void* base64Data, const size_t inputLength, void* outputBuffer, const size_t outputBufferSize)
     {
-        unsigned long outLength = GetBase64DecodeOutputLength(inputLength);
+        unsigned long outLength = GetBase64DecodeOutputLength(base64Data, inputLength);
+        assert(outLength <= outputBufferSize);
         if (outLength > outputBufferSize)
             return 0u;
 
@@ -42,8 +43,28 @@ namespace base64
         return static_cast<size_t>(outLength);
     }
 
+    size_t GetBase64DecodeOutputLength(const void* base64Data, const size_t inputLength)
+    {
+        assert(base64Data);
+        assert(inputLength);
+
+        if (!base64Data || inputLength == 0u)
+            return 0u;
+
+        auto padding = 0u;
+        if (inputLength >= 1 && static_cast<const char*>(base64Data)[inputLength - 1] == '=')
+        {
+            if (inputLength >= 2 && static_cast<const char*>(base64Data)[inputLength - 2] == '=')
+                padding = 2u;
+            else
+                padding = 1u;
+        }
+
+        return ((inputLength / 4u) * 3u) - padding;
+    }
+
     size_t GetBase64DecodeOutputLength(const size_t inputLength)
     {
-        return inputLength / 4u;
+        return (inputLength / 4u) * 3u;
     }
 } // namespace base64

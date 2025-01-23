@@ -48,11 +48,12 @@ bool DataUriBuffer::ReadDataFromUri(const std::string& uri)
     if (!IsDataUri(uri))
         return false;
 
+    const auto base64Data = &uri[URI_PREFIX_LENGTH];
     const auto base64DataLength = uri.size() - URI_PREFIX_LENGTH;
-    m_data_size = base64::GetBase64DecodeOutputLength(base64DataLength);
+    m_data_size = base64::GetBase64DecodeOutputLength(base64Data, base64DataLength);
     m_data = std::make_unique<uint8_t[]>(m_data_size);
 
-    m_data_size = base64::DecodeBase64(&uri[URI_PREFIX_LENGTH], base64DataLength, m_data.get(), m_data_size);
+    m_data_size = base64::DecodeBase64(base64Data, base64DataLength, m_data.get(), m_data_size);
 
     return m_data_size > 0;
 }
