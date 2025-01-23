@@ -547,9 +547,6 @@ namespace
             if (!jRoot.nodes)
                 return false;
 
-            if (!common.m_bones.empty())
-                throw GltfLoadException("Only scenes with at most one skin are supported");
-
             const auto rootNode = GetRootNodeForSkin(jRoot, skin).value_or(skin.joints[0]);
             const auto skinBoneOffset = common.m_bones.size();
             common.m_bones.resize(skinBoneOffset + skin.joints.size());
@@ -566,13 +563,27 @@ namespace
             if (!jRoot.meshes)
                 return;
 
+            std::optional<unsigned> alreadyLoadedSkinIndex;
+
             for (const auto& loadObject : m_load_objects)
             {
                 if (loadObject.skinIndex && jRoot.skins)
                 {
-                    const auto& skin = jRoot.skins.value()[*loadObject.skinIndex];
-                    if (!ConvertSkin(jRoot, skin, common))
-                        return;
+                    if (alreadyLoadedSkinIndex)
+                    {
+                        if (*alreadyLoadedSkinIndex != *loadObject.skinIndex)
+                            throw GltfLoadException("Only scenes with at most one skin are supported");
+
+                        // Do not load already loaded skin
+                    }
+                    else
+                    {
+                        const auto& skin = jRoot.skins.value()[*loadObject.skinIndex];
+                        if (!ConvertSkin(jRoot, skin, common))
+                            return;
+
+                        alreadyLoadedSkinIndex = *loadObject.skinIndex;
+                    }
                 }
 
                 const auto& mesh = jRoot.meshes.value()[loadObject.meshIndex];
