@@ -8,6 +8,7 @@
 #include <Eigen>
 #pragma warning(pop)
 
+#include <algorithm>
 #include <format>
 
 using namespace gltf;
@@ -131,8 +132,7 @@ namespace
             {
                 JsonMeshPrimitives primitives;
 
-                if (object.materialIndex >= 0)
-                    primitives.material = static_cast<unsigned>(object.materialIndex);
+                primitives.material = object.materialIndex;
 
                 primitives.attributes.POSITION = m_position_accessor;
                 primitives.attributes.NORMAL = m_normal_accessor;
@@ -466,18 +466,12 @@ namespace
                 vertex->coordinates[1] = commonVertex.coordinates[2];
                 vertex->coordinates[2] = -commonVertex.coordinates[1];
 
-                if (minPosition[0] > vertex->coordinates[0])
-                    minPosition[0] = vertex->coordinates[0];
-                if (minPosition[1] > vertex->coordinates[1])
-                    minPosition[1] = vertex->coordinates[1];
-                if (minPosition[2] > vertex->coordinates[2])
-                    minPosition[2] = vertex->coordinates[2];
-                if (maxPosition[0] < vertex->coordinates[0])
-                    maxPosition[0] = vertex->coordinates[0];
-                if (maxPosition[1] < vertex->coordinates[1])
-                    maxPosition[1] = vertex->coordinates[1];
-                if (maxPosition[2] < vertex->coordinates[2])
-                    maxPosition[2] = vertex->coordinates[2];
+                minPosition[0] = std::min(minPosition[0], vertex->coordinates[0]);
+                minPosition[1] = std::min(minPosition[1], vertex->coordinates[1]);
+                minPosition[2] = std::min(minPosition[2], vertex->coordinates[2]);
+                maxPosition[0] = std::max(maxPosition[0], vertex->coordinates[0]);
+                maxPosition[1] = std::max(maxPosition[1], vertex->coordinates[1]);
+                maxPosition[2] = std::max(maxPosition[2], vertex->coordinates[2]);
 
                 vertex->normal[0] = commonVertex.normal[0];
                 vertex->normal[1] = commonVertex.normal[2];
@@ -499,7 +493,7 @@ namespace
             {
                 assert(xmodel.m_vertex_bone_weights.size() == xmodel.m_vertices.size());
 
-                auto* joints = reinterpret_cast<uint8_t*>(&bufferData[currentBufferOffset]);
+                auto* joints = &bufferData[currentBufferOffset];
                 auto* weights = reinterpret_cast<float*>(&bufferData[currentBufferOffset + sizeof(uint8_t) * 4u * xmodel.m_vertex_bone_weights.size()]);
                 for (const auto& commonVertexWeights : xmodel.m_vertex_bone_weights)
                 {
