@@ -22,7 +22,6 @@
 #include JSON_HEADER
 
 #include "Asset/AssetRegistration.h"
-#include "ObjLoading.h"
 #include "Utils/QuatInt16.h"
 #include "Utils/StringUtils.h"
 #include "XModel/Gltf/GltfBinInput.h"
@@ -44,7 +43,6 @@
 #include <format>
 #include <iostream>
 #include <numeric>
-#include <set>
 #include <vector>
 
 using namespace GAME;
@@ -146,17 +144,17 @@ namespace
             assert(common.m_vertex_bone_weights.size() == common.m_vertices.size());
 
             XModelBone rootBone{
-                "root",
-                std::nullopt,
-                {1.0f, 1.0f, 1.0f},
-                {0.0f, 0.0f, 0.0f},
-                {0.0f, 0.0f, 0.0f},
-                {0.0f, 0.0f, 0.0f, 1.0f},
-                {0.0f, 0.0f, 0.0f, 1.0f},
+                .name = "root",
+                .parentIndex = std::nullopt,
+                .scale = {1.0f, 1.0f, 1.0f},
+                .globalOffset = {0.0f, 0.0f, 0.0f},
+                .localOffset = {0.0f, 0.0f, 0.0f},
+                .globalRotation = {.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f},
+                .localRotation = {.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f},
             };
             common.m_bones.emplace_back(rootBone);
-
-            XModelBoneWeight rootWeight{0, 1.0f};
+            
+            XModelBoneWeight rootWeight{.boneIndex = 0, .weight = 1.0f};
             common.m_bone_weight_data.weights.emplace_back(rootWeight);
 
             for (auto& vertexBoneWeights : common.m_vertex_bone_weights)
@@ -401,7 +399,7 @@ namespace
         }
 
         static std::vector<std::optional<size_t>>
-            GetRigidBoneIndicesForTris(const std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+            GetRigidBoneIndicesForTris(const std::vector<size_t>& vertexIndices, const XSurface& surface, const XModelCommon& common)
         {
             std::vector<std::optional<size_t>> rigidBoneIndexForTri;
             rigidBoneIndexForTri.reserve(surface.triCount);
@@ -422,7 +420,7 @@ namespace
             return rigidBoneIndexForTri;
         }
 
-        static void ReorderRigidTrisByBoneIndex(const std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        static void ReorderRigidTrisByBoneIndex(const std::vector<size_t>& vertexIndices, const XSurface& surface, const XModelCommon& common)
         {
             const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
 
@@ -512,7 +510,7 @@ namespace
             // TODO
         }
 
-        static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, XSurface& surface, const XModelCommon& common)
+        static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, const XSurface& surface, const XModelCommon& common)
         {
             if (common.m_bone_weight_data.weights.empty())
                 return;
