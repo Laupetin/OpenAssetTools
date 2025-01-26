@@ -286,7 +286,7 @@ namespace
 
                 common.m_vertices.emplace_back(vertex);
 
-                XModelVertexBoneWeights vertexWeights{common.m_bone_weight_data.weights.size(), 0u};
+                XModelVertexBoneWeights vertexWeights{.weightOffset = common.m_bone_weight_data.weights.size(), .weightCount = 0u};
                 for (auto i = 0u; i < std::extent_v<decltype(joints)>; i++)
                 {
                     if (std::abs(weights[i]) < std::numeric_limits<float>::epsilon())
@@ -315,12 +315,12 @@ namespace
                 throw GltfLoadException("Requires primitives attribute POSITION");
 
             AccessorsForVertex accessorsForVertex{
-                *primitives.attributes.POSITION,
-                primitives.attributes.NORMAL,
-                primitives.attributes.COLOR_0,
-                primitives.attributes.TEXCOORD_0,
-                primitives.attributes.JOINTS_0,
-                primitives.attributes.WEIGHTS_0,
+                .positionAccessor = *primitives.attributes.POSITION,
+                .normalAccessor = primitives.attributes.NORMAL,
+                .colorAccessor = primitives.attributes.COLOR_0,
+                .uvAccessor = primitives.attributes.TEXCOORD_0,
+                .jointsAccessor = primitives.attributes.JOINTS_0,
+                .weightsAccessor = primitives.attributes.WEIGHTS_0,
             };
 
             const auto existingVertices = m_vertex_offset_for_accessors.find(accessorsForVertex);
@@ -328,7 +328,7 @@ namespace
                 existingVertices == m_vertex_offset_for_accessors.end() ? CreateVertices(common, accessorsForVertex) : existingVertices->second;
 
             // clang-format off
-            auto* indexAccessor = GetAccessorForIndex(
+            const auto* indexAccessor = GetAccessorForIndex(
                 "INDICES",
                 primitives.indices, 
                 {JsonAccessorType::SCALAR}, 
@@ -552,7 +552,7 @@ namespace
             common.m_bones.resize(skinBoneOffset + skin.joints.size());
 
             constexpr float defaultTranslation[3]{0.0f, 0.0f, 0.0f};
-            constexpr XModelQuaternion defaultRotation{0.0f, 0.0f, 0.0f, 1.0f};
+            constexpr XModelQuaternion defaultRotation{.x = 0.0f, .y = 0.0f, .z = 0.0f, .w = 1.0f};
             constexpr float defaultScale[3]{1.0f, 1.0f, 1.0f};
 
             return ConvertJoint(jRoot, skin, common, skinBoneOffset, rootNode, std::nullopt, defaultTranslation, defaultRotation, defaultScale);
