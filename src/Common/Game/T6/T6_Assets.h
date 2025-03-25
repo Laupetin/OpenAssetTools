@@ -3814,7 +3814,8 @@ namespace T6
         uint16_t dynEntId;
     };
 
-    union gcc_align(8) __m128
+    // Usually __m128, but that is not portable
+    union gcc_align(8) custom_m128
     {
         float m128_f32[4];
         uint64_t m128_u64[2];
@@ -3827,19 +3828,12 @@ namespace T6
         unsigned int m128_u32[4];
     };
 
-    struct vector3
-    {
-        __m128 x;
-        __m128 y;
-        __m128 z;
-    };
-
     struct vector4
     {
-        __m128 x;
-        __m128 y;
-        __m128 z;
-        __m128 w;
+        custom_m128 x;
+        custom_m128 y;
+        custom_m128 z;
+        custom_m128 w;
     };
 
     struct type_align(16) SSkinInstance
