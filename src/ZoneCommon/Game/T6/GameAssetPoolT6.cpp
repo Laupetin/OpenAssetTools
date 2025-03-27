@@ -21,7 +21,7 @@ namespace
         "image",
         "soundbank",
         "soundpatch",
-        "clipmap",
+        "clipmap_unused",
         "clipmap",
         "comworld",
         "gameworldsp",
