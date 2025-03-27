@@ -10,10 +10,10 @@ using namespace IW3;
 namespace
 {
     constexpr const char* ASSET_TYPE_NAMES[]{
-        "xmodelpieces", "physpreset", "xanim",       "xmodel",      "material",         "techniqueset", "image",    "sound",    "soundcurve", "loadedsound",
-        "clipmap",      "clipmap",    "comworld",    "gameworldsp", "gameworldmp",      "mapents",      "gfxworld", "lightdef", "uimap",      "font",
-        "menulist",     "menu",       "localize",    "weapon",      "snddriverglobals", "fx",           "impactfx", "aitype",   "mptype",     "character",
-        "xmodelalias",  "rawfile",    "stringtable",
+        "xmodelpieces",   "physpreset", "xanim",       "xmodel",      "material",         "techniqueset", "image",    "sound",    "soundcurve", "loadedsound",
+        "clipmap_unused", "clipmap",    "comworld",    "gameworldsp", "gameworldmp",      "mapents",      "gfxworld", "lightdef", "uimap",      "font",
+        "menulist",       "menu",       "localize",    "weapon",      "snddriverglobals", "fx",           "impactfx", "aitype",   "mptype",     "character",
+        "xmodelalias",    "rawfile",    "stringtable",
     };
 }
 

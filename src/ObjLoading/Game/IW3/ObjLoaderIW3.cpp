@@ -96,7 +96,6 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundCurve>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldSp>(memory));

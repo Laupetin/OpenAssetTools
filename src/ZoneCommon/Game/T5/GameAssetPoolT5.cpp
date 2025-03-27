@@ -10,12 +10,12 @@ using namespace T5;
 namespace
 {
     constexpr const char* ASSET_TYPE_NAMES[]{
-        "xmodelpieces", "physpreset",    "physconstraints", "destructibledef", "xanim",       "xmodel",        "material",
-        "techniqueset", "image",         "soundbank",       "soundpatch",      "clipmap",     "clipmap",       "comworld",
-        "gameworldsp",  "gameworldmp",   "mapents",         "gfxworld",        "gfxlightdef", "uimap",         "font",
-        "menulist",     "menu",          "localize",        "weapon",          "weapondef",   "weaponvariant", "snddriverglobals",
-        "fx",           "fximpacttable", "aitype",          "mptype",          "mpbody",      "mphead",        "character",
-        "xmodelalias",  "rawfile",       "stringtable",     "packindex",       "xglobals",    "ddl",           "glasses",
+        "xmodelpieces", "physpreset",    "physconstraints", "destructibledef", "xanim",          "xmodel",        "material",
+        "techniqueset", "image",         "soundbank",       "soundpatch",      "clipmap_unused", "clipmap",       "comworld",
+        "gameworldsp",  "gameworldmp",   "mapents",         "gfxworld",        "gfxlightdef",    "uimap",         "font",
+        "menulist",     "menu",          "localize",        "weapon",          "weapondef",      "weaponvariant", "snddriverglobals",
+        "fx",           "fximpacttable", "aitype",          "mptype",          "mpbody",         "mphead",        "character",
+        "xmodelalias",  "rawfile",       "stringtable",     "packindex",       "xglobals",       "ddl",           "glasses",
         "emblemset",
     };
 }

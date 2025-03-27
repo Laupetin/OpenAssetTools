@@ -135,8 +135,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         collection.AddAssetCreator(CreateSoundCurveLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderLoadedSound>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapSp>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapMp>(memory));
+        // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldSp>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderGameWorldMp>(memory));
