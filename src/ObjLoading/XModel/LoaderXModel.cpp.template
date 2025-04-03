@@ -539,13 +539,21 @@ namespace
                                   return false;
                               });
 
+            std::vector<XSurfaceTri> preSortTris(surface.triCount);
+            std::memcpy(preSortTris.data(), surface.triIndices, sizeof(XSurfaceTri) * surface.triCount);
+
+            std::vector<size_t> reverseLookup(reorderLookup.size());
+            for (auto i = 0u; i < reverseLookup.size(); i++)
+                reverseLookup[reorderLookup[i]] = i;
+
             for (auto triIndex = 0u; triIndex < surface.triCount; triIndex++)
             {
+                const auto& preSortTriIndices = preSortTris[triIndex];
                 auto& triIndices = surface.triIndices[triIndex];
 
-                triIndices.i[0] = static_cast<uint16_t>(reorderLookup[triIndices.i[0]]);
-                triIndices.i[1] = static_cast<uint16_t>(reorderLookup[triIndices.i[1]]);
-                triIndices.i[2] = static_cast<uint16_t>(reorderLookup[triIndices.i[2]]);
+                triIndices.i[0] = static_cast<uint16_t>(reverseLookup[preSortTriIndices.i[0]]);
+                triIndices.i[1] = static_cast<uint16_t>(reverseLookup[preSortTriIndices.i[1]]);
+                triIndices.i[2] = static_cast<uint16_t>(reverseLookup[preSortTriIndices.i[2]]);
             }
 
             for (auto& entry : reorderLookup)
@@ -570,6 +578,7 @@ namespace
             surface.triCount = static_cast<uint16_t>(commonObject.m_faces.size());
             surface.triIndices = m_memory.Alloc<XSurfaceTri>(surface.triCount);
 
+            xmodelToCommonVertexIndexLookup.reserve(static_cast<size_t>(surface.triCount) * std::extent_v<decltype(XModelFace::vertexIndex)>);
             for (auto faceIndex = 0u; faceIndex < surface.triCount; faceIndex++)
             {
                 const auto& face = commonObject.m_faces[faceIndex];
@@ -592,14 +601,14 @@ namespace
                 }
             }
 
-            ReorderVerticesByWeightCount(xmodelToCommonVertexIndexLookup, surface, common);
-
             constexpr auto maxVertices = std::numeric_limits<decltype(XSurface::vertCount)>::max();
             if (vertexOffset + xmodelToCommonVertexIndexLookup.size() > maxVertices)
             {
                 std::cerr << std::format("Lod exceeds limit of {} vertices\n", maxVertices);
                 return false;
             }
+
+            ReorderVerticesByWeightCount(xmodelToCommonVertexIndexLookup, surface, common);
 
             surface.baseVertIndex = static_cast<uint16_t>(vertexOffset);
             surface.vertCount = static_cast<uint16_t>(xmodelToCommonVertexIndexLookup.size());
