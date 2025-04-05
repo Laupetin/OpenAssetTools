@@ -3,6 +3,7 @@
 #include "SearchPath/IWD.h"
 #include "SearchPath/SearchPathFilesystem.h"
 #include "SearchPath/SearchPaths.h"
+#include "Utils/StringUtils.h"
 
 #include <cassert>
 #include <cstdint>
@@ -215,7 +216,10 @@ namespace
             {
                 if (!curTemplate.CanRender(PROJECT_MASK) && curTemplate.CanRender(GAME_MASK))
                 {
-                    auto renderedTemplate = curTemplate.Render(m_bin_dir, m_base_dir, projectName, GameId_Names[static_cast<unsigned>(game)]);
+                    std::string gameName(GameId_Names[static_cast<unsigned>(game)]);
+                    utils::MakeStringLowerCase(gameName);
+
+                    auto renderedTemplate = curTemplate.Render(m_bin_dir, m_base_dir, projectName, gameName);
                     if (AddSearchPath(addedSearchPaths, searchPaths, renderedTemplate))
                         hasSearchPath = true;
                 }
