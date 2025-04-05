@@ -454,17 +454,17 @@ namespace
             surface.partBits[partBitsIndex] |= 1 << shiftValue;
         }
 
-        void CreateVertListData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common) const
+        void CreateVertListData(XSurface& surface, const std::vector<size_t>& xmodelToCommonVertexIndexLookup, const XModelCommon& common) const
         {
-            ReorderRigidTrisByBoneIndex(vertexIndices, surface, common);
-            const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
+            ReorderRigidTrisByBoneIndex(xmodelToCommonVertexIndexLookup, surface, common);
+            const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(xmodelToCommonVertexIndexLookup, surface, common);
 
             std::vector<XRigidVertList> vertLists;
 
             auto currentVertexTail = 0u;
             auto currentTriTail = 0u;
 
-            const auto vertexCount = vertexIndices.size();
+            const auto vertexCount = xmodelToCommonVertexIndexLookup.size();
             const auto triCount = static_cast<size_t>(surface.triCount);
             const auto boneCount = common.m_bones.size();
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
@@ -473,7 +473,7 @@ namespace
                 boneVertList.boneOffset = static_cast<uint16_t>(boneIndex * sizeof(DObjSkelMat));
 
                 auto currentVertexHead = currentVertexTail;
-                while (currentVertexHead < vertexCount && GetRigidBoneForVertex(currentVertexHead, common) == boneIndex)
+                while (currentVertexHead < vertexCount && GetRigidBoneForVertex(xmodelToCommonVertexIndexLookup[currentVertexHead], common) == boneIndex)
                     currentVertexHead++;
 
                 auto currentTriHead = currentTriTail;
