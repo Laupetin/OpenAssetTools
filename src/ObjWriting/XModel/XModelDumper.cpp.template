@@ -569,7 +569,7 @@ namespace
     void DumpXModelExportLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
     {
         const auto* model = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".XMODEL_EXPORT"));
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_export"));
 
         if (!assetFile)
             return;
@@ -664,13 +664,13 @@ namespace
             switch (ObjWriting::Configuration.ModelOutputFormat)
             {
             case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
-                return ".XMODEL_EXPORT";
+                return ".xmodel_export";
             case ObjWriting::Configuration_t::ModelOutputFormat_e::OBJ:
-                return ".OBJ";
+                return ".obj";
             case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:
-                return ".GLTF";
+                return ".gltf";
             case ObjWriting::Configuration_t::ModelOutputFormat_e::GLB:
-                return ".GLB";
+                return ".glb";
             default:
                 assert(false);
                 return "";
