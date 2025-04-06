@@ -15,7 +15,7 @@ void SetDefineStreamProxy::SetDefinesProxy(DefinesStreamProxy* definesProxy)
     m_defines_proxy = definesProxy;
 }
 
-bool SetDefineStreamProxy::MatchSetDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition) const
+bool SetDefineStreamProxy::MatchSetDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition) const
 {
     auto currentPosition = directiveStartPosition;
 
@@ -59,7 +59,7 @@ bool SetDefineStreamProxy::MatchSetDirective(const ParserLine& line, const unsig
 
 bool SetDefineStreamProxy::MatchDirectives(const ParserLine& line) const
 {
-    unsigned directiveStartPos, directiveEndPos;
+    size_t directiveStartPos, directiveEndPos;
 
     if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;

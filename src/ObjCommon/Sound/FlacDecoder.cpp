@@ -68,7 +68,7 @@ namespace
                 T result;
             } data{};
 
-            const auto byteCount = utils::Align(bitCount, 8u) / 8u;
+            const auto byteCount = utils::Align(bitCount, 8uz) / 8uz;
             assert(byteCount <= sizeof(T));
 
             const auto shiftCount = (8u - bitCount % 8) % 8;
@@ -83,7 +83,7 @@ namespace
 
             while (remainingBits > 0)
             {
-                const auto curBits = static_cast<uint8_t>(std::min(remainingBits, 8u));
+                const auto curBits = static_cast<uint8_t>(std::min(remainingBits, 8uz));
 
                 if (m_remaining_bits_last_byte > 0)
                 {

@@ -21,7 +21,7 @@ private:
     IParserLineStream* const m_stream;
     std::stack<int> m_current_pack;
 
-    _NODISCARD bool MatchPackDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    _NODISCARD bool MatchPackDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
 public:

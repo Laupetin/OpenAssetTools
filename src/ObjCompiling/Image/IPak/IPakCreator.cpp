@@ -216,7 +216,7 @@ namespace
                 const auto remainingSize = dataSize - dataOffset;
                 const auto remainingChunkBufferWindowSize = std::max((ipak_consts::IPAK_CHUNK_COUNT_PER_READ * ipak_consts::IPAK_CHUNK_SIZE)
                                                                          - static_cast<size_t>(m_current_offset - m_chunk_buffer_window_start),
-                                                                     0u);
+                                                                     0uz);
 
                 if (remainingChunkBufferWindowSize == 0)
                 {

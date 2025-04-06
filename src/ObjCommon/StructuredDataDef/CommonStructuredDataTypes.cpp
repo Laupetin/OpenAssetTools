@@ -59,7 +59,7 @@ size_t CommonStructuredDataType::GetSizeInBits(const CommonStructuredDataDef& de
             return 0u;
         }
         const auto& indexedArray = def.m_indexed_arrays[m_info.type_index];
-        return utils::Align(indexedArray.m_element_size_in_bits * indexedArray.m_element_count, 8u);
+        return utils::Align(indexedArray.m_element_size_in_bits * indexedArray.m_element_count, 8uz);
     }
     case CommonStructuredDataTypeCategory::ENUM_ARRAY:
     {
@@ -69,7 +69,7 @@ size_t CommonStructuredDataType::GetSizeInBits(const CommonStructuredDataDef& de
             return 0u;
         }
         const auto& enumedArray = def.m_enumed_arrays[m_info.type_index];
-        return utils::Align(enumedArray.m_element_size_in_bits * enumedArray.m_element_count, 8u);
+        return utils::Align(enumedArray.m_element_size_in_bits * enumedArray.m_element_count, 8uz);
     }
 
     case CommonStructuredDataTypeCategory::UNKNOWN:

@@ -74,7 +74,7 @@ class StructuredDataDefSizeCalculatorInternal
 
         m_type_stack.emplace_back(CommonStructuredDataTypeCategory::STRUCT, index);
 
-        auto currentOffset = 0u;
+        auto currentOffset = 0uz;
         for (auto& property : _struct.m_properties)
         {
             CalculateForType(property.m_type);
@@ -85,7 +85,7 @@ class StructuredDataDefSizeCalculatorInternal
 
             currentOffset += property.m_type.GetSizeInBits(m_def);
         }
-        currentOffset = utils::Align(currentOffset, 8u);
+        currentOffset = utils::Align(currentOffset, 8uz);
         _struct.m_size_in_byte += currentOffset / 8;
 
         m_struct_calculated[index] = true;

@@ -37,22 +37,22 @@ CommonStructuredDataType AssetDumperStructuredDataDefSet::ConvertType(const Comm
     case DATA_ENUM:
         assert(!def->m_enums.empty());
         out.m_category = CommonStructuredDataTypeCategory::ENUM;
-        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.enumIndex), def->m_enums.size() - 1u), 0u);
+        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.enumIndex), def->m_enums.size() - 1uz), 0uz);
         break;
     case DATA_STRUCT:
         assert(!def->m_structs.empty());
         out.m_category = CommonStructuredDataTypeCategory::STRUCT;
-        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.structIndex), def->m_structs.size() - 1u), 0u);
+        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.structIndex), def->m_structs.size() - 1uz), 0uz);
         break;
     case DATA_INDEXED_ARRAY:
         assert(!def->m_indexed_arrays.empty());
         out.m_category = CommonStructuredDataTypeCategory::INDEXED_ARRAY;
-        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.indexedArrayIndex), def->m_indexed_arrays.size() - 1u), 0u);
+        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.indexedArrayIndex), def->m_indexed_arrays.size() - 1uz), 0uz);
         break;
     case DATA_ENUM_ARRAY:
         assert(!def->m_enumed_arrays.empty());
         out.m_category = CommonStructuredDataTypeCategory::ENUM_ARRAY;
-        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.enumedArrayIndex), def->m_enumed_arrays.size() - 1u), 0u);
+        out.m_info.type_index = std::max(std::min(static_cast<size_t>(in.u.enumedArrayIndex), def->m_enumed_arrays.size() - 1uz), 0uz);
         break;
     case DATA_COUNT:
     default:
@@ -138,7 +138,7 @@ void AssetDumperStructuredDataDefSet::ConvertEnumedArray(const CommonStructuredD
     assert(!def->m_enums.empty());
     out->m_element_size_in_bits = in->elementType.type == DATA_BOOL ? 1 : in->elementSize * 8;
     out->m_array_type = ConvertType(def, in->elementType);
-    out->m_enum_index = std::max(std::min(static_cast<size_t>(in->enumIndex), def->m_enums.size() - 1u), 0u);
+    out->m_enum_index = std::max(std::min(static_cast<size_t>(in->enumIndex), def->m_enums.size() - 1uz), 0uz);
 
     if (def->m_enums.empty())
     {

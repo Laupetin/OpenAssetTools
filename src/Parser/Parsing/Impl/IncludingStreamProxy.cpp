@@ -13,9 +13,9 @@ IncludingStreamProxy::IncludingStreamProxy(IParserLineStream* stream)
 }
 
 bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line,
-                                                  const unsigned includeDirectivePosition,
-                                                  unsigned& filenameStartPosition,
-                                                  unsigned& filenameEndPosition)
+                                                  const size_t includeDirectivePosition,
+                                                  size_t& filenameStartPosition,
+                                                  size_t& filenameEndPosition)
 {
     auto currentPos = includeDirectivePosition;
     bool isDoubleQuotes;
@@ -60,7 +60,7 @@ bool IncludingStreamProxy::ExtractIncludeFilename(const ParserLine& line,
     return false;
 }
 
-bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const unsigned directiveStartPos, const unsigned directiveEndPos) const
+bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const size_t directiveStartPos, const size_t directiveEndPos) const
 {
     auto currentPos = directiveStartPos;
 
@@ -70,7 +70,7 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const u
         return false;
     }
 
-    unsigned filenameStart, filenameEnd;
+    size_t filenameStart, filenameEnd;
 
     if (!ExtractIncludeFilename(line, currentPos, filenameStart, filenameEnd))
         throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(currentPos)), INCLUDE_QUOTES_ERROR);
@@ -86,7 +86,7 @@ bool IncludingStreamProxy::MatchIncludeDirective(const ParserLine& line, const u
     return true;
 }
 
-bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, const unsigned directiveStartPos, const unsigned directiveEndPos)
+bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, const size_t directiveStartPos, const size_t directiveEndPos)
 {
     auto currentPos = directiveStartPos;
 
@@ -116,7 +116,7 @@ bool IncludingStreamProxy::MatchPragmaOnceDirective(const ParserLine& line, cons
 
 bool IncludingStreamProxy::MatchDirectives(const ParserLine& line)
 {
-    unsigned directiveStartPos, directiveEndPos;
+    size_t directiveStartPos, directiveEndPos;
 
     if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;

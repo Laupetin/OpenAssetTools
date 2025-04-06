@@ -18,7 +18,7 @@ void TemplatingStreamProxy::SetDefinesProxy(DefinesStreamProxy* definesProxy)
     m_defines_proxy = definesProxy;
 }
 
-bool TemplatingStreamProxy::MatchSwitchDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition) const
+bool TemplatingStreamProxy::MatchSwitchDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition) const
 {
     auto currentPosition = directiveStartPosition;
 
@@ -43,7 +43,7 @@ bool TemplatingStreamProxy::MatchSwitchDirective(const ParserLine& line, const u
     return true;
 }
 
-bool TemplatingStreamProxy::MatchOptionsDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition) const
+bool TemplatingStreamProxy::MatchOptionsDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition) const
 {
     auto currentPosition = directiveStartPosition;
 
@@ -93,7 +93,7 @@ bool TemplatingStreamProxy::MatchOptionsDirective(const ParserLine& line, const 
     return true;
 }
 
-bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition) const
+bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition) const
 {
     auto currentPosition = directiveStartPosition;
 
@@ -128,7 +128,7 @@ bool TemplatingStreamProxy::MatchFilenameDirective(const ParserLine& line, const
     return true;
 }
 
-bool TemplatingStreamProxy::MatchSkipDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition) const
+bool TemplatingStreamProxy::MatchSkipDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition) const
 {
     auto currentPosition = directiveStartPosition;
 
@@ -146,7 +146,7 @@ bool TemplatingStreamProxy::MatchSkipDirective(const ParserLine& line, const uns
 
 bool TemplatingStreamProxy::MatchDirectives(const ParserLine& line) const
 {
-    unsigned directiveStartPos, directiveEndPos;
+    size_t directiveStartPos, directiveEndPos;
 
     if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;

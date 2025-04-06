@@ -110,7 +110,7 @@ namespace
         "devraw/",
     };
 
-    constexpr size_t FRAME_RATE_FOR_INDEX[]{
+    constexpr unsigned FRAME_RATE_FOR_INDEX[]{
         8000,
         12000,
         16000,

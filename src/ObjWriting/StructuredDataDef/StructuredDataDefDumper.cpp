@@ -139,7 +139,7 @@ void StructuredDataDefDumper::DumpType(const CommonStructuredDataDef& def,
 
 void StructuredDataDefDumper::DumpProperty(const CommonStructuredDataDef& def,
                                            const CommonStructuredDataStructProperty& property,
-                                           unsigned& currentOffsetInBit) const
+                                           size_t& currentOffsetInBit) const
 {
     std::string typeName;
     std::vector<std::string> arraySpecifiers;
@@ -205,11 +205,11 @@ void StructuredDataDefDumper::DumpStruct(const CommonStructuredDataDef& def, con
     IncIndent();
 
     auto currentOffsetInBit =
-        def.m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT && def.m_root_type.m_info.type_index == structIndex ? 64u : 0u;
+        def.m_root_type.m_category == CommonStructuredDataTypeCategory::STRUCT && def.m_root_type.m_info.type_index == structIndex ? 64uz : 0uz;
     for (const auto& property : _struct.m_properties)
         DumpProperty(def, property, currentOffsetInBit);
 
-    currentOffsetInBit = utils::Align(currentOffsetInBit, 8u);
+    currentOffsetInBit = utils::Align(currentOffsetInBit, 8uz);
     if ((currentOffsetInBit / 8) < _struct.m_size_in_byte)
     {
         Indent();

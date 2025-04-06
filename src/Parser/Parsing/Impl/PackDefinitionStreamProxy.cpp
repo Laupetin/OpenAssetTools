@@ -7,7 +7,7 @@ PackDefinitionStreamProxy::PackDefinitionStreamProxy(IParserLineStream* stream)
 {
 }
 
-bool PackDefinitionStreamProxy::MatchPackDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool PackDefinitionStreamProxy::MatchPackDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto packValue = 0;
     auto currentPosition = directiveStartPosition;
@@ -60,7 +60,7 @@ bool PackDefinitionStreamProxy::MatchPackDirective(const ParserLine& line, const
 
 bool PackDefinitionStreamProxy::MatchDirectives(const ParserLine& line)
 {
-    unsigned directiveStartPos, directiveEndPos;
+    size_t directiveStartPos, directiveEndPos;
 
     if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;
