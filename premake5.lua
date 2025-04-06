@@ -54,6 +54,10 @@ workspace "OpenAssetTools"
         symbols "On"
     filter {}
 
+    filter {"system:windows", "configurations:Debug" }
+        buildoptions { "/bigobj" }
+    filter {}
+
     filter "configurations:Release"
         defines "NDEBUG"
         optimize "Full"
