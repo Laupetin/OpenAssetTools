@@ -16,7 +16,7 @@ workspace "OpenAssetTools"
     objdir "%{wks.location}/obj"
     symbols "On"
     systemversion "latest"
-    cppdialect "C++20"
+    cppdialect "C++23"
     largeaddressaware "on"
 
 	flags {
