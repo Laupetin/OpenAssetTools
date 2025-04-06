@@ -56,8 +56,8 @@ namespace
         void CreateFromString(const std::string& templateString)
         {
             const auto templateStringLength = templateString.size();
-            auto partStart = 0u;
-            for (auto i = 0u; i < templateStringLength; i++)
+            auto partStart = 0uz;
+            for (auto i = 0uz; i < templateStringLength; i++)
             {
                 if (templateString[i] != '?')
                     continue;
