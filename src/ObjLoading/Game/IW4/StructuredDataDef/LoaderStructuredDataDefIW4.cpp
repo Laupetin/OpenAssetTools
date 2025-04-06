@@ -53,15 +53,15 @@ namespace
             case CommonStructuredDataTypeCategory::SHORT:
                 return {DATA_SHORT, {0}};
             case CommonStructuredDataTypeCategory::STRING:
-                return {DATA_STRING, {inputType.m_info.string_length}};
+                return {DATA_STRING, {static_cast<unsigned>(inputType.m_info.string_length)}};
             case CommonStructuredDataTypeCategory::ENUM:
-                return {DATA_ENUM, {inputType.m_info.type_index}};
+                return {DATA_ENUM, {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::STRUCT:
-                return {DATA_STRUCT, {inputType.m_info.type_index}};
+                return {DATA_STRUCT, {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
-                return {DATA_INDEXED_ARRAY, {inputType.m_info.type_index}};
+                return {DATA_INDEXED_ARRAY, {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::ENUM_ARRAY:
-                return {DATA_ENUM_ARRAY, {inputType.m_info.type_index}};
+                return {DATA_ENUM_ARRAY, {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::UNKNOWN:
             default:
                 assert(false);
@@ -129,14 +129,14 @@ namespace
         {
             outputIndexedArray.arraySize = static_cast<int>(inputIndexedArray.m_element_count);
             outputIndexedArray.elementType = ConvertType(inputIndexedArray.m_array_type);
-            outputIndexedArray.elementSize = utils::Align(inputIndexedArray.m_element_size_in_bits, 8u) / 8u;
+            outputIndexedArray.elementSize = utils::Align(inputIndexedArray.m_element_size_in_bits, 8uz) / 8uz;
         }
 
         void ConvertEnumedArray(const CommonStructuredDataEnumedArray& inputEnumedArray, StructuredDataEnumedArray& outputEnumedArray)
         {
             outputEnumedArray.enumIndex = static_cast<int>(inputEnumedArray.m_enum_index);
             outputEnumedArray.elementType = ConvertType(inputEnumedArray.m_array_type);
-            outputEnumedArray.elementSize = utils::Align(inputEnumedArray.m_element_size_in_bits, 8u) / 8u;
+            outputEnumedArray.elementSize = utils::Align(inputEnumedArray.m_element_size_in_bits, 8uz) / 8uz;
         }
 
         void ConvertDef(const CommonStructuredDataDef& inputDef, StructuredDataDef& outputDef)

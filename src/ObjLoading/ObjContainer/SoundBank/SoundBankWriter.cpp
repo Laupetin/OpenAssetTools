@@ -131,7 +131,7 @@ public:
             sizeof(SoundAssetBankEntry),
             sizeof(SoundAssetBankChecksum),
             0x40,
-            m_entries.size(),
+            static_cast<unsigned>(m_entries.size()),
             0,
             0,
             m_total_size,
@@ -157,9 +157,9 @@ public:
 
         SoundAssetBankEntry entry{
             sound.m_sound_id,
-            soundSize,
-            static_cast<size_t>(m_current_offset),
-            frameCount,
+            static_cast<unsigned>(soundSize),
+            static_cast<unsigned>(m_current_offset),
+            static_cast<unsigned>(frameCount),
             frameRateIndex,
             static_cast<unsigned char>(header.formatChunk.nChannels),
             sound.m_looping,
@@ -188,8 +188,8 @@ public:
             const auto frameRateIndex = INDEX_FOR_FRAMERATE[metaData.m_sample_rate];
             SoundAssetBankEntry entry{
                 sound.m_sound_id,
-                soundSize,
-                static_cast<size_t>(m_current_offset),
+                static_cast<unsigned>(soundSize),
+                static_cast<unsigned>(m_current_offset),
                 static_cast<unsigned>(metaData.m_total_samples),
                 frameRateIndex,
                 metaData.m_number_of_channels,

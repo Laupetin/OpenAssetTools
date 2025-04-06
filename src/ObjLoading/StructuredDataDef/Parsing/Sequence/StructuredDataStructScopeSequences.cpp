@@ -240,7 +240,7 @@ namespace sdd::struct_scope_sequences
             if (state->m_current_struct_is_root && state->m_current_struct->m_properties.empty())
                 state->m_current_struct_padding_offset -= 64u;
 
-            state->m_current_struct->m_size_in_byte = utils::Align(state->m_current_struct_padding_offset, 8u) / 8;
+            state->m_current_struct->m_size_in_byte = utils::Align(state->m_current_struct_padding_offset, 8uz) / 8;
             state->m_current_struct_padding_offset = 0u;
             state->m_current_struct_is_root = false;
             state->m_current_struct = nullptr;

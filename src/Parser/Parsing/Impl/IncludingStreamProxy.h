@@ -16,9 +16,9 @@ class IncludingStreamProxy final : public AbstractDirectiveStreamProxy
     std::set<std::string> m_included_files;
 
     _NODISCARD static bool
-        ExtractIncludeFilename(const ParserLine& line, unsigned includeDirectivePosition, unsigned& filenameStartPosition, unsigned& filenameEndPosition);
-    _NODISCARD bool MatchIncludeDirective(const ParserLine& line, unsigned directiveStartPos, unsigned directiveEndPos) const;
-    _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, unsigned directiveStartPos, unsigned directiveEndPos);
+        ExtractIncludeFilename(const ParserLine& line, size_t includeDirectivePosition, size_t& filenameStartPosition, size_t& filenameEndPosition);
+    _NODISCARD bool MatchIncludeDirective(const ParserLine& line, size_t directiveStartPos, size_t directiveEndPos) const;
+    _NODISCARD bool MatchPragmaOnceDirective(const ParserLine& line, size_t directiveStartPos, size_t directiveEndPos);
     _NODISCARD bool MatchDirectives(const ParserLine& line);
 
 public:

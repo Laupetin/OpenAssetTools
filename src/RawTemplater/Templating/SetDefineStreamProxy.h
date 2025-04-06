@@ -22,7 +22,7 @@ namespace templating
     private:
         static constexpr const char* SET_DIRECTIVE = "set";
 
-        _NODISCARD bool MatchSetDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
+        _NODISCARD bool MatchSetDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
         _NODISCARD bool MatchDirectives(const ParserLine& line) const;
 
         IParserLineStream* const m_stream;

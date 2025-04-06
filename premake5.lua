@@ -16,7 +16,7 @@ workspace "OpenAssetTools"
     objdir "%{wks.location}/obj"
     symbols "On"
     systemversion "latest"
-    cppdialect "C++20"
+    cppdialect "C++23"
     largeaddressaware "on"
 
 	flags {
@@ -52,6 +52,10 @@ workspace "OpenAssetTools"
         defines "_DEBUG"
         optimize "Debug"
         symbols "On"
+    filter {}
+
+    filter {"system:windows", "configurations:Debug" }
+        buildoptions { "/bigobj" }
     filter {}
 
     filter "configurations:Release"

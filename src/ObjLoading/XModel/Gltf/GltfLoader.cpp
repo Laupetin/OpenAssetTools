@@ -286,7 +286,7 @@ namespace
 
                 common.m_vertices.emplace_back(vertex);
 
-                XModelVertexBoneWeights vertexWeights{.weightOffset = common.m_bone_weight_data.weights.size(), .weightCount = 0u};
+                XModelVertexBoneWeights vertexWeights{.weightOffset = static_cast<unsigned>(common.m_bone_weight_data.weights.size()), .weightCount = 0u};
                 for (auto i = 0u; i < std::extent_v<decltype(joints)>; i++)
                 {
                     if (std::abs(weights[i]) < std::numeric_limits<float>::epsilon())

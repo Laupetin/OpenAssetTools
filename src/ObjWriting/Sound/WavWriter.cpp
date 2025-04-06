@@ -27,7 +27,7 @@ void WavWriter::WritePcmHeader(const WavMetaData& metaData, const size_t dataLen
     };
     m_stream.write(reinterpret_cast<const char*>(&formatChunk), sizeof(formatChunk));
 
-    const WavChunkHeader dataChunkHeader{WAV_CHUNK_ID_DATA, dataLen};
+    const WavChunkHeader dataChunkHeader{WAV_CHUNK_ID_DATA, static_cast<unsigned>(dataLen)};
     m_stream.write(reinterpret_cast<const char*>(&dataChunkHeader), sizeof(dataChunkHeader));
 }
 

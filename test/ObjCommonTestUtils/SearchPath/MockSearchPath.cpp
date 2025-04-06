@@ -14,7 +14,7 @@ SearchPathOpenFile MockSearchPath::Open(const std::string& fileName)
     if (foundFileData == m_file_data_map.end())
         return {};
 
-    return {std::make_unique<std::istringstream>(foundFileData->second), foundFileData->second.size()};
+    return {std::make_unique<std::istringstream>(foundFileData->second), static_cast<int64_t>(foundFileData->second.size())};
 }
 
 const std::string& MockSearchPath::GetPath()

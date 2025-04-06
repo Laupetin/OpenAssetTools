@@ -4,6 +4,7 @@
 #include "Parsing/IParserLineStream.h"
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 
+#include <cstddef>
 #include <map>
 #include <set>
 #include <sstream>
@@ -29,11 +30,11 @@ public:
     {
     public:
         unsigned m_parameter_index;
-        unsigned m_parameter_position;
+        size_t m_parameter_position;
         bool m_stringize;
 
         DefineParameterPosition();
-        DefineParameterPosition(unsigned index, unsigned position, bool stringize);
+        DefineParameterPosition(unsigned index, size_t position, bool stringize);
     };
 
     class Define
@@ -96,22 +97,22 @@ private:
     MacroParameterState m_multi_line_macro_parameters;
 
     static int GetLineEndEscapePos(const ParserLine& line);
-    void MatchDefineParameters(const ParserLine& line, unsigned& currentPos);
-    void ContinueDefine(const ParserLine& line, unsigned currentPos);
-    void ContinueParameters(const ParserLine& line, unsigned& currentPos);
-    _NODISCARD bool MatchDefineDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchUndefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchIfDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchElIfDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchIfdefDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchElseDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
-    _NODISCARD bool MatchEndifDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition);
+    void MatchDefineParameters(const ParserLine& line, size_t& currentPos);
+    void ContinueDefine(const ParserLine& line, size_t currentPos);
+    void ContinueParameters(const ParserLine& line, size_t& currentPos);
+    _NODISCARD bool MatchDefineDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    _NODISCARD bool MatchUndefDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    _NODISCARD bool MatchIfDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    _NODISCARD bool MatchElIfDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    _NODISCARD bool MatchIfdefDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    _NODISCARD bool MatchElseDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
+    _NODISCARD bool MatchEndifDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
     _NODISCARD bool MatchDirectives(ParserLine& line);
 
     void ExtractParametersFromMacroUsage(const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos);
     bool FindMacroForIdentifier(const std::string& input, unsigned wordStart, unsigned wordEnd, const Define*& value) const;
 
-    static bool MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName);
+    static bool MatchDefinedExpression(const ParserLine& line, size_t& pos, std::string& definitionName);
     void ExpandDefinedExpressions(ParserLine& line) const;
 
     bool FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define);

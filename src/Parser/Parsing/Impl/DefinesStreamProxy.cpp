@@ -14,12 +14,12 @@
 
 namespace
 {
-    bool IsStringizeParameterForwardLookup(const std::string& value, unsigned pos)
+    bool IsStringizeParameterForwardLookup(const std::string& value, size_t pos)
     {
         return pos + 1 && (isalpha(value[pos + 1]) || value[pos + 1] == '_');
     }
 
-    bool IsTokenPastingOperatorForwardLookup(const std::string& value, unsigned pos)
+    bool IsTokenPastingOperatorForwardLookup(const std::string& value, size_t pos)
     {
         return pos + 1 < value.size() && value[pos + 1] == '#';
     }
@@ -32,7 +32,7 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
 {
 }
 
-DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const unsigned position, const bool stringize)
+DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const size_t position, const bool stringize)
     : m_parameter_index(index),
       m_parameter_position(position),
       m_stringize(stringize)
@@ -175,7 +175,7 @@ int DefinesStreamProxy::GetLineEndEscapePos(const ParserLine& line)
     return -1;
 }
 
-void DefinesStreamProxy::ContinueDefine(const ParserLine& line, const unsigned currentPos)
+void DefinesStreamProxy::ContinueDefine(const ParserLine& line, const size_t currentPos)
 {
     const auto lineEndEscapePos = GetLineEndEscapePos(line);
     if (lineEndEscapePos < 0)
@@ -204,7 +204,7 @@ void DefinesStreamProxy::ContinueDefine(const ParserLine& line, const unsigned c
     }
 }
 
-void DefinesStreamProxy::ContinueParameters(const ParserLine& line, unsigned& currentPos)
+void DefinesStreamProxy::ContinueParameters(const ParserLine& line, size_t& currentPos)
 {
     const auto lineEndEscapePos = GetLineEndEscapePos(line);
     while (true)
@@ -241,7 +241,7 @@ void DefinesStreamProxy::ContinueParameters(const ParserLine& line, unsigned& cu
     }
 }
 
-void DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, unsigned& currentPos)
+void DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, size_t& currentPos)
 {
     m_current_define_parameters = std::vector<std::string>();
     if (line.m_line[currentPos] != '(')
@@ -253,7 +253,7 @@ void DefinesStreamProxy::MatchDefineParameters(const ParserLine& line, unsigned&
     ContinueParameters(line, currentPos);
 }
 
-bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -284,7 +284,7 @@ bool DefinesStreamProxy::MatchDefineDirective(const ParserLine& line, const unsi
     return true;
 }
 
-bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchUndefDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -323,7 +323,7 @@ std::unique_ptr<ISimpleExpression> DefinesStreamProxy::ParseExpression(std::shar
     return expressionInterpreter.Evaluate();
 }
 
-bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -356,7 +356,7 @@ bool DefinesStreamProxy::MatchIfDirective(const ParserLine& line, const unsigned
     return true;
 }
 
-bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -398,7 +398,7 @@ bool DefinesStreamProxy::MatchElIfDirective(const ParserLine& line, const unsign
     return true;
 }
 
-bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -439,7 +439,7 @@ bool DefinesStreamProxy::MatchIfdefDirective(const ParserLine& line, const unsig
     return true;
 }
 
-bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -460,7 +460,7 @@ bool DefinesStreamProxy::MatchElseDirective(const ParserLine& line, const unsign
     return true;
 }
 
-bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, const unsigned directiveStartPosition, const unsigned directiveEndPosition)
+bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, const size_t directiveStartPosition, const size_t directiveEndPosition)
 {
     auto currentPos = directiveStartPosition;
 
@@ -486,8 +486,8 @@ bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, const unsig
 
 bool DefinesStreamProxy::MatchDirectives(ParserLine& line)
 {
-    unsigned directiveStartPos;
-    unsigned directiveEndPos;
+    size_t directiveStartPos;
+    size_t directiveEndPos;
 
     if (!FindDirective(line, directiveStartPos, directiveEndPos))
         return false;
@@ -537,9 +537,9 @@ void DefinesStreamProxy::ExtractParametersFromMacroUsage(
     ContinueMacroParameters(line, linePos, state, input, inputPos);
 }
 
-bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, unsigned& pos, std::string& definitionName)
+bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, size_t& pos, std::string& definitionName)
 {
-    unsigned currentPos = pos;
+    auto currentPos = pos;
 
     if (!MatchNextCharacter(line, currentPos, '('))
         return false;
@@ -559,7 +559,7 @@ bool DefinesStreamProxy::MatchDefinedExpression(const ParserLine& line, unsigned
 
 void DefinesStreamProxy::ExpandDefinedExpressions(ParserLine& line) const
 {
-    auto currentPos = 0u;
+    auto currentPos = 0uz;
 
     while (true)
     {
@@ -1094,7 +1094,7 @@ ParserLine DefinesStreamProxy::NextLine()
     {
         if (m_in_define)
         {
-            unsigned currentPos = 0u;
+            auto currentPos = 0uz;
 
             if (m_parameter_state != ParameterState::NOT_IN_PARAMETERS)
             {

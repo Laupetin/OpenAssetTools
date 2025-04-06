@@ -43,10 +43,10 @@ namespace templating
         static constexpr const char* FILENAME_DIRECTIVE = "filename";
         static constexpr const char* SKIP_DIRECTIVE = "skip";
 
-        _NODISCARD bool MatchSwitchDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
-        _NODISCARD bool MatchOptionsDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
-        _NODISCARD bool MatchFilenameDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
-        _NODISCARD bool MatchSkipDirective(const ParserLine& line, unsigned directiveStartPosition, unsigned directiveEndPosition) const;
+        _NODISCARD bool MatchSwitchDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        _NODISCARD bool MatchOptionsDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        _NODISCARD bool MatchFilenameDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
+        _NODISCARD bool MatchSkipDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition) const;
         _NODISCARD bool MatchDirectives(const ParserLine& line) const;
 
         IParserLineStream* const m_stream;
