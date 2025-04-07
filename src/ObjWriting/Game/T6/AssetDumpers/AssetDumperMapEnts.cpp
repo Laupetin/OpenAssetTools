@@ -1,6 +1,6 @@
 #include "AssetDumperMapEnts.h"
 
-#include <filesystem>
+#include <format>
 
 using namespace T6;
 
@@ -13,10 +13,7 @@ void AssetDumperMapEnts::DumpAsset(AssetDumpingContext& context, XAssetInfo<MapE
 {
     const auto* mapEnts = asset->Asset();
 
-    std::filesystem::path mapEntsPath(mapEnts->name);
-    mapEntsPath.replace_extension("ents");
-
-    const auto mapEntsFile = context.OpenAssetFile(mapEntsPath.string());
+    const auto mapEntsFile = context.OpenAssetFile(std::format("{}.ents", mapEnts->name));
 
     if (!mapEntsFile)
         return;
