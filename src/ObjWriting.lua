@@ -21,6 +21,7 @@ function ObjWriting:link(links)
 	links:linkto(ZoneCommon)
 	links:linkto(minizip)
 	links:linkto(libtomcrypt)
+	links:linkto(lz4)
 end
 
 function ObjWriting:use()
@@ -60,5 +61,5 @@ function ObjWriting:project()
 		eigen:include(includes)
 		json:include(includes)
 		libtomcrypt:include(includes)
-
+		lz4:include(includes)
 end

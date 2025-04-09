@@ -80,7 +80,7 @@ const CommandLineOption* const OPTION_IMAGE_FORMAT =
 const CommandLineOption* const OPTION_MODEL_FORMAT = 
     CommandLineOption::Builder::Create()
     .WithLongName("model-format")
-    .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, OBJ, GLTF, GLB")
+    .WithDescription("Specifies the format of dumped model files. Valid values are: XMODEL_EXPORT, XMODEL_BIN, OBJ, GLTF, GLB")
     .WithParameter("modelFormatValue")
     .Build();
 
@@ -207,6 +207,12 @@ bool UnlinkerArgs::SetModelDumpingMode() const
     if (specifiedValue == "xmodel_export")
     {
         ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT;
+        return true;
+    }
+
+    if (specifiedValue == "xmodel_bin")
+    {
+        ObjWriting::Configuration.ModelOutputFormat = ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN;
         return true;
     }
 
