@@ -1,6 +1,7 @@
 #include "MemoryWriter.h"
 
 #include <cassert>
+#include <cstring>
 
 MemoryWriter::MemoryWriter(uint32_t capacity)
 {
