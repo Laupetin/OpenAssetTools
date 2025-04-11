@@ -114,12 +114,12 @@ protected:
 
     int16_t ClampFloatToShort(const float value) const
     {
-        return std::clamp(static_cast<int16_t>(32767 * std::clamp(value, -1.0f, 1.0f)), static_cast<int16_t>(-32767), 32767i16);
+        return std::clamp(static_cast<int16_t>(32767 * std::clamp(value, -1.0f, 1.0f)), static_cast<int16_t>(-32767), static_cast<int16_t>(32767));
     }
 
     uint8_t ClampFloatToUByte(const float value) const
     {
-        return std::clamp(static_cast<uint8_t>(255 * std::clamp(value, -1.0f, 1.0f)), 0ui8, 255ui8);
+        return std::clamp(static_cast<uint8_t>(255 * std::clamp(value, -1.0f, 1.0f)), static_cast<uint8_t>(0), static_cast<uint8_t>(255));
     }
 
     void WriteHeader(int16_t version)
