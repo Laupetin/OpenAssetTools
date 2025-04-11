@@ -14,6 +14,55 @@
 class XModelBinWriterBase : public XModelWriter
 {
 protected:
+    enum XModelBinHash : int32_t
+    {
+        COMMENT = 0xC355,
+        MODEL = 0x46C8,
+        VERSION = 0x24D1,
+
+        BONE_COUNT = 0x76BA,
+        BONE = 0xF099,
+        BONE_INDEX = 0xDD9A,
+        OFFSET = 0x9383, // Bone/Vertex Offset
+        BONE_SCALE = 0x1C56,
+        BONE_MATRIX_X = 0xDCFD,
+        BONE_MATRIX_Y = 0xCCDC,
+        BONE_MATRIX_Z = 0xFCBF,
+
+        VERT16_COUNT = 0x950D,
+        VERT32_COUNT = 0x2AEC,
+        VERT16 = 0x8F03,
+        VERT32 = 0xB097,
+        VERT_WEIGHT_COUNT = 0xEA46,
+        VERT_WEIGHT = 0xF1AB,
+
+        FACE_COUNT = 0xBE92,
+        TRIANGLE16 = 0x6711,
+        TRIANGLE32 = 0x562F,
+
+        NORMAL = 0x89EC,
+        COLOR = 0x6DD8,
+        UV = 0x1AD4,
+
+        OBJECT_COUNT = 0x62AF,
+        OBJECT = 0x87D4,
+
+        MATERIAL_COUNT = 0xA1B2,
+        MATERIAL = 0xA700,
+        MATERIAL_TRANSPARENCY = 0x6DAB,
+        MATERIAL_AMBIENT_COLOR = 0x37FF,
+        MATERIAL_INCANDESCENCE = 0x4265,
+        MATERIAL_COEFFS = 0xC835,
+        MATERIAL_GLOW = 0xFE0C,
+        MATERIAL_REFRACTIVE = 0x7E24,
+        MATERIAL_SPECULAR_COLOR = 0x317C,
+        MATERIAL_REFLECTIVE_COLOR = 0xE593,
+        MATERIAL_REFLECTIVE = 0x7D76,
+        MATERIAL_BLINN = 0x83C7,
+        MATERIAL_PHONG = 0x5CD2
+    };
+
+protected:
     void PrepareVertexMerger(const XModelCommon& xmodel)
     {
         m_vertex_merger = VertexMerger(xmodel.m_vertices.size());
@@ -48,7 +97,7 @@ protected:
 
     void WriteComment(const std::string& comment)
     {
-        m_writer.Write(0xC355);
+        m_writer.Write(XModelBinHash::COMMENT);
         WriteAlignedString(comment);
     }
 
@@ -79,18 +128,18 @@ protected:
         WriteComment("OpenAssetTools XMODEL_BIN File");
         WriteComment(std::format("Game Origin: {}", m_game_name));
         WriteComment(std::format("Zone Origin: {}", m_zone_name));
-        m_writer.Write(0x46C8); // Model Hash
-        WriteInt16(0x24D1, version);
+        m_writer.Write(XModelBinHash::MODEL);
+        WriteInt16(XModelBinHash::VERSION, version);
     }
 
     void WriteBones(const XModelCommon& xmodel)
     {
-        WriteInt16(0x76BA, xmodel.m_bones.size());
+        WriteInt16(XModelBinHash::BONE_COUNT, xmodel.m_bones.size());
 
         auto boneNum = 0;
         for (const auto& bone : xmodel.m_bones)
         {
-            m_writer.Write(0xF099); // Bone Hash
+            m_writer.Write(XModelBinHash::BONE);
             m_writer.Write(boneNum);
             if (bone.parentIndex)
                 m_writer.Write(static_cast<int32_t>(*bone.parentIndex));
@@ -104,31 +153,31 @@ protected:
         boneNum = 0;
         for (const auto& bone : xmodel.m_bones)
         {
-            WriteInt16(0xDD9A, boneNum);
+            WriteInt16(XModelBinHash::BONE_INDEX, boneNum);
 
-            m_writer.Write(0x9383);               // Bone Offset Hash
+            m_writer.Write(XModelBinHash::OFFSET);
             m_writer.Write(bone.globalOffset[0]); // X
             m_writer.Write(bone.globalOffset[1]); // Y
             m_writer.Write(bone.globalOffset[2]); // Z
 
-            m_writer.Write(0x1C56);        // Bone Scale Hash
+            m_writer.Write(XModelBinHash::BONE_SCALE);
             m_writer.Write(bone.scale[0]); // X
             m_writer.Write(bone.scale[1]); // Y
             m_writer.Write(bone.scale[2]); // Z
 
             const auto mat = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z).matrix();
 
-            m_writer.Write(0xDCFDi16); // Bone Matrix X Hash
+            m_writer.Write(static_cast<int16_t>(XModelBinHash::BONE_MATRIX_X));
             m_writer.Write(ClampFloatToShort(mat(0, 0)));
             m_writer.Write(ClampFloatToShort(mat(0, 1)));
             m_writer.Write(ClampFloatToShort(mat(0, 2)));
 
-            m_writer.Write(0xCCDCi16); // Bone Matrix Y Hash
+            m_writer.Write(static_cast<int16_t>(XModelBinHash::BONE_MATRIX_Y));
             m_writer.Write(ClampFloatToShort(mat(1, 0)));
             m_writer.Write(ClampFloatToShort(mat(1, 1)));
             m_writer.Write(ClampFloatToShort(mat(1, 2)));
 
-            m_writer.Write(0xFCBFi16); // Bone Matrix Z Hash
+            m_writer.Write(static_cast<int16_t>(XModelBinHash::BONE_MATRIX_Z));
             m_writer.Write(ClampFloatToShort(mat(2, 0)));
             m_writer.Write(ClampFloatToShort(mat(2, 1)));
             m_writer.Write(ClampFloatToShort(mat(2, 2)));
@@ -161,13 +210,13 @@ class XModelBinWriter7 final : public XModelBinWriterBase
         if (distinctVertexValues.size() > UINT16_MAX)
         {
             // Use 32 bit
-            m_writer.Write(0x2AEC); // 32 bit Hash
+            m_writer.Write(XModelBinHash::VERT32_COUNT);
             m_writer.Write(static_cast<uint32_t>(distinctVertexValues.size()));
         }
         else
         {
             // Use 16 bit
-            WriteUInt16(0x950D, distinctVertexValues.size());
+            WriteUInt16(XModelBinHash::VERT16_COUNT, distinctVertexValues.size());
         }
 
         size_t vertexNum = 0u;
@@ -176,16 +225,16 @@ class XModelBinWriter7 final : public XModelBinWriterBase
             if (vertexNum > UINT16_MAX)
             {
                 // Use 32 bit
-                m_writer.Write(0xB097); // 32 bit Hash
+                m_writer.Write(XModelBinHash::VERT32);
                 m_writer.Write(static_cast<uint32_t>(vertexNum));
             }
             else
             {
                 // Use 16 bit
-                WriteUInt16(0x8F03, vertexNum);
+                WriteUInt16(XModelBinHash::VERT16, vertexNum);
             }
 
-            m_writer.Write(0x9383); // Offset Hash
+            m_writer.Write(XModelBinHash::OFFSET);
             m_writer.Write(vertexPos.x);
             m_writer.Write(vertexPos.y);
             m_writer.Write(vertexPos.z);
@@ -205,19 +254,19 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteFaceVertex(const XModelVertex& vertex)
     {
-        m_writer.Write(0x89ECi16);                           // Normal Hash
+        m_writer.Write(static_cast<int16_t>(XModelBinHash::NORMAL));
         m_writer.Write(ClampFloatToShort(vertex.normal[0])); // X
         m_writer.Write(ClampFloatToShort(vertex.normal[1])); // Y
         m_writer.Write(ClampFloatToShort(vertex.normal[2])); // Z
 
-        m_writer.Write(0x6DD8);                             // Color Hash
+        m_writer.Write(XModelBinHash::COLOR);
         m_writer.Write(ClampFloatToUByte(vertex.color[0])); // R
         m_writer.Write(ClampFloatToUByte(vertex.color[1])); // G
         m_writer.Write(ClampFloatToUByte(vertex.color[2])); // B
         m_writer.Write(ClampFloatToUByte(vertex.color[3])); // A
 
-        m_writer.Write(0x1AD4i16); // UV Hash
-        m_writer.Write(1ui16);     // Layer
+        m_writer.Write(static_cast<int16_t>(XModelBinHash::UV));
+        m_writer.Write(1ui16); // Layer
         m_writer.Write(vertex.uv[0]);
         m_writer.Write(vertex.uv[1]);
     }
@@ -228,7 +277,7 @@ class XModelBinWriter7 final : public XModelBinWriterBase
         for (const auto& object : xmodel.m_objects)
             totalFaceCount += object.m_faces.size();
 
-        m_writer.Write(0xBE92); // Face Count Hash
+        m_writer.Write(XModelBinHash::FACE_COUNT);
         m_writer.Write(totalFaceCount);
 
         auto objectIndex = 0u;
@@ -246,33 +295,33 @@ class XModelBinWriter7 final : public XModelBinWriterBase
                 const XModelVertex& v1 = xmodel.m_vertices[face.vertexIndex[1]];
                 const XModelVertex& v2 = xmodel.m_vertices[face.vertexIndex[2]];
 
-                m_writer.Write(0x562Fi16); // Face Info Hash
+                m_writer.Write(static_cast<int16_t>(XModelBinHash::TRIANGLE32));
                 m_writer.Write(static_cast<uint8_t>(objectIndex));
                 m_writer.Write(static_cast<uint8_t>(object.materialIndex));
 
                 if (m_vertex_merger.GetDistinctValues().size() > UINT16_MAX)
                 {
-                    m_writer.Write(0xB097); // 32 Bit Vertex Count Hash
+                    m_writer.Write(XModelBinHash::VERT32);
                     m_writer.Write(static_cast<uint32_t>(distinctPositions[0]));
                     WriteFaceVertex(v0);
 
-                    m_writer.Write(0xB097); // 32 Bit Vertex Count Hash
+                    m_writer.Write(XModelBinHash::VERT32);
                     m_writer.Write(static_cast<uint32_t>(distinctPositions[1]));
                     WriteFaceVertex(v1);
 
-                    m_writer.Write(0xB097); // 32 Bit Vertex Count Hash
+                    m_writer.Write(XModelBinHash::VERT32);
                     m_writer.Write(static_cast<uint32_t>(distinctPositions[2]));
                     WriteFaceVertex(v2);
                 }
                 else
                 {
-                    WriteUInt16(0x8F03, distinctPositions[0]);
+                    WriteUInt16(XModelBinHash::VERT16, distinctPositions[0]);
                     WriteFaceVertex(v0);
 
-                    WriteUInt16(0x8F03, distinctPositions[1]);
+                    WriteUInt16(XModelBinHash::VERT16, distinctPositions[1]);
                     WriteFaceVertex(v1);
 
-                    WriteUInt16(0x8F03, distinctPositions[2]);
+                    WriteUInt16(XModelBinHash::VERT16, distinctPositions[2]);
                     WriteFaceVertex(v2);
                 }
             }
@@ -283,12 +332,12 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteObjects(const XModelCommon& xmodel)
     {
-        WriteInt16(0x62AF, xmodel.m_objects.size());
+        WriteInt16(XModelBinHash::OBJECT_COUNT, xmodel.m_objects.size());
 
         size_t objectNum = 0;
         for (const auto& object : xmodel.m_objects)
         {
-            m_writer.Write(0x87D4i16); // Object Info Hash
+            m_writer.Write(static_cast<int16_t>(XModelBinHash::OBJECT));
             m_writer.Write(static_cast<int16_t>(objectNum));
             WriteAlignedString(object.name);
 
@@ -298,75 +347,75 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteMaterials(const XModelCommon& xmodel)
     {
-        WriteInt16(0xA1B2, xmodel.m_materials.size());
+        WriteInt16(XModelBinHash::MATERIAL_COUNT, xmodel.m_materials.size());
 
         size_t materialNum = 0u;
         for (const auto& material : xmodel.m_materials)
         {
             const auto colorMapPath = "../images/" + material.colorMapName + ".dds";
 
-            WriteInt16(0xA700, materialNum);
+            WriteInt16(XModelBinHash::MATERIAL, materialNum);
             WriteAlignedString(material.name);
             WriteAlignedString(material.materialTypeName);
             WriteAlignedString(colorMapPath);
 
-            m_writer.Write(0x6DD8);                               // Vertex Color Hash
+            m_writer.Write(XModelBinHash::COLOR);
             m_writer.Write(ClampFloatToUByte(material.color[0])); // R
             m_writer.Write(ClampFloatToUByte(material.color[1])); // G
             m_writer.Write(ClampFloatToUByte(material.color[2])); // B
             m_writer.Write(ClampFloatToUByte(material.color[3])); // A
 
-            m_writer.Write(0x6DAB); // Transparancy Hash
+            m_writer.Write(XModelBinHash::MATERIAL_TRANSPARENCY);
             m_writer.Write(material.transparency[0]);
             m_writer.Write(material.transparency[1]);
             m_writer.Write(material.transparency[2]);
             m_writer.Write(material.transparency[3]);
 
-            m_writer.Write(0x37FF);                   // Ambient Color Hash
+            m_writer.Write(XModelBinHash::MATERIAL_AMBIENT_COLOR);
             m_writer.Write(material.ambientColor[0]); // R
             m_writer.Write(material.ambientColor[1]); // G
             m_writer.Write(material.ambientColor[2]); // B
             m_writer.Write(material.ambientColor[3]); // A
 
-            m_writer.Write(0x4265); // Incandescence Hash
+            m_writer.Write(XModelBinHash::MATERIAL_INCANDESCENCE);
             m_writer.Write(material.incandescence[0]);
             m_writer.Write(material.incandescence[1]);
             m_writer.Write(material.incandescence[2]);
             m_writer.Write(material.incandescence[3]);
 
-            m_writer.Write(0xC835); // Coeffs Hash
+            m_writer.Write(XModelBinHash::MATERIAL_COEFFS);
             m_writer.Write(material.coeffs[0]);
             m_writer.Write(material.coeffs[1]);
 
-            m_writer.Write(0xFE0C); // Glow Hash
+            m_writer.Write(XModelBinHash::MATERIAL_GLOW);
             m_writer.Write(material.glow.x);
             m_writer.Write(material.glow.y);
 
-            m_writer.Write(0x7E24); // Refractive Hash
+            m_writer.Write(XModelBinHash::MATERIAL_REFRACTIVE);
             m_writer.Write(material.refractive.x);
             m_writer.Write(material.refractive.y);
 
-            m_writer.Write(0x317C);                    // Specular Color Hash
+            m_writer.Write(XModelBinHash::MATERIAL_SPECULAR_COLOR);
             m_writer.Write(material.specularColor[0]); // R
             m_writer.Write(material.specularColor[1]); // G
             m_writer.Write(material.specularColor[2]); // B
             m_writer.Write(material.specularColor[3]); // A
 
-            m_writer.Write(0xE593);                      // Reflective Color Hash
+            m_writer.Write(XModelBinHash::MATERIAL_REFLECTIVE_COLOR);
             m_writer.Write(material.reflectiveColor[0]); // R
             m_writer.Write(material.reflectiveColor[1]); // G
             m_writer.Write(material.reflectiveColor[2]); // B
             m_writer.Write(material.reflectiveColor[3]); // A
 
-            m_writer.Write(0x7D76); // Reflective Hash
+            m_writer.Write(XModelBinHash::MATERIAL_REFLECTIVE);
             m_writer.Write(material.reflective.x);
             m_writer.Write(material.reflective.y);
 
-            m_writer.Write(0x83C7); // Blinn Hash
+            m_writer.Write(XModelBinHash::MATERIAL_BLINN);
             m_writer.Write(material.blinn[0]);
             m_writer.Write(material.blinn[1]);
 
-            m_writer.Write(0x5CD2); // Phong Hash
+            m_writer.Write(XModelBinHash::MATERIAL_PHONG);
             m_writer.Write(material.phong);
 
             materialNum++;
