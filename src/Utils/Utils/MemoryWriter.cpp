@@ -15,12 +15,12 @@ MemoryWriter::~MemoryWriter()
     Close();
 }
 
-uint64_t MemoryWriter::GetLength() const
+size_t MemoryWriter::GetLength() const
 {
     return m_dataLength;
 }
 
-uint64_t MemoryWriter::GetPosition() const
+size_t MemoryWriter::GetPosition() const
 {
     return m_currentPosition;
 }
@@ -52,7 +52,7 @@ void MemoryWriter::WriteNullTerminatedString(const std::string& string)
     Write(reinterpret_cast<const uint8_t*>(string.c_str()), string.size() + 1);
 }
 
-void MemoryWriter::Reallocate(uint64_t capacity)
+void MemoryWriter::Reallocate(size_t capacity)
 {
     auto tempPtr = static_cast<int8_t*>(std::realloc(m_dataPointer, capacity));
 
@@ -63,7 +63,7 @@ void MemoryWriter::Reallocate(uint64_t capacity)
     }
 }
 
-void MemoryWriter::ValidateCapacity(uint64_t newSize)
+void MemoryWriter::ValidateCapacity(size_t newSize)
 {
     if (newSize > m_dataLength)
     {

@@ -445,11 +445,11 @@ public:
 
         uint64_t uncompressedSize = m_writer.GetPosition();
         char uncompressedSizeChar[4];
-        std::memcpy(uncompressedSizeChar, &uncompressedSize, 4);
+        std::memcpy(uncompressedSizeChar, &uncompressedSize, sizeof(uncompressedSizeChar));
 
         const char magic[5] = {0x2A, 0x4C, 0x5A, 0x34, 0x2A};
-        m_stream.write(magic, 5);
-        m_stream.write(uncompressedSizeChar, 4);
+        m_stream.write(magic, sizeof(magic));
+        m_stream.write(uncompressedSizeChar, sizeof(uncompressedSizeChar));
         m_stream.write(compressedBuffer, actualCompressedFileSize);
     }
 };

@@ -9,8 +9,8 @@ public:
     MemoryWriter(uint32_t capacity);
     ~MemoryWriter();
 
-    uint64_t GetLength() const;
-    uint64_t GetPosition() const;
+    size_t GetLength() const;
+    size_t GetPosition() const;
     int8_t* Data() const;
 
     void Close();
@@ -23,11 +23,11 @@ public:
     }
 
 private:
-    void Reallocate(uint64_t capacity);
-    void ValidateCapacity(uint64_t size);
+    void Reallocate(size_t capacity);
+    void ValidateCapacity(size_t size);
 
 private:
     int8_t* m_dataPointer;
-    uint64_t m_dataLength;
-    uint64_t m_currentPosition;
+    size_t m_dataLength;
+    size_t m_currentPosition;
 };
