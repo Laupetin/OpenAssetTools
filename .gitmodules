@@ -18,4 +18,4 @@
 	url = https://gitlab.com/libeigen/eigen.git
 [submodule "thirdparty/lz4"]
 	path = thirdparty/lz4
-	url = git@github.com:lz4/lz4.git
+	url = https://github.com/lz4/lz4.git
