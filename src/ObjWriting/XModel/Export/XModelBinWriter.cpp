@@ -14,6 +14,18 @@
 class XModelBinWriterBase : public XModelWriter
 {
 protected:
+    /*
+     * A XModelBin Files consists of blocks of data, each block is indentified by a hash and is then followed by the actual data
+     * e.g.:
+     *       0x62AF      = Number of objects hash
+     *       2           = Number of objects
+     *       0x87D4      = Start of object hash
+     *       0           = Object index
+     *       Test_Obj    = Object name
+     *       0x87D4      = Start of object hash
+     *       1           = Object index
+     *       Test_Obj2   = Object name
+     */
     enum XModelBinHash : int32_t
     {
         COMMENT = 0xC355,
@@ -446,7 +458,7 @@ public:
         char uncompressedSizeChar[4];
         std::memcpy(uncompressedSizeChar, &uncompressedSize, sizeof(uncompressedSizeChar));
 
-        const char magic[5] = {0x2A, 0x4C, 0x5A, 0x34, 0x2A};
+        const char magic[5] = {0x2A, 0x4C, 0x5A, 0x34, 0x2A}; // *LZ4*
         m_stream.write(magic, sizeof(magic));
         m_stream.write(uncompressedSizeChar, sizeof(uncompressedSizeChar));
         m_stream.write(compressedBuffer, actualCompressedFileSize);
