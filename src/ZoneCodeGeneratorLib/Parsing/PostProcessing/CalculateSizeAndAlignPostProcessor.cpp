@@ -1,7 +1,7 @@
 #include "CalculateSizeAndAlignPostProcessor.h"
 
 #include "Domain/Definition/ArrayDeclarationModifier.h"
-#include "Utils/AlignmentUtils.h"
+#include "Utils/Alignment.h"
 
 #include <cassert>
 #include <cstdint>
@@ -136,13 +136,13 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
         {
             if (currentBitOffset > 0)
             {
-                currentBitOffset = AlignmentUtils::Align(currentBitOffset, 8u);
+                currentBitOffset = utils::Align(currentBitOffset, 8u);
                 definition->m_size += currentBitOffset / 8;
                 currentBitOffset = 0;
             }
 
-            definition->m_size = AlignmentUtils::Align(
-                definition->m_size, member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack));
+            definition->m_size =
+                utils::Align(definition->m_size, member->GetForceAlignment() ? member->GetAlignment() : std::min(member->GetAlignment(), definition->m_pack));
 
             member->m_offset = definition->m_size;
 
@@ -152,11 +152,11 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
 
     if (currentBitOffset > 0)
     {
-        currentBitOffset = AlignmentUtils::Align(currentBitOffset, 8u);
+        currentBitOffset = utils::Align(currentBitOffset, 8u);
         definition->m_size += currentBitOffset / 8;
     }
 
-    definition->m_size = AlignmentUtils::Align(definition->m_size, definition->m_alignment);
+    definition->m_size = utils::Align(definition->m_size, definition->m_alignment);
 
     return true;
 }
@@ -177,7 +177,7 @@ bool CalculateSizeAndAlignPostProcessor::CalculateSize(IDataRepository* reposito
             definition->m_size = memberSize;
     }
 
-    definition->m_size = AlignmentUtils::Align(definition->m_size, definition->m_alignment);
+    definition->m_size = utils::Align(definition->m_size, definition->m_alignment);
 
     return true;
 }
