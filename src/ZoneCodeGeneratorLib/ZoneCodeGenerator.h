@@ -1,17 +1,15 @@
 #pragma once
 
+#include <memory>
+
 class ZoneCodeGenerator
 {
-    class Impl;
-    Impl* m_impl;
+protected:
+    ZoneCodeGenerator() = default;
 
 public:
-    ZoneCodeGenerator();
-    ~ZoneCodeGenerator();
-    ZoneCodeGenerator(const ZoneCodeGenerator& other) = delete;
-    ZoneCodeGenerator(ZoneCodeGenerator&& other) noexcept = default;
-    ZoneCodeGenerator& operator=(const ZoneCodeGenerator& other) = delete;
-    ZoneCodeGenerator& operator=(ZoneCodeGenerator&& other) noexcept = default;
+    virtual ~ZoneCodeGenerator() = default;
+    virtual int Run(int argc, const char** argv) = 0;
 
-    int Run(int argc, const char** argv) const;
+    static std::unique_ptr<ZoneCodeGenerator> Create();
 };
