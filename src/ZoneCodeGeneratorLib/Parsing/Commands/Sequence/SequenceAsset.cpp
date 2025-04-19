@@ -3,6 +3,12 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto CAPTURE_TYPE = 1;
+    static constexpr auto CAPTURE_ENUM_ENTRY = 2;
+} // namespace
+
 SequenceAsset::SequenceAsset()
 {
     const CommandsMatcherFactory create(this);

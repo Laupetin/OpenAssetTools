@@ -4,6 +4,15 @@
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
+namespace
+{
+    static constexpr int TAG_TYPEDEF = 1;
+
+    static constexpr int CAPTURE_NAME = 1;
+    static constexpr int CAPTURE_ALIGN = 2;
+    static constexpr int CAPTURE_PARENT_TYPE = 3;
+} // namespace
+
 SequenceStruct::SequenceStruct()
 {
     const HeaderMatcherFactory create(this);

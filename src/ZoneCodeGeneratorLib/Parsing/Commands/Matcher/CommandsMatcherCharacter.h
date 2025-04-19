@@ -5,11 +5,12 @@
 
 class CommandsMatcherCharacter final : public AbstractMatcher<CommandsParserValue>
 {
-    char m_char;
+public:
+    explicit CommandsMatcherCharacter(char c);
 
 protected:
     MatcherResult<CommandsParserValue> CanMatch(ILexer<CommandsParserValue>* lexer, unsigned tokenOffset) override;
 
-public:
-    explicit CommandsMatcherCharacter(char c);
+private:
+    char m_char;
 };

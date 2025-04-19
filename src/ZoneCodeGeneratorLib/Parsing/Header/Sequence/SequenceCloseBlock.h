@@ -7,16 +7,12 @@
 
 class SequenceCloseBlock final : public HeaderParser::sequence_t
 {
-    static constexpr auto TAG_SEMICOLON = 1;
+public:
+    explicit SequenceCloseBlock(bool semicolonRequired);
 
-    static constexpr auto CAPTURE_NAME = 1;
-    static constexpr auto CAPTURE_CLOSING_PARENTHESIS = 2;
-
+private:
     bool m_semicolon_required;
 
 protected:
     void ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const override;
-
-public:
-    explicit SequenceCloseBlock(bool semicolonRequired);
 };

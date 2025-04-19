@@ -6,9 +6,12 @@
 
 class PrettyPrinter
 {
-    std::ostream& m_stream;
-    const IDataRepository* const m_repository;
+public:
+    PrettyPrinter(std::ostream& stream, const IDataRepository* repository);
 
+    void PrintAll() const;
+
+private:
     void PrintSeparator() const;
     void PrintVariablePointerToArray(Variable* variable) const;
     void PrintVariableArrayOfPointers(Variable* variable) const;
@@ -21,8 +24,6 @@ class PrettyPrinter
     void PrintUnions() const;
     void PrintTypedefs() const;
 
-public:
-    PrettyPrinter(std::ostream& stream, const IDataRepository* repository);
-
-    void PrintAll() const;
+    std::ostream& m_stream;
+    const IDataRepository* m_repository;
 };

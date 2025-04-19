@@ -2,34 +2,36 @@
 
 #include "Domain/Evaluation/IEvaluation.h"
 #include "Domain/Information/MemberInformation.h"
-#include "Utils/ClassUtils.h"
+
+#include <vector>
 
 class DeclarationModifierComputations
 {
-    const MemberInformation* const m_information;
-    std::vector<int> m_modifier_indices;
-    int m_combined_index;
-
-    DeclarationModifierComputations(const MemberInformation* member, std::vector<int> modifierIndices);
-
 public:
     explicit DeclarationModifierComputations(const MemberInformation* member);
 
-    _NODISCARD DeclarationModifier* GetDeclarationModifier() const;
-    _NODISCARD DeclarationModifier* GetNextDeclarationModifier() const;
-    _NODISCARD std::vector<DeclarationModifier*> GetFollowingDeclarationModifiers() const;
-    _NODISCARD std::vector<int> GetArrayIndices() const;
-    _NODISCARD bool IsArray() const;
-    _NODISCARD int GetArraySize() const;
-    _NODISCARD bool HasDynamicArrayCount() const;
-    _NODISCARD const IEvaluation* GetDynamicArrayCountEvaluation() const;
-    _NODISCARD std::vector<DeclarationModifierComputations> GetArrayEntries() const;
-    _NODISCARD bool IsSinglePointer() const;
-    _NODISCARD bool IsArrayPointer() const;
-    _NODISCARD const IEvaluation* GetArrayPointerCountEvaluation() const;
-    _NODISCARD bool IsPointerArray() const;
-    _NODISCARD const IEvaluation* GetPointerArrayCountEvaluation() const;
-    _NODISCARD bool IsDynamicArray() const;
-    _NODISCARD const IEvaluation* GetDynamicArraySizeEvaluation() const;
-    _NODISCARD unsigned GetAlignment() const;
+    [[nodiscard]] DeclarationModifier* GetDeclarationModifier() const;
+    [[nodiscard]] DeclarationModifier* GetNextDeclarationModifier() const;
+    [[nodiscard]] std::vector<DeclarationModifier*> GetFollowingDeclarationModifiers() const;
+    [[nodiscard]] std::vector<int> GetArrayIndices() const;
+    [[nodiscard]] bool IsArray() const;
+    [[nodiscard]] int GetArraySize() const;
+    [[nodiscard]] bool HasDynamicArrayCount() const;
+    [[nodiscard]] const IEvaluation* GetDynamicArrayCountEvaluation() const;
+    [[nodiscard]] std::vector<DeclarationModifierComputations> GetArrayEntries() const;
+    [[nodiscard]] bool IsSinglePointer() const;
+    [[nodiscard]] bool IsArrayPointer() const;
+    [[nodiscard]] const IEvaluation* GetArrayPointerCountEvaluation() const;
+    [[nodiscard]] bool IsPointerArray() const;
+    [[nodiscard]] const IEvaluation* GetPointerArrayCountEvaluation() const;
+    [[nodiscard]] bool IsDynamicArray() const;
+    [[nodiscard]] const IEvaluation* GetDynamicArraySizeEvaluation() const;
+    [[nodiscard]] unsigned GetAlignment() const;
+
+private:
+    DeclarationModifierComputations(const MemberInformation* member, std::vector<int> modifierIndices);
+
+    const MemberInformation* const m_information;
+    std::vector<int> m_modifier_indices;
+    int m_combined_index;
 };

@@ -5,59 +5,62 @@
 
 #include <algorithm>
 #include <queue>
-#include <set>
+#include <unordered_set>
 
-bool UsagesPostProcessor::ProcessAsset(StructureInformation* info)
+namespace
 {
-    std::set<StructureInformation*> processedInfos;
-    std::queue<StructureInformation*> processingQueue;
-
-    processingQueue.push(info);
-
-    while (!processingQueue.empty())
+    bool ProcessAsset(StructureInformation* info)
     {
-        auto* currentStructure = processingQueue.front();
-        processingQueue.pop();
+        std::unordered_set<StructureInformation*> processedInfos;
+        std::queue<StructureInformation*> processingQueue;
 
-        if (processedInfos.find(currentStructure) != processedInfos.end())
-            continue;
-        processedInfos.emplace(currentStructure);
+        processingQueue.push(info);
 
-        for (const auto& member : currentStructure->m_ordered_members)
+        while (!processingQueue.empty())
         {
-            if (member->m_type == nullptr)
+            auto* currentStructure = processingQueue.front();
+            processingQueue.pop();
+
+            if (processedInfos.find(currentStructure) != processedInfos.end())
                 continue;
+            processedInfos.emplace(currentStructure);
 
-            const MemberComputations computations(member.get());
+            for (const auto& member : currentStructure->m_ordered_members)
+            {
+                if (member->m_type == nullptr)
+                    continue;
 
-            if (computations.ShouldIgnore())
-                continue;
+                const MemberComputations computations(member.get());
 
-            if (computations.ContainsNonEmbeddedReference())
-                member->m_type->m_non_embedded_reference_exists = true;
+                if (computations.ShouldIgnore())
+                    continue;
 
-            if (computations.ContainsSinglePointerReference())
-                member->m_type->m_single_pointer_reference_exists = true;
+                if (computations.ContainsNonEmbeddedReference())
+                    member->m_type->m_non_embedded_reference_exists = true;
 
-            if (computations.ContainsArrayPointerReference())
-                member->m_type->m_array_pointer_reference_exists = true;
+                if (computations.ContainsSinglePointerReference())
+                    member->m_type->m_single_pointer_reference_exists = true;
 
-            if (computations.ContainsArrayReference())
-                member->m_type->m_array_reference_exists = true;
+                if (computations.ContainsArrayPointerReference())
+                    member->m_type->m_array_pointer_reference_exists = true;
 
-            if (computations.IsNotInDefaultNormalBlock())
-                member->m_type->m_reference_from_non_default_normal_block_exists = true;
+                if (computations.ContainsArrayReference())
+                    member->m_type->m_array_reference_exists = true;
 
-            if (member->m_is_reusable)
-                member->m_type->m_reusable_reference_exists = true;
+                if (computations.IsNotInDefaultNormalBlock())
+                    member->m_type->m_reference_from_non_default_normal_block_exists = true;
 
-            member->m_type->m_usages.push_back(currentStructure);
-            processingQueue.push(member->m_type);
+                if (member->m_is_reusable)
+                    member->m_type->m_reusable_reference_exists = true;
+
+                member->m_type->m_usages.push_back(currentStructure);
+                processingQueue.push(member->m_type);
+            }
         }
-    }
 
-    return true;
-}
+        return true;
+    }
+} // namespace
 
 bool UsagesPostProcessor::PostProcess(IDataRepository* repository)
 {

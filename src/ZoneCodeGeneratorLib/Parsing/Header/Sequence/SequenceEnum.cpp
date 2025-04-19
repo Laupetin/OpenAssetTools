@@ -4,6 +4,14 @@
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto TAG_TYPEDEF = 1;
+
+    static constexpr auto CAPTURE_NAME = 1;
+    static constexpr auto CAPTURE_PARENT_TYPE = 2;
+} // namespace
+
 SequenceEnum::SequenceEnum()
 {
     const HeaderMatcherFactory create(this);

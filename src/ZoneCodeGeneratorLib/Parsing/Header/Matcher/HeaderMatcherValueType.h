@@ -5,11 +5,12 @@
 
 class HeaderMatcherValueType final : public AbstractMatcher<HeaderParserValue>
 {
-    HeaderParserValueType m_type;
+public:
+    explicit HeaderMatcherValueType(HeaderParserValueType type);
 
 protected:
     MatcherResult<HeaderParserValue> CanMatch(ILexer<HeaderParserValue>* lexer, unsigned tokenOffset) override;
 
-public:
-    explicit HeaderMatcherValueType(HeaderParserValueType type);
+private:
+    HeaderParserValueType m_type;
 };

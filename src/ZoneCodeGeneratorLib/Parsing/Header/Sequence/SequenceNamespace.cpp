@@ -3,6 +3,11 @@
 #include "Parsing/Header/Block/HeaderBlockNamespace.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
+namespace
+{
+    static constexpr int CAPTURE_NAME = 0;
+}
+
 SequenceNamespace::SequenceNamespace()
 {
     const HeaderMatcherFactory create(this);

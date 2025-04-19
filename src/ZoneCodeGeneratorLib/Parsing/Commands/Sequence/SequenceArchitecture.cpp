@@ -3,6 +3,11 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto CAPTURE_ARCHITECTURE = 1;
+}
+
 SequenceArchitecture::SequenceArchitecture()
 {
     const CommandsMatcherFactory create(this);

@@ -3,6 +3,14 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto TAG_DEFAULT = 1;
+
+    static constexpr auto CAPTURE_BLOCK_ENUM_ENTRY = 1;
+    static constexpr auto CAPTURE_BLOCK_TYPE = 2;
+} // namespace
+
 SequenceBlock::SequenceBlock()
 {
     const CommandsMatcherFactory create(this);
