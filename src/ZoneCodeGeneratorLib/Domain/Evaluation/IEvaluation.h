@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
-
 enum class EvaluationType
 {
     OPERAND_DYNAMIC,
@@ -20,7 +18,7 @@ public:
     IEvaluation& operator=(const IEvaluation& other) = default;
     IEvaluation& operator=(IEvaluation&& other) noexcept = default;
 
-    _NODISCARD virtual EvaluationType GetType() const = 0;
-    _NODISCARD virtual bool IsStatic() const = 0;
-    _NODISCARD virtual int EvaluateNumeric() const = 0;
+    [[nodiscard]] virtual EvaluationType GetType() const = 0;
+    [[nodiscard]] virtual bool IsStatic() const = 0;
+    [[nodiscard]] virtual int EvaluateNumeric() const = 0;
 };

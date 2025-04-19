@@ -4,17 +4,6 @@
 class BaseTypeDefinition final : public DataDefinition
 {
 public:
-    const unsigned m_size;
-
-private:
-    BaseTypeDefinition(std::string name, unsigned size);
-
-public:
-    _NODISCARD DataDefinitionType GetType() const override;
-    _NODISCARD unsigned GetAlignment() const override;
-    _NODISCARD bool GetForceAlignment() const override;
-    _NODISCARD unsigned GetSize() const override;
-
     static const BaseTypeDefinition* const FLOAT;
     static const BaseTypeDefinition* const DOUBLE;
     static const BaseTypeDefinition* const BOOL;
@@ -32,4 +21,14 @@ public:
 
     static const BaseTypeDefinition* const ALL_BASE_TYPES[];
     static const size_t ALL_BASE_TYPES_COUNT;
+
+    [[nodiscard]] DataDefinitionType GetType() const override;
+    [[nodiscard]] unsigned GetAlignment() const override;
+    [[nodiscard]] bool GetForceAlignment() const override;
+    [[nodiscard]] unsigned GetSize() const override;
+
+    const unsigned m_size;
+
+private:
+    BaseTypeDefinition(std::string name, unsigned size);
 };

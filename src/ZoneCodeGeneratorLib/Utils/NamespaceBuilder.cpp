@@ -1,5 +1,6 @@
 #include "NamespaceBuilder.h"
 
+#include <format>
 #include <sstream>
 
 std::string NamespaceBuilder::Combine(const std::string& _namespace, const std::string& name)
@@ -7,10 +8,7 @@ std::string NamespaceBuilder::Combine(const std::string& _namespace, const std::
     if (_namespace.empty())
         return name;
 
-    std::ostringstream str;
-    str << _namespace << "::" << name;
-
-    return str.str();
+    return std::format("{}::{}", _namespace, name);
 }
 
 bool NamespaceBuilder::IsEmpty() const

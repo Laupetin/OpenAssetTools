@@ -8,11 +8,11 @@
 
 class HeaderParser final : public AbstractParser<HeaderParserValue, HeaderParserState>
 {
-protected:
-    const std::vector<sequence_t*>& GetTestsForState() override;
-
 public:
     HeaderParser(HeaderLexer* lexer, const IPackValueSupplier* packValueSupplier);
 
     bool SaveToRepository(IDataRepository* repository) const;
+
+protected:
+    const std::vector<sequence_t*>& GetTestsForState() override;
 };

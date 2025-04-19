@@ -3,6 +3,15 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto CAPTURE_ACTION_NAME = 1;
+    static constexpr auto CAPTURE_TYPE = 2;
+    static constexpr auto CAPTURE_ARG_TYPE = 3;
+
+    static constexpr auto LABEL_ACTION_ARGS = 1;
+} // namespace
+
 SequenceAction::SequenceAction()
 {
     const CommandsMatcherFactory create(this);

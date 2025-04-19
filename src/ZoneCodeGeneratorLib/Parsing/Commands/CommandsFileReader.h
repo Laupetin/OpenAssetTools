@@ -9,8 +9,15 @@
 
 class CommandsFileReader
 {
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+public:
+    CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);
+
+    bool ReadCommandsFile(IDataRepository* repository);
+
+private:
+    bool OpenBaseStream();
+    void SetupStreamProxies();
+    void SetupPostProcessors();
 
     const ZoneCodeGeneratorArguments* m_args;
     std::string m_filename;
@@ -19,13 +26,4 @@ class CommandsFileReader
     IParserLineStream* m_stream;
 
     std::vector<std::unique_ptr<IPostProcessor>> m_post_processors;
-
-    bool OpenBaseStream();
-    void SetupStreamProxies();
-    void SetupPostProcessors();
-
-public:
-    explicit CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);
-
-    bool ReadCommandsFile(IDataRepository* repository);
 };

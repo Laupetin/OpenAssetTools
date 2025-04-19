@@ -4,6 +4,12 @@
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto CAPTURE_NAME = 1;
+    static constexpr auto CAPTURE_VALUE = 2;
+} // namespace
+
 SequenceEnumMember::SequenceEnumMember()
 {
     const HeaderMatcherFactory create(this);

@@ -7,23 +7,12 @@
 #include "IHeaderBlockVariableDefining.h"
 #include "IHeaderBlockVariableHolder.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 
 class HeaderBlockStruct final : public IHeaderBlock, public IHeaderBlockNameHolder, public IHeaderBlockVariableDefining, public IHeaderBlockVariableHolder
 {
-    std::string m_namespace;
-    std::string m_type_name;
-    std::vector<std::shared_ptr<Variable>> m_members;
-    StructDefinition* m_struct_definition;
-
-    int m_custom_alignment;
-
-    bool m_is_typedef;
-    bool m_has_custom_align;
-    bool m_is_anonymous;
-
-    std::string m_variable_name;
-
 public:
     HeaderBlockStruct(std::string name, bool isTypedef);
 
@@ -41,4 +30,18 @@ public:
     bool IsDefiningVariable() override;
     DataDefinition* GetVariableType() override;
     std::string GetVariableName() override;
+
+private:
+    std::string m_namespace;
+    std::string m_type_name;
+    std::vector<std::shared_ptr<Variable>> m_members;
+    StructDefinition* m_struct_definition;
+
+    int m_custom_alignment;
+
+    bool m_is_typedef;
+    bool m_has_custom_align;
+    bool m_is_anonymous;
+
+    std::string m_variable_name;
 };

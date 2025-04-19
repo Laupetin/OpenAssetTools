@@ -8,9 +8,9 @@ class HeaderMatcherFactory final : public AbstractMatcherFactory<HeaderParserVal
 public:
     explicit HeaderMatcherFactory(const IMatcherForLabelSupplier<HeaderParserValue>* labelSupplier);
 
-    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Type(HeaderParserValueType type) const;
-    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Identifier() const;
-    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Integer() const;
-    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> FloatingPoint() const;
-    _NODISCARD MatcherFactoryWrapper<HeaderParserValue> Char(char c) const;
+    [[nodiscard]] MatcherFactoryWrapper<HeaderParserValue> Type(HeaderParserValueType type) const;
+    [[nodiscard]] MatcherFactoryWrapper<HeaderParserValue> Identifier() const;
+    [[nodiscard]] MatcherFactoryWrapper<HeaderParserValue> Integer() const;
+    [[nodiscard]] MatcherFactoryWrapper<HeaderParserValue> FloatingPoint() const;
+    [[nodiscard]] MatcherFactoryWrapper<HeaderParserValue> Char(char c) const;
 };

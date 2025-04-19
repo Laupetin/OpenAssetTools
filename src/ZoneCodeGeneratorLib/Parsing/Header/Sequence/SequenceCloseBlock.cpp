@@ -4,6 +4,14 @@
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto TAG_SEMICOLON = 1;
+
+    static constexpr auto CAPTURE_NAME = 1;
+    static constexpr auto CAPTURE_CLOSING_PARENTHESIS = 2;
+} // namespace
+
 SequenceCloseBlock::SequenceCloseBlock(const bool semicolonRequired)
     : m_semicolon_required(semicolonRequired)
 {

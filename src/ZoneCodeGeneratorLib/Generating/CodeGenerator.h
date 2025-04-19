@@ -3,21 +3,24 @@
 #include "ICodeTemplate.h"
 #include "ZoneCodeGeneratorArguments.h"
 
+#include <memory>
+#include <string>
 #include <unordered_map>
 
 class CodeGenerator
 {
-    const ZoneCodeGeneratorArguments* m_args;
+public:
+    explicit CodeGenerator(const ZoneCodeGeneratorArguments* args);
 
-    std::unordered_map<std::string, std::unique_ptr<ICodeTemplate>> m_template_mapping;
+    bool GenerateCode(IDataRepository* repository);
 
+private:
     void SetupTemplates();
 
     bool GenerateCodeForTemplate(RenderingContext* context, ICodeTemplate* codeTemplate) const;
     static bool GetAssetWithName(IDataRepository* repository, const std::string& name, StructureInformation*& asset);
 
-public:
-    explicit CodeGenerator(const ZoneCodeGeneratorArguments* args);
+    const ZoneCodeGeneratorArguments* m_args;
 
-    bool GenerateCode(IDataRepository* repository);
+    std::unordered_map<std::string, std::unique_ptr<ICodeTemplate>> m_template_mapping;
 };

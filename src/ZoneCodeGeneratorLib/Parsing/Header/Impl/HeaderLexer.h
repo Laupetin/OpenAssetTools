@@ -3,17 +3,19 @@
 #include "HeaderParserValue.h"
 #include "Parsing/Impl/AbstractLexer.h"
 
+#include <string>
 #include <unordered_map>
 
 class HeaderLexer final : public AbstractLexer<HeaderParserValue>
 {
-    std::unordered_map<std::string, HeaderParserValueType> m_keywords;
-
-    void PrepareKeywords();
+public:
+    explicit HeaderLexer(IParserLineStream* stream);
 
 protected:
     HeaderParserValue GetNextToken() override;
 
-public:
-    explicit HeaderLexer(IParserLineStream* stream);
+private:
+    void PrepareKeywords();
+
+    std::unordered_map<std::string, HeaderParserValueType> m_keywords;
 };

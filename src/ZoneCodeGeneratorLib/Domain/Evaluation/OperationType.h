@@ -21,14 +21,6 @@ enum class OperationPrecedence
 class OperationType
 {
 public:
-    std::string m_syntax;
-    OperationPrecedence m_precedence;
-    std::function<int(int operand1, int operand2)> m_evaluation_function;
-
-private:
-    OperationType(std::string syntax, OperationPrecedence precedence, std::function<int(int, int)> evaluationFunction);
-
-public:
     static const OperationType* const OPERATION_ADD;
     static const OperationType* const OPERATION_SUBTRACT;
     static const OperationType* const OPERATION_MULTIPLY;
@@ -49,4 +41,11 @@ public:
     static const OperationType* const OPERATION_OR;
 
     static const OperationType* const ALL_OPERATION_TYPES[];
+
+    std::string m_syntax;
+    OperationPrecedence m_precedence;
+    std::function<int(int operand1, int operand2)> m_evaluation_function;
+
+private:
+    OperationType(std::string syntax, OperationPrecedence precedence, std::function<int(int, int)> evaluationFunction);
 };

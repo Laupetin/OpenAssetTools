@@ -2,10 +2,11 @@
 
 #include "IHeaderBlock.h"
 
+#include <string>
+#include <vector>
+
 class HeaderBlockNamespace final : public IHeaderBlock
 {
-    std::string m_namespace_name;
-
 public:
     explicit HeaderBlockNamespace(std::string namespaceName);
 
@@ -14,4 +15,6 @@ public:
     void OnOpen(HeaderParserState* state) override;
     void OnClose(HeaderParserState* state) override;
     void OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) override;
+
+    std::string m_namespace_name;
 };

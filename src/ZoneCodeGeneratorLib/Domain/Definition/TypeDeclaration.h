@@ -13,11 +13,13 @@ public:
     static constexpr int FLAG_FIELDS_CALCULATED = 1 << 0;
     static constexpr int FLAG_ALIGNMENT_FORCED = 1 << 1;
 
-    unsigned m_flags;
-    unsigned m_size;
-    unsigned m_alignment;
-
     explicit TypeDeclaration(const DataDefinition* type);
+
+    [[nodiscard]] unsigned GetSize() const;
+    [[nodiscard]] unsigned GetAlignment() const;
+    [[nodiscard]] bool GetForceAlignment() const;
+
+    std::vector<std::unique_ptr<DeclarationModifier>> m_declaration_modifiers;
 
     bool m_is_const;
     bool m_has_custom_bit_size;
@@ -25,9 +27,7 @@ public:
     const DataDefinition* m_type;
     unsigned m_custom_bit_size;
 
-    std::vector<std::unique_ptr<DeclarationModifier>> m_declaration_modifiers;
-
-    _NODISCARD unsigned GetSize() const;
-    _NODISCARD unsigned GetAlignment() const;
-    _NODISCARD bool GetForceAlignment() const;
+    unsigned m_flags;
+    unsigned m_size;
+    unsigned m_alignment;
 };

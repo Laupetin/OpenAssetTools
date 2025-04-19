@@ -8,11 +8,12 @@
 
 class CommandsParser final : public AbstractParser<CommandsParserValue, CommandsParserState>
 {
-    IDataRepository* m_repository;
+public:
+    CommandsParser(CommandsLexer* lexer, IDataRepository* targetRepository);
 
 protected:
     const std::vector<sequence_t*>& GetTestsForState() override;
 
-public:
-    CommandsParser(CommandsLexer* lexer, IDataRepository* targetRepository);
+private:
+    IDataRepository* m_repository;
 };

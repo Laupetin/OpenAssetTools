@@ -5,9 +5,9 @@
 
 class CommandsLexer final : public AbstractLexer<CommandsParserValue>
 {
-protected:
-    CommandsParserValue GetNextToken() override;
-
 public:
     explicit CommandsLexer(IParserLineStream* stream);
+
+protected:
+    CommandsParserValue GetNextToken() override;
 };

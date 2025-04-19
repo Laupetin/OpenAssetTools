@@ -7,18 +7,12 @@
 #include "IHeaderBlockVariableDefining.h"
 #include "Utils/ClassUtils.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 class HeaderBlockEnum final : public IHeaderBlock, public IHeaderBlockNameHolder, public IHeaderBlockVariableDefining
 {
-    std::string m_namespace;
-    std::string m_type_name;
-    const BaseTypeDefinition* m_parent_type;
-    bool m_is_typedef;
-    std::vector<std::unique_ptr<EnumMember>> m_members;
-    int m_next_value;
-    EnumDefinition* m_enum_definition;
-
-    std::string m_variable_name;
-
 public:
     HeaderBlockEnum(std::string typeName, const BaseTypeDefinition* parentType, bool isTypeDef);
 
@@ -29,11 +23,22 @@ public:
     void OnChildBlockClose(HeaderParserState* state, IHeaderBlock* block) override;
 
     void AddEnumMember(std::unique_ptr<EnumMember> enumMember);
-    _NODISCARD EnumMember* GetEnumMember(const std::string& name) const;
-    _NODISCARD int GetNextEnumMemberValue() const;
+    [[nodiscard]] EnumMember* GetEnumMember(const std::string& name) const;
+    [[nodiscard]] int GetNextEnumMemberValue() const;
 
     void SetBlockName(const TokenPos& nameTokenPos, std::string name) override;
     bool IsDefiningVariable() override;
     DataDefinition* GetVariableType() override;
     std::string GetVariableName() override;
+
+private:
+    std::string m_namespace;
+    std::string m_type_name;
+    const BaseTypeDefinition* m_parent_type;
+    bool m_is_typedef;
+    std::vector<std::unique_ptr<EnumMember>> m_members;
+    int m_next_value;
+    EnumDefinition* m_enum_definition;
+
+    std::string m_variable_name;
 };

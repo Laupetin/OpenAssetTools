@@ -5,6 +5,11 @@
 
 #include <algorithm>
 
+namespace
+{
+    static constexpr auto CAPTURE_TYPE = 1;
+}
+
 SequenceString::SequenceString()
 {
     const CommandsMatcherFactory create(this);

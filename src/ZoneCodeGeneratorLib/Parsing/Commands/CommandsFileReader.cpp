@@ -17,6 +17,12 @@
 #include <chrono>
 #include <iostream>
 
+namespace
+{
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+} // namespace
+
 CommandsFileReader::CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
       m_filename(std::move(filename)),
@@ -30,7 +36,7 @@ bool CommandsFileReader::OpenBaseStream()
     auto stream = std::make_unique<ParserFilesystemStream>(m_filename);
     if (!stream->IsOpen())
     {
-        std::cout << "Could not open commands file\n";
+        std::cerr << "Could not open commands file\n";
         return false;
     }
 
@@ -68,7 +74,7 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
 {
     if (m_args->m_verbose)
     {
-        std::cout << "Reading commands file: " << m_filename << "\n";
+        std::cout << std::format("Reading commands file: {}\n", m_filename);
     }
 
     if (!OpenBaseStream())
@@ -84,9 +90,7 @@ bool CommandsFileReader::ReadCommandsFile(IDataRepository* repository)
     const auto end = std::chrono::steady_clock::now();
 
     if (m_args->m_verbose)
-    {
-        std::cout << "Processing commands took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
-    }
+        std::cout << std::format("Processing commands took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     if (!result)
         return false;

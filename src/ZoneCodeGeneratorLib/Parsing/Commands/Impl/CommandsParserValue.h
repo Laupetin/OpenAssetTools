@@ -52,10 +52,6 @@ enum class CommandsParserValueType
 class CommandsParserValue final : public IParserValue
 {
 public:
-    TokenPos m_pos;
-    CommandsParserValueType m_type;
-    size_t m_hash;
-
     union ValueType
     {
         char char_value;
@@ -83,25 +79,28 @@ public:
     static CommandsParserValue TypeName(TokenPos pos, std::string* typeName);
     static CommandsParserValue OpType(TokenPos pos, const OperationType* operationType);
 
-private:
-    CommandsParserValue(TokenPos pos, CommandsParserValueType type);
-
-public:
-    ~CommandsParserValue() override;
     CommandsParserValue(const CommandsParserValue& other) = delete;
+    ~CommandsParserValue() override;
     CommandsParserValue(CommandsParserValue&& other) noexcept;
     CommandsParserValue& operator=(const CommandsParserValue& other) = delete;
     CommandsParserValue& operator=(CommandsParserValue&& other) noexcept;
 
-    _NODISCARD bool IsEof() const override;
-    _NODISCARD const TokenPos& GetPos() const override;
+    [[nodiscard]] bool IsEof() const override;
+    [[nodiscard]] const TokenPos& GetPos() const override;
 
-    _NODISCARD char CharacterValue() const;
-    _NODISCARD int IntegerValue() const;
-    _NODISCARD double FloatingPointValue() const;
-    _NODISCARD std::string& StringValue() const;
-    _NODISCARD std::string& IdentifierValue() const;
-    _NODISCARD size_t IdentifierHash() const;
-    _NODISCARD std::string& TypeNameValue() const;
-    _NODISCARD const OperationType* OpTypeValue() const;
+    [[nodiscard]] char CharacterValue() const;
+    [[nodiscard]] int IntegerValue() const;
+    [[nodiscard]] double FloatingPointValue() const;
+    [[nodiscard]] std::string& StringValue() const;
+    [[nodiscard]] std::string& IdentifierValue() const;
+    [[nodiscard]] size_t IdentifierHash() const;
+    [[nodiscard]] std::string& TypeNameValue() const;
+    [[nodiscard]] const OperationType* OpTypeValue() const;
+
+    TokenPos m_pos;
+    CommandsParserValueType m_type;
+    size_t m_hash;
+
+private:
+    CommandsParserValue(TokenPos pos, CommandsParserValueType type);
 };

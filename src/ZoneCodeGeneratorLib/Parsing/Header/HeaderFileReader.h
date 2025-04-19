@@ -10,8 +10,15 @@
 
 class HeaderFileReader
 {
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+public:
+    HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);
+
+    bool ReadHeaderFile(IDataRepository* repository);
+
+private:
+    bool OpenBaseStream();
+    void SetupStreamProxies();
+    void SetupPostProcessors();
 
     const ZoneCodeGeneratorArguments* m_args;
     std::string m_filename;
@@ -21,13 +28,4 @@ class HeaderFileReader
     IParserLineStream* m_stream;
 
     std::vector<std::unique_ptr<IPostProcessor>> m_post_processors;
-
-    bool OpenBaseStream();
-    void SetupStreamProxies();
-    void SetupPostProcessors();
-
-public:
-    HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename);
-
-    bool ReadHeaderFile(IDataRepository* repository);
 };

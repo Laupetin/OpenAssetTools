@@ -15,27 +15,10 @@ class BaseTemplate
 protected:
     static constexpr const char* INTENDATION = "    ";
 
-    std::ostream& m_out;
-    RenderingContext& m_env;
-    unsigned m_intendation;
-
     BaseTemplate(std::ostream& stream, RenderingContext* context);
 
     void DoIntendation() const;
 
-private:
-    static void MakeSafeTypeNameInternal(const DataDefinition* def, std::ostringstream& str);
-    static void MakeTypeVarNameInternal(const DataDefinition* def, std::ostringstream& str);
-    static void MakeTypeWrittenVarNameInternal(const DataDefinition* def, std::ostringstream& str);
-    static void MakeTypePtrVarNameInternal(const DataDefinition* def, std::ostringstream& str);
-    static void MakeTypeWrittenPtrVarNameInternal(const DataDefinition* def, std::ostringstream& str);
-    static void MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str);
-    static void MakeOperandStatic(const OperandStatic* op, std::ostringstream& str);
-    static void MakeOperandDynamic(const OperandDynamic* op, std::ostringstream& str);
-    static void MakeOperation(const Operation* operation, std::ostringstream& str);
-    static void MakeEvaluationInternal(const IEvaluation* evaluation, std::ostringstream& str);
-
-protected:
     static std::string Upper(std::string str);
     static std::string Lower(std::string str);
     static std::string MakeTypeVarName(const DataDefinition* def);
@@ -55,6 +38,22 @@ protected:
     static std::string MakeCustomActionCall(CustomAction* action);
     static std::string MakeArrayCount(const ArrayDeclarationModifier* arrayModifier);
     static std::string MakeEvaluation(const IEvaluation* evaluation);
+
+    std::ostream& m_out;
+    RenderingContext& m_env;
+    unsigned m_intendation;
+
+private:
+    static void MakeSafeTypeNameInternal(const DataDefinition* def, std::ostringstream& str);
+    static void MakeTypeVarNameInternal(const DataDefinition* def, std::ostringstream& str);
+    static void MakeTypeWrittenVarNameInternal(const DataDefinition* def, std::ostringstream& str);
+    static void MakeTypePtrVarNameInternal(const DataDefinition* def, std::ostringstream& str);
+    static void MakeTypeWrittenPtrVarNameInternal(const DataDefinition* def, std::ostringstream& str);
+    static void MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str);
+    static void MakeOperandStatic(const OperandStatic* op, std::ostringstream& str);
+    static void MakeOperandDynamic(const OperandDynamic* op, std::ostringstream& str);
+    static void MakeOperation(const Operation* operation, std::ostringstream& str);
+    static void MakeEvaluationInternal(const IEvaluation* evaluation, std::ostringstream& str);
 };
 
 #define LINE(x)                                                                                                                                                \

@@ -61,9 +61,6 @@ enum class HeaderParserValueType
 class HeaderParserValue final : public IParserValue
 {
 public:
-    TokenPos m_pos;
-    HeaderParserValueType m_type;
-
     union ValueType
     {
         char char_value;
@@ -90,23 +87,25 @@ public:
     static HeaderParserValue Keyword(TokenPos pos, HeaderParserValueType type);
     static HeaderParserValue TypeName(TokenPos pos, std::string* typeName);
 
-private:
-    HeaderParserValue(TokenPos pos, HeaderParserValueType type);
-
-public:
     ~HeaderParserValue() override;
     HeaderParserValue(const HeaderParserValue& other) = delete;
     HeaderParserValue(HeaderParserValue&& other) noexcept;
     HeaderParserValue& operator=(const HeaderParserValue& other) = delete;
     HeaderParserValue& operator=(HeaderParserValue&& other) noexcept;
 
-    _NODISCARD bool IsEof() const override;
-    _NODISCARD const TokenPos& GetPos() const override;
+    [[nodiscard]] bool IsEof() const override;
+    [[nodiscard]] const TokenPos& GetPos() const override;
 
-    _NODISCARD char CharacterValue() const;
-    _NODISCARD int IntegerValue() const;
-    _NODISCARD double FloatingPointValue() const;
-    _NODISCARD std::string& StringValue() const;
-    _NODISCARD std::string& IdentifierValue() const;
-    _NODISCARD std::string& TypeNameValue() const;
+    [[nodiscard]] char CharacterValue() const;
+    [[nodiscard]] int IntegerValue() const;
+    [[nodiscard]] double FloatingPointValue() const;
+    [[nodiscard]] std::string& StringValue() const;
+    [[nodiscard]] std::string& IdentifierValue() const;
+    [[nodiscard]] std::string& TypeNameValue() const;
+
+    TokenPos m_pos;
+    HeaderParserValueType m_type;
+
+private:
+    HeaderParserValue(TokenPos pos, HeaderParserValueType type);
 };

@@ -10,10 +10,10 @@ class CommandsMatcherFactory final : public AbstractMatcherFactory<CommandsParse
 public:
     explicit CommandsMatcherFactory(const IMatcherForLabelSupplier<CommandsParserValue>* labelSupplier);
 
-    _NODISCARD MatcherFactoryWrapper<CommandsParserValue> Type(CommandsParserValueType type) const;
-    _NODISCARD MatcherFactoryWrapper<CommandsParserValue> Keyword(std::string value) const;
-    _NODISCARD MatcherFactoryWrapper<CommandsParserValue> Identifier() const;
-    _NODISCARD MatcherFactoryWrapper<CommandsParserValue> Integer() const;
-    _NODISCARD MatcherFactoryWrapper<CommandsParserValue> FloatingPoint() const;
-    _NODISCARD MatcherFactoryWrapper<CommandsParserValue> Char(char c) const;
+    [[nodiscard]] MatcherFactoryWrapper<CommandsParserValue> Type(CommandsParserValueType type) const;
+    [[nodiscard]] MatcherFactoryWrapper<CommandsParserValue> Keyword(std::string value) const;
+    [[nodiscard]] MatcherFactoryWrapper<CommandsParserValue> Identifier() const;
+    [[nodiscard]] MatcherFactoryWrapper<CommandsParserValue> Integer() const;
+    [[nodiscard]] MatcherFactoryWrapper<CommandsParserValue> FloatingPoint() const;
+    [[nodiscard]] MatcherFactoryWrapper<CommandsParserValue> Char(char c) const;
 };

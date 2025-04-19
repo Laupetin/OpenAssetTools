@@ -3,6 +3,16 @@
 #include "Parsing/Header/Matcher/HeaderCommonMatchers.h"
 #include "Parsing/Header/Matcher/HeaderMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto TAG_ENUM = 1;
+    static constexpr auto TAG_STRUCT = 2;
+    static constexpr auto TAG_UNION = 3;
+
+    static constexpr auto CAPTURE_TYPE = 1;
+    static constexpr auto CAPTURE_NAME = 2;
+} // namespace
+
 SequenceForwardDecl::SequenceForwardDecl()
 {
     const HeaderMatcherFactory create(this);

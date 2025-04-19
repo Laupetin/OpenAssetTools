@@ -5,6 +5,14 @@
 
 #include <algorithm>
 
+namespace
+{
+    static constexpr auto TAG_DEFAULT = 1;
+
+    static constexpr auto CAPTURE_TYPE = 1;
+    static constexpr auto CAPTURE_ASSET_TYPE_ENUM_ENTRY = 2;
+} // namespace
+
 SequenceAssetRef::SequenceAssetRef()
 {
     const CommandsMatcherFactory create(this);

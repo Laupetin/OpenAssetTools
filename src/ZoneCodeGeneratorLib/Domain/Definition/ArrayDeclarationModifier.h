@@ -2,13 +2,16 @@
 
 #include "DeclarationModifier.h"
 #include "Domain/Evaluation/IEvaluation.h"
-#include "Utils/ClassUtils.h"
 
 #include <memory>
 
 class ArrayDeclarationModifier final : public DeclarationModifier
 {
 public:
+    explicit ArrayDeclarationModifier(int size);
+
+    [[nodiscard]] DeclarationModifierType GetType() const override;
+
     int m_size;
 
     /**
@@ -20,8 +23,4 @@ public:
      * \brief The array has a size that is given by \c m_size but only a certain dynamic amount is handled by generated count.
      */
     std::unique_ptr<IEvaluation> m_dynamic_count_evaluation;
-
-    explicit ArrayDeclarationModifier(int size);
-
-    _NODISCARD DeclarationModifierType GetType() const override;
 };

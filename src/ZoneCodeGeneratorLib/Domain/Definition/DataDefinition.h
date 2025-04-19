@@ -25,13 +25,13 @@ public:
     DataDefinition& operator=(const DataDefinition& other) = default;
     DataDefinition& operator=(DataDefinition&& other) noexcept = default;
 
+    [[nodiscard]] virtual DataDefinitionType GetType() const = 0;
+    [[nodiscard]] virtual unsigned GetAlignment() const = 0;
+    [[nodiscard]] virtual bool GetForceAlignment() const = 0;
+    [[nodiscard]] virtual unsigned GetSize() const = 0;
+
+    [[nodiscard]] std::string GetFullName() const;
+
     std::string m_namespace;
     std::string m_name;
-
-    _NODISCARD virtual DataDefinitionType GetType() const = 0;
-    _NODISCARD virtual unsigned GetAlignment() const = 0;
-    _NODISCARD virtual bool GetForceAlignment() const = 0;
-    _NODISCARD virtual unsigned GetSize() const = 0;
-
-    _NODISCARD std::string GetFullName() const;
 };

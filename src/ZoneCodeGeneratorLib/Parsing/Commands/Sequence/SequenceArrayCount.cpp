@@ -4,6 +4,11 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto CAPTURE_TYPE = 1;
+}
+
 SequenceArrayCount::SequenceArrayCount()
 {
     const CommandsMatcherFactory create(this);

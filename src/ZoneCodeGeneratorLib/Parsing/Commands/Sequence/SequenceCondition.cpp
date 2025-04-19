@@ -4,6 +4,16 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto TAG_ALWAYS = 1;
+    static constexpr auto TAG_NEVER = 2;
+    static constexpr auto TAG_EVALUATION = 3;
+
+    static constexpr auto CAPTURE_TYPE = 1;
+    static constexpr auto CAPTURE_EVALUATION = 2;
+} // namespace
+
 SequenceCondition::SequenceCondition()
 {
     const CommandsMatcherFactory create(this);

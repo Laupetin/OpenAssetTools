@@ -5,13 +5,17 @@
 #include "Domain/Extension/CustomAction.h"
 #include "Domain/FastFile/FastFileBlock.h"
 #include "MemberInformation.h"
-#include "Utils/ClassUtils.h"
+
+#include <memory>
+#include <vector>
 
 class MemberInformation;
 
 class StructureInformation
 {
 public:
+    explicit StructureInformation(DefinitionWithMembers* definition);
+
     DefinitionWithMembers* const m_definition;
     EnumMember* m_asset_enum_entry;
 
@@ -31,6 +35,4 @@ public:
     std::unique_ptr<CustomAction> m_post_load_action;
     const FastFileBlock* m_block;
     std::vector<MemberInformation*> m_name_chain;
-
-    explicit StructureInformation(DefinitionWithMembers* definition);
 };
