@@ -23,3 +23,7 @@
 ## zlib
 - https://www.zlib.net/
 - Version 1.2.11
+
+## lz4
+- https://lz4.org/
+- Version 1.10.0

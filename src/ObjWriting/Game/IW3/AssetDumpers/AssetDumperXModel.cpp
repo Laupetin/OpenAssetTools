@@ -5,6 +5,7 @@
 #include "Utils/DistinctMapper.h"
 #include "Utils/HalfFloat.h"
 #include "Utils/QuatInt16.h"
+#include "XModel/Export/XModelBinWriter.h"
 #include "XModel/Export/XModelExportWriter.h"
 #include "XModel/Gltf/GltfBinOutput.h"
 #include "XModel/Gltf/GltfTextOutput.h"
@@ -458,6 +459,18 @@ namespace
         writer->Write(common);
     }
 
+    void DumpXModelBinLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
+    {
+        const auto* model = asset->Asset();
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_bin"));
+
+        if (!assetFile)
+            return;
+
+        const auto writer = xmodel_bin::CreateWriterForVersion7(*assetFile, context.m_zone.m_game->GetShortName(), context.m_zone.m_name);
+        writer->Write(common);
+    }
+
     template<typename T>
     void DumpGltfLod(
         const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod, const std::string& extension)
@@ -493,6 +506,10 @@ namespace
 
             case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_EXPORT:
                 DumpXModelExportLod(common, context, asset, currentLod);
+                break;
+
+            case ObjWriting::Configuration_t::ModelOutputFormat_e::XMODEL_BIN:
+                DumpXModelBinLod(common, context, asset, currentLod);
                 break;
 
             case ObjWriting::Configuration_t::ModelOutputFormat_e::GLTF:

@@ -20,6 +20,7 @@ public:
         enum class ModelOutputFormat_e
         {
             XMODEL_EXPORT,
+            XMODEL_BIN,
             OBJ,
             GLTF,
             GLB
