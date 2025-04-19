@@ -451,7 +451,7 @@ namespace
     {
         const auto* model = asset->Asset();
         const auto* modelSurfs = model->lodInfo[lod].modelSurfs;
-        const auto assetFile = context.OpenAssetFile(std::format("model_export/{}.XMODEL_BIN", modelSurfs->name));
+        const auto assetFile = context.OpenAssetFile(std::format("model_export/{}.xmodel_bin", modelSurfs->name));
 
         if (!assetFile)
             return;

@@ -462,7 +462,7 @@ namespace
     void DumpXModelBinLod(const XModelCommon& common, const AssetDumpingContext& context, const XAssetInfo<XModel>* asset, const unsigned lod)
     {
         const auto* model = asset->Asset();
-        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".XMODEL_EXPORT"));
+        const auto assetFile = context.OpenAssetFile(GetFileNameForLod(model->name, lod, ".xmodel_bin"));
 
         if (!assetFile)
             return;
