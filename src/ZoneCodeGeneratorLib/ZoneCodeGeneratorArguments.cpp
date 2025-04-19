@@ -93,18 +93,24 @@ const CommandLineOption* const COMMAND_LINE_OPTIONS[]{
     OPTION_GENERATE,
 };
 
-ZoneCodeGeneratorArguments::GenerationTask::GenerationTask()
+namespace
+{
+    static constexpr unsigned FLAG_TASK_GENERATE = 1 << 0;
+    static constexpr unsigned FLAG_TASK_PRINT = 1 << 1;
+} // namespace
+
+GenerationTask::GenerationTask()
     : m_all_assets(false)
 {
 }
 
-ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string templateName)
+GenerationTask::GenerationTask(std::string templateName)
     : m_all_assets(true),
       m_template_name(std::move(templateName))
 {
 }
 
-ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName, std::string templateName)
+GenerationTask::GenerationTask(std::string assetName, std::string templateName)
     : m_all_assets(false),
       m_asset_name(std::move(assetName)),
       m_template_name(std::move(templateName))
@@ -113,7 +119,7 @@ ZoneCodeGeneratorArguments::GenerationTask::GenerationTask(std::string assetName
 
 ZoneCodeGeneratorArguments::ZoneCodeGeneratorArguments()
     : m_argument_parser(COMMAND_LINE_OPTIONS, std::extent_v<decltype(COMMAND_LINE_OPTIONS)>),
-      m_task_flags(0)
+      m_task_flags(0u)
 {
     m_verbose = false;
 }
@@ -123,9 +129,7 @@ void ZoneCodeGeneratorArguments::PrintUsage() const
     UsageInformation usage(m_argument_parser.GetExecutableName());
 
     for (const auto* commandLineOption : COMMAND_LINE_OPTIONS)
-    {
         usage.AddCommandLineOption(commandLineOption);
-    }
 
     usage.Print();
 }
