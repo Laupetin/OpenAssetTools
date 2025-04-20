@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta4/premake-5.0.0-beta4-linux.tar.gz'
-PREMAKE_HASH='4356ab7cdec6085183d68fb240089376eacdc2fb751ffbd8063d797ae43abeb3'
+PREMAKE_URL='https://github.com/premake/premake-core/releases/download/v5.0.0-beta6/premake-5.0.0-beta6-linux.tar.gz'
+PREMAKE_HASH='fade2839ace1a2953556693e6f3d8f9b8b2897894b5a1f2ad477cdf8e9af042a'
 
 # The following variables can be set:
 #     PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
@@ -72,4 +72,4 @@ else
 fi
 
 git submodule update --init --recursive
-$PREMAKE_BIN $@ gmake2
+$PREMAKE_BIN $@ gmake
