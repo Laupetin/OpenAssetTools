@@ -10,6 +10,8 @@
 class RenderingUsedType
 {
 public:
+    RenderingUsedType(const DataDefinition* type, StructureInformation* info);
+
     bool m_members_loaded;
     const DataDefinition* m_type;
     StructureInformation* m_info;
@@ -20,25 +22,13 @@ public:
     bool m_array_reference_exists;
     bool m_pointer_array_reference_exists;
     bool m_pointer_array_reference_is_reusable;
-
-    RenderingUsedType(const DataDefinition* type, StructureInformation* info);
 };
 
 class RenderingContext
 {
-    std::unordered_map<const DataDefinition*, std::unique_ptr<RenderingUsedType>> m_used_types_lookup;
-
-    RenderingContext(std::string game, std::vector<const FastFileBlock*> fastFileBlocks);
-
-    RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
-    RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
-    void AddMembersToContext(const IDataRepository* repository, StructureInformation* info);
-    void ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
-    void MakeAsset(const IDataRepository* repository, StructureInformation* asset);
-    void CreateUsedTypeCollections();
-    bool UsedTypeHasActions(const RenderingUsedType* usedType) const;
-
 public:
+    static std::unique_ptr<RenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
+
     std::string m_game;
     std::vector<const FastFileBlock*> m_blocks;
 
@@ -52,5 +42,16 @@ public:
     const FastFileBlock* m_default_normal_block;
     const FastFileBlock* m_default_temp_block;
 
-    static std::unique_ptr<RenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
+private:
+    RenderingContext(std::string game, std::vector<const FastFileBlock*> fastFileBlocks);
+
+    RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
+    RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
+    void AddMembersToContext(const IDataRepository* repository, StructureInformation* info);
+    void ScanUsedTypeIfNeeded(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);
+    void MakeAsset(const IDataRepository* repository, StructureInformation* asset);
+    void CreateUsedTypeCollections();
+    bool UsedTypeHasActions(const RenderingUsedType* usedType) const;
+
+    std::unordered_map<const DataDefinition*, std::unique_ptr<RenderingUsedType>> m_used_types_lookup;
 };

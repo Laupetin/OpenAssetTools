@@ -13,6 +13,12 @@ public:
     static constexpr int FLAG_FIELDS_CALCULATING = 1 << 1;
     static constexpr int FLAG_ALIGNMENT_FORCED = 1 << 2;
 
+    DefinitionWithMembers(std::string _namespace, std::string name, unsigned pack);
+
+    [[nodiscard]] unsigned GetAlignment() const override;
+    [[nodiscard]] bool GetForceAlignment() const override;
+    [[nodiscard]] unsigned GetSize() const override;
+
     unsigned m_flags;
     unsigned m_size;
     unsigned m_alignment;
@@ -24,10 +30,4 @@ public:
     unsigned m_alignment_override;
 
     std::vector<std::shared_ptr<Variable>> m_members;
-
-    DefinitionWithMembers(std::string _namespace, std::string name, unsigned pack);
-
-    _NODISCARD unsigned GetAlignment() const override;
-    _NODISCARD bool GetForceAlignment() const override;
-    _NODISCARD unsigned GetSize() const override;
 };

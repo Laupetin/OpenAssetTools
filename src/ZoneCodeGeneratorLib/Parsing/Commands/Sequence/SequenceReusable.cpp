@@ -3,6 +3,11 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+namespace
+{
+    static constexpr auto CAPTURE_TYPE = 1;
+}
+
 SequenceReusable::SequenceReusable()
 {
     const CommandsMatcherFactory create(this);

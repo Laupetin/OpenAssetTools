@@ -7,19 +7,15 @@
 
 class SequenceBlock final : public CommandsParser::sequence_t
 {
-    static constexpr auto TAG_DEFAULT = 1;
-
-    static constexpr auto CAPTURE_BLOCK_ENUM_ENTRY = 1;
-    static constexpr auto CAPTURE_BLOCK_TYPE = 2;
-
-    std::unordered_map<std::string, FastFileBlockType> m_type_lookup;
-
-    void AddFastFileBlockToLookup(std::string name, FastFileBlockType type);
-    _NODISCARD bool GetFastFileBlockNameByType(const std::string& name, FastFileBlockType& type) const;
+public:
+    SequenceBlock();
 
 protected:
     void ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const override;
 
-public:
-    SequenceBlock();
+private:
+    void AddFastFileBlockToLookup(std::string name, FastFileBlockType type);
+    [[nodiscard]] bool GetFastFileBlockNameByType(const std::string& name, FastFileBlockType& type) const;
+
+    std::unordered_map<std::string, FastFileBlockType> m_type_lookup;
 };

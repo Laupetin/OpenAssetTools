@@ -7,11 +7,9 @@
 
 class SequenceNamespace final : public HeaderParser::sequence_t
 {
-    static constexpr int CAPTURE_NAME = 0;
+public:
+    SequenceNamespace();
 
 protected:
     void ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const override;
-
-public:
-    SequenceNamespace();
 };

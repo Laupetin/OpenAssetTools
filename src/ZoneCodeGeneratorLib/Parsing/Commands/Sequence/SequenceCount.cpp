@@ -5,6 +5,76 @@
 #include "Parsing/Commands/Matcher/CommandsCommonMatchers.h"
 #include "Parsing/Commands/Matcher/CommandsMatcherFactory.h"
 
+#include <memory>
+#include <vector>
+
+namespace
+{
+    static constexpr auto TAG_POINTER_RESOLVE = 1;
+
+    static constexpr auto CAPTURE_START = 1;
+    static constexpr auto CAPTURE_TYPE = 2;
+    static constexpr auto CAPTURE_ARRAY_INDEX = 3;
+
+    void SetCountByArrayIndex(CommandsParserState* state,
+                              SequenceResult<CommandsParserValue>& result,
+                              MemberInformation* member,
+                              PointerDeclarationModifier* pointer,
+                              std::unique_ptr<IEvaluation> evaluation)
+    {
+        std::vector<int> arraySizes;
+        std::vector<int> depthSize;
+        for (const auto& modifier : member->m_member->m_type_declaration->m_declaration_modifiers)
+        {
+            if (modifier->GetType() == DeclarationModifierType::ARRAY)
+                arraySizes.push_back(dynamic_cast<ArrayDeclarationModifier*>(modifier.get())->m_size);
+        }
+
+        depthSize.resize(arraySizes.size());
+        auto currentDepthSize = 1u;
+        for (auto i = arraySizes.size(); i > 0; i--)
+        {
+            if (i < arraySizes.size())
+                currentDepthSize *= arraySizes[i];
+            depthSize[i - 1] = currentDepthSize;
+        }
+
+        if (pointer->m_count_evaluation_by_array_index.empty())
+        {
+            auto neededCapacity = 0u;
+            for (auto arraySize : arraySizes)
+            {
+                if (neededCapacity == 0)
+                    neededCapacity = arraySize;
+                else
+                    neededCapacity *= arraySize;
+            }
+            pointer->m_count_evaluation_by_array_index.resize(neededCapacity);
+        }
+
+        auto currentIndex = 0u;
+        auto currentIndexOffset = 0u;
+        while (result.HasNextCapture(CAPTURE_ARRAY_INDEX) && currentIndexOffset < depthSize.size())
+        {
+            const auto& arrayIndexToken = result.NextCapture(CAPTURE_ARRAY_INDEX);
+            if (arrayIndexToken.m_type == CommandsParserValueType::INTEGER)
+            {
+                currentIndex += depthSize[currentIndexOffset++] * arrayIndexToken.IntegerValue();
+            }
+            else
+            {
+                auto* enumEntry = state->GetRepository()->GetEnumMemberByName(arrayIndexToken.IdentifierValue());
+                if (enumEntry == nullptr)
+                    throw ParsingException(arrayIndexToken.GetPos(), "Unknown enum entry");
+
+                currentIndex += depthSize[currentIndexOffset++] * enumEntry->m_value;
+            }
+        }
+
+        pointer->m_count_evaluation_by_array_index[currentIndex] = std::move(evaluation);
+    }
+} // namespace
+
 SequenceCount::SequenceCount()
 {
     const CommandsMatcherFactory create(this);
@@ -21,64 +91,6 @@ SequenceCount::SequenceCount()
         create.Label(CommandsCommonMatchers::LABEL_EVALUATION),
         create.Char(';'),
     });
-}
-
-void SequenceCount::SetCountByArrayIndex(CommandsParserState* state,
-                                         SequenceResult<CommandsParserValue>& result,
-                                         MemberInformation* member,
-                                         PointerDeclarationModifier* pointer,
-                                         std::unique_ptr<IEvaluation> evaluation)
-{
-    std::vector<int> arraySizes;
-    std::vector<int> depthSize;
-    for (const auto& modifier : member->m_member->m_type_declaration->m_declaration_modifiers)
-    {
-        if (modifier->GetType() == DeclarationModifierType::ARRAY)
-            arraySizes.push_back(dynamic_cast<ArrayDeclarationModifier*>(modifier.get())->m_size);
-    }
-
-    depthSize.resize(arraySizes.size());
-    auto currentDepthSize = 1u;
-    for (auto i = arraySizes.size(); i > 0; i--)
-    {
-        if (i < arraySizes.size())
-            currentDepthSize *= arraySizes[i];
-        depthSize[i - 1] = currentDepthSize;
-    }
-
-    if (pointer->m_count_evaluation_by_array_index.empty())
-    {
-        auto neededCapacity = 0u;
-        for (auto arraySize : arraySizes)
-        {
-            if (neededCapacity == 0)
-                neededCapacity = arraySize;
-            else
-                neededCapacity *= arraySize;
-        }
-        pointer->m_count_evaluation_by_array_index.resize(neededCapacity);
-    }
-
-    auto currentIndex = 0u;
-    auto currentIndexOffset = 0u;
-    while (result.HasNextCapture(CAPTURE_ARRAY_INDEX) && currentIndexOffset < depthSize.size())
-    {
-        const auto& arrayIndexToken = result.NextCapture(CAPTURE_ARRAY_INDEX);
-        if (arrayIndexToken.m_type == CommandsParserValueType::INTEGER)
-        {
-            currentIndex += depthSize[currentIndexOffset++] * arrayIndexToken.IntegerValue();
-        }
-        else
-        {
-            auto* enumEntry = state->GetRepository()->GetEnumMemberByName(arrayIndexToken.IdentifierValue());
-            if (enumEntry == nullptr)
-                throw ParsingException(arrayIndexToken.GetPos(), "Unknown enum entry");
-
-            currentIndex += depthSize[currentIndexOffset++] * enumEntry->m_value;
-        }
-    }
-
-    pointer->m_count_evaluation_by_array_index[currentIndex] = std::move(evaluation);
 }
 
 void SequenceCount::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const

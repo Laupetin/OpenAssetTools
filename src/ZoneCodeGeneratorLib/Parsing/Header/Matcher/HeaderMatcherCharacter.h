@@ -5,11 +5,12 @@
 
 class HeaderMatcherCharacter final : public AbstractMatcher<HeaderParserValue>
 {
-    char m_char;
+public:
+    explicit HeaderMatcherCharacter(char c);
 
 protected:
     MatcherResult<HeaderParserValue> CanMatch(ILexer<HeaderParserValue>* lexer, unsigned tokenOffset) override;
 
-public:
-    explicit HeaderMatcherCharacter(char c);
+private:
+    char m_char;
 };

@@ -13,7 +13,14 @@
 
 #include <algorithm>
 #include <chrono>
+#include <format>
 #include <iostream>
+
+namespace
+{
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
+    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+} // namespace
 
 HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
     : m_args(args),
@@ -29,7 +36,7 @@ bool HeaderFileReader::OpenBaseStream()
     auto stream = std::make_unique<ParserFilesystemStream>(m_filename);
     if (!stream->IsOpen())
     {
-        std::cout << "Could not open header file\n";
+        std::cerr << "Could not open header file\n";
         return false;
     }
 
@@ -65,9 +72,7 @@ void HeaderFileReader::SetupPostProcessors()
 bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
 {
     if (m_args->m_verbose)
-    {
-        std::cout << "Reading header file: " << m_filename << "\n";
-    }
+        std::cout << std::format("Reading header file: {}\n", m_filename);
 
     if (!OpenBaseStream())
         return false;
@@ -84,9 +89,7 @@ bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
     const auto end = std::chrono::steady_clock::now();
 
     if (m_args->m_verbose)
-    {
-        std::cout << "Processing header took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
-    }
+        std::cout << std::format("Processing header took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     if (!result)
         return false;

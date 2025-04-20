@@ -1,40 +1,44 @@
 #include "UnionsPostProcessor.h"
 
 #include <algorithm>
+#include <format>
 #include <iostream>
 
-bool UnionsPostProcessor::ProcessUnion(StructureInformation* info)
+namespace
 {
-    auto index = 0u;
-    auto lastEntryWithoutCondition = 0u;
-    auto entriesWithoutConditionCount = 0u;
-
-    for (const auto& member : info->m_ordered_members)
+    bool ProcessUnion(StructureInformation* info)
     {
-        if (!member->m_condition && !member->m_is_leaf)
+        auto index = 0u;
+        auto lastEntryWithoutCondition = 0u;
+        auto entriesWithoutConditionCount = 0u;
+
+        for (const auto& member : info->m_ordered_members)
         {
-            entriesWithoutConditionCount++;
-            lastEntryWithoutCondition = index;
+            if (!member->m_condition && !member->m_is_leaf)
+            {
+                entriesWithoutConditionCount++;
+                lastEntryWithoutCondition = index;
+            }
+            index++;
         }
-        index++;
-    }
 
-    if (entriesWithoutConditionCount > 1 && !info->m_usages.empty() && !info->m_is_leaf)
-    {
-        std::cout << "Union '" << info->m_definition->GetFullName() << "' has more than one entry without a condition!\n";
-        return false;
-    }
+        if (entriesWithoutConditionCount > 1 && !info->m_usages.empty() && !info->m_is_leaf)
+        {
+            std::cerr << std::format("Union '{}' has more than one entry without a condition!\n", info->m_definition->GetFullName());
+            return false;
+        }
 
-    if (entriesWithoutConditionCount == 1)
-    {
-        // If there is only one entry without condition make it the last of the ordered members
-        auto entryWithoutCondition = std::move(info->m_ordered_members.at(lastEntryWithoutCondition));
-        info->m_ordered_members.erase(info->m_ordered_members.begin() + lastEntryWithoutCondition);
-        info->m_ordered_members.emplace_back(std::move(entryWithoutCondition));
-    }
+        if (entriesWithoutConditionCount == 1)
+        {
+            // If there is only one entry without condition make it the last of the ordered members
+            auto entryWithoutCondition = std::move(info->m_ordered_members.at(lastEntryWithoutCondition));
+            info->m_ordered_members.erase(info->m_ordered_members.begin() + lastEntryWithoutCondition);
+            info->m_ordered_members.emplace_back(std::move(entryWithoutCondition));
+        }
 
-    return true;
-}
+        return true;
+    }
+} // namespace
 
 bool UnionsPostProcessor::PostProcess(IDataRepository* repository)
 {

@@ -7,14 +7,9 @@
 
 class SequenceEnum final : public HeaderParser::sequence_t
 {
-    static constexpr auto TAG_TYPEDEF = 1;
-
-    static constexpr auto CAPTURE_NAME = 1;
-    static constexpr auto CAPTURE_PARENT_TYPE = 2;
+public:
+    SequenceEnum();
 
 protected:
     void ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const override;
-
-public:
-    SequenceEnum();
 };

@@ -28,20 +28,20 @@ public:
     virtual void Add(std::unique_ptr<StructureInformation> structureInformation) = 0;
     virtual void Add(std::unique_ptr<FastFileBlock> fastFileBlock) = 0;
 
-    _NODISCARD virtual const std::string& GetGameName() const = 0;
+    [[nodiscard]] virtual const std::string& GetGameName() const = 0;
     virtual void SetGame(std::string gameName) = 0;
-    _NODISCARD virtual Architecture GetArchitecture() const = 0;
+    [[nodiscard]] virtual Architecture GetArchitecture() const = 0;
     virtual void SetArchitecture(Architecture architecture) = 0;
 
-    _NODISCARD virtual const std::vector<EnumDefinition*>& GetAllEnums() const = 0;
-    _NODISCARD virtual const std::vector<StructDefinition*>& GetAllStructs() const = 0;
-    _NODISCARD virtual const std::vector<UnionDefinition*>& GetAllUnions() const = 0;
-    _NODISCARD virtual const std::vector<TypedefDefinition*>& GetAllTypedefs() const = 0;
-    _NODISCARD virtual const std::vector<StructureInformation*>& GetAllStructureInformation() const = 0;
-    _NODISCARD virtual const std::vector<const FastFileBlock*>& GetAllFastFileBlocks() const = 0;
+    [[nodiscard]] virtual const std::vector<EnumDefinition*>& GetAllEnums() const = 0;
+    [[nodiscard]] virtual const std::vector<StructDefinition*>& GetAllStructs() const = 0;
+    [[nodiscard]] virtual const std::vector<UnionDefinition*>& GetAllUnions() const = 0;
+    [[nodiscard]] virtual const std::vector<TypedefDefinition*>& GetAllTypedefs() const = 0;
+    [[nodiscard]] virtual const std::vector<StructureInformation*>& GetAllStructureInformation() const = 0;
+    [[nodiscard]] virtual const std::vector<const FastFileBlock*>& GetAllFastFileBlocks() const = 0;
 
-    _NODISCARD virtual DataDefinition* GetDataDefinitionByName(const std::string& name) const = 0;
-    _NODISCARD virtual StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const = 0;
-    _NODISCARD virtual EnumMember* GetEnumMemberByName(const std::string& name) const = 0;
-    _NODISCARD virtual const FastFileBlock* GetFastFileBlockByName(const std::string& name) const = 0;
+    [[nodiscard]] virtual DataDefinition* GetDataDefinitionByName(const std::string& name) const = 0;
+    [[nodiscard]] virtual StructureInformation* GetInformationFor(const DefinitionWithMembers* definitionWithMembers) const = 0;
+    [[nodiscard]] virtual EnumMember* GetEnumMemberByName(const std::string& name) const = 0;
+    [[nodiscard]] virtual const FastFileBlock* GetFastFileBlockByName(const std::string& name) const = 0;
 };

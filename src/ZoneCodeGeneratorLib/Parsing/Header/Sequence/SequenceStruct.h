@@ -7,15 +7,9 @@
 
 class SequenceStruct final : public HeaderParser::sequence_t
 {
-    static constexpr int TAG_TYPEDEF = 1;
-
-    static constexpr int CAPTURE_NAME = 1;
-    static constexpr int CAPTURE_ALIGN = 2;
-    static constexpr int CAPTURE_PARENT_TYPE = 3;
+public:
+    SequenceStruct();
 
 protected:
     void ProcessMatch(HeaderParserState* state, SequenceResult<HeaderParserValue>& result) const override;
-
-public:
-    SequenceStruct();
 };

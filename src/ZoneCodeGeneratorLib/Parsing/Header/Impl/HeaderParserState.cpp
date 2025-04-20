@@ -3,6 +3,7 @@
 #include "Domain/Definition/EnumDefinition.h"
 #include "Parsing/Header/Block/HeaderBlockNone.h"
 
+#include <format>
 #include <iostream>
 
 HeaderParserState::HeaderParserState(const IPackValueSupplier* packValueSupplier)
@@ -96,7 +97,7 @@ bool HeaderParserState::ResolveForwardDeclarations()
 
         if (dataDefinition == nullptr)
         {
-            std::cout << "Forward declaration \"" << forwardDeclaration->GetFullName() << "\" was not defined\n";
+            std::cerr << std::format("Forward declaration \"{}\" was not defined\n", forwardDeclaration->GetFullName());
             return false;
         }
 

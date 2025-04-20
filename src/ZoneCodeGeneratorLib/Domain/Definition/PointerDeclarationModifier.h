@@ -8,19 +8,19 @@
 
 class PointerDeclarationModifier final : public DeclarationModifier
 {
-    static const IEvaluation* const DEFAULT_COUNT;
-
-    static bool EvaluationIsArray(const IEvaluation* evaluation);
-
 public:
+    [[nodiscard]] DeclarationModifierType GetType() const override;
+    [[nodiscard]] const IEvaluation* GetCountEvaluation() const;
+    [[nodiscard]] const IEvaluation* GetCountEvaluationForArrayIndex(int index);
+
+    [[nodiscard]] bool CountEvaluationIsArray() const;
+    [[nodiscard]] bool CountEvaluationIsArray(int index) const;
+    [[nodiscard]] bool AnyCountEvaluationIsArray() const;
+
     std::unique_ptr<IEvaluation> m_count_evaluation;
     std::vector<std::unique_ptr<IEvaluation>> m_count_evaluation_by_array_index;
 
-    _NODISCARD DeclarationModifierType GetType() const override;
-    _NODISCARD const IEvaluation* GetCountEvaluation() const;
-    _NODISCARD const IEvaluation* GetCountEvaluationForArrayIndex(int index);
-
-    _NODISCARD bool CountEvaluationIsArray() const;
-    _NODISCARD bool CountEvaluationIsArray(int index) const;
-    _NODISCARD bool AnyCountEvaluationIsArray() const;
+private:
+    static const IEvaluation* const DEFAULT_COUNT;
+    static bool EvaluationIsArray(const IEvaluation* evaluation);
 };

@@ -5,6 +5,43 @@
 
 #include <list>
 
+namespace
+{
+    static constexpr auto TAG_FIND_FIRST = 1;
+
+    static constexpr auto CAPTURE_START = 1;
+    static constexpr auto CAPTURE_TYPE = 2;
+    static constexpr auto CAPTURE_ENTRY = 3;
+
+    StructureInformation* GetType(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
+    {
+        if (result.HasNextCapture(CAPTURE_TYPE))
+        {
+            const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
+            StructureInformation* information;
+            std::vector<MemberInformation*> memberChain;
+
+            if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), information, memberChain))
+                throw ParsingException(typeNameToken.GetPos(), "Unknown type");
+
+            if (memberChain.empty())
+                return information;
+
+            auto* lastMember = memberChain.back();
+
+            if (lastMember->m_type == nullptr)
+                throw ParsingException(typeNameToken.GetPos(), "Member type must either be struct or union");
+
+            return lastMember->m_type;
+        }
+
+        if (state->GetInUse() != nullptr)
+            return state->GetInUse();
+
+        throw ParsingException(result.NextCapture(CAPTURE_START).GetPos(), "No type is used. Therefore one needs to be specified directly.");
+    }
+} // namespace
+
 SequenceReorder::SequenceReorder()
 {
     const CommandsMatcherFactory create(this);
@@ -24,34 +61,6 @@ SequenceReorder::SequenceReorder()
         create.Loop(create.Identifier().Capture(CAPTURE_ENTRY)),
         create.Char(';'),
     });
-}
-
-StructureInformation* SequenceReorder::GetType(CommandsParserState* state, SequenceResult<CommandsParserValue>& result)
-{
-    if (result.HasNextCapture(CAPTURE_TYPE))
-    {
-        const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
-        StructureInformation* information;
-        std::vector<MemberInformation*> memberChain;
-
-        if (!state->GetTypenameAndMembersFromTypename(typeNameToken.TypeNameValue(), information, memberChain))
-            throw ParsingException(typeNameToken.GetPos(), "Unknown type");
-
-        if (memberChain.empty())
-            return information;
-
-        auto* lastMember = memberChain.back();
-
-        if (lastMember->m_type == nullptr)
-            throw ParsingException(typeNameToken.GetPos(), "Member type must either be struct or union");
-
-        return lastMember->m_type;
-    }
-
-    if (state->GetInUse() != nullptr)
-        return state->GetInUse();
-
-    throw ParsingException(result.NextCapture(CAPTURE_START).GetPos(), "No type is used. Therefore one needs to be specified directly.");
 }
 
 void SequenceReorder::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const

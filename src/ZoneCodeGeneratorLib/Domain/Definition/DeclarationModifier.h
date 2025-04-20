@@ -18,5 +18,5 @@ public:
     DeclarationModifier& operator=(const DeclarationModifier& other) = default;
     DeclarationModifier& operator=(DeclarationModifier&& other) noexcept = default;
 
-    _NODISCARD virtual DeclarationModifierType GetType() const = 0;
+    [[nodiscard]] virtual DeclarationModifierType GetType() const = 0;
 };
