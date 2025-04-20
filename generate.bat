@@ -1,7 +1,7 @@
 @echo off
 
-set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-beta4/premake-5.0.0-beta4-windows.zip"
-set PREMAKE_HASH="12d741d3b70445b025c03e26148e2d129801041fa5ddde61b4ac888a76017395"
+set PREMAKE_URL="https://github.com/premake/premake-core/releases/download/v5.0.0-beta6/premake-5.0.0-beta6-windows.zip"
+set PREMAKE_HASH="c34a6e0b15f119f6284886298fdd8df543af87ad16f3ce5f4d0a847be2a88343"
 
 @REM The following variables can be set:
 @REM    PREMAKE_NO_GLOBAL - Ignore premake5 executable from path
