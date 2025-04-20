@@ -37,7 +37,7 @@ private:
     void PrintUsage() const;
     static void PrintVersion();
 
-    void SetBinFolder(const char* argv0);
+    void SetBinFolder();
     void SetVerbose(bool isVerbose);
 
     ArgumentParser m_argument_parser;
