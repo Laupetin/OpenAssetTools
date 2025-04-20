@@ -46,13 +46,18 @@ function install_premake {
     chmod +x build/premake5
 }
 
+function expect_inside_git_repository {
+    inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
+    if [ ! -d ".git" ] && [ ! "$inside_git_repo" ]; then
+        echo "You must clone the OpenAssetTools repository using 'git clone'. Please read README.md." >&2
+        exit 1
+    fi
+}
+
 # Go to repository root
 cd "$(dirname "$0")" || exit 2
 
-if [[ ! -d ".git" ]]; then
-    echo "You must clone the OpenAssetTools repository using 'git clone'. Please read README.md." >&2
-    exit 1
-fi
+expect_inside_git_repository
 
 PREMAKE_BIN=''
 if [[ -z "$PREMAKE_NO_GLOBAL" ]] && [[ -x "$(command -v premake5)" ]]; then
