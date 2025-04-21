@@ -28,7 +28,7 @@ IF ERRORLEVEL 1 (
 )
 
 echo Extracting...
-%POWERSHELL_BIN% -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath build/premake.zip -DestinationPath build"
+%POWERSHELL_BIN% -NoProfile -NonInteractive -Command "Expand-Archive -LiteralPath build/premake.zip -DestinationPath build -Force"
 IF ERRORLEVEL 1 (
     echo Extraction failed >&2
     exit 2
@@ -59,8 +59,11 @@ IF "%PREMAKE_NO_GLOBAL%" EQU "" (
 )
 
 IF EXIST build/premake5.exe (
-    set PREMAKE_BIN="build/premake5.exe"
-    goto runpremake
+    build\premake5.exe --version >NUL
+    IF NOT ERRORLEVEL 1 (
+        set PREMAKE_BIN="build/premake5.exe"
+        goto runpremake
+    )
 )
 
 if "%PREMAKE_NO_PROMPT%" NEQ "" (

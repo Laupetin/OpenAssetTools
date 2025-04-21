@@ -62,7 +62,7 @@ expect_inside_git_repository
 PREMAKE_BIN=''
 if [[ -z "$PREMAKE_NO_GLOBAL" ]] && [[ -x "$(command -v premake5)" ]]; then
     PREMAKE_BIN='premake5'
-elif [[ -x "$(command -v build/premake5)" ]]; then
+elif [[ -x "$(command -v build/premake5)" ]] && [[ ! -z "$(build/premake5 --version)" ]]; then
     PREMAKE_BIN='build/premake5'
 else
     echo "Could not find premake5. You can either install it yourself or this script download it for you."
