@@ -1,14 +1,20 @@
 #include "XModelBinWriter.h"
 
+#include "GitVersion.h"
+
 #pragma warning(push, 0)
 #include <Eigen>
 #pragma warning(pop)
 
 #include <chrono>
+#include <format>
 #include <iomanip>
 #include <iostream>
 #include <lib/lz4.h>
+#include <limits>
 #include <ostream>
+#include <sstream>
+#include <string>
 
 class XModelBinWriterBase : public XModelWriter
 {
@@ -25,7 +31,7 @@ protected:
      *       1           = Object index
      *       Test_Obj2   = Object name
      */
-    enum XModelBinHash : uint32_t
+    enum XModelBinHash : uint16_t
     {
         COMMENT = 0xC355,
         MODEL = 0x46C8,
@@ -116,17 +122,17 @@ protected:
 
     void WriteComment(const std::string& comment)
     {
-        Write(XModelBinHash::COMMENT);
+        Write(static_cast<uint32_t>(XModelBinHash::COMMENT));
         WriteAlignedString(comment);
     }
 
-    void WriteInt16(const int16_t hash, const int16_t value)
+    void WriteInt16(const uint16_t hash, const int16_t value)
     {
         Write(hash);
         Write(value);
     }
 
-    void WriteUInt16(const int16_t hash, const uint16_t value)
+    void WriteUInt16(const uint16_t hash, const uint16_t value)
     {
         Write(hash);
         Write(value);
@@ -146,23 +152,23 @@ protected:
                           std::numeric_limits<uint8_t>::max());
     }
 
-    void WriteHeader(int16_t version)
+    void WriteHeader(uint16_t version)
     {
-        WriteComment("OpenAssetTools XMODEL_BIN File");
+        WriteComment("OpenAssetTools " GIT_VERSION " XMODEL_BIN File");
         WriteComment(std::format("Game Origin: {}", m_game_name));
         WriteComment(std::format("Zone Origin: {}", m_zone_name));
-        Write(XModelBinHash::MODEL);
-        WriteInt16(static_cast<int16_t>(XModelBinHash::VERSION), version);
+        Write(static_cast<uint32_t>(XModelBinHash::MODEL));
+        WriteUInt16(XModelBinHash::VERSION, version);
     }
 
     void WriteBones(const XModelCommon& xmodel)
     {
-        WriteInt16(static_cast<int16_t>(XModelBinHash::BONE_COUNT), static_cast<int16_t>(xmodel.m_bones.size()));
+        WriteUInt16(XModelBinHash::BONE_COUNT, static_cast<uint16_t>(xmodel.m_bones.size()));
 
-        auto boneNum = 0;
+        auto boneNum = 0U;
         for (const auto& bone : xmodel.m_bones)
         {
-            Write(XModelBinHash::BONE);
+            Write(static_cast<uint32_t>(XModelBinHash::BONE));
             Write(boneNum);
             if (bone.parentIndex)
                 Write(static_cast<int32_t>(*bone.parentIndex));
@@ -176,31 +182,31 @@ protected:
         boneNum = 0;
         for (const auto& bone : xmodel.m_bones)
         {
-            WriteInt16(static_cast<int16_t>(XModelBinHash::BONE_INDEX), boneNum);
+            WriteUInt16(XModelBinHash::BONE_INDEX, static_cast<uint32_t>(boneNum));
 
-            Write(XModelBinHash::OFFSET);
+            Write(static_cast<uint32_t>(XModelBinHash::OFFSET));
             Write(bone.globalOffset[0]); // X
             Write(bone.globalOffset[1]); // Y
             Write(bone.globalOffset[2]); // Z
 
-            Write(XModelBinHash::BONE_SCALE);
+            Write(static_cast<uint32_t>(XModelBinHash::BONE_SCALE));
             Write(bone.scale[0]); // X
             Write(bone.scale[1]); // Y
             Write(bone.scale[2]); // Z
 
             const auto mat = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.y, bone.globalRotation.z).matrix();
 
-            Write(static_cast<int16_t>(XModelBinHash::BONE_MATRIX_X));
+            Write(XModelBinHash::BONE_MATRIX_X);
             Write(ClampFloatToShort(mat(0, 0)));
             Write(ClampFloatToShort(mat(0, 1)));
             Write(ClampFloatToShort(mat(0, 2)));
 
-            Write(static_cast<int16_t>(XModelBinHash::BONE_MATRIX_Y));
+            Write(XModelBinHash::BONE_MATRIX_Y);
             Write(ClampFloatToShort(mat(1, 0)));
             Write(ClampFloatToShort(mat(1, 1)));
             Write(ClampFloatToShort(mat(1, 2)));
 
-            Write(static_cast<int16_t>(XModelBinHash::BONE_MATRIX_Z));
+            Write(XModelBinHash::BONE_MATRIX_Z);
             Write(ClampFloatToShort(mat(2, 0)));
             Write(ClampFloatToShort(mat(2, 1)));
             Write(ClampFloatToShort(mat(2, 2)));
@@ -209,15 +215,13 @@ protected:
         }
     }
 
-    XModelBinWriterBase(std::ostream& stream, std::string gameName, std::string zoneName)
-        : m_stream(stream),
-          m_game_name(std::move(gameName)),
+    XModelBinWriterBase(std::string gameName, std::string zoneName)
+        : m_game_name(std::move(gameName)),
           m_zone_name(std::move(zoneName))
     {
     }
 
     std::ostringstream m_writer;
-    std::ostream& m_stream;
     std::string m_game_name;
     std::string m_zone_name;
     VertexMerger m_vertex_merger;
@@ -229,45 +233,45 @@ class XModelBinWriter7 final : public XModelBinWriterBase
     {
         const auto& distinctVertexValues = m_vertex_merger.GetDistinctValues();
 
-        if (distinctVertexValues.size() > UINT16_MAX)
+        if (distinctVertexValues.size() > std::numeric_limits<uint16_t>::max())
         {
             // Use 32 bit
-            XModelBinWriterBase::Write(XModelBinHash::VERT32_COUNT);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::VERT32_COUNT));
             XModelBinWriterBase::Write(static_cast<uint32_t>(distinctVertexValues.size()));
         }
         else
         {
             // Use 16 bit
-            WriteUInt16(static_cast<int16_t>(XModelBinHash::VERT16_COUNT), static_cast<uint16_t>(distinctVertexValues.size()));
+            WriteUInt16(XModelBinHash::VERT16_COUNT, static_cast<uint16_t>(distinctVertexValues.size()));
         }
 
         size_t vertexNum = 0u;
         for (const auto& vertexPos : distinctVertexValues)
         {
-            if (vertexNum > UINT16_MAX)
+            if (vertexNum > std::numeric_limits<uint16_t>::max())
             {
                 // Use 32 bit
-                XModelBinWriterBase::Write(XModelBinHash::VERT32);
+                XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::VERT32));
                 XModelBinWriterBase::Write(static_cast<uint32_t>(vertexNum));
             }
             else
             {
                 // Use 16 bit
-                WriteUInt16(static_cast<int16_t>(XModelBinHash::VERT16), static_cast<uint16_t>(vertexNum));
+                WriteUInt16(XModelBinHash::VERT16, static_cast<uint16_t>(vertexNum));
             }
 
-            XModelBinWriterBase::Write(XModelBinHash::OFFSET);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::OFFSET));
             XModelBinWriterBase::Write(vertexPos.x);
             XModelBinWriterBase::Write(vertexPos.y);
             XModelBinWriterBase::Write(vertexPos.z);
 
-            WriteInt16(static_cast<int16_t>(XModelBinHash::VERT_WEIGHT_COUNT), static_cast<int16_t>(vertexPos.weightCount));
+            WriteUInt16(XModelBinHash::VERT_WEIGHT_COUNT, static_cast<uint16_t>(vertexPos.weightCount));
 
             for (auto weightIndex = 0u; weightIndex < vertexPos.weightCount; weightIndex++)
             {
                 const auto& weight = vertexPos.weights[weightIndex];
 
-                WriteInt16(static_cast<int16_t>(XModelBinHash::VERT_WEIGHT), weight.boneIndex);
+                WriteInt16(XModelBinHash::VERT_WEIGHT, weight.boneIndex);
                 XModelBinWriterBase::Write(weight.weight);
             }
             vertexNum++;
@@ -276,18 +280,18 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteFaceVertex(const XModelVertex& vertex)
     {
-        XModelBinWriterBase::Write(static_cast<int16_t>(XModelBinHash::NORMAL));
+        XModelBinWriterBase::Write(XModelBinHash::NORMAL);
         XModelBinWriterBase::Write(ClampFloatToShort(vertex.normal[0])); // X
         XModelBinWriterBase::Write(ClampFloatToShort(vertex.normal[1])); // Y
         XModelBinWriterBase::Write(ClampFloatToShort(vertex.normal[2])); // Z
 
-        XModelBinWriterBase::Write(XModelBinHash::COLOR);
+        XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::COLOR));
         XModelBinWriterBase::Write(ClampFloatToUByte(vertex.color[0])); // R
         XModelBinWriterBase::Write(ClampFloatToUByte(vertex.color[1])); // G
         XModelBinWriterBase::Write(ClampFloatToUByte(vertex.color[2])); // B
         XModelBinWriterBase::Write(ClampFloatToUByte(vertex.color[3])); // A
 
-        XModelBinWriterBase::Write(static_cast<int16_t>(XModelBinHash::UV));
+        XModelBinWriterBase::Write(XModelBinHash::UV);
         XModelBinWriterBase::Write(static_cast<uint16_t>(1)); // Layer
         XModelBinWriterBase::Write(vertex.uv[0]);
         XModelBinWriterBase::Write(vertex.uv[1]);
@@ -299,7 +303,7 @@ class XModelBinWriter7 final : public XModelBinWriterBase
         for (const auto& object : xmodel.m_objects)
             totalFaceCount += object.m_faces.size();
 
-        XModelBinWriterBase::Write(XModelBinHash::FACE_COUNT);
+        XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::FACE_COUNT));
         XModelBinWriterBase::Write(totalFaceCount);
 
         auto objectIndex = 0u;
@@ -317,33 +321,33 @@ class XModelBinWriter7 final : public XModelBinWriterBase
                 const XModelVertex& v1 = xmodel.m_vertices[face.vertexIndex[1]];
                 const XModelVertex& v2 = xmodel.m_vertices[face.vertexIndex[2]];
 
-                XModelBinWriterBase::Write(static_cast<int16_t>(XModelBinHash::TRIANGLE32));
+                XModelBinWriterBase::Write(XModelBinHash::TRIANGLE32);
                 XModelBinWriterBase::Write(static_cast<uint8_t>(objectIndex));
                 XModelBinWriterBase::Write(static_cast<uint8_t>(object.materialIndex));
 
-                if (m_vertex_merger.GetDistinctValues().size() > UINT16_MAX)
+                if (m_vertex_merger.GetDistinctValues().size() > std::numeric_limits<uint16_t>::max())
                 {
-                    XModelBinWriterBase::Write(XModelBinHash::VERT32);
+                    XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::VERT32));
                     XModelBinWriterBase::Write(static_cast<uint32_t>(distinctPositions[0]));
                     WriteFaceVertex(v0);
 
-                    XModelBinWriterBase::Write(XModelBinHash::VERT32);
+                    XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::VERT32));
                     XModelBinWriterBase::Write(static_cast<uint32_t>(distinctPositions[1]));
                     WriteFaceVertex(v1);
 
-                    XModelBinWriterBase::Write(XModelBinHash::VERT32);
+                    XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::VERT32));
                     XModelBinWriterBase::Write(static_cast<uint32_t>(distinctPositions[2]));
                     WriteFaceVertex(v2);
                 }
                 else
                 {
-                    WriteUInt16(static_cast<int16_t>(XModelBinHash::VERT16), static_cast<uint16_t>(distinctPositions[0]));
+                    WriteUInt16(XModelBinHash::VERT16, static_cast<uint16_t>(distinctPositions[0]));
                     WriteFaceVertex(v0);
 
-                    WriteUInt16(static_cast<int16_t>(XModelBinHash::VERT16), static_cast<uint16_t>(distinctPositions[1]));
+                    WriteUInt16(XModelBinHash::VERT16, static_cast<uint16_t>(distinctPositions[1]));
                     WriteFaceVertex(v1);
 
-                    WriteUInt16(static_cast<int16_t>(XModelBinHash::VERT16), static_cast<uint16_t>(distinctPositions[2]));
+                    WriteUInt16(XModelBinHash::VERT16, static_cast<uint16_t>(distinctPositions[2]));
                     WriteFaceVertex(v2);
                 }
             }
@@ -354,13 +358,13 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteObjects(const XModelCommon& xmodel)
     {
-        WriteInt16(XModelBinHash::OBJECT_COUNT, static_cast<int16_t>(xmodel.m_objects.size()));
+        WriteUInt16(XModelBinHash::OBJECT_COUNT, static_cast<uint16_t>(xmodel.m_objects.size()));
 
         size_t objectNum = 0;
         for (const auto& object : xmodel.m_objects)
         {
-            XModelBinWriterBase::Write(static_cast<int16_t>(XModelBinHash::OBJECT));
-            XModelBinWriterBase::Write(static_cast<int16_t>(objectNum));
+            XModelBinWriterBase::Write(XModelBinHash::OBJECT);
+            XModelBinWriterBase::Write(static_cast<uint16_t>(objectNum));
             WriteAlignedString(object.name);
 
             objectNum++;
@@ -369,84 +373,87 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteMaterials(const XModelCommon& xmodel)
     {
-        WriteInt16(static_cast<int16_t>(XModelBinHash::MATERIAL_COUNT), static_cast<int16_t>(xmodel.m_materials.size()));
+        WriteUInt16(XModelBinHash::MATERIAL_COUNT, static_cast<uint16_t>(xmodel.m_materials.size()));
 
         size_t materialNum = 0u;
         for (const auto& material : xmodel.m_materials)
         {
             const auto colorMapPath = std::format("../images/{}.dds", material.colorMapName);
 
-            WriteInt16(static_cast<int16_t>(XModelBinHash::MATERIAL), static_cast<int16_t>(materialNum));
+            WriteUInt16(XModelBinHash::MATERIAL, static_cast<uint16_t>(materialNum));
             WriteAlignedString(material.name);
             WriteAlignedString(material.materialTypeName);
             WriteAlignedString(colorMapPath);
 
-            XModelBinWriterBase::Write(XModelBinHash::COLOR);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::COLOR));
             XModelBinWriterBase::Write(ClampFloatToUByte(material.color[0])); // R
             XModelBinWriterBase::Write(ClampFloatToUByte(material.color[1])); // G
             XModelBinWriterBase::Write(ClampFloatToUByte(material.color[2])); // B
             XModelBinWriterBase::Write(ClampFloatToUByte(material.color[3])); // A
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_TRANSPARENCY);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_TRANSPARENCY));
             XModelBinWriterBase::Write(material.transparency[0]);
             XModelBinWriterBase::Write(material.transparency[1]);
             XModelBinWriterBase::Write(material.transparency[2]);
             XModelBinWriterBase::Write(material.transparency[3]);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_AMBIENT_COLOR);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_AMBIENT_COLOR));
             XModelBinWriterBase::Write(material.ambientColor[0]); // R
             XModelBinWriterBase::Write(material.ambientColor[1]); // G
             XModelBinWriterBase::Write(material.ambientColor[2]); // B
             XModelBinWriterBase::Write(material.ambientColor[3]); // A
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_INCANDESCENCE);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_INCANDESCENCE));
             XModelBinWriterBase::Write(material.incandescence[0]);
             XModelBinWriterBase::Write(material.incandescence[1]);
             XModelBinWriterBase::Write(material.incandescence[2]);
             XModelBinWriterBase::Write(material.incandescence[3]);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_COEFFS);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_COEFFS));
             XModelBinWriterBase::Write(material.coeffs[0]);
             XModelBinWriterBase::Write(material.coeffs[1]);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_GLOW);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_GLOW));
             XModelBinWriterBase::Write(material.glow.x);
             XModelBinWriterBase::Write(material.glow.y);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_REFRACTIVE);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_REFRACTIVE));
             XModelBinWriterBase::Write(material.refractive.x);
             XModelBinWriterBase::Write(material.refractive.y);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_SPECULAR_COLOR);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_SPECULAR_COLOR));
             XModelBinWriterBase::Write(material.specularColor[0]); // R
             XModelBinWriterBase::Write(material.specularColor[1]); // G
             XModelBinWriterBase::Write(material.specularColor[2]); // B
             XModelBinWriterBase::Write(material.specularColor[3]); // A
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_REFLECTIVE_COLOR);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_REFLECTIVE_COLOR));
             XModelBinWriterBase::Write(material.reflectiveColor[0]); // R
             XModelBinWriterBase::Write(material.reflectiveColor[1]); // G
             XModelBinWriterBase::Write(material.reflectiveColor[2]); // B
             XModelBinWriterBase::Write(material.reflectiveColor[3]); // A
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_REFLECTIVE);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_REFLECTIVE));
             XModelBinWriterBase::Write(material.reflective.x);
             XModelBinWriterBase::Write(material.reflective.y);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_BLINN);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_BLINN));
             XModelBinWriterBase::Write(material.blinn[0]);
             XModelBinWriterBase::Write(material.blinn[1]);
 
-            XModelBinWriterBase::Write(XModelBinHash::MATERIAL_PHONG);
+            XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::MATERIAL_PHONG));
             XModelBinWriterBase::Write(material.phong);
 
             materialNum++;
         }
     }
 
+    std::ostream& m_stream;
+
 public:
     XModelBinWriter7(std::ostream& stream, std::string gameName, std::string zoneName)
-        : XModelBinWriterBase(stream, std::move(gameName), std::move(zoneName))
+        : m_stream(stream),
+          XModelBinWriterBase(std::move(gameName), std::move(zoneName))
     {
     }
 
@@ -460,18 +467,16 @@ public:
         WriteObjects(xmodel);
         WriteMaterials(xmodel);
 
+        auto uncompressedSize = static_cast<uint32_t>(m_writer.str().size());
         auto estimatedCompressedFileSize = LZ4_compressBound(m_writer.str().size());
-        auto compressedBuffer = new char[estimatedCompressedFileSize];
-        auto actualCompressedFileSize = LZ4_compress_default(m_writer.str().c_str(), compressedBuffer, m_writer.str().size(), estimatedCompressedFileSize);
-
-        auto uncompressedSize = m_writer.str().size();
-        char uncompressedSizeChar[4];
-        std::memcpy(uncompressedSizeChar, &uncompressedSize, sizeof(uncompressedSizeChar));
+        const auto compressedBuffer = std::make_unique<char[]>(estimatedCompressedFileSize);
+        auto actualCompressedFileSize =
+            LZ4_compress_default(m_writer.str().c_str(), compressedBuffer.get(), m_writer.str().size(), estimatedCompressedFileSize);
 
         static constexpr char MAGIC[5] = {'*', 'L', 'Z', '4', '*'};
         m_stream.write(MAGIC, sizeof(MAGIC));
-        m_stream.write(uncompressedSizeChar, sizeof(uncompressedSizeChar));
-        m_stream.write(compressedBuffer, actualCompressedFileSize);
+        m_stream.write(reinterpret_cast<char*>(&uncompressedSize), sizeof(uncompressedSize));
+        m_stream.write(compressedBuffer.get(), actualCompressedFileSize);
     }
 };
 
