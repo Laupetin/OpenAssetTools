@@ -51,10 +51,11 @@ namespace
         CHECK(stringTable->values[5].hash == 0x1505);
 
         REQUIRE(stringTable->cellIndex != nullptr);
-        CHECK(stringTable->cellIndex[0] == 2);
-        CHECK(stringTable->cellIndex[1] == 4);
-        CHECK(stringTable->cellIndex[2] == 3);
-        CHECK(stringTable->cellIndex[3] == 1);
-        CHECK(stringTable->cellIndex[4] == 0);
+        CHECK(stringTable->cellIndex[0] == 5);
+        CHECK(stringTable->cellIndex[1] == 2);
+        CHECK(stringTable->cellIndex[2] == 4);
+        CHECK(stringTable->cellIndex[3] == 3);
+        CHECK(stringTable->cellIndex[4] == 1);
+        CHECK(stringTable->cellIndex[5] == 0);
     }
 } // namespace

@@ -1942,7 +1942,7 @@ namespace T6
         int columnCount;
         int rowCount;
         StringTableCell* values;
-        int16_t* cellIndex;
+        uint16_t* cellIndex;
     };
 
     enum LbUpdateType
