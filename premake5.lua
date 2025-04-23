@@ -97,6 +97,7 @@ include "thirdparty/minilzo.lua"
 include "thirdparty/minizip.lua"
 include "thirdparty/salsa20.lua"
 include "thirdparty/zlib.lua"
+include "thirdparty/lz4.lua"
 
 -- ThirdParty group: All projects that are external dependencies
 group "ThirdParty"
@@ -109,6 +110,7 @@ group "ThirdParty"
     minizip:project()
     salsa20:project()
     zlib:project()
+    lz4:project()
 group ""
 
 -- ========================
