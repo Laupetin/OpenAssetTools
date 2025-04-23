@@ -112,7 +112,8 @@ namespace string_table
     template<typename StringTableType, int (*HashFunc)(const char*)>
     class StringTableLoaderV3 final : public AbstractStringTableLoader<StringTableType, std::remove_pointer_t<decltype(StringTableType::values)>>
     {
-        using CellType_t = decltype(*StringTableType::values);
+        using CellType_t = std::remove_pointer_t<decltype(StringTableType::values)>;
+        using CellIndexType_t = std::remove_pointer_t<decltype(StringTableType::cellIndex)>;
 
     protected:
         void SetCellContent(CellType_t& cell, const char* content) override
@@ -129,13 +130,13 @@ namespace string_table
                 return;
             }
 
-            stringTable->cellIndex = memory.Alloc<int16_t>(cellCount);
+            stringTable->cellIndex = memory.Alloc<CellIndexType_t>(cellCount);
             for (auto i = 0u; i < cellCount; i++)
-                stringTable->cellIndex[i] = i;
+                stringTable->cellIndex[i] = static_cast<CellIndexType_t>(i);
 
             std::sort(&stringTable->cellIndex[0],
-                      &stringTable->cellIndex[cellCount - 1],
-                      [stringTable](const int16_t a, const int16_t b)
+                      &stringTable->cellIndex[cellCount],
+                      [stringTable](const CellIndexType_t a, const CellIndexType_t b)
                       {
                           auto compareResult = stringTable->values[a].hash - stringTable->values[b].hash;
                           if (compareResult == 0)
