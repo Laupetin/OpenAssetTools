@@ -86,16 +86,17 @@ protected:
         auto vertexOffset = 0u;
         for (const auto& vertex : xmodel.m_vertices)
         {
-            XModelVertexBoneWeights weights{0, 0};
+            XModelVertexBoneWeights weights{.weightOffset = 0, .weightCount = 0};
 
             if (vertexOffset < xmodel.m_vertex_bone_weights.size())
                 weights = xmodel.m_vertex_bone_weights[vertexOffset];
 
-            m_vertex_merger.Add(VertexMergerPos{vertex.coordinates[0],
-                                                vertex.coordinates[1],
-                                                vertex.coordinates[2],
-                                                xmodel.m_bone_weight_data.weights.empty() ? nullptr : &xmodel.m_bone_weight_data.weights[weights.weightOffset],
-                                                weights.weightCount});
+            m_vertex_merger.Add(
+                VertexMergerPos{.x = vertex.coordinates[0],
+                                .y = vertex.coordinates[1],
+                                .z = vertex.coordinates[2],
+                                .weights = xmodel.m_bone_weight_data.weights.empty() ? nullptr : &xmodel.m_bone_weight_data.weights[weights.weightOffset],
+                                .weightCount = weights.weightCount});
 
             vertexOffset++;
         }
@@ -106,7 +107,7 @@ protected:
         m_writer.write(reinterpret_cast<const char*>(&data), sizeof(T));
     }
 
-    void WriteNullTerminatedString(std::string string)
+    void WriteNullTerminatedString(const std::string& string)
     {
         m_writer.write(string.c_str(), string.size() + 1);
     }
@@ -138,21 +139,21 @@ protected:
         Write(value);
     }
 
-    int16_t ClampFloatToShort(const float value) const
+    [[nodiscard]] static int16_t ClampFloatToShort(const float value)
     {
         return std::clamp(static_cast<int16_t>(std::numeric_limits<int16_t>::max() * std::clamp(value, -1.0f, 1.0f)),
                           std::numeric_limits<int16_t>::min(),
                           std::numeric_limits<int16_t>::max());
     }
 
-    uint8_t ClampFloatToUByte(const float value) const
+    [[nodiscard]] static uint8_t ClampFloatToUByte(const float value)
     {
         return std::clamp(static_cast<uint8_t>(std::numeric_limits<uint8_t>::max() * std::clamp(value, -1.0f, 1.0f)),
                           std::numeric_limits<uint8_t>::min(),
                           std::numeric_limits<uint8_t>::max());
     }
 
-    void WriteHeader(uint16_t version)
+    void WriteHeader(const uint16_t version)
     {
         WriteComment("OpenAssetTools " GIT_VERSION " XMODEL_BIN File");
         WriteComment(std::format("Game Origin: {}", m_game_name));
@@ -182,7 +183,7 @@ protected:
         boneNum = 0;
         for (const auto& bone : xmodel.m_bones)
         {
-            WriteUInt16(XModelBinHash::BONE_INDEX, static_cast<uint32_t>(boneNum));
+            WriteUInt16(XModelBinHash::BONE_INDEX, static_cast<uint16_t>(boneNum));
 
             Write(static_cast<uint32_t>(XModelBinHash::OFFSET));
             Write(bone.globalOffset[0]); // X
@@ -271,7 +272,7 @@ class XModelBinWriter7 final : public XModelBinWriterBase
             {
                 const auto& weight = vertexPos.weights[weightIndex];
 
-                WriteInt16(XModelBinHash::VERT_WEIGHT, weight.boneIndex);
+                WriteUInt16(XModelBinHash::VERT_WEIGHT, static_cast<uint16_t>(weight.boneIndex));
                 XModelBinWriterBase::Write(weight.weight);
             }
             vertexNum++;
@@ -292,7 +293,7 @@ class XModelBinWriter7 final : public XModelBinWriterBase
         XModelBinWriterBase::Write(ClampFloatToUByte(vertex.color[3])); // A
 
         XModelBinWriterBase::Write(XModelBinHash::UV);
-        XModelBinWriterBase::Write(static_cast<uint16_t>(1)); // Layer
+        XModelBinWriterBase::Write(static_cast<uint16_t>(1u)); // Layer
         XModelBinWriterBase::Write(vertex.uv[0]);
         XModelBinWriterBase::Write(vertex.uv[1]);
     }
@@ -452,8 +453,8 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
 public:
     XModelBinWriter7(std::ostream& stream, std::string gameName, std::string zoneName)
-        : m_stream(stream),
-          XModelBinWriterBase(std::move(gameName), std::move(zoneName))
+        : XModelBinWriterBase(std::move(gameName), std::move(zoneName)),
+          m_stream(stream)
     {
     }
 
@@ -468,10 +469,10 @@ public:
         WriteMaterials(xmodel);
 
         auto uncompressedSize = static_cast<uint32_t>(m_writer.str().size());
-        auto estimatedCompressedFileSize = LZ4_compressBound(m_writer.str().size());
+        const auto estimatedCompressedFileSize = LZ4_compressBound(static_cast<int>(m_writer.str().size()));
         const auto compressedBuffer = std::make_unique<char[]>(estimatedCompressedFileSize);
-        auto actualCompressedFileSize =
-            LZ4_compress_default(m_writer.str().c_str(), compressedBuffer.get(), m_writer.str().size(), estimatedCompressedFileSize);
+        const auto actualCompressedFileSize =
+            LZ4_compress_default(m_writer.str().c_str(), compressedBuffer.get(), static_cast<int>(m_writer.str().size()), estimatedCompressedFileSize);
 
         static constexpr char MAGIC[5] = {'*', 'L', 'Z', '4', '*'};
         m_stream.write(MAGIC, sizeof(MAGIC));
