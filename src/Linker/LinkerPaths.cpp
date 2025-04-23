@@ -314,8 +314,8 @@ namespace
 
 std::unique_ptr<ILinkerPaths> ILinkerPaths::FromArgs(const LinkerArgs& args)
 {
-    std::string normalizedBinPath = fs::canonical(args.m_bin_folder).make_preferred().string();
-    std::string normalizedBasePath = fs::canonical(args.m_base_folder).make_preferred().string();
+    std::string normalizedBinPath = fs::weakly_canonical(args.m_bin_folder).make_preferred().string();
+    std::string normalizedBasePath = fs::weakly_canonical(args.m_base_folder).make_preferred().string();
 
     LinkerSearchPathBuilder assetSearchPaths("asset", normalizedBinPath, normalizedBasePath);
     assetSearchPaths.BuildFromArgs(args.m_asset_search_paths);

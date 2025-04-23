@@ -5,6 +5,7 @@
 #include "ObjWriting.h"
 #include "Utils/Arguments/UsageInformation.h"
 #include "Utils/FileUtils.h"
+#include "Utils/PathUtils.h"
 
 #include <filesystem>
 #include <format>
@@ -152,9 +153,9 @@ void LinkerArgs::PrintVersion()
     std::cout << std::format("OpenAssetTools Linker {}\n", GIT_VERSION);
 }
 
-void LinkerArgs::SetBinFolder(const char* argv0)
+void LinkerArgs::SetBinFolder()
 {
-    const fs::path path(argv0);
+    const fs::path path(utils::GetExecutablePath());
     m_bin_folder = path.parent_path().string();
 }
 
@@ -190,7 +191,7 @@ bool LinkerArgs::ParseArgs(const int argc, const char** argv, bool& shouldContin
         return true;
     }
 
-    SetBinFolder(argv[0]);
+    SetBinFolder();
 
     m_project_specifiers_to_build = m_argument_parser.GetArguments();
     if (m_project_specifiers_to_build.empty())
