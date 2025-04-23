@@ -3,7 +3,7 @@ lz4 = {}
 function lz4:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
-			path.join(ThirdPartyFolder(), "lz4")
+			path.join(ThirdPartyFolder(), "lz4/lib")
 		}
 	end
 end
