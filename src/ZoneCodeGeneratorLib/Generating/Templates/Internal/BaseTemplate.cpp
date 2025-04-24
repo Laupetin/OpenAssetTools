@@ -74,7 +74,7 @@ void BaseTemplate::MakeTypeWrittenPtrVarNameInternal(const DataDefinition* def, 
 
 void BaseTemplate::MakeArrayIndicesInternal(const DeclarationModifierComputations& modifierComputations, std::ostringstream& str)
 {
-    for (auto index : modifierComputations.GetArrayIndices())
+    for (const auto index : modifierComputations.GetArrayIndices())
     {
         str << "[" << index << "]";
     }
@@ -115,7 +115,7 @@ std::string BaseTemplate::MakeSafeTypeName(const DataDefinition* def)
     return str.str();
 }
 
-std::string BaseTemplate::MakeMemberAccess(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+std::string BaseTemplate::MakeMemberAccess(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
 {
     std::ostringstream str;
     MakeTypeVarNameInternal(info->m_definition, str);
@@ -125,7 +125,8 @@ std::string BaseTemplate::MakeMemberAccess(StructureInformation* info, MemberInf
     return str.str();
 }
 
-std::string BaseTemplate::MakeWrittenMemberAccess(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+std::string
+    BaseTemplate::MakeWrittenMemberAccess(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
 {
     std::ostringstream str;
     MakeTypeWrittenVarNameInternal(info->m_definition, str);
@@ -137,7 +138,7 @@ std::string BaseTemplate::MakeWrittenMemberAccess(StructureInformation* info, Me
 
 std::string BaseTemplate::MakeMemberAccess(const std::string& variableName,
                                            StructureInformation* info,
-                                           MemberInformation* member,
+                                           const MemberInformation* member,
                                            const DeclarationModifierComputations& modifier)
 {
     std::ostringstream str;
@@ -185,13 +186,13 @@ std::string BaseTemplate::MakeArrayIndices(const DeclarationModifierComputations
     return str.str();
 }
 
-std::string BaseTemplate::MakeCustomActionCall(CustomAction* action)
+std::string BaseTemplate::MakeCustomActionCall(const CustomAction* action)
 {
     std::ostringstream str;
     str << "m_actions." << action->m_action_name << "(";
 
     auto first = true;
-    for (auto* def : action->m_parameter_types)
+    for (const auto* def : action->m_parameter_types)
     {
         if (first)
         {
