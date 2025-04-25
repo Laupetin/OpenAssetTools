@@ -40,8 +40,8 @@ void AbstractSalsa20Processor::InitStreams(const std::string& zoneName, const ui
     {
         m_stream_block_indices[stream] = 0;
 
-        m_stream_contexts[stream].m_salsa20 = Crypto::CreateSalsa20(salsa20Key, keySize);
-        m_stream_contexts[stream].m_sha1 = Crypto::CreateSHA1();
+        m_stream_contexts[stream].m_salsa20 = cryptography::CreateSalsa20(salsa20Key, keySize);
+        m_stream_contexts[stream].m_sha1 = cryptography::CreateSha1();
     }
 }
 

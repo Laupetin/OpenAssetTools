@@ -17,7 +17,7 @@ class ProcessorAuthedBlocks::Impl
     const size_t m_chunk_size;
     const unsigned m_max_master_block_count;
 
-    const std::unique_ptr<IHashFunction> m_hash_function;
+    const std::unique_ptr<cryptography::IHashFunction> m_hash_function;
     IHashProvider* const m_master_block_hash_provider;
     const std::unique_ptr<uint8_t[]> m_chunk_hashes_buffer;
     const std::unique_ptr<uint8_t[]> m_current_chunk_hash_buffer;
@@ -34,7 +34,7 @@ public:
          const unsigned authedChunkCount,
          const size_t chunkSize,
          const unsigned maxMasterBlockCount,
-         std::unique_ptr<IHashFunction> hashFunction,
+         std::unique_ptr<cryptography::IHashFunction> hashFunction,
          IHashProvider* masterBlockHashProvider)
         : m_base(base),
           m_authed_chunk_count(authedChunkCount),
@@ -141,7 +141,7 @@ public:
 ProcessorAuthedBlocks::ProcessorAuthedBlocks(const unsigned authedChunkCount,
                                              const size_t chunkSize,
                                              const unsigned maxMasterBlockCount,
-                                             std::unique_ptr<IHashFunction> hashFunction,
+                                             std::unique_ptr<cryptography::IHashFunction> hashFunction,
                                              IHashProvider* masterBlockHashProvider)
     : m_impl(new Impl(this, authedChunkCount, chunkSize, maxMasterBlockCount, std::move(hashFunction), masterBlockHashProvider))
 {

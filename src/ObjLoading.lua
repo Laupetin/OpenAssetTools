@@ -55,7 +55,7 @@ function ObjLoading:project()
 		useSourceTemplating("ObjLoading")
 		
 		self:include(includes)
-		Crypto:include(includes)
+		Cryptography:include(includes)
 		Utils:include(includes)
 		minilzo:include(includes)
 		minizip:include(includes)

@@ -1,29 +1,29 @@
-Crypto = {}
+Cryptography = {}
 
-function Crypto:include(includes)
+function Cryptography:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
-			path.join(ProjectFolder(), "Crypto")
+			path.join(ProjectFolder(), "Cryptography")
 		}
 	end
 end
 
-function Crypto:link(links)
+function Cryptography:link(links)
 	links:add(self:name())
 	links:linkto(libtomcrypt)
 	links:linkto(libtommath)
 	links:linkto(salsa20)
 end
 
-function Crypto:use()
+function Cryptography:use()
 	
 end
 
-function Crypto:name()
-	return "Crypto"
+function Cryptography:name()
+	return "Cryptography"
 end
 
-function Crypto:project()
+function Cryptography:project()
 	local folder = ProjectFolder()
 	local includes = Includes:create()
 
@@ -34,8 +34,8 @@ function Crypto:project()
 		language "C++"
 		
 		files {
-			path.join(folder, "Crypto/**.h"), 
-			path.join(folder, "Crypto/**.cpp") 
+			path.join(folder, "Cryptography/**.h"), 
+			path.join(folder, "Cryptography/**.cpp") 
 		}
 		
 		self:include(includes)

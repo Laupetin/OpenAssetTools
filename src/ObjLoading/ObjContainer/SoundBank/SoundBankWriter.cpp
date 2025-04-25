@@ -1,6 +1,6 @@
 #include "SoundBankWriter.h"
 
-#include "Crypto.h"
+#include "Cryptography.h"
 #include "ObjContainer/SoundBank/SoundBankTypes.h"
 #include "Sound/FlacDecoder.h"
 #include "Sound/WavTypes.h"
@@ -251,7 +251,7 @@ public:
 
             SoundAssetBankChecksum checksum{};
 
-            const auto md5Crypt = Crypto::CreateMD5();
+            const auto md5Crypt = cryptography::CreateMd5();
             md5Crypt->Process(soundData.get(), soundSize);
             md5Crypt->Finish(checksum.checksumBytes);
 

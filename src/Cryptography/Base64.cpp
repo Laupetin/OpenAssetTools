@@ -20,8 +20,9 @@ namespace base64
 
     bool EncodeBase64(const void* inputData, const size_t inputLength, void* outputBuffer, const size_t outputBufferSize)
     {
-        unsigned long outLength = outputBufferSize;
-        const auto result = base64_encode(static_cast<const unsigned char*>(inputData), inputLength, static_cast<char*>(outputBuffer), &outLength);
+        unsigned long outLength = static_cast<unsigned long>(outputBufferSize);
+        const auto result =
+            base64_encode(static_cast<const unsigned char*>(inputData), static_cast<unsigned long>(inputLength), static_cast<char*>(outputBuffer), &outLength);
         return result == CRYPT_OK;
     }
 
@@ -32,12 +33,13 @@ namespace base64
 
     size_t DecodeBase64(const void* base64Data, const size_t inputLength, void* outputBuffer, const size_t outputBufferSize)
     {
-        unsigned long outLength = GetBase64DecodeOutputLength(base64Data, inputLength);
+        auto outLength = static_cast<unsigned long>(GetBase64DecodeOutputLength(base64Data, inputLength));
         assert(outLength <= outputBufferSize);
         if (outLength > outputBufferSize)
             return 0u;
 
-        const auto result = base64_decode(static_cast<const char*>(base64Data), inputLength, static_cast<unsigned char*>(outputBuffer), &outLength);
+        const auto result =
+            base64_decode(static_cast<const char*>(base64Data), static_cast<unsigned long>(inputLength), static_cast<unsigned char*>(outputBuffer), &outLength);
         assert(result == CRYPT_OK);
 
         return static_cast<size_t>(outLength);

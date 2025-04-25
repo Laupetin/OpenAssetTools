@@ -117,7 +117,7 @@ group ""
 -- Projects
 -- ========================
 include "src/Common.lua"
-include "src/Crypto.lua"
+include "src/Cryptography.lua"
 include "src/ImageConverter.lua"
 include "src/Linker.lua"
 include "src/Parser.lua"
@@ -141,7 +141,7 @@ include "tools/scripts/raw.lua"
 -- Components group: All projects assist or are part of a tool
 group "Components"
     Common:project()
-    Crypto:project()
+    Cryptography:project()
     Parser:project()
     Utils:project()
     ZoneCode:project()

@@ -1,14 +1,8 @@
 #include "ProcessorStreamCipher.h"
 
-ProcessorStreamCipher::ProcessorStreamCipher(IStreamCipher* cipher)
+ProcessorStreamCipher::ProcessorStreamCipher(std::unique_ptr<cryptography::IStreamCipher> cipher)
+    : m_cipher(std::move(cipher))
 {
-    m_cipher = cipher;
-}
-
-ProcessorStreamCipher::~ProcessorStreamCipher()
-{
-    delete m_cipher;
-    m_cipher = nullptr;
 }
 
 size_t ProcessorStreamCipher::Load(void* buffer, const size_t length)

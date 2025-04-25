@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Crypto.h"
+#include "Cryptography.h"
 #include "Loading/ILoadingStep.h"
 #include "Loading/ISignatureProvider.h"
 #include "Utils/ICapturedDataProvider.h"
 
 class StepVerifySignature final : public ILoadingStep
 {
-    std::unique_ptr<IPublicKeyAlgorithm> m_algorithm;
+    std::unique_ptr<cryptography::IPublicKeyAlgorithm> m_algorithm;
     ISignatureProvider* m_signature_provider;
     ICapturedDataProvider* m_signature_data_provider;
 
 public:
-    StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm,
+    StepVerifySignature(std::unique_ptr<cryptography::IPublicKeyAlgorithm> signatureAlgorithm,
                         ISignatureProvider* signatureProvider,
                         ICapturedDataProvider* signatureDataProvider);
     ~StepVerifySignature() override = default;

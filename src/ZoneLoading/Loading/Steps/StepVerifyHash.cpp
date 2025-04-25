@@ -5,7 +5,7 @@
 #include <cstring>
 #include <memory>
 
-StepVerifyHash::StepVerifyHash(std::unique_ptr<IHashFunction> hashFunction,
+StepVerifyHash::StepVerifyHash(std::unique_ptr<cryptography::IHashFunction> hashFunction,
                                const unsigned hashIndex,
                                IHashProvider* hashProvider,
                                ICapturedDataProvider* dataProvider)

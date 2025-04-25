@@ -1,5 +1,6 @@
 #pragma once
-#include "Crypto.h"
+
+#include "Cryptography.h"
 #include "Utils/ClassUtils.h"
 #include "Utils/ICapturedDataProvider.h"
 
@@ -17,8 +18,8 @@ protected:
     class StreamContext
     {
     public:
-        std::unique_ptr<IStreamCipher> m_salsa20;
-        std::unique_ptr<IHashFunction> m_sha1;
+        std::unique_ptr<cryptography::IStreamCipher> m_salsa20;
+        std::unique_ptr<cryptography::IHashFunction> m_sha1;
     };
 
     int m_stream_count;

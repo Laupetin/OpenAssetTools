@@ -1,8 +1,8 @@
 #include "JsonMaterialWriter.h"
 
+#include "Base64.h"
 #include "Game/IW5/CommonIW5.h"
 #include "Game/IW5/Material/JsonMaterial.h"
-#include "Impl/Base64.h"
 #include "MaterialConstantZoneState.h"
 
 #include <iomanip>

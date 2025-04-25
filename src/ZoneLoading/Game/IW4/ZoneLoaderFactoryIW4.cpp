@@ -91,11 +91,11 @@ namespace
 #undef XBLOCK_DEF
     }
 
-    std::unique_ptr<IPublicKeyAlgorithm> SetupRSA(const bool isOfficial)
+    std::unique_ptr<cryptography::IPublicKeyAlgorithm> SetupRsa(const bool isOfficial)
     {
         if (isOfficial)
         {
-            auto rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256, Crypto::RSAPaddingMode::RSA_PADDING_PSS);
+            auto rsa = cryptography::CreateRsa(cryptography::HashingAlgorithm::RSA_HASH_SHA256, cryptography::RsaPaddingMode::RSA_PADDING_PSS);
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD, sizeof(ZoneConstants::RSA_PUBLIC_KEY_INFINITY_WARD)))
             {
@@ -121,7 +121,7 @@ namespace
             return;
 
         // If file is signed setup a RSA instance.
-        auto rsa = SetupRSA(isOfficial);
+        auto rsa = SetupRsa(isOfficial);
 
         zoneLoader.AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
         zoneLoader.AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
@@ -147,8 +147,7 @@ namespace
         auto* masterBlockHashesPtr = masterBlockHashes.get();
         zoneLoader.AddLoadingStep(std::move(masterBlockHashes));
 
-        zoneLoader.AddLoadingStep(
-            std::make_unique<StepVerifyHash>(std::unique_ptr<IHashFunction>(Crypto::CreateSHA256()), 0, subHeaderHashPtr, subHeaderCapturePtr));
+        zoneLoader.AddLoadingStep(std::make_unique<StepVerifyHash>(cryptography::CreateSha256(), 0, subHeaderHashPtr, subHeaderCapturePtr));
         zoneLoader.AddLoadingStep(std::make_unique<StepRemoveProcessor>(subHeaderCapturePtr));
 
         // Skip the rest of the first chunk
@@ -158,7 +157,7 @@ namespace
             std::make_unique<StepAddProcessor>(std::make_unique<ProcessorAuthedBlocks>(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
                                                                                        ZoneConstants::AUTHED_CHUNK_SIZE,
                                                                                        std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>,
-                                                                                       Crypto::CreateSHA256(),
+                                                                                       cryptography::CreateSha256(),
                                                                                        masterBlockHashesPtr)));
     }
 } // namespace

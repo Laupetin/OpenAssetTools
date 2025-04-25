@@ -105,11 +105,11 @@ namespace
 #undef XBLOCK_DEF
     }
 
-    std::unique_ptr<IPublicKeyAlgorithm> SetupRSA(const bool isOfficial)
+    std::unique_ptr<cryptography::IPublicKeyAlgorithm> SetupRsa(const bool isOfficial)
     {
         if (isOfficial)
         {
-            auto rsa = Crypto::CreateRSA(IPublicKeyAlgorithm::HashingAlgorithm::RSA_HASH_SHA256, Crypto::RSAPaddingMode::RSA_PADDING_PSS);
+            auto rsa = cryptography::CreateRsa(cryptography::HashingAlgorithm::RSA_HASH_SHA256, cryptography::RsaPaddingMode::RSA_PADDING_PSS);
 
             if (!rsa->SetKey(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH, sizeof(ZoneConstants::RSA_PUBLIC_KEY_TREYARCH)))
             {
@@ -190,7 +190,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     SetupBlock(*zoneLoader);
 
     // If file is signed setup a RSA instance.
-    auto rsa = isSecure ? SetupRSA(isOfficial) : nullptr;
+    auto rsa = isSecure ? SetupRsa(isOfficial) : nullptr;
 
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
     ISignatureProvider* signatureProvider = AddAuthHeaderSteps(isSecure, *zoneLoader, fileName);
