@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <list>
+#include <ranges>
 
 static constexpr int TAG_EXPRESSION = SimpleExpressionMatchers::TAG_OFFSET_EXPRESSION + 1;
 static constexpr int TAG_OPERAND = SimpleExpressionMatchers::TAG_OFFSET_EXPRESSION + 2;
@@ -103,7 +104,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessConditionalO
     return std::make_unique<SimpleExpressionConditionalOperator>(std::move(condition), std::move(trueExpression), std::move(falseExpression));
 }
 
-std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessOperand(SequenceResult<SimpleParserValue>& result) const
+std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessOperand(SequenceResult<SimpleParserValue>& result)
 {
     const auto& operandToken = result.NextCapture(CAPTURE_OPERAND);
 
@@ -133,7 +134,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
         return nullptr;
 
     std::vector<std::unique_ptr<ISimpleExpression>> operands;
-    std::list<std::pair<unsigned, const SimpleExpressionBinaryOperationType*>> operators;
+    std::list<std::pair<size_t, const SimpleExpressionBinaryOperationType*>> operators;
 
     while (true)
     {
@@ -200,7 +201,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
     }
 
     operators.sort(
-        [](const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p1, const std::pair<unsigned, const SimpleExpressionBinaryOperationType*>& p2)
+        [](const std::pair<size_t, const SimpleExpressionBinaryOperationType*>& p1, const std::pair<size_t, const SimpleExpressionBinaryOperationType*>& p2)
         {
             if (p1.second->m_precedence != p2.second->m_precedence)
                 return p1.second->m_precedence > p2.second->m_precedence;
@@ -219,7 +220,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
 
         operators.pop_back();
 
-        for (auto& [opIndex, _] : operators)
+        for (auto& opIndex : operators | std::views::keys)
         {
             if (opIndex > operatorIndex)
                 opIndex--;

@@ -1,5 +1,63 @@
 #include "CommandsParserState.h"
 
+namespace
+{
+    MemberInformation* GetMemberWithName(const std::string& memberName, const StructureInformation* type)
+    {
+        for (const auto& member : type->m_ordered_members)
+        {
+            if (member->m_member->m_name == memberName)
+            {
+                return member.get();
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool GetNextTypenameSeparatorPos(const std::string& typeNameValue, const size_t startPos, size_t& separatorPos)
+    {
+        const auto typeNameValueSize = typeNameValue.size();
+        for (auto currentHead = startPos + 1; currentHead < typeNameValueSize; currentHead++)
+        {
+            if (typeNameValue[currentHead] == ':' && typeNameValue[currentHead - 1] == ':')
+            {
+                separatorPos = currentHead - 1;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool ExtractMembersFromTypenameInternal(const std::string& typeNameValue,
+                                            size_t typeNameOffset,
+                                            const StructureInformation* type,
+                                            std::vector<MemberInformation*>& members)
+    {
+        auto startOffset = typeNameOffset;
+        while (GetNextTypenameSeparatorPos(typeNameValue, typeNameOffset, typeNameOffset))
+        {
+            auto* foundMember = GetMemberWithName(std::string(typeNameValue, startOffset, typeNameOffset - startOffset), type);
+
+            if (foundMember == nullptr)
+                return false;
+
+            members.push_back(foundMember);
+            type = foundMember->m_type;
+            typeNameOffset += 2;
+            startOffset = typeNameOffset;
+        }
+
+        auto* foundMember = GetMemberWithName(std::string(typeNameValue, startOffset, typeNameValue.size() - startOffset), type);
+        if (foundMember == nullptr)
+            return false;
+
+        members.push_back(foundMember);
+        return true;
+    }
+} // namespace
+
 CommandsParserState::CommandsParserState(IDataRepository* repository)
     : m_repository(repository),
       m_in_use(nullptr)
@@ -36,63 +94,8 @@ void CommandsParserState::SetInUse(StructureInformation* structure)
     m_in_use = structure;
 }
 
-MemberInformation* CommandsParserState::GetMemberWithName(const std::string& memberName, StructureInformation* type)
-{
-    for (const auto& member : type->m_ordered_members)
-    {
-        if (member->m_member->m_name == memberName)
-        {
-            return member.get();
-        }
-    }
-
-    return nullptr;
-}
-
-bool CommandsParserState::GetNextTypenameSeparatorPos(const std::string& typeNameValue, const unsigned startPos, unsigned& separatorPos)
-{
-    const auto typeNameValueSize = typeNameValue.size();
-    for (auto currentHead = startPos + 1; currentHead < typeNameValueSize; currentHead++)
-    {
-        if (typeNameValue[currentHead] == ':' && typeNameValue[currentHead - 1] == ':')
-        {
-            separatorPos = currentHead - 1;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool CommandsParserState::ExtractMembersFromTypenameInternal(const std::string& typeNameValue,
-                                                             unsigned typeNameOffset,
-                                                             StructureInformation* type,
-                                                             std::vector<MemberInformation*>& members)
-{
-    auto startOffset = typeNameOffset;
-    while (GetNextTypenameSeparatorPos(typeNameValue, typeNameOffset, typeNameOffset))
-    {
-        auto* foundMember = GetMemberWithName(std::string(typeNameValue, startOffset, typeNameOffset - startOffset), type);
-
-        if (foundMember == nullptr)
-            return false;
-
-        members.push_back(foundMember);
-        type = foundMember->m_type;
-        typeNameOffset += 2;
-        startOffset = typeNameOffset;
-    }
-
-    auto* foundMember = GetMemberWithName(std::string(typeNameValue, startOffset, typeNameValue.size() - startOffset), type);
-    if (foundMember == nullptr)
-        return false;
-
-    members.push_back(foundMember);
-    return true;
-}
-
 bool CommandsParserState::GetMembersFromTypename(const std::string& typeNameValue,
-                                                 StructureInformation* baseType,
+                                                 const StructureInformation* baseType,
                                                  std::vector<MemberInformation*>& members) const
 {
     return m_in_use != nullptr && ExtractMembersFromTypenameInternal(typeNameValue, 0, m_in_use, members)
@@ -114,7 +117,7 @@ bool CommandsParserState::GetTypenameAndMembersFromTypename(const std::string& t
     }
 
     DataDefinition* foundDefinition = nullptr;
-    unsigned currentSeparatorPos = 0;
+    auto currentSeparatorPos = 0uz;
     while (GetNextTypenameSeparatorPos(typeNameValue, currentSeparatorPos, currentSeparatorPos))
     {
         std::string currentTypename(typeNameValue, 0, currentSeparatorPos);
@@ -134,7 +137,7 @@ bool CommandsParserState::GetTypenameAndMembersFromTypename(const std::string& t
     if (foundDefinition == nullptr)
         return false;
 
-    auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(foundDefinition);
+    const auto* definitionWithMembers = dynamic_cast<DefinitionWithMembers*>(foundDefinition);
     if (definitionWithMembers == nullptr)
         return false;
 

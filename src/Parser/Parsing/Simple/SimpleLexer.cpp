@@ -14,7 +14,12 @@ SimpleLexer::MultiCharacterTokenLookupEntry::MultiCharacterTokenLookupEntry(cons
 
 SimpleLexer::SimpleLexer(IParserLineStream* stream)
     : AbstractLexer(stream),
-      m_config{false, true, false, true, true, {}},
+      m_config{.m_emit_new_line_tokens = false,
+               .m_read_strings = true,
+               .m_string_escape_sequences = false,
+               .m_read_integer_numbers = true,
+               .m_read_floating_point_numbers = true,
+               .m_multi_character_tokens = {}},
       m_check_for_multi_character_tokens(false),
       m_last_line(1)
 {

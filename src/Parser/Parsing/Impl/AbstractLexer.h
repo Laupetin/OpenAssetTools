@@ -7,21 +7,82 @@
 #include "Utils/StringUtils.h"
 
 #include <cassert>
+#include <concepts>
 #include <deque>
 #include <sstream>
 
-template<typename TokenType> class AbstractLexer : public ILexer<TokenType>
+template<std::derived_from<IParserValue> TokenType> class AbstractLexer : public ILexer<TokenType>
 {
-    // TokenType must inherit IParserValue
-    static_assert(std::is_base_of<IParserValue, TokenType>::value);
+public:
+    const TokenType& GetToken(const size_t index) override
+    {
+        while (index >= m_token_cache.size())
+            m_token_cache.emplace_back(GetNextToken());
+
+        return m_token_cache[index];
+    }
+
+    void PopTokens(size_t amount) override
+    {
+        if (amount == 0 || m_token_cache.empty())
+            return;
+
+        if (m_token_cache.size() <= amount)
+        {
+            const auto& lastToken = m_token_cache.back();
+            while (
+                !m_line_cache.empty()
+                && (m_line_cache.front().m_line_number != lastToken.GetPos().m_line || *m_line_cache.front().m_filename != lastToken.GetPos().m_filename.get()))
+            {
+                m_line_cache.pop_front();
+                m_line_index--;
+            }
+            m_token_cache.clear();
+        }
+        else
+        {
+            m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
+            const auto& firstToken = m_token_cache.front();
+            while (!m_line_cache.empty()
+                   && (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
+                       || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get()))
+            {
+                m_line_cache.pop_front();
+                m_line_index--;
+            }
+        }
+    }
+
+    [[nodiscard]] bool IsEof() override
+    {
+        return GetToken(0).IsEof();
+    }
+
+    [[nodiscard]] const TokenPos& GetPos() override
+    {
+        return GetToken(0).GetPos();
+    }
+
+    [[nodiscard]] ParserLine GetLineForPos(const TokenPos& pos) const override
+    {
+        for (const auto& line : m_line_cache)
+        {
+            if (line.m_filename && *line.m_filename == pos.m_filename.get() && line.m_line_number == pos.m_line)
+            {
+                return line;
+            }
+        }
+
+        return ParserLine();
+    }
 
 protected:
     std::deque<TokenType> m_token_cache;
     std::deque<ParserLine> m_line_cache;
-    IParserLineStream* const m_stream;
+    IParserLineStream* m_stream;
 
-    unsigned m_line_index;
-    unsigned m_current_line_offset;
+    size_t m_line_index;
+    size_t m_current_line_offset;
 
     explicit AbstractLexer(IParserLineStream* stream)
         : m_stream(stream),
@@ -83,28 +144,28 @@ protected:
         return m_line_cache[peekLine].m_line[peekLineOffset];
     }
 
-    _NODISCARD const ParserLine& CurrentLine() const
+    [[nodiscard]] const ParserLine& CurrentLine() const
     {
         return m_line_cache[m_line_index];
     }
 
-    _NODISCARD bool IsLineEnd() const
+    [[nodiscard]] bool IsLineEnd() const
     {
         return m_current_line_offset >= CurrentLine().m_line.size();
     }
 
-    _NODISCARD bool NextCharInLineIs(const char c)
+    [[nodiscard]] bool NextCharInLineIs(const char c)
     {
         return !IsLineEnd() && PeekChar() == c;
     }
 
-    _NODISCARD TokenPos GetPreviousCharacterPos() const
+    [[nodiscard]] TokenPos GetPreviousCharacterPos() const
     {
         const auto& currentLine = CurrentLine();
         return TokenPos(*currentLine.m_filename, currentLine.m_line_number, m_current_line_offset);
     }
 
-    _NODISCARD TokenPos GetNextCharacterPos()
+    [[nodiscard]] TokenPos GetNextCharacterPos()
     {
         const auto& currentLine = CurrentLine();
         if (m_current_line_offset + 1 >= currentLine.m_line.size())
@@ -227,7 +288,7 @@ protected:
         m_current_line_offset += numberLength - 1;
     }
 
-    _NODISCARD bool IsIntegerNumber() const
+    [[nodiscard]] bool IsIntegerNumber() const
     {
         const auto& currentLine = CurrentLine();
         const auto* currentCharacter = &currentLine.m_line.c_str()[m_current_line_offset - 1];
@@ -349,68 +410,5 @@ protected:
         {
             integerValue = ReadInteger();
         }
-    }
-
-public:
-    const TokenType& GetToken(unsigned index) override
-    {
-        while (index >= m_token_cache.size())
-            m_token_cache.emplace_back(GetNextToken());
-
-        return m_token_cache[index];
-    }
-
-    void PopTokens(int amount) override
-    {
-        if (amount <= 0 || m_token_cache.empty())
-            return;
-
-        if (static_cast<int>(m_token_cache.size()) <= amount)
-        {
-            const auto& lastToken = m_token_cache.back();
-            while (
-                !m_line_cache.empty()
-                && (m_line_cache.front().m_line_number != lastToken.GetPos().m_line || *m_line_cache.front().m_filename != lastToken.GetPos().m_filename.get()))
-            {
-                m_line_cache.pop_front();
-                m_line_index--;
-            }
-            m_token_cache.clear();
-        }
-        else
-        {
-            m_token_cache.erase(m_token_cache.begin(), m_token_cache.begin() + amount);
-            const auto& firstToken = m_token_cache.front();
-            while (!m_line_cache.empty()
-                   && (m_line_cache.front().m_line_number != firstToken.GetPos().m_line
-                       || *m_line_cache.front().m_filename != firstToken.GetPos().m_filename.get()))
-            {
-                m_line_cache.pop_front();
-                m_line_index--;
-            }
-        }
-    }
-
-    _NODISCARD bool IsEof() override
-    {
-        return GetToken(0).IsEof();
-    }
-
-    _NODISCARD const TokenPos& GetPos() override
-    {
-        return GetToken(0).GetPos();
-    }
-
-    _NODISCARD ParserLine GetLineForPos(const TokenPos& pos) const override
-    {
-        for (const auto& line : m_line_cache)
-        {
-            if (line.m_filename && *line.m_filename == pos.m_filename.get() && line.m_line_number == pos.m_line)
-            {
-                return line;
-            }
-        }
-
-        return ParserLine();
     }
 };

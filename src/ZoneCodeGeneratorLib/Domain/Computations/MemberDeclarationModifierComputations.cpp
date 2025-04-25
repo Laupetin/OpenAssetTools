@@ -12,18 +12,18 @@ DeclarationModifierComputations::DeclarationModifierComputations(const MemberInf
       m_modifier_indices(std::move(modifierIndices))
 {
     auto combinedIndex = 0;
-    auto arraySizes = MemberComputations(m_information).GetArraySizes();
+    const auto arraySizes = MemberComputations(m_information).GetArraySizes();
     std::vector<int> sizePerDepth(arraySizes.size());
 
     auto currentDepthSize = 1;
-    for (int i = arraySizes.size(); i > 0; i--)
+    for (int i = static_cast<int>(arraySizes.size()); i > 0; i--)
     {
         sizePerDepth[i - 1] = currentDepthSize;
         currentDepthSize *= arraySizes[i - 1];
     }
 
     auto currentDepth = 0;
-    for (auto modifierIndex : m_modifier_indices)
+    for (const auto modifierIndex : m_modifier_indices)
     {
         combinedIndex += sizePerDepth[currentDepth++] * modifierIndex;
     }
@@ -62,7 +62,7 @@ std::vector<DeclarationModifier*> DeclarationModifierComputations::GetFollowingD
 
     if (m_modifier_indices.size() + 1 < declarationModifiers.size())
     {
-        for (auto i = declarationModifiers.begin() + m_modifier_indices.size() + 1; i != declarationModifiers.end(); ++i)
+        for (auto i = declarationModifiers.begin() + m_modifier_indices.size() + 1uz; i != declarationModifiers.end(); ++i)
         {
             following.push_back(i->get());
         }

@@ -42,7 +42,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
     m_path = args[0];
 
     const auto argCount = args.size();
-    for (unsigned argIndex = 1u; argIndex < argCount; argIndex++)
+    for (auto argIndex = 1uz; argIndex < argCount; argIndex++)
     {
         auto& arg = args[argIndex];
 
@@ -85,7 +85,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
                 return false;
             }
 
-            if (m_matched_options.find(matchedOption) != m_matched_options.end())
+            if (m_matched_options.contains(matchedOption))
             {
                 if (!matchedOption->m_multi_use)
                 {
@@ -106,7 +106,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
             }
 
             auto& parameters = m_matched_options[matchedOption];
-            for (unsigned parameterIndex = 0; parameterIndex < parameterCount; parameterIndex++)
+            for (auto parameterIndex = 0uz; parameterIndex < parameterCount; parameterIndex++)
             {
                 std::string& param = args[argIndex + parameterIndex + 1];
 
@@ -116,14 +116,14 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
                     return false;
                 }
 
-                parameters.push_back(param);
+                parameters.emplace_back(param);
             }
 
             argIndex += parameterCount;
         }
         else
         {
-            m_matched_arguments.push_back(arg);
+            m_matched_arguments.emplace_back(arg);
         }
     }
 

@@ -107,26 +107,29 @@ private:
     _NODISCARD bool MatchIfdefDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
     _NODISCARD bool MatchElseDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
     _NODISCARD bool MatchEndifDirective(const ParserLine& line, size_t directiveStartPosition, size_t directiveEndPosition);
-    _NODISCARD bool MatchDirectives(ParserLine& line);
+    _NODISCARD bool MatchDirectives(const ParserLine& line);
 
-    void ExtractParametersFromMacroUsage(const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos);
-    bool FindMacroForIdentifier(const std::string& input, unsigned wordStart, unsigned wordEnd, const Define*& value) const;
+    static void ExtractParametersFromMacroUsage(
+        const ParserLine& line, const unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos);
+    bool FindMacroForIdentifier(const std::string& input, unsigned identifierStart, unsigned identifierEnd, const Define*& value) const;
 
     static bool MatchDefinedExpression(const ParserLine& line, size_t& pos, std::string& definitionName);
     void ExpandDefinedExpressions(ParserLine& line) const;
 
-    bool FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define);
+    bool FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define) const;
 
-    void ProcessTokenPastingOperators(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos);
-    void InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, std::vector<std::string>& parameterValues);
+    static void ProcessTokenPastingOperators(
+        const ParserLine& line, const unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos);
+    static void InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, const std::vector<std::string>& parameterValues);
     void ExpandMacro(ParserLine& line,
                      unsigned& linePos,
                      std::ostringstream& out,
                      std::vector<const Define*>& callstack,
                      const DefinesStreamProxy::Define* macro,
-                     std::vector<std::string>& parameterValues);
+                     const std::vector<std::string>& parameterValues);
 
-    void ContinueMacroParameters(const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos);
+    static void
+        ContinueMacroParameters(const ParserLine& line, const unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos);
     void ContinueMultiLineMacro(ParserLine& line);
 
     void ProcessNestedMacros(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos);

@@ -3,11 +3,10 @@
 #include "IParserLineStream.h"
 #include "Parsing/IParserValue.h"
 
-template<typename TokenType> class ILexer
-{
-    // TokenType must inherit IParserValue
-    static_assert(std::is_base_of<IParserValue, TokenType>::value);
+#include <concepts>
 
+template<std::derived_from<IParserValue> TokenType> class ILexer
+{
 public:
     ILexer() = default;
     virtual ~ILexer() = default;
@@ -16,10 +15,10 @@ public:
     ILexer& operator=(const ILexer& other) = default;
     ILexer& operator=(ILexer&& other) noexcept = default;
 
-    virtual const TokenType& GetToken(unsigned index) = 0;
-    virtual void PopTokens(int amount) = 0;
+    virtual const TokenType& GetToken(size_t index) = 0;
+    virtual void PopTokens(size_t amount) = 0;
 
-    _NODISCARD virtual bool IsEof() = 0;
-    _NODISCARD virtual const TokenPos& GetPos() = 0;
-    _NODISCARD virtual ParserLine GetLineForPos(const TokenPos& pos) const = 0;
+    [[nodiscard]] virtual bool IsEof() = 0;
+    [[nodiscard]] virtual const TokenPos& GetPos() = 0;
+    [[nodiscard]] virtual ParserLine GetLineForPos(const TokenPos& pos) const = 0;
 };

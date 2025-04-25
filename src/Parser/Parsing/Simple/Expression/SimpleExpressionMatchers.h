@@ -59,7 +59,7 @@ private:
     std::unique_ptr<ISimpleExpression> ProcessExpressionInParenthesis(SequenceResult<SimpleParserValue>& result) const;
     std::unique_ptr<ISimpleExpression> ProcessConditionalOperation(std::unique_ptr<ISimpleExpression> condition,
                                                                    SequenceResult<SimpleParserValue>& result) const;
-    std::unique_ptr<ISimpleExpression> ProcessOperand(SequenceResult<SimpleParserValue>& result) const;
+    static std::unique_ptr<ISimpleExpression> ProcessOperand(SequenceResult<SimpleParserValue>& result);
 
 public:
     std::unique_ptr<matcher_t> Expression(const supplier_t* labelSupplier) const;
