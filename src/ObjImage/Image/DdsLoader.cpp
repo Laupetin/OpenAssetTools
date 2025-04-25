@@ -14,16 +14,28 @@ namespace dds
     {
         static constexpr auto DDS_MAGIC = FileUtils::MakeMagic32('D', 'D', 'S', ' ');
 
-        std::istream& m_stream;
+    public:
+        explicit DdsLoaderInternal(std::istream& stream)
+            : m_stream(stream),
+              m_texture_type(TextureType::T_2D),
+              m_has_mip_maps(false),
+              m_width(0u),
+              m_height(0u),
+              m_depth(0u),
+              m_format(nullptr)
+        {
+        }
 
-        TextureType m_texture_type;
-        bool m_has_mip_maps;
-        size_t m_width;
-        size_t m_height;
-        size_t m_depth;
-        const ImageFormat* m_format;
+        std::unique_ptr<Texture> LoadDds()
+        {
+            if (!ReadMagic() || !ReadHeader())
+                return nullptr;
 
-        _NODISCARD bool ReadMagic() const
+            return ReadTextureData();
+        }
+
+    private:
+        [[nodiscard]] bool ReadMagic() const
         {
             uint32_t magic;
             m_stream.read(reinterpret_cast<char*>(&magic), sizeof(magic));
@@ -42,7 +54,7 @@ namespace dds
             return true;
         }
 
-        _NODISCARD bool ReadDxt10Header()
+        [[nodiscard]] bool ReadDxt10Header()
         {
             DDS_HEADER_DXT10 headerDx10{};
             m_stream.read(reinterpret_cast<char*>(&headerDx10), sizeof(headerDx10));
@@ -86,7 +98,7 @@ namespace dds
             return false;
         }
 
-        _NODISCARD bool ReadPixelFormatFourCc(DDS_PIXELFORMAT& pf)
+        [[nodiscard]] bool ReadPixelFormatFourCc(DDS_PIXELFORMAT& pf)
         {
             switch (pf.dwFourCC)
             {
@@ -132,7 +144,7 @@ namespace dds
             }
         }
 
-        _NODISCARD bool ReadPixelFormatUnsigned(DDS_PIXELFORMAT& pf)
+        [[nodiscard]] bool ReadPixelFormatUnsigned(DDS_PIXELFORMAT& pf)
         {
             unsigned rOffset, rSize, gOffset, gSize, bOffset, bSize, aOffset, aSize;
 
@@ -163,7 +175,7 @@ namespace dds
             return false;
         }
 
-        _NODISCARD bool ReadPixelFormat(DDS_PIXELFORMAT& pf)
+        [[nodiscard]] bool ReadPixelFormat(DDS_PIXELFORMAT& pf)
         {
             if (pf.dwFlags & DDPF_FOURCC)
                 return ReadPixelFormatFourCc(pf);
@@ -200,7 +212,7 @@ namespace dds
             return ReadPixelFormat(header.ddspf);
         }
 
-        _NODISCARD std::unique_ptr<Texture> ReadTextureData() const
+        [[nodiscard]] std::unique_ptr<Texture> ReadTextureData() const
         {
             std::unique_ptr<Texture> result;
 
@@ -229,7 +241,7 @@ namespace dds
 
             for (auto mipLevel = 0; mipLevel < mipMapCount; mipLevel++)
             {
-                const auto mipSize = result->GetSizeOfMipLevel(mipLevel);
+                const auto mipSize = static_cast<std::streamsize>(result->GetSizeOfMipLevel(mipLevel));
 
                 for (auto face = 0; face < faceCount; face++)
                 {
@@ -246,25 +258,14 @@ namespace dds
             return result;
         }
 
-    public:
-        explicit DdsLoaderInternal(std::istream& stream)
-            : m_stream(stream),
-              m_texture_type(TextureType::T_2D),
-              m_has_mip_maps(false),
-              m_width(0u),
-              m_height(0u),
-              m_depth(0u),
-              m_format(nullptr)
-        {
-        }
+        std::istream& m_stream;
 
-        std::unique_ptr<Texture> LoadDds()
-        {
-            if (!ReadMagic() || !ReadHeader())
-                return nullptr;
-
-            return ReadTextureData();
-        }
+        TextureType m_texture_type;
+        bool m_has_mip_maps;
+        unsigned m_width;
+        unsigned m_height;
+        unsigned m_depth;
+        const ImageFormat* m_format;
     };
 
     std::unique_ptr<Texture> LoadDds(std::istream& stream)

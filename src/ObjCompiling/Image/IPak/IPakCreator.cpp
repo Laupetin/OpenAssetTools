@@ -1,7 +1,6 @@
 #include "IPakCreator.h"
 
 #include "Game/T6/CommonT6.h"
-#include "Game/T6/GameT6.h"
 #include "GitVersion.h"
 #include "ObjContainer/IPak/IPakTypes.h"
 #include "Utils/Alignment.h"
@@ -23,7 +22,7 @@ namespace
         static constexpr char BRANDING[] = "Created with OpenAssetTools " GIT_VERSION;
         static constexpr auto SECTION_COUNT = 3; // Index + Data + Branding
 
-        inline static const std::string PAD_DATA = std::string(256, '\xA7');
+        inline static const auto PAD_DATA = std::string(256, '\xA7');
 
     public:
         IPakWriter(std::ostream& stream, ISearchPath& searchPath, const std::vector<std::string>& images)
@@ -70,8 +69,8 @@ namespace
 
         void Write(const void* data, const size_t dataSize)
         {
-            m_stream.write(static_cast<const char*>(data), dataSize);
-            m_current_offset += dataSize;
+            m_stream.write(static_cast<const char*>(data), static_cast<std::streamsize>(dataSize));
+            m_current_offset += static_cast<int64_t>(dataSize);
         }
 
         void Pad(const size_t paddingSize)
@@ -100,27 +99,30 @@ namespace
         {
             GoTo(0);
 
-            const IPakHeader header{ipak_consts::IPAK_MAGIC, ipak_consts::IPAK_VERSION, static_cast<uint32_t>(m_total_size), SECTION_COUNT};
+            const IPakHeader header{.magic = ipak_consts::IPAK_MAGIC,
+                                    .version = ipak_consts::IPAK_VERSION,
+                                    .size = static_cast<uint32_t>(m_total_size),
+                                    .sectionCount = SECTION_COUNT};
 
             const IPakSection dataSection{
-                ipak_consts::IPAK_DATA_SECTION,
-                static_cast<uint32_t>(m_data_section_offset),
-                static_cast<uint32_t>(m_data_section_size),
-                static_cast<uint32_t>(m_index_entries.size()),
+                .type = ipak_consts::IPAK_DATA_SECTION,
+                .offset = static_cast<uint32_t>(m_data_section_offset),
+                .size = static_cast<uint32_t>(m_data_section_size),
+                .itemCount = static_cast<uint32_t>(m_index_entries.size()),
             };
 
             const IPakSection indexSection{
-                ipak_consts::IPAK_INDEX_SECTION,
-                static_cast<uint32_t>(m_index_section_offset),
-                static_cast<uint32_t>(sizeof(IPakIndexEntry) * m_index_entries.size()),
-                static_cast<uint32_t>(m_index_entries.size()),
+                .type = ipak_consts::IPAK_INDEX_SECTION,
+                .offset = static_cast<uint32_t>(m_index_section_offset),
+                .size = static_cast<uint32_t>(sizeof(IPakIndexEntry) * m_index_entries.size()),
+                .itemCount = static_cast<uint32_t>(m_index_entries.size()),
             };
 
             const IPakSection brandingSection{
-                ipak_consts::IPAK_BRANDING_SECTION,
-                static_cast<uint32_t>(m_branding_section_offset),
-                std::extent_v<decltype(BRANDING)>,
-                1,
+                .type = ipak_consts::IPAK_BRANDING_SECTION,
+                .offset = static_cast<uint32_t>(m_branding_section_offset),
+                .size = std::extent_v<decltype(BRANDING)>,
+                .itemCount = 1,
             };
 
             Write(&header, sizeof(header));
@@ -147,7 +149,7 @@ namespace
 
             imageSize = static_cast<size_t>(openFile.m_length);
             auto imageData = std::make_unique<char[]>(imageSize);
-            openFile.m_stream->read(imageData.get(), imageSize);
+            openFile.m_stream->read(imageData.get(), static_cast<std::streamsize>(imageSize));
 
             return imageData;
         }
@@ -177,7 +179,7 @@ namespace
                 IPakDataBlockHeader skipBlockHeader{};
                 skipBlockHeader.countAndOffset.count = 1;
                 skipBlockHeader.commands[0].compressed = ipak_consts::IPAK_COMMAND_SKIP;
-                skipBlockHeader.commands[0].size = sizeToSkip - sizeof(IPakDataBlockHeader);
+                skipBlockHeader.commands[0].size = static_cast<uint32_t>(sizeToSkip - sizeof(IPakDataBlockHeader));
                 Write(&skipBlockHeader, sizeof(skipBlockHeader));
             }
 
@@ -199,12 +201,12 @@ namespace
             m_current_block.countAndOffset.offset = static_cast<uint32_t>(m_file_offset);
 
             // Reserve space to later write actual block header data
-            GoTo(m_current_offset + sizeof(IPakDataBlockHeader));
+            GoTo(static_cast<int64_t>(m_current_offset + sizeof(IPakDataBlockHeader)));
         }
 
         void WriteChunkData(const void* data, const size_t dataSize)
         {
-            auto dataOffset = 0u;
+            auto dataOffset = 0uz;
             while (dataOffset < dataSize)
             {
                 if (m_current_block.countAndOffset.count >= std::extent_v<decltype(IPakDataBlockHeader::commands)>)
@@ -225,7 +227,7 @@ namespace
                     continue;
                 }
 
-                const auto commandSize = std::min(std::min(remainingSize, ipak_consts::IPAK_COMMAND_DEFAULT_SIZE), remainingChunkBufferWindowSize);
+                const auto commandSize = std::min({remainingSize, ipak_consts::IPAK_COMMAND_DEFAULT_SIZE, remainingChunkBufferWindowSize});
 
                 auto writeUncompressed = true;
                 if (USE_IPAK_COMPRESSION)
@@ -254,7 +256,7 @@ namespace
                     Write(&static_cast<const char*>(data)[dataOffset], commandSize);
 
                     const auto currentCommand = m_current_block.countAndOffset.count;
-                    m_current_block.commands[currentCommand].size = commandSize;
+                    m_current_block.commands[currentCommand].size = static_cast<uint32_t>(commandSize);
                     m_current_block.commands[currentCommand].compressed = ipak_consts::IPAK_COMMAND_UNCOMPRESSED;
                     m_current_block.countAndOffset.count = currentCommand + 1u;
                 }
@@ -281,7 +283,7 @@ namespace
                 return;
 
             const auto nameHash = T6::Common::R_HashString(imageName.c_str(), 0);
-            const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(imageData.get()), imageSize));
+            const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(imageData.get()), static_cast<unsigned>(imageSize)));
 
             StartNewFile();
             const auto startOffset = m_current_block_header_offset;
@@ -294,7 +296,7 @@ namespace
             WriteChunkData(imageData.get(), imageSize);
             const auto writtenImageSize = static_cast<size_t>(m_current_offset - startOffset);
 
-            indexEntry.size = writtenImageSize;
+            indexEntry.size = static_cast<uint32_t>(writtenImageSize);
             m_index_entries.emplace_back(indexEntry);
         }
 

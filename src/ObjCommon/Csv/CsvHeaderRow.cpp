@@ -21,7 +21,7 @@ bool CsvHeaderRow::RequireIndexForHeader(const std::string& headerName, unsigned
     if (existingHeader == m_header_row.end())
         return false;
 
-    out = std::distance(m_header_row.begin(), existingHeader);
+    out = static_cast<unsigned>(std::distance(m_header_row.begin(), existingHeader));
     return true;
 }
 

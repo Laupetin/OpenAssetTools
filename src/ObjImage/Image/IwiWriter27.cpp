@@ -113,7 +113,7 @@ void IwiWriter::DumpImage(std::ostream& stream, const Texture* texture)
         currentFileSize += mipLevelSize;
 
         if (currentMipLevel < static_cast<int>(std::extent_v<decltype(iwi27::IwiHeader::fileSizeForPicmip)>))
-            header.fileSizeForPicmip[currentMipLevel] = currentFileSize;
+            header.fileSizeForPicmip[currentMipLevel] = static_cast<uint32_t>(currentFileSize);
     }
 
     if (const auto* texture2D = dynamic_cast<const Texture2D*>(texture))

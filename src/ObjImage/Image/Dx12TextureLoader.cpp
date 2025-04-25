@@ -14,7 +14,7 @@ Dx12TextureLoader::Dx12TextureLoader()
 
 const ImageFormat* Dx12TextureLoader::GetFormatForDx12Format() const
 {
-    for (auto i : ImageFormat::ALL_FORMATS)
+    for (const auto* i : ImageFormat::ALL_FORMATS)
     {
         if (i->GetDxgiFormat() == m_format)
             return i;
@@ -41,19 +41,19 @@ Dx12TextureLoader& Dx12TextureLoader::HasMipMaps(const bool hasMipMaps)
     return *this;
 }
 
-Dx12TextureLoader& Dx12TextureLoader::Width(const size_t width)
+Dx12TextureLoader& Dx12TextureLoader::Width(const unsigned width)
 {
     m_width = width;
     return *this;
 }
 
-Dx12TextureLoader& Dx12TextureLoader::Height(const size_t height)
+Dx12TextureLoader& Dx12TextureLoader::Height(const unsigned height)
 {
     m_height = height;
     return *this;
 }
 
-Dx12TextureLoader& Dx12TextureLoader::Depth(const size_t depth)
+Dx12TextureLoader& Dx12TextureLoader::Depth(const unsigned depth)
 {
     m_depth = depth;
     return *this;

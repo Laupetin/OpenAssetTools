@@ -27,9 +27,9 @@
 #define gcc_align(x)
 #else
 #ifdef _MSVC_LANG
-#define type_align(x) __declspec(align(x))
-#define tdef_align(x) __declspec(align(x))
-#define memb_align(x) __declspec(align(x))
+#define type_align(x) /* __declspec(align(x)) */
+#define tdef_align(x) /* __declspec(align(x)) */
+#define memb_align(x) /* __declspec(align(x)) */
 #define gcc_align(x)
 #else
 #define type_align(x) __attribute__((__aligned__(x)))
