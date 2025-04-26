@@ -3,7 +3,7 @@
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
 
-#include <sstream>
+#include <format>
 
 using namespace T6;
 
@@ -140,14 +140,14 @@ class AssetDumperFontIconInternal
 
     CsvOutputStream m_csv;
 
-    static FontIconEntry* FindEntryByHash(FontIcon* fontIcon, const int hash)
+    static FontIconEntry* FindEntryByHash(const FontIcon* fontIcon, const int hash)
     {
-        int lowerBound = 0;
-        int upperBound = fontIcon->numEntries;
+        auto lowerBound = 0u;
+        auto upperBound = fontIcon->numEntries;
 
         while (true)
         {
-            const int entryIndex = (lowerBound + upperBound) / 2;
+            const auto entryIndex = (lowerBound + upperBound) / 2u;
             auto* entry = &fontIcon->fontIconEntry[entryIndex];
 
             if (entry->fontIconName.hash == hash)
@@ -157,9 +157,9 @@ class AssetDumperFontIconInternal
                 return nullptr;
 
             if (entry->fontIconName.hash < hash)
-                lowerBound = entryIndex + 1;
+                lowerBound = entryIndex + 1u;
             else
-                upperBound = entryIndex - 1;
+                upperBound = entryIndex - 1u;
         }
     }
 
@@ -174,15 +174,15 @@ class AssetDumperFontIconInternal
         return nullptr;
     }
 
-    void WriteFontIconEntries(FontIcon* fontIcon)
+    void WriteFontIconEntries(const FontIcon* fontIcon)
     {
         for (const auto& header : ICON_HEADERS)
             m_csv.WriteColumn(header);
         m_csv.NextRow();
 
-        for (int iconIndex = 0; iconIndex < fontIcon->numEntries; iconIndex++)
+        for (auto iconIndex = 0u; iconIndex < fontIcon->numEntries; iconIndex++)
         {
-            auto* entry = &fontIcon->fontIconEntry[iconIndex];
+            const auto* entry = &fontIcon->fontIconEntry[iconIndex];
             m_csv.WriteColumn(std::to_string(iconIndex));
             m_csv.WriteColumn(TYPE_ICON);
 
@@ -204,15 +204,15 @@ class AssetDumperFontIconInternal
         }
     }
 
-    void WriteFontIconAliases(FontIcon* fontIcon)
+    void WriteFontIconAliases(const FontIcon* fontIcon)
     {
         for (const auto& header : ALIAS_HEADERS)
             m_csv.WriteColumn(header);
         m_csv.NextRow();
 
-        for (int aliasIndex = 0; aliasIndex < fontIcon->numAliasEntries; aliasIndex++)
+        for (auto aliasIndex = 0u; aliasIndex < fontIcon->numAliasEntries; aliasIndex++)
         {
-            auto* alias = &fontIcon->fontIconAlias[aliasIndex];
+            const auto* alias = &fontIcon->fontIconAlias[aliasIndex];
             m_csv.WriteColumn(std::to_string(aliasIndex));
             m_csv.WriteColumn(TYPE_ALIAS);
 
@@ -220,14 +220,9 @@ class AssetDumperFontIconInternal
             if (knownAlias)
                 m_csv.WriteColumn(knownAlias->m_name);
             else
-            {
-                std::ostringstream str;
-                str << '@' << std::hex << alias->aliasHash;
+                m_csv.WriteColumn(std::format("@{:x}", alias->aliasHash));
 
-                m_csv.WriteColumn(str.str());
-            }
-
-            auto* referencedEntry = FindEntryByHash(fontIcon, alias->buttonHash);
+            const auto* referencedEntry = FindEntryByHash(fontIcon, alias->buttonHash);
             if (referencedEntry && referencedEntry->fontIconName.string)
                 m_csv.WriteColumn(referencedEntry->fontIconName.string);
             else
@@ -243,7 +238,7 @@ public:
     {
     }
 
-    void DumpFontIcon(FontIcon* fontIcon)
+    void DumpFontIcon(const FontIcon* fontIcon)
     {
         WriteFontIconEntries(fontIcon);
         m_csv.NextRow();
