@@ -297,12 +297,12 @@ class XModelBinWriter7 final : public XModelBinWriterBase
 
     void WriteFaces(const XModelCommon& xmodel)
     {
-        auto totalFaceCount = 0u;
+        auto totalFaceCount = 0uz;
         for (const auto& object : xmodel.m_objects)
             totalFaceCount += object.m_faces.size();
 
         XModelBinWriterBase::Write(static_cast<uint32_t>(XModelBinHash::FACE_COUNT));
-        XModelBinWriterBase::Write(totalFaceCount);
+        XModelBinWriterBase::Write(static_cast<uint32_t>(totalFaceCount));
 
         auto objectIndex = 0u;
         for (const auto& object : xmodel.m_objects)

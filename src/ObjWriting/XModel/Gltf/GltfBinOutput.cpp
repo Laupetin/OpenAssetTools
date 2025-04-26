@@ -64,7 +64,7 @@ void BinOutput::EmitJson(const nlohmann::json& json) const
 
 void BinOutput::EmitBuffer(const void* buffer, const size_t bufferSize) const
 {
-    const auto chunkLength = utils::Align<uint32_t>(bufferSize, 4u);
+    const auto chunkLength = utils::Align<uint32_t>(static_cast<uint32_t>(bufferSize), 4u);
     Write(&chunkLength, sizeof(chunkLength));
     Write(&CHUNK_MAGIC_BIN, sizeof(CHUNK_MAGIC_BIN));
 

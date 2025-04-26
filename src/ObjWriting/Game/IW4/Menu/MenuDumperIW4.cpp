@@ -271,13 +271,13 @@ void MenuDumper::WriteStatementSkipInitialUnnecessaryParenthesis(const Statement
 
 void MenuDumper::WriteStatementNaive(const Statement_s* statement) const
 {
-    const auto entryCount = static_cast<unsigned>(statement->numEntries);
+    const auto entryCount = static_cast<size_t>(statement->numEntries);
 
     const auto missingClosingParenthesis = statement->numEntries > 0 && statement->entries[0].type == EET_OPERATOR
                                            && statement->entries[0].data.op == OP_LEFTPAREN
                                            && FindStatementClosingParenthesis(statement, 0) >= static_cast<size_t>(statement->numEntries);
 
-    for (auto i = 0u; i < entryCount; i++)
+    for (auto i = 0uz; i < entryCount; i++)
     {
         const auto& entry = statement->entries[i];
         if (entry.type == EET_OPERAND)
@@ -314,7 +314,7 @@ void MenuDumper::WriteStatementNaive(const Statement_s* statement) const
             const auto closingParenPos = FindStatementClosingParenthesis(statement, i);
             m_stream << "(";
 
-            if (closingParenPos - i + 1 >= 1)
+            if (closingParenPos - i + 1u >= 1u)
             {
                 const auto& staticDvarEntry = statement->entries[i + 1];
                 if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)

@@ -251,7 +251,7 @@ void UnlinkerArgs::AddSpecifiedAssetType(std::string value)
 
 void UnlinkerArgs::ParseCommaSeparatedAssetTypeString(const std::string& input)
 {
-    auto currentPos = 0u;
+    auto currentPos = 0uz;
     size_t endPos;
 
     std::string lowerInput(input);

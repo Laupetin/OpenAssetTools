@@ -25,7 +25,7 @@ public:
         LoadDataInBlock(const_cast<void*>(reinterpret_cast<const void*>(dst)), sizeof(T));
     }
 
-    template<typename T> void Load(T* dst, const uint32_t count)
+    template<typename T> void Load(T* dst, const size_t count)
     {
         LoadDataInBlock(const_cast<void*>(reinterpret_cast<const void*>(dst)), count * sizeof(T));
     }

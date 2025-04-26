@@ -10,12 +10,6 @@
 
 class OutputProcessorDeflate::Impl
 {
-    z_stream m_stream{};
-    OutputProcessorDeflate* m_base;
-
-    std::unique_ptr<uint8_t[]> m_buffer;
-    size_t m_buffer_size;
-
 public:
     Impl(OutputProcessorDeflate* baseClass, const size_t bufferSize)
         : m_buffer(std::make_unique<uint8_t[]>(bufferSize)),
@@ -29,7 +23,7 @@ public:
         m_stream.avail_in = 0;
         m_stream.next_in = Z_NULL;
         m_stream.next_out = m_buffer.get();
-        m_stream.avail_out = m_buffer_size;
+        m_stream.avail_out = static_cast<unsigned>(m_buffer_size);
 
         const int ret = deflateInit(&m_stream, Z_DEFAULT_COMPRESSION);
 
@@ -52,7 +46,7 @@ public:
     void Write(const void* buffer, const size_t length)
     {
         m_stream.next_in = static_cast<const Bytef*>(buffer);
-        m_stream.avail_in = length;
+        m_stream.avail_in = static_cast<unsigned>(length);
 
         while (m_stream.avail_in > 0)
         {
@@ -60,7 +54,7 @@ public:
             {
                 m_base->m_base_stream->Write(m_buffer.get(), m_buffer_size);
                 m_stream.next_out = m_buffer.get();
-                m_stream.avail_out = m_buffer_size;
+                m_stream.avail_out = static_cast<unsigned>(m_buffer_size);
             }
 
             const auto ret = deflate(&m_stream, Z_NO_FLUSH);
@@ -79,7 +73,7 @@ public:
             {
                 m_base->m_base_stream->Write(m_buffer.get(), m_buffer_size - m_stream.avail_out);
                 m_stream.next_out = m_buffer.get();
-                m_stream.avail_out = m_buffer_size;
+                m_stream.avail_out = static_cast<unsigned>(m_buffer_size);
             }
 
             const auto ret = deflate(&m_stream, Z_FINISH);
@@ -96,14 +90,21 @@ public:
         {
             m_base->m_base_stream->Write(m_buffer.get(), m_buffer_size - m_stream.avail_out);
             m_stream.next_out = m_buffer.get();
-            m_stream.avail_out = m_buffer_size;
+            m_stream.avail_out = static_cast<unsigned>(m_buffer_size);
         }
     }
 
-    _NODISCARD int64_t Pos() const
+    [[nodiscard]] int64_t Pos() const
     {
         return m_base->m_base_stream->Pos();
     }
+
+private:
+    z_stream m_stream{};
+    OutputProcessorDeflate* m_base;
+
+    std::unique_ptr<uint8_t[]> m_buffer;
+    size_t m_buffer_size;
 };
 
 OutputProcessorDeflate::OutputProcessorDeflate()

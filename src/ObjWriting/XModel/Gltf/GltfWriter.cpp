@@ -74,7 +74,7 @@ namespace
             if (!gltf.nodes.has_value())
                 gltf.nodes.emplace();
 
-            m_first_mesh_node = gltf.nodes->size();
+            m_first_mesh_node = static_cast<unsigned>(gltf.nodes->size());
 
             auto meshIndex = 0u;
             for (const auto& object : xmodel.m_objects)
@@ -123,7 +123,7 @@ namespace
 
             rootNode.children->push_back(m_first_bone_node);
 
-            m_root_node = gltf.nodes->size();
+            m_root_node = static_cast<unsigned>(gltf.nodes->size());
             gltf.nodes->emplace_back(std::move(rootNode));
         }
 
@@ -211,12 +211,12 @@ namespace
 
             JsonImage image;
             image.uri = std::move(uri);
-            const auto imageIndex = gltf.images->size();
+            const auto imageIndex = static_cast<unsigned>(gltf.images->size());
             gltf.images->emplace_back(std::move(image));
 
             JsonTexture texture;
             texture.source = imageIndex;
-            const auto textureIndex = gltf.textures->size();
+            const auto textureIndex = static_cast<unsigned>(gltf.textures->size());
             gltf.textures->emplace_back(texture);
 
             return textureIndex;
@@ -231,7 +231,7 @@ namespace
                 gltf.nodes.emplace();
 
             const auto boneCount = common.m_bones.size();
-            m_first_bone_node = gltf.nodes->size();
+            m_first_bone_node = static_cast<unsigned>(gltf.nodes->size());
             for (auto boneIndex = 0u; boneIndex < boneCount; boneIndex++)
             {
                 JsonNode boneNode;
@@ -319,12 +319,12 @@ namespace
             JsonBufferView vertexBufferView;
             vertexBufferView.buffer = 0u;
             vertexBufferView.byteOffset = bufferOffset;
-            vertexBufferView.byteStride = sizeof(GltfVertex);
-            vertexBufferView.byteLength = sizeof(GltfVertex) * xmodel.m_vertices.size();
+            vertexBufferView.byteStride = static_cast<unsigned>(sizeof(GltfVertex));
+            vertexBufferView.byteLength = static_cast<unsigned>(sizeof(GltfVertex) * xmodel.m_vertices.size());
             vertexBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
             bufferOffset += vertexBufferView.byteLength;
 
-            m_vertex_buffer_view = gltf.bufferViews->size();
+            m_vertex_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
             gltf.bufferViews->emplace_back(vertexBufferView);
 
             if (!xmodel.m_bone_weight_data.weights.empty())
@@ -332,40 +332,40 @@ namespace
                 JsonBufferView jointsBufferView;
                 jointsBufferView.buffer = 0u;
                 jointsBufferView.byteOffset = bufferOffset;
-                jointsBufferView.byteLength = sizeof(uint8_t) * xmodel.m_vertices.size() * 4u;
+                jointsBufferView.byteLength = static_cast<unsigned>(sizeof(uint8_t) * xmodel.m_vertices.size() * 4u);
                 jointsBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
                 bufferOffset += jointsBufferView.byteLength;
 
-                m_joints_buffer_view = gltf.bufferViews->size();
+                m_joints_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
                 gltf.bufferViews->emplace_back(jointsBufferView);
 
                 JsonBufferView weightsBufferView;
                 weightsBufferView.buffer = 0u;
                 weightsBufferView.byteOffset = bufferOffset;
-                weightsBufferView.byteLength = sizeof(float) * xmodel.m_vertices.size() * 4u;
+                weightsBufferView.byteLength = static_cast<unsigned>(sizeof(float) * xmodel.m_vertices.size() * 4u);
                 weightsBufferView.target = JsonBufferViewTarget::ARRAY_BUFFER;
                 bufferOffset += weightsBufferView.byteLength;
 
-                m_weights_buffer_view = gltf.bufferViews->size();
+                m_weights_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
                 gltf.bufferViews->emplace_back(weightsBufferView);
 
                 JsonBufferView inverseBindMatricesBufferView;
                 inverseBindMatricesBufferView.buffer = 0u;
                 inverseBindMatricesBufferView.byteOffset = bufferOffset;
-                inverseBindMatricesBufferView.byteLength = sizeof(float) * xmodel.m_bones.size() * 16u;
+                inverseBindMatricesBufferView.byteLength = static_cast<unsigned>(sizeof(float) * xmodel.m_bones.size() * 16u);
                 bufferOffset += inverseBindMatricesBufferView.byteLength;
 
-                m_inverse_bind_matrices_buffer_view = gltf.bufferViews->size();
+                m_inverse_bind_matrices_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
                 gltf.bufferViews->emplace_back(inverseBindMatricesBufferView);
             }
 
-            m_first_index_buffer_view = gltf.bufferViews->size();
+            m_first_index_buffer_view = static_cast<unsigned>(gltf.bufferViews->size());
             for (const auto& object : xmodel.m_objects)
             {
                 JsonBufferView indicesBufferView;
                 indicesBufferView.buffer = 0u;
                 indicesBufferView.byteOffset = bufferOffset;
-                indicesBufferView.byteLength = sizeof(unsigned short) * object.m_faces.size() * 3u;
+                indicesBufferView.byteLength = static_cast<unsigned>(sizeof(unsigned short) * object.m_faces.size() * 3u);
                 indicesBufferView.target = JsonBufferViewTarget::ELEMENT_ARRAY_BUFFER;
                 bufferOffset += indicesBufferView.byteLength;
 
@@ -380,29 +380,29 @@ namespace
 
             JsonAccessor positionAccessor;
             positionAccessor.bufferView = m_vertex_buffer_view;
-            positionAccessor.byteOffset = offsetof(GltfVertex, coordinates);
+            positionAccessor.byteOffset = static_cast<unsigned>(offsetof(GltfVertex, coordinates));
             positionAccessor.componentType = JsonAccessorComponentType::FLOAT;
-            positionAccessor.count = xmodel.m_vertices.size();
+            positionAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
             positionAccessor.type = JsonAccessorType::VEC3;
-            m_position_accessor = gltf.accessors->size();
+            m_position_accessor = static_cast<unsigned>(gltf.accessors->size());
             gltf.accessors->emplace_back(positionAccessor);
 
             JsonAccessor normalAccessor;
             normalAccessor.bufferView = m_vertex_buffer_view;
-            normalAccessor.byteOffset = offsetof(GltfVertex, normal);
+            normalAccessor.byteOffset = static_cast<unsigned>(offsetof(GltfVertex, normal));
             normalAccessor.componentType = JsonAccessorComponentType::FLOAT;
-            normalAccessor.count = xmodel.m_vertices.size();
+            normalAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
             normalAccessor.type = JsonAccessorType::VEC3;
-            m_normal_accessor = gltf.accessors->size();
+            m_normal_accessor = static_cast<unsigned>(gltf.accessors->size());
             gltf.accessors->emplace_back(normalAccessor);
 
             JsonAccessor uvAccessor;
             uvAccessor.bufferView = m_vertex_buffer_view;
-            uvAccessor.byteOffset = offsetof(GltfVertex, uv);
+            uvAccessor.byteOffset = static_cast<unsigned>(offsetof(GltfVertex, uv));
             uvAccessor.componentType = JsonAccessorComponentType::FLOAT;
-            uvAccessor.count = xmodel.m_vertices.size();
+            uvAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
             uvAccessor.type = JsonAccessorType::VEC2;
-            m_uv_accessor = gltf.accessors->size();
+            m_uv_accessor = static_cast<unsigned>(gltf.accessors->size());
             gltf.accessors->emplace_back(uvAccessor);
 
             if (!xmodel.m_bone_weight_data.weights.empty())
@@ -410,29 +410,29 @@ namespace
                 JsonAccessor jointsAccessor;
                 jointsAccessor.bufferView = m_joints_buffer_view;
                 jointsAccessor.componentType = JsonAccessorComponentType::UNSIGNED_BYTE;
-                jointsAccessor.count = xmodel.m_vertices.size();
+                jointsAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
                 jointsAccessor.type = JsonAccessorType::VEC4;
-                m_joints_accessor = gltf.accessors->size();
+                m_joints_accessor = static_cast<unsigned>(gltf.accessors->size());
                 gltf.accessors->emplace_back(jointsAccessor);
 
                 JsonAccessor weightsAccessor;
                 weightsAccessor.bufferView = m_weights_buffer_view;
                 weightsAccessor.componentType = JsonAccessorComponentType::FLOAT;
-                weightsAccessor.count = xmodel.m_vertices.size();
+                weightsAccessor.count = static_cast<unsigned>(xmodel.m_vertices.size());
                 weightsAccessor.type = JsonAccessorType::VEC4;
-                m_weights_accessor = gltf.accessors->size();
+                m_weights_accessor = static_cast<unsigned>(gltf.accessors->size());
                 gltf.accessors->emplace_back(weightsAccessor);
 
                 JsonAccessor inverseBindMatricesAccessor;
                 inverseBindMatricesAccessor.bufferView = m_inverse_bind_matrices_buffer_view;
                 inverseBindMatricesAccessor.componentType = JsonAccessorComponentType::FLOAT;
-                inverseBindMatricesAccessor.count = xmodel.m_bones.size();
+                inverseBindMatricesAccessor.count = static_cast<unsigned>(xmodel.m_bones.size());
                 inverseBindMatricesAccessor.type = JsonAccessorType::MAT4;
-                m_inverse_bind_matrices_accessor = gltf.accessors->size();
+                m_inverse_bind_matrices_accessor = static_cast<unsigned>(gltf.accessors->size());
                 gltf.accessors->emplace_back(inverseBindMatricesAccessor);
             }
 
-            m_first_index_accessor = gltf.accessors->size();
+            m_first_index_accessor = static_cast<unsigned>(gltf.accessors->size());
             for (auto i = 0u; i < xmodel.m_objects.size(); i++)
             {
                 const auto& object = xmodel.m_objects[i];
@@ -440,7 +440,7 @@ namespace
                 JsonAccessor indicesAccessor;
                 indicesAccessor.bufferView = m_first_index_buffer_view + i;
                 indicesAccessor.componentType = JsonAccessorComponentType::UNSIGNED_SHORT;
-                indicesAccessor.count = object.m_faces.size() * 3u;
+                indicesAccessor.count = static_cast<unsigned>(object.m_faces.size() * 3u);
                 indicesAccessor.type = JsonAccessorType::SCALAR;
 
                 gltf.accessors->emplace_back(indicesAccessor);
@@ -452,7 +452,7 @@ namespace
             const auto expectedBufferSize = GetExpectedBufferSize(xmodel);
             bufferData.resize(expectedBufferSize);
 
-            auto currentBufferOffset = 0u;
+            auto currentBufferOffset = 0uz;
 
             float minPosition[3]{
                 std::numeric_limits<float>::max(),
@@ -576,7 +576,7 @@ namespace
 
         static size_t GetExpectedBufferSize(const XModelCommon& xmodel)
         {
-            auto result = 0u;
+            auto result = 0uz;
 
             result += xmodel.m_vertices.size() * sizeof(GltfVertex);
 
@@ -603,7 +603,7 @@ namespace
                 gltf.buffers.emplace();
 
             JsonBuffer jsonBuffer;
-            jsonBuffer.byteLength = bufferData.size();
+            jsonBuffer.byteLength = static_cast<unsigned>(bufferData.size());
 
             if (!bufferData.empty())
                 jsonBuffer.uri = m_output->CreateBufferUri(bufferData.data(), bufferData.size());

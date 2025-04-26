@@ -122,11 +122,11 @@ class XModelExportWriter6 final : public XModelExportWriterBase
 
     void WriteFaces(const XModelCommon& xmodel) const
     {
-        auto totalFaceCount = 0u;
+        auto totalFaceCount = 0uz;
         for (const auto& object : xmodel.m_objects)
             totalFaceCount += object.m_faces.size();
 
-        m_stream << "NUMFACES " << totalFaceCount << "\n";
+        m_stream << std::format("NUMFACES {}\n", totalFaceCount);
 
         auto objectIndex = 0u;
         for (const auto& object : xmodel.m_objects)

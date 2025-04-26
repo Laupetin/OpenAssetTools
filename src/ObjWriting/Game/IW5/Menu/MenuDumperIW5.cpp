@@ -240,7 +240,7 @@ void MenuDumper::WriteStatementEntryRange(const Statement_s* statement, size_t s
 void MenuDumper::WriteStatementNaive(const Statement_s* statement) const
 {
     const auto entryCount = static_cast<unsigned>(statement->numEntries);
-    for (auto i = 0u; i < entryCount; i++)
+    for (auto i = 0uz; i < entryCount; i++)
     {
         const auto& entry = statement->entries[i];
         if (entry.type == EET_OPERAND)
@@ -277,9 +277,9 @@ void MenuDumper::WriteStatementNaive(const Statement_s* statement) const
             const auto closingParenPos = FindStatementClosingParenthesis(statement, i);
             m_stream << "(";
 
-            if (closingParenPos - i + 1 >= 1)
+            if (closingParenPos - i + 1u >= 1u)
             {
-                const auto& staticDvarEntry = statement->entries[i + 1];
+                const auto& staticDvarEntry = statement->entries[i + 1u];
                 if (staticDvarEntry.type == EET_OPERAND && staticDvarEntry.data.operand.dataType == VAL_INT)
                 {
                     if (statement->supportingData && statement->supportingData->staticDvarList.staticDvars && staticDvarEntry.data.operand.internals.intVal >= 0
