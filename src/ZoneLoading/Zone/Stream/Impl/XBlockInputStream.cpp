@@ -13,21 +13,14 @@ XBlockInputStream::XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStrea
 {
     m_stream = stream;
 
-    const unsigned int blockCount = blocks.size();
-    m_block_offsets = new size_t[blockCount]{0};
+    const auto blockCount = static_cast<unsigned>(blocks.size());
+    m_block_offsets = std::make_unique<size_t[]>(blockCount);
+    std::memset(m_block_offsets.get(), 0, sizeof(size_t) * blockCount);
 
     m_block_bit_count = blockBitCount;
 
-    assert(insertBlock >= 0 && insertBlock < static_cast<block_t>(blocks.size()));
+    assert(insertBlock < static_cast<block_t>(blocks.size()));
     m_insert_block = blocks[insertBlock];
-}
-
-XBlockInputStream::~XBlockInputStream()
-{
-    delete[] m_block_offsets;
-    m_block_offsets = nullptr;
-
-    assert(m_block_stack.empty());
 }
 
 void XBlockInputStream::Align(const unsigned align)
@@ -37,13 +30,13 @@ void XBlockInputStream::Align(const unsigned align)
     if (align > 0)
     {
         const block_t blockIndex = m_block_stack.top()->m_index;
-        m_block_offsets[blockIndex] = (m_block_offsets[blockIndex] + align - 1) / align * align;
+        m_block_offsets[blockIndex] = (m_block_offsets[blockIndex] + align - 1u) / align * align;
     }
 }
 
 void XBlockInputStream::PushBlock(const block_t block)
 {
-    assert(block >= 0 && block < static_cast<block_t>(m_blocks.size()));
+    assert(block < static_cast<block_t>(m_blocks.size()));
 
     XBlock* newBlock = m_blocks[block];
 
@@ -150,7 +143,7 @@ void XBlockInputStream::IncBlockPos(const size_t size)
     if (m_block_stack.empty())
         return;
 
-    XBlock* block = m_block_stack.top();
+    const XBlock* block = m_block_stack.top();
     m_block_offsets[block->m_index] += size;
 }
 
@@ -172,7 +165,7 @@ void XBlockInputStream::LoadNullTerminated(void* dst)
     assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
 
     uint8_t byte;
-    size_t offset = reinterpret_cast<uint8_t*>(dst) - block->m_buffer;
+    size_t offset = static_cast<uint8_t*>(dst) - block->m_buffer;
     do
     {
         if (offset >= block->m_buffer_size)
@@ -198,7 +191,7 @@ void** XBlockInputStream::InsertPointer()
         throw BlockOverflowException(m_insert_block);
     }
 
-    void** ptr = reinterpret_cast<void**>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
+    auto* ptr = reinterpret_cast<void**>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
 
     IncBlockPos(sizeof(void*));
 
@@ -211,9 +204,9 @@ void* XBlockInputStream::ConvertOffsetToPointer(const void* offset)
 {
     // -1 because otherwise Block 0 Offset 0 would be just 0 which is already used to signalize a nullptr.
     // So all offsets are moved by 1.
-    auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1;
+    const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
 
-    const block_t blockNum = offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count);
+    const block_t blockNum = static_cast<block_t>(offsetInt >> (sizeof(offsetInt) * 8u - m_block_bit_count));
     const size_t blockOffset = offsetInt & (UINTPTR_MAX >> m_block_bit_count);
 
     if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))
@@ -234,9 +227,9 @@ void* XBlockInputStream::ConvertOffsetToPointer(const void* offset)
 void* XBlockInputStream::ConvertOffsetToAlias(const void* offset)
 {
     // For details see ConvertOffsetToPointer
-    auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1;
+    const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1;
 
-    const block_t blockNum = offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count);
+    const block_t blockNum = static_cast<block_t>(offsetInt >> (sizeof(offsetInt) * 8 - m_block_bit_count));
     const size_t blockOffset = offsetInt & (UINTPTR_MAX >> m_block_bit_count);
 
     if (blockNum < 0 || blockNum >= static_cast<block_t>(m_blocks.size()))

@@ -50,20 +50,20 @@ public:
     size_t Load(void* buffer, const size_t length)
     {
         m_stream.next_out = static_cast<Bytef*>(buffer);
-        m_stream.avail_out = length;
+        m_stream.avail_out = static_cast<unsigned>(length);
 
         while (m_stream.avail_out > 0)
         {
             if (m_stream.avail_in == 0)
             {
-                m_stream.avail_in = m_base->m_base_stream->Load(m_buffer.get(), m_buffer_size);
+                m_stream.avail_in = static_cast<unsigned>(m_base->m_base_stream->Load(m_buffer.get(), m_buffer_size));
                 m_stream.next_in = m_buffer.get();
 
                 if (m_stream.avail_in == 0) // EOF
                     return length - m_stream.avail_out;
             }
 
-            auto ret = inflate(&m_stream, Z_SYNC_FLUSH);
+            const auto ret = inflate(&m_stream, Z_SYNC_FLUSH);
 
             if (ret < 0)
                 throw InvalidCompressionException();

@@ -143,7 +143,8 @@ namespace
         zoneLoader.AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, sizeof(DB_AuthSubHeader::fastfileName)));
         zoneLoader.AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Skip reserved
 
-        auto masterBlockHashes = std::make_unique<StepLoadHash>(sizeof(DB_AuthHash::bytes), std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>);
+        auto masterBlockHashes =
+            std::make_unique<StepLoadHash>(sizeof(DB_AuthHash::bytes), static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>));
         auto* masterBlockHashesPtr = masterBlockHashes.get();
         zoneLoader.AddLoadingStep(std::move(masterBlockHashes));
 
@@ -153,12 +154,12 @@ namespace
         // Skip the rest of the first chunk
         zoneLoader.AddLoadingStep(std::make_unique<StepSkipBytes>(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
 
-        zoneLoader.AddLoadingStep(
-            std::make_unique<StepAddProcessor>(std::make_unique<ProcessorAuthedBlocks>(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
-                                                                                       ZoneConstants::AUTHED_CHUNK_SIZE,
-                                                                                       std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>,
-                                                                                       cryptography::CreateSha256(),
-                                                                                       masterBlockHashesPtr)));
+        zoneLoader.AddLoadingStep(std::make_unique<StepAddProcessor>(
+            std::make_unique<ProcessorAuthedBlocks>(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
+                                                    ZoneConstants::AUTHED_CHUNK_SIZE,
+                                                    static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
+                                                    cryptography::CreateSha256(),
+                                                    masterBlockHashesPtr)));
     }
 } // namespace
 

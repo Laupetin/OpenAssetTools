@@ -14,7 +14,7 @@ public:
     };
 
     std::string m_name;
-    int m_index;
+    unsigned m_index;
     Type m_type;
 
     uint8_t* m_buffer;

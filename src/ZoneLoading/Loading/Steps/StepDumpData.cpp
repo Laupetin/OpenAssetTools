@@ -2,21 +2,21 @@
 
 #include <fstream>
 
-StepDumpData::StepDumpData(const unsigned int dumpCount)
+StepDumpData::StepDumpData(const size_t dumpCount)
+    : m_dump_count(dumpCount)
 {
-    m_dump_count = dumpCount;
 }
 
 void StepDumpData::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
     uint8_t tempBuffer[128];
-    unsigned int dumpedBytes = 0;
+    auto dumpedBytes = 0uz;
 
     std::ofstream tempFile("dump.dat", std::fstream::out | std::fstream::binary);
 
     while (dumpedBytes < m_dump_count)
     {
-        unsigned int toDump;
+        size_t toDump;
 
         if (m_dump_count - dumpedBytes < sizeof(tempBuffer))
         {
@@ -33,7 +33,7 @@ void StepDumpData::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
         if (loadedSize == 0)
             break;
 
-        tempFile.write(reinterpret_cast<char*>(tempBuffer), loadedSize);
+        tempFile.write(reinterpret_cast<char*>(tempBuffer), static_cast<std::streamsize>(loadedSize));
     }
 
     tempFile.close();

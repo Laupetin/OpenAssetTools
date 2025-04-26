@@ -4,10 +4,11 @@
 
 class StepDumpData final : public ILoadingStep
 {
-    unsigned int m_dump_count;
-
 public:
-    explicit StepDumpData(unsigned int dumpCount);
+    explicit StepDumpData(size_t dumpCount);
 
     void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+
+private:
+    size_t m_dump_count;
 };
