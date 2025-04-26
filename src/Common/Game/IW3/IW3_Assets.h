@@ -1314,9 +1314,9 @@ namespace IW3
     {
         char levelCount;
         char flags;
-        int16_t dimensions[3];
+        uint16_t dimensions[3];
         int format;
-        int resourceSize;
+        unsigned int resourceSize;
         char data[1];
     };
 

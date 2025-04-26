@@ -15,7 +15,7 @@ ShaderArgument::ShaderArgument(std::string argumentName)
 {
 }
 
-ShaderArgument::ShaderArgument(std::string argumentName, const size_t argumentIndex)
+ShaderArgument::ShaderArgument(std::string argumentName, const unsigned argumentIndex)
     : m_argument_name(std::move(argumentName)),
       m_argument_index_specified(true),
       m_argument_index(argumentIndex)
@@ -35,7 +35,7 @@ ShaderArgumentCodeSource::ShaderArgumentCodeSource(std::vector<std::string> acce
 {
 }
 
-ShaderArgumentCodeSource::ShaderArgumentCodeSource(std::vector<std::string> accessors, const size_t indexAccessor)
+ShaderArgumentCodeSource::ShaderArgumentCodeSource(std::vector<std::string> accessors, const unsigned indexAccessor)
     : m_accessors(std::move(accessors)),
       m_index_accessor_specified(true),
       m_index_accessor(indexAccessor)
@@ -102,7 +102,7 @@ ShaderArgumentMaterialSource::ShaderArgumentMaterialSource()
 {
 }
 
-ShaderArgumentMaterialSource::ShaderArgumentMaterialSource(const size_t hash)
+ShaderArgumentMaterialSource::ShaderArgumentMaterialSource(const unsigned hash)
     : m_is_hash(true),
       m_hash(hash)
 {

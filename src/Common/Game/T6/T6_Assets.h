@@ -1478,8 +1478,8 @@ namespace T6
     struct FontIcon
     {
         const char* name;
-        int numEntries;
-        int numAliasEntries;
+        unsigned int numEntries;
+        unsigned int numAliasEntries;
         FontIconEntry* fontIconEntry;
         FontIconAlias* fontIconAlias;
     };

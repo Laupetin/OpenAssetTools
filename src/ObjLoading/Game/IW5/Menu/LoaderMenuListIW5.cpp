@@ -83,7 +83,7 @@ namespace
                                    menu::MenuAssetZoneState& zoneState,
                                    MenuConversionZoneState& conversionState,
                                    std::vector<menuDef_t*>& menus,
-                                   AssetRegistration<AssetMenuList>& registration)
+                                   AssetRegistration<AssetMenuList>& registration) const
         {
             const auto alreadyLoadedMenuFile = conversionState.m_menus_by_filename.find(menuFilePath);
             if (alreadyLoadedMenuFile != conversionState.m_menus_by_filename.end())
@@ -125,14 +125,14 @@ namespace
                                   menu::MenuAssetZoneState& zoneState,
                                   MenuConversionZoneState& conversionState,
                                   std::vector<menuDef_t*>& menus,
-                                  AssetRegistration<AssetMenuList>& registration)
+                                  AssetRegistration<AssetMenuList>& registration) const
         {
             const auto menuCount = parsingResult.m_menus.size();
             const auto functionCount = parsingResult.m_functions.size();
             const auto menuLoadCount = parsingResult.m_menus_to_load.size();
             auto totalItemCount = 0u;
             for (const auto& menu : parsingResult.m_menus)
-                totalItemCount += menu->m_items.size();
+                totalItemCount += static_cast<unsigned>(menu->m_items.size());
 
             std::cout << std::format("Successfully read menu file \"{}\" ({} loads, {} menus, {} functions, {} items)\n",
                                      fileName,
@@ -152,7 +152,7 @@ namespace
             // Convert all menus and add them as assets
             for (auto& commonMenu : parsingResult.m_menus)
             {
-                auto converter = IMenuConverter::Create(ObjLoading::Configuration.MenuNoOptimization, m_search_path, m_memory, context);
+                const auto converter = IMenuConverter::Create(ObjLoading::Configuration.MenuNoOptimization, m_search_path, m_memory, context);
 
                 auto* menuAsset = m_memory.Alloc<menuDef_t>();
                 AssetRegistration<AssetMenu> menuRegistration(commonMenu->m_name, menuAsset);
@@ -182,7 +182,7 @@ namespace
             return true;
         }
 
-        void CreateMenuListAsset(MenuList& menuList, const std::vector<menuDef_t*>& menus)
+        void CreateMenuListAsset(MenuList& menuList, const std::vector<menuDef_t*>& menus) const
         {
             menuList.menuCount = static_cast<int>(menus.size());
 
@@ -196,7 +196,8 @@ namespace
                 menuList.menus = nullptr;
         }
 
-        std::unique_ptr<menu::ParsingResult> ParseMenuFile(std::istream& stream, const std::string& menuFileName, const menu::MenuAssetZoneState& zoneState)
+        std::unique_ptr<menu::ParsingResult>
+            ParseMenuFile(std::istream& stream, const std::string& menuFileName, const menu::MenuAssetZoneState& zoneState) const
         {
             menu::MenuFileReader reader(stream, menuFileName, menu::FeatureLevel::IW5, m_search_path);
 

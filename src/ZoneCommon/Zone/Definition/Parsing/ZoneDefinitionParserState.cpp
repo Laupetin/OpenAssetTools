@@ -26,14 +26,14 @@ namespace
         if (!maybeObjContainer)
             return;
 
-        maybeObjContainer->m_asset_end = zoneDefinition.m_assets.size();
+        maybeObjContainer->m_asset_end = static_cast<unsigned>(zoneDefinition.m_assets.size());
         zoneDefinition.m_obj_containers.emplace_back(std::move(*maybeObjContainer));
         maybeObjContainer = std::nullopt;
     }
 
     ZoneDefinitionObjContainer DefineNewObjContainer(const ZoneDefinition& zoneDefinition, std::string name, const ZoneDefinitionObjContainerType type)
     {
-        return ZoneDefinitionObjContainer(std::move(name), type, zoneDefinition.m_assets.size());
+        return ZoneDefinitionObjContainer(std::move(name), type, static_cast<unsigned>(zoneDefinition.m_assets.size()));
     }
 
     void SortObjContainer(ZoneDefinition& zoneDefinition)

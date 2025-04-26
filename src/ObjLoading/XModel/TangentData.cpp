@@ -11,11 +11,11 @@ void TangentData::CreateTangentData(const XModelCommon& common)
     m_tangents.resize(vertexCount);
     m_binormals.resize(vertexCount);
 
-    auto triCount = 0u;
+    auto triCount = 0uz;
     for (const auto& object : common.m_objects)
         triCount += object.m_faces.size();
 
-    std::vector<uint16_t> indices(triCount * 3u);
+    std::vector<uint16_t> indices(triCount * 3uz);
     auto triOffset = 0u;
     for (const auto& object : common.m_objects)
     {

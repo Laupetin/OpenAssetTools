@@ -36,8 +36,7 @@ namespace string_table
 
             while (csv.NextRow(currentLine))
             {
-                if (currentLine.size() > maxCols)
-                    maxCols = currentLine.size();
+                maxCols = std::max(static_cast<unsigned>(currentLine.size()), maxCols);
                 csvLines.emplace_back(std::move(currentLine));
                 currentLine = std::vector<std::string>();
             }

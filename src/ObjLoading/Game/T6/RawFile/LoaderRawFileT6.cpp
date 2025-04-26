@@ -58,7 +58,7 @@ namespace
             zs.zfree = Z_NULL;
             zs.opaque = Z_NULL;
             zs.avail_in = static_cast<uInt>(file.m_length);
-            zs.avail_out = compressionBufferSize;
+            zs.avail_out = static_cast<unsigned>(compressionBufferSize);
             zs.next_in = reinterpret_cast<const Bytef*>(uncompressedBuffer.get());
             zs.next_out = reinterpret_cast<Bytef*>(&compressedBuffer[sizeof(uint32_t)]);
 
@@ -92,7 +92,7 @@ namespace
             return AssetCreationResult::Success(context.AddAsset<AssetRawFile>(assetName, rawFile));
         }
 
-        AssetCreationResult LoadDefault(const SearchPathOpenFile& file, const std::string& assetName, AssetCreationContext& context)
+        AssetCreationResult LoadDefault(const SearchPathOpenFile& file, const std::string& assetName, AssetCreationContext& context) const
         {
             auto* rawFile = m_memory.Alloc<RawFile>();
             rawFile->name = m_memory.Dup(assetName.c_str());

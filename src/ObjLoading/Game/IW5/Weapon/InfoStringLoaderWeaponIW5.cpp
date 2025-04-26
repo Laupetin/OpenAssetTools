@@ -232,7 +232,7 @@ namespace
             }
 
             m_weapon.weapCompleteDef.animOverrides = animOverrides;
-            m_weapon.weapCompleteDef.numAnimOverrides = valueArray.size();
+            m_weapon.weapCompleteDef.numAnimOverrides = static_cast<unsigned>(valueArray.size());
 
             return true;
         }
@@ -267,7 +267,7 @@ namespace
             }
 
             m_weapon.weapCompleteDef.soundOverrides = soundOverrides;
-            m_weapon.weapCompleteDef.numSoundOverrides = valueArray.size();
+            m_weapon.weapCompleteDef.numSoundOverrides = static_cast<unsigned>(valueArray.size());
 
             return true;
         }
@@ -305,7 +305,7 @@ namespace
             }
 
             m_weapon.weapCompleteDef.fxOverrides = fxOverrides;
-            m_weapon.weapCompleteDef.numFxOverrides = valueArray.size();
+            m_weapon.weapCompleteDef.numFxOverrides = static_cast<unsigned>(valueArray.size());
 
             return true;
         }
@@ -339,7 +339,7 @@ namespace
             }
 
             m_weapon.weapCompleteDef.reloadOverrides = reloadOverrides;
-            m_weapon.weapCompleteDef.numReloadStateTimerOverrides = valueArray.size();
+            m_weapon.weapCompleteDef.numReloadStateTimerOverrides = static_cast<unsigned>(valueArray.size());
 
             return true;
         }
@@ -392,7 +392,7 @@ namespace
 
             m_weapon.weapCompleteDef.notetrackOverrides = m_memory.Alloc<NoteTrackToSoundEntry>(overrideVector.size());
             memcpy(m_weapon.weapCompleteDef.notetrackOverrides, overrideVector.data(), sizeof(NoteTrackToSoundEntry) * overrideVector.size());
-            m_weapon.weapCompleteDef.numNotetrackOverrides = overrideVector.size();
+            m_weapon.weapCompleteDef.numNotetrackOverrides = static_cast<unsigned>(overrideVector.size());
 
             return true;
         }
@@ -437,7 +437,7 @@ namespace
             return false;
         }
 
-        void ParseAnim(const std::string& value, const char*& animName)
+        void ParseAnim(const std::string& value, const char*& animName) const
         {
             if (value == "none")
             {
@@ -449,7 +449,7 @@ namespace
             m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetXAnim>(value));
         }
 
-        void ParseSoundAlias(const std::string& value, SndAliasCustom& soundAlias)
+        void ParseSoundAlias(const std::string& value, SndAliasCustom& soundAlias) const
         {
             if (value == "none")
             {
@@ -462,7 +462,7 @@ namespace
             m_registration.AddIndirectAssetReference(m_context.LoadIndirectAssetReference<AssetSound>(value));
         }
 
-        bool ParseFxEffectDef(const std::string& value, FxEffectDef*& fx)
+        bool ParseFxEffectDef(const std::string& value, FxEffectDef*& fx) const
         {
             if (value == "none")
             {
@@ -542,7 +542,7 @@ namespace
             return true;
         }
 
-        void ParseScriptString(const std::string& value, ScriptString& out)
+        void ParseScriptString(const std::string& value, ScriptString& out) const
         {
             out = m_zone_script_strings.AddOrGetScriptString(value);
             m_registration.AddScriptString(out);
@@ -863,7 +863,7 @@ InfoStringLoaderWeapon::InfoStringLoaderWeapon(MemoryManager& memory, ISearchPat
 {
 }
 
-AssetCreationResult InfoStringLoaderWeapon::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+AssetCreationResult InfoStringLoaderWeapon::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
 {
     auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
 

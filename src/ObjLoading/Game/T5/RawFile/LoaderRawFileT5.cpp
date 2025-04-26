@@ -40,7 +40,7 @@ namespace
         }
 
     private:
-        AssetCreationResult LoadGsc(const SearchPathOpenFile& file, const std::string& assetName, AssetCreationContext& context)
+        AssetCreationResult LoadGsc(const SearchPathOpenFile& file, const std::string& assetName, AssetCreationContext& context) const
         {
             const auto uncompressedBuffer = std::make_unique<char[]>(static_cast<size_t>(file.m_length + 1));
 
@@ -58,7 +58,7 @@ namespace
             zs.zfree = Z_NULL;
             zs.opaque = Z_NULL;
             zs.avail_in = static_cast<uInt>(file.m_length + 1);
-            zs.avail_out = compressionBufferSize;
+            zs.avail_out = static_cast<unsigned>(compressionBufferSize);
             zs.next_in = reinterpret_cast<const Bytef*>(uncompressedBuffer.get());
             zs.next_out = reinterpret_cast<Bytef*>(&compressedBuffer[sizeof(uint32_t) + sizeof(uint32_t)]);
 
@@ -79,7 +79,7 @@ namespace
             const auto compressedSize = compressionBufferSize - zs.avail_out;
 
             reinterpret_cast<uint32_t*>(compressedBuffer)[0] = static_cast<uint32_t>(file.m_length + 1); // outLen
-            reinterpret_cast<uint32_t*>(compressedBuffer)[1] = compressedSize;                           // inLen
+            reinterpret_cast<uint32_t*>(compressedBuffer)[1] = static_cast<uint32_t>(compressedSize);    // inLen
 
             auto* rawFile = m_memory.Alloc<RawFile>();
             rawFile->name = m_memory.Dup(assetName.c_str());
@@ -91,7 +91,7 @@ namespace
             return AssetCreationResult::Success(context.AddAsset<AssetRawFile>(assetName, rawFile));
         }
 
-        AssetCreationResult LoadDefault(const SearchPathOpenFile& file, const std::string& assetName, AssetCreationContext& context)
+        AssetCreationResult LoadDefault(const SearchPathOpenFile& file, const std::string& assetName, AssetCreationContext& context) const
         {
             auto* rawFile = m_memory.Alloc<RawFile>();
             rawFile->name = m_memory.Dup(assetName.c_str());

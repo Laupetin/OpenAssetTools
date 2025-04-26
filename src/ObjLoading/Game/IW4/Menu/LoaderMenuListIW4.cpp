@@ -83,7 +83,7 @@ namespace
                                    menu::MenuAssetZoneState& zoneState,
                                    MenuConversionZoneState& conversionState,
                                    std::vector<menuDef_t*>& menus,
-                                   AssetRegistration<AssetMenuList>& registration)
+                                   AssetRegistration<AssetMenuList>& registration) const
         {
             const auto alreadyLoadedMenuFile = conversionState.m_menus_by_filename.find(menuFilePath);
             if (alreadyLoadedMenuFile != conversionState.m_menus_by_filename.end())
@@ -125,12 +125,12 @@ namespace
                                   menu::MenuAssetZoneState& zoneState,
                                   MenuConversionZoneState& conversionState,
                                   std::vector<menuDef_t*>& menus,
-                                  AssetRegistration<AssetMenuList>& registration)
+                                  AssetRegistration<AssetMenuList>& registration) const
         {
             const auto menuCount = parsingResult.m_menus.size();
             const auto functionCount = parsingResult.m_functions.size();
             const auto menuLoadCount = parsingResult.m_menus_to_load.size();
-            auto totalItemCount = 0u;
+            auto totalItemCount = 0uz;
             for (const auto& menu : parsingResult.m_menus)
                 totalItemCount += menu->m_items.size();
 
@@ -182,7 +182,7 @@ namespace
             return true;
         }
 
-        void CreateMenuListAsset(MenuList& menuList, const std::vector<menuDef_t*>& menus)
+        void CreateMenuListAsset(MenuList& menuList, const std::vector<menuDef_t*>& menus) const
         {
             menuList.menuCount = static_cast<int>(menus.size());
 
@@ -196,7 +196,8 @@ namespace
                 menuList.menus = nullptr;
         }
 
-        std::unique_ptr<menu::ParsingResult> ParseMenuFile(std::istream& stream, const std::string& menuFileName, const menu::MenuAssetZoneState& zoneState)
+        std::unique_ptr<menu::ParsingResult>
+            ParseMenuFile(std::istream& stream, const std::string& menuFileName, const menu::MenuAssetZoneState& zoneState) const
         {
             menu::MenuFileReader reader(stream, menuFileName, menu::FeatureLevel::IW4, m_search_path);
 

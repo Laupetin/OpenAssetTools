@@ -16,11 +16,11 @@ namespace techset
     public:
         std::string m_argument_name;
         bool m_argument_index_specified;
-        size_t m_argument_index;
+        unsigned m_argument_index;
 
         ShaderArgument();
         explicit ShaderArgument(std::string argumentName);
-        ShaderArgument(std::string argumentName, size_t argumentIndex);
+        ShaderArgument(std::string argumentName, unsigned argumentIndex);
     };
 
     class ShaderArgumentCodeSource
@@ -28,11 +28,11 @@ namespace techset
     public:
         std::vector<std::string> m_accessors;
         bool m_index_accessor_specified;
-        size_t m_index_accessor;
+        unsigned m_index_accessor;
 
         ShaderArgumentCodeSource();
         explicit ShaderArgumentCodeSource(std::vector<std::string> accessors);
-        ShaderArgumentCodeSource(std::vector<std::string> accessors, size_t indexAccessor);
+        ShaderArgumentCodeSource(std::vector<std::string> accessors, unsigned indexAccessor);
     };
 
     class ShaderArgumentLiteralSource
@@ -53,13 +53,13 @@ namespace techset
     class ShaderArgumentMaterialSource
     {
     public:
-        bool m_is_hash;
-        size_t m_hash;
-        std::string m_name;
-
         ShaderArgumentMaterialSource();
-        explicit ShaderArgumentMaterialSource(size_t hash);
+        explicit ShaderArgumentMaterialSource(unsigned hash);
         explicit ShaderArgumentMaterialSource(std::string name);
+
+        bool m_is_hash;
+        unsigned m_hash;
+        std::string m_name;
     };
 
     class ITechniqueDefinitionAcceptor

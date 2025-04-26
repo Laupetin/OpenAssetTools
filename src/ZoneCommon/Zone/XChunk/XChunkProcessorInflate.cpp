@@ -16,9 +16,9 @@ size_t XChunkProcessorInflate::Process(int streamNumber, const uint8_t* input, c
     if (ret != Z_OK)
         throw XChunkException("Initializing inflate failed.");
 
-    stream.avail_in = inputLength;
+    stream.avail_in = static_cast<unsigned>(inputLength);
     stream.next_in = input;
-    stream.avail_out = outputBufferSize;
+    stream.avail_out = static_cast<unsigned>(outputBufferSize);
     stream.next_out = output;
 
     ret = inflate(&stream, Z_FULL_FLUSH);

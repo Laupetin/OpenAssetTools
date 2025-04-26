@@ -574,12 +574,12 @@ namespace
                     {
                         if (lastSibling == nullptr)
                         {
-                            attachmentUnique.childLink = attachmentUniqueIndex;
+                            attachmentUnique.childLink = static_cast<int>(attachmentUniqueIndex);
                             lastSibling = weapon.attachmentUniques[attachmentUniqueIndex];
                         }
                         else
                         {
-                            lastSibling->siblingLink = attachmentUniqueIndex;
+                            lastSibling->siblingLink = static_cast<int>(attachmentUniqueIndex);
                             lastSibling = weapon.attachmentUniques[attachmentUniqueIndex];
                         }
                     }

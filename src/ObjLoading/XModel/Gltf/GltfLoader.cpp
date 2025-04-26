@@ -258,7 +258,7 @@ namespace
             VerifyAccessorVertexCount("WEIGHTS_0", weightsAccessor, vertexCount);
             // clang-format on
 
-            const auto vertexOffset = common.m_vertices.size();
+            const auto vertexOffset = static_cast<unsigned>(common.m_vertices.size());
             common.m_vertices.reserve(vertexOffset + vertexCount);
             common.m_vertex_bone_weights.reserve(vertexOffset + vertexCount);
             for (auto vertexIndex = 0u; vertexIndex < vertexCount; vertexIndex++)
@@ -300,6 +300,7 @@ namespace
             }
 
             m_vertex_offset_for_accessors.emplace(accessorsForVertex, vertexOffset);
+
             return vertexOffset;
         }
 
@@ -499,7 +500,7 @@ namespace
             const auto boneInSkin = std::ranges::find(skin.joints, nodeIndex);
             if (boneInSkin == skin.joints.end())
                 throw GltfLoadException("Bone node is not part of skin");
-            const auto boneIndexInSkin = std::distance(skin.joints.begin(), boneInSkin);
+            const auto boneIndexInSkin = static_cast<unsigned>(std::distance(skin.joints.begin(), boneInSkin));
 
             const auto commonBoneOffset = skinBoneOffset + boneIndexInSkin;
             auto& bone = common.m_bones[commonBoneOffset];
@@ -548,7 +549,7 @@ namespace
                 return false;
 
             const auto rootNode = GetRootNodeForSkin(jRoot, skin).value_or(skin.joints[0]);
-            const auto skinBoneOffset = common.m_bones.size();
+            const auto skinBoneOffset = static_cast<unsigned>(common.m_bones.size());
             common.m_bones.resize(skinBoneOffset + skin.joints.size());
 
             constexpr float defaultTranslation[3]{0.0f, 0.0f, 0.0f};
