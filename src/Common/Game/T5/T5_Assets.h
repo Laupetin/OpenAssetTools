@@ -193,20 +193,20 @@ namespace T5
         void* data;
     };
 
-    typedef tdef_align(16) char char16;
-    typedef tdef_align(32) char byte32;
-    typedef tdef_align(128) char byte128;
+    typedef tdef_align32(16) char char16;
+    typedef tdef_align32(32) char byte32;
+    typedef tdef_align32(128) char byte128;
 
-    typedef tdef_align(4) char char_align4;
-    typedef tdef_align(128) char char_align128;
+    typedef tdef_align32(4) char char_align4;
+    typedef tdef_align32(128) char char_align128;
 
-    typedef tdef_align(16) char raw_byte16;
-    typedef tdef_align(128) char raw_byte128;
+    typedef tdef_align32(16) char raw_byte16;
+    typedef tdef_align32(128) char raw_byte128;
 
-    typedef tdef_align(128) float float_align128;
+    typedef tdef_align32(128) float float_align128;
 
     typedef char cbrushedge_t;
-    typedef tdef_align(128) unsigned int raw_uint128;
+    typedef tdef_align32(128) unsigned int raw_uint128;
 
     typedef uint16_t ScriptString;
 
@@ -350,7 +350,7 @@ namespace T5
     };
 
     typedef unsigned char ByteVec[3];
-    typedef tdef_align(4) unsigned short UShortVec[3];
+    typedef tdef_align32(4) unsigned short UShortVec[3];
 
     union XAnimDynamicFrames
     {
@@ -385,7 +385,7 @@ namespace T5
         XAnimPartTransData u;
     };
 
-    typedef tdef_align(4) short XQuat[2];
+    typedef tdef_align32(4) short XQuat[2];
 
     union XAnimDynamicIndicesQuat
     {
@@ -490,7 +490,7 @@ namespace T5
         char array[4];
     };
 
-    struct type_align(16) GfxPackedVertex
+    struct type_align32(16) GfxPackedVertex
     {
         vec3_t xyz;
         float binormalSign;
@@ -511,7 +511,7 @@ namespace T5
         uint16_t maxs[3];
     };
 
-    struct type_align(16) XSurfaceCollisionNode
+    struct type_align32(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         uint16_t childBeginIndex;
@@ -542,7 +542,7 @@ namespace T5
         uint16_t i[3];
     };
 
-    typedef tdef_align(16) XSurfaceTri XSurfaceTri16;
+    typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
 
     struct XSurface
     {
@@ -627,7 +627,7 @@ namespace T5
         int sflags;
     };
 
-    struct type_align(16) BrushWrapper
+    struct type_align32(16) BrushWrapper
     {
         vec3_t mins;
         int contents;
@@ -650,7 +650,7 @@ namespace T5
         vec3_t halfLengths;
     };
 
-    typedef tdef_align(16) PhysGeomInfo PhysGeomInfo16;
+    typedef tdef_align32(16) PhysGeomInfo PhysGeomInfo16;
 
     struct PhysGeomList
     {
@@ -713,7 +713,7 @@ namespace T5
         PhysConstraints* physConstraints;
     };
 
-    struct gcc_align(8) GfxDrawSurfFields
+    struct gcc_align32(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;
         uint64_t fade : 4;
@@ -732,8 +732,8 @@ namespace T5
 
     union GfxDrawSurf
     {
-        gcc_align(8) GfxDrawSurfFields fields;
-        gcc_align(8) uint64_t packed;
+        gcc_align32(8) GfxDrawSurfFields fields;
+        gcc_align32(8) uint64_t packed;
     };
 
     struct MaterialInfo
@@ -796,7 +796,7 @@ namespace T5
         MaterialTextureDefInfo u;
     };
 
-    struct type_align(16) MaterialConstantDef
+    struct type_align32(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -1138,7 +1138,7 @@ namespace T5
         SND_ASSET_FLAG_PAD_LOOP_BUFFER = 0x2,
     };
 
-    typedef tdef_align(2048) char snd_align_char;
+    typedef tdef_align32(2048) char snd_align_char;
 
     struct snd_asset
     {
@@ -1164,7 +1164,7 @@ namespace T5
         snd_asset sound;
     };
 
-    typedef tdef_align(2048) char char_align_2048;
+    typedef tdef_align32(2048) char char_align_2048;
 
     struct PrimedSound
     {
@@ -1254,7 +1254,7 @@ namespace T5
         int sequence;
     };
 
-    struct type_align(4) SndIndexEntry
+    struct type_align32(4) SndIndexEntry
     {
         uint16_t value;
         uint16_t next;
@@ -1409,7 +1409,7 @@ namespace T5
         int partitionIndex;
     };
 
-    struct type_align(16) CollisionAabbTree
+    struct type_align32(16) CollisionAabbTree
     {
         float origin[3];
         uint16_t materialIndex;
@@ -1426,7 +1426,7 @@ namespace T5
         cLeaf_s leaf;
     };
 
-    struct type_align(16) cbrush_t
+    struct type_align32(16) cbrush_t
     {
         float mins[3];
         int contents;
@@ -1687,7 +1687,7 @@ namespace T5
         int maxy;
     };
 
-    struct type_align(4) ComWaterCell
+    struct type_align32(4) ComWaterCell
     {
         int16_t waterheight;
         char flooroffset;
@@ -1826,7 +1826,7 @@ namespace T5
         pathnode_transient_t transient;
     };
 
-    struct type_align(16) pathbasenode_t
+    struct type_align32(16) pathbasenode_t
     {
         float vOrigin[3];
         unsigned int type;
@@ -1926,7 +1926,7 @@ namespace T5
         GfxWorldSunColor sunSettings[1];
     };
 
-    struct type_align(16) float44
+    struct type_align32(16) float44
     {
         union
         {
@@ -1935,7 +1935,7 @@ namespace T5
         };
     };
 
-    struct type_align(16) GfxLight
+    struct type_align32(16) GfxLight
     {
         char type;
         char canUseShadowMap;
@@ -2130,19 +2130,19 @@ namespace T5
         uint16_t* indices;
     };
 
-    struct type_align(4) GfxLightGridEntry
+    struct type_align32(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
         char primaryLightIndex;
         char needsTrace;
     };
 
-    struct type_align(4) GfxCompressedLightGridColors
+    struct type_align32(4) GfxCompressedLightGridColors
     {
         char rgb[56][3];
     };
 
-    typedef tdef_align(4) char aligned_byte_pointer;
+    typedef tdef_align32(4) char aligned_byte_pointer;
 
     struct GfxLightGrid
     {
@@ -2220,14 +2220,14 @@ namespace T5
         uint16_t dynEntId;
     };
 
-    typedef tdef_align(4) GfxSceneDynModel GfxSceneDynModel4;
+    typedef tdef_align32(4) GfxSceneDynModel GfxSceneDynModel4;
 
     struct BModelDrawInfo
     {
         uint16_t surfId;
     };
 
-    struct type_align(4) GfxSceneDynBrush
+    struct type_align32(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;
@@ -2283,7 +2283,7 @@ namespace T5
         int stream2ByteOffset;
     };
 
-    struct type_align(16) GfxSurface
+    struct type_align32(16) GfxSurface
     {
         srfTriangles_t tris;
         Material* material;
@@ -2935,7 +2935,7 @@ namespace T5
         ITEM_TYPE_MENUMODEL = 0x27
     };
 
-    struct type_align(8) itemDef_s
+    struct type_align32(8) itemDef_s
     {
         windowDef_t window;
         int type;
@@ -2949,15 +2949,15 @@ namespace T5
         menuDef_t* parent;
         rectData_s* rectExpData;
         ExpressionStatement visibleExp;
-        gcc_align(8) uint64_t showBits;
-        gcc_align(8) uint64_t hideBits;
+        gcc_align32(8) uint64_t showBits;
+        gcc_align32(8) uint64_t hideBits;
         ExpressionStatement forecolorAExp;
         int ui3dWindowId;
         GenericEventHandler* onEvent;
         UIAnimInfo* animInfo;
     };
 
-    struct type_align(8) menuDef_t
+    struct type_align32(8) menuDef_t
     {
         windowDef_t window;
         const char* font;
@@ -2984,8 +2984,8 @@ namespace T5
         GenericEventHandler* onEvent;
         ItemKeyHandler* onKey;
         ExpressionStatement visibleExp;
-        gcc_align(8) uint64_t showBits;
-        gcc_align(8) uint64_t hideBits;
+        gcc_align32(8) uint64_t showBits;
+        gcc_align32(8) uint64_t hideBits;
         const char* allowedBinding;
         const char* soundName;
         int imageTrack;
