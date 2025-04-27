@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #define LTC_NO_PROTOTYPES
-#include "Impl/Base64.h"
+#include "Base64.h"
 
 #include <tomcrypt.h>
 

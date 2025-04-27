@@ -11,7 +11,7 @@ namespace IW5
     public:
         InfoStringLoaderWeapon(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
-        AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
+        AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const;
 
     private:
         MemoryManager& m_memory;

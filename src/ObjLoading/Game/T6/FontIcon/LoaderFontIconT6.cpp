@@ -5,9 +5,7 @@
 #include "Game/T6/T6.h"
 
 #include <algorithm>
-#include <cstring>
 #include <format>
-#include <sstream>
 
 using namespace T6;
 
@@ -25,8 +23,8 @@ namespace
     constexpr unsigned ROW_ALIAS_NAME = 2;
     constexpr unsigned ROW_ALIAS_BUTTON = 3;
 
-    constexpr const char* VALUE_TYPE_ICON = "icon";
-    constexpr const char* VALUE_TYPE_ALIAS = "alias";
+    constexpr auto VALUE_TYPE_ICON = "icon";
+    constexpr auto VALUE_TYPE_ALIAS = "alias";
 
     constexpr unsigned COL_COUNT_ICON = 7;
     constexpr unsigned COL_COUNT_ALIAS = 4;
@@ -125,8 +123,8 @@ namespace
                 }
             }
 
-            fontIcon->numEntries = entries.size();
-            fontIcon->numAliasEntries = aliases.size();
+            fontIcon->numEntries = static_cast<unsigned>(entries.size());
+            fontIcon->numAliasEntries = static_cast<unsigned>(aliases.size());
 
             if (fontIcon->numEntries > 0)
             {
@@ -159,7 +157,7 @@ namespace
         {
             for (auto& cell : row)
             {
-                for (auto c : cell)
+                for (const auto c : cell)
                 {
                     if (isspace(c))
                         continue;
@@ -220,7 +218,7 @@ namespace
                          const std::string& assetName,
                          const unsigned rowIndex,
                          AssetCreationContext& context,
-                         AssetRegistration<AssetFontIcon>& registration)
+                         AssetRegistration<AssetFontIcon>& registration) const
         {
             if (row.size() < COL_COUNT_ICON)
             {
@@ -246,6 +244,7 @@ namespace
                 std::cerr << std::format("{} Failed to load material \"{}\"\n", ErrorPrefix(assetName, rowIndex), row[ROW_ICON_MATERIAL]);
                 return false;
             }
+            registration.AddDependency(materialDependency);
 
             icon.fontIconMaterialHandle = materialDependency->Asset();
             icon.fontIconName.string = m_memory.Dup(row[ROW_ICON_NAME].c_str());
@@ -254,7 +253,7 @@ namespace
             return true;
         }
 
-        bool ReadAliasRow(
+        static bool ReadAliasRow(
             const std::vector<std::string>& row, FontIconAlias& alias, const std::string& assetName, const unsigned rowIndex, AssetCreationContext& context)
         {
             if (row.size() < COL_COUNT_ALIAS)

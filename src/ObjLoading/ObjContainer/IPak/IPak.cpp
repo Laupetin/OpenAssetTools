@@ -56,9 +56,9 @@ namespace
 
         [[nodiscard]] std::unique_ptr<iobjstream> GetEntryStream(const Hash nameHash, const Hash dataHash) const override
         {
-            IPakIndexEntryKey wantedKey{};
-            wantedKey.nameHash = nameHash;
-            wantedKey.dataHash = dataHash;
+            const IPakIndexEntryKey wantedKey{
+                {.dataHash = dataHash, .nameHash = nameHash}
+            };
 
             for (auto& entry : m_index_entries)
             {
@@ -209,5 +209,5 @@ IIPak::Hash IIPak::HashString(const std::string& str)
 
 IIPak::Hash IIPak::HashData(const void* data, const size_t dataSize)
 {
-    return crc32(0, static_cast<const Bytef*>(data), dataSize);
+    return crc32(0, static_cast<const Bytef*>(data), static_cast<unsigned>(dataSize));
 }

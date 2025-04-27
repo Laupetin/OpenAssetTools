@@ -1,18 +1,18 @@
 #include "StepSkipBytes.h"
 
-StepSkipBytes::StepSkipBytes(const unsigned int skipCount)
+StepSkipBytes::StepSkipBytes(const size_t skipCount)
+    : m_skip_count(skipCount)
 {
-    m_skip_count = skipCount;
 }
 
 void StepSkipBytes::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
     uint8_t tempBuffer[128];
-    unsigned int skippedBytes = 0;
+    auto skippedBytes = 0uz;
 
     while (skippedBytes < m_skip_count)
     {
-        unsigned int toSkip;
+        size_t toSkip;
 
         if (m_skip_count - skippedBytes < sizeof(tempBuffer))
         {

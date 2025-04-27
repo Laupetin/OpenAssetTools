@@ -151,7 +151,7 @@ namespace
         {
             if (!jWeaponCamoMaterialSet.materials.empty())
             {
-                weaponCamoMaterialSet.numMaterials = jWeaponCamoMaterialSet.materials.size();
+                weaponCamoMaterialSet.numMaterials = static_cast<unsigned>(jWeaponCamoMaterialSet.materials.size());
                 weaponCamoMaterialSet.materials = m_memory.Alloc<WeaponCamoMaterial>(weaponCamoMaterialSet.numMaterials);
 
                 for (auto i = 0u; i < weaponCamoMaterialSet.numMaterials; i++)
@@ -197,7 +197,7 @@ namespace
 
             if (!jWeaponCamo.camoSets.empty())
             {
-                weaponCamo.numCamoSets = jWeaponCamo.camoSets.size();
+                weaponCamo.numCamoSets = static_cast<unsigned>(jWeaponCamo.camoSets.size());
                 weaponCamo.camoSets = m_memory.Alloc<WeaponCamoSet>(weaponCamo.numCamoSets);
 
                 for (auto i = 0u; i < weaponCamo.numCamoSets; i++)
@@ -214,7 +214,7 @@ namespace
 
             if (!jWeaponCamo.camoMaterials.empty())
             {
-                weaponCamo.numCamoMaterials = jWeaponCamo.camoMaterials.size();
+                weaponCamo.numCamoMaterials = static_cast<unsigned>(jWeaponCamo.camoMaterials.size());
                 weaponCamo.camoMaterials = m_memory.Alloc<WeaponCamoMaterialSet>(weaponCamo.numCamoMaterials);
 
                 for (auto i = 0u; i < weaponCamo.numCamoMaterials; i++)

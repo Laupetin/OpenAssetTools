@@ -41,19 +41,19 @@ Dx9TextureLoader& Dx9TextureLoader::HasMipMaps(const bool hasMipMaps)
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Width(const size_t width)
+Dx9TextureLoader& Dx9TextureLoader::Width(const unsigned width)
 {
     m_width = width;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Height(const size_t height)
+Dx9TextureLoader& Dx9TextureLoader::Height(const unsigned height)
 {
     m_height = height;
     return *this;
 }
 
-Dx9TextureLoader& Dx9TextureLoader::Depth(const size_t depth)
+Dx9TextureLoader& Dx9TextureLoader::Depth(const unsigned depth)
 {
     m_depth = depth;
     return *this;

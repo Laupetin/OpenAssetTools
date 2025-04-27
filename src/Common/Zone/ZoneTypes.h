@@ -14,6 +14,6 @@ typedef uint32_t xblock_size_t;
 
 constexpr uint16_t SCR_STRING_MAX = std::numeric_limits<scr_string_t>::max();
 
-typedef int block_t;
-typedef int asset_type_t;
+typedef unsigned block_t;
+typedef unsigned asset_type_t;
 typedef unsigned int zone_priority_t;

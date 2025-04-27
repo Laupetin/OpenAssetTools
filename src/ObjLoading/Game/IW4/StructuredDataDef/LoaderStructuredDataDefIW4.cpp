@@ -38,38 +38,38 @@ namespace
         }
 
     private:
-        StructuredDataType ConvertType(CommonStructuredDataType inputType)
+        static StructuredDataType ConvertType(const CommonStructuredDataType inputType)
         {
             switch (inputType.m_category)
             {
             case CommonStructuredDataTypeCategory::INT:
-                return {DATA_INT, {0}};
+                return {.type = DATA_INT, .u = {}};
             case CommonStructuredDataTypeCategory::BYTE:
-                return {DATA_BYTE, {0}};
+                return {.type = DATA_BYTE, .u = {}};
             case CommonStructuredDataTypeCategory::BOOL:
-                return {DATA_BOOL, {0}};
+                return {.type = DATA_BOOL, .u = {}};
             case CommonStructuredDataTypeCategory::FLOAT:
-                return {DATA_FLOAT, {0}};
+                return {.type = DATA_FLOAT, .u = {}};
             case CommonStructuredDataTypeCategory::SHORT:
-                return {DATA_SHORT, {0}};
+                return {.type = DATA_SHORT, .u = {}};
             case CommonStructuredDataTypeCategory::STRING:
-                return {DATA_STRING, {static_cast<unsigned>(inputType.m_info.string_length)}};
+                return {.type = DATA_STRING, .u = {static_cast<unsigned>(inputType.m_info.string_length)}};
             case CommonStructuredDataTypeCategory::ENUM:
-                return {DATA_ENUM, {static_cast<unsigned>(inputType.m_info.type_index)}};
+                return {.type = DATA_ENUM, .u = {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::STRUCT:
-                return {DATA_STRUCT, {static_cast<unsigned>(inputType.m_info.type_index)}};
+                return {.type = DATA_STRUCT, .u = {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::INDEXED_ARRAY:
-                return {DATA_INDEXED_ARRAY, {static_cast<unsigned>(inputType.m_info.type_index)}};
+                return {.type = DATA_INDEXED_ARRAY, .u = {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::ENUM_ARRAY:
-                return {DATA_ENUM_ARRAY, {static_cast<unsigned>(inputType.m_info.type_index)}};
+                return {.type = DATA_ENUM_ARRAY, .u = {static_cast<unsigned>(inputType.m_info.type_index)}};
             case CommonStructuredDataTypeCategory::UNKNOWN:
             default:
                 assert(false);
-                return {DATA_INT, {0}};
+                return {.type = DATA_INT, .u = {0}};
             }
         }
 
-        void ConvertEnum(CommonStructuredDataEnum& inputEnum, StructuredDataEnum& outputEnum)
+        void ConvertEnum(CommonStructuredDataEnum& inputEnum, StructuredDataEnum& outputEnum) const
         {
             outputEnum.entryCount = static_cast<int>(inputEnum.m_entries.size());
             if (inputEnum.m_reserved_entry_count <= 0)
@@ -94,10 +94,10 @@ namespace
                 outputEnum.entries = nullptr;
         }
 
-        void ConvertStruct(CommonStructuredDataStruct& inputStruct, StructuredDataStruct& outputStruct)
+        void ConvertStruct(CommonStructuredDataStruct& inputStruct, StructuredDataStruct& outputStruct) const
         {
             outputStruct.size = static_cast<int>(inputStruct.m_size_in_byte);
-            outputStruct.bitOffset = inputStruct.m_bit_offset;
+            outputStruct.bitOffset = static_cast<unsigned>(inputStruct.m_bit_offset);
 
             outputStruct.propertyCount = static_cast<int>(inputStruct.m_properties.size());
             inputStruct.SortPropertiesByName();
@@ -115,34 +115,34 @@ namespace
                     if (outputProperty.type.type != DATA_BOOL)
                     {
                         assert(inputProperty.m_offset_in_bits % 8 == 0);
-                        outputProperty.offset = inputProperty.m_offset_in_bits / 8;
+                        outputProperty.offset = static_cast<unsigned>(inputProperty.m_offset_in_bits / 8uz);
                     }
                     else
-                        outputProperty.offset = inputProperty.m_offset_in_bits;
+                        outputProperty.offset = static_cast<unsigned>(inputProperty.m_offset_in_bits);
                 }
             }
             else
                 outputStruct.properties = nullptr;
         }
 
-        void ConvertIndexedArray(const CommonStructuredDataIndexedArray& inputIndexedArray, StructuredDataIndexedArray& outputIndexedArray)
+        static void ConvertIndexedArray(const CommonStructuredDataIndexedArray& inputIndexedArray, StructuredDataIndexedArray& outputIndexedArray)
         {
             outputIndexedArray.arraySize = static_cast<int>(inputIndexedArray.m_element_count);
             outputIndexedArray.elementType = ConvertType(inputIndexedArray.m_array_type);
-            outputIndexedArray.elementSize = utils::Align(inputIndexedArray.m_element_size_in_bits, 8uz) / 8uz;
+            outputIndexedArray.elementSize = static_cast<unsigned>(utils::Align(inputIndexedArray.m_element_size_in_bits, 8uz) / 8uz);
         }
 
         void ConvertEnumedArray(const CommonStructuredDataEnumedArray& inputEnumedArray, StructuredDataEnumedArray& outputEnumedArray)
         {
             outputEnumedArray.enumIndex = static_cast<int>(inputEnumedArray.m_enum_index);
             outputEnumedArray.elementType = ConvertType(inputEnumedArray.m_array_type);
-            outputEnumedArray.elementSize = utils::Align(inputEnumedArray.m_element_size_in_bits, 8uz) / 8uz;
+            outputEnumedArray.elementSize = static_cast<unsigned>(utils::Align(inputEnumedArray.m_element_size_in_bits, 8uz) / 8uz);
         }
 
         void ConvertDef(const CommonStructuredDataDef& inputDef, StructuredDataDef& outputDef)
         {
             outputDef.version = inputDef.m_version;
-            outputDef.formatChecksum = inputDef.m_checksum;
+            outputDef.formatChecksum = static_cast<unsigned>(inputDef.m_checksum);
 
             outputDef.enumCount = static_cast<int>(inputDef.m_enums.size());
             if (!inputDef.m_enums.empty())
@@ -185,7 +185,7 @@ namespace
                 outputDef.enumedArrays = nullptr;
 
             outputDef.rootType = ConvertType(inputDef.m_root_type);
-            outputDef.size = inputDef.m_size_in_byte;
+            outputDef.size = static_cast<unsigned>(inputDef.m_size_in_byte);
         }
 
         StructuredDataDefSet* ConvertSet(const std::string& assetName, const std::vector<std::unique_ptr<CommonStructuredDataDef>>& commonDefs)
@@ -193,7 +193,7 @@ namespace
             auto* set = m_memory.Alloc<StructuredDataDefSet>();
             set->name = m_memory.Dup(assetName.c_str());
 
-            set->defCount = commonDefs.size();
+            set->defCount = static_cast<unsigned>(commonDefs.size());
             set->defs = m_memory.Alloc<StructuredDataDef>(commonDefs.size());
 
             for (auto defIndex = 0u; defIndex < commonDefs.size(); defIndex++)

@@ -221,9 +221,9 @@ namespace IW5
         };
     };
 
-    typedef tdef_align(16) char raw_byte16;
-    typedef tdef_align(16) float raw_float16;
-    typedef tdef_align(128) unsigned int raw_uint128;
+    typedef tdef_align32(16) char raw_byte16;
+    typedef tdef_align32(16) float raw_float16;
+    typedef tdef_align32(128) unsigned int raw_uint128;
     typedef unsigned char raw_byte;
     typedef unsigned int raw_uint;
     typedef unsigned short r_index_t;
@@ -338,7 +338,7 @@ namespace IW5
     };
 
     typedef unsigned char ByteVec[3];
-    typedef tdef_align(4) unsigned short UShortVec[3];
+    typedef tdef_align32(4) unsigned short UShortVec[3];
 
     union XAnimDynamicFrames
     {
@@ -352,7 +352,7 @@ namespace IW5
         uint16_t _2[1];
     };
 
-    struct type_align(4) XAnimPartTransFrames
+    struct type_align32(4) XAnimPartTransFrames
     {
         float mins[3];
         float size[3];
@@ -379,9 +379,9 @@ namespace IW5
         uint16_t _2[1];
     };
 
-    typedef tdef_align(4) short XQuat2[2];
+    typedef tdef_align32(4) short XQuat2[2];
 
-    struct type_align(4) XAnimDeltaPartQuatDataFrames2
+    struct type_align32(4) XAnimDeltaPartQuatDataFrames2
     {
         XQuat2* frames;
         XAnimDynamicIndicesQuat2 indices;
@@ -405,7 +405,7 @@ namespace IW5
         uint16_t _2[1];
     };
 
-    typedef tdef_align(4) short XQuat[4];
+    typedef tdef_align32(4) short XQuat[4];
 
     struct XAnimDeltaPartQuatDataFrames
     {
@@ -543,7 +543,7 @@ namespace IW5
         uint16_t i[3];
     };
 
-    typedef tdef_align(16) XSurfaceTri XSurfaceTri16;
+    typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
 
     struct XSurface
     {
@@ -653,7 +653,7 @@ namespace IW5
         float quantization;
     };
 
-    struct gcc_align(8) GfxDrawSurfFields
+    struct gcc_align32(8) GfxDrawSurfFields
     {
         uint64_t unused : 1;
         uint64_t primarySortKey : 6;
@@ -671,8 +671,8 @@ namespace IW5
 
     union GfxDrawSurf
     {
-        gcc_align(8) GfxDrawSurfFields fields;
-        gcc_align(8) uint64_t packed;
+        gcc_align32(8) GfxDrawSurfFields fields;
+        gcc_align32(8) uint64_t packed;
     };
 
     enum MaterialGameFlags
@@ -1127,7 +1127,7 @@ namespace IW5
         MaterialTechnique* techniques[54];
     };
 
-    struct type_align(4) GfxImageLoadDef
+    struct type_align32(4) GfxImageLoadDef
     {
         char levelCount;
         char pad[3];
@@ -1339,8 +1339,8 @@ namespace IW5
         unsigned char edgeCount[2][3];
     };
 
-    typedef tdef_align(128) cbrush_t cbrush_array_t;
-    typedef tdef_align(128) Bounds BoundsArray;
+    typedef tdef_align32(128) cbrush_t cbrush_array_t;
+    typedef tdef_align32(128) Bounds BoundsArray;
 
     struct ClipInfo
     {
@@ -2190,7 +2190,7 @@ namespace IW5
         Bounds bounds;
     };
 
-    struct type_align(4) GfxBrushModel
+    struct type_align32(4) GfxBrushModel
     {
         GfxBrushModelWritable writable;
         Bounds bounds;
@@ -2396,7 +2396,7 @@ namespace IW5
         int exponent;
     };
 
-    typedef tdef_align(128) GfxCellTree GfxCellTree128;
+    typedef tdef_align32(128) GfxCellTree GfxCellTree128;
 
     struct GfxWorld
     {
@@ -3446,7 +3446,7 @@ namespace IW5
         SndAliasCustom projIgnitionSound;
     };
 
-    typedef tdef_align(4) AttSight AttSight4;
+    typedef tdef_align32(4) AttSight AttSight4;
 
     struct WeaponAttachment
     {

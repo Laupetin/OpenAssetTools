@@ -1,9 +1,9 @@
 #include "SoundBank.h"
 
-#include "Utils/FileUtils.h"
 #include "zlib.h"
 
 #include <cstring>
+#include <format>
 #include <memory>
 #include <sstream>
 #include <vector>
@@ -67,18 +67,18 @@ protected:
 
         if (dir == std::ios_base::end)
         {
-            if (off > m_size)
+            if (off > static_cast<off_type>(m_size))
                 return pos_type(-1);
 
-            return seekpos(m_size - off, mode);
+            return seekpos(static_cast<off_type>(m_size) - off, mode);
         }
 
-        return seekpos(m_offset + off, mode);
+        return seekpos(static_cast<pos_type>(m_offset) + off, mode);
     }
 
     pos_type seekpos(const pos_type pos, std::ios_base::openmode mode) override
     {
-        if (pos < 0 || pos >= m_size)
+        if (pos < 0 || pos >= static_cast<pos_type>(m_size))
             return pos_type(-1);
 
         m_stream.seekg(m_base_offset + pos);
@@ -96,7 +96,7 @@ public:
     {
     }
 
-    _NODISCARD bool is_open() const override
+    [[nodiscard]] bool is_open() const override
     {
         return m_open;
     }
@@ -116,13 +116,13 @@ SoundBankEntryInputStream::SoundBankEntryInputStream()
 
 SoundBankEntryInputStream::SoundBankEntryInputStream(std::unique_ptr<std::istream> stream, SoundAssetBankEntry entry)
     : m_stream(std::move(stream)),
-      m_entry(entry)
+      m_entry(std::move(entry))
 {
 }
 
 bool SoundBankEntryInputStream::IsOpen() const
 {
-    return m_stream.get() != nullptr;
+    return m_stream != nullptr;
 }
 
 bool SoundBank::ReadHeader()
@@ -130,49 +130,50 @@ bool SoundBank::ReadHeader()
     m_stream->read(reinterpret_cast<char*>(&m_header), sizeof(m_header));
     if (m_stream->gcount() != sizeof(m_header))
     {
-        printf("Unexpected eof when trying to load sndbank header.\n");
+        std::cerr << "Unexpected eof when trying to load sndbank header.\n";
         return false;
     }
 
     if (m_header.magic != MAGIC)
     {
-        std::cout << "Invalid sndbank magic 0x" << std::hex << m_header.magic << "\n";
+        std::cerr << std::format("Invalid sndbank magic 0x{:x}\n", m_header.magic);
         return false;
     }
 
     if (m_header.version != VERSION)
     {
-        std::cout << "Unsupported sndbank version " << m_header.version << " (should be " << VERSION << ")\n";
+        std::cerr << std::format("Unsupported sndbank version {} (should be {})\n", m_header.version, VERSION);
         return false;
     }
 
     if (m_header.entrySize != sizeof(SoundAssetBankEntry))
     {
-        std::cout << "Invalid sndbank entry size 0x" << std::hex << m_header.entrySize << " (should be 0x" << std::hex << sizeof(SoundAssetBankEntry) << ")\n";
+        std::cerr << std::format("Invalid sndbank entry size 0x{:x} (should be 0x{:x})\n", m_header.entrySize, sizeof(SoundAssetBankEntry));
         return false;
     }
 
     if (m_header.fileSize != m_file_size)
     {
-        std::cout << "Invalid sndbank " << m_file_size << " (header expects " << m_header.fileSize << ")\n";
+        std::cerr << std::format("Invalid sndbank {} (header expects {})\n", m_file_size, m_header.fileSize);
         return false;
     }
 
-    if (m_header.entryCount && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > m_file_size))
+    if (m_header.entryCount
+        && (m_header.entryOffset <= 0 || m_header.entryOffset + sizeof(SoundAssetBankEntry) * m_header.entryCount > static_cast<size_t>(m_file_size)))
     {
-        std::cout << "Invalid sndbank entry offset " << m_header.entryOffset << " (filesize is " << m_file_size << ")\n";
+        std::cerr << std::format("Invalid sndbank entry offset {} (filesize is {})\n", m_header.entryOffset, m_file_size);
         return false;
     }
 
-    if (m_header.checksumOffset <= 0 || m_header.checksumOffset + sizeof(SoundAssetBankChecksum) * m_header.entryCount > m_file_size)
+    if (m_header.checksumOffset <= 0 || m_header.checksumOffset + sizeof(SoundAssetBankChecksum) * m_header.entryCount > static_cast<size_t>(m_file_size))
     {
-        std::cout << "Invalid sndbank checksum offset " << m_header.checksumOffset << " (filesize is " << m_file_size << ")\n";
+        std::cerr << std::format("Invalid sndbank checksum offset {} (filesize is {})\n", m_header.checksumOffset, m_file_size);
         return false;
     }
 
     if (m_header.dependencyCount * m_header.dependencySize > sizeof(SoundAssetBankHeader::dependencies))
     {
-        std::cout << "Invalid sndbank dependency sizes (count is " << m_header.dependencyCount << "; size is " << m_header.dependencySize << ")\n";
+        std::cerr << std::format("Invalid sndbank dependency sizes (count is {}; size is {})\n", m_header.dependencyCount, m_header.dependencySize);
         return false;
     }
 
@@ -201,13 +202,13 @@ bool SoundBank::ReadEntries()
 
         if (m_stream->gcount() != sizeof(entry))
         {
-            std::cout << "Failed to read sound bank entry at index " << i << "\n";
+            std::cerr << std::format("Failed to read sound bank entry at index {}\n", i);
             return false;
         }
 
         if (entry.offset == 0 || entry.offset + entry.size >= m_file_size)
         {
-            std::cout << "Invalid sound bank entry data offset " << entry.offset << " (filesize is " << m_header.fileSize << ")\n";
+            std::cerr << std::format("Invalid sound bank entry data offset {} (filesize is {})\n", entry.offset, m_header.fileSize);
             return false;
         }
 
@@ -229,7 +230,7 @@ bool SoundBank::ReadChecksums()
 
         if (m_stream->gcount() != sizeof(checksum))
         {
-            std::cout << "Failed to read sound bank checksum at index " << i << "\n";
+            std::cerr << std::format("Failed to read sound bank checksum at index {}\n", i);
             return false;
         }
 

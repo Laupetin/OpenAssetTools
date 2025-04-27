@@ -5,13 +5,11 @@
 
 class TokenPos
 {
-    static const std::string EMPTY_FILENAME;
-
 public:
-    std::reference_wrapper<const std::string> m_filename;
-    int m_line;
-    int m_column;
-
     TokenPos();
-    TokenPos(const std::string& filename, int line, int column);
+    TokenPos(const std::string& filename, size_t line, size_t column);
+
+    std::reference_wrapper<const std::string> m_filename;
+    size_t m_line;
+    size_t m_column;
 };

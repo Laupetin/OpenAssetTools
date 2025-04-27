@@ -13,7 +13,7 @@ public:
 
     bool Read(const CsvInputStream& inputStream);
 
-    const std::string& HeaderNameForColumn(unsigned columnIndex) const;
+    [[nodiscard]] const std::string& HeaderNameForColumn(unsigned columnIndex) const;
     bool RequireIndexForHeader(const std::string& headerName, unsigned& out) const;
     [[nodiscard]] std::optional<unsigned> GetIndexForHeader(const std::string& headerName) const;
 

@@ -5,7 +5,6 @@
 #include "Parsing/Simple/Expression/ISimpleExpression.h"
 #include "Parsing/Simple/Expression/SimpleExpressionMatchers.h"
 #include "Parsing/Simple/SimpleExpressionInterpreter.h"
-#include "Utils/ClassUtils.h"
 #include "Utils/StringUtils.h"
 
 #include <regex>
@@ -114,7 +113,7 @@ void DefinesStreamProxy::Define::IdentifyParameters(const std::vector<std::strin
                 {
                     m_contains_token_pasting_operators = true;
 
-                    // Skip next char since it's # anyway and we do not want to count it as stringize
+                    // Skip next char since it's # anyway, and we do not want to count it as stringize
                     i++;
                 }
             }
@@ -484,7 +483,7 @@ bool DefinesStreamProxy::MatchEndifDirective(const ParserLine& line, const size_
     return true;
 }
 
-bool DefinesStreamProxy::MatchDirectives(ParserLine& line)
+bool DefinesStreamProxy::MatchDirectives(const ParserLine& line)
 {
     size_t directiveStartPos;
     size_t directiveEndPos;
@@ -522,7 +521,7 @@ bool DefinesStreamProxy::FindMacroForIdentifier(const std::string& input,
 }
 
 void DefinesStreamProxy::ExtractParametersFromMacroUsage(
-    const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
+    const ParserLine& line, const unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
 {
     if (input[inputPos] != '(')
         return;
@@ -588,7 +587,7 @@ void DefinesStreamProxy::ExpandDefinedExpressions(ParserLine& line) const
     }
 }
 
-bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const DefinesStreamProxy::Define*& define)
+bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& inputPos, unsigned& defineStart, const Define*& define) const
 {
     const auto inputSize = input.size();
     auto wordStart = 0u;
@@ -655,7 +654,7 @@ bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& input
 
 namespace
 {
-    enum class TokenPasteTokenType
+    enum class TokenPasteTokenType : std::uint8_t
     {
         NONE,
         STRING,
@@ -673,13 +672,7 @@ namespace
         {
         }
 
-        ~TokenPasteToken() = default;
-        TokenPasteToken(const TokenPasteToken& other) = default;
-        TokenPasteToken(TokenPasteToken&& other) = default;
-        TokenPasteToken& operator=(const TokenPasteToken& other) = default;
-        TokenPasteToken& operator=(TokenPasteToken&& other) noexcept = default;
-
-        void SetFromInput(ParserLine& line, unsigned& linePos, const std::string& input, unsigned& offset)
+        void SetFromInput(const ParserLine& line, const unsigned& linePos, const std::string& input, unsigned& offset)
         {
             m_start = offset;
 
@@ -698,8 +691,8 @@ namespace
                 }
 
                 if (offset >= inputSize)
-                    throw new ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
-                                               "Token-pasting operator cannot be used on unclosed string");
+                    throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
+                                           "Token-pasting operator cannot be used on unclosed string");
 
                 offset++;
             }
@@ -743,12 +736,16 @@ namespace
         unsigned m_end;
     };
 
-    void EmitPastedTokens(
-        ParserLine& line, unsigned& linePos, std::ostream& out, const std::string& input, const TokenPasteToken& token0, const TokenPasteToken& token1)
+    void EmitPastedTokens(const ParserLine& line,
+                          const unsigned& linePos,
+                          std::ostream& out,
+                          const std::string& input,
+                          const TokenPasteToken& token0,
+                          const TokenPasteToken& token1)
     {
         if ((token0.m_type == TokenPasteTokenType::STRING) != (token1.m_type == TokenPasteTokenType::STRING))
-            throw new ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
-                                       "String token can only use token-pasting operator on other string token");
+            throw ParsingException(TokenPos(*line.m_filename, line.m_line_number, static_cast<int>(linePos + 1)),
+                                   "String token can only use token-pasting operator on other string token");
         if (token0.m_type == TokenPasteTokenType::STRING)
         {
             out << '"';
@@ -767,7 +764,7 @@ namespace
 } // namespace
 
 void DefinesStreamProxy::ProcessTokenPastingOperators(
-    ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
+    const ParserLine& line, const unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
 {
     std::ostringstream ss;
 
@@ -789,7 +786,7 @@ void DefinesStreamProxy::ProcessTokenPastingOperators(
         if (c == '#' && IsTokenPastingOperatorForwardLookup(input, i))
         {
             if (currentToken.m_type == TokenPasteTokenType::NONE)
-                throw new ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without previous token");
+                throw ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without previous token");
 
             if (previousToken.m_end < currentToken.m_start)
                 ss << std::string(input, previousToken.m_end, currentToken.m_start - previousToken.m_end);
@@ -816,12 +813,12 @@ void DefinesStreamProxy::ProcessTokenPastingOperators(
         ss << std::string(input, previousToken.m_end, inputSize - previousToken.m_end);
 
     if (pasteNext)
-        throw new ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without following token");
+        throw ParsingException(CreatePos(line, linePos), "Cannot use token-pasting operator without following token");
 
     input = ss.str();
 }
 
-void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const DefinesStreamProxy::Define* macro, std::vector<std::string>& parameterValues)
+void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const Define* macro, const std::vector<std::string>& parameterValues)
 {
     if (parameterValues.empty() || macro->m_parameter_positions.empty())
     {
@@ -829,7 +826,7 @@ void DefinesStreamProxy::InsertMacroParameters(std::ostringstream& out, const De
         return;
     }
 
-    auto lastPos = 0u;
+    auto lastPos = 0uz;
     for (const auto& parameterPosition : macro->m_parameter_positions)
     {
         if (lastPos < parameterPosition.m_parameter_position)
@@ -857,7 +854,7 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
                                      std::ostringstream& out,
                                      std::vector<const Define*>& callstack,
                                      const DefinesStreamProxy::Define* macro,
-                                     std::vector<std::string>& parameterValues)
+                                     const std::vector<std::string>& parameterValues)
 {
     std::ostringstream rawOutput;
     InsertMacroParameters(rawOutput, macro, parameterValues);
@@ -873,7 +870,7 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
 }
 
 void DefinesStreamProxy::ContinueMacroParameters(
-    const ParserLine& line, unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
+    const ParserLine& line, const unsigned& linePos, MacroParameterState& state, const std::string& input, unsigned& inputPos)
 {
     const auto inputLength = input.size();
     while (state.m_parameter_state != ParameterState::NOT_IN_PARAMETERS && inputPos < inputLength)

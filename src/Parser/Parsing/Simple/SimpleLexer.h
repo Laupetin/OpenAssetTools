@@ -7,7 +7,7 @@
 #include <limits>
 #include <memory>
 
-class SimpleLexer : public AbstractLexer<SimpleParserValue>
+class SimpleLexer final : public AbstractLexer<SimpleParserValue>
 {
 public:
     class Config
@@ -30,6 +30,9 @@ public:
         std::vector<MultiCharacterToken> m_multi_character_tokens;
     };
 
+    explicit SimpleLexer(IParserLineStream* stream);
+    SimpleLexer(IParserLineStream* stream, Config config);
+
 protected:
     class MultiCharacterTokenLookupEntry
     {
@@ -41,10 +44,6 @@ protected:
         MultiCharacterTokenLookupEntry(int id, std::string value);
     };
 
-    Config m_config;
-    bool m_check_for_multi_character_tokens;
-    int m_last_line;
-
     std::unique_ptr<MultiCharacterTokenLookupEntry> m_multi_character_token_lookup[std::numeric_limits<uint8_t>::max() + 1];
 
     void AddMultiCharacterTokenConfigToLookup(Config::MultiCharacterToken tokenConfig);
@@ -52,7 +51,7 @@ protected:
 
     SimpleParserValue GetNextToken() override;
 
-public:
-    explicit SimpleLexer(IParserLineStream* stream);
-    SimpleLexer(IParserLineStream* stream, Config config);
+    Config m_config;
+    bool m_check_for_multi_character_tokens;
+    size_t m_last_line;
 };

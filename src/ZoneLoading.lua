@@ -11,7 +11,7 @@ end
 
 function ZoneLoading:link(links)
 	links:add(self:name())
-	links:linkto(Crypto)
+	links:linkto(Cryptography)
 	links:linkto(Utils)
 	links:linkto(ZoneCommon)
 	links:linkto(zlib)
@@ -53,7 +53,7 @@ function ZoneLoading:project()
 		}
 		
         self:include(includes)
-        Crypto:include(includes)
+        Cryptography:include(includes)
 		Utils:include(includes)
 		zlib:include(includes)
 		ZoneCode:include(includes)

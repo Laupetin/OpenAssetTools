@@ -17,9 +17,9 @@ size_t XChunkProcessorDeflate::Process(int streamNumber, const uint8_t* input, c
     if (ret != Z_OK)
         throw XChunkException("Initializing deflate failed.");
 
-    stream.avail_in = inputLength;
+    stream.avail_in = static_cast<unsigned>(inputLength);
     stream.next_in = input;
-    stream.avail_out = outputBufferSize;
+    stream.avail_out = static_cast<unsigned>(outputBufferSize);
     stream.next_out = output;
 
     ret = deflate(&stream, Z_FINISH);

@@ -42,14 +42,14 @@ uint32_t CommonStructuredDataEnum::CalculateChecksum(const uint32_t initialValue
 {
     auto checksum = initialValue;
 
-    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(m_name.c_str()), m_name.size() + 1);
+    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(m_name.c_str()), static_cast<unsigned>(m_name.size() + 1u));
 
     const auto littleEndianElementCount = endianness::ToLittleEndian(ElementCount());
     checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianElementCount), sizeof(littleEndianElementCount));
 
     for (const auto& entry : m_entries)
     {
-        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(entry.m_name.c_str()), entry.m_name.size() + 1);
+        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(entry.m_name.c_str()), static_cast<unsigned>(entry.m_name.size() + 1));
 
         const auto littleEndianValue = endianness::ToLittleEndian(entry.m_value);
         checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianValue), sizeof(littleEndianValue));

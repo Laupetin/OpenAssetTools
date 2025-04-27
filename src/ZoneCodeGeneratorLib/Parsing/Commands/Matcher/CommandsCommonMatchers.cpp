@@ -6,6 +6,7 @@
 #include "Domain/Evaluation/Operation.h"
 
 #include <list>
+#include <ranges>
 #include <sstream>
 #include <type_traits>
 #include <vector>
@@ -353,7 +354,7 @@ std::unique_ptr<IEvaluation>
         currentType = nullptr;
 
     std::vector<std::unique_ptr<IEvaluation>> operands;
-    std::list<std::pair<unsigned, const OperationType*>> operators;
+    std::list<std::pair<size_t, const OperationType*>> operators;
 
     while (true)
     {
@@ -384,7 +385,7 @@ std::unique_ptr<IEvaluation>
     }
 
     operators.sort(
-        [](const std::pair<unsigned, const OperationType*>& p1, const std::pair<unsigned, const OperationType*>& p2)
+        [](const std::pair<size_t, const OperationType*>& p1, const std::pair<size_t, const OperationType*>& p2)
         {
             if (p1.second->m_precedence != p2.second->m_precedence)
                 return p1.second->m_precedence > p2.second->m_precedence;
@@ -402,7 +403,7 @@ std::unique_ptr<IEvaluation>
 
         operators.pop_back();
 
-        for (auto& [opIndex, _] : operators)
+        for (auto& opIndex : operators | std::views::keys)
         {
             if (opIndex > operatorIndex)
                 opIndex--;

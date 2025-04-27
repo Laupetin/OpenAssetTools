@@ -48,13 +48,13 @@ protected:
 public:
     virtual ~ImageFormat() = default;
 
-    ImageFormatId GetId() const;
-    oat::D3DFORMAT GetD3DFormat() const;
-    oat::DXGI_FORMAT GetDxgiFormat() const;
+    [[nodiscard]] ImageFormatId GetId() const;
+    [[nodiscard]] oat::D3DFORMAT GetD3DFormat() const;
+    [[nodiscard]] oat::DXGI_FORMAT GetDxgiFormat() const;
 
-    virtual ImageFormatType GetType() const = 0;
-    virtual size_t GetPitch(unsigned mipLevel, unsigned width) const = 0;
-    virtual size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const = 0;
+    [[nodiscard]] virtual ImageFormatType GetType() const = 0;
+    [[nodiscard]] virtual size_t GetPitch(unsigned mipLevel, unsigned width) const = 0;
+    [[nodiscard]] virtual size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const = 0;
 
     static const ImageFormatUnsigned FORMAT_R8_G8_B8;
     static const ImageFormatUnsigned FORMAT_B8_G8_R8_X8;
@@ -98,14 +98,14 @@ public:
                         unsigned aOffset,
                         unsigned aSize);
 
-    ImageFormatType GetType() const override;
-    size_t GetPitch(unsigned mipLevel, unsigned width) const override;
-    size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
+    [[nodiscard]] ImageFormatType GetType() const override;
+    [[nodiscard]] size_t GetPitch(unsigned mipLevel, unsigned width) const override;
+    [[nodiscard]] size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
 
-    bool HasR() const;
-    bool HasG() const;
-    bool HasB() const;
-    bool HasA() const;
+    [[nodiscard]] bool HasR() const;
+    [[nodiscard]] bool HasG() const;
+    [[nodiscard]] bool HasB() const;
+    [[nodiscard]] bool HasA() const;
 };
 
 class ImageFormatBlockCompressed final : public ImageFormat
@@ -116,7 +116,7 @@ public:
 
     ImageFormatBlockCompressed(ImageFormatId id, oat::D3DFORMAT d3dFormat, oat::DXGI_FORMAT dxgiFormat, unsigned blockSize, unsigned bitsPerBlock);
 
-    ImageFormatType GetType() const override;
-    size_t GetPitch(unsigned mipLevel, unsigned width) const override;
-    size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
+    [[nodiscard]] ImageFormatType GetType() const override;
+    [[nodiscard]] size_t GetPitch(unsigned mipLevel, unsigned width) const override;
+    [[nodiscard]] size_t GetSizeOfMipLevel(unsigned mipLevel, unsigned width, unsigned height, unsigned depth) const override;
 };

@@ -6,7 +6,6 @@
 
 #include <cassert>
 #include <format>
-#include <iostream>
 
 using namespace T6;
 
@@ -42,7 +41,7 @@ namespace
 
             auto* gameKvps = m_memory.Alloc<KeyValuePairs>();
             gameKvps->name = m_memory.Dup(m_zone.m_name.c_str());
-            gameKvps->numVariables = commonKvps.size();
+            gameKvps->numVariables = static_cast<unsigned>(commonKvps.size());
             gameKvps->keyValuePairs = m_memory.Alloc<KeyValuePair>(commonKvps.size());
 
             const auto namespaceHash = Common::Com_HashKey(m_zone.m_name.c_str(), 64);

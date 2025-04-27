@@ -72,7 +72,7 @@ bool PartClassificationState::LoadRow(const char** hitLocStart, const char** hit
         return false;
     }
 
-    const auto hitLocNum = std::distance(hitLocStart, foundHitLoc);
+    const auto hitLocNum = static_cast<unsigned>(std::distance(hitLocStart, foundHitLoc));
 
     m_part_classifications.emplace(row[0], hitLocNum);
     return true;

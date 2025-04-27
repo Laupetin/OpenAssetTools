@@ -679,7 +679,7 @@ namespace
         if (!aliasList.empty())
             aliasLists.emplace_back(CreateAliasList(aliasList, memory));
 
-        sndBank->aliasCount = aliasLists.size();
+        sndBank->aliasCount = static_cast<unsigned>(aliasLists.size());
         if (sndBank->aliasCount)
         {
             sndBank->alias = memory.Alloc<SndAliasList>(sndBank->aliasCount);
@@ -702,7 +702,7 @@ namespace
             const auto idx = sndBank->alias[i].id % sndBank->aliasCount;
             if (sndBank->aliasIndex[idx].value == std::numeric_limits<unsigned short>::max())
             {
-                sndBank->aliasIndex[idx].value = i;
+                sndBank->aliasIndex[idx].value = static_cast<unsigned short>(i);
                 sndBank->aliasIndex[idx].next = std::numeric_limits<unsigned short>::max();
                 setAliasIndexList[i] = true;
             }
@@ -720,14 +720,14 @@ namespace
             }
 
             auto offset = 1u;
-            auto freeIdx = std::numeric_limits<unsigned short>::max();
+            unsigned short freeIdx;
             while (true)
             {
-                freeIdx = (idx + offset) % sndBank->aliasCount;
+                freeIdx = static_cast<unsigned short>((idx + offset) % sndBank->aliasCount);
                 if (sndBank->aliasIndex[freeIdx].value == std::numeric_limits<unsigned short>::max())
                     break;
 
-                freeIdx = (idx + sndBank->aliasCount - offset) % sndBank->aliasCount;
+                freeIdx = static_cast<unsigned short>((idx + sndBank->aliasCount - offset) % sndBank->aliasCount);
                 if (sndBank->aliasIndex[freeIdx].value == std::numeric_limits<unsigned short>::max())
                     break;
 
@@ -745,7 +745,7 @@ namespace
             }
 
             sndBank->aliasIndex[idx].next = freeIdx;
-            sndBank->aliasIndex[freeIdx].value = i;
+            sndBank->aliasIndex[freeIdx].value = static_cast<unsigned short>(i);
             sndBank->aliasIndex[freeIdx].next = std::numeric_limits<unsigned short>::max();
             setAliasIndexList[i] = true;
         }
@@ -849,7 +849,7 @@ namespace
             radverbs.emplace_back(radverb);
         }
 
-        sndBank->radverbCount = radverbs.size();
+        sndBank->radverbCount = static_cast<unsigned>(radverbs.size());
         if (sndBank->radverbCount)
         {
             sndBank->radverbs = memory.Alloc<SndRadverb>(sndBank->radverbCount);
@@ -912,7 +912,7 @@ namespace
 
             for (auto& valueJson : duckJson["values"])
             {
-                auto index = GetValueIndex(valueJson["duckGroup"].get<std::string>(), SOUND_DUCK_GROUPS, std::extent_v<decltype(SOUND_DUCK_GROUPS)>);
+                const auto index = GetValueIndex(valueJson["duckGroup"].get<std::string>(), SOUND_DUCK_GROUPS, std::extent_v<decltype(SOUND_DUCK_GROUPS)>);
 
                 duck.attenuation[index] = valueJson["attenuation"].get<float>();
                 duck.filter[index] = valueJson["filter"].get<float>();
@@ -921,7 +921,7 @@ namespace
             ducks.emplace_back(duck);
         }
 
-        sndBank->duckCount = ducks.size();
+        sndBank->duckCount = static_cast<unsigned>(ducks.size());
         if (sndBank->duckCount)
         {
             sndBank->ducks = memory.Alloc<SndDuck>(sndBank->duckCount);
@@ -1046,7 +1046,7 @@ namespace
 
                 if (result)
                 {
-                    sndBank->loadedAssets.dataSize = dataSize;
+                    sndBank->loadedAssets.dataSize = static_cast<unsigned>(dataSize);
                     sndBank->loadedAssets.data = m_memory.Alloc<SndChar2048>(dataSize);
                 }
                 else

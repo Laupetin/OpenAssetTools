@@ -3,18 +3,12 @@
 #include "Parsing/ILexer.h"
 #include "Utils/ClassUtils.h"
 
+#include <concepts>
 #include <iterator>
 #include <vector>
 
-template<typename TokenType> class MockLexer final : public ILexer<TokenType>
+template<std::derived_from<IParserValue> TokenType> class MockLexer final : public ILexer<TokenType>
 {
-    // TokenType must inherit IParserValue
-    static_assert(std::is_base_of<IParserValue, TokenType>::value);
-
-    std::vector<TokenType> m_tokens;
-    TokenType m_eof;
-    size_t m_pop_count;
-
 public:
     MockLexer(std::initializer_list<Movable<TokenType>> tokens, TokenType eof)
         : m_tokens(std::make_move_iterator(tokens.begin()), std::make_move_iterator(tokens.end())),
@@ -36,7 +30,7 @@ public:
     MockLexer& operator=(const MockLexer& other) = delete;
     MockLexer& operator=(MockLexer&& other) noexcept = default;
 
-    const TokenType& GetToken(const unsigned index) override
+    const TokenType& GetToken(const size_t index) override
     {
         const auto absoluteIndex = m_pop_count + index;
         if (absoluteIndex < m_tokens.size())
@@ -45,10 +39,10 @@ public:
         return m_eof;
     }
 
-    void PopTokens(const int amount) override
+    void PopTokens(const size_t amount) override
     {
         assert(amount >= 0);
-        m_pop_count += static_cast<size_t>(amount);
+        m_pop_count += amount;
     }
 
     bool IsEof() override
@@ -70,4 +64,9 @@ public:
     {
         return ParserLine();
     }
+
+private:
+    std::vector<TokenType> m_tokens;
+    TokenType m_eof;
+    size_t m_pop_count;
 };

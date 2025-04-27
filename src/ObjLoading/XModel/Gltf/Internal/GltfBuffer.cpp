@@ -1,6 +1,6 @@
 #include "GltfBuffer.h"
 
-#include "Impl/Base64.h"
+#include "Base64.h"
 #include "XModel/Gltf/GltfConstants.h"
 
 #include <cassert>

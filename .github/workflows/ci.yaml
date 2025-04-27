@@ -10,6 +10,9 @@ on:
 
 jobs:
   build-test-linux:
+    strategy:
+      matrix:
+        build_arch: [x86, x64]
     runs-on: ubuntu-latest
     container: ubuntu:24.04
     steps:
@@ -35,10 +38,10 @@ jobs:
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: make -C build -j$(nproc) config=release_x86 all
+        run: make -C build -j$(nproc) config=release_${{ matrix.build_arch }} all
 
       - name: Test
-        working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
+        working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
         run: |
           ./ObjCommonTests
           ./ObjCompilingTests
@@ -48,6 +51,14 @@ jobs:
           ./ZoneCommonTests
 
   build-test-windows:
+    strategy:
+      matrix:
+        build_arch: [x86, x64]
+        include:
+          - build_arch: x86
+            msbuild_config: Win32
+          - build_arch: x64
+            msbuild_config: x64
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -66,10 +77,10 @@ jobs:
 
       - name: Build
         working-directory: ${{ github.workspace }}
-        run: msbuild /m /p:Configuration=Release /p:Platform=Win32 build
+        run: msbuild /m /p:Configuration=Release /p:Platform=${{ matrix.msbuild_config }} build
 
       - name: Test
-        working-directory: ${{ github.workspace }}/build/lib/Release_x86/tests
+        working-directory: ${{ github.workspace }}/build/lib/Release_${{ matrix.build_arch }}/tests
         run: |
           $combinedExitCode = 0
           ./ObjCommonTests

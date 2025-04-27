@@ -44,7 +44,7 @@ namespace
             zs.zfree = Z_NULL;
             zs.opaque = Z_NULL;
             zs.avail_in = static_cast<uInt>(file.m_length);
-            zs.avail_out = compressionBufferSize;
+            zs.avail_out = static_cast<unsigned>(compressionBufferSize);
             zs.next_in = reinterpret_cast<const Bytef*>(uncompressedBuffer.get());
             zs.next_out = reinterpret_cast<Bytef*>(compressedBuffer);
 

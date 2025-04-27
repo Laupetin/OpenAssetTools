@@ -81,7 +81,7 @@ namespace
             const auto mipCount = texture->HasMipMaps() ? texture->GetMipMapCount() : 1;
             const auto faceCount = texture->GetFaceCount();
 
-            size_t dataSize = 0;
+            auto dataSize = 0uz;
             for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)
                 dataSize += texture->GetSizeOfMipLevel(mipLevel) * faceCount;
 
@@ -99,7 +99,7 @@ namespace
             loadDef->dimensions[1] = image->height;
             loadDef->dimensions[2] = image->depth;
             loadDef->format = static_cast<int>(texture->GetFormat()->GetD3DFormat());
-            loadDef->resourceSize = dataSize;
+            loadDef->resourceSize = static_cast<unsigned>(dataSize);
 
             char* currentDataBuffer = loadDef->data;
             for (auto mipLevel = 0; mipLevel < mipCount; mipLevel++)

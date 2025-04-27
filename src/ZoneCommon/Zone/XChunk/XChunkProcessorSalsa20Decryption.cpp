@@ -1,7 +1,7 @@
 #include "XChunkProcessorSalsa20Decryption.h"
 
 #include "AbstractSalsa20Processor.h"
-#include "Crypto.h"
+#include "Cryptography.h"
 
 #include <cassert>
 
@@ -21,10 +21,10 @@ size_t XChunkProcessorSalsa20Decryption::Process(
     assert(output != nullptr);
     assert(inputLength <= outputBufferSize);
 
-    auto& streamContext = m_stream_contexts[streamNumber];
+    const auto& streamContext = m_stream_contexts[streamNumber];
 
     // Initialize Salsa20 with an IV of the first 8 bytes of the current hash block
-    streamContext.m_salsa20->SetIV(GetHashBlock(streamNumber), SALSA20_IV_SIZE);
+    streamContext.m_salsa20->SetIv(GetHashBlock(streamNumber), SALSA20_IV_SIZE);
     streamContext.m_salsa20->Process(input, output, inputLength);
 
     // Hash decrypted XChunk

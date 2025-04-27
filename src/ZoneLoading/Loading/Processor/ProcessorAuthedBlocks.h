@@ -1,5 +1,6 @@
 #pragma once
-#include "Crypto.h"
+
+#include "Cryptography.h"
 #include "Loading/IHashProvider.h"
 #include "Loading/StreamProcessor.h"
 
@@ -14,7 +15,7 @@ public:
     ProcessorAuthedBlocks(unsigned authedChunkCount,
                           size_t chunkSize,
                           unsigned maxMasterBlockCount,
-                          std::unique_ptr<IHashFunction> hashFunction,
+                          std::unique_ptr<cryptography::IHashFunction> hashFunction,
                           IHashProvider* masterBlockHashProvider);
     ~ProcessorAuthedBlocks() override;
     ProcessorAuthedBlocks(const ProcessorAuthedBlocks& other) = delete;

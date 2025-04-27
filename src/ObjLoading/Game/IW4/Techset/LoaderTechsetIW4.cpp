@@ -31,14 +31,14 @@ namespace
     class LoadedTechnique
     {
     public:
-        MaterialTechnique* m_technique;
-        std::vector<XAssetInfoGeneric*> m_dependencies;
-
         LoadedTechnique(MaterialTechnique* technique, std::vector<XAssetInfoGeneric*> dependencies)
             : m_technique(technique),
               m_dependencies(std::move(dependencies))
         {
         }
+
+        MaterialTechnique* m_technique;
+        std::vector<XAssetInfoGeneric*> m_dependencies;
     };
 
     class TechniqueZoneLoadingState final : public IZoneAssetCreationState
@@ -46,8 +46,7 @@ namespace
     public:
         typedef const float (*literal_t)[4];
 
-    public:
-        _NODISCARD const LoadedTechnique* FindLoadedTechnique(const std::string& techniqueName) const
+        [[nodiscard]] const LoadedTechnique* FindLoadedTechnique(const std::string& techniqueName) const
         {
             const auto loadedTechnique = m_loaded_techniques.find(techniqueName);
             if (loadedTechnique != m_loaded_techniques.end())
@@ -86,8 +85,6 @@ namespace
 
     class ShaderInfoFromFileSystemCacheState final : public IZoneAssetCreationState
     {
-        std::unordered_map<std::string, std::unique_ptr<d3d9::ShaderInfo>> m_cached_shader_info;
-
     public:
         [[nodiscard]] const d3d9::ShaderInfo* LoadShaderInfoFromDisk(ISearchPath& searchPath, const std::string& fileName)
         {
@@ -108,9 +105,9 @@ namespace
             }
 
             const auto shaderData = std::make_unique<char[]>(shaderSize);
-            file.m_stream->read(shaderData.get(), shaderSize);
+            file.m_stream->read(shaderData.get(), static_cast<std::streamsize>(shaderSize));
 
-            auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(reinterpret_cast<const uint32_t*>(shaderData.get()), shaderSize);
+            auto shaderInfo = d3d9::ShaderAnalyser::GetShaderInfo(shaderData.get(), shaderSize);
             if (!shaderInfo)
                 return nullptr;
 
@@ -118,6 +115,9 @@ namespace
             m_cached_shader_info.emplace(std::make_pair(fileName, std::move(shaderInfo)));
             return result;
         }
+
+    private:
+        std::unordered_map<std::string, std::unique_ptr<d3d9::ShaderInfo>> m_cached_shader_info;
     };
 
     class TechniqueCreator final : public techset::ITechniqueDefinitionAcceptor
@@ -126,10 +126,13 @@ namespace
         class PassShaderArgument
         {
         public:
-            MaterialShaderArgument m_arg;
-            MaterialUpdateFrequency m_update_frequency;
+            explicit PassShaderArgument(const MaterialShaderArgument arg)
+                : m_arg(arg),
+                  m_update_frequency(GetUpdateFrequencyForArg(arg))
+            {
+            }
 
-            static MaterialUpdateFrequency GetUpdateFrequencyForArg(MaterialShaderArgument arg)
+            static MaterialUpdateFrequency GetUpdateFrequencyForArg(const MaterialShaderArgument arg)
             {
                 switch (arg.type)
                 {
@@ -160,15 +163,22 @@ namespace
                 }
             }
 
-            explicit PassShaderArgument(const MaterialShaderArgument arg)
-                : m_arg(arg),
-                  m_update_frequency(GetUpdateFrequencyForArg(arg))
-            {
-            }
+            MaterialShaderArgument m_arg;
+            MaterialUpdateFrequency m_update_frequency;
         };
 
         struct Pass
         {
+            Pass()
+                : m_vertex_shader(nullptr),
+                  m_vertex_shader_info(nullptr),
+                  m_pixel_shader(nullptr),
+                  m_pixel_shader_info(nullptr),
+                  m_vertex_decl{},
+                  m_vertex_decl_asset(nullptr)
+            {
+            }
+
             XAssetInfo<MaterialVertexShader>* m_vertex_shader;
             const d3d9::ShaderInfo* m_vertex_shader_info;
             std::unique_ptr<d3d9::ShaderInfo> m_vertex_shader_info_unq;
@@ -184,20 +194,7 @@ namespace
             MaterialVertexDeclaration m_vertex_decl;
             XAssetInfo<MaterialVertexDeclaration>* m_vertex_decl_asset;
             std::vector<PassShaderArgument> m_arguments;
-
-            Pass()
-                : m_vertex_shader(nullptr),
-                  m_vertex_shader_info(nullptr),
-                  m_pixel_shader(nullptr),
-                  m_pixel_shader_info(nullptr),
-                  m_vertex_decl{},
-                  m_vertex_decl_asset(nullptr)
-            {
-            }
         };
-
-        std::vector<Pass> m_passes;
-        std::vector<XAssetInfoGeneric*> m_dependencies;
 
         TechniqueCreator(
             const std::string& techniqueName, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context, ITechsetCreator* techsetCreator)
@@ -217,10 +214,11 @@ namespace
             m_passes.emplace_back();
         }
 
-        static size_t RegisterCountPerElement(const d3d9::ShaderConstant& constant)
+        static unsigned RegisterCountPerElement(const d3d9::ShaderConstant& constant)
         {
             const auto valuesPerRegister =
                 constant.m_register_set == d3d9::RegisterSet::BOOL || constant.m_register_set == d3d9::RegisterSet::SAMPLER ? 1u : 4u;
+
             return utils::Align(constant.m_type_columns * constant.m_type_rows, valuesPerRegister) / valuesPerRegister;
         }
 
@@ -243,7 +241,7 @@ namespace
             if (shaderType == techset::ShaderSelector::VERTEX_SHADER && isSamplerArgument)
                 return false;
 
-            MaterialShaderArgument argument{};
+            MaterialShaderArgument argument;
             argument.dest = static_cast<uint16_t>(shaderArgument.m_register_index + registerOffset);
 
             unsigned arrayCount;
@@ -258,7 +256,7 @@ namespace
                     return false;
 
                 argument.type = MTL_ARG_CODE_PIXEL_SAMPLER;
-                argument.u.codeSampler = samplerSource->source + elementOffset;
+                argument.u.codeSampler = samplerSource->source + static_cast<unsigned>(elementOffset);
 
                 arrayCount = static_cast<unsigned>(samplerSource->arrayCount);
             }
@@ -304,13 +302,12 @@ namespace
                     {
                         if (!AutoCreateShaderArgument(techset::ShaderSelector::VERTEX_SHADER, argument, elementIndex, registerIndex))
                         {
-                            std::ostringstream ss;
-                            ss << "Unassigned vertex shader \"" << pass.m_vertex_shader->m_name << "\" arg: " << argument.m_name;
-
+                            std::string elementIndexStr;
                             if (argument.m_type_elements > 1)
-                                ss << '[' << elementIndex << ']';
+                                elementIndexStr = std::format("[{}]", elementIndex);
 
-                            errorMessage = ss.str();
+                            errorMessage =
+                                std::format("Unassigned vertex shader \"{}\" arg: {}{}", pass.m_vertex_shader->m_name, argument.m_name, elementIndexStr);
                             return false;
                         }
                     }
@@ -572,11 +569,11 @@ namespace
             return foundSource;
         }
 
-        bool FindShaderArgument(const d3d9::ShaderInfo& shaderInfo,
-                                const techset::ShaderArgument& argument,
-                                size_t& constantIndex,
-                                size_t& registerOffset,
-                                std::string& errorMessage) const
+        static bool FindShaderArgument(const d3d9::ShaderInfo& shaderInfo,
+                                       const techset::ShaderArgument& argument,
+                                       size_t& constantIndex,
+                                       size_t& registerOffset,
+                                       std::string& errorMessage)
         {
             const auto matchingShaderConstant = std::ranges::find_if(shaderInfo.m_constants,
                                                                      [argument](const d3d9::ShaderConstant& constant)
@@ -854,14 +851,14 @@ namespace
         }
 
         bool AcceptShaderLiteralArgument(const techset::ShaderSelector shader,
-                                         techset::ShaderArgument shaderArgument,
-                                         techset::ShaderArgumentLiteralSource source,
+                                         const techset::ShaderArgument shaderArgument,
+                                         const techset::ShaderArgumentLiteralSource source,
                                          std::string& errorMessage) override
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
 
-            MaterialShaderArgument argument{};
+            MaterialShaderArgument argument;
             const d3d9::ShaderInfo* shaderInfo;
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
@@ -913,14 +910,14 @@ namespace
         }
 
         bool AcceptShaderMaterialArgument(const techset::ShaderSelector shader,
-                                          techset::ShaderArgument shaderArgument,
+                                          const techset::ShaderArgument shaderArgument,
                                           const techset::ShaderArgumentMaterialSource source,
                                           std::string& errorMessage) override
         {
             assert(!m_passes.empty());
             auto& pass = m_passes.at(m_passes.size() - 1);
 
-            MaterialShaderArgument argument{};
+            MaterialShaderArgument argument;
             const d3d9::ShaderInfo* shaderInfo;
 
             if (shader == techset::ShaderSelector::VERTEX_SHADER)
@@ -1015,6 +1012,8 @@ namespace
             pass.m_vertex_decl.streamCount++;
             return true;
         }
+
+        std::vector<Pass> m_passes;
 
     private:
         const std::string& m_technique_name;

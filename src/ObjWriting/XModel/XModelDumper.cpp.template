@@ -380,7 +380,7 @@ namespace
             return;
 
         auto& weightCollection = out.m_bone_weight_data;
-        size_t weightOffset = 0u;
+        auto weightOffset = 0u;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {

@@ -27,7 +27,7 @@ size_t XChunkProcessorSalsa20Encryption::Process(
     streamContext.m_sha1->Finish(&blockSha1Hash);
 
     // Initialize Salsa20 with an IV of the first 8 bytes of the current hash block
-    streamContext.m_salsa20->SetIV(GetHashBlock(streamNumber), SALSA20_IV_SIZE);
+    streamContext.m_salsa20->SetIv(GetHashBlock(streamNumber), SALSA20_IV_SIZE);
     streamContext.m_salsa20->Process(input, output, inputLength);
 
     // Advance index to next hash block

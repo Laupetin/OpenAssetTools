@@ -41,10 +41,10 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
 {
     auto checksum = initialValue;
 
-    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(m_name.c_str()), m_name.size() + 1);
+    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(m_name.c_str()), static_cast<unsigned>(m_name.size() + 1u));
     for (const auto& property : m_properties)
     {
-        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(property.m_name.c_str()), property.m_name.size() + 1);
+        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(property.m_name.c_str()), static_cast<unsigned>(property.m_name.size() + 1u));
 
         const auto littleEndianOffset = endianness::ToLittleEndian(property.m_offset_in_bits);
         checksum = crc32(checksum, reinterpret_cast<const Bytef*>(&littleEndianOffset), sizeof(littleEndianOffset));
@@ -68,7 +68,7 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
                 if (currentType.m_info.type_index < def.m_enums.size())
                 {
                     const auto& _enum = *def.m_enums[currentType.m_info.type_index];
-                    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_enum.m_name.c_str()), _enum.m_name.size() + 1);
+                    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_enum.m_name.c_str()), static_cast<unsigned>(_enum.m_name.size() + 1u));
                     currentType = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
                 }
                 break;
@@ -76,7 +76,7 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
                 if (currentType.m_info.type_index < def.m_structs.size())
                 {
                     const auto& _struct = *def.m_structs[currentType.m_info.type_index];
-                    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_struct.m_name.c_str()), _struct.m_name.size() + 1);
+                    checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_struct.m_name.c_str()), static_cast<unsigned>(_struct.m_name.size() + 1u));
                     currentType = CommonStructuredDataType(CommonStructuredDataTypeCategory::UNKNOWN);
                 }
                 break;
@@ -99,7 +99,7 @@ uint32_t CommonStructuredDataStruct::CalculateChecksum(const CommonStructuredDat
                     if (enumedArray.m_enum_index < def.m_enums.size())
                     {
                         const auto& _enum = *def.m_enums[enumedArray.m_enum_index];
-                        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_enum.m_name.c_str()), _enum.m_name.size() + 1);
+                        checksum = crc32(checksum, reinterpret_cast<const Bytef*>(_enum.m_name.c_str()), static_cast<unsigned>(_enum.m_name.size() + 1u));
                     }
                     currentType = enumedArray.m_array_type;
                 }

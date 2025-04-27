@@ -32,8 +32,8 @@ namespace
 
             const auto fileSize = static_cast<size_t>(file.m_length);
             const auto fileData = std::make_unique<char[]>(fileSize);
-            file.m_stream->read(fileData.get(), fileSize);
-            const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(fileData.get()), fileSize));
+            file.m_stream->read(fileData.get(), static_cast<std::streamsize>(fileSize));
+            const auto dataHash = static_cast<unsigned>(crc32(0u, reinterpret_cast<const Bytef*>(fileData.get()), static_cast<unsigned>(fileSize)));
 
             std::istringstream ss(std::string(fileData.get(), fileSize));
             const auto texture = iwi::LoadIwi(ss);

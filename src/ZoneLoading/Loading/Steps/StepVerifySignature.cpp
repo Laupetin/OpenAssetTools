@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-StepVerifySignature::StepVerifySignature(std::unique_ptr<IPublicKeyAlgorithm> signatureAlgorithm,
+StepVerifySignature::StepVerifySignature(std::unique_ptr<cryptography::IPublicKeyAlgorithm> signatureAlgorithm,
                                          ISignatureProvider* signatureProvider,
                                          ICapturedDataProvider* signatureDataProvider)
     : m_algorithm(std::move(signatureAlgorithm)),

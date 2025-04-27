@@ -343,7 +343,7 @@ namespace GAME_NAMESPACE
         if (!surfs)
             return;
 
-        size_t weightOffset = 0u;
+        auto weightOffset = 0u;
 
         for (auto surfIndex = 0u; surfIndex < surfCount; surfIndex++)
         {

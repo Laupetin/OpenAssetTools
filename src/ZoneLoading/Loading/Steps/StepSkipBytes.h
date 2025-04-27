@@ -4,10 +4,11 @@
 
 class StepSkipBytes final : public ILoadingStep
 {
-    unsigned int m_skip_count;
-
 public:
-    explicit StepSkipBytes(unsigned int skipCount);
+    explicit StepSkipBytes(size_t skipCount);
 
     void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+
+private:
+    size_t m_skip_count;
 };

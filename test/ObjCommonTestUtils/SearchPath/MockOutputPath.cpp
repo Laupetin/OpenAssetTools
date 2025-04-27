@@ -66,7 +66,7 @@ namespace
 
         pos_type seekpos(const pos_type pos, std::ios_base::openmode) override
         {
-            if (pos > m_data.size())
+            if (pos > static_cast<pos_type>(m_data.size()))
                 m_data.resize(static_cast<decltype(m_data)::size_type>(pos));
             m_pos = static_cast<size_t>(pos);
 

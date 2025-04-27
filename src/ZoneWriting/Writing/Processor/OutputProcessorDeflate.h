@@ -13,7 +13,7 @@ class OutputProcessorDeflate final : public OutputStreamProcessor
 
 public:
     OutputProcessorDeflate();
-    OutputProcessorDeflate(size_t bufferSize);
+    explicit OutputProcessorDeflate(size_t bufferSize);
     ~OutputProcessorDeflate() override;
     OutputProcessorDeflate(const OutputProcessorDeflate& other) = delete;
     OutputProcessorDeflate(OutputProcessorDeflate&& other) noexcept = default;

@@ -57,7 +57,7 @@ namespace
                 return AssetCreationResult::Failure();
             }
 
-            if (offset + (scriptFile->compressedLen + scriptFile->bytecodeLen) > file.m_length)
+            if (offset + static_cast<size_t>(scriptFile->compressedLen + scriptFile->bytecodeLen) > static_cast<size_t>(file.m_length))
             {
                 std::cerr << std::format("Error: Specified length in {} GSC BIN structure exceeds the actual file size\n", assetName);
                 return AssetCreationResult::Failure();

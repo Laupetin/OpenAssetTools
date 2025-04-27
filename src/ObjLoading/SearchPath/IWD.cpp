@@ -145,7 +145,7 @@ namespace
                 {
                     char temp[1024];
                     const auto toRead = skipAmount > sizeof(temp) ? sizeof(temp) : static_cast<size_t>(skipAmount);
-                    unzReadCurrentFile(m_container, temp, toRead);
+                    unzReadCurrentFile(m_container, temp, static_cast<unsigned>(toRead));
                     skipAmount -= toRead;
                 }
 

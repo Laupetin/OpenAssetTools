@@ -55,7 +55,7 @@ public:
         {
             const auto* buffer = m_texture->GetBufferForMipLevel(mipLevel);
             const auto mipLevelSize = m_texture->GetSizeOfMipLevel(mipLevel) * m_texture->GetFaceCount();
-            m_stream.write(reinterpret_cast<const char*>(buffer), mipLevelSize);
+            m_stream.write(reinterpret_cast<const char*>(buffer), static_cast<std::streamsize>(mipLevelSize));
         }
     }
 
@@ -153,7 +153,7 @@ public:
         header.dwHeight = m_texture->GetHeight();
         header.dwWidth = m_texture->GetWidth();
         header.dwDepth = m_texture->GetDepth();
-        header.dwPitchOrLinearSize = m_texture->GetFormat()->GetPitch(0, m_texture->GetWidth());
+        header.dwPitchOrLinearSize = static_cast<uint32_t>(m_texture->GetFormat()->GetPitch(0, m_texture->GetWidth()));
         header.dwMipMapCount = m_texture->HasMipMaps() ? m_texture->GetMipMapCount() : 1;
 
         PopulatePixelFormat(header.ddspf);

@@ -4,11 +4,11 @@
 
 class StreamProcessor : public ILoadingStream
 {
-protected:
-    ILoadingStream* m_base_stream;
-
 public:
     StreamProcessor();
 
     void SetBaseStream(ILoadingStream* baseStream);
+
+protected:
+    ILoadingStream* m_base_stream;
 };

@@ -5,9 +5,10 @@
 #include "Parsing/ParsingException.h"
 #include "Utils/ClassUtils.h"
 
+#include <concepts>
 #include <unordered_map>
 
-template<typename TokenType> class SequenceResult
+template<std::derived_from<IParserValue> TokenType> class SequenceResult
 {
     class Capture
     {
@@ -21,9 +22,6 @@ template<typename TokenType> class SequenceResult
         }
     };
 
-    // TokenType must inherit IParserValue
-    static_assert(std::is_base_of<IParserValue, TokenType>::value);
-
     std::vector<int> m_tags;
     std::unordered_map<int, Capture> m_captures;
 
@@ -34,7 +32,7 @@ public:
         : m_tags(result.m_tags),
           m_tag_offset(0)
     {
-        for (const typename MatcherResult<TokenType>::Capture& capture : result.m_captures)
+        for (const MatcherResultCapture& capture : result.m_captures)
         {
             if (capture.m_token_index.IsFabricated())
                 m_captures[capture.GetCaptureId()].m_tokens.push_back(result.m_fabricated_tokens[capture.m_token_index.GetTokenIndex()]);

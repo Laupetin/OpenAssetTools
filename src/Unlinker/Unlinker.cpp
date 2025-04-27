@@ -106,7 +106,7 @@ private:
         ObjWriting::Configuration.AssetTypesToHandleBitfield = std::vector<bool>(assetTypeCount);
 
         std::vector<bool> handledSpecifiedAssets(m_args.m_specified_asset_types.size());
-        for (auto i = 0; i < assetTypeCount; i++)
+        for (auto i = 0u; i < assetTypeCount; i++)
         {
             const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
 
@@ -136,7 +136,7 @@ private:
             std::cerr << "Valid asset types are:\n";
 
             auto first = true;
-            for (auto i = 0; i < assetTypeCount; i++)
+            for (auto i = 0u; i < assetTypeCount; i++)
             {
                 const auto assetTypeName = std::string(*context.m_zone.m_pools->GetAssetTypeName(i));
 

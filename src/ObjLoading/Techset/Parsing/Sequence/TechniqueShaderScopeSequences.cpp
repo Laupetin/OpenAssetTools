@@ -213,7 +213,7 @@ namespace techset
                 const auto& shaderArgumentIndexToken = result.NextCapture(CAPTURE_SHADER_INDEX);
                 if (shaderArgumentIndexToken.IntegerValue() < 0)
                     throw ParsingException(shaderArgumentIndexToken.GetPos(), "Index cannot be negative");
-                const auto index = static_cast<size_t>(shaderArgumentIndexToken.IntegerValue());
+                const auto index = static_cast<unsigned>(shaderArgumentIndexToken.IntegerValue());
                 arg = ShaderArgument(shaderArgumentNameToken.IdentifierValue(), index);
             }
             else

@@ -9,6 +9,7 @@
 #include "Parsing/Impl/ParserFilesystemStream.h"
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
+#include "Parsing/PostProcessing/CrossPlatformStructurePostProcessor.h"
 #include "Parsing/PostProcessing/IPostProcessor.h"
 
 #include <algorithm>
@@ -67,6 +68,7 @@ void HeaderFileReader::SetupPostProcessors()
     // Order is important
     m_post_processors.emplace_back(std::make_unique<CreateStructureInformationPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<CreateMemberInformationPostProcessor>());
+    m_post_processors.emplace_back(std::make_unique<CrossPlatformStructurePostProcessor>());
 }
 
 bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)

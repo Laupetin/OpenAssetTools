@@ -43,7 +43,7 @@ public:
         return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), sizeof(T)));
     }
 
-    template<typename T> T* Write(T* dst, const uint32_t count)
+    template<typename T> T* Write(T* dst, const size_t count)
     {
         return static_cast<T*>(WriteDataInBlock(reinterpret_cast<const void*>(dst), count * sizeof(T)));
     }

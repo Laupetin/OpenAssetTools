@@ -135,7 +135,7 @@ namespace IW3
     typedef float vec2_t[2];
     typedef float vec3_t[3];
     typedef float vec4_t[4];
-    typedef tdef_align(128) unsigned int raw_uint128;
+    typedef tdef_align32(128) unsigned int raw_uint128;
 
     struct XModelPiece
     {
@@ -179,7 +179,7 @@ namespace IW3
     };
 
     typedef unsigned char ByteVec[3];
-    typedef tdef_align(4) unsigned short UShortVec[3];
+    typedef tdef_align32(4) unsigned short UShortVec[3];
 
     union XAnimDynamicIndicesTrans
     {
@@ -214,7 +214,7 @@ namespace IW3
         XAnimPartTransData u;
     };
 
-    typedef tdef_align(4) short XQuat[2];
+    typedef tdef_align32(4) short XQuat[2];
 
     union XAnimDynamicIndicesQuat
     {
@@ -360,7 +360,7 @@ namespace IW3
         uint16_t* vertsBlend;
     };
 
-    typedef tdef_align(16) uint16_t r_index16_t;
+    typedef tdef_align32(16) uint16_t r_index16_t;
 
     struct XSurface
     {
@@ -709,7 +709,7 @@ namespace IW3
         MaterialTextureDefInfo u;
     };
 
-    struct gcc_align(8) GfxDrawSurfFields
+    struct gcc_align32(8) GfxDrawSurfFields
     {
         uint64_t objectId : 16;
         uint64_t reflectionProbeIndex : 8;
@@ -724,8 +724,8 @@ namespace IW3
 
     union GfxDrawSurf
     {
-        gcc_align(8) GfxDrawSurfFields fields;
-        gcc_align(8) uint64_t packed;
+        gcc_align32(8) GfxDrawSurfFields fields;
+        gcc_align32(8) uint64_t packed;
     };
 
     enum materialSurfType_t
@@ -1314,9 +1314,9 @@ namespace IW3
     {
         char levelCount;
         char flags;
-        int16_t dimensions[3];
+        uint16_t dimensions[3];
         int format;
-        int resourceSize;
+        unsigned int resourceSize;
         char data[1];
     };
 
@@ -1605,7 +1605,7 @@ namespace IW3
         cLeaf_t leaf;
     };
 
-    struct type_align(16) cbrush_t
+    struct type_align32(16) cbrush_t
     {
         float mins[3];
         int contents;
@@ -1671,7 +1671,7 @@ namespace IW3
 
     typedef unsigned short LeafBrush;
 
-    typedef tdef_align(16) cbrush_t cbrush_array_t;
+    typedef tdef_align32(16) cbrush_t cbrush_array_t;
 
     struct clipMap_t
     {
@@ -2265,7 +2265,7 @@ namespace IW3
         char pad;
     };
 
-    typedef tdef_align(4) GfxSceneDynModel GfxSceneDynModel4;
+    typedef tdef_align32(4) GfxSceneDynModel GfxSceneDynModel4;
 
     struct GfxWorld
     {

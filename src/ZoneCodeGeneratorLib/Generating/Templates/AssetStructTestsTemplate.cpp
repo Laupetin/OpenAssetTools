@@ -37,11 +37,13 @@ namespace
             LINE("{")
             m_intendation++;
 
-            TestMethod(m_env.m_asset);
+            if (m_env.m_asset->m_has_matching_cross_platform_structure)
+                TestMethod(m_env.m_asset);
+
             for (auto* structure : m_env.m_used_structures)
             {
                 StructureComputations computations(structure->m_info);
-                if (!structure->m_info->m_definition->m_anonymous && !computations.IsAsset())
+                if (!structure->m_info->m_definition->m_anonymous && !computations.IsAsset() && structure->m_info->m_has_matching_cross_platform_structure)
                     TestMethod(structure->m_info);
             }
 

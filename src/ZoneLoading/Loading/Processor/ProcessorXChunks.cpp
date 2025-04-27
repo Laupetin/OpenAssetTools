@@ -78,7 +78,7 @@ public:
         m_is_loading = false;
     }
 
-    uint8_t* GetInputBuffer() const
+    [[nodiscard]] uint8_t* GetInputBuffer() const
     {
         return m_input_buffer;
     }
@@ -140,9 +140,9 @@ class ProcessorXChunks::ProcessorXChunksImpl
     bool m_eof_reached;
     unsigned int m_eof_stream;
 
-    void AdvanceStream(const unsigned int streamNum)
+    void AdvanceStream(const unsigned streamNum)
     {
-        assert(streamNum >= 0 && streamNum < m_streams.size());
+        assert(streamNum < m_streams.size());
 
         if (m_eof_reached)
             return;
@@ -203,8 +203,8 @@ class ProcessorXChunks::ProcessorXChunksImpl
         m_initialized_streams = true;
         m_vanilla_buffer_offset = static_cast<size_t>(m_base->m_base_stream->Pos());
 
-        const unsigned int streamCount = m_streams.size();
-        for (unsigned int streamNum = 0; streamNum < streamCount; streamNum++)
+        const auto streamCount = static_cast<unsigned>(m_streams.size());
+        for (auto streamNum = 0u; streamNum < streamCount; streamNum++)
         {
             AdvanceStream(streamNum);
         }
@@ -214,7 +214,7 @@ class ProcessorXChunks::ProcessorXChunksImpl
         m_streams[0]->GetOutput(&m_current_chunk, &m_current_chunk_size);
     }
 
-    bool EndOfStream() const
+    [[nodiscard]] bool EndOfStream() const
     {
         return m_eof_reached && m_eof_stream == m_current_stream;
     }

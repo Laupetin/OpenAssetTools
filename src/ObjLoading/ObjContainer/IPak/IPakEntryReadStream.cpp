@@ -2,6 +2,7 @@
 
 #include "ObjContainer/IPak/IPakTypes.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <minilzo.h>
@@ -24,7 +25,7 @@ IPakEntryReadStream::IPakEntryReadStream(
       m_current_command_offset(0),
       m_pos(startOffset),
       m_base_pos(startOffset),
-      m_end_pos(startOffset + entrySize),
+      m_end_pos(startOffset + static_cast<int64_t>(entrySize)),
       m_buffer_start_pos(0),
       m_buffer_end_pos(0)
 {
@@ -53,8 +54,7 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
 {
     // Cannot load more than IPAK_CHUNK_COUNT_PER_READ chunks without overflowing the buffer
     assert(chunkCount <= IPAK_CHUNK_COUNT_PER_READ);
-    if (chunkCount > IPAK_CHUNK_COUNT_PER_READ)
-        chunkCount = IPAK_CHUNK_COUNT_PER_READ;
+    chunkCount = std::min(chunkCount, IPAK_CHUNK_COUNT_PER_READ);
 
     // The start position must be aligned to IPAK_CHUNK_SIZE
     assert(startPos % IPAK_CHUNK_SIZE == 0);
@@ -66,7 +66,7 @@ bool IPakEntryReadStream::SetChunkBufferWindow(const int64_t startPos, size_t ch
         return true;
     }
 
-    const auto endPos = startPos + static_cast<int64_t>(chunkCount) * IPAK_CHUNK_SIZE;
+    const auto endPos = startPos + static_cast<int64_t>(chunkCount) * static_cast<int64_t>(IPAK_CHUNK_SIZE);
 
     // Check whether the start position is already part of the loaded data
     // We might be able to reuse previously loaded data
@@ -133,7 +133,7 @@ bool IPakEntryReadStream::ValidateBlockHeader(const IPakDataBlockHeader* blockHe
     }
 
     // We expect the current file to be continued where we left off
-    if (blockHeader->countAndOffset.offset != m_file_head)
+    if (static_cast<int64_t>(blockHeader->countAndOffset.offset) != m_file_head)
     {
         // A matching offset is only relevant if a command contains data
         for (unsigned currentCommand = 0; currentCommand < blockHeader->countAndOffset.count; currentCommand++)
@@ -228,7 +228,7 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
             m_current_command_buffer = m_decompress_buffer;
             m_current_command_length = outputSize;
             m_current_command_offset = 0;
-            m_file_head += outputSize;
+            m_file_head += static_cast<int64_t>(outputSize);
         }
         else
         {
@@ -240,9 +240,9 @@ bool IPakEntryReadStream::ProcessCommand(const size_t commandSize, const int com
         m_current_command_buffer = &m_chunk_buffer[m_pos - m_buffer_start_pos];
         m_current_command_length = commandSize;
         m_current_command_offset = 0;
-        m_file_head += commandSize;
+        m_file_head += static_cast<int64_t>(commandSize);
     }
-    m_pos += commandSize;
+    m_pos += static_cast<int64_t>(commandSize);
 
     return true;
 }
@@ -326,7 +326,7 @@ std::streambuf::int_type IPakEntryReadStream::uflow()
 std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize count)
 {
     auto* destBuffer = reinterpret_cast<uint8_t*>(ptr);
-    int64_t countRead = 0;
+    std::streamsize countRead = 0;
 
     while (countRead < count)
     {
@@ -337,12 +337,11 @@ std::streamsize IPakEntryReadStream::xsgetn(char* ptr, const std::streamsize cou
         }
 
         auto sizeToRead = count - countRead;
-        if (sizeToRead > m_current_command_length - m_current_command_offset)
-            sizeToRead = m_current_command_length - m_current_command_offset;
+        sizeToRead = std::min(sizeToRead, static_cast<std::streamsize>(m_current_command_length - m_current_command_offset));
 
         if (sizeToRead > 0)
         {
-            assert(static_cast<size_t>(count - countRead) >= static_cast<size_t>(sizeToRead));
+            assert(count - countRead >= sizeToRead);
             memcpy(&destBuffer[countRead], &m_current_command_buffer[m_current_command_offset], static_cast<size_t>(sizeToRead));
             countRead += sizeToRead;
             m_current_command_offset += static_cast<size_t>(sizeToRead);
