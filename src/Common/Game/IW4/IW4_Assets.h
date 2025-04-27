@@ -442,7 +442,7 @@ namespace IW4
         char array[4];
     };
 
-    struct type_align32(16) GfxPackedVertex
+    struct type_align(16) GfxPackedVertex
     {
         float xyz[3];
         float binormalSign;
@@ -458,7 +458,7 @@ namespace IW4
         uint16_t maxs[3];
     };
 
-    struct type_align32(16) XSurfaceCollisionNode
+    struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         uint16_t childBeginIndex;
@@ -673,7 +673,7 @@ namespace IW4
         MaterialTextureDefInfo u;
     };
 
-    struct type_align32(16) MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -2824,7 +2824,7 @@ namespace IW4
         int partitionIndex;
     };
 
-    struct type_align32(16) CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         float midPoint[3];
         uint16_t materialIndex;
@@ -3116,7 +3116,7 @@ namespace IW4
         pathnode_transient_t transient;
     };
 
-    struct type_align32(16) pathbasenode_t
+    struct type_align(16) pathbasenode_t
     {
         float vOrigin[3];
         unsigned int type;
@@ -3313,7 +3313,7 @@ namespace IW4
         char endVertIndex;
     };
 
-    union type_align32(4) FxGlassGeometryData
+    union type_align(4) FxGlassGeometryData
     {
         FxGlassVertex vert;
         FxGlassHoleHeader hole;
@@ -3505,14 +3505,14 @@ namespace IW4
         r_index_t* indices;
     };
 
-    struct type_align32(4) GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
         char primaryLightIndex;
         char needsTrace;
     };
 
-    struct type_align32(4) GfxLightGridColors
+    struct type_align(4) GfxLightGridColors
     {
         char rgb[56][3];
     };
@@ -3599,7 +3599,7 @@ namespace IW4
         uint16_t surfId;
     };
 
-    struct type_align32(4) GfxSceneDynBrush
+    struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;

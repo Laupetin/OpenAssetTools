@@ -2883,7 +2883,7 @@ namespace T6
         GfxImage* image;
     };
 
-    struct type_align32(16) MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -3076,7 +3076,7 @@ namespace T6
         int sequence;
     };
 
-    struct type_align32(4) SndIndexEntry
+    struct type_align(4) SndIndexEntry
     {
         uint16_t value;
         uint16_t next;
@@ -3261,7 +3261,7 @@ namespace T6
         int partitionIndex;
     };
 
-    struct type_align32(16) CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         vec3_t origin;
         uint16_t materialIndex;
@@ -3526,7 +3526,7 @@ namespace T6
         pathnode_transient_t transient;
     };
 
-    struct type_align32(16) pathbasenode_t
+    struct type_align(16) pathbasenode_t
     {
         vec3_t vOrigin;
         unsigned int type;
@@ -3573,7 +3573,7 @@ namespace T6
         float halfSize;
     };
 
-    struct type_align32(16) GfxStreamingAabbTree
+    struct type_align(16) GfxStreamingAabbTree
     {
         vec4_t mins;
         vec4_t maxs;
@@ -3586,7 +3586,7 @@ namespace T6
         uint16_t surfaceCount;
     };
 
-    struct type_align32(16) float44
+    struct type_align(16) float44
     {
         union
         {
@@ -3734,14 +3734,14 @@ namespace T6
     {
     };*/
 
-    struct type_align32(4) GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
         char primaryLightIndex;
         char visibility;
     };
 
-    struct type_align32(4) GfxCompressedLightGridColors
+    struct type_align(4) GfxCompressedLightGridColors
     {
         char rgb[56][3];
     };
@@ -3769,7 +3769,7 @@ namespace T6
         float padding2;
     };
 
-    struct type_align32(16) GfxBrushModel
+    struct type_align(16) GfxBrushModel
     {
         GfxBrushModelWritable writable;
         vec3_t bounds[2];
@@ -3808,7 +3808,7 @@ namespace T6
         uint16_t surfId;
     };
 
-    struct type_align32(4) GfxSceneDynBrush
+    struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;
@@ -5712,7 +5712,7 @@ namespace T6
         unsigned int packed;
     };
 
-    struct type_align32(16) GfxPackedVertex
+    struct type_align(16) GfxPackedVertex
     {
         vec3_t xyz;
         float binormalSign;
@@ -6994,7 +6994,7 @@ namespace T6
         uint16_t maxs[3];
     };
 
-    struct type_align32(16) XSurfaceCollisionNode
+    struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         uint16_t childBeginIndex;

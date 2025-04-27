@@ -490,7 +490,7 @@ namespace T5
         char array[4];
     };
 
-    struct type_align32(16) GfxPackedVertex
+    struct type_align(16) GfxPackedVertex
     {
         vec3_t xyz;
         float binormalSign;
@@ -511,7 +511,7 @@ namespace T5
         uint16_t maxs[3];
     };
 
-    struct type_align32(16) XSurfaceCollisionNode
+    struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         uint16_t childBeginIndex;
@@ -796,7 +796,7 @@ namespace T5
         MaterialTextureDefInfo u;
     };
 
-    struct type_align32(16) MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -1254,7 +1254,7 @@ namespace T5
         int sequence;
     };
 
-    struct type_align32(4) SndIndexEntry
+    struct type_align(4) SndIndexEntry
     {
         uint16_t value;
         uint16_t next;
@@ -1409,7 +1409,7 @@ namespace T5
         int partitionIndex;
     };
 
-    struct type_align32(16) CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         float origin[3];
         uint16_t materialIndex;
@@ -1687,7 +1687,7 @@ namespace T5
         int maxy;
     };
 
-    struct type_align32(4) ComWaterCell
+    struct type_align(4) ComWaterCell
     {
         int16_t waterheight;
         char flooroffset;
@@ -1826,7 +1826,7 @@ namespace T5
         pathnode_transient_t transient;
     };
 
-    struct type_align32(16) pathbasenode_t
+    struct type_align(16) pathbasenode_t
     {
         float vOrigin[3];
         unsigned int type;
@@ -1926,7 +1926,7 @@ namespace T5
         GfxWorldSunColor sunSettings[1];
     };
 
-    struct type_align32(16) float44
+    struct type_align(16) float44
     {
         union
         {
@@ -2130,14 +2130,14 @@ namespace T5
         uint16_t* indices;
     };
 
-    struct type_align32(4) GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         uint16_t colorsIndex;
         char primaryLightIndex;
         char needsTrace;
     };
 
-    struct type_align32(4) GfxCompressedLightGridColors
+    struct type_align(4) GfxCompressedLightGridColors
     {
         char rgb[56][3];
     };
@@ -2227,7 +2227,7 @@ namespace T5
         uint16_t surfId;
     };
 
-    struct type_align32(4) GfxSceneDynBrush
+    struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         uint16_t dynEntId;

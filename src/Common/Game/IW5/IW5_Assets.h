@@ -491,7 +491,7 @@ namespace IW5
         unsigned char array[4];
     };
 
-    struct type_align32(16) GfxPackedVertex
+    struct type_align(16) GfxPackedVertex
     {
         vec3_t xyz;
         float binormalSign;
@@ -507,7 +507,7 @@ namespace IW5
         unsigned short maxs[3];
     };
 
-    struct type_align32(16) XSurfaceCollisionNode
+    struct type_align(16) XSurfaceCollisionNode
     {
         XSurfaceCollisionAabb aabb;
         unsigned short childBeginIndex;
@@ -822,7 +822,7 @@ namespace IW5
         MaterialTextureDefInfo u;
     };
 
-    struct type_align32(16) MaterialConstantDef
+    struct type_align(16) MaterialConstantDef
     {
         unsigned int nameHash;
         char name[12];
@@ -1410,7 +1410,7 @@ namespace IW5
         int partitionIndex;
     };
 
-    struct type_align32(16) CollisionAabbTree
+    struct type_align(16) CollisionAabbTree
     {
         float midPoint[3];
         unsigned short materialIndex;
@@ -1761,7 +1761,7 @@ namespace IW5
         pathnode_transient_t transient;
     };
 
-    struct type_align32(16) pathbasenode_t
+    struct type_align(16) pathbasenode_t
     {
         float vOrigin[3];
         unsigned int type;
@@ -1948,7 +1948,7 @@ namespace IW5
         unsigned char endVertIndex;
     };
 
-    union type_align32(4) FxGlassGeometryData
+    union type_align(4) FxGlassGeometryData
     {
         FxGlassVertex vert;
         FxGlassHoleHeader hole;
@@ -2155,14 +2155,14 @@ namespace IW5
         r_index_t* indices;
     };
 
-    struct type_align32(4) GfxLightGridEntry
+    struct type_align(4) GfxLightGridEntry
     {
         unsigned short colorsIndex;
         unsigned char primaryLightIndex;
         unsigned char needsTrace;
     };
 
-    struct type_align32(4) GfxLightGridColors
+    struct type_align(4) GfxLightGridColors
     {
         unsigned char rgb[56][3];
     };
@@ -2250,7 +2250,7 @@ namespace IW5
         unsigned short surfId;
     };
 
-    struct type_align32(4) GfxSceneDynBrush
+    struct type_align(4) GfxSceneDynBrush
     {
         BModelDrawInfo info;
         unsigned short dynEntId;
