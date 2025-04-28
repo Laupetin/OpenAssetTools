@@ -12,7 +12,7 @@ StructureComputations::StructureComputations(const StructureInformation* structu
 
 bool StructureComputations::IsAsset() const
 {
-    return m_info->m_asset_enum_entry != nullptr;
+    return !m_info->m_asset_name.empty();
 }
 
 MemberInformation* StructureComputations::GetDynamicMember() const

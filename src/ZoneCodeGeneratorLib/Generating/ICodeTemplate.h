@@ -9,14 +9,14 @@
 class CodeTemplateFile
 {
 public:
-    std::string m_file_name;
-    int m_tag;
-
     CodeTemplateFile(std::string fileName, const int tag)
         : m_file_name(std::move(fileName)),
           m_tag(tag)
     {
     }
+
+    std::string m_file_name;
+    int m_tag;
 };
 
 class ICodeTemplate

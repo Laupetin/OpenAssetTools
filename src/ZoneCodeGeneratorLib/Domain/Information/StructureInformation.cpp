@@ -2,7 +2,6 @@
 
 StructureInformation::StructureInformation(DefinitionWithMembers* definition)
     : m_definition(definition),
-      m_asset_enum_entry(nullptr),
       m_is_leaf(false),
       m_requires_marking(false),
       m_has_matching_cross_platform_structure(false),

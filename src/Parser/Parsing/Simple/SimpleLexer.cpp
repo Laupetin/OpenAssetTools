@@ -79,7 +79,7 @@ bool SimpleLexer::ReadMultiCharacterToken(const MultiCharacterTokenLookupEntry* 
         linePos++;
     }
 
-    m_current_line_offset = m_current_line_offset - 1 + multiTokenLookup->m_value.size();
+    m_current_line_offset = m_current_line_offset - 1 + static_cast<unsigned>(multiTokenLookup->m_value.size());
     return true;
 }
 

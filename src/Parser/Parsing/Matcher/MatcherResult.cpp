@@ -3,11 +3,11 @@
 namespace
 {
     // The highest bit is the fabricated flag
-    constexpr size_t FABRICATED_FLAG_MASK = 1uz << (sizeof(size_t) * 8uz - 1uz);
-    constexpr size_t TOKEN_INDEX_MASK = ~FABRICATED_FLAG_MASK;
+    constexpr unsigned FABRICATED_FLAG_MASK = 1u << (sizeof(unsigned) * 8u - 1u);
+    constexpr unsigned TOKEN_INDEX_MASK = ~FABRICATED_FLAG_MASK;
 } // namespace
 
-MatcherResultTokenIndex::MatcherResultTokenIndex(const size_t index, const bool isFabricated)
+MatcherResultTokenIndex::MatcherResultTokenIndex(const unsigned index, const bool isFabricated)
 {
     m_token_index = index & TOKEN_INDEX_MASK;
     if (isFabricated)
@@ -19,7 +19,7 @@ bool MatcherResultTokenIndex::IsFabricated() const
     return m_token_index & FABRICATED_FLAG_MASK;
 }
 
-size_t MatcherResultTokenIndex::GetTokenIndex() const
+unsigned MatcherResultTokenIndex::GetTokenIndex() const
 {
     return m_token_index & TOKEN_INDEX_MASK;
 }

@@ -3,6 +3,7 @@
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
+#include "Utils/StringUtils.h"
 
 #include <cassert>
 #include <iostream>
@@ -261,7 +262,7 @@ namespace
             LINEF("{0}::{0}(Zone* zone, IZoneInputStream* stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
-            LINE_STARTF(": AssetLoader({0}, zone, stream)", m_env.m_asset->m_asset_enum_entry->m_name)
+            LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
             if (m_env.m_has_actions)
             {
                 LINE_MIDDLE(", m_actions(zone)")
@@ -1349,8 +1350,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContex
     std::vector<CodeTemplateFile> files;
 
     auto assetName = context->m_asset->m_definition->m_name;
-    for (auto& c : assetName)
-        c = static_cast<char>(tolower(c));
+    utils::MakeStringLowerCase(assetName);
 
     files.emplace_back(std::format("{0}/{0}_load_db.h", assetName), TAG_HEADER);
     files.emplace_back(std::format("{0}/{0}_load_db.cpp", assetName), TAG_SOURCE);

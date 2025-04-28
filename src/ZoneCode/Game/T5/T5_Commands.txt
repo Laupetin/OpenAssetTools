@@ -3,38 +3,38 @@ game T5;
 architecture x86;
 
 // Game Assets
-asset PhysPreset ASSET_TYPE_PHYSPRESET;
-asset PhysConstraints ASSET_TYPE_PHYSCONSTRAINTS;
-asset DestructibleDef ASSET_TYPE_DESTRUCTIBLEDEF;
-asset XAnimParts ASSET_TYPE_XANIMPARTS;
-asset XModel ASSET_TYPE_XMODEL;
-asset Material ASSET_TYPE_MATERIAL;
-asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
-asset GfxImage ASSET_TYPE_IMAGE;
-asset SndBank ASSET_TYPE_SOUND;
-asset SndPatch ASSET_TYPE_SOUND_PATCH;
-asset clipMap_t ASSET_TYPE_CLIPMAP_PVS;
-asset ComWorld ASSET_TYPE_COMWORLD;
-asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
-asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
-asset MapEnts ASSET_TYPE_MAP_ENTS;
-asset GfxWorld ASSET_TYPE_GFXWORLD;
-asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
-asset Font_s ASSET_TYPE_FONT;
-asset MenuList ASSET_TYPE_MENULIST;
-asset menuDef_t ASSET_TYPE_MENU;
-asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
-asset WeaponVariantDef ASSET_TYPE_WEAPON;
-asset SndDriverGlobals ASSET_TYPE_SNDDRIVER_GLOBALS;
-asset FxEffectDef ASSET_TYPE_FX;
-asset FxImpactTable ASSET_TYPE_IMPACT_FX;
-asset RawFile ASSET_TYPE_RAWFILE;
-asset StringTable ASSET_TYPE_STRINGTABLE;
-asset PackIndex ASSET_TYPE_PACK_INDEX;
-asset XGlobals ASSET_TYPE_XGLOBALS;
-asset ddlRoot_t ASSET_TYPE_DDL;
-asset Glasses ASSET_TYPE_GLASSES;
-asset EmblemSet ASSET_TYPE_EMBLEMSET;
+asset PhysPreset AssetPhysPreset;
+asset PhysConstraints AssetPhysConstraints;
+asset DestructibleDef AssetDestructibleDef;
+asset XAnimParts AssetXAnim;
+asset XModel AssetXModel;
+asset Material AssetMaterial;
+asset MaterialTechniqueSet AssetTechniqueSet;
+asset GfxImage AssetImage;
+asset SndBank AssetSoundBank;
+asset SndPatch AssetSoundPatch;
+asset clipMap_t AssetClipMapPvs;
+asset ComWorld AssetComWorld;
+asset GameWorldSp AssetGameWorldSp;
+asset GameWorldMp AssetGameWorldMp;
+asset MapEnts AssetMapEnts;
+asset GfxWorld AssetGfxWorld;
+asset GfxLightDef AssetLightDef;
+asset Font_s AssetFont;
+asset MenuList AssetMenuList;
+asset menuDef_t AssetMenu;
+asset LocalizeEntry AssetLocalize;
+asset WeaponVariantDef AssetWeapon;
+asset SndDriverGlobals AssetSoundDriverGlobals;
+asset FxEffectDef AssetFx;
+asset FxImpactTable AssetImpactFx;
+asset RawFile AssetRawFile;
+asset StringTable AssetStringTable;
+asset PackIndex AssetPackIndex;
+asset XGlobals AssetXGlobals;
+asset ddlRoot_t AssetDDL;
+asset Glasses AssetGlasses;
+asset EmblemSet AssetEmblemSet;
 
 // Setup blocks
 block temp    XFILE_BLOCK_TEMP              default;
@@ -79,4 +79,3 @@ block normal  XFILE_BLOCK_PHYSICAL;
 #include "XAssets/Glasses.txt"
 #include "XAssets/EmblemSet.txt"
 
-// EOF

@@ -10,12 +10,12 @@
 class MatcherResultTokenIndex
 {
 public:
-    MatcherResultTokenIndex(size_t index, bool isFabricated);
+    MatcherResultTokenIndex(unsigned index, bool isFabricated);
     [[nodiscard]] bool IsFabricated() const;
-    [[nodiscard]] size_t GetTokenIndex() const;
+    [[nodiscard]] unsigned GetTokenIndex() const;
 
 private:
-    size_t m_token_index;
+    unsigned m_token_index;
 };
 
 class MatcherResultCapture
@@ -54,8 +54,9 @@ public:
         for (const auto& capture : other.m_captures)
         {
             if (capture.m_token_index.IsFabricated())
-                m_captures.emplace_back(capture.GetCaptureId(),
-                                        MatcherResultTokenIndex(m_fabricated_tokens.size() + capture.m_token_index.GetTokenIndex(), true));
+                m_captures.emplace_back(
+                    capture.GetCaptureId(),
+                    MatcherResultTokenIndex(static_cast<unsigned>(m_fabricated_tokens.size()) + capture.m_token_index.GetTokenIndex(), true));
             else
                 m_captures.emplace_back(capture.GetCaptureId(), capture.m_token_index);
         }
@@ -63,7 +64,7 @@ public:
         for (const auto& token : other.m_matched_tokens)
         {
             if (token.IsFabricated())
-                m_matched_tokens.emplace_back(m_fabricated_tokens.size() + token.GetTokenIndex(), true);
+                m_matched_tokens.emplace_back(static_cast<unsigned>(m_fabricated_tokens.size()) + token.GetTokenIndex(), true);
             else
                 m_matched_tokens.emplace_back(token.GetTokenIndex(), false);
         }

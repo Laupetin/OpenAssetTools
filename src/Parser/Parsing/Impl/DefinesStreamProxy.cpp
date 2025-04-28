@@ -13,12 +13,22 @@
 
 namespace
 {
-    bool IsStringizeParameterForwardLookup(const std::string& value, size_t pos)
+    constexpr auto DEFINE_DIRECTIVE = "define";
+    constexpr auto UNDEF_DIRECTIVE = "undef";
+    constexpr auto IF_DIRECTIVE = "if";
+    constexpr auto ELIF_DIRECTIVE = "elif";
+    constexpr auto IFDEF_DIRECTIVE = "ifdef";
+    constexpr auto IFNDEF_DIRECTIVE = "ifndef";
+    constexpr auto ELSE_DIRECTIVE = "else";
+    constexpr auto ENDIF_DIRECTIVE = "endif";
+    constexpr auto DEFINED_KEYWORD = "defined";
+
+    bool IsStringizeParameterForwardLookup(const std::string& value, const size_t pos)
     {
         return pos + 1 && (isalpha(value[pos + 1]) || value[pos + 1] == '_');
     }
 
-    bool IsTokenPastingOperatorForwardLookup(const std::string& value, size_t pos)
+    bool IsTokenPastingOperatorForwardLookup(const std::string& value, const size_t pos)
     {
         return pos + 1 < value.size() && value[pos + 1] == '#';
     }
@@ -31,7 +41,7 @@ DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition()
 {
 }
 
-DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const size_t position, const bool stringize)
+DefinesStreamProxy::DefineParameterPosition::DefineParameterPosition(const unsigned index, const unsigned position, const bool stringize)
     : m_parameter_index(index),
       m_parameter_position(position),
       m_stringize(stringize)
@@ -591,7 +601,6 @@ bool DefinesStreamProxy::FindNextMacro(const std::string& input, unsigned& input
 {
     const auto inputSize = input.size();
     auto wordStart = 0u;
-    auto lastWordEnd = 0u;
     auto inWord = false;
     auto inString = false;
     auto stringEscape = false;
@@ -763,8 +772,7 @@ namespace
     }
 } // namespace
 
-void DefinesStreamProxy::ProcessTokenPastingOperators(
-    const ParserLine& line, const unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
+void DefinesStreamProxy::ProcessTokenPastingOperators(const ParserLine& line, const unsigned& linePos, std::string& input)
 {
     std::ostringstream ss;
 
@@ -853,18 +861,17 @@ void DefinesStreamProxy::ExpandMacro(ParserLine& line,
                                      unsigned& linePos,
                                      std::ostringstream& out,
                                      std::vector<const Define*>& callstack,
-                                     const DefinesStreamProxy::Define* macro,
+                                     const Define* macro,
                                      const std::vector<std::string>& parameterValues)
 {
     std::ostringstream rawOutput;
     InsertMacroParameters(rawOutput, macro, parameterValues);
 
     std::string str = rawOutput.str();
-    unsigned nestedPos = 0;
-    ProcessNestedMacros(line, linePos, callstack, str, nestedPos);
+    ProcessNestedMacros(line, linePos, callstack, str);
 
     if (macro->m_contains_token_pasting_operators)
-        ProcessTokenPastingOperators(line, linePos, callstack, str, nestedPos);
+        ProcessTokenPastingOperators(line, linePos, str);
 
     out << str;
 }
@@ -966,7 +973,7 @@ void DefinesStreamProxy::ContinueMultiLineMacro(ParserLine& line)
     }
 }
 
-void DefinesStreamProxy::ProcessNestedMacros(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input, unsigned& inputPos)
+void DefinesStreamProxy::ProcessNestedMacros(ParserLine& line, unsigned& linePos, std::vector<const Define*>& callstack, std::string& input)
 {
     bool usesDefines = false;
 
@@ -1021,7 +1028,7 @@ void DefinesStreamProxy::ProcessMacrosSingleLine(ParserLine& line)
 {
     unsigned pos = 0;
     std::vector<const Define*> callstack;
-    ProcessNestedMacros(line, pos, callstack, line.m_line, pos);
+    ProcessNestedMacros(line, pos, callstack, line.m_line);
 }
 
 void DefinesStreamProxy::ProcessMacrosMultiLine(ParserLine& line)

@@ -16,7 +16,7 @@
 template<typename TokenType> class MatcherFactoryWrapper
 {
     // TokenType must inherit IParserValue
-    static_assert(std::is_base_of<IParserValue, TokenType>::value);
+    static_assert(std::is_base_of_v<IParserValue, TokenType>);
 
     std::unique_ptr<AbstractMatcher<TokenType>> m_matcher;
 
@@ -73,7 +73,7 @@ public:
 template<typename TokenType> class AbstractMatcherFactory
 {
     // TokenType must inherit IParserValue
-    static_assert(std::is_base_of<IParserValue, TokenType>::value);
+    static_assert(std::is_base_of_v<IParserValue, TokenType>);
 
     const IMatcherForLabelSupplier<TokenType>* m_label_supplier;
 
@@ -85,52 +85,52 @@ public:
     {
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> False() const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> False() const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherFalse<TokenType>>());
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> True() const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> True() const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherTrue<TokenType>>());
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> And(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> And(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherAnd<TokenType>>(matchers));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> And(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> And(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherAnd<TokenType>>(std::move(matchers)));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> Or(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> Or(std::initializer_list<Movable<std::unique_ptr<AbstractMatcher<TokenType>>>> matchers) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOr<TokenType>>(matchers));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> Or(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> Or(std::vector<std::unique_ptr<AbstractMatcher<TokenType>>> matchers) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOr<TokenType>>(std::move(matchers)));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> Loop(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> Loop(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherLoop<TokenType>>(std::move(matcher)));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> OptionalLoop(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> OptionalLoop(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOptional<TokenType>>(std::make_unique<MatcherLoop<TokenType>>(std::move(matcher))));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> Optional(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> Optional(std::unique_ptr<AbstractMatcher<TokenType>> matcher) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherOptional<TokenType>>(std::move(matcher)));
     }
 
-    _NODISCARD MatcherFactoryWrapper<TokenType> Label(const int label) const
+    [[nodiscard]] MatcherFactoryWrapper<TokenType> Label(const int label) const
     {
         return MatcherFactoryWrapper<TokenType>(std::make_unique<MatcherLabel<TokenType>>(m_label_supplier, label));
     }

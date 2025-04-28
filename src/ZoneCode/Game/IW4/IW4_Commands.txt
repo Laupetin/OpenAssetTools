@@ -3,41 +3,41 @@ game IW4;
 architecture x86;
 
 // Game Assets
-asset PhysPreset ASSET_TYPE_PHYSPRESET;
-asset PhysCollmap ASSET_TYPE_PHYSCOLLMAP;
-asset XAnimParts ASSET_TYPE_XANIMPARTS;
-asset XModel ASSET_TYPE_XMODEL;
-asset Material ASSET_TYPE_MATERIAL;
-asset MaterialPixelShader ASSET_TYPE_PIXELSHADER;
-asset MaterialVertexShader ASSET_TYPE_VERTEXSHADER;
-asset MaterialVertexDeclaration ASSET_TYPE_VERTEXDECL;
-asset MaterialTechniqueSet ASSET_TYPE_TECHNIQUE_SET;
-asset GfxImage ASSET_TYPE_IMAGE;
-asset snd_alias_list_t ASSET_TYPE_SOUND;
-asset SndCurve ASSET_TYPE_SOUND_CURVE;
-asset LoadedSound ASSET_TYPE_LOADED_SOUND;
-asset clipMap_t ASSET_TYPE_CLIPMAP_MP;
-asset ComWorld ASSET_TYPE_COMWORLD;
-asset GameWorldSp ASSET_TYPE_GAMEWORLD_SP;
-asset GameWorldMp ASSET_TYPE_GAMEWORLD_MP;
-asset MapEnts ASSET_TYPE_MAP_ENTS;
-asset FxWorld ASSET_TYPE_FXWORLD;
-asset GfxWorld ASSET_TYPE_GFXWORLD;
-asset GfxLightDef ASSET_TYPE_LIGHT_DEF;
-asset Font_s ASSET_TYPE_FONT;
-asset MenuList ASSET_TYPE_MENULIST;
-asset menuDef_t ASSET_TYPE_MENU;
-asset LocalizeEntry ASSET_TYPE_LOCALIZE_ENTRY;
-asset WeaponCompleteDef ASSET_TYPE_WEAPON;
-asset FxEffectDef ASSET_TYPE_FX;
-asset FxImpactTable ASSET_TYPE_IMPACT_FX;
-asset RawFile ASSET_TYPE_RAWFILE;
-asset StringTable ASSET_TYPE_STRINGTABLE;
-asset LeaderboardDef ASSET_TYPE_LEADERBOARD;
-asset StructuredDataDefSet ASSET_TYPE_STRUCTURED_DATA_DEF;
-asset TracerDef ASSET_TYPE_TRACER;
-asset VehicleDef ASSET_TYPE_VEHICLE;
-asset AddonMapEnts ASSET_TYPE_ADDON_MAP_ENTS;
+asset PhysPreset AssetPhysPreset;
+asset PhysCollmap AssetPhysCollMap;
+asset XAnimParts AssetXAnim;
+asset XModel AssetXModel;
+asset Material AssetMaterial;
+asset MaterialPixelShader AssetPixelShader;
+asset MaterialVertexShader AssetVertexShader;
+asset MaterialVertexDeclaration AssetVertexDecl;
+asset MaterialTechniqueSet AssetTechniqueSet;
+asset GfxImage AssetImage;
+asset snd_alias_list_t AssetSound;
+asset SndCurve AssetSoundCurve;
+asset LoadedSound AssetLoadedSound;
+asset clipMap_t AssetClipMapMp;
+asset ComWorld AssetComWorld;
+asset GameWorldSp AssetGameWorldSp;
+asset GameWorldMp AssetGameWorldMp;
+asset MapEnts AssetMapEnts;
+asset FxWorld AssetFxWorld;
+asset GfxWorld AssetGfxWorld;
+asset GfxLightDef AssetLightDef;
+asset Font_s AssetFont;
+asset MenuList AssetMenuList;
+asset menuDef_t AssetMenu;
+asset LocalizeEntry AssetLocalize;
+asset WeaponCompleteDef AssetWeapon;
+asset FxEffectDef AssetFx;
+asset FxImpactTable AssetImpactFx;
+asset RawFile AssetRawFile;
+asset StringTable AssetStringTable;
+asset LeaderboardDef AssetLeaderboard;
+asset StructuredDataDefSet AssetStructuredDataDef;
+asset TracerDef AssetTracer;
+asset VehicleDef AssetVehicle;
+asset AddonMapEnts AssetAddonMapEnts;
 
 // Setup blocks
 block temp    XFILE_BLOCK_TEMP              default;
@@ -85,4 +85,3 @@ block normal  XFILE_BLOCK_INDEX;
 #include "XAssets/VehicleDef.txt"
 #include "XAssets/AddonMapEnts.txt"
 
-// EOF

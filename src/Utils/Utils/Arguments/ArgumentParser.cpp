@@ -98,7 +98,7 @@ bool ArgumentParser::ParseArguments(std::vector<std::string>& args)
                 m_matched_options[matchedOption] = std::vector<std::string>();
             }
 
-            const auto parameterCount = matchedOption->m_parameters.size();
+            const auto parameterCount = static_cast<unsigned>(matchedOption->m_parameters.size());
             if (argIndex + parameterCount >= argCount)
             {
                 std::cout << std::format("Not enough parameters for option '{}'.\n", arg);

@@ -97,7 +97,6 @@ namespace
             m_intendation++;
             PrintHeaderConstructor();
             PrintHeaderMainWriteMethodDeclaration(m_env.m_asset);
-            PrintHeaderGetNameMethodDeclaration(m_env.m_asset);
 
             m_intendation--;
             LINE("};")
@@ -160,8 +159,6 @@ namespace
             PrintWritePtrMethod(m_env.m_asset);
             LINE("")
             PrintMainWriteMethod();
-            LINE("")
-            PrintGetNameMethod();
         }
 
     private:
@@ -220,11 +217,6 @@ namespace
             LINEF("void WritePtr_{0}(bool atStreamStart);", MakeSafeTypeName(info->m_definition))
         }
 
-        void PrintHeaderGetNameMethodDeclaration(const StructureInformation* info) const
-        {
-            LINEF("static std::string GetAssetName({0}* pAsset);", info->m_definition->GetFullName())
-        }
-
         void PrintHeaderMainWriteMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("void Write({0}** pAsset);", info->m_definition->GetFullName())
@@ -261,7 +253,8 @@ namespace
                 "{0}::{0}({1}* asset, const Zone& zone, IZoneOutputStream& stream)", WriterClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
 
             m_intendation++;
-            LINEF(": AssetWriter(zone.m_pools->GetAssetOrAssetReference({0}, GetAssetName(asset)), zone, stream)", m_env.m_asset->m_asset_enum_entry->m_name)
+            LINEF(": AssetWriter(zone.m_pools->GetAssetOrAssetReference({0}::EnumEntry, AssetNameAccessor<{0}>()(*asset)), zone, stream)",
+                  m_env.m_asset->m_asset_name)
             m_intendation--;
 
             LINE("{")
@@ -1097,40 +1090,6 @@ namespace
             LINEF("{0} = &zoneAsset;", MakeTypeWrittenPtrVarName(m_env.m_asset->m_definition))
             LINEF("WritePtr_{0}(false);", MakeSafeTypeName(m_env.m_asset->m_definition))
             LINE("*pAsset = zoneAsset;")
-
-            m_intendation--;
-            LINE("}")
-        }
-
-        void PrintGetNameMethod()
-        {
-            LINEF("std::string {0}::GetAssetName({1}* pAsset)", WriterClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
-            LINE("{")
-            m_intendation++;
-
-            if (!m_env.m_asset->m_name_chain.empty())
-            {
-                LINE_START("return pAsset")
-
-                auto first = true;
-                for (const auto* member : m_env.m_asset->m_name_chain)
-                {
-                    if (first)
-                    {
-                        first = false;
-                        LINE_MIDDLEF("->{0}", member->m_member->m_name)
-                    }
-                    else
-                    {
-                        LINE_MIDDLEF(".{0}", member->m_member->m_name)
-                    }
-                }
-                LINE_END(";")
-            }
-            else
-            {
-                LINEF("return \"{0}\";", m_env.m_asset->m_definition->m_name)
-            }
 
             m_intendation--;
             LINE("}")
