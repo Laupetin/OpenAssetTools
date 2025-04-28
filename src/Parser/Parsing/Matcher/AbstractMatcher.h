@@ -80,7 +80,7 @@ public:
             result.m_fabricated_tokens.push_back(m_transform_func(tokens));
 
             result.m_matched_tokens.clear();
-            result.m_matched_tokens.emplace_back(result.m_fabricated_tokens.size() - 1, true);
+            result.m_matched_tokens.emplace_back(static_cast<unsigned>(result.m_fabricated_tokens.size()) - 1u, true);
         }
         else if (result.m_matched_tokens.empty())
         {

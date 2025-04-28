@@ -376,7 +376,7 @@ std::unique_ptr<IEvaluation>
         operands.emplace_back(std::move(firstStatementPart));
 
         if (result.PeekAndRemoveIfTag(TAG_EVALUATION_OPERATION) == TAG_EVALUATION_OPERATION)
-            operators.emplace_back(operators.size(), result.NextCapture(CAPTURE_BINARY_OPERATION_TYPE).OpTypeValue());
+            operators.emplace_back(static_cast<unsigned>(operators.size()), result.NextCapture(CAPTURE_BINARY_OPERATION_TYPE).OpTypeValue());
         else
             break;
 

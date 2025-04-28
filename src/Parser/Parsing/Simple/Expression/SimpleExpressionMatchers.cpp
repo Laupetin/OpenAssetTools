@@ -191,7 +191,7 @@ std::unique_ptr<ISimpleExpression> SimpleExpressionMatchers::ProcessExpression(S
             if (operationIndex < 0 || operationIndex >= static_cast<int>(SimpleBinaryOperationId::COUNT))
                 throw ParsingException(TokenPos(), "Invalid binary operation id @ Expression");
 
-            operators.emplace_back(operators.size(), SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[operationIndex]);
+            operators.emplace_back(static_cast<unsigned>(operators.size()), SimpleExpressionBinaryOperationType::ALL_OPERATION_TYPES[operationIndex]);
         }
         else
             break;

@@ -130,7 +130,7 @@ bool CommandsParserState::GetTypenameAndMembersFromTypename(const std::string& t
 
     if (foundDefinition == nullptr)
     {
-        currentSeparatorPos = typeNameValue.size();
+        currentSeparatorPos = static_cast<unsigned>(typeNameValue.size());
         foundDefinition = m_repository->GetDataDefinitionByName(typeNameValue);
     }
 
