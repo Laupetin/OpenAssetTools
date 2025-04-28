@@ -105,7 +105,6 @@ namespace
             m_intendation++;
             PrintHeaderConstructor();
             PrintHeaderMainLoadMethodDeclaration(m_env.m_asset);
-            PrintHeaderGetNameMethodDeclaration(m_env.m_asset);
 
             m_intendation--;
             LINE("};")
@@ -172,8 +171,6 @@ namespace
             PrintLoadAssetMethod(m_env.m_asset);
             LINE("")
             PrintMainLoadMethod();
-            LINE("")
-            PrintGetNameMethod();
         }
 
     private:
@@ -230,11 +227,6 @@ namespace
         void PrintHeaderAssetLoadMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("void LoadAsset_{0}({1}** pAsset);", MakeSafeTypeName(info->m_definition), info->m_definition->GetFullName())
-        }
-
-        void PrintHeaderGetNameMethodDeclaration(const StructureInformation* info) const
-        {
-            LINEF("static std::string GetAssetName({0}* pAsset);", info->m_definition->GetFullName())
         }
 
         void PrintHeaderMainLoadMethodDeclaration(const StructureInformation* info) const
@@ -1276,9 +1268,10 @@ namespace
             LINEF("auto* reallocatedAsset = m_zone->GetMemory()->Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(GetAssetName(*pAsset), reallocatedAsset, marker.GetDependencies(), "
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetNameAccessor<{1}>()(**pAsset), reallocatedAsset, marker.GetDependencies(), "
                   "marker.GetUsedScriptStrings(), marker.GetIndirectAssetReferences()));",
-                  info->m_definition->GetFullName())
+                  info->m_definition->GetFullName(),
+                  info->m_asset_name)
             LINE("*pAsset = m_asset_info->Asset();")
 
             m_intendation--;
@@ -1300,44 +1293,12 @@ namespace
             LINE("")
             LINE("if (m_asset_info == nullptr && *pAsset != nullptr)")
             m_intendation++;
-            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(GetAssetName(*pAsset)));", m_env.m_asset->m_definition->GetFullName())
+            LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfo(AssetNameAccessor<{1}>()(**pAsset)));",
+                  m_env.m_asset->m_definition->GetFullName(),
+                  m_env.m_asset->m_asset_name)
             m_intendation--;
             LINE("")
             LINE("return m_asset_info;")
-
-            m_intendation--;
-            LINE("}")
-        }
-
-        void PrintGetNameMethod()
-        {
-            LINEF("std::string {0}::GetAssetName({1}* pAsset)", LoaderClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
-            LINE("{")
-            m_intendation++;
-
-            if (!m_env.m_asset->m_name_chain.empty())
-            {
-                LINE_START("return pAsset")
-
-                auto first = true;
-                for (const auto* member : m_env.m_asset->m_name_chain)
-                {
-                    if (first)
-                    {
-                        first = false;
-                        LINE_MIDDLEF("->{0}", member->m_member->m_name)
-                    }
-                    else
-                    {
-                        LINE_MIDDLEF(".{0}", member->m_member->m_name)
-                    }
-                }
-                LINE_END(";")
-            }
-            else
-            {
-                LINEF("return \"{0}\";", m_env.m_asset->m_definition->m_name)
-            }
 
             m_intendation--;
             LINE("}")

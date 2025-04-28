@@ -4,7 +4,6 @@
 use GfxWorld;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set string baseName;
 set count skies skyCount;
 set count aabbTreeCounts dpvsPlanes::cellCount;

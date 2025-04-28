@@ -4,7 +4,6 @@
 use WeaponAttachmentUnique;
 set block XFILE_BLOCK_TEMP;
 set string szInternalName;
-set name szInternalName;
 set string szAltWeaponName;
 set string szDualWieldWeaponName;
 set scriptstring hideTags;

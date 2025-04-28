@@ -4,7 +4,6 @@
 use XAnimParts;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set scriptstring names;
 set count names boneCount[9];
 set count notify notifyCount;

@@ -4,7 +4,6 @@
 use XGlobals;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set arraycount gumps gumpsCount;
 set condition gumps gumpsCount >= 0 && gumpsCount <= 32;
 set arraycount overlays overlayCount;

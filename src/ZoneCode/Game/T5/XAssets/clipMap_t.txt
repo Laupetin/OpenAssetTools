@@ -4,7 +4,6 @@
 use clipMap_t;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set reusable planes;
 set count planes planeCount;
 set count staticModelList numStaticModels;
@@ -82,5 +81,4 @@ set scriptstring target;
 // XModelPieces
 use XModelPieces;
 set string name;
-set name name;
 set count pieces numpieces;

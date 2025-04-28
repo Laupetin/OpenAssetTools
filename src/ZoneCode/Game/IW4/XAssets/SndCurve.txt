@@ -4,4 +4,3 @@
 use SndCurve;
 set block XFILE_BLOCK_TEMP;
 set string filename;
-set name filename;
