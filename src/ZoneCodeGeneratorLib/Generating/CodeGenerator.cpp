@@ -64,14 +64,14 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
     }
 
     auto* defWithMembers = dynamic_cast<DefinitionWithMembers*>(def);
-    auto* info = defWithMembers != nullptr ? repository->GetInformationFor(defWithMembers) : nullptr;
-    if (info == nullptr)
+    asset = defWithMembers != nullptr ? repository->GetInformationFor(defWithMembers) : nullptr;
+    if (asset == nullptr)
     {
         std::cerr << std::format("Could not find type with name '{}'\n", name);
         return false;
     }
 
-    if (!StructureComputations(info).IsAsset())
+    if (!StructureComputations(asset).IsAsset())
     {
         std::cerr << std::format("Type is not an asset '{}'\n", name);
         return false;
