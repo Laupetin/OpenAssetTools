@@ -7,6 +7,7 @@
 #include "Templates/ZoneWriteTemplate.h"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 
@@ -41,7 +42,7 @@ bool CodeGenerator::GenerateCodeForTemplate(RenderingContext* context, ICodeTemp
 
         if (!stream.is_open())
         {
-            std::cout << "Failed to open file '" << p.string() << "'\n";
+            std::cerr << std::format("Failed to open file '{}'\n", p.string());
             return false;
         }
 
@@ -58,7 +59,7 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
     auto* def = repository->GetDataDefinitionByName(name);
     if (def == nullptr)
     {
-        std::cout << "Could not find type with name '" << name << "'\n";
+        std::cerr << std::format("Could not find type with name '{}'\n", name);
         return false;
     }
 
@@ -66,13 +67,13 @@ bool CodeGenerator::GetAssetWithName(IDataRepository* repository, const std::str
     auto* info = defWithMembers != nullptr ? repository->GetInformationFor(defWithMembers) : nullptr;
     if (info == nullptr)
     {
-        std::cout << "Could not find type with name '" << name << "'\n";
+        std::cerr << std::format("Could not find type with name '{}'\n", name);
         return false;
     }
 
     if (!StructureComputations(info).IsAsset())
     {
-        std::cout << "Type is not an asset '" << name << "'\n";
+        std::cerr << std::format("Type is not an asset '{}'\n", name);
         return false;
     }
 
@@ -100,7 +101,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
         const auto foundTemplate = m_template_mapping.find(templateName);
         if (foundTemplate == m_template_mapping.end())
         {
-            std::cout << "Unknown template '" << generationTask.m_template_name << "'.\n";
+            std::cerr << std::format("Unknown template '{}'.\n", generationTask.m_template_name);
             return false;
         }
 
@@ -111,13 +112,13 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
                 auto context = RenderingContext::BuildContext(repository, asset);
                 if (!GenerateCodeForTemplate(context.get(), foundTemplate->second.get()))
                 {
-                    std::cout << "Failed to generate code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first
-                              << "'\n";
+                    std::cerr << std::format(
+                        "Failed to generate code for asset '{}' with preset '{}'\n", asset->m_definition->GetFullName(), foundTemplate->first);
                     return false;
                 }
 
-                std::cout << "Successfully generated code for asset '" << asset->m_definition->GetFullName() << "' with preset '" << foundTemplate->first
-                          << "'\n";
+                std::cout << std::format(
+                    "Successfully generated code for asset '{}' with preset '{}'\n", asset->m_definition->GetFullName(), foundTemplate->first);
             }
         }
         else
@@ -133,9 +134,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
     }
     const auto end = std::chrono::steady_clock::now();
     if (m_args->m_verbose)
-    {
-        std::cout << "Generating code took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\n";
-    }
+        std::cout << std::format("Generating code took {}ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 
     return true;
 }

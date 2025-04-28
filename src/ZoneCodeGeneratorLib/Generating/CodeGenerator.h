@@ -21,6 +21,5 @@ private:
     static bool GetAssetWithName(IDataRepository* repository, const std::string& name, StructureInformation*& asset);
 
     const ZoneCodeGeneratorArguments* m_args;
-
     std::unordered_map<std::string, std::unique_ptr<ICodeTemplate>> m_template_mapping;
 };

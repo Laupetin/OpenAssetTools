@@ -3,6 +3,7 @@
 #include "Domain/Computations/MemberComputations.h"
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
+#include "Utils/StringUtils.h"
 
 #include <cassert>
 #include <iostream>
@@ -1349,8 +1350,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContex
     std::vector<CodeTemplateFile> files;
 
     auto assetName = context->m_asset->m_definition->m_name;
-    for (auto& c : assetName)
-        c = static_cast<char>(tolower(c));
+    utils::MakeStringLowerCase(assetName);
 
     files.emplace_back(std::format("{0}/{0}_load_db.h", assetName), TAG_HEADER);
     files.emplace_back(std::format("{0}/{0}_load_db.cpp", assetName), TAG_SOURCE);
