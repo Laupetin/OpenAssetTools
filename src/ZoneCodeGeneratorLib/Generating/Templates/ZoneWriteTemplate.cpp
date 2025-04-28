@@ -261,7 +261,7 @@ namespace
                 "{0}::{0}({1}* asset, const Zone& zone, IZoneOutputStream& stream)", WriterClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
 
             m_intendation++;
-            LINEF(": AssetWriter(zone.m_pools->GetAssetOrAssetReference({0}, GetAssetName(asset)), zone, stream)", m_env.m_asset->m_asset_enum_entry->m_name)
+            LINEF(": AssetWriter(zone.m_pools->GetAssetOrAssetReference({0}::EnumEntry, GetAssetName(asset)), zone, stream)", m_env.m_asset->m_asset_name)
             m_intendation--;
 
             LINE("{")

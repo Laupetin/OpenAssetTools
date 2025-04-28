@@ -16,8 +16,8 @@ class StructureInformation
 public:
     explicit StructureInformation(DefinitionWithMembers* definition);
 
-    DefinitionWithMembers* const m_definition;
-    EnumMember* m_asset_enum_entry;
+    DefinitionWithMembers* m_definition;
+    std::string m_asset_name;
 
     std::vector<StructureInformation*> m_usages;
     std::vector<std::unique_ptr<MemberInformation>> m_ordered_members;

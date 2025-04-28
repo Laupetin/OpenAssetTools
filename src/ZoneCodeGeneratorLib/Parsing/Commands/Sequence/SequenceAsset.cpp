@@ -6,7 +6,7 @@
 namespace
 {
     static constexpr auto CAPTURE_TYPE = 1;
-    static constexpr auto CAPTURE_ENUM_ENTRY = 2;
+    static constexpr auto CAPTURE_ASSET_NAME = 2;
 } // namespace
 
 SequenceAsset::SequenceAsset()
@@ -17,7 +17,7 @@ SequenceAsset::SequenceAsset()
     AddMatchers({
         create.Keyword("asset"),
         create.Label(CommandsCommonMatchers::LABEL_TYPENAME).Capture(CAPTURE_TYPE),
-        create.Identifier().Capture(CAPTURE_ENUM_ENTRY),
+        create.Identifier().Capture(CAPTURE_ASSET_NAME),
         create.Char(';'),
     });
 }
@@ -25,7 +25,7 @@ SequenceAsset::SequenceAsset()
 void SequenceAsset::ProcessMatch(CommandsParserState* state, SequenceResult<CommandsParserValue>& result) const
 {
     const auto& typeNameToken = result.NextCapture(CAPTURE_TYPE);
-    const auto& enumEntryToken = result.NextCapture(CAPTURE_ENUM_ENTRY);
+    const auto& assetNameToken = result.NextCapture(CAPTURE_ASSET_NAME);
 
     auto* definition = state->GetRepository()->GetDataDefinitionByName(typeNameToken.TypeNameValue());
     if (definition == nullptr)
@@ -39,9 +39,7 @@ void SequenceAsset::ProcessMatch(CommandsParserState* state, SequenceResult<Comm
     if (information == nullptr)
         throw ParsingException(typeNameToken.GetPos(), "No information for definition");
 
-    auto* enumMember = state->GetRepository()->GetEnumMemberByName(enumEntryToken.IdentifierValue());
-    if (enumMember == nullptr)
-        throw ParsingException(enumEntryToken.GetPos(), "Unknown enum entry");
-
-    information->m_asset_enum_entry = enumMember;
+    information->m_asset_name = assetNameToken.IdentifierValue();
+    if (information->m_asset_name.empty())
+        throw ParsingException(assetNameToken.GetPos(), "Asset name is empty");
 }

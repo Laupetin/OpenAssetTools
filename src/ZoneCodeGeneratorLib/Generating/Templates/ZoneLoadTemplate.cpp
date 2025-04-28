@@ -262,7 +262,7 @@ namespace
             LINEF("{0}::{0}(Zone* zone, IZoneInputStream* stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
-            LINE_STARTF(": AssetLoader({0}, zone, stream)", m_env.m_asset->m_asset_enum_entry->m_name)
+            LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
             if (m_env.m_has_actions)
             {
                 LINE_MIDDLE(", m_actions(zone)")
