@@ -96,7 +96,6 @@ namespace
             }
             PrintHeaderMarkMethodDeclaration(m_env.m_asset);
             LINE("")
-            PrintHeaderGetNameMethodDeclaration(m_env.m_asset);
             PrintHeaderGetAssetInfoMethodDeclaration(m_env.m_asset);
             LINE("")
             PrintHeaderConstructor();
@@ -165,7 +164,6 @@ namespace
             LINE("")
             PrintMainMarkMethod();
             LINE("")
-            PrintGetNameMethod();
             PrintGetAssetInfoMethod();
         }
 
@@ -213,11 +211,6 @@ namespace
         void PrintHeaderGetAssetInfoMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("XAssetInfo<{0}>* GetAssetInfo({0}* pAsset) const;", info->m_definition->GetFullName())
-        }
-
-        void PrintHeaderGetNameMethodDeclaration(const StructureInformation* info) const
-        {
-            LINEF("static std::string GetAssetName({0}* pAsset);", info->m_definition->GetFullName())
         }
 
         void PrintHeaderConstructor() const
@@ -756,47 +749,15 @@ namespace
             LINE("}")
         }
 
-        void PrintGetNameMethod()
-        {
-            LINEF("std::string {0}::GetAssetName({1}* pAsset)", MarkerClassName(m_env.m_asset), m_env.m_asset->m_definition->GetFullName())
-            LINE("{")
-            m_intendation++;
-
-            if (!m_env.m_asset->m_name_chain.empty())
-            {
-                LINE_START("return pAsset")
-
-                auto first = true;
-                for (auto* member : m_env.m_asset->m_name_chain)
-                {
-                    if (first)
-                    {
-                        first = false;
-                        LINE_MIDDLEF("->{0}", member->m_member->m_name)
-                    }
-                    else
-                    {
-                        LINE_MIDDLEF(".{0}", member->m_member->m_name)
-                    }
-                }
-                LINE_END(";")
-            }
-            else
-            {
-                LINEF("return \"{0}\";", m_env.m_asset->m_definition->m_name)
-            }
-
-            m_intendation--;
-            LINE("}")
-        }
-
         void PrintGetAssetInfoMethod()
         {
             LINEF("XAssetInfo<{0}>* {1}::GetAssetInfo({0}* pAsset) const", m_env.m_asset->m_definition->GetFullName(), MarkerClassName(m_env.m_asset))
             LINE("{")
             m_intendation++;
 
-            LINEF("return reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfoByName(GetAssetName(pAsset)));", m_env.m_asset->m_definition->GetFullName())
+            LINEF("return reinterpret_cast<XAssetInfo<{0}>*>(GetAssetInfoByName(AssetNameAccessor<{1}>()(*pAsset)));",
+                  m_env.m_asset->m_definition->GetFullName(),
+                  m_env.m_asset->m_asset_name)
 
             m_intendation--;
             LINE("}")
