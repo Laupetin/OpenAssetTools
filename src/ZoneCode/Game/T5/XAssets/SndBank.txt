@@ -4,7 +4,6 @@
 use SndBank;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set count alias aliasCount;
 set count aliasIndex aliasCount;
 set count radverbs radverbCount;

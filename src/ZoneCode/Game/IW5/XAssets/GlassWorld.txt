@@ -4,7 +4,6 @@
 use GlassWorld;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 
 // G_GlassData
 use G_GlassData;

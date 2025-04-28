@@ -4,7 +4,6 @@
 use WeaponDef;
 set block XFILE_BLOCK_TEMP;
 set string szInternalName;
-set name szInternalName;
 set string szDisplayName;
 set string szOverlayName;
 set string szXAnims;

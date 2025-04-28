@@ -4,7 +4,6 @@
 use ddlRoot_t;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set count ddlDef 1;
 
 // ddlDef_t

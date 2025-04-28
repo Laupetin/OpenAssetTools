@@ -4,7 +4,6 @@
 use MemoryBlock;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 
 set condition data::mainData mainMem;
 set count data::mainData size;

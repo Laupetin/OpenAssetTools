@@ -4,7 +4,6 @@
 use menuDef_t;
 set block XFILE_BLOCK_TEMP;
 set string window::name;
-set name window::name;
 set string font;
 set reusable visibleExp;
 set string allowedBinding;

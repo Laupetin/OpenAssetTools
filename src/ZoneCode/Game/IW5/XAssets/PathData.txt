@@ -4,7 +4,6 @@
 use PathData;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set count nodes nodeCount;
 set block basenodes XFILE_BLOCK_RUNTIME;
 set count basenodes nodeCount;

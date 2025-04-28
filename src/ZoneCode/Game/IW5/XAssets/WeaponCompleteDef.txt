@@ -4,7 +4,6 @@
 use WeaponCompleteDef;
 set block XFILE_BLOCK_TEMP;
 set string szInternalName;
-set name szInternalName;
 set reusable weapDef;
 set string szDisplayName;
 set reusable hideTags;

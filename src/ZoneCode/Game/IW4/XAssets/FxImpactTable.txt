@@ -4,5 +4,4 @@
 use FxImpactTable;
 set block XFILE_BLOCK_TEMP;
 set string name;
-set name name;
 set count table 15;
