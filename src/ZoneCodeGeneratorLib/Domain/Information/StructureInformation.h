@@ -35,5 +35,4 @@ public:
 
     std::unique_ptr<CustomAction> m_post_load_action;
     const FastFileBlock* m_block;
-    std::vector<MemberInformation*> m_name_chain;
 };
