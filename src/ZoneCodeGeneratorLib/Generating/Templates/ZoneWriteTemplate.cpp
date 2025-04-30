@@ -30,8 +30,9 @@ namespace
             LINE("")
             LINE("#pragma once")
             LINE("")
-            LINE("#include \"Writing/AssetWriter.h\"")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
+            LINE("#include \"Writing/AssetWriter.h\"")
+            LINE("")
             LINE("#include <string>")
             LINE("")
             LINEF("namespace {0}", m_env.m_game)
@@ -113,18 +114,20 @@ namespace
             LINE("// ====================================================================")
             LINE("")
             LINEF("#include \"{0}_write_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
-            LINE("#include <cassert>")
-            LINE("")
 
             if (!m_env.m_referenced_assets.empty())
             {
+                LINE("")
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
                     LINEF("#include \"../{0}/{0}_write_db.h\"", Lower(type->m_type->m_name))
                 }
-                LINE("")
             }
+
+            LINE("")
+            LINE("#include <cassert>")
+            LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
             PrintConstructorMethod();

@@ -6,7 +6,6 @@
 #include "Utils/StringUtils.h"
 
 #include <cassert>
-#include <iostream>
 #include <sstream>
 
 namespace
@@ -32,12 +31,13 @@ namespace
             LINE("")
             LINE("#pragma once")
             LINE("")
-            LINE("#include \"Loading/AssetLoader.h\"")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
             if (m_env.m_has_actions)
             {
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_actions.h\"", m_env.m_game, Lower(m_env.m_asset->m_definition->m_name))
             }
+            LINE("#include \"Loading/AssetLoader.h\"")
+            LINE("")
             LINE("#include <string>")
             LINE("")
             LINEF("namespace {0}", m_env.m_game)
@@ -121,20 +121,24 @@ namespace
             LINE("// ====================================================================")
             LINE("")
             LINEF("#include \"{0}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
-            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
-            LINE("#include <cassert>")
-            LINE("#include <cstring>")
             LINE("")
+            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
 
             if (!m_env.m_referenced_assets.empty())
             {
+                LINE("")
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
                     LINEF("#include \"../{0}/{0}_load_db.h\"", Lower(type->m_type->m_name))
                 }
-                LINE("")
             }
+
+            LINE("")
+            LINE("#include <cassert>")
+            LINE("#include <cstring>")
+
+            LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
             PrintConstructorMethod();
@@ -362,7 +366,7 @@ namespace
 
             LINE("")
             LINEF("{0}** var = {1};", def->GetFullName(), MakeTypePtrVarName(def))
-            LINE("for(size_t index = 0; index < count; index++)")
+            LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
 
@@ -392,7 +396,7 @@ namespace
 
             LINE("")
             LINEF("{0}* var = {1};", def->GetFullName(), MakeTypeVarName(def))
-            LINE("for(size_t index = 0; index < count; index++)")
+            LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
 
