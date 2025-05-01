@@ -10,22 +10,38 @@
 #include <cstring>
 #include <stack>
 
+ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(const void* buffer, const size_t bufferSize, const unsigned pointerByteCount)
+    : m_buffer(buffer),
+      m_buffer_size(bufferSize),
+      m_pointer_byte_count(pointerByteCount)
+{
+}
+
+ZoneStreamFillReadAccessor ZoneStreamFillReadAccessor::AtOffset(const size_t offset) const
+{
+    assert(offset < m_buffer_size);
+    return ZoneStreamFillReadAccessor(static_cast<const char*>(m_buffer) + offset, m_buffer_size - offset, m_pointer_byte_count);
+}
+
 namespace
 {
     class XBlockInputStream final : public ZoneInputStream
     {
     public:
-        XBlockInputStream(std::vector<XBlock*>& blocks, ILoadingStream& stream, const unsigned blockBitCount, const block_t insertBlock)
+        XBlockInputStream(
+            const unsigned pointerBitCount, const unsigned blockBitCount, std::vector<XBlock*>& blocks, const block_t insertBlock, ILoadingStream& stream)
             : m_blocks(blocks),
-              m_stream(stream)
+              m_stream(stream),
+              m_pointer_byte_count(pointerBitCount / 8u),
+              m_block_bit_count(blockBitCount)
         {
+            assert(pointerBitCount % 8u == 0u);
+            assert(insertBlock < static_cast<block_t>(blocks.size()));
+
             const auto blockCount = static_cast<unsigned>(blocks.size());
             m_block_offsets = std::make_unique<size_t[]>(blockCount);
             std::memset(m_block_offsets.get(), 0, sizeof(size_t) * blockCount);
 
-            m_block_bit_count = blockBitCount;
-
-            assert(insertBlock < static_cast<block_t>(blocks.size()));
             m_insert_block = blocks[insertBlock];
         }
 
@@ -87,50 +103,42 @@ namespace
 
         void LoadDataInBlock(void* dst, const size_t size) override
         {
-            assert(!m_block_stack.empty());
-
-            if (m_block_stack.empty())
-                return;
-
-            auto* block = m_block_stack.top();
-
-            if (block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
-                throw OutOfBlockBoundsException(block);
-
-            if (static_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
-                throw BlockOverflowException(block);
-
-            // Theoretically ptr should always be at the current block offset.
-            assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
-
-            switch (block->m_type)
+            // If no block has been pushed, load raw
+            if (!m_block_stack.empty())
             {
-            case XBlock::Type::BLOCK_TYPE_TEMP:
-            case XBlock::Type::BLOCK_TYPE_NORMAL:
-                m_stream.Load(dst, size);
-                break;
+                auto* block = m_block_stack.top();
 
-            case XBlock::Type::BLOCK_TYPE_RUNTIME:
-                memset(dst, 0, size);
-                break;
+                if (block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
+                    throw OutOfBlockBoundsException(block);
 
-            case XBlock::Type::BLOCK_TYPE_DELAY:
-                assert(false);
-                break;
+                if (static_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
+                    throw BlockOverflowException(block);
+
+                // Theoretically ptr should always be at the current block offset.
+                assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
+
+                switch (block->m_type)
+                {
+                case XBlock::Type::BLOCK_TYPE_TEMP:
+                case XBlock::Type::BLOCK_TYPE_NORMAL:
+                    m_stream.Load(dst, size);
+                    break;
+
+                case XBlock::Type::BLOCK_TYPE_RUNTIME:
+                    std::memset(dst, 0, size);
+                    break;
+
+                case XBlock::Type::BLOCK_TYPE_DELAY:
+                    assert(false);
+                    break;
+                }
+
+                IncBlockPos(size);
             }
-
-            IncBlockPos(size);
-        }
-
-        void IncBlockPos(const size_t size) override
-        {
-            assert(!m_block_stack.empty());
-
-            if (m_block_stack.empty())
-                return;
-
-            const auto* block = m_block_stack.top();
-            m_block_offsets[block->m_index] += size;
+            else
+            {
+                m_stream.Load(dst, size);
+            }
         }
 
         void LoadNullTerminated(void* dst) override
@@ -162,25 +170,61 @@ namespace
             m_block_offsets[block->m_index] = offset;
         }
 
-        void** InsertPointer() override
+        ZoneStreamFillReadAccessor LoadWithFill(const size_t size) override
+        {
+            m_fill_buffer.reserve(size);
+            auto* dst = m_fill_buffer.data();
+
+            // If no block has been pushed, load raw
+            if (!m_block_stack.empty())
+            {
+                const auto* block = m_block_stack.top();
+                switch (block->m_type)
+                {
+                case XBlock::Type::BLOCK_TYPE_TEMP:
+                case XBlock::Type::BLOCK_TYPE_NORMAL:
+                    m_stream.Load(dst, size);
+                    break;
+
+                case XBlock::Type::BLOCK_TYPE_RUNTIME:
+                    std::memset(dst, 0, size);
+                    break;
+
+                case XBlock::Type::BLOCK_TYPE_DELAY:
+                    assert(false);
+                    break;
+                }
+
+                IncBlockPos(size);
+            }
+            else
+            {
+                m_stream.Load(dst, size);
+            }
+
+            return ZoneStreamFillReadAccessor(dst, size, m_pointer_byte_count);
+        }
+
+        void* InsertPointer() override
         {
             m_block_stack.push(m_insert_block);
 
-            Align(alignof(void*));
+            // Alignment of pointer should always be its size
+            Align(m_pointer_byte_count);
 
-            if (m_block_offsets[m_insert_block->m_index] + sizeof(void*) > m_insert_block->m_buffer_size)
+            if (m_block_offsets[m_insert_block->m_index] + m_pointer_byte_count > m_insert_block->m_buffer_size)
                 throw BlockOverflowException(m_insert_block);
 
-            auto* ptr = reinterpret_cast<void**>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
+            auto* ptr = static_cast<void*>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
 
-            IncBlockPos(sizeof(void*));
+            IncBlockPos(m_pointer_byte_count);
 
             m_block_stack.pop();
 
             return ptr;
         }
 
-        void* ConvertOffsetToPointer(const void* offset) override
+        void* ConvertOffsetToPointerNative(const void* offset) override
         {
             // -1 because otherwise Block 0 Offset 0 would be just 0 which is already used to signalize a nullptr.
             // So all offsets are moved by 1.
@@ -200,7 +244,7 @@ namespace
             return &block->m_buffer[blockOffset];
         }
 
-        void* ConvertOffsetToAlias(const void* offset) override
+        void* ConvertOffsetToAliasNative(const void* offset) override
         {
             // For details see ConvertOffsetToPointer
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
@@ -220,6 +264,17 @@ namespace
         }
 
     private:
+        void IncBlockPos(const size_t size)
+        {
+            assert(!m_block_stack.empty());
+
+            if (m_block_stack.empty())
+                return;
+
+            const auto* block = m_block_stack.top();
+            m_block_offsets[block->m_index] += size;
+        }
+
         void Align(const unsigned align)
         {
             assert(!m_block_stack.empty());
@@ -238,12 +293,16 @@ namespace
         std::stack<size_t> m_temp_offsets;
         ILoadingStream& m_stream;
 
+        unsigned m_pointer_byte_count;
         unsigned m_block_bit_count;
         XBlock* m_insert_block;
+
+        std::vector<uint8_t> m_fill_buffer;
     };
 } // namespace
 
-std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(std::vector<XBlock*>& blocks, ILoadingStream& stream, unsigned blockBitCount, block_t insertBlock)
+std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(
+    const unsigned pointerBitCount, const unsigned blockBitCount, std::vector<XBlock*>& blocks, const block_t insertBlock, ILoadingStream& stream)
 {
-    return std::make_unique<XBlockInputStream>(blocks, stream, blockBitCount, insertBlock);
+    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream);
 }

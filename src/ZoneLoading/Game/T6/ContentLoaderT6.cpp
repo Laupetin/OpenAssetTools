@@ -55,8 +55,8 @@
 
 using namespace T6;
 
-ContentLoader::ContentLoader(Zone& zone)
-    : ContentLoaderBase(zone),
+ContentLoader::ContentLoader(Zone& zone, ZoneInputStream& stream)
+    : ContentLoaderBase(zone, stream),
       varXAsset(nullptr),
       varScriptStringList(nullptr)
 {
@@ -176,10 +176,8 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     }
 }
 
-void ContentLoader::Load(ZoneInputStream& stream)
+void ContentLoader::Load()
 {
-    m_stream = &stream;
-
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 
     XAssetList assetList{};
