@@ -5,14 +5,6 @@
 const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
 const void* ContentLoaderBase::PTR_INSERT = reinterpret_cast<void*>(-2);
 
-ContentLoaderBase::ContentLoaderBase(Zone& zone)
-    : varXString(nullptr),
-      m_zone(zone),
-      m_memory(zone.Memory()),
-      m_stream(nullptr)
-{
-}
-
 ContentLoaderBase::ContentLoaderBase(Zone& zone, ZoneInputStream& stream)
     : varXString(nullptr),
       m_zone(zone),
@@ -37,7 +29,7 @@ void ContentLoaderBase::LoadXString(const bool atStreamStart) const
         }
         else
         {
-            *varXString = m_stream->ConvertOffsetToPointer<const char>(*varXString);
+            *varXString = m_stream->ConvertOffsetToPointerNative<const char>(*varXString);
         }
     }
 }

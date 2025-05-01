@@ -43,7 +43,7 @@ namespace IW4
         static constexpr size_t AUTHED_CHUNK_SIZE = 0x2000;
         static constexpr unsigned AUTHED_CHUNK_COUNT_PER_GROUP = 256;
 
-        static constexpr int OFFSET_BLOCK_BIT_COUNT = 4;
+        static constexpr unsigned OFFSET_BLOCK_BIT_COUNT = 4u;
         static constexpr block_t INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
     };
 } // namespace IW4

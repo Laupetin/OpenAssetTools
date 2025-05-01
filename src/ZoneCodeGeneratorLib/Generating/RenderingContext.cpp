@@ -18,8 +18,9 @@ RenderingUsedType::RenderingUsedType(const DataDefinition* type, StructureInform
 {
 }
 
-RenderingContext::RenderingContext(std::string game, std::vector<const FastFileBlock*> fastFileBlocks)
+RenderingContext::RenderingContext(std::string game, const Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks)
     : m_game(std::move(game)),
+      m_architecture_mismatch(gameArchitecture != OWN_ARCHITECTURE),
       m_blocks(std::move(fastFileBlocks)),
       m_asset(nullptr),
       m_has_actions(false),
@@ -190,7 +191,8 @@ bool RenderingContext::UsedTypeHasActions(const RenderingUsedType* usedType) con
 
 std::unique_ptr<RenderingContext> RenderingContext::BuildContext(const IDataRepository* repository, StructureInformation* asset)
 {
-    auto context = std::make_unique<RenderingContext>(RenderingContext(repository->GetGameName(), repository->GetAllFastFileBlocks()));
+    auto context =
+        std::make_unique<RenderingContext>(RenderingContext(repository->GetGameName(), repository->GetArchitecture(), repository->GetAllFastFileBlocks()));
 
     context->MakeAsset(repository, asset);
     context->CreateUsedTypeCollections();
