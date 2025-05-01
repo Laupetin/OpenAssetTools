@@ -9,16 +9,19 @@ namespace IW4
     class ContentLoader final : public ContentLoaderBase, public IContentLoadingEntryPoint
     {
     public:
-        explicit ContentLoader(Zone& zone);
-
-        void Load(ZoneInputStream& stream) override;
+        explicit ContentLoader(Zone& zone, ZoneInputStream& stream);
+        void Load() override;
 
     private:
+        void FillStruct_XAssetList(const ZoneStreamFillReadAccessor& fillAccessor);
+        void FillStruct_ScriptStringList(const ZoneStreamFillReadAccessor& fillAccessor) const;
+
         void LoadScriptStringList(bool atStreamStart);
 
         void LoadXAsset(bool atStreamStart) const;
         void LoadXAssetArray(bool atStreamStart, size_t count);
 
+        XAssetList* varXAssetList;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
     };

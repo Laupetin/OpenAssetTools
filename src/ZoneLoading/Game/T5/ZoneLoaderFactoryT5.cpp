@@ -85,8 +85,14 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
 
     // Start of the zone content
-    zoneLoader->AddLoadingStep(
-        step::CreateStepLoadZoneContent(std::make_unique<ContentLoader>(*zonePtr), ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
+        [&zonePtr](ZoneInputStream& stream)
+        {
+            return std::make_unique<ContentLoader>(*zonePtr, stream);
+        },
+        32u,
+        ZoneConstants::OFFSET_BLOCK_BIT_COUNT,
+        ZoneConstants::INSERT_BLOCK));
 
     return zoneLoader;
 }

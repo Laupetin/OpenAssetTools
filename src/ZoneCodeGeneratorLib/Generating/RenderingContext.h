@@ -30,6 +30,7 @@ public:
     static std::unique_ptr<RenderingContext> BuildContext(const IDataRepository* repository, StructureInformation* asset);
 
     std::string m_game;
+    bool m_architecture_mismatch;
     std::vector<const FastFileBlock*> m_blocks;
 
     StructureInformation* m_asset;
@@ -43,7 +44,7 @@ public:
     const FastFileBlock* m_default_temp_block;
 
 private:
-    RenderingContext(std::string game, std::vector<const FastFileBlock*> fastFileBlocks);
+    RenderingContext(std::string game, Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks);
 
     RenderingUsedType* AddUsedType(std::unique_ptr<RenderingUsedType> usedType);
     RenderingUsedType* GetBaseType(const IDataRepository* repository, MemberComputations* computations, RenderingUsedType* usedType);

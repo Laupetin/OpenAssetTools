@@ -17,7 +17,6 @@ public:
     ContentLoaderBase& operator=(ContentLoaderBase&& other) noexcept = delete;
 
 protected:
-    explicit ContentLoaderBase(Zone& zone);
     ContentLoaderBase(Zone& zone, ZoneInputStream& stream);
 
     void LoadXString(bool atStreamStart) const;
@@ -27,5 +26,5 @@ protected:
 
     Zone& m_zone;
     MemoryManager& m_memory;
-    ZoneInputStream* m_stream;
+    ZoneInputStream* m_stream; // TODO: Change this to reference
 };

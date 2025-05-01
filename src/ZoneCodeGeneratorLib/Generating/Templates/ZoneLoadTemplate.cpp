@@ -61,6 +61,13 @@ namespace
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
             {
+                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure)
+                {
+                    PrintFillStructMethodDeclaration(type->m_info);
+                }
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
                 if (type->m_pointer_array_reference_exists)
                 {
                     PrintHeaderPtrArrayLoadMethodDeclaration(type->m_type);
@@ -151,6 +158,14 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
+                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure)
+                {
+                    LINE("")
+                    PrintFillStructMethod(type->m_info);
+                }
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
                 if (type->m_pointer_array_reference_exists)
                 {
                     LINE("")
@@ -210,6 +225,11 @@ namespace
         static std::string PointerVariableDecl(const DataDefinition* def)
         {
             return std::format("{0}** var{1}Ptr;", def->GetFullName(), MakeSafeTypeName(def));
+        }
+
+        void PrintFillStructMethodDeclaration(const StructureInformation* info)
+        {
+            LINEF("void FillStruct_{1}(const ZoneStreamFillReadAccessor& fillAccessor);", LoaderClassName(m_env.m_asset), MakeSafeTypeName(info->m_definition))
         }
 
         void PrintHeaderPtrArrayLoadMethodDeclaration(const DataDefinition* def) const
@@ -297,6 +317,28 @@ namespace
             LINE("}")
         }
 
+        void PrintFillStructMethod(const StructureInformation* info)
+        {
+            LINEF("void {0}::FillStruct_{1}(const ZoneStreamFillReadAccessor& fillAccessor)",
+                  LoaderClassName(m_env.m_asset),
+                  MakeSafeTypeName(info->m_definition))
+
+            LINE("{")
+            m_intendation++;
+
+            for (const auto& member : info->m_ordered_members)
+            {
+                const MemberComputations computations(member.get());
+                if (computations.ShouldIgnore())
+                    continue;
+
+                LINEF("// FillStruct_{0}();", MakeSafeTypeName(member->m_member->m_type_declaration->m_type))
+            }
+
+            m_intendation--;
+            LINE("}")
+        }
+
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
             LINEF("*{0} = m_stream->Alloc<{1}>({2});", MakeTypePtrVarName(def), def->GetFullName(), def->GetAlignment())
@@ -339,7 +381,7 @@ namespace
                     LINE("{")
                     m_intendation++;
 
-                    LINEF("*{0} = m_stream->ConvertOffsetToPointer(*{0});", MakeTypePtrVarName(def))
+                    LINEF("*{0} = m_stream->ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(def))
 
                     m_intendation--;
                     LINE("}")
@@ -765,7 +807,7 @@ namespace
                 LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
                 LINE("if (ptr == PTR_INSERT)")
                 m_intendation++;
-                LINEF("toInsert = m_stream->InsertPointer<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
+                LINEF("toInsert = m_stream->InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
                 m_intendation--;
                 LINE("")
             }
@@ -823,7 +865,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = m_stream->ConvertOffsetToAlias({0});", MakeMemberAccess(info, member, modifier))
+                LINEF("{0} = m_stream->ConvertOffsetToAliasNative({0});", MakeMemberAccess(info, member, modifier))
 
                 m_intendation--;
                 LINE("}")
@@ -842,7 +884,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = m_stream->ConvertOffsetToPointer({0});", MakeMemberAccess(info, member, modifier))
+                LINEF("{0} = m_stream->ConvertOffsetToPointerNative({0});", MakeMemberAccess(info, member, modifier))
 
                 m_intendation--;
                 LINE("}")
@@ -1080,24 +1122,39 @@ namespace
             {
                 LINE("")
                 LINE("if (atStreamStart)")
-                m_intendation++;
 
-                if (dynamicMember == nullptr)
+                if (info->m_has_matching_cross_platform_structure)
                 {
-                    LINEF("m_stream->Load<{0}>({1}); // Size: {2}",
-                          info->m_definition->GetFullName(),
-                          MakeTypeVarName(info->m_definition),
-                          info->m_definition->GetSize())
+                    m_intendation++;
+
+                    if (dynamicMember == nullptr)
+                    {
+                        LINEF("m_stream->Load<{0}>({1}); // Size: {2}",
+                              info->m_definition->GetFullName(),
+                              MakeTypeVarName(info->m_definition),
+                              info->m_definition->GetSize())
+                    }
+                    else
+                    {
+                        LINEF("m_stream->LoadPartial<{0}>({1}, offsetof({0}, {2}));",
+                              info->m_definition->GetFullName(),
+                              MakeTypeVarName(info->m_definition),
+                              dynamicMember->m_member->m_name)
+                    }
+
+                    m_intendation--;
                 }
                 else
                 {
-                    LINEF("m_stream->LoadPartial<{0}>({1}, offsetof({0}, {2}));",
-                          info->m_definition->GetFullName(),
-                          MakeTypeVarName(info->m_definition),
-                          dynamicMember->m_member->m_name)
-                }
+                    LINE("{")
+                    m_intendation++;
 
-                m_intendation--;
+                    LINEF("{0} = m_memory.Alloc<{1}>();", MakeTypeVarName(info->m_definition), info->m_definition->m_name)
+                    LINEF("FillStruct_{0}(m_stream->LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
+
+                    m_intendation--;
+                    LINE("}")
+                }
             }
             else
             {
@@ -1182,7 +1239,7 @@ namespace
                 LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
                 LINE("if (ptr == PTR_INSERT)")
                 m_intendation++;
-                LINEF("toInsert = m_stream->InsertPointer<{0}>();", info->m_definition->GetFullName())
+                LINEF("toInsert = m_stream->InsertPointerNative<{0}>();", info->m_definition->GetFullName())
                 m_intendation--;
             }
 
@@ -1236,11 +1293,11 @@ namespace
 
             if (inTemp)
             {
-                LINEF("*{0} = m_stream->ConvertOffsetToAlias(*{0});", MakeTypePtrVarName(info->m_definition))
+                LINEF("*{0} = m_stream->ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
             }
             else
             {
-                LINEF("*{0} = m_stream->ConvertOffsetToPointer(*{0});", MakeTypePtrVarName(info->m_definition))
+                LINEF("*{0} = m_stream->ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(info->m_definition))
             }
 
             m_intendation--;
