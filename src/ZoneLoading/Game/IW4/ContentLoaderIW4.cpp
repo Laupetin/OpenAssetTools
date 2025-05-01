@@ -42,33 +42,44 @@
 
 using namespace IW4;
 
-ContentLoader::ContentLoader(Zone& zone)
-    : ContentLoaderBase(zone),
+ContentLoader::ContentLoader(Zone& zone, ZoneInputStream& stream)
+    : ContentLoaderBase(zone, stream),
+      varXAssetList(nullptr),
       varXAsset(nullptr),
       varScriptStringList(nullptr)
 {
 }
 
+void ContentLoader::FillStruct_XAssetList(const ZoneStreamFillReadAccessor& fillAccessor)
+{
+    varScriptStringList = &varXAssetList->stringList;
+    FillStruct_ScriptStringList(fillAccessor.AtOffset(0u));
+
+    fillAccessor.Fill(varXAssetList->assetCount, 8u);
+    fillAccessor.FillPtr(varXAssetList->assets, 12u);
+}
+
+void ContentLoader::FillStruct_ScriptStringList(const ZoneStreamFillReadAccessor& fillAccessor) const
+{
+    fillAccessor.Fill(varScriptStringList->count, 0u);
+    fillAccessor.FillPtr(varScriptStringList->strings, 4u);
+}
+
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
-    if (atStreamStart)
-        m_stream->Load<ScriptStringList>(varScriptStringList);
+    assert(!atStreamStart);
 
     if (varScriptStringList->strings != nullptr)
     {
         assert(varScriptStringList->strings == PTR_FOLLOWING);
 
-        varScriptStringList->strings = m_stream->Alloc<const char*>(alignof(const char*));
+        varScriptStringList->strings = m_stream->Alloc<const char*>(4);
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
         if (varScriptStringList->strings && varScriptStringList->count > 0)
             m_zone.m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
     }
-
-    m_stream->PopBlock();
 
     assert(m_zone.m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
@@ -154,14 +165,14 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     }
 }
 
-void ContentLoader::Load(ZoneInputStream& stream)
+void ContentLoader::Load()
 {
-    m_stream = &stream;
+    XAssetList assetList{};
+    varXAssetList = &assetList;
+
+    FillStruct_XAssetList(m_stream->LoadWithFill(16u));
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
-    XAssetList assetList{};
-    m_stream->LoadDataRaw(&assetList, sizeof(assetList));
 
     varScriptStringList = &assetList.stringList;
     LoadScriptStringList(false);
