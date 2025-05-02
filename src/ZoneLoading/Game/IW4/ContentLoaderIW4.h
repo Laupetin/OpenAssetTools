@@ -9,9 +9,9 @@ namespace IW4
     class ContentLoader final : public ContentLoaderBase, public IContentLoadingEntryPoint
     {
     public:
-        ContentLoader();
+        explicit ContentLoader(Zone& zone);
 
-        void Load(Zone* zone, IZoneInputStream* stream) override;
+        void Load(ZoneInputStream& stream) override;
 
     private:
         void LoadScriptStringList(bool atStreamStart);

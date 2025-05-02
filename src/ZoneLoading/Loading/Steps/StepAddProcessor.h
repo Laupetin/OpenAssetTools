@@ -4,12 +4,7 @@
 
 #include <memory>
 
-class StepAddProcessor final : public ILoadingStep
+namespace step
 {
-    std::unique_ptr<StreamProcessor> m_stream_processor;
-
-public:
-    explicit StepAddProcessor(std::unique_ptr<StreamProcessor> streamProcessor);
-
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
-};
+    std::unique_ptr<ILoadingStep> CreateStepAddProcessor(std::unique_ptr<StreamProcessor> streamProcessor);
+}

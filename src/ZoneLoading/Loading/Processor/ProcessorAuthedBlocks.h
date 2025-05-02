@@ -6,23 +6,11 @@
 
 #include <memory>
 
-class ProcessorAuthedBlocks final : public StreamProcessor
+namespace processor
 {
-    class Impl;
-    Impl* m_impl;
-
-public:
-    ProcessorAuthedBlocks(unsigned authedChunkCount,
-                          size_t chunkSize,
-                          unsigned maxMasterBlockCount,
-                          std::unique_ptr<cryptography::IHashFunction> hashFunction,
-                          IHashProvider* masterBlockHashProvider);
-    ~ProcessorAuthedBlocks() override;
-    ProcessorAuthedBlocks(const ProcessorAuthedBlocks& other) = delete;
-    ProcessorAuthedBlocks(ProcessorAuthedBlocks&& other) noexcept = default;
-    ProcessorAuthedBlocks& operator=(const ProcessorAuthedBlocks& other) = delete;
-    ProcessorAuthedBlocks& operator=(ProcessorAuthedBlocks&& other) noexcept = default;
-
-    size_t Load(void* buffer, size_t length) override;
-    int64_t Pos() override;
-};
+    std::unique_ptr<StreamProcessor> CreateProcessorAuthedBlocks(unsigned authedChunkCount,
+                                                                 size_t chunkSize,
+                                                                 unsigned maxMasterBlockCount,
+                                                                 std::unique_ptr<cryptography::IHashFunction> hashFunction,
+                                                                 IHashProvider* masterBlockHashProvider);
+}

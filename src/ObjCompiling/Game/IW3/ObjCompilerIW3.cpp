@@ -11,7 +11,7 @@ namespace
 {
     void ConfigureCompilers(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         // No compilers yet
     }
@@ -23,7 +23,7 @@ namespace
                                  ZoneAssetCreationStateContainer& zoneStates,
                                  IOutputPath& outDir)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         if (ImageIwdPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
             collection.AddAssetPostProcessor(std::make_unique<ImageIwdPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));

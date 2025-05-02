@@ -5,7 +5,7 @@
 
 using namespace IW4;
 
-Actions_GfxImage::Actions_GfxImage(Zone* zone)
+Actions_GfxImage::Actions_GfxImage(Zone& zone)
     : AssetLoadingActions(zone)
 {
 }
@@ -19,6 +19,6 @@ void Actions_GfxImage::LoadImageData(GfxImageLoadDef* loadDef, GfxImage* image) 
 {
     const size_t loadDefSize = offsetof(IW4::GfxImageLoadDef, data) + loadDef->resourceSize;
 
-    image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone->GetMemory()->AllocRaw(loadDefSize));
+    image->texture.loadDef = static_cast<GfxImageLoadDef*>(m_zone.Memory().AllocRaw(loadDefSize));
     memcpy(image->texture.loadDef, loadDef, loadDefSize);
 }

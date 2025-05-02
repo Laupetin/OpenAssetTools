@@ -4,7 +4,7 @@
 
 using namespace IW5;
 
-Actions_XModel::Actions_XModel(Zone* zone)
+Actions_XModel::Actions_XModel(Zone& zone)
     : AssetLoadingActions(zone)
 {
 }
@@ -13,7 +13,7 @@ void Actions_XModel::SetModelSurfs(XModelLodInfo* lodInfo, XModelSurfs* modelSur
 {
     if (modelSurfs)
     {
-        lodInfo->modelSurfs = m_zone->GetMemory()->Alloc<XModelSurfs>();
+        lodInfo->modelSurfs = m_zone.Memory().Alloc<XModelSurfs>();
         memcpy(lodInfo->modelSurfs, modelSurfs, sizeof(XModelSurfs));
     }
 }

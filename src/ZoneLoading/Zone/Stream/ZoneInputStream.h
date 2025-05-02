@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Loading/ILoadingStream.h"
 #include "Zone/Stream/IZoneStream.h"
+#include "Zone/XBlock.h"
 
-#include <cstddef>
-#include <cstdint>
+#include <memory>
+#include <vector>
 
-class IZoneInputStream : public IZoneStream
+class ZoneInputStream : public IZoneStream
 {
 public:
     virtual void* Alloc(unsigned align) = 0;
@@ -55,4 +57,6 @@ public:
     {
         return static_cast<T*>(ConvertOffsetToAlias(static_cast<const void*>(offset)));
     }
+
+    static std::unique_ptr<ZoneInputStream> Create(std::vector<XBlock*>& blocks, ILoadingStream& stream, unsigned blockBitCount, block_t insertBlock);
 };

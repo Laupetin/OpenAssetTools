@@ -6,7 +6,6 @@
 #include "Utils/StringUtils.h"
 
 #include <cassert>
-#include <iostream>
 #include <sstream>
 
 namespace
@@ -17,7 +16,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, RenderingContext* context)
+        Template(std::ostream& stream, const RenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -32,12 +31,13 @@ namespace
             LINE("")
             LINE("#pragma once")
             LINE("")
-            LINE("#include \"Loading/AssetLoader.h\"")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
             if (m_env.m_has_actions)
             {
                 LINEF("#include \"Game/{0}/XAssets/{1}/{1}_actions.h\"", m_env.m_game, Lower(m_env.m_asset->m_definition->m_name))
             }
+            LINE("#include \"Loading/AssetLoader.h\"")
+            LINE("")
             LINE("#include <string>")
             LINE("")
             LINEF("namespace {0}", m_env.m_game)
@@ -47,32 +47,16 @@ namespace
             LINE("{")
             m_intendation++;
 
-            LINEF("XAssetInfo<{0}>* m_asset_info;", m_env.m_asset->m_definition->GetFullName())
-            if (m_env.m_has_actions)
-            {
-                LINEF("Actions_{0} m_actions;", m_env.m_asset->m_definition->m_name)
-            }
-            LINE(VariableDecl(m_env.m_asset->m_definition))
-            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
-            LINE("")
-
-            // Variable Declarations: type varType;
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
-                {
-                    LINE(VariableDecl(type->m_type))
-                }
-            }
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
-                {
-                    LINE(PointerVariableDecl(type->m_type))
-                }
-            }
+            m_intendation--;
+            LINE("public:")
+            m_intendation++;
+            PrintHeaderConstructor();
+            PrintHeaderMainLoadMethodDeclaration(m_env.m_asset);
 
             LINE("")
+            m_intendation--;
+            LINE("private:")
+            m_intendation++;
 
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
@@ -100,11 +84,31 @@ namespace
             PrintHeaderTempPtrLoadMethodDeclaration(m_env.m_asset);
             PrintHeaderAssetLoadMethodDeclaration(m_env.m_asset);
             LINE("")
-            m_intendation--;
-            LINE("public:")
-            m_intendation++;
-            PrintHeaderConstructor();
-            PrintHeaderMainLoadMethodDeclaration(m_env.m_asset);
+
+            LINEF("XAssetInfo<{0}>* m_asset_info;", m_env.m_asset->m_definition->GetFullName())
+            if (m_env.m_has_actions)
+            {
+                LINEF("Actions_{0} m_actions;", m_env.m_asset->m_definition->m_name)
+            }
+            LINE(VariableDecl(m_env.m_asset->m_definition))
+            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
+            LINE("")
+
+            // Variable Declarations: type varType;
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                {
+                    LINE(VariableDecl(type->m_type))
+                }
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+                {
+                    LINE(PointerVariableDecl(type->m_type))
+                }
+            }
 
             m_intendation--;
             LINE("};")
@@ -121,23 +125,29 @@ namespace
             LINE("// ====================================================================")
             LINE("")
             LINEF("#include \"{0}_load_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
-            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
-            LINE("#include <cassert>")
-            LINE("#include <cstring>")
             LINE("")
+            LINEF("#include \"{0}_mark_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
 
             if (!m_env.m_referenced_assets.empty())
             {
+                LINE("")
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
                     LINEF("#include \"../{0}/{0}_load_db.h\"", Lower(type->m_type->m_name))
                 }
-                LINE("")
             }
+
+            LINE("")
+            LINE("#include <cassert>")
+            LINE("#include <cstring>")
+
+            LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
             PrintConstructorMethod();
+            LINE("")
+            PrintMainLoadMethod();
 
             for (const auto* type : m_env.m_used_types)
             {
@@ -169,8 +179,6 @@ namespace
             PrintLoadPtrMethod(m_env.m_asset);
             LINE("")
             PrintLoadAssetMethod(m_env.m_asset);
-            LINE("")
-            PrintMainLoadMethod();
         }
 
     private:
@@ -236,7 +244,7 @@ namespace
 
         void PrintHeaderConstructor() const
         {
-            LINEF("{0}(Zone* zone, IZoneInputStream* stream);", LoaderClassName(m_env.m_asset))
+            LINEF("{0}(Zone& zone, ZoneInputStream& stream);", LoaderClassName(m_env.m_asset))
         }
 
         void PrintVariableInitialization(const DataDefinition* def) const
@@ -251,7 +259,7 @@ namespace
 
         void PrintConstructorMethod()
         {
-            LINEF("{0}::{0}(Zone* zone, IZoneInputStream* stream)", LoaderClassName(m_env.m_asset))
+            LINEF("{0}::{0}(Zone& zone, ZoneInputStream& stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
             LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
@@ -304,7 +312,7 @@ namespace
             }
         }
 
-        void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("if (*{0})", MakeTypePtrVarName(def))
             LINE("{")
@@ -312,7 +320,7 @@ namespace
 
             if (info && StructureComputations(info).IsAsset())
             {
-                LINEF("{0} loader(m_zone, m_stream);", LoaderClassName(info))
+                LINEF("{0} loader(m_zone, *m_stream);", LoaderClassName(info))
                 LINEF("loader.Load({0});", MakeTypePtrVarName(def))
             }
             else
@@ -346,7 +354,7 @@ namespace
             LINE("}")
         }
 
-        void PrintLoadPtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintLoadPtrArrayMethod(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("void {0}::LoadPtrArray_{1}(const bool atStreamStart, const size_t count)", LoaderClassName(m_env.m_asset), MakeSafeTypeName(def))
             LINE("{")
@@ -362,7 +370,7 @@ namespace
 
             LINE("")
             LINEF("{0}** var = {1};", def->GetFullName(), MakeTypePtrVarName(def))
-            LINE("for(size_t index = 0; index < count; index++)")
+            LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
 
@@ -392,7 +400,7 @@ namespace
 
             LINE("")
             LINEF("{0}* var = {1};", def->GetFullName(), MakeTypeVarName(def))
-            LINE("for(size_t index = 0; index < count; index++)")
+            LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
 
@@ -414,7 +422,7 @@ namespace
         {
             if (loadType == MemberLoadType::SINGLE_POINTER)
             {
-                LINEF("{0} loader(m_zone, m_stream);", LoaderClassName(member->m_type))
+                LINEF("{0} loader(m_zone, *m_stream);", LoaderClassName(member->m_type))
                 LINEF("loader.Load(&{0});", MakeMemberAccess(info, member, modifier))
             }
             else if (loadType == MemberLoadType::POINTER_ARRAY)
@@ -899,7 +907,7 @@ namespace
             }
         }
 
-        void LoadMember_ReferenceArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+        void LoadMember_ReferenceArray(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             auto first = true;
             for (const auto& entry : modifier.GetArrayEntries())
@@ -917,7 +925,7 @@ namespace
             }
         }
 
-        void LoadMember_Reference(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+        void LoadMember_Reference(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             if (modifier.IsDynamicArray())
             {
@@ -954,7 +962,7 @@ namespace
             }
         }
 
-        void LoadMember_Condition_Struct(StructureInformation* info, MemberInformation* member)
+        void LoadMember_Condition_Struct(const StructureInformation* info, const MemberInformation* member)
         {
             LINE("")
             if (member->m_condition)
@@ -974,7 +982,7 @@ namespace
             }
         }
 
-        void LoadMember_Condition_Union(StructureInformation* info, MemberInformation* member)
+        void LoadMember_Condition_Union(const StructureInformation* info, const MemberInformation* member)
         {
             const MemberComputations computations(member);
 
@@ -1042,7 +1050,7 @@ namespace
             }
         }
 
-        void PrintLoadMemberIfNeedsTreatment(StructureInformation* info, MemberInformation* member)
+        void PrintLoadMemberIfNeedsTreatment(const StructureInformation* info, const MemberInformation* member)
         {
             const MemberComputations computations(member);
             if (computations.ShouldIgnore())
@@ -1058,7 +1066,7 @@ namespace
             }
         }
 
-        void PrintLoadMethod(StructureInformation* info)
+        void PrintLoadMethod(const StructureInformation* info)
         {
             const StructureComputations computations(info);
             LINEF("void {0}::Load_{1}(const bool atStreamStart)", LoaderClassName(m_env.m_asset), info->m_definition->m_name)
@@ -1122,7 +1130,7 @@ namespace
             LINE("}")
         }
 
-        void PrintLoadPtrMethod(StructureInformation* info)
+        void PrintLoadPtrMethod(const StructureInformation* info)
         {
             const bool inTemp = info->m_block && info->m_block->m_type == FastFileBlockType::TEMP;
             LINEF("void {0}::LoadPtr_{1}(const bool atStreamStart)", LoaderClassName(m_env.m_asset), MakeSafeTypeName(info->m_definition))
@@ -1265,7 +1273,7 @@ namespace
             LINEF("{0} marker(m_zone);", MarkerClassName(m_env.m_asset))
             LINE("marker.Mark(*pAsset);")
             LINE("")
-            LINEF("auto* reallocatedAsset = m_zone->GetMemory()->Alloc<{0}>();", info->m_definition->GetFullName())
+            LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
             LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetNameAccessor<{1}>()(**pAsset), reallocatedAsset, marker.GetDependencies(), "
@@ -1306,11 +1314,11 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContext* context)
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(const RenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context->m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
     files.emplace_back(std::format("{0}/{0}_load_db.h", assetName), TAG_HEADER);
@@ -1319,7 +1327,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContex
     return files;
 }
 
-void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
+void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
 {
     Template t(stream, context);
 

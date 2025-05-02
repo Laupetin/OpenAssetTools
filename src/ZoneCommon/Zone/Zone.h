@@ -3,7 +3,6 @@
 #include "Game/GameLanguage.h"
 #include "Game/IGame.h"
 #include "Pool/ZoneAssetPools.h"
-#include "Utils/ClassUtils.h"
 #include "Zone/ZoneTypes.h"
 #include "ZoneMemory.h"
 #include "ZoneScriptStrings.h"
@@ -16,10 +15,6 @@ class ZoneAssetPools;
 
 class Zone
 {
-    std::unique_ptr<ZoneMemory> m_memory;
-
-    bool m_registered;
-
 public:
     std::string m_name;
     zone_priority_t m_priority;
@@ -37,5 +32,10 @@ public:
 
     void Register();
 
-    _NODISCARD ZoneMemory* GetMemory() const;
+    [[nodiscard]] ZoneMemory& Memory() const;
+
+private:
+    std::unique_ptr<ZoneMemory> m_memory;
+
+    bool m_registered;
 };

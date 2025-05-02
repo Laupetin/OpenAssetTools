@@ -2,18 +2,19 @@
 
 #include "Domain/Computations/StructureComputations.h"
 #include "Internal/BaseTemplate.h"
+#include "Utils/StringUtils.h"
 
-#include <iostream>
-#include <sstream>
+#include <cassert>
+#include <format>
 
 namespace
 {
-    static constexpr int TAG_SOURCE = 1;
+    constexpr int TAG_SOURCE = 1;
 
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, RenderingContext* context)
+        Template(std::ostream& stream, const RenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -26,21 +27,22 @@ namespace
             LINE("// Any changes will be discarded when regenerating.")
             LINE("// ====================================================================")
             LINE("")
+            LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
+            LINE("")
             LINE("#include <catch2/catch_test_macros.hpp>")
             LINE("#include <catch2/generators/catch_generators.hpp>")
             LINE("#include <cstddef>")
-            LINE("#include \"Game/" << m_env.m_game << "/" << m_env.m_game << ".h\"")
             LINE("")
-            LINE("using namespace " << m_env.m_game << ";")
+            LINEF("using namespace {0};", m_env.m_game)
             LINE("")
-            LINE("namespace game::" << m_env.m_game << "::xassets::asset_" << Lower(m_env.m_asset->m_definition->m_name))
+            LINEF("namespace game::{0}::xassets::asset_{1}", m_env.m_game, Lower(m_env.m_asset->m_definition->m_name))
             LINE("{")
             m_intendation++;
 
             if (m_env.m_asset->m_has_matching_cross_platform_structure)
                 TestMethod(m_env.m_asset);
 
-            for (auto* structure : m_env.m_used_structures)
+            for (const auto* structure : m_env.m_used_structures)
             {
                 StructureComputations computations(structure->m_info);
                 if (!structure->m_info->m_definition->m_anonymous && !computations.IsAsset() && structure->m_info->m_has_matching_cross_platform_structure)
@@ -52,10 +54,12 @@ namespace
         }
 
     private:
-        void TestMethod(StructureInformation* structure)
+        void TestMethod(const StructureInformation* structure)
         {
-            LINE("TEST_CASE(\"" << m_env.m_game << "::" << m_env.m_asset->m_definition->GetFullName() << ": Tests for "
-                                << structure->m_definition->GetFullName() << "\", \"[assetstruct]\")")
+            LINEF("TEST_CASE(\"{0}::{1}: Tests for {2}\", \"[assetstruct]\")",
+                  m_env.m_game,
+                  m_env.m_asset->m_definition->GetFullName(),
+                  structure->m_definition->GetFullName())
             LINE("{")
             m_intendation++;
 
@@ -63,44 +67,37 @@ namespace
             {
                 if (!member->m_member->m_name.empty() && !member->m_member->m_type_declaration->m_has_custom_bit_size)
                 {
-                    LINE("REQUIRE(offsetof(" << structure->m_definition->GetFullName() << ", " << member->m_member->m_name
-                                             << ") == " << member->m_member->m_offset << ");")
+                    LINEF("REQUIRE(offsetof({0}, {1}) == {2});", structure->m_definition->GetFullName(), member->m_member->m_name, member->m_member->m_offset)
                 }
             }
 
             LINE("")
 
-            LINE("REQUIRE(" << structure->m_definition->GetSize() << "u == sizeof(" << structure->m_definition->GetFullName() << "));")
-            LINE("REQUIRE(" << structure->m_definition->GetAlignment() << "u == alignof(" << structure->m_definition->GetFullName() << "));")
+            LINEF("REQUIRE({0}u == sizeof({1}));", structure->m_definition->GetSize(), structure->m_definition->GetFullName())
+            LINEF("REQUIRE({0}u == alignof({1}));", structure->m_definition->GetAlignment(), structure->m_definition->GetFullName())
             m_intendation--;
             LINE("}")
         }
     };
 } // namespace
 
-std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRender(RenderingContext* context)
+std::vector<CodeTemplateFile> AssetStructTestsTemplate::GetFilesToRender(const RenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context->m_asset->m_definition->m_name;
-    for (auto& c : assetName)
-        c = static_cast<char>(tolower(c));
+    auto assetName = context.m_asset->m_definition->m_name;
+    utils::MakeStringLowerCase(assetName);
 
-    {
-        std::ostringstream str;
-        str << assetName << '/' << assetName << "_struct_test.cpp";
-        files.emplace_back(str.str(), TAG_SOURCE);
-    }
+    files.emplace_back(std::format("{0}/{0}_struct_test.cpp", assetName), TAG_SOURCE);
 
     return files;
 }
 
-void AssetStructTestsTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
+void AssetStructTestsTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
 {
     Template t(stream, context);
 
+    assert(fileTag == TAG_SOURCE);
     if (fileTag == TAG_SOURCE)
         t.Source();
-    else
-        std::cout << "Invalid tag in AssetStructTestsTemplate\n";
 }

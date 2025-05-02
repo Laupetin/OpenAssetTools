@@ -5,9 +5,9 @@
 
 #include <sstream>
 
-BaseTemplate::BaseTemplate(std::ostream& stream, RenderingContext* context)
+BaseTemplate::BaseTemplate(std::ostream& stream, const RenderingContext& context)
     : m_out(stream),
-      m_env(*context),
+      m_env(context),
       m_intendation(0u)
 {
 }

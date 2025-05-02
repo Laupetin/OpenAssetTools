@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cassert>
 
-AssetMarker::AssetMarker(const asset_type_t assetType, Zone* zone)
-    : m_asset_type(assetType),
-      m_zone(zone)
+AssetMarker::AssetMarker(const asset_type_t assetType, Zone& zone)
+    : m_zone(zone),
+      m_asset_type(assetType)
 {
 }
 
@@ -23,9 +23,9 @@ void AssetMarker::AddDependency(XAssetInfoGeneric* assetInfo)
 
 void AssetMarker::Mark_ScriptString(const scr_string_t scrString)
 {
-    assert(scrString < m_zone->m_script_strings.Count());
+    assert(scrString < m_zone.m_script_strings.Count());
 
-    if (scrString >= m_zone->m_script_strings.Count())
+    if (scrString >= m_zone.m_script_strings.Count())
         return;
 
     m_used_script_strings.emplace(scrString);
@@ -57,7 +57,7 @@ void AssetMarker::MarkArray_IndirectAssetRef(const asset_type_t type, const char
 
 XAssetInfoGeneric* AssetMarker::GetAssetInfoByName(const std::string& name) const
 {
-    return m_zone->m_pools->GetAsset(m_asset_type, name);
+    return m_zone.m_pools->GetAsset(m_asset_type, name);
 }
 
 std::vector<XAssetInfoGeneric*> AssetMarker::GetDependencies() const

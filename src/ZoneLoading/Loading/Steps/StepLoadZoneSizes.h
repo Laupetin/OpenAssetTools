@@ -1,20 +1,17 @@
 #pragma once
 
 #include "Loading/ILoadingStep.h"
-#include "Utils/ClassUtils.h"
 
-#include <cstddef>
+#include <memory>
 
-class StepLoadZoneSizes final : public ILoadingStep
+namespace step
 {
-    size_t m_size;
-    size_t m_external_size;
+    class IStepLoadZoneSizes : public ILoadingStep
+    {
+    public:
+        [[nodiscard]] virtual uint32_t GetSize() const = 0;
+        [[nodiscard]] virtual uint32_t GetExternalSize() const = 0;
+    };
 
-public:
-    StepLoadZoneSizes();
-
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
-
-    _NODISCARD size_t GetSize() const;
-    _NODISCARD size_t GetExternalSize() const;
-};
+    std::unique_ptr<IStepLoadZoneSizes> CreateStepLoadZoneSizes();
+} // namespace step

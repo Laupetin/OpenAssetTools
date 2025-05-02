@@ -15,7 +15,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, RenderingContext* context)
+        Template(std::ostream& stream, const RenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -30,8 +30,9 @@ namespace
             LINE("")
             LINE("#pragma once")
             LINE("")
-            LINE("#include \"Writing/AssetWriter.h\"")
             LINEF("#include \"Game/{0}/{0}.h\"", m_env.m_game)
+            LINE("#include \"Writing/AssetWriter.h\"")
+            LINE("")
             LINE("#include <string>")
             LINE("")
             LINEF("namespace {0}", m_env.m_game)
@@ -41,31 +42,16 @@ namespace
             LINE("{")
             m_intendation++;
 
-            LINE(VariableDecl(m_env.m_asset->m_definition))
-            LINE(WrittenVariableDecl(m_env.m_asset->m_definition))
-            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
-            LINE(WrittenPointerVariableDecl(m_env.m_asset->m_definition))
-            LINE("")
-
-            // Variable Declarations: type varType;
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
-                {
-                    LINE(VariableDecl(type->m_type))
-                    LINE(WrittenVariableDecl(type->m_type))
-                }
-            }
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
-                {
-                    LINE(PointerVariableDecl(type->m_type))
-                    LINE(WrittenPointerVariableDecl(type->m_type))
-                }
-            }
+            m_intendation--;
+            LINE("public:")
+            m_intendation++;
+            PrintHeaderConstructor();
+            PrintHeaderMainWriteMethodDeclaration(m_env.m_asset);
 
             LINE("")
+            m_intendation--;
+            LINE("private:")
+            m_intendation++;
 
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
@@ -91,12 +77,32 @@ namespace
             }
             PrintHeaderWriteMethodDeclaration(m_env.m_asset);
             PrintHeaderTempPtrWriteMethodDeclaration(m_env.m_asset);
+
             LINE("")
-            m_intendation--;
-            LINE("public:")
-            m_intendation++;
-            PrintHeaderConstructor();
-            PrintHeaderMainWriteMethodDeclaration(m_env.m_asset);
+
+            LINE(VariableDecl(m_env.m_asset->m_definition))
+            LINE(WrittenVariableDecl(m_env.m_asset->m_definition))
+            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
+            LINE(WrittenPointerVariableDecl(m_env.m_asset->m_definition))
+            LINE("")
+
+            // Variable Declarations: type varType;
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                {
+                    LINE(VariableDecl(type->m_type))
+                    LINE(WrittenVariableDecl(type->m_type))
+                }
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+                {
+                    LINE(PointerVariableDecl(type->m_type))
+                    LINE(WrittenPointerVariableDecl(type->m_type))
+                }
+            }
 
             m_intendation--;
             LINE("};")
@@ -113,21 +119,25 @@ namespace
             LINE("// ====================================================================")
             LINE("")
             LINEF("#include \"{0}_write_db.h\"", Lower(m_env.m_asset->m_definition->m_name))
-            LINE("#include <cassert>")
-            LINE("")
 
             if (!m_env.m_referenced_assets.empty())
             {
+                LINE("")
                 LINE("// Referenced Assets:")
                 for (const auto* type : m_env.m_referenced_assets)
                 {
                     LINEF("#include \"../{0}/{0}_write_db.h\"", Lower(type->m_type->m_name))
                 }
-                LINE("")
             }
+
+            LINE("")
+            LINE("#include <cassert>")
+            LINE("")
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
             PrintConstructorMethod();
+            LINE("")
+            PrintMainWriteMethod();
 
             for (const auto* type : m_env.m_used_types)
             {
@@ -157,8 +167,6 @@ namespace
             PrintWriteMethod(m_env.m_asset);
             LINE("")
             PrintWritePtrMethod(m_env.m_asset);
-            LINE("")
-            PrintMainWriteMethod();
         }
 
     private:
@@ -1116,7 +1124,7 @@ namespace
             LINEF("m_stream->MarkFollowing(*{0});", MakeTypeWrittenPtrVarName(def))
         }
 
-        void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("if (*{0})", MakeTypePtrVarName(def))
             LINE("{")
@@ -1150,7 +1158,7 @@ namespace
             LINE("}")
         }
 
-        void PrintWritePtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintWritePtrArrayMethod(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("void {0}::WritePtrArray_{1}(const bool atStreamStart, const size_t count)", WriterClassName(m_env.m_asset), MakeSafeTypeName(def))
             LINE("{")
@@ -1225,11 +1233,11 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(RenderingContext* context)
+std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(const RenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context->m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_definition->m_name;
     for (auto& c : assetName)
         c = static_cast<char>(tolower(c));
 
@@ -1239,7 +1247,7 @@ std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(RenderingConte
     return files;
 }
 
-void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
+void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
 {
     Template t(stream, context);
 

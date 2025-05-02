@@ -3,15 +3,13 @@
 #include "Loading/ILoadingStep.h"
 #include "Loading/ISignatureProvider.h"
 
-class StepLoadSignature final : public ILoadingStep, public ISignatureProvider
+#include <memory>
+
+namespace step
 {
-    uint8_t* m_signature;
-    size_t m_signature_size;
+    class IStepLoadSignature : public ILoadingStep, public ISignatureProvider
+    {
+    };
 
-public:
-    explicit StepLoadSignature(size_t signatureSize);
-    ~StepLoadSignature() override;
-
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
-    void GetSignature(const uint8_t** pSignature, size_t* pSize) override;
-};
+    std::unique_ptr<IStepLoadSignature> CreateStepLoadSignature(size_t signatureSize);
+} // namespace step

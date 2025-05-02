@@ -2,10 +2,9 @@
 
 #include "Loading/ILoadingStep.h"
 
-class StepAllocXBlocks final : public ILoadingStep
-{
-    static const uint64_t MAX_XBLOCK_SIZE;
+#include <memory>
 
-public:
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
-};
+namespace step
+{
+    std::unique_ptr<ILoadingStep> CreateStepAllocXBlocks();
+}

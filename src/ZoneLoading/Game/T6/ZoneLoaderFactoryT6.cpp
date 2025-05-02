@@ -35,7 +35,7 @@ namespace
 
         for (const auto& languagePrefix : languagePrefixes)
         {
-            if (zoneName.compare(0, languagePrefix.m_prefix.length(), languagePrefix.m_prefix) == 0)
+            if (zoneName.starts_with(languagePrefix.m_prefix))
             {
                 return languagePrefix.m_language;
             }
@@ -128,17 +128,17 @@ namespace
         }
     }
 
-    ISignatureProvider* AddAuthHeaderSteps(const bool isSecure, ZoneLoader& zoneLoader, std::string& fileName)
+    ISignatureProvider* AddAuthHeaderSteps(const bool isSecure, ZoneLoader& zoneLoader, const std::string& fileName)
     {
         // Unsigned zones do not have an auth header
         if (!isSecure)
             return nullptr;
 
-        zoneLoader.AddLoadingStep(std::make_unique<StepVerifyMagic>(ZoneConstants::MAGIC_AUTH_HEADER));
-        zoneLoader.AddLoadingStep(std::make_unique<StepSkipBytes>(4)); // Loading Flags which are always zero
-        zoneLoader.AddLoadingStep(std::make_unique<StepVerifyFileName>(fileName, 32));
+        zoneLoader.AddLoadingStep(step::CreateStepVerifyMagic(ZoneConstants::MAGIC_AUTH_HEADER));
+        zoneLoader.AddLoadingStep(step::CreateStepSkipBytes(4)); // Loading Flags which are always zero
+        zoneLoader.AddLoadingStep(step::CreateStepVerifyFileName(fileName, 32));
 
-        auto signatureLoadStep = std::make_unique<StepLoadSignature>(256);
+        auto signatureLoadStep = step::CreateStepLoadSignature(256);
         auto* signatureLoadStepPtr = signatureLoadStep.get();
         zoneLoader.AddLoadingStep(std::move(signatureLoadStep));
 
@@ -148,7 +148,7 @@ namespace
     ICapturedDataProvider* AddXChunkProcessor(const bool isEncrypted, ZoneLoader& zoneLoader, std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
-        auto xChunkProcessor = std::make_unique<ProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        auto xChunkProcessor = processor::CreateProcessorXChunks(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
 
         if (isEncrypted)
         {
@@ -161,7 +161,7 @@ namespace
 
         // Decompress the chunks using zlib
         xChunkProcessor->AddChunkProcessor(std::make_unique<XChunkProcessorInflate>());
-        zoneLoader.AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(xChunkProcessor)));
+        zoneLoader.AddLoadingStep(step::CreateStepAddProcessor(std::move(xChunkProcessor)));
 
         // If there is encryption, the signed data of the zone is the final hash blocks provided by the Salsa20 IV adaption algorithm
         return result;
@@ -199,16 +199,16 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     ICapturedDataProvider* signatureDataProvider = AddXChunkProcessor(isEncrypted, *zoneLoader, fileName);
 
     // Start of the XFile struct
-    zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneSizes>());
-    zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
+    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
 
     // Start of the zone content
     zoneLoader->AddLoadingStep(
-        std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+        step::CreateStepLoadZoneContent(std::make_unique<ContentLoader>(*zonePtr), ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
     if (isSecure)
     {
-        zoneLoader->AddLoadingStep(std::make_unique<StepVerifySignature>(std::move(rsa), signatureProvider, signatureDataProvider));
+        zoneLoader->AddLoadingStep(step::CreateStepVerifySignature(std::move(rsa), signatureProvider, signatureDataProvider));
     }
 
     return zoneLoader;

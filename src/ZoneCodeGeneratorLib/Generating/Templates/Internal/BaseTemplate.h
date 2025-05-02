@@ -15,7 +15,7 @@ class BaseTemplate
 protected:
     static constexpr auto INTENDATION = "    ";
 
-    BaseTemplate(std::ostream& stream, RenderingContext* context);
+    BaseTemplate(std::ostream& stream, const RenderingContext& context);
 
     void DoIntendation() const;
 
@@ -41,7 +41,7 @@ protected:
     static std::string MakeEvaluation(const IEvaluation* evaluation);
 
     std::ostream& m_out;
-    RenderingContext& m_env;
+    const RenderingContext& m_env;
     unsigned m_intendation;
 
 private:

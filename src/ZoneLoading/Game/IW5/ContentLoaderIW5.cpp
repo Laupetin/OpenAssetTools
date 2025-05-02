@@ -47,8 +47,9 @@
 
 using namespace IW5;
 
-ContentLoader::ContentLoader()
-    : varXAsset(nullptr),
+ContentLoader::ContentLoader(Zone& zone)
+    : ContentLoaderBase(zone),
+      varXAsset(nullptr),
       varScriptStringList(nullptr)
 {
 }
@@ -69,12 +70,12 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
         LoadXStringArray(true, varScriptStringList->count);
 
         if (varScriptStringList->strings && varScriptStringList->count > 0)
-            m_zone->m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
+            m_zone.m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
     }
 
     m_stream->PopBlock();
 
-    assert(m_zone->m_script_strings.Count() <= SCR_STRING_MAX + 1);
+    assert(m_zone.m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
 
 void ContentLoader::LoadXAsset(const bool atStreamStart) const
@@ -82,7 +83,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        Loader_##typeName loader(m_zone, *m_stream);                                                                                                           \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }
@@ -162,10 +163,9 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     }
 }
 
-void ContentLoader::Load(Zone* zone, IZoneInputStream* stream)
+void ContentLoader::Load(ZoneInputStream& stream)
 {
-    m_zone = zone;
-    m_stream = stream;
+    m_stream = &stream;
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 

@@ -4,18 +4,14 @@
 
 #include <memory>
 
-class ProcessorXChunks : public StreamProcessor
+namespace processor
 {
-    class ProcessorXChunksImpl;
-    ProcessorXChunksImpl* m_impl;
+    class IProcessorXChunks : public StreamProcessor
+    {
+    public:
+        virtual void AddChunkProcessor(std::unique_ptr<IXChunkProcessor> chunkProcessor) = 0;
+    };
 
-public:
-    ProcessorXChunks(int numStreams, size_t xChunkSize);
-    ProcessorXChunks(int numStreams, size_t xChunkSize, size_t vanillaBufferSize);
-    ~ProcessorXChunks() override;
-
-    size_t Load(void* buffer, size_t length) override;
-    int64_t Pos() override;
-
-    void AddChunkProcessor(std::unique_ptr<IXChunkProcessor> chunkProcessor) const;
-};
+    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(int numStreams, size_t xChunkSize);
+    std::unique_ptr<IProcessorXChunks> CreateProcessorXChunks(int numStreams, size_t xChunkSize, size_t vanillaBufferSize);
+} // namespace processor

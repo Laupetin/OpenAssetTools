@@ -1,13 +1,13 @@
 #include "Zone.h"
 
 Zone::Zone(std::string name, const zone_priority_t priority, IGame* game)
-    : m_memory(std::make_unique<ZoneMemory>()),
-      m_registered(false),
-      m_name(std::move(name)),
+    : m_name(std::move(name)),
       m_priority(priority),
       m_language(GameLanguage::LANGUAGE_NONE),
       m_game(game),
-      m_pools(ZoneAssetPools::CreateForGame(game->GetId(), this, priority))
+      m_pools(ZoneAssetPools::CreateForGame(game->GetId(), this, priority)),
+      m_memory(std::make_unique<ZoneMemory>()),
+      m_registered(false)
 {
 }
 
@@ -28,7 +28,7 @@ void Zone::Register()
     }
 }
 
-ZoneMemory* Zone::GetMemory() const
+ZoneMemory& Zone::Memory() const
 {
-    return m_memory.get();
+    return *m_memory;
 }
