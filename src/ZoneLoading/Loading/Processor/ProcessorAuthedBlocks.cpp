@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <memory>
 
 class ProcessorAuthedBlocks final : public StreamProcessor
@@ -49,7 +50,7 @@ public:
             sizeToWrite = std::min(sizeToWrite, m_current_chunk_size - m_current_chunk_offset);
 
             assert(length - loadedSize >= sizeToWrite);
-            memcpy(&static_cast<uint8_t*>(buffer)[loadedSize], &m_chunk_buffer[m_current_chunk_offset], sizeToWrite);
+            std::memcpy(&static_cast<uint8_t*>(buffer)[loadedSize], &m_chunk_buffer[m_current_chunk_offset], sizeToWrite);
             loadedSize += sizeToWrite;
             m_current_chunk_offset += sizeToWrite;
         }

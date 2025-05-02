@@ -7,6 +7,7 @@
 #include "Utils/Alignment.h"
 
 #include <cassert>
+#include <cstring>
 #include <stack>
 
 namespace

@@ -6,8 +6,8 @@
 class ContentLoaderBase
 {
 protected:
-    static constexpr auto PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-    static constexpr auto PTR_INSERT = reinterpret_cast<void*>(-2);
+    static const void* PTR_FOLLOWING;
+    static const void* PTR_INSERT;
 
 public:
     virtual ~ContentLoaderBase() = default;

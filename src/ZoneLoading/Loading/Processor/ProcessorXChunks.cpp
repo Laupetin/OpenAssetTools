@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <condition_variable>
+#include <cstring>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -164,14 +165,14 @@ namespace
                 if (sizeToRead > bytesLeftInCurrentChunk)
                 {
                     assert(sizeToRead >= bytesLeftInCurrentChunk);
-                    memcpy(bufferPos, &m_current_chunk[m_current_chunk_offset], bytesLeftInCurrentChunk);
+                    std::memcpy(bufferPos, &m_current_chunk[m_current_chunk_offset], bytesLeftInCurrentChunk);
                     loadedSize += bytesLeftInCurrentChunk;
 
                     NextStream();
                 }
                 else
                 {
-                    memcpy(bufferPos, &m_current_chunk[m_current_chunk_offset], sizeToRead);
+                    std::memcpy(bufferPos, &m_current_chunk[m_current_chunk_offset], sizeToRead);
                     loadedSize += sizeToRead;
                     m_current_chunk_offset += sizeToRead;
 

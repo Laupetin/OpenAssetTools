@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 namespace
 {
@@ -25,7 +26,7 @@ namespace
 
             auto loadedSize = m_base_stream->Load(&m_data[m_captured_data_size], dataToCapture);
             assert(length >= loadedSize);
-            memcpy(buffer, &m_data[m_captured_data_size], loadedSize);
+            std::memcpy(buffer, &m_data[m_captured_data_size], loadedSize);
 
             m_captured_data_size += loadedSize;
 

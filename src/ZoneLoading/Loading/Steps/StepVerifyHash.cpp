@@ -2,6 +2,7 @@
 
 #include "Loading/Exception/InvalidHashException.h"
 
+#include <cstring>
 #include <memory>
 
 namespace

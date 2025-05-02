@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
+const void* ContentLoaderBase::PTR_INSERT = reinterpret_cast<void*>(-2);
+
 ContentLoaderBase::ContentLoaderBase(Zone& zone)
     : varXString(nullptr),
       m_zone(zone),
