@@ -1,21 +1,44 @@
 #include "ProcessorStreamCipher.h"
 
-ProcessorStreamCipher::ProcessorStreamCipher(std::unique_ptr<cryptography::IStreamCipher> cipher)
-    : m_cipher(std::move(cipher))
+namespace
 {
-}
-
-size_t ProcessorStreamCipher::Load(void* buffer, const size_t length)
-{
-    if (m_base_stream != nullptr)
+    class ProcessorStreamCipher final : public StreamProcessor
     {
-        const size_t readSize = m_base_stream->Load(buffer, length);
+    public:
+        explicit ProcessorStreamCipher(std::unique_ptr<cryptography::IStreamCipher> cipher)
+            : m_cipher(std::move(cipher))
+        {
+        }
 
-        if (readSize > 0)
-            m_cipher->Process(buffer, buffer, readSize);
+        size_t Load(void* buffer, const size_t length) override
+        {
+            if (m_base_stream != nullptr)
+            {
+                const size_t readSize = m_base_stream->Load(buffer, length);
 
-        return readSize;
+                if (readSize > 0)
+                    m_cipher->Process(buffer, buffer, readSize);
+
+                return readSize;
+            }
+
+            return 0;
+        }
+
+        int64_t Pos() override
+        {
+            return m_base_stream->Pos();
+        }
+
+    private:
+        std::unique_ptr<cryptography::IStreamCipher> m_cipher;
+    };
+} // namespace
+
+namespace processor
+{
+    std::unique_ptr<StreamProcessor> CreateProcessorStreamCipher(std::unique_ptr<cryptography::IStreamCipher> cipher)
+    {
+        return std::make_unique<ProcessorStreamCipher>(std::move(cipher));
     }
-
-    return 0;
-}
+} // namespace processor

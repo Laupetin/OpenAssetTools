@@ -120,7 +120,7 @@ namespace
 
         zoneLoader.AddLoadingStep(std::make_unique<StepVerifySignature>(std::move(rsa), subHeaderHashSignaturePtr, subHeaderHashPtr));
 
-        auto subHeaderCapture = std::make_unique<ProcessorCaptureData>(sizeof(DB_AuthSubHeader));
+        auto subHeaderCapture = processor::CreateProcessorCaptureData(sizeof(DB_AuthSubHeader));
         auto* subHeaderCapturePtr = subHeaderCapture.get();
         zoneLoader.AddLoadingStep(std::make_unique<StepAddProcessor>(std::move(subHeaderCapture)));
 
@@ -139,11 +139,11 @@ namespace
         zoneLoader.AddLoadingStep(std::make_unique<StepSkipBytes>(ZoneConstants::AUTHED_CHUNK_SIZE - sizeof(DB_AuthHeader)));
 
         zoneLoader.AddLoadingStep(std::make_unique<StepAddProcessor>(
-            std::make_unique<ProcessorAuthedBlocks>(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
-                                                    ZoneConstants::AUTHED_CHUNK_SIZE,
-                                                    static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
-                                                    cryptography::CreateSha256(),
-                                                    masterBlockHashesPtr)));
+            processor::CreateProcessorAuthedBlocks(ZoneConstants::AUTHED_CHUNK_COUNT_PER_GROUP,
+                                                   ZoneConstants::AUTHED_CHUNK_SIZE,
+                                                   static_cast<unsigned>(std::extent_v<decltype(DB_AuthSubHeader::masterBlockHashes)>),
+                                                   cryptography::CreateSha256(),
+                                                   masterBlockHashesPtr)));
     }
 } // namespace
 
@@ -176,7 +176,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     // Add steps for loading the auth header which also contain the signature of the zone if it is signed.
     AddAuthHeaderSteps(isSecure, isOfficial, *zoneLoader, fileName);
 
-    zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorInflate>(ZoneConstants::AUTHED_CHUNK_SIZE)));
+    zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
 
     // Start of the XFile struct
     zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));

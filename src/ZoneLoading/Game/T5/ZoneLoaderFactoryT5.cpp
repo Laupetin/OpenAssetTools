@@ -77,7 +77,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
 
     SetupBlock(*zoneLoader);
 
-    zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(std::make_unique<ProcessorInflate>(ZoneConstants::AUTHED_CHUNK_SIZE)));
+    zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
 
     // Start of the XFile struct
     zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));

@@ -148,7 +148,7 @@ namespace
     ICapturedDataProvider* AddXChunkProcessor(const bool isEncrypted, ZoneLoader& zoneLoader, std::string& fileName)
     {
         ICapturedDataProvider* result = nullptr;
-        auto xChunkProcessor = std::make_unique<ProcessorXChunks>(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
+        auto xChunkProcessor = processor::CreateProcessorXChunks(ZoneConstants::STREAM_COUNT, ZoneConstants::XCHUNK_SIZE, ZoneConstants::VANILLA_BUFFER_SIZE);
 
         if (isEncrypted)
         {
