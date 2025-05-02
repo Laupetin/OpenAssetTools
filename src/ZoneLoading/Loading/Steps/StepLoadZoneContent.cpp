@@ -19,7 +19,7 @@ void StepLoadZoneContent::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* st
 {
     auto* inputStream = new XBlockInputStream(zoneLoader->m_blocks, stream, m_offset_block_bit_count, m_insert_block);
 
-    m_content_loader->Load(m_zone, inputStream);
+    m_content_loader->Load(inputStream);
 
     delete inputStream;
 }

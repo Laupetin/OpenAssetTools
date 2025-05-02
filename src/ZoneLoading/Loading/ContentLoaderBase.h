@@ -6,20 +6,22 @@
 class ContentLoaderBase
 {
 protected:
-    static const void* PTR_FOLLOWING;
-    static const void* PTR_INSERT;
+    static constexpr auto PTR_FOLLOWING = reinterpret_cast<void*>(-1);
+    static constexpr auto PTR_INSERT = reinterpret_cast<void*>(-2);
 
-    const char** varXString;
+public:
+    virtual ~ContentLoaderBase() = default;
 
-    Zone* m_zone;
-    IZoneInputStream* m_stream;
-
-    ContentLoaderBase();
-    ContentLoaderBase(Zone* zone, IZoneInputStream* stream);
+protected:
+    explicit ContentLoaderBase(Zone& zone);
+    ContentLoaderBase(Zone& zone, IZoneInputStream* stream);
 
     void LoadXString(bool atStreamStart) const;
     void LoadXStringArray(bool atStreamStart, size_t count);
 
-public:
-    virtual ~ContentLoaderBase() = default;
+    const char** varXString;
+
+    Zone& m_zone;
+    MemoryManager& m_memory;
+    IZoneInputStream* m_stream;
 };

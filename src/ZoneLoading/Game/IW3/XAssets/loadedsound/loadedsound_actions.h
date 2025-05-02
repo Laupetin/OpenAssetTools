@@ -8,7 +8,7 @@ namespace IW3
     class Actions_LoadedSound final : public AssetLoadingActions
     {
     public:
-        explicit Actions_LoadedSound(Zone* zone);
+        explicit Actions_LoadedSound(Zone& zone);
 
         void SetSoundData(MssSound* sound) const;
     };

@@ -2,19 +2,18 @@
 
 #include <cassert>
 
-const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-const void* ContentLoaderBase::PTR_INSERT = reinterpret_cast<void*>(-2);
-
-ContentLoaderBase::ContentLoaderBase()
+ContentLoaderBase::ContentLoaderBase(Zone& zone)
     : varXString(nullptr),
-      m_zone(nullptr),
+      m_zone(zone),
+      m_memory(*zone.GetMemory()),
       m_stream(nullptr)
 {
 }
 
-ContentLoaderBase::ContentLoaderBase(Zone* zone, IZoneInputStream* stream)
+ContentLoaderBase::ContentLoaderBase(Zone& zone, IZoneInputStream* stream)
     : varXString(nullptr),
       m_zone(zone),
+      m_memory(*zone.GetMemory()),
       m_stream(stream)
 {
 }

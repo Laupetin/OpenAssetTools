@@ -203,8 +203,8 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
     zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
 
     // Start of the zone content
-    zoneLoader->AddLoadingStep(
-        std::make_unique<StepLoadZoneContent>(std::make_unique<ContentLoader>(), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+    zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
+        std::make_unique<ContentLoader>(*zonePtr), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
     if (isSecure)
     {

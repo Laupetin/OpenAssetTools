@@ -4,9 +4,9 @@
 
 class AssetLoadingActions
 {
-protected:
-    Zone* m_zone;
-
 public:
-    explicit AssetLoadingActions(Zone* zone);
+    explicit AssetLoadingActions(Zone& zone);
+
+protected:
+    Zone& m_zone;
 };

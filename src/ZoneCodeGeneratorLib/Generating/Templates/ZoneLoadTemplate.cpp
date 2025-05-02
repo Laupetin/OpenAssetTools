@@ -240,7 +240,7 @@ namespace
 
         void PrintHeaderConstructor() const
         {
-            LINEF("{0}(Zone* zone, IZoneInputStream* stream);", LoaderClassName(m_env.m_asset))
+            LINEF("{0}(Zone& zone, IZoneInputStream* stream);", LoaderClassName(m_env.m_asset))
         }
 
         void PrintVariableInitialization(const DataDefinition* def) const
@@ -255,7 +255,7 @@ namespace
 
         void PrintConstructorMethod()
         {
-            LINEF("{0}::{0}(Zone* zone, IZoneInputStream* stream)", LoaderClassName(m_env.m_asset))
+            LINEF("{0}::{0}(Zone& zone, IZoneInputStream* stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
             LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
@@ -1269,7 +1269,7 @@ namespace
             LINEF("{0} marker(m_zone);", MarkerClassName(m_env.m_asset))
             LINE("marker.Mark(*pAsset);")
             LINE("")
-            LINEF("auto* reallocatedAsset = m_zone->GetMemory()->Alloc<{0}>();", info->m_definition->GetFullName())
+            LINEF("auto* reallocatedAsset = m_zone.GetMemory()->Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
             LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetNameAccessor<{1}>()(**pAsset), reallocatedAsset, marker.GetDependencies(), "

@@ -215,7 +215,7 @@ namespace
 
         void PrintHeaderConstructor() const
         {
-            LINEF("{0}(Zone* zone);", MarkerClassName(m_env.m_asset))
+            LINEF("{0}(Zone& zone);", MarkerClassName(m_env.m_asset))
         }
 
         void PrintHeaderMainMarkMethodDeclaration(const StructureInformation* info) const
@@ -235,7 +235,7 @@ namespace
 
         void PrintConstructorMethod()
         {
-            LINEF("{0}::{0}(Zone* zone)", MarkerClassName(m_env.m_asset))
+            LINEF("{0}::{0}(Zone& zone)", MarkerClassName(m_env.m_asset))
 
             m_intendation++;
             LINEF(": AssetMarker({0}::EnumEntry, zone)", m_env.m_asset->m_asset_name)

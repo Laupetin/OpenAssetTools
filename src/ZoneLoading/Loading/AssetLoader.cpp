@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <cassert>
 
-AssetLoader::AssetLoader(const asset_type_t assetType, Zone* zone, IZoneInputStream* stream)
+AssetLoader::AssetLoader(const asset_type_t assetType, Zone& zone, IZoneInputStream* stream)
     : ContentLoaderBase(zone, stream),
-      m_asset_type(assetType),
-      varScriptString(nullptr)
+      varScriptString(nullptr),
+      m_asset_type(assetType)
 {
 }
 
@@ -16,11 +16,11 @@ XAssetInfoGeneric* AssetLoader::LinkAsset(std::string name,
                                           std::vector<scr_string_t> scriptStrings,
                                           std::vector<IndirectAssetReference> indirectAssetReferences) const
 {
-    return m_zone->m_pools->AddAsset(
+    return m_zone.m_pools->AddAsset(
         m_asset_type, std::move(name), asset, std::move(dependencies), std::move(scriptStrings), std::move(indirectAssetReferences));
 }
 
 XAssetInfoGeneric* AssetLoader::GetAssetInfo(const std::string& name) const
 {
-    return m_zone->m_pools->GetAsset(m_asset_type, name);
+    return m_zone.m_pools->GetAsset(m_asset_type, name);
 }
