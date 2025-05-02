@@ -36,7 +36,7 @@ void ZoneLoader::AddXBlock(std::unique_ptr<XBlock> block)
                           return b1->m_index < b2->m_index;
                       });
 
-    m_zone->GetMemory()->AddBlock(std::move(block));
+    m_zone->Memory().AddBlock(std::move(block));
 }
 
 void ZoneLoader::AddLoadingStep(std::unique_ptr<ILoadingStep> step)

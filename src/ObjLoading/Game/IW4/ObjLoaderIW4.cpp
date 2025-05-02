@@ -34,7 +34,7 @@ namespace
 {
     void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysPreset>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysCollMap>>(memory));
@@ -118,7 +118,7 @@ namespace
 
     void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         collection.AddAssetCreator(std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone));
         collection.AddAssetCreator(std::make_unique<GdtLoaderPhysPreset>(memory, gdt, zone));

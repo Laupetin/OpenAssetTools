@@ -17,7 +17,7 @@ namespace
                             ISearchPath& searchPath,
                             ZoneAssetCreationStateContainer& zoneStates)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         collection.AddAssetCreator(CreateKeyValuePairsCompiler(memory, zone, zoneDefinition.m_zone_definition, zoneStates));
     }
@@ -29,7 +29,7 @@ namespace
                                  ZoneAssetCreationStateContainer& zoneStates,
                                  IOutputPath& outDir)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         if (ImageIPakPostProcessor<AssetImage>::AppliesToZoneDefinition(zoneDefinition))
             collection.AddAssetPostProcessor(std::make_unique<ImageIPakPostProcessor<AssetImage>>(zoneDefinition, searchPath, zoneStates, outDir));

@@ -21,7 +21,7 @@ namespace
 {
     void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysPreset>>(memory));
         collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysConstraints>>(memory));
@@ -97,7 +97,7 @@ namespace
 
     void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath)
     {
-        auto& memory = *zone.GetMemory();
+        auto& memory = zone.Memory();
 
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));

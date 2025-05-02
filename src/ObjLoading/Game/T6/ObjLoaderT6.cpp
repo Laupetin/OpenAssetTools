@@ -284,7 +284,7 @@ namespace T6
     {
         void ConfigureDefaultCreators(AssetCreatorCollection& collection, Zone& zone)
         {
-            auto& memory = *zone.GetMemory();
+            auto& memory = zone.Memory();
 
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysPreset>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetPhysConstraints>>(memory));
@@ -390,7 +390,7 @@ namespace T6
 
         void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
         {
-            auto& memory = *zone.GetMemory();
+            auto& memory = zone.Memory();
 
             collection.AddAssetCreator(CreateRawPhysPresetLoader(memory, searchPath, zone));
             collection.AddAssetCreator(CreateGdtPhysPresetLoader(memory, searchPath, gdt, zone));

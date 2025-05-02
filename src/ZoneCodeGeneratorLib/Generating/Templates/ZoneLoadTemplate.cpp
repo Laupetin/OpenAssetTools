@@ -1269,7 +1269,7 @@ namespace
             LINEF("{0} marker(m_zone);", MarkerClassName(m_env.m_asset))
             LINE("marker.Mark(*pAsset);")
             LINE("")
-            LINEF("auto* reallocatedAsset = m_zone.GetMemory()->Alloc<{0}>();", info->m_definition->GetFullName())
+            LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())
             LINE("")
             LINEF("m_asset_info = reinterpret_cast<XAssetInfo<{0}>*>(LinkAsset(AssetNameAccessor<{1}>()(**pAsset), reallocatedAsset, marker.GetDependencies(), "

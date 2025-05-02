@@ -5,7 +5,7 @@
 ContentLoaderBase::ContentLoaderBase(Zone& zone)
     : varXString(nullptr),
       m_zone(zone),
-      m_memory(*zone.GetMemory()),
+      m_memory(zone.Memory()),
       m_stream(nullptr)
 {
 }
@@ -13,7 +13,7 @@ ContentLoaderBase::ContentLoaderBase(Zone& zone)
 ContentLoaderBase::ContentLoaderBase(Zone& zone, IZoneInputStream* stream)
     : varXString(nullptr),
       m_zone(zone),
-      m_memory(*zone.GetMemory()),
+      m_memory(zone.Memory()),
       m_stream(stream)
 {
 }

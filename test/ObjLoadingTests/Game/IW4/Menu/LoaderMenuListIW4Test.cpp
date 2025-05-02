@@ -36,7 +36,7 @@ namespace test::game::iw4::menu::parsing::it
               m_ignored_asset_lookup(),
               m_context(m_zone, &m_creator_collection, &m_ignored_asset_lookup)
         {
-            m_asset_creator = CreateMenuListLoader(*m_zone.GetMemory(), m_search_path);
+            m_asset_creator = CreateMenuListLoader(m_zone.Memory(), m_search_path);
         }
 
         void AddFile(std::string fileName, std::string data)
@@ -51,8 +51,8 @@ namespace test::game::iw4::menu::parsing::it
 
         Material* AddMaterial(const std::string& name)
         {
-            auto* material = m_zone.GetMemory()->Alloc<Material>();
-            material->info.name = m_zone.GetMemory()->Dup(name.c_str());
+            auto* material = m_zone.Memory().Alloc<Material>();
+            material->info.name = m_zone.Memory().Dup(name.c_str());
 
             m_context.AddAsset<AssetMaterial>(name, material);
 
