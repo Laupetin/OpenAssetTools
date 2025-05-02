@@ -43,31 +43,17 @@ namespace
             LINE("{")
             m_intendation++;
 
-            LINE(VariableDecl(m_env.m_asset->m_definition))
-            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
-            LINE("")
-
             m_intendation--;
             LINE("public:")
             m_intendation++;
-
-            // Variable Declarations: type varType;
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
-                {
-                    LINE(VariableDecl(type->m_type))
-                }
-            }
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
-                {
-                    LINE(PointerVariableDecl(type->m_type))
-                }
-            }
-
+            PrintHeaderConstructor();
+            PrintHeaderMainMarkMethodDeclaration(m_env.m_asset);
+            PrintHeaderGetAssetInfoMethodDeclaration(m_env.m_asset);
             LINE("")
+
+            m_intendation--;
+            LINE("private:")
+            m_intendation++;
 
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
@@ -94,11 +80,28 @@ namespace
                 }
             }
             PrintHeaderMarkMethodDeclaration(m_env.m_asset);
+
             LINE("")
-            PrintHeaderGetAssetInfoMethodDeclaration(m_env.m_asset);
+
+            LINE(VariableDecl(m_env.m_asset->m_definition))
+            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
             LINE("")
-            PrintHeaderConstructor();
-            PrintHeaderMainMarkMethodDeclaration(m_env.m_asset);
+
+            // Variable Declarations: type varType;
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                {
+                    LINE(VariableDecl(type->m_type))
+                }
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+                {
+                    LINE(PointerVariableDecl(type->m_type))
+                }
+            }
 
             m_intendation--;
             LINE("};")
@@ -131,6 +134,10 @@ namespace
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
             PrintConstructorMethod();
+            LINE("")
+            PrintMainMarkMethod();
+            LINE("")
+            PrintGetAssetInfoMethod();
 
             for (const auto* type : m_env.m_used_types)
             {
@@ -160,10 +167,6 @@ namespace
             }
             LINE("")
             PrintMarkMethod(m_env.m_asset);
-            LINE("")
-            PrintMainMarkMethod();
-            LINE("")
-            PrintGetAssetInfoMethod();
         }
 
     private:

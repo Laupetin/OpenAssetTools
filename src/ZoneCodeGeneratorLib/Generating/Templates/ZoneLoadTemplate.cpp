@@ -47,32 +47,16 @@ namespace
             LINE("{")
             m_intendation++;
 
-            LINEF("XAssetInfo<{0}>* m_asset_info;", m_env.m_asset->m_definition->GetFullName())
-            if (m_env.m_has_actions)
-            {
-                LINEF("Actions_{0} m_actions;", m_env.m_asset->m_definition->m_name)
-            }
-            LINE(VariableDecl(m_env.m_asset->m_definition))
-            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
-            LINE("")
-
-            // Variable Declarations: type varType;
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
-                {
-                    LINE(VariableDecl(type->m_type))
-                }
-            }
-            for (const auto* type : m_env.m_used_types)
-            {
-                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
-                {
-                    LINE(PointerVariableDecl(type->m_type))
-                }
-            }
+            m_intendation--;
+            LINE("public:")
+            m_intendation++;
+            PrintHeaderConstructor();
+            PrintHeaderMainLoadMethodDeclaration(m_env.m_asset);
 
             LINE("")
+            m_intendation--;
+            LINE("private:")
+            m_intendation++;
 
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
@@ -100,11 +84,31 @@ namespace
             PrintHeaderTempPtrLoadMethodDeclaration(m_env.m_asset);
             PrintHeaderAssetLoadMethodDeclaration(m_env.m_asset);
             LINE("")
-            m_intendation--;
-            LINE("public:")
-            m_intendation++;
-            PrintHeaderConstructor();
-            PrintHeaderMainLoadMethodDeclaration(m_env.m_asset);
+
+            LINEF("XAssetInfo<{0}>* m_asset_info;", m_env.m_asset->m_definition->GetFullName())
+            if (m_env.m_has_actions)
+            {
+                LINEF("Actions_{0} m_actions;", m_env.m_asset->m_definition->m_name)
+            }
+            LINE(VariableDecl(m_env.m_asset->m_definition))
+            LINE(PointerVariableDecl(m_env.m_asset->m_definition))
+            LINE("")
+
+            // Variable Declarations: type varType;
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                {
+                    LINE(VariableDecl(type->m_type))
+                }
+            }
+            for (const auto* type : m_env.m_used_types)
+            {
+                if (type->m_pointer_array_reference_exists && !type->m_is_context_asset)
+                {
+                    LINE(PointerVariableDecl(type->m_type))
+                }
+            }
 
             m_intendation--;
             LINE("};")
@@ -142,6 +146,8 @@ namespace
             LINEF("using namespace {0};", m_env.m_game)
             LINE("")
             PrintConstructorMethod();
+            LINE("")
+            PrintMainLoadMethod();
 
             for (const auto* type : m_env.m_used_types)
             {
@@ -173,8 +179,6 @@ namespace
             PrintLoadPtrMethod(m_env.m_asset);
             LINE("")
             PrintLoadAssetMethod(m_env.m_asset);
-            LINE("")
-            PrintMainLoadMethod();
         }
 
     private:
