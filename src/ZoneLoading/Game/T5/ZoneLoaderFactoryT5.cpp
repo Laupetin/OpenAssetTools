@@ -10,6 +10,7 @@
 #include "Loading/Steps/StepAddProcessor.h"
 #include "Loading/Steps/StepAllocXBlocks.h"
 #include "Loading/Steps/StepLoadZoneContent.h"
+#include "Loading/Steps/StepLoadZoneSizes.h"
 #include "Loading/Steps/StepSkipBytes.h"
 #include "Utils/ClassUtils.h"
 
@@ -77,16 +78,15 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
 
     SetupBlock(*zoneLoader);
 
-    zoneLoader->AddLoadingStep(std::make_unique<StepAddProcessor>(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
+    zoneLoader->AddLoadingStep(step::CreateStepAddProcessor(processor::CreateProcessorInflate(ZoneConstants::AUTHED_CHUNK_SIZE)));
 
     // Start of the XFile struct
-    zoneLoader->AddLoadingStep(std::make_unique<StepSkipBytes>(8));
-    // Skip size and externalSize fields since they are not interesting for us
-    zoneLoader->AddLoadingStep(std::make_unique<StepAllocXBlocks>());
+    zoneLoader->AddLoadingStep(step::CreateStepLoadZoneSizes());
+    zoneLoader->AddLoadingStep(step::CreateStepAllocXBlocks());
 
     // Start of the zone content
-    zoneLoader->AddLoadingStep(std::make_unique<StepLoadZoneContent>(
-        std::make_unique<ContentLoader>(*zonePtr), zonePtr, ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
+    zoneLoader->AddLoadingStep(
+        step::CreateStepLoadZoneContent(std::make_unique<ContentLoader>(*zonePtr), ZoneConstants::OFFSET_BLOCK_BIT_COUNT, ZoneConstants::INSERT_BLOCK));
 
     return zoneLoader;
 }

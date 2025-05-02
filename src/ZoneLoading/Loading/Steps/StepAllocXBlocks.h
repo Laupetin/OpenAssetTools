@@ -2,8 +2,9 @@
 
 #include "Loading/ILoadingStep.h"
 
-class StepAllocXBlocks final : public ILoadingStep
+#include <memory>
+
+namespace step
 {
-public:
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-};
+    std::unique_ptr<ILoadingStep> CreateStepAllocXBlocks();
+}

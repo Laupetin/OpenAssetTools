@@ -5,15 +5,11 @@
 
 #include <memory>
 
-class StepLoadSignature final : public ILoadingStep, public ISignatureProvider
+namespace step
 {
-public:
-    explicit StepLoadSignature(size_t signatureSize);
+    class IStepLoadSignature : public ILoadingStep, public ISignatureProvider
+    {
+    };
 
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-    void GetSignature(const uint8_t** pSignature, size_t* pSize) override;
-
-private:
-    std::unique_ptr<uint8_t[]> m_signature;
-    size_t m_signature_size;
-};
+    std::unique_ptr<IStepLoadSignature> CreateStepLoadSignature(size_t signatureSize);
+} // namespace step

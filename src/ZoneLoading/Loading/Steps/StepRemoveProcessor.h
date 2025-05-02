@@ -1,14 +1,11 @@
 #pragma once
 
 #include "Loading/ILoadingStep.h"
+#include "Loading/StreamProcessor.h"
 
-class StepRemoveProcessor final : public ILoadingStep
+#include <memory>
+
+namespace step
 {
-public:
-    explicit StepRemoveProcessor(StreamProcessor* streamProcessor);
-
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-
-private:
-    StreamProcessor* m_stream_processor;
-};
+    std::unique_ptr<ILoadingStep> CreateStepRemoveProcessor(const StreamProcessor* streamProcessor);
+}

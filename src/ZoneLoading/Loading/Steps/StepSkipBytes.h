@@ -2,13 +2,9 @@
 
 #include "Loading/ILoadingStep.h"
 
-class StepSkipBytes final : public ILoadingStep
+#include <memory>
+
+namespace step
 {
-public:
-    explicit StepSkipBytes(size_t skipCount);
-
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-
-private:
-    size_t m_skip_count;
-};
+    std::unique_ptr<ILoadingStep> CreateStepSkipBytes(size_t skipCount);
+}

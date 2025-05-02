@@ -2,13 +2,9 @@
 
 #include "Loading/ILoadingStep.h"
 
-class StepDumpData final : public ILoadingStep
+#include <memory>
+
+namespace step
 {
-public:
-    explicit StepDumpData(size_t dumpCount);
-
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-
-private:
-    size_t m_dump_count;
-};
+    std::unique_ptr<ILoadingStep> CreateStepDumpData(size_t dumpCount);
+}

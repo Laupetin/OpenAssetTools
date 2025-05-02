@@ -2,19 +2,16 @@
 
 #include "Loading/ILoadingStep.h"
 
-#include <cstddef>
+#include <memory>
 
-class StepLoadZoneSizes final : public ILoadingStep
+namespace step
 {
-public:
-    StepLoadZoneSizes();
+    class IStepLoadZoneSizes : public ILoadingStep
+    {
+    public:
+        [[nodiscard]] virtual uint32_t GetSize() const = 0;
+        [[nodiscard]] virtual uint32_t GetExternalSize() const = 0;
+    };
 
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-
-    [[nodiscard]] size_t GetSize() const;
-    [[nodiscard]] size_t GetExternalSize() const;
-
-private:
-    size_t m_size;
-    size_t m_external_size;
-};
+    std::unique_ptr<IStepLoadZoneSizes> CreateStepLoadZoneSizes();
+} // namespace step

@@ -5,17 +5,11 @@
 #include "Loading/ISignatureProvider.h"
 #include "Utils/ICapturedDataProvider.h"
 
-class StepVerifySignature final : public ILoadingStep
+#include <memory>
+
+namespace step
 {
-public:
-    StepVerifySignature(std::unique_ptr<cryptography::IPublicKeyAlgorithm> signatureAlgorithm,
-                        ISignatureProvider* signatureProvider,
-                        ICapturedDataProvider* signatureDataProvider);
-
-    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
-
-private:
-    std::unique_ptr<cryptography::IPublicKeyAlgorithm> m_algorithm;
-    ISignatureProvider* m_signature_provider;
-    ICapturedDataProvider* m_signature_data_provider;
-};
+    std::unique_ptr<ILoadingStep> CreateStepVerifySignature(std::unique_ptr<cryptography::IPublicKeyAlgorithm> signatureAlgorithm,
+                                                            ISignatureProvider* signatureProvider,
+                                                            ICapturedDataProvider* signatureDataProvider);
+}
