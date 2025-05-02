@@ -10,7 +10,7 @@ class StepLoadSignature final : public ILoadingStep, public ISignatureProvider
 public:
     explicit StepLoadSignature(size_t signatureSize);
 
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
     void GetSignature(const uint8_t** pSignature, size_t* pSize) override;
 
 private:

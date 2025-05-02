@@ -4,6 +4,9 @@
 #include "LoadingFileStream.h"
 
 #include <algorithm>
+#include <cassert>
+#include <format>
+#include <iostream>
 
 ZoneLoader::ZoneLoader(std::unique_ptr<Zone> zone)
     : m_processor_chain_dirty(false),
@@ -31,7 +34,7 @@ void ZoneLoader::AddXBlock(std::unique_ptr<XBlock> block)
     m_blocks.push_back(block.get());
 
     std::ranges::sort(m_blocks,
-                      [](XBlock* b1, XBlock* b2) -> bool
+                      [](const XBlock* b1, const XBlock* b2) -> bool
                       {
                           return b1->m_index < b2->m_index;
                       });
@@ -50,7 +53,7 @@ void ZoneLoader::AddStreamProcessor(std::unique_ptr<StreamProcessor> streamProce
     m_processor_chain_dirty = true;
 }
 
-void ZoneLoader::RemoveStreamProcessor(StreamProcessor* streamProcessor)
+void ZoneLoader::RemoveStreamProcessor(const StreamProcessor* streamProcessor)
 {
     for (auto i = m_processors.begin(); i < m_processors.end(); ++i)
     {
@@ -67,23 +70,24 @@ std::unique_ptr<Zone> ZoneLoader::LoadZone(std::istream& stream)
 {
     LoadingFileStream fileStream(stream);
     auto* endStream = BuildLoadingChain(&fileStream);
+    assert(endStream);
 
     try
     {
         for (const auto& step : m_steps)
         {
-            step->PerformStep(this, endStream);
+            step->PerformStep(*this, *endStream);
 
             if (m_processor_chain_dirty)
             {
                 endStream = BuildLoadingChain(&fileStream);
+                assert(endStream);
             }
         }
     }
     catch (LoadingException& e)
     {
-        const auto detailedMessage = e.DetailedMessage();
-        printf("Loading fastfile failed: %s\n", detailedMessage.c_str());
+        std::cerr << std::format("Loading fastfile failed: {}\n", e.DetailedMessage());
 
         return nullptr;
     }

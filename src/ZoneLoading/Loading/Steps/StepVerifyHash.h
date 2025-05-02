@@ -15,7 +15,7 @@ public:
                    IHashProvider* hashProvider,
                    ICapturedDataProvider* dataProvider);
 
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
 
 private:
     std::unique_ptr<cryptography::IHashFunction> m_hash_function;

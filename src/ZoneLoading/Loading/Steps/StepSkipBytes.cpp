@@ -5,7 +5,7 @@ StepSkipBytes::StepSkipBytes(const size_t skipCount)
 {
 }
 
-void StepSkipBytes::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepSkipBytes::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
     uint8_t tempBuffer[128];
     auto skippedBytes = 0uz;
@@ -23,7 +23,7 @@ void StepSkipBytes::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
             toSkip = sizeof(tempBuffer);
         }
 
-        stream->Load(tempBuffer, toSkip);
+        stream.Load(tempBuffer, toSkip);
 
         skippedBytes += toSkip;
     }

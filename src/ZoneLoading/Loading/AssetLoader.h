@@ -9,7 +9,7 @@
 class AssetLoader : public ContentLoaderBase
 {
 protected:
-    AssetLoader(asset_type_t assetType, Zone& zone, IZoneInputStream* stream);
+    AssetLoader(asset_type_t assetType, Zone& zone, ZoneInputStream& stream);
 
     XAssetInfoGeneric* LinkAsset(std::string name,
                                  void* asset,

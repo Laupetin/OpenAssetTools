@@ -91,7 +91,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
+        Loader_##typeName loader(m_zone, *m_stream);                                                                                                           \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }
@@ -176,9 +176,9 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     }
 }
 
-void ContentLoader::Load(IZoneInputStream* stream)
+void ContentLoader::Load(ZoneInputStream& stream)
 {
-    m_stream = stream;
+    m_stream = &stream;
 
     m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
 

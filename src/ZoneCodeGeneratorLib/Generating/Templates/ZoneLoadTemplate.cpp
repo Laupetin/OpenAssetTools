@@ -244,7 +244,7 @@ namespace
 
         void PrintHeaderConstructor() const
         {
-            LINEF("{0}(Zone& zone, IZoneInputStream* stream);", LoaderClassName(m_env.m_asset))
+            LINEF("{0}(Zone& zone, ZoneInputStream& stream);", LoaderClassName(m_env.m_asset))
         }
 
         void PrintVariableInitialization(const DataDefinition* def) const
@@ -259,7 +259,7 @@ namespace
 
         void PrintConstructorMethod()
         {
-            LINEF("{0}::{0}(Zone& zone, IZoneInputStream* stream)", LoaderClassName(m_env.m_asset))
+            LINEF("{0}::{0}(Zone& zone, ZoneInputStream& stream)", LoaderClassName(m_env.m_asset))
 
             m_intendation++;
             LINE_STARTF(": AssetLoader({0}::EnumEntry, zone, stream)", m_env.m_asset->m_asset_name)
@@ -320,7 +320,7 @@ namespace
 
             if (info && StructureComputations(info).IsAsset())
             {
-                LINEF("{0} loader(m_zone, m_stream);", LoaderClassName(info))
+                LINEF("{0} loader(m_zone, *m_stream);", LoaderClassName(info))
                 LINEF("loader.Load({0});", MakeTypePtrVarName(def))
             }
             else
@@ -422,7 +422,7 @@ namespace
         {
             if (loadType == MemberLoadType::SINGLE_POINTER)
             {
-                LINEF("{0} loader(m_zone, m_stream);", LoaderClassName(member->m_type))
+                LINEF("{0} loader(m_zone, *m_stream);", LoaderClassName(member->m_type))
                 LINEF("loader.Load(&{0});", MakeMemberAccess(info, member, modifier))
             }
             else if (loadType == MemberLoadType::POINTER_ARRAY)

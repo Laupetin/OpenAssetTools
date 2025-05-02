@@ -7,7 +7,7 @@ class StepVerifyFileName final : public ILoadingStep
 public:
     explicit StepVerifyFileName(std::string fileName, size_t fileNameBufferSize);
 
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
 
 private:
     std::string m_expected_file_name;

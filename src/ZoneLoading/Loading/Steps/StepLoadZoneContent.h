@@ -10,7 +10,7 @@ class StepLoadZoneContent final : public ILoadingStep
 public:
     StepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoint> entryPoint, Zone* zone, int offsetBlockBitCount, block_t insertBlock);
 
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
 
 private:
     std::unique_ptr<IContentLoadingEntryPoint> m_content_loader;

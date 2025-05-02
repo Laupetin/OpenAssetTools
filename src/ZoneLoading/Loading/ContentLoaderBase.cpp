@@ -10,11 +10,11 @@ ContentLoaderBase::ContentLoaderBase(Zone& zone)
 {
 }
 
-ContentLoaderBase::ContentLoaderBase(Zone& zone, IZoneInputStream* stream)
+ContentLoaderBase::ContentLoaderBase(Zone& zone, ZoneInputStream& stream)
     : varXString(nullptr),
       m_zone(zone),
       m_memory(zone.Memory()),
-      m_stream(stream)
+      m_stream(&stream)
 {
 }
 

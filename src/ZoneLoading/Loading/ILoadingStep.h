@@ -15,5 +15,5 @@ public:
     ILoadingStep& operator=(const ILoadingStep& other) = default;
     ILoadingStep& operator=(ILoadingStep&& other) noexcept = default;
 
-    virtual void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) = 0;
+    virtual void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) = 0;
 };

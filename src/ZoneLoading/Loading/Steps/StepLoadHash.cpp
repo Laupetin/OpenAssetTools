@@ -13,11 +13,9 @@ StepLoadHash::StepLoadHash(const size_t hashSize, const unsigned hashCount)
 
 StepLoadHash::~StepLoadHash() = default;
 
-void StepLoadHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepLoadHash::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
-    assert(stream != nullptr);
-
-    if (stream->Load(m_hashes.get(), m_hash_size * m_hash_count) != m_hash_size * m_hash_count)
+    if (stream.Load(m_hashes.get(), m_hash_size * m_hash_count) != m_hash_size * m_hash_count)
         throw UnexpectedEndOfFileException();
 }
 

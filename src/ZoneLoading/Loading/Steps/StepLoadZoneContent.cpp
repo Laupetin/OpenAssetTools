@@ -1,6 +1,6 @@
 #include "StepLoadZoneContent.h"
 
-#include "Zone/Stream/Impl/XBlockInputStream.h"
+#include "Zone/Stream/ZoneInputStream.h"
 
 StepLoadZoneContent::StepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoint> entryPoint,
                                          Zone* zone,
@@ -13,9 +13,9 @@ StepLoadZoneContent::StepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoi
 {
 }
 
-void StepLoadZoneContent::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepLoadZoneContent::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
-    const auto inputStream = std::make_unique<XBlockInputStream>(zoneLoader->m_blocks, stream, m_offset_block_bit_count, m_insert_block);
+    const auto inputStream = ZoneInputStream::Create(zoneLoader.m_blocks, stream, m_offset_block_bit_count, m_insert_block);
 
-    m_content_loader->Load(inputStream.get());
+    m_content_loader->Load(*inputStream);
 }

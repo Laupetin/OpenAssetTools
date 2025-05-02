@@ -7,11 +7,10 @@ StepAddProcessor::StepAddProcessor(std::unique_ptr<StreamProcessor> streamProces
 {
 }
 
-void StepAddProcessor::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepAddProcessor::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
-    assert(zoneLoader != nullptr);
     assert(m_stream_processor != nullptr);
 
-    zoneLoader->AddStreamProcessor(std::move(m_stream_processor));
+    zoneLoader.AddStreamProcessor(std::move(m_stream_processor));
     m_stream_processor = nullptr;
 }

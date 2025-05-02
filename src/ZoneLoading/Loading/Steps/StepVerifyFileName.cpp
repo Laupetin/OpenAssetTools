@@ -12,7 +12,7 @@ StepVerifyFileName::StepVerifyFileName(std::string fileName, const size_t fileNa
         m_expected_file_name.erase(m_file_name_buffer_size - 1);
 }
 
-void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepVerifyFileName::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
     std::stringstream originalFilenameStream;
     unsigned bufferOffset = 0;
@@ -20,8 +20,7 @@ void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* str
 
     for (; bufferOffset < m_file_name_buffer_size; bufferOffset++)
     {
-
-        stream->Load(&c, sizeof(char));
+        stream.Load(&c, sizeof(char));
 
         if (c == '\00')
         {
@@ -35,7 +34,7 @@ void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* str
     // Skip the rest of the buffer which should be null bytes
     while (bufferOffset < m_file_name_buffer_size)
     {
-        stream->Load(&c, sizeof(char));
+        stream.Load(&c, sizeof(char));
         bufferOffset++;
     }
 

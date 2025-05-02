@@ -18,7 +18,7 @@ public:
     StepLoadHash& operator=(const StepLoadHash& other) = delete;
     StepLoadHash& operator=(StepLoadHash&& other) noexcept = delete;
 
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
     void GetHash(unsigned hashIndex, const uint8_t** pHash, size_t* pSize) override;
     void GetCapturedData(const uint8_t** pCapturedData, size_t* pSize) override;
 

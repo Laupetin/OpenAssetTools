@@ -5,5 +5,5 @@
 class StepAllocXBlocks final : public ILoadingStep
 {
 public:
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
 };

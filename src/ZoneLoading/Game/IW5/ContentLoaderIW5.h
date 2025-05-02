@@ -11,7 +11,7 @@ namespace IW5
     public:
         explicit ContentLoader(Zone& zone);
 
-        void Load(IZoneInputStream* stream) override;
+        void Load(ZoneInputStream& stream) override;
 
     private:
         void LoadScriptStringList(bool atStreamStart);

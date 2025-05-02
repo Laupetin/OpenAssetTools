@@ -10,11 +10,9 @@ StepLoadSignature::StepLoadSignature(const size_t signatureSize)
 {
 }
 
-void StepLoadSignature::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepLoadSignature::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
-    assert(stream != nullptr);
-
-    if (stream->Load(m_signature.get(), m_signature_size) != m_signature_size)
+    if (stream.Load(m_signature.get(), m_signature_size) != m_signature_size)
         throw UnexpectedEndOfFileException();
 }
 

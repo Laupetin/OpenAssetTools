@@ -7,7 +7,7 @@ StepDumpData::StepDumpData(const size_t dumpCount)
 {
 }
 
-void StepDumpData::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepDumpData::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
     uint8_t tempBuffer[128];
     auto dumpedBytes = 0uz;
@@ -27,7 +27,7 @@ void StepDumpData::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
             toDump = sizeof(tempBuffer);
         }
 
-        const auto loadedSize = stream->Load(tempBuffer, toDump);
+        const auto loadedSize = stream.Load(tempBuffer, toDump);
         dumpedBytes += loadedSize;
 
         if (loadedSize == 0)

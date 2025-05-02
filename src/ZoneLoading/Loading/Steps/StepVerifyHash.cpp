@@ -16,7 +16,7 @@ StepVerifyHash::StepVerifyHash(std::unique_ptr<cryptography::IHashFunction> hash
 {
 }
 
-void StepVerifyHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepVerifyHash::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
     const uint8_t* dataToHash = nullptr;
     size_t dataToHashSize = 0;

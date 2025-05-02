@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cassert>
 
-AssetLoader::AssetLoader(const asset_type_t assetType, Zone& zone, IZoneInputStream* stream)
+AssetLoader::AssetLoader(const asset_type_t assetType, Zone& zone, ZoneInputStream& stream)
     : ContentLoaderBase(zone, stream),
       varScriptString(nullptr),
       m_asset_type(assetType)

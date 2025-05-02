@@ -12,7 +12,7 @@ public:
                         ISignatureProvider* signatureProvider,
                         ICapturedDataProvider* signatureDataProvider);
 
-    void PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream) override;
+    void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override;
 
 private:
     std::unique_ptr<cryptography::IPublicKeyAlgorithm> m_algorithm;

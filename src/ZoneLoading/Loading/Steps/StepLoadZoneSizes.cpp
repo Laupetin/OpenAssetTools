@@ -6,10 +6,10 @@ StepLoadZoneSizes::StepLoadZoneSizes()
 {
 }
 
-void StepLoadZoneSizes::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepLoadZoneSizes::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
-    stream->Load(&m_size, sizeof(m_size));
-    stream->Load(&m_external_size, sizeof(m_external_size));
+    stream.Load(&m_size, sizeof(m_size));
+    stream.Load(&m_external_size, sizeof(m_external_size));
 }
 
 size_t StepLoadZoneSizes::GetSize() const

@@ -20,7 +20,7 @@ public:
     void AddLoadingStep(std::unique_ptr<ILoadingStep> step);
     void AddStreamProcessor(std::unique_ptr<StreamProcessor> streamProcessor);
 
-    void RemoveStreamProcessor(StreamProcessor* streamProcessor);
+    void RemoveStreamProcessor(const StreamProcessor* streamProcessor);
 
     std::unique_ptr<Zone> LoadZone(std::istream& stream);
 

@@ -13,7 +13,7 @@ StepVerifySignature::StepVerifySignature(std::unique_ptr<cryptography::IPublicKe
 {
 }
 
-void StepVerifySignature::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
+void StepVerifySignature::PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream)
 {
     assert(m_algorithm != nullptr);
     assert(m_signature_provider != nullptr);

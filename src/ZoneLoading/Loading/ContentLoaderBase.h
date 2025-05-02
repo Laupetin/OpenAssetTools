@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Zone/Stream/IZoneInputStream.h"
+#include "Zone/Stream/ZoneInputStream.h"
 #include "Zone/Zone.h"
 
 class ContentLoaderBase
@@ -18,7 +18,7 @@ public:
 
 protected:
     explicit ContentLoaderBase(Zone& zone);
-    ContentLoaderBase(Zone& zone, IZoneInputStream* stream);
+    ContentLoaderBase(Zone& zone, ZoneInputStream& stream);
 
     void LoadXString(bool atStreamStart) const;
     void LoadXStringArray(bool atStreamStart, size_t count);
@@ -27,5 +27,5 @@ protected:
 
     Zone& m_zone;
     MemoryManager& m_memory;
-    IZoneInputStream* m_stream;
+    ZoneInputStream* m_stream;
 };
