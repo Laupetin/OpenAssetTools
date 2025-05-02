@@ -16,8 +16,6 @@ StepVerifyHash::StepVerifyHash(std::unique_ptr<cryptography::IHashFunction> hash
 {
 }
 
-StepVerifyHash::~StepVerifyHash() = default;
-
 void StepVerifyHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {
     const uint8_t* dataToHash = nullptr;
@@ -31,7 +29,7 @@ void StepVerifyHash::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
     if (hashSize != m_hash_function->GetHashSize())
         throw InvalidHashException();
 
-    const std::unique_ptr<uint8_t[]> hashMemory = std::make_unique<uint8_t[]>(m_hash_function->GetHashSize());
+    const auto hashMemory = std::make_unique<uint8_t[]>(m_hash_function->GetHashSize());
     m_hash_function->Init();
     m_hash_function->Process(dataToHash, dataToHashSize);
     m_hash_function->Finish(hashMemory.get());

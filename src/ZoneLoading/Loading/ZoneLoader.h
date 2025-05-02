@@ -13,18 +13,7 @@ class ILoadingStep;
 
 class ZoneLoader
 {
-    std::vector<std::unique_ptr<ILoadingStep>> m_steps;
-    std::vector<std::unique_ptr<StreamProcessor>> m_processors;
-
-    bool m_processor_chain_dirty;
-
-    std::unique_ptr<Zone> m_zone;
-
-    ILoadingStream* BuildLoadingChain(ILoadingStream* rootStream);
-
 public:
-    std::vector<XBlock*> m_blocks;
-
     explicit ZoneLoader(std::unique_ptr<Zone> zone);
 
     void AddXBlock(std::unique_ptr<XBlock> block);
@@ -34,4 +23,16 @@ public:
     void RemoveStreamProcessor(StreamProcessor* streamProcessor);
 
     std::unique_ptr<Zone> LoadZone(std::istream& stream);
+
+    std::vector<XBlock*> m_blocks;
+
+private:
+    ILoadingStream* BuildLoadingChain(ILoadingStream* rootStream);
+
+    std::vector<std::unique_ptr<ILoadingStep>> m_steps;
+    std::vector<std::unique_ptr<StreamProcessor>> m_processors;
+
+    bool m_processor_chain_dirty;
+
+    std::unique_ptr<Zone> m_zone;
 };

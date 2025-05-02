@@ -25,7 +25,7 @@ void StepLoadHash::GetHash(const unsigned hashIndex, const uint8_t** pHash, size
 {
     assert(pHash != nullptr);
     assert(pSize != nullptr);
-    assert(hashIndex >= 0 && hashIndex < m_hash_count);
+    assert(hashIndex < m_hash_count);
 
     assert(m_hashes);
 

@@ -2,7 +2,10 @@
 
 #include "Loading/Exception/InvalidXBlockSizeException.h"
 
-const uint64_t StepAllocXBlocks::MAX_XBLOCK_SIZE = 0x3C000000;
+namespace
+{
+    constexpr uint64_t MAX_XBLOCK_SIZE = 0x3C000000;
+}
 
 void StepAllocXBlocks::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* stream)
 {

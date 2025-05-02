@@ -39,7 +39,7 @@ void StepVerifyFileName::PerformStep(ZoneLoader* zoneLoader, ILoadingStream* str
         bufferOffset++;
     }
 
-    std::string originalFileName = originalFilenameStream.str();
+    const auto originalFileName = originalFilenameStream.str();
 
     if (originalFileName != m_expected_file_name)
         throw InvalidFileNameException(m_expected_file_name, originalFileName);

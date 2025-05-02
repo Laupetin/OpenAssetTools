@@ -11,6 +11,10 @@ protected:
 
 public:
     virtual ~ContentLoaderBase() = default;
+    ContentLoaderBase(const ContentLoaderBase& other) = default;
+    ContentLoaderBase(ContentLoaderBase&& other) noexcept = default;
+    ContentLoaderBase& operator=(const ContentLoaderBase& other) = delete;
+    ContentLoaderBase& operator=(ContentLoaderBase&& other) noexcept = delete;
 
 protected:
     explicit ContentLoaderBase(Zone& zone);
