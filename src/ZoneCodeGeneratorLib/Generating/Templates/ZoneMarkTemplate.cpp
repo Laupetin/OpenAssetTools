@@ -6,7 +6,6 @@
 #include "Utils/StringUtils.h"
 
 #include <cassert>
-#include <iostream>
 #include <sstream>
 
 namespace
@@ -17,7 +16,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, RenderingContext* context)
+        Template(std::ostream& stream, const RenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -276,7 +275,7 @@ namespace
             }
         }
 
-        void PrintMarkPtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintMarkPtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info)
         {
             LINEF("if (*{0})", MakeTypePtrVarName(def))
             LINE("{")
@@ -295,7 +294,7 @@ namespace
             LINE("}")
         }
 
-        void PrintMarkPtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintMarkPtrArrayMethod(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("void {0}::MarkPtrArray_{1}(const size_t count)", MarkerClassName(m_env.m_asset), MakeSafeTypeName(def))
             LINE("{")
@@ -310,7 +309,7 @@ namespace
             m_intendation++;
 
             LINEF("{0} = var;", MakeTypePtrVarName(def))
-            PrintMarkPtrArrayMethod_PointerCheck(def, info, reusable);
+            PrintMarkPtrArrayMethod_PointerCheck(def, info);
             LINE("")
             LINE("var++;")
 
@@ -531,7 +530,8 @@ namespace
             }
         }
 
-        static bool MarkMember_ShouldMakePointerCheck(const MemberInformation* member, const DeclarationModifierComputations& modifier, MemberLoadType loadType)
+        static bool
+            MarkMember_ShouldMakePointerCheck(const MemberInformation* member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType)
         {
             if (loadType != MemberLoadType::ARRAY_POINTER && loadType != MemberLoadType::POINTER_ARRAY && loadType != MemberLoadType::SINGLE_POINTER)
             {
@@ -780,11 +780,11 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRender(RenderingContext* context)
+std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRender(const RenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context->m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
     files.emplace_back(std::format("{0}/{0}_mark_db.h", assetName), TAG_HEADER);
@@ -793,7 +793,7 @@ std::vector<CodeTemplateFile> ZoneMarkTemplate::GetFilesToRender(RenderingContex
     return files;
 }
 
-void ZoneMarkTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
+void ZoneMarkTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
 {
     Template t(stream, context);
 

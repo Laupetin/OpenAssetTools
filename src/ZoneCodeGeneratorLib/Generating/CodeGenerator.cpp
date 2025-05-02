@@ -27,7 +27,7 @@ void CodeGenerator::SetupTemplates()
     m_template_mapping["assetstructtests"] = std::make_unique<AssetStructTestsTemplate>();
 }
 
-bool CodeGenerator::GenerateCodeForTemplate(RenderingContext* context, ICodeTemplate* codeTemplate) const
+bool CodeGenerator::GenerateCodeForTemplate(const RenderingContext& context, ICodeTemplate* codeTemplate) const
 {
     for (const auto& codeFile : codeTemplate->GetFilesToRender(context))
     {
@@ -110,7 +110,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
             for (auto* asset : assets)
             {
                 auto context = RenderingContext::BuildContext(repository, asset);
-                if (!GenerateCodeForTemplate(context.get(), foundTemplate->second.get()))
+                if (!GenerateCodeForTemplate(*context, foundTemplate->second.get()))
                 {
                     std::cerr << std::format(
                         "Failed to generate code for asset '{}' with preset '{}'\n", asset->m_definition->GetFullName(), foundTemplate->first);
@@ -128,7 +128,7 @@ bool CodeGenerator::GenerateCode(IDataRepository* repository)
                 return false;
 
             auto context = RenderingContext::BuildContext(repository, asset);
-            if (!GenerateCodeForTemplate(context.get(), foundTemplate->second.get()))
+            if (!GenerateCodeForTemplate(*context, foundTemplate->second.get()))
                 return false;
         }
     }

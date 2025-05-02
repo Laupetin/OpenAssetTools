@@ -15,7 +15,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, RenderingContext* context)
+        Template(std::ostream& stream, const RenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -1119,7 +1119,7 @@ namespace
             LINEF("m_stream->MarkFollowing(*{0});", MakeTypeWrittenPtrVarName(def))
         }
 
-        void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintWritePtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("if (*{0})", MakeTypePtrVarName(def))
             LINE("{")
@@ -1153,7 +1153,7 @@ namespace
             LINE("}")
         }
 
-        void PrintWritePtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintWritePtrArrayMethod(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("void {0}::WritePtrArray_{1}(const bool atStreamStart, const size_t count)", WriterClassName(m_env.m_asset), MakeSafeTypeName(def))
             LINE("{")
@@ -1228,11 +1228,11 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(RenderingContext* context)
+std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(const RenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context->m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_definition->m_name;
     for (auto& c : assetName)
         c = static_cast<char>(tolower(c));
 
@@ -1242,7 +1242,7 @@ std::vector<CodeTemplateFile> ZoneWriteTemplate::GetFilesToRender(RenderingConte
     return files;
 }
 
-void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
+void ZoneWriteTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
 {
     Template t(stream, context);
 

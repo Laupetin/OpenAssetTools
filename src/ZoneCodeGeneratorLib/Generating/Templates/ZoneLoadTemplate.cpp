@@ -16,7 +16,7 @@ namespace
     class Template final : BaseTemplate
     {
     public:
-        Template(std::ostream& stream, RenderingContext* context)
+        Template(std::ostream& stream, const RenderingContext& context)
             : BaseTemplate(stream, context)
         {
         }
@@ -308,7 +308,7 @@ namespace
             }
         }
 
-        void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintLoadPtrArrayMethod_PointerCheck(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("if (*{0})", MakeTypePtrVarName(def))
             LINE("{")
@@ -350,7 +350,7 @@ namespace
             LINE("}")
         }
 
-        void PrintLoadPtrArrayMethod(const DataDefinition* def, StructureInformation* info, const bool reusable)
+        void PrintLoadPtrArrayMethod(const DataDefinition* def, const StructureInformation* info, const bool reusable)
         {
             LINEF("void {0}::LoadPtrArray_{1}(const bool atStreamStart, const size_t count)", LoaderClassName(m_env.m_asset), MakeSafeTypeName(def))
             LINE("{")
@@ -903,7 +903,7 @@ namespace
             }
         }
 
-        void LoadMember_ReferenceArray(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+        void LoadMember_ReferenceArray(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             auto first = true;
             for (const auto& entry : modifier.GetArrayEntries())
@@ -921,7 +921,7 @@ namespace
             }
         }
 
-        void LoadMember_Reference(StructureInformation* info, MemberInformation* member, const DeclarationModifierComputations& modifier)
+        void LoadMember_Reference(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             if (modifier.IsDynamicArray())
             {
@@ -958,7 +958,7 @@ namespace
             }
         }
 
-        void LoadMember_Condition_Struct(StructureInformation* info, MemberInformation* member)
+        void LoadMember_Condition_Struct(const StructureInformation* info, const MemberInformation* member)
         {
             LINE("")
             if (member->m_condition)
@@ -978,7 +978,7 @@ namespace
             }
         }
 
-        void LoadMember_Condition_Union(StructureInformation* info, MemberInformation* member)
+        void LoadMember_Condition_Union(const StructureInformation* info, const MemberInformation* member)
         {
             const MemberComputations computations(member);
 
@@ -1046,7 +1046,7 @@ namespace
             }
         }
 
-        void PrintLoadMemberIfNeedsTreatment(StructureInformation* info, MemberInformation* member)
+        void PrintLoadMemberIfNeedsTreatment(const StructureInformation* info, const MemberInformation* member)
         {
             const MemberComputations computations(member);
             if (computations.ShouldIgnore())
@@ -1062,7 +1062,7 @@ namespace
             }
         }
 
-        void PrintLoadMethod(StructureInformation* info)
+        void PrintLoadMethod(const StructureInformation* info)
         {
             const StructureComputations computations(info);
             LINEF("void {0}::Load_{1}(const bool atStreamStart)", LoaderClassName(m_env.m_asset), info->m_definition->m_name)
@@ -1126,7 +1126,7 @@ namespace
             LINE("}")
         }
 
-        void PrintLoadPtrMethod(StructureInformation* info)
+        void PrintLoadPtrMethod(const StructureInformation* info)
         {
             const bool inTemp = info->m_block && info->m_block->m_type == FastFileBlockType::TEMP;
             LINEF("void {0}::LoadPtr_{1}(const bool atStreamStart)", LoaderClassName(m_env.m_asset), MakeSafeTypeName(info->m_definition))
@@ -1310,11 +1310,11 @@ namespace
     };
 } // namespace
 
-std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContext* context)
+std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(const RenderingContext& context)
 {
     std::vector<CodeTemplateFile> files;
 
-    auto assetName = context->m_asset->m_definition->m_name;
+    auto assetName = context.m_asset->m_definition->m_name;
     utils::MakeStringLowerCase(assetName);
 
     files.emplace_back(std::format("{0}/{0}_load_db.h", assetName), TAG_HEADER);
@@ -1323,7 +1323,7 @@ std::vector<CodeTemplateFile> ZoneLoadTemplate::GetFilesToRender(RenderingContex
     return files;
 }
 
-void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag, RenderingContext* context)
+void ZoneLoadTemplate::RenderFile(std::ostream& stream, const int fileTag, const RenderingContext& context)
 {
     Template t(stream, context);
 
