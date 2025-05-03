@@ -4,7 +4,7 @@
 
 namespace
 {
-    constexpr uint64_t MAX_XBLOCK_SIZE = 0x3C000000;
+    constexpr uint64_t MAX_XBLOCK_SIZE = 0x3C000000; // ~1GB
 
     class StepAllocXBlocks final : public ILoadingStep
     {

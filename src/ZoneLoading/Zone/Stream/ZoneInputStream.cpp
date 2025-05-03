@@ -28,10 +28,15 @@ namespace
     class XBlockInputStream final : public ZoneInputStream
     {
     public:
-        XBlockInputStream(
-            const unsigned pointerBitCount, const unsigned blockBitCount, std::vector<XBlock*>& blocks, const block_t insertBlock, ILoadingStream& stream)
+        XBlockInputStream(const unsigned pointerBitCount,
+                          const unsigned blockBitCount,
+                          std::vector<XBlock*>& blocks,
+                          const block_t insertBlock,
+                          ILoadingStream& stream,
+                          MemoryManager& memory)
             : m_blocks(blocks),
               m_stream(stream),
+              m_memory(memory),
               m_pointer_byte_count(pointerBitCount / 8u),
               m_block_bit_count(blockBitCount)
         {
@@ -45,6 +50,11 @@ namespace
             m_insert_block = blocks[insertBlock];
         }
 
+        [[nodiscard]] unsigned GetPointerBitCount() const override
+        {
+            return m_pointer_byte_count * 8u;
+        }
+
         void PushBlock(const block_t block) override
         {
             assert(block < static_cast<block_t>(m_blocks.size()));
@@ -54,7 +64,7 @@ namespace
 
             m_block_stack.push(newBlock);
 
-            if (newBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+            if (newBlock->m_type == XBlockType::BLOCK_TYPE_TEMP)
                 m_temp_offsets.push(m_block_offsets[newBlock->m_index]);
         }
 
@@ -70,7 +80,7 @@ namespace
             m_block_stack.pop();
 
             // If the temp block is not used anymore right now, reset it to the buffer start since as the name suggests, the data inside is temporary.
-            if (poppedBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+            if (poppedBlock->m_type == XBlockType::BLOCK_TYPE_TEMP)
             {
                 m_block_offsets[poppedBlock->m_index] = m_temp_offsets.top();
                 m_temp_offsets.pop();
@@ -96,6 +106,23 @@ namespace
             return &block->m_buffer[m_block_offsets[block->m_index]];
         }
 
+        void* AllocOutOfBlock(const unsigned align, const size_t size) override
+        {
+            assert(!m_block_stack.empty());
+
+            if (m_block_stack.empty())
+                return nullptr;
+
+            auto* block = m_block_stack.top();
+
+            Align(align);
+
+            if (m_block_offsets[block->m_index] > block->m_buffer_size)
+                throw BlockOverflowException(block);
+
+            return m_memory.AllocRaw(size);
+        }
+
         void LoadDataRaw(void* dst, const size_t size) override
         {
             m_stream.Load(dst, size);
@@ -108,10 +135,10 @@ namespace
             {
                 auto* block = m_block_stack.top();
 
-                if (block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
+                if (block->m_buffer.get() > dst || block->m_buffer.get() + block->m_buffer_size < dst)
                     throw OutOfBlockBoundsException(block);
 
-                if (static_cast<uint8_t*>(dst) + size > block->m_buffer + block->m_buffer_size)
+                if (static_cast<uint8_t*>(dst) + size > block->m_buffer.get() + block->m_buffer_size)
                     throw BlockOverflowException(block);
 
                 // Theoretically ptr should always be at the current block offset.
@@ -119,16 +146,16 @@ namespace
 
                 switch (block->m_type)
                 {
-                case XBlock::Type::BLOCK_TYPE_TEMP:
-                case XBlock::Type::BLOCK_TYPE_NORMAL:
+                case XBlockType::BLOCK_TYPE_TEMP:
+                case XBlockType::BLOCK_TYPE_NORMAL:
                     m_stream.Load(dst, size);
                     break;
 
-                case XBlock::Type::BLOCK_TYPE_RUNTIME:
+                case XBlockType::BLOCK_TYPE_RUNTIME:
                     std::memset(dst, 0, size);
                     break;
 
-                case XBlock::Type::BLOCK_TYPE_DELAY:
+                case XBlockType::BLOCK_TYPE_DELAY:
                     assert(false);
                     break;
                 }
@@ -150,14 +177,14 @@ namespace
 
             auto* block = m_block_stack.top();
 
-            if (block->m_buffer > dst || block->m_buffer + block->m_buffer_size < dst)
+            if (block->m_buffer.get() > dst || block->m_buffer.get() + block->m_buffer_size < dst)
                 throw OutOfBlockBoundsException(block);
 
             // Theoretically ptr should always be at the current block offset.
             assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
 
             uint8_t byte;
-            auto offset = static_cast<size_t>(static_cast<uint8_t*>(dst) - block->m_buffer);
+            auto offset = static_cast<size_t>(static_cast<uint8_t*>(dst) - block->m_buffer.get());
             do
             {
                 if (offset >= block->m_buffer_size)
@@ -181,16 +208,16 @@ namespace
                 const auto* block = m_block_stack.top();
                 switch (block->m_type)
                 {
-                case XBlock::Type::BLOCK_TYPE_TEMP:
-                case XBlock::Type::BLOCK_TYPE_NORMAL:
+                case XBlockType::BLOCK_TYPE_TEMP:
+                case XBlockType::BLOCK_TYPE_NORMAL:
                     m_stream.Load(dst, size);
                     break;
 
-                case XBlock::Type::BLOCK_TYPE_RUNTIME:
+                case XBlockType::BLOCK_TYPE_RUNTIME:
                     std::memset(dst, 0, size);
                     break;
 
-                case XBlock::Type::BLOCK_TYPE_DELAY:
+                case XBlockType::BLOCK_TYPE_DELAY:
                     assert(false);
                     break;
                 }
@@ -293,6 +320,8 @@ namespace
         std::stack<size_t> m_temp_offsets;
         ILoadingStream& m_stream;
 
+        MemoryManager& m_memory;
+
         unsigned m_pointer_byte_count;
         unsigned m_block_bit_count;
         XBlock* m_insert_block;
@@ -301,8 +330,12 @@ namespace
     };
 } // namespace
 
-std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(
-    const unsigned pointerBitCount, const unsigned blockBitCount, std::vector<XBlock*>& blocks, const block_t insertBlock, ILoadingStream& stream)
+std::unique_ptr<ZoneInputStream> ZoneInputStream::Create(const unsigned pointerBitCount,
+                                                         const unsigned blockBitCount,
+                                                         std::vector<XBlock*>& blocks,
+                                                         const block_t insertBlock,
+                                                         ILoadingStream& stream,
+                                                         MemoryManager& memory)
 {
-    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream);
+    return std::make_unique<XBlockInputStream>(pointerBitCount, blockBitCount, blocks, insertBlock, stream, memory);
 }

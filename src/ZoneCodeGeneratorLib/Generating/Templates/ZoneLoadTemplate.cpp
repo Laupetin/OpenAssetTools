@@ -369,7 +369,8 @@ namespace
             {
                 if (reusable)
                 {
-                    LINEF("if (*{0} == PTR_FOLLOWING)", MakeTypePtrVarName(def))
+                    LINEF("const auto zonePtrType = GetZonePointerType(*{0});", MakeTypePtrVarName(def))
+                    LINEF("if (zonePtrType == ZonePointerType::FOLLOWING)", MakeTypePtrVarName(def))
                     LINE("{")
                     m_intendation++;
 
@@ -805,7 +806,7 @@ namespace
             {
                 LINE("")
                 LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
-                LINE("if (ptr == PTR_INSERT)")
+                LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
                 LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
                 m_intendation--;
@@ -850,10 +851,12 @@ namespace
                 return;
             }
 
+            LINEF("const auto zonePtrType = GetZonePointerType({0});", MakeMemberAccess(info, member, modifier))
+
             const MemberComputations computations(member);
             if (computations.IsInTempBlock())
             {
-                LINEF("if ({0} == PTR_FOLLOWING || {0} == PTR_INSERT)", MakeMemberAccess(info, member, modifier))
+                LINE("if (zonePtrType == ZonePointerType::FOLLOWING || zonePtrType == ZonePointerType::INSERT)")
                 LINE("{")
                 m_intendation++;
 
@@ -872,7 +875,7 @@ namespace
             }
             else
             {
-                LINEF("if ({0} == PTR_FOLLOWING)", MakeMemberAccess(info, member, modifier))
+                LINE("if (zonePtrType == ZonePointerType::FOLLOWING)")
                 LINE("{")
                 m_intendation++;
 
@@ -1213,13 +1216,14 @@ namespace
             LINE("{")
             m_intendation++;
 
+            LINEF("const auto zonePtrType = GetZonePointerType(*{0});", MakeTypePtrVarName(info->m_definition))
             if (inTemp)
             {
-                LINEF("if (*{0} == PTR_FOLLOWING || *{0} == PTR_INSERT)", MakeTypePtrVarName(info->m_definition))
+                LINEF("if (zonePtrType == ZonePointerType::FOLLOWING || zonePtrType == ZonePointerType::INSERT)", MakeTypePtrVarName(info->m_definition))
             }
             else
             {
-                LINEF("if (*{0} == PTR_FOLLOWING)", MakeTypePtrVarName(info->m_definition))
+                LINEF("if (zonePtrType == ZonePointerType::FOLLOWING)", MakeTypePtrVarName(info->m_definition))
             }
             LINE("{")
             m_intendation++;
@@ -1237,7 +1241,7 @@ namespace
             {
                 LINE("")
                 LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
-                LINE("if (ptr == PTR_INSERT)")
+                LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
                 LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
                 m_intendation--;

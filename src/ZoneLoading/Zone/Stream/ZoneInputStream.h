@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Loading/ILoadingStream.h"
+#include "Utils/MemoryManager.h"
 #include "Zone/Stream/IZoneStream.h"
 #include "Zone/XBlock.h"
 
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -48,6 +50,11 @@ class ZoneInputStream : public IZoneStream
 {
 public:
     /**
+     * \brief Returns the configured bits that make up a pointer.
+     */
+    [[nodiscard]] virtual unsigned GetPointerBitCount() const = 0;
+
+    /**
      * \brief Retrieves the new read position in the current block by aligning the position with the specified value and then returning the current read
      * position in the block.
      * \param align The alignment value that the read position is aligned with before being returned. This should typically be the alignment of the struct that
@@ -62,6 +69,16 @@ public:
     template<typename T> T* Alloc(const unsigned align)
     {
         return static_cast<T*>(Alloc(align));
+    }
+
+    virtual void* AllocOutOfBlock(unsigned align, size_t size) = 0;
+
+    /**
+     * \copydoc ZoneInputStream#AllocOutOfBlock(unsigned)
+     */
+    template<typename T> T* AllocOutOfBlock(const unsigned align, const size_t arraySize = 1u)
+    {
+        return static_cast<T*>(AllocOutOfBlock(align, sizeof(T) * arraySize));
     }
 
     /**
@@ -120,6 +137,6 @@ public:
         return static_cast<T*>(ConvertOffsetToAliasNative(static_cast<const void*>(offset)));
     }
 
-    static std::unique_ptr<ZoneInputStream>
-        Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, ILoadingStream& stream);
+    static std::unique_ptr<ZoneInputStream> Create(
+        unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, ILoadingStream& stream, MemoryManager& memory);
 };
