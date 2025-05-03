@@ -132,10 +132,51 @@ namespace IW3
     };
 
     typedef char cbrushedge_t;
-    typedef float vec2_t[2];
-    typedef float vec3_t[3];
-    typedef float vec4_t[4];
     typedef tdef_align32(128) unsigned int raw_uint128;
+
+    union vec2_t
+    {
+        float v[2];
+
+        struct
+        {
+            float x;
+            float y;
+        };
+    };
+
+    union vec3_t
+    {
+        struct
+        {
+            float x;
+            float y;
+            float z;
+        };
+
+        float v[3];
+    };
+
+    union vec4_t
+    {
+        float v[4];
+
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float w;
+        };
+
+        struct
+        {
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+    };
 
     struct XModelPiece
     {

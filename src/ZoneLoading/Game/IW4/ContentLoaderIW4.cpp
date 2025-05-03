@@ -71,9 +71,9 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
     if (varScriptStringList->strings != nullptr)
     {
-        assert(varScriptStringList->strings == PTR_FOLLOWING);
+        assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
 
-        varScriptStringList->strings = m_stream.Alloc<const char*>(4);
+        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
@@ -156,7 +156,16 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        m_stream.Load<XAsset>(varXAsset, count);
+    {
+        const auto fill = m_stream.LoadWithFill(8u * count);
+
+        for (size_t index = 0; index < count; index++)
+        {
+            fill.Fill(varXAsset[index].type, 8u * index);
+            fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
+            fill.InsertPointerRedirect(m_stream.AllocRedirectEntry(varXAsset[index].header.data), 8u * index + 4u);
+        }
+    }
 
     for (size_t index = 0; index < count; index++)
     {
@@ -179,9 +188,9 @@ void ContentLoader::Load()
 
     if (assetList.assets != nullptr)
     {
-        assert(assetList.assets == PTR_FOLLOWING);
+        assert(GetZonePointerType(assetList.assets) == ZonePointerType::FOLLOWING);
 
-        assetList.assets = m_stream.Alloc<XAsset>(alignof(XAsset));
+        assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);
     }
