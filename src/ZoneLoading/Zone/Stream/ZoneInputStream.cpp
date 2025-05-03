@@ -45,6 +45,11 @@ namespace
             m_insert_block = blocks[insertBlock];
         }
 
+        [[nodiscard]] unsigned GetPointerBitCount() const override
+        {
+            return m_pointer_byte_count * 8u;
+        }
+
         void PushBlock(const block_t block) override
         {
             assert(block < static_cast<block_t>(m_blocks.size()));

@@ -48,6 +48,11 @@ class ZoneInputStream : public IZoneStream
 {
 public:
     /**
+     * \brief Returns the configured bits that make up a pointer.
+     */
+    [[nodiscard]] virtual unsigned GetPointerBitCount() const = 0;
+
+    /**
      * \brief Retrieves the new read position in the current block by aligning the position with the specified value and then returning the current read
      * position in the block.
      * \param align The alignment value that the read position is aligned with before being returned. This should typically be the alignment of the struct that
