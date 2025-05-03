@@ -6,6 +6,7 @@
 #include "Utils/StringUtils.h"
 
 #include <cassert>
+#include <iostream>
 #include <sstream>
 
 namespace
@@ -61,7 +62,8 @@ namespace
             // Method Declarations
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure)
+                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
+                    && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
                 {
                     PrintFillStructMethodDeclaration(type->m_info);
                 }
@@ -104,7 +106,8 @@ namespace
             // Variable Declarations: type varType;
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && !type->m_info->m_definition->m_anonymous && !type->m_info->m_is_leaf && !StructureComputations(type->m_info).IsAsset())
+                if (type->m_info && !type->m_info->m_definition->m_anonymous
+                    && (!type->m_info->m_is_leaf || !type->m_info->m_has_matching_cross_platform_structure) && !StructureComputations(type->m_info).IsAsset())
                 {
                     LINE(VariableDecl(type->m_type))
                 }
@@ -148,6 +151,7 @@ namespace
             LINE("")
             LINE("#include <cassert>")
             LINE("#include <cstring>")
+            LINE("#include <type_traits>")
 
             LINE("")
             LINEF("using namespace {0};", m_env.m_game)
@@ -158,7 +162,8 @@ namespace
 
             for (const auto* type : m_env.m_used_types)
             {
-                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure)
+                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
+                    && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
                 {
                     LINE("")
                     PrintFillStructMethod(type->m_info);
@@ -317,6 +322,251 @@ namespace
             LINE("}")
         }
 
+        [[nodiscard]] size_t SizeForDeclModifierLevel(const MemberInformation& memberInfo, const size_t level) const
+        {
+            const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
+            if (declModifiers.empty())
+                return memberInfo.m_member->m_type_declaration->GetSize();
+
+            if (level == 0)
+                return memberInfo.m_member->m_type_declaration->GetSize();
+
+            size_t currentSize = memberInfo.m_member->m_type_declaration->m_type->GetSize();
+            const auto end = declModifiers.rbegin() + (declModifiers.size() - level);
+            for (auto i = declModifiers.rbegin(); i != end; ++i)
+            {
+                if ((*i)->GetType() == DeclarationModifierType::POINTER)
+                    currentSize = m_env.m_pointer_size;
+                else
+                    currentSize *= dynamic_cast<ArrayDeclarationModifier*>(i->get())->m_size;
+            }
+
+            return currentSize;
+        }
+
+        [[nodiscard]] size_t
+            OffsetForMemberModifier(const MemberInformation& memberInfo, const DeclarationModifierComputations& modifier, const size_t nestedBaseOffset) const
+        {
+            size_t curOffset = memberInfo.m_member->m_offset;
+
+            const auto& declModifiers = memberInfo.m_member->m_type_declaration->m_declaration_modifiers;
+            auto curDeclModifier = declModifiers.begin();
+            auto curLevel = 0u;
+            for (const auto index : modifier.GetArrayIndices())
+            {
+                if (index > 0)
+                    curOffset += index * SizeForDeclModifierLevel(memberInfo, curLevel + 1);
+
+                curLevel++;
+            }
+
+            return curOffset + nestedBaseOffset;
+        }
+
+        void PrintFillStruct_Member_DynamicArray(const StructureInformation& structInfo,
+                                                 const MemberInformation& memberInfo,
+                                                 const DeclarationModifierComputations& modifier,
+                                                 const size_t nestedBaseOffset)
+        {
+
+            LINEF("const auto dynamicArraySize = {0};", MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
+            LINE("if (dynamicArraySize > 0)")
+            LINE("{")
+            m_intendation++;
+
+            const auto callFillForMember = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+
+            if (callFillForMember)
+            {
+                LINEF("{0} = &{1}[0];", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
+                LINEF("FillStruct_{0}(fillAccessor.AtOffset({1}));",
+                      MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+            }
+            else
+            {
+                LINEF("fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->m_offset)
+            }
+
+            LINEF("const auto dynamicFill = m_stream.LoadWithFill({0} * static_cast<size_t>(dynamicArraySize - 1));",
+                  memberInfo.m_member->m_type_declaration->GetSize())
+
+            LINEF("for (auto i = 1u; i < dynamicArraySize; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
+            LINE("{")
+            m_intendation++;
+            if (callFillForMember)
+            {
+                LINEF("{0} = &{1}[i];", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
+                LINEF("FillStruct_{0}(dynamicFill.AtOffset((i - 1u) * {1}));",
+                      MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                      memberInfo.m_member->m_type_declaration->GetSize())
+            }
+            else
+            {
+                LINEF("dynamicFill.Fill({0}[i], (i - 1u) * {1});",
+                      MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      memberInfo.m_member->m_type_declaration->GetSize())
+            }
+            m_intendation--;
+            LINE("}")
+
+            m_intendation--;
+            LINE("}")
+        }
+
+        void PrintFillStruct_Member_PointerArray(const StructureInformation& structInfo,
+                                                 const MemberInformation& memberInfo,
+                                                 const DeclarationModifierComputations& modifier,
+                                                 const size_t nestedBaseOffset)
+        {
+            if (modifier.IsArray())
+            {
+                LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
+                m_intendation++;
+                LINEF("fillAccessor.FillPtr({0}[i], {1} + {2} * i);",
+                      MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
+                      m_env.m_pointer_size)
+                m_intendation--;
+            }
+            else
+            {
+                LINEF("fillAccessor.FillPtr({0}, {1});",
+                      MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+            }
+        }
+
+        void PrintFillStruct_Member_EmbeddedArray(const StructureInformation& structInfo,
+                                                  const MemberInformation& memberInfo,
+                                                  const DeclarationModifierComputations& modifier,
+                                                  const size_t nestedBaseOffset)
+        {
+            if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+            {
+                LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
+                LINE("{")
+                m_intendation++;
+                LINEF("{0} = &{1}[i];", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
+                LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
+                      MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
+                      memberInfo.m_member->m_type_declaration->m_type->GetSize())
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                LINEF("fillAccessor.FillArray({0}, {1});",
+                      MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+            }
+        }
+
+        void PrintFillStruct_Member_Embedded(const StructureInformation& structInfo,
+                                             const MemberInformation& memberInfo,
+                                             const DeclarationModifierComputations& modifier,
+                                             const size_t nestedBaseOffset)
+        {
+            const auto hasAnonymousType = memberInfo.m_type && memberInfo.m_type->m_definition->m_anonymous;
+
+            if (!hasAnonymousType)
+            {
+                if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+                {
+                    LINEF("{0} = &{1};", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
+                    LINEF("FillStruct_{0}(fillAccessor.AtOffset({1}));",
+                          MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                          OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+                }
+                else
+                {
+                    LINEF("fillAccessor.Fill({0}, {1});",
+                          MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                          OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+                }
+            }
+            else if (memberInfo.m_member->m_name.empty())
+            {
+                const auto anonymousMemberOffset = memberInfo.m_member->m_offset + nestedBaseOffset;
+                for (const auto& anonymousMember : memberInfo.m_type->m_ordered_members)
+                {
+                    PrintFillStruct_Member(structInfo, *anonymousMember, DeclarationModifierComputations(anonymousMember.get()), anonymousMemberOffset);
+                }
+            }
+            else
+            {
+                LINEF("#error Unsupported anonymous struct with name: {0}", memberInfo.m_member->m_name);
+            }
+        }
+
+        void PrintFillStruct_Member_ReferenceArray(const StructureInformation& info,
+                                                   const MemberInformation& member,
+                                                   const DeclarationModifierComputations& modifier,
+                                                   const size_t nestedBaseOffset)
+        {
+            for (const auto& entry : modifier.GetArrayEntries())
+            {
+                PrintFillStruct_Member(info, member, entry, nestedBaseOffset);
+            }
+        }
+
+        // nestedBaseOffset: Base offset in case member is part of a nested anonymous sub-struct
+        void PrintFillStruct_Member(const StructureInformation& structInfo,
+                                    const MemberInformation& memberInfo,
+                                    const DeclarationModifierComputations& modifier,
+                                    const size_t nestedBaseOffset)
+        {
+            if (modifier.IsDynamicArray())
+            {
+                PrintFillStruct_Member_DynamicArray(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else if (modifier.IsSinglePointer() || modifier.IsArrayPointer())
+            {
+                LINEF("fillAccessor.FillPtr({0}, {1});",
+                      MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+            }
+            else if (modifier.IsPointerArray())
+            {
+                PrintFillStruct_Member_PointerArray(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else if (modifier.IsArray() && modifier.GetNextDeclarationModifier() == nullptr)
+            {
+                PrintFillStruct_Member_EmbeddedArray(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else if (modifier.GetDeclarationModifier() == nullptr)
+            {
+                PrintFillStruct_Member_Embedded(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else if (modifier.IsArray())
+            {
+                PrintFillStruct_Member_ReferenceArray(structInfo, memberInfo, modifier, nestedBaseOffset);
+            }
+            else
+            {
+                assert(false);
+                LINEF("#error PrintFillStruct_Member failed @ {0}", memberInfo.m_member->m_name)
+            }
+        }
+
+        void PrintFillStruct_Struct(const StructureInformation& info)
+        {
+            const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
+            for (const auto& member : info.m_ordered_members)
+            {
+                const MemberComputations computations(member.get());
+                if (computations.ShouldIgnore() || member.get() == dynamicMember)
+                    continue;
+
+                PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
+            }
+
+            // Always fill dynamic members last
+            if (dynamicMember)
+                PrintFillStruct_Member(info, *dynamicMember, DeclarationModifierComputations(dynamicMember), 0u);
+        }
+
         void PrintFillStructMethod(const StructureInformation* info)
         {
             LINEF("void {0}::FillStruct_{1}(const ZoneStreamFillReadAccessor& fillAccessor)",
@@ -326,14 +576,7 @@ namespace
             LINE("{")
             m_intendation++;
 
-            for (const auto& member : info->m_ordered_members)
-            {
-                const MemberComputations computations(member.get());
-                if (computations.ShouldIgnore())
-                    continue;
-
-                LINEF("// FillStruct_{0}();", MakeSafeTypeName(member->m_member->m_type_declaration->m_type))
-            }
+            PrintFillStruct_Struct(*info);
 
             m_intendation--;
             LINE("}")
@@ -341,7 +584,11 @@ namespace
 
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
-            LINEF("*{0} = m_stream.Alloc<{1}>({2});", MakeTypePtrVarName(def), def->GetFullName(), def->GetAlignment())
+            LINEF("*{0} = m_stream.{1}<{2}>({3});",
+                  MakeTypePtrVarName(def),
+                  m_env.m_architecture_mismatch ? "AllocOutOfBlock" : "Alloc",
+                  def->GetFullName(),
+                  def->GetAlignment())
 
             if (info && !info->m_is_leaf)
             {
@@ -369,7 +616,8 @@ namespace
             {
                 if (reusable)
                 {
-                    LINEF("if (*{0} == PTR_FOLLOWING)", MakeTypePtrVarName(def))
+                    LINEF("const auto zonePtrType = GetZonePointerType(*{0});", MakeTypePtrVarName(def))
+                    LINEF("if (zonePtrType == ZonePointerType::FOLLOWING)", MakeTypePtrVarName(def))
                     LINE("{")
                     m_intendation++;
 
@@ -406,9 +654,25 @@ namespace
             LINE("")
 
             LINE("if (atStreamStart)")
-            m_intendation++;
-            LINEF("m_stream.Load<{0}*>({1}, count);", def->GetFullName(), MakeTypePtrVarName(def))
-            m_intendation--;
+
+            if (m_env.m_architecture_mismatch)
+            {
+                LINE("{")
+                m_intendation++;
+                LINEF("const auto ptrArrayFill = m_stream.LoadWithFill({0} * count);", m_env.m_pointer_size)
+                LINE("for (size_t index = 0; index < count; index++)")
+                m_intendation++;
+                LINEF("ptrArrayFill.FillPtr({0}[index], {1} * index);", MakeTypePtrVarName(def), m_env.m_pointer_size)
+                m_intendation--;
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+                m_intendation++;
+                LINEF("m_stream.Load<{0}*>({1}, count);", def->GetFullName(), MakeTypePtrVarName(def))
+                m_intendation--;
+            }
 
             LINE("")
             LINEF("{0}** var = {1};", def->GetFullName(), MakeTypePtrVarName(def))
@@ -436,17 +700,45 @@ namespace
             LINEF("assert({0} != nullptr);", MakeTypeVarName(def))
             LINE("")
             LINE("if (atStreamStart)")
-            m_intendation++;
-            LINEF("m_stream.Load<{0}>({1}, count);", def->GetFullName(), MakeTypeVarName(def))
-            m_intendation--;
+
+            if (info->m_has_matching_cross_platform_structure)
+            {
+                m_intendation++;
+                LINEF("m_stream.Load<{0}>({1}, count);", info->m_definition->GetFullName(), MakeTypeVarName(def))
+                m_intendation--;
+            }
+            else
+            {
+                LINE("{")
+                m_intendation++;
+
+                LINEF("const auto arrayFill = m_stream.LoadWithFill({0} * count);", def->GetSize())
+                LINEF("auto* arrayStart = {0};", MakeTypeVarName(def))
+                LINEF("auto* var = {0};", MakeTypeVarName(def))
+                LINE("for (size_t index = 0; index < count; index++)")
+                LINE("{")
+                m_intendation++;
+
+                LINEF("{0} = var;", MakeTypeVarName(def))
+                LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
+                LINE("var++;")
+
+                m_intendation--;
+                LINE("}")
+
+                LINEF("{0} = arrayStart;", MakeTypeVarName(def))
+
+                m_intendation--;
+                LINE("}")
+            }
 
             LINE("")
-            LINEF("{0}* var = {1};", def->GetFullName(), MakeTypeVarName(def))
+            LINEF("auto* var = {0};", MakeTypeVarName(def))
             LINE("for (size_t index = 0; index < count; index++)")
             LINE("{")
             m_intendation++;
 
-            LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
+            LINEF("{0} = var;", MakeTypeVarName(def))
             LINEF("Load_{0}(false);", info->m_definition->m_name)
             LINE("var++;")
 
@@ -575,7 +867,7 @@ namespace
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
 
-                if (computations.IsAfterPartialLoad())
+                if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
                 {
                     LINEF("LoadArray_{0}(true, {1});", MakeSafeTypeName(member->m_member->m_type_declaration->m_type), arraySizeStr)
                 }
@@ -596,7 +888,7 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (computations.IsAfterPartialLoad())
+            else if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
             {
                 LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
@@ -611,11 +903,12 @@ namespace
             if (member->m_type && !member->m_type->m_is_leaf)
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
-                LINEF("LoadArray_{0}(true, {1});",
+                LINEF("LoadArray_{0}({1}, {2});",
                       MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
+                      m_env.m_architecture_mismatch ? "false" : "true",
                       MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
             }
-            else
+            else if (info->m_has_matching_cross_platform_structure)
             {
                 LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
@@ -632,7 +925,7 @@ namespace
             {
                 LINEF("{0} = &{1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
 
-                if (computations.IsAfterPartialLoad())
+                if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
                 {
                     LINEF("Load_{0}(true);", MakeSafeTypeName(member->m_member->m_type_declaration->m_type))
                 }
@@ -653,7 +946,7 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (computations.IsAfterPartialLoad())
+            else if (computations.IsAfterPartialLoad() && !m_env.m_architecture_mismatch)
             {
                 LINEF("m_stream.Load<{0}{1}>(&{2});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
@@ -775,14 +1068,19 @@ namespace
                 return;
             }
 
-            const MemberComputations computations(member);
-            if (computations.IsInTempBlock())
-            {
-                LINEF("{0}* ptr = {1};", member->m_member->m_type_declaration->m_type->GetFullName(), MakeMemberAccess(info, member, modifier))
-            }
-
             const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
             const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
+
+            const auto allocOutOfBlock =
+                (member->m_type && !member->m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY;
+
+            LINE_STARTF("{0} = m_stream.", MakeMemberAccess(info, member, modifier))
+            if (allocOutOfBlock)
+                LINE_MIDDLE("AllocOutOfBlock")
+            else
+                LINE_MIDDLE("Alloc")
+
+            LINE_MIDDLEF("<{0}{1}>(", typeDecl, followingReferences)
 
             // This used to use `alignof()` to calculate alignment but due to inconsistencies between compilers and bugs discovered in MSVC
             // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a larger
@@ -790,24 +1088,38 @@ namespace
             // allocating. This is more reliable when being used with different compilers and the value used can be seen in the source code directly
             if (member->m_alloc_alignment)
             {
-                LINEF("{0} = m_stream.Alloc<{1}{2}>({3});",
-                      MakeMemberAccess(info, member, modifier),
-                      typeDecl,
-                      followingReferences,
-                      MakeEvaluation(member->m_alloc_alignment.get()))
+                LINE_MIDDLE(MakeEvaluation(member->m_alloc_alignment.get()))
             }
             else
             {
-                LINEF("{0} = m_stream.Alloc<{1}{2}>({3});", MakeMemberAccess(info, member, modifier), typeDecl, followingReferences, modifier.GetAlignment())
+                LINE_MIDDLEF("{0}", modifier.GetAlignment())
             }
 
+            if (allocOutOfBlock && modifier.IsArrayPointer())
+                LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+            else if (allocOutOfBlock && modifier.IsPointerArray())
+                LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
+
+            LINE_END(");")
+
+            const MemberComputations computations(member);
             if (computations.IsInTempBlock())
             {
                 LINE("")
-                LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
-                LINE("if (ptr == PTR_INSERT)")
+
+                if (m_env.m_architecture_mismatch)
+                    LINE("uintptr_t toInsertLookupEntry = 0;")
+                else
+                    LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
+
+                LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
-                LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
+
+                if (m_env.m_architecture_mismatch)
+                    LINE("toInsertLookupEntry = m_stream.InsertPointerAliasLookup();")
+                else
+                    LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
+
                 m_intendation--;
                 LINE("")
             }
@@ -817,9 +1129,15 @@ namespace
             if (computations.IsInTempBlock())
             {
                 LINE("")
-                LINE("if (toInsert != nullptr)")
+                LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
-                LINEF("*toInsert = {0}->{1};", MakeTypeVarName(info->m_definition), member->m_member->m_name)
+
+                if (m_env.m_architecture_mismatch)
+                    LINEF(
+                        "m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, {0}->{1});", MakeTypeVarName(info->m_definition), member->m_member->m_name)
+                else
+                    LINEF("*toInsert = {0}->{1};", MakeTypeVarName(info->m_definition), member->m_member->m_name)
+
                 m_intendation--;
             }
         }
@@ -850,10 +1168,12 @@ namespace
                 return;
             }
 
+            LINEF("const auto zonePtrType = GetZonePointerType({0});", MakeMemberAccess(info, member, modifier))
+
             const MemberComputations computations(member);
             if (computations.IsInTempBlock())
             {
-                LINEF("if ({0} == PTR_FOLLOWING || {0} == PTR_INSERT)", MakeMemberAccess(info, member, modifier))
+                LINE("if (zonePtrType == ZonePointerType::FOLLOWING || zonePtrType == ZonePointerType::INSERT)")
                 LINE("{")
                 m_intendation++;
 
@@ -872,7 +1192,7 @@ namespace
             }
             else
             {
-                LINEF("if ({0} == PTR_FOLLOWING)", MakeMemberAccess(info, member, modifier))
+                LINE("if (zonePtrType == ZonePointerType::FOLLOWING)")
                 LINE("{")
                 m_intendation++;
 
@@ -1123,10 +1443,9 @@ namespace
                 LINE("")
                 LINE("if (atStreamStart)")
 
+                m_intendation++;
                 if (info->m_has_matching_cross_platform_structure)
                 {
-                    m_intendation++;
-
                     if (dynamicMember == nullptr)
                     {
                         LINEF("m_stream.Load<{0}>({1}); // Size: {2}",
@@ -1141,20 +1460,12 @@ namespace
                               MakeTypeVarName(info->m_definition),
                               dynamicMember->m_member->m_name)
                     }
-
-                    m_intendation--;
                 }
                 else
                 {
-                    LINE("{")
-                    m_intendation++;
-
-                    LINEF("{0} = m_memory.Alloc<{1}>();", MakeTypeVarName(info->m_definition), info->m_definition->m_name)
                     LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
-
-                    m_intendation--;
-                    LINE("}")
                 }
+                m_intendation--;
             }
             else
             {
@@ -1197,10 +1508,17 @@ namespace
             LINEF("assert({0} != nullptr);", MakeTypePtrVarName(info->m_definition))
             LINE("")
 
-            LINE("if (atStreamStart)")
-            m_intendation++;
-            LINEF("m_stream.Load<{0}*>({1});", info->m_definition->GetFullName(), MakeTypePtrVarName(info->m_definition))
-            m_intendation--;
+            if (!m_env.m_architecture_mismatch)
+            {
+                LINE("if (atStreamStart)")
+                m_intendation++;
+                LINEF("m_stream.Load<{0}*>({1});", info->m_definition->GetFullName(), MakeTypePtrVarName(info->m_definition))
+                m_intendation--;
+            }
+            else
+            {
+                LINE("assert(!atStreamStart);");
+            }
 
             LINE("")
             if (inTemp)
@@ -1213,23 +1531,21 @@ namespace
             LINE("{")
             m_intendation++;
 
+            LINEF("const auto zonePtrType = GetZonePointerType(*{0});", MakeTypePtrVarName(info->m_definition))
             if (inTemp)
             {
-                LINEF("if (*{0} == PTR_FOLLOWING || *{0} == PTR_INSERT)", MakeTypePtrVarName(info->m_definition))
+                LINEF("if (zonePtrType == ZonePointerType::FOLLOWING || zonePtrType == ZonePointerType::INSERT)", MakeTypePtrVarName(info->m_definition))
             }
             else
             {
-                LINEF("if (*{0} == PTR_FOLLOWING)", MakeTypePtrVarName(info->m_definition))
+                LINEF("if (zonePtrType == ZonePointerType::FOLLOWING)", MakeTypePtrVarName(info->m_definition))
             }
             LINE("{")
             m_intendation++;
 
-            if (inTemp)
-            {
-                LINEF("{0}* ptr = *{1};", info->m_definition->GetFullName(), MakeTypePtrVarName(info->m_definition))
-            }
-            LINEF("*{0} = m_stream.Alloc<{1}>({2});",
+            LINEF("*{0} = m_stream.{1}<{2}>({3});",
                   MakeTypePtrVarName(info->m_definition),
+                  m_env.m_architecture_mismatch ? "AllocOutOfBlock" : "Alloc",
                   info->m_definition->GetFullName(),
                   info->m_definition->GetAlignment())
 
@@ -1237,7 +1553,7 @@ namespace
             {
                 LINE("")
                 LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
-                LINE("if (ptr == PTR_INSERT)")
+                LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
                 LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
                 m_intendation--;
@@ -1293,7 +1609,14 @@ namespace
 
             if (inTemp)
             {
-                LINEF("*{0} = m_stream.ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
+                if (info->m_has_matching_cross_platform_structure)
+                {
+                    LINEF("*{0} = m_stream.ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
+                }
+                else
+                {
+                    LINEF("*{0} = m_stream.ConvertOffsetToPointerRedirect(*{0});", MakeTypePtrVarName(info->m_definition))
+                }
             }
             else
             {
@@ -1328,7 +1651,7 @@ namespace
             LINE("assert(pAsset != nullptr);")
             LINE("")
             LINEF("{0} marker(m_zone);", MarkerClassName(m_env.m_asset))
-            LINE("marker.Mark(*pAsset);")
+            LINE("// marker.Mark(*pAsset); // TODO")
             LINE("")
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())

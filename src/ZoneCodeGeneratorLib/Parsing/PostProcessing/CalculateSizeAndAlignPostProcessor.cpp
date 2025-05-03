@@ -12,22 +12,6 @@ namespace
     bool CalculateFieldsIfNecessary(IDataRepository* repository, const DataDefinition* definition);
     bool CalculateFields(IDataRepository* repository, TypeDeclaration* declaration);
 
-    unsigned GetPointerSizeForArchitecture(const Architecture architecture)
-    {
-        switch (architecture)
-        {
-        case Architecture::X86:
-            return sizeof(uint32_t);
-
-        case Architecture::X64:
-            return sizeof(uint64_t);
-
-        default:
-            assert(false);
-            return sizeof(uint32_t);
-        }
-    }
-
     bool CalculateAlign(IDataRepository* repository, TypeDeclaration* declaration)
     {
         auto hasPointerModifier = false;

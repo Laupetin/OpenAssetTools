@@ -231,8 +231,8 @@ namespace IW4
         for (auto i = 0u; i < originalKnotCount; i++)
         {
             auto& knot = graph.knots[i];
-            knot.x = originalKnots[i][0];
-            knot.y = originalKnots[i][1];
+            knot.x = originalKnots[i].x;
+            knot.y = originalKnots[i].y;
         }
 
         return graph;

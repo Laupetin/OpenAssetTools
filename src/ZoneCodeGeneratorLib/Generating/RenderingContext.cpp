@@ -21,6 +21,7 @@ RenderingUsedType::RenderingUsedType(const DataDefinition* type, StructureInform
 RenderingContext::RenderingContext(std::string game, const Architecture gameArchitecture, std::vector<const FastFileBlock*> fastFileBlocks)
     : m_game(std::move(game)),
       m_architecture_mismatch(gameArchitecture != OWN_ARCHITECTURE),
+      m_pointer_size(GetPointerSizeForArchitecture(gameArchitecture)),
       m_blocks(std::move(fastFileBlocks)),
       m_asset(nullptr),
       m_has_actions(false),

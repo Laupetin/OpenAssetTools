@@ -2,6 +2,7 @@
 
 #include "Domain/Definition/ArrayDeclarationModifier.h"
 #include "Domain/Definition/PointerDeclarationModifier.h"
+#include "Domain/Definition/TypedefDefinition.h"
 #include "MemberComputations.h"
 
 #include <algorithm>
@@ -71,7 +72,7 @@ std::vector<DeclarationModifier*> DeclarationModifierComputations::GetFollowingD
     return following;
 }
 
-std::vector<int> DeclarationModifierComputations::GetArrayIndices() const
+const std::vector<int>& DeclarationModifierComputations::GetArrayIndices() const
 {
     return m_modifier_indices;
 }
@@ -239,6 +240,15 @@ const IEvaluation* DeclarationModifierComputations::GetDynamicArraySizeEvaluatio
         return nullptr;
 
     return dynamic_cast<ArrayDeclarationModifier*>(declarationModifier)->m_dynamic_size_evaluation.get();
+}
+
+bool DeclarationModifierComputations::HasPointerModifier() const
+{
+    return std::ranges::any_of(m_information->m_member->m_type_declaration->m_declaration_modifiers,
+                               [](const std::unique_ptr<DeclarationModifier>& modifier)
+                               {
+                                   return modifier->GetType() == DeclarationModifierType::POINTER;
+                               });
 }
 
 unsigned DeclarationModifierComputations::GetAlignment() const

@@ -31,6 +31,7 @@ public:
 
     std::string m_game;
     bool m_architecture_mismatch;
+    unsigned m_pointer_size;
     std::vector<const FastFileBlock*> m_blocks;
 
     StructureInformation* m_asset;
