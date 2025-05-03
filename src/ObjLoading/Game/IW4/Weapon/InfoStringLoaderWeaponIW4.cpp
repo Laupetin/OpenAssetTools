@@ -382,8 +382,8 @@ namespace
         for (auto i = 0u; i < originalGraphKnotCount; i++)
         {
             const auto& commonKnot = graph.knots[i];
-            originalGraphKnots[i][0] = static_cast<float>(commonKnot.x);
-            originalGraphKnots[i][1] = static_cast<float>(commonKnot.y);
+            originalGraphKnots[i].x = static_cast<float>(commonKnot.x);
+            originalGraphKnots[i].y = static_cast<float>(commonKnot.y);
         }
 
         graphKnots = originalGraphKnots;

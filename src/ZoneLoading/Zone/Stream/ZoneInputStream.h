@@ -1,17 +1,19 @@
 #pragma once
 
 #include "Loading/ILoadingStream.h"
+#include "Utils/MemoryManager.h"
 #include "Zone/Stream/IZoneStream.h"
 #include "Zone/XBlock.h"
 
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <vector>
 
 class ZoneStreamFillReadAccessor
 {
 public:
-    ZoneStreamFillReadAccessor(const void* buffer, size_t bufferSize, unsigned pointerByteCount);
+    ZoneStreamFillReadAccessor(const void* dataBuffer, void* blockBuffer, size_t bufferSize, unsigned pointerByteCount);
 
     [[nodiscard]] ZoneStreamFillReadAccessor AtOffset(size_t offset) const;
 
@@ -19,14 +21,14 @@ public:
     {
         assert(offset + sizeof(T) <= m_buffer_size);
 
-        value = *reinterpret_cast<const T*>(static_cast<const char*>(m_buffer) + offset);
+        value = *reinterpret_cast<const T*>(static_cast<const char*>(m_data_buffer) + offset);
     }
 
-    template<typename T> void FillArray(T* value, const size_t offset, const size_t arraySize) const
+    template<typename T, size_t S> void FillArray(T (&value)[S], const size_t offset) const
     {
-        assert(offset + sizeof(T) * arraySize <= m_buffer_size);
+        assert(offset + sizeof(T) * S <= m_buffer_size);
 
-        std::memcpy(value, static_cast<const char*>(m_buffer) + offset, sizeof(T) * arraySize);
+        std::memcpy(value, static_cast<const char*>(m_data_buffer) + offset, sizeof(T) * S);
     }
 
     template<typename T> void FillPtr(T*& value, const size_t offset) const
@@ -35,11 +37,14 @@ public:
         assert(m_pointer_byte_count <= sizeof(uintptr_t));
 
         value = nullptr;
-        std::memcpy(&value, static_cast<const char*>(m_buffer) + offset, m_pointer_byte_count);
+        std::memcpy(&value, static_cast<const char*>(m_data_buffer) + offset, m_pointer_byte_count);
     }
 
+    void InsertPointerRedirect(uintptr_t aliasValue, size_t offset) const;
+
 private:
-    const void* m_buffer;
+    const void* m_data_buffer;
+    void* m_block_buffer;
     size_t m_buffer_size;
     unsigned m_pointer_byte_count;
 };
@@ -47,6 +52,11 @@ private:
 class ZoneInputStream : public IZoneStream
 {
 public:
+    /**
+     * \brief Returns the configured bits that make up a pointer.
+     */
+    [[nodiscard]] virtual unsigned GetPointerBitCount() const = 0;
+
     /**
      * \brief Retrieves the new read position in the current block by aligning the position with the specified value and then returning the current read
      * position in the block.
@@ -62,6 +72,16 @@ public:
     template<typename T> T* Alloc(const unsigned align)
     {
         return static_cast<T*>(Alloc(align));
+    }
+
+    virtual void* AllocOutOfBlock(unsigned align, size_t size) = 0;
+
+    /**
+     * \copydoc ZoneInputStream#AllocOutOfBlock(unsigned)
+     */
+    template<typename T> T* AllocOutOfBlock(const unsigned align, const size_t arraySize = 1u)
+    {
+        return static_cast<T*>(AllocOutOfBlock(align, sizeof(T) * arraySize));
     }
 
     /**
@@ -99,12 +119,16 @@ public:
         LoadDataInBlock(const_cast<void*>(reinterpret_cast<const void*>(dst)), size);
     }
 
-    virtual void* InsertPointer() = 0;
+    virtual void* InsertPointerNative() = 0;
 
     template<typename T> T** InsertPointerNative()
     {
-        return static_cast<T**>(InsertPointer());
+        return static_cast<T**>(InsertPointerNative());
     }
+
+    virtual uintptr_t InsertPointerAliasLookup() = 0;
+
+    virtual void SetInsertedPointerAliasLookup(uintptr_t lookupEntry, void* value) = 0;
 
     virtual void* ConvertOffsetToPointerNative(const void* offset) = 0;
 
@@ -120,6 +144,27 @@ public:
         return static_cast<T*>(ConvertOffsetToAliasNative(static_cast<const void*>(offset)));
     }
 
-    static std::unique_ptr<ZoneInputStream>
-        Create(unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, ILoadingStream& stream);
+    virtual uintptr_t AllocRedirectEntry(void** alias) = 0;
+
+    template<typename T> uintptr_t AllocRedirectEntry(T*& offset)
+    {
+        return AllocRedirectEntry(reinterpret_cast<void**>(&offset));
+    }
+
+    virtual void* ConvertOffsetToPointerRedirect(const void* offset) = 0;
+
+    template<typename T> T* ConvertOffsetToPointerRedirect(T* offset)
+    {
+        return static_cast<T*>(ConvertOffsetToPointerRedirect(static_cast<const void*>(offset)));
+    }
+
+    virtual void* ConvertOffsetToAliasLookup(const void* offset) = 0;
+
+    template<typename T> T* ConvertOffsetToAliasLookup(T* offset)
+    {
+        return static_cast<T*>(ConvertOffsetToAliasLookup(static_cast<const void*>(offset)));
+    }
+
+    static std::unique_ptr<ZoneInputStream> Create(
+        unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, ILoadingStream& stream, MemoryManager& memory);
 };

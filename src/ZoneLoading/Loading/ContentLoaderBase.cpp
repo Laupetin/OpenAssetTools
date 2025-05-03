@@ -1,15 +1,22 @@
 #include "ContentLoaderBase.h"
 
 #include <cassert>
-
-const void* ContentLoaderBase::PTR_FOLLOWING = reinterpret_cast<void*>(-1);
-const void* ContentLoaderBase::PTR_INSERT = reinterpret_cast<void*>(-2);
+#include <cstdint>
+#include <limits>
 
 ContentLoaderBase::ContentLoaderBase(Zone& zone, ZoneInputStream& stream)
     : varXString(nullptr),
       m_zone(zone),
       m_memory(zone.Memory()),
-      m_stream(stream)
+      m_stream(stream),
+
+      // -1
+      m_zone_ptr_following(
+          reinterpret_cast<const void*>(std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - stream.GetPointerBitCount()))),
+
+      // -2
+      m_zone_ptr_insert(
+          reinterpret_cast<const void*>((std::numeric_limits<std::uintptr_t>::max() >> ((sizeof(std::uintptr_t) * 8u) - stream.GetPointerBitCount())) - 1u))
 {
 }
 
@@ -22,9 +29,9 @@ void ContentLoaderBase::LoadXString(const bool atStreamStart) const
 
     if (*varXString != nullptr)
     {
-        if (*varXString == PTR_FOLLOWING)
+        if (GetZonePointerType(*varXString) == ZonePointerType::FOLLOWING)
         {
-            *varXString = m_stream.Alloc<const char>(alignof(const char));
+            *varXString = m_stream.Alloc<const char>(1);
             m_stream.LoadNullTerminated(const_cast<char*>(*varXString));
         }
         else
@@ -39,11 +46,26 @@ void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t 
     assert(varXString != nullptr);
 
     if (atStreamStart)
-        m_stream.Load<const char*>(varXString, count);
+    {
+        const auto fill = m_stream.LoadWithFill(4u * count);
+
+        for (size_t index = 0; index < count; index++)
+            fill.FillPtr(varXString[index], 4u * index);
+    }
 
     for (size_t index = 0; index < count; index++)
     {
         LoadXString(false);
         varXString++;
     }
+}
+
+ZonePointerType ContentLoaderBase::GetZonePointerType(const void* zonePtr) const
+{
+    if (zonePtr == m_zone_ptr_following)
+        return ZonePointerType::FOLLOWING;
+    if (zonePtr == m_zone_ptr_insert)
+        return ZonePointerType::INSERT;
+
+    return ZonePointerType::OFFSET;
 }

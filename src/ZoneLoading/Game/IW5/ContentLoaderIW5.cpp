@@ -63,7 +63,7 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 
     if (varScriptStringList->strings != nullptr)
     {
-        assert(varScriptStringList->strings == PTR_FOLLOWING);
+        assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
 
         varScriptStringList->strings = m_stream.Alloc<const char*>(alignof(const char*));
         varXString = varScriptStringList->strings;
@@ -175,7 +175,7 @@ void ContentLoader::Load()
 
     if (assetList.assets != nullptr)
     {
-        assert(assetList.assets == PTR_FOLLOWING);
+        assert(GetZonePointerType(assetList.assets) == ZonePointerType::FOLLOWING);
 
         assetList.assets = m_stream.Alloc<XAsset>(alignof(XAsset));
         varXAsset = assetList.assets;
