@@ -30,7 +30,7 @@ void InMemoryZoneOutputStream::PushBlock(const block_t block)
 
     m_block_stack.push(newBlock);
 
-    if (newBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+    if (newBlock->m_type == XBlockType::BLOCK_TYPE_TEMP)
     {
         if (m_temp_sizes.empty())
             m_temp_sizes.push(0);
@@ -50,7 +50,7 @@ block_t InMemoryZoneOutputStream::PopBlock()
     m_block_stack.pop();
 
     // If temp block is popped, see if its size is bigger than the current maximum temp size
-    if (poppedBlock->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+    if (poppedBlock->m_type == XBlockType::BLOCK_TYPE_TEMP)
     {
         const auto tempSize = m_temp_sizes.top();
         m_temp_sizes.pop();
@@ -70,7 +70,7 @@ void InMemoryZoneOutputStream::Align(const int align)
     {
         auto* block = m_block_stack.top();
 
-        if (block->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+        if (block->m_type == XBlockType::BLOCK_TYPE_TEMP)
             m_temp_sizes.top() = (m_temp_sizes.top() + align - 1) / align * align;
         else
             block->m_buffer_size = (block->m_buffer_size + align - 1) / align * align;
@@ -96,16 +96,16 @@ void* InMemoryZoneOutputStream::WriteDataInBlock(const void* src, const size_t s
     void* result = nullptr;
     switch (block->m_type)
     {
-    case XBlock::Type::BLOCK_TYPE_TEMP:
-    case XBlock::Type::BLOCK_TYPE_NORMAL:
+    case XBlockType::BLOCK_TYPE_TEMP:
+    case XBlockType::BLOCK_TYPE_NORMAL:
         result = m_zone_data->GetBufferOfSize(size);
         memcpy(result, src, size);
         break;
 
-    case XBlock::Type::BLOCK_TYPE_RUNTIME:
+    case XBlockType::BLOCK_TYPE_RUNTIME:
         break;
 
-    case XBlock::Type::BLOCK_TYPE_DELAY:
+    case XBlockType::BLOCK_TYPE_DELAY:
         assert(false);
         break;
     }
@@ -122,7 +122,7 @@ void InMemoryZoneOutputStream::IncBlockPos(const size_t size)
         return;
 
     auto* block = m_block_stack.top();
-    if (block->m_type == XBlock::Type::BLOCK_TYPE_TEMP)
+    if (block->m_type == XBlockType::BLOCK_TYPE_TEMP)
     {
         m_temp_sizes.top() += size;
     }
@@ -141,7 +141,7 @@ void InMemoryZoneOutputStream::WriteNullTerminated(const void* src)
 uintptr_t InMemoryZoneOutputStream::GetCurrentZonePointer()
 {
     assert(!m_block_stack.empty());
-    assert(m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_NORMAL);
+    assert(m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_NORMAL);
 
     uintptr_t ptr = 0;
     ptr |= static_cast<uintptr_t>(m_block_stack.top()->m_index) << (sizeof(uintptr_t) * 8 - m_block_bit_count);
@@ -168,7 +168,7 @@ void InMemoryZoneOutputStream::MarkFollowing(void** pPtr)
 {
     assert(!m_block_stack.empty());
     assert(pPtr != nullptr);
-    *pPtr = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP ? PTR_INSERT : PTR_FOLLOWING;
+    *pPtr = m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_TEMP ? PTR_INSERT : PTR_FOLLOWING;
 }
 
 bool InMemoryZoneOutputStream::ReusableShouldWrite(void** pPtr, const size_t entrySize, const std::type_index type)
@@ -202,7 +202,7 @@ void InMemoryZoneOutputStream::ReusableAddOffset(void* ptr, size_t size, size_t 
 {
     assert(!m_block_stack.empty());
 
-    const auto inTemp = m_block_stack.top()->m_type == XBlock::Type::BLOCK_TYPE_TEMP;
+    const auto inTemp = m_block_stack.top()->m_type == XBlockType::BLOCK_TYPE_TEMP;
     auto zoneOffset = inTemp ? InsertPointer() : GetCurrentZonePointer();
     const auto foundEntriesForType = m_reusable_entries.find(type);
     if (foundEntriesForType == m_reusable_entries.end())

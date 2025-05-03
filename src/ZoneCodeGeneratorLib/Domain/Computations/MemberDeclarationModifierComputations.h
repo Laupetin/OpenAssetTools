@@ -26,6 +26,7 @@ public:
     [[nodiscard]] const IEvaluation* GetPointerArrayCountEvaluation() const;
     [[nodiscard]] bool IsDynamicArray() const;
     [[nodiscard]] const IEvaluation* GetDynamicArraySizeEvaluation() const;
+    [[nodiscard]] bool HasPointerModifier() const;
     [[nodiscard]] unsigned GetAlignment() const;
 
 private:
