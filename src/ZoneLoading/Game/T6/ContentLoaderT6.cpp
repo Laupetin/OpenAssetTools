@@ -64,16 +64,16 @@ ContentLoader::ContentLoader(Zone& zone, ZoneInputStream& stream)
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
+    m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);
 
     if (atStreamStart)
-        m_stream->Load<ScriptStringList>(varScriptStringList);
+        m_stream.Load<ScriptStringList>(varScriptStringList);
 
     if (varScriptStringList->strings != nullptr)
     {
         assert(varScriptStringList->strings == PTR_FOLLOWING);
 
-        varScriptStringList->strings = m_stream->Alloc<const char*>(alignof(const char*));
+        varScriptStringList->strings = m_stream.Alloc<const char*>(alignof(const char*));
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
@@ -81,7 +81,7 @@ void ContentLoader::LoadScriptStringList(const bool atStreamStart)
             m_zone.m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
     }
 
-    m_stream->PopBlock();
+    m_stream.PopBlock();
 
     assert(m_zone.m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
@@ -91,7 +91,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, *m_stream);                                                                                                           \
+        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }
@@ -99,7 +99,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        m_stream->Load<XAsset>(varXAsset);
+        m_stream.Load<XAsset>(varXAsset);
 
     switch (varXAsset->type)
     {
@@ -167,7 +167,7 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        m_stream->Load<XAsset>(varXAsset, count);
+        m_stream.Load<XAsset>(varXAsset, count);
 
     for (size_t index = 0; index < count; index++)
     {
@@ -178,10 +178,10 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
 
 void ContentLoader::Load()
 {
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
+    m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);
 
     XAssetList assetList{};
-    m_stream->LoadDataRaw(&assetList, sizeof(assetList));
+    m_stream.LoadDataRaw(&assetList, sizeof(assetList));
 
     varScriptStringList = &assetList.stringList;
     LoadScriptStringList(false);
@@ -190,7 +190,7 @@ void ContentLoader::Load()
     {
         assert(assetList.depends == PTR_FOLLOWING);
 
-        assetList.depends = m_stream->Alloc<const char*>(alignof(const char*));
+        assetList.depends = m_stream.Alloc<const char*>(alignof(const char*));
         varXString = assetList.depends;
         LoadXStringArray(true, assetList.dependCount);
     }
@@ -199,10 +199,10 @@ void ContentLoader::Load()
     {
         assert(assetList.assets == PTR_FOLLOWING);
 
-        assetList.assets = m_stream->Alloc<XAsset>(alignof(XAsset));
+        assetList.assets = m_stream.Alloc<XAsset>(alignof(XAsset));
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);
     }
 
-    m_stream->PopBlock();
+    m_stream.PopBlock();
 }

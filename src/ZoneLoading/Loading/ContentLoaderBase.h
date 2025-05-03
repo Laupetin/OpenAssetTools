@@ -26,5 +26,5 @@ protected:
 
     Zone& m_zone;
     MemoryManager& m_memory;
-    ZoneInputStream* m_stream; // TODO: Change this to reference
+    ZoneInputStream& m_stream;
 };

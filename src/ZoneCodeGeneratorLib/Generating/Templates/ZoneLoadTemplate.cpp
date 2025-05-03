@@ -341,7 +341,7 @@ namespace
 
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
-            LINEF("*{0} = m_stream->Alloc<{1}>({2});", MakeTypePtrVarName(def), def->GetFullName(), def->GetAlignment())
+            LINEF("*{0} = m_stream.Alloc<{1}>({2});", MakeTypePtrVarName(def), def->GetFullName(), def->GetAlignment())
 
             if (info && !info->m_is_leaf)
             {
@@ -350,7 +350,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream->Load<{0}>(*{1});", def->GetFullName(), MakeTypePtrVarName(def))
+                LINEF("m_stream.Load<{0}>(*{1});", def->GetFullName(), MakeTypePtrVarName(def))
             }
         }
 
@@ -362,7 +362,7 @@ namespace
 
             if (info && StructureComputations(info).IsAsset())
             {
-                LINEF("{0} loader(m_zone, *m_stream);", LoaderClassName(info))
+                LINEF("{0} loader(m_zone, m_stream);", LoaderClassName(info))
                 LINEF("loader.Load({0});", MakeTypePtrVarName(def))
             }
             else
@@ -381,7 +381,7 @@ namespace
                     LINE("{")
                     m_intendation++;
 
-                    LINEF("*{0} = m_stream->ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(def))
+                    LINEF("*{0} = m_stream.ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(def))
 
                     m_intendation--;
                     LINE("}")
@@ -407,7 +407,7 @@ namespace
 
             LINE("if (atStreamStart)")
             m_intendation++;
-            LINEF("m_stream->Load<{0}*>({1}, count);", def->GetFullName(), MakeTypePtrVarName(def))
+            LINEF("m_stream.Load<{0}*>({1}, count);", def->GetFullName(), MakeTypePtrVarName(def))
             m_intendation--;
 
             LINE("")
@@ -437,7 +437,7 @@ namespace
             LINE("")
             LINE("if (atStreamStart)")
             m_intendation++;
-            LINEF("m_stream->Load<{0}>({1}, count);", def->GetFullName(), MakeTypeVarName(def))
+            LINEF("m_stream.Load<{0}>({1}, count);", def->GetFullName(), MakeTypeVarName(def))
             m_intendation--;
 
             LINE("")
@@ -464,7 +464,7 @@ namespace
         {
             if (loadType == MemberLoadType::SINGLE_POINTER)
             {
-                LINEF("{0} loader(m_zone, *m_stream);", LoaderClassName(member->m_type))
+                LINEF("{0} loader(m_zone, m_stream);", LoaderClassName(member->m_type))
                 LINEF("loader.Load(&{0});", MakeMemberAccess(info, member, modifier))
             }
             else if (loadType == MemberLoadType::POINTER_ARRAY)
@@ -538,7 +538,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream->Load<{0}{1}>({2}, {3});",
+                LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()),
                       MakeMemberAccess(info, member, modifier),
@@ -598,7 +598,7 @@ namespace
             }
             else if (computations.IsAfterPartialLoad())
             {
-                LINEF("m_stream->Load<{0}{1}>({2}, {3});",
+                LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()),
                       MakeMemberAccess(info, member, modifier),
@@ -617,7 +617,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream->Load<{0}{1}>({2}, {3});",
+                LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()),
                       MakeMemberAccess(info, member, modifier),
@@ -655,7 +655,7 @@ namespace
             }
             else if (computations.IsAfterPartialLoad())
             {
-                LINEF("m_stream->Load<{0}{1}>(&{2});",
+                LINEF("m_stream.Load<{0}{1}>(&{2});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()),
                       MakeMemberAccess(info, member, modifier))
@@ -684,7 +684,7 @@ namespace
             }
             else
             {
-                LINEF("m_stream->Load<{0}{1}>({2});",
+                LINEF("m_stream.Load<{0}{1}>({2});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()),
                       MakeMemberAccess(info, member, modifier))
@@ -790,7 +790,7 @@ namespace
             // allocating. This is more reliable when being used with different compilers and the value used can be seen in the source code directly
             if (member->m_alloc_alignment)
             {
-                LINEF("{0} = m_stream->Alloc<{1}{2}>({3});",
+                LINEF("{0} = m_stream.Alloc<{1}{2}>({3});",
                       MakeMemberAccess(info, member, modifier),
                       typeDecl,
                       followingReferences,
@@ -798,7 +798,7 @@ namespace
             }
             else
             {
-                LINEF("{0} = m_stream->Alloc<{1}{2}>({3});", MakeMemberAccess(info, member, modifier), typeDecl, followingReferences, modifier.GetAlignment())
+                LINEF("{0} = m_stream.Alloc<{1}{2}>({3});", MakeMemberAccess(info, member, modifier), typeDecl, followingReferences, modifier.GetAlignment())
             }
 
             if (computations.IsInTempBlock())
@@ -807,7 +807,7 @@ namespace
                 LINEF("{0}** toInsert = nullptr;", member->m_member->m_type_declaration->m_type->GetFullName())
                 LINE("if (ptr == PTR_INSERT)")
                 m_intendation++;
-                LINEF("toInsert = m_stream->InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
+                LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", member->m_member->m_type_declaration->m_type->GetFullName())
                 m_intendation--;
                 LINE("")
             }
@@ -865,7 +865,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = m_stream->ConvertOffsetToAliasNative({0});", MakeMemberAccess(info, member, modifier))
+                LINEF("{0} = m_stream.ConvertOffsetToAliasNative({0});", MakeMemberAccess(info, member, modifier))
 
                 m_intendation--;
                 LINE("}")
@@ -884,7 +884,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = m_stream->ConvertOffsetToPointerNative({0});", MakeMemberAccess(info, member, modifier))
+                LINEF("{0} = m_stream.ConvertOffsetToPointerNative({0});", MakeMemberAccess(info, member, modifier))
 
                 m_intendation--;
                 LINE("}")
@@ -938,14 +938,14 @@ namespace
             const auto notInDefaultNormalBlock = computations.IsNotInDefaultNormalBlock();
             if (notInDefaultNormalBlock)
             {
-                LINEF("m_stream->PushBlock({0});", member->m_fast_file_block->m_name)
+                LINEF("m_stream.PushBlock({0});", member->m_fast_file_block->m_name)
             }
 
             LoadMember_PointerCheck(info, member, modifier, loadType);
 
             if (notInDefaultNormalBlock)
             {
-                LINE("m_stream->PopBlock();")
+                LINE("m_stream.PopBlock();")
             }
         }
 
@@ -1129,14 +1129,14 @@ namespace
 
                     if (dynamicMember == nullptr)
                     {
-                        LINEF("m_stream->Load<{0}>({1}); // Size: {2}",
+                        LINEF("m_stream.Load<{0}>({1}); // Size: {2}",
                               info->m_definition->GetFullName(),
                               MakeTypeVarName(info->m_definition),
                               info->m_definition->GetSize())
                     }
                     else
                     {
-                        LINEF("m_stream->LoadPartial<{0}>({1}, offsetof({0}, {2}));",
+                        LINEF("m_stream.LoadPartial<{0}>({1}, offsetof({0}, {2}));",
                               info->m_definition->GetFullName(),
                               MakeTypeVarName(info->m_definition),
                               dynamicMember->m_member->m_name)
@@ -1150,7 +1150,7 @@ namespace
                     m_intendation++;
 
                     LINEF("{0} = m_memory.Alloc<{1}>();", MakeTypeVarName(info->m_definition), info->m_definition->m_name)
-                    LINEF("FillStruct_{0}(m_stream->LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
+                    LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
 
                     m_intendation--;
                     LINE("}")
@@ -1164,12 +1164,12 @@ namespace
             if (computations.IsAsset())
             {
                 LINE("")
-                LINEF("m_stream->PushBlock({0});", m_env.m_default_normal_block->m_name)
+                LINEF("m_stream.PushBlock({0});", m_env.m_default_normal_block->m_name)
             }
             else if (info->m_block)
             {
                 LINE("")
-                LINEF("m_stream->PushBlock({0});", info->m_block->m_name)
+                LINEF("m_stream.PushBlock({0});", info->m_block->m_name)
             }
 
             for (const auto& member : info->m_ordered_members)
@@ -1180,7 +1180,7 @@ namespace
             if (info->m_block || computations.IsAsset())
             {
                 LINE("")
-                LINE("m_stream->PopBlock();")
+                LINE("m_stream.PopBlock();")
             }
 
             m_intendation--;
@@ -1199,13 +1199,13 @@ namespace
 
             LINE("if (atStreamStart)")
             m_intendation++;
-            LINEF("m_stream->Load<{0}*>({1});", info->m_definition->GetFullName(), MakeTypePtrVarName(info->m_definition))
+            LINEF("m_stream.Load<{0}*>({1});", info->m_definition->GetFullName(), MakeTypePtrVarName(info->m_definition))
             m_intendation--;
 
             LINE("")
             if (inTemp)
             {
-                LINEF("m_stream->PushBlock({0});", m_env.m_default_temp_block->m_name)
+                LINEF("m_stream.PushBlock({0});", m_env.m_default_temp_block->m_name)
                 LINE("")
             }
 
@@ -1228,7 +1228,7 @@ namespace
             {
                 LINEF("{0}* ptr = *{1};", info->m_definition->GetFullName(), MakeTypePtrVarName(info->m_definition))
             }
-            LINEF("*{0} = m_stream->Alloc<{1}>({2});",
+            LINEF("*{0} = m_stream.Alloc<{1}>({2});",
                   MakeTypePtrVarName(info->m_definition),
                   info->m_definition->GetFullName(),
                   info->m_definition->GetAlignment())
@@ -1239,7 +1239,7 @@ namespace
                 LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
                 LINE("if (ptr == PTR_INSERT)")
                 m_intendation++;
-                LINEF("toInsert = m_stream->InsertPointerNative<{0}>();", info->m_definition->GetFullName())
+                LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
                 m_intendation--;
             }
 
@@ -1293,11 +1293,11 @@ namespace
 
             if (inTemp)
             {
-                LINEF("*{0} = m_stream->ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
+                LINEF("*{0} = m_stream.ConvertOffsetToAliasNative(*{0});", MakeTypePtrVarName(info->m_definition))
             }
             else
             {
-                LINEF("*{0} = m_stream->ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(info->m_definition))
+                LINEF("*{0} = m_stream.ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(info->m_definition))
             }
 
             m_intendation--;
@@ -1309,7 +1309,7 @@ namespace
             if (inTemp)
             {
                 LINE("")
-                LINE("m_stream->PopBlock();")
+                LINE("m_stream.PopBlock();")
             }
 
             m_intendation--;
