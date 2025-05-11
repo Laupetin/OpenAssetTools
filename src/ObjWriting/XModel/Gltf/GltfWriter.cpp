@@ -121,7 +121,8 @@ namespace
             for (auto meshIndex = 0u; meshIndex < meshCount; meshIndex++)
                 rootNode.children->push_back(m_first_mesh_node + meshIndex);
 
-            rootNode.children->push_back(m_first_bone_node);
+            if (!xmodel.m_bones.empty())
+                rootNode.children->push_back(m_first_bone_node);
 
             m_root_node = static_cast<unsigned>(gltf.nodes->size());
             gltf.nodes->emplace_back(std::move(rootNode));
