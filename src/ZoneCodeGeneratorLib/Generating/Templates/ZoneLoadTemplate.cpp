@@ -60,12 +60,15 @@ namespace
             m_intendation++;
 
             // Method Declarations
-            for (const auto* type : m_env.m_used_types)
+            if (m_env.m_architecture_mismatch)
             {
-                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
-                    && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
+                for (const auto* type : m_env.m_used_types)
                 {
-                    PrintFillStructMethodDeclaration(type->m_info);
+                    if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
+                        && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
+                    {
+                        PrintFillStructMethodDeclaration(type->m_info);
+                    }
                 }
             }
             for (const auto* type : m_env.m_used_types)
@@ -160,13 +163,16 @@ namespace
             LINE("")
             PrintMainLoadMethod();
 
-            for (const auto* type : m_env.m_used_types)
+            if (m_env.m_architecture_mismatch)
             {
-                if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
-                    && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
+                for (const auto* type : m_env.m_used_types)
                 {
-                    LINE("")
-                    PrintFillStructMethod(type->m_info);
+                    if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
+                        && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
+                    {
+                        LINE("")
+                        PrintFillStructMethod(type->m_info);
+                    }
                 }
             }
             for (const auto* type : m_env.m_used_types)
@@ -232,7 +238,7 @@ namespace
             return std::format("{0}** var{1}Ptr;", def->GetFullName(), MakeSafeTypeName(def));
         }
 
-        void PrintFillStructMethodDeclaration(const StructureInformation* info)
+        void PrintFillStructMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("void FillStruct_{1}(const ZoneStreamFillReadAccessor& fillAccessor);", LoaderClassName(m_env.m_asset), MakeSafeTypeName(info->m_definition))
         }
@@ -738,7 +744,7 @@ namespace
             LINE("{")
             m_intendation++;
 
-            LINEF("{0} = var;", MakeTypeVarName(def))
+            LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
             LINEF("Load_{0}(false);", info->m_definition->m_name)
             LINE("var++;")
 
@@ -1072,7 +1078,8 @@ namespace
             const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
 
             const auto allocOutOfBlock =
-                (member->m_type && !member->m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY;
+                m_env.m_architecture_mismatch
+                && ((member->m_type && !member->m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
 
             LINE_STARTF("{0} = m_stream.", MakeMemberAccess(info, member, modifier))
             if (allocOutOfBlock)
@@ -1517,7 +1524,7 @@ namespace
             }
             else
             {
-                LINE("assert(!atStreamStart);");
+                LINE("assert(!atStreamStart);")
             }
 
             LINE("")
@@ -1651,7 +1658,7 @@ namespace
             LINE("assert(pAsset != nullptr);")
             LINE("")
             LINEF("{0} marker(m_zone);", MarkerClassName(m_env.m_asset))
-            LINE("// marker.Mark(*pAsset); // TODO")
+            LINE("marker.Mark(*pAsset);")
             LINE("")
             LINEF("auto* reallocatedAsset = m_zone.Memory().Alloc<{0}>();", info->m_definition->GetFullName())
             LINEF("std::memcpy(reallocatedAsset, *pAsset, sizeof({0}));", info->m_definition->GetFullName())

@@ -7,6 +7,7 @@
 #include "Parsing/Impl/IncludingStreamProxy.h"
 #include "Parsing/Impl/ParserFilesystemStream.h"
 #include "Parsing/PostProcessing/CalculateSizeAndAlignPostProcessor.h"
+#include "Parsing/PostProcessing/CrossPlatformStructurePostProcessor.h"
 #include "Parsing/PostProcessing/LeafsPostProcessor.h"
 #include "Parsing/PostProcessing/MarkingRequiredPostProcessor.h"
 #include "Parsing/PostProcessing/MemberLeafsPostProcessor.h"
@@ -19,8 +20,8 @@
 
 namespace
 {
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+    constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
+    constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
 } // namespace
 
 CommandsFileReader::CommandsFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
@@ -62,6 +63,7 @@ void CommandsFileReader::SetupStreamProxies()
 void CommandsFileReader::SetupPostProcessors()
 {
     // Order is important
+    m_post_processors.emplace_back(std::make_unique<CrossPlatformStructurePostProcessor>());
     m_post_processors.emplace_back(std::make_unique<CalculateSizeAndAlignPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<UsagesPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<LeafsPostProcessor>());
