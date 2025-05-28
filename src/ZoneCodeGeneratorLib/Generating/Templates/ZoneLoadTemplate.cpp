@@ -1063,6 +1063,12 @@ namespace
             return true;
         }
 
+        [[nodiscard]] bool ShouldAllocOutOfBlock(const MemberInformation& member, const MemberLoadType loadType) const
+        {
+            return m_env.m_architecture_mismatch
+                   && ((member.m_type && !member.m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
+        }
+
         void LoadMember_Alloc(const StructureInformation* info,
                               const MemberInformation* member,
                               const DeclarationModifierComputations& modifier,
@@ -1077,9 +1083,7 @@ namespace
             const auto typeDecl = MakeTypeDecl(member->m_member->m_type_declaration.get());
             const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
 
-            const auto allocOutOfBlock =
-                m_env.m_architecture_mismatch
-                && ((member->m_type && !member->m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
+            const auto allocOutOfBlock = ShouldAllocOutOfBlock(*member, loadType);
 
             LINE_STARTF("{0} = m_stream.", MakeMemberAccess(info, member, modifier))
             if (allocOutOfBlock)
@@ -1192,7 +1196,14 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = m_stream.ConvertOffsetToAliasNative({0});", MakeMemberAccess(info, member, modifier))
+                if (info->m_has_matching_cross_platform_structure)
+                {
+                    LINEF("{0} = m_stream.ConvertOffsetToAliasNative({0});", MakeMemberAccess(info, member, modifier))
+                }
+                else
+                {
+                    LINEF("{0} = m_stream.ConvertOffsetToAliasLookup({0});", MakeMemberAccess(info, member, modifier))
+                }
 
                 m_intendation--;
                 LINE("}")
@@ -1211,7 +1222,14 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = m_stream.ConvertOffsetToPointerNative({0});", MakeMemberAccess(info, member, modifier))
+                if (ShouldAllocOutOfBlock(*member, loadType))
+                {
+                    LINEF("{0} = m_stream.ConvertOffsetToPointerRedirect({0});", MakeMemberAccess(info, member, modifier))
+                }
+                else
+                {
+                    LINEF("{0} = m_stream.ConvertOffsetToPointerNative({0});", MakeMemberAccess(info, member, modifier))
+                }
 
                 m_intendation--;
                 LINE("}")
@@ -1559,10 +1577,20 @@ namespace
             if (inTemp)
             {
                 LINE("")
-                LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
+
+                if (m_env.m_architecture_mismatch)
+                    LINE("uintptr_t toInsertLookupEntry = 0;")
+                else
+                    LINEF("{0}** toInsert = nullptr;", info->m_definition->GetFullName())
+
                 LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
-                LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
+
+                if (m_env.m_architecture_mismatch)
+                    LINE("toInsertLookupEntry = m_stream.InsertPointerAliasLookup();")
+                else
+                    LINEF("toInsert = m_stream.InsertPointerNative<{0}>();", info->m_definition->GetFullName())
+
                 m_intendation--;
             }
 
@@ -1602,9 +1630,14 @@ namespace
                     LINE("")
                 }
 
-                LINE("if (toInsert != nullptr)")
+                LINE("if (zonePtrType == ZonePointerType::INSERT)")
                 m_intendation++;
-                LINEF("*toInsert = *{0};", MakeTypePtrVarName(info->m_definition))
+
+                if (m_env.m_architecture_mismatch)
+                    LINEF("m_stream.SetInsertedPointerAliasLookup(toInsertLookupEntry, *{0});", MakeTypePtrVarName(info->m_definition))
+                else
+                    LINEF("*toInsert = *{0};", MakeTypePtrVarName(info->m_definition))
+
                 m_intendation--;
             }
 
@@ -1622,7 +1655,7 @@ namespace
                 }
                 else
                 {
-                    LINEF("*{0} = m_stream.ConvertOffsetToPointerRedirect(*{0});", MakeTypePtrVarName(info->m_definition))
+                    LINEF("*{0} = m_stream.ConvertOffsetToAliasLookup(*{0});", MakeTypePtrVarName(info->m_definition))
                 }
             }
             else
