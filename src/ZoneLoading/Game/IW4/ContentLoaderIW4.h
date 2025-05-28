@@ -13,9 +13,6 @@ namespace IW4
         void Load() override;
 
     private:
-        void FillStruct_XAssetList(const ZoneStreamFillReadAccessor& fillAccessor);
-        void FillStruct_ScriptStringList(const ZoneStreamFillReadAccessor& fillAccessor) const;
-
         void LoadScriptStringList(bool atStreamStart);
 
         void LoadXAsset(bool atStreamStart) const;

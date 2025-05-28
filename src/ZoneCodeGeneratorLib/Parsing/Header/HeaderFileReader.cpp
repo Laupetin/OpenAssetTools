@@ -9,7 +9,6 @@
 #include "Parsing/Impl/ParserFilesystemStream.h"
 #include "Parsing/PostProcessing/CreateMemberInformationPostProcessor.h"
 #include "Parsing/PostProcessing/CreateStructureInformationPostProcessor.h"
-#include "Parsing/PostProcessing/CrossPlatformStructurePostProcessor.h"
 #include "Parsing/PostProcessing/IPostProcessor.h"
 
 #include <algorithm>
@@ -19,8 +18,8 @@
 
 namespace
 {
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
-    static constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
+    constexpr const char* ZONE_CODE_GENERATOR_DEFINE_NAME = "__zonecodegenerator";
+    constexpr const char* ZONE_CODE_GENERATOR_DEFINE_VALUE = "1";
 } // namespace
 
 HeaderFileReader::HeaderFileReader(const ZoneCodeGeneratorArguments* args, std::string filename)
@@ -68,7 +67,6 @@ void HeaderFileReader::SetupPostProcessors()
     // Order is important
     m_post_processors.emplace_back(std::make_unique<CreateStructureInformationPostProcessor>());
     m_post_processors.emplace_back(std::make_unique<CreateMemberInformationPostProcessor>());
-    m_post_processors.emplace_back(std::make_unique<CrossPlatformStructurePostProcessor>());
 }
 
 bool HeaderFileReader::ReadHeaderFile(IDataRepository* repository)
