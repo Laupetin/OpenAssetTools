@@ -70,6 +70,13 @@ namespace
                         PrintFillStructMethodDeclaration(type->m_info);
                     }
                 }
+                for (const auto* type : m_env.m_used_types)
+                {
+                    if (type->m_info && type->m_type == type->m_info->m_definition && StructureComputations(type->m_info).GetDynamicMember())
+                    {
+                        PrintDynamicFillMethodDeclaration(type->m_info);
+                    }
+                }
             }
             for (const auto* type : m_env.m_used_types)
             {
@@ -174,6 +181,14 @@ namespace
                         PrintFillStructMethod(type->m_info);
                     }
                 }
+                for (const auto* type : m_env.m_used_types)
+                {
+                    if (type->m_info && type->m_type == type->m_info->m_definition && StructureComputations(type->m_info).GetDynamicMember())
+                    {
+                        LINE("")
+                        PrintDynamicFillMethod(*type->m_info);
+                    }
+                }
             }
             for (const auto* type : m_env.m_used_types)
             {
@@ -240,7 +255,12 @@ namespace
 
         void PrintFillStructMethodDeclaration(const StructureInformation* info) const
         {
-            LINEF("void FillStruct_{1}(const ZoneStreamFillReadAccessor& fillAccessor);", LoaderClassName(m_env.m_asset), MakeSafeTypeName(info->m_definition))
+            LINEF("void FillStruct_{0}(const ZoneStreamFillReadAccessor& fillAccessor);", MakeSafeTypeName(info->m_definition))
+        }
+
+        void PrintDynamicFillMethodDeclaration(const StructureInformation* info) const
+        {
+            LINEF("size_t LoadDynamicFill_{0}(const ZoneStreamFillReadAccessor& parentFill);", MakeSafeTypeName(info->m_definition))
         }
 
         void PrintHeaderPtrArrayLoadMethodDeclaration(const DataDefinition* def) const
@@ -255,6 +275,7 @@ namespace
 
         void PrintHeaderLoadMethodDeclaration(const StructureInformation* info) const
         {
+            const StructureComputations computations(info);
             LINEF("void Load_{0}(bool atStreamStart);", MakeSafeTypeName(info->m_definition))
         }
 
@@ -563,21 +584,124 @@ namespace
             }
         }
 
+        void PrintFillStruct_Member_Condition_Struct(const StructureInformation& structInfo, const MemberInformation& member)
+        {
+            if (member.m_condition)
+            {
+                LINEF("if ({0})", MakeEvaluation(member.m_condition.get()))
+                LINE("{")
+                m_intendation++;
+
+                PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+
+                PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+            }
+        }
+
+        void PrintFillStruct_Member_Condition_Union(const StructureInformation& structInfo, const MemberInformation& member)
+        {
+            const MemberComputations computations(&member);
+
+            if (computations.IsFirstUsedMember())
+            {
+                if (member.m_condition)
+                {
+                    LINEF("if ({0})", MakeEvaluation(member.m_condition.get()))
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+                }
+            }
+            else if (computations.IsLastUsedMember())
+            {
+                if (member.m_condition)
+                {
+                    LINEF("else if ({0})", MakeEvaluation(member.m_condition.get()))
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    LINE("else")
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+            }
+            else
+            {
+                if (member.m_condition)
+                {
+                    LINEF("else if ({0})", MakeEvaluation(member.m_condition.get()))
+                    LINE("{")
+                    m_intendation++;
+
+                    PrintFillStruct_Member(structInfo, member, DeclarationModifierComputations(&member), 0u);
+
+                    m_intendation--;
+                    LINE("}")
+                }
+                else
+                {
+                    LINEF("#error Middle member of union2 must have condition ({0})", member.m_member->m_name)
+                }
+            }
+        }
+
         void PrintFillStruct_Struct(const StructureInformation& info)
         {
             const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
-            for (const auto& member : info.m_ordered_members)
-            {
-                const MemberComputations computations(member.get());
-                if (computations.ShouldIgnore() || member.get() == dynamicMember)
-                    continue;
 
-                PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
-            }
-
-            // Always fill dynamic members last
             if (dynamicMember)
-                PrintFillStruct_Member(info, *dynamicMember, DeclarationModifierComputations(dynamicMember), 0u);
+            {
+                for (const auto& member : info.m_ordered_members)
+                {
+                    const MemberComputations computations(member.get());
+                    if (computations.ShouldIgnore() || member.get() == dynamicMember)
+                        continue;
+
+                    PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
+                }
+
+                if (info.m_definition->GetType() == DataDefinitionType::UNION)
+                    PrintFillStruct_Member_Condition_Union(info, *dynamicMember);
+                else
+                    PrintFillStruct_Member_Condition_Struct(info, *dynamicMember);
+            }
+            else
+            {
+                for (const auto& member : info.m_ordered_members)
+                {
+                    const MemberComputations computations(member.get());
+                    if (computations.ShouldIgnore())
+                        continue;
+
+                    PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
+                }
+            }
         }
 
         void PrintFillStructMethod(const StructureInformation* info)
@@ -595,13 +719,197 @@ namespace
             LINE("}")
         }
 
+        void PrintDynamicOversize_DynamicMember(const StructureInformation& info, const MemberInformation& member) const
+        {
+            const MemberComputations memberComputations(&member);
+            const DeclarationModifierComputations modifier(&member);
+
+            if (memberComputations.HasDynamicArraySize())
+            {
+                LINEF("const auto dynamicArrayEntries = static_cast<size_t>({0});", MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
+                LINEF("m_stream.AppendToFill(dynamicArrayEntries * {0});", member.m_member->m_type_declaration->m_type->GetSize())
+                LINEF("return dynamicArrayEntries * sizeof({0}{1}) + offsetof({2}, {3});",
+                      MakeTypeDecl(member.m_member->m_type_declaration.get()),
+                      MakeFollowingReferences(modifier.GetAllDeclarationModifiers()),
+                      info.m_definition->GetFullName(),
+                      member.m_member->m_name)
+            }
+            else if (member.m_type && StructureComputations(member.m_type).GetDynamicMember())
+            {
+                LINEF("return LoadDynamicFill_{0}(fillAccessor.AtOffset({1})) + offsetof({2}, {3});",
+                      MakeSafeTypeName(member.m_type->m_definition),
+                      member.m_member->m_offset,
+                      info.m_definition->GetFullName(),
+                      member.m_member->m_name)
+            }
+            else
+            {
+                LINEF("m_stream.AppendToFill({0});", member.m_member->m_type_declaration->GetSize())
+                LINEF("return sizeof({0}{1}) + offsetof({2}, {3});",
+                      MakeTypeDecl(member.m_member->m_type_declaration.get()),
+                      MakeFollowingReferences(modifier.GetAllDeclarationModifiers()),
+                      info.m_definition->GetFullName(),
+                      member.m_member->m_name)
+            }
+        }
+
+        void DynamicOverSize_Struct_Condition(const StructureInformation& info, const MemberInformation& member)
+        {
+            if (member.m_condition)
+            {
+                LINEF("if ({0})", MakeEvaluation(member.m_condition.get()))
+                LINE("{")
+                m_intendation++;
+
+                PrintFillStruct_Member(info, member, DeclarationModifierComputations(&member), 0u);
+
+                m_intendation--;
+                LINE("}")
+            }
+            else
+            {
+
+                PrintFillStruct_Member(info, member, DeclarationModifierComputations(&member), 0u);
+            }
+        }
+
+        void PrintDynamicOversize_Struct(const StructureInformation& info)
+        {
+            const StructureComputations structureComputations(&info);
+            const auto dynamicMember = structureComputations.GetDynamicMember();
+
+            LINEF("const auto fillAccessor = m_stream.AppendToFill({0}).AtOffset(parentFill.Offset());", dynamicMember->m_member->m_offset)
+            LINE("")
+
+            for (const auto& member : info.m_ordered_members)
+            {
+                const MemberComputations computations(member.get());
+                if (computations.ShouldIgnore() || computations.IsDynamicMember())
+                    continue;
+
+                DynamicOverSize_Struct_Condition(info, *member);
+            }
+
+            LINE("")
+
+            PrintDynamicOversize_DynamicMember(info, *dynamicMember);
+        }
+
+        void PrintDynamicOversize_Union(const StructureInformation& info)
+        {
+            LINE("const auto& fillAccessor = parentFill;")
+
+            for (const auto& member : info.m_ordered_members)
+            {
+                const MemberComputations computations(member.get());
+                if (computations.ShouldIgnore())
+                    continue;
+
+                if (computations.IsFirstUsedMember())
+                {
+                    LINE("")
+                    if (member->m_condition)
+                    {
+                        LINEF("if ({0})", MakeEvaluation(member->m_condition.get()))
+                        LINE("{")
+                        m_intendation++;
+
+                        PrintDynamicOversize_DynamicMember(info, *member);
+
+                        m_intendation--;
+                        LINE("}")
+                    }
+                    else
+                    {
+                        PrintDynamicOversize_DynamicMember(info, *member);
+                    }
+                }
+                else if (computations.IsLastUsedMember())
+                {
+                    if (member->m_condition)
+                    {
+                        LINEF("else if ({0})", MakeEvaluation(member->m_condition.get()))
+                        LINE("{")
+                        m_intendation++;
+
+                        PrintDynamicOversize_DynamicMember(info, *member);
+
+                        m_intendation--;
+                        LINE("}")
+                    }
+                    else
+                    {
+                        LINE("else")
+                        LINE("{")
+                        m_intendation++;
+
+                        PrintDynamicOversize_DynamicMember(info, *member);
+
+                        m_intendation--;
+                        LINE("}")
+                    }
+                }
+                else
+                {
+                    if (member->m_condition)
+                    {
+                        LINEF("else if ({0})", MakeEvaluation(member->m_condition.get()))
+                        LINE("{")
+                        m_intendation++;
+
+                        PrintDynamicOversize_DynamicMember(info, *member);
+
+                        m_intendation--;
+                        LINE("}")
+                    }
+                    else
+                    {
+                        LINEF("#error Middle member of union must have condition ({0})", member->m_member->m_name)
+                    }
+                }
+            }
+        }
+
+        void PrintDynamicFillMethod(const StructureInformation& info)
+        {
+            LINEF("size_t {0}::LoadDynamicFill_{1}(const ZoneStreamFillReadAccessor& parentFill)",
+                  LoaderClassName(m_env.m_asset),
+                  MakeSafeTypeName(info.m_definition))
+
+            LINE("{")
+            m_intendation++;
+
+            LINEF("{0} temp{1};", info.m_definition->GetFullName(), MakeSafeTypeName(info.m_definition))
+            LINEF("{0} = &temp{1};", MakeTypeVarName(info.m_definition), MakeSafeTypeName(info.m_definition))
+
+            if (info.m_definition->GetType() == DataDefinitionType::UNION)
+            {
+                PrintDynamicOversize_Union(info);
+            }
+            else
+            {
+                PrintDynamicOversize_Struct(info);
+            }
+
+            m_intendation--;
+            LINE("}")
+        }
+
         void PrintLoadPtrArrayMethod_Loading(const DataDefinition* def, const StructureInformation* info) const
         {
-            LINEF("*{0} = m_stream.{1}<{2}>({3});",
-                  MakeTypePtrVarName(def),
-                  m_env.m_architecture_mismatch ? "AllocOutOfBlock" : "Alloc",
-                  def->GetFullName(),
-                  def->GetAlignment())
+            if (info && !info->m_has_matching_cross_platform_structure && StructureComputations(info).GetDynamicMember())
+            {
+                LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(def))
+                LINEF("*{0} = static_cast<{1}*>(m_stream.AllocOutOfBlock({2}, allocSize));", MakeTypePtrVarName(def), def->GetFullName(), def->GetAlignment())
+            }
+            else
+            {
+                LINEF("*{0} = m_stream.{1}<{2}>({3});",
+                      MakeTypePtrVarName(def),
+                      m_env.m_architecture_mismatch ? "AllocOutOfBlock" : "Alloc",
+                      def->GetFullName(),
+                      def->GetAlignment())
+            }
 
             if (info && !info->m_is_leaf)
             {
@@ -911,7 +1219,7 @@ namespace
             }
         }
 
-        void LoadMember_DynamicArray(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier) const
+        void LoadMember_DynamicArray(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             if (member->m_type && !member->m_type->m_is_leaf)
             {
@@ -923,11 +1231,22 @@ namespace
             }
             else if (info->m_has_matching_cross_platform_structure)
             {
+                if (m_env.m_architecture_mismatch)
+                {
+                    LINE("if (atStreamStart)")
+                    m_intendation++;
+                }
+
                 LINEF("m_stream.Load<{0}{1}>({2}, {3});",
                       MakeTypeDecl(member->m_member->m_type_declaration.get()),
                       MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()),
                       MakeMemberAccess(info, member, modifier),
                       MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
+
+                if (m_env.m_architecture_mismatch)
+                {
+                    m_intendation--;
+                }
             }
         }
 
@@ -974,6 +1293,7 @@ namespace
             if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
+
                 LINEF("Load_{0}(true);", MakeSafeTypeName(member->m_type->m_definition))
 
                 if (member->m_type->m_post_load_action)
@@ -1000,7 +1320,7 @@ namespace
         void LoadMember_TypeCheck(const StructureInformation* info,
                                   const MemberInformation* member,
                                   const DeclarationModifierComputations& modifier,
-                                  const MemberLoadType loadType) const
+                                  const MemberLoadType loadType)
         {
             if (member->m_is_string)
             {
@@ -1076,6 +1396,13 @@ namespace
                    && ((member.m_type && !member.m_type->m_has_matching_cross_platform_structure) || loadType == MemberLoadType::POINTER_ARRAY);
         }
 
+        [[nodiscard]] bool
+            ShouldPreAllocDynamic(const MemberInformation& member, const DeclarationModifierComputations& modifier, const MemberLoadType loadType) const
+        {
+            return ShouldAllocOutOfBlock(member, loadType) && (modifier.IsSinglePointer() || modifier.IsPointerArray()) && member.m_type
+                   && StructureComputations(member.m_type).GetDynamicMember();
+        }
+
         void LoadMember_Alloc(const StructureInformation* info,
                               const MemberInformation* member,
                               const DeclarationModifierComputations& modifier,
@@ -1091,34 +1418,54 @@ namespace
             const auto followingReferences = MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers());
 
             const auto allocOutOfBlock = ShouldAllocOutOfBlock(*member, loadType);
+            const auto preAllocDynamic = ShouldPreAllocDynamic(*member, modifier, loadType);
 
-            LINE_STARTF("{0} = m_stream.", MakeMemberAccess(info, member, modifier))
-            if (allocOutOfBlock)
-                LINE_MIDDLE("AllocOutOfBlock")
-            else
-                LINE_MIDDLE("Alloc")
-
-            LINE_MIDDLEF("<{0}{1}>(", typeDecl, followingReferences)
-
-            // This used to use `alignof()` to calculate alignment but due to inconsistencies between compilers and bugs discovered in MSVC
-            // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a larger
-            // alignment than the specified value) this was changed to make ZoneCodeGenerator calculate what is supposed to be used as alignment when
-            // allocating. This is more reliable when being used with different compilers and the value used can be seen in the source code directly
-            if (member->m_alloc_alignment)
+            if (preAllocDynamic)
             {
-                LINE_MIDDLE(MakeEvaluation(member->m_alloc_alignment.get()))
+                LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(member->m_type->m_definition))
+                LINE_STARTF("{0} = static_cast<{1}{2}*>(m_stream.AllocOutOfBlock(", MakeMemberAccess(info, member, modifier), typeDecl, followingReferences)
+
+                if (member->m_alloc_alignment)
+                {
+                    LINE_MIDDLE(MakeEvaluation(member->m_alloc_alignment.get()))
+                }
+                else
+                {
+                    LINE_MIDDLEF("{0}", modifier.GetAlignment())
+                }
+
+                LINE_ENDF(", allocSize));", member->m_type->m_definition->GetFullName())
             }
             else
             {
-                LINE_MIDDLEF("{0}", modifier.GetAlignment())
+                LINE_STARTF("{0} = m_stream.", MakeMemberAccess(info, member, modifier))
+                if (allocOutOfBlock)
+                    LINE_MIDDLE("AllocOutOfBlock")
+                else
+                    LINE_MIDDLE("Alloc")
+
+                LINE_MIDDLEF("<{0}{1}>(", typeDecl, followingReferences)
+
+                // This used to use `alignof()` to calculate alignment but due to inconsistencies between compilers and bugs discovered in MSVC
+                // (Alignment specified via `__declspec(align())` showing as correct via intellisense but is incorrect when compiled for types that have a
+                // larger alignment than the specified value) this was changed to make ZoneCodeGenerator calculate what is supposed to be used as alignment when
+                // allocating. This is more reliable when being used with different compilers and the value used can be seen in the source code directly
+                if (member->m_alloc_alignment)
+                {
+                    LINE_MIDDLE(MakeEvaluation(member->m_alloc_alignment.get()))
+                }
+                else
+                {
+                    LINE_MIDDLEF("{0}", modifier.GetAlignment())
+                }
+
+                if (allocOutOfBlock && modifier.IsArrayPointer())
+                    LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+                else if (allocOutOfBlock && modifier.IsPointerArray())
+                    LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
+
+                LINE_END(");")
             }
-
-            if (allocOutOfBlock && modifier.IsArrayPointer())
-                LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
-            else if (allocOutOfBlock && modifier.IsPointerArray())
-                LINE_MIDDLEF(", {0}", MakeEvaluation(modifier.GetPointerArrayCountEvaluation()))
-
-            LINE_END(");")
 
             const MemberComputations computations(member);
             if (computations.IsInTempBlock())
@@ -1380,7 +1727,7 @@ namespace
         {
             const MemberComputations computations(member);
 
-            if (computations.IsFirstMember())
+            if (computations.IsFirstUsedMember())
             {
                 LINE("")
                 if (member->m_condition)
@@ -1399,7 +1746,7 @@ namespace
                     LoadMember_Reference(info, member, DeclarationModifierComputations(member));
                 }
             }
-            else if (computations.IsLastMember())
+            else if (computations.IsLastUsedMember())
             {
                 if (member->m_condition)
                 {
@@ -1464,13 +1811,18 @@ namespace
         {
             const StructureComputations computations(info);
             LINEF("void {0}::Load_{1}(const bool atStreamStart)", LoaderClassName(m_env.m_asset), info->m_definition->m_name)
+
             LINE("{")
             m_intendation++;
 
             LINEF("assert({0} != nullptr);", MakeTypeVarName(info->m_definition))
 
             const auto* dynamicMember = computations.GetDynamicMember();
-            if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
+            if (!info->m_has_matching_cross_platform_structure && dynamicMember && !info->m_non_embedded_reference_exists)
+            {
+                LINE("assert(!atStreamStart);")
+            }
+            else if (!(info->m_definition->GetType() == DataDefinitionType::UNION && dynamicMember))
             {
                 LINE("")
                 LINE("if (atStreamStart)")
@@ -1495,7 +1847,18 @@ namespace
                 }
                 else
                 {
-                    LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
+                    if (dynamicMember == nullptr)
+                    {
+                        LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));", MakeSafeTypeName(info->m_definition), info->m_definition->GetSize())
+                    }
+                    else if (info->m_non_embedded_reference_exists)
+                    {
+                        LINEF("FillStruct_{0}(m_stream.GetLastFill());", MakeSafeTypeName(info->m_definition))
+                    }
+                    else
+                    {
+                        LINE("assert(false);")
+                    }
                 }
                 m_intendation--;
             }

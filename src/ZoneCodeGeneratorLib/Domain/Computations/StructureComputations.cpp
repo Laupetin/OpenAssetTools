@@ -26,6 +26,18 @@ MemberInformation* StructureComputations::GetDynamicMember() const
     return nullptr;
 }
 
+bool StructureComputations::HasNonDynamicMember() const
+{
+    for (const auto& member : m_info->m_ordered_members)
+    {
+        const MemberComputations memberComputations(member.get());
+        if (!memberComputations.ShouldIgnore() && !memberComputations.IsAfterPartialLoad())
+            return true;
+    }
+
+    return false;
+}
+
 std::vector<MemberInformation*> StructureComputations::GetUsedMembers() const
 {
     std::vector<MemberInformation*> members;

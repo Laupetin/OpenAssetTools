@@ -11,11 +11,13 @@
 #include <cstring>
 #include <stack>
 
-ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(const void* dataBuffer, void* blockBuffer, const size_t bufferSize, const unsigned pointerByteCount)
+ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(
+    const void* dataBuffer, void* blockBuffer, const size_t bufferSize, const unsigned pointerByteCount, const size_t offset)
     : m_data_buffer(dataBuffer),
       m_block_buffer(blockBuffer),
       m_buffer_size(bufferSize),
-      m_pointer_byte_count(pointerByteCount)
+      m_pointer_byte_count(pointerByteCount),
+      m_offset(offset)
 {
     // Otherwise we cannot insert alias
     assert(m_pointer_byte_count <= sizeof(uintptr_t));
@@ -23,9 +25,17 @@ ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(const void* dataBuffer, v
 
 ZoneStreamFillReadAccessor ZoneStreamFillReadAccessor::AtOffset(const size_t offset) const
 {
-    assert(offset < m_buffer_size);
-    return ZoneStreamFillReadAccessor(
-        static_cast<const char*>(m_data_buffer) + offset, static_cast<char*>(m_block_buffer) + offset, m_buffer_size - offset, m_pointer_byte_count);
+    assert(offset <= m_buffer_size);
+    return ZoneStreamFillReadAccessor(static_cast<const char*>(m_data_buffer) + offset,
+                                      static_cast<char*>(m_block_buffer) + offset,
+                                      m_buffer_size - offset,
+                                      m_pointer_byte_count,
+                                      m_offset + offset);
+}
+
+size_t ZoneStreamFillReadAccessor::Offset() const
+{
+    return m_offset;
 }
 
 void ZoneStreamFillReadAccessor::InsertPointerRedirect(const uintptr_t aliasValue, const size_t offset) const
@@ -117,7 +127,7 @@ namespace
 
             auto* block = m_block_stack.top();
 
-            Align(align);
+            Align(*block, align);
 
             if (m_block_offsets[block->m_index] > block->m_buffer_size)
                 throw BlockOverflowException(block);
@@ -134,7 +144,7 @@ namespace
 
             auto* block = m_block_stack.top();
 
-            Align(align);
+            Align(*block, align);
 
             if (m_block_offsets[block->m_index] > block->m_buffer_size)
                 throw BlockOverflowException(block);
@@ -163,23 +173,7 @@ namespace
                 // Theoretically ptr should always be at the current block offset.
                 assert(dst == &block->m_buffer[m_block_offsets[block->m_index]]);
 
-                switch (block->m_type)
-                {
-                case XBlockType::BLOCK_TYPE_TEMP:
-                case XBlockType::BLOCK_TYPE_NORMAL:
-                    m_stream.Load(dst, size);
-                    break;
-
-                case XBlockType::BLOCK_TYPE_RUNTIME:
-                    std::memset(dst, 0, size);
-                    break;
-
-                case XBlockType::BLOCK_TYPE_DELAY:
-                    assert(false);
-                    break;
-                }
-
-                IncBlockPos(size);
+                LoadDataFromBlock(*block, dst, size);
             }
             else
             {
@@ -218,7 +212,7 @@ namespace
 
         ZoneStreamFillReadAccessor LoadWithFill(const size_t size) override
         {
-            m_fill_buffer.reserve(size);
+            m_fill_buffer.resize(size);
             auto* dst = m_fill_buffer.data();
 
             // If no block has been pushed, load raw
@@ -227,65 +221,78 @@ namespace
                 const auto* block = m_block_stack.top();
                 auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]];
 
-                switch (block->m_type)
-                {
-                case XBlockType::BLOCK_TYPE_TEMP:
-                case XBlockType::BLOCK_TYPE_NORMAL:
-                    m_stream.Load(dst, size);
-                    break;
+                LoadDataFromBlock(*block, dst, size);
 
-                case XBlockType::BLOCK_TYPE_RUNTIME:
-                    std::memset(dst, 0, size);
-                    break;
-
-                case XBlockType::BLOCK_TYPE_DELAY:
-                    assert(false);
-                    break;
-                }
-
-                IncBlockPos(size);
-
-                return ZoneStreamFillReadAccessor(dst, blockBufferForFill, size, m_pointer_byte_count);
+                return ZoneStreamFillReadAccessor(dst, blockBufferForFill, size, m_pointer_byte_count, 0);
             }
 
             m_stream.Load(dst, size);
-            return ZoneStreamFillReadAccessor(dst, nullptr, size, m_pointer_byte_count);
+            return ZoneStreamFillReadAccessor(dst, nullptr, size, m_pointer_byte_count, 0);
+        }
+
+        ZoneStreamFillReadAccessor AppendToFill(const size_t appendSize) override
+        {
+            const auto appendOffset = m_fill_buffer.size();
+            m_fill_buffer.resize(appendOffset + appendSize);
+            auto* dst = m_fill_buffer.data() + appendOffset;
+
+            const auto newTotalSize = appendOffset + appendSize;
+            // If no block has been pushed, load raw
+            if (!m_block_stack.empty())
+            {
+                const auto* block = m_block_stack.top();
+                auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]] - appendOffset;
+
+                LoadDataFromBlock(*block, dst, appendSize);
+
+                return ZoneStreamFillReadAccessor(m_fill_buffer.data(), blockBufferForFill, newTotalSize, m_pointer_byte_count, 0);
+            }
+
+            m_stream.Load(dst, appendSize);
+            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), nullptr, newTotalSize, m_pointer_byte_count, 0);
+        }
+
+        ZoneStreamFillReadAccessor GetLastFill() override
+        {
+            assert(!m_fill_buffer.empty());
+
+            if (!m_block_stack.empty())
+            {
+                const auto* block = m_block_stack.top();
+                auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]] - m_fill_buffer.size();
+
+                return ZoneStreamFillReadAccessor(m_fill_buffer.data(), blockBufferForFill, m_fill_buffer.size(), m_pointer_byte_count, 0);
+            }
+
+            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), nullptr, m_fill_buffer.size(), m_pointer_byte_count, 0);
         }
 
         void* InsertPointerNative() override
         {
-            m_block_stack.push(m_insert_block);
-
             // Alignment of pointer should always be its size
-            Align(m_pointer_byte_count);
+            Align(*m_insert_block, m_pointer_byte_count);
 
             if (m_block_offsets[m_insert_block->m_index] + m_pointer_byte_count > m_insert_block->m_buffer_size)
                 throw BlockOverflowException(m_insert_block);
 
             auto* ptr = static_cast<void*>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
 
-            IncBlockPos(m_pointer_byte_count);
-
-            m_block_stack.pop();
+            IncBlockPos(*m_insert_block, m_pointer_byte_count);
 
             return ptr;
         }
 
         uintptr_t InsertPointerAliasLookup() override
         {
-            m_block_stack.push(m_insert_block);
-
             // Alignment of pointer should always be its size
-            Align(m_pointer_byte_count);
+            Align(*m_insert_block, m_pointer_byte_count);
 
             if (m_block_offsets[m_insert_block->m_index] + m_pointer_byte_count > m_insert_block->m_buffer_size)
                 throw BlockOverflowException(m_insert_block);
 
             auto* ptr = static_cast<void*>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
 
-            IncBlockPos(m_pointer_byte_count);
-
-            m_block_stack.pop();
+            IncBlockPos(*m_insert_block, m_pointer_byte_count);
 
             const auto newLookupIndex = static_cast<uintptr_t>(m_alias_lookup.size()) + 1;
             m_alias_lookup.emplace_back(nullptr);
@@ -410,24 +417,37 @@ namespace
         }
 
     private:
-        void IncBlockPos(const size_t size)
+        void LoadDataFromBlock(const XBlock& block, void* dst, const size_t size)
         {
-            assert(!m_block_stack.empty());
+            switch (block.m_type)
+            {
+            case XBlockType::BLOCK_TYPE_TEMP:
+            case XBlockType::BLOCK_TYPE_NORMAL:
+                m_stream.Load(dst, size);
+                break;
 
-            if (m_block_stack.empty())
-                return;
+            case XBlockType::BLOCK_TYPE_RUNTIME:
+                std::memset(dst, 0, size);
+                break;
 
-            const auto* block = m_block_stack.top();
-            m_block_offsets[block->m_index] += size;
+            case XBlockType::BLOCK_TYPE_DELAY:
+                assert(false);
+                break;
+            }
+
+            IncBlockPos(block, size);
         }
 
-        void Align(const unsigned align)
+        void IncBlockPos(const XBlock& block, const size_t size)
         {
-            assert(!m_block_stack.empty());
+            m_block_offsets[block.m_index] += size;
+        }
 
+        void Align(const XBlock& block, const unsigned align)
+        {
             if (align > 0)
             {
-                const auto blockIndex = m_block_stack.top()->m_index;
+                const auto blockIndex = block.m_index;
                 m_block_offsets[blockIndex] = utils::Align(m_block_offsets[blockIndex], static_cast<size_t>(align));
             }
         }
