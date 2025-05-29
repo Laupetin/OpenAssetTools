@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstring>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 class ZoneStreamFillReadAccessor
@@ -148,7 +149,7 @@ public:
 
     template<typename T> uintptr_t AllocRedirectEntry(T*& offset)
     {
-        return AllocRedirectEntry(reinterpret_cast<void**>(&offset));
+        return AllocRedirectEntry(reinterpret_cast<void**>(const_cast<std::remove_const_t<T>**>(&offset)));
     }
 
     virtual void* ConvertOffsetToPointerRedirect(const void* offset) = 0;
