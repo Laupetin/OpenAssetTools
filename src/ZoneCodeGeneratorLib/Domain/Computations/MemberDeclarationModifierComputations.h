@@ -12,6 +12,7 @@ public:
 
     [[nodiscard]] DeclarationModifier* GetDeclarationModifier() const;
     [[nodiscard]] DeclarationModifier* GetNextDeclarationModifier() const;
+    [[nodiscard]] std::vector<DeclarationModifier*> GetAllDeclarationModifiers() const;
     [[nodiscard]] std::vector<DeclarationModifier*> GetFollowingDeclarationModifiers() const;
     [[nodiscard]] const std::vector<int>& GetArrayIndices() const;
     [[nodiscard]] bool IsArray() const;

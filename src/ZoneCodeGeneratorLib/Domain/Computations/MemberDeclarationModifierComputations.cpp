@@ -56,6 +56,18 @@ DeclarationModifier* DeclarationModifierComputations::GetNextDeclarationModifier
     return nullptr;
 }
 
+std::vector<DeclarationModifier*> DeclarationModifierComputations::GetAllDeclarationModifiers() const
+{
+    const auto& declarationModifiers = m_information->m_member->m_type_declaration->m_declaration_modifiers;
+    std::vector<DeclarationModifier*> all;
+    all.reserve(declarationModifiers.size());
+
+    for (const auto& mod : declarationModifiers)
+        all.emplace_back(mod.get());
+
+    return all;
+}
+
 std::vector<DeclarationModifier*> DeclarationModifierComputations::GetFollowingDeclarationModifiers() const
 {
     std::vector<DeclarationModifier*> following;

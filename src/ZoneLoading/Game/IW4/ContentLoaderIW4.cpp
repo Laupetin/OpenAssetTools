@@ -175,7 +175,7 @@ void ContentLoader::Load()
 #ifdef ARCH_x86
     m_stream.LoadDataRaw(&assetList, sizeof(assetList));
 #else
-    auto fillAccessor = m_stream.LoadWithFill(16u);
+    const auto fillAccessor = m_stream.LoadWithFill(16u);
     varScriptStringList = &varXAssetList->stringList;
     fillAccessor.Fill(varScriptStringList->count, 0u);
     fillAccessor.FillPtr(varScriptStringList->strings, 4u);
