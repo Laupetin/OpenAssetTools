@@ -532,6 +532,13 @@ namespace
                 LINEF("fillAccessor.FillPtr({0}, {1});",
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+
+                if (memberInfo.m_is_reusable)
+                {
+                    LINEF("fillAccessor.InsertPointerRedirect(m_stream.AllocRedirectEntry({0}), {1});",
+                          MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                          OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
+                }
             }
             else if (modifier.IsPointerArray())
             {
@@ -1492,7 +1499,7 @@ namespace
                 }
                 m_intendation--;
             }
-            else
+            else if (!m_env.m_architecture_mismatch)
             {
                 LINE("assert(atStreamStart);")
             }
