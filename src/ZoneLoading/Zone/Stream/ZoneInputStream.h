@@ -14,9 +14,10 @@
 class ZoneStreamFillReadAccessor
 {
 public:
-    ZoneStreamFillReadAccessor(const void* dataBuffer, void* blockBuffer, size_t bufferSize, unsigned pointerByteCount);
+    ZoneStreamFillReadAccessor(const void* dataBuffer, void* blockBuffer, size_t bufferSize, unsigned pointerByteCount, size_t offset);
 
     [[nodiscard]] ZoneStreamFillReadAccessor AtOffset(size_t offset) const;
+    [[nodiscard]] size_t Offset() const;
 
     template<typename T> void Fill(T& value, const size_t offset) const
     {
@@ -48,6 +49,7 @@ private:
     void* m_block_buffer;
     size_t m_buffer_size;
     unsigned m_pointer_byte_count;
+    size_t m_offset;
 };
 
 class ZoneInputStream : public IZoneStream
@@ -104,6 +106,8 @@ public:
     virtual void LoadDataInBlock(void* dst, size_t size) = 0;
     virtual void LoadNullTerminated(void* dst) = 0;
     virtual ZoneStreamFillReadAccessor LoadWithFill(size_t size) = 0;
+    virtual ZoneStreamFillReadAccessor AppendToFill(size_t appendSize) = 0;
+    virtual ZoneStreamFillReadAccessor GetLastFill() = 0;
 
     template<typename T> void Load(T* dst)
     {
