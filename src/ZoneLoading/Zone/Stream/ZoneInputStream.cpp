@@ -403,10 +403,10 @@ namespace
 
             if (lookupEntry == 0)
                 return nullptr;
-            if (lookupEntry > m_alias_lookup.size())
-                throw InvalidAliasLookupException(lookupEntry - 1, m_alias_lookup.size());
+            if (lookupEntry > m_pointer_redirect_lookup.size())
+                throw InvalidAliasLookupException(lookupEntry - 1, m_pointer_redirect_lookup.size());
 
-            return m_alias_lookup[lookupEntry - 1];
+            return *m_pointer_redirect_lookup[lookupEntry - 1];
         }
 
     private:
