@@ -113,17 +113,17 @@ void IwiWriter::DumpImage(std::ostream& stream, const Texture* texture)
             header.fileSizeForPicmip[currentMipLevel] = static_cast<uint32_t>(currentFileSize);
     }
 
-    if (const auto* texture2D = dynamic_cast<const Texture2D*>(texture))
+    if (const auto* texture3D = dynamic_cast<const Texture3D*>(texture))
     {
-        FillHeader2D(header, *texture2D);
+        FillHeader3D(header, *texture3D);
     }
     else if (const auto* textureCube = dynamic_cast<const TextureCube*>(texture))
     {
         FillHeaderCube(header, *textureCube);
     }
-    else if (const auto* texture3D = dynamic_cast<const Texture3D*>(texture))
+    else if (const auto* texture2D = dynamic_cast<const Texture2D*>(texture))
     {
-        FillHeader3D(header, *texture3D);
+        FillHeader2D(header, *texture2D);
     }
     else
     {
