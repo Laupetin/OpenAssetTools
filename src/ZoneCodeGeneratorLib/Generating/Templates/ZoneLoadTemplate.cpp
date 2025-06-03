@@ -952,7 +952,14 @@ namespace
                     LINE("{")
                     m_intendation++;
 
-                    LINEF("*{0} = m_stream.ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(def))
+                    if (info && !info->m_has_matching_cross_platform_structure)
+                    {
+                        LINEF("*{0} = m_stream.ConvertOffsetToPointerRedirect(*{0});", MakeTypePtrVarName(def))
+                    }
+                    else
+                    {
+                        LINEF("*{0} = m_stream.ConvertOffsetToPointerNative(*{0});", MakeTypePtrVarName(def))
+                    }
 
                     m_intendation--;
                     LINE("}")
@@ -984,9 +991,19 @@ namespace
                 m_intendation++;
                 LINEF("const auto ptrArrayFill = m_stream.LoadWithFill({0} * count);", m_env.m_pointer_size)
                 LINE("for (size_t index = 0; index < count; index++)")
+                LINE("{")
                 m_intendation++;
                 LINEF("ptrArrayFill.FillPtr({0}[index], {1} * index);", MakeTypePtrVarName(def), m_env.m_pointer_size)
+
+                if (reusable)
+                {
+                    LINEF("ptrArrayFill.InsertPointerRedirect(m_stream.AllocRedirectEntry({0}[index]), {1} * index);",
+                          MakeTypePtrVarName(def),
+                          m_env.m_pointer_size)
+                }
+
                 m_intendation--;
+                LINE("}")
                 m_intendation--;
                 LINE("}")
             }
