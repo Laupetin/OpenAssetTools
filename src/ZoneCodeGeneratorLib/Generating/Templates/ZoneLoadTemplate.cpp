@@ -396,7 +396,7 @@ namespace
                                                  const size_t nestedBaseOffset)
         {
 
-            LINEF("const auto dynamicArraySize = {0};", MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
+            LINEF("const auto dynamicArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetDynamicArraySizeEvaluation()))
             LINE("if (dynamicArraySize > 0)")
             LINE("{")
             m_intendation++;
@@ -415,23 +415,25 @@ namespace
                 LINEF("fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->m_offset)
             }
 
-            LINEF("const auto dynamicFill = m_stream.LoadWithFill({0} * static_cast<size_t>(dynamicArraySize - 1));",
-                  memberInfo.m_member->m_type_declaration->GetSize())
+            /*LINEF("const auto dynamicFill = m_stream.LoadWithFill({0} * static_cast<size_t>(dynamicArraySize - 1));",
+                  memberInfo.m_member->m_type_declaration->GetSize())*/
 
-            LINEF("for (auto i = 1u; i < dynamicArraySize; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
+            LINEF("for (auto i = 1uz; i < dynamicArraySize; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
             LINE("{")
             m_intendation++;
             if (callFillForMember)
             {
                 LINEF("{0} = &{1}[i];", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
-                LINEF("FillStruct_{0}(dynamicFill.AtOffset((i - 1u) * {1}));",
+                LINEF("FillStruct_{0}(fillAccessor.AtOffset({1} + i * {2}));",
                       MakeSafeTypeName(memberInfo.m_member->m_type_declaration->m_type),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
                       memberInfo.m_member->m_type_declaration->GetSize())
             }
             else
             {
-                LINEF("dynamicFill.Fill({0}[i], (i - 1u) * {1});",
+                LINEF("fillAccessor.Fill({0}[i], {1} + i * {2});",
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                      OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
                       memberInfo.m_member->m_type_declaration->GetSize())
             }
             m_intendation--;
@@ -1040,7 +1042,7 @@ namespace
                 LINE("{")
                 m_intendation++;
 
-                LINEF("{0} = var;", MakeTypeVarName(def))
+                LINEF("{0} = var;", MakeTypeVarName(info->m_definition))
                 LINEF("FillStruct_{0}(arrayFill.AtOffset(0 + {1} * index));", info->m_definition->m_name, def->GetSize())
                 LINE("var++;")
 
