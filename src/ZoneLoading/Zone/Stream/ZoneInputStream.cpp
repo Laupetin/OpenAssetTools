@@ -67,7 +67,8 @@ namespace
               m_pointer_byte_count(pointerBitCount / 8u),
               m_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - blockBitCount)) << (pointerBitCount - blockBitCount)),
               m_block_shift(pointerBitCount - blockBitCount),
-              m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount)))
+              m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
+              m_alias_mask(1uz << (pointerBitCount - 1uz))
         {
             assert(pointerBitCount % 8u == 0u);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
@@ -294,7 +295,7 @@ namespace
 
             IncBlockPos(*m_insert_block, m_pointer_byte_count);
 
-            const auto newLookupIndex = static_cast<uintptr_t>(m_alias_lookup.size()) + 1;
+            const auto newLookupIndex = static_cast<uintptr_t>(m_alias_lookup.size()) | m_alias_mask;
             m_alias_lookup.emplace_back(nullptr);
 
             std::memcpy(ptr, &newLookupIndex, m_pointer_byte_count);
@@ -304,10 +305,13 @@ namespace
 
         void SetInsertedPointerAliasLookup(const uintptr_t lookupEntry, void* value) override
         {
-            assert(lookupEntry > 0);
-            assert(lookupEntry <= m_alias_lookup.size());
+            assert(lookupEntry & m_alias_mask);
 
-            m_alias_lookup[lookupEntry - 1] = value;
+            const auto aliasIndex = lookupEntry & ~m_alias_mask;
+
+            assert(aliasIndex < m_alias_lookup.size());
+
+            m_alias_lookup[aliasIndex] = value;
         }
 
         void* ConvertOffsetToPointerNative(const void* offset) override
@@ -410,10 +414,23 @@ namespace
 
             if (lookupEntry == 0)
                 return nullptr;
-            if (lookupEntry > m_pointer_redirect_lookup.size())
-                throw InvalidAliasLookupException(lookupEntry - 1, m_pointer_redirect_lookup.size());
 
-            return *m_pointer_redirect_lookup[lookupEntry - 1];
+            if (lookupEntry & m_alias_mask)
+            {
+                const auto aliasIndex = lookupEntry & ~m_alias_mask;
+
+                if (aliasIndex >= m_alias_lookup.size())
+                    throw InvalidAliasLookupException(aliasIndex, m_alias_lookup.size());
+
+                return m_alias_lookup[aliasIndex];
+            }
+
+            const auto redirectIndex = lookupEntry - 1;
+
+            if (redirectIndex >= m_pointer_redirect_lookup.size())
+                throw InvalidAliasLookupException(redirectIndex, m_pointer_redirect_lookup.size());
+
+            return *m_pointer_redirect_lookup[redirectIndex];
         }
 
     private:
@@ -470,6 +487,7 @@ namespace
         std::vector<uint8_t> m_fill_buffer;
         std::vector<void**> m_pointer_redirect_lookup;
         std::vector<void*> m_alias_lookup;
+        size_t m_alias_mask;
     };
 } // namespace
 
