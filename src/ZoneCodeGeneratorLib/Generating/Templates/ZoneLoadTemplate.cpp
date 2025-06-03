@@ -1129,7 +1129,7 @@ namespace
             }
         }
 
-        void LoadMember_ArrayPointer(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier) const
+        void LoadMember_ArrayPointer(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier)
         {
             const MemberComputations computations(member);
             if (member->m_type && !member->m_type->m_is_leaf && !computations.IsInRuntimeBlock())
@@ -1150,6 +1150,20 @@ namespace
                     LINE("")
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
+            }
+            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure && computations.IsInRuntimeBlock())
+            {
+                LINEF("const auto runtimeArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+                LINEF("const auto runtimeFill = m_stream.LoadWithFill({0} * runtimeArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                LINE("for (auto i = 0uz; i < runtimeArraySize; i++)")
+                LINE("{")
+                m_intendation++;
+                LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
+                LINEF("FillStruct_{0}(runtimeFill.AtOffset(i * {1}));",
+                      MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
+                      member->m_member->m_type_declaration->m_type->GetSize())
+                m_intendation--;
+                LINE("}")
             }
             else
             {
@@ -1309,6 +1323,13 @@ namespace
                     LINE("")
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
+            }
+            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure && computations.IsInRuntimeBlock())
+            {
+                LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
+                LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));",
+                      MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
+                      member->m_member->m_type_declaration->m_type->GetSize())
             }
             else
             {
