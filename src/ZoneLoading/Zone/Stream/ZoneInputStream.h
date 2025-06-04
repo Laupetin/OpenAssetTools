@@ -11,6 +11,8 @@
 #include <type_traits>
 #include <vector>
 
+#define DEBUG_OFFSETS 1
+
 class ZoneStreamFillReadAccessor
 {
 public:
@@ -169,6 +171,10 @@ public:
     {
         return static_cast<T*>(ConvertOffsetToAliasLookup(static_cast<const void*>(offset)));
     }
+
+#ifdef DEBUG_OFFSETS
+    virtual void DebugOffsets(size_t assetIndex) const = 0;
+#endif
 
     static std::unique_ptr<ZoneInputStream> Create(
         unsigned pointerBitCount, unsigned blockBitCount, std::vector<XBlock*>& blocks, block_t insertBlock, ILoadingStream& stream, MemoryManager& memory);

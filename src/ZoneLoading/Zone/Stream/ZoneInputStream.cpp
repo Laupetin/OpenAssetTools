@@ -9,6 +9,8 @@
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
+#include <sstream>
 #include <stack>
 
 ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(
@@ -432,6 +434,25 @@ namespace
 
             return *m_pointer_redirect_lookup[redirectIndex];
         }
+
+#ifdef DEBUG_OFFSETS
+        void DebugOffsets(const size_t assetIndex) const override
+        {
+            std::ostringstream ss;
+
+            ss << "Asset " << assetIndex;
+            for (const auto& block : m_blocks)
+            {
+                if (block->m_type != XBlockType::BLOCK_TYPE_NORMAL)
+                    continue;
+
+                ss << " " << m_block_offsets[block->m_index];
+            }
+
+            ss << "\n";
+            std::cout << ss.str();
+        }
+#endif
 
     private:
         void LoadDataFromBlock(const XBlock& block, void* dst, const size_t size)
