@@ -64,8 +64,7 @@ namespace
             {
                 for (const auto* type : m_env.m_used_types)
                 {
-                    if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
-                        && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
+                    if (ShouldGenerateFillMethod(*type))
                     {
                         PrintFillStructMethodDeclaration(type->m_info);
                     }
@@ -174,8 +173,7 @@ namespace
             {
                 for (const auto* type : m_env.m_used_types)
                 {
-                    if (type->m_info && type->m_type == type->m_info->m_definition && !type->m_info->m_has_matching_cross_platform_structure
-                        && (type->m_is_context_asset || !StructureComputations(type->m_info).IsAsset()))
+                    if (ShouldGenerateFillMethod(*type))
                     {
                         LINE("")
                         PrintFillStructMethod(type->m_info);
@@ -253,6 +251,16 @@ namespace
             return std::format("{0}** var{1}Ptr;", def->GetFullName(), MakeSafeTypeName(def));
         }
 
+        bool ShouldGenerateFillMethod(const RenderingUsedType& type)
+        {
+            const auto isNotForeignAsset = type.m_is_context_asset || !type.m_info || !StructureComputations(type.m_info).IsAsset();
+            const auto hasMismatchingStructure =
+                type.m_info && type.m_type == type.m_info->m_definition && !type.m_info->m_has_matching_cross_platform_structure;
+            const auto isEmbeddedDynamic = type.m_info && type.m_info->m_embedded_reference_exists && StructureComputations(type.m_info).GetDynamicMember();
+
+            return isNotForeignAsset && (hasMismatchingStructure || isEmbeddedDynamic);
+        }
+
         void PrintFillStructMethodDeclaration(const StructureInformation* info) const
         {
             LINEF("void FillStruct_{0}(const ZoneStreamFillReadAccessor& fillAccessor);", MakeSafeTypeName(info->m_definition))
@@ -275,7 +283,6 @@ namespace
 
         void PrintHeaderLoadMethodDeclaration(const StructureInformation* info) const
         {
-            const StructureComputations computations(info);
             LINEF("void Load_{0}(bool atStreamStart);", MakeSafeTypeName(info->m_definition))
         }
 
@@ -501,7 +508,9 @@ namespace
 
             if (!hasAnonymousType)
             {
-                if (memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure)
+                const auto hasMismatchingStructure = memberInfo.m_type && !memberInfo.m_type->m_has_matching_cross_platform_structure;
+                const auto hasDynamicMember = memberInfo.m_type && StructureComputations(memberInfo.m_type).GetDynamicMember();
+                if (hasMismatchingStructure || hasDynamicMember)
                 {
                     LINEF("{0} = &{1};", MakeTypeVarName(memberInfo.m_member->m_type_declaration->m_type), MakeMemberAccess(&structInfo, &memberInfo, modifier))
                     LINEF("FillStruct_{0}(fillAccessor.AtOffset({1}));",
