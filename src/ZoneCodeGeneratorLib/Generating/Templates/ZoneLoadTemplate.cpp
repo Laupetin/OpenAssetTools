@@ -565,7 +565,7 @@ namespace
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
 
-                if (memberInfo.m_is_reusable)
+                if (memberInfo.m_is_reusable || (memberInfo.m_type && StructureComputations(memberInfo.m_type).IsAsset()))
                 {
                     LINEF("fillAccessor.InsertPointerRedirect(m_stream.AllocRedirectEntry({0}), {1});",
                           MakeMemberAccess(&structInfo, &memberInfo, modifier),
@@ -1017,7 +1017,7 @@ namespace
                 m_intendation++;
                 LINEF("ptrArrayFill.FillPtr({0}[index], {1} * index);", MakeTypePtrVarName(def), m_env.m_pointer_size)
 
-                if (reusable)
+                if (reusable || (info && StructureComputations(info).IsAsset()))
                 {
                     LINEF("ptrArrayFill.InsertPointerRedirect(m_stream.AllocRedirectEntry({0}[index]), {1} * index);",
                           MakeTypePtrVarName(def),
