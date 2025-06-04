@@ -901,8 +901,10 @@ namespace
         {
             if (info && !info->m_has_matching_cross_platform_structure && StructureComputations(info).GetDynamicMember())
             {
+                LINE("// Alloc first for alignment, then proceed to read as game does")
+                LINEF("m_stream.Alloc({0});", def->GetAlignment())
                 LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(def))
-                LINEF("*{0} = static_cast<{1}*>(m_stream.AllocOutOfBlock({2}, allocSize));", MakeTypePtrVarName(def), def->GetFullName(), def->GetAlignment())
+                LINEF("*{0} = static_cast<{1}*>(m_stream.AllocOutOfBlock(0, allocSize));", MakeTypePtrVarName(def), def->GetFullName())
             }
             else
             {
@@ -1462,19 +1464,23 @@ namespace
 
             if (preAllocDynamic)
             {
-                LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(member->m_type->m_definition))
-                LINE_STARTF("{0} = static_cast<{1}{2}*>(m_stream.AllocOutOfBlock(", MakeMemberAccess(info, member, modifier), typeDecl, followingReferences)
-
+                LINE("// Alloc first for alignment, then proceed to read as game does")
                 if (member->m_alloc_alignment)
                 {
-                    LINE_MIDDLE(MakeEvaluation(member->m_alloc_alignment.get()))
+                    LINEF("m_stream.Alloc({0});", MakeEvaluation(member->m_alloc_alignment.get()))
                 }
                 else
                 {
-                    LINE_MIDDLEF("{0}", modifier.GetAlignment())
+                    LINEF("m_stream.Alloc({0});", modifier.GetAlignment())
                 }
 
-                LINE_ENDF(", allocSize));", member->m_type->m_definition->GetFullName())
+                LINEF("const auto allocSize = LoadDynamicFill_{0}(m_stream.LoadWithFill(0));", MakeSafeTypeName(member->m_type->m_definition))
+
+                // We do not align again, because we already did previously
+                LINEF("{0} = static_cast<{1}{2}*>(m_stream.AllocOutOfBlock(0, allocSize));",
+                      MakeMemberAccess(info, member, modifier),
+                      typeDecl,
+                      followingReferences)
             }
             else
             {
