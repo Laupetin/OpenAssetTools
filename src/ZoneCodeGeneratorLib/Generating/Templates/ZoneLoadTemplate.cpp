@@ -525,7 +525,7 @@ namespace
             }
             else
             {
-                LINEF("#error Unsupported anonymous struct with name: {0}", memberInfo.m_member->m_name);
+                LINEF("#error Unsupported anonymous struct with name: {0}", memberInfo.m_member->m_name)
             }
         }
 
@@ -679,19 +679,30 @@ namespace
 
             if (dynamicMember)
             {
-                for (const auto& member : info.m_ordered_members)
-                {
-                    const MemberComputations computations(member.get());
-                    if (computations.ShouldIgnore() || member.get() == dynamicMember)
-                        continue;
-
-                    PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
-                }
-
                 if (info.m_definition->GetType() == DataDefinitionType::UNION)
-                    PrintFillStruct_Member_Condition_Union(info, *dynamicMember);
+                {
+                    for (const auto& member : info.m_ordered_members)
+                    {
+                        const MemberComputations computations(member.get());
+                        if (computations.ShouldIgnore())
+                            continue;
+
+                        PrintFillStruct_Member_Condition_Union(info, *member);
+                    }
+                }
                 else
+                {
+                    for (const auto& member : info.m_ordered_members)
+                    {
+                        const MemberComputations computations(member.get());
+                        if (computations.ShouldIgnore() || member.get() == dynamicMember)
+                            continue;
+
+                        PrintFillStruct_Member(info, *member, DeclarationModifierComputations(member.get()), 0u);
+                    }
+
                     PrintFillStruct_Member_Condition_Struct(info, *dynamicMember);
+                }
             }
             else
             {
