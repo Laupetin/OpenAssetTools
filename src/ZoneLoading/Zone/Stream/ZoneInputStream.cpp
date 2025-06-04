@@ -392,7 +392,7 @@ namespace
             if (lookupEntry > m_pointer_redirect_lookup.size())
                 throw InvalidAliasLookupException(lookupEntry - 1, m_pointer_redirect_lookup.size());
 
-            return *m_pointer_redirect_lookup[lookupEntry - 1];
+            return m_pointer_redirect_lookup[lookupEntry - 1];
         }
 
         void* ConvertOffsetToAliasLookup(const void* offset) override
@@ -432,7 +432,7 @@ namespace
             if (redirectIndex >= m_pointer_redirect_lookup.size())
                 throw InvalidAliasLookupException(redirectIndex, m_pointer_redirect_lookup.size());
 
-            return *m_pointer_redirect_lookup[redirectIndex];
+            return *static_cast<void**>(m_pointer_redirect_lookup[redirectIndex]);
         }
 
 #ifdef DEBUG_OFFSETS
@@ -506,7 +506,7 @@ namespace
         XBlock* m_insert_block;
 
         std::vector<uint8_t> m_fill_buffer;
-        std::vector<void**> m_pointer_redirect_lookup;
+        std::vector<void*> m_pointer_redirect_lookup;
         std::vector<void*> m_alias_lookup;
         size_t m_alias_mask;
     };
