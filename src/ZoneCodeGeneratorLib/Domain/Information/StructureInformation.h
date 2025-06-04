@@ -26,6 +26,7 @@ public:
     bool m_requires_marking;
     bool m_has_matching_cross_platform_structure;
 
+    bool m_embedded_reference_exists;
     bool m_non_embedded_reference_exists;
     bool m_single_pointer_reference_exists;
     bool m_array_pointer_reference_exists;
