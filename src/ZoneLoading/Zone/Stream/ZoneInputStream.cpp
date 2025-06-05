@@ -387,6 +387,7 @@ namespace
             uintptr_t lookupEntry = 0u;
             std::memcpy(&lookupEntry, &block->m_buffer[blockOffset], m_pointer_byte_count);
 
+            assert(lookupEntry != 0);
             if (lookupEntry == 0)
                 return nullptr;
             if (lookupEntry > m_pointer_redirect_lookup.size())
