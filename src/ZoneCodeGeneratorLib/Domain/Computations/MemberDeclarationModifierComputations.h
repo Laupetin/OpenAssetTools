@@ -12,8 +12,9 @@ public:
 
     [[nodiscard]] DeclarationModifier* GetDeclarationModifier() const;
     [[nodiscard]] DeclarationModifier* GetNextDeclarationModifier() const;
+    [[nodiscard]] std::vector<DeclarationModifier*> GetAllDeclarationModifiers() const;
     [[nodiscard]] std::vector<DeclarationModifier*> GetFollowingDeclarationModifiers() const;
-    [[nodiscard]] std::vector<int> GetArrayIndices() const;
+    [[nodiscard]] const std::vector<int>& GetArrayIndices() const;
     [[nodiscard]] bool IsArray() const;
     [[nodiscard]] int GetArraySize() const;
     [[nodiscard]] bool HasDynamicArrayCount() const;
@@ -26,6 +27,7 @@ public:
     [[nodiscard]] const IEvaluation* GetPointerArrayCountEvaluation() const;
     [[nodiscard]] bool IsDynamicArray() const;
     [[nodiscard]] const IEvaluation* GetDynamicArraySizeEvaluation() const;
+    [[nodiscard]] bool HasPointerModifier() const;
     [[nodiscard]] unsigned GetAlignment() const;
 
 private:

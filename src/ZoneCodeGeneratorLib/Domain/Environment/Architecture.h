@@ -1,6 +1,8 @@
 #pragma once
 
-enum class Architecture
+#include <cstdint>
+
+enum class Architecture : std::uint8_t
 {
     UNKNOWN,
     X86,
@@ -14,3 +16,5 @@ static constexpr Architecture OWN_ARCHITECTURE =
     Architecture::X64
 #endif
     ;
+
+extern unsigned GetPointerSizeForArchitecture(Architecture architecture);

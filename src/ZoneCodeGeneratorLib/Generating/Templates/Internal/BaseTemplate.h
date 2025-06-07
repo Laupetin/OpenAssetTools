@@ -29,10 +29,6 @@ protected:
     static std::string MakeMemberAccess(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier);
     static std::string
         MakeWrittenMemberAccess(const StructureInformation* info, const MemberInformation* member, const DeclarationModifierComputations& modifier);
-    static std::string MakeMemberAccess(const std::string& variableName,
-                                        StructureInformation* info,
-                                        const MemberInformation* member,
-                                        const DeclarationModifierComputations& modifier);
     static std::string MakeTypeDecl(const TypeDeclaration* decl);
     static std::string MakeFollowingReferences(const std::vector<DeclarationModifier*>& modifiers);
     static std::string MakeArrayIndices(const DeclarationModifierComputations& modifierComputations);

@@ -27,7 +27,7 @@ namespace T6
         static constexpr int XCHUNK_SIZE = 0x8000;
         static constexpr int XCHUNK_MAX_WRITE_SIZE = XCHUNK_SIZE - 0x40;
         static constexpr int VANILLA_BUFFER_SIZE = 0x80000;
-        static constexpr int OFFSET_BLOCK_BIT_COUNT = 3;
+        static constexpr unsigned OFFSET_BLOCK_BIT_COUNT = 3u;
         static constexpr block_t INSERT_BLOCK = XFILE_BLOCK_VIRTUAL;
 
         static constexpr size_t FILE_SUFFIX_ZERO_MIN_SIZE = 0x40;

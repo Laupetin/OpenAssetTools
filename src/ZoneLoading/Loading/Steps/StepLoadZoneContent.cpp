@@ -7,32 +7,47 @@ namespace
     class StepLoadZoneContent final : public ILoadingStep
     {
     public:
-        StepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoint> entryPoint, const int offsetBlockBitCount, const block_t insertBlock)
-            : m_content_loader(std::move(entryPoint)),
+        StepLoadZoneContent(std::function<std::unique_ptr<IContentLoadingEntryPoint>(ZoneInputStream&)> entryPointFactory,
+                            const unsigned pointerBitCount,
+                            const unsigned offsetBlockBitCount,
+                            const block_t insertBlock,
+                            MemoryManager& memory)
+            : m_entry_point_factory(std::move(entryPointFactory)),
+              m_pointer_bit_count(pointerBitCount),
               m_offset_block_bit_count(offsetBlockBitCount),
-              m_insert_block(insertBlock)
+              m_insert_block(insertBlock),
+              m_memory(memory)
         {
         }
 
         void PerformStep(ZoneLoader& zoneLoader, ILoadingStream& stream) override
         {
-            const auto inputStream = ZoneInputStream::Create(zoneLoader.m_blocks, stream, m_offset_block_bit_count, m_insert_block);
+            const auto inputStream =
+                ZoneInputStream::Create(m_pointer_bit_count, m_offset_block_bit_count, zoneLoader.m_blocks, m_insert_block, stream, m_memory);
 
-            m_content_loader->Load(*inputStream);
+            const auto entryPoint = m_entry_point_factory(*inputStream);
+            assert(entryPoint);
+
+            entryPoint->Load();
         }
 
     private:
-        std::unique_ptr<IContentLoadingEntryPoint> m_content_loader;
-        int m_offset_block_bit_count;
+        std::function<std::unique_ptr<IContentLoadingEntryPoint>(ZoneInputStream&)> m_entry_point_factory;
+        unsigned m_pointer_bit_count;
+        unsigned m_offset_block_bit_count;
         block_t m_insert_block;
+        MemoryManager& m_memory;
     };
 } // namespace
 
 namespace step
 {
-    std::unique_ptr<ILoadingStep>
-        CreateStepLoadZoneContent(std::unique_ptr<IContentLoadingEntryPoint> entryPoint, const int offsetBlockBitCount, const block_t insertBlock)
+    std::unique_ptr<ILoadingStep> CreateStepLoadZoneContent(std::function<std::unique_ptr<IContentLoadingEntryPoint>(ZoneInputStream&)> entryPointFactory,
+                                                            const unsigned pointerBitCount,
+                                                            const unsigned offsetBlockBitCount,
+                                                            const block_t insertBlock,
+                                                            MemoryManager& memory)
     {
-        return std::make_unique<StepLoadZoneContent>(std::move(entryPoint), offsetBlockBitCount, insertBlock);
+        return std::make_unique<StepLoadZoneContent>(std::move(entryPointFactory), pointerBitCount, offsetBlockBitCount, insertBlock, memory);
     }
 } // namespace step
