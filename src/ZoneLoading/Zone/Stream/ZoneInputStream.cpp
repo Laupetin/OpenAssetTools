@@ -355,10 +355,11 @@ namespace
             return *reinterpret_cast<void**>(&block->m_buffer[blockOffset]);
         }
 
-        uintptr_t AllocRedirectEntry(void** alias) override
+        uintptr_t AllocRedirectEntry(void* alias) override
         {
             // nullptr is always lookup alias 0
-            if (*alias == nullptr)
+            assert(alias);
+            if (alias == nullptr)
                 return 0;
 
             const auto newIndex = m_pointer_redirect_lookup.size();

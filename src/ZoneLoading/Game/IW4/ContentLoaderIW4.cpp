@@ -155,7 +155,7 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
         {
             fill.Fill(varXAsset[index].type, 8u * index);
             fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
-            fill.InsertPointerRedirect(m_stream.AllocRedirectEntry(varXAsset[index].header.data), 8u * index + 4u);
+            fill.InsertPointerRedirect(m_stream.AllocRedirectEntry(&varXAsset[index].header.data), 8u * index + 4u);
         }
 #endif
     }

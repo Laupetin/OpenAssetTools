@@ -567,7 +567,7 @@ namespace
 
                 if (memberInfo.m_is_reusable || (memberInfo.m_type && StructureComputations(memberInfo.m_type).IsAsset()))
                 {
-                    LINEF("fillAccessor.InsertPointerRedirect(m_stream.AllocRedirectEntry({0}), {1});",
+                    LINEF("fillAccessor.InsertPointerRedirect(m_stream.AllocRedirectEntry(&{0}), {1});",
                           MakeMemberAccess(&structInfo, &memberInfo, modifier),
                           OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
                 }
@@ -1019,7 +1019,7 @@ namespace
 
                 if (reusable || (info && StructureComputations(info).IsAsset()))
                 {
-                    LINEF("ptrArrayFill.InsertPointerRedirect(m_stream.AllocRedirectEntry({0}[index]), {1} * index);",
+                    LINEF("ptrArrayFill.InsertPointerRedirect(m_stream.AllocRedirectEntry(&{0}[index]), {1} * index);",
                           MakeTypePtrVarName(def),
                           m_env.m_pointer_size)
                 }
