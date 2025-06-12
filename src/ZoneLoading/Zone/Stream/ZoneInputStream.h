@@ -151,12 +151,7 @@ public:
         return static_cast<T*>(ConvertOffsetToAliasNative(static_cast<const void*>(offset)));
     }
 
-    virtual uintptr_t AllocRedirectEntry(void** alias) = 0;
-
-    template<typename T> uintptr_t AllocRedirectEntry(T*& offset)
-    {
-        return AllocRedirectEntry(reinterpret_cast<void**>(const_cast<std::remove_const_t<T>**>(&offset)));
-    }
+    virtual uintptr_t AllocRedirectEntry(void* alias) = 0;
 
     virtual void* ConvertOffsetToPointerRedirect(const void* offset) = 0;
 
