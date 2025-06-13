@@ -16,23 +16,24 @@
 class ZoneStreamFillReadAccessor
 {
 public:
-    ZoneStreamFillReadAccessor(const void* dataBuffer, void* blockBuffer, size_t bufferSize, unsigned pointerByteCount, size_t offset);
+    ZoneStreamFillReadAccessor(void* blockBuffer, size_t bufferSize, unsigned pointerByteCount, size_t offset);
 
     [[nodiscard]] ZoneStreamFillReadAccessor AtOffset(size_t offset) const;
     [[nodiscard]] size_t Offset() const;
+    [[nodiscard]] void* BlockBuffer(size_t offset) const;
 
     template<typename T> void Fill(T& value, const size_t offset) const
     {
         assert(offset + sizeof(T) <= m_buffer_size);
 
-        value = *reinterpret_cast<const T*>(static_cast<const char*>(m_data_buffer) + offset);
+        value = *reinterpret_cast<const T*>(static_cast<const char*>(m_block_buffer) + offset);
     }
 
     template<typename T, size_t S> void FillArray(T (&value)[S], const size_t offset) const
     {
         assert(offset + sizeof(T) * S <= m_buffer_size);
 
-        std::memcpy(value, static_cast<const char*>(m_data_buffer) + offset, sizeof(T) * S);
+        std::memcpy(value, static_cast<const char*>(m_block_buffer) + offset, sizeof(T) * S);
     }
 
     template<typename T> void FillPtr(T*& value, const size_t offset) const
@@ -41,13 +42,10 @@ public:
         assert(m_pointer_byte_count <= sizeof(uintptr_t));
 
         value = nullptr;
-        std::memcpy(&value, static_cast<const char*>(m_data_buffer) + offset, m_pointer_byte_count);
+        std::memcpy(&value, static_cast<const char*>(m_block_buffer) + offset, m_pointer_byte_count);
     }
 
-    void InsertPointerRedirect(uintptr_t aliasValue, size_t offset) const;
-
 private:
-    const void* m_data_buffer;
     void* m_block_buffer;
     size_t m_buffer_size;
     unsigned m_pointer_byte_count;
@@ -134,7 +132,6 @@ public:
     }
 
     virtual uintptr_t InsertPointerAliasLookup() = 0;
-
     virtual void SetInsertedPointerAliasLookup(uintptr_t lookupEntry, void* value) = 0;
 
     virtual void* ConvertOffsetToPointerNative(const void* offset) = 0;
@@ -151,13 +148,18 @@ public:
         return static_cast<T*>(ConvertOffsetToAliasNative(static_cast<const void*>(offset)));
     }
 
-    virtual uintptr_t AllocRedirectEntry(void* alias) = 0;
+    /**
+     * \brief Adds a lookup from a block pointer to out of block data
+     * \param redirectTo A pointer to the out of block data to redirect to
+     * \param redirectFrom A pointer to the block data to redirect from
+     */
+    virtual void AddPointerLookup(void* redirectTo, const void* redirectFrom) = 0;
 
-    virtual void* ConvertOffsetToPointerRedirect(const void* offset) = 0;
+    virtual void* ConvertOffsetToPointerLookup(const void* offset) = 0;
 
-    template<typename T> T* ConvertOffsetToPointerRedirect(T* offset)
+    template<typename T> T* ConvertOffsetToPointerLookup(T* offset)
     {
-        return static_cast<T*>(ConvertOffsetToPointerRedirect(static_cast<const void*>(offset)));
+        return static_cast<T*>(ConvertOffsetToPointerLookup(static_cast<const void*>(offset)));
     }
 
     virtual void* ConvertOffsetToAliasLookup(const void* offset) = 0;

@@ -1,7 +1,6 @@
 #include "ZoneInputStream.h"
 
 #include "Loading/Exception/BlockOverflowException.h"
-#include "Loading/Exception/InvalidAliasLookupException.h"
 #include "Loading/Exception/InvalidOffsetBlockException.h"
 #include "Loading/Exception/InvalidOffsetBlockOffsetException.h"
 #include "Loading/Exception/OutOfBlockBoundsException.h"
@@ -12,11 +11,10 @@
 #include <iostream>
 #include <sstream>
 #include <stack>
+#include <unordered_map>
 
-ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(
-    const void* dataBuffer, void* blockBuffer, const size_t bufferSize, const unsigned pointerByteCount, const size_t offset)
-    : m_data_buffer(dataBuffer),
-      m_block_buffer(blockBuffer),
+ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(void* blockBuffer, const size_t bufferSize, const unsigned pointerByteCount, const size_t offset)
+    : m_block_buffer(blockBuffer),
       m_buffer_size(bufferSize),
       m_pointer_byte_count(pointerByteCount),
       m_offset(offset)
@@ -28,11 +26,7 @@ ZoneStreamFillReadAccessor::ZoneStreamFillReadAccessor(
 ZoneStreamFillReadAccessor ZoneStreamFillReadAccessor::AtOffset(const size_t offset) const
 {
     assert(offset <= m_buffer_size);
-    return ZoneStreamFillReadAccessor(static_cast<const char*>(m_data_buffer) + offset,
-                                      static_cast<char*>(m_block_buffer) + offset,
-                                      m_buffer_size - offset,
-                                      m_pointer_byte_count,
-                                      m_offset + offset);
+    return ZoneStreamFillReadAccessor(static_cast<char*>(m_block_buffer) + offset, m_buffer_size - offset, m_pointer_byte_count, m_offset + offset);
 }
 
 size_t ZoneStreamFillReadAccessor::Offset() const
@@ -40,16 +34,9 @@ size_t ZoneStreamFillReadAccessor::Offset() const
     return m_offset;
 }
 
-void ZoneStreamFillReadAccessor::InsertPointerRedirect(const uintptr_t aliasValue, const size_t offset) const
+void* ZoneStreamFillReadAccessor::BlockBuffer(const size_t offset) const
 {
-    // Memory should be zero by default
-    if (aliasValue == 0)
-        return;
-
-    assert(offset < m_buffer_size);
-    assert(m_block_buffer);
-
-    std::memcpy(static_cast<char*>(m_block_buffer) + offset, &aliasValue, m_pointer_byte_count);
+    return static_cast<uint8_t*>(m_block_buffer) + offset;
 }
 
 namespace
@@ -70,7 +57,7 @@ namespace
               m_block_mask((std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - blockBitCount)) << (pointerBitCount - blockBitCount)),
               m_block_shift(pointerBitCount - blockBitCount),
               m_offset_mask(std::numeric_limits<uintptr_t>::max() >> (sizeof(uintptr_t) * 8 - (pointerBitCount - blockBitCount))),
-              m_alias_mask(1uz << (pointerBitCount - 1uz))
+              m_last_fill_size(0)
         {
             assert(pointerBitCount % 8u == 0u);
             assert(insertBlock < static_cast<block_t>(blocks.size()));
@@ -215,8 +202,7 @@ namespace
 
         ZoneStreamFillReadAccessor LoadWithFill(const size_t size) override
         {
-            m_fill_buffer.resize(size);
-            auto* dst = m_fill_buffer.data();
+            m_last_fill_size = size;
 
             // If no block has been pushed, load raw
             if (!m_block_stack.empty())
@@ -224,35 +210,34 @@ namespace
                 const auto* block = m_block_stack.top();
                 auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]];
 
-                LoadDataFromBlock(*block, dst, size);
+                LoadDataFromBlock(*block, blockBufferForFill, size);
 
-                return ZoneStreamFillReadAccessor(dst, blockBufferForFill, size, m_pointer_byte_count, 0);
+                return ZoneStreamFillReadAccessor(blockBufferForFill, size, m_pointer_byte_count, 0);
             }
 
-            m_stream.Load(dst, size);
-            return ZoneStreamFillReadAccessor(dst, nullptr, size, m_pointer_byte_count, 0);
+            m_fill_buffer.resize(size);
+            m_stream.Load(m_fill_buffer.data(), size);
+            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), size, m_pointer_byte_count, 0);
         }
 
         ZoneStreamFillReadAccessor AppendToFill(const size_t appendSize) override
         {
-            const auto appendOffset = m_fill_buffer.size();
-            m_fill_buffer.resize(appendOffset + appendSize);
-            auto* dst = m_fill_buffer.data() + appendOffset;
+            const auto appendOffset = m_last_fill_size;
+            m_last_fill_size += appendSize;
 
-            const auto newTotalSize = appendOffset + appendSize;
             // If no block has been pushed, load raw
             if (!m_block_stack.empty())
             {
                 const auto* block = m_block_stack.top();
                 auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]] - appendOffset;
+                LoadDataFromBlock(*block, &block->m_buffer[m_block_offsets[block->m_index]], appendSize);
 
-                LoadDataFromBlock(*block, dst, appendSize);
-
-                return ZoneStreamFillReadAccessor(m_fill_buffer.data(), blockBufferForFill, newTotalSize, m_pointer_byte_count, 0);
+                return ZoneStreamFillReadAccessor(blockBufferForFill, m_last_fill_size, m_pointer_byte_count, 0);
             }
 
-            m_stream.Load(dst, appendSize);
-            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), nullptr, newTotalSize, m_pointer_byte_count, 0);
+            m_fill_buffer.resize(appendOffset + appendSize);
+            m_stream.Load(m_fill_buffer.data() + appendOffset, appendSize);
+            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), m_last_fill_size, m_pointer_byte_count, 0);
         }
 
         ZoneStreamFillReadAccessor GetLastFill() override
@@ -262,12 +247,13 @@ namespace
             if (!m_block_stack.empty())
             {
                 const auto* block = m_block_stack.top();
-                auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]] - m_fill_buffer.size();
+                auto* blockBufferForFill = &block->m_buffer[m_block_offsets[block->m_index]] - m_last_fill_size;
 
-                return ZoneStreamFillReadAccessor(m_fill_buffer.data(), blockBufferForFill, m_fill_buffer.size(), m_pointer_byte_count, 0);
+                return ZoneStreamFillReadAccessor(blockBufferForFill, m_last_fill_size, m_pointer_byte_count, 0);
             }
 
-            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), nullptr, m_fill_buffer.size(), m_pointer_byte_count, 0);
+            assert(m_fill_buffer.size() == m_last_fill_size);
+            return ZoneStreamFillReadAccessor(m_fill_buffer.data(), m_last_fill_size, m_pointer_byte_count, 0);
         }
 
         void* InsertPointerNative() override
@@ -293,27 +279,19 @@ namespace
             if (m_block_offsets[m_insert_block->m_index] + m_pointer_byte_count > m_insert_block->m_buffer_size)
                 throw BlockOverflowException(m_insert_block);
 
-            auto* ptr = static_cast<void*>(&m_insert_block->m_buffer[m_block_offsets[m_insert_block->m_index]]);
+            const auto blockNum = m_insert_block->m_index;
+            const auto blockOffset = static_cast<uintptr_t>(m_block_offsets[m_insert_block->m_index]);
+            const auto zonePtr = (static_cast<uintptr_t>(blockNum) << m_block_shift) | (blockOffset & m_offset_mask);
 
             IncBlockPos(*m_insert_block, m_pointer_byte_count);
 
-            const auto newLookupIndex = static_cast<uintptr_t>(m_alias_lookup.size()) | m_alias_mask;
-            m_alias_lookup.emplace_back(nullptr);
-
-            std::memcpy(ptr, &newLookupIndex, m_pointer_byte_count);
-
-            return newLookupIndex;
+            return zonePtr;
         }
 
-        void SetInsertedPointerAliasLookup(const uintptr_t lookupEntry, void* value) override
+        void SetInsertedPointerAliasLookup(const uintptr_t zonePtr, void* value) override
         {
-            assert(lookupEntry & m_alias_mask);
-
-            const auto aliasIndex = lookupEntry & ~m_alias_mask;
-
-            assert(aliasIndex < m_alias_lookup.size());
-
-            m_alias_lookup[aliasIndex] = value;
+            assert((static_cast<block_t>((zonePtr & m_block_mask) >> m_block_shift)) < m_blocks.size());
+            m_alias_redirect_lookup.emplace(zonePtr, value);
         }
 
         void* ConvertOffsetToPointerNative(const void* offset) override
@@ -355,21 +333,23 @@ namespace
             return *reinterpret_cast<void**>(&block->m_buffer[blockOffset]);
         }
 
-        uintptr_t AllocRedirectEntry(void* alias) override
+        void AddPointerLookup(void* alias, const void* blockPtr) override
         {
-            // nullptr is always lookup alias 0
-            assert(alias);
-            if (alias == nullptr)
-                return 0;
+            assert(!m_block_stack.empty());
+            const auto* block = m_block_stack.top();
+            assert(blockPtr >= block->m_buffer.get() && blockPtr < block->m_buffer.get() + block->m_buffer_size);
 
-            const auto newIndex = m_pointer_redirect_lookup.size();
+            // Non-normal blocks cannot be referenced via zone pointer anyway
+            if (block->m_type != XBlockType::BLOCK_TYPE_NORMAL)
+                return;
 
-            m_pointer_redirect_lookup.emplace_back(alias);
-
-            return static_cast<uintptr_t>(newIndex + 1);
+            const auto blockNum = block->m_index;
+            const auto blockOffset = static_cast<uintptr_t>(static_cast<const uint8_t*>(blockPtr) - block->m_buffer.get());
+            const auto zonePtr = (static_cast<uintptr_t>(blockNum) << m_block_shift) | (blockOffset & m_offset_mask);
+            m_pointer_redirect_lookup.emplace(zonePtr, alias);
         }
 
-        void* ConvertOffsetToPointerRedirect(const void* offset) override
+        void* ConvertOffsetToPointerLookup(const void* offset) override
         {
             // For details see ConvertOffsetToPointer
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
@@ -385,16 +365,12 @@ namespace
             if (block->m_buffer_size <= blockOffset + sizeof(void*))
                 throw InvalidOffsetBlockOffsetException(block, blockOffset);
 
-            uintptr_t lookupEntry = 0u;
-            std::memcpy(&lookupEntry, &block->m_buffer[blockOffset], m_pointer_byte_count);
+            const auto foundPointerLookup = m_pointer_redirect_lookup.find(offsetInt);
+            if (foundPointerLookup != m_pointer_redirect_lookup.end())
+                return foundPointerLookup->second;
 
-            assert(lookupEntry != 0);
-            if (lookupEntry == 0)
-                return nullptr;
-            if (lookupEntry > m_pointer_redirect_lookup.size())
-                throw InvalidAliasLookupException(lookupEntry - 1, m_pointer_redirect_lookup.size());
-
-            return m_pointer_redirect_lookup[lookupEntry - 1];
+            assert(false);
+            return &block->m_buffer[blockOffset];
         }
 
         void* ConvertOffsetToAliasLookup(const void* offset) override
@@ -410,31 +386,19 @@ namespace
 
             auto* block = m_blocks[blockNum];
 
-            if (block->m_buffer_size <= blockOffset + sizeof(void*))
+            if (block->m_buffer_size <= blockOffset + sizeof(uintptr_t))
                 throw InvalidOffsetBlockOffsetException(block, blockOffset);
 
-            uintptr_t lookupEntry = 0u;
-            std::memcpy(&lookupEntry, &block->m_buffer[blockOffset], m_pointer_byte_count);
+            const auto foundAliasLookup = m_alias_redirect_lookup.find(offsetInt);
+            if (foundAliasLookup != m_alias_redirect_lookup.end())
+                return foundAliasLookup->second;
 
-            if (lookupEntry == 0)
-                return nullptr;
+            const auto foundPointerLookup = m_pointer_redirect_lookup.find(offsetInt);
+            if (foundPointerLookup != m_pointer_redirect_lookup.end())
+                return *static_cast<void**>(foundPointerLookup->second);
 
-            if (lookupEntry & m_alias_mask)
-            {
-                const auto aliasIndex = lookupEntry & ~m_alias_mask;
-
-                if (aliasIndex >= m_alias_lookup.size())
-                    throw InvalidAliasLookupException(aliasIndex, m_alias_lookup.size());
-
-                return m_alias_lookup[aliasIndex];
-            }
-
-            const auto redirectIndex = lookupEntry - 1;
-
-            if (redirectIndex >= m_pointer_redirect_lookup.size())
-                throw InvalidAliasLookupException(redirectIndex, m_pointer_redirect_lookup.size());
-
-            return *static_cast<void**>(m_pointer_redirect_lookup[redirectIndex]);
+            assert(false);
+            throw InvalidOffsetBlockOffsetException(block, blockOffset);
         }
 
 #ifdef DEBUG_OFFSETS
@@ -508,9 +472,10 @@ namespace
         XBlock* m_insert_block;
 
         std::vector<uint8_t> m_fill_buffer;
-        std::vector<void*> m_pointer_redirect_lookup;
-        std::vector<void*> m_alias_lookup;
-        size_t m_alias_mask;
+        size_t m_last_fill_size;
+        // These lookups map a block offset to a pointer in case of a platform mismatch
+        std::unordered_map<uintptr_t, void*> m_pointer_redirect_lookup;
+        std::unordered_map<uintptr_t, void*> m_alias_redirect_lookup;
     };
 } // namespace
 
