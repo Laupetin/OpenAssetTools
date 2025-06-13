@@ -422,9 +422,6 @@ namespace
                 LINEF("fillAccessor.Fill({0}[0], {1});", MakeMemberAccess(&structInfo, &memberInfo, modifier), memberInfo.m_member->m_offset)
             }
 
-            /*LINEF("const auto dynamicFill = m_stream.LoadWithFill({0} * static_cast<size_t>(dynamicArraySize - 1));",
-                  memberInfo.m_member->m_type_declaration->GetSize())*/
-
             LINEF("for (auto i = 1uz; i < dynamicArraySize; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
             LINE("{")
             m_intendation++;
@@ -458,12 +455,25 @@ namespace
             if (modifier.IsArray())
             {
                 LINEF("for (auto i = 0u; i < std::extent_v<decltype({0}::{1})>; i++)", structInfo.m_definition->m_name, memberInfo.m_member->m_name)
+                LINE("{")
                 m_intendation++;
+
                 LINEF("fillAccessor.FillPtr({0}[i], {1} + {2} * i);",
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
                       m_env.m_pointer_size)
+
+                if (!StructureComputations(&structInfo).IsInTempBlock()
+                    && (memberInfo.m_is_reusable || (memberInfo.m_type && StructureComputations(memberInfo.m_type).IsAsset())))
+                {
+                    LINEF("m_stream.AddPointerLookup(&{0}[i], fillAccessor.BlockBuffer({1} + {2} * i));",
+                          MakeMemberAccess(&structInfo, &memberInfo, modifier),
+                          OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset),
+                          m_env.m_pointer_size)
+                }
+
                 m_intendation--;
+                LINE("}")
             }
             else
             {
@@ -565,9 +575,10 @@ namespace
                       MakeMemberAccess(&structInfo, &memberInfo, modifier),
                       OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
 
-                if (memberInfo.m_is_reusable || (memberInfo.m_type && StructureComputations(memberInfo.m_type).IsAsset()))
+                if (!StructureComputations(&structInfo).IsInTempBlock()
+                    && (memberInfo.m_is_reusable || (memberInfo.m_type && StructureComputations(memberInfo.m_type).IsAsset())))
                 {
-                    LINEF("fillAccessor.InsertPointerRedirect(m_stream.AllocRedirectEntry(&{0}), {1});",
+                    LINEF("m_stream.AddPointerLookup(&{0}, fillAccessor.BlockBuffer({1}));",
                           MakeMemberAccess(&structInfo, &memberInfo, modifier),
                           OffsetForMemberModifier(memberInfo, modifier, nestedBaseOffset))
                 }
@@ -684,6 +695,12 @@ namespace
 
         void PrintFillStruct_Struct(const StructureInformation& info)
         {
+            if (info.m_reusable_reference_exists)
+            {
+                LINEF("m_stream.AddPointerLookup({0}, fillAccessor.BlockBuffer(0));", MakeTypeVarName(info.m_definition))
+                LINE("")
+            }
+
             const auto* dynamicMember = StructureComputations(&info).GetDynamicMember();
 
             if (dynamicMember)
@@ -976,7 +993,7 @@ namespace
 
                     if (info && !info->m_has_matching_cross_platform_structure)
                     {
-                        LINEF("*{0} = m_stream.ConvertOffsetToPointerRedirect(*{0});", MakeTypePtrVarName(def))
+                        LINEF("*{0} = m_stream.ConvertOffsetToPointerLookup(*{0});", MakeTypePtrVarName(def))
                     }
                     else
                     {
@@ -1019,9 +1036,7 @@ namespace
 
                 if (reusable || (info && StructureComputations(info).IsAsset()))
                 {
-                    LINEF("ptrArrayFill.InsertPointerRedirect(m_stream.AllocRedirectEntry(&{0}[index]), {1} * index);",
-                          MakeTypePtrVarName(def),
-                          m_env.m_pointer_size)
+                    LINEF("m_stream.AddPointerLookup(&{0}[index], ptrArrayFill.BlockBuffer({1} * index));", MakeTypePtrVarName(def), m_env.m_pointer_size)
                 }
 
                 m_intendation--;
@@ -1644,7 +1659,7 @@ namespace
 
                 if (ShouldAllocOutOfBlock(*member, loadType))
                 {
-                    LINEF("{0} = m_stream.ConvertOffsetToPointerRedirect({0});", MakeMemberAccess(info, member, modifier))
+                    LINEF("{0} = m_stream.ConvertOffsetToPointerLookup({0});", MakeMemberAccess(info, member, modifier))
                 }
                 else
                 {

@@ -11,6 +11,7 @@ public:
     [[nodiscard]] MemberInformation* GetDynamicMember() const;
     [[nodiscard]] bool HasNonDynamicMember() const;
     [[nodiscard]] std::vector<MemberInformation*> GetUsedMembers() const;
+    [[nodiscard]] bool IsInTempBlock() const;
 
 private:
     const StructureInformation* m_info;

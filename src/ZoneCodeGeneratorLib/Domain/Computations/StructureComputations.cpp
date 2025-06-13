@@ -61,3 +61,8 @@ std::vector<MemberInformation*> StructureComputations::GetUsedMembers() const
 
     return members;
 }
+
+bool StructureComputations::IsInTempBlock() const
+{
+    return m_info->m_block != nullptr && m_info->m_block->m_type == FastFileBlockType::TEMP;
+}
