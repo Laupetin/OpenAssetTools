@@ -42,8 +42,9 @@
 
 using namespace IW4;
 
-ContentLoader::ContentLoader(Zone& zone)
-    : ContentLoaderBase(zone),
+ContentLoader::ContentLoader(Zone& zone, ZoneInputStream& stream)
+    : ContentLoaderBase(zone, stream),
+      varXAssetList(nullptr),
       varXAsset(nullptr),
       varScriptStringList(nullptr)
 {
@@ -51,24 +52,23 @@ ContentLoader::ContentLoader(Zone& zone)
 
 void ContentLoader::LoadScriptStringList(const bool atStreamStart)
 {
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
-    if (atStreamStart)
-        m_stream->Load<ScriptStringList>(varScriptStringList);
+    assert(!atStreamStart);
 
     if (varScriptStringList->strings != nullptr)
     {
-        assert(varScriptStringList->strings == PTR_FOLLOWING);
+        assert(GetZonePointerType(varScriptStringList->strings) == ZonePointerType::FOLLOWING);
 
-        varScriptStringList->strings = m_stream->Alloc<const char*>(alignof(const char*));
+#ifdef ARCH_x86
+        varScriptStringList->strings = m_stream.Alloc<const char*>(4);
+#else
+        varScriptStringList->strings = m_stream.AllocOutOfBlock<const char*>(4, varScriptStringList->count);
+#endif
         varXString = varScriptStringList->strings;
         LoadXStringArray(true, varScriptStringList->count);
 
         if (varScriptStringList->strings && varScriptStringList->count > 0)
             m_zone.m_script_strings.InitializeForExistingZone(varScriptStringList->strings, static_cast<size_t>(varScriptStringList->count));
     }
-
-    m_stream->PopBlock();
 
     assert(m_zone.m_script_strings.Count() <= SCR_STRING_MAX + 1);
 }
@@ -78,7 +78,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
 #define LOAD_ASSET(type_index, typeName, headerEntry)                                                                                                          \
     case type_index:                                                                                                                                           \
     {                                                                                                                                                          \
-        Loader_##typeName loader(m_zone, *m_stream);                                                                                                           \
+        Loader_##typeName loader(m_zone, m_stream);                                                                                                            \
         loader.Load(&varXAsset->header.headerEntry);                                                                                                           \
         break;                                                                                                                                                 \
     }
@@ -89,7 +89,7 @@ void ContentLoader::LoadXAsset(const bool atStreamStart) const
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        m_stream->Load<XAsset>(varXAsset);
+        m_stream.Load<XAsset>(varXAsset);
 
     switch (varXAsset->type)
     {
@@ -145,35 +145,66 @@ void ContentLoader::LoadXAssetArray(const bool atStreamStart, const size_t count
     assert(varXAsset != nullptr);
 
     if (atStreamStart)
-        m_stream->Load<XAsset>(varXAsset, count);
+    {
+#ifdef ARCH_x86
+        m_stream.Load<XAsset>(varXAsset, count);
+#else
+        const auto fill = m_stream.LoadWithFill(8u * count);
+
+        for (size_t index = 0; index < count; index++)
+        {
+            fill.Fill(varXAsset[index].type, 8u * index);
+            fill.FillPtr(varXAsset[index].header.data, 8u * index + 4u);
+            m_stream.AddPointerLookup(&varXAsset[index].header.data, fill.BlockBuffer(8u * index + 4u));
+        }
+#endif
+    }
 
     for (size_t index = 0; index < count; index++)
     {
         LoadXAsset(false);
         varXAsset++;
+
+#ifdef DEBUG_OFFSETS
+        m_stream.DebugOffsets(index);
+#endif
     }
 }
 
-void ContentLoader::Load(ZoneInputStream& stream)
+void ContentLoader::Load()
 {
-    m_stream = &stream;
-
-    m_stream->PushBlock(XFILE_BLOCK_VIRTUAL);
-
     XAssetList assetList{};
-    m_stream->LoadDataRaw(&assetList, sizeof(assetList));
+    varXAssetList = &assetList;
+
+#ifdef ARCH_x86
+    m_stream.LoadDataRaw(&assetList, sizeof(assetList));
+#else
+    const auto fillAccessor = m_stream.LoadWithFill(16u);
+    varScriptStringList = &varXAssetList->stringList;
+    fillAccessor.Fill(varScriptStringList->count, 0u);
+    fillAccessor.FillPtr(varScriptStringList->strings, 4u);
+
+    fillAccessor.Fill(varXAssetList->assetCount, 8u);
+    fillAccessor.FillPtr(varXAssetList->assets, 12u);
+#endif
+
+    m_stream.PushBlock(XFILE_BLOCK_VIRTUAL);
 
     varScriptStringList = &assetList.stringList;
     LoadScriptStringList(false);
 
     if (assetList.assets != nullptr)
     {
-        assert(assetList.assets == PTR_FOLLOWING);
+        assert(GetZonePointerType(assetList.assets) == ZonePointerType::FOLLOWING);
 
-        assetList.assets = m_stream->Alloc<XAsset>(alignof(XAsset));
+#ifdef ARCH_x86
+        assetList.assets = m_stream.Alloc<XAsset>(4);
+#else
+        assetList.assets = m_stream.AllocOutOfBlock<XAsset>(4, assetList.assetCount);
+#endif
         varXAsset = assetList.assets;
         LoadXAssetArray(true, assetList.assetCount);
     }
 
-    m_stream->PopBlock();
+    m_stream.PopBlock();
 }
