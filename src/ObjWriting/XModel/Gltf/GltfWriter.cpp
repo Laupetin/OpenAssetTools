@@ -534,7 +534,8 @@ namespace
                     const auto translation = Eigen::Translation3f(bone.globalOffset[0], bone.globalOffset[2], -bone.globalOffset[1]);
                     const auto rotation = Eigen::Quaternionf(bone.globalRotation.w, bone.globalRotation.x, bone.globalRotation.z, -bone.globalRotation.y);
 
-                    const auto inverseBindMatrix = (translation * rotation).matrix().inverse();
+                    const auto bindMatrix = (translation * rotation);
+                    const auto inverseBindMatrix = bindMatrix.matrix().inverse();
 
                     // GLTF matrix is column major
                     inverseBindMatrixData[0] = inverseBindMatrix(0, 0);
