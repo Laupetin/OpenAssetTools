@@ -5650,7 +5650,10 @@ namespace T6
         uint16_t _2[1];
     };
 
-    typedef tdef_align32(4) int16_t XQuat2[2];
+    struct type_align(4) XQuat2
+    {
+        int16_t value[2];
+    };
 
     struct type_align32(4) XAnimDeltaPartQuatDataFrames2
     {
@@ -5676,7 +5679,10 @@ namespace T6
         uint16_t _2[1];
     };
 
-    typedef tdef_align32(4) int16_t XQuat[4];
+    struct type_align(4) XQuat
+    {
+        int16_t value[4];
+    };
 
     struct type_align32(4) XAnimDeltaPartQuatDataFrames
     {

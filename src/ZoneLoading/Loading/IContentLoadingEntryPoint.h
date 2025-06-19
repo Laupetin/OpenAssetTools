@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Zone/Stream/ZoneInputStream.h"
-
 class IContentLoadingEntryPoint
 {
 public:
@@ -12,5 +10,5 @@ public:
     IContentLoadingEntryPoint& operator=(const IContentLoadingEntryPoint& other) = default;
     IContentLoadingEntryPoint& operator=(IContentLoadingEntryPoint&& other) noexcept = default;
 
-    virtual void Load(ZoneInputStream& stream) = 0;
+    virtual void Load() = 0;
 };

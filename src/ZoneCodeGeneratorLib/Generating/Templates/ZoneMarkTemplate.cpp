@@ -655,7 +655,7 @@ namespace
         {
             const MemberComputations computations(member);
 
-            if (computations.IsFirstMember())
+            if (computations.IsFirstUsedMember())
             {
                 LINE("")
                 if (member->m_condition)
@@ -674,7 +674,7 @@ namespace
                     MarkMember_Reference(info, member, DeclarationModifierComputations(member));
                 }
             }
-            else if (computations.IsLastMember())
+            else if (computations.IsLastUsedMember())
             {
                 if (member->m_condition)
                 {

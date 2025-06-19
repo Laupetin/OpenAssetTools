@@ -35,6 +35,9 @@ namespace
                 if (computations.ShouldIgnore())
                     continue;
 
+                if (computations.IsArray() || member->m_member->m_type_declaration->m_declaration_modifiers.empty())
+                    member->m_type->m_embedded_reference_exists = true;
+
                 if (computations.ContainsNonEmbeddedReference())
                     member->m_type->m_non_embedded_reference_exists = true;
 

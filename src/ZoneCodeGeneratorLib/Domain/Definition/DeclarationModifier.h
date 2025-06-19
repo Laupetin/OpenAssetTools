@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Utils/ClassUtils.h"
+#include <cstdint>
 
-enum class DeclarationModifierType
+enum class DeclarationModifierType : std::uint8_t
 {
     POINTER,
     ARRAY

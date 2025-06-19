@@ -1,6 +1,9 @@
 #include "AssetDumperLoadedSound.h"
 
 #include "Sound/WavTypes.h"
+#include "Sound/WavWriter.h"
+
+#include <format>
 
 using namespace IW5;
 
@@ -9,35 +12,22 @@ bool AssetDumperLoadedSound::ShouldDump(XAssetInfo<LoadedSound>* asset)
     return true;
 }
 
-void AssetDumperLoadedSound::DumpWavPcm(AssetDumpingContext& context, const LoadedSound* asset, std::ostream& stream)
+void AssetDumperLoadedSound::DumpWavPcm(const LoadedSound* asset, std::ostream& stream)
 {
-    const auto riffMasterChunkSize = sizeof(WAV_CHUNK_ID_RIFF) + sizeof(uint32_t) + sizeof(WAV_WAVE_ID) + sizeof(WavChunkHeader) + sizeof(WavFormatChunkPcm)
-                                     + sizeof(WavChunkHeader) + sizeof(asset->sound.info.data_len);
+    const WavWriter writer(stream);
 
-    stream.write(reinterpret_cast<const char*>(&WAV_CHUNK_ID_RIFF), sizeof(WAV_CHUNK_ID_RIFF));
-    stream.write(reinterpret_cast<const char*>(&riffMasterChunkSize), sizeof(riffMasterChunkSize));
-    stream.write(reinterpret_cast<const char*>(&WAV_WAVE_ID), sizeof(WAV_WAVE_ID));
+    const WavMetaData metaData{.channelCount = static_cast<unsigned>(asset->sound.info.channels),
+                               .samplesPerSec = static_cast<unsigned>(asset->sound.info.rate),
+                               .bitsPerSample = static_cast<unsigned>(asset->sound.info.bits)};
 
-    const WavChunkHeader formatChunkHeader{WAV_CHUNK_ID_FMT, sizeof(WavFormatChunkPcm)};
-    stream.write(reinterpret_cast<const char*>(&formatChunkHeader), sizeof(formatChunkHeader));
-
-    WavFormatChunkPcm formatChunk{WavFormat::PCM,
-                                  static_cast<uint16_t>(asset->sound.info.channels),
-                                  asset->sound.info.rate,
-                                  asset->sound.info.rate * asset->sound.info.channels * asset->sound.info.bits / 8,
-                                  static_cast<uint16_t>(asset->sound.info.block_size),
-                                  static_cast<uint16_t>(asset->sound.info.bits)};
-    stream.write(reinterpret_cast<const char*>(&formatChunk), sizeof(formatChunk));
-
-    const WavChunkHeader dataChunkHeader{WAV_CHUNK_ID_DATA, asset->sound.info.data_len};
-    stream.write(reinterpret_cast<const char*>(&dataChunkHeader), sizeof(dataChunkHeader));
-    stream.write(asset->sound.data, asset->sound.info.data_len);
+    writer.WritePcmHeader(metaData, asset->sound.info.data_len);
+    writer.WritePcmData(asset->sound.data, asset->sound.info.data_len);
 }
 
 void AssetDumperLoadedSound::DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset)
 {
     const auto* loadedSound = asset->Asset();
-    const auto assetFile = context.OpenAssetFile("sound/" + asset->m_name);
+    const auto assetFile = context.OpenAssetFile(std::format("sound/{}", asset->m_name));
 
     if (!assetFile)
         return;
@@ -46,11 +36,11 @@ void AssetDumperLoadedSound::DumpAsset(AssetDumpingContext& context, XAssetInfo<
     switch (static_cast<WavFormat>(loadedSound->sound.info.format))
     {
     case WavFormat::PCM:
-        DumpWavPcm(context, loadedSound, stream);
+        DumpWavPcm(loadedSound, stream);
         break;
 
     default:
-        printf("Unknown format %i for loaded sound: %s\n", loadedSound->sound.info.format, loadedSound->name);
+        std::cerr << std::format("Unknown format {} for loaded sound: {}\n", loadedSound->sound.info.format, loadedSound->name);
         break;
     }
 }
