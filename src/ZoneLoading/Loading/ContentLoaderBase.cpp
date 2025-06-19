@@ -45,6 +45,10 @@ void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t 
 {
     assert(varXString != nullptr);
 
+#ifdef ARCH_x86
+    if (atStreamStart)
+        m_stream.Load<const char*>(varXString, count);
+#else
     if (atStreamStart)
     {
         const auto fill = m_stream.LoadWithFill(4u * count);
@@ -55,6 +59,7 @@ void ContentLoaderBase::LoadXStringArray(const bool atStreamStart, const size_t 
             m_stream.AddPointerLookup(&varXString[index], fill.BlockBuffer(4u * index));
         }
     }
+#endif
 
     for (size_t index = 0; index < count; index++)
     {
