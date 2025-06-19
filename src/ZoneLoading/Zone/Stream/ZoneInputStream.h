@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Loading/Exception/InvalidLookupPositionException.h"
 #include "Loading/ILoadingStream.h"
 #include "Utils/MemoryManager.h"
 #include "Zone/Stream/IZoneStream.h"
 #include "Zone/XBlock.h"
 
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <type_traits>
@@ -49,6 +51,69 @@ private:
     void* m_block_buffer;
     size_t m_buffer_size;
     unsigned m_pointer_byte_count;
+    size_t m_offset;
+};
+
+template<typename T> class MaybePointerFromLookup
+{
+public:
+    explicit MaybePointerFromLookup(void* ptr)
+        : m_valid(true),
+          m_ptr(ptr),
+          m_block(0),
+          m_offset(0)
+    {
+    }
+
+    MaybePointerFromLookup(void* ptr, const block_t block, const size_t offset)
+        : m_valid(false),
+          m_ptr(ptr),
+          m_block(block),
+          m_offset(offset)
+    {
+    }
+
+    explicit MaybePointerFromLookup(const MaybePointerFromLookup<void>& other)
+        : m_valid(other.m_valid),
+          m_ptr(static_cast<T*>(other.m_ptr)),
+          m_block(other.m_block),
+          m_offset(other.m_offset)
+    {
+    }
+
+    [[nodiscard]] T* Expect() const
+    {
+        if (!m_valid)
+            throw InvalidLookupPositionException(m_block, m_offset);
+
+        return static_cast<T*>(m_ptr);
+    }
+
+    /**
+     * The original linker does an annoying optimization where ConvertOffsetToPointer makes structs
+     * reuse data across non-matching types.
+     * E.g. a pointer array reuses memory of a scriptstring array.
+     * Since cross-platform the sizes of the types do not match anymore, this has to be handled differently.
+     * The scenario seems to realistically only happen when the data is nulled so just alloc a nulled memory block.
+     * If this strategy fails, in the future it might need to realloc and load existing block data with fill.
+     */
+    [[nodiscard]] T* OrNulled(const size_t gameSize, const size_t size, MemoryManager& memory) const
+    {
+        if (m_valid)
+            return static_cast<T*>(m_ptr);
+
+        auto* result = static_cast<T*>(memory.AllocRaw(size));
+
+        // We expect the original game buffer to also have been nulled
+        assert(gameSize < size);
+        assert(memcmp(result, m_ptr, gameSize) == 0);
+
+        return result;
+    }
+
+    bool m_valid;
+    void* m_ptr;
+    block_t m_block;
     size_t m_offset;
 };
 
@@ -155,11 +220,11 @@ public:
      */
     virtual void AddPointerLookup(void* redirectTo, const void* redirectFrom) = 0;
 
-    virtual void* ConvertOffsetToPointerLookup(const void* offset) = 0;
+    virtual MaybePointerFromLookup<void> ConvertOffsetToPointerLookup(const void* offset) = 0;
 
-    template<typename T> T* ConvertOffsetToPointerLookup(T* offset)
+    template<typename T> MaybePointerFromLookup<T> ConvertOffsetToPointerLookup(T* offset)
     {
-        return static_cast<T*>(ConvertOffsetToPointerLookup(static_cast<const void*>(offset)));
+        return MaybePointerFromLookup<T>(ConvertOffsetToPointerLookup(static_cast<const void*>(offset)));
     }
 
     virtual void* ConvertOffsetToAliasLookup(const void* offset) = 0;

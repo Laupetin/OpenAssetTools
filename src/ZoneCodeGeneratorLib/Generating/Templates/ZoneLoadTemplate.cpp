@@ -993,7 +993,7 @@ namespace
 
                     if (info && !info->m_has_matching_cross_platform_structure)
                     {
-                        LINEF("*{0} = m_stream.ConvertOffsetToPointerLookup(*{0});", MakeTypePtrVarName(def))
+                        LINEF("*{0} = m_stream.ConvertOffsetToPointerLookup(*{0}).Expect();", MakeTypePtrVarName(def))
                     }
                     else
                     {
@@ -1659,7 +1659,21 @@ namespace
 
                 if (ShouldAllocOutOfBlock(*member, loadType))
                 {
-                    LINEF("{0} = m_stream.ConvertOffsetToPointerLookup({0});", MakeMemberAccess(info, member, modifier))
+                    LINE_STARTF("{0} = m_stream.ConvertOffsetToPointerLookup({0})", MakeMemberAccess(info, member, modifier))
+                    if (loadType == MemberLoadType::POINTER_ARRAY)
+                    {
+                        LINE_MIDDLEF(".OrNulled({0}uz * ({1}), sizeof({2}{3}) * ({1}), m_memory)",
+                                     member->m_member->m_type_declaration->GetSize(),
+                                     MakeEvaluation(modifier.GetPointerArrayCountEvaluation()),
+                                     MakeTypeDecl(member->m_member->m_type_declaration.get()),
+                                     MakeFollowingReferences(modifier.GetFollowingDeclarationModifiers()))
+                    }
+                    else
+                    {
+                        LINE_MIDDLE(".Expect()")
+                    }
+
+                    LINE_END(";")
                 }
                 else
                 {

@@ -349,7 +349,7 @@ namespace
             m_pointer_redirect_lookup.emplace(zonePtr, alias);
         }
 
-        void* ConvertOffsetToPointerLookup(const void* offset) override
+        MaybePointerFromLookup<void> ConvertOffsetToPointerLookup(const void* offset) override
         {
             // For details see ConvertOffsetToPointer
             const auto offsetInt = reinterpret_cast<uintptr_t>(offset) - 1u;
@@ -367,10 +367,9 @@ namespace
 
             const auto foundPointerLookup = m_pointer_redirect_lookup.find(offsetInt);
             if (foundPointerLookup != m_pointer_redirect_lookup.end())
-                return foundPointerLookup->second;
+                return MaybePointerFromLookup<void>(foundPointerLookup->second);
 
-            assert(false);
-            return &block->m_buffer[blockOffset];
+            return MaybePointerFromLookup<void>(&block->m_buffer[blockOffset], blockNum, blockOffset);
         }
 
         void* ConvertOffsetToAliasLookup(const void* offset) override
