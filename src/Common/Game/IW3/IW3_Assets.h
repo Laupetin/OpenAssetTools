@@ -255,7 +255,10 @@ namespace IW3
         XAnimPartTransData u;
     };
 
-    typedef tdef_align32(4) short XQuat[2];
+    struct type_align(4) XQuat
+    {
+        int16_t value[4];
+    };
 
     union XAnimDynamicIndicesQuat
     {
@@ -272,7 +275,7 @@ namespace IW3
     union XAnimDeltaPartQuatData
     {
         XAnimDeltaPartQuatDataFrames frames;
-        int16_t frame0[2];
+        XQuat frame0;
     };
 
     struct XAnimDeltaPartQuat

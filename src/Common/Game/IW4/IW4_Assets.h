@@ -371,7 +371,10 @@ namespace IW4
         uint16_t _2[1];
     };
 
-    typedef tdef_align32(4) short XQuat2[2];
+    struct type_align(4) XQuat2
+    {
+        int16_t value[2];
+    };
 
     struct type_align32(4) XAnimDeltaPartQuatDataFrames2
     {
@@ -382,7 +385,7 @@ namespace IW4
     union XAnimDeltaPartQuatData2
     {
         XAnimDeltaPartQuatDataFrames2 frames;
-        int16_t frame0[2];
+        XQuat2 frame0;
     };
 
     struct XAnimDeltaPartQuat2
@@ -397,7 +400,10 @@ namespace IW4
         uint16_t _2[1];
     };
 
-    typedef tdef_align32(4) short XQuat[4];
+    struct type_align(4) XQuat
+    {
+        int16_t value[4];
+    };
 
     struct XAnimDeltaPartQuatDataFrames
     {
@@ -408,7 +414,7 @@ namespace IW4
     union XAnimDeltaPartQuatData
     {
         XAnimDeltaPartQuatDataFrames frames;
-        int16_t frame0[4];
+        XQuat frame0;
     };
 
     struct XAnimDeltaPartQuat
