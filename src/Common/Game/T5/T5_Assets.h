@@ -387,7 +387,7 @@ namespace T5
 
     struct type_align(4) XQuat
     {
-        int16_t value[4];
+        int16_t value[2];
     };
 
     union XAnimDynamicIndicesQuat
