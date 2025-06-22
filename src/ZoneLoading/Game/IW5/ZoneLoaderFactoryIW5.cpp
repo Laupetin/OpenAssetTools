@@ -185,7 +185,7 @@ std::unique_ptr<ZoneLoader> ZoneLoaderFactory::CreateLoaderForHeader(ZoneHeader&
 
     // Start of the zone content
     zoneLoader->AddLoadingStep(step::CreateStepLoadZoneContent(
-        [&zonePtr](ZoneInputStream& stream)
+        [zonePtr](ZoneInputStream& stream)
         {
             return std::make_unique<ContentLoader>(*zonePtr, stream);
         },
