@@ -1,6 +1,6 @@
 #include "AssetDumperMaterial.h"
 
-#include "Game/IW5/Material/JsonMaterialWriter.h"
+#include "Game/IW5/Material/JsonMaterialWriterIW5.h"
 #include "Game/IW5/Material/MaterialConstantZoneState.h"
 
 #include <algorithm>
@@ -36,7 +36,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     if (!assetFile)
         return;
 
-    DumpMaterialAsJson(*assetFile, asset->Asset(), context);
+    DumpMaterialAsJson(*assetFile, *asset->Asset(), context);
 }
 
 void AssetDumperMaterial::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
