@@ -18,6 +18,7 @@ namespace IW5
         void LoadXAsset(bool atStreamStart) const;
         void LoadXAssetArray(bool atStreamStart, size_t count);
 
+        XAssetList* varXAssetList;
         XAsset* varXAsset;
         ScriptStringList* varScriptStringList;
     };

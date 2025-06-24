@@ -1205,16 +1205,16 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure && computations.IsInRuntimeBlock())
+            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
             {
-                LINEF("const auto runtimeArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
-                LINEF("const auto runtimeFill = m_stream.LoadWithFill({0} * runtimeArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
-                LINE("for (auto i = 0uz; i < runtimeArraySize; i++)")
+                LINEF("const auto fillArraySize = static_cast<size_t>({0});", MakeEvaluation(modifier.GetArrayPointerCountEvaluation()))
+                LINEF("const auto fill = m_stream.LoadWithFill({0} * fillArraySize);", member->m_member->m_type_declaration->m_type->GetSize())
+                LINE("for (auto i = 0uz; i < fillArraySize; i++)")
                 LINE("{")
                 m_intendation++;
-                LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
-                LINEF("FillStruct_{0}(runtimeFill.AtOffset(i * {1}));",
-                      MakeSafeTypeName(member->m_member->m_type_declaration->m_type),
+                LINEF("{0} = &{1}[i];", MakeTypeVarName(member->m_type->m_definition), MakeMemberAccess(info, member, modifier))
+                LINEF("FillStruct_{0}(fill.AtOffset(i * {1}));",
+                      MakeSafeTypeName(member->m_type->m_definition),
                       member->m_member->m_type_declaration->m_type->GetSize())
                 m_intendation--;
                 LINE("}")
@@ -1378,7 +1378,7 @@ namespace
                     LINE(MakeCustomActionCall(member->m_post_load_action.get()))
                 }
             }
-            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure && computations.IsInRuntimeBlock())
+            else if (member->m_type && !member->m_type->m_has_matching_cross_platform_structure)
             {
                 LINEF("{0} = {1};", MakeTypeVarName(member->m_member->m_type_declaration->m_type), MakeMemberAccess(info, member, modifier))
                 LINEF("FillStruct_{0}(m_stream.LoadWithFill({1}));",
