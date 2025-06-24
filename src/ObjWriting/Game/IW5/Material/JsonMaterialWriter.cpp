@@ -29,8 +29,8 @@ namespace
             json jRoot = jsonMaterial;
 
             jRoot["_type"] = "material";
-            jRoot["_game"] = "iw5";
             jRoot["_version"] = 1;
+            jRoot["_game"] = "iw5";
 
             m_stream << std::setw(4) << jRoot << "\n";
         }

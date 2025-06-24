@@ -4,6 +4,10 @@
 
 #set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
 
+// This file was templated.
+// See XModelDumper.h.template.
+// Do not modify, changes will be lost.
+
 #pragma once
 
 #include "Dumping/AssetDumpingContext.h"

@@ -28,6 +28,7 @@ namespace
 
             jRoot["_type"] = "leaderboard";
             jRoot["_version"] = 1;
+            jRoot["_game"] = "iw4";
 
             m_stream << std::setw(4) << jRoot << "\n";
         }

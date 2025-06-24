@@ -8,11 +8,18 @@
 
 #if GAME == "IW5"
 #define FEATURE_IW5
+#define GAME_LOWER "iw5"
 #elif GAME == "T5"
 #define FEATURE_T5
+#define GAME_LOWER "t5"
 #elif GAME == "T6"
 #define FEATURE_T6
+#define GAME_LOWER "t6"
 #endif
+
+// This file was templated.
+// See XModelDumper.cpp.template.
+// Do not modify, changes will be lost.
 
 #include DUMPER_HEADER
 
@@ -664,6 +671,7 @@ namespace
 
             jRoot["_type"] = "xmodel";
             jRoot["_version"] = 1;
+            jRoot["_game"] = GAME_LOWER;
 
             m_stream << std::setw(4) << jRoot << "\n";
         }
