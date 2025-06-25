@@ -5,7 +5,6 @@
 #include "AssetDumpers/AssetDumperLeaderboardDef.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperMapEnts.h"
-#include "AssetDumpers/AssetDumperMaterial.h"
 #include "AssetDumpers/AssetDumperPhysConstraints.h"
 #include "AssetDumpers/AssetDumperPhysPreset.h"
 #include "AssetDumpers/AssetDumperQdb.h"
@@ -25,6 +24,7 @@
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
 #include "Game/T6/GameAssetPoolT6.h"
+#include "Material/AssetDumperMaterial.h"
 #include "ObjWriting.h"
 
 using namespace T6;

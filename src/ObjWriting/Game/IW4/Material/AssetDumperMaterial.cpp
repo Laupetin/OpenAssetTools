@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <vector>
 
-#define DUMP_AS_GDT 1
+// #define DUMP_AS_GDT 1
 // #define FLAGS_DEBUG 1
 
 using namespace IW4;
