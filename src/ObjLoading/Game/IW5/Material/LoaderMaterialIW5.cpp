@@ -1,7 +1,7 @@
 #include "LoaderMaterialIW5.h"
 
 #include "Game/IW5/IW5.h"
-#include "JsonMaterialLoader.h"
+#include "Game/IW5/Material/JsonMaterialLoaderIW5.h"
 
 #include <algorithm>
 #include <cstring>

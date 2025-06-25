@@ -12,7 +12,7 @@
 #endif
 
 // This file was templated.
-// See JsonMaterialWriter.h.template.
+// See JsonMaterialWriter.cpp.template.
 // Do not modify, changes will be lost.
 
 #set WRITER_HEADER "\"JsonMaterialWriter" + GAME + ".h\""

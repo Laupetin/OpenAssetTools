@@ -1,15 +1,37 @@
-#include "JsonMaterialLoader.h"
+#options GAME (IW5, T6)
 
+#filename "Game/" + GAME + "/Material/JsonMaterialLoader" + GAME + ".cpp"
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#define HAS_WATER
+#define GAME_LOWER "iw5"
+#elif GAME == "T6"
+#define FEATURE_T6
+#define GAME_LOWER "t6"
+#endif
+
+// This file was templated.
+// See JsonMaterialLoader.cpp.template.
+// Do not modify, changes will be lost.
+
+#set LOADER_HEADER "\"JsonMaterialLoader" + GAME + ".h\""
+#include LOADER_HEADER
+
+#ifdef HAS_WATER
 #include "Base64.h"
-#include "Game/IW5/CommonIW5.h"
-#include "Game/IW5/Material/JsonMaterial.h"
+#endif
+#set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
+#include COMMON_HEADER
+#set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
+#include JSON_HEADER
 
 #include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
-using namespace IW5;
+using namespace GAME;
 
 namespace
 {
@@ -27,19 +49,27 @@ namespace
         bool Load(Material& material) const
         {
             const auto jRoot = json::parse(m_stream);
-            std::string game;
             std::string type;
             unsigned version;
 
             jRoot.at("_type").get_to(type);
-            jRoot.at("_game").get_to(game);
             jRoot.at("_version").get_to(version);
 
-            if (type != "material" || version != 1u || game != "iw5")
+            if (type != "material" || version != 1u)
             {
                 std::cerr << std::format("Tried to load material \"{}\" but did not find expected type material of version 1\n", material.info.name);
                 return false;
             }
+            
+#ifndef FEATURE_T6 // T6 did not have this check in version 1, so to stay backwards compatible, let it stay that way
+            std::string game;
+            jRoot.at("_game").get_to(game);
+            if (game != GAME_LOWER)
+            {
+                std::cerr << std::format("Tried to load material \"{}\" but \"_game\" did not find expected type value {}\n", material.info.name, GAME_LOWER);
+                return false;
+            }
+#endif
 
             try
             {
@@ -60,7 +90,11 @@ namespace
             std::cerr << std::format("Cannot load material \"{}\": {}\n", material.info.name, message);
         }
 
+#ifdef FEATURE_IW5
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned char& gameFlags)
+#elif defined(FEATURE_T6)
+        static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned& gameFlags)
+#endif
         {
             for (const auto gameFlag : jMaterial.gameFlags)
                 gameFlags |= gameFlag;
@@ -77,6 +111,7 @@ namespace
             samplerState.clampW = jSamplerState.clampW;
         }
 
+#ifdef HAS_WATER
         bool CreateWaterFromJson(const JsonWater& jWater, water_t& water, const Material& material) const
         {
             water.writable.floatTime = jWater.floatTime;
@@ -120,6 +155,7 @@ namespace
 
             return true;
         }
+#endif
 
         bool CreateTextureDefFromJson(const JsonTexture& jTexture, MaterialTextureDef& textureDef, const Material& material) const
         {
@@ -157,6 +193,9 @@ namespace
             CreateSamplerStateFromJson(jTexture.samplerState, textureDef.samplerState);
 
             textureDef.semantic = jTexture.semantic;
+#ifdef FEATURE_T6
+            textureDef.isMatureContent = jTexture.isMatureContent;
+#endif
 
             auto* imageAsset = m_context.LoadDependency<AssetImage>(jTexture.image);
             if (!imageAsset)
@@ -166,6 +205,7 @@ namespace
             }
             m_registration.AddDependency(imageAsset);
 
+#ifdef HAS_WATER
             if (jTexture.water)
             {
                 if (jTexture.semantic != TS_WATER_MAP)
@@ -195,6 +235,9 @@ namespace
             }
             else
                 textureDef.u.image = imageAsset->Asset();
+#else
+            textureDef.image = imageAsset->Asset();
+#endif
 
             return true;
         }
@@ -257,11 +300,13 @@ namespace
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_GT_0;
             }
+#ifdef FEATURE_IW5
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::LT128)
             {
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_LT_128;
             }
+#endif
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::GE128)
             {
                 structured.alphaTestDisabled = 0;
@@ -290,7 +335,9 @@ namespace
             structured.blendOpAlpha = jStateBitsTableEntry.blendOpAlpha;
             structured.colorWriteRgb = jStateBitsTableEntry.colorWriteRgb;
             structured.colorWriteAlpha = jStateBitsTableEntry.colorWriteAlpha;
+#ifdef FEATURE_IW5
             structured.gammaWrite = jStateBitsTableEntry.gammaWrite;
+#endif
             structured.polymodeLine = jStateBitsTableEntry.polymodeLine;
             structured.depthWrite = jStateBitsTableEntry.depthWrite;
 
@@ -352,6 +399,12 @@ namespace
             }
 
             material.info.surfaceTypeBits = jMaterial.surfaceTypeBits;
+#ifdef FEATURE_T6
+            material.info.layeredSurfaceTypes = jMaterial.layeredSurfaceTypes;
+            material.info.hashIndex = static_cast<uint16_t>(jMaterial.hashIndex);
+            material.info.surfaceFlags = jMaterial.surfaceFlags;
+            material.info.contents = jMaterial.contents;
+#endif
 
             if (jMaterial.stateBitsEntry.size() != std::extent_v<decltype(Material::stateBitsEntry)>)
             {
@@ -363,6 +416,9 @@ namespace
 
             material.stateFlags = static_cast<unsigned char>(jMaterial.stateFlags);
             material.cameraRegion = jMaterial.cameraRegion;
+#ifdef FEATURE_T6
+            material.probeMipBits = jMaterial.probeMipBits;
+#endif
 
             auto* techniqueSet = m_context.LoadDependency<AssetTechniqueSet>(jMaterial.techniqueSet);
             if (!techniqueSet)
@@ -424,6 +480,24 @@ namespace
                 material.stateBitsTable = nullptr;
             }
 
+#ifdef FEATURE_T6
+            if (jMaterial.thermalMaterial)
+            {
+                auto* thermalMaterial = m_context.LoadDependency<AssetMaterial>(jMaterial.thermalMaterial.value());
+                if (!thermalMaterial)
+                {
+                    PrintError(material, "Could not find thermal material");
+                    return false;
+                }
+                m_registration.AddDependency(thermalMaterial);
+                material.thermalMaterial = thermalMaterial->Asset();
+            }
+            else
+            {
+                material.thermalMaterial = nullptr;
+            }
+#endif
+
             return true;
         }
 
@@ -434,7 +508,7 @@ namespace
     };
 } // namespace
 
-namespace IW5
+namespace GAME
 {
     bool LoadMaterialAsJson(
         std::istream& stream, Material& material, MemoryManager& memory, AssetCreationContext& context, AssetRegistration<AssetMaterial>& registration)
@@ -443,4 +517,4 @@ namespace IW5
 
         return loader.Load(material);
     }
-} // namespace IW5
+} // namespace GAME

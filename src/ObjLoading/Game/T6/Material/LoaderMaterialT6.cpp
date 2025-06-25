@@ -1,6 +1,6 @@
 #include "LoaderMaterialT6.h"
 
-#include "Game/T6/Material/JsonMaterialLoader.h"
+#include "Game/T6/Material/JsonMaterialLoaderT6.h"
 #include "Game/T6/T6.h"
 
 #include <algorithm>
