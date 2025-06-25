@@ -2,9 +2,8 @@
 
 #include "Game/IW5/IW5.h"
 #include "Game/IW5/Material/JsonMaterialLoaderIW5.h"
+#include "Material/MaterialCommon.h"
 
-#include <algorithm>
-#include <cstring>
 #include <format>
 #include <iostream>
 
@@ -23,7 +22,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(GetFileNameForAsset(assetName));
+            const auto file = m_search_path.Open(material::GetFileNameForAssetName(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -41,21 +40,6 @@ namespace
         }
 
     private:
-        std::string GetFileNameForAsset(const std::string& assetName)
-        {
-            std::string sanitizedFileName(assetName);
-            if (sanitizedFileName[0] == '*')
-            {
-                std::ranges::replace(sanitizedFileName, '*', '_');
-                const auto parenthesisPos = sanitizedFileName.find('(');
-                if (parenthesisPos != std::string::npos)
-                    sanitizedFileName.erase(parenthesisPos);
-                sanitizedFileName = std::format("generated/{}", sanitizedFileName);
-            }
-
-            return std::format("materials/{}.json", sanitizedFileName);
-        }
-
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
     };
