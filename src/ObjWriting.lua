@@ -53,6 +53,7 @@ function ObjWriting:project()
 			}
 		}
 
+		ObjCommon:use()
 		useSourceTemplating("ObjWriting")
 		
         self:include(includes)

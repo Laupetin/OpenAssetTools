@@ -24,7 +24,7 @@
 
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #include COMMON_HEADER
-#set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial.h\""
+#set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
 #include JSON_HEADER
 #set CONSTANTS_HEADER "\"Game/" + GAME + "/Material/MaterialConstantZoneState.h\""
 #include CONSTANTS_HEADER
