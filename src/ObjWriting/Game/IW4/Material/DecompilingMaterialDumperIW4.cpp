@@ -564,7 +564,7 @@ namespace
         };
 
         static inline BlendFuncParameters knownBlendFuncs[]{
-            // Only considering passthrough statemap
+  // Only considering passthrough statemap
             {BlendFunc_e::ADD,
              BlendOp_e::ADD,
              CustomBlendFunc_e::ONE,
@@ -601,8 +601,8 @@ namespace
              CustomBlendFunc_e::UNKNOWN,
              CustomBlendFunc_e::UNKNOWN},
 
-            // TODO: Enable when using statemaps
-            // Considering default statemap
+ // TODO: Enable when using statemaps
+  // Considering default statemap
             {BlendFunc_e::ADD,
              BlendOp_e::ADD,
              CustomBlendFunc_e::ONE,
@@ -624,7 +624,7 @@ namespace
              BlendOp_e::ADD,
              CustomBlendFunc_e::INV_DST_ALPHA,
              CustomBlendFunc_e::ONE    },
-            // REPLACE matches passthrough statemap
+ // REPLACE matches passthrough statemap
             {BlendFunc_e::SCREEN_ADD,
              BlendOp_e::ADD,
              CustomBlendFunc_e::INV_DST_COLOR,
@@ -666,12 +666,6 @@ namespace
             m_state_bits_info.m_blend_func = BlendFunc_e::CUSTOM;
         }
 
-        template<typename T> T StateBitsToEnum(const unsigned input, const size_t mask, const size_t shift)
-        {
-            const unsigned value = (input & mask) >> shift;
-            return value >= (static_cast<unsigned>(T::COUNT) - 1) ? T::UNKNOWN : static_cast<T>(value + 1);
-        }
-
         void ExamineStateBitsInfo()
         {
             if (!m_material.stateBitsTable || m_material.stateBitsCount == 0)
@@ -695,37 +689,32 @@ namespace
             }
 
             if (m_state_bits_info.m_custom_blend_op_rgb == BlendOp_e::UNKNOWN)
-                m_state_bits_info.m_custom_blend_op_rgb = StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_RGB_MASK, GFXS0_BLENDOP_RGB_SHIFT);
+                m_state_bits_info.m_custom_blend_op_rgb = static_cast<BlendOp_e>(stateBits.loadBits.structured.blendOpRgb);
 
             if (m_state_bits_info.m_custom_blend_op_alpha == BlendOp_e::UNKNOWN)
-                m_state_bits_info.m_custom_blend_op_alpha =
-                    StateBitsToEnum<BlendOp_e>(stateBits.loadBits[0], GFXS0_BLENDOP_ALPHA_MASK, GFXS0_BLENDOP_ALPHA_SHIFT);
+                m_state_bits_info.m_custom_blend_op_alpha = static_cast<BlendOp_e>(stateBits.loadBits.structured.blendOpAlpha);
 
             if (m_state_bits_info.m_custom_src_blend_func == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_src_blend_func =
-                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_RGB_MASK, GFXS0_SRCBLEND_RGB_SHIFT);
+                m_state_bits_info.m_custom_src_blend_func = static_cast<CustomBlendFunc_e>(stateBits.loadBits.structured.srcBlendRgb);
 
             if (m_state_bits_info.m_custom_dst_blend_func == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_dst_blend_func =
-                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_RGB_MASK, GFXS0_DSTBLEND_RGB_SHIFT);
+                m_state_bits_info.m_custom_dst_blend_func = static_cast<CustomBlendFunc_e>(stateBits.loadBits.structured.dstBlendRgb);
 
             if (m_state_bits_info.m_custom_src_blend_func_alpha == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_src_blend_func_alpha =
-                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_SRCBLEND_ALPHA_MASK, GFXS0_SRCBLEND_ALPHA_SHIFT);
+                m_state_bits_info.m_custom_src_blend_func_alpha = static_cast<CustomBlendFunc_e>(stateBits.loadBits.structured.srcBlendAlpha);
 
             if (m_state_bits_info.m_custom_dst_blend_func_alpha == CustomBlendFunc_e::UNKNOWN)
-                m_state_bits_info.m_custom_dst_blend_func_alpha =
-                    StateBitsToEnum<CustomBlendFunc_e>(stateBits.loadBits[0], GFXS0_DSTBLEND_ALPHA_MASK, GFXS0_DSTBLEND_ALPHA_SHIFT);
+                m_state_bits_info.m_custom_dst_blend_func_alpha = static_cast<CustomBlendFunc_e>(stateBits.loadBits.structured.dstBlendAlpha);
 
             if (m_state_bits_info.m_alpha_test == AlphaTest_e::UNKNOWN)
             {
-                if (stateBits.loadBits[0] & GFXS0_ATEST_DISABLE)
+                if (stateBits.loadBits.structured.alphaTestDisabled)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::ALWAYS;
-                else if ((stateBits.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_GE_128)
+                else if (stateBits.loadBits.structured.alphaTest == GFXS_ALPHA_TEST_GE_128)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::GE128;
-                else if ((stateBits.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_GT_0)
+                else if (stateBits.loadBits.structured.alphaTest == GFXS_ALPHA_TEST_GT_0)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::GT0;
-                else if ((stateBits.loadBits[0] & GFXS0_ATEST_MASK) == GFXS0_ATEST_LT_128)
+                else if (stateBits.loadBits.structured.alphaTest == GFXS_ALPHA_TEST_LT_128)
                     m_state_bits_info.m_alpha_test = AlphaTest_e::LT128;
                 else
                     assert(false);
@@ -733,13 +722,13 @@ namespace
 
             if (m_state_bits_info.m_depth_test == DepthTest_e::UNKNOWN)
             {
-                if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_DISABLE)
+                if (stateBits.loadBits.structured.depthTestDisabled)
                     m_state_bits_info.m_depth_test = DepthTest_e::DISABLE;
-                else if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_LESSEQUAL)
+                else if (stateBits.loadBits.structured.depthTest == GFXS_DEPTHTEST_LESSEQUAL)
                     m_state_bits_info.m_depth_test = DepthTest_e::LESS_EQUAL;
-                else if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_LESS)
+                else if (stateBits.loadBits.structured.depthTest == GFXS_DEPTHTEST_LESS)
                     m_state_bits_info.m_depth_test = DepthTest_e::LESS;
-                else if (stateBits.loadBits[1] & GFXS1_DEPTHTEST_EQUAL)
+                else if (stateBits.loadBits.structured.depthTest == GFXS_DEPTHTEST_EQUAL)
                     m_state_bits_info.m_depth_test = DepthTest_e::EQUAL;
                 else
                     m_state_bits_info.m_depth_test = DepthTest_e::ALWAYS;
@@ -747,85 +736,82 @@ namespace
 
             if (m_state_bits_info.m_depth_write == StateBitsEnabledStatus_e::UNKNOWN)
                 m_state_bits_info.m_depth_write =
-                    (stateBits.loadBits[1] & GFXS1_DEPTHWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                    stateBits.loadBits.structured.depthWrite ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
 
             if (m_state_bits_info.m_cull_face == CullFace_e::UNKNOWN)
             {
-                if (stateBits.loadBits[0] & GFXS0_CULL_NONE)
+                if (stateBits.loadBits.structured.cullFace == GFXS_CULL_NONE)
                     m_state_bits_info.m_cull_face = CullFace_e::NONE;
-                else if (stateBits.loadBits[0] & GFXS0_CULL_BACK)
+                else if (stateBits.loadBits.structured.cullFace == GFXS_CULL_BACK)
                     m_state_bits_info.m_cull_face = CullFace_e::BACK;
-                else if (stateBits.loadBits[0] & GFXS0_CULL_FRONT)
+                else if (stateBits.loadBits.structured.cullFace == GFXS_CULL_FRONT)
                     m_state_bits_info.m_cull_face = CullFace_e::FRONT;
                 else
                     assert(false);
             }
 
             if (m_state_bits_info.m_polygon_offset == PolygonOffset_e::UNKNOWN)
-                m_state_bits_info.m_polygon_offset =
-                    StateBitsToEnum<PolygonOffset_e>(stateBits.loadBits[1], GFXS1_POLYGON_OFFSET_MASK, GFXS1_POLYGON_OFFSET_SHIFT);
+                m_state_bits_info.m_polygon_offset = static_cast<PolygonOffset_e>(stateBits.loadBits.structured.polygonOffset);
 
             if (m_state_bits_info.m_color_write_rgb == StateBitsEnabledStatus_e::UNKNOWN)
+            {
                 m_state_bits_info.m_color_write_rgb =
-                    (stateBits.loadBits[0] & GFXS0_COLORWRITE_RGB) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                    stateBits.loadBits.structured.colorWriteRgb ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+            }
 
             if (m_state_bits_info.m_color_write_alpha == StateBitsEnabledStatus_e::UNKNOWN)
+            {
                 m_state_bits_info.m_color_write_alpha =
-                    (stateBits.loadBits[0] & GFXS0_COLORWRITE_ALPHA) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                    stateBits.loadBits.structured.colorWriteAlpha ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+            }
 
             if (m_state_bits_info.m_gamma_write == StateBitsEnabledStatus_e::UNKNOWN)
+            {
                 m_state_bits_info.m_gamma_write =
-                    (stateBits.loadBits[0] & GFXS0_GAMMAWRITE) ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+                    stateBits.loadBits.structured.gammaWrite ? StateBitsEnabledStatus_e::ENABLED : StateBitsEnabledStatus_e::DISABLED;
+            }
 
             if (m_state_bits_info.m_stencil_mode == StencilMode_e::UNKNOWN)
             {
-                if ((stateBits.loadBits[1] & GFXS1_STENCIL_BACK_ENABLE) == 0 && (stateBits.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE) == 0)
+                if (stateBits.loadBits.structured.stencilBackEnabled == 0 && stateBits.loadBits.structured.stencilFrontEnabled == 0)
                 {
                     m_state_bits_info.m_stencil_mode = StencilMode_e::DISABLED;
                 }
-                else if (stateBits.loadBits[1] & GFXS1_STENCIL_BACK_ENABLE)
+                else if (stateBits.loadBits.structured.stencilBackEnabled)
                 {
-                    assert(stateBits.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE);
+                    assert(stateBits.loadBits.structured.stencilFrontEnabled);
                     m_state_bits_info.m_stencil_mode = StencilMode_e::TWO_SIDED;
                 }
                 else
                 {
-                    assert(stateBits.loadBits[1] & GFXS1_STENCIL_FRONT_ENABLE);
+                    assert(stateBits.loadBits.structured.stencilFrontEnabled);
                     m_state_bits_info.m_stencil_mode = StencilMode_e::ONE_SIDED;
                 }
             }
 
             if (m_state_bits_info.m_stencil_front_func == StencilFunc_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_func =
-                    StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FUNC_MASK, GFXS1_STENCIL_FRONT_FUNC_SHIFT);
+                m_state_bits_info.m_stencil_front_func = static_cast<StencilFunc_e>(stateBits.loadBits.structured.stencilFrontFunc);
 
             if (m_state_bits_info.m_stencil_front_pass == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_pass =
-                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_PASS_MASK, GFXS1_STENCIL_FRONT_PASS_SHIFT);
+                m_state_bits_info.m_stencil_front_pass = static_cast<StencilOp_e>(stateBits.loadBits.structured.stencilFrontPass);
 
             if (m_state_bits_info.m_stencil_front_fail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_fail =
-                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_FAIL_MASK, GFXS1_STENCIL_FRONT_FAIL_SHIFT);
+                m_state_bits_info.m_stencil_front_fail = static_cast<StencilOp_e>(stateBits.loadBits.structured.stencilFrontFail);
 
             if (m_state_bits_info.m_stencil_front_zfail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_front_zfail =
-                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_FRONT_ZFAIL_MASK, GFXS1_STENCIL_FRONT_ZFAIL_SHIFT);
+                m_state_bits_info.m_stencil_front_zfail = static_cast<StencilOp_e>(stateBits.loadBits.structured.stencilFrontZFail);
 
             if (m_state_bits_info.m_stencil_back_func == StencilFunc_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_func =
-                    StateBitsToEnum<StencilFunc_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FUNC_MASK, GFXS1_STENCIL_BACK_FUNC_SHIFT);
+                m_state_bits_info.m_stencil_back_func = static_cast<StencilFunc_e>(stateBits.loadBits.structured.stencilBackFunc);
 
             if (m_state_bits_info.m_stencil_back_pass == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_pass =
-                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_PASS_MASK, GFXS1_STENCIL_BACK_PASS_SHIFT);
+                m_state_bits_info.m_stencil_back_pass = static_cast<StencilOp_e>(stateBits.loadBits.structured.stencilBackPass);
 
             if (m_state_bits_info.m_stencil_back_fail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_fail =
-                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_FAIL_MASK, GFXS1_STENCIL_BACK_FAIL_SHIFT);
+                m_state_bits_info.m_stencil_back_fail = static_cast<StencilOp_e>(stateBits.loadBits.structured.stencilBackFail);
 
             if (m_state_bits_info.m_stencil_back_zfail == StencilOp_e::UNKNOWN)
-                m_state_bits_info.m_stencil_back_zfail =
-                    StateBitsToEnum<StencilOp_e>(stateBits.loadBits[1], GFXS1_STENCIL_BACK_ZFAIL_MASK, GFXS1_STENCIL_BACK_ZFAIL_SHIFT);
+                m_state_bits_info.m_stencil_back_zfail = static_cast<StencilOp_e>(stateBits.loadBits.structured.stencilBackZFail);
 
             ExamineBlendFunc();
         }
@@ -857,7 +843,7 @@ namespace
 
                 if (constant.nameHash == Common::R_HashString("colorTint"))
                 {
-                    m_constants_info.m_color_tint = Eigen::Vector4f(constant.literal);
+                    m_constants_info.m_color_tint = Eigen::Vector4f(constant.literal.v);
                 }
                 else if (constant.nameHash == Common::R_HashString("envMapParms"))
                 {
@@ -868,19 +854,19 @@ namespace
                 }
                 else if (constant.nameHash == Common::R_HashString("featherParms"))
                 {
-                    m_constants_info.m_zfeather_depth = constant.literal[1];
+                    m_constants_info.m_zfeather_depth = constant.literal.y;
                 }
                 else if (constant.nameHash == Common::R_HashString("falloffBeginColor"))
                 {
-                    m_constants_info.m_falloff_begin_color = Eigen::Vector4f(constant.literal);
+                    m_constants_info.m_falloff_begin_color = Eigen::Vector4f(constant.literal.v);
                 }
                 else if (constant.nameHash == Common::R_HashString("falloffEndColor"))
                 {
-                    m_constants_info.m_falloff_end_color = Eigen::Vector4f(constant.literal);
+                    m_constants_info.m_falloff_end_color = Eigen::Vector4f(constant.literal.v);
                 }
                 else if (constant.nameHash == Common::R_HashString("eyeOffsetParms"))
                 {
-                    m_constants_info.m_eye_offset_depth = constant.literal[0];
+                    m_constants_info.m_eye_offset_depth = constant.literal.x;
                 }
                 else if (constant.nameHash == Common::R_HashString("detailScale"))
                 {
@@ -901,21 +887,20 @@ namespace
                         {
                             const auto detailScaleFactorX = static_cast<float>(colorMapTexture->width) / static_cast<float>(detailMapTexture->width);
                             const auto detailScaleFactorY = static_cast<float>(colorMapTexture->height) / static_cast<float>(detailMapTexture->height);
-                            m_constants_info.m_detail_scale =
-                                Eigen::Vector2f(constant.literal[0] / detailScaleFactorX, constant.literal[1] / detailScaleFactorY);
+                            m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal.x / detailScaleFactorX, constant.literal.y / detailScaleFactorY);
                         }
                         else
-                            m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal[0], constant.literal[1]);
+                            m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal.x, constant.literal.y);
                     }
                     else
                     {
-                        m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal[0], constant.literal[1]);
+                        m_constants_info.m_detail_scale = Eigen::Vector2f(constant.literal.x, constant.literal.y);
                     }
                 }
                 else if (constant.nameHash == Common::R_HashString("flagParms"))
                 {
-                    m_constants_info.m_flag_speed = constant.literal[0];
-                    m_constants_info.m_flag_phase = constant.literal[1];
+                    m_constants_info.m_flag_speed = constant.literal.x;
+                    m_constants_info.m_flag_phase = constant.literal.y;
                 }
                 else if (constant.nameHash == Common::R_HashString("falloffParms"))
                 {
@@ -927,25 +912,25 @@ namespace
                 }
                 else if (constant.nameHash == Common::R_HashString("distortionScale"))
                 {
-                    m_constants_info.m_distortion_scale = Eigen::Vector2f(constant.literal[0], constant.literal[1]);
+                    m_constants_info.m_distortion_scale = Eigen::Vector2f(constant.literal.x, constant.literal.y);
                 }
                 else if (constant.nameHash == Common::R_HashString("uvAnimParms"))
                 {
-                    m_constants_info.m_uv_scroll_x = constant.literal[0];
-                    m_constants_info.m_uv_scroll_y = constant.literal[1];
-                    m_constants_info.m_uv_rotate = constant.literal[2];
+                    m_constants_info.m_uv_scroll_x = constant.literal.x;
+                    m_constants_info.m_uv_scroll_y = constant.literal.y;
+                    m_constants_info.m_uv_rotate = constant.literal.z;
                 }
                 else if (constant.nameHash == Common::R_HashString("colorObjMin"))
                 {
-                    m_constants_info.m_color_obj_min = Eigen::Vector4f(constant.literal);
+                    m_constants_info.m_color_obj_min = Eigen::Vector4f(constant.literal.v);
                 }
                 else if (constant.nameHash == Common::R_HashString("colorObjMax"))
                 {
-                    m_constants_info.m_color_obj_max = Eigen::Vector4f(constant.literal);
+                    m_constants_info.m_color_obj_max = Eigen::Vector4f(constant.literal.v);
                 }
                 else if (constant.nameHash == Common::R_HashString("waterColor"))
                 {
-                    m_constants_info.m_water_color = Eigen::Vector4f(constant.literal);
+                    m_constants_info.m_water_color = Eigen::Vector4f(constant.literal.v);
                 }
                 else
                 {
@@ -1064,45 +1049,45 @@ namespace
                 }
 
                 TileMode_e tileMode;
-                if (entry.samplerState & SAMPLER_CLAMP_U && entry.samplerState & SAMPLER_CLAMP_V && entry.samplerState & SAMPLER_CLAMP_W)
+                if (entry.samplerState.clampU && entry.samplerState.clampV && entry.samplerState.clampW)
                     tileMode = TileMode_e::TILE_BOTH;
-                else if (entry.samplerState & SAMPLER_CLAMP_U)
+                else if (entry.samplerState.clampU)
                     tileMode = TileMode_e::TILE_VERTICAL;
-                else if (entry.samplerState & SAMPLER_CLAMP_V)
+                else if (entry.samplerState.clampV)
                     tileMode = TileMode_e::TILE_HORIZONTAL;
                 else
                     tileMode = TileMode_e::NO_TILE;
 
                 auto filter = GdtFilter_e::UNKNOWN;
-                if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_ANISO2X)
+                if (entry.samplerState.filter == TEXTURE_FILTER_ANISO2X)
                 {
-                    if (entry.samplerState & SAMPLER_MIPMAP_NEAREST)
+                    if (entry.samplerState.mipMap == SAMPLER_MIPMAP_ENUM_NEAREST)
                         filter = GdtFilter_e::MIP_2X_BILINEAR;
-                    else if (entry.samplerState & SAMPLER_MIPMAP_LINEAR)
+                    else if (entry.samplerState.mipMap == SAMPLER_MIPMAP_ENUM_LINEAR)
                         filter = GdtFilter_e::MIP_2X_TRILINEAR;
                 }
-                else if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_ANISO4X)
+                else if (entry.samplerState.filter == TEXTURE_FILTER_ANISO4X)
                 {
-                    if (entry.samplerState & SAMPLER_MIPMAP_NEAREST)
+                    if (entry.samplerState.mipMap == SAMPLER_MIPMAP_ENUM_NEAREST)
                         filter = GdtFilter_e::MIP_4X_BILINEAR;
-                    else if (entry.samplerState & SAMPLER_MIPMAP_LINEAR)
+                    else if (entry.samplerState.mipMap == SAMPLER_MIPMAP_ENUM_LINEAR)
                         filter = GdtFilter_e::MIP_4X_TRILINEAR;
                 }
-                else if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_NEAREST)
+                else if (entry.samplerState.filter == TEXTURE_FILTER_NEAREST)
                 {
-                    assert((entry.samplerState & SAMPLER_MIPMAP_MASK) == SAMPLER_MIPMAP_DISABLED);
+                    assert(entry.samplerState.mipMap == SAMPLER_MIPMAP_ENUM_DISABLED);
                     filter = GdtFilter_e::NOMIP_NEAREST;
                 }
-                else if ((entry.samplerState & SAMPLER_FILTER_MASK) == SAMPLER_FILTER_LINEAR)
+                else if (entry.samplerState.filter == TEXTURE_FILTER_LINEAR)
                 {
-                    assert((entry.samplerState & SAMPLER_MIPMAP_MASK) == SAMPLER_MIPMAP_DISABLED);
+                    assert(entry.samplerState.mipMap == SAMPLER_MIPMAP_ENUM_DISABLED);
                     filter = GdtFilter_e::NOMIP_BILINEAR;
                 }
 
                 assert(filter != GdtFilter_e::UNKNOWN);
                 if (filter == GdtFilter_e::UNKNOWN)
                 {
-                    std::cout << "Unknown filter/mipmap combination: " << entry.samplerState << "\n";
+                    std::cout << std::format("Unknown filter/mipmap combination: {} {}\n", entry.samplerState.filter, entry.samplerState.mipMap);
                     continue;
                 }
 

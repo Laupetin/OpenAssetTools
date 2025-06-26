@@ -991,7 +991,7 @@ namespace IW5
         unsigned char constantCount;
         unsigned char stateBitsCount;
         unsigned char stateFlags;
-        unsigned char cameraRegion;
+        unsigned char cameraRegion; // GfxCameraRegionType
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;

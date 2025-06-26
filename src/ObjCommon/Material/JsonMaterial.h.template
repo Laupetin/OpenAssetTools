@@ -1,8 +1,11 @@
-#options GAME (IW5, T6)
+#options GAME (IW4, IW5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h"
 
-#if GAME == "IW5"
+#if GAME == "IW4"
+#define FEATURE_IW4
+#define HAS_WATER
+#elif GAME == "IW5"
 #define FEATURE_IW5
 #define HAS_WATER
 #elif GAME == "T6"
@@ -19,6 +22,7 @@
 #include GAME_HEADER
 
 #include "Json/JsonExtension.h"
+
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <optional>
@@ -71,7 +75,7 @@ namespace GAME
         INVALID,
         DISABLED,
         GT0,
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         LT128,
 #endif
         GE128
@@ -81,7 +85,7 @@ namespace GAME
         {JsonAlphaTest::INVALID,  nullptr   },
         {JsonAlphaTest::DISABLED, "disabled"},
         {JsonAlphaTest::GT0,      "gt0"     },
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {JsonAlphaTest::LT128,    "lt128"   },
 #endif
         {JsonAlphaTest::GE128,    "ge128"   }
@@ -164,7 +168,7 @@ namespace GAME
         GfxBlendOp blendOpAlpha;
         bool colorWriteRgb;
         bool colorWriteAlpha;
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         bool gammaWrite;
 #endif
         bool polymodeLine;
@@ -308,7 +312,7 @@ namespace GAME
 #endif
 
     NLOHMANN_JSON_SERIALIZE_ENUM(TextureSemantic, {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {TS_2D,               "2D"             },
         {TS_FUNCTION,         "function"       },
         {TS_COLOR_MAP,        "colorMap"       },
@@ -321,7 +325,9 @@ namespace GAME
         {TS_UNUSED_5,         "unused5"        },
         {TS_UNUSED_6,         "unused6"        },
         {TS_WATER_MAP,        "waterMap"       },
+#ifdef FEATURE_IW5
         {TS_DISPLACEMENT_MAP, "displacementMap"},
+#endif
 #elif defined(FEATURE_T6)
         {TS_2D,            "2D"          },
         {TS_FUNCTION,      "function"    },
@@ -421,10 +427,14 @@ namespace GAME
         uint8_t columns;
     };
 
-    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonTextureAtlas, rows, columns);
+    NLOHMANN_DEFINE_TYPE_EXTENSION(
+        JsonTextureAtlas,
+        rows,
+        columns
+    );
 
     NLOHMANN_JSON_SERIALIZE_ENUM(MaterialGameFlags, {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {MTL_GAMEFLAG_1,    "1"   },
         {MTL_GAMEFLAG_2,    "2"   },
         {MTL_GAMEFLAG_4,    "4"   },
@@ -433,11 +443,13 @@ namespace GAME
         {MTL_GAMEFLAG_20,   "20"  },
         {MTL_GAMEFLAG_40,   "40"  },
         {MTL_GAMEFLAG_80,   "80"  },
+#ifdef FEATURE_IW5
         {MTL_GAMEFLAG_100,  "100" },
         {MTL_GAMEFLAG_200,  "200" },
         {MTL_GAMEFLAG_400,  "400" },
         {MTL_GAMEFLAG_800,  "800" },
         {MTL_GAMEFLAG_1000, "1000"},
+#endif
 #elif defined(FEATURE_T6)
         {MTL_GAMEFLAG_1,            "1"           },
         {MTL_GAMEFLAG_2,            "2"           },
@@ -458,12 +470,14 @@ namespace GAME
     });
 
     NLOHMANN_JSON_SERIALIZE_ENUM(GfxCameraRegionType, {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {CAMERA_REGION_LIT_OPAQUE,       "litOpaque"     },
         {CAMERA_REGION_LIT_TRANS,        "litTrans"      },
         {CAMERA_REGION_EMISSIVE,         "emissive"      },
         {CAMERA_REGION_DEPTH_HACK,       "depthHack"     },
+#ifdef FEATURE_IW5
         {CAMERA_REGION_LIGHT_MAP_OPAQUE, "lightMapOpaque"},
+#endif
         {CAMERA_REGION_NONE,             "none"          },
 #elif defined(FEATURE_T6)
         {CAMERA_REGION_LIT_OPAQUE,       "litOpaque"     },

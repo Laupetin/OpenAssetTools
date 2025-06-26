@@ -1,8 +1,12 @@
-#options GAME (IW5, T6)
+#options GAME (IW4, IW5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialLoader" + GAME + ".cpp"
 
-#if GAME == "IW5"
+#if GAME == "IW4"
+#define FEATURE_IW4
+#define HAS_WATER
+#define GAME_LOWER "iw4"
+#elif GAME == "IW5"
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
@@ -90,7 +94,7 @@ namespace
             std::cerr << std::format("Cannot load material \"{}\": {}\n", material.info.name, message);
         }
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned char& gameFlags)
 #elif defined(FEATURE_T6)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned& gameFlags)
@@ -300,7 +304,7 @@ namespace
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_GT_0;
             }
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::LT128)
             {
                 structured.alphaTestDisabled = 0;
@@ -335,7 +339,7 @@ namespace
             structured.blendOpAlpha = jStateBitsTableEntry.blendOpAlpha;
             structured.colorWriteRgb = jStateBitsTableEntry.colorWriteRgb;
             structured.colorWriteAlpha = jStateBitsTableEntry.colorWriteAlpha;
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             structured.gammaWrite = jStateBitsTableEntry.gammaWrite;
 #endif
             structured.polymodeLine = jStateBitsTableEntry.polymodeLine;

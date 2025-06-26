@@ -6,6 +6,7 @@
 #include "Leaderboard/LoaderLeaderboardIW4.h"
 #include "LightDef/LoaderLightDefIW4.h"
 #include "Localize/LoaderLocalizeIW4.h"
+#include "Material/CompilingMaterialLoad.h"
 #include "Material/LoaderMaterialIW4.h"
 #include "Menu/LoaderMenuListIW4.h"
 #include "ObjLoading.h"
@@ -126,7 +127,8 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
-        collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath, gdt));
+        collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
+        collection.AddAssetCreator(CreateCompilingMaterialLoader(memory, searchPath, gdt));
         collection.AddAssetCreator(CreatePixelShaderLoader(memory, searchPath));
         collection.AddAssetCreator(CreateVertexShaderLoader(memory, searchPath));
         collection.AddAssetCreator(CreateVertexDeclLoader(memory));

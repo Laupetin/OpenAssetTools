@@ -674,7 +674,7 @@ namespace IW4
         water_t* water;
     };
 
-    enum MaterialTextureFilter
+    enum TextureFilter
     {
         TEXTURE_FILTER_DISABLED = 0x0,
         TEXTURE_FILTER_NEAREST = 0x1,
@@ -683,6 +683,15 @@ namespace IW4
         TEXTURE_FILTER_ANISO4X = 0x4,
 
         TEXTURE_FILTER_COUNT
+    };
+
+    enum SamplerStateBitsMipMap_e
+    {
+        SAMPLER_MIPMAP_ENUM_DISABLED,
+        SAMPLER_MIPMAP_ENUM_NEAREST,
+        SAMPLER_MIPMAP_ENUM_LINEAR,
+
+        SAMPLER_MIPMAP_ENUM_COUNT
     };
 
     enum SamplerStateBits_e
@@ -710,13 +719,26 @@ namespace IW4
         SAMPLER_CLAMP_MASK = 0xE0,
     };
 
+    struct MaterialTextureDefSamplerState
+    {
+        unsigned char filter : 3;
+        unsigned char mipMap : 2;
+        unsigned char clampU : 1;
+        unsigned char clampV : 1;
+        unsigned char clampW : 1;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(MaterialTextureDefSamplerState) == 1u);
+#endif
+
     struct MaterialTextureDef
     {
         unsigned int nameHash;
         char nameStart;
         char nameEnd;
-        unsigned char samplerState; // SamplerStateBits_e
-        unsigned char semantic;     // TextureSemantic
+        MaterialTextureDefSamplerState samplerState; // SamplerStateBits_e
+        unsigned char semantic;                      // TextureSemantic
         MaterialTextureDefInfo u;
     };
 
@@ -724,7 +746,7 @@ namespace IW4
     {
         unsigned int nameHash;
         char name[12];
-        float literal[4];
+        vec4_t literal;
     };
 
     enum GfxBlend : unsigned int
@@ -754,19 +776,36 @@ namespace IW4
         GFXS_BLENDOP_MASK = 0x7,
     };
 
-    enum GfxStencilFunc : unsigned int
+    enum GfxAlphaTest_e
     {
-        GFXS_STENCILFUNC_NEVER = 0x0,
-        GFXS_STENCILFUNC_LESS = 0x1,
-        GFXS_STENCILFUNC_EQUAL = 0x2,
-        GFXS_STENCILFUNC_LESSEQUAL = 0x3,
-        GFXS_STENCILFUNC_GREATER = 0x4,
-        GFXS_STENCILFUNC_NOTEQUAL = 0x5,
-        GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
-        GFXS_STENCILFUNC_ALWAYS = 0x7,
+        GFXS_ALPHA_TEST_GT_0 = 1,
+        GFXS_ALPHA_TEST_LT_128 = 2,
+        GFXS_ALPHA_TEST_GE_128 = 3,
 
-        GFXS_STENCILFUNC_COUNT,
-        GFXS_STENCILFUNC_MASK = 0x7
+        GFXS_ALPHA_TEST_COUNT
+    };
+
+    enum GfxCullFace_e
+    {
+        GFXS_CULL_NONE = 1,
+        GFXS_CULL_BACK = 2,
+        GFXS_CULL_FRONT = 3,
+    };
+
+    enum GfxDepthTest_e
+    {
+        GFXS_DEPTHTEST_ALWAYS = 0,
+        GFXS_DEPTHTEST_LESS = 1,
+        GFXS_DEPTHTEST_EQUAL = 2,
+        GFXS_DEPTHTEST_LESSEQUAL = 3
+    };
+
+    enum GfxPolygonOffset_e
+    {
+        GFXS_POLYGON_OFFSET_0 = 0,
+        GFXS_POLYGON_OFFSET_1 = 1,
+        GFXS_POLYGON_OFFSET_2 = 2,
+        GFXS_POLYGON_OFFSET_SHADOWMAP = 3
     };
 
     enum GfxStencilOp : unsigned int
@@ -782,6 +821,21 @@ namespace IW4
 
         GFXS_STENCILOP_COUNT,
         GFXS_STENCILOP_MASK = 0x7
+    };
+
+    enum GfxStencilFunc : unsigned int
+    {
+        GFXS_STENCILFUNC_NEVER = 0x0,
+        GFXS_STENCILFUNC_LESS = 0x1,
+        GFXS_STENCILFUNC_EQUAL = 0x2,
+        GFXS_STENCILFUNC_LESSEQUAL = 0x3,
+        GFXS_STENCILFUNC_GREATER = 0x4,
+        GFXS_STENCILFUNC_NOTEQUAL = 0x5,
+        GFXS_STENCILFUNC_GREATEREQUAL = 0x6,
+        GFXS_STENCILFUNC_ALWAYS = 0x7,
+
+        GFXS_STENCILFUNC_COUNT,
+        GFXS_STENCILFUNC_MASK = 0x7
     };
 
     enum GfxStateBitsEnum : unsigned int
@@ -876,9 +930,55 @@ namespace IW4
         GFXS1_STENCILOP_FRONTBACK_MASK = 0x1FF1FF00,
     };
 
+    struct GfxStateBitsLoadBitsStructured
+    {
+        // Byte 0
+        unsigned int srcBlendRgb : 4;       // 0-3
+        unsigned int dstBlendRgb : 4;       // 4-7
+        unsigned int blendOpRgb : 3;        // 8-10
+        unsigned int alphaTestDisabled : 1; // 11
+        unsigned int alphaTest : 2;         // 12-13
+        unsigned int cullFace : 2;          // 14-15
+        unsigned int srcBlendAlpha : 4;     // 16-19
+        unsigned int dstBlendAlpha : 4;     // 20-23
+        unsigned int blendOpAlpha : 3;      // 24-26
+        unsigned int colorWriteRgb : 1;     // 27
+        unsigned int colorWriteAlpha : 1;   // 28
+        unsigned int unused0 : 1;           // 29
+        unsigned int gammaWrite : 1;        // 30
+        unsigned int polymodeLine : 1;      // 31
+
+        // Byte 1
+        unsigned int depthWrite : 1;          // 0
+        unsigned int depthTestDisabled : 1;   // 1
+        unsigned int depthTest : 2;           // 2-3
+        unsigned int polygonOffset : 2;       // 4-5
+        unsigned int stencilFrontEnabled : 1; // 6
+        unsigned int stencilBackEnabled : 1;  // 7
+        unsigned int stencilFrontPass : 3;    // 8-10
+        unsigned int stencilFrontFail : 3;    // 11-13
+        unsigned int stencilFrontZFail : 3;   // 14-16
+        unsigned int stencilFrontFunc : 3;    // 17-19
+        unsigned int stencilBackPass : 3;     // 20-22
+        unsigned int stencilBackFail : 3;     // 23-25
+        unsigned int stencilBackZFail : 3;    // 26-28
+        unsigned int stencilBackFunc : 3;     // 29-31
+    };
+
+    union GfxStateBitsLoadBits
+    {
+        unsigned int raw[2];
+        GfxStateBitsLoadBitsStructured structured;
+    };
+
+#ifndef __zonecodegenerator
+    static_assert(sizeof(GfxStateBitsLoadBits) == 8);
+    static_assert(sizeof(GfxStateBitsLoadBitsStructured) == 8);
+#endif
+
     struct GfxStateBits
     {
-        unsigned int loadBits[2];
+        GfxStateBitsLoadBits loadBits;
     };
 
     struct infoParm_t
