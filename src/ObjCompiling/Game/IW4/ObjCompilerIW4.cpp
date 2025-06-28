@@ -3,6 +3,8 @@
 #include "Game/IW4/IW4.h"
 #include "Image/ImageIwdPostProcessor.h"
 #include "Material/CompilerMaterialIW4.h"
+#include "Techset/CompilerTechsetIW4.h"
+#include "Techset/CompilerVertexDeclIW4.h"
 
 #include <memory>
 
@@ -15,8 +17,10 @@ namespace
         auto& memory = zone.Memory();
 
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION
-        collection.AddAssetCreator(CreateCompilingMaterialLoader(memory, searchPath, gdt));
+        collection.AddAssetCreator(CreateMaterialCompiler(memory, searchPath, gdt));
+        collection.AddAssetCreator(CreateTechsetLoader(memory, searchPath));
 #endif
+        collection.AddAssetCreator(CreateVertexDeclLoader(memory));
     }
 
     void ConfigurePostProcessors(AssetCreatorCollection& collection,

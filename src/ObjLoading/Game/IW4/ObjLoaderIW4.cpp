@@ -17,8 +17,6 @@
 #include "Sound/LoaderSoundCurveIW4.h"
 #include "StringTable/LoaderStringTableIW4.h"
 #include "StructuredDataDef/LoaderStructuredDataDefIW4.h"
-#include "Techset/LoaderTechsetIW4.h"
-#include "Techset/LoaderVertexDeclIW4.h"
 #include "Weapon/GdtLoaderWeaponIW4.h"
 #include "Weapon/RawLoaderWeaponIW4.h"
 
@@ -129,8 +127,7 @@ namespace
         collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         collection.AddAssetCreator(CreatePixelShaderLoader(memory, searchPath));
         collection.AddAssetCreator(CreateVertexShaderLoader(memory, searchPath));
-        collection.AddAssetCreator(CreateVertexDeclLoader(memory));
-        collection.AddAssetCreator(CreateTechsetLoader(memory, searchPath));
+        // collection.AddAssetCreator(std::make_unique<AssetLoaderTechset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
         collection.AddAssetCreator(CreateSoundCurveLoader(memory, searchPath));

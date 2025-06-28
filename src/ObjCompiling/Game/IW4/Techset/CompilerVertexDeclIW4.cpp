@@ -1,4 +1,4 @@
-#include "LoaderVertexDeclIW4.h"
+#include "CompilerVertexDeclIW4.h"
 
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
