@@ -9,6 +9,8 @@
 #include <Eigen>
 #pragma warning(pop)
 
+#include <cassert>
+#include <format>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -564,7 +566,7 @@ namespace
         };
 
         static inline BlendFuncParameters knownBlendFuncs[]{
-  // Only considering passthrough statemap
+            // Only considering passthrough statemap
             {BlendFunc_e::ADD,
              BlendOp_e::ADD,
              CustomBlendFunc_e::ONE,
@@ -601,8 +603,8 @@ namespace
              CustomBlendFunc_e::UNKNOWN,
              CustomBlendFunc_e::UNKNOWN},
 
- // TODO: Enable when using statemaps
-  // Considering default statemap
+            // TODO: Enable when using statemaps
+            // Considering default statemap
             {BlendFunc_e::ADD,
              BlendOp_e::ADD,
              CustomBlendFunc_e::ONE,
@@ -624,7 +626,7 @@ namespace
              BlendOp_e::ADD,
              CustomBlendFunc_e::INV_DST_ALPHA,
              CustomBlendFunc_e::ONE    },
- // REPLACE matches passthrough statemap
+            // REPLACE matches passthrough statemap
             {BlendFunc_e::SCREEN_ADD,
              BlendOp_e::ADD,
              CustomBlendFunc_e::INV_DST_COLOR,
