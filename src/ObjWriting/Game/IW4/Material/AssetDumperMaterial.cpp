@@ -5,8 +5,6 @@
 #include "Game/IW4/Material/MaterialConstantZoneState.h"
 #include "Material/MaterialCommon.h"
 
-// #define EXPERIMENTAL_DECOMPILE_MATERIAL 1
-
 using namespace IW4;
 
 void AssetDumperMaterial::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
@@ -24,7 +22,7 @@ bool AssetDumperMaterial::ShouldDump(XAssetInfo<Material>* asset)
 
 void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
 {
-#ifdef EXPERIMENTAL_DECOMPILE_MATERIAL
+#ifdef EXPERIMENTAL_MATERIAL_COMPILATION
     if (context.m_gdt)
     {
         DecompileMaterialToGdt(*context.m_gdt, *asset->Asset(), context);

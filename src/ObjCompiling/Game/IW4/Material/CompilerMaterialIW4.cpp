@@ -1,4 +1,4 @@
-#include "CompilingMaterialLoad.h"
+#include "CompilerMaterialIW4.h"
 
 #include "Game/IW4/CommonIW4.h"
 #include "Game/IW4/IW4.h"
@@ -1376,7 +1376,7 @@ namespace
 
 namespace IW4
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateCompilingMaterialLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialCompiler(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath, gdt);
     }

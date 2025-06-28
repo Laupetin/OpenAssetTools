@@ -8,5 +8,5 @@
 
 namespace IW4
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateCompilingMaterialLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt);
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialCompiler(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt);
 } // namespace IW4

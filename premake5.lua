@@ -84,6 +84,9 @@ workspace "OpenAssetTools"
     filter "options:debug-techset"
         defines { "TECHSET_DEBUG" }
     filter {}
+    filter "options:experimental-material-compilation"
+        defines { "EXPERIMENTAL_MATERIAL_COMPILATION" }
+    filter {}
 
 -- ========================
 -- ThirdParty
