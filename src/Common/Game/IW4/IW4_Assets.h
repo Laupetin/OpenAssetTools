@@ -1128,7 +1128,7 @@ namespace IW4
     struct Material
     {
         MaterialInfo info;
-        unsigned char stateBitsEntry[48];
+        char stateBitsEntry[48];
         unsigned char textureCount;
         unsigned char constantCount;
         unsigned char stateBitsCount;
