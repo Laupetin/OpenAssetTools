@@ -190,6 +190,9 @@ namespace GAME
         blendOpAlpha,
         colorWriteRgb,
         colorWriteAlpha,
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+        gammaWrite,
+#endif
         polymodeLine,
         depthWrite,
         depthWrite,
@@ -443,13 +446,6 @@ namespace GAME
         {MTL_GAMEFLAG_20,   "20"  },
         {MTL_GAMEFLAG_40,   "40"  },
         {MTL_GAMEFLAG_80,   "80"  },
-#ifdef FEATURE_IW5
-        {MTL_GAMEFLAG_100,  "100" },
-        {MTL_GAMEFLAG_200,  "200" },
-        {MTL_GAMEFLAG_400,  "400" },
-        {MTL_GAMEFLAG_800,  "800" },
-        {MTL_GAMEFLAG_1000, "1000"},
-#endif
 #elif defined(FEATURE_T6)
         {MTL_GAMEFLAG_1,            "1"           },
         {MTL_GAMEFLAG_2,            "2"           },
