@@ -28,7 +28,7 @@ namespace tangent_space
 
     void SetVec3(void* dest, const size_t index, const size_t stride, const tvec3& data)
     {
-        auto* out = reinterpret_cast<float(*)[3]>(static_cast<char*>(dest) + stride * index);
+        auto* out = reinterpret_cast<float (*)[3]>(static_cast<char*>(dest) + stride * index);
         (*out)[0] = data[0];
         (*out)[1] = data[1];
         (*out)[2] = data[2];
