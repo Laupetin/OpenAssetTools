@@ -691,11 +691,6 @@ namespace IW5
         MTL_GAMEFLAG_20 = 0x20,
         MTL_GAMEFLAG_40 = 0x40,
         MTL_GAMEFLAG_80 = 0x80,
-        MTL_GAMEFLAG_100 = 0x100,
-        MTL_GAMEFLAG_200 = 0x200,
-        MTL_GAMEFLAG_400 = 0x400,
-        MTL_GAMEFLAG_800 = 0x800,
-        MTL_GAMEFLAG_1000 = 0x1000,
     };
 
     struct MaterialInfo
@@ -991,7 +986,7 @@ namespace IW5
         unsigned char constantCount;
         unsigned char stateBitsCount;
         unsigned char stateFlags;
-        unsigned char cameraRegion;
+        unsigned char cameraRegion; // GfxCameraRegionType
         MaterialTechniqueSet* techniqueSet;
         MaterialTextureDef* textureTable;
         MaterialConstantDef* constantTable;

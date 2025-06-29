@@ -5,7 +5,6 @@
 #include "AssetDumpers/AssetDumperLeaderboardDef.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
-#include "AssetDumpers/AssetDumperMaterial.h"
 #include "AssetDumpers/AssetDumperMenuDef.h"
 #include "AssetDumpers/AssetDumperMenuList.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
@@ -15,6 +14,7 @@
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
+#include "Material/DumperMaterialIW5.h"
 #include "ObjWriting.h"
 
 using namespace IW5;

@@ -7,7 +7,8 @@ function ObjCommon:include(includes)
 		minizip:include(includes)
 		Parser:include(includes)
 		includedirs {
-			path.join(ProjectFolder(), "ObjCommon")
+			path.join(ProjectFolder(), "ObjCommon"),
+            "%{wks.location}/src/ObjCommon"
 		}
 	end
 end
@@ -21,7 +22,7 @@ function ObjCommon:link(links)
 end
 
 function ObjCommon:use()
-	
+	dependson(self:name())
 end
 
 function ObjCommon:name()
@@ -48,6 +49,8 @@ function ObjCommon:project()
 				path.join(folder, "ObjCommon")
 			}
 		}
+
+		useSourceTemplating("ObjCommon")
 		
         self:include(includes)
 		Utils:include(includes)

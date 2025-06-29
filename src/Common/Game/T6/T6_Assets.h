@@ -2929,9 +2929,9 @@ namespace T6
 
     enum GfxCullFace_e
     {
-        GFXS0_CULL_NONE = 1,
-        GFXS0_CULL_BACK = 2,
-        GFXS0_CULL_FRONT = 3,
+        GFXS_CULL_NONE = 1,
+        GFXS_CULL_BACK = 2,
+        GFXS_CULL_FRONT = 3,
     };
 
     enum GfxDepthTest_e

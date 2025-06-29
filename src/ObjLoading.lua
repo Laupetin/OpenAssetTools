@@ -52,6 +52,7 @@ function ObjLoading:project()
 			}
 		}
 
+		ObjCommon:use()
 		useSourceTemplating("ObjLoading")
 		
 		self:include(includes)

@@ -6,7 +6,6 @@
 #include "AssetDumpers/AssetDumperLeaderboardDef.h"
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
-#include "AssetDumpers/AssetDumperMaterial.h"
 #include "AssetDumpers/AssetDumperMenuDef.h"
 #include "AssetDumpers/AssetDumperMenuList.h"
 #include "AssetDumpers/AssetDumperPhysCollmap.h"
@@ -23,6 +22,7 @@
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
+#include "Material/DumperMaterialIW4.h"
 #include "ObjWriting.h"
 
 using namespace IW4;

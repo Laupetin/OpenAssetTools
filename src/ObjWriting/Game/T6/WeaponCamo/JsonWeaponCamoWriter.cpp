@@ -27,6 +27,7 @@ namespace
 
             jRoot["_type"] = "weaponCamo";
             jRoot["_version"] = 1;
+            jRoot["_game"] = "t6";
 
             m_stream << std::setw(4) << jRoot << "\n";
         }

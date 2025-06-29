@@ -25,5 +25,5 @@ public:
 
     [[nodiscard]] virtual asset_type_t GetHandlingAssetType() const = 0;
     virtual void PostProcessAsset(XAssetInfoGeneric& assetInfo, AssetCreationContext& context) = 0;
-    virtual void FinalizeZone(AssetCreationContext& context){};
+    virtual void FinalizeZone(AssetCreationContext& context) {};
 };

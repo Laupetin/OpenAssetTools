@@ -818,5 +818,5 @@ namespace IW4
          }},
     });
 
-    inline state_map::StateMapLayout stateMapLayout(std::extent_v<decltype(GfxStateBits::loadBits)>, stateMapEntryLayout, stateMapVarLayout);
+    inline state_map::StateMapLayout stateMapLayout(std::extent_v<decltype(GfxStateBits::loadBits.raw)>, stateMapEntryLayout, stateMapVarLayout);
 } // namespace IW4

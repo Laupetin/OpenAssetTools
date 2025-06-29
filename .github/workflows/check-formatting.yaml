@@ -15,7 +15,7 @@ jobs:
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: "17.0"
+          version: "20.1"
 
       - name: Test formatting for all files
         working-directory: ${{ github.workspace }}
