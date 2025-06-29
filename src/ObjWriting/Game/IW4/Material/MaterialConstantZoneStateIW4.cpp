@@ -199,20 +199,20 @@ namespace IW4
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : IGame::GetGameById(GameId::IW5)->GetZones())
+        for (const auto* zone : IGame::GetGameById(GameId::IW4)->GetZones())
         {
-            const auto* iw5AssetPools = dynamic_cast<const GameAssetPoolIW4*>(zone->m_pools.get());
-            if (!iw5AssetPools)
+            const auto* assetPools = dynamic_cast<const GameAssetPoolIW4*>(zone->m_pools.get());
+            if (!assetPools)
                 return;
 
-            for (const auto* vertexShaderAsset : *iw5AssetPools->m_material_vertex_shader)
+            for (const auto* vertexShaderAsset : *assetPools->m_material_vertex_shader)
             {
                 const auto* vertexShader = vertexShaderAsset->Asset();
                 if (ShouldDumpFromStruct(vertexShader))
                     ExtractNamesFromShader(vertexShader->prog.loadDef.program, static_cast<size_t>(vertexShader->prog.loadDef.programSize) * sizeof(uint32_t));
             }
 
-            for (const auto* pixelShaderAsset : *iw5AssetPools->m_material_pixel_shader)
+            for (const auto* pixelShaderAsset : *assetPools->m_material_pixel_shader)
             {
                 const auto* pixelShader = pixelShaderAsset->Asset();
                 if (ShouldDumpFromStruct(pixelShader))
