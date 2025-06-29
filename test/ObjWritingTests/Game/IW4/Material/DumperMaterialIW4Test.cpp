@@ -62,7 +62,7 @@ namespace
         textureDef0.nameStart = 's';
         textureDef0.nameEnd = 'p';
         textureDef0.samplerState.filter = TEXTURE_FILTER_ANISO2X;
-        textureDef0.samplerState.mipMap = TEXTURE_FILTER_NEAREST;
+        textureDef0.samplerState.mipMap = SAMPLER_MIPMAP_ENUM_NEAREST;
         textureDef0.samplerState.clampU = 0;
         textureDef0.samplerState.clampV = 0;
         textureDef0.samplerState.clampW = 0;
@@ -74,7 +74,7 @@ namespace
         textureDef1.nameStart = 'n';
         textureDef1.nameEnd = 'p';
         textureDef1.samplerState.filter = TEXTURE_FILTER_ANISO2X;
-        textureDef1.samplerState.mipMap = TEXTURE_FILTER_NEAREST;
+        textureDef1.samplerState.mipMap = SAMPLER_MIPMAP_ENUM_NEAREST;
         textureDef1.samplerState.clampU = 0;
         textureDef1.samplerState.clampV = 0;
         textureDef1.samplerState.clampW = 0;
@@ -86,7 +86,7 @@ namespace
         textureDef2.nameStart = 'c';
         textureDef2.nameEnd = 'p';
         textureDef2.samplerState.filter = TEXTURE_FILTER_ANISO2X;
-        textureDef2.samplerState.mipMap = TEXTURE_FILTER_NEAREST;
+        textureDef2.samplerState.mipMap = SAMPLER_MIPMAP_ENUM_NEAREST;
         textureDef2.samplerState.clampU = 0;
         textureDef2.samplerState.clampV = 0;
         textureDef2.samplerState.clampW = 0;
