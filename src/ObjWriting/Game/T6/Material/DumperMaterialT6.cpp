@@ -1,7 +1,7 @@
-#include "AssetDumperMaterial.h"
+#include "DumperMaterialT6.h"
 
 #include "Game/T6/Material/JsonMaterialWriterT6.h"
-#include "Game/T6/Material/MaterialConstantZoneState.h"
+#include "Game/T6/Material/MaterialConstantZoneStateT6.h"
 #include "Material/MaterialCommon.h"
 
 using namespace T6;

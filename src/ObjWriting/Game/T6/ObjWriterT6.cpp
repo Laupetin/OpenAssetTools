@@ -24,7 +24,7 @@
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
 #include "Game/T6/GameAssetPoolT6.h"
-#include "Material/AssetDumperMaterial.h"
+#include "Material/DumperMaterialT6.h"
 #include "ObjWriting.h"
 
 using namespace T6;

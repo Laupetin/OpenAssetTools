@@ -1,4 +1,4 @@
-#include "MaterialConstantZoneState.h"
+#include "MaterialConstantZoneStateT6.h"
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"

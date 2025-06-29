@@ -1,11 +1,11 @@
-#include "MaterialConstantZoneState.h"
+#include "MaterialConstantZoneStateIW4.h"
 
-#include "Game/IW5/CommonIW5.h"
-#include "Game/IW5/GameAssetPoolIW5.h"
-#include "Game/IW5/GameIW5.h"
+#include "Game/IW4/CommonIW4.h"
+#include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW4/GameIW4.h"
 #include "ObjWriting.h"
 
-namespace IW5
+namespace IW4
 {
     const char* KNOWN_CONSTANT_NAMES[]{
         "worldViewProjectionMatrix",
@@ -201,7 +201,7 @@ namespace IW5
     {
         for (const auto* zone : IGame::GetGameById(GameId::IW5)->GetZones())
         {
-            const auto* iw5AssetPools = dynamic_cast<const GameAssetPoolIW5*>(zone->m_pools.get());
+            const auto* iw5AssetPools = dynamic_cast<const GameAssetPoolIW4*>(zone->m_pools.get());
             if (!iw5AssetPools)
                 return;
 
@@ -233,4 +233,4 @@ namespace IW5
     {
         return Common::R_HashString(str.c_str());
     }
-} // namespace IW5
+} // namespace IW4

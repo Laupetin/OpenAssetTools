@@ -22,7 +22,7 @@
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
-#include "Material/AssetDumperMaterial.h"
+#include "Material/DumperMaterialIW4.h"
 #include "ObjWriting.h"
 
 using namespace IW4;

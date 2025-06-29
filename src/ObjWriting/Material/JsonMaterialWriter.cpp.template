@@ -30,7 +30,7 @@
 #include COMMON_HEADER
 #set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
 #include JSON_HEADER
-#set CONSTANTS_HEADER "\"Game/" + GAME + "/Material/MaterialConstantZoneState.h\""
+#set CONSTANTS_HEADER "\"Game/" + GAME + "/Material/MaterialConstantZoneState" + GAME + ".h\""
 #include CONSTANTS_HEADER
 
 #include <iomanip>
