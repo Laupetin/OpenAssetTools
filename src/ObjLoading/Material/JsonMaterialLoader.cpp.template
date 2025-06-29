@@ -1,8 +1,12 @@
-#options GAME (IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialLoader" + GAME + ".cpp"
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define HAS_WATER
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #define HAS_WATER
 #define GAME_LOWER "iw4"
@@ -94,7 +98,7 @@ namespace
             std::cerr << std::format("Cannot load material \"{}\": {}\n", material.info.name, message);
         }
 
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned char& gameFlags)
 #elif defined(FEATURE_T6)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned& gameFlags)
@@ -304,7 +308,7 @@ namespace
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_GT_0;
             }
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::LT128)
             {
                 structured.alphaTestDisabled = 0;

@@ -1,8 +1,12 @@
-#options GAME (IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialWriter" + GAME + ".cpp"
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define HAS_WATER
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #define HAS_WATER
 #define GAME_LOWER "iw4"
@@ -218,7 +222,7 @@ namespace
 
             assert(structured.alphaTestDisabled
                     || structured.alphaTest == GFXS_ALPHA_TEST_GT_0
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
                     || structured.alphaTest == GFXS_ALPHA_TEST_LT_128
 #endif
                     || structured.alphaTest == GFXS_ALPHA_TEST_GE_128);
@@ -226,7 +230,7 @@ namespace
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::DISABLED;
             else if (structured.alphaTest == GFXS_ALPHA_TEST_GT_0)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::GT0;
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             else if (structured.alphaTest == GFXS_ALPHA_TEST_LT_128)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::LT128;
 #endif

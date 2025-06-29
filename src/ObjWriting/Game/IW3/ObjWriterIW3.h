@@ -1,4 +1,5 @@
 #pragma once
+
 #include "IObjWriter.h"
 
 namespace IW3
