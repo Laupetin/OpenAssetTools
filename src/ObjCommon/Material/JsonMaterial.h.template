@@ -509,7 +509,6 @@ namespace GAME
         uint8_t maxStreamedMips;
 #elif defined(FEATURE_T6)
         unsigned layeredSurfaceTypes;
-        unsigned hashIndex;
         unsigned surfaceFlags;
         unsigned contents;
         uint8_t probeMipBits;
@@ -534,7 +533,6 @@ namespace GAME
         maxStreamedMips,
 #elif defined(FEATURE_T6)
         layeredSurfaceTypes,
-        hashIndex,
         surfaceFlags,
         contents,
         probeMipBits,

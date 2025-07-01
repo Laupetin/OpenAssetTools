@@ -30,5 +30,6 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
 
     const auto* material = asset->Asset();
     assert(material->info.gameFlags < 0x8000);
+    assert(material->info.hashIndex == 0);
     DumpMaterialAsJson(*assetFile, *material, context);
 }

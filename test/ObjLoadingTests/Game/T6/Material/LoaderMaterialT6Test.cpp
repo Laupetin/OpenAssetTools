@@ -62,7 +62,6 @@ namespace
         "10",
         "CASTS_SHADOW"
     ],
-    "hashIndex": 0,
     "layeredSurfaceTypes": 536870925,
     "probeMipBits": 0,
     "sortKey": 4,

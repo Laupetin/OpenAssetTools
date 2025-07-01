@@ -315,7 +315,6 @@ namespace
             jMaterial.surfaceTypeBits = material.info.surfaceTypeBits;
 #ifdef FEATURE_T6
             jMaterial.layeredSurfaceTypes = material.info.layeredSurfaceTypes;
-            jMaterial.hashIndex = material.info.hashIndex;
             jMaterial.surfaceFlags = material.info.surfaceFlags;
             jMaterial.contents = material.info.contents;
 #endif
