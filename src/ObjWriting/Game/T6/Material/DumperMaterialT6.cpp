@@ -4,6 +4,8 @@
 #include "Game/T6/Material/MaterialConstantZoneStateT6.h"
 #include "Material/MaterialCommon.h"
 
+#include <cassert>
+
 using namespace T6;
 
 void AssetDumperMaterial::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
@@ -26,5 +28,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     if (!assetFile)
         return;
 
-    DumpMaterialAsJson(*assetFile, *asset->Asset(), context);
+    const auto* material = asset->Asset();
+    assert(material->info.gameFlags < 0x8000);
+    DumpMaterialAsJson(*assetFile, *material, context);
 }

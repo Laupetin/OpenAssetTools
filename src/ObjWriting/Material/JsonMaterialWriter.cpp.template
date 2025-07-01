@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialWriter" + GAME + ".cpp"
 
@@ -14,6 +14,10 @@
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
+#elif GAME == "T5"
+#define FEATURE_T5
+#define HAS_WATER
+#define GAME_LOWER "t5"
 #elif GAME == "T6"
 #define FEATURE_T6
 #define GAME_LOWER "t6"
@@ -144,7 +148,7 @@ namespace
             }
 
             jTextureDef.semantic = static_cast<TextureSemantic>(textureDef.semantic);
-#if defined(FEATURE_T6)
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             jTextureDef.isMatureContent = textureDef.isMatureContent;
 #endif
 
@@ -224,6 +228,8 @@ namespace
                     || structured.alphaTest == GFXS_ALPHA_TEST_GT_0
 #if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
                     || structured.alphaTest == GFXS_ALPHA_TEST_LT_128
+#elif defined(FEATURE_T5)
+                    || structured.alphaTest == GFXS_ALPHA_TEST_GE_255
 #endif
                     || structured.alphaTest == GFXS_ALPHA_TEST_GE_128);
             if (structured.alphaTestDisabled)
@@ -233,6 +239,9 @@ namespace
 #if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             else if (structured.alphaTest == GFXS_ALPHA_TEST_LT_128)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::LT128;
+#elif defined(FEATURE_T5)
+            else if (structured.alphaTest == GFXS_ALPHA_TEST_GE_255)
+                jStateBitsTableEntry.alphaTest = JsonAlphaTest::GE255;
 #endif
             else if (structured.alphaTest == GFXS_ALPHA_TEST_GE_128)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::GE128;
@@ -317,7 +326,9 @@ namespace
 
             jMaterial.stateFlags = material.stateFlags;
             jMaterial.cameraRegion = static_cast<GfxCameraRegionType>(material.cameraRegion);
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5)
+            jMaterial.maxStreamedMips = material.maxStreamedMips;
+#elif defined(FEATURE_T6)
             jMaterial.probeMipBits = material.probeMipBits;
 #endif
 

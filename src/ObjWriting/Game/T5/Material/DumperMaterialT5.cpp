@@ -1,10 +1,12 @@
-#include "DumperMaterialIW5.h"
+#include "DumperMaterialT5.h"
 
-#include "Game/IW5/Material/JsonMaterialWriterIW5.h"
-#include "Game/IW5/Material/MaterialConstantZoneStateIW5.h"
+#include "Game/T5/Material/JsonMaterialWriterT5.h"
+#include "Game/T5/Material/MaterialConstantZoneStateT5.h"
 #include "Material/MaterialCommon.h"
 
-using namespace IW5;
+#include <assert.h>
+
+using namespace T5;
 
 void AssetDumperMaterial::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
 {
@@ -27,5 +29,6 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         return;
 
     const auto* material = asset->Asset();
+    assert(material->info.gameFlags < 0x400);
     DumpMaterialAsJson(*assetFile, *material, context);
 }

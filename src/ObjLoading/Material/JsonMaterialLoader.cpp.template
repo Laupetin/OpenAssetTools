@@ -1,4 +1,4 @@
-#options GAME (IW3, IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialLoader" + GAME + ".cpp"
 
@@ -14,6 +14,10 @@
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
+#elif GAME == "T5"
+#define FEATURE_T5
+#define HAS_WATER
+#define GAME_LOWER "t5"
 #elif GAME == "T6"
 #define FEATURE_T6
 #define GAME_LOWER "t6"
@@ -29,6 +33,7 @@
 #ifdef HAS_WATER
 #include "Base64.h"
 #endif
+
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #include COMMON_HEADER
 #set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
@@ -100,7 +105,7 @@ namespace
 
 #if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned char& gameFlags)
-#elif defined(FEATURE_T6)
+#elif defined(FEATURE_T5) || defined(FEATURE_T6)
         static bool CreateGameFlagsFromJson(const JsonMaterial& jMaterial, unsigned& gameFlags)
 #endif
         {
@@ -201,7 +206,7 @@ namespace
             CreateSamplerStateFromJson(jTexture.samplerState, textureDef.samplerState);
 
             textureDef.semantic = jTexture.semantic;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             textureDef.isMatureContent = jTexture.isMatureContent;
 #endif
 
@@ -314,6 +319,12 @@ namespace
                 structured.alphaTestDisabled = 0;
                 structured.alphaTest = GFXS_ALPHA_TEST_LT_128;
             }
+#elif defined(FEATURE_T5)
+            else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::GE255)
+            {
+                structured.alphaTestDisabled = 0;
+                structured.alphaTest = GFXS_ALPHA_TEST_GE_255;
+            }
 #endif
             else if (jStateBitsTableEntry.alphaTest == JsonAlphaTest::GE128)
             {
@@ -424,7 +435,9 @@ namespace
 
             material.stateFlags = static_cast<unsigned char>(jMaterial.stateFlags);
             material.cameraRegion = jMaterial.cameraRegion;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5)
+            material.maxStreamedMips = jMaterial.maxStreamedMips;
+#elif defined(FEATURE_T6)
             material.probeMipBits = jMaterial.probeMipBits;
 #endif
 
