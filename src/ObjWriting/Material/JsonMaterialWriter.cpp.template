@@ -313,8 +313,10 @@ namespace
             jMaterial.textureAtlas->columns = material.info.textureAtlasColumnCount;
 
             jMaterial.surfaceTypeBits = material.info.surfaceTypeBits;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             jMaterial.layeredSurfaceTypes = material.info.layeredSurfaceTypes;
+#endif
+#if defined(FEATURE_T6)
             jMaterial.surfaceFlags = material.info.surfaceFlags;
             jMaterial.contents = material.info.contents;
 #endif

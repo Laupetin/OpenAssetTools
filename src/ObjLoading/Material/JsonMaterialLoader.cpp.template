@@ -418,8 +418,10 @@ namespace
             }
 
             material.info.surfaceTypeBits = jMaterial.surfaceTypeBits;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             material.info.layeredSurfaceTypes = jMaterial.layeredSurfaceTypes;
+#endif
+#if defined(FEATURE_T6)
             material.info.surfaceFlags = jMaterial.surfaceFlags;
             material.info.contents = jMaterial.contents;
 #endif

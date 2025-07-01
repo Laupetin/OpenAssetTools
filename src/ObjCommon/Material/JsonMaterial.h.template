@@ -507,6 +507,7 @@ namespace GAME
     public:
 #ifdef FEATURE_T5
         uint8_t maxStreamedMips;
+        unsigned layeredSurfaceTypes;
 #elif defined(FEATURE_T6)
         unsigned layeredSurfaceTypes;
         unsigned surfaceFlags;
@@ -531,6 +532,7 @@ namespace GAME
         JsonMaterial,
 #ifdef FEATURE_T5
         maxStreamedMips,
+        layeredSurfaceTypes,
 #elif defined(FEATURE_T6)
         layeredSurfaceTypes,
         surfaceFlags,
