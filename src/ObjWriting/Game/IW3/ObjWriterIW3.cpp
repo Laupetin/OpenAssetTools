@@ -4,12 +4,12 @@
 #include "AssetDumpers/AssetDumperLoadedSound.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
 #include "AssetDumpers/AssetDumperMapEnts.h"
-#include "AssetDumpers/AssetDumperMaterial.h"
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
+#include "Material/DumperMaterialIW3.h"
 #include "ObjWriting.h"
 
 using namespace IW3;

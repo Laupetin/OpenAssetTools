@@ -14,9 +14,6 @@ public:
     std::unique_ptr<AssetPool<IW3::XAnimParts>> m_xanim_parts;
     std::unique_ptr<AssetPool<IW3::XModel>> m_xmodel;
     std::unique_ptr<AssetPool<IW3::Material>> m_material;
-    std::unique_ptr<AssetPool<IW3::MaterialPixelShader>> m_material_pixel_shader;
-    std::unique_ptr<AssetPool<IW3::MaterialVertexShader>> m_material_vertex_shader;
-    std::unique_ptr<AssetPool<IW3::MaterialVertexDeclaration>> m_material_vertex_decl;
     std::unique_ptr<AssetPool<IW3::MaterialTechniqueSet>> m_technique_set;
     std::unique_ptr<AssetPool<IW3::GfxImage>> m_image;
     std::unique_ptr<AssetPool<IW3::snd_alias_list_t>> m_sound;

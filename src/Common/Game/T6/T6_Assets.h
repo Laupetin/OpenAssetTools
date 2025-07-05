@@ -700,6 +700,8 @@ namespace T6
         MTL_GAMEFLAG_400 = 0x400,
         MTL_GAMEFLAG_800 = 0x800,
         MTL_GAMEFLAG_1000 = 0x1000,
+        MTL_GAMEFLAG_2000 = 0x2000,
+        MTL_GAMEFLAG_4000 = 0x4000,
     };
 
     struct type_align32(8) MaterialInfo
