@@ -64,6 +64,7 @@ namespace
             CreateJsonMaterial(jsonMaterial, material);
             json jRoot = jsonMaterial;
 
+            jRoot["$schema"] = "https://openassettools.dev/schema/material.v1.json";
             jRoot["_type"] = "material";
             jRoot["_version"] = 1;
             jRoot["_game"] = GAME_LOWER;

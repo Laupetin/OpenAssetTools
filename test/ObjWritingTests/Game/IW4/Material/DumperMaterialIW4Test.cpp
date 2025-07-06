@@ -295,6 +295,7 @@ namespace
     {
         std::string expected(R"MATERIAL(
 {
+    "$schema": "https://openassettools.dev/schema/material.v1.json",
     "_game": "iw4",
     "_type": "material",
     "_version": 1,
