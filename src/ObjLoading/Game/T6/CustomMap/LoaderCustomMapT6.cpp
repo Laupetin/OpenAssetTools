@@ -10,7 +10,7 @@ using namespace T6;
 
 namespace
 {
-    class CustomMapLoader final : public AssetCreator<AssetCustomMap>
+    class CustomMapLoader final : public AssetCreator<AssetGfxWorld>
     {
     public:
         CustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
@@ -32,7 +32,7 @@ namespace
                 return AssetCreationResult::Failure();
             
             // linker will add all the assets needed
-            CustomMapLinker* linker = new CustomMapLinker(m_memory, m_search_path, m_zone);
+            CustomMapLinker* linker = new CustomMapLinker(m_memory, m_search_path, m_zone, context);
             bool result = linker->linkCustomMap(mapInfo);
 
             if (result)
@@ -50,7 +50,7 @@ namespace
 
 namespace T6
 {
-    std::unique_ptr<AssetCreator<AssetCustomMap>> CreateCustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateCustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<CustomMapLoader>(memory, searchPath, zone);
     }
