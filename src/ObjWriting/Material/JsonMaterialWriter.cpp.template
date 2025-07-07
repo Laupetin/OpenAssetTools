@@ -201,12 +201,12 @@ namespace
                 jConstantDef.nameFragment = nameFragment;
             }
 
-            jConstantDef.literal = std::vector({
+            jConstantDef.literal = {
                 constantDef.literal.x,
                 constantDef.literal.y,
                 constantDef.literal.z,
                 constantDef.literal.w,
-            });
+            };
         }
 
         static void CreateJsonStencil(JsonStencil& jStencil, const unsigned pass, const unsigned fail, const unsigned zFail, const unsigned func)

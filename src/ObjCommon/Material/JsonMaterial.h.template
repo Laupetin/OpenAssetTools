@@ -218,7 +218,7 @@ namespace GAME
         std::optional<std::string> name;
         std::optional<std::string> nameFragment;
         std::optional<unsigned> nameHash;
-        std::vector<float> literal;
+        std::array<float, 4> literal;
     };
 
     inline void to_json(nlohmann::json& out, const JsonConstant& in)
