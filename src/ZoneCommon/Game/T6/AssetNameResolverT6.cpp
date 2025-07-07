@@ -9,6 +9,8 @@ AssetNameResolver::AssetNameResolver()
 {
     for (auto assetType = 0; assetType < ASSET_TYPE_COUNT; assetType++)
         AddAssetTypeName(assetType, *GameAssetPoolT6::AssetTypeNameByType(assetType));
+
+    AddAssetTypeName(ASSET_TYPE_CUSTOM_MAP, "custom_map");
 }
 
 GameId AssetNameResolver::GetGameId() const

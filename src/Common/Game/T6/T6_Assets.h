@@ -304,6 +304,8 @@ namespace T6
         ASSET_TYPE_REPORT = 0x3E,
         ASSET_TYPE_DEPEND = 0x3F,
         ASSET_TYPE_FULL_COUNT = 0x40,
+
+        ASSET_TYPE_CUSTOM_MAP = 0x41
     };
 
     enum XFileBlock
@@ -1244,13 +1246,13 @@ namespace T6
 
     struct GfxWorldVertexData0
     {
-        byte128* data;
+        byte128* data; // GfxPackedWorldVertex
         void /*ID3D11Buffer*/* vb;
     };
 
     struct GfxWorldVertexData1
     {
-        byte128* data;
+        byte128* data; // GfxPackedWorldVertex
         void /*ID3D11Buffer*/* vb;
     };
 
@@ -5718,6 +5720,11 @@ namespace T6
         unsigned int packed;
     };
 
+    union PackedLmapCoords
+    {
+        unsigned int packed;
+    };
+
     struct type_align(16) GfxPackedVertex
     {
         vec3_t xyz;
@@ -5726,6 +5733,17 @@ namespace T6
         PackedTexCoords texCoord;
         PackedUnitVec normal;
         PackedUnitVec tangent;
+    };
+
+    struct GfxPackedWorldVertex
+    {
+        vec3_t xyz;
+        float binormalSign;
+        GfxColor color;
+        PackedTexCoords texCoord;
+        PackedUnitVec normal;
+        PackedUnitVec tangent;
+        PackedLmapCoords lmapCoord;
     };
 
     struct XRigidVertList

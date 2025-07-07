@@ -40,6 +40,7 @@
 #include "Weapon/RawLoaderWeaponT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
+#include "CustomMap/LoaderCustomMapT6.h"
 
 #include <format>
 #include <memory>
@@ -334,6 +335,7 @@ namespace T6
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFootstepTable>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetFootstepFxTable>>(memory));
             collection.AddDefaultAssetCreator(std::make_unique<DefaultAssetCreator<AssetZBarrier>>(memory));
+            // custom maps have no default
         }
 
         void ConfigureGlobalAssetPoolsLoaders(AssetCreatorCollection& collection, Zone& zone)
@@ -386,6 +388,7 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepFxTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
+            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetCustomMap>>(zone));
         }
 
         void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
@@ -446,6 +449,8 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
             collection.AddAssetCreator(CreateRawZBarrierLoader(memory, searchPath, zone));
             collection.AddAssetCreator(CreateGdtZBarrierLoader(memory, searchPath, gdt, zone));
+
+            collection.AddAssetCreator(CreateCustomMapLoader(memory, searchPath));
         }
     } // namespace
 
