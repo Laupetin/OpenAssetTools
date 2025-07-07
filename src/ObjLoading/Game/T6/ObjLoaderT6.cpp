@@ -41,6 +41,7 @@
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
 #include "CustomMap/LoaderCustomMapT6.h"
+#include "TechniqueSet/LoaderTechniqueSetT6.h"
 
 #include <format>
 #include <memory>
@@ -403,7 +404,7 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
             collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
             collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
-            // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
+            collection.AddAssetCreator(CreateTechniqueSetLoader(memory, searchPath));
             collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
             collection.AddAssetCreator(CreateSoundBankLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
