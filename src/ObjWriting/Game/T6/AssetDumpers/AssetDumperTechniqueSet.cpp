@@ -1,5 +1,6 @@
 #include "AssetDumperTechniqueSet.h"
 
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <unordered_set>
 
@@ -58,7 +59,7 @@ bool AssetDumperTechniqueSet::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset
 void AssetDumperTechniqueSet::DumpPixelShader(const AssetDumpingContext& context, const MaterialPixelShader* pixelShader)
 {
     std::ostringstream ss;
-    ss << "shader_bin/ps_" << pixelShader->name << ".cso";
+    ss << "techniquesets/shader_bin/ps_" << pixelShader->name;
 
     const auto shaderFile = context.OpenAssetFile(ss.str());
 
@@ -71,7 +72,7 @@ void AssetDumperTechniqueSet::DumpPixelShader(const AssetDumpingContext& context
 void AssetDumperTechniqueSet::DumpVertexShader(const AssetDumpingContext& context, const MaterialVertexShader* vertexShader)
 {
     std::ostringstream ss;
-    ss << "shader_bin/vs_" << vertexShader->name << ".cso";
+    ss << "techniquesets/shader_bin/vs_" << vertexShader->name;
 
     const auto shaderFile = context.OpenAssetFile(ss.str());
 
@@ -86,21 +87,110 @@ void AssetDumperTechniqueSet::DumpAsset(AssetDumpingContext& context, XAssetInfo
     const auto* techniqueSet = asset->Asset();
     auto* shaderState = context.GetZoneAssetDumperState<ShaderZoneState>();
 
+    const auto assetFile = context.OpenAssetFile(std::format("techniquesets/{}.json", techniqueSet->name));
+    if (!assetFile)
+        return;
+
+    nlohmann::json js;
+
+    js["name"] = techniqueSet->name;
+    js["worldVertFormat"] = techniqueSet->worldVertFormat;
+
+    js["techniques"] = nlohmann::json::array();
     for (const auto* technique : techniqueSet->techniques)
     {
-        if (!technique || !shaderState->ShouldDumpTechnique(technique))
-            continue;
+        nlohmann::json techniqueJs = nlohmann::json::object();
 
-        for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+        if (technique != NULL)
         {
-            const auto* pixelShader = technique->passArray[passIndex].pixelShader;
+            techniqueJs["name"] = technique->name;
+            techniqueJs["flags"] = technique->flags;
+            techniqueJs["passCount"] = technique->passCount;
 
-            if (pixelShader && shaderState->ShouldDumpPixelShader(pixelShader))
-                DumpPixelShader(context, pixelShader);
+            _ASSERT(technique->passCount == 1);
 
-            const auto* vertexShader = technique->passArray[passIndex].vertexShader;
-            if (vertexShader && shaderState->ShouldDumpVertexShader(vertexShader))
-                DumpVertexShader(context, vertexShader);
+            techniqueJs["passArray"] = nlohmann::json::array();
+            for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+            {
+                const MaterialPass* currPass = &technique->passArray[passIndex];
+                nlohmann::json passJs = nlohmann::json::object();
+
+                passJs["perPrimArgCount"] = currPass->perPrimArgCount;
+                passJs["perObjArgCount"] = currPass->perObjArgCount;
+                passJs["stableArgCount"] = currPass->stableArgCount;
+                passJs["customSamplerFlags"] = currPass->customSamplerFlags;
+                passJs["precompiledIndex"] = currPass->precompiledIndex;
+                passJs["materialType"] = currPass->materialType;
+
+                nlohmann::json vertDeclJs = nlohmann::json::object();
+                if (currPass->vertexDecl != NULL)
+                {
+                    vertDeclJs["streamCount"] = currPass->vertexDecl->streamCount;
+                    vertDeclJs["hasOptionalSource"] = currPass->vertexDecl->hasOptionalSource;
+                    vertDeclJs["isLoaded"] = currPass->vertexDecl->isLoaded;
+                    for (int i = 0; i < 16; i++)
+                    {
+                        vertDeclJs["routing"][i]["source"] = currPass->vertexDecl->routing.data[i].source;
+                        vertDeclJs["routing"][i]["dest"] = currPass->vertexDecl->routing.data[i].dest;
+
+                        _ASSERT(currPass->vertexDecl->routing.decl[i] == NULL);
+                    }
+                }
+                passJs["vertexDecl"] = vertDeclJs;
+
+                passJs["args"] = nlohmann::json::array();
+                if (currPass->args != NULL)
+                {
+                    for (int i = 0; i < currPass->perPrimArgCount + currPass->perObjArgCount + currPass->stableArgCount; i++)
+                    {
+                        nlohmann::json argsJs = nlohmann::json::object();
+                        MaterialShaderArgument* currArg = &currPass->args[i];
+
+                        argsJs["type"] = currArg->type;
+                        argsJs["location"] = currArg->location.offset;
+                        argsJs["size"] = currArg->size;
+                        argsJs["buffer"] = currArg->buffer;
+                        if (currArg->type == MTL_ARG_LITERAL_VERTEX_CONST || currArg->type == MTL_ARG_LITERAL_PIXEL_CONST)
+                        {
+                            argsJs["u"]["const0"] = currArg->u.literalConst[0];
+                            argsJs["u"]["const1"] = currArg->u.literalConst[1];
+                            argsJs["u"]["const2"] = currArg->u.literalConst[2];
+                            argsJs["u"]["const3"] = currArg->u.literalConst[3];
+                        }
+                        else
+                        {
+                            argsJs["u"]["value"] = currArg->u.nameHash;
+                        }
+
+                        passJs["args"].push_back(argsJs);
+                    }
+                }
+
+                nlohmann::json pixelJs = nlohmann::json::object();
+                if (currPass->pixelShader != NULL)
+                {
+                    pixelJs["name"] = currPass->pixelShader->name;
+                    if (shaderState->ShouldDumpPixelShader(currPass->pixelShader))
+                        DumpPixelShader(context, currPass->pixelShader);
+                }
+                passJs["pixelShader"] = pixelJs;
+
+                nlohmann::json vertexJs = nlohmann::json::object();
+                if (currPass->vertexShader != NULL)
+                {
+                    vertexJs["name"] = currPass->vertexShader->name;
+                    if (shaderState->ShouldDumpVertexShader(currPass->vertexShader))
+                        DumpVertexShader(context, currPass->vertexShader);
+                }
+                passJs["vertexShader"] = vertexJs;
+
+                techniqueJs["passArray"].push_back(passJs);
+            }
         }
+
+        js["techniques"].push_back(techniqueJs);
     }
+
+    std::string jsonString = js.dump(4);
+    assetFile->write(jsonString.c_str(), jsonString.size());
 }
