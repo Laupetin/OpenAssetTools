@@ -1,3 +1,6 @@
+#pragma once
+
+
 #include <string>
 
 #define DYN_ENT_COUNT 0

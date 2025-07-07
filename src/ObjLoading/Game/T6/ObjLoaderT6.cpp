@@ -389,7 +389,7 @@ namespace T6
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetFootstepFxTable>>(zone));
             collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetZBarrier>>(zone));
-            collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetCustomMap>>(zone));
+            //collection.AddAssetCreator(std::make_unique<GlobalAssetPoolsLoader<AssetCustomMap>>(zone));
         }
 
         void ConfigureLoaders(AssetCreatorCollection& collection, Zone& zone, ISearchPath& searchPath, IGdtQueryable& gdt)
@@ -451,7 +451,7 @@ namespace T6
             collection.AddAssetCreator(CreateRawZBarrierLoader(memory, searchPath, zone));
             collection.AddAssetCreator(CreateGdtZBarrierLoader(memory, searchPath, gdt, zone));
 
-            collection.AddAssetCreator(CreateCustomMapLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateCustomMapLoader(memory, searchPath, zone));
         }
     } // namespace
 

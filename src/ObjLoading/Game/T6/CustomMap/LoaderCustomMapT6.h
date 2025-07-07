@@ -9,5 +9,5 @@
 
 namespace T6
 {
-    std::unique_ptr<AssetCreator<AssetCustomMap>> CreateCustomMapLoader(MemoryManager& memory, ISearchPath& searchPath);
+    std::unique_ptr<AssetCreator<AssetGfxWorld>> CreateCustomMapLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 } // namespace T6
