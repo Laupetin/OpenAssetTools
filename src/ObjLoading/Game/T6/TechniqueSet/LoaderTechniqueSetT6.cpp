@@ -127,7 +127,7 @@ namespace
                             currPass->pixelShader->name = _strdup(pixelName.c_str());
                             currPass->pixelShader->prog.ps = NULL;
 
-                            const auto psFileName = std::format("techniques/shader_bin/ps_{}", pixelName);
+                            const auto psFileName = std::format("techniquesets/shader_bin/ps_{}", pixelName);
                             const auto psFile = m_search_path.Open(psFileName);
                             if (!psFile.IsOpen())
                             {
@@ -151,7 +151,7 @@ namespace
                             currPass->vertexShader->name = _strdup(vertexName.c_str());
                             currPass->vertexShader->prog.vs = NULL;
 
-                            const auto vsFileName = std::format("techniques/shader_bin/vs_{}", vertexName);
+                            const auto vsFileName = std::format("techniquesets/shader_bin/vs_{}", vertexName);
                             const auto vsFile = m_search_path.Open(vsFileName);
                             if (!vsFile.IsOpen())
                             {
