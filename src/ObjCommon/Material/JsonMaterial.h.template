@@ -325,9 +325,9 @@ namespace GAME
 #endif
 
     NLOHMANN_JSON_SERIALIZE_ENUM(TextureSemantic, {
-        {TS_2D,            "2D"                },
-        {TS_FUNCTION,      "function"          },
-        {TS_COLOR_MAP,     "colorMap"          },
+        {TS_2D,               "2D"             },
+        {TS_FUNCTION,         "function"       },
+        {TS_COLOR_MAP,        "colorMap"       },
 #if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
         {TS_UNUSED_1,         "unused1"        },
 #else
