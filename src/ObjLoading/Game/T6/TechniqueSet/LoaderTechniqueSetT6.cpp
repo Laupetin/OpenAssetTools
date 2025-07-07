@@ -21,7 +21,7 @@ namespace
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
             const auto fileName = std::format("techniquesets/{}.json", assetName);
-            const auto file = m_search_path.Open(assetName);
+            const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
