@@ -1201,13 +1201,13 @@ namespace T6
 
     struct GfxWorldVertexData0
     {
-        byte128* data;
+        byte128* data; // GfxPackedWorldVertex
         void /*ID3D11Buffer*/* vb;
     };
 
     struct GfxWorldVertexData1
     {
-        byte128* data;
+        byte128* data; // GfxPackedWorldVertex
         void /*ID3D11Buffer*/* vb;
     };
 
@@ -5726,6 +5726,11 @@ namespace T6
         unsigned int packed;
     };
 
+    union PackedLmapCoords
+    {
+        unsigned int packed;
+    };
+
     struct type_align(16) GfxPackedVertex
     {
         vec3_t xyz;
@@ -5734,6 +5739,17 @@ namespace T6
         PackedTexCoords texCoord;
         PackedUnitVec normal;
         PackedUnitVec tangent;
+    };
+
+    struct GfxPackedWorldVertex
+    {
+        vec3_t xyz;
+        float binormalSign;
+        GfxColor color;
+        PackedTexCoords texCoord;
+        PackedUnitVec normal;
+        PackedUnitVec tangent;
+        PackedLmapCoords lmapCoord;
     };
 
     struct XRigidVertList

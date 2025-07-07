@@ -77,6 +77,8 @@ namespace T6
         ASSET_TYPE_FOOTSTEPFX_TABLE,
         ASSET_TYPE_ZBARRIER,
 
+        ASSET_TYPE_CUSTOM_MAP,
+
         ASSET_TYPE_COUNT
     };
 
@@ -238,6 +240,50 @@ namespace T6
         AUFT_NUM_FIELD_TYPES,
     };
 
+    struct customMapVertex
+    {
+        vec3_t pos;
+        float binormalSign;
+        float color[4];
+        float texCoord[2];
+        vec3_t normal;
+        vec3_t tangent;
+        unsigned int packedLmapCoord;
+    };
+
+    struct worldSurface
+    {
+        char flags;
+        char lightmapIndex;
+        std::string materialName;
+        char primaryLightIndex;
+        char reflectionProbeIndex;
+
+        int triCount;
+        int firstVertexIndex;
+        int firstIndex_Index;
+    };
+
+    struct customMapGfx
+    {
+        int vertexCount;
+        customMapVertex* vertices;
+
+        int indexCount;
+        uint16_t* indices;
+
+        int surfaceCount;
+        worldSurface* surfaces;
+    };
+
+    struct customMapInfo
+    {
+        std::string name;
+        std::string bspName;
+
+        customMapGfx gfxInfo;
+    };
+
     using AssetPhysPreset = Asset<ASSET_TYPE_PHYSPRESET, PhysPreset>;
     using AssetPhysConstraints = Asset<ASSET_TYPE_PHYSCONSTRAINTS, PhysConstraints>;
     using AssetDestructibleDef = Asset<ASSET_TYPE_DESTRUCTIBLEDEF, DestructibleDef>;
@@ -292,6 +338,8 @@ namespace T6
     using SubAssetVertexDecl = SubAsset<SUB_ASSET_TYPE_VERTEX_DECL, MaterialVertexDeclaration>;
     using SubAssetVertexShader = SubAsset<SUB_ASSET_TYPE_VERTEX_SHADER, MaterialVertexShader>;
     using SubAssetPixelShader = SubAsset<SUB_ASSET_TYPE_PIXEL_SHADER, MaterialPixelShader>;
+
+    using AssetCustomMap = Asset<ASSET_TYPE_CUSTOM_MAP, customMapInfo>;
 } // namespace T6
 
 DEFINE_ASSET_NAME_ACCESSOR(T6::AssetPhysPreset, name);
