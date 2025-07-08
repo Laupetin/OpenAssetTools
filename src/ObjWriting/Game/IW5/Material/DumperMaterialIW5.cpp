@@ -26,5 +26,6 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
     if (!assetFile)
         return;
 
-    DumpMaterialAsJson(*assetFile, *asset->Asset(), context);
+    const auto* material = asset->Asset();
+    DumpMaterialAsJson(*assetFile, *material, context);
 }

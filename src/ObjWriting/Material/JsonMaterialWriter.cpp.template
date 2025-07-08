@@ -1,8 +1,12 @@
-#options GAME (IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterialWriter" + GAME + ".cpp"
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define HAS_WATER
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #define HAS_WATER
 #define GAME_LOWER "iw4"
@@ -10,6 +14,10 @@
 #define FEATURE_IW5
 #define HAS_WATER
 #define GAME_LOWER "iw5"
+#elif GAME == "T5"
+#define FEATURE_T5
+#define HAS_WATER
+#define GAME_LOWER "t5"
 #elif GAME == "T6"
 #define FEATURE_T6
 #define GAME_LOWER "t6"
@@ -56,6 +64,7 @@ namespace
             CreateJsonMaterial(jsonMaterial, material);
             json jRoot = jsonMaterial;
 
+            jRoot["$schema"] = "http://openassettools.dev/schema/material.v1.json";
             jRoot["_type"] = "material";
             jRoot["_version"] = 1;
             jRoot["_game"] = GAME_LOWER;
@@ -140,7 +149,7 @@ namespace
             }
 
             jTextureDef.semantic = static_cast<TextureSemantic>(textureDef.semantic);
-#if defined(FEATURE_T6)
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             jTextureDef.isMatureContent = textureDef.isMatureContent;
 #endif
 
@@ -192,12 +201,12 @@ namespace
                 jConstantDef.nameFragment = nameFragment;
             }
 
-            jConstantDef.literal = std::vector({
+            jConstantDef.literal = {
                 constantDef.literal.x,
                 constantDef.literal.y,
                 constantDef.literal.z,
                 constantDef.literal.w,
-            });
+            };
         }
 
         static void CreateJsonStencil(JsonStencil& jStencil, const unsigned pass, const unsigned fail, const unsigned zFail, const unsigned func)
@@ -218,17 +227,22 @@ namespace
 
             assert(structured.alphaTestDisabled
                     || structured.alphaTest == GFXS_ALPHA_TEST_GT_0
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
                     || structured.alphaTest == GFXS_ALPHA_TEST_LT_128
+#elif defined(FEATURE_T5)
+                    || structured.alphaTest == GFXS_ALPHA_TEST_GE_255
 #endif
                     || structured.alphaTest == GFXS_ALPHA_TEST_GE_128);
             if (structured.alphaTestDisabled)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::DISABLED;
             else if (structured.alphaTest == GFXS_ALPHA_TEST_GT_0)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::GT0;
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             else if (structured.alphaTest == GFXS_ALPHA_TEST_LT_128)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::LT128;
+#elif defined(FEATURE_T5)
+            else if (structured.alphaTest == GFXS_ALPHA_TEST_GE_255)
+                jStateBitsTableEntry.alphaTest = JsonAlphaTest::GE255;
 #endif
             else if (structured.alphaTest == GFXS_ALPHA_TEST_GE_128)
                 jStateBitsTableEntry.alphaTest = JsonAlphaTest::GE128;
@@ -300,9 +314,10 @@ namespace
             jMaterial.textureAtlas->columns = material.info.textureAtlasColumnCount;
 
             jMaterial.surfaceTypeBits = material.info.surfaceTypeBits;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
             jMaterial.layeredSurfaceTypes = material.info.layeredSurfaceTypes;
-            jMaterial.hashIndex = material.info.hashIndex;
+#endif
+#if defined(FEATURE_T6)
             jMaterial.surfaceFlags = material.info.surfaceFlags;
             jMaterial.contents = material.info.contents;
 #endif
@@ -313,9 +328,6 @@ namespace
 
             jMaterial.stateFlags = material.stateFlags;
             jMaterial.cameraRegion = static_cast<GfxCameraRegionType>(material.cameraRegion);
-#ifdef FEATURE_T6
-            jMaterial.probeMipBits = material.probeMipBits;
-#endif
 
             if (material.techniqueSet && material.techniqueSet->name)
                 jMaterial.techniqueSet = AssetName(material.techniqueSet->name);

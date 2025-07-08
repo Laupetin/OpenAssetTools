@@ -1,11 +1,11 @@
-#include "MaterialConstantZoneStateIW4.h"
+#include "MaterialConstantZoneStateIW3.h"
 
-#include "Game/IW4/CommonIW4.h"
-#include "Game/IW4/GameAssetPoolIW4.h"
-#include "Game/IW4/GameIW4.h"
+#include "Game/IW3/CommonIW3.h"
+#include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW3/GameIW3.h"
 #include "ObjWriting.h"
 
-namespace IW4
+namespace IW3
 {
     const char* KNOWN_CONSTANT_NAMES[]{
         "worldViewProjectionMatrix",
@@ -199,25 +199,44 @@ namespace IW4
 
     void MaterialConstantZoneState::ExtractNamesFromZoneInternal()
     {
-        for (const auto* zone : IGame::GetGameById(GameId::IW4)->GetZones())
+        for (const auto* zone : IGame::GetGameById(GameId::IW3)->GetZones())
         {
-            const auto* assetPools = dynamic_cast<const GameAssetPoolIW4*>(zone->m_pools.get());
+            const auto* assetPools = dynamic_cast<const GameAssetPoolIW3*>(zone->m_pools.get());
             if (!assetPools)
                 return;
 
-            for (const auto* vertexShaderAsset : *assetPools->m_material_vertex_shader)
+            for (const auto* techniqueSetInfo : *assetPools->m_technique_set)
             {
-                const auto* vertexShader = vertexShaderAsset->Asset();
-                if (ShouldDumpFromStruct(vertexShader))
-                    ExtractNamesFromShader(vertexShader->prog.loadDef.program, static_cast<size_t>(vertexShader->prog.loadDef.programSize) * sizeof(uint32_t));
-            }
+                const auto* techniqueSet = techniqueSetInfo->Asset();
 
-            for (const auto* pixelShaderAsset : *assetPools->m_material_pixel_shader)
-            {
-                const auto* pixelShader = pixelShaderAsset->Asset();
-                if (ShouldDumpFromStruct(pixelShader))
-                    ExtractNamesFromShader(pixelShader->prog.loadDef.program, static_cast<size_t>(pixelShader->prog.loadDef.programSize) * sizeof(uint32_t));
+                for (const auto* technique : techniqueSet->techniques)
+                {
+                    if (technique)
+                        ExtractNamesFromTechnique(technique);
+                }
             }
+        }
+    }
+
+    unsigned MaterialConstantZoneState::HashString(const std::string& str)
+    {
+        return Common::R_HashString(str.c_str());
+    }
+
+    void MaterialConstantZoneState::ExtractNamesFromTechnique(const MaterialTechnique* technique)
+    {
+        if (!ShouldDumpFromStruct(technique))
+            return;
+
+        for (auto passIndex = 0u; passIndex < technique->passCount; passIndex++)
+        {
+            const auto& pass = technique->passArray[passIndex];
+
+            if (pass.vertexShader && pass.vertexShader->prog.loadDef.program)
+                ExtractNamesFromShader(pass.vertexShader->prog.loadDef.program, pass.vertexShader->prog.loadDef.programSize);
+
+            if (pass.pixelShader && pass.pixelShader->prog.loadDef.program)
+                ExtractNamesFromShader(pass.pixelShader->prog.loadDef.program, pass.pixelShader->prog.loadDef.programSize);
         }
     }
 
@@ -228,9 +247,4 @@ namespace IW4
         for (const auto* knownTextureDefName : KNOWN_TEXTURE_DEF_NAMES)
             AddTextureDefName(knownTextureDefName);
     }
-
-    unsigned MaterialConstantZoneState::HashString(const std::string& str)
-    {
-        return Common::R_HashString(str.c_str());
-    }
-} // namespace IW4
+} // namespace IW3

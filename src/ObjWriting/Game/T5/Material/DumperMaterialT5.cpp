@@ -1,12 +1,12 @@
-#include "DumperMaterialT6.h"
+#include "DumperMaterialT5.h"
 
-#include "Game/T6/Material/JsonMaterialWriterT6.h"
-#include "Game/T6/Material/MaterialConstantZoneStateT6.h"
+#include "Game/T5/Material/JsonMaterialWriterT5.h"
+#include "Game/T5/Material/MaterialConstantZoneStateT5.h"
 #include "Material/MaterialCommon.h"
 
-#include <cassert>
+#include <assert.h>
 
-using namespace T6;
+using namespace T5;
 
 void AssetDumperMaterial::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
 {
@@ -29,8 +29,7 @@ void AssetDumperMaterial::DumpAsset(AssetDumpingContext& context, XAssetInfo<Mat
         return;
 
     const auto* material = asset->Asset();
-    assert(material->info.gameFlags < 0x8000);
-    assert(material->info.hashIndex == 0);
-    assert(material->probeMipBits == 0);
+    assert(material->info.gameFlags < 0x400);
+    assert(material->maxStreamedMips == 0);
     DumpMaterialAsJson(*assetFile, *material, context);
 }

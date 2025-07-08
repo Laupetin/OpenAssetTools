@@ -1,12 +1,18 @@
-#options GAME (IW4, IW5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h"
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define HAS_WATER
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #define HAS_WATER
 #elif GAME == "IW5"
 #define FEATURE_IW5
+#define HAS_WATER
+#elif GAME == "T5"
+#define FEATURE_T5
 #define HAS_WATER
 #elif GAME == "T6"
 #define FEATURE_T6
@@ -75,8 +81,10 @@ namespace GAME
         INVALID,
         DISABLED,
         GT0,
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
         LT128,
+#elif defined(FEATURE_T5)
+        GE255,
 #endif
         GE128
     };
@@ -85,8 +93,10 @@ namespace GAME
         {JsonAlphaTest::INVALID,  nullptr   },
         {JsonAlphaTest::DISABLED, "disabled"},
         {JsonAlphaTest::GT0,      "gt0"     },
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {JsonAlphaTest::LT128,    "lt128"   },
+#elif defined(FEATURE_T5)
+        {JsonAlphaTest::GE255,    "ge255"   },
 #endif
         {JsonAlphaTest::GE128,    "ge128"   }
     });
@@ -208,7 +218,7 @@ namespace GAME
         std::optional<std::string> name;
         std::optional<std::string> nameFragment;
         std::optional<unsigned> nameHash;
-        std::vector<float> literal;
+        std::array<float, 4> literal;
     };
 
     inline void to_json(nlohmann::json& out, const JsonConstant& in)
@@ -315,52 +325,48 @@ namespace GAME
 #endif
 
     NLOHMANN_JSON_SERIALIZE_ENUM(TextureSemantic, {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {TS_2D,               "2D"             },
         {TS_FUNCTION,         "function"       },
         {TS_COLOR_MAP,        "colorMap"       },
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
+        {TS_UNUSED_1,         "unused1"        },
+#else
         {TS_DETAIL_MAP,       "detailMap"      },
+#endif
         {TS_UNUSED_2,         "unused2"        },
         {TS_NORMAL_MAP,       "normalMap"      },
         {TS_UNUSED_3,         "unused3"        },
         {TS_UNUSED_4,         "unused4"        },
         {TS_SPECULAR_MAP,     "specularMap"    },
         {TS_UNUSED_5,         "unused5"        },
+#ifdef FEATURE_T6
+        {TS_OCCLUSION_MAP,    "occlusionMap"   },
+#endif
         {TS_UNUSED_6,         "unused6"        },
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T5)
         {TS_WATER_MAP,        "waterMap"       },
+#endif
 #ifdef FEATURE_IW5
         {TS_DISPLACEMENT_MAP, "displacementMap"},
 #endif
-#elif defined(FEATURE_T6)
-        {TS_2D,            "2D"          },
-        {TS_FUNCTION,      "function"    },
-        {TS_COLOR_MAP,     "colorMap"    },
-        {TS_UNUSED_1,      "unused1"     },
-        {TS_UNUSED_2,      "unused2"     },
-        {TS_NORMAL_MAP,    "normalMap"   },
-        {TS_UNUSED_3,      "unused3"     },
-        {TS_UNUSED_4,      "unused4"     },
-        {TS_SPECULAR_MAP,  "specularMap" },
-        {TS_UNUSED_5,      "unused5"     },
-        {TS_OCCLUSION_MAP, "occlusionMap"},
-        {TS_UNUSED_6,      "unused6"     },
-        {TS_COLOR0_MAP,    "color0Map"   },
-        {TS_COLOR1_MAP,    "color1Map"   },
-        {TS_COLOR2_MAP,    "color2Map"   },
-        {TS_COLOR3_MAP,    "color3Map"   },
-        {TS_COLOR4_MAP,    "color4Map"   },
-        {TS_COLOR5_MAP,    "color5Map"   },
-        {TS_COLOR6_MAP,    "color6Map"   },
-        {TS_COLOR7_MAP,    "color7Map"   },
-        {TS_COLOR8_MAP,    "color8Map"   },
-        {TS_COLOR9_MAP,    "color9Map"   },
-        {TS_COLOR10_MAP,   "color10Map"  },
-        {TS_COLOR11_MAP,   "color11Map"  },
-        {TS_COLOR12_MAP,   "color12Map"  },
-        {TS_COLOR13_MAP,   "color13Map"  },
-        {TS_COLOR14_MAP,   "color14Map"  },
-        {TS_COLOR15_MAP,   "color15Map"  },
-        {TS_THROW_MAP,     "throwMap"    },
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+        {TS_COLOR0_MAP,       "color0Map"      },
+        {TS_COLOR1_MAP,       "color1Map"      },
+        {TS_COLOR2_MAP,       "color2Map"      },
+        {TS_COLOR3_MAP,       "color3Map"      },
+        {TS_COLOR4_MAP,       "color4Map"      },
+        {TS_COLOR5_MAP,       "color5Map"      },
+        {TS_COLOR6_MAP,       "color6Map"      },
+        {TS_COLOR7_MAP,       "color7Map"      },
+        {TS_COLOR8_MAP,       "color8Map"      },
+        {TS_COLOR9_MAP,       "color9Map"      },
+        {TS_COLOR10_MAP,      "color10Map"     },
+        {TS_COLOR11_MAP,      "color11Map"     },
+        {TS_COLOR12_MAP,      "color12Map"     },
+        {TS_COLOR13_MAP,      "color13Map"     },
+        {TS_COLOR14_MAP,      "color14Map"     },
+        {TS_COLOR15_MAP,      "color15Map"     },
+        {TS_THROW_MAP,        "throwMap"       },
 #endif
     });
 
@@ -372,7 +378,7 @@ namespace GAME
         std::optional<std::string> nameStart;
         std::optional<std::string> nameEnd;
         TextureSemantic semantic;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         bool isMatureContent;
 #endif
         JsonSamplerState samplerState;
@@ -396,7 +402,7 @@ namespace GAME
         }
 
         out["semantic"] = in.semantic;
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         out["isMatureContent"] = in.isMatureContent;
 #endif
         out["samplerState"] = in.samplerState;
@@ -413,7 +419,7 @@ namespace GAME
         optional_from_json(in, "nameStart", out.nameStart);
         optional_from_json(in, "nameEnd", out.nameEnd);
         in.at("semantic").get_to(out.semantic);
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         in.at("isMatureContent").get_to(out.isMatureContent);
 #endif
         in.at("samplerState").get_to(out.samplerState);
@@ -437,36 +443,43 @@ namespace GAME
     );
 
     NLOHMANN_JSON_SERIALIZE_ENUM(MaterialGameFlags, {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
-        {MTL_GAMEFLAG_1,    "1"   },
-        {MTL_GAMEFLAG_2,    "2"   },
-        {MTL_GAMEFLAG_4,    "4"   },
-        {MTL_GAMEFLAG_8,    "8"   },
-        {MTL_GAMEFLAG_10,   "10"  },
-        {MTL_GAMEFLAG_20,   "20"  },
-        {MTL_GAMEFLAG_40,   "40"  },
-        {MTL_GAMEFLAG_80,   "80"  },
-#elif defined(FEATURE_T6)
         {MTL_GAMEFLAG_1,            "1"           },
         {MTL_GAMEFLAG_2,            "2"           },
+#ifdef FEATURE_T6
         {MTL_GAMEFLAG_NO_MARKS,     "NO_MARKS"    },
         {MTL_GAMEFLAG_NO_MARKS,     "4"           },
+#else
+        {MTL_GAMEFLAG_4,            "4"           },
+#endif
         {MTL_GAMEFLAG_8,            "8"           },
         {MTL_GAMEFLAG_10,           "10"          },
         {MTL_GAMEFLAG_20,           "20"          },
+#if defined(FEATURE_IW3) || defined(FEATURE_T5) || defined(FEATURE_T6)
         {MTL_GAMEFLAG_CASTS_SHADOW, "CASTS_SHADOW"},
         {MTL_GAMEFLAG_CASTS_SHADOW, "40"          },
+#else
+        {MTL_GAMEFLAG_40,           "40"          },
+#endif
         {MTL_GAMEFLAG_80,           "80"          },
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         {MTL_GAMEFLAG_100,          "100"         },
         {MTL_GAMEFLAG_200,          "200"         },
+#if defined(FEATURE_T6)
         {MTL_GAMEFLAG_400,          "400"         },
         {MTL_GAMEFLAG_800,          "800"         },
         {MTL_GAMEFLAG_1000,         "1000"        },
+        {MTL_GAMEFLAG_2000,         "2000"        },
+        {MTL_GAMEFLAG_4000,         "4000"        },
+#endif
 #endif
     });
 
     NLOHMANN_JSON_SERIALIZE_ENUM(GfxCameraRegionType, {
-#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+#if defined(FEATURE_IW3) || defined(FEATURE_T5)
+        {CAMERA_REGION_LIT,              "lit"           },
+        {CAMERA_REGION_DECAL,            "decal"         },
+        {CAMERA_REGION_EMISSIVE,         "emissive"      },
+#elif defined(FEATURE_IW4) || defined(FEATURE_IW5)
         {CAMERA_REGION_LIT_OPAQUE,       "litOpaque"     },
         {CAMERA_REGION_LIT_TRANS,        "litTrans"      },
         {CAMERA_REGION_EMISSIVE,         "emissive"      },
@@ -474,7 +487,6 @@ namespace GAME
 #ifdef FEATURE_IW5
         {CAMERA_REGION_LIGHT_MAP_OPAQUE, "lightMapOpaque"},
 #endif
-        {CAMERA_REGION_NONE,             "none"          },
 #elif defined(FEATURE_T6)
         {CAMERA_REGION_LIT_OPAQUE,       "litOpaque"     },
         {CAMERA_REGION_LIT_TRANS,        "litTrans"      },
@@ -486,20 +498,20 @@ namespace GAME
         {CAMERA_REGION_DEPTH_HACK,       "depthHack"     },
         {CAMERA_REGION_UNUSED,           "unused"        },
         {CAMERA_REGION_SONAR,            "sonar"         },
-        {CAMERA_REGION_NONE,             "none"          },
 #endif
+        {CAMERA_REGION_NONE,             "none"          },
     });
 
     class JsonMaterial
     {
     public:
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         unsigned layeredSurfaceTypes;
-        unsigned hashIndex;
+#if defined(FEATURE_T6)
         unsigned surfaceFlags;
         unsigned contents;
-        uint8_t probeMipBits;
         std::optional<std::string> thermalMaterial;
+#endif
 #endif
         std::vector<MaterialGameFlags> gameFlags;
         unsigned sortKey;
@@ -516,13 +528,13 @@ namespace GAME
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(
         JsonMaterial,
-#ifdef FEATURE_T6
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         layeredSurfaceTypes,
-        hashIndex,
+#if defined(FEATURE_T6)
         surfaceFlags,
         contents,
-        probeMipBits,
         thermalMaterial,
+#endif
 #endif
         gameFlags,
         sortKey,

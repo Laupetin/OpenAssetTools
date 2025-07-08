@@ -5,6 +5,7 @@
 #include "Game/T5/T5.h"
 #include "Game/T5/XModel/LoaderXModelT5.h"
 #include "Localize/LoaderLocalizeT5.h"
+#include "Material/LoaderMaterialT5.h"
 #include "ObjLoading.h"
 #include "RawFile/LoaderRawFileT5.h"
 #include "StringTable/LoaderStringTableT5.h"
@@ -104,7 +105,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
+        collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundBank>(memory));

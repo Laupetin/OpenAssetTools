@@ -5,6 +5,7 @@
 #include "Game/IW3/IW3.h"
 #include "Image/AssetLoaderImageIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
+#include "Material/LoaderMaterialIW3.h"
 #include "ObjLoading.h"
 #include "RawFile/AssetLoaderRawFileIW3.h"
 #include "StringTable/AssetLoaderStringTableIW3.h"
@@ -90,7 +91,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderMaterial>(memory));
+        collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderSound>(memory));
