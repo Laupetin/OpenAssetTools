@@ -55,7 +55,6 @@ namespace
 
         material->cameraRegion = CAMERA_REGION_LIT;
         material->stateFlags = 121;
-        material->maxStreamedMips = 0;
         material->techniqueSet = GivenTechset("mc_l_sm_r0c0n0s0", memory);
 
         material->textureCount = 3;
@@ -328,7 +327,6 @@ namespace
         "CASTS_SHADOW"
     ],
     "layeredSurfaceTypes": 536870914,
-    "maxStreamedMips": 0,
     "sortKey": 4,
     "stateBits": [
         {

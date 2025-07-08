@@ -505,15 +505,14 @@ namespace GAME
     class JsonMaterial
     {
     public:
-#ifdef FEATURE_T5
-        uint8_t maxStreamedMips;
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         unsigned layeredSurfaceTypes;
-#elif defined(FEATURE_T6)
-        unsigned layeredSurfaceTypes;
+#if defined(FEATURE_T6)
         unsigned surfaceFlags;
         unsigned contents;
         uint8_t probeMipBits;
         std::optional<std::string> thermalMaterial;
+#endif
 #endif
         std::vector<MaterialGameFlags> gameFlags;
         unsigned sortKey;
@@ -530,15 +529,14 @@ namespace GAME
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(
         JsonMaterial,
-#ifdef FEATURE_T5
-        maxStreamedMips,
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
         layeredSurfaceTypes,
-#elif defined(FEATURE_T6)
-        layeredSurfaceTypes,
+#if defined(FEATURE_T6)
         surfaceFlags,
         contents,
         probeMipBits,
         thermalMaterial,
+#endif
 #endif
         gameFlags,
         sortKey,

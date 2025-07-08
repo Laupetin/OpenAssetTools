@@ -71,7 +71,6 @@ namespace
         "CASTS_SHADOW"
     ],
     "layeredSurfaceTypes": 536870914,
-    "maxStreamedMips": 0,
     "sortKey": 4,
     "stateBits": [
         {
@@ -395,7 +394,6 @@ namespace
 
         REQUIRE(material->stateFlags == 121);
         REQUIRE(material->cameraRegion == CAMERA_REGION_LIT);
-        REQUIRE(material->maxStreamedMips == 0);
 
         REQUIRE(material->techniqueSet != nullptr);
         REQUIRE(material->techniqueSet->name != nullptr);

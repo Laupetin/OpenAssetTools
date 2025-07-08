@@ -328,9 +328,7 @@ namespace
 
             jMaterial.stateFlags = material.stateFlags;
             jMaterial.cameraRegion = static_cast<GfxCameraRegionType>(material.cameraRegion);
-#if defined(FEATURE_T5)
-            jMaterial.maxStreamedMips = material.maxStreamedMips;
-#elif defined(FEATURE_T6)
+#if defined(FEATURE_T6)
             jMaterial.probeMipBits = material.probeMipBits;
 #endif
 
