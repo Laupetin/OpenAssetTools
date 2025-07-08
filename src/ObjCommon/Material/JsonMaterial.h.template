@@ -510,7 +510,6 @@ namespace GAME
 #if defined(FEATURE_T6)
         unsigned surfaceFlags;
         unsigned contents;
-        uint8_t probeMipBits;
         std::optional<std::string> thermalMaterial;
 #endif
 #endif
@@ -534,7 +533,6 @@ namespace GAME
 #if defined(FEATURE_T6)
         surfaceFlags,
         contents,
-        probeMipBits,
         thermalMaterial,
 #endif
 #endif

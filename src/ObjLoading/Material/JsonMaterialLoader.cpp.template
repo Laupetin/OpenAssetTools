@@ -436,9 +436,6 @@ namespace
 
             material.stateFlags = static_cast<unsigned char>(jMaterial.stateFlags);
             material.cameraRegion = jMaterial.cameraRegion;
-#if defined(FEATURE_T6)
-            material.probeMipBits = jMaterial.probeMipBits;
-#endif
 
             auto* techniqueSet = m_context.LoadDependency<AssetTechniqueSet>(jMaterial.techniqueSet);
             if (!techniqueSet)

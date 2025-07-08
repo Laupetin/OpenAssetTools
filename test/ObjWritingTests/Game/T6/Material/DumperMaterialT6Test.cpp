@@ -284,7 +284,6 @@ namespace
         "CASTS_SHADOW"
     ],
     "layeredSurfaceTypes": 536870925,
-    "probeMipBits": 0,
     "sortKey": 4,
     "stateBits": [
         {

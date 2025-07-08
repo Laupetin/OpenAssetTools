@@ -328,9 +328,6 @@ namespace
 
             jMaterial.stateFlags = material.stateFlags;
             jMaterial.cameraRegion = static_cast<GfxCameraRegionType>(material.cameraRegion);
-#if defined(FEATURE_T6)
-            jMaterial.probeMipBits = material.probeMipBits;
-#endif
 
             if (material.techniqueSet && material.techniqueSet->name)
                 jMaterial.techniqueSet = AssetName(material.techniqueSet->name);
