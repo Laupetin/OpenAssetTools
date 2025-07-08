@@ -843,7 +843,7 @@ namespace T5
         char nameEnd;
         MaterialTextureDefSamplerState samplerState;
         unsigned char semantic; // TextureSemantic
-        char isMatureContent;
+        bool isMatureContent;
         char pad[3];
         MaterialTextureDefInfo u;
     };
