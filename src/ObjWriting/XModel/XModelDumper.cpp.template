@@ -66,7 +66,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#ifdef FEATURE_IW5            
+#if defined(FEATURE_IW5)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -155,7 +155,7 @@ namespace
 
     bool GetSurfaces(const XModel* model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
     {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW5)
         if (!model->lodInfo[lod].modelSurfs || !model->lodInfo[lod].modelSurfs->surfs)
             return false;
 
@@ -722,7 +722,7 @@ namespace
             if (xmodel.physPreset && xmodel.physPreset->name)
                 jXModel.physPreset = AssetName(xmodel.physPreset->name);
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW5)
             if (xmodel.physCollmap && xmodel.physCollmap->name)
                 jXModel.physCollmap = AssetName(xmodel.physCollmap->name);
 #endif

@@ -1,17 +1,36 @@
+#options GAME (IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See JsonXModel.h.template.
+// Do not modify, changes will be lost.
 #pragma once
 
-#include "Game/T6/T6.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
 
-namespace T6
+namespace GAME
 {
     inline const char* HITLOC_NAMES[]{
-        // clang-format off
         "none",
         "helmet",
         "head",
         "neck",
         "torso_upper",
+#if defined(FEATURE_T6)
         "torso_middle",
+#endif
         "torso_lower",
         "right_arm_upper",
         "left_arm_upper",
@@ -26,8 +45,9 @@ namespace T6
         "right_foot",
         "left_foot",
         "gun",
+#if defined(FEATURE_IW5) || defined(FEATURE_T6)
         "shield",
-        // clang-format on
+#endif
     };
     static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);
-} // namespace T6
+} // namespace GAME

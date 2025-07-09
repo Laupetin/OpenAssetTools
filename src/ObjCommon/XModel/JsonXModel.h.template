@@ -1,0 +1,71 @@
+#options GAME (IW5, T5, T6)
+
+#filename "Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h"
+
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+
+#if GAME == "IW5"
+#define FEATURE_IW5
+#elif GAME == "T5"
+#define FEATURE_T5
+#elif GAME == "T6"
+#define FEATURE_T6
+#endif
+
+// This file was templated.
+// See JsonXModel.h.template.
+// Do not modify, changes will be lost.
+#pragma once
+
+#include "Json/JsonCommon.h"
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace GAME
+{
+    class JsonXModelLod
+    {
+    public:
+        std::string file;
+        float distance;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModelLod, file, distance);
+
+    class JsonXModel
+    {
+    public:
+        std::vector<JsonXModelLod> lods;
+        std::optional<int> collLod;
+        std::optional<std::string> physPreset;
+#if defined(FEATURE_IW5)
+        std::optional<std::string> physCollmap;
+#elif defined(FEATURE_T5) || defined(FEATURE_T6)
+        std::optional<std::string> physConstraints;
+#endif
+#if defined(FEATURE_T6)
+        JsonVec3 lightingOriginOffset;
+        float lightingOriginRange;
+#endif
+        unsigned flags;
+    };
+
+    NLOHMANN_DEFINE_TYPE_EXTENSION(
+        JsonXModel,
+        lods,
+        collLod,
+        physPreset,
+#if defined(FEATURE_IW5)
+        physCollmap,
+#elif defined(FEATURE_T5) || defined(FEATURE_T6)
+        physConstraints,
+#endif
+#if defined(FEATURE_T6)
+        lightingOriginOffset,
+        lightingOriginRange,
+#endif
+        flags
+    );
+} // namespace GAME
