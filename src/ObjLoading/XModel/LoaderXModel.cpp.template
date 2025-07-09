@@ -81,21 +81,21 @@ namespace
     private:
         bool LoadFromFile(std::istream& jsonStream, XModel& xmodel, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
         {
-            const auto jRoot = nlohmann::json::parse(jsonStream);
-            std::string type;
-            unsigned version;
-
-            jRoot.at("_type").get_to(type);
-            jRoot.at("_version").get_to(version);
-
-            if (type != "xmodel" || version != 1u)
-            {
-                std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1\n", xmodel.name);
-                return false;
-            }
-
             try
             {
+                const auto jRoot = nlohmann::json::parse(jsonStream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "xmodel" || version != 1u)
+                {
+                    std::cerr << std::format("Tried to load xmodel \"{}\" but did not find expected type material of version 1\n", xmodel.name);
+                    return false;
+                }
+
                 const auto jXModel = jRoot.get<JsonXModel>();
                 return CreateXModelFromJson(jXModel, xmodel, context, registration);
             }

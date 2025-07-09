@@ -26,21 +26,21 @@ namespace
 
         bool Load(WeaponCamo& weaponCamo) const
         {
-            const auto jRoot = json::parse(m_stream);
-            std::string type;
-            unsigned version;
-
-            jRoot.at("_type").get_to(type);
-            jRoot.at("_version").get_to(version);
-
-            if (type != "weaponCamo" || version != 1u)
-            {
-                std::cerr << std::format("Tried to load weapon camo \"{}\" but did not find expected type weaponCamo of version {}\n", weaponCamo.name, 1u);
-                return false;
-            }
-
             try
             {
+                const auto jRoot = json::parse(m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "weaponCamo" || version != 1u)
+                {
+                    std::cerr << std::format("Tried to load weapon camo \"{}\" but did not find expected type weaponCamo of version {}\n", weaponCamo.name, 1u);
+                    return false;
+                }
+
                 const auto jWeaponCamo = jRoot.get<JsonWeaponCamo>();
                 return CreateWeaponCamoFromJson(jWeaponCamo, weaponCamo);
             }
