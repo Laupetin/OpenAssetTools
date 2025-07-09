@@ -52,20 +52,20 @@ void AssetDumperPhysCollmap::DumpAsset(AssetDumpingContext& context, XAssetInfo<
             break;
         case PHYS_GEOM_BOX:
             mapFileDumper.WritePhysicsBox({
-                {geom.bounds.midPoint[0], geom.bounds.midPoint[1], geom.bounds.midPoint[2]},
-                {geom.bounds.halfSize[0], geom.bounds.halfSize[1], geom.bounds.halfSize[2]},
-                {geom.orientation[0][0],  geom.orientation[0][1],  geom.orientation[0][2] },
-                {geom.orientation[1][0],  geom.orientation[1][1],  geom.orientation[1][2] },
-                {geom.orientation[2][0],  geom.orientation[2][1],  geom.orientation[2][2] }
+                {geom.bounds.midPoint.v[0], geom.bounds.midPoint.v[1], geom.bounds.midPoint.v[2]},
+                {geom.bounds.halfSize.v[0], geom.bounds.halfSize.v[1], geom.bounds.halfSize.v[2]},
+                {geom.orientation[0][0],    geom.orientation[0][1],    geom.orientation[0][2]   },
+                {geom.orientation[1][0],    geom.orientation[1][1],    geom.orientation[1][2]   },
+                {geom.orientation[2][0],    geom.orientation[2][1],    geom.orientation[2][2]   }
             });
             break;
 
         case PHYS_GEOM_CYLINDER:
             mapFileDumper.WritePhysicsCylinder({
-                {geom.bounds.midPoint[0], geom.bounds.midPoint[1], geom.bounds.midPoint[2]},
-                geom.bounds.halfSize[0],
-                geom.bounds.halfSize[2] * 2,
-                {geom.orientation[0][0],  geom.orientation[0][1],  geom.orientation[0][2] }
+                {geom.bounds.midPoint.v[0], geom.bounds.midPoint.v[1], geom.bounds.midPoint.v[2]},
+                geom.bounds.halfSize.v[0],
+                geom.bounds.halfSize.v[2] * 2,
+                {geom.orientation[0][0],    geom.orientation[0][1],    geom.orientation[0][2]   }
             });
             break;
 

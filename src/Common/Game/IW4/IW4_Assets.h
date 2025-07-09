@@ -113,6 +113,8 @@ namespace IW4
     struct VehicleDef;
     struct AddonMapEnts;
 
+    typedef unsigned short ScriptString;
+
     union XAssetHeader
     {
         PhysPreset* physPreset;
@@ -239,8 +241,8 @@ namespace IW4
 
     struct Bounds
     {
-        float midPoint[3];
-        float halfSize[3];
+        vec3_t midPoint;
+        vec3_t halfSize;
     };
 
     struct cplane_s
@@ -325,7 +327,7 @@ namespace IW4
 
     struct XAnimNotifyInfo
     {
-        uint16_t name;
+        ScriptString name;
         float time;
     };
 
@@ -448,7 +450,7 @@ namespace IW4
         unsigned int indexCount;
         float framerate;
         float frequency;
-        uint16_t* names;
+        ScriptString* names;
         char* dataByte;
         int16_t* dataShort;
         int* dataInt;
@@ -491,7 +493,7 @@ namespace IW4
 
     struct type_align(16) GfxPackedVertex
     {
-        float xyz[3];
+        vec3_t xyz;
         float binormalSign;
         GfxColor color;
         PackedTexCoords texCoord;
@@ -536,7 +538,12 @@ namespace IW4
         XSurfaceCollisionTree* collisionTree;
     };
 
-    typedef tdef_align32(16) uint16_t r_index16_t;
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
 
     struct XSurface
     {
@@ -547,7 +554,7 @@ namespace IW4
         char zoneHandle;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        r_index16_t (*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         unsigned int vertListCount;
@@ -602,9 +609,14 @@ namespace IW4
 
     struct DObjAnimMat
     {
-        float quat[4];
-        float trans[3];
+        vec4_t quat;
+        vec3_t trans;
         float transWeight;
+    };
+
+    struct XModelQuat
+    {
+        int16_t v[4];
     };
 
     struct XModel
@@ -616,10 +628,10 @@ namespace IW4
         char lodRampType;
         float scale;
         unsigned int noScalePartBits[6];
-        uint16_t* boneNames;
+        ScriptString* boneNames;
         unsigned char* parentList;
-        int16_t (*quats)[4];
-        float (*trans)[3];
+        XModelQuat* quats;
+        float* trans;
         unsigned char* partClassification;
         DObjAnimMat* baseMat;
         Material** materialHandles;

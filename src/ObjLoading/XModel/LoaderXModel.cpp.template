@@ -1,4 +1,4 @@
-#options GAME(IW5, T5, T6)
+#options GAME(IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/LoaderXModel" + GAME + ".cpp"
 
@@ -7,7 +7,9 @@
 #set CONSTANTS_HEADER "\"Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
 
-#if GAME == "IW5"
+#if GAME == "IW4"
+#define FEATURE_IW4
+#elif GAME == "IW5"
 #define FEATURE_IW5
 #elif GAME == "T5"
 #define FEATURE_T5
@@ -191,7 +193,7 @@ namespace
             if (common.m_bone_weight_data.weights.empty())
                 return;
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             vec3_t minCoordinate, maxCoordinate;
             auto& offset = info.bounds.midPoint;
 #else
@@ -236,7 +238,7 @@ namespace
             const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
             const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
             const Eigen::Vector3f halfSizeEigen = maxEigen - boundsCenter;
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
 
             info.bounds.halfSize.x = halfSizeEigen.x();
             info.bounds.halfSize.y = halfSizeEigen.y();
@@ -727,7 +729,7 @@ namespace
                     lodInfo.partBits[i] |= surface.partBits[i];
             }
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             auto* modelSurfs = m_memory.Alloc<XModelSurfs>();
             const auto modelSurfsName = std::format("{}_lod{}", xmodel.name, lodNumber);
             modelSurfs->name = m_memory.Dup(modelSurfsName.c_str());
@@ -752,7 +754,7 @@ namespace
 
         static void CalculateModelBounds(XModel& xmodel)
         {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             if (!xmodel.lodInfo[0].modelSurfs || !xmodel.lodInfo[0].modelSurfs->surfs)
                 return;
 
@@ -768,7 +770,7 @@ namespace
 
             for (auto surfaceIndex = 0u; surfaceIndex < xmodel.lodInfo[0].numsurfs; surfaceIndex++)
             {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
                 const auto& surface = surfs[surfaceIndex];
 #else
                 const auto& surface = xmodel.surfs[surfaceIndex + xmodel.lodInfo[0].surfIndex];
@@ -790,7 +792,7 @@ namespace
                 }
             }
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             const Eigen::Vector3f minEigen(minCoordinate.x, minCoordinate.y, minCoordinate.z);
             const Eigen::Vector3f maxEigen(maxCoordinate.x, maxCoordinate.y, maxCoordinate.z);
             const Eigen::Vector3f boundsCenter = (minEigen + maxEigen) * 0.5f;
@@ -876,7 +878,7 @@ namespace
                 xmodel.physPreset = nullptr;
             }
 
-#if defined(FEATURE_IW5)
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             if (jXModel.physCollmap)
             {
                 auto* physCollmap = context.LoadDependency<AssetPhysCollMap>(jXModel.physCollmap.value());
