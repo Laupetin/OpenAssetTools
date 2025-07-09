@@ -26,21 +26,21 @@ namespace
 
         bool Load(WeaponAttachment& attachment) const
         {
-            const auto jRoot = json::parse(m_stream);
-            std::string type;
-            unsigned version;
-
-            jRoot.at("_type").get_to(type);
-            jRoot.at("_version").get_to(version);
-
-            if (type != "attachment" || version != 1u)
-            {
-                std::cerr << "Tried to load attachment \"" << attachment.szInternalName << "\" but did not find expected type attachment of version 1\n";
-                return false;
-            }
-
             try
             {
+                const auto jRoot = json::parse(m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "attachment" || version != 1u)
+                {
+                    std::cerr << "Tried to load attachment \"" << attachment.szInternalName << "\" but did not find expected type attachment of version 1\n";
+                    return false;
+                }
+
                 const auto jAttachment = jRoot.get<JsonWeaponAttachment>();
                 return CreateWeaponAttachmentFromJson(jAttachment, attachment);
             }

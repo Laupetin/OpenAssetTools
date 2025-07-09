@@ -61,31 +61,31 @@ namespace
 
         bool Load(Material& material) const
         {
-            const auto jRoot = json::parse(m_stream);
-            std::string type;
-            unsigned version;
-
-            jRoot.at("_type").get_to(type);
-            jRoot.at("_version").get_to(version);
-
-            if (type != "material" || version != 1u)
-            {
-                std::cerr << std::format("Tried to load material \"{}\" but did not find expected type material of version 1\n", material.info.name);
-                return false;
-            }
-            
-#ifndef FEATURE_T6 // T6 did not have this check in version 1, so to stay backwards compatible, let it stay that way
-            std::string game;
-            jRoot.at("_game").get_to(game);
-            if (game != GAME_LOWER)
-            {
-                std::cerr << std::format("Tried to load material \"{}\" but \"_game\" did not find expected type value {}\n", material.info.name, GAME_LOWER);
-                return false;
-            }
-#endif
-
             try
             {
+                const auto jRoot = json::parse(m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "material" || version != 1u)
+                {
+                    std::cerr << std::format("Tried to load material \"{}\" but did not find expected type material of version 1\n", material.info.name);
+                    return false;
+                }
+            
+#ifndef FEATURE_T6 // T6 did not have this check in version 1, so to stay backwards compatible, let it stay that way
+                std::string game;
+                jRoot.at("_game").get_to(game);
+                if (game != GAME_LOWER)
+                {
+                    std::cerr << std::format("Tried to load material \"{}\" but \"_game\" did not find expected type value {}\n", material.info.name, GAME_LOWER);
+                    return false;
+                }
+#endif
+
                 const auto jMaterial = jRoot.get<JsonMaterial>();
                 return CreateMaterialFromJson(jMaterial, material);
             }

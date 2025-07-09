@@ -23,21 +23,21 @@ namespace
 
         bool Load(LeaderboardDef& leaderboardDef) const
         {
-            const auto jRoot = json::parse(m_stream);
-            std::string type;
-            unsigned version;
-
-            jRoot.at("_type").get_to(type);
-            jRoot.at("_version").get_to(version);
-
-            if (type != "leaderboard" || version != 1u)
-            {
-                std::cerr << std::format("Tried to load leaderboard \"{}\" but did not find expected type leaderboard of version 1\n", leaderboardDef.name);
-                return false;
-            }
-
             try
             {
+                const auto jRoot = json::parse(m_stream);
+                std::string type;
+                unsigned version;
+
+                jRoot.at("_type").get_to(type);
+                jRoot.at("_version").get_to(version);
+
+                if (type != "leaderboard" || version != 1u)
+                {
+                    std::cerr << std::format("Tried to load leaderboard \"{}\" but did not find expected type leaderboard of version 1\n", leaderboardDef.name);
+                    return false;
+                }
+
                 const auto jLeaderboard = jRoot.get<JsonLeaderboardDef>();
                 return CreateLeaderboardFromJson(jLeaderboard, leaderboardDef);
             }
