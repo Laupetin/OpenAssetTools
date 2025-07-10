@@ -1,4 +1,4 @@
-#options GAME (IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelDumper" + GAME + ".cpp"
 
@@ -6,7 +6,13 @@
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
 
-#if GAME == "IW5"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#define GAME_LOWER "iw3"
+#elif GAME == "IW4"
+#define FEATURE_IW4
+#define GAME_LOWER "iw4"
+#elif GAME == "IW5"
 #define FEATURE_IW5
 #define GAME_LOWER "iw5"
 #elif GAME == "T5"
@@ -66,7 +72,7 @@ namespace
         {
             MaterialTextureDef* def = &material->textureTable[textureIndex];
 
-#ifdef FEATURE_IW5            
+#if defined(FEATURE_IW3) || defined(FEATURE_IW4) || defined(FEATURE_IW5)
             if (def->semantic == TS_COLOR_MAP)
                 potentialTextureDefs.push_back(def);
 #else
@@ -155,7 +161,7 @@ namespace
 
     bool GetSurfaces(const XModel* model, const unsigned lod, XSurface*& surfs, unsigned& surfCount)
     {
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
         if (!model->lodInfo[lod].modelSurfs || !model->lodInfo[lod].modelSurfs->surfs)
             return false;
 
@@ -669,6 +675,7 @@ namespace
             CreateJsonXModel(jsonXModel, *xmodel);
             nlohmann::json jRoot = jsonXModel;
 
+            jRoot["$schema"] = "http://openassettools.dev/schema/xmodel.v1.json";
             jRoot["_type"] = "xmodel";
             jRoot["_version"] = 1;
             jRoot["_game"] = GAME_LOWER;
@@ -722,7 +729,7 @@ namespace
             if (xmodel.physPreset && xmodel.physPreset->name)
                 jXModel.physPreset = AssetName(xmodel.physPreset->name);
 
-#ifdef FEATURE_IW5
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
             if (xmodel.physCollmap && xmodel.physCollmap->name)
                 jXModel.physCollmap = AssetName(xmodel.physCollmap->name);
 #endif

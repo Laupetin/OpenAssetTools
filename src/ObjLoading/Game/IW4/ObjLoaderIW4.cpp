@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/IW4/GameIW4.h"
 #include "Game/IW4/IW4.h"
+#include "Game/IW4/XModel/LoaderXModelIW4.h"
 #include "Leaderboard/LoaderLeaderboardIW4.h"
 #include "LightDef/LoaderLightDefIW4.h"
 #include "Localize/LoaderLocalizeIW4.h"
@@ -123,7 +124,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysCollMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
+        collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
         collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         collection.AddAssetCreator(CreatePixelShaderLoader(memory, searchPath));
         collection.AddAssetCreator(CreateVertexShaderLoader(memory, searchPath));
