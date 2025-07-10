@@ -97,6 +97,8 @@ namespace IW3
     struct RawFile;
     struct StringTable;
 
+    typedef unsigned short ScriptString;
+
     union XAssetHeader
     {
         // XModelPieces *xmodelPieces; // NOT AN ASSET
@@ -215,7 +217,7 @@ namespace IW3
 
     struct XAnimNotifyInfo
     {
-        uint16_t name;
+        ScriptString name;
         float time;
     };
 
@@ -309,7 +311,7 @@ namespace IW3
         unsigned int indexCount;
         float framerate;
         float frequency;
-        uint16_t* names;
+        ScriptString* names;
         char* dataByte;
         int16_t* dataShort;
         int* dataInt;
@@ -329,8 +331,8 @@ namespace IW3
 
     struct DObjAnimMat
     {
-        float quat[4];
-        float trans[3];
+        vec4_t quat;
+        vec3_t trans;
         float transWeight;
     };
 
@@ -390,7 +392,7 @@ namespace IW3
 
     struct type_align(16) GfxPackedVertex
     {
-        float xyz[3];
+        vec3_t xyz;
         float binormalSign;
         GfxColor color;
         PackedTexCoords texCoord;
@@ -404,7 +406,12 @@ namespace IW3
         uint16_t* vertsBlend;
     };
 
-    typedef tdef_align32(16) uint16_t r_index16_t;
+    struct XSurfaceTri
+    {
+        uint16_t i[3];
+    };
+
+    typedef tdef_align32(16) XSurfaceTri XSurfaceTri16;
 
     struct XSurface
     {
@@ -415,7 +422,7 @@ namespace IW3
         char zoneHandle;
         uint16_t baseTriIndex;
         uint16_t baseVertIndex;
-        r_index16_t (*triIndices)[3];
+        XSurfaceTri16* triIndices;
         XSurfaceVertexInfo vertInfo;
         GfxPackedVertex* verts0;
         unsigned int vertListCount;
@@ -455,8 +462,8 @@ namespace IW3
 
     struct XBoneInfo
     {
-        float bounds[2][3];
-        float offset[3];
+        vec3_t bounds[2];
+        vec3_t offset;
         float radiusSquared;
     };
 
@@ -520,6 +527,11 @@ namespace IW3
         char pad;
     };
 
+    struct XModelQuat
+    {
+        int16_t v[4];
+    };
+
     struct XModel
     {
         const char* name;
@@ -527,11 +539,11 @@ namespace IW3
         unsigned char numRootBones;
         unsigned char numsurfs;
         char lodRampType;
-        uint16_t* boneNames;
-        char* parentList;
-        int16_t (*quats)[4];
-        float (*trans)[4];
-        char* partClassification;
+        ScriptString* boneNames;
+        unsigned char* parentList;
+        XModelQuat* quats;
+        float* trans;
+        unsigned char* partClassification;
         DObjAnimMat* baseMat;
         XSurface* surfs;
         Material** materialHandles;
@@ -541,8 +553,8 @@ namespace IW3
         int contents;
         XBoneInfo* boneInfo;
         float radius;
-        float mins[3];
-        float maxs[3];
+        vec3_t mins;
+        vec3_t maxs;
         uint16_t numLods;
         uint16_t collLod;
         XModelStreamInfo streamInfo;
@@ -2919,6 +2931,30 @@ namespace IW3
         MISSILE_GUIDANCE_HELLFIRE = 0x2,
         MISSILE_GUIDANCE_JAVELIN = 0x3,
         MISSILE_GUIDANCE_COUNT = 0x4,
+    };
+
+    enum hitLocation_t
+    {
+        HITLOC_NONE = 0x0,
+        HITLOC_HELMET = 0x1,
+        HITLOC_HEAD = 0x2,
+        HITLOC_NECK = 0x3,
+        HITLOC_TORSO_UPR = 0x4,
+        HITLOC_TORSO_LWR = 0x5,
+        HITLOC_R_ARM_UPR = 0x6,
+        HITLOC_L_ARM_UPR = 0x7,
+        HITLOC_R_ARM_LWR = 0x8,
+        HITLOC_L_ARM_LWR = 0x9,
+        HITLOC_R_HAND = 0xA,
+        HITLOC_L_HAND = 0xB,
+        HITLOC_R_LEG_UPR = 0xC,
+        HITLOC_L_LEG_UPR = 0xD,
+        HITLOC_R_LEG_LWR = 0xE,
+        HITLOC_L_LEG_LWR = 0xF,
+        HITLOC_R_FOOT = 0x10,
+        HITLOC_L_FOOT = 0x11,
+
+        HITLOC_COUNT,
     };
 
     struct snd_alias_list_name

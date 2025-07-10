@@ -1,10 +1,12 @@
-#options GAME (IW4, IW5, T5, T6)
+#options GAME (IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h"
 
 #set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
@@ -46,9 +48,11 @@ namespace GAME
         "left_leg_lower",
         "right_foot",
         "left_foot",
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T5) || defined(FEATURE_T6)
         "gun",
 #if defined(FEATURE_IW4) || defined(FEATURE_IW5) || defined(FEATURE_T6)
         "shield",
+#endif
 #endif
     };
     static_assert(std::extent_v<decltype(HITLOC_NAMES)> == HITLOC_COUNT);

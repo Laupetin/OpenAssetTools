@@ -1,4 +1,4 @@
-#options GAME(IW4, IW5, T5, T6)
+#options GAME(IW3, IW4, IW5, T5, T6)
 
 #filename "Game/" + GAME + "/XModel/LoaderXModel" + GAME + ".cpp"
 
@@ -7,7 +7,9 @@
 #set CONSTANTS_HEADER "\"Game/" + GAME + "/XModel/XModelConstants" + GAME + ".h\""
 #set JSON_HEADER "\"Game/" + GAME + "/XModel/JsonXModel" + GAME + ".h\""
 
-#if GAME == "IW4"
+#if GAME == "IW3"
+#define FEATURE_IW3
+#elif GAME == "IW4"
 #define FEATURE_IW4
 #elif GAME == "IW5"
 #define FEATURE_IW5
