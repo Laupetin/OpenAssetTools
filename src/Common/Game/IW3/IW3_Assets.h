@@ -556,7 +556,7 @@ namespace IW3
         vec3_t mins;
         vec3_t maxs;
         uint16_t numLods;
-        uint16_t collLod;
+        int16_t collLod;
         XModelStreamInfo streamInfo;
         int memUsage;
         char flags;

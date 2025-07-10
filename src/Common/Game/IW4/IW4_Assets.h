@@ -638,7 +638,7 @@ namespace IW4
         XModelLodInfo lodInfo[4];
         char maxLoadedLod;
         unsigned char numLods;
-        unsigned char collLod;
+        char collLod;
         char flags;
         XModelCollSurf_s* collSurfs;
         int numCollSurfs;
