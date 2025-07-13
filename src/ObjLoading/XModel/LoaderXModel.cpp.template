@@ -429,8 +429,7 @@ namespace
             const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
 
             std::vector<size_t> triSortList(surface.triCount);
-            std::iota(triSortList.begin(), triSortList.end(), 0);
-
+            std::ranges::iota(triSortList, 0);
             std::ranges::sort(triSortList,
                               [&rigidBoneIndexForTri](const size_t triIndex0, const size_t triIndex1)
                               {
@@ -509,9 +508,96 @@ namespace
             }
         }
 
-        void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
+        static uint16_t BoneWeight16(const float value)
         {
-            // TODO
+            return static_cast<uint16_t>(value * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        }
+
+        void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common) const
+        {
+            std::vector<uint16_t> vertsBlendData;
+            const auto vertexCount = vertexIndices.size();
+            auto vertexIndex = 0uz;
+
+            // Reserve the minimum amount of data we know will follow
+            vertsBlendData.reserve(vertexCount);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+                if (boneWeights.weightCount > 1)
+                    break;
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[0]++;
+            }
+
+            vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 3u);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+                if (boneWeights.weightCount > 2)
+                    break;
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 0];
+                const auto& weight1 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 1];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight1.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight1.weight));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[1]++;
+            }
+
+            vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 5u);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+                if (boneWeights.weightCount > 3)
+                    break;
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 0];
+                const auto& weight1 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 1];
+                const auto& weight2 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 2];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight1.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight1.weight));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight2.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight2.weight));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[2]++;
+            }
+
+            vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 7u);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 0];
+                const auto& weight1 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 1];
+                const auto& weight2 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 2];
+                const auto& weight3 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 3];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight1.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight1.weight));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight2.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight2.weight));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight3.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight3.weight));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[3]++;
+            }
+
+            surface.vertInfo.vertsBlend = m_memory.Alloc<uint16_t>(vertsBlendData.size());
+            std::memcpy(surface.vertInfo.vertsBlend, vertsBlendData.data(), sizeof(uint16_t) * vertsBlendData.size());
         }
 
         static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, const XSurface& surface, const XModelCommon& common)
@@ -521,8 +607,7 @@ namespace
 
             const auto vertexCount = vertexIndices.size();
             std::vector<size_t> reorderLookup(vertexCount);
-            std::iota(reorderLookup.begin(), reorderLookup.end(), 0);
-
+            std::ranges::iota(reorderLookup, 0);
             std::ranges::sort(reorderLookup,
                               [&common, &vertexIndices](const size_t& i0, const size_t& i1)
                               {
@@ -629,15 +714,16 @@ namespace
             if (!common.m_bone_weight_data.weights.empty())
             {
                 // Since bone weights are sorted by weight count, the last must have the highest weight count
-                const auto hasVertsBlend =
-                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount > 1;
-                if (!hasVertsBlend)
+                const auto maxWeightCount =
+                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
+                if (maxWeightCount == 0) // XModel is rigid
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
+                else if (maxWeightCount < std::extent_v<decltype(XSurfaceVertexInfo::vertCount)> + 1)
+                    CreateVertsBlendData(surface, xmodelToCommonVertexIndexLookup, common);
                 else
                 {
-                    CreateVertsBlendData(surface, xmodelToCommonVertexIndexLookup, common);
-
-                    std::cerr << "Only rigid models are supported at the moment\n";
+                    std::cerr << std::format("Models must not have vertices that are influenced by more than {} bones\n",
+                                             std::extent_v<decltype(XSurfaceVertexInfo::vertCount)> + 1);
                     return false;
                 }
             }
@@ -936,7 +1022,7 @@ namespace
         ZoneScriptStrings& m_script_strings;
         PartClassificationState m_part_classification_state;
     };
-} // namespace GAME
+} // namespace
 
 namespace GAME
 {
