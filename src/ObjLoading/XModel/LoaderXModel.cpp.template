@@ -533,6 +533,8 @@ namespace
 
                 vertexIndex++;
                 surface.vertInfo.vertCount[0]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
             }
 
             vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 3u);
@@ -551,6 +553,9 @@ namespace
 
                 vertexIndex++;
                 surface.vertInfo.vertCount[1]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight1.boneIndex);
             }
 
             vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 5u);
@@ -572,6 +577,10 @@ namespace
 
                 vertexIndex++;
                 surface.vertInfo.vertCount[2]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight1.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight2.boneIndex);
             }
 
             vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 7u);
@@ -594,6 +603,11 @@ namespace
 
                 vertexIndex++;
                 surface.vertInfo.vertCount[3]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight1.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight2.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight3.boneIndex);
             }
 
             surface.vertInfo.vertsBlend = m_memory.Alloc<uint16_t>(vertsBlendData.size());
