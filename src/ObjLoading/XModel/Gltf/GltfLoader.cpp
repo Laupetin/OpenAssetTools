@@ -516,13 +516,16 @@ namespace
             bone.scale[1] *= parentScale[1];
             bone.scale[2] *= parentScale[2];
 
-            bone.globalOffset[0] = bone.localOffset[0] + parentOffset[0];
-            bone.globalOffset[1] = bone.localOffset[1] + parentOffset[1];
-            bone.globalOffset[2] = bone.localOffset[2] + parentOffset[2];
-
             const auto localRotationEigen = Eigen::Quaternionf(bone.localRotation.w, bone.localRotation.x, bone.localRotation.y, bone.localRotation.z);
             const auto parentRotationEigen = Eigen::Quaternionf(parentRotation.w, parentRotation.x, parentRotation.y, parentRotation.z);
-            const auto globalRotationEigen = localRotationEigen * parentRotationEigen;
+            const auto globalRotationEigen = (parentRotationEigen * localRotationEigen).normalized();
+
+            const Eigen::Vector3f localTranslationEigen(bone.localOffset[0], bone.localOffset[1], bone.localOffset[2]);
+            const Eigen::Vector3f parentTranslationEigen(parentOffset[0], parentOffset[1], parentOffset[2]);
+            const auto globalTranslationEigen = (parentRotationEigen * localTranslationEigen) + parentTranslationEigen;
+            bone.globalOffset[0] = globalTranslationEigen.x();
+            bone.globalOffset[1] = globalTranslationEigen.y();
+            bone.globalOffset[2] = globalTranslationEigen.z();
 
             bone.globalRotation.x = globalRotationEigen.x();
             bone.globalRotation.y = globalRotationEigen.y();

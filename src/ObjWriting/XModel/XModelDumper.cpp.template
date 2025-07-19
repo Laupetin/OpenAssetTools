@@ -282,7 +282,7 @@ namespace
 
     void AddXModelMaterials(XModelCommon& out, DistinctMapper<Material*>& materialMapper, const XModel* model)
     {
-        for (auto surfaceMaterialNum = 0; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
+        for (auto surfaceMaterialNum = 0u; surfaceMaterialNum < model->numsurfs; surfaceMaterialNum++)
         {
             Material* material = model->materialHandles[surfaceMaterialNum];
             if (materialMapper.Add(material))

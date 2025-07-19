@@ -2743,6 +2743,14 @@ namespace T6
         float transWeight;
     };
 
+    enum XSurfaceFlag
+    {
+        XSURFACE_FLAG_QUANTIZED = 0x1,
+        XSURFACE_FLAG_SKINNED = 0x2,
+        XSURFACE_FLAG_CONSTANT_COLOR = 0x4,
+        XSURFACE_FLAG_DEFORMED = 0x80,
+    };
+
     struct XSurfaceVertexInfo
     {
         int16_t vertCount[4];
