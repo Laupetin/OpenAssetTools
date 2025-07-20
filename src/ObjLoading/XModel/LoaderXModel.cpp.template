@@ -72,6 +72,9 @@ namespace
             auto* xmodel = m_memory.Alloc<XModel>();
             xmodel->name = m_memory.Dup(assetName.c_str());
 
+            m_materials.clear();
+            m_surfaces.clear();
+
             AssetRegistration<AssetXModel> registration(assetName, xmodel);
             if (!LoadFromFile(*file.m_stream, *xmodel, context, registration))
             {
@@ -255,7 +258,7 @@ namespace
         }
         
         bool ApplyCommonBonesToXModel(
-            const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common, AssetRegistration<AssetXModel>& registration)
+            const JsonXModel& jXModel, const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common, AssetRegistration<AssetXModel>& registration)
         {
             if (common.m_bones.empty())
                 return true;
@@ -338,6 +341,12 @@ namespace
                     quats.v[2] = QuatInt16::ToInt16(bone.localRotation.z);
                     quats.v[3] = QuatInt16::ToInt16(bone.localRotation.w);
                 }
+            }
+
+            // Viewhands seem to have nulled trans for some reason?
+            if (jXModel.type.value_or(JsonXModelType::RIGID) == JsonXModelType::VIEWHANDS)
+            {
+                memset(xmodel.trans, 0, sizeof(float) * 4 * (xmodel.numBones - xmodel.numRootBones));
             }
 
             return true;
@@ -429,8 +438,7 @@ namespace
             const auto rigidBoneIndexForTri = GetRigidBoneIndicesForTris(vertexIndices, surface, common);
 
             std::vector<size_t> triSortList(surface.triCount);
-            std::iota(triSortList.begin(), triSortList.end(), 0);
-
+            std::ranges::iota(triSortList, 0);
             std::ranges::sort(triSortList,
                               [&rigidBoneIndexForTri](const size_t triIndex0, const size_t triIndex1)
                               {
@@ -509,9 +517,110 @@ namespace
             }
         }
 
-        void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common)
+        static uint16_t BoneWeight16(const float value)
         {
-            // TODO
+            return static_cast<uint16_t>(value * static_cast<float>(std::numeric_limits<uint16_t>::max()));
+        }
+
+        void CreateVertsBlendData(XSurface& surface, const std::vector<size_t>& vertexIndices, const XModelCommon& common) const
+        {
+            std::vector<uint16_t> vertsBlendData;
+            const auto vertexCount = vertexIndices.size();
+            auto vertexIndex = 0uz;
+
+            // Reserve the minimum amount of data we know will follow
+            vertsBlendData.reserve(vertexCount);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+                if (boneWeights.weightCount > 1)
+                    break;
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[0]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+            }
+
+            vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 3u);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+                if (boneWeights.weightCount > 2)
+                    break;
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 0];
+                const auto& weight1 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 1];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight1.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight1.weight));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[1]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight1.boneIndex);
+            }
+
+            vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 5u);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+                if (boneWeights.weightCount > 3)
+                    break;
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 0];
+                const auto& weight1 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 1];
+                const auto& weight2 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 2];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight1.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight1.weight));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight2.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight2.weight));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[2]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight1.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight2.boneIndex);
+            }
+
+            vertsBlendData.reserve(vertsBlendData.size() + (vertexCount - vertexIndex) * 7u);
+            while (vertexIndex < vertexCount)
+            {
+                const auto& boneWeights = common.m_vertex_bone_weights[vertexIndices[vertexIndex]];
+
+                const auto& weight0 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 0];
+                const auto& weight1 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 1];
+                const auto& weight2 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 2];
+                const auto& weight3 = common.m_bone_weight_data.weights[boneWeights.weightOffset + 3];
+
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight0.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight1.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight1.weight));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight2.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight2.weight));
+                vertsBlendData.emplace_back(static_cast<uint16_t>(weight3.boneIndex * sizeof(DObjSkelMat)));
+                vertsBlendData.emplace_back(BoneWeight16(weight3.weight));
+
+                vertexIndex++;
+                surface.vertInfo.vertCount[3]++;
+
+                AddBoneToXSurfacePartBits(surface, weight0.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight1.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight2.boneIndex);
+                AddBoneToXSurfacePartBits(surface, weight3.boneIndex);
+            }
+
+            surface.vertInfo.vertsBlend = m_memory.Alloc<uint16_t>(vertsBlendData.size());
+            std::memcpy(surface.vertInfo.vertsBlend, vertsBlendData.data(), sizeof(uint16_t) * vertsBlendData.size());
         }
 
         static void ReorderVerticesByWeightCount(std::vector<size_t>& vertexIndices, const XSurface& surface, const XModelCommon& common)
@@ -521,8 +630,7 @@ namespace
 
             const auto vertexCount = vertexIndices.size();
             std::vector<size_t> reorderLookup(vertexCount);
-            std::iota(reorderLookup.begin(), reorderLookup.end(), 0);
-
+            std::ranges::iota(reorderLookup, 0);
             std::ranges::sort(reorderLookup,
                               [&common, &vertexIndices](const size_t& i0, const size_t& i1)
                               {
@@ -629,15 +737,24 @@ namespace
             if (!common.m_bone_weight_data.weights.empty())
             {
                 // Since bone weights are sorted by weight count, the last must have the highest weight count
-                const auto hasVertsBlend =
-                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount > 1;
-                if (!hasVertsBlend)
+                const auto maxWeightCount =
+                    common.m_vertex_bone_weights[xmodelToCommonVertexIndexLookup[xmodelToCommonVertexIndexLookup.size() - 1]].weightCount;
+
+                if (maxWeightCount == 0) // XModel is rigid
+                {
                     CreateVertListData(surface, xmodelToCommonVertexIndexLookup, common);
-                else
+                }
+                else if (maxWeightCount < std::extent_v<decltype(XSurfaceVertexInfo::vertCount)> + 1)
                 {
                     CreateVertsBlendData(surface, xmodelToCommonVertexIndexLookup, common);
-
-                    std::cerr << "Only rigid models are supported at the moment\n";
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+                    surface.flags |= XSURFACE_FLAG_SKINNED | XSURFACE_FLAG_DEFORMED;
+#endif
+                }
+                else
+                {
+                    std::cerr << std::format("Models must not have vertices that are influenced by more than {} bones\n",
+                                             std::extent_v<decltype(XSurfaceVertexInfo::vertCount)> + 1);
                     return false;
                 }
             }
@@ -645,7 +762,12 @@ namespace
             return true;
         }
 
-        bool LoadLod(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
+        bool LoadLod(const JsonXModel& jXModel,
+                const JsonXModelLod& jLod,
+                XModel& xmodel,
+                unsigned lodNumber,
+                AssetCreationContext& context,
+                AssetRegistration<AssetXModel>& registration)
         {
             const auto file = m_search_path.Open(jLod.file);
             if (!file.IsOpen())
@@ -669,7 +791,7 @@ namespace
 
             if (lodNumber == 0u)
             {
-                if (!ApplyCommonBonesToXModel(jLod, xmodel, lodNumber, *common, registration))
+                if (!ApplyCommonBonesToXModel(jXModel, jLod, xmodel, lodNumber, *common, registration))
                     return false;
             }
             else
@@ -816,6 +938,24 @@ namespace
 #endif
         }
 
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+        static bool HasAnySkinnedSurfs(const XModel& xmodel)
+        {
+            for (auto lodIndex = 0u; lodIndex < xmodel.numLods; lodIndex++)
+            {
+                const auto& lod = xmodel.lodInfo[lodIndex];
+                for (auto surfIndex = lod.surfIndex; surfIndex < lod.numsurfs; surfIndex++)
+                {
+                    const auto& surf = xmodel.surfs[lod.surfIndex + surfIndex];
+                    if (surf.flags & XSURFACE_FLAG_DEFORMED)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+#endif
+
         bool CreateXModelFromJson(const JsonXModel& jXModel, XModel& xmodel, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
         {
             constexpr auto maxLods = std::extent_v<decltype(XModel::lodInfo)>;
@@ -829,7 +969,7 @@ namespace
             xmodel.numLods = static_cast<decltype(XModel::numLods)>(jXModel.lods.size());
             for (const auto& jLod : jXModel.lods)
             {
-                if (!LoadLod(jLod, xmodel, lodNumber++, context, registration))
+                if (!LoadLod(jXModel, jLod, xmodel, lodNumber++, context, registration))
                     return false;
             }
 
@@ -863,6 +1003,10 @@ namespace
             }
             else
                 xmodel.collLod = -1;
+
+#if defined(FEATURE_T5) || defined(FEATURE_T6)
+            xmodel.lodRampType = HasAnySkinnedSurfs(xmodel) ? XMODEL_LOD_RAMP_SKINNED : XMODEL_LOD_RAMP_RIGID;
+#endif
 
             if (jXModel.physPreset)
             {
@@ -936,7 +1080,7 @@ namespace
         ZoneScriptStrings& m_script_strings;
         PartClassificationState m_part_classification_state;
     };
-} // namespace GAME
+} // namespace
 
 namespace GAME
 {

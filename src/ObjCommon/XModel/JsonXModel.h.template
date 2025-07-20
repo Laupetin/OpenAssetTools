@@ -38,9 +38,23 @@ namespace GAME
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(JsonXModelLod, file, distance);
 
+    enum class JsonXModelType
+    {
+        RIGID,
+        ANIMATED,
+        VIEWHANDS
+    };
+
+    NLOHMANN_JSON_SERIALIZE_ENUM(JsonXModelType, {
+        {JsonXModelType::RIGID,     "rigid"     },
+        {JsonXModelType::ANIMATED,  "animated"  },
+        {JsonXModelType::VIEWHANDS, "viewhands" }
+    });
+
     class JsonXModel
     {
     public:
+        std::optional<JsonXModelType> type;
         std::vector<JsonXModelLod> lods;
         std::optional<int> collLod;
         std::optional<std::string> physPreset;
@@ -58,6 +72,7 @@ namespace GAME
 
     NLOHMANN_DEFINE_TYPE_EXTENSION(
         JsonXModel,
+        type,
         lods,
         collLod,
         physPreset,
