@@ -258,7 +258,7 @@ namespace
         }
         
         bool ApplyCommonBonesToXModel(
-            const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common, AssetRegistration<AssetXModel>& registration)
+            const JsonXModel& jXModel, const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, const XModelCommon& common, AssetRegistration<AssetXModel>& registration)
         {
             if (common.m_bones.empty())
                 return true;
@@ -343,8 +343,8 @@ namespace
                 }
             }
 
-            // TODO: Dirty hack, this is not necessarly always related to the name
-            if (strstr(xmodel.name, "viewhands"))
+            // Viewhands seem to have nulled trans for some reason?
+            if (jXModel.type.value_or(JsonXModelType::RIGID) == JsonXModelType::VIEWHANDS)
             {
                 memset(xmodel.trans, 0, sizeof(float) * 4 * (xmodel.numBones - xmodel.numRootBones));
             }
@@ -762,7 +762,12 @@ namespace
             return true;
         }
 
-        bool LoadLod(const JsonXModelLod& jLod, XModel& xmodel, unsigned lodNumber, AssetCreationContext& context, AssetRegistration<AssetXModel>& registration)
+        bool LoadLod(const JsonXModel& jXModel,
+                const JsonXModelLod& jLod,
+                XModel& xmodel,
+                unsigned lodNumber,
+                AssetCreationContext& context,
+                AssetRegistration<AssetXModel>& registration)
         {
             const auto file = m_search_path.Open(jLod.file);
             if (!file.IsOpen())
@@ -786,7 +791,7 @@ namespace
 
             if (lodNumber == 0u)
             {
-                if (!ApplyCommonBonesToXModel(jLod, xmodel, lodNumber, *common, registration))
+                if (!ApplyCommonBonesToXModel(jXModel, jLod, xmodel, lodNumber, *common, registration))
                     return false;
             }
             else
@@ -964,7 +969,7 @@ namespace
             xmodel.numLods = static_cast<decltype(XModel::numLods)>(jXModel.lods.size());
             for (const auto& jLod : jXModel.lods)
             {
-                if (!LoadLod(jLod, xmodel, lodNumber++, context, registration))
+                if (!LoadLod(jXModel, jLod, xmodel, lodNumber++, context, registration))
                     return false;
             }
 
