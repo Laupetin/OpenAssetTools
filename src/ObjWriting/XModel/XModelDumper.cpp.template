@@ -712,10 +712,86 @@ namespace
             }
         }
 
+        static bool IsAnimated(const XModel& xmodel)
+        {
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+            for (auto i = 0u; i < xmodel.numLods; i++)
+            {
+                const auto& lod = xmodel.lodInfo[i];
+                if (lod.modelSurfs == nullptr || lod.modelSurfs->surfs == nullptr)
+                    continue;
+
+                for (auto j = 0u; j < lod.modelSurfs->numsurfs; j++)
+                {
+                    const auto& surf = xmodel.lodInfo[i].modelSurfs->surfs[j];
+                    if (surf.vertInfo.vertsBlend)
+                        return true;
+                }
+            }
+#else
+            for (auto i = 0u; i < xmodel.numsurfs; i++)
+            {
+                const auto& surf = xmodel.surfs[i];
+                if (surf.vertInfo.vertsBlend)
+                    return true;
+            }
+#endif
+
+            return false;
+        }
+
+        static bool HasNulledTrans(const XModel& xmodel)
+        {
+            if (xmodel.trans == nullptr)
+                return true;
+
+            const auto transCount = (xmodel.numBones - xmodel.numRootBones) * 3u;
+            for (auto i = 0u; i < transCount; i++)
+            {
+                if (xmodel.trans[i] != 0)
+                    return false;
+            }
+
+            return true;
+        }
+
+        static bool HasNonNullBoneInfoTrans(const XModel& xmodel)
+        {
+            if (xmodel.boneInfo == nullptr)
+                return false;
+
+            for (auto i = 0u; i < xmodel.numBones; i++)
+            {
+                const auto& boneInfo = xmodel.boneInfo[i];
+#if defined(FEATURE_IW4) || defined(FEATURE_IW5)
+                if (boneInfo.bounds.midPoint.x != 0 || boneInfo.bounds.midPoint.y != 0 || boneInfo.bounds.midPoint.z != 0)
+                    return true;
+#else
+                if (boneInfo.offset.x != 0 || boneInfo.offset.y != 0 || boneInfo.offset.z != 0)
+                    return true;
+#endif
+            }
+
+            return false;
+        }
+
+        static JsonXModelType GetType(const XModel& xmodel)
+        {
+            if (!IsAnimated(xmodel))
+                return JsonXModelType::RIGID;
+
+            if (HasNulledTrans(xmodel) && HasNonNullBoneInfoTrans(xmodel))
+                return JsonXModelType::VIEWHANDS;
+
+            return JsonXModelType::ANIMATED;
+        }
+
         static void CreateJsonXModel(JsonXModel& jXModel, const XModel& xmodel)
         {
             if (xmodel.collLod >= 0)
                 jXModel.collLod = xmodel.collLod;
+
+            jXModel.type = GetType(xmodel);
 
             for (auto lodNumber = 0u; lodNumber < xmodel.numLods; lodNumber++)
             {
