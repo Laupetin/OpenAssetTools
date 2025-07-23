@@ -1,7 +1,8 @@
 #include "ObjLoaderT6.h"
 
 #include "Asset/GlobalAssetPoolsLoader.h"
-#include "FontIcon/LoaderFontIconT6.h"
+#include "FontIcon/CsvLoaderFontIconT6.h"
+#include "FontIcon/JsonLoaderFontIconT6.h"
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/GameT6.h"
@@ -412,7 +413,8 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
-            collection.AddAssetCreator(CreateFontIconLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateCsvFontIconLoader(memory, searchPath));
+            collection.AddAssetCreator(CreateJsonFontIconLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
             collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
