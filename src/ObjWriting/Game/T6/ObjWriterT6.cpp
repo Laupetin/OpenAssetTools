@@ -1,6 +1,5 @@
 #include "ObjWriterT6.h"
 
-#include "AssetDumpers/AssetDumperFontIcon.h"
 #include "AssetDumpers/AssetDumperGfxImage.h"
 #include "AssetDumpers/AssetDumperLeaderboardDef.h"
 #include "AssetDumpers/AssetDumperLocalizeEntry.h"
@@ -23,6 +22,7 @@
 #include "AssetDumpers/AssetDumperWeaponCamo.h"
 #include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
+#include "FontIcon/DumperFontIconT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Material/DumperMaterialT6.h"
 #include "ObjWriting.h"

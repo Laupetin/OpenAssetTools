@@ -1,4 +1,4 @@
-#include "LoaderFontIconT6.h"
+#include "CsvLoaderFontIconT6.h"
 
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
@@ -30,10 +30,10 @@ namespace
     constexpr unsigned COL_COUNT_ALIAS = 4;
     constexpr unsigned COL_COUNT_MIN = std::min(COL_COUNT_ICON, COL_COUNT_ALIAS);
 
-    class FontIconLoader final : public AssetCreator<AssetFontIcon>
+    class CsvFontIconLoader final : public AssetCreator<AssetFontIcon>
     {
     public:
-        FontIconLoader(MemoryManager& memory, ISearchPath& searchPath)
+        CsvFontIconLoader(MemoryManager& memory, ISearchPath& searchPath)
             : m_memory(memory),
               m_search_path(searchPath)
         {
@@ -284,8 +284,8 @@ namespace
 
 namespace T6
 {
-    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateFontIconLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateCsvFontIconLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
-        return std::make_unique<FontIconLoader>(memory, searchPath);
+        return std::make_unique<CsvFontIconLoader>(memory, searchPath);
     }
 } // namespace T6

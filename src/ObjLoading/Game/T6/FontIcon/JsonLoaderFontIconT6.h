@@ -9,5 +9,5 @@
 
 namespace T6
 {
-    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateFontIconLoader(MemoryManager& memory, ISearchPath& searchPath);
+    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonFontIconLoader(MemoryManager& memory, ISearchPath& searchPath);
 } // namespace T6
