@@ -7,8 +7,8 @@
 #include "AssetDumpers/AssetDumperRawFile.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
-#include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW3/GameAssetPoolIW3.h"
+#include "Game/IW3/XModel/XModelDumperIW3.h"
 #include "Material/DumperMaterialIW3.h"
 #include "ObjWriting.h"
 

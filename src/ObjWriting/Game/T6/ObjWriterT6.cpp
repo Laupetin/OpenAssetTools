@@ -20,10 +20,10 @@
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
 #include "AssetDumpers/AssetDumperWeaponAttachmentUnique.h"
 #include "AssetDumpers/AssetDumperWeaponCamo.h"
-#include "AssetDumpers/AssetDumperXModel.h"
 #include "AssetDumpers/AssetDumperZBarrier.h"
 #include "FontIcon/DumperFontIconT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/XModel/XModelDumperT6.h"
 #include "Material/DumperMaterialT6.h"
 #include "ObjWriting.h"
 

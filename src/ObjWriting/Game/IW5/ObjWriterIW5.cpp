@@ -12,8 +12,8 @@
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
 #include "AssetDumpers/AssetDumperWeaponAttachment.h"
-#include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW5/GameAssetPoolIW5.h"
+#include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Material/DumperMaterialIW5.h"
 #include "ObjWriting.h"
 

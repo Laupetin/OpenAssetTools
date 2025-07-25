@@ -20,8 +20,8 @@
 #include "AssetDumpers/AssetDumperVehicle.h"
 #include "AssetDumpers/AssetDumperVertexShader.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
-#include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW4/XModel/XModelDumperIW4.h"
 #include "Material/DumperMaterialIW4.h"
 #include "ObjWriting.h"
 

@@ -8,8 +8,8 @@
 #include "AssetDumpers/AssetDumperSndBank.h"
 #include "AssetDumpers/AssetDumperStringTable.h"
 #include "AssetDumpers/AssetDumperWeapon.h"
-#include "AssetDumpers/AssetDumperXModel.h"
 #include "Game/T5/GameAssetPoolT5.h"
+#include "Game/T5/XModel/XModelDumperT5.h"
 #include "Material/DumperMaterialT5.h"
 #include "ObjWriting.h"
 
