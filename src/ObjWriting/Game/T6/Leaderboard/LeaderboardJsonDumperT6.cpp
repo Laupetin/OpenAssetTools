@@ -1,28 +1,32 @@
-#include "JsonLeaderboardDefWriter.h"
+#include "LeaderboardJsonDumperT6.h"
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/Leaderboard/JsonLeaderboardDef.h"
+#include "Leaderboard/LeaderboardCommon.h"
 
+#include <format>
 #include <iomanip>
 #include <nlohmann/json.hpp>
+#include <ranges>
 
 using namespace nlohmann;
 using namespace T6;
+using namespace ::leaderboard;
 
 namespace
 {
-    class JsonDumper
+    class Dumper
     {
     public:
-        explicit JsonDumper(std::ostream& stream)
+        explicit Dumper(std::ostream& stream)
             : m_stream(stream)
         {
         }
 
-        void Dump(const LeaderboardDef* leaderboardDef) const
+        void Dump(const LeaderboardDef& leaderboardDef) const
         {
             JsonLeaderboardDef jsonLeaderboardDef;
-            CreateJsonLeaderboardDef(jsonLeaderboardDef, *leaderboardDef);
+            CreateJsonLeaderboardDef(jsonLeaderboardDef, leaderboardDef);
 
             json jRoot = jsonLeaderboardDef;
 
@@ -94,11 +98,21 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace T6::leaderboard
 {
-    void DumpLeaderboardDefAsJson(std::ostream& stream, const LeaderboardDef* leaderboardDef)
+    bool JsonDumper::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
     {
-        JsonDumper dumper(stream);
-        dumper.Dump(leaderboardDef);
+        return true;
     }
-} // namespace T6
+
+    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset->m_name));
+
+        if (!assetFile)
+            return;
+
+        Dumper dumper(*assetFile);
+        dumper.Dump(*asset->Asset());
+    }
+} // namespace T6::leaderboard

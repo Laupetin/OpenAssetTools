@@ -4,7 +4,7 @@
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
 #include "Image/AssetDumperGfxImage.h"
-#include "Leaderboard/AssetDumperLeaderboardDef.h"
+#include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "Localize/AssetDumperLocalizeEntry.h"
 #include "Maps/AssetDumperMapEnts.h"
 #include "Material/DumperMaterialT6.h"
@@ -26,7 +26,6 @@
 #include "Weapon/AssetDumperWeaponAttachmentUnique.h"
 #include "Weapon/AssetDumperWeaponCamo.h"
 #include "ZBarrier/AssetDumperZBarrier.h"
-
 
 using namespace T6;
 
@@ -72,7 +71,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
-    DUMP_ASSET_POOL(AssetDumperLeaderboardDef, m_leaderboard, ASSET_TYPE_LEADERBOARD)
+    DUMP_ASSET_POOL(leaderboard::JsonDumper, m_leaderboard, ASSET_TYPE_LEADERBOARD)
     // DUMP_ASSET_POOL(AssetDumperXGlobals, m_xglobals, ASSET_TYPE_XGLOBALS)
     // DUMP_ASSET_POOL(AssetDumperDDLRoot, m_ddl, ASSET_TYPE_DDL)
     // DUMP_ASSET_POOL(AssetDumperGlasses, m_glasses, ASSET_TYPE_GLASSES)
