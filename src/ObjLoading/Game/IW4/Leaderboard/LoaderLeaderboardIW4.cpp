@@ -2,6 +2,7 @@
 
 #include "Game/IW4/IW4.h"
 #include "JsonLeaderboardDefLoader.h"
+#include "Leaderboard/LeaderboardCommon.h"
 
 #include <cstring>
 #include <format>
@@ -22,7 +23,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(std::format("leaderboards/{}.json", assetName));
+            const auto file = m_search_path.Open(leaderboard::GetJsonFileNameForAsset(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
