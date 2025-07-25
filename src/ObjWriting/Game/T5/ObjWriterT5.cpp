@@ -1,17 +1,17 @@
 #include "ObjWriterT5.h"
 
-#include "AssetDumpers/AssetDumperGfxImage.h"
-#include "AssetDumpers/AssetDumperLocalizeEntry.h"
-#include "AssetDumpers/AssetDumperPhysConstraints.h"
-#include "AssetDumpers/AssetDumperPhysPreset.h"
-#include "AssetDumpers/AssetDumperRawFile.h"
-#include "AssetDumpers/AssetDumperSndBank.h"
-#include "AssetDumpers/AssetDumperStringTable.h"
-#include "AssetDumpers/AssetDumperWeapon.h"
 #include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/XModel/XModelDumperT5.h"
+#include "Image/AssetDumperGfxImage.h"
+#include "Localize/AssetDumperLocalizeEntry.h"
 #include "Material/DumperMaterialT5.h"
 #include "ObjWriting.h"
+#include "PhysConstraints/AssetDumperPhysConstraints.h"
+#include "PhysPreset/AssetDumperPhysPreset.h"
+#include "RawFile/AssetDumperRawFile.h"
+#include "Sound/AssetDumperSndBank.h"
+#include "StringTable/AssetDumperStringTable.h"
+#include "Weapon/AssetDumperWeapon.h"
 
 using namespace T5;
 

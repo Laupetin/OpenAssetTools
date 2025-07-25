@@ -1,6 +1,6 @@
 #include "AssetDumperWeaponCamo.h"
 
-#include "Game/T6/WeaponCamo/JsonWeaponCamoWriter.h"
+#include "JsonWeaponCamoWriter.h"
 
 #include <format>
 
