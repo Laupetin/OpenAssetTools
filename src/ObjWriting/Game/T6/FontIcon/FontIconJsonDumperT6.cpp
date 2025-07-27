@@ -1,4 +1,4 @@
-#include "DumperFontIconJsonT6.h"
+#include "FontIconJsonDumperT6.h"
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/FontIcon/FontIconCommonT6.h"
@@ -76,15 +76,20 @@ namespace
     }
 } // namespace
 
-namespace T6
+namespace T6::font_icon
 {
-    void DumpFontIconAsJson(const AssetDumpingContext& context, const FontIcon& fontIcon)
+    bool JsonDumper::ShouldDump(XAssetInfo<FontIcon>* asset)
     {
-        const auto assetFile = context.OpenAssetFile(font_icon::GetJsonFileNameForAssetName(fontIcon.name));
+        return true;
+    }
+
+    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(font_icon::GetJsonFileNameForAssetName(asset->m_name));
 
         if (!assetFile)
             return;
 
-        DumpFontIcon(*assetFile, fontIcon);
+        DumpFontIcon(*assetFile, *asset->Asset());
     }
-} // namespace T6
+} // namespace T6::font_icon

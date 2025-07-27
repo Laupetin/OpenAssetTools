@@ -1,6 +1,6 @@
 #include "ObjWriterT6.h"
 
-#include "FontIcon/DumperFontIconT6.h"
+#include "FontIcon/FontIconDumperT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
 #include "Image/AssetDumperGfxImage.h"
@@ -37,6 +37,12 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
         dumperType dumper;                                                                                                                                     \
         dumper.DumpPool(context, assetPools->poolName.get());                                                                                                  \
     }
+#define DUMP_ASSET_POOL_WITH_FACTORY(createDumper, poolName, assetType)                                                                                        \
+    if (assetPools->poolName && ObjWriting::ShouldHandleAssetType(assetType))                                                                                  \
+    {                                                                                                                                                          \
+        const auto dumper = createDumper;                                                                                                                      \
+        dumper->DumpPool(context, assetPools->poolName.get());                                                                                                 \
+    }
 
     const auto* assetPools = dynamic_cast<GameAssetPoolT6*>(context.m_zone.m_pools.get());
 
@@ -58,7 +64,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
     // DUMP_ASSET_POOL(AssetDumperFont, m_font, ASSET_TYPE_FONT)
-    DUMP_ASSET_POOL(AssetDumperFontIcon, m_font_icon, ASSET_TYPE_FONTICON)
+    DUMP_ASSET_POOL_WITH_FACTORY(font_icon::CreateDumper(), m_font_icon, ASSET_TYPE_FONTICON)
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     // DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
     DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)

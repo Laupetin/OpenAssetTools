@@ -1,4 +1,4 @@
-#include "DumperFontIconCsvT6.h"
+#include "FontIconCsvDumperT6.h"
 
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
@@ -52,15 +52,15 @@ namespace
         }
     }
 
-    class DumperFontIconCsv
+    class Dumper
     {
     public:
-        explicit DumperFontIconCsv(std::ostream& stream)
+        explicit Dumper(std::ostream& stream)
             : m_csv(stream)
         {
         }
 
-        void DumpFontIcon(const FontIcon& fontIcon)
+        void Dump(const FontIcon& fontIcon)
         {
             WriteFontIconEntries(fontIcon);
             m_csv.NextRow();
@@ -131,16 +131,21 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace T6::font_icon
 {
-    void DumpFontIconAsCsv(const AssetDumpingContext& context, const FontIcon& fontIcon)
+    bool CsvDumper::ShouldDump(XAssetInfo<FontIcon>* asset)
     {
-        const auto assetFile = context.OpenAssetFile(fontIcon.name);
+        return true;
+    }
+
+    void CsvDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<FontIcon>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(asset->m_name);
 
         if (!assetFile)
             return;
 
-        DumperFontIconCsv dumperFontIconCsv(*assetFile);
-        dumperFontIconCsv.DumpFontIcon(fontIcon);
+        Dumper dumper(*assetFile);
+        dumper.Dump(*asset->Asset());
     }
-} // namespace T6
+} // namespace T6::font_icon

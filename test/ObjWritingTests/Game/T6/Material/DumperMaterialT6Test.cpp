@@ -470,7 +470,6 @@ namespace
         AssetDumpingContext context(zone, "", mockOutput, mockObjPath);
 
         AssetPoolDynamic<Material> materialPool(0);
-
         GivenMaterial("wpc/metal_ac_duct", materialPool, memory);
 
         AssetDumperMaterial dumper;
