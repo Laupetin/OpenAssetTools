@@ -2,7 +2,7 @@
 
 #include "Game/IW3/GameAssetPoolIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
-#include "Image/AssetDumperGfxImage.h"
+#include "Image/ImageDumperIW3.h"
 #include "Localize/AssetDumperLocalizeEntry.h"
 #include "Maps/AssetDumperMapEnts.h"
 #include "Material/DumperMaterialIW3.h"
@@ -30,7 +30,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
     DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
     // DUMP_ASSET_POOL(AssetDumperMaterialTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
-    DUMP_ASSET_POOL(AssetDumperGfxImage, m_image, ASSET_TYPE_IMAGE)
+    DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
     // DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
     DUMP_ASSET_POOL(AssetDumperLoadedSound, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)

@@ -3,7 +3,7 @@
 #include "FontIcon/FontIconDumperT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
-#include "Image/AssetDumperGfxImage.h"
+#include "Image/ImageDumperT6.h"
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "Localize/AssetDumperLocalizeEntry.h"
 #include "Maps/AssetDumperMapEnts.h"
@@ -53,7 +53,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
     DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
     DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
-    DUMP_ASSET_POOL(AssetDumperGfxImage, m_image, ASSET_TYPE_IMAGE)
+    DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     DUMP_ASSET_POOL(AssetDumperSndBank, m_sound_bank, ASSET_TYPE_SOUND)
     // DUMP_ASSET_POOL(AssetDumperSndPatch, m_sound_patch, ASSET_TYPE_SOUND_PATCH)
     // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map, ASSET_TYPE_CLIPMAP_PVS)

@@ -1,7 +1,8 @@
-#include "AssetDumperGfxImage.h"
+#include "ImageDumperT5.h"
 
 #include "Image/DdsWriter.h"
 #include "Image/Dx9TextureLoader.h"
+#include "Image/ImageCommon.h"
 #include "Image/IwiLoader.h"
 #include "Image/IwiWriter13.h"
 #include "ObjWriting.h"
@@ -11,6 +12,7 @@
 #include <format>
 
 using namespace T5;
+using namespace ::image;
 
 namespace
 {
@@ -55,48 +57,43 @@ namespace
     }
 } // namespace
 
-AssetDumperGfxImage::AssetDumperGfxImage()
+namespace T5::image
 {
-    switch (ObjWriting::Configuration.ImageOutputFormat)
+    Dumper::Dumper()
     {
-    case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
-        m_writer = std::make_unique<DdsWriter>();
-        break;
-    case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
-        m_writer = std::make_unique<iwi13::IwiWriter>();
-        break;
-    default:
-        assert(false);
-        m_writer = nullptr;
-        break;
+        switch (ObjWriting::Configuration.ImageOutputFormat)
+        {
+        case ObjWriting::Configuration_t::ImageOutputFormat_e::DDS:
+            m_writer = std::make_unique<DdsWriter>();
+            break;
+        case ObjWriting::Configuration_t::ImageOutputFormat_e::IWI:
+            m_writer = std::make_unique<iwi13::IwiWriter>();
+            break;
+        default:
+            assert(false);
+            m_writer = nullptr;
+            break;
+        }
     }
-}
 
-bool AssetDumperGfxImage::ShouldDump(XAssetInfo<GfxImage>* asset)
-{
-    return true;
-}
+    bool Dumper::ShouldDump(XAssetInfo<GfxImage>* asset)
+    {
+        return true;
+    }
 
-std::string AssetDumperGfxImage::GetAssetFileName(const XAssetInfo<GfxImage>& asset) const
-{
-    auto cleanAssetName = asset.m_name;
-    std::ranges::replace(cleanAssetName, '*', '_');
+    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
+    {
+        const auto* image = asset->Asset();
+        const auto texture = LoadImageData(context.m_obj_search_path, *image);
+        if (!texture)
+            return;
 
-    return std::format("images/{}{}", cleanAssetName, m_writer->GetFileExtension());
-}
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAsset(asset->m_name, m_writer->GetFileExtension()));
 
-void AssetDumperGfxImage::DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxImage>* asset)
-{
-    const auto* image = asset->Asset();
-    const auto texture = LoadImageData(context.m_obj_search_path, *image);
-    if (!texture)
-        return;
+        if (!assetFile)
+            return;
 
-    const auto assetFile = context.OpenAssetFile(GetAssetFileName(*asset));
-
-    if (!assetFile)
-        return;
-
-    auto& stream = *assetFile;
-    m_writer->DumpImage(stream, texture.get());
-}
+        auto& stream = *assetFile;
+        m_writer->DumpImage(stream, texture.get());
+    }
+} // namespace T5::image
