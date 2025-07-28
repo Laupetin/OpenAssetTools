@@ -5,7 +5,7 @@
 #include "Game/IW4/IW4.h"
 #include "Game/IW4/XModel/LoaderXModelIW4.h"
 #include "Leaderboard/LoaderLeaderboardIW4.h"
-#include "LightDef/LoaderLightDefIW4.h"
+#include "LightDef/LightDefLoaderIW4.h"
 #include "Localize/LoaderLocalizeIW4.h"
 #include "Material/LoaderMaterialIW4.h"
 #include "Menu/LoaderMenuListIW4.h"

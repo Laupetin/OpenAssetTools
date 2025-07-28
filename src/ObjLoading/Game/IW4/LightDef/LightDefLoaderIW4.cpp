@@ -1,12 +1,15 @@
-#include "LoaderLightDefIW4.h"
+#include "LightDefLoaderIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "LightDef/LightDefCommon.h"
 
 #include <cstring>
 #include <format>
 #include <iostream>
 
+
 using namespace IW4;
+using namespace ::light_def;
 
 namespace
 {
@@ -23,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto filename = GetAssetFilename(assetName);
+            const auto filename = GetFileNameForAsset(assetName);
             const auto file = m_search_path.Open(filename);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -61,11 +64,6 @@ namespace
         }
 
     private:
-        std::string GetAssetFilename(const std::string& assetName)
-        {
-            return std::format("lights/{}", assetName);
-        }
-
         MemoryManager& m_memory;
         ISearchPath& m_search_path;
     };

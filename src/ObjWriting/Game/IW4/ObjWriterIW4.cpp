@@ -4,7 +4,7 @@
 #include "Game/IW4/XModel/XModelDumperIW4.h"
 #include "Image/AssetDumperGfxImage.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
-#include "LightDef/AssetDumperGfxLightDef.h"
+#include "LightDef/LightDefDumperIW4.h"
 #include "Localize/AssetDumperLocalizeEntry.h"
 #include "Maps/AssetDumperAddonMapEnts.h"
 #include "Material/DumperMaterialIW4.h"
@@ -57,7 +57,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents, ASSET_TYPE_MAP_ENTS)
     // DUMP_ASSET_POOL(AssetDumperFxWorld, m_fx_world, ASSET_TYPE_FXWORLD)
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
-    DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
+    DUMP_ASSET_POOL(light_def::Dumper, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
     DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)

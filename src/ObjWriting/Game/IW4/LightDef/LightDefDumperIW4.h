@@ -3,12 +3,10 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW4/IW4.h"
 
-namespace IW4
+namespace IW4::light_def
 {
-    class AssetDumperGfxLightDef final : public AbstractAssetDumper<GfxLightDef>
+    class Dumper final : public AbstractAssetDumper<GfxLightDef>
     {
-        static std::string GetAssetFilename(const std::string& assetName);
-
     protected:
         bool ShouldDump(XAssetInfo<GfxLightDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<GfxLightDef>* asset) override;
