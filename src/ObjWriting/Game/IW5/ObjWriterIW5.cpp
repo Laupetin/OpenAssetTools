@@ -3,7 +3,7 @@
 #include "Game/IW5/GameAssetPoolIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Image/AssetDumperGfxImage.h"
-#include "Leaderboard/AssetDumperLeaderboardDef.h"
+#include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "Localize/AssetDumperLocalizeEntry.h"
 #include "Maps/AssetDumperAddonMapEnts.h"
 #include "Material/DumperMaterialIW5.h"
@@ -64,7 +64,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(AssetDumperScriptFile, m_script_file, ASSET_TYPE_SCRIPTFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
-    DUMP_ASSET_POOL(AssetDumperLeaderboardDef, m_leaderboard, ASSET_TYPE_LEADERBOARD)
+    DUMP_ASSET_POOL(leaderboard::JsonDumper, m_leaderboard, ASSET_TYPE_LEADERBOARD)
     // DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
     // DUMP_ASSET_POOL(AssetDumperTracerDef, m_tracer, ASSET_TYPE_TRACER)
     // DUMP_ASSET_POOL(AssetDumperVehicleDef, m_vehicle, ASSET_TYPE_VEHICLE)

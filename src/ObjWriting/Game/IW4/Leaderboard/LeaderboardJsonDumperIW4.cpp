@@ -1,34 +1,36 @@
-#include "JsonLeaderboardDefWriter.h"
+#include "LeaderboardJsonDumperIW4.h"
 
-#include "Game/IW5/CommonIW5.h"
-#include "Game/IW5/Leaderboard/JsonLeaderboardDef.h"
+#include "Game/IW4/CommonIW4.h"
+#include "Game/IW4/Leaderboard/JsonLeaderboardDef.h"
+#include "Leaderboard/LeaderboardCommon.h"
 
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
-using namespace IW5;
+using namespace IW4;
+using namespace ::leaderboard;
 
 namespace
 {
-    class JsonDumper
+    class Dumper
     {
     public:
-        explicit JsonDumper(std::ostream& stream)
+        explicit Dumper(std::ostream& stream)
             : m_stream(stream)
         {
         }
 
-        void Dump(const LeaderboardDef* leaderboardDef) const
+        void Dump(const LeaderboardDef& leaderboardDef) const
         {
             JsonLeaderboardDef jsonLeaderboardDef;
-            CreateJsonLeaderboardDef(jsonLeaderboardDef, *leaderboardDef);
+            CreateJsonLeaderboardDef(jsonLeaderboardDef, leaderboardDef);
 
             json jRoot = jsonLeaderboardDef;
 
             jRoot["_type"] = "leaderboard";
             jRoot["_version"] = 1;
-            jRoot["_game"] = "iw5";
+            jRoot["_game"] = "iw4";
 
             m_stream << std::setw(4) << jRoot << "\n";
         }
@@ -54,12 +56,6 @@ namespace
                 jColumnDef.precision = lbColumnDef.precision;
 
             jColumnDef.aggregationFunction = lbColumnDef.agg;
-
-            if (lbColumnDef.uiCalColX != 0 || lbColumnDef.uiCalColY != 0)
-            {
-                jColumnDef.uiCalColX = lbColumnDef.uiCalColX;
-                jColumnDef.uiCalColY = lbColumnDef.uiCalColY;
-            }
         }
 
         static void CreateJsonLeaderboardDef(JsonLeaderboardDef& jLeaderboardDef, const LeaderboardDef& leaderboardDef)
@@ -74,27 +70,27 @@ namespace
             jLeaderboardDef.columns.resize(leaderboardDef.columnCount);
             for (auto i = 0; i < leaderboardDef.columnCount; ++i)
                 CreateJsonColumnDef(jLeaderboardDef.columns[i], leaderboardDef.columns[i]);
-
-            jLeaderboardDef.updateType = leaderboardDef.updateType;
-
-            for (auto i = 0; i < TRK_COUNT; ++i)
-            {
-                const auto trackTypeMask = 1 << i;
-
-                if (leaderboardDef.trackTypes & trackTypeMask)
-                    jLeaderboardDef.trackTypes.emplace_back(static_cast<LbTrackType>(i));
-            }
         }
 
         std::ostream& m_stream;
     };
 } // namespace
 
-namespace IW5
+namespace IW4::leaderboard
 {
-    void DumpLeaderboardDefAsJson(std::ostream& stream, const LeaderboardDef* leaderboardDef)
+    bool JsonDumper::ShouldDump(XAssetInfo<LeaderboardDef>* asset)
     {
-        JsonDumper dumper(stream);
-        dumper.Dump(leaderboardDef);
+        return true;
     }
-} // namespace IW5
+
+    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<LeaderboardDef>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(GetJsonFileNameForAsset(asset->m_name));
+
+        if (!assetFile)
+            return;
+
+        Dumper dumper(*assetFile);
+        dumper.Dump(*asset->Asset());
+    }
+} // namespace IW4::leaderboard

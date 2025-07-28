@@ -4,7 +4,6 @@
 #include "Game/T6/Leaderboard/JsonLeaderboardDef.h"
 #include "Leaderboard/LeaderboardCommon.h"
 
-#include <format>
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include <ranges>
