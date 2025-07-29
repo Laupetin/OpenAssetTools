@@ -4,7 +4,7 @@
 #include "Game/IW3/XModel/XModelDumperIW3.h"
 #include "Image/ImageDumperIW3.h"
 #include "Localize/LocalizeDumperIW3.h"
-#include "Maps/AssetDumperMapEnts.h"
+#include "Maps/MapEntsDumperIW3.h"
 #include "Material/DumperMaterialIW3.h"
 #include "ObjWriting.h"
 #include "RawFile/AssetDumperRawFile.h"
@@ -38,7 +38,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world, ASSET_TYPE_COMWORLD)
     // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp, ASSET_TYPE_GAMEWORLD_SP)
     // DUMP_ASSET_POOL(AssetDumperGameWorldMp, m_game_world_mp, ASSET_TYPE_GAMEWORLD_MP)
-    DUMP_ASSET_POOL(AssetDumperMapEnts, m_map_ents, ASSET_TYPE_MAP_ENTS)
+    DUMP_ASSET_POOL(map_ents::Dumper, m_map_ents, ASSET_TYPE_MAP_ENTS)
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)

@@ -6,7 +6,7 @@
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
 #include "LightDef/LightDefDumperIW4.h"
 #include "Localize/LocalizeDumperIW4.h"
-#include "Maps/AssetDumperAddonMapEnts.h"
+#include "Maps/AddonMapEntsDumperIW4.h"
 #include "Material/DumperMaterialIW4.h"
 #include "Menu/AssetDumperMenuDef.h"
 #include "Menu/AssetDumperMenuList.h"
@@ -72,7 +72,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
     DUMP_ASSET_POOL(AssetDumperTracer, m_tracer, ASSET_TYPE_TRACER)
     DUMP_ASSET_POOL(AssetDumperVehicle, m_vehicle, ASSET_TYPE_VEHICLE)
-    DUMP_ASSET_POOL(AssetDumperAddonMapEnts, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
+    DUMP_ASSET_POOL(addon_map_ents::Dumper, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
 
     return true;
 

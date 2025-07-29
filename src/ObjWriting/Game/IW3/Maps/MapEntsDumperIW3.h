@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Dumping/AbstractAssetDumper.h"
-#include "Game/T6/T6.h"
+#include "Game/IW3/IW3.h"
 
-namespace T6
+namespace IW3::map_ents
 {
-    class AssetDumperMapEnts final : public AbstractAssetDumper<MapEnts>
+    class Dumper final : public AbstractAssetDumper<MapEnts>
     {
     protected:
         bool ShouldDump(XAssetInfo<MapEnts>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<MapEnts>* asset) override;
     };
-} // namespace T6
+} // namespace IW3::map_ents
