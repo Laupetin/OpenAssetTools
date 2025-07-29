@@ -2,12 +2,12 @@
 
 #include "FontIcon/FontIconDumperT6.h"
 #include "Game/T6/GameAssetPoolT6.h"
+#include "Game/T6/Material/MaterialJsonDumperT6.h"
 #include "Game/T6/XModel/XModelDumperT6.h"
 #include "Image/ImageDumperT6.h"
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
 #include "Localize/LocalizeDumperT6.h"
 #include "Maps/MapEntsDumperT6.h"
-#include "Material/DumperMaterialT6.h"
 #include "ObjWriting.h"
 #include "PhysConstraints/AssetDumperPhysConstraints.h"
 #include "PhysPreset/AssetDumperPhysPreset.h"
@@ -51,7 +51,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperDestructibleDef, m_destructible_def, ASSET_TYPE_DESTRUCTIBLEDEF)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
-    DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
+    DUMP_ASSET_POOL(material::JsonDumper, m_material, ASSET_TYPE_MATERIAL)
     DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     DUMP_ASSET_POOL(AssetDumperSndBank, m_sound_bank, ASSET_TYPE_SOUND)

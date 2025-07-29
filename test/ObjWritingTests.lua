@@ -3,6 +3,7 @@ ObjWritingTests = {}
 function ObjWritingTests:include(includes)
 	if includes:handle(self:name()) then
 		includedirs {
+			"%{wks.location}/src/ObjWriting",
 			path.join(TestFolder(), "ObjWritingTests")
 		}
 	end

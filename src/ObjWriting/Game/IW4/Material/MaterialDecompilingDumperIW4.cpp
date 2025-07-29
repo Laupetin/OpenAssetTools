@@ -1,4 +1,4 @@
-#include "DecompilingMaterialDumperIW4.h"
+#include "MaterialDecompilingDumperIW4.h"
 
 #include "Game/IW4/MaterialConstantsIW4.h"
 #include "Game/IW4/ObjConstantsIW4.h"
@@ -1108,11 +1108,19 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::material
 {
-    void DecompileMaterialToGdt(GdtOutputStream& out, const Material& material, AssetDumpingContext& context)
+    bool DecompilingGdtDumper::ShouldDump(XAssetInfo<Material>* asset)
     {
-        MaterialGdtDumper dumper(material);
-        out.WriteEntry(dumper.CreateGdtEntry());
+        return true;
     }
-} // namespace IW4
+
+    void DecompilingGdtDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
+    {
+        if (!context.m_gdt)
+            return;
+
+        MaterialGdtDumper dumper(*asset->Asset());
+        context.m_gdt->WriteEntry(dumper.CreateGdtEntry());
+    }
+} // namespace IW4::material

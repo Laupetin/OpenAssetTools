@@ -1,6 +1,6 @@
 #options GAME (IW3, IW4, IW5, T5, T6)
 
-#filename "Game/" + GAME + "/Material/JsonMaterialWriter" + GAME + ".cpp"
+#filename "Game/" + GAME + "/Material/MaterialJsonDumper" + GAME + ".cpp"
 
 #if GAME == "IW3"
 #define FEATURE_IW3
@@ -24,16 +24,17 @@
 #endif
 
 // This file was templated.
-// See JsonMaterialWriter.cpp.template.
+// See MaterialJsonDumper.cpp.template.
 // Do not modify, changes will be lost.
 
-#set WRITER_HEADER "\"JsonMaterialWriter" + GAME + ".h\""
+#set WRITER_HEADER "\"MaterialJsonDumper" + GAME + ".h\""
 #include WRITER_HEADER
 
 #ifdef HAS_WATER
 #include "Base64.h"
 #endif
 
+#include "Material/MaterialCommon.h"
 #set COMMON_HEADER "\"Game/" + GAME + "/Common" + GAME + ".h\""
 #include COMMON_HEADER
 #set JSON_HEADER "\"Game/" + GAME + "/Material/JsonMaterial" + GAME + ".h\""
@@ -41,18 +42,20 @@
 #set CONSTANTS_HEADER "\"Game/" + GAME + "/Material/MaterialConstantZoneState" + GAME + ".h\""
 #include CONSTANTS_HEADER
 
+#include <cassert>
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
 using namespace GAME;
+using namespace ::material;
 
 namespace
 {
-    class JsonDumper
+    class JsonDumperImpl
     {
     public:
-        JsonDumper(AssetDumpingContext& context, std::ostream& stream)
+        JsonDumperImpl(AssetDumpingContext& context, std::ostream& stream)
             : m_stream(stream),
               m_material_constants(*context.GetZoneAssetDumperState<MaterialConstantZoneState>())
         {
@@ -355,11 +358,40 @@ namespace
     };
 } // namespace
 
-namespace GAME
+namespace GAME::material
 {
-    void DumpMaterialAsJson(std::ostream& stream, const Material& material, AssetDumpingContext& context)
+    void JsonDumper::DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool)
     {
-        const JsonDumper dumper(context, stream);
-        dumper.Dump(material);
+        auto* materialConstantState = context.GetZoneAssetDumperState<MaterialConstantZoneState>();
+        materialConstantState->ExtractNamesFromZone();
+
+        AbstractAssetDumper::DumpPool(context, pool);
     }
-} // namespace GAME
+
+    bool JsonDumper::ShouldDump(XAssetInfo<Material>* asset)
+    {
+        return true;
+    }
+
+    void JsonDumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset)
+    {
+        const auto assetFile = context.OpenAssetFile(GetFileNameForAssetName(asset->m_name));
+
+        if (!assetFile)
+            return;
+
+        const auto* material = asset->Asset();
+#if defined(FEATURE_T5)
+        assert(material->info.gameFlags < 0x400);
+        assert(material->maxStreamedMips == 0);
+#elif defined(FEATURE_T6)
+        assert(material->info.gameFlags < 0x8000);
+        assert(material->info.hashIndex == 0);
+        assert(material->probeMipBits == 0);
+#endif
+
+        JsonDumperImpl dumper(context, *assetFile);
+        dumper.Dump(*material);
+    }
+} // namespace T6::leaderboard
+

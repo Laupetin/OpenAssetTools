@@ -1,12 +1,12 @@
 #include "ObjWriterIW5.h"
 
 #include "Game/IW5/GameAssetPoolIW5.h"
+#include "Game/IW5/Material/MaterialJsonDumperIW5.h"
 #include "Game/IW5/XModel/XModelDumperIW5.h"
 #include "Image/ImageDumperIW5.h"
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "Localize/LocalizeDumperIW5.h"
 #include "Maps/AddonMapEntsDumperIW5.h"
-#include "Material/DumperMaterialIW5.h"
 #include "Menu/AssetDumperMenuDef.h"
 #include "Menu/AssetDumperMenuList.h"
 #include "ObjWriting.h"
@@ -34,7 +34,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
     // DUMP_ASSET_POOL(AssetDumperXModelSurfs, m_xmodel_surfs, ASSET_TYPE_XMODEL_SURFS)
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
-    DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
+    DUMP_ASSET_POOL(material::JsonDumper, m_material, ASSET_TYPE_MATERIAL)
     // DUMP_ASSET_POOL(AssetDumperMaterialPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
     // DUMP_ASSET_POOL(AssetDumperMaterialVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
     // DUMP_ASSET_POOL(AssetDumperMaterialVertexDeclaration, m_material_vertex_decl, ASSET_TYPE_VERTEXDECL)

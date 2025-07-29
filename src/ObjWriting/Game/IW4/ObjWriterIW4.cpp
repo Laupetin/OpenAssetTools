@@ -1,13 +1,14 @@
 #include "ObjWriterIW4.h"
 
 #include "Game/IW4/GameAssetPoolIW4.h"
+#include "Game/IW4/Material/MaterialJsonDumperIW4.h"
 #include "Game/IW4/XModel/XModelDumperIW4.h"
 #include "Image/ImageDumperIW4.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
 #include "LightDef/LightDefDumperIW4.h"
 #include "Localize/LocalizeDumperIW4.h"
 #include "Maps/AddonMapEntsDumperIW4.h"
-#include "Material/DumperMaterialIW4.h"
+#include "Material/MaterialDecompilingDumperIW4.h"
 #include "Menu/AssetDumperMenuDef.h"
 #include "Menu/AssetDumperMenuList.h"
 #include "ObjWriting.h"
@@ -42,7 +43,10 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
-    DUMP_ASSET_POOL(AssetDumperMaterial, m_material, ASSET_TYPE_MATERIAL)
+    DUMP_ASSET_POOL(material::JsonDumper, m_material, ASSET_TYPE_MATERIAL)
+#ifdef EXPERIMENTAL_MATERIAL_COMPILATION
+    DUMP_ASSET_POOL(material::DecompilingGdtDumper, m_material, ASSET_TYPE_MATERIAL)
+#endif
     DUMP_ASSET_POOL(AssetDumperPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
     DUMP_ASSET_POOL(AssetDumperVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
     DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)

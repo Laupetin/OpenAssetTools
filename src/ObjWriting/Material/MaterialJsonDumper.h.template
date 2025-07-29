@@ -1,0 +1,27 @@
+#options GAME(IW3, IW4, IW5, T5, T6)
+
+#filename "Game/" + GAME + "/Material/MaterialJsonDumper" + GAME + ".h"
+
+// This file was templated.
+// See MaterialJsonDumper.h.template.
+// Do not modify, changes will be lost.
+
+#pragma once
+
+#include "Dumping/AbstractAssetDumper.h"
+#include "Dumping/AssetDumpingContext.h"
+#set GAME_HEADER "\"Game/" + GAME + "/" + GAME + ".h\""
+#include GAME_HEADER
+
+namespace GAME::material
+{
+    class JsonDumper final : public AbstractAssetDumper<Material>
+    {
+    public:
+        void DumpPool(AssetDumpingContext& context, AssetPool<Material>* pool) override;
+        
+    protected:
+        [[nodiscard]] bool ShouldDump(XAssetInfo<Material>* asset) override;
+        void DumpAsset(AssetDumpingContext& context, XAssetInfo<Material>* asset) override;
+    };
+} // namespace GAME::material

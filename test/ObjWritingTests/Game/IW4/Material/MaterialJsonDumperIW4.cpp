@@ -1,4 +1,4 @@
-#include "Game/IW4/Material/DumperMaterialIW4.h"
+#include "Game/IW4/Material/MaterialJsonDumperIW4.h"
 
 #include "Asset/AssetRegistration.h"
 #include "Game/IW4/CommonIW4.h"
@@ -543,7 +543,7 @@ namespace
 
         GivenMaterial("mc/ch_rubble01", materialPool, memory);
 
-        AssetDumperMaterial dumper;
+        material::JsonDumper dumper;
         dumper.DumpPool(context, &materialPool);
 
         const auto* file = mockOutput.GetMockedFile("materials/mc/ch_rubble01.json");
