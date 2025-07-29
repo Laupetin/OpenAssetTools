@@ -5,7 +5,7 @@
 #include "Image/ImageDumperIW4.h"
 #include "Leaderboard/LeaderboardJsonDumperIW4.h"
 #include "LightDef/LightDefDumperIW4.h"
-#include "Localize/AssetDumperLocalizeEntry.h"
+#include "Localize/LocalizeDumperIW4.h"
 #include "Maps/AssetDumperAddonMapEnts.h"
 #include "Material/DumperMaterialIW4.h"
 #include "Menu/AssetDumperMenuDef.h"
@@ -61,7 +61,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
     DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
-    DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
+    DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon, ASSET_TYPE_WEAPON)
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)

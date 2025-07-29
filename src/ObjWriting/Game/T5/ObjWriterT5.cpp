@@ -3,7 +3,7 @@
 #include "Game/T5/GameAssetPoolT5.h"
 #include "Game/T5/XModel/XModelDumperT5.h"
 #include "Image/ImageDumperT5.h"
-#include "Localize/AssetDumperLocalizeEntry.h"
+#include "Localize/LocalizeDumperT5.h"
 #include "Material/DumperMaterialT5.h"
 #include "ObjWriting.h"
 #include "PhysConstraints/AssetDumperPhysConstraints.h"
@@ -46,7 +46,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFont, m_font, ASSET_TYPE_FONT)
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     // DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
-    DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
+    DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     // DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon, ASSET_TYPE_WEAPON)
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)

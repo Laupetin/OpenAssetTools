@@ -5,7 +5,7 @@
 #include "Game/T6/XModel/XModelDumperT6.h"
 #include "Image/ImageDumperT6.h"
 #include "Leaderboard/LeaderboardJsonDumperT6.h"
-#include "Localize/AssetDumperLocalizeEntry.h"
+#include "Localize/LocalizeDumperT6.h"
 #include "Maps/AssetDumperMapEnts.h"
 #include "Material/DumperMaterialT6.h"
 #include "ObjWriting.h"
@@ -67,7 +67,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL_WITH_FACTORY(font_icon::CreateDumper(), m_font_icon, ASSET_TYPE_FONTICON)
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     // DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
-    DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
+    DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon, ASSET_TYPE_WEAPON)
     DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment, ASSET_TYPE_ATTACHMENT)
     DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique, ASSET_TYPE_ATTACHMENT_UNIQUE)

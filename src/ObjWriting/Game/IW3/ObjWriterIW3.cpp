@@ -3,7 +3,7 @@
 #include "Game/IW3/GameAssetPoolIW3.h"
 #include "Game/IW3/XModel/XModelDumperIW3.h"
 #include "Image/ImageDumperIW3.h"
-#include "Localize/AssetDumperLocalizeEntry.h"
+#include "Localize/LocalizeDumperIW3.h"
 #include "Maps/AssetDumperMapEnts.h"
 #include "Material/DumperMaterialIW3.h"
 #include "ObjWriting.h"
@@ -44,7 +44,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     // DUMP_ASSET_POOL(AssetDumpermenuDef_t, m_menu_def, ASSET_TYPE_MENU)
-    DUMP_ASSET_POOL(AssetDumperLocalizeEntry, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
+    DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     // DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon, ASSET_TYPE_WEAPON)
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)

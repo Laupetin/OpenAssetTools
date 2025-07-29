@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Dumping/AbstractAssetDumper.h"
-#include "Game/IW4/IW4.h"
+#include "Game/T5/T5.h"
 
-namespace IW4
+namespace T5::localize
 {
-    class AssetDumperLocalizeEntry final : public IAssetDumper<LocalizeEntry>
+    class Dumper final : public IAssetDumper<LocalizeEntry>
     {
     public:
         void DumpPool(AssetDumpingContext& context, AssetPool<LocalizeEntry>* pool) override;
     };
-} // namespace IW4
+} // namespace T5::localize
