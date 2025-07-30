@@ -21,7 +21,7 @@
 #include "Sound/AssetDumperSndCurve.h"
 #include "StringTable/StringTableDumperIW4.h"
 #include "StructuredDataDef/AssetDumperStructuredDataDefSet.h"
-#include "Techset/AssetDumperTechniqueSet.h"
+#include "Techset/TechsetDumperIW4.h"
 #include "Tracer/AssetDumperTracer.h"
 #include "Vehicle/AssetDumperVehicle.h"
 #include "Weapon/AssetDumperWeapon.h"
@@ -49,7 +49,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 #endif
     DUMP_ASSET_POOL(AssetDumperPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
     DUMP_ASSET_POOL(AssetDumperVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
-    DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
+    DUMP_ASSET_POOL(techset::Dumper, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
     DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve, ASSET_TYPE_SOUND_CURVE)

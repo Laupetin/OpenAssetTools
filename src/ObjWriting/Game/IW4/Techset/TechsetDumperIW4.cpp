@@ -1,9 +1,10 @@
-#include "AssetDumperTechniqueSet.h"
+#include "TechsetDumperIW4.h"
 
 #include "Dumping/AbstractTextDumper.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Pool/GlobalAssetPool.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "Techset/TechsetCommon.h"
 
 #include <algorithm>
 #include <cassert>
@@ -12,6 +13,7 @@
 #include <type_traits>
 
 using namespace IW4;
+using namespace ::techset;
 
 namespace IW4
 {
@@ -531,48 +533,37 @@ namespace IW4
     };
 } // namespace IW4
 
-std::string AssetDumperTechniqueSet::GetTechniqueFileName(const MaterialTechnique* technique)
+namespace IW4::techset
 {
-    std::ostringstream ss;
-    ss << "techniques/" << technique->name << ".tech";
-    return ss.str();
-}
-
-std::string AssetDumperTechniqueSet::GetTechsetFileName(const MaterialTechniqueSet* techset)
-{
-    std::ostringstream ss;
-    ss << "techsets/" << techset->name << ".techset";
-    return ss.str();
-}
-
-bool AssetDumperTechniqueSet::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
-{
-    return true;
-}
-
-void AssetDumperTechniqueSet::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
-{
-    const auto* techset = asset->Asset();
-
-    const auto techsetFile = context.OpenAssetFile(GetTechsetFileName(techset));
-
-    if (techsetFile)
+    bool Dumper::ShouldDump(XAssetInfo<MaterialTechniqueSet>* asset)
     {
-        TechsetFileWriter writer(*techsetFile);
-        writer.DumpTechset(techset);
+        return true;
     }
 
-    auto* techniqueState = context.GetZoneAssetDumperState<TechniqueDumpingZoneState>();
-    for (const auto* technique : techset->techniques)
+    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<MaterialTechniqueSet>* asset)
     {
-        if (technique && techniqueState->ShouldDumpTechnique(technique))
+        const auto* techset = asset->Asset();
+
+        const auto techsetFile = context.OpenAssetFile(GetFileNameForTechsetName(techset->name));
+
+        if (techsetFile)
         {
-            const auto techniqueFile = context.OpenAssetFile(GetTechniqueFileName(technique));
-            if (techniqueFile)
+            TechsetFileWriter writer(*techsetFile);
+            writer.DumpTechset(techset);
+        }
+
+        auto* techniqueState = context.GetZoneAssetDumperState<TechniqueDumpingZoneState>();
+        for (const auto* technique : techset->techniques)
+        {
+            if (technique && techniqueState->ShouldDumpTechnique(technique))
             {
-                TechniqueFileWriter writer(*techniqueFile);
-                writer.DumpTechnique(technique);
+                const auto techniqueFile = context.OpenAssetFile(GetFileNameForTechniqueName(technique->name));
+                if (techniqueFile)
+                {
+                    TechniqueFileWriter writer(*techniqueFile);
+                    writer.DumpTechnique(technique);
+                }
             }
         }
     }
-}
+} // namespace IW4::techset
