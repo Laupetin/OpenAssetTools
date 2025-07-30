@@ -6,7 +6,7 @@
 #include "Image/ImageDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
 #include "ObjWriting.h"
-#include "RawFile/AssetDumperRawFile.h"
+#include "RawFile/RawFileDumperT5.h"
 #include "Sound/AssetDumperSndBank.h"
 #include "StringTable/AssetDumperStringTable.h"
 #include "Weapon/AssetDumperWeapon.h"
@@ -49,7 +49,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
-    DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
+    DUMP_ASSET_POOL(raw_file::Dumper, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
     // DUMP_ASSET_POOL(AssetDumperPackIndex, m_pack_index, ASSET_TYPE_PACK_INDEX)
     // DUMP_ASSET_POOL(AssetDumperXGlobals, m_xglobals, ASSET_TYPE_XGLOBALS)

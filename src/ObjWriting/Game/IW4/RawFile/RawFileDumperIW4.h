@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Dumping/AbstractAssetDumper.h"
-#include "Game/IW3/IW3.h"
+#include "Game/IW4/IW4.h"
 
-namespace IW3
+namespace IW4::raw_file
 {
-    class AssetDumperRawFile final : public AbstractAssetDumper<RawFile>
+    class Dumper final : public AbstractAssetDumper<RawFile>
     {
     protected:
         bool ShouldDump(XAssetInfo<RawFile>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset) override;
     };
-} // namespace IW3
+} // namespace IW4::raw_file

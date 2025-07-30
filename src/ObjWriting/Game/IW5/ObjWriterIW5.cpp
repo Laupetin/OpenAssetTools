@@ -10,7 +10,7 @@
 #include "Menu/AssetDumperMenuDef.h"
 #include "Menu/AssetDumperMenuList.h"
 #include "ObjWriting.h"
-#include "RawFile/AssetDumperRawFile.h"
+#include "RawFile/RawFileDumperIW5.h"
 #include "Script/AssetDumperScriptFile.h"
 #include "Sound/AssetDumperLoadedSound.h"
 #include "StringTable/AssetDumperStringTable.h"
@@ -61,7 +61,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     // DUMP_ASSET_POOL(AssetDumperSurfaceFxTable, m_surface_fx_table, ASSET_TYPE_SURFACE_FX)
-    DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
+    DUMP_ASSET_POOL(raw_file::Dumper, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(AssetDumperScriptFile, m_script_file, ASSET_TYPE_SCRIPTFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
     DUMP_ASSET_POOL(leaderboard::JsonDumper, m_leaderboard, ASSET_TYPE_LEADERBOARD)

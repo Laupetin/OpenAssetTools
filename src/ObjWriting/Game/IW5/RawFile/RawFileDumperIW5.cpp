@@ -1,29 +1,31 @@
-#include "AssetDumperRawFile.h"
+#include "RawFileDumperIW5.h"
 
 #include <format>
 #include <stdexcept>
 #include <zlib.h>
 
-using namespace IW4;
+using namespace IW5;
 
-bool AssetDumperRawFile::ShouldDump(XAssetInfo<RawFile>* asset)
+namespace IW5::raw_file
 {
-    return true;
-}
-
-void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
-{
-    const auto* rawFile = asset->Asset();
-    const auto assetFile = context.OpenAssetFile(asset->m_name);
-
-    if (!assetFile)
-        return;
-
-    auto& stream = *assetFile;
-    if (rawFile->compressedLen > 0)
+    bool Dumper::ShouldDump(XAssetInfo<RawFile>* asset)
     {
-        z_stream_s zs{};
+        return true;
+    }
 
+    void Dumper::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset)
+    {
+        const auto* rawFile = asset->Asset();
+        const auto assetFile = context.OpenAssetFile(asset->m_name);
+
+        if (!assetFile)
+            return;
+
+        auto& stream = *assetFile;
+        if (rawFile->compressedLen <= 0)
+            return;
+
+        z_stream_s zs{};
         zs.zalloc = Z_NULL;
         zs.zfree = Z_NULL;
         zs.opaque = Z_NULL;
@@ -37,7 +39,7 @@ void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawF
             throw std::runtime_error("Initializing inflate failed");
         }
 
-        zs.next_in = reinterpret_cast<const Bytef*>(rawFile->data.compressedBuffer);
+        zs.next_in = reinterpret_cast<const Bytef*>(rawFile->buffer);
         zs.avail_in = rawFile->compressedLen;
 
         Bytef buffer[0x1000];
@@ -60,8 +62,4 @@ void AssetDumperRawFile::DumpAsset(AssetDumpingContext& context, XAssetInfo<RawF
 
         inflateEnd(&zs);
     }
-    else if (rawFile->len > 0)
-    {
-        stream.write(rawFile->data.buffer, rawFile->len);
-    }
-}
+} // namespace IW5::raw_file

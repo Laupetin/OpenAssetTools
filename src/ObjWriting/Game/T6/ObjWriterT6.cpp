@@ -12,7 +12,7 @@
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT6.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT6.h"
 #include "Qdb/AssetDumperQdb.h"
-#include "RawFile/AssetDumperRawFile.h"
+#include "RawFile/RawFileDumperT6.h"
 #include "Script/AssetDumperScriptParseTree.h"
 #include "Slug/AssetDumperSlug.h"
 #include "Sound/AssetDumperSndBank.h"
@@ -75,7 +75,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
-    DUMP_ASSET_POOL(AssetDumperRawFile, m_raw_file, ASSET_TYPE_RAWFILE)
+    DUMP_ASSET_POOL(raw_file::Dumper, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
     DUMP_ASSET_POOL(leaderboard::JsonDumper, m_leaderboard, ASSET_TYPE_LEADERBOARD)
     // DUMP_ASSET_POOL(AssetDumperXGlobals, m_xglobals, ASSET_TYPE_XGLOBALS)
