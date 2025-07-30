@@ -4,12 +4,14 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderTracerT6.h"
+#include "Tracer/TracerCommon.h"
 
 #include <cstring>
 #include <format>
 #include <iostream>
 
 using namespace T6;
+using namespace ::tracer;
 
 namespace
 {
@@ -24,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("tracer/{}", assetName);
+            const auto fileName = GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
