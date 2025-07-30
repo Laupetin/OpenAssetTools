@@ -4,6 +4,7 @@
 #include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysPresetT6.h"
+#include "PhysPreset/PhysPresetCommon.h"
 
 #include <cstring>
 #include <format>
@@ -24,7 +25,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("physic/{}", assetName);
+            const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();

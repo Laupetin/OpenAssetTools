@@ -13,7 +13,7 @@
 #include "Menu/AssetDumperMenuList.h"
 #include "ObjWriting.h"
 #include "PhysCollmap/AssetDumperPhysCollmap.h"
-#include "PhysPreset/AssetDumperPhysPreset.h"
+#include "PhysPreset/PhysPresetInfoStringDumperIW4.h"
 #include "RawFile/AssetDumperRawFile.h"
 #include "Shader/AssetDumperPixelShader.h"
 #include "Shader/AssetDumperVertexShader.h"
@@ -39,7 +39,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 
     const auto* assetPools = dynamic_cast<GameAssetPoolIW4*>(context.m_zone.m_pools.get());
 
-    DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset, ASSET_TYPE_PHYSPRESET)
+    DUMP_ASSET_POOL(phys_preset::InfoStringDumper, m_phys_preset, ASSET_TYPE_PHYSPRESET)
     DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
     DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)

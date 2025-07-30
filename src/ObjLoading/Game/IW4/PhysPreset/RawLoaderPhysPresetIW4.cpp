@@ -4,6 +4,7 @@
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderPhysPresetIW4.h"
+#include "PhysPreset/PhysPresetCommon.h"
 
 #include <format>
 #include <iostream>
@@ -19,7 +20,7 @@ RawLoaderPhysPreset::RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& sea
 
 AssetCreationResult RawLoaderPhysPreset::CreateAsset(const std::string& assetName, AssetCreationContext& context)
 {
-    const auto fileName = std::format("physic/{}", assetName);
+    const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
     const auto file = m_search_path.Open(fileName);
     if (!file.IsOpen())
         return AssetCreationResult::NoAction();

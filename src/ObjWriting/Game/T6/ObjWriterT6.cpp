@@ -10,7 +10,7 @@
 #include "Maps/MapEntsDumperT6.h"
 #include "ObjWriting.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT6.h"
-#include "PhysPreset/AssetDumperPhysPreset.h"
+#include "PhysPreset/PhysPresetInfoStringDumperT6.h"
 #include "Qdb/AssetDumperQdb.h"
 #include "RawFile/AssetDumperRawFile.h"
 #include "Script/AssetDumperScriptParseTree.h"
@@ -46,7 +46,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 
     const auto* assetPools = dynamic_cast<GameAssetPoolT6*>(context.m_zone.m_pools.get());
 
-    DUMP_ASSET_POOL(AssetDumperPhysPreset, m_phys_preset, ASSET_TYPE_PHYSPRESET)
+    DUMP_ASSET_POOL(phys_preset::InfoStringDumper, m_phys_preset, ASSET_TYPE_PHYSPRESET)
     DUMP_ASSET_POOL(phys_constraints::InfoStringDumper, m_phys_constraints, ASSET_TYPE_PHYSCONSTRAINTS)
     // DUMP_ASSET_POOL(AssetDumperDestructibleDef, m_destructible_def, ASSET_TYPE_DESTRUCTIBLEDEF)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)

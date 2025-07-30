@@ -6,7 +6,6 @@
 #include "Image/ImageDumperT5.h"
 #include "Localize/LocalizeDumperT5.h"
 #include "ObjWriting.h"
-#include "PhysPreset/AssetDumperPhysPreset.h"
 #include "RawFile/AssetDumperRawFile.h"
 #include "Sound/AssetDumperSndBank.h"
 #include "StringTable/AssetDumperStringTable.h"
