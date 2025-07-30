@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Dumping/AbstractAssetDumper.h"
-#include "Game/IW3/IW3.h"
+#include "Game/T5/T5.h"
 
-namespace IW3
+namespace T5::string_table
 {
-    class AssetDumperStringTable final : public AbstractAssetDumper<StringTable>
+    class Dumper final : public AbstractAssetDumper<StringTable>
     {
     protected:
         bool ShouldDump(XAssetInfo<StringTable>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset) override;
     };
-} // namespace IW3
+} // namespace T5::string_table

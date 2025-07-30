@@ -17,7 +17,7 @@
 #include "Slug/SlugDumperT6.h"
 #include "Sound/AssetDumperSndBank.h"
 #include "Sound/AssetDumperSndDriverGlobals.h"
-#include "StringTable/AssetDumperStringTable.h"
+#include "StringTable/StringTableDumperT6.h"
 #include "Techset/AssetDumperTechniqueSet.h"
 #include "Tracer/AssetDumperTracer.h"
 #include "Vehicle/AssetDumperVehicle.h"
@@ -76,7 +76,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     DUMP_ASSET_POOL(raw_file::Dumper, m_raw_file, ASSET_TYPE_RAWFILE)
-    DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
+    DUMP_ASSET_POOL(string_table::Dumper, m_string_table, ASSET_TYPE_STRINGTABLE)
     DUMP_ASSET_POOL(leaderboard::JsonDumper, m_leaderboard, ASSET_TYPE_LEADERBOARD)
     // DUMP_ASSET_POOL(AssetDumperXGlobals, m_xglobals, ASSET_TYPE_XGLOBALS)
     // DUMP_ASSET_POOL(AssetDumperDDLRoot, m_ddl, ASSET_TYPE_DDL)

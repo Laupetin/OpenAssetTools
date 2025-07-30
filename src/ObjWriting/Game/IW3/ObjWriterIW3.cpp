@@ -9,7 +9,7 @@
 #include "ObjWriting.h"
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/AssetDumperLoadedSound.h"
-#include "StringTable/AssetDumperStringTable.h"
+#include "StringTable/StringTableDumperIW3.h"
 #include "Weapon/AssetDumperWeapon.h"
 
 using namespace IW3;
@@ -50,7 +50,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)
     DUMP_ASSET_POOL(raw_file::Dumper, m_raw_file, ASSET_TYPE_RAWFILE)
-    DUMP_ASSET_POOL(AssetDumperStringTable, m_string_table, ASSET_TYPE_STRINGTABLE)
+    DUMP_ASSET_POOL(string_table::Dumper, m_string_table, ASSET_TYPE_STRINGTABLE)
 
     return true;
 
