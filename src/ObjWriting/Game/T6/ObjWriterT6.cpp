@@ -11,10 +11,10 @@
 #include "ObjWriting.h"
 #include "PhysConstraints/PhysConstraintsInfoStringDumperT6.h"
 #include "PhysPreset/PhysPresetInfoStringDumperT6.h"
-#include "Qdb/AssetDumperQdb.h"
+#include "Qdb/QdbDumperT6.h"
 #include "RawFile/RawFileDumperT6.h"
-#include "Script/AssetDumperScriptParseTree.h"
-#include "Slug/AssetDumperSlug.h"
+#include "Script/ScriptDumperT6.h"
+#include "Slug/SlugDumperT6.h"
 #include "Sound/AssetDumperSndBank.h"
 #include "Sound/AssetDumperSndDriverGlobals.h"
 #include "StringTable/AssetDumperStringTable.h"
@@ -82,15 +82,15 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperDDLRoot, m_ddl, ASSET_TYPE_DDL)
     // DUMP_ASSET_POOL(AssetDumperGlasses, m_glasses, ASSET_TYPE_GLASSES)
     // DUMP_ASSET_POOL(AssetDumperEmblemSet, m_emblem_set, ASSET_TYPE_EMBLEMSET)
-    DUMP_ASSET_POOL(AssetDumperScriptParseTree, m_script, ASSET_TYPE_SCRIPTPARSETREE)
+    DUMP_ASSET_POOL(script::Dumper, m_script, ASSET_TYPE_SCRIPTPARSETREE)
     // DUMP_ASSET_POOL(AssetDumperKeyValuePairs, m_key_value_pairs, ASSET_TYPE_KEYVALUEPAIRS)
     DUMP_ASSET_POOL(AssetDumperVehicle, m_vehicle, ASSET_TYPE_VEHICLEDEF)
     // DUMP_ASSET_POOL(AssetDumperMemoryBlock, m_memory_block, ASSET_TYPE_MEMORYBLOCK)
     // DUMP_ASSET_POOL(AssetDumperAddonMapEnts, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
     DUMP_ASSET_POOL(AssetDumperTracer, m_tracer, ASSET_TYPE_TRACER)
     // DUMP_ASSET_POOL(AssetDumperSkinnedVertsDef, m_skinned_verts, ASSET_TYPE_SKINNEDVERTS)
-    DUMP_ASSET_POOL(AssetDumperQdb, m_qdb, ASSET_TYPE_QDB)
-    DUMP_ASSET_POOL(AssetDumperSlug, m_slug, ASSET_TYPE_SLUG)
+    DUMP_ASSET_POOL(qdb::Dumper, m_qdb, ASSET_TYPE_QDB)
+    DUMP_ASSET_POOL(slug::Dumper, m_slug, ASSET_TYPE_SLUG)
     // DUMP_ASSET_POOL(AssetDumperFootstepTableDef, m_footstep_table, ASSET_TYPE_FOOTSTEP_TABLE)
     // DUMP_ASSET_POOL(AssetDumperFootstepFXTableDef, m_footstep_fx_table, ASSET_TYPE_FOOTSTEPFX_TABLE)
     DUMP_ASSET_POOL(AssetDumperZBarrier, m_zbarrier, ASSET_TYPE_ZBARRIER)
