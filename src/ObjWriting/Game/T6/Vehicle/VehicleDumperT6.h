@@ -1,17 +1,15 @@
 #pragma once
 
 #include "Dumping/AbstractAssetDumper.h"
-#include "Game/IW4/IW4.h"
+#include "Game/T6/T6.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4
+namespace T6::vehicle
 {
-    class AssetDumperVehicle final : public AbstractAssetDumper<VehicleDef>
+    class Dumper final : public AbstractAssetDumper<VehicleDef>
     {
-        static InfoString CreateInfoString(XAssetInfo<VehicleDef>* asset);
-
     protected:
         bool ShouldDump(XAssetInfo<VehicleDef>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<VehicleDef>* asset) override;
     };
-} // namespace IW4
+} // namespace T6::vehicle

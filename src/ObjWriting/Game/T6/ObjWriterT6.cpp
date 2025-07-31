@@ -20,7 +20,7 @@
 #include "StringTable/StringTableDumperT6.h"
 #include "Techset/TechsetDumperT6.h"
 #include "Tracer/TracerDumperT6.h"
-#include "Vehicle/AssetDumperVehicle.h"
+#include "Vehicle/VehicleDumperT6.h"
 #include "Weapon/AssetDumperWeapon.h"
 #include "Weapon/AssetDumperWeaponAttachment.h"
 #include "Weapon/AssetDumperWeaponAttachmentUnique.h"
@@ -84,7 +84,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperEmblemSet, m_emblem_set, ASSET_TYPE_EMBLEMSET)
     DUMP_ASSET_POOL(script::Dumper, m_script, ASSET_TYPE_SCRIPTPARSETREE)
     // DUMP_ASSET_POOL(AssetDumperKeyValuePairs, m_key_value_pairs, ASSET_TYPE_KEYVALUEPAIRS)
-    DUMP_ASSET_POOL(AssetDumperVehicle, m_vehicle, ASSET_TYPE_VEHICLEDEF)
+    DUMP_ASSET_POOL(vehicle::Dumper, m_vehicle, ASSET_TYPE_VEHICLEDEF)
     // DUMP_ASSET_POOL(AssetDumperMemoryBlock, m_memory_block, ASSET_TYPE_MEMORYBLOCK)
     // DUMP_ASSET_POOL(AssetDumperAddonMapEnts, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
     DUMP_ASSET_POOL(tracer::Dumper, m_tracer, ASSET_TYPE_TRACER)
