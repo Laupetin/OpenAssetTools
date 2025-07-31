@@ -25,7 +25,7 @@
 #include "Weapon/AssetDumperWeaponAttachment.h"
 #include "Weapon/AssetDumperWeaponAttachmentUnique.h"
 #include "Weapon/AssetDumperWeaponCamo.h"
-#include "ZBarrier/AssetDumperZBarrier.h"
+#include "ZBarrier/ZBarrierDumperT6.h"
 
 using namespace T6;
 
@@ -93,7 +93,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(slug::Dumper, m_slug, ASSET_TYPE_SLUG)
     // DUMP_ASSET_POOL(AssetDumperFootstepTableDef, m_footstep_table, ASSET_TYPE_FOOTSTEP_TABLE)
     // DUMP_ASSET_POOL(AssetDumperFootstepFXTableDef, m_footstep_fx_table, ASSET_TYPE_FOOTSTEPFX_TABLE)
-    DUMP_ASSET_POOL(AssetDumperZBarrier, m_zbarrier, ASSET_TYPE_ZBARRIER)
+    DUMP_ASSET_POOL(z_barrier::Dumper, m_zbarrier, ASSET_TYPE_ZBARRIER)
 
     return true;
 
