@@ -1,4 +1,4 @@
-#include "AssetDumperSndBank.h"
+#include "SndBankDumperT6.h"
 
 #include "Csv/CsvStream.h"
 #include "Game/T6/CommonT6.h"
@@ -910,15 +910,18 @@ namespace
     }
 } // namespace
 
-void AssetDumperSndBank::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
+namespace T6::sound
 {
-    LoadedSoundBankHashes soundBankHashes;
-    soundBankHashes.Initialize();
-    for (const auto* assetInfo : *pool)
+    void SndBankDumper::DumpPool(AssetDumpingContext& context, AssetPool<SndBank>* pool)
     {
-        if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
-            continue;
+        LoadedSoundBankHashes soundBankHashes;
+        soundBankHashes.Initialize();
+        for (const auto* assetInfo : *pool)
+        {
+            if (!assetInfo->m_name.empty() && assetInfo->m_name[0] == ',')
+                continue;
 
-        DumpSndBank(context, soundBankHashes, *assetInfo);
+            DumpSndBank(context, soundBankHashes, *assetInfo);
+        }
     }
-}
+} // namespace T6::sound

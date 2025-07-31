@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace T6::sound
 {
     std::unique_ptr<AssetCreator<AssetSoundBank>> CreateSoundBankLoader(MemoryManager& memory, ISearchPath& searchPath);
 } // namespace T6

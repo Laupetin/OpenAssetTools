@@ -403,7 +403,7 @@ namespace T6
             collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
             collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
-            collection.AddAssetCreator(CreateSoundBankLoader(memory, searchPath));
+            collection.AddAssetCreator(sound::CreateSoundBankLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderComWorld>(memory));

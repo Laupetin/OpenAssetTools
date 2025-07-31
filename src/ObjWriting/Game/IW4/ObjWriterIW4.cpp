@@ -17,8 +17,8 @@
 #include "RawFile/RawFileDumperIW4.h"
 #include "Shader/AssetDumperPixelShader.h"
 #include "Shader/AssetDumperVertexShader.h"
-#include "Sound/AssetDumperLoadedSound.h"
-#include "Sound/AssetDumperSndCurve.h"
+#include "Sound/LoadedSoundDumperIW4.h"
+#include "Sound/SndCurveDumperIW4.h"
 #include "StringTable/StringTableDumperIW4.h"
 #include "StructuredDataDef/AssetDumperStructuredDataDefSet.h"
 #include "Techset/TechsetDumperIW4.h"
@@ -52,8 +52,8 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(techset::Dumper, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
-    DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
-    DUMP_ASSET_POOL(AssetDumperLoadedSound, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
+    DUMP_ASSET_POOL(sound::SndCurveDumper, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
+    DUMP_ASSET_POOL(sound::LoadedSoundDumper, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
     // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map, ASSET_TYPE_CLIPMAP_MP)
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world, ASSET_TYPE_COMWORLD)
     // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp, ASSET_TYPE_GAMEWORLD_SP)

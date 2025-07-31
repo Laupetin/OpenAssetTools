@@ -7,7 +7,6 @@
 #include "Localize/LocalizeDumperT5.h"
 #include "ObjWriting.h"
 #include "RawFile/RawFileDumperT5.h"
-#include "Sound/AssetDumperSndBank.h"
 #include "StringTable/StringTableDumperT5.h"
 #include "Weapon/AssetDumperWeapon.h"
 

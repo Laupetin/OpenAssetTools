@@ -8,7 +8,7 @@
 #include "Maps/MapEntsDumperIW3.h"
 #include "ObjWriting.h"
 #include "RawFile/RawFileDumperIW3.h"
-#include "Sound/AssetDumperLoadedSound.h"
+#include "Sound/LoadedSoundDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
 #include "Weapon/AssetDumperWeapon.h"
 
@@ -33,7 +33,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
     // DUMP_ASSET_POOL(AssetDumperSndCurve, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
-    DUMP_ASSET_POOL(AssetDumperLoadedSound, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
+    DUMP_ASSET_POOL(sound::LoadedSoundDumper, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
     // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map, ASSET_TYPE_CLIPMAP_PVS)
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world, ASSET_TYPE_COMWORLD)
     // DUMP_ASSET_POOL(AssetDumperGameWorldSp, m_game_world_sp, ASSET_TYPE_GAMEWORLD_SP)

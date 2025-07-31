@@ -3,14 +3,12 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include "Game/IW5/IW5.h"
 
-namespace IW5
+namespace IW5::sound
 {
-    class AssetDumperLoadedSound final : public AbstractAssetDumper<LoadedSound>
+    class LoadedSoundDumper final : public AbstractAssetDumper<LoadedSound>
     {
-        static void DumpWavPcm(const LoadedSound* asset, std::ostream& stream);
-
     protected:
         bool ShouldDump(XAssetInfo<LoadedSound>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<LoadedSound>* asset) override;
     };
-} // namespace IW5
+} // namespace IW5::sound
