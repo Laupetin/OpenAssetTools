@@ -26,7 +26,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperPhysConstraints, m_phys_constraints, ASSET_TYPE_PHYSCONSTRAINTS)
     // DUMP_ASSET_POOL(AssetDumperDestructibleDef, m_destructible_def, ASSET_TYPE_DESTRUCTIBLEDEF)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
-    DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
+    DUMP_ASSET_POOL(xmodel::Dumper, m_xmodel, ASSET_TYPE_XMODEL)
     DUMP_ASSET_POOL(material::JsonDumper, m_material, ASSET_TYPE_MATERIAL)
     // DUMP_ASSET_POOL(AssetDumperTechniqueSet, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)

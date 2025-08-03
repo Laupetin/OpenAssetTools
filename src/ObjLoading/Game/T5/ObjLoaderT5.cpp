@@ -104,7 +104,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysConstraints>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-        collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
+        collection.AddAssetCreator(xmodel::CreateXModelLoader(memory, searchPath, zone));
         collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderImage>(memory));

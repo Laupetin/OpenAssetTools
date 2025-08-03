@@ -124,7 +124,7 @@ namespace
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysCollMap>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXModelSurfs>(memory));
-        collection.AddAssetCreator(CreateXModelLoader(memory, searchPath, zone));
+        collection.AddAssetCreator(xmodel::CreateXModelLoader(memory, searchPath, zone));
         collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         collection.AddAssetCreator(CreatePixelShaderLoader(memory, searchPath));
         collection.AddAssetCreator(CreateVertexShaderLoader(memory, searchPath));

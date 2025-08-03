@@ -3,6 +3,7 @@
 #include "Asset/GlobalAssetPoolsLoader.h"
 #include "Game/IW3/GameIW3.h"
 #include "Game/IW3/IW3.h"
+#include "Game/IW3/XModel/LoaderXModelIW3.h"
 #include "Image/AssetLoaderImageIW3.h"
 #include "Localize/AssetLoaderLocalizeIW3.h"
 #include "Material/LoaderMaterialIW3.h"
@@ -90,7 +91,7 @@ namespace
 
         // collection.AddAssetCreator(std::make_unique<AssetLoaderPhysPreset>(memory));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
-        // collection.AddAssetCreator(std::make_unique<AssetLoaderXModel>(memory));
+        collection.AddAssetCreator(xmodel::CreateXModelLoader(memory, searchPath, zone));
         collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
         // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
         collection.AddAssetCreator(CreateImageLoader(memory, searchPath));

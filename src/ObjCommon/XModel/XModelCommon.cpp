@@ -1,6 +1,7 @@
 #include "XModelCommon.h"
 
 #include <cmath>
+#include <format>
 #include <limits>
 #include <tuple>
 
@@ -99,3 +100,11 @@ bool operator<(const VertexMergerPos& lhs, const VertexMergerPos& rhs)
 
     return false;
 }
+
+namespace xmodel
+{
+    std::string GetJsonFileNameForAssetName(const std::string& assetName)
+    {
+        return std::format("xmodel/{}.json", assetName);
+    }
+} // namespace xmodel

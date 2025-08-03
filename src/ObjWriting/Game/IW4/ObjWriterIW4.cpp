@@ -42,7 +42,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(phys_preset::InfoStringDumper, m_phys_preset, ASSET_TYPE_PHYSPRESET)
     DUMP_ASSET_POOL(AssetDumperPhysCollmap, m_phys_collmap, ASSET_TYPE_PHYSCOLLMAP)
     // DUMP_ASSET_POOL(AssetDumperXAnimParts, m_xanim_parts, ASSET_TYPE_XANIMPARTS)
-    DUMP_ASSET_POOL(AssetDumperXModel, m_xmodel, ASSET_TYPE_XMODEL)
+    DUMP_ASSET_POOL(xmodel::Dumper, m_xmodel, ASSET_TYPE_XMODEL)
     DUMP_ASSET_POOL(material::JsonDumper, m_material, ASSET_TYPE_MATERIAL)
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION
     DUMP_ASSET_POOL(material::DecompilingGdtDumper, m_material, ASSET_TYPE_MATERIAL)

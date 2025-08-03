@@ -127,3 +127,8 @@ struct VertexMergerPos
 };
 
 typedef DistinctMapper<VertexMergerPos> VertexMerger;
+
+namespace xmodel
+{
+    std::string GetJsonFileNameForAssetName(const std::string& assetName);
+}

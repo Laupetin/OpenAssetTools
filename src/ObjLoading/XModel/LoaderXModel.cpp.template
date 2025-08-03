@@ -1082,7 +1082,7 @@ namespace
     };
 } // namespace
 
-namespace GAME
+namespace GAME::xmodel
 {
     std::unique_ptr<AssetCreator<AssetXModel>> CreateXModelLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {

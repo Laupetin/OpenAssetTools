@@ -13,9 +13,9 @@
 #include "Dumping/AbstractAssetDumper.h"
 #include GAME_HEADER
 
-namespace GAME
+namespace GAME::xmodel
 {
-    class AssetDumperXModel final : public AbstractAssetDumper<XModel>
+    class Dumper final : public AbstractAssetDumper<XModel>
     {
     protected:
         bool ShouldDump(XAssetInfo<XModel>* asset) override;
