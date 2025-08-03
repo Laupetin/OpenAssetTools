@@ -7,8 +7,8 @@
 #include "Leaderboard/LeaderboardJsonDumperIW5.h"
 #include "Localize/LocalizeDumperIW5.h"
 #include "Maps/AddonMapEntsDumperIW5.h"
-#include "Menu/AssetDumperMenuDef.h"
-#include "Menu/AssetDumperMenuList.h"
+#include "Menu/MenuDumperIW5.h"
+#include "Menu/MenuListDumperIW5.h"
 #include "ObjWriting.h"
 #include "RawFile/RawFileDumperIW5.h"
 #include "Script/ScriptDumperIW5.h"
@@ -53,8 +53,8 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
     // DUMP_ASSET_POOL(AssetDumperGfxLightDef, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
-    DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
-    DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
+    DUMP_ASSET_POOL(menu::MenuListDumper, m_menu_list, ASSET_TYPE_MENULIST)
+    DUMP_ASSET_POOL(menu::MenuDumper, m_menu_def, ASSET_TYPE_MENU)
     DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     DUMP_ASSET_POOL(attachment::JsonDumper, m_attachment, ASSET_TYPE_ATTACHMENT)
     DUMP_ASSET_POOL(weapon::Dumper, m_weapon, ASSET_TYPE_WEAPON)

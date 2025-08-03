@@ -9,8 +9,8 @@
 #include "Localize/LocalizeDumperIW4.h"
 #include "Maps/AddonMapEntsDumperIW4.h"
 #include "Material/MaterialDecompilingDumperIW4.h"
-#include "Menu/AssetDumperMenuDef.h"
-#include "Menu/AssetDumperMenuList.h"
+#include "Menu/MenuDumperIW4.h"
+#include "Menu/MenuListDumperIW4.h"
 #include "ObjWriting.h"
 #include "PhysCollmap/AssetDumperPhysCollmap.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW4.h"
@@ -63,8 +63,8 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperGfxWorld, m_gfx_world, ASSET_TYPE_GFXWORLD)
     DUMP_ASSET_POOL(light_def::Dumper, m_gfx_light_def, ASSET_TYPE_LIGHT_DEF)
     // DUMP_ASSET_POOL(AssetDumperFont_s, m_font, ASSET_TYPE_FONT)
-    DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
-    DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
+    DUMP_ASSET_POOL(menu::MenuListDumper, m_menu_list, ASSET_TYPE_MENULIST)
+    DUMP_ASSET_POOL(menu::MenuDumper, m_menu_def, ASSET_TYPE_MENU)
     DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
     DUMP_ASSET_POOL(weapon::Dumper, m_weapon, ASSET_TYPE_WEAPON)
     // DUMP_ASSET_POOL(AssetDumperSndDriverGlobals, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
