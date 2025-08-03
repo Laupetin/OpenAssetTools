@@ -32,13 +32,13 @@
 #include "Tracer/RawLoaderTracerT6.h"
 #include "Vehicle/GdtLoaderVehicleT6.h"
 #include "Vehicle/RawLoaderVehicleT6.h"
-#include "Weapon/GdtLoaderAttachmentT6.h"
-#include "Weapon/GdtLoaderAttachmentUniqueT6.h"
-#include "Weapon/GdtLoaderWeaponT6.h"
-#include "Weapon/LoaderWeaponCamoT6.h"
-#include "Weapon/RawLoaderAttachmentT6.h"
-#include "Weapon/RawLoaderAttachmentUniqueT6.h"
-#include "Weapon/RawLoaderWeaponT6.h"
+#include "Weapon/AttachmentGdtLoaderT6.h"
+#include "Weapon/AttachmentRawLoaderT6.h"
+#include "Weapon/AttachmentUniqueGdtLoaderT6.h"
+#include "Weapon/AttachmentUniqueRawLoaderT6.h"
+#include "Weapon/CamoJsonLoaderT6.h"
+#include "Weapon/WeaponGdtLoaderT6.h"
+#include "Weapon/WeaponRawLoaderT6.h"
 #include "ZBarrier/GdtLoaderZBarrierT6.h"
 #include "ZBarrier/RawLoaderZBarrierT6.h"
 
@@ -418,13 +418,13 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
             collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateRawWeaponLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtWeaponLoader(memory, searchPath, gdt, zone));
-            collection.AddAssetCreator(CreateRawAttachmentLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtAttachmentLoader(memory, searchPath, gdt, zone));
-            collection.AddAssetCreator(CreateRawAttachmentUniqueLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtAttachmentUniqueLoader(memory, searchPath, gdt, zone));
-            collection.AddAssetCreator(CreateWeaponCamoLoader(memory, searchPath));
+            collection.AddAssetCreator(weapon::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(weapon::CreateGdtLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(attachment::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(attachment::CreateGdtLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(attachment_unique::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(attachment_unique::CreateGdtLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(camo::CreateJsonLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));

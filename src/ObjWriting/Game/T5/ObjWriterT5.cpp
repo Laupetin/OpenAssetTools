@@ -8,7 +8,6 @@
 #include "ObjWriting.h"
 #include "RawFile/RawFileDumperT5.h"
 #include "StringTable/StringTableDumperT5.h"
-#include "Weapon/AssetDumperWeapon.h"
 
 using namespace T5;
 

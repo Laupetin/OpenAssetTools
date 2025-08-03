@@ -21,10 +21,10 @@
 #include "Techset/TechsetDumperT6.h"
 #include "Tracer/TracerDumperT6.h"
 #include "Vehicle/VehicleDumperT6.h"
-#include "Weapon/AssetDumperWeapon.h"
-#include "Weapon/AssetDumperWeaponAttachment.h"
-#include "Weapon/AssetDumperWeaponAttachmentUnique.h"
-#include "Weapon/AssetDumperWeaponCamo.h"
+#include "Weapon/AttachmentDumperT6.h"
+#include "Weapon/AttachmentUniqueDumperT6.h"
+#include "Weapon/CamoJsonDumperT6.h"
+#include "Weapon/WeaponDumperT6.h"
 #include "ZBarrier/ZBarrierDumperT6.h"
 
 using namespace T6;
@@ -68,10 +68,10 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     // DUMP_ASSET_POOL(AssetDumperMenuList, m_menu_list, ASSET_TYPE_MENULIST)
     // DUMP_ASSET_POOL(AssetDumperMenuDef, m_menu_def, ASSET_TYPE_MENU)
     DUMP_ASSET_POOL(localize::Dumper, m_localize, ASSET_TYPE_LOCALIZE_ENTRY)
-    DUMP_ASSET_POOL(AssetDumperWeapon, m_weapon, ASSET_TYPE_WEAPON)
-    DUMP_ASSET_POOL(AssetDumperWeaponAttachment, m_attachment, ASSET_TYPE_ATTACHMENT)
-    DUMP_ASSET_POOL(AssetDumperWeaponAttachmentUnique, m_attachment_unique, ASSET_TYPE_ATTACHMENT_UNIQUE)
-    DUMP_ASSET_POOL(AssetDumperWeaponCamo, m_camo, ASSET_TYPE_WEAPON_CAMO)
+    DUMP_ASSET_POOL(weapon::Dumper, m_weapon, ASSET_TYPE_WEAPON)
+    DUMP_ASSET_POOL(attachment::Dumper, m_attachment, ASSET_TYPE_ATTACHMENT)
+    DUMP_ASSET_POOL(attachment_unique::Dumper, m_attachment_unique, ASSET_TYPE_ATTACHMENT_UNIQUE)
+    DUMP_ASSET_POOL(camo::JsonDumper, m_camo, ASSET_TYPE_WEAPON_CAMO)
     DUMP_ASSET_POOL(sound::SndDriverGlobalsDumper, m_snd_driver_globals, ASSET_TYPE_SNDDRIVER_GLOBALS)
     // DUMP_ASSET_POOL(AssetDumperFxEffectDef, m_fx, ASSET_TYPE_FX)
     // DUMP_ASSET_POOL(AssetDumperFxImpactTable, m_fx_impact_table, ASSET_TYPE_IMPACT_FX)

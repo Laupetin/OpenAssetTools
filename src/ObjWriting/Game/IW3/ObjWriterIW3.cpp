@@ -10,7 +10,6 @@
 #include "RawFile/RawFileDumperIW3.h"
 #include "Sound/LoadedSoundDumperIW3.h"
 #include "StringTable/StringTableDumperIW3.h"
-#include "Weapon/AssetDumperWeapon.h"
 
 using namespace IW3;
 
