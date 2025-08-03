@@ -13,4 +13,4 @@ namespace shader
     {
         return std::format("shader_bin/vs_{}.cso", assetName);
     }
-} // namespace phys_constraints
+} // namespace shader

@@ -7,7 +7,6 @@
 #include <format>
 #include <iostream>
 
-
 using namespace IW4;
 using namespace ::light_def;
 

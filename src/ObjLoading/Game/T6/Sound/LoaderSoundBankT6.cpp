@@ -1085,4 +1085,4 @@ namespace T6::sound
     {
         return std::make_unique<SoundBankLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace T6::sound

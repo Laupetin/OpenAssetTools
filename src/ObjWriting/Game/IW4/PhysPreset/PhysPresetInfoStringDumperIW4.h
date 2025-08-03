@@ -12,4 +12,4 @@ namespace IW4::phys_preset
         bool ShouldDump(XAssetInfo<PhysPreset>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<PhysPreset>* asset) override;
     };
-} // namespace IW4
+} // namespace IW4::phys_preset

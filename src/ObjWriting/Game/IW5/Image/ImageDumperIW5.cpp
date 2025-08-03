@@ -11,7 +11,6 @@
 #include <cassert>
 #include <format>
 
-
 using namespace IW5;
 using namespace ::image;
 

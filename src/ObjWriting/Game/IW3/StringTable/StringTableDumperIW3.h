@@ -11,4 +11,4 @@ namespace IW3::string_table
         bool ShouldDump(XAssetInfo<StringTable>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<StringTable>* asset) override;
     };
-} // namespace IW3
+} // namespace IW3::string_table

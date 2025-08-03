@@ -14,7 +14,6 @@
 #include <cassert>
 #include <format>
 
-
 using namespace IW3;
 using namespace ::image;
 

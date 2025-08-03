@@ -11,4 +11,4 @@ namespace T6::raw_file
         bool ShouldDump(XAssetInfo<RawFile>* asset) override;
         void DumpAsset(AssetDumpingContext& context, XAssetInfo<RawFile>* asset) override;
     };
-} // namespace T6
+} // namespace T6::raw_file
