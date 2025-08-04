@@ -15,8 +15,8 @@
 #include "PhysCollmap/PhysCollmapDumperIW4.h"
 #include "PhysPreset/PhysPresetInfoStringDumperIW4.h"
 #include "RawFile/RawFileDumperIW4.h"
-#include "Shader/AssetDumperPixelShader.h"
-#include "Shader/AssetDumperVertexShader.h"
+#include "Shader/PixelShaderDumperIW4.h"
+#include "Shader/VertexShaderDumperIW4.h"
 #include "Sound/LoadedSoundDumperIW4.h"
 #include "Sound/SndCurveDumperIW4.h"
 #include "StringTable/StringTableDumperIW4.h"
@@ -47,8 +47,8 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
 #ifdef EXPERIMENTAL_MATERIAL_COMPILATION
     DUMP_ASSET_POOL(material::DecompilingGdtDumper, m_material, ASSET_TYPE_MATERIAL)
 #endif
-    DUMP_ASSET_POOL(AssetDumperPixelShader, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
-    DUMP_ASSET_POOL(AssetDumperVertexShader, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
+    DUMP_ASSET_POOL(shader::PixelShaderDumper, m_material_pixel_shader, ASSET_TYPE_PIXELSHADER)
+    DUMP_ASSET_POOL(shader::VertexShaderDumper, m_material_vertex_shader, ASSET_TYPE_VERTEXSHADER)
     DUMP_ASSET_POOL(techset::Dumper, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
