@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace T6::tracer
 {
-    std::unique_ptr<AssetCreator<AssetTracer>> CreateRawTracerLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<AssetTracer>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace T6::tracer

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace T6::font_icon
 {
-    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonFontIconLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace T6::font_icon

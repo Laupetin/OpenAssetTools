@@ -44,10 +44,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace T6::slug
 {
-    std::unique_ptr<AssetCreator<AssetSlug>> CreateSlugLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetSlug>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<SlugLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace T6::slug

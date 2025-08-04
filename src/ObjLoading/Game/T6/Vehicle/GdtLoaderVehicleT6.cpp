@@ -40,14 +40,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        InfoStringLoaderVehicle m_info_string_loader;
+        T6::vehicle::InfoStringLoader m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace T6::vehicle
 {
-    std::unique_ptr<AssetCreator<AssetVehicle>> CreateGdtVehicleLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetVehicle>> CreateGdtLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderVehicle>(memory, searchPath, gdt, zone);
     }
-} // namespace T6
+} // namespace T6::vehicle

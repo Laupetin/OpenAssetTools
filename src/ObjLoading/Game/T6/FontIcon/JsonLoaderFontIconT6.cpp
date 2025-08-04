@@ -141,10 +141,10 @@ namespace
     };
 } // namespace
 
-namespace T6
+namespace T6::font_icon
 {
-    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonFontIconLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetFontIcon>> CreateJsonLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<JsonFontIconLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace T6::font_icon

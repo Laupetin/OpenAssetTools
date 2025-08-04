@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace T6::script
 {
-    std::unique_ptr<AssetCreator<AssetScript>> CreateScriptLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T6
+    std::unique_ptr<AssetCreator<AssetScript>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace T6::script

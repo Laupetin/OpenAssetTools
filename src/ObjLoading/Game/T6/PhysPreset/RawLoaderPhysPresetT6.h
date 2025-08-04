@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T6
+namespace T6::phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawPhysPresetLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace T6::phys_preset

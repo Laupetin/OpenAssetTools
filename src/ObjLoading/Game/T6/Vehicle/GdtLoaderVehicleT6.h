@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace T6
+namespace T6::vehicle
 {
-    std::unique_ptr<AssetCreator<AssetVehicle>> CreateGdtVehicleLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
-} // namespace T6
+    std::unique_ptr<AssetCreator<AssetVehicle>> CreateGdtLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone);
+} // namespace T6::vehicle

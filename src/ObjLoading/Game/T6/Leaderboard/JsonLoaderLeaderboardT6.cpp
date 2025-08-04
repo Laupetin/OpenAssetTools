@@ -1,14 +1,18 @@
-#include "JsonLeaderboardDefLoader.h"
+#include "JsonLoaderLeaderboardT6.h"
 
 #include "Game/T6/CommonT6.h"
 #include "Game/T6/Leaderboard/JsonLeaderboardDef.h"
+#include "Game/T6/T6.h"
+#include "Leaderboard/LeaderboardCommon.h"
 
+#include <cstring>
 #include <format>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
 using namespace nlohmann;
 using namespace T6;
+using namespace ::leaderboard;
 
 namespace
 {
@@ -124,13 +128,45 @@ namespace
         std::istream& m_stream;
         MemoryManager& m_memory;
     };
+
+    class LeaderboardLoader final : public AssetCreator<AssetLeaderboard>
+    {
+    public:
+        LeaderboardLoader(MemoryManager& memory, ISearchPath& searchPath)
+            : m_memory(memory),
+              m_search_path(searchPath)
+        {
+        }
+
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto file = m_search_path.Open(GetJsonFileNameForAsset(assetName));
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            auto* leaderboardDef = m_memory.Alloc<LeaderboardDef>();
+            leaderboardDef->name = m_memory.Dup(assetName.c_str());
+
+            const JsonLoader loader(*file.m_stream, m_memory);
+            if (!loader.Load(*leaderboardDef))
+            {
+                std::cerr << std::format("Failed to load leaderboard \"{}\"\n", assetName);
+                return AssetCreationResult::Failure();
+            }
+
+            return AssetCreationResult::Success(context.AddAsset<AssetLeaderboard>(assetName, leaderboardDef));
+        }
+
+    private:
+        MemoryManager& m_memory;
+        ISearchPath& m_search_path;
+    };
 } // namespace
 
-namespace T6
+namespace T6::leaderboard
 {
-    bool LoadLeaderboardAsJson(std::istream& stream, LeaderboardDef& leaderboard, MemoryManager& memory)
+    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
-        const JsonLoader loader(stream, memory);
-        return loader.Load(leaderboard);
+        return std::make_unique<LeaderboardLoader>(memory, searchPath);
     }
-} // namespace T6
+} // namespace T6::leaderboard

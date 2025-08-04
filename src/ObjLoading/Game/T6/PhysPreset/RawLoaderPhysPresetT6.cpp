@@ -11,6 +11,7 @@
 #include <iostream>
 
 using namespace T6;
+using namespace ::phys_preset;
 
 namespace
 {
@@ -19,13 +20,13 @@ namespace
     public:
         RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
             : m_search_path(searchPath),
-              m_info_string_loader(memory, searchPath, zone)
+              m_info_string_loader(memory, zone)
         {
         }
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
+            const auto fileName = GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -42,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderPhysPreset m_info_string_loader;
+        T6::phys_preset::InfoStringLoader m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace T6::phys_preset
 {
-    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawPhysPresetLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace T6::phys_preset

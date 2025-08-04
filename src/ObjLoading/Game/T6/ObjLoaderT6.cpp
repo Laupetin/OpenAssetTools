@@ -13,8 +13,8 @@
 #include "Image/IwiTypes.h"
 #include "Image/LoaderImageT6.h"
 #include "Image/Texture.h"
-#include "Leaderboard/LoaderLeaderboardT6.h"
-#include "Localize/LoaderLocalizeT6.h"
+#include "Leaderboard/JsonLoaderLeaderboardT6.h"
+#include "Localize/LocalizeLoaderT6.h"
 #include "Material/LoaderMaterialT6.h"
 #include "ObjContainer/IPak/IPak.h"
 #include "ObjLoading.h"
@@ -393,16 +393,16 @@ namespace T6
         {
             auto& memory = zone.Memory();
 
-            collection.AddAssetCreator(CreateRawPhysPresetLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtPhysPresetLoader(memory, searchPath, gdt, zone));
-            collection.AddAssetCreator(CreateRawPhysConstraintsLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtPhysConstraintsLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(phys_preset::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(phys_preset::CreateGdtLoader(memory, gdt, zone));
+            collection.AddAssetCreator(phys_constraints::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(phys_constraints::CreateGdtLoader(memory, searchPath, gdt, zone));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderDestructibleDef>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXAnim>(memory));
             collection.AddAssetCreator(xmodel::CreateXModelLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateMaterialLoader(memory, searchPath));
+            collection.AddAssetCreator(material::CreateLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTechniqueSet>(memory));
-            collection.AddAssetCreator(CreateImageLoader(memory, searchPath));
+            collection.AddAssetCreator(image::CreateLoader(memory, searchPath));
             collection.AddAssetCreator(sound::CreateSoundBankLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundPatch>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderClipMapPvs>(memory));
@@ -413,11 +413,11 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGfxWorld>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderLightDef>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFont>(memory));
-            collection.AddAssetCreator(CreateCsvFontIconLoader(memory, searchPath));
-            collection.AddAssetCreator(CreateJsonFontIconLoader(memory, searchPath));
+            collection.AddAssetCreator(font_icon::CreateCsvLoader(memory, searchPath));
+            collection.AddAssetCreator(font_icon::CreateJsonLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenuList>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMenu>(memory));
-            collection.AddAssetCreator(CreateLocalizeLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(localize::CreateLoader(memory, searchPath, zone));
             collection.AddAssetCreator(weapon::CreateRawLoader(memory, searchPath, zone));
             collection.AddAssetCreator(weapon::CreateGdtLoader(memory, searchPath, gdt, zone));
             collection.AddAssetCreator(attachment::CreateRawLoader(memory, searchPath, zone));
@@ -428,26 +428,26 @@ namespace T6
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSoundDriverGlobals>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFx>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderImpactFx>(memory));
-            collection.AddAssetCreator(CreateRawFileLoader(memory, searchPath));
-            collection.AddAssetCreator(CreateStringTableLoader(memory, searchPath));
-            collection.AddAssetCreator(CreateLeaderboardLoader(memory, searchPath));
+            collection.AddAssetCreator(raw_file::CreateLoader(memory, searchPath));
+            collection.AddAssetCreator(string_table::CreateLoader(memory, searchPath));
+            collection.AddAssetCreator(leaderboard::CreateLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderXGlobals>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderDDL>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderGlasses>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderEmblemSet>(memory));
-            collection.AddAssetCreator(CreateScriptLoader(memory, searchPath));
-            collection.AddAssetCreator(CreateRawVehicleLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtVehicleLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(script::CreateLoader(memory, searchPath));
+            collection.AddAssetCreator(vehicle::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(vehicle::CreateGdtLoader(memory, searchPath, gdt, zone));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderMemoryBlock>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderAddonMapEnts>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderTracer>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderSkinnedVerts>(memory));
-            collection.AddAssetCreator(CreateQdbLoader(memory, searchPath));
-            collection.AddAssetCreator(CreateSlugLoader(memory, searchPath));
+            collection.AddAssetCreator(qdb::CreateLoader(memory, searchPath));
+            collection.AddAssetCreator(slug::CreateLoader(memory, searchPath));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepTable>(memory));
             // collection.AddAssetCreator(std::make_unique<AssetLoaderFootstepFxTable>(memory));
-            collection.AddAssetCreator(CreateRawZBarrierLoader(memory, searchPath, zone));
-            collection.AddAssetCreator(CreateGdtZBarrierLoader(memory, searchPath, gdt, zone));
+            collection.AddAssetCreator(z_barrier::CreateRawLoader(memory, searchPath, zone));
+            collection.AddAssetCreator(z_barrier::CreateGdtLoader(memory, searchPath, gdt, zone));
         }
     } // namespace
 

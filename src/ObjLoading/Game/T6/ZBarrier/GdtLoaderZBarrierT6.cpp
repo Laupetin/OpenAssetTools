@@ -40,14 +40,14 @@ namespace
 
     private:
         IGdtQueryable& m_gdt;
-        InfoStringLoaderZBarrier m_info_string_loader;
+        T6::z_barrier::InfoStringLoader m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace T6::z_barrier
 {
-    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateGdtZBarrierLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetZBarrier>> CreateGdtLoader(MemoryManager& memory, ISearchPath& searchPath, IGdtQueryable& gdt, Zone& zone)
     {
         return std::make_unique<GdtLoaderZBarrier>(memory, searchPath, gdt, zone);
     }
-} // namespace T6
+} // namespace T6::z_barrier

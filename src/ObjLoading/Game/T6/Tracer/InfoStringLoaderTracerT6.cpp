@@ -3,6 +3,7 @@
 #include "Game/T6/InfoString/InfoStringToStructConverter.h"
 #include "Game/T6/T6.h"
 #include "Game/T6/Tracer/TracerFields.h"
+#include "Tracer/TracerCommon.h"
 
 #include <cassert>
 #include <cstring>
@@ -11,6 +12,7 @@
 #include <limits>
 
 using namespace T6;
+using namespace ::tracer;
 
 namespace
 {
@@ -46,27 +48,31 @@ namespace
     };
 } // namespace
 
-InfoStringLoaderTracer::InfoStringLoaderTracer(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-    : m_memory(memory),
-      m_search_path(searchPath),
-      m_zone(zone)
+namespace T6::tracer
 {
-}
-
-AssetCreationResult InfoStringLoaderTracer::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
-{
-    auto* tracer = m_memory.Alloc<TracerDef>();
-    tracer->name = m_memory.Dup(assetName.c_str());
-
-    AssetRegistration<AssetTracer> registration(assetName, tracer);
-
-    InfoStringToTracerConverter converter(
-        infoString, *tracer, m_zone.m_script_strings, m_memory, context, registration, tracer_fields, std::extent_v<decltype(tracer_fields)>);
-    if (!converter.Convert())
+    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_zone(zone)
     {
-        std::cerr << std::format("Failed to parse tracer: \"{}\"\n", assetName);
-        return AssetCreationResult::Failure();
     }
 
-    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
-}
+    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context)
+    {
+        auto* tracer = m_memory.Alloc<TracerDef>();
+        tracer->name = m_memory.Dup(assetName.c_str());
+
+        AssetRegistration<AssetTracer> registration(assetName, tracer);
+
+        InfoStringToTracerConverter converter(
+            infoString, *tracer, m_zone.m_script_strings, m_memory, context, registration, tracer_fields, std::extent_v<decltype(tracer_fields)>);
+        if (!converter.Convert())
+        {
+            std::cerr << std::format("Failed to parse tracer: \"{}\"\n", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+
+} // namespace T6::tracer

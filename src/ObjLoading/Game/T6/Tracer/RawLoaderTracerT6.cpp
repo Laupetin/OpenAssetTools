@@ -43,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderTracer m_info_string_loader;
+        T6::tracer::InfoStringLoader m_info_string_loader;
     };
 } // namespace
 
-namespace T6
+namespace T6::tracer
 {
-    std::unique_ptr<AssetCreator<AssetTracer>> CreateRawTracerLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetTracer>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderTracer>(memory, searchPath, zone);
     }
-} // namespace T6
+} // namespace T6::tracer
