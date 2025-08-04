@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW3
+namespace IW3::image
 {
-    std::unique_ptr<AssetCreator<AssetImage>> CreateImageLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW3
+    std::unique_ptr<AssetCreator<AssetImage>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace IW3::image

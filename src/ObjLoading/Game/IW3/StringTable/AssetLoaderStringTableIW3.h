@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW3
+namespace IW3::string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW3
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace IW3::string_table

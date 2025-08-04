@@ -286,7 +286,7 @@ namespace
         GivenImage("ch_plasterwall_long_col", context, memory);
         GivenTechset("wc_l_sm_r0c0n0s0", context, memory);
 
-        auto loader = CreateMaterialLoader(memory, searchPath);
+        auto loader = material::CreateLoader(memory, searchPath);
         auto result = loader->CreateAsset("wc/ch_plasterwall_long", context);
         REQUIRE(result.HasBeenSuccessful());
 

@@ -6,6 +6,7 @@
 #include <cstring>
 
 using namespace IW3;
+using namespace ::string_table;
 
 namespace
 {
@@ -24,7 +25,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            string_table::StringTableLoaderV1<StringTable> loader;
+            StringTableLoaderV1<StringTable> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
             if (!stringTable)
                 return AssetCreationResult::Failure();
@@ -38,10 +39,10 @@ namespace
     };
 } // namespace
 
-namespace IW3
+namespace IW3::string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<StringTableLoader>(memory, searchPath);
     }
-} // namespace IW3
+} // namespace IW3::string_table

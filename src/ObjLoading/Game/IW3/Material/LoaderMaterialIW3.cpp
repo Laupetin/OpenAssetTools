@@ -8,6 +8,7 @@
 #include <iostream>
 
 using namespace IW3;
+using namespace ::material;
 
 namespace
 {
@@ -22,7 +23,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto file = m_search_path.Open(material::GetFileNameForAssetName(assetName));
+            const auto file = m_search_path.Open(GetFileNameForAssetName(assetName));
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
@@ -45,10 +46,10 @@ namespace
     };
 } // namespace
 
-namespace IW3
+namespace IW3::material
 {
-    std::unique_ptr<AssetCreator<AssetMaterial>> CreateMaterialLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetMaterial>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<MaterialLoader>(memory, searchPath);
     }
-} // namespace IW3
+} // namespace IW3::material
