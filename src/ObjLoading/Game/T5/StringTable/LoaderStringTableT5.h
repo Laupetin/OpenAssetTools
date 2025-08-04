@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace T5
+namespace T5::string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace T5
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace T5::string_table
