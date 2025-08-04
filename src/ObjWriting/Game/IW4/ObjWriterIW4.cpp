@@ -20,7 +20,7 @@
 #include "Sound/LoadedSoundDumperIW4.h"
 #include "Sound/SndCurveDumperIW4.h"
 #include "StringTable/StringTableDumperIW4.h"
-#include "StructuredDataDef/AssetDumperStructuredDataDefSet.h"
+#include "StructuredDataDef/StructuredDataDefDumperIW4.h"
 #include "Techset/TechsetDumperIW4.h"
 #include "Tracer/TracerDumperIW4.h"
 #include "Vehicle/VehicleDumperIW4.h"
@@ -73,7 +73,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(raw_file::Dumper, m_raw_file, ASSET_TYPE_RAWFILE)
     DUMP_ASSET_POOL(string_table::Dumper, m_string_table, ASSET_TYPE_STRINGTABLE)
     DUMP_ASSET_POOL(leaderboard::JsonDumper, m_leaderboard, ASSET_TYPE_LEADERBOARD)
-    DUMP_ASSET_POOL(AssetDumperStructuredDataDefSet, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
+    DUMP_ASSET_POOL(structured_data_def::Dumper, m_structed_data_def_set, ASSET_TYPE_STRUCTURED_DATA_DEF)
     DUMP_ASSET_POOL(tracer::Dumper, m_tracer, ASSET_TYPE_TRACER)
     DUMP_ASSET_POOL(vehicle::Dumper, m_vehicle, ASSET_TYPE_VEHICLE)
     DUMP_ASSET_POOL(addon_map_ents::Dumper, m_addon_map_ents, ASSET_TYPE_ADDON_MAP_ENTS)
