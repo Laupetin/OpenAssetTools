@@ -68,10 +68,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::light_def
 {
-    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLightDefLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderLightDef>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace IW4::light_def

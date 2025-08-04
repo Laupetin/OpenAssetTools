@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace IW4::leaderboard
 {
-    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLeaderboardLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+    std::unique_ptr<AssetCreator<AssetLeaderboard>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace IW4::leaderboard

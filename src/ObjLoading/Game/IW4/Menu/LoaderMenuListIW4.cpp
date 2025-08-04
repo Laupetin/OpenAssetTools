@@ -11,6 +11,7 @@
 #include <iostream>
 
 using namespace IW4;
+using namespace ::menu;
 
 namespace
 {
@@ -28,7 +29,7 @@ namespace
             std::vector<menuDef_t*> menus;
             AssetRegistration<AssetMenuList> registration(assetName);
 
-            auto& zoneState = context.GetZoneAssetCreationState<menu::MenuAssetZoneState>();
+            auto& zoneState = context.GetZoneAssetCreationState<MenuAssetZoneState>();
             auto& conversionState = context.GetZoneAssetCreationState<MenuConversionZoneState>();
 
             std::deque<std::string> menuLoadQueue;
@@ -80,7 +81,7 @@ namespace
     private:
         bool LoadMenuFileFromQueue(const std::string& menuFilePath,
                                    AssetCreationContext& context,
-                                   menu::MenuAssetZoneState& zoneState,
+                                   MenuAssetZoneState& zoneState,
                                    MenuConversionZoneState& conversionState,
                                    std::vector<menuDef_t*>& menus,
                                    AssetRegistration<AssetMenuList>& registration) const
@@ -121,8 +122,8 @@ namespace
 
         bool ProcessParsedResults(const std::string& fileName,
                                   AssetCreationContext& context,
-                                  menu::ParsingResult& parsingResult,
-                                  menu::MenuAssetZoneState& zoneState,
+                                  ParsingResult& parsingResult,
+                                  MenuAssetZoneState& zoneState,
                                   MenuConversionZoneState& conversionState,
                                   std::vector<menuDef_t*>& menus,
                                   AssetRegistration<AssetMenuList>& registration) const
@@ -196,10 +197,9 @@ namespace
                 menuList.menus = nullptr;
         }
 
-        std::unique_ptr<menu::ParsingResult>
-            ParseMenuFile(std::istream& stream, const std::string& menuFileName, const menu::MenuAssetZoneState& zoneState) const
+        std::unique_ptr<ParsingResult> ParseMenuFile(std::istream& stream, const std::string& menuFileName, const MenuAssetZoneState& zoneState) const
         {
-            menu::MenuFileReader reader(stream, menuFileName, menu::FeatureLevel::IW4, m_search_path);
+            MenuFileReader reader(stream, menuFileName, FeatureLevel::IW4, m_search_path);
 
             reader.IncludeZoneState(zoneState);
             reader.SetPermissiveMode(ObjLoading::Configuration.MenuPermissiveParsing);
@@ -212,10 +212,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::menu
 {
     std::unique_ptr<AssetCreator<AssetMenuList>> CreateMenuListLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<MenuListLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace IW4::menu

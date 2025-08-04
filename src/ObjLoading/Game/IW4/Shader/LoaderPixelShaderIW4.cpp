@@ -1,12 +1,14 @@
 #include "LoaderPixelShaderIW4.h"
 
 #include "Game/IW4/IW4.h"
+#include "Shader/ShaderCommon.h"
 
 #include <cstdint>
 #include <format>
 #include <iostream>
 
 using namespace IW4;
+using namespace ::shader;
 
 namespace
 {
@@ -21,7 +23,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = GetPixelShaderFileName(assetName);
+            const auto fileName = GetFileNameForPixelShaderAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -53,15 +55,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::shader
 {
-    std::string GetPixelShaderFileName(const std::string& pixelShaderAssetName)
-    {
-        return std::format("shader_bin/ps_{}.cso", pixelShaderAssetName);
-    }
-
     std::unique_ptr<AssetCreator<AssetPixelShader>> CreatePixelShaderLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<PixelShaderLoader>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace IW4::shader

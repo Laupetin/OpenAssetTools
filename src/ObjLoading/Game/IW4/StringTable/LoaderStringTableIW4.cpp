@@ -6,6 +6,7 @@
 #include "StringTable/StringTableLoader.h"
 
 using namespace IW4;
+using namespace ::string_table;
 
 namespace
 {
@@ -24,7 +25,7 @@ namespace
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
 
-            string_table::StringTableLoaderV2<StringTable, Common::StringTable_HashString> loader;
+            StringTableLoaderV2<StringTable, Common::StringTable_HashString> loader;
             auto* stringTable = loader.LoadFromStream(assetName, m_memory, *file.m_stream);
             if (!stringTable)
                 return AssetCreationResult::Failure();
@@ -38,10 +39,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::string_table
 {
-    std::unique_ptr<AssetCreator<AssetStringTable>> CreateStringTableLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetStringTable>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderStringTable>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace IW4::string_table

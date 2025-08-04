@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace IW4::light_def
 {
-    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLightDefLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+    std::unique_ptr<AssetCreator<AssetLightDef>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace IW4::light_def

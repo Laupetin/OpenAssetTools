@@ -4,12 +4,14 @@
 #include "Game/IW4/ObjConstantsIW4.h"
 #include "InfoString/InfoString.h"
 #include "InfoStringLoaderWeaponIW4.h"
+#include "Weapon/WeaponCommon.h"
 
 #include <cstring>
 #include <format>
 #include <iostream>
 
 using namespace IW4;
+using namespace ::weapon;
 
 namespace
 {
@@ -24,7 +26,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("weapons/{}", assetName);
+            const auto fileName = GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -41,14 +43,14 @@ namespace
 
     private:
         ISearchPath& m_search_path;
-        InfoStringLoaderWeapon m_info_string_loader;
+        IW4::weapon::InfoStringLoader m_info_string_loader;
     };
 } // namespace
 
-namespace IW4
+namespace IW4::weapon
 {
-    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawWeaponLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    std::unique_ptr<AssetCreator<AssetWeapon>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
     {
         return std::make_unique<RawLoaderWeapon>(memory, searchPath, zone);
     }
-} // namespace IW4
+} // namespace IW4::weapon

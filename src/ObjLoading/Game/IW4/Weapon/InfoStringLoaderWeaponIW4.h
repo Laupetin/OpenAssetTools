@@ -4,12 +4,12 @@
 #include "Asset/AssetCreationResult.h"
 #include "InfoString/InfoString.h"
 
-namespace IW4
+namespace IW4::weapon
 {
-    class InfoStringLoaderWeapon
+    class InfoStringLoader
     {
     public:
-        InfoStringLoaderWeapon(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+        InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
 
         AssetCreationResult CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context);
 
@@ -18,4 +18,4 @@ namespace IW4
         ISearchPath& m_search_path;
         Zone& m_zone;
     };
-} // namespace IW4
+} // namespace IW4::weapon

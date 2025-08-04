@@ -289,7 +289,7 @@ namespace
         GivenImage("ch_rubble01_col", context, memory);
         GivenTechset("mc_l_sm_r0c0n0s0", context, memory);
 
-        auto loader = CreateMaterialLoader(memory, searchPath);
+        auto loader = material::CreateLoader(memory, searchPath);
         auto result = loader->CreateAsset("mc/ch_rubble01", context);
         REQUIRE(result.HasBeenSuccessful());
 

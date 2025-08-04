@@ -7,9 +7,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace IW4::shader
 {
-    [[nodiscard]] std::string GetVertexShaderFileName(const std::string& vertexShaderAssetName);
-
     std::unique_ptr<AssetCreator<AssetVertexShader>> CreateVertexShaderLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+} // namespace IW4::shader

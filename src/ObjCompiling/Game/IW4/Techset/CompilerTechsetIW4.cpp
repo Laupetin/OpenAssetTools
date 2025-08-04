@@ -5,6 +5,7 @@
 #include "Game/IW4/Shader/LoaderVertexShaderIW4.h"
 #include "Game/IW4/TechsetConstantsIW4.h"
 #include "Shader/D3D9ShaderAnalyser.h"
+#include "Shader/ShaderCommon.h"
 #include "StateMap/StateMapReader.h"
 #include "Techset/TechniqueFileReader.h"
 #include "Techset/TechniqueStateMapCache.h"
@@ -460,7 +461,8 @@ namespace
 
             if (pass.m_vertex_shader->Asset()->name && pass.m_vertex_shader->Asset()->name[0] == ',')
             {
-                pass.m_vertex_shader_info = m_shader_info_cache.LoadShaderInfoFromDisk(m_search_path, GetVertexShaderFileName(vertexShaderName));
+                pass.m_vertex_shader_info =
+                    m_shader_info_cache.LoadShaderInfoFromDisk(m_search_path, ::shader::GetFileNameForVertexShaderAssetName(vertexShaderName));
             }
             else
             {
@@ -495,7 +497,8 @@ namespace
 
             if (pass.m_pixel_shader->Asset()->name && pass.m_pixel_shader->Asset()->name[0] == ',')
             {
-                pass.m_pixel_shader_info = m_shader_info_cache.LoadShaderInfoFromDisk(m_search_path, GetPixelShaderFileName(pixelShaderName));
+                pass.m_pixel_shader_info =
+                    m_shader_info_cache.LoadShaderInfoFromDisk(m_search_path, ::shader::GetFileNameForPixelShaderAssetName(pixelShaderName));
             }
             else
             {

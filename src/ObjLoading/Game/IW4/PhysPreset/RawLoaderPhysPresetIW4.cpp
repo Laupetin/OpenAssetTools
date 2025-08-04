@@ -10,28 +10,46 @@
 #include <iostream>
 
 using namespace IW4;
+using namespace ::phys_preset;
 
-RawLoaderPhysPreset::RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-    : m_memory(memory),
-      m_search_path(searchPath),
-      m_zone(zone)
+namespace
 {
-}
-
-AssetCreationResult RawLoaderPhysPreset::CreateAsset(const std::string& assetName, AssetCreationContext& context)
-{
-    const auto fileName = phys_preset::GetFileNameForAssetName(assetName);
-    const auto file = m_search_path.Open(fileName);
-    if (!file.IsOpen())
-        return AssetCreationResult::NoAction();
-
-    InfoString infoString;
-    if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
+    class RawLoaderPhysPreset final : public AssetCreator<AssetPhysPreset>
     {
-        std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
-        return AssetCreationResult::Failure();
-    }
+    public:
+        RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+            : m_search_path(searchPath),
+              m_info_string_loader(memory, zone)
+        {
+        }
 
-    InfoStringLoaderPhysPreset infoStringLoader(m_memory, m_zone);
-    return infoStringLoader.CreateAsset(assetName, infoString, context);
-}
+        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
+        {
+            const auto fileName = GetFileNameForAssetName(assetName);
+            const auto file = m_search_path.Open(fileName);
+            if (!file.IsOpen())
+                return AssetCreationResult::NoAction();
+
+            InfoString infoString;
+            if (!infoString.FromStream(ObjConstants::INFO_STRING_PREFIX_PHYS_PRESET, *file.m_stream))
+            {
+                std::cerr << std::format("Could not parse as info string file: \"{}\"\n", fileName);
+                return AssetCreationResult::Failure();
+            }
+
+            return m_info_string_loader.CreateAsset(assetName, infoString, context);
+        }
+
+    private:
+        ISearchPath& m_search_path;
+        IW4::phys_preset::InfoStringLoader m_info_string_loader;
+    };
+} // namespace
+
+namespace IW4::phys_preset
+{
+    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+    {
+        return std::make_unique<RawLoaderPhysPreset>(memory, searchPath, zone);
+    }
+} // namespace IW4::phys_preset

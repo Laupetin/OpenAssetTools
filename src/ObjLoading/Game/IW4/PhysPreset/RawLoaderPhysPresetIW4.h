@@ -5,18 +5,9 @@
 #include "SearchPath/ISearchPath.h"
 #include "Utils/MemoryManager.h"
 
-namespace IW4
+#include <memory>
+
+namespace IW4::phys_preset
 {
-    class RawLoaderPhysPreset final : public AssetCreator<AssetPhysPreset>
-    {
-    public:
-        RawLoaderPhysPreset(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
-
-        AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override;
-
-    private:
-        MemoryManager& m_memory;
-        ISearchPath& m_search_path;
-        Zone& m_zone;
-    };
-} // namespace IW4
+    std::unique_ptr<AssetCreator<AssetPhysPreset>> CreateRawLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone);
+} // namespace IW4::phys_preset

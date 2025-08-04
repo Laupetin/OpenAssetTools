@@ -52,7 +52,7 @@ bool ObjWriter::DumpZone(AssetDumpingContext& context) const
     DUMP_ASSET_POOL(techset::Dumper, m_technique_set, ASSET_TYPE_TECHNIQUE_SET)
     DUMP_ASSET_POOL(image::Dumper, m_image, ASSET_TYPE_IMAGE)
     // DUMP_ASSET_POOL(AssetDumpersnd_alias_list_t, m_sound, ASSET_TYPE_SOUND)
-    DUMP_ASSET_POOL(sound::SndCurveDumper, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
+    DUMP_ASSET_POOL(sound_curve::Dumper, m_sound_curve, ASSET_TYPE_SOUND_CURVE)
     DUMP_ASSET_POOL(sound::LoadedSoundDumper, m_loaded_sound, ASSET_TYPE_LOADED_SOUND)
     // DUMP_ASSET_POOL(AssetDumperClipMap, m_clip_map, ASSET_TYPE_CLIPMAP_MP)
     // DUMP_ASSET_POOL(AssetDumperComWorld, m_com_world, ASSET_TYPE_COMWORLD)

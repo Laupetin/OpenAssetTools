@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace IW4
+namespace IW4::sound_curve
 {
-    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateSoundCurveLoader(MemoryManager& memory, ISearchPath& searchPath);
-} // namespace IW4
+    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath);
+} // namespace IW4::sound_curve

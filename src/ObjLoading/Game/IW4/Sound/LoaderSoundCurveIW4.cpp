@@ -4,6 +4,7 @@
 #include "ObjLoading.h"
 #include "Parsing/Graph2D/Graph2DReader.h"
 #include "Pool/GlobalAssetPool.h"
+#include "Sound/SoundCurveCommon.h"
 
 #include <cstring>
 #include <format>
@@ -11,6 +12,7 @@
 #include <sstream>
 
 using namespace IW4;
+using namespace ::sound_curve;
 
 namespace
 {
@@ -25,7 +27,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("soundaliases/{}.vfcurve", assetName);
+            const auto fileName = GetFileNameForAssetName(assetName);
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -69,10 +71,10 @@ namespace
     };
 } // namespace
 
-namespace IW4
+namespace IW4::sound_curve
 {
-    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateSoundCurveLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetSoundCurve>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<LoaderSoundCurve>(memory, searchPath);
     }
-} // namespace IW4
+} // namespace IW4::sound_curve
