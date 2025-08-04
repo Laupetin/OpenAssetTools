@@ -14,7 +14,7 @@ namespace IW5
         IMenuConverter() = default;
         virtual ~IMenuConverter() = default;
 
-        virtual void ConvertMenu(const menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) = 0;
+        virtual void ConvertMenu(const ::menu::CommonMenuDef& commonMenu, menuDef_t& menu, AssetRegistration<AssetMenu>& registration) = 0;
 
         static std::unique_ptr<IMenuConverter> Create(bool disableOptimizations, ISearchPath& searchPath, MemoryManager& memory, AssetCreationContext& context);
     };

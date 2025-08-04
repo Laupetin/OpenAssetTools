@@ -1,6 +1,7 @@
 #include "LoaderImageIW5.h"
 
 #include "Game/IW5/IW5.h"
+#include "Image/ImageCommon.h"
 #include "Image/IwiLoader.h"
 
 #include <cstring>
@@ -9,6 +10,7 @@
 #include <sstream>
 
 using namespace IW5;
+using namespace ::image;
 
 namespace
 {
@@ -25,7 +27,7 @@ namespace
 
         AssetCreationResult CreateAsset(const std::string& assetName, AssetCreationContext& context) override
         {
-            const auto fileName = std::format("images/{}.iwi", assetName);
+            const auto fileName = GetFileNameForAsset(assetName, ".iwi");
             const auto file = m_search_path.Open(fileName);
             if (!file.IsOpen())
                 return AssetCreationResult::NoAction();
@@ -60,10 +62,10 @@ namespace
     };
 } // namespace
 
-namespace IW5
+namespace IW5::image
 {
-    std::unique_ptr<AssetCreator<AssetImage>> CreateImageLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetImage>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<ImageLoader>(memory, searchPath);
     }
-} // namespace IW5
+} // namespace IW5::image

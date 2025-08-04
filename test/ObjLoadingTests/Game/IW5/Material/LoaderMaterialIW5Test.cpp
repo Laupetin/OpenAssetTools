@@ -313,7 +313,7 @@ namespace
         GivenImage("me_metal_rusty02_col", context, memory);
         GivenTechset("wc_l_sm_r0c0n0s0", context, memory);
 
-        auto loader = CreateMaterialLoader(memory, searchPath);
+        auto loader = material::CreateLoader(memory, searchPath);
         auto result = loader->CreateAsset("wc/me_metal_rust_02", context);
         REQUIRE(result.HasBeenSuccessful());
 

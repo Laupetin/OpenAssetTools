@@ -856,33 +856,36 @@ namespace
     }
 } // namespace
 
-InfoStringLoaderWeapon::InfoStringLoaderWeapon(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
-    : m_memory(memory),
-      m_search_path(searchPath),
-      m_zone(zone)
+namespace IW5::weapon
 {
-}
-
-AssetCreationResult InfoStringLoaderWeapon::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
-{
-    auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
-
-    InitWeaponFullDef(*weaponFullDef);
-    weaponFullDef->weapCompleteDef.szInternalName = m_memory.Dup(assetName.c_str());
-
-    AssetRegistration<AssetWeapon> registration(assetName, &weaponFullDef->weapCompleteDef);
-
-    InfoStringToWeaponConverter converter(
-        infoString, *weaponFullDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
-    if (!converter.Convert())
+    InfoStringLoader::InfoStringLoader(MemoryManager& memory, ISearchPath& searchPath, Zone& zone)
+        : m_memory(memory),
+          m_search_path(searchPath),
+          m_zone(zone)
     {
-        std::cerr << std::format("Failed to parse weapon: \"{}\"\n", assetName);
-        return AssetCreationResult::Failure();
     }
 
-    CalculateWeaponFields(*weaponFullDef, m_memory);
+    AssetCreationResult InfoStringLoader::CreateAsset(const std::string& assetName, const InfoString& infoString, AssetCreationContext& context) const
+    {
+        auto* weaponFullDef = m_memory.Alloc<WeaponFullDef>();
 
-    LoadAccuracyGraphs(*weaponFullDef, m_memory, m_search_path, context);
+        InitWeaponFullDef(*weaponFullDef);
+        weaponFullDef->weapCompleteDef.szInternalName = m_memory.Dup(assetName.c_str());
 
-    return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
-}
+        AssetRegistration<AssetWeapon> registration(assetName, &weaponFullDef->weapCompleteDef);
+
+        InfoStringToWeaponConverter converter(
+            infoString, *weaponFullDef, m_zone.m_script_strings, m_memory, context, registration, weapon_fields, std::extent_v<decltype(weapon_fields)>);
+        if (!converter.Convert())
+        {
+            std::cerr << std::format("Failed to parse weapon: \"{}\"\n", assetName);
+            return AssetCreationResult::Failure();
+        }
+
+        CalculateWeaponFields(*weaponFullDef, m_memory);
+
+        LoadAccuracyGraphs(*weaponFullDef, m_memory, m_search_path, context);
+
+        return AssetCreationResult::Success(context.AddAsset(std::move(registration)));
+    }
+} // namespace IW5::weapon

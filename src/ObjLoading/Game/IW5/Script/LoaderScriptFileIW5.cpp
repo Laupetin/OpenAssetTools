@@ -79,10 +79,10 @@ namespace
     };
 } // namespace
 
-namespace IW5
+namespace IW5::script
 {
-    std::unique_ptr<AssetCreator<AssetScript>> CreateScriptLoader(MemoryManager& memory, ISearchPath& searchPath)
+    std::unique_ptr<AssetCreator<AssetScript>> CreateLoader(MemoryManager& memory, ISearchPath& searchPath)
     {
         return std::make_unique<ScriptLoader>(memory, searchPath);
     }
-} // namespace IW5
+} // namespace IW5::script
